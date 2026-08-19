@@ -574,7 +574,7 @@ class SharedRuntimeTests(unittest.TestCase):
 
         registry = json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))
         active = [row for row in registry["skills"] if row["state"] == "active"]
-        self.assertEqual(len(active), 20)
+        self.assertEqual(len(active), 21)
         for row in active:
             with self.subTest(skill=row["id"]):
                 payload = discover(SKILLS, row["id"])

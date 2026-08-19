@@ -242,15 +242,16 @@
         ],
         "active_skill_ids": [
           "guru-approve-task-plan",
+          "guru-bootstrap-repository-ssot",
           "guru-check-task",
           "guru-clarify-requirements",
-          "guru-maintain-architecture-baseline",
-          "guru-maintain-requirements-design-test-ssot",
           "guru-create-task-commit",
           "guru-create-task-workspace",
           "guru-discover-change-context",
           "guru-execute-task-free-change",
           "guru-finalize-task",
+          "guru-maintain-architecture-baseline",
+          "guru-maintain-requirements-design-test-ssot",
           "guru-merge-task-pr",
           "guru-qualify-normal-scenario",
           "guru-reconcile-task-base",
@@ -391,11 +392,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-18T22:35:17Z",
+  "installed_at": "2026-08-19T00:59:46Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "cf6c058f047df5ef5ffaecbad2a66120919d3e85",
-    "commit": "cf6c058f047df5ef5ffaecbad2a66120919d3e85",
+    "ref": "891c21473541d8e10317adfab7bf3d0a9106aaa0",
+    "commit": "891c21473541d8e10317adfab7bf3d0a9106aaa0",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -480,11 +481,11 @@
     "managed_asset_hashes": {
       ".trellis/spec/workflow/requirements-design-test-ssot.md": "5c92ecd811bbaba26ff443a1d3d0944ebdebbd993d7f9d2f02352f1fd3429829",
       ".trellis/spec/workflow/semantic-retrieval.md": "2c9a3097949979e84d42e15811278df1b047ec4c2101f3019e887e7799aef483",
-      ".trellis/spec/workflow/workflow-contract.md": "f3a9805d7486100bbee14ae4bf1daeb3d9d39f0eca21a1f382b5c653b4ea9a22",
-      ".trellis/spec/workflow/skill-package-contract.md": "ab5f75104689a190090569a56c2ada8565b828210a6fb97bfb31f5add5d92b67",
+      ".trellis/spec/workflow/workflow-contract.md": "32470f5f7817dc67bdad6004f44ab3a2724da2519a4b8aadddc4bc5971e7b786",
+      ".trellis/spec/workflow/skill-package-contract.md": "08850a55c0f57fc4444eba71e2c424969dccc89540e862618b82ee3a26f15695",
       ".trellis/spec/workflow/data-contracts.md": "d5082886e4488bbada3fc31bdf62acf8176617cd2f1d635edb52873d78bd474a",
       ".trellis/spec/workflow/companion-scripts.md": "7b42af874ea5b08c318b2ff46860204fa884b2674eb3cfedefc86e62bb1cd617",
-      ".trellis/spec/workflow/quality-guidelines.md": "109bd12bf4774f4a70b5a95dbb60047d7b11dd718eb1c53542045f81953ee33b"
+      ".trellis/spec/workflow/quality-guidelines.md": "2c148806f792cd61925040ce8c1022120723f117d3dc55140add9bae5c7effa8"
     },
     "new_copies": [],
     "managed_backups": [],
@@ -494,10 +495,11 @@
   "skill_packages": {
     "schema_version": "1.0",
     "status": "ok",
-    "canonical_registry_sha256": "a168c581f18c9be55b329b413d840011c61f25bdc97fda13cf25c0f8eaf72c06",
+    "canonical_registry_sha256": "1c0234ccb1d52f5e38e1230e01de9304213c0bee94e346fde59aa959dffd5c67",
     "registry_schema_version": "1.4",
     "active_ids": [
       "guru-approve-task-plan",
+      "guru-bootstrap-repository-ssot",
       "guru-check-task",
       "guru-clarify-requirements",
       "guru-create-task-commit",
@@ -524,6 +526,11 @@
       "cursor"
     ],
     "packages": [
+      {
+        "id": "guru-bootstrap-repository-ssot",
+        "interface_sha256": "e45ae98be0e89b674f47c0ddf212b0bb2641d3fef69f469df29bc9a4ca44b176",
+        "tree_sha256": "a1bbad06fc95c29122ff2a3dfd9c510be4139bb4d7f4af03fb175f4340a6d235"
+      },
       {
         "id": "guru-maintain-architecture-baseline",
         "interface_sha256": "8bb4801c1f59bbb09d9f068b6dcafa10828d37214733b28bc633c0dfcd0a72cc",
@@ -629,7 +636,7 @@
       {
         "path": ".trellis/guru-team/skills/registry.json",
         "source": "trellis/skills/guru-team/registry.json",
-        "sha256": "a168c581f18c9be55b329b413d840011c61f25bdc97fda13cf25c0f8eaf72c06",
+        "sha256": "1c0234ccb1d52f5e38e1230e01de9304213c0bee94e346fde59aa959dffd5c67",
         "executable": false,
         "action": "unchanged"
       },
@@ -1255,6 +1262,342 @@
         "sha256": "1c2eb87f5c894d7f4ae0e808da58513335dbb56e64a1b953974bb06044cfd240",
         "executable": false,
         "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/SKILL.md",
+        "sha256": "645055e143e5a9875ab338221faac2254c504d66b289078a998095e26f2255e0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/commands.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/commands.json",
+        "sha256": "1bafb382d5caae6571f152b26edc706246f0b428b957f5beea10f315b937b109",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/consumers/stop/blocked.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/stop/blocked.schema.json",
+        "sha256": "ebf24f6040fb37004adabd15e165087bc7aa91b8f9035a9239104582f03a4160",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/consumers/workflow/baseline-incomplete.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/baseline-incomplete.schema.json",
+        "sha256": "e026f0ed5c326292c96378ed579a809a136d6f1071617091956cd94dc5c4f006",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/consumers/workflow/bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/bootstrap.schema.json",
+        "sha256": "e026f0ed5c326292c96378ed579a809a136d6f1071617091956cd94dc5c4f006",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/consumers/workflow/check.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/check.schema.json",
+        "sha256": "ebf24f6040fb37004adabd15e165087bc7aa91b8f9035a9239104582f03a4160",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/consumers/workflow/completed.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/completed.schema.json",
+        "sha256": "1a24987d26da0f47fabd7c375ee4324bfb2c5543102a18a691315a4c0a0e617a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/consumers/workflow/current.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/current.schema.json",
+        "sha256": "1a24987d26da0f47fabd7c375ee4324bfb2c5543102a18a691315a4c0a0e617a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/consumers/workflow/planning.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/planning.schema.json",
+        "sha256": "91fcb85f7362cadb1b41a7dde6aee7a2ee98c114b632af12ba08619c3f59956e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/errors/catalog.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/errors/catalog.json",
+        "sha256": "0d46b381e380c44ecf0151714e318cbec579da6921e3d3127f7286d98b4ed8d2",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/evals/evals.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/evals.json",
+        "sha256": "e3d75abeed698bfae93987065150fde2b36f883165fc3a32b7750cb1f0e2e1d2",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "sha256": "d0e03ac96c4ea4f58c883e2869f01ea12b8e7c4556f6b263684e1e644ed6eac9",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-input.json",
+        "sha256": "3717aa1b0cef303bfe77ca621bcee01801a506210abf7e5ce7bbd74c38f86f5b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
+        "sha256": "ee7e053b44214c4229729b214f3a6ba9a16442d263cb699bb87b9a0cdc44226b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-input.json",
+        "sha256": "8e147d1311729798ff90d6ffbc3fbb2bfa26500d1294f5d4c9fe1ed0913573bd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
+        "sha256": "c247984e4b500cecd91b6cc01e47d7c6c1e1ab588889de9b4283d6be704598f8",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-input.json",
+        "sha256": "14ebf59be42ed6ca21857c4b997651a194735a53257e2193957378013e205077",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
+        "sha256": "f375333bac373e9a04611d868d2fcd740c57d69b3911188efb10bcc446b2174b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-input.json",
+        "sha256": "eea42e76711ece251376c47b7a9a203aa6e9d0d581e94e81a0c9ea30ab7838ff",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/examples/public-blocked-output.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-blocked-output.json",
+        "sha256": "4309a84ba4bbbbdcf07b810b675ebd829858fd652e7759a7106d9ec117b1cb34",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/examples/public-input-existing-repository.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-input-existing-repository.json",
+        "sha256": "831e5db85d35a0cbc6a94b99d657baa46b0185e014d0993d1fb908e30ef98b65",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/examples/public-input-new-repository.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-input-new-repository.json",
+        "sha256": "8abc8eb433667722b147950db6211b747551f6184b312ab01424e38d02ebb952",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/examples/public-input-repair.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-input-repair.json",
+        "sha256": "efa9a38d7a57a643056af75fc851832a8162feddb189e6e1785cc9d95b7406fb",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/examples/public-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-input.json",
+        "sha256": "ed83d957eb61c8a3dcf84b3908d431f56b3f8f3f125de1335f658803e6093b1f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/examples/public-output-baseline-incomplete.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-baseline-incomplete.json",
+        "sha256": "77805e93f25e3b3059b09077ec1dc113fb716bb25ff29b2a030b294e4b59cacb",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/examples/public-output-blocked.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-blocked.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/examples/public-output-completed.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-completed.json",
+        "sha256": "66f774be4eb70f9ae15df64fa8a5578ae367533b2687e20cace5160051c7e02a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/examples/public-output-repair-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-repair-required.json",
+        "sha256": "351bf597433f6db1423741dbcc688dba86b52f2948d2435e5e8b8b0c6f36a967",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/interface.json",
+        "sha256": "e45ae98be0e89b674f47c0ddf212b0bb2641d3fef69f469df29bc9a4ca44b176",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/references/contract.md",
+        "sha256": "fccd9dabe8fb789c9833c7b8d8de5948846def3a296c66af8681e6e4c3541b7d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/runtime/invoke.py",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/runtime/invoke.py",
+        "sha256": "b9c716a26d66df91dc4862af3d11547a87e4ba962b9e12f89bf9c5cbd6978e94",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/schemas/public-architecture-conflict-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-architecture-conflict-output.schema.json",
+        "sha256": "2f98c170f38f9474bc9d9ee9000212e44c3a2b9ce279f5c0ba4b5c1a5326e97a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/schemas/public-baseline-current-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-baseline-current-output.schema.json",
+        "sha256": "a599f1f1a38a1da9e8ad7c8a115f9d1b11f0b3499e3940c46f4c1e61e7ff6a75",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "sha256": "c4e091e705d261a394030faa10693b569040c85dfc0941f8bacec0a0de394cd3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/schemas/public-blocked-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-blocked-output.schema.json",
+        "sha256": "e7153aa9434564fffaff74d5ef90cb7f0163bd5ecef570d41d17e986164f0b4d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/schemas/public-completed-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-completed-output.schema.json",
+        "sha256": "6da95ffbc2f9e0f28fd63c196f844bee583134d9273415025159b332c16d579c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/schemas/public-contract-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-contract-incomplete-output.schema.json",
+        "sha256": "9e6f0201923724c18551390410cbb02ac0b60a50ce24bb7dcd25ec3bf02ba3f6",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/schemas/public-fitness-regression-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-fitness-regression-output.schema.json",
+        "sha256": "d2fa888accc6a18ad93a637fee9f7188f65ab3704c86a1f61e64d27686ee3229",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/schemas/public-input-aggregate.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-aggregate.schema.json",
+        "sha256": "89d3808d9030b92806abae5d3e67b46a25810ac07b5093e3206766e736a0f96f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/schemas/public-input-existing-repository.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-existing-repository.schema.json",
+        "sha256": "fb044370f9652ce5de0e88c39ed1ca8d65d0bb854fd9ac0fce2efccd04092d6e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/schemas/public-input-new-repository.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-new-repository.schema.json",
+        "sha256": "393e5f81092a4fd5bc50297002829cc96b5057b62da1c02e977bf1cb912880fd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/schemas/public-input-repair.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-repair.schema.json",
+        "sha256": "290c7cc865555587f57507f079496386c4225c7e2ff77248c818c7e1779cfdf9",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/schemas/public-input.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input.schema.json",
+        "sha256": "ec97e3d8abee46c350284b41adb1613b87aa90a1faa1113bfd04c317ae743bad",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/schemas/public-repair-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-repair-required-output.schema.json",
+        "sha256": "307e6b930a1182ba57e2533bf09d1640c9eadd4db35d4ed06daf25a8c4cde577",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/schemas/public-sync-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-sync-required-output.schema.json",
+        "sha256": "a1112f136634adc7e1c4bf6f723615ca68a736447b8cc6d15087b46cd307454d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/scripts/check-env.sh",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/scripts/check-env.sh",
+        "sha256": "f3c7d915235cde341d0264af78914c5aee3f63a195bbd1a442b092857654a697",
+        "executable": true,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/scripts/invoke.sh",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/scripts/invoke.sh",
+        "sha256": "8dcbfb9ba16053560c294a0d06ea0432bfcd23b77c9d0ee60b5dac1865bee645",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/tests/test_contract.py",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/tests/test_contract.py",
+        "sha256": "d219affa2995895d506704997255a276dd02492c894078ac7ed94e70d2684df9",
+        "executable": false,
+        "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/SKILL.md",
@@ -8490,8 +8833,1156 @@
       {
         "path": ".trellis/guru-team/runtime/validate.py",
         "source": "trellis/skills/guru-team/runtime/validate.py",
-        "sha256": "eab26cff74395ccbe698389676497cbeb75d7f144047ced3b8d57acfaf1793f1",
+        "sha256": "da165621c26db309d3b2fc88796d70b7a7b67c019074e7d4f26dcb2f270142ed",
         "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/SKILL.md",
+        "sha256": "645055e143e5a9875ab338221faac2254c504d66b289078a998095e26f2255e0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/commands.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/commands.json",
+        "sha256": "1bafb382d5caae6571f152b26edc706246f0b428b957f5beea10f315b937b109",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/consumers/stop/blocked.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/stop/blocked.schema.json",
+        "sha256": "ebf24f6040fb37004adabd15e165087bc7aa91b8f9035a9239104582f03a4160",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/consumers/workflow/baseline-incomplete.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/baseline-incomplete.schema.json",
+        "sha256": "e026f0ed5c326292c96378ed579a809a136d6f1071617091956cd94dc5c4f006",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/consumers/workflow/bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/bootstrap.schema.json",
+        "sha256": "e026f0ed5c326292c96378ed579a809a136d6f1071617091956cd94dc5c4f006",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/consumers/workflow/check.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/check.schema.json",
+        "sha256": "ebf24f6040fb37004adabd15e165087bc7aa91b8f9035a9239104582f03a4160",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/consumers/workflow/completed.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/completed.schema.json",
+        "sha256": "1a24987d26da0f47fabd7c375ee4324bfb2c5543102a18a691315a4c0a0e617a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/consumers/workflow/current.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/current.schema.json",
+        "sha256": "1a24987d26da0f47fabd7c375ee4324bfb2c5543102a18a691315a4c0a0e617a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/consumers/workflow/planning.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/planning.schema.json",
+        "sha256": "91fcb85f7362cadb1b41a7dde6aee7a2ee98c114b632af12ba08619c3f59956e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/evals/evals.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/evals.json",
+        "sha256": "e3d75abeed698bfae93987065150fde2b36f883165fc3a32b7750cb1f0e2e1d2",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "sha256": "d0e03ac96c4ea4f58c883e2869f01ea12b8e7c4556f6b263684e1e644ed6eac9",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-input.json",
+        "sha256": "3717aa1b0cef303bfe77ca621bcee01801a506210abf7e5ce7bbd74c38f86f5b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
+        "sha256": "ee7e053b44214c4229729b214f3a6ba9a16442d263cb699bb87b9a0cdc44226b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/evals/files/impact-current-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-input.json",
+        "sha256": "8e147d1311729798ff90d6ffbc3fbb2bfa26500d1294f5d4c9fe1ed0913573bd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
+        "sha256": "c247984e4b500cecd91b6cc01e47d7c6c1e1ab588889de9b4283d6be704598f8",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/evals/files/promotion-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-input.json",
+        "sha256": "14ebf59be42ed6ca21857c4b997651a194735a53257e2193957378013e205077",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
+        "sha256": "f375333bac373e9a04611d868d2fcd740c57d69b3911188efb10bcc446b2174b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/evals/files/repair-blocked-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-input.json",
+        "sha256": "eea42e76711ece251376c47b7a9a203aa6e9d0d581e94e81a0c9ea30ab7838ff",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/examples/public-blocked-output.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-blocked-output.json",
+        "sha256": "4309a84ba4bbbbdcf07b810b675ebd829858fd652e7759a7106d9ec117b1cb34",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/examples/public-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-input.json",
+        "sha256": "ed83d957eb61c8a3dcf84b3908d431f56b3f8f3f125de1335f658803e6093b1f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/examples/public-output-baseline-incomplete.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-baseline-incomplete.json",
+        "sha256": "77805e93f25e3b3059b09077ec1dc113fb716bb25ff29b2a030b294e4b59cacb",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/examples/public-output-blocked.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-blocked.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/examples/public-output-completed.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-completed.json",
+        "sha256": "66f774be4eb70f9ae15df64fa8a5578ae367533b2687e20cace5160051c7e02a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/examples/public-output-repair-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-repair-required.json",
+        "sha256": "351bf597433f6db1423741dbcc688dba86b52f2948d2435e5e8b8b0c6f36a967",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/interface.json",
+        "sha256": "e45ae98be0e89b674f47c0ddf212b0bb2641d3fef69f469df29bc9a4ca44b176",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/references/contract.md",
+        "sha256": "fccd9dabe8fb789c9833c7b8d8de5948846def3a296c66af8681e6e4c3541b7d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/schemas/public-architecture-conflict-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-architecture-conflict-output.schema.json",
+        "sha256": "2f98c170f38f9474bc9d9ee9000212e44c3a2b9ce279f5c0ba4b5c1a5326e97a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/schemas/public-baseline-current-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-baseline-current-output.schema.json",
+        "sha256": "a599f1f1a38a1da9e8ad7c8a115f9d1b11f0b3499e3940c46f4c1e61e7ff6a75",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "sha256": "c4e091e705d261a394030faa10693b569040c85dfc0941f8bacec0a0de394cd3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/schemas/public-blocked-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-blocked-output.schema.json",
+        "sha256": "e7153aa9434564fffaff74d5ef90cb7f0163bd5ecef570d41d17e986164f0b4d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/schemas/public-completed-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-completed-output.schema.json",
+        "sha256": "6da95ffbc2f9e0f28fd63c196f844bee583134d9273415025159b332c16d579c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/schemas/public-contract-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-contract-incomplete-output.schema.json",
+        "sha256": "9e6f0201923724c18551390410cbb02ac0b60a50ce24bb7dcd25ec3bf02ba3f6",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/schemas/public-fitness-regression-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-fitness-regression-output.schema.json",
+        "sha256": "d2fa888accc6a18ad93a637fee9f7188f65ab3704c86a1f61e64d27686ee3229",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/schemas/public-input-aggregate.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-aggregate.schema.json",
+        "sha256": "89d3808d9030b92806abae5d3e67b46a25810ac07b5093e3206766e736a0f96f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/schemas/public-input-existing-repository.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-existing-repository.schema.json",
+        "sha256": "fb044370f9652ce5de0e88c39ed1ca8d65d0bb854fd9ac0fce2efccd04092d6e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/schemas/public-input-new-repository.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-new-repository.schema.json",
+        "sha256": "393e5f81092a4fd5bc50297002829cc96b5057b62da1c02e977bf1cb912880fd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/schemas/public-input-repair.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-repair.schema.json",
+        "sha256": "290c7cc865555587f57507f079496386c4225c7e2ff77248c818c7e1779cfdf9",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/schemas/public-input.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input.schema.json",
+        "sha256": "ec97e3d8abee46c350284b41adb1613b87aa90a1faa1113bfd04c317ae743bad",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/schemas/public-repair-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-repair-required-output.schema.json",
+        "sha256": "307e6b930a1182ba57e2533bf09d1640c9eadd4db35d4ed06daf25a8c4cde577",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/schemas/public-sync-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-sync-required-output.schema.json",
+        "sha256": "a1112f136634adc7e1c4bf6f723615ca68a736447b8cc6d15087b46cd307454d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-bootstrap-repository-ssot/scripts/invoke.sh",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/scripts/invoke.sh",
+        "sha256": "8dcbfb9ba16053560c294a0d06ea0432bfcd23b77c9d0ee60b5dac1865bee645",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/SKILL.md",
+        "sha256": "645055e143e5a9875ab338221faac2254c504d66b289078a998095e26f2255e0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/commands.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/commands.json",
+        "sha256": "1bafb382d5caae6571f152b26edc706246f0b428b957f5beea10f315b937b109",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/consumers/stop/blocked.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/stop/blocked.schema.json",
+        "sha256": "ebf24f6040fb37004adabd15e165087bc7aa91b8f9035a9239104582f03a4160",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/consumers/workflow/baseline-incomplete.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/baseline-incomplete.schema.json",
+        "sha256": "e026f0ed5c326292c96378ed579a809a136d6f1071617091956cd94dc5c4f006",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/consumers/workflow/bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/bootstrap.schema.json",
+        "sha256": "e026f0ed5c326292c96378ed579a809a136d6f1071617091956cd94dc5c4f006",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/consumers/workflow/check.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/check.schema.json",
+        "sha256": "ebf24f6040fb37004adabd15e165087bc7aa91b8f9035a9239104582f03a4160",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/consumers/workflow/completed.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/completed.schema.json",
+        "sha256": "1a24987d26da0f47fabd7c375ee4324bfb2c5543102a18a691315a4c0a0e617a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/consumers/workflow/current.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/current.schema.json",
+        "sha256": "1a24987d26da0f47fabd7c375ee4324bfb2c5543102a18a691315a4c0a0e617a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/consumers/workflow/planning.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/planning.schema.json",
+        "sha256": "91fcb85f7362cadb1b41a7dde6aee7a2ee98c114b632af12ba08619c3f59956e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/evals/evals.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/evals.json",
+        "sha256": "e3d75abeed698bfae93987065150fde2b36f883165fc3a32b7750cb1f0e2e1d2",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "sha256": "d0e03ac96c4ea4f58c883e2869f01ea12b8e7c4556f6b263684e1e644ed6eac9",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-input.json",
+        "sha256": "3717aa1b0cef303bfe77ca621bcee01801a506210abf7e5ce7bbd74c38f86f5b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
+        "sha256": "ee7e053b44214c4229729b214f3a6ba9a16442d263cb699bb87b9a0cdc44226b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/evals/files/impact-current-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-input.json",
+        "sha256": "8e147d1311729798ff90d6ffbc3fbb2bfa26500d1294f5d4c9fe1ed0913573bd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
+        "sha256": "c247984e4b500cecd91b6cc01e47d7c6c1e1ab588889de9b4283d6be704598f8",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/evals/files/promotion-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-input.json",
+        "sha256": "14ebf59be42ed6ca21857c4b997651a194735a53257e2193957378013e205077",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
+        "sha256": "f375333bac373e9a04611d868d2fcd740c57d69b3911188efb10bcc446b2174b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/evals/files/repair-blocked-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-input.json",
+        "sha256": "eea42e76711ece251376c47b7a9a203aa6e9d0d581e94e81a0c9ea30ab7838ff",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/examples/public-blocked-output.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-blocked-output.json",
+        "sha256": "4309a84ba4bbbbdcf07b810b675ebd829858fd652e7759a7106d9ec117b1cb34",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/examples/public-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-input.json",
+        "sha256": "ed83d957eb61c8a3dcf84b3908d431f56b3f8f3f125de1335f658803e6093b1f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/examples/public-output-baseline-incomplete.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-baseline-incomplete.json",
+        "sha256": "77805e93f25e3b3059b09077ec1dc113fb716bb25ff29b2a030b294e4b59cacb",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/examples/public-output-blocked.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-blocked.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/examples/public-output-completed.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-completed.json",
+        "sha256": "66f774be4eb70f9ae15df64fa8a5578ae367533b2687e20cace5160051c7e02a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/examples/public-output-repair-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-repair-required.json",
+        "sha256": "351bf597433f6db1423741dbcc688dba86b52f2948d2435e5e8b8b0c6f36a967",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/interface.json",
+        "sha256": "e45ae98be0e89b674f47c0ddf212b0bb2641d3fef69f469df29bc9a4ca44b176",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/references/contract.md",
+        "sha256": "fccd9dabe8fb789c9833c7b8d8de5948846def3a296c66af8681e6e4c3541b7d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/schemas/public-architecture-conflict-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-architecture-conflict-output.schema.json",
+        "sha256": "2f98c170f38f9474bc9d9ee9000212e44c3a2b9ce279f5c0ba4b5c1a5326e97a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/schemas/public-baseline-current-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-baseline-current-output.schema.json",
+        "sha256": "a599f1f1a38a1da9e8ad7c8a115f9d1b11f0b3499e3940c46f4c1e61e7ff6a75",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "sha256": "c4e091e705d261a394030faa10693b569040c85dfc0941f8bacec0a0de394cd3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/schemas/public-blocked-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-blocked-output.schema.json",
+        "sha256": "e7153aa9434564fffaff74d5ef90cb7f0163bd5ecef570d41d17e986164f0b4d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/schemas/public-completed-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-completed-output.schema.json",
+        "sha256": "6da95ffbc2f9e0f28fd63c196f844bee583134d9273415025159b332c16d579c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/schemas/public-contract-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-contract-incomplete-output.schema.json",
+        "sha256": "9e6f0201923724c18551390410cbb02ac0b60a50ce24bb7dcd25ec3bf02ba3f6",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/schemas/public-fitness-regression-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-fitness-regression-output.schema.json",
+        "sha256": "d2fa888accc6a18ad93a637fee9f7188f65ab3704c86a1f61e64d27686ee3229",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/schemas/public-input-aggregate.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-aggregate.schema.json",
+        "sha256": "89d3808d9030b92806abae5d3e67b46a25810ac07b5093e3206766e736a0f96f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/schemas/public-input-existing-repository.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-existing-repository.schema.json",
+        "sha256": "fb044370f9652ce5de0e88c39ed1ca8d65d0bb854fd9ac0fce2efccd04092d6e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/schemas/public-input-new-repository.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-new-repository.schema.json",
+        "sha256": "393e5f81092a4fd5bc50297002829cc96b5057b62da1c02e977bf1cb912880fd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/schemas/public-input-repair.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-repair.schema.json",
+        "sha256": "290c7cc865555587f57507f079496386c4225c7e2ff77248c818c7e1779cfdf9",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/schemas/public-input.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input.schema.json",
+        "sha256": "ec97e3d8abee46c350284b41adb1613b87aa90a1faa1113bfd04c317ae743bad",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/schemas/public-repair-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-repair-required-output.schema.json",
+        "sha256": "307e6b930a1182ba57e2533bf09d1640c9eadd4db35d4ed06daf25a8c4cde577",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/schemas/public-sync-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-sync-required-output.schema.json",
+        "sha256": "a1112f136634adc7e1c4bf6f723615ca68a736447b8cc6d15087b46cd307454d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-bootstrap-repository-ssot/scripts/invoke.sh",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/scripts/invoke.sh",
+        "sha256": "8dcbfb9ba16053560c294a0d06ea0432bfcd23b77c9d0ee60b5dac1865bee645",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/SKILL.md",
+        "sha256": "645055e143e5a9875ab338221faac2254c504d66b289078a998095e26f2255e0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/commands.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/commands.json",
+        "sha256": "1bafb382d5caae6571f152b26edc706246f0b428b957f5beea10f315b937b109",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/consumers/stop/blocked.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/stop/blocked.schema.json",
+        "sha256": "ebf24f6040fb37004adabd15e165087bc7aa91b8f9035a9239104582f03a4160",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/consumers/workflow/baseline-incomplete.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/baseline-incomplete.schema.json",
+        "sha256": "e026f0ed5c326292c96378ed579a809a136d6f1071617091956cd94dc5c4f006",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/consumers/workflow/bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/bootstrap.schema.json",
+        "sha256": "e026f0ed5c326292c96378ed579a809a136d6f1071617091956cd94dc5c4f006",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/consumers/workflow/check.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/check.schema.json",
+        "sha256": "ebf24f6040fb37004adabd15e165087bc7aa91b8f9035a9239104582f03a4160",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/consumers/workflow/completed.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/completed.schema.json",
+        "sha256": "1a24987d26da0f47fabd7c375ee4324bfb2c5543102a18a691315a4c0a0e617a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/consumers/workflow/current.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/current.schema.json",
+        "sha256": "1a24987d26da0f47fabd7c375ee4324bfb2c5543102a18a691315a4c0a0e617a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/consumers/workflow/planning.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/planning.schema.json",
+        "sha256": "91fcb85f7362cadb1b41a7dde6aee7a2ee98c114b632af12ba08619c3f59956e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/evals/evals.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/evals.json",
+        "sha256": "e3d75abeed698bfae93987065150fde2b36f883165fc3a32b7750cb1f0e2e1d2",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "sha256": "d0e03ac96c4ea4f58c883e2869f01ea12b8e7c4556f6b263684e1e644ed6eac9",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-input.json",
+        "sha256": "3717aa1b0cef303bfe77ca621bcee01801a506210abf7e5ce7bbd74c38f86f5b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
+        "sha256": "ee7e053b44214c4229729b214f3a6ba9a16442d263cb699bb87b9a0cdc44226b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/evals/files/impact-current-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-input.json",
+        "sha256": "8e147d1311729798ff90d6ffbc3fbb2bfa26500d1294f5d4c9fe1ed0913573bd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
+        "sha256": "c247984e4b500cecd91b6cc01e47d7c6c1e1ab588889de9b4283d6be704598f8",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/evals/files/promotion-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-input.json",
+        "sha256": "14ebf59be42ed6ca21857c4b997651a194735a53257e2193957378013e205077",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
+        "sha256": "f375333bac373e9a04611d868d2fcd740c57d69b3911188efb10bcc446b2174b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/evals/files/repair-blocked-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-input.json",
+        "sha256": "eea42e76711ece251376c47b7a9a203aa6e9d0d581e94e81a0c9ea30ab7838ff",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/examples/public-blocked-output.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-blocked-output.json",
+        "sha256": "4309a84ba4bbbbdcf07b810b675ebd829858fd652e7759a7106d9ec117b1cb34",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/examples/public-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-input.json",
+        "sha256": "ed83d957eb61c8a3dcf84b3908d431f56b3f8f3f125de1335f658803e6093b1f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/examples/public-output-baseline-incomplete.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-baseline-incomplete.json",
+        "sha256": "77805e93f25e3b3059b09077ec1dc113fb716bb25ff29b2a030b294e4b59cacb",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/examples/public-output-blocked.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-blocked.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/examples/public-output-completed.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-completed.json",
+        "sha256": "66f774be4eb70f9ae15df64fa8a5578ae367533b2687e20cace5160051c7e02a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/examples/public-output-repair-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-repair-required.json",
+        "sha256": "351bf597433f6db1423741dbcc688dba86b52f2948d2435e5e8b8b0c6f36a967",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/interface.json",
+        "sha256": "e45ae98be0e89b674f47c0ddf212b0bb2641d3fef69f469df29bc9a4ca44b176",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/references/contract.md",
+        "sha256": "fccd9dabe8fb789c9833c7b8d8de5948846def3a296c66af8681e6e4c3541b7d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/schemas/public-architecture-conflict-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-architecture-conflict-output.schema.json",
+        "sha256": "2f98c170f38f9474bc9d9ee9000212e44c3a2b9ce279f5c0ba4b5c1a5326e97a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/schemas/public-baseline-current-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-baseline-current-output.schema.json",
+        "sha256": "a599f1f1a38a1da9e8ad7c8a115f9d1b11f0b3499e3940c46f4c1e61e7ff6a75",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "sha256": "c4e091e705d261a394030faa10693b569040c85dfc0941f8bacec0a0de394cd3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/schemas/public-blocked-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-blocked-output.schema.json",
+        "sha256": "e7153aa9434564fffaff74d5ef90cb7f0163bd5ecef570d41d17e986164f0b4d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/schemas/public-completed-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-completed-output.schema.json",
+        "sha256": "6da95ffbc2f9e0f28fd63c196f844bee583134d9273415025159b332c16d579c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/schemas/public-contract-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-contract-incomplete-output.schema.json",
+        "sha256": "9e6f0201923724c18551390410cbb02ac0b60a50ce24bb7dcd25ec3bf02ba3f6",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/schemas/public-fitness-regression-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-fitness-regression-output.schema.json",
+        "sha256": "d2fa888accc6a18ad93a637fee9f7188f65ab3704c86a1f61e64d27686ee3229",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/schemas/public-input-aggregate.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-aggregate.schema.json",
+        "sha256": "89d3808d9030b92806abae5d3e67b46a25810ac07b5093e3206766e736a0f96f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/schemas/public-input-existing-repository.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-existing-repository.schema.json",
+        "sha256": "fb044370f9652ce5de0e88c39ed1ca8d65d0bb854fd9ac0fce2efccd04092d6e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/schemas/public-input-new-repository.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-new-repository.schema.json",
+        "sha256": "393e5f81092a4fd5bc50297002829cc96b5057b62da1c02e977bf1cb912880fd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/schemas/public-input-repair.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-repair.schema.json",
+        "sha256": "290c7cc865555587f57507f079496386c4225c7e2ff77248c818c7e1779cfdf9",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/schemas/public-input.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input.schema.json",
+        "sha256": "ec97e3d8abee46c350284b41adb1613b87aa90a1faa1113bfd04c317ae743bad",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/schemas/public-repair-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-repair-required-output.schema.json",
+        "sha256": "307e6b930a1182ba57e2533bf09d1640c9eadd4db35d4ed06daf25a8c4cde577",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/schemas/public-sync-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-sync-required-output.schema.json",
+        "sha256": "a1112f136634adc7e1c4bf6f723615ca68a736447b8cc6d15087b46cd307454d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-bootstrap-repository-ssot/scripts/invoke.sh",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/scripts/invoke.sh",
+        "sha256": "8dcbfb9ba16053560c294a0d06ea0432bfcd23b77c9d0ee60b5dac1865bee645",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/SKILL.md",
+        "sha256": "645055e143e5a9875ab338221faac2254c504d66b289078a998095e26f2255e0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/commands.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/commands.json",
+        "sha256": "1bafb382d5caae6571f152b26edc706246f0b428b957f5beea10f315b937b109",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/consumers/stop/blocked.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/stop/blocked.schema.json",
+        "sha256": "ebf24f6040fb37004adabd15e165087bc7aa91b8f9035a9239104582f03a4160",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/consumers/workflow/baseline-incomplete.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/baseline-incomplete.schema.json",
+        "sha256": "e026f0ed5c326292c96378ed579a809a136d6f1071617091956cd94dc5c4f006",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/consumers/workflow/bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/bootstrap.schema.json",
+        "sha256": "e026f0ed5c326292c96378ed579a809a136d6f1071617091956cd94dc5c4f006",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/consumers/workflow/check.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/check.schema.json",
+        "sha256": "ebf24f6040fb37004adabd15e165087bc7aa91b8f9035a9239104582f03a4160",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/consumers/workflow/completed.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/completed.schema.json",
+        "sha256": "1a24987d26da0f47fabd7c375ee4324bfb2c5543102a18a691315a4c0a0e617a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/consumers/workflow/current.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/current.schema.json",
+        "sha256": "1a24987d26da0f47fabd7c375ee4324bfb2c5543102a18a691315a4c0a0e617a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/consumers/workflow/planning.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/consumers/workflow/planning.schema.json",
+        "sha256": "91fcb85f7362cadb1b41a7dde6aee7a2ee98c114b632af12ba08619c3f59956e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/evals/evals.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/evals.json",
+        "sha256": "e3d75abeed698bfae93987065150fde2b36f883165fc3a32b7750cb1f0e2e1d2",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "sha256": "d0e03ac96c4ea4f58c883e2869f01ea12b8e7c4556f6b263684e1e644ed6eac9",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-input.json",
+        "sha256": "3717aa1b0cef303bfe77ca621bcee01801a506210abf7e5ce7bbd74c38f86f5b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
+        "sha256": "ee7e053b44214c4229729b214f3a6ba9a16442d263cb699bb87b9a0cdc44226b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/evals/files/impact-current-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-input.json",
+        "sha256": "8e147d1311729798ff90d6ffbc3fbb2bfa26500d1294f5d4c9fe1ed0913573bd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
+        "sha256": "c247984e4b500cecd91b6cc01e47d7c6c1e1ab588889de9b4283d6be704598f8",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/evals/files/promotion-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-input.json",
+        "sha256": "14ebf59be42ed6ca21857c4b997651a194735a53257e2193957378013e205077",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
+        "sha256": "f375333bac373e9a04611d868d2fcd740c57d69b3911188efb10bcc446b2174b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/evals/files/repair-blocked-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-input.json",
+        "sha256": "eea42e76711ece251376c47b7a9a203aa6e9d0d581e94e81a0c9ea30ab7838ff",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/examples/public-blocked-output.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-blocked-output.json",
+        "sha256": "4309a84ba4bbbbdcf07b810b675ebd829858fd652e7759a7106d9ec117b1cb34",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/examples/public-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-input.json",
+        "sha256": "ed83d957eb61c8a3dcf84b3908d431f56b3f8f3f125de1335f658803e6093b1f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/examples/public-output-baseline-incomplete.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-baseline-incomplete.json",
+        "sha256": "77805e93f25e3b3059b09077ec1dc113fb716bb25ff29b2a030b294e4b59cacb",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/examples/public-output-blocked.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-blocked.json",
+        "sha256": "f2cb0b381442b2b5185eb7a06a23e3d342c5908f374e89426b2e024a779b748d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/examples/public-output-completed.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-completed.json",
+        "sha256": "66f774be4eb70f9ae15df64fa8a5578ae367533b2687e20cace5160051c7e02a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/examples/public-output-repair-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/examples/public-output-repair-required.json",
+        "sha256": "351bf597433f6db1423741dbcc688dba86b52f2948d2435e5e8b8b0c6f36a967",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/interface.json",
+        "sha256": "e45ae98be0e89b674f47c0ddf212b0bb2641d3fef69f469df29bc9a4ca44b176",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/references/contract.md",
+        "sha256": "fccd9dabe8fb789c9833c7b8d8de5948846def3a296c66af8681e6e4c3541b7d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/schemas/public-architecture-conflict-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-architecture-conflict-output.schema.json",
+        "sha256": "2f98c170f38f9474bc9d9ee9000212e44c3a2b9ce279f5c0ba4b5c1a5326e97a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/schemas/public-baseline-current-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-baseline-current-output.schema.json",
+        "sha256": "a599f1f1a38a1da9e8ad7c8a115f9d1b11f0b3499e3940c46f4c1e61e7ff6a75",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "sha256": "c4e091e705d261a394030faa10693b569040c85dfc0941f8bacec0a0de394cd3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/schemas/public-blocked-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-blocked-output.schema.json",
+        "sha256": "e7153aa9434564fffaff74d5ef90cb7f0163bd5ecef570d41d17e986164f0b4d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/schemas/public-completed-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-completed-output.schema.json",
+        "sha256": "6da95ffbc2f9e0f28fd63c196f844bee583134d9273415025159b332c16d579c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/schemas/public-contract-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-contract-incomplete-output.schema.json",
+        "sha256": "9e6f0201923724c18551390410cbb02ac0b60a50ce24bb7dcd25ec3bf02ba3f6",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/schemas/public-fitness-regression-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-fitness-regression-output.schema.json",
+        "sha256": "d2fa888accc6a18ad93a637fee9f7188f65ab3704c86a1f61e64d27686ee3229",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/schemas/public-input-aggregate.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-aggregate.schema.json",
+        "sha256": "89d3808d9030b92806abae5d3e67b46a25810ac07b5093e3206766e736a0f96f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/schemas/public-input-existing-repository.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-existing-repository.schema.json",
+        "sha256": "fb044370f9652ce5de0e88c39ed1ca8d65d0bb854fd9ac0fce2efccd04092d6e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/schemas/public-input-new-repository.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-new-repository.schema.json",
+        "sha256": "393e5f81092a4fd5bc50297002829cc96b5057b62da1c02e977bf1cb912880fd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/schemas/public-input-repair.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input-repair.schema.json",
+        "sha256": "290c7cc865555587f57507f079496386c4225c7e2ff77248c818c7e1779cfdf9",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/schemas/public-input.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-input.schema.json",
+        "sha256": "ec97e3d8abee46c350284b41adb1613b87aa90a1faa1113bfd04c317ae743bad",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/schemas/public-repair-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-repair-required-output.schema.json",
+        "sha256": "307e6b930a1182ba57e2533bf09d1640c9eadd4db35d4ed06daf25a8c4cde577",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/schemas/public-sync-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/schemas/public-sync-required-output.schema.json",
+        "sha256": "a1112f136634adc7e1c4bf6f723615ca68a736447b8cc6d15087b46cd307454d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-bootstrap-repository-ssot/scripts/invoke.sh",
+        "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/scripts/invoke.sh",
+        "sha256": "8dcbfb9ba16053560c294a0d06ea0432bfcd23b77c9d0ee60b5dac1865bee645",
+        "executable": true,
         "action": "unchanged"
       },
       {

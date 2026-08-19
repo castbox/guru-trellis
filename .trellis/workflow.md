@@ -54,6 +54,11 @@ invalid interface projections stop fail closed.
 ## Integrated Public Graph
 
 ### Architecture Baseline owner
+<!-- guru-skill-invoke: {"skill":"guru-bootstrap-repository-ssot","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-bootstrap-repository-ssot","exit":"completed","consumer":{"kind":"workflow","id":"guru-bootstrap-repository-ssot-completed-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-bootstrap-repository-ssot","exit":"baseline_incomplete","consumer":{"kind":"workflow","id":"guru-bootstrap-repository-ssot-baseline-incomplete-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-bootstrap-repository-ssot","exit":"repair_required","consumer":{"kind":"skill","id":"guru-bootstrap-repository-ssot"}} -->
+<!-- guru-skill-exit: {"skill":"guru-bootstrap-repository-ssot","exit":"blocked","consumer":{"kind":"stop","id":"guru-bootstrap-repository-ssot-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-maintain-architecture-baseline","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-architecture-baseline","exit":"baseline_current","consumer":{"kind":"workflow","id":"guru-architecture-baseline-current-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-architecture-baseline","exit":"sync_required","consumer":{"kind":"skill","id":"guru-maintain-architecture-baseline"}} -->
@@ -69,8 +74,8 @@ invalid interface projections stop fail closed.
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"revision_required","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-planning-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"baseline_incomplete","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-bootstrap-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"blocked","consumer":{"kind":"stop","id":"requirements-design-test-ssot-blocked"}} -->
-The installed graph is exactly 20 active Skills and 85 package exits. The
-business-task workflow is exactly 19 mandatory invokes and 83 external exits.
+The installed graph is exactly 21 active Skills and 89 package exits. The
+business-task workflow is exactly 20 mandatory invokes and 87 external exits.
 ### Cross-phase normal-scenario qualification owner
 <!-- guru-skill-invoke: {"skill":"guru-qualify-normal-scenario","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"classified","consumer":{"kind":"workflow","id":"guru-normal-scenario-classified-router"}} -->
@@ -166,6 +171,9 @@ business-task workflow is exactly 19 mandatory invokes and 83 external exits.
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"merge_blocked","consumer":{"kind":"stop","id":"task-pr-merge-blocked"}} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"closure_mismatch","consumer":{"kind":"stop","id":"task-pr-closure-mismatch"}} -->
 ## Workflow And Stop Targets
+<!-- guru-workflow-target: {"id":"guru-bootstrap-repository-ssot-completed-router"} -->
+<!-- guru-workflow-target: {"id":"guru-bootstrap-repository-ssot-baseline-incomplete-router"} -->
+<!-- guru-stop-target: {"id":"guru-bootstrap-repository-ssot-blocked"} -->
 <!-- guru-workflow-target: {"id":"guru-architecture-baseline-current-router"} -->
 <!-- guru-workflow-target: {"id":"guru-architecture-baseline-bootstrap-router"} -->
 <!-- guru-workflow-target: {"id":"guru-architecture-baseline-planning-router"} -->

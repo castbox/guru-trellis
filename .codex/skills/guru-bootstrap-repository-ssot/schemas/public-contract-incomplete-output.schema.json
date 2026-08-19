@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-bootstrap-repository-ssot-output-contract-1.0","type":"object","additionalProperties":false,"required":["exit_id"],"properties":{"exit_id":{"const":"blocked"},"baseline":{"type":"object"},"scope":{"type":"object"},"consumer":{"type":"object"},"reason":{"type":"string"}}}
