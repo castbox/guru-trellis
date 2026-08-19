@@ -11,7 +11,7 @@
       "number": 266,
       "url": "https://github.com/castbox/guru-trellis/issues/266",
       "title": "Bootstrap guru-trellis 当前仓库：建立完整双 SSOT 与架构基线",
-      "reason": "当前 task 完整覆盖 #266 的双 SSOT、Architecture Baseline 与最小 Spec 投影。"
+      "reason": "仅在当前 docs/spec Bootstrap task 的规划、实现、独立审查、验证、发布与合并门禁全部完成后关闭 #266。"
     }
   ],
   "related_issues": [
