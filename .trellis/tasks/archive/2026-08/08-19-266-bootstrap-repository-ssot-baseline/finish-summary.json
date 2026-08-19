@@ -1,0 +1,253 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-19T05:00:56Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-19-266-bootstrap-repository-ssot-baseline",
+    "title": "#266 Bootstrap guru-trellis 当前双 SSOT 与架构基线",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/266-bootstrap-repository-ssot-baseline",
+    "commits": [
+      "326c7ebb1050203325a43eb3db067b41762c9bf5",
+      "a2afa533046e091bc84592dca3d9d51c4d8f94b9",
+      "f85902beaef2aa0b784f25c76878cd2da948a12f"
+    ],
+    "changed_paths": [
+      ".trellis/spec/architecture/baseline-usage.md",
+      ".trellis/spec/architecture/index.md",
+      ".trellis/spec/docs/index.md",
+      ".trellis/spec/docs/requirements-design-test-ssot.md",
+      ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/check.jsonl",
+      ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/design.md",
+      ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/implement.jsonl",
+      ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/implement.md",
+      ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/issue-scope-ledger.json",
+      ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/prd.md",
+      ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/task.json",
+      ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/design.md",
+      ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/implement.md",
+      ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/prd.md",
+      ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/task.json",
+      "docs/architecture/00-foundation/baseline.md",
+      "docs/architecture/01-current/system.md",
+      "docs/architecture/02-target/target.md",
+      "docs/architecture/03-domains/ownership.md",
+      "docs/architecture/04-integrations/distribution.md",
+      "docs/architecture/05-gaps/current-to-target.md",
+      "docs/architecture/06-governance/rules.md",
+      "docs/architecture/07-plans/roadmap.md",
+      "docs/architecture/README.md",
+      "docs/architecture/adr/README.md",
+      "docs/architecture/evidence/current-evidence.md",
+      "docs/design/README.md",
+      "docs/design/versions/current-main-0.6.5-guru.35/capability-inventory.md",
+      "docs/design/versions/current-main-0.6.5-guru.35/decisions.md",
+      "docs/design/versions/current-main-0.6.5-guru.35/design-main.md",
+      "docs/design/versions/current-main-0.6.5-guru.35/manifest.yaml",
+      "docs/design/versions/current-main-0.6.5-guru.35/traceability.md",
+      "docs/design/versions/v0.6.5-guru.9/README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "docs/requirements/versions/current-main-0.6.5-guru.35/decisions.md",
+      "docs/requirements/versions/current-main-0.6.5-guru.35/requirement-main.md",
+      "docs/requirements/versions/current-main-0.6.5-guru.35/requirement-non-functional.md",
+      "docs/requirements/versions/current-main-0.6.5-guru.35/traceability.md",
+      "docs/requirements/versions/v0.6.5-guru.9/requirement-main.md",
+      "docs/test/README.md",
+      "docs/test/versions/current-main-0.6.5-guru.35/test-plan.md",
+      "docs/test/versions/current-main-0.6.5-guru.35/test-strategy.md",
+      "docs/test/versions/current-main-0.6.5-guru.35/traceability.md",
+      "docs/test/versions/v0.6.5-guru.9/README.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      266
+    ],
+    "close_issues": [
+      266
+    ],
+    "related_issues": [
+      260,
+      263,
+      264,
+      265,
+      267,
+      275
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/281"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#266 Bootstrap guru-trellis 当前双 SSOT 与架构基线",
+    "outcome": "建立并激活 `current-main-0.6.5-guru.35` 的 versioned Requirements、Design、Test 与 Architecture Baseline SSOT。",
+    "changed_behavior": [
+      "建立并激活 `current-main-0.6.5-guru.35` 的 versioned Requirements、Design、Test 与 Architecture Baseline SSOT。",
+      "将旧 requirements 页面收敛为导航，新增最小 `.trellis/spec/docs` 与 `.trellis/spec/architecture` projection。",
+      "记录 `v0.6.5-guru.9` released history、current main as-built、future Trellis `0.6.15` 与 #263/#264/#265 focused historical evidence。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "config",
+        "name": "config",
+        "paths": [
+          "docs/design/versions/current-main-0.6.5-guru.35/manifest.yaml"
+        ],
+        "change": "建立并激活 `current-main-0.6.5-guru.35` 的 versioned Requirements、Design、Test 与 Architecture Baseline SSOT。"
+      },
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/architecture/baseline-usage.md",
+          ".trellis/spec/architecture/index.md",
+          ".trellis/spec/docs/index.md",
+          ".trellis/spec/docs/requirements-design-test-ssot.md",
+          ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/design.md",
+          ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/implement.md",
+          ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/prd.md",
+          ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/design.md",
+          ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/implement.md",
+          ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/prd.md",
+          "docs/architecture/00-foundation/baseline.md",
+          "docs/architecture/01-current/system.md",
+          "docs/architecture/02-target/target.md",
+          "docs/architecture/03-domains/ownership.md",
+          "docs/architecture/04-integrations/distribution.md",
+          "docs/architecture/05-gaps/current-to-target.md",
+          "docs/architecture/06-governance/rules.md",
+          "docs/architecture/07-plans/roadmap.md",
+          "docs/architecture/README.md",
+          "docs/architecture/adr/README.md",
+          "docs/architecture/evidence/current-evidence.md",
+          "docs/design/README.md",
+          "docs/design/versions/current-main-0.6.5-guru.35/capability-inventory.md",
+          "docs/design/versions/current-main-0.6.5-guru.35/decisions.md",
+          "docs/design/versions/current-main-0.6.5-guru.35/design-main.md",
+          "docs/design/versions/current-main-0.6.5-guru.35/traceability.md",
+          "docs/design/versions/v0.6.5-guru.9/README.md",
+          "docs/requirements/README.md",
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md",
+          "docs/requirements/versions/current-main-0.6.5-guru.35/decisions.md",
+          "docs/requirements/versions/current-main-0.6.5-guru.35/requirement-main.md",
+          "docs/requirements/versions/current-main-0.6.5-guru.35/requirement-non-functional.md",
+          "docs/requirements/versions/current-main-0.6.5-guru.35/traceability.md",
+          "docs/requirements/versions/v0.6.5-guru.9/requirement-main.md",
+          "docs/test/README.md",
+          "docs/test/versions/current-main-0.6.5-guru.35/test-plan.md",
+          "docs/test/versions/current-main-0.6.5-guru.35/test-strategy.md",
+          "docs/test/versions/current-main-0.6.5-guru.35/traceability.md",
+          "docs/test/versions/v0.6.5-guru.9/README.md"
+        ],
+        "change": "建立并激活 `current-main-0.6.5-guru.35` 的 versioned Requirements、Design、Test 与 Architecture Baseline SSOT。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/check.jsonl",
+          ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/implement.jsonl",
+          ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/issue-scope-ledger.json",
+          ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/task.json",
+          ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/task.json"
+        ],
+        "change": "建立并激活 `current-main-0.6.5-guru.35` 的 versioned Requirements、Design、Test 与 Architecture Baseline SSOT。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#260",
+        "#263",
+        "#264",
+        "#265",
+        "#266",
+        "#267",
+        "#275"
+      ],
+      "pr_refs": [
+        "PR #281"
+      ],
+      "branches": [
+        "codex/266-bootstrap-repository-ssot-baseline"
+      ],
+      "paths": [
+        ".trellis/spec/architecture/baseline-usage.md",
+        ".trellis/spec/architecture/index.md",
+        ".trellis/spec/docs/index.md",
+        ".trellis/spec/docs/requirements-design-test-ssot.md",
+        ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/check.jsonl",
+        ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/design.md",
+        ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/implement.jsonl",
+        ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/implement.md",
+        ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/issue-scope-ledger.json",
+        ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/prd.md",
+        ".trellis/tasks/08-19-266-bootstrap-repository-ssot-baseline/task.json",
+        ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/design.md",
+        ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/implement.md",
+        ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/prd.md",
+        ".trellis/tasks/archive/2026-08/08-19-266-bootstrap-repository-ssot-baseline/task.json",
+        "docs/architecture/00-foundation/baseline.md",
+        "docs/architecture/01-current/system.md",
+        "docs/architecture/02-target/target.md",
+        "docs/architecture/03-domains/ownership.md",
+        "docs/architecture/04-integrations/distribution.md",
+        "docs/architecture/05-gaps/current-to-target.md",
+        "docs/architecture/06-governance/rules.md",
+        "docs/architecture/07-plans/roadmap.md",
+        "docs/architecture/README.md",
+        "docs/architecture/adr/README.md",
+        "docs/architecture/evidence/current-evidence.md",
+        "docs/design/README.md",
+        "docs/design/versions/current-main-0.6.5-guru.35/capability-inventory.md",
+        "docs/design/versions/current-main-0.6.5-guru.35/decisions.md",
+        "docs/design/versions/current-main-0.6.5-guru.35/design-main.md",
+        "docs/design/versions/current-main-0.6.5-guru.35/manifest.yaml",
+        "docs/design/versions/current-main-0.6.5-guru.35/traceability.md",
+        "docs/design/versions/v0.6.5-guru.9/README.md",
+        "docs/requirements/README.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "docs/requirements/versions/current-main-0.6.5-guru.35/decisions.md",
+        "docs/requirements/versions/current-main-0.6.5-guru.35/requirement-main.md",
+        "docs/requirements/versions/current-main-0.6.5-guru.35/requirement-non-functional.md",
+        "docs/requirements/versions/current-main-0.6.5-guru.35/traceability.md",
+        "docs/requirements/versions/v0.6.5-guru.9/requirement-main.md",
+        "docs/test/README.md",
+        "docs/test/versions/current-main-0.6.5-guru.35/test-plan.md",
+        "docs/test/versions/current-main-0.6.5-guru.35/test-strategy.md",
+        "docs/test/versions/current-main-0.6.5-guru.35/traceability.md",
+        "docs/test/versions/v0.6.5-guru.9/README.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#266 Bootstrap guru-trellis 当前双 SSOT 与架构基线",
+        "建立并激活 `current-main-0.6.5-guru.35` 的 versioned Requirements、",
+        "完成 baseline-usage.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#266 Bootstrap guru-trellis 当前双 SSOT 与架构基线\n建立并激活 `current-main-0.6.5-guru.35` 的 versioned Requirements、Design、Test 与 Architecture Baseline SSOT。\n将旧 requirements 页面收敛为导航，新增最小 `.trellis/spec/docs` 与 `.trellis/spec/architecture` projection。\n记录 `v0.6.5-guru.9` released history、current main as-built、future Trellis `0.6.15` 与 #263/#264/#265 focused historical evidence。\n建立并激活 `current-main-0.6.5-guru.35` 的 versioned Requirements、\n完成 baseline-usage.md 相关变更"
+  }
+}
