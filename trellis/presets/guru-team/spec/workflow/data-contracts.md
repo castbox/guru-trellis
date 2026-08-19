@@ -441,13 +441,13 @@ participates in current invocation.
 
 The source and installed closure algorithm reads the live registry, current
 package contracts, the production current manifest, Interface public
-contracts, and package-local corpora. Eighteen integrated rows select Interface
+contracts, and package-local corpora. Nineteen integrated rows select Interface
 1.4; normal-scenario qualification selects Interface 1.6; the standalone
 verifier selects Interface 1.5. Exact profile, exit,
 consumer, projection, current-case, and authoring-edge equality is required.
-Twenty Skills and 85 exits are the current package cardinality regression, not
+Twenty-one Skills and 89 exits are the current package cardinality regression, not
 a hard-coded future registry allowlist; the business workflow independently
-asserts 19 invokes, 83 exits, 31 workflow targets, and 20 stop targets.
+asserts 20 invokes, 87 exits, 33 workflow targets, and 21 stop targets.
 
 The production manifest also binds the exact four
 `skill_input_authoring_seed` edges. Each binding names the target Interface and

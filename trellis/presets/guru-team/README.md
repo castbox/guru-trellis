@@ -536,8 +536,8 @@ private gate、七条 production eval cases 与 finalization runtime wrappers。
 `guru-merge-task-pr` 再安装两种 inputs、三个
 exits 与五个 merge runtime wrappers。Requirements/Design/Test SSOT package 另提供
 四个 semantic profiles、五个 typed exits 和 isolated contribution boundary。
-Source/installed package closure 为 20 Skills / 85 exits；business global workflow
-marker closure 为 19 invokes / 83 exits / 51 combined targets（31 workflow + 20 stop）。
+Source/installed package closure 为 21 Skills / 89 exits；business global workflow
+marker closure 为 20 invokes / 87 exits / 54 combined targets（33 workflow + 21 stop）。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -670,8 +670,8 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 `guru-execute-task-free-change`、`guru-qualify-normal-scenario`、
 `guru-reconcile-task-base`、`guru-maintain-architecture-baseline`、
 `guru-maintain-requirements-design-test-ssot`、
-`guru-verify-extension-installation`。十九个 integrated business packages 加一个
-standalone-only verifier 共声明 85 个 external exits。
+`guru-verify-extension-installation`。二十个 integrated business packages 加一个
+standalone-only verifier 共声明 89 个 external exits。
 `guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
 invoke 与六个 exit marker。当前 source candidate 的 canonical extension version 为
@@ -1417,7 +1417,7 @@ runtime 留在 native execution 外；四平台 projection 内对应 raw read �
 throwaway project 的 `trellis update --dry-run` -> 仅当输出明确为
 `MIGRATION REQUIRED` 时执行 `trellis update --migrate --skip-all`，否则执行
 `trellis update --skip-all` -> marketplace `--create-new` preview/active switch -> canonical
-preset reapply。之后重新验证 20 Skills/89 package exits、19 invokes/87 workflow
-exits、31 workflow targets、20 stop targets、全部已声明 profile real installed entry、
+preset reapply。之后重新验证 21 Skills/89 package exits、20 invokes/87 workflow
+exits、33 workflow targets、21 stop targets、全部已声明 profile real installed entry、
 ownership、platform parity、dogfood drift 与 recursive zero `.new`/`.bak`。该流程不修改
 开发机 global npm，也不升级真实业务仓。
