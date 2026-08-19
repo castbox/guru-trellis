@@ -4,7 +4,7 @@
     "number": 275,
     "url": "https://github.com/castbox/guru-trellis/issues/275",
     "title": "修复 v0.6.5-guru.9 Throwaway closeout 回归并发布 replacement release",
-    "reason": "本 task 完整实现并验证 #275 的 Finalizer terminal projection、registry-derived verifier inventory 与 replacement release 闭环；Issue 仅在 tag、Release、post-publish smoke 和 downstream gate 完成后关闭。"
+    "reason": "仅在当前 task 的实现、独立审查、exact-candidate gate、合并、immutable tag、GitHub Release、tag-pinned smoke 与 downstream consumer gate 全部通过后关闭 #275。"
   },
   "close_issues": [
     {
