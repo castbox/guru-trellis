@@ -745,7 +745,7 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  twenty-Skill/85-exit current package closure while the production activation
+  twenty-one-Skill/89-exit current package closure while the production activation
   unit remains three Skills/11 exits and business markers remain integrated at
   20 invokes, 87 exits, 33 workflow targets, and 21 stop targets. Update and preset reapply must reproduce
   that closure with zero unresolved `.new` or `.bak`.
@@ -869,7 +869,7 @@ and actual exit selects the schema before grader comparison.
 
 Source/installed/platform/throwaway checks assert twenty-one active Skills and 89
 package exits, exactly one selected `production-current-v4`
-four-Skill/15-exit current manifest, and business workflow markers of 19
+four-Skill/15-exit current manifest, and business workflow markers of 20
 invokes, 87 exits, 33 workflow targets, and 21 stop targets.
 
 ## Extension Installation Verification Quality
