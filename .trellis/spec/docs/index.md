@@ -1,20 +1,10 @@
 # Documentation Specs
 
-Use these specs when changing top-level repository docs or marketplace-facing
-README files.
-
 ## Pre-Development Checklist
 
-1. Read [public-docs.md](./public-docs.md).
-2. Read `.trellis/spec/workflow/workflow-contract.md` when docs describe workflow behavior.
-3. Read `.trellis/spec/preset/installer.md` when docs describe install or upgrade.
+1. 先读 [requirements-design-test-ssot.md](./requirements-design-test-ssot.md)，取得 current authority locator/version/status。
+2. 修改公开 README 时再读 [public-docs.md](./public-docs.md)。
+3. 涉及系统边界时读 [`../architecture/index.md`](../architecture/index.md)。
+4. 涉及 workflow 行为时读 `.trellis/spec/workflow/workflow-contract.md`；涉及安装升级时读 `.trellis/spec/preset/installer.md`。
 
-## Documentation Surfaces
-
-- `README.md` explains the public repository purpose, install prompt, upgrade
-  prompt, daily entrypoints, and maintenance principles.
-- `trellis/workflows/guru-team/README.md` documents marketplace workflow usage
-  and companion script relationship.
-- `trellis/presets/guru-team/README.md` documents preset installation and the
-  installed file set.
-- `trellis/index.json` exposes marketplace metadata.
+本目录是 Agent usage projection，不是 Requirements/Design/Test authority；任何正文冲突以 `docs/**/README.md` 指向的 current version 为准。
