@@ -542,7 +542,8 @@ contracts、source-session private result schema、两例 production corpus 与 
 它不修改 live Intake 6/23 或 production-current-v4 4/15 合同。Active
 `guru-finalize-task` 另行安装四个 distinct profiles、六个 `exit_id` outputs、
 private gate、七条 production eval cases 与 finalization runtime wrappers。独立
-`guru-merge-task-pr` 再安装两种 inputs、三个
+`guru-merge-task-pr` 再安装 active 2.0 workflow/standalone inputs、private gate、
+保留 immutable 1.0 compatibility assets，并安装三个
 exits 与五个 merge runtime wrappers。Requirements/Design/Test SSOT package 另提供
 四个 semantic profiles、五个 typed exits 和 isolated contribution boundary。
 Source/installed package closure 为 21 Skills / 89 exits；business global workflow

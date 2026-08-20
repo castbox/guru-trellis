@@ -1,0 +1,7 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Phase 2 完整验证范围、findings、external live proof 与未验证边界。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"检查 2.0 active I/O、1.0 immutable compatibility、consumer authoring 和 public/private 最小性。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"检查脚本未代替语义判断，body file 生命周期和 post-merge live verifier 完整。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"检查 exact subject/body、PR/Issue refs、parents、remote base、close-keyword 与 terminal recovery。"}
+{"file":".trellis/spec/preset/installer.md","reason":"检查 canonical/dogfood/installed/全平台 projection、apply/reapply/update/throwaway 与零 sidecar。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"确认未修改 Trellis upstream/global npm，preset ownership 与 managed claims 合规。"}
+{"file":".trellis/spec/docs/requirements-design-test-ssot.md","reason":"检查 #285 RDT contribution、traceability、promotion route 与 Architecture no_change。"}

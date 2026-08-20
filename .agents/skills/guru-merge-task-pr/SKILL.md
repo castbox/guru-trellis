@@ -8,15 +8,17 @@ description: Merge one Ready task PR through a semantic live gate, expected-head
 Use this Skill only for the remote post-publication merge boundary. In workflow
 mode consume `guru-finalize-task:ready_for_merge`; in standalone mode accept one
 repo-bound PR identity plus the expected base/head branches and reviewed close
-Issue set, then rebuild the same live evidence.
+Issue set. Before invocation, author and review the exact Chinese
+`chore(merge)` subject/body plus its primary Issue and concrete Chinese summary,
+then rebuild the same live evidence.
 
 Read [references/contract.md](references/contract.md), run the preview, perform
 the semantic gate, and ask once for the exact merge action. After confirmation,
 record/check the gate, execute with the expected head, and return exactly one of
 `merged`, `merge_blocked`, or `closure_mismatch`.
 An already persisted terminal output is recovered only after read-only live
-revalidation of the exact merge and closure facts; recovery never repeats the
-merge mutation.
+revalidation of the exact merge SHA, two parents, reviewed subject/body, remote
+base ref and closure facts; recovery never repeats the merge mutation.
 
 Fail closed on stale head, base/head branch drift, PR-body close-scope drift,
 Draft/Open/readiness drift, unknown policy, incomplete GitHub response, or

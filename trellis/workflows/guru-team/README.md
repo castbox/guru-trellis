@@ -129,8 +129,11 @@ authority 生成并审查 exact Chinese PR title/body。其 ready 4.0 DTO 无损
 
 Finalizer `ready_for_merge` 只证明唯一 PR 已 Ready、expected head 对齐且 close Issues
 仍 Open；它不是 finish。Workflow 随即 mandatory invoke `guru-merge-task-pr`。Merge owner
-用 repo-bound `gh` 重建 checks/reviews/mergeability/policy/close-keyword facts，独立展示并确认
-expected-head merge，执行后只读验证 PR=MERGED 且 Issues 由 GitHub 自动关闭。`merged` 才进入
+在 target-owned active 2.0 input 中补充并审查中文摘要、primary Issue 和精确
+`chore(merge)` subject/body；Finalizer public output 不扩张。随后用 repo-bound `gh`
+重建 checks/reviews/mergeability/policy/close-keyword facts，独立展示并确认
+expected-head merge，并传递 `--subject/--body-file`；执行后只读验证 PR=MERGED、
+双 parent、subject/body、remote base 以及 Issues 由 GitHub 自动关闭。`merged` 才进入
 finish response；`merge_blocked` 与 `closure_mismatch` 分别 fail closed，任何 Guru 命令都不
 调用 Issue-close API、update PR branch、同步本地 `main` 或清理资源。
 

@@ -495,7 +495,12 @@ Chinese PR-title-as-subject squash messages, issue ids before the prefix or in
 scope, missing issue ids, and English `Update ...` subjects; accept issue-bearing
 work/metadata subjects and `chore(merge)` subjects; verify work body fixed
 sections plus `Refs`, empty metadata body, fixed merge body, finish metadata
-subject, and publish dry-run/formal `merge_commit` payloads.
+subject, and publish dry-run/formal `merge_commit` payloads. Merge Skill tests
+also bind active 2.0 input/gate selection while freezing 1.0 bytes, exact
+`--merge --subject --body-file` argv/body bytes and cleanup, pre-merge base head,
+two commit parents, post-merge subject/body, remote base identity, terminal
+recovery without repeated mutation, and rejection of Issue close-keyword
+references at any position in the subject, summary, or body.
 
 Transactional finish tests must inject failure at prepare, reviewed-content
 push, verifier, draft create/reuse, final projection, archive move, archive

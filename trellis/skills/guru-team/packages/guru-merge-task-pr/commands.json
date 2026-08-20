@@ -80,7 +80,7 @@
       "side_effect": "runtime_write",
       "schema_bindings": [
         "schemas/public-ready-for-merge-input.schema.json",
-        "schemas/task-pr-merge-gate.schema.json"
+        "schemas/task-pr-merge-gate-2.0.schema.json"
       ],
       "validator_id": "merge_recorder",
       "runtime_role": "record"
@@ -125,7 +125,7 @@
       ],
       "side_effect": "github_read",
       "schema_bindings": [
-        "schemas/task-pr-merge-gate.schema.json"
+        "schemas/task-pr-merge-gate-2.0.schema.json"
       ],
       "validator_id": "merge_checker",
       "runtime_role": "check"
@@ -170,7 +170,7 @@
       ],
       "side_effect": "github_write",
       "schema_bindings": [
-        "schemas/task-pr-merge-gate.schema.json"
+        "schemas/task-pr-merge-gate-2.0.schema.json"
       ],
       "validator_id": "merge_executor",
       "runtime_role": "execute"

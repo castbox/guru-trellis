@@ -250,12 +250,15 @@ invokes `guru-merge-task-pr`; only `merged` reaches the finish response.
 
 `guru-merge-task-pr` is a semantic, remote-only post-publication route. It
 compares live PR base/head branches and close keywords with Finalizer's minimal
-reviewed authority, then rebuilds check, review, mergeability, repository-policy
+reviewed authority. The Merge owner authors and reviews the exact Chinese
+`chore(merge)` subject/body on top of that seed, then rebuilds check, review, mergeability, repository-policy
 and Issue facts using repo-bound `gh`; it never enters Phase 0, invokes `guru-sync-base`, updates
 the PR branch, synchronizes local `main`, or cleans resources. After one exact
-merge confirmation, its deterministic executor uses the selected repository
-method and expected-head precondition. Post-merge verification is read-only:
-the PR must be `MERGED`, every close Issue must be `CLOSED`/`COMPLETED`, and
+merge confirmation, its deterministic executor uses the merge-commit method,
+expected-head precondition and reviewed subject/body. Post-merge verification is read-only:
+the PR must be `MERGED`, the merge commit must have the reviewed message and
+parents `[pre-merge base head, expected head]`, the remote base must point at
+that merge SHA, every close Issue must be `CLOSED`/`COMPLETED`, and
 each Issue close timestamp must be no earlier than the PR merge timestamp.
 Missing GitHub close-keyword effects return `closure_mismatch`; no Guru command
 manually closes an Issue.

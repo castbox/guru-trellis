@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-task-pr-merge-gate-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "skill_id", "input", "facts_sha256", "pre_merge_base_head", "reviewed_message_sha256", "semantic_review", "route"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "skill_id": {"const": "guru-merge-task-pr"},
+    "input": {"$ref": "public-input-2.0.schema.json"},
+    "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "pre_merge_base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "reviewed_message_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "semantic_review": {"type": "object"},
+    "route": {"type": "object"},
+    "terminal_output": {"type": "object"}
+  }
+}

@@ -1223,8 +1223,8 @@ assert ownership["overlay_root"] == "trellis/presets/guru-team/overlays"
 assert len(ownership["guru_owned_rules"]) == 11
 assert len(ownership["managed_path_claims"]) == 9
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.36"
-assert extension["target_trellis_cli"] == "0.6.5"
+assert extension["version"] == "0.6.5-guru.37"
+assert extension["target_trellis_cli"] == "0.6.15"
 assert assets == sorted(set(assets))
 assert len(assets) == 69
 managed_specs = {
@@ -1620,10 +1620,10 @@ done
 test -z "$(find "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print -quit)"
 CHECK_ENV_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-env.sh" --root "$TARGET" --json)"
 printf '%s\n' "$CHECK_ENV_JSON"
-installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["github_repo"] == "castbox/guru-trellis-throwaway"; assert payload["status"] == "ok"; assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == "0.6.5"' <<<"$CHECK_ENV_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["github_repo"] == "castbox/guru-trellis-throwaway"; assert payload["status"] == "ok"; assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == "0.6.15"' <<<"$CHECK_ENV_JSON"
 VERSION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/version.sh" --root "$TARGET" --json)"
 printf '%s\n' "$VERSION_JSON"
-installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == "0.6.5"' <<<"$VERSION_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == "0.6.15"' <<<"$VERSION_JSON"
 
 set +e
 FINISH_ERROR_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/finish-work.sh" --root "$TARGET" --json --dry-run 2>&1)"
@@ -2594,7 +2594,7 @@ TARGET="$INSTALL_TARGET"
 
 INITIAL_CLOSEOUT_JSON="$(installed_python "$TARGET" "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case initial)"
 printf '%s\n' "$INITIAL_CLOSEOUT_JSON"
-installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 105; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"] == payload["merge_commit"]; assert payload["pr_ready"] is True; assert payload["public_exit"] == "ready_for_merge"; assert payload["merge_exit"] == "merged"; assert payload["verifier_artifacts"] == 0; assert payload["after_archive_hook_preflight"] is True' <<<"$INITIAL_CLOSEOUT_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 105; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["merge_commit"] == "2" * 40; assert payload["pr_ready"] is True; assert payload["public_exit"] == "ready_for_merge"; assert payload["merge_exit"] == "merged"; assert payload["verifier_artifacts"] == 0; assert payload["after_archive_hook_preflight"] is True' <<<"$INITIAL_CLOSEOUT_JSON"
 assert_embedded_runtime_checkpoint \
   "$TARGET" "$INITIAL_RUNTIME_CHECKPOINT" "$INITIAL_CLOSEOUT_JSON" closeout-initial
 INITIAL_TASK_WORKSPACE_JSON="$(installed_python "$TARGET" "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-task-workspace-initial" --checkpoint initial)"
@@ -2912,7 +2912,7 @@ grep -q '^\.trellis/workspace/$' "$TARGET/.gitignore"
 
 UPDATED_CLOSEOUT_JSON="$(installed_python "$TARGET" "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case after-update)"
 printf '%s\n' "$UPDATED_CLOSEOUT_JSON"
-installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 106; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"] == payload["merge_commit"]; assert payload["pr_ready"] is True; assert payload["public_exit"] == "ready_for_merge"; assert payload["merge_exit"] == "merged"; assert payload["verifier_artifacts"] == 0; assert payload["after_archive_hook_preflight"] is True' <<<"$UPDATED_CLOSEOUT_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 106; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["merge_commit"] == "2" * 40; assert payload["pr_ready"] is True; assert payload["public_exit"] == "ready_for_merge"; assert payload["merge_exit"] == "merged"; assert payload["verifier_artifacts"] == 0; assert payload["after_archive_hook_preflight"] is True' <<<"$UPDATED_CLOSEOUT_JSON"
 assert_embedded_runtime_checkpoint \
   "$TARGET" "$AFTER_UPDATE_RUNTIME_CHECKPOINT" "$UPDATED_CLOSEOUT_JSON" closeout-after-update
 UPDATED_TASK_WORKSPACE_JSON="$(installed_python "$TARGET" "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-task-workspace-after-update" --checkpoint after-update --existing-developer-identity)"

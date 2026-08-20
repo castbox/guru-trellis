@@ -652,21 +652,21 @@
       "ordinal": 1
     },
     {
-      "id": "verifier-installed_managed-f82be216956e",
+      "id": "verifier-installed_managed-0a942c035981",
       "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
       "kind": "inline_c",
       "classification": "installed_managed",
       "expected_launcher": "installed_python",
-      "anchor_sha256": "f82be216956e36af2f744d88cf944d936f5737d4f5795a612b0ba7a9675a78da",
+      "anchor_sha256": "0a942c035981243425484606a5e6fc29c829805aa987c5b2bad9accbd5b33b7d",
       "ordinal": 1
     },
     {
-      "id": "verifier-installed_managed-f55a36f8eaec",
+      "id": "verifier-installed_managed-fff8b5c1c8c9",
       "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
       "kind": "inline_c",
       "classification": "installed_managed",
       "expected_launcher": "installed_python",
-      "anchor_sha256": "f55a36f8eaece340341c4d84247db4b9ba23f9fcacf80e5875b708c8703bf618",
+      "anchor_sha256": "fff8b5c1c8c92f3aad1d8aaf71c07061a1b9676aafea3c69d09fa0865bc4b7e4",
       "ordinal": 1
     },
     {
@@ -1003,12 +1003,12 @@
       "ordinal": 1
     },
     {
-      "id": "verifier-installed_managed-aa6ae5142d4f",
+      "id": "verifier-installed_managed-0bc1588bd574",
       "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
       "kind": "inline_c",
       "classification": "installed_managed",
       "expected_launcher": "installed_python",
-      "anchor_sha256": "aa6ae5142d4fdc7d74f63a16bad4e773e0d957ff6753ba4cbb713516d277e243",
+      "anchor_sha256": "0bc1588bd574926719b08dd1a3ee6c2b51ff43c7842e60e2de775f9d464ff018",
       "ordinal": 1
     },
     {
@@ -1102,12 +1102,12 @@
       "ordinal": 1
     },
     {
-      "id": "verifier-installed_managed-c0a14983abb8",
+      "id": "verifier-installed_managed-37e4866f92f3",
       "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
       "kind": "inline_c",
       "classification": "installed_managed",
       "expected_launcher": "installed_python",
-      "anchor_sha256": "c0a14983abb8aafdf5fc91e9b0634b53ae9f093547c6c299a380a794e17b0a78",
+      "anchor_sha256": "37e4866f92f336e78a34030c07646ebcca8b99bda62430150793ea374477f204",
       "ordinal": 1
     },
     {
@@ -1185,12 +1185,12 @@
       "ordinal": 1
     },
     {
-      "id": "helper-generated_shebang-999f2d0bd6db",
+      "id": "helper-generated_shebang-e205de236e6b",
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
       "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "999f2d0bd6db6b08cfbd07bf4da2e8cd9a1cf0932201fa45410e89a18d94eeed",
+      "anchor_sha256": "e205de236e6bf2e905aa965bb80b5b4fd3eb414d81076e00953d7d551d5321f0",
       "ordinal": 1
     },
     {
@@ -1248,12 +1248,12 @@
       "ordinal": 1
     },
     {
-      "id": "helper-generated_shebang-61b8960b5f2d",
+      "id": "helper-generated_shebang-d72f0686b746",
       "owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
       "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "61b8960b5f2d3af143f613a2c7cc02cc75a4958016824a01a2e0066ee6ff86a1",
+      "anchor_sha256": "d72f0686b7461f5aa1353015f511511c0af7219c8959e906985d932d25509736",
       "ordinal": 1
     },
     {

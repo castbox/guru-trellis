@@ -54,6 +54,22 @@ def tearDownModule() -> None:
         patcher.stop()
 
 
+class InstalledCloseoutFixtureTest(unittest.TestCase):
+    def test_generated_fake_gh_is_valid_python(self) -> None:
+        module_path = Path(__file__).with_name("verify_installed_closeout.py")
+        spec = importlib.util.spec_from_file_location(
+            "verify_installed_closeout_fixture", module_path
+        )
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_bin = Path(tmp) / "bin"
+            module.install_fake_commands(fake_bin)
+            fake_gh = fake_bin / "gh"
+            compile(fake_gh.read_text(encoding="utf-8"), str(fake_gh), "exec")
+
+
 class ManagedPythonBootstrapBoundaryTest(unittest.TestCase):
     def test_helper_returns_success_payload(self) -> None:
         completed = subprocess.CompletedProcess(
@@ -1812,7 +1828,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
         self.assertIn('payload["after_archive_hook_preflight"] is True', verifier)
         self.assertIn('payload["merge_exit"] == "merged"', verifier)
-        self.assertIn('payload["pr_head"] == payload["merge_commit"]', verifier)
+        self.assertIn(
+            'payload["local_head"] == payload["remote_head"] == payload["pr_head"]',
+            verifier,
+        )
+        self.assertIn('payload["merge_commit"] == "2" * 40', verifier)
+        self.assertNotIn('payload["pr_head"] == payload["merge_commit"]', verifier)
         self.assertIn('payload["verifier_artifacts"] == 0', verifier)
         self.assertIn("verify_installed_task_workspace.py", verifier)
         self.assertIn("installed-task-workspace-initial", verifier)
@@ -2504,6 +2525,27 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "guru-stage0-clarify-requirements-input-initial-change-request-1.0",
             public_input_schema_ids,
         )
+        self.assertIn(
+            "guru-merge-task-pr-input-ready-for-merge-2.0",
+            public_input_schema_ids,
+        )
+        self.assertIn(
+            "guru-merge-task-pr-input-standalone-merge-2.0",
+            public_input_schema_ids,
+        )
+        self.assertNotIn(
+            "guru-merge-task-pr-input-ready-for-merge-1.0",
+            public_input_schema_ids,
+        )
+        self.assertNotIn(
+            "guru-merge-task-pr-input-standalone-merge-1.0",
+            public_input_schema_ids,
+        )
+        private_artifact_schema_ids = public_api["skill_contracts"][
+            "private_artifact_schema_ids"
+        ]
+        self.assertIn("guru-task-pr-merge-gate-2.0", private_artifact_schema_ids)
+        self.assertNotIn("guru-task-pr-merge-gate-1.0", private_artifact_schema_ids)
         typed_output_schema_ids = public_api["skill_contracts"]["typed_output_schema_ids"]
         self.assertIn("guru-normal-scenario-output-classified-1.0", typed_output_schema_ids)
         self.assertIn(
