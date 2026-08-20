@@ -1,0 +1,51 @@
+{
+  "close_issues": [
+    {
+      "number": 283,
+      "reason": "The task fully implements the latest live #283 acceptance and is the only issue closed by this delivery.",
+      "title": "完善架构基线治理：建立单向收敛、三类变更路径与架构约束自动检查合同",
+      "url": "https://github.com/castbox/guru-trellis/issues/283"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 267,
+      "reason": "The exact-candidate release gate consumes #283 only after this PR is merged; no #267 resources are created now.",
+      "title": "发布 Trellis v0.6.15 双 SSOT 稳定基线版本",
+      "url": "https://github.com/castbox/guru-trellis/issues/267"
+    }
+  ],
+  "primary_issue": {
+    "number": 283,
+    "reason": "The task fully implements the latest live #283 acceptance and is the only issue closed by this delivery.",
+    "title": "完善架构基线治理：建立单向收敛、三类变更路径与架构约束自动检查合同",
+    "url": "https://github.com/castbox/guru-trellis/issues/283"
+  },
+  "related_issues": [
+    {
+      "number": 108,
+      "reason": "A separate consumer of architecture state and old-implementation exit data; its subtraction audit is not implemented here.",
+      "title": "Guru Team：在 Phase 2 引入代码与 Docs SSOT 减法审计门禁",
+      "url": "https://github.com/castbox/guru-trellis/issues/108"
+    },
+    {
+      "number": 248,
+      "reason": "A separate Acceptance consumer of the final current architecture result.",
+      "title": "Task Acceptance 与 upstream Finish handoff",
+      "url": "https://github.com/castbox/guru-trellis/issues/248"
+    },
+    {
+      "number": 250,
+      "reason": "A separate Intake consumer of the minimal baseline and three-path classification.",
+      "title": "收敛业务 repo Phase 0 为唯一 Intake semantic owner",
+      "url": "https://github.com/castbox/guru-trellis/issues/250"
+    },
+    {
+      "number": 261,
+      "reason": "A separate Publication-route consumer; its implementation remains excluded.",
+      "title": "拆分 Guru Team Git delivery 与可选 GitHub change-request route",
+      "url": "https://github.com/castbox/guru-trellis/issues/261"
+    }
+  ],
+  "schema_version": "2.0"
+}

@@ -34,6 +34,35 @@ The caller does not submit semantic conclusions, findings, raw evidence, an AI
 gate, or an exit. Eval cases likewise choose a staged semantic case outside the
 public input and assert the actual exit only after the owner result returns.
 
+## Architecture Stage Consumption
+
+The global workflow mandatory invokes
+`guru-maintain-architecture-baseline:task_impact_sync(stage=phase2)` before this
+owner can select `passed`. The Architecture owner rereads the current baseline,
+design constitution, project change-contract identity, task-local Architecture
+change contract, and applicable project Architecture check results. This Skill
+consumes only the checked current route and the live authorities; it does not
+read Architecture private state or repeat applicability, contribution, ADR,
+promotion, or typed-route judgment.
+
+Phase 2 uses that stage result to perform the first semantic before/after review
+of the complete worktree candidate. Applicable project checks must be current;
+mandatory `fail` or `unverified` evidence remains blocking. New or worsened
+deviation, owner expansion, dual writer, compatibility without an exit, or a
+closed-GAP recurrence routes as `fitness_regression` to implementation/check.
+Missing applicable facts route as `contract_incomplete`, authority conflict
+returns to Planning, and stale baseline/constitution/contribution identity
+returns `sync_required` to the Architecture owner. None can be converted into a
+Phase 2 pass by this consumer.
+
+After `implementation_discovery` qualification, any expansion of scope, risk,
+owner, state authority, persistence, SDK lifecycle, external integration, or
+another architecture boundary makes the Planning Architecture result stale.
+The coordinator stops before the expanded edit or test and mandatory invokes
+`task_impact_sync(stage=implementation_discovery)`. Rejected candidates remain
+out of scope; a qualified expansion resumes only from a fresh Architecture
+result.
+
 ## Semantic Loop
 
 Before repository, Docs, test, fixture, consumer, or history retrieval, read
@@ -43,7 +72,8 @@ Do not persist raw searches, query lists, or search-process fields in the
 private result or public DTO.
 
 1. Reread the current task, approved plan, live authority, issue scope, diff,
-   dirty paths, code, tests, docs, and applicable validation commands.
+   dirty paths, code, tests, docs, the current Phase 2 Architecture result, and
+   applicable validation commands.
 2. Perform early candidate hygiene over the committed task-base diff, staged,
    unstaged, untracked, and new files before expensive or external validation.
    Git-diff and untracked-text whitespace or blank-EOF findings are suppressed
@@ -64,8 +94,8 @@ private result or public DTO.
    finding, negative test, implementation route, planning-stale route, or user
    question.
 4. Review requirements, design, implementation, tests, Docs SSOT, cross-layer
-   behavior, compatibility, deployment/operations, and verification
-   completeness.
+   behavior, Architecture before/after satisfaction, compatibility,
+   deployment/operations, and verification completeness.
 5. After a finding fix, perform one current complete semantic round. Do not
    persist each worker round or require historical HEAD equality.
 
@@ -122,7 +152,8 @@ planning routes project only their direct consumer references.
 ## Exits
 
 - `passed`: all nine dimensions pass with no open finding or blocking
-  unverified item.
+  unverified item, and the Phase 2 Architecture result and mandatory project
+  checks are current and passing.
 - `implementation_required`: A current-scope finding returns to implementation.
 - `planning_stale`: a current scope or authority change returns to planning.
 - `blocked`: a concrete evidence or dependency gap prevents a reliable result.

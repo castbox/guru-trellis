@@ -1,1 +1,58 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-architecture-baseline-output-sync-1.0","type":"object","additionalProperties":false,"required":["exit_id"],"properties":{"exit_id":{"const":"sync_required"},"baseline":{"type":"object"},"scope":{"type":"object"},"freshness":{"type":"object"},"consumer":{"type":"object"}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-architecture-baseline-output-sync-required-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_locator",
+    "stage",
+    "sync_kind",
+    "expected_current_identity",
+    "current_identity",
+    "sync_target",
+    "freshness_identity"
+  ],
+  "properties": {
+    "exit_id": {"const": "sync_required"},
+    "task_locator": {"type": "string", "minLength": 1},
+    "stage": {
+      "enum": [
+        "planning",
+        "implementation_discovery",
+        "phase2",
+        "branch_review",
+        "publication",
+        "acceptance_finish"
+      ]
+    },
+    "sync_kind": {
+      "enum": [
+        "promotion_required",
+        "baseline_advanced",
+        "constitution_advanced",
+        "contribution_stale",
+        "repair"
+      ]
+    },
+    "expected_current_identity": {"type": "string", "minLength": 1},
+    "current_identity": {"type": "string", "minLength": 1},
+    "sync_target": {"$ref": "#/$defs/syncTarget"},
+    "freshness_identity": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "syncTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "locator", "expected_identity", "current_identity"],
+      "properties": {
+        "kind": {
+          "enum": ["baseline", "constitution", "contribution", "project_contract"]
+        },
+        "locator": {"type": "string", "minLength": 1},
+        "expected_identity": {"type": "string", "minLength": 1},
+        "current_identity": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

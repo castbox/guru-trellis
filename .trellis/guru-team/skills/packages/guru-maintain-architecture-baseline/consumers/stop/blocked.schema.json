@@ -1,1 +1,1 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","required":["exit_id"],"properties":{"exit_id":{"const":"blocked"}},"additionalProperties":true}
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-architecture-baseline-blocked-consumer-2.0","type":"object","additionalProperties":false,"required":["exit_id","reason_code","remediation"],"properties":{"exit_id":{"const":"blocked"},"reason_code":{"type":"string","minLength":1},"remediation":{"type":"string","minLength":1}}}

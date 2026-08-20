@@ -1,0 +1,1 @@
+{"scenario":"The task converges a touched legacy boundary within scope.","owner_staging":{"recipe":"architecture-legacy-convergence"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

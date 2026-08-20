@@ -1,0 +1,11 @@
+{
+  "id": "283-architecture-convergence-governance",
+  "name": "283-architecture-convergence-governance",
+  "title": "#283 完善架构单向收敛与设计宪法消费合同",
+  "status": "in_progress",
+  "branch": "codex/283-architecture-convergence-governance",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/283"
+}

@@ -5465,18 +5465,144 @@ def stage_owner_execution(
         elif skill_id == "guru-create-task-workspace":
             owner = build_workspace_owner(runtime, fixture, recipe, public_mode)
         elif skill_id == "guru-maintain-architecture-baseline":
-            expected = {
-                "architecture-bootstrap-incomplete": "baseline_incomplete",
-                "architecture-impact-current": "baseline_current",
-                "architecture-promotion-sync": "sync_required",
-                "architecture-repair-blocked": "blocked",
-            }.get(recipe)
-            if expected is None:
+            if recipe in {
+                "architecture-no-impact",
+                "architecture-next-task",
+            }:
+                selected = {
+                    "typed_exit": "baseline_current",
+                    "task_locator": str(public_payload["task_locator"]),
+                    "baseline_identity": str(public_payload["baseline"]["identity"]),
+                    "constitution_identity": str(public_payload["constitution"]["identity"]),
+                    "impact_kind": "no_architecture_impact",
+                    "impact_reason": "The reviewed task changes no architecture authority, owner, boundary, decision, or GAP.",
+                    "promotion_state": "no_change",
+                }
+            elif recipe in {
+                "architecture-target-native",
+                "architecture-legacy-convergence",
+                "architecture-refactor-slice",
+            }:
+                change_path = {
+                    "architecture-target-native": "target_native",
+                    "architecture-legacy-convergence": "legacy_boundary_convergence",
+                    "architecture-refactor-slice": "dedicated_refactor_slice",
+                }[recipe]
+                selected = {
+                    "typed_exit": "baseline_current",
+                    "task_locator": str(public_payload["task_locator"]),
+                    "baseline_identity": str(public_payload["baseline"]["identity"]),
+                    "constitution_identity": str(public_payload["constitution"]["identity"]),
+                    "impact_kind": "architecture_impact",
+                    "impact_reason": "The reviewed task changes an architecture boundary and follows the selected convergence path.",
+                    "change_path": change_path,
+                    "promotion_state": "reviewed_candidate",
+                    "contribution_locator": "docs/architecture/contributions/eval-task",
+                    "contribution_identity": "contribution-v1",
+                    "project_checks": [{
+                        "schema_version": "2.0",
+                        "check_id": "project-architecture",
+                        "check_version": "1",
+                        "applicability": "applicable",
+                        "blocking": True,
+                        "applicable_scope": ["target-boundary"],
+                        "rule_refs": ["RULE-owner"],
+                        "decision_refs": ["ADR-example"],
+                        "gap_refs": ["GAP-example"],
+                        "before": {"state": "one owner and one open GAP"},
+                        "after": {"state": "one owner and no worsened deviation"},
+                        "status": "pass",
+                        "evidence_locator": "docs/architecture/evidence/eval.md",
+                        "freshness_identity": str(public_payload["freshness_identity"]),
+                    }],
+                }
+            elif recipe == "architecture-scope-expansion":
+                selected = {
+                    "typed_exit": "contract_incomplete",
+                    "task_locator": str(public_payload["task_locator"]),
+                    "missing_refs": ["expanded-scope-reassessment"],
+                    "return_route": "planning",
+                }
+            elif recipe == "architecture-fitness-regression":
+                selected = {
+                    "typed_exit": "fitness_regression",
+                    "task_locator": str(public_payload["task_locator"]),
+                    "regression_refs": ["second-authority"],
+                    "return_route": "implementation",
+                }
+            elif recipe == "architecture-parallel-stale":
+                selected = {
+                    "typed_exit": "sync_required",
+                    "task_locator": str(public_payload["task_locator"]),
+                    "sync_kind": "baseline_advanced",
+                    "expected_current_identity": str(public_payload["expected_current_identity"]),
+                    "current_identity": str(public_payload["current_identity"]),
+                    "sync_target": copy.deepcopy(public_payload["sync_target"]),
+                }
+            elif recipe == "architecture-unpromoted":
+                selected = {
+                    "typed_exit": "sync_required",
+                    "task_locator": str(public_payload["task_locator"]),
+                    "sync_kind": "promotion_required",
+                    "expected_current_identity": str(public_payload["baseline"]["identity"]),
+                    "current_identity": str(public_payload["baseline"]["identity"]),
+                    "sync_target": {
+                        "kind": "contribution",
+                        "locator": "docs/architecture/contributions/eval-task",
+                        "expected_identity": "contribution-v1",
+                        "current_identity": "contribution-v1",
+                    },
+                }
+            elif recipe == "architecture-missing-evidence":
+                selected = {
+                    "typed_exit": "contract_incomplete",
+                    "task_locator": str(public_payload["task_locator"]),
+                    "missing_refs": ["applicable-external-evidence"],
+                    "return_route": "repair",
+                }
+            else:
                 raise ValueError(f"unsupported architecture baseline owner staging recipe: {recipe}")
             owner = {
+                "schema_version": "2.0",
                 "profile": public_payload["profile"],
+                "mode": public_payload["mode"],
                 "continuation_id": public_payload["continuation_id"],
-                "typed_exit": expected,
+                "stage": public_payload["stage"],
+                "input_sha256": hashlib.sha256(
+                    json.dumps(
+                        public_payload,
+                        ensure_ascii=False,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ).encode()
+                ).hexdigest(),
+                "baseline": dict(public_payload["baseline"]),
+                "constitution": dict(public_payload["constitution"]),
+                "project_contract": dict(public_payload["project_contract"]),
+                "freshness_identity": str(public_payload["freshness_identity"]),
+                **({
+                    "expected_current_identity": str(public_payload["expected_current_identity"]),
+                    "current_identity": str(public_payload["current_identity"]),
+                    "sync_kind": str(public_payload["sync_kind"]),
+                    "sync_target": copy.deepcopy(public_payload["sync_target"]),
+                } if public_payload["profile"] == "promotion" else {}),
+                "ai_review_gate": {
+                    "status": "passed",
+                    "reviewed_scope": "Current Architecture authority, task-local change contract, project checks, and lifecycle stage.",
+                    "evidence_summary": "The project-neutral eval facts bind the baseline, constitution, contribution, before/after state, and freshness identity.",
+                    "findings": [],
+                    "conclusion": "The expected typed route is justified by the evaluated scenario.",
+                },
+                "consumer": {
+                    "baseline_current": {"kind": "workflow", "id": "guru-architecture-baseline-current-router"},
+                    "sync_required": {"kind": "skill", "id": "guru-maintain-architecture-baseline"},
+                    "baseline_incomplete": {"kind": "workflow", "id": "guru-architecture-baseline-bootstrap-router"},
+                    "architecture_conflict": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"},
+                    "contract_incomplete": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"},
+                    "fitness_regression": {"kind": "workflow", "id": "guru-architecture-baseline-check-router"},
+                    "blocked": {"kind": "stop", "id": "architecture-baseline-blocked"},
+                }[selected["typed_exit"]],
+                **selected,
             }
         elif skill_id == "guru-bootstrap-repository-ssot":
             expected = {

@@ -1,1 +1,228 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-team-skill-evals-1.0","schema_version":"1.0","skill_name":"guru-maintain-architecture-baseline","evals":[{"id":"bootstrap-incomplete","prompt":"Project has no active baseline; return baseline_incomplete after semantic review.","expected_exit":"baseline_incomplete","expected_output":"The incomplete baseline routes to bootstrap.","input_profile_id":"bootstrap_foundation","files":["evals/files/bootstrap-incomplete-input.json","evals/files/bootstrap-incomplete-facts.json"],"assertions":{"deterministic":[{"id":"expected-route","kind":"json_path","pointer":"/exit_id","operation":"equals","expected":"baseline_incomplete"}]}},{"id":"impact-current","prompt":"Task inherits an active baseline without conflict; return baseline_current.","expected_exit":"baseline_current","expected_output":"The current baseline is handed to the current router.","input_profile_id":"task_impact_sync","files":["evals/files/impact-current-input.json","evals/files/impact-current-facts.json"],"assertions":{"deterministic":[{"id":"expected-route","kind":"json_path","pointer":"/exit_id","operation":"equals","expected":"baseline_current"}]}},{"id":"promotion-sync","prompt":"Reviewed contribution is ready for projection; return sync_required.","expected_exit":"sync_required","expected_output":"The promotion contribution routes back to the architecture owner for sync.","input_profile_id":"promotion","files":["evals/files/promotion-sync-input.json","evals/files/promotion-sync-facts.json"],"assertions":{"deterministic":[{"id":"expected-route","kind":"json_path","pointer":"/exit_id","operation":"equals","expected":"sync_required"}]}},{"id":"repair-blocked","prompt":"Repair facts are stale; fail closed.","expected_exit":"blocked","expected_output":"Stale repair evidence stops the workflow.","input_profile_id":"repair","files":["evals/files/repair-blocked-input.json","evals/files/repair-blocked-facts.json"],"assertions":{"deterministic":[{"id":"expected-route","kind":"json_path","pointer":"/exit_id","operation":"equals","expected":"blocked"}]}}]}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-maintain-architecture-baseline",
+  "evals": [
+    {
+      "id": "no-impact",
+      "prompt": "A bounded documentation-equivalent change has no architecture impact and creates no contribution or ADR.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The no-impact scenario returns baseline_current.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/no-impact-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "target-native",
+      "prompt": "A new capability follows the target boundary and one writer without introducing a legacy authority.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The target-native scenario returns baseline_current.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/target-native-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "legacy-boundary-convergence",
+      "prompt": "A feature touches a legacy boundary and records bounded convergence, remaining debt, compatibility exit, and forbidden parallel scope.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The legacy-boundary-convergence scenario returns baseline_current.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/legacy-boundary-convergence-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "dedicated-refactor-slice",
+      "prompt": "A behavior-preserving refactor slice has one writer, bounded migration, observation, rollback, and deletion condition.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The dedicated-refactor-slice scenario returns baseline_current.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/dedicated-refactor-slice-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "scope-expansion",
+      "prompt": "Implementation discovery expands persistence or owner scope and the old planning contract must be redone.",
+      "expected_exit": "contract_incomplete",
+      "expected_output": "The scope-expansion scenario returns contract_incomplete.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-scope-expansion-input.json",
+        "evals/files/scope-expansion-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "contract_incomplete"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fitness-regression",
+      "prompt": "The candidate introduces a second authority or reopens a closed GAP.",
+      "expected_exit": "fitness_regression",
+      "expected_output": "The fitness-regression scenario returns fitness_regression.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/fitness-regression-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "fitness_regression"
+          }
+        ]
+      }
+    },
+    {
+      "id": "parallel-stale",
+      "prompt": "Another task promoted a new current identity before this task could promote.",
+      "expected_exit": "sync_required",
+      "expected_output": "The parallel-stale scenario returns sync_required.",
+      "input_profile_id": "promotion",
+      "files": [
+        "evals/files/promotion-sync-input.json",
+        "evals/files/parallel-stale-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "sync_required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unpromoted-contribution",
+      "prompt": "Implementation passes but the required reviewed contribution and promotion are not complete.",
+      "expected_exit": "sync_required",
+      "expected_output": "The unpromoted-contribution scenario returns sync_required.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-unpromoted-input.json",
+        "evals/files/unpromoted-contribution-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "sync_required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "next-task-consumption",
+      "prompt": "A new task consumes only the promoted current identity and current GAP and owner state.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The next-task-consumption scenario returns baseline_current.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/next-task-consumption-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "missing-external-evidence",
+      "prompt": "Applicable external evidence is unavailable and remains unverified.",
+      "expected_exit": "contract_incomplete",
+      "expected_output": "The missing-external-evidence scenario returns contract_incomplete.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/missing-external-evidence-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "contract_incomplete"
+          }
+        ]
+      }
+    }
+  ]
+}

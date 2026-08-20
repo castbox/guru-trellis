@@ -490,6 +490,43 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         for path in sorted(self.package.rglob("*.json")):
             self.assertTrue(forbidden.isdisjoint(keys(json.loads(path.read_text(encoding="utf-8")))), path)
 
+    def test_planning_requires_current_architecture_stage_result(self) -> None:
+        repo = next(parent for parent in self.package.parents if (parent / "trellis/workflows/guru-team/workflow.md").is_file())
+        sources = {
+            "skill": self.package / "SKILL.md",
+            "contract": self.package / "references/contract.md",
+            "workflow": repo / "trellis/workflows/guru-team/workflow.md",
+        }
+        required = (
+            "task_impact_sync(stage=planning)",
+            "baseline_current",
+            "design constitution",
+            "Architecture change contract",
+            "no_architecture_impact",
+        )
+        for label, path in sources.items():
+            with self.subTest(source=label):
+                text = " ".join(path.read_text(encoding="utf-8").replace("design-constitution", "design constitution").replace("change-contract", "change contract").split())
+                for phrase in required:
+                    self.assertIn(phrase, text)
+                self.assertNotIn("Afizzy", text)
+
+        skill = " ".join(sources["skill"].read_text(encoding="utf-8").split())
+        self.assertIn("cannot approve a missing or stale Architecture result", skill)
+        self.assertIn("do not copy the Architecture owner's reasoning", skill)
+
+        workflow = sources["workflow"].read_text(encoding="utf-8")
+        phase = workflow.split("#### 1.4 Task plan approval", 1)[1].split("#### 1.5 Task activation", 1)[0]
+        self.assertLess(
+            phase.index("task_impact_sync(stage=planning)"),
+            phase.index("invoke guru-approve-task-plan"),
+        )
+        for exit_id in (
+            "sync_required", "baseline_incomplete", "architecture_conflict",
+            "contract_incomplete", "fitness_regression",
+        ):
+            self.assertIn(exit_id, workflow)
+
     def test_approved_exit_keeps_workflow_owned_phase1_review_pause(self) -> None:
         repo = next(parent for parent in self.package.parents if (parent / ".trellis/workflow.md").is_file())
         canonical = repo / "trellis/workflows/guru-team/workflow.md"

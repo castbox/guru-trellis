@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-project-architecture-check-descriptor-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "check_id", "check_version", "entrypoint", "applicable_scope", "rule_refs", "decision_refs", "gap_refs", "result_contract_identity", "freshness_source"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "check_id": {"type": "string", "minLength": 1},
+    "check_version": {"type": "string", "minLength": 1},
+    "entrypoint": {"type": "string", "minLength": 1},
+    "applicable_scope": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "rule_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "decision_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "gap_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "result_contract_identity": {"const": "guru-project-architecture-check-result-2.0"},
+    "freshness_source": {"type": "string", "minLength": 1}
+  },
+  "anyOf": [
+    {"properties": {"rule_refs": {"minItems": 1}}},
+    {"properties": {"decision_refs": {"minItems": 1}}},
+    {"properties": {"gap_refs": {"minItems": 1}}}
+  ]
+}

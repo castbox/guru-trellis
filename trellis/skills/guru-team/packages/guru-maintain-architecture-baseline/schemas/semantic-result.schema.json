@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-architecture-baseline-semantic-result-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "profile", "mode", "continuation_id", "stage", "task_locator", "input_sha256", "baseline", "constitution", "project_contract", "freshness_identity", "ai_review_gate", "typed_exit", "consumer"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "profile": {"enum": ["bootstrap_foundation", "task_impact_sync", "promotion", "repair"]},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "continuation_id": {"type": "string", "minLength": 1},
+    "stage": {"enum": ["planning", "implementation_discovery", "phase2", "branch_review", "publication", "acceptance_finish"]},
+    "input_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "baseline": {"type": "object", "additionalProperties": false, "required": ["locator", "identity", "status"], "properties": {"locator": {"type": "string", "minLength": 1}, "identity": {"type": "string", "minLength": 1}, "status": {"enum": ["missing", "draft", "active", "superseded"]}}},
+    "constitution": {"$ref": "#/$defs/constitution"},
+    "project_contract": {"type": "object", "additionalProperties": false, "required": ["guru_contract_identity", "change_contract_locator", "change_contract_identity", "required_concern_set_identity"], "properties": {"guru_contract_identity": {"const": "guru-maintain-architecture-baseline:2.0"}, "change_contract_locator": {"type": "string", "minLength": 1}, "change_contract_identity": {"type": "string", "minLength": 1}, "required_concern_set_identity": {"type": "string", "minLength": 1}}},
+    "freshness_identity": {"type": "string", "minLength": 1},
+    "ai_review_gate": {"type": "object", "additionalProperties": false, "required": ["status", "reviewed_scope", "evidence_summary", "findings", "conclusion"], "properties": {"status": {"enum": ["passed", "blocked"]}, "reviewed_scope": {"type": "string", "minLength": 1}, "evidence_summary": {"type": "string", "minLength": 1}, "findings": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "conclusion": {"type": "string", "minLength": 1}}},
+    "typed_exit": {"enum": ["baseline_current", "sync_required", "baseline_incomplete", "architecture_conflict", "contract_incomplete", "fitness_regression", "blocked"]},
+    "consumer": {"type": "object", "additionalProperties": false, "required": ["kind", "id"], "properties": {"kind": {"enum": ["skill", "workflow", "stop"]}, "id": {"type": "string", "minLength": 1}}},
+    "task_locator": {"type": "string", "minLength": 1},
+    "baseline_identity": {"type": "string", "minLength": 1},
+    "constitution_identity": {"type": "string", "minLength": 1},
+    "impact_kind": {"enum": ["no_architecture_impact", "architecture_impact"]},
+    "impact_reason": {"type": "string", "minLength": 1},
+    "change_path": {"enum": ["target_native", "legacy_boundary_convergence", "dedicated_refactor_slice"]},
+    "promotion_state": {"enum": ["no_change", "reviewed_candidate", "reviewed_promoted"]},
+    "contribution_locator": {"type": "string", "minLength": 1},
+    "contribution_identity": {"type": "string", "minLength": 1},
+    "project_checks": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/projectCheck"}},
+    "review": {"type": "object", "additionalProperties": false, "required": ["status", "independent", "committed_diff_identity"], "properties": {"status": {"enum": ["pending", "reviewed"]}, "independent": {"type": "boolean"}, "committed_diff_identity": {"type": "string"}}, "oneOf": [{"properties": {"status": {"const": "pending"}, "independent": {"const": false}, "committed_diff_identity": {"const": ""}}}, {"properties": {"status": {"const": "reviewed"}, "independent": {"const": true}, "committed_diff_identity": {"type": "string", "minLength": 1}}}]},
+    "sync_kind": {"enum": ["promotion_required", "baseline_advanced", "constitution_advanced", "contribution_stale", "repair"]},
+    "expected_current_identity": {"type": "string", "minLength": 1},
+    "current_identity": {"type": "string", "minLength": 1},
+    "sync_target": {"$ref": "#/$defs/syncTarget"},
+    "authority_locator": {"type": "string", "minLength": 1},
+    "missing_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "repair_profile": {"enum": ["bootstrap_foundation", "repair"]},
+    "conflict_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "regression_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "return_route": {"enum": ["planning", "repair", "implementation", "check"]},
+    "reason_code": {"type": "string", "minLength": 1},
+    "remediation": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "constitution": {"type": "object", "additionalProperties": false, "required": ["authority_locator", "identity_kind", "identity", "principles"], "properties": {"authority_locator": {"type": "string", "minLength": 1}, "identity_kind": {"enum": ["version", "content"]}, "identity": {"type": "string", "minLength": 1}, "principles": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {"oneOf": [
+        {"$ref": "#/$defs/p1"},
+        {"$ref": "#/$defs/p2"},
+        {"$ref": "#/$defs/p3"},
+        {"$ref": "#/$defs/p4"},
+        {"$ref": "#/$defs/p5"}
+      ]},
+      "allOf": [
+        {"contains": {"$ref": "#/$defs/p1"}},
+        {"contains": {"$ref": "#/$defs/p2"}},
+        {"contains": {"$ref": "#/$defs/p3"}},
+        {"contains": {"$ref": "#/$defs/p4"}},
+        {"contains": {"$ref": "#/$defs/p5"}}
+      ]
+    }}},
+    "p1": {"type": "object", "additionalProperties": false, "required": ["id", "short_name"], "properties": {"id": {"const": "mature-practice-applicability"}, "short_name": {"const": "成熟实践与适用性"}}},
+    "p2": {"type": "object", "additionalProperties": false, "required": ["id", "short_name"], "properties": {"id": {"const": "concept-semantic-completeness"}, "short_name": {"const": "概念与语义完整性"}}},
+    "p3": {"type": "object", "additionalProperties": false, "required": ["id", "short_name"], "properties": {"id": {"const": "cohesion-change-isolation"}, "short_name": {"const": "职责内聚与变化隔离"}}},
+    "p4": {"type": "object", "additionalProperties": false, "required": ["id", "short_name"], "properties": {"id": {"const": "minimum-necessary-complexity"}, "short_name": {"const": "最小必要复杂度"}}},
+    "p5": {"type": "object", "additionalProperties": false, "required": ["id", "short_name"], "properties": {"id": {"const": "debt-one-way-convergence"}, "short_name": {"const": "技术债务单向收敛"}}},
+    "projectCheck": {"type": "object", "additionalProperties": false, "required": ["schema_version", "check_id", "check_version", "applicability", "blocking", "applicable_scope", "rule_refs", "decision_refs", "gap_refs", "before", "after", "status", "freshness_identity"], "properties": {"schema_version": {"const": "2.0"}, "check_id": {"type": "string", "minLength": 1}, "check_version": {"type": "string", "minLength": 1}, "applicability": {"enum": ["applicable", "not_applicable"]}, "blocking": {"type": "boolean"}, "applicable_scope": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "rule_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "decision_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "gap_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "before": {"type": "object", "additionalProperties": false, "required": ["state"], "properties": {"state": {"type": "string", "minLength": 1}}}, "after": {"type": "object", "additionalProperties": false, "required": ["state"], "properties": {"state": {"type": "string", "minLength": 1}}}, "status": {"enum": ["pass", "fail", "unverified"]}, "evidence_locator": {"type": "string", "minLength": 1}, "unavailable_reason": {"type": "string", "minLength": 1}, "freshness_identity": {"type": "string", "minLength": 1}}, "anyOf": [{"properties": {"rule_refs": {"minItems": 1}}}, {"properties": {"decision_refs": {"minItems": 1}}}, {"properties": {"gap_refs": {"minItems": 1}}}], "allOf": [{"if": {"properties": {"status": {"enum": ["pass", "fail"]}}}, "then": {"required": ["evidence_locator"], "not": {"required": ["unavailable_reason"]}}}, {"if": {"properties": {"status": {"const": "unverified"}}}, "then": {"required": ["unavailable_reason"], "not": {"required": ["evidence_locator"]}}}, {"if": {"properties": {"applicability": {"const": "not_applicable"}}}, "then": {"properties": {"blocking": {"const": false}}}}]},
+    "syncTarget": {"type": "object", "additionalProperties": false, "required": ["kind", "locator", "expected_identity", "current_identity"], "properties": {"kind": {"enum": ["baseline", "constitution", "contribution", "project_contract"]}, "locator": {"type": "string", "minLength": 1}, "expected_identity": {"type": "string", "minLength": 1}, "current_identity": {"type": "string", "minLength": 1}}}
+  }
+}

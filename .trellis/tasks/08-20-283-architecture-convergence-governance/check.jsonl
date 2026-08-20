@@ -1,0 +1,6 @@
+{"file":".trellis/spec/workflow/architecture-baseline.md","reason":"复核 Architecture authority、profile、promotion 与 failure route 是否完整。"}
+{"file":".trellis/spec/architecture/baseline-usage.md","reason":"复核 current baseline/constitution identity 与 freshness 消费。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"检查 schema versioning、public/private 最小性、唯一 consumer 和 projection closure。"}
+{"file":".trellis/spec/workflow/semantic-retrieval.md","reason":"Phase 2 与 Branch Review 形成架构 finding 前使用双语概念族与证据覆盖规则。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查 canonical/dogfood/installed/platform、drift、sidecar 和代表性安装证据。"}
+{"file":"docs/architecture/README.md","reason":"独立复核项目 Architecture Baseline authority、版本与 contribution/promotion 边界。"}

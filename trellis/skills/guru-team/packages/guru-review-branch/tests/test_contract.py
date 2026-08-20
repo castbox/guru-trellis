@@ -465,6 +465,77 @@ class BranchReviewContractTest(unittest.TestCase):
             sources["skill"].read_text(encoding="utf-8"),
         )
 
+    def test_branch_review_recomputes_architecture_over_committed_full_diff(self):
+        workflow = REPO / "trellis/workflows/guru-team/workflow.md"
+        sources = {
+            "skill": PACKAGE / "SKILL.md",
+            "contract": PACKAGE / "references/contract.md",
+            "workflow": workflow,
+        }
+        for label, path in sources.items():
+            with self.subTest(source=label):
+                text = " ".join(path.read_text(encoding="utf-8").split())
+                self.assertIn("task_impact_sync(stage=branch_review)", text)
+                self.assertRegex(text, r"complete committed (?:base-to-HEAD )?diff|committed full diff")
+                self.assertIn("Phase 2", text)
+                self.assertRegex(text, r"reuse|reused|never treats")
+                self.assertNotIn("Afizzy", text)
+
+        contract = sources["contract"].read_text(encoding="utf-8")
+        for route in (
+            "sync_required", "contract_incomplete", "architecture_conflict",
+            "fitness_regression",
+        ):
+            self.assertIn(route, contract)
+        self.assertIn("does not read Architecture private state", contract)
+
+        workflow_text = workflow.read_text(encoding="utf-8")
+        phase = workflow_text.split("#### 3.5 Branch review", 1)[1].split("#### 3.6 Publication review", 1)[0]
+        self.assertLess(
+            phase.index("task_impact_sync(stage=branch_review)"),
+            phase.index("invokes guru-review-branch"),
+        )
+
+    def test_workflow_closes_publication_finish_and_promotion_architecture_routes(self):
+        text = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
+        normalized = " ".join(text.split())
+        for stage in (
+            "stage=planning", "stage=implementation_discovery", "stage=phase2",
+            "stage=branch_review", "stage=publication", "stage=acceptance_finish",
+        ):
+            self.assertIn(stage, normalized)
+        for phrase in (
+            "Publication rejects missing or stale Architecture evidence",
+            "reviewed_promoted",
+            "current `no_change` proof",
+            "promotion-created shared-current diff returns to fresh Phase 2",
+            "baseline, constitution, contribution, expected-current, or stage identity always returns `sync_required`",
+            "`sync_required(sync_kind=promotion_required)` enters that owner's declared serialized promotion route",
+            "does not absorb PR-publication or Finalizer business semantics",
+        ):
+            self.assertIn(phrase, normalized)
+        publication = text.split("#### 3.6 Publication review", 1)[1].split("#### 3.7 Finalization", 1)[0]
+        self.assertLess(
+            publication.index("task_impact_sync(stage=publication)"),
+            publication.index("invoke guru-review-task-publication"),
+        )
+        finish = text.split("#### 3.7 Finalization", 1)[1].split("## Global Integration Boundaries", 1)[0]
+        self.assertLess(
+            finish.index("task_impact_sync(stage=acceptance_finish)"),
+            finish.index("Invoke guru-finalize-task"),
+        )
+        spec = (
+            REPO / "trellis/presets/guru-team/spec/workflow/workflow-contract.md"
+        ).read_text(encoding="utf-8")
+        for phrase in (
+            "Every standard task mandatory invokes",
+            "committed full-diff Branch Review",
+            "returns `sync_required`",
+            "requires `reviewed_promoted`",
+            "routing-only integration",
+        ):
+            self.assertIn(phrase, spec)
+
     def test_current_interface_wording_matches_profiles_gate_and_exits(self):
         interface = json.loads((PACKAGE / "interface.json").read_text())
         public = interface["public_contracts"]

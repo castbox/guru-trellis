@@ -1,0 +1,31 @@
+{
+  "schema_version": "2.0",
+  "profile": "task_impact_sync",
+  "source_exit": "publication",
+  "mode": "workflow",
+  "continuation_id": "eval-unpromoted-contribution",
+  "stage": "publication",
+  "task_locator": ".trellis/tasks/eval-task",
+  "baseline": {"locator": "docs/architecture/README.md", "identity": "current-v1", "status": "active"},
+  "constitution": {
+    "authority_locator": "docs/architecture/00-foundation/design-constitution.md",
+    "identity_kind": "content",
+    "identity": "constitution-v1",
+    "principles": [
+      {"id": "mature-practice-applicability", "short_name": "成熟实践与适用性"},
+      {"id": "concept-semantic-completeness", "short_name": "概念与语义完整性"},
+      {"id": "cohesion-change-isolation", "short_name": "职责内聚与变化隔离"},
+      {"id": "minimum-necessary-complexity", "short_name": "最小必要复杂度"},
+      {"id": "debt-one-way-convergence", "short_name": "技术债务单向收敛"}
+    ]
+  },
+  "project_contract": {
+    "guru_contract_identity": "guru-maintain-architecture-baseline:2.0",
+    "change_contract_locator": "docs/architecture/06-governance/change-contract.md",
+    "change_contract_identity": "project-change-contract-v1",
+    "required_concern_set_identity": "project-concerns-v1"
+  },
+  "freshness_identity": "eval-unpromoted-fresh",
+  "requirement_authority": "docs/requirements/README.md",
+  "behavior_authority": "docs/design/README.md"
+}

@@ -1,0 +1,1 @@
+{"scenario":"The task follows the target boundary and one writer.","owner_staging":{"recipe":"architecture-target-native"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

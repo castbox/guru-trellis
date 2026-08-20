@@ -1,0 +1,1 @@
+{"scenario":"The refactor slice preserves behavior and bounds migration.","owner_staging":{"recipe":"architecture-refactor-slice"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

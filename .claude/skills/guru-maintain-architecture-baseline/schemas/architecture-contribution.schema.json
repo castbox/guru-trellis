@@ -1,0 +1,339 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-architecture-contribution-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_locator",
+    "requirement_authority",
+    "behavior_authority",
+    "guru_contract_identity",
+    "baseline_locator",
+    "baseline_identity",
+    "baseline_status",
+    "constitution_authority_locator",
+    "constitution_identity_kind",
+    "constitution_identity",
+    "change_contract_locator",
+    "change_contract_identity",
+    "required_concern_set_identity",
+    "contribution_identity",
+    "change_path",
+    "domain_refs",
+    "integration_refs",
+    "decision_refs",
+    "gap_refs",
+    "required_concerns",
+    "owner_transition",
+    "compatibility",
+    "parallel_scope",
+    "deviations",
+    "legacy_deletion_conditions",
+    "design_responsibility",
+    "before_plan",
+    "after_candidate",
+    "project_checks",
+    "evidence",
+    "expected_current_identity",
+    "adr",
+    "review",
+    "promotion"
+  ],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "task_locator": {"type": "string", "minLength": 1},
+    "requirement_authority": {"type": "string", "minLength": 1},
+    "behavior_authority": {"type": "string", "minLength": 1},
+    "guru_contract_identity": {"const": "guru-maintain-architecture-baseline:2.0"},
+    "baseline_locator": {"type": "string", "minLength": 1},
+    "baseline_identity": {"type": "string", "minLength": 1},
+    "baseline_status": {"enum": ["draft", "active", "superseded"]},
+    "constitution_authority_locator": {"type": "string", "minLength": 1},
+    "constitution_identity_kind": {"enum": ["version", "content"]},
+    "constitution_identity": {"type": "string", "minLength": 1},
+    "change_contract_locator": {"type": "string", "minLength": 1},
+    "change_contract_identity": {"type": "string", "minLength": 1},
+    "required_concern_set_identity": {"type": "string", "minLength": 1},
+    "contribution_identity": {"type": "string", "minLength": 1},
+    "change_path": {
+      "enum": [
+        "target_native",
+        "legacy_boundary_convergence",
+        "dedicated_refactor_slice"
+      ]
+    },
+    "domain_refs": {"$ref": "#/$defs/refList"},
+    "integration_refs": {"$ref": "#/$defs/refList"},
+    "decision_refs": {"$ref": "#/$defs/refList"},
+    "gap_refs": {"$ref": "#/$defs/refList"},
+    "required_concerns": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/requiredConcern"}
+    },
+    "owner_transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["current", "target", "single_writer"],
+      "properties": {
+        "current": {"type": "string", "minLength": 1},
+        "target": {"type": "string", "minLength": 1},
+        "single_writer": {"type": "string", "minLength": 1}
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "owner", "exit_condition"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "owner": {"type": "string", "minLength": 1},
+        "exit_condition": {"type": "string", "minLength": 1}
+      }
+    },
+    "parallel_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed", "forbidden"],
+      "properties": {
+        "allowed": {"$ref": "#/$defs/refList"},
+        "forbidden": {"$ref": "#/$defs/refList"}
+      }
+    },
+    "deviations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["closed", "retained", "new"],
+      "properties": {
+        "closed": {"$ref": "#/$defs/refList"},
+        "retained": {"$ref": "#/$defs/refList"},
+        "new": {"$ref": "#/$defs/refList"}
+      }
+    },
+    "legacy_deletion_conditions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "design_responsibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["overview", "detailed"],
+      "properties": {
+        "overview": {"type": "string", "minLength": 1},
+        "detailed": {"type": "string", "minLength": 1}
+      }
+    },
+    "before_plan": {"type": "string", "minLength": 1},
+    "after_candidate": {"type": "string", "minLength": 1},
+    "project_checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/projectCheck"}
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["test_refs", "runtime_refs", "external_refs", "external_status"],
+      "properties": {
+        "test_refs": {"$ref": "#/$defs/refList"},
+        "runtime_refs": {"$ref": "#/$defs/refList"},
+        "external_refs": {"$ref": "#/$defs/refList"},
+        "external_status": {
+          "enum": ["verified", "evidence_gap", "unverified", "not_applicable"]
+        }
+      }
+    },
+    "expected_current_identity": {"type": "string", "minLength": 1},
+    "adr": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "locator", "reason"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "locator": {"type": "string"},
+        "reason": {"type": "string", "minLength": 1}
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "required": {"const": false},
+            "locator": {"const": ""}
+          }
+        },
+        {
+          "properties": {
+            "required": {"const": true},
+            "locator": {"type": "string", "minLength": 1}
+          }
+        }
+      ]
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "independent", "committed_diff_identity"],
+      "properties": {
+        "status": {"enum": ["pending", "reviewed"]},
+        "independent": {"type": "boolean"},
+        "committed_diff_identity": {"type": "string"}
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "status": {"const": "pending"},
+            "independent": {"const": false},
+            "committed_diff_identity": {"const": ""}
+          }
+        },
+        {
+          "properties": {
+            "status": {"const": "reviewed"},
+            "independent": {"const": true},
+            "committed_diff_identity": {"type": "string", "minLength": 1}
+          }
+        }
+      ]
+    },
+    "promotion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "promoted_identity"],
+      "properties": {
+        "state": {"enum": ["required", "reviewed_promoted"]},
+        "promoted_identity": {"type": "string"}
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "state": {"const": "required"},
+            "promoted_identity": {"const": ""}
+          }
+        },
+        {
+          "properties": {
+            "state": {"const": "reviewed_promoted"},
+            "promoted_identity": {"type": "string", "minLength": 1}
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "promotion": {
+            "properties": {
+              "state": {"const": "reviewed_promoted"}
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "review": {
+            "properties": {
+              "status": {"const": "reviewed"}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "refList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "requiredConcern": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "applicability", "rationale"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "applicability": {"enum": ["applicable", "not_applicable"]},
+        "rationale": {"type": "string", "minLength": 1}
+      }
+    },
+    "projectCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "check_id",
+        "check_version",
+        "applicability",
+        "blocking",
+        "applicable_scope",
+        "rule_refs",
+        "decision_refs",
+        "gap_refs",
+        "before",
+        "after",
+        "status",
+        "freshness_identity"
+      ],
+      "properties": {
+        "schema_version": {"const": "2.0"},
+        "check_id": {"type": "string", "minLength": 1},
+        "check_version": {"type": "string", "minLength": 1},
+        "applicability": {"enum": ["applicable", "not_applicable"]},
+        "blocking": {"type": "boolean"},
+        "applicable_scope": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "rule_refs": {"$ref": "#/$defs/refList"},
+        "decision_refs": {"$ref": "#/$defs/refList"},
+        "gap_refs": {"$ref": "#/$defs/refList"},
+        "before": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state"],
+          "properties": {"state": {"type": "string", "minLength": 1}}
+        },
+        "after": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state"],
+          "properties": {"state": {"type": "string", "minLength": 1}}
+        },
+        "status": {"enum": ["pass", "fail", "unverified"]},
+        "evidence_locator": {"type": "string", "minLength": 1},
+        "unavailable_reason": {"type": "string", "minLength": 1},
+        "freshness_identity": {"type": "string", "minLength": 1}
+      },
+      "anyOf": [
+        {"properties": {"rule_refs": {"minItems": 1}}},
+        {"properties": {"decision_refs": {"minItems": 1}}},
+        {"properties": {"gap_refs": {"minItems": 1}}}
+      ],
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"enum": ["pass", "fail"]}}},
+          "then": {
+            "required": ["evidence_locator"],
+            "not": {"required": ["unavailable_reason"]}
+          }
+        },
+        {
+          "if": {"properties": {"status": {"const": "unverified"}}},
+          "then": {
+            "required": ["unavailable_reason"],
+            "not": {"required": ["evidence_locator"]}
+          }
+        },
+        {
+          "if": {"properties": {"applicability": {"const": "not_applicable"}}},
+          "then": {"properties": {"blocking": {"const": false}}}
+        }
+      ]
+    }
+  }
+}
