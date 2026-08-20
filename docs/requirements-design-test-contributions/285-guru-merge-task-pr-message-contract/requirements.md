@@ -11,7 +11,8 @@
   持久化正文完全一致。
 - `REQ-022`：semantic gate、recorder 与 checker 必须绑定 repo/PR、expected head、
   base/head branches、close scope、reviewed message identity 与 pre-merge base head；
-  `primary_issue` 必须属于 reviewed close scope，授权不得持久化。
+  非空 reviewed close scope 要求 `primary_issue` 属于该集合；空集合保持合法 refs-only
+  merge，`primary_issue` 只作为 subject/body 的引用而不触发关闭；授权不得持久化。
 - `REQ-023`：executor 只执行 repo-bound merge commit 路径，并同时传递
   `--match-head-commit`、唯一 `--merge`、`--subject` 与 `--body-file`；body file 只在
   ignored owner runtime 中短生命周期存在。

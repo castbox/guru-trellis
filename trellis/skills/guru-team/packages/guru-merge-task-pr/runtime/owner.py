@@ -634,7 +634,10 @@ def task_pr_merge_json_input(root: Path, value: str | None) -> dict[str, Any]:
         head_branch=expected_branch,
         base_branch=expected_base,
     )
-    if reviewed_merge_message["primary_issue"] not in expected_close_issues:
+    if (
+        expected_close_issues
+        and reviewed_merge_message["primary_issue"] not in expected_close_issues
+    ):
         raise WorkflowError(
             "Reviewed merge primary Issue is outside the reviewed close scope.",
             exit_code=2,

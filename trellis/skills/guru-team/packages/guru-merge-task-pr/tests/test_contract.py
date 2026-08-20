@@ -733,6 +733,29 @@ class MergeTaskPrContractTest(unittest.TestCase):
             with self.assertRaisesRegex(GTT.WorkflowError, "outside the reviewed close scope"):
                 GTT.task_pr_merge_json_input(Path(temp_dir), str(path))
 
+    def test_public_input_accepts_primary_issue_for_empty_refs_only_close_scope(self) -> None:
+        payload = {
+            "schema_version": "2.0",
+            "profile": "ready_for_merge",
+            "mode": "workflow",
+            "repo_ref": "castbox/guru-trellis",
+            "pr_number": 180,
+            "pr_url": "https://github.com/castbox/guru-trellis/pull/180",
+            "expected_head_sha": "1" * 40,
+            "expected_base_branch": "main",
+            "expected_head_branch": "codex/180-eval",
+            "expected_close_issues": [],
+            "reviewed_merge_message": self.reviewed_message(
+                pr=180, issue=181, head="codex/180-eval"
+            ),
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "input.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            parsed = GTT.task_pr_merge_json_input(Path(temp_dir), str(path))
+        self.assertEqual(parsed["expected_close_issues"], [])
+        self.assertEqual(parsed["reviewed_merge_message"]["primary_issue"], 181)
+
     def test_checker_rejects_pre_merge_base_head_mismatch(self) -> None:
         public_input, _, gate, _ = self.terminal_fixture()
         facts = {
