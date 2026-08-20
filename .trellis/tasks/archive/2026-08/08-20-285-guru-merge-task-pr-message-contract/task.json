@@ -2,10 +2,11 @@
   "id": "285-guru-merge-task-pr-message-contract",
   "name": "285-guru-merge-task-pr-message-contract",
   "title": "#285 修复 guru-merge-task-pr 丢失中文 chore(merge) subject/body 合同",
-  "status": "in_progress",
+  "status": "completed",
   "branch": "fix/285-guru-merge-task-pr-message-contract",
   "base_branch": "main",
   "creator": "wesleywu",
   "assignee": "wesleywu",
-  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/285"
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/285",
+  "completedAt": "2026-08-20"
 }

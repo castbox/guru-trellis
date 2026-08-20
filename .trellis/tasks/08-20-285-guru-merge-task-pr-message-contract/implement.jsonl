@@ -1,9 +1,0 @@
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Active Skill public I/O versioning、authoring seed、private gate 与 typed-exit 合同。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Merge recorder/checker/executor、ephemeral body file 与 post-merge verifier 的确定性边界。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"中文 merge subject/body、gate identity、terminal output 与 compatibility schema 的数据合同。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"package/runtime/eval、projection、throwaway 与 live proof 验证范围。"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"Finalizer seed 到 Merge owner authoring、mandatory invocation 与三 typed exits 的全局路由。"}
-{"file":".trellis/spec/preset/installer.md","reason":"canonical、installed、all-platform projection、apply/reapply/update 与 sidecar 门禁。"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"dogfood/platform 同步和 drift 处置。"}
-{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"reviewed message 跨 Finalizer consumer、Merge input、gate、executor、GitHub commit 与 verifier。"}
-{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"复用 legacy formatter/message helper、digest、GitHub adapter 与 runtime cleanup 机制。"}
