@@ -2,10 +2,11 @@
   "id": "260-trellis-v0615-compatibility-baseline",
   "name": "260-trellis-v0615-compatibility-baseline",
   "title": "#260 Trellis v0.6.15 compatibility baseline",
-  "status": "in_progress",
+  "status": "completed",
   "branch": "feat/260-trellis-v0615-compatibility-baseline",
   "base_branch": "main",
   "creator": "wesleywu",
   "assignee": "wesleywu",
-  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/260"
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/260",
+  "completedAt": "2026-08-20"
 }

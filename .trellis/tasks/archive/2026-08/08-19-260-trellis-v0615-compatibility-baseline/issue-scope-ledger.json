@@ -29,7 +29,7 @@
   ],
   "primary_issue": {
     "number": 260,
-    "reason": "This task owns the complete Trellis 0.6.5 to 0.6.15 migration and live-inventory-derived compatibility baseline.",
+    "reason": "Close only after the full multi-platform matrix, dogfood migration, installed contracts, authority preservation and both parallel Finish scenarios pass.",
     "title": "在当前双 SSOT 基线上升级并验证 Trellis v0.6.15：业务仓库安装态与并行兼容",
     "url": "https://github.com/castbox/guru-trellis/issues/260"
   },
