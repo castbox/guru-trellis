@@ -52,8 +52,21 @@ def run(args: argparse.Namespace) -> dict:
         summary = title if re.search(r"[\u3400-\u9fff]", title) else f"完成 {summary or f'#{primary}'}"
     pull_request = args.pull_request or "<pull_request>"
     expected_head = owner.run(["git", "rev-parse", "HEAD"], cwd=root).stdout.strip()
-    subject = f"chore(merge): #{pull_request} 合并 #{primary} {summary}"
-    body = f"合并：\n合入 `{head}` 到 `{base}`，保留 PR 内部提交历史。\n\n范围：\n本次 PR 完成 #{primary}：{summary}。\n\n审计：\nTrellis task archive、review gate、finish-summary 和 readiness 提交保留在 PR 分支历史中，用于审计任务过程。\n\nPR: #{pull_request}\nRefs #{primary}\n"
+    reviewed = owner.build_reviewed_merge_message(
+        pull_request=pull_request,
+        primary_issue=primary,
+        summary=summary,
+        head_branch=head,
+        base_branch=base,
+    )
+    reviewed = owner.validate_reviewed_merge_message(
+        reviewed,
+        pull_request=pull_request,
+        head_branch=head,
+        base_branch=base,
+    )
+    subject = reviewed["subject"]
+    body = reviewed["body"]
     repo = _repo(root, owner.load_config(root))
     body_hint = args.body_file_hint
     merge = {"ready": bool(args.pull_request and str(args.pull_request).isdigit()), "subject": subject, "body": body, "body_file_hint": body_hint, "expected_head": expected_head, "command": ["gh", "pr", "merge", str(pull_request), "--repo", repo, "--match-head-commit", expected_head, "--merge", "--subject", subject, "--body-file", body_hint], "errors": []}

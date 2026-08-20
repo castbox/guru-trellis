@@ -1374,17 +1374,33 @@ Phase 2 and live Git evidence.
 
 ## Current Merge Gate And Results
 
-`guru-merge-task-pr` owns one ignored-runtime semantic gate. Its public input
-binds canonical repository/PR identity, expected head SHA, reviewed base/head
-branches and the exact reviewed close-Issue numbers. The gate records those
-minimal authorities together with live facts, selected repository merge method,
-passed AI dimensions, selected route and the minimal executor marker. Live PR
-body/base/head values are evidence to compare, never the source of reviewed
-authority. Authorization remains dialogue-local.
+`guru-merge-task-pr` owns one ignored-runtime semantic gate. Active public input
+2.0 binds canonical repository/PR identity, expected head SHA, reviewed
+base/head branches, the exact reviewed close-Issue numbers, and one
+`reviewed_merge_message(primary_issue,summary,subject,body)`. Finalizer keeps its
+1.0 `ready_for_merge` output unchanged; the Merge semantic owner authors the
+message fields in the target-owned consumer input before the gate. Input/gate
+1.0 schemas and examples remain immutable compatibility inventory and are not
+selected by the current Interface or runtime.
 
-The deterministic executor uses repo-bound `gh pr merge` with
-`--match-head-commit <expected-head-sha>` and the uniquely selected policy
-method. It then rereads the PR and Issues. `merged` carries only PR URL/number
+The gate records those minimal authorities together with live facts, the
+pre-merge base head, reviewed-message digest, selected repository merge method,
+passed AI dimensions, selected route and the minimal executor marker. Subject
+must exactly equal `chore(merge): #<pr> 合并 #<primary-issue> <中文摘要>`; the
+subject, summary, and body must contain no Issue close-keyword reference at any
+position, and the body uses the fixed `合并/范围/审计/PR/Refs` contract. Live PR
+body/base/head values are evidence to compare, never the
+source of reviewed authority. Authorization remains dialogue-local.
+
+The deterministic executor writes the exact reviewed body to ignored
+`task-pr-merge/<identity>/merge-body.md`, uses repo-bound `gh pr merge` with
+`--match-head-commit <expected-head-sha> --merge --subject <subject>
+--body-file <path>`, and removes the body file after success, failure or
+terminal recovery. It then rereads the PR, merge commit, expected base ref and
+Issues. Post-merge verification requires merge SHA equality, parents exactly
+`[pre-merge-base-head, expected-head]`, exact subject/body bytes, correct PR and
+primary-Issue refs, remote base at the merge SHA, and the existing Issue closure
+timing contract. `merged` carries only PR URL/number
 and merged commit identity. `merge_blocked` carries a closed reason/remediation.
 `closure_mismatch` carries merged PR identity plus exact Issue mismatches. The
 executor never calls Issue-close APIs, updates/rebases the PR branch,

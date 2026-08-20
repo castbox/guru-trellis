@@ -109,12 +109,18 @@ markers, 87 exit markers and 54 unique workflow/stop targets.
 The Finalizer-to-Merge edge is target-authored. Finalizer returns canonical
 repository/PR identity, `expected_head_sha`, expected base/head branch identity,
 and the reviewed close-Issue number set; Merge supplies only its fixed
-`profile=ready_for_merge` and `mode=workflow`. These are the minimal facts the
+`profile=ready_for_merge`, `mode=workflow`, active `schema_version=2.0`, and one
+reviewed merge message containing primary Issue, concrete Chinese summary, and
+exact Chinese `chore(merge)` subject/body. These are the minimal facts the
 consumer cannot rederive from live PR state without turning that mutable state
 into authority. No transaction, review narrative, authorization, task runtime or
 local checkout identity crosses the edge. Merge standalone/re-entry accepts the
 same expected authority from its caller and rebuilds live evidence without an
 active task.
+
+The Merge 1.0 input/aggregate/gate schemas and examples remain immutable legacy
+assets. Interface 1.4 explicitly selects the active 2.0 profiles and gate; no
+legacy input is synthesized from live state or neighboring fields.
 
 The Merge AI owns readiness, close scope, policy/method sufficiency, the exact
 displayed action and the dialogue-local confirmation. Its deterministic

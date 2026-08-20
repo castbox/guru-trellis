@@ -544,6 +544,16 @@ def remote_head():
     rows = [line.split() for line in proc.stdout.splitlines() if line.strip()]
     return rows[0][0] if len(rows) == 1 else ""
 
+def remote_ref(ref):
+    proc = subprocess.run(
+        [real_git, "ls-remote", "--heads", remote, ref],
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    rows = [line.split() for line in proc.stdout.splitlines() if line.strip()]
+    return rows[0][0] if len(rows) == 1 else ""
+
 def load():
     return json.loads(store_path.read_text(encoding="utf-8")) if store_path.exists() else None
 
@@ -632,18 +642,39 @@ if args[:2] == ["api", "repos/microsoft/powertoys"]:
         "allow_rebase_merge": False,
     }))
     raise SystemExit(0)
+if len(args) >= 2 and args[0] == "api" and args[1].startswith("repos/microsoft/powertoys/git/ref/heads/"):
+    ref = args[1].split("/git/ref/heads/", 1)[1]
+    payload = load() or {}
+    current = (payload.get("mergeCommit") or {}).get("oid") if payload.get("state") == "MERGED" else remote_ref(ref)
+    print(json.dumps({"ref": f"refs/heads/{ref}", "object": {"sha": current}}))
+    raise SystemExit(0)
+if len(args) >= 2 and args[0] == "api" and args[1].startswith("repos/microsoft/powertoys/git/commits/"):
+    payload = load() or {}
+    commit = payload.get("commit")
+    if not commit or args[1].rsplit("/", 1)[1] != commit.get("sha"):
+        raise SystemExit(2)
+    print(json.dumps(commit, ensure_ascii=False))
+    raise SystemExit(0)
 if len(args) >= 3 and args[:2] == ["pr", "merge"]:
     mutate("pr_merge")
     payload = load()
     if not payload or int(args[2]) != number:
         raise SystemExit(2)
     expected_head = value("--match-head-commit")
-    if expected_head != remote_head() or "--merge" not in args:
+    subject = value("--subject")
+    body = Path(value("--body-file")).read_text(encoding="utf-8")
+    if expected_head != remote_head() or "--merge" not in args or not subject.startswith("chore(merge): #") or not body:
         raise SystemExit(2)
+    merge_sha = "2" * 40
     payload.update({
         "state": "MERGED",
         "mergedAt": "2026-08-12T10:00:00Z",
-        "mergeCommit": {"oid": expected_head},
+        "mergeCommit": {"oid": merge_sha},
+        "commit": {
+            "sha": merge_sha,
+            "message": subject + "\\n\\n" + body,
+            "parents": [{"sha": remote_ref("main")}, {"sha": expected_head}],
+        },
     })
     save(payload)
     raise SystemExit(0)
@@ -1083,10 +1114,25 @@ def run_closeout(
     merge_input.write_text(
         json.dumps(
             {
-                "schema_version": "1.0",
+                "schema_version": "2.0",
                 "profile": "ready_for_merge",
                 "mode": "workflow",
                 **{key: value for key, value in ready_payload.items() if key != "exit_id"},
+                "reviewed_merge_message": {
+                    "primary_issue": issue,
+                    "summary": "验证安装态 Merge Skill 中文提交消息承接",
+                    "subject": f"chore(merge): #{issue} 合并 #{issue} 验证安装态 Merge Skill 中文提交消息承接",
+                    "body": (
+                        "合并：\n"
+                        f"合入 `{branch}` 到 `main`，保留 PR 内部提交历史。\n\n"
+                        "范围：\n"
+                        f"本次 PR 完成 #{issue}：验证安装态 Merge Skill 中文提交消息承接。\n\n"
+                        "审计：\n"
+                        "Trellis task archive、review gate、finish-summary 和 readiness 提交保留在 PR 分支历史中，用于审计任务过程。\n\n"
+                        f"PR: #{issue}\n"
+                        f"Refs #{issue}"
+                    ),
+                },
             },
             ensure_ascii=False,
             indent=2,
@@ -1189,7 +1235,7 @@ def run_closeout(
         merged_payload.get("exit_id") != expected_merge_exit
         or merged_payload.get("repo_ref") != REPO
         or merged_payload.get("pr_number") != issue
-        or merged_payload.get("merge_commit_sha") != local_head
+        or merged_payload.get("merge_commit_sha") != "2" * 40
     ):
         raise RuntimeError("installed Merge public wrapper returned an invalid merged DTO")
     if merge_gate.exists():

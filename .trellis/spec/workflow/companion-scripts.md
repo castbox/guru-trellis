@@ -59,8 +59,11 @@ consumption.
 `execute-task-pr-merge` are the deterministic commands for
 `guru-merge-task-pr`. All GitHub calls are authenticated, repo-bound `gh`/`gh
 api` calls. Preview is read-only. Record/check validate the already performed
-AI gate. Execute uses the unique repository merge method and
-`--match-head-commit`, then performs only read-only PR/Issue post-merge checks.
+AI gate, exact reviewed-message identity and pre-merge base head. Execute uses
+the merge-commit method, `--match-head-commit`, `--subject`, and an ignored
+short-lived `--body-file`, then performs only read-only PR/commit/base-ref/Issue
+post-merge checks. Success, failure and terminal recovery remove the body file;
+unknown residue fails closed.
 No command invokes `gh issue close`, an Issue PATCH mutation, `guru-sync-base`,
 PR update/rebase, local base synchronization, or cleanup.
 

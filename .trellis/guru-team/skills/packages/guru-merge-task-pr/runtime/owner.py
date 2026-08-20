@@ -65,8 +65,13 @@ DEFAULTS: dict[str, Any] = {
 }
 
 TASK_PR_MERGE_GATE_ARTIFACT = "task-pr-merge-gate.json"
+TASK_PR_MERGE_BODY_ARTIFACT = "merge-body.md"
 
-PR_CLOSE_KEYWORDS = ["Closes", "Fixes", "Resolves", "Close", "Fix", "Resolve"]
+PR_CLOSE_KEYWORDS = [
+    "Close", "Closes", "Closed",
+    "Fix", "Fixes", "Fixed",
+    "Resolve", "Resolves", "Resolved",
+]
 
 class WorkflowError(RuntimeError):
     def __init__(self, message: str, exit_code: int = 1, payload: dict[str, Any] | None = None) -> None:
@@ -479,7 +484,7 @@ def canonical_pull_request_url(repo: str, number: int, url: Any) -> str:
         )
     return value
 
-TASK_PR_MERGE_SCHEMA_VERSION = "1.0"
+TASK_PR_MERGE_SCHEMA_VERSION = "2.0"
 
 TASK_PR_MERGE_DIMENSIONS = (
     "pr_ready",
@@ -492,8 +497,6 @@ TASK_PR_MERGE_DIMENSIONS = (
 
 TASK_PR_MERGE_METHOD_FLAGS = {
     "merge": "--merge",
-    "squash": "--squash",
-    "rebase": "--rebase",
 }
 
 TASK_PR_MERGE_STATE_STATUSES = frozenset({
@@ -518,6 +521,76 @@ def task_pr_merge_package_root(root: Path) -> Path:
             return candidate
     raise WorkflowError("Task PR merge package root is unavailable.", exit_code=2)
 
+def build_reviewed_merge_message(
+    *,
+    pull_request: int | str,
+    primary_issue: int,
+    summary: str,
+    head_branch: str,
+    base_branch: str,
+) -> dict[str, Any]:
+    subject = f"chore(merge): #{pull_request} 合并 #{primary_issue} {summary}"
+    body = (
+        "合并：\n"
+        f"合入 `{head_branch}` 到 `{base_branch}`，保留 PR 内部提交历史。\n\n"
+        "范围：\n"
+        f"本次 PR 完成 #{primary_issue}：{summary}。\n\n"
+        "审计：\n"
+        "Trellis task archive、review gate、finish-summary 和 readiness 提交保留在 PR 分支历史中，用于审计任务过程。\n\n"
+        f"PR: #{pull_request}\n"
+        f"Refs #{primary_issue}"
+    )
+    return {
+        "primary_issue": primary_issue,
+        "summary": summary,
+        "subject": subject,
+        "body": body,
+    }
+
+def validate_reviewed_merge_message(
+    value: Any,
+    *,
+    pull_request: int | str,
+    head_branch: str,
+    base_branch: str,
+) -> dict[str, Any]:
+    if not isinstance(value, dict) or set(value) != {
+        "primary_issue", "summary", "subject", "body"
+    }:
+        raise WorkflowError("Reviewed merge message failed its closed contract.", exit_code=2)
+    primary_issue = value.get("primary_issue")
+    summary = value.get("summary")
+    subject = value.get("subject")
+    body = value.get("body")
+    if (
+        not is_strict_int(primary_issue)
+        or primary_issue < 1
+        or not isinstance(summary, str)
+        or summary != summary.strip()
+        or not summary
+        or "\n" in summary
+        or re.search(r"[\u3400-\u9fff]", summary) is None
+        or summary.casefold() in {"todo", "tbd", "placeholder", "待补充", "占位"}
+        or not isinstance(subject, str)
+        or not isinstance(body, str)
+    ):
+        raise WorkflowError("Reviewed merge message content is invalid.", exit_code=2)
+    expected = build_reviewed_merge_message(
+        pull_request=pull_request,
+        primary_issue=primary_issue,
+        summary=summary,
+        head_branch=head_branch,
+        base_branch=base_branch,
+    )
+    if value != expected:
+        raise WorkflowError(
+            "Reviewed merge subject/body do not exactly match the Chinese chore(merge) contract.",
+            exit_code=2,
+        )
+    if task_pr_merge_contains_close_keyword(subject + "\n" + body):
+        raise WorkflowError("Reviewed merge message must not contain close keywords.", exit_code=2)
+    return expected
+
 def task_pr_merge_json_input(root: Path, value: str | None) -> dict[str, Any]:
     if not value:
         raise WorkflowError("Task PR merge requires --input.", exit_code=2)
@@ -535,6 +608,7 @@ def task_pr_merge_json_input(root: Path, value: str | None) -> dict[str, Any]:
     expected_base = payload.get("expected_base_branch")
     expected_branch = payload.get("expected_head_branch")
     expected_close_issues = payload.get("expected_close_issues")
+    reviewed_merge_message = payload.get("reviewed_merge_message")
     if (
         payload.get("schema_version") != TASK_PR_MERGE_SCHEMA_VERSION
         or payload.get("profile") not in {"ready_for_merge", "standalone_merge"}
@@ -558,6 +632,20 @@ def task_pr_merge_json_input(root: Path, value: str | None) -> dict[str, Any]:
     ):
         raise WorkflowError("Task PR merge input failed its current closed contract.", exit_code=2)
     expected_url = canonical_pull_request_url(repo, number, payload.get("pr_url"))
+    reviewed_merge_message = validate_reviewed_merge_message(
+        reviewed_merge_message,
+        pull_request=number,
+        head_branch=expected_branch,
+        base_branch=expected_base,
+    )
+    if (
+        expected_close_issues
+        and reviewed_merge_message["primary_issue"] not in expected_close_issues
+    ):
+        raise WorkflowError(
+            "Reviewed merge primary Issue is outside the reviewed close scope.",
+            exit_code=2,
+        )
     return {
         "schema_version": TASK_PR_MERGE_SCHEMA_VERSION,
         "profile": payload["profile"],
@@ -569,21 +657,40 @@ def task_pr_merge_json_input(root: Path, value: str | None) -> dict[str, Any]:
         "expected_base_branch": expected_base,
         "expected_head_branch": expected_branch,
         "expected_close_issues": expected_close_issues,
+        "reviewed_merge_message": reviewed_merge_message,
     }
 
 def task_pr_merge_close_issues(body: Any) -> list[int]:
     if not isinstance(body, str):
         raise WorkflowError("Task PR merge requires a complete PR body.", exit_code=2)
     keywords = "|".join(re.escape(item) for item in PR_CLOSE_KEYWORDS)
-    values = {
-        int(match.group(1))
-        for match in re.finditer(
-            rf"(?im)^[ \t]*(?:[-+*][ \t]+)?(?:{keywords})[ \t]+"
-            rf"#([1-9][0-9]*)[ \t]*[.。]?[ \t]*$",
+    matches = list(
+        re.finditer(
+            rf"(?im)^[ \t]*(?:[-+*][ \t]+)?(?:{keywords})[ \t]*:?[ \t]+"
+            rf"(?:(?P<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+))?"
+            rf"#(?P<issue>[1-9][0-9]*)[ \t]*[.。]?[ \t]*$",
             body,
         )
-    }
+    )
+    if any(match.group("repo") for match in matches):
+        raise WorkflowError(
+            "Task PR close scope must not contain cross-repository Issue references.",
+            exit_code=2,
+        )
+    values = {int(match.group("issue")) for match in matches}
     return sorted(values)
+
+def task_pr_merge_contains_close_keyword(value: str) -> bool:
+    keywords = "|".join(re.escape(item) for item in PR_CLOSE_KEYWORDS)
+    issue_reference = (
+        r"(?:#[1-9][0-9]*|"
+        r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#[1-9][0-9]*)"
+    )
+    return re.search(
+        rf"(?i)(?:^|[^A-Za-z])(?:{keywords})[ \t]*:?[ \t]+"
+        rf"{issue_reference}\b",
+        value,
+    ) is not None
 
 def task_pr_merge_check_rows(payload: Any) -> list[dict[str, Any]]:
     if not isinstance(payload, list):
@@ -654,6 +761,27 @@ def task_pr_merge_live_facts(root: Path, public_input: dict[str, Any]) -> dict[s
     ]
     if not methods:
         raise WorkflowError("Repository policy exposes no supported merge method.", exit_code=2)
+    base_ref = gh_json(
+        [
+            "api",
+            f"repos/{repo}/git/ref/heads/{quote(public_input['expected_base_branch'], safe='')}",
+        ],
+        cwd=root,
+        repo=repo,
+        required_fields=("ref", "object"),
+        operation="merge_base_ref",
+    )
+    base_object = base_ref.get("object") if isinstance(base_ref, dict) else None
+    base_head_sha = base_object.get("sha") if isinstance(base_object, dict) else None
+    if (
+        not isinstance(base_ref, dict)
+        or base_ref.get("ref") != f"refs/heads/{public_input['expected_base_branch']}"
+        or not isinstance(base_head_sha, str)
+        or re.fullmatch(r"[0-9a-f]{40}", base_head_sha) is None
+    ):
+        raise github_response_incomplete(
+            operation="merge_base_ref", repo=repo, detail="Expected base ref identity is incomplete."
+        )
     close_issues = task_pr_merge_close_issues(pr.get("body"))
     issues: list[dict[str, Any]] = []
     for issue_number in public_input["expected_close_issues"]:
@@ -674,6 +802,40 @@ def task_pr_merge_live_facts(root: Path, public_input: dict[str, Any]) -> dict[s
             "closed_at": issue.get("closedAt"),
             "url": issue.get("url"),
         })
+    commit: dict[str, Any] | None = None
+    merge_commit = pr.get("mergeCommit")
+    merge_oid = merge_commit.get("oid") if isinstance(merge_commit, dict) else None
+    if str(pr.get("state") or "").upper() == "MERGED":
+        if not isinstance(merge_oid, str) or re.fullmatch(r"[0-9a-f]{40}", merge_oid) is None:
+            raise github_response_incomplete(
+                operation="merge_commit", repo=repo, detail="Merged PR lacks a complete merge commit identity."
+            )
+        commit_payload = gh_json(
+            ["api", f"repos/{repo}/git/commits/{merge_oid}"],
+            cwd=root,
+            repo=repo,
+            required_fields=("sha", "message", "parents"),
+            operation="merge_commit",
+        )
+        parents_payload = commit_payload.get("parents") if isinstance(commit_payload, dict) else None
+        parents = [row.get("sha") for row in parents_payload] if isinstance(parents_payload, list) else []
+        message = commit_payload.get("message") if isinstance(commit_payload, dict) else None
+        if (
+            commit_payload.get("sha") != merge_oid
+            or not isinstance(message, str)
+            or len(parents) != 2
+            or any(not isinstance(parent, str) or re.fullmatch(r"[0-9a-f]{40}", parent) is None for parent in parents)
+        ):
+            raise github_response_incomplete(
+                operation="merge_commit", repo=repo, detail="Merge commit message or parent identity is incomplete."
+            )
+        subject, separator, body = message.partition("\n\n")
+        commit = {
+            "sha": merge_oid,
+            "subject": subject,
+            "body": body if separator else "",
+            "parents": parents,
+        }
     facts = {
         "schema_version": TASK_PR_MERGE_SCHEMA_VERSION,
         "skill_id": "guru-merge-task-pr",
@@ -694,6 +856,11 @@ def task_pr_merge_live_facts(root: Path, public_input: dict[str, Any]) -> dict[s
             "merge_commit": pr.get("mergeCommit"),
         },
         "repository_policy": {"allowed_methods": methods},
+        "base_ref": {
+            "name": public_input["expected_base_branch"],
+            "head_sha": base_head_sha,
+        },
+        "merge_commit": commit,
         "close_issues": close_issues,
         "issues": issues,
     }
@@ -705,6 +872,37 @@ def task_pr_merge_gate_path(root: Path, public_input: dict[str, Any]) -> Path:
         f"{public_input['repo_ref']}#{public_input['pr_number']}".encode("utf-8")
     ).hexdigest()[:20]
     return runtime_root(root, load_config(root)) / "task-pr-merge" / key / TASK_PR_MERGE_GATE_ARTIFACT
+
+def task_pr_merge_body_path(root: Path, public_input: dict[str, Any]) -> Path:
+    return task_pr_merge_gate_path(root, public_input).with_name(TASK_PR_MERGE_BODY_ARTIFACT)
+
+def task_pr_merge_cleanup_body_file(root: Path, public_input: dict[str, Any]) -> None:
+    path = task_pr_merge_body_path(root, public_input)
+    if path.is_symlink():
+        raise WorkflowError("Task PR merge body residue is a symlink.", exit_code=2)
+    if not path.exists():
+        return
+    if not path.is_file():
+        raise WorkflowError("Task PR merge body residue is not a regular file.", exit_code=2)
+    expected = public_input["reviewed_merge_message"]["body"].encode("utf-8")
+    if path.read_bytes() != expected:
+        raise WorkflowError("Task PR merge body residue does not match the reviewed bytes.", exit_code=2)
+    path.unlink()
+
+def task_pr_merge_materialize_body_file(root: Path, public_input: dict[str, Any]) -> Path:
+    path = task_pr_merge_body_path(root, public_input)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.parent.is_symlink() or path.exists() or path.is_symlink():
+        raise WorkflowError("Task PR merge body path is not clean and private.", exit_code=2)
+    try:
+        with path.open("x", encoding="utf-8", newline="") as handle:
+            handle.write(public_input["reviewed_merge_message"]["body"])
+        path.chmod(stat.S_IRUSR | stat.S_IWUSR)
+    except BaseException:
+        if path.is_file() and not path.is_symlink():
+            path.unlink(missing_ok=True)
+        raise
+    return path
 
 def task_pr_merge_preflight_errors(
     public_input: dict[str, Any], facts: dict[str, Any]
@@ -725,6 +923,8 @@ def task_pr_merge_preflight_errors(
         errors.append("pull request is not currently mergeable")
     if facts["close_issues"] != public_input["expected_close_issues"]:
         errors.append("PR body close keywords differ from reviewed close scope")
+    if facts["base_ref"]["head_sha"] == public_input["expected_head_sha"]:
+        errors.append("expected base head already equals the PR head before merge")
     nonopen = [str(row["number"]) for row in facts["issues"] if row["state"] != "OPEN"]
     if nonopen:
         errors.append("close issues are not Open before merge: " + ", ".join(nonopen))
@@ -783,7 +983,12 @@ def cmd_record_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
     passed = all(row["status"] == "passed" for row in review["dimensions"])
     if route["typed_exit"] == "merged":
         method = route.get("merge_method")
-        if blockers or not passed or method not in facts["repository_policy"]["allowed_methods"]:
+        if (
+            blockers
+            or not passed
+            or method not in TASK_PR_MERGE_METHOD_FLAGS
+            or method not in facts["repository_policy"]["allowed_methods"]
+        ):
             raise WorkflowError("Task PR merge cannot record a merge route against blocked facts.", exit_code=2)
         normalized_route = {"typed_exit": "merged", "merge_method": method}
     else:
@@ -803,6 +1008,8 @@ def cmd_record_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
         "skill_id": "guru-merge-task-pr",
         "input": public_input,
         "facts_sha256": facts["facts_sha256"],
+        "pre_merge_base_head": facts["base_ref"]["head_sha"],
+        "reviewed_message_sha256": canonical_json_sha256(public_input["reviewed_merge_message"]),
         "semantic_review": review,
         "route": normalized_route,
     }
@@ -823,6 +1030,9 @@ def task_pr_merge_gate(root: Path, public_input: dict[str, Any], value: str | No
         or gate.get("schema_version") != TASK_PR_MERGE_SCHEMA_VERSION
         or gate.get("skill_id") != "guru-merge-task-pr"
         or gate.get("input") != public_input
+        or re.fullmatch(r"[0-9a-f]{40}", str(gate.get("pre_merge_base_head") or "")) is None
+        or gate.get("reviewed_message_sha256")
+        != canonical_json_sha256(public_input["reviewed_merge_message"])
     ):
         raise WorkflowError("Task PR merge gate failed its current contract.", exit_code=2)
     task_pr_merge_semantic_review(gate.get("semantic_review"))
@@ -835,10 +1045,18 @@ def check_task_pr_merge_result(
     route = gate.get("route") if isinstance(gate.get("route"), dict) else {}
     terminal = gate.get("terminal_output")
     if terminal is not None:
-        output = task_pr_merge_revalidate_terminal_output(public_input, facts, terminal)
+        output = task_pr_merge_revalidate_terminal_output(public_input, facts, gate, terminal)
+        return {"status": "passed", "typed_exit": output["exit_id"], "output": output}
+    if facts["pr"]["state"] == "MERGED" and route.get("typed_exit") == "merged":
+        output = task_pr_merge_terminal_output(public_input, facts, gate)
         return {"status": "passed", "typed_exit": output["exit_id"], "output": output}
     if gate.get("facts_sha256") != facts["facts_sha256"]:
         raise WorkflowError("Task PR merge gate is stale against live GitHub facts.", exit_code=2)
+    if gate.get("pre_merge_base_head") != facts.get("base_ref", {}).get("head_sha"):
+        raise WorkflowError(
+            "Task PR merge gate pre-merge base head is stale against live GitHub facts.",
+            exit_code=2,
+        )
     blockers = task_pr_merge_preflight_errors(public_input, facts)
     if route.get("typed_exit") == "merge_blocked":
         return {
@@ -851,12 +1069,16 @@ def check_task_pr_merge_result(
             },
         }
     method = route.get("merge_method")
-    if blockers or method not in facts["repository_policy"]["allowed_methods"]:
+    if (
+        blockers
+        or method not in TASK_PR_MERGE_METHOD_FLAGS
+        or method not in facts["repository_policy"]["allowed_methods"]
+    ):
         raise WorkflowError("Task PR merge gate no longer permits execution.", exit_code=2, payload={"blockers": blockers})
     return {"status": "passed", "typed_exit": "ready_to_merge", "merge_method": method, "facts": facts}
 
 def task_pr_merge_terminal_output(
-    public_input: dict[str, Any], facts: dict[str, Any]
+    public_input: dict[str, Any], facts: dict[str, Any], gate: dict[str, Any]
 ) -> dict[str, Any]:
     pr = facts["pr"]
     if (
@@ -877,6 +1099,26 @@ def task_pr_merge_terminal_output(
     merge_oid = merge_commit.get("oid") if isinstance(merge_commit, dict) else None
     if not isinstance(merge_oid, str) or re.fullmatch(r"[0-9a-f]{40}", merge_oid) is None:
         raise WorkflowError("Merged PR lacks a complete merge commit identity.", exit_code=2)
+    commit = facts.get("merge_commit")
+    reviewed = validate_reviewed_merge_message(
+        public_input.get("reviewed_merge_message"),
+        pull_request=public_input["pr_number"],
+        head_branch=public_input["expected_head_branch"],
+        base_branch=public_input["expected_base_branch"],
+    )
+    if (
+        not isinstance(commit, dict)
+        or commit.get("sha") != merge_oid
+        or commit.get("parents")
+        != [gate.get("pre_merge_base_head"), public_input["expected_head_sha"]]
+        or commit.get("subject") != reviewed["subject"]
+        or commit.get("body") != reviewed["body"]
+        or facts.get("base_ref", {}).get("head_sha") != merge_oid
+    ):
+        raise WorkflowError(
+            "Task PR merge commit message, parents, or remote base identity is inconsistent.",
+            exit_code=2,
+        )
     merged_at = parse_iso_datetime(pr["merged_at"], "pull request merged_at")
     mismatches: list[dict[str, Any]] = []
     for issue in facts["issues"]:
@@ -902,11 +1144,11 @@ def task_pr_merge_terminal_output(
     return output
 
 def task_pr_merge_revalidate_terminal_output(
-    public_input: dict[str, Any], facts: dict[str, Any], terminal: Any
+    public_input: dict[str, Any], facts: dict[str, Any], gate: dict[str, Any], terminal: Any
 ) -> dict[str, Any]:
     if not isinstance(terminal, dict) or terminal.get("exit_id") not in {"merged", "closure_mismatch"}:
         raise WorkflowError("Task PR merge terminal output is invalid.", exit_code=2)
-    current = task_pr_merge_terminal_output(public_input, facts)
+    current = task_pr_merge_terminal_output(public_input, facts, gate)
     if terminal != current:
         raise WorkflowError(
             "Task PR merge terminal output is stale against live merged facts.",
@@ -924,8 +1166,12 @@ def cmd_execute_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or "."))
     public_input = task_pr_merge_json_input(root, args.input)
     gate_path, gate = task_pr_merge_gate(root, public_input, args.gate)
+    task_pr_merge_cleanup_body_file(root, public_input)
     checked = check_task_pr_merge_result(root, public_input, gate)
     if checked.get("typed_exit") in {"merged", "closure_mismatch"}:
+        if gate.get("terminal_output") is None:
+            gate["terminal_output"] = checked["output"]
+            write_json(gate_path, gate)
         return {
             "status": "recovered",
             "typed_exit": checked["typed_exit"],
@@ -935,19 +1181,27 @@ def cmd_execute_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
         raise WorkflowError("Task PR merge executor requires one checked merge route.", exit_code=2)
     repo = public_input["repo_ref"]
     method = checked["merge_method"]
+    if method != "merge":
+        raise WorkflowError("Task PR merge executor requires the merge commit method.", exit_code=2)
     require_gh_auth(root)
+    body_path = task_pr_merge_materialize_body_file(root, public_input)
     command = [
         "gh", "pr", "merge", str(public_input["pr_number"]), "--repo", repo,
         "--match-head-commit", public_input["expected_head_sha"],
-        TASK_PR_MERGE_METHOD_FLAGS[method],
+        "--merge",
+        "--subject", public_input["reviewed_merge_message"]["subject"],
+        "--body-file", str(body_path),
     ]
     if github_repo_binding(command[1:], repo) != repo:
         raise WorkflowError("Task PR merge mutation lacks an exact repository binding.", exit_code=2)
-    proc = run(command, cwd=root, check=False)
-    if proc.returncode != 0:
-        raise github_error_from_process(proc, operation="expected_head_merge", repo=repo)
-    post = task_pr_merge_live_facts(root, public_input)
-    output = task_pr_merge_terminal_output(public_input, post)
+    try:
+        proc = run(command, cwd=root, check=False)
+        if proc.returncode != 0:
+            raise github_error_from_process(proc, operation="expected_head_merge", repo=repo)
+        post = task_pr_merge_live_facts(root, public_input)
+        output = task_pr_merge_terminal_output(public_input, post, gate)
+    finally:
+        task_pr_merge_cleanup_body_file(root, public_input)
     gate["terminal_output"] = output
     write_json(gate_path, gate)
     return {"status": "executed", "typed_exit": output["exit_id"], "output": output}
@@ -956,6 +1210,7 @@ def cmd_invoke_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or "."))
     public_input = task_pr_merge_json_input(root, args.input)
     gate_path, gate = task_pr_merge_gate(root, public_input, args.gate)
+    task_pr_merge_cleanup_body_file(root, public_input)
     checked = check_task_pr_merge_result(root, public_input, gate)
     if checked.get("typed_exit") == "ready_to_merge":
         raise WorkflowError("Task PR merge has not executed its checked expected-head mutation.", exit_code=2)

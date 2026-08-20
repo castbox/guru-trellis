@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-merge-task-pr-input-ready-for-merge-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "profile", "mode", "repo_ref", "pr_number", "pr_url", "expected_head_sha", "expected_base_branch", "expected_head_branch", "expected_close_issues", "reviewed_merge_message"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "profile": {"const": "ready_for_merge"},
+    "mode": {"const": "workflow"},
+    "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+    "pr_number": {"type": "integer", "minimum": 1},
+    "pr_url": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/pull/[1-9][0-9]*$"},
+    "expected_head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "expected_base_branch": {"type": "string", "minLength": 1},
+    "expected_head_branch": {"type": "string", "minLength": 1},
+    "expected_close_issues": {"type": "array", "uniqueItems": true, "items": {"type": "integer", "minimum": 1}},
+    "reviewed_merge_message": {"$ref": "#/$defs/reviewed_merge_message"}
+  },
+  "$defs": {
+    "reviewed_merge_message": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary_issue", "summary", "subject", "body"],
+      "properties": {
+        "primary_issue": {"type": "integer", "minimum": 1},
+        "summary": {"type": "string", "minLength": 1, "pattern": "[\\u3400-\\u9fff]"},
+        "subject": {"type": "string", "minLength": 1},
+        "body": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

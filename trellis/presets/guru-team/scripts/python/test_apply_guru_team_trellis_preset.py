@@ -54,6 +54,22 @@ def tearDownModule() -> None:
         patcher.stop()
 
 
+class InstalledCloseoutFixtureTest(unittest.TestCase):
+    def test_generated_fake_gh_is_valid_python(self) -> None:
+        module_path = Path(__file__).with_name("verify_installed_closeout.py")
+        spec = importlib.util.spec_from_file_location(
+            "verify_installed_closeout_fixture", module_path
+        )
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_bin = Path(tmp) / "bin"
+            module.install_fake_commands(fake_bin)
+            fake_gh = fake_bin / "gh"
+            compile(fake_gh.read_text(encoding="utf-8"), str(fake_gh), "exec")
+
+
 class ManagedPythonBootstrapBoundaryTest(unittest.TestCase):
     def test_helper_returns_success_payload(self) -> None:
         completed = subprocess.CompletedProcess(
@@ -1541,6 +1557,49 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                         (canonical_root / legacy_relative).read_bytes(),
                     )
 
+    def test_merge_private_gate_generations_stay_out_of_every_platform_projection(self) -> None:
+        platforms, all_platforms = preset.selected_platforms(None, True)
+        payload = self.install(platforms, all_platforms=all_platforms)
+
+        self.assertEqual(payload["skill_packages"]["status"], "ok")
+        package_relative = Path("guru-merge-task-pr")
+        canonical_root = (
+            self.guru_root / "trellis/skills/guru-team/packages" / package_relative
+        )
+        installed_root = (
+            self.repo / ".trellis/guru-team/skills/packages" / package_relative
+        )
+        private_paths = (
+            Path("schemas/task-pr-merge-gate-2.0.schema.json"),
+            Path("schemas/task-pr-merge-gate.schema.json"),
+            Path("examples/task-pr-merge-gate-2.0.json"),
+            Path("examples/task-pr-merge-gate.json"),
+        )
+        platform_roots = (
+            self.repo / ".agents/skills" / package_relative,
+            self.repo / ".codex/skills" / package_relative,
+            self.repo / ".claude/skills" / package_relative,
+            self.repo / ".cursor/skills" / package_relative,
+        )
+        for relative in private_paths:
+            with self.subTest(relative=relative, location="canonical-installed"):
+                self.assertTrue((canonical_root / relative).is_file())
+                self.assertEqual(
+                    (installed_root / relative).read_bytes(),
+                    (canonical_root / relative).read_bytes(),
+                )
+            for platform_root in platform_roots:
+                with self.subTest(relative=relative, platform_root=platform_root):
+                    self.assertFalse((platform_root / relative).exists())
+
+        legacy_public_schema = Path("schemas/public-ready-for-merge-input.schema.json")
+        for platform_root in platform_roots:
+            with self.subTest(platform_root=platform_root, asset="legacy-public"):
+                self.assertEqual(
+                    (platform_root / legacy_public_schema).read_bytes(),
+                    (canonical_root / legacy_public_schema).read_bytes(),
+                )
+
     def test_all_platforms_to_subset_removes_clean_managed_overlay(self) -> None:
         platforms, all_platforms = preset.selected_platforms(None, True)
         self.install(platforms, all_platforms=all_platforms)
@@ -1812,7 +1871,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
         self.assertIn('payload["after_archive_hook_preflight"] is True', verifier)
         self.assertIn('payload["merge_exit"] == "merged"', verifier)
-        self.assertIn('payload["pr_head"] == payload["merge_commit"]', verifier)
+        self.assertIn(
+            'payload["local_head"] == payload["remote_head"] == payload["pr_head"]',
+            verifier,
+        )
+        self.assertIn('payload["merge_commit"] == "2" * 40', verifier)
+        self.assertNotIn('payload["pr_head"] == payload["merge_commit"]', verifier)
         self.assertIn('payload["verifier_artifacts"] == 0', verifier)
         self.assertIn("verify_installed_task_workspace.py", verifier)
         self.assertIn("installed-task-workspace-initial", verifier)
@@ -2504,6 +2568,27 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "guru-stage0-clarify-requirements-input-initial-change-request-1.0",
             public_input_schema_ids,
         )
+        self.assertIn(
+            "guru-merge-task-pr-input-ready-for-merge-2.0",
+            public_input_schema_ids,
+        )
+        self.assertIn(
+            "guru-merge-task-pr-input-standalone-merge-2.0",
+            public_input_schema_ids,
+        )
+        self.assertNotIn(
+            "guru-merge-task-pr-input-ready-for-merge-1.0",
+            public_input_schema_ids,
+        )
+        self.assertNotIn(
+            "guru-merge-task-pr-input-standalone-merge-1.0",
+            public_input_schema_ids,
+        )
+        private_artifact_schema_ids = public_api["skill_contracts"][
+            "private_artifact_schema_ids"
+        ]
+        self.assertIn("guru-task-pr-merge-gate-2.0", private_artifact_schema_ids)
+        self.assertNotIn("guru-task-pr-merge-gate-1.0", private_artifact_schema_ids)
         typed_output_schema_ids = public_api["skill_contracts"]["typed_output_schema_ids"]
         self.assertIn("guru-normal-scenario-output-classified-1.0", typed_output_schema_ids)
         self.assertIn(

@@ -1,0 +1,44 @@
+{
+  "close_issues": [
+    {
+      "number": 285,
+      "reason": "本任务完整实现并验证 #285 的 guru-merge-task-pr reviewed 中文 merge subject/body 合同。",
+      "title": "修复 guru-merge-task-pr 丢失中文 chore(merge) subject/body 合同",
+      "url": "https://github.com/castbox/guru-trellis/issues/285"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 285,
+    "reason": "本任务完整实现并验证 #285 的 guru-merge-task-pr reviewed 中文 merge subject/body 合同。",
+    "title": "修复 guru-merge-task-pr 丢失中文 chore(merge) subject/body 合同",
+    "url": "https://github.com/castbox/guru-trellis/issues/285"
+  },
+  "related_issues": [
+    {
+      "number": 92,
+      "reason": "中文 Conventional Commits merge subject/body 的既有质量合同来源；本任务只恢复当前 Skill 承接。",
+      "title": "强制 guru-team workflow 使用中文 Conventional Commits 提交规范",
+      "url": "https://github.com/castbox/guru-trellis/issues/92"
+    },
+    {
+      "number": 106,
+      "reason": "延后的服务端 enforcement、GitHub App 与 ruleset 范围；本任务不激活或修改。",
+      "title": "延后实施：用 Guru Team Merge Executor 与 GitHub ruleset 强制 #92 合并提交合同",
+      "url": "https://github.com/castbox/guru-trellis/issues/106"
+    },
+    {
+      "number": 223,
+      "reason": "CI、Ready 时序与自动合并 authority 范围；本任务不实现或关闭。",
+      "title": "配置驱动的 Draft CI 门禁、Ready 时序与 Agent 自动合并",
+      "url": "https://github.com/castbox/guru-trellis/issues/223"
+    },
+    {
+      "number": 260,
+      "reason": "PR #284 提供当前正常 merge gate 的真实复现与一次性 workaround 证据；本任务不重开。",
+      "title": "在当前双 SSOT 基线上升级并验证 Trellis v0.6.15：业务仓库安装态与并行兼容",
+      "url": "https://github.com/castbox/guru-trellis/issues/260"
+    }
+  ],
+  "schema_version": "2.0"
+}

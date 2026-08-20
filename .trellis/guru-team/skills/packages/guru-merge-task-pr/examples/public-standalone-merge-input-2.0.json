@@ -1,0 +1,18 @@
+{
+  "schema_version": "2.0",
+  "profile": "standalone_merge",
+  "mode": "standalone",
+  "repo_ref": "castbox/guru-trellis",
+  "pr_number": 176,
+  "pr_url": "https://github.com/castbox/guru-trellis/pull/176",
+  "expected_head_sha": "1111111111111111111111111111111111111111",
+  "expected_base_branch": "main",
+  "expected_head_branch": "codex/180-eval",
+  "expected_close_issues": [174],
+  "reviewed_merge_message": {
+    "primary_issue": 174,
+    "summary": "修复 Merge Skill 中文提交消息承接",
+    "subject": "chore(merge): #176 合并 #174 修复 Merge Skill 中文提交消息承接",
+    "body": "合并：\n合入 `codex/180-eval` 到 `main`，保留 PR 内部提交历史。\n\n范围：\n本次 PR 完成 #174：修复 Merge Skill 中文提交消息承接。\n\n审计：\nTrellis task archive、review gate、finish-summary 和 readiness 提交保留在 PR 分支历史中，用于审计任务过程。\n\nPR: #176\nRefs #174"
+  }
+}
