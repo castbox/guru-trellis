@@ -2,13 +2,13 @@
 
 ## Current identity
 
-- version：`current-main-0.6.5-guru.36`
+- version：`current-main-0.6.5-guru.37`
 - status：`active`
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
 - Architecture inheritance：`docs/architecture/README.md`，同版本、`active`
-- source binding：main `c2b1784654a95b999bbff71daf1393c22aa01048` + #275 committed task-branch delta（精确 revision 为当前 Git HEAD）
+- source binding：main `5c059f4943edad7dfe25182a78af94759d41f9a1` + #260 compatibility task delta（精确 revision 为当前 Git HEAD）
 
 ## 读取与更新
 
@@ -18,4 +18,4 @@
 
 ## Freshness
 
-每次 gate 必须重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 和 source binding。locator 不存在、版本不一致、traceability 断裂或 projection 落后时，不得沿用本页，进入 owner `repair`。Released `v0.6.5-guru.9` 与 future Trellis `0.6.15` 不得覆盖 current main identity。
+每次 gate 必须重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 和 source binding。locator 不存在、版本不一致、traceability 断裂或 projection 落后时，不得沿用本页，进入 owner `repair`。Released `v0.6.5-guru.10` 与 future `.37` stable publication 不得覆盖 current main identity。

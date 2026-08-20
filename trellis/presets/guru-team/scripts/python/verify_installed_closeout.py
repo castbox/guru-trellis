@@ -323,7 +323,15 @@ def write_fixture_runtime_mappings(root: Path, task_slug: str, task_dir: Path, b
     })
 
 
-def write_fixture(root: Path, owners: dict[str, Any], real_git: str, case_name: str, issue: int) -> tuple[Path, str, str]:
+def write_fixture(
+    root: Path,
+    owners: dict[str, Any],
+    real_git: str,
+    case_name: str,
+    issue: int,
+    *,
+    repo_ref: str = REPO,
+) -> tuple[Path, str, str]:
     branch = f"fix/{issue}-installed-closeout-{case_name}"
     git(root, real_git, "switch", "-C", branch, BASE_BRANCH)
     smoke_path = root / f"installed-closeout-{case_name}.txt"
@@ -343,7 +351,7 @@ def write_fixture(root: Path, owners: dict[str, Any], real_git: str, case_name: 
     }
     issue_entry = {
         "number": issue,
-        "url": f"https://github.com/{REPO}/issues/{issue}",
+        "url": f"https://github.com/{repo_ref}/issues/{issue}",
         "title": f"#{issue} 验证安装后 closeout",
         "reason": "Installed closeout smoke fully covers this issue.",
     }
@@ -565,6 +573,11 @@ if args[:2] == ["pr", "list"]:
         print("[]")
     raise SystemExit(0)
 if args[:2] == ["pr", "create"]:
+    fail_marker = os.environ.get("INSTALLED_CLOSEOUT_FAIL_PR_CREATE_ONCE")
+    if fail_marker and not Path(fail_marker).exists():
+        Path(fail_marker).write_text("failed-once\\n", encoding="utf-8")
+        mutate("pr_create_failed")
+        raise SystemExit(73)
     mutate("pr_create")
     body = Path(value("--body-file")).read_text(encoding="utf-8")
     payload = {
@@ -651,6 +664,7 @@ def run_closeout(
     *,
     terminal_recovery_only: bool = False,
     closure_mismatch: bool = False,
+    provider_failure_once: bool = False,
 ) -> dict[str, Any]:
     package = (
         root / ".trellis/guru-team/skills/packages/guru-finalize-task"
@@ -674,8 +688,12 @@ def run_closeout(
     install_fake_commands(fake_bin)
     store = root.parent / f"installed-closeout-pr-{issue}.json"
     mutations = root.parent / f"installed-closeout-mutations-{issue}.txt"
+    provider_failure_marker = (
+        root.parent / f"installed-closeout-provider-failure-{issue}.sentinel"
+    )
     store.unlink(missing_ok=True)
     mutations.unlink(missing_ok=True)
+    provider_failure_marker.unlink(missing_ok=True)
     env = dict(os.environ)
     env.update({
         "PATH": f"{fake_bin}{os.pathsep}{env.get('PATH', '')}",
@@ -686,6 +704,9 @@ def run_closeout(
         "INSTALLED_CLOSEOUT_PR_STORE": str(store),
         "INSTALLED_CLOSEOUT_MUTATION_STORE": str(mutations),
         "INSTALLED_CLOSEOUT_CLOSURE_MISMATCH": "1" if closure_mismatch else "0",
+        "INSTALLED_CLOSEOUT_FAIL_PR_CREATE_ONCE": (
+            str(provider_failure_marker) if provider_failure_once else ""
+        ),
     })
     task_rel = task_dir.relative_to(root).as_posix()
     runtime_dir = root / ".trellis/.runtime/guru-team/installed-closeout"
@@ -754,6 +775,33 @@ def run_closeout(
         str(wrappers["execute-finalization-transition"]),
         *common_options,
     ]
+
+    resolved_gh = subprocess.run(
+        ["/bin/sh", "-c", "command -v gh"],
+        cwd=root,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if resolved_gh.returncode != 0 or Path(resolved_gh.stdout.strip()) != fake_bin / "gh":
+        raise RuntimeError(
+            "installed Finalizer fixture did not resolve the expected fake gh: "
+            f"{resolved_gh.stdout.strip()} {resolved_gh.stderr.strip()}"
+        )
+    fake_auth = subprocess.run(
+        [resolved_gh.stdout.strip(), "auth", "status"],
+        cwd=root,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if fake_auth.returncode != 0:
+        raise RuntimeError(
+            "installed Finalizer fixture fake gh auth self-check failed: "
+            f"{fake_auth.stdout.strip()} {fake_auth.stderr.strip()}"
+        )
 
     dry_payload = json.loads(run(preview_command, root, env=env).stdout)
     if dry_payload.get("side_effects") is not False:
@@ -932,6 +980,23 @@ def run_closeout(
             config_path.unlink(missing_ok=True)
         else:
             config_path.write_bytes(original_config)
+
+    provider_failure_recovered = False
+    if provider_failure_once:
+        failed_provider = subprocess.run(
+            execute_command,
+            cwd=root,
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if failed_provider.returncode == 0 or not provider_failure_marker.is_file():
+            raise RuntimeError("installed provider failure injection did not fail once")
+        if not task_dir.is_dir():
+            raise RuntimeError("installed provider failure moved the active task")
+        provider_failure_recovered = True
+        env["INSTALLED_CLOSEOUT_FAIL_PR_CREATE_ONCE"] = ""
 
     payload = single_json_stdout(run(execute_command, root, env=env), "installed Finalizer fresh executor")
     if (
@@ -1170,6 +1235,7 @@ def run_closeout(
         "fresh_archived_pr_binding": recovered_remote_pr.get("headRefOid") == local_head,
         "after_archive_hook_preflight": not terminal_recovery_only,
         "archive_path_symlink_preflight": not terminal_recovery_only,
+        "provider_failure_recovered": provider_failure_recovered,
     }
 
 

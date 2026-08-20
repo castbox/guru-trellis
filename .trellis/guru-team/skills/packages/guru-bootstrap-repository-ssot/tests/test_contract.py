@@ -20,6 +20,28 @@ class BootstrapRepositorySSOTContractTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout)["exit_id"], "baseline_incomplete")
 
+    def test_eval_owner_staging_is_bootstrap_owned(self):
+        corpus = json.loads((self.package / "evals/evals.json").read_text())
+        recipes = set()
+        profiles = set()
+        for case in corpus["evals"]:
+            profiles.add(case["input_profile_id"])
+            for relative in case["files"]:
+                payload = json.loads((self.package / relative).read_text())
+                staging = payload.get("owner_staging")
+                if staging:
+                    recipes.add(staging["recipe"])
+        self.assertEqual(profiles, {"new_repository", "existing_repository", "repair"})
+        self.assertEqual(
+            recipes,
+            {
+                "bootstrap-baseline-incomplete",
+                "bootstrap-completed",
+                "bootstrap-repair-required",
+                "bootstrap-blocked",
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

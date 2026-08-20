@@ -1,0 +1,10 @@
+schema_version: "1.0"
+task_ref: "260-trellis-v0615-compatibility-baseline"
+target_version: "current-main-0.6.5-guru.37"
+status: "promotion_ready"
+source_version: "current-main-0.6.5-guru.36"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.5-guru.37"
+  status: "active"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"

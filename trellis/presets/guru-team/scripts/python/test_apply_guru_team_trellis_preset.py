@@ -2388,17 +2388,27 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.tmp.cleanup()
 
     def test_install_assets_writes_installed_extension_manifest(self) -> None:
-        payload = preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"})
+        with mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-08-19T08:00:00+08:00"},
+        ):
+            payload = preset.install_assets(
+                self.workflow_src,
+                self.install_dst,
+                self.repo,
+                {"codex", "cursor"},
+            )
 
         manifest_path = self.repo / ".trellis/guru-team/extension.json"
         self.assertTrue(manifest_path.is_file())
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["schema_version"], preset.INSTALLED_EXTENSION_SCHEMA_VERSION)
+        self.assertEqual(installed["installed_at"], "2026-08-19T00:00:00Z")
         self.assertEqual(set(installed), preset.INSTALLED_EXTENSION_KEYS)
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.36")
-        self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.37")
+        self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.15")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
             (self.guru_root / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
@@ -2444,6 +2454,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "guru-planning-approval-3.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
+
         self.assertIn(
             "guru-phase2-check-4.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
@@ -2735,8 +2746,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("check-skill-packages", public_api["companion_scripts"])
         self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")
-        self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.5")
-        self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.5"])
+        self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.15")
+        self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.15"])
         self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
         self.assertEqual(
             installed["install"]["managed_asset_hashes"],
@@ -2752,6 +2763,14 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(payload["extension_manifest"], ".trellis/guru-team/extension.json")
         self.assertEqual(payload["runtime_gitignore"]["rule"], ".trellis/.runtime/")
         self.assertIn(".trellis/.runtime/", (self.repo / ".gitignore").read_text(encoding="utf-8"))
+
+    def test_install_timestamp_override_requires_timezone(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-08-19T05:30:35"},
+        ):
+            with self.assertRaisesRegex(SystemExit, "timezone-aware ISO-8601"):
+                preset.now_iso()
 
     def test_runtime_gitignore_is_idempotent(self) -> None:
         first = preset.ensure_runtime_gitignore(self.repo)

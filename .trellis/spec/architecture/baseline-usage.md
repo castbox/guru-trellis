@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.5-guru.36`
+- version：`current-main-0.6.5-guru.37`
 - status：`active`
-- source binding：main `c2b1784654a95b999bbff71daf1393c22aa01048` + #275 committed task-branch delta（精确 revision 为当前 Git HEAD）
+- source binding：main `5c059f4943edad7dfe25182a78af94759d41f9a1` + #260 compatibility task delta（精确 revision 为当前 Git HEAD）
 
 ## 语义分区
 

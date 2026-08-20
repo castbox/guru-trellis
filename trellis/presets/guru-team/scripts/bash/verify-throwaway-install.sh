@@ -11,6 +11,7 @@ SEMANTIC_RETRIEVAL_GRADING="$REPO_ROOT/trellis/presets/guru-team/tests/semantic-
 SOURCE_RUNTIME_ASSETS="$REPO_ROOT/trellis/skills/guru-team/runtime"
 SOURCE_RUNTIME_RESOLVER="$SOURCE_RUNTIME_ASSETS/resolve-python.sh"
 PYTHON_ROUTING_HELPER="$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_throwaway_python_routing.py"
+COMPATIBILITY_MATRIX_HELPER="$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
 PYTHON_CALLER_INVENTORY="$REPO_ROOT/trellis/presets/guru-team/tests/throwaway-python-callers.json"
 ENGLISH_LANGUAGE_RULE_PATTERN='All documentation (must|should) be written in .*English'
 
@@ -22,7 +23,8 @@ mkdir -p "$WORK_DIR"
 TARGET="$WORK_DIR/project"
 TRELLIS_CLI_PREFIX="$WORK_DIR/trellis-cli-prefix"
 TRELLIS_PRE_UPGRADE_PACKAGE="${TRELLIS_PRE_UPGRADE_PACKAGE:-@mindfoldhq/trellis@0.6.5}"
-TRELLIS_UPGRADE_TAG="${TRELLIS_UPGRADE_TAG:-latest}"
+TRELLIS_UPGRADE_TAG="${TRELLIS_UPGRADE_TAG:-0.6.15}"
+TRELLIS_TARGET_VERSION="${TRELLIS_TARGET_VERSION:-0.6.15}"
 
 if [[ -e "$TARGET" ]]; then
   echo "Target already exists: $TARGET" >&2
@@ -160,6 +162,26 @@ source_python "$PYTHON_ROUTING_HELPER" check-inventory \
   --repo-root "$REPO_ROOT" \
   --inventory "$PYTHON_CALLER_INVENTORY" \
   --json
+
+# The default cumulative gate is the live-manifest-derived matrix.  The
+# historical single-repository path below remains available only as an explicit
+# bounded compatibility diagnostic while its focused regressions are migrated.
+if [[ "${GURU_TEAM_THROWAWAY_SINGLE_REPO_COMPATIBILITY:-0}" != "1" ]]; then
+  MATRIX_ARGS=(
+    run
+    --repo-root "$REPO_ROOT"
+    --work-root "$WORK_DIR/matrix"
+    --workflow-source "$WORKFLOW_SOURCE"
+    --before-tag "v0.6.5-guru.10"
+    --before-cli "0.6.5"
+    --target-cli "$TRELLIS_TARGET_VERSION"
+  )
+  if [[ "$ALLOW_PUBLIC_SAMPLE" == "1" ]]; then
+    MATRIX_ARGS+=(--allow-local-sample)
+  fi
+  source_python "$COMPATIBILITY_MATRIX_HELPER" "${MATRIX_ARGS[@]}"
+  exit 0
+fi
 
 installed_runtime_checkpoint() {
   local checkpoint_repo="$1"

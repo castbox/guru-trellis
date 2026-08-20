@@ -234,10 +234,10 @@ class ExtensionVerificationContractTests(unittest.TestCase):
                 "installed_at": "2026-08-12T00:00:00Z",
                 "extension": {
                     "extension_id": "guru-team",
-                    "version": "0.6.5-guru.34",
+                    "version": "0.6.5-guru.37",
                     "workflow_template_id": "guru-team",
-                    "target_trellis_cli": "0.6.5",
-                    "tested": {"trellis_cli": ["0.6.5"]},
+                    "target_trellis_cli": "0.6.15",
+                    "tested": {"trellis_cli": ["0.6.15"]},
                 },
                 "source": {
                     "repo": "castbox/guru-trellis",
@@ -257,8 +257,8 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result)
             payload = json.loads(result.stdout)
-            self.assertEqual(payload["guru_team_extension"]["version"], "0.6.5-guru.34")
-            self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.5"])
+            self.assertEqual(payload["guru_team_extension"]["version"], "0.6.5-guru.37")
+            self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.15"])
             self.assertEqual(result.stderr, "")
 
     def test_version_help_and_compatibility_wrapper_route_to_package(self) -> None:
