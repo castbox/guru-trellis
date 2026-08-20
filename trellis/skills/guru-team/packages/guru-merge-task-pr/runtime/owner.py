@@ -664,14 +664,20 @@ def task_pr_merge_close_issues(body: Any) -> list[int]:
     if not isinstance(body, str):
         raise WorkflowError("Task PR merge requires a complete PR body.", exit_code=2)
     keywords = "|".join(re.escape(item) for item in PR_CLOSE_KEYWORDS)
-    values = {
-        int(match.group(1))
-        for match in re.finditer(
-            rf"(?im)^[ \t]*(?:[-+*][ \t]+)?(?:{keywords})[ \t]+"
-            rf"#([1-9][0-9]*)[ \t]*[.。]?[ \t]*$",
+    matches = list(
+        re.finditer(
+            rf"(?im)^[ \t]*(?:[-+*][ \t]+)?(?:{keywords})[ \t]*:?[ \t]+"
+            rf"(?:(?P<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+))?"
+            rf"#(?P<issue>[1-9][0-9]*)[ \t]*[.。]?[ \t]*$",
             body,
         )
-    }
+    )
+    if any(match.group("repo") for match in matches):
+        raise WorkflowError(
+            "Task PR close scope must not contain cross-repository Issue references.",
+            exit_code=2,
+        )
+    values = {int(match.group("issue")) for match in matches}
     return sorted(values)
 
 def task_pr_merge_contains_close_keyword(value: str) -> bool:

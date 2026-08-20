@@ -259,6 +259,26 @@ class MergeTaskPrContractTest(unittest.TestCase):
             [180, 181, 182, 183],
         )
 
+    def test_close_keyword_parser_covers_all_keywords_and_rejects_cross_repository_scope(self) -> None:
+        local_body = "\n".join(
+            f"{keyword}: #{index}."
+            for index, keyword in enumerate(GTT.PR_CLOSE_KEYWORDS, start=180)
+        )
+        self.assertEqual(
+            GTT.task_pr_merge_close_issues(local_body),
+            list(range(180, 180 + len(GTT.PR_CLOSE_KEYWORDS))),
+        )
+
+        for keyword in GTT.PR_CLOSE_KEYWORDS:
+            with self.subTest(keyword=keyword):
+                with self.assertRaisesRegex(
+                    GTT.WorkflowError,
+                    "must not contain cross-repository Issue references",
+                ):
+                    GTT.task_pr_merge_close_issues(
+                        f"- {keyword} castbox/other#999。\n"
+                    )
+
     def test_close_keyword_parser_accepts_publication_producer_bodies(self) -> None:
         public_ready = json.loads(
             (PUBLICATION_PACKAGE / "examples/public-ready-output.json").read_text(

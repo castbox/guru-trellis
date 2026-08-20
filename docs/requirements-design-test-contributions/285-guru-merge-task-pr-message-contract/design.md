@@ -8,7 +8,9 @@
 - `DES-022`：package-local `build_reviewed_merge_message` / validator 是 subject/body
   唯一实现；legacy formatter 调用同一实现。validator exact reconstruction，并拒绝
   summary、subject 或 body 任意位置可形成 GitHub Issue closure 的九种 close-keyword
-  词形及 local / `owner/repository#issue` 引用，不误伤 `fix/...` 分支名。
+  词形及 local / `owner/repository#issue` 引用，不误伤 `fix/...` 分支名；live PR
+  close-scope parser 对 local 引用返回 Issue number，对无法由 `list[int]` 表达的跨仓
+  close effect 直接 fail closed。
   canonical body 不带尾随换行；executor 写入相同 bytes，post-merge verifier 不对 GitHub
   回读结果做 strip/normalize，而是直接精确比较。
 - `DES-023`：live facts 增加 expected base ref 与 merged commit message/parents；gate
