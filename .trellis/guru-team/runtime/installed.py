@@ -159,6 +159,15 @@ def public_files(package: Path, interface: dict[str, Any], files: list[Path]) ->
         for item in interface.get("public_contracts", {}).get("private_artifacts", [])
         if isinstance(item, dict) and isinstance(item.get("schema"), dict)
     }
+    for inventory_name in ("schemas", "artifacts"):
+        private_paths.update(
+            str(item.get("path"))
+            for item in interface.get(inventory_name, [])
+            if isinstance(item, dict)
+            and isinstance(item.get("id"), str)
+            and item["id"].startswith("legacy_private_gate_")
+            and isinstance(item.get("path"), str)
+        )
     output_examples = {
         str(item.get("example", {}).get("path"))
         for item in interface.get("public_contracts", {}).get("outputs", [])

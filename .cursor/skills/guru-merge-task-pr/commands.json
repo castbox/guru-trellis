@@ -34,7 +34,7 @@
       ],
       "side_effect": "github_read",
       "schema_bindings": [
-        "schemas/public-ready-for-merge-input.schema.json"
+        "schemas/public-ready-for-merge-input-2.0.schema.json"
       ],
       "validator_id": "merge_previewer",
       "runtime_role": "preview"
@@ -79,7 +79,7 @@
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [
-        "schemas/public-ready-for-merge-input.schema.json",
+        "schemas/public-ready-for-merge-input-2.0.schema.json",
         "schemas/task-pr-merge-gate-2.0.schema.json"
       ],
       "validator_id": "merge_recorder",

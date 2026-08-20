@@ -4,7 +4,10 @@
   seed 只把 `reviewed_merge_message` 交给 Merge semantic owner 补全，避免扩大 Finalizer
   public DTO。
 - `DES-021`：Merge package 显式选择 2.0 workflow/standalone/aggregate input 与 private
-  gate；1.0 assets 留在 Interface inventory 中并由固定 hash 回归保护。
+  gate，preview/record command 的 active input binding 同步指向 2.0 schema；1.0 assets
+  留在 Interface inventory 中并由固定 hash 回归保护。Interface 中显式标为
+  `legacy_private_gate_*` 的 schema/example 与 current private gate 一样只保留在
+  canonical/installed 完整 package，不进入 Shared/Codex/Claude/Cursor public projection。
 - `DES-022`：package-local `build_reviewed_merge_message` / validator 是 subject/body
   唯一实现；legacy formatter 调用同一实现。validator exact reconstruction，并拒绝
   summary、subject 或 body 任意位置可形成 GitHub Issue closure 的九种 close-keyword

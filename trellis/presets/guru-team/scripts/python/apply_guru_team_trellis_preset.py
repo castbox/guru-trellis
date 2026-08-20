@@ -1057,6 +1057,15 @@ def skill_platform_public_files(package_root: Path) -> list[Path]:
         and isinstance(item.get("schema"), dict)
         and isinstance(item["schema"].get("path"), str)
     }
+    for inventory_name in ("schemas", "artifacts"):
+        private_paths.update(
+            str(item["path"])
+            for item in interface.get(inventory_name, [])
+            if isinstance(item, dict)
+            and isinstance(item.get("id"), str)
+            and item["id"].startswith("legacy_private_gate_")
+            and isinstance(item.get("path"), str)
+        )
     private_artifact_paths = {
         str(item["path"])
         for item in interface.get("artifacts", [])

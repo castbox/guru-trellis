@@ -183,9 +183,24 @@ class MergeTaskPrContractTest(unittest.TestCase):
         self.assertEqual(aggregate["schema_id"], "guru-merge-task-pr-input-aggregate-2.0")
         private = self.interface["public_contracts"]["private_artifacts"][0]["schema"]
         self.assertEqual(private["schema_id"], "guru-task-pr-merge-gate-2.0")
-        extension = json.loads(
-            (PACKAGE.parents[4] / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
-        )["public_api"]["skill_contracts"]
+        extension_path = next(
+            (
+                path
+                for path in (
+                    PACKAGE.parents[4] / "trellis/guru-team-extension.json",
+                    PACKAGE.parents[2] / "extension.json",
+                )
+                if path.is_file()
+            ),
+            None,
+        )
+        if extension_path is None:
+            self.fail("source or installed Guru Team extension manifest is required")
+        extension_manifest = json.loads(extension_path.read_text(encoding="utf-8"))
+        public_api = extension_manifest.get("public_api")
+        if public_api is None:
+            public_api = extension_manifest["extension"]["public_api"]
+        extension = public_api["skill_contracts"]
         self.assertIn(
             "guru-merge-task-pr-input-ready-for-merge-2.0",
             extension["public_input_schema_ids"],
@@ -222,6 +237,37 @@ class MergeTaskPrContractTest(unittest.TestCase):
         for path, expected in legacy.items():
             with self.subTest(path=path):
                 self.assertEqual(hashlib.sha256((PACKAGE / path).read_bytes()).hexdigest(), expected)
+
+    def test_active_command_input_bindings_validate_the_two_point_zero_example(self) -> None:
+        import jsonschema
+
+        commands = json.loads((PACKAGE / "commands.json").read_text(encoding="utf-8"))
+        active_schema_path = "schemas/public-ready-for-merge-input-2.0.schema.json"
+        legacy_schema_path = "schemas/public-ready-for-merge-input.schema.json"
+        example = json.loads(
+            (PACKAGE / "examples/public-ready-for-merge-input-2.0.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        active_commands = {
+            item["id"]: item for item in commands["commands"]
+            if item["id"] in {"preview-task-pr-merge", "record-task-pr-merge"}
+        }
+        self.assertEqual(
+            set(active_commands),
+            {"preview-task-pr-merge", "record-task-pr-merge"},
+        )
+        for command_id, command in active_commands.items():
+            with self.subTest(command_id=command_id):
+                self.assertIn(active_schema_path, command["schema_bindings"])
+                self.assertNotIn(legacy_schema_path, command["schema_bindings"])
+                schema = json.loads(
+                    (PACKAGE / active_schema_path).read_text(encoding="utf-8")
+                )
+                self.assertEqual(
+                    list(jsonschema.Draft202012Validator(schema).iter_errors(example)),
+                    [],
+                )
 
     def test_outputs_exclude_finalizer_and_authorization_state(self) -> None:
         forbidden = {

@@ -1,8 +1,8 @@
 # #285 Test contribution
 
-- `SCN-017`：active 2.0 input/gate schemas、examples、Interface selector 与 Finalizer
-  authoring seed 通过；1.0 input/gate/example 固定 hash 保持不变，cross-version substitution
-  被拒绝。
+- `SCN-017`：active 2.0 input/gate schemas、examples、Interface selector、preview/record
+  command input bindings 与 Finalizer authoring seed 通过；2.0 example 经两个 active command
+  binding 验证，1.0 input/gate/example 固定 hash 保持不变，cross-version substitution 被拒绝。
 - `SCN-018`：message tests 接受合规中文 summary/subject/body，拒绝 GitHub 默认
   `Merge pull request ...`、直接 PR title、错误 PR/primary Issue、primary Issue 不在
   非空 close scope、非中文/占位摘要、段落/refs 漂移、body 尾随换行，以及
@@ -16,7 +16,9 @@
 - `SCN-020`：post-merge tests 拒绝 PR/merge SHA、双 parents、subject/body、pre-base、
   remote base、Issue closure/timestamp 任一漂移，并保持三个 typed exits。
 - `SCN-021`：source/installed package、contract/eval、installed closeout fake GitHub、preset
-  apply/reapply、ownership、dogfood drift、all-platform parity 与 recursive zero sidecars 通过。
+  apply/reapply、ownership、dogfood drift、all-platform parity 与 recursive zero sidecars 通过；
+  current/legacy private gate schema/example 在 canonical/installed 完整 package 中保持字节，
+  且不出现在 Shared/Codex/Claude/Cursor public projection，legacy public input 仍保留。
 - `SCN-022`：代表性 clean throwaway install/update 使用完整 preset runtime，验证 active
   Merge package、2.0 input、executor message 参数与 post-merge verifier；不冒充 release-wide
   多平台矩阵。

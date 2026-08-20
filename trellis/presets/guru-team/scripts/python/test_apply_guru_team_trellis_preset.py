@@ -1557,6 +1557,49 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                         (canonical_root / legacy_relative).read_bytes(),
                     )
 
+    def test_merge_private_gate_generations_stay_out_of_every_platform_projection(self) -> None:
+        platforms, all_platforms = preset.selected_platforms(None, True)
+        payload = self.install(platforms, all_platforms=all_platforms)
+
+        self.assertEqual(payload["skill_packages"]["status"], "ok")
+        package_relative = Path("guru-merge-task-pr")
+        canonical_root = (
+            self.guru_root / "trellis/skills/guru-team/packages" / package_relative
+        )
+        installed_root = (
+            self.repo / ".trellis/guru-team/skills/packages" / package_relative
+        )
+        private_paths = (
+            Path("schemas/task-pr-merge-gate-2.0.schema.json"),
+            Path("schemas/task-pr-merge-gate.schema.json"),
+            Path("examples/task-pr-merge-gate-2.0.json"),
+            Path("examples/task-pr-merge-gate.json"),
+        )
+        platform_roots = (
+            self.repo / ".agents/skills" / package_relative,
+            self.repo / ".codex/skills" / package_relative,
+            self.repo / ".claude/skills" / package_relative,
+            self.repo / ".cursor/skills" / package_relative,
+        )
+        for relative in private_paths:
+            with self.subTest(relative=relative, location="canonical-installed"):
+                self.assertTrue((canonical_root / relative).is_file())
+                self.assertEqual(
+                    (installed_root / relative).read_bytes(),
+                    (canonical_root / relative).read_bytes(),
+                )
+            for platform_root in platform_roots:
+                with self.subTest(relative=relative, platform_root=platform_root):
+                    self.assertFalse((platform_root / relative).exists())
+
+        legacy_public_schema = Path("schemas/public-ready-for-merge-input.schema.json")
+        for platform_root in platform_roots:
+            with self.subTest(platform_root=platform_root, asset="legacy-public"):
+                self.assertEqual(
+                    (platform_root / legacy_public_schema).read_bytes(),
+                    (canonical_root / legacy_public_schema).read_bytes(),
+                )
+
     def test_all_platforms_to_subset_removes_clean_managed_overlay(self) -> None:
         platforms, all_platforms = preset.selected_platforms(None, True)
         self.install(platforms, all_platforms=all_platforms)
