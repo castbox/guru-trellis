@@ -6,8 +6,9 @@
 - `SCN-018`：message tests 接受合规中文 summary/subject/body，拒绝 GitHub 默认
   `Merge pull request ...`、直接 PR title、错误 PR/primary Issue、primary Issue 不在
   非空 close scope、非中文/占位摘要、段落/refs 漂移、body 尾随换行，以及
-  summary/subject/body 任意位置的 Issue close-keyword 引用；同时接受
-  `expected_close_issues=[]` 且保留 `primary_issue` 引用的合法 refs-only merge。
+  summary/subject/body 任意位置的 Issue close-keyword 引用，包括九种词形与 local /
+  `owner/repository#issue` 引用；同时接受 `expected_close_issues=[]` 且保留
+  `primary_issue` 引用的合法 refs-only merge。
 - `SCN-019`：executor tests 精确断言 repo binding、expected head、唯一 `--merge`、
   `--subject`、`--body-file`、body bytes、失败 cleanup 与 terminal recovery 零重复 mutation；
   即使 live repository 同时允许 squash/rebase，recorder/checker 也拒绝非 `merge` route。

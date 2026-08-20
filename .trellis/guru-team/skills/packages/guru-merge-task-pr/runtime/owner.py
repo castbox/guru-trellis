@@ -67,7 +67,11 @@ DEFAULTS: dict[str, Any] = {
 TASK_PR_MERGE_GATE_ARTIFACT = "task-pr-merge-gate.json"
 TASK_PR_MERGE_BODY_ARTIFACT = "merge-body.md"
 
-PR_CLOSE_KEYWORDS = ["Closes", "Fixes", "Resolves", "Close", "Fix", "Resolve"]
+PR_CLOSE_KEYWORDS = [
+    "Close", "Closes", "Closed",
+    "Fix", "Fixes", "Fixed",
+    "Resolve", "Resolves", "Resolved",
+]
 
 class WorkflowError(RuntimeError):
     def __init__(self, message: str, exit_code: int = 1, payload: dict[str, Any] | None = None) -> None:
@@ -672,8 +676,13 @@ def task_pr_merge_close_issues(body: Any) -> list[int]:
 
 def task_pr_merge_contains_close_keyword(value: str) -> bool:
     keywords = "|".join(re.escape(item) for item in PR_CLOSE_KEYWORDS)
+    issue_reference = (
+        r"(?:#[1-9][0-9]*|"
+        r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#[1-9][0-9]*)"
+    )
     return re.search(
-        rf"(?i)(?:^|[^A-Za-z])(?:{keywords})[ \t]*:?[ \t]+#[1-9][0-9]*\b",
+        rf"(?i)(?:^|[^A-Za-z])(?:{keywords})[ \t]*:?[ \t]+"
+        rf"{issue_reference}\b",
         value,
     ) is not None
 

@@ -697,19 +697,36 @@ class MergeTaskPrContractTest(unittest.TestCase):
                     GTT.validate_reviewed_merge_message(
                         changed, pull_request=180, head_branch="codex/180-eval", base_branch="main"
                     )
-        for summary in (
-            "修复 Closes #180 误用",
-            "修复 Fixes: #180 误用",
-            "修复 Resolve #180 误用",
+        for keyword in (
+            "Close", "Closes", "Closed",
+            "Fix", "Fixes", "Fixed",
+            "Resolve", "Resolves", "Resolved",
         ):
-            with self.subTest(summary=summary):
-                changed = self.reviewed_message(
-                    pr=180, issue=180, head="codex/180-eval", summary=summary
-                )
-                with self.assertRaisesRegex(GTT.WorkflowError, "must not contain close keywords"):
-                    GTT.validate_reviewed_merge_message(
-                        changed, pull_request=180, head_branch="codex/180-eval", base_branch="main"
+            for issue_reference in ("#180", "castbox/other#180"):
+                summary = f"修复 {keyword} {issue_reference} 误用"
+                with self.subTest(summary=summary):
+                    changed = self.reviewed_message(
+                        pr=180, issue=180, head="codex/180-eval", summary=summary
                     )
+                    with self.assertRaisesRegex(
+                        GTT.WorkflowError, "must not contain close keywords"
+                    ):
+                        GTT.validate_reviewed_merge_message(
+                            changed,
+                            pull_request=180,
+                            head_branch="codex/180-eval",
+                            base_branch="main",
+                        )
+        changed = self.reviewed_message(
+            pr=180,
+            issue=180,
+            head="codex/180-eval",
+            summary="修复 Fixes: #180 误用",
+        )
+        with self.assertRaisesRegex(GTT.WorkflowError, "must not contain close keywords"):
+            GTT.validate_reviewed_merge_message(
+                changed, pull_request=180, head_branch="codex/180-eval", base_branch="main"
+            )
 
     def test_public_input_rejects_primary_issue_outside_close_scope(self) -> None:
         payload = {
