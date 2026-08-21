@@ -160,9 +160,9 @@
     },
     {
       "id": "unpromoted-contribution",
-      "prompt": "Implementation passes but the required reviewed contribution and promotion are not complete.",
+      "prompt": "Implementation passes, but the design constitution remains authority_status=pending_reviewed_promotion and the required reviewed contribution/promotion is incomplete; return sync_required(promotion_required), never baseline_current.",
       "expected_exit": "sync_required",
-      "expected_output": "The unpromoted-contribution scenario returns sync_required.",
+      "expected_output": "The unpromoted-contribution scenario returns sync_required(promotion_required).",
       "input_profile_id": "task_impact_sync",
       "files": [
         "evals/files/impact-unpromoted-input.json",

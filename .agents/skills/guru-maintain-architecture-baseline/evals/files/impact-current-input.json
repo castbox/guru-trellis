@@ -13,6 +13,7 @@
   },
   "constitution": {
     "authority_locator": "docs/architecture/00-foundation/design-constitution.md",
+    "authority_status": "current",
     "identity_kind": "content",
     "identity": "constitution-v1",
     "principles": [

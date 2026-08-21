@@ -2545,8 +2545,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         for field, expected_count in (
-            ("public_input_schema_ids", 57),
-            ("typed_output_schema_ids", 78),
+            ("public_input_schema_ids", 62),
+            ("typed_output_schema_ids", 85),
             ("private_artifact_schema_ids", 18),
         ):
             self.assertEqual(
@@ -2555,6 +2555,32 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             )
             self.assertEqual(len(public_api["skill_contracts"][field]), expected_count)
         public_input_schema_ids = public_api["skill_contracts"]["public_input_schema_ids"]
+        architecture_interface = json.loads(
+            (
+                self.guru_root
+                / "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/interface.json"
+            ).read_text(encoding="utf-8")
+        )
+        architecture_input_schema_ids = {
+            architecture_interface["public_contracts"]["input"]["aggregate_schema"][
+                "schema_id"
+            ],
+            *(
+                item["schema"]["schema_id"]
+                for item in architecture_interface["public_contracts"]["input"][
+                    "profiles"
+                ]
+            ),
+        }
+        self.assertEqual(len(architecture_input_schema_ids), 5)
+        self.assertEqual(
+            {
+                schema_id
+                for schema_id in public_input_schema_ids
+                if schema_id.startswith("guru-architecture-baseline-input-")
+            },
+            architecture_input_schema_ids,
+        )
         self.assertIn("guru-normal-scenario-input-aggregate-1.0", public_input_schema_ids)
         self.assertIn(
             "guru-normal-scenario-input-implementation-discovery-1.0",
@@ -2590,6 +2616,19 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("guru-task-pr-merge-gate-2.0", private_artifact_schema_ids)
         self.assertNotIn("guru-task-pr-merge-gate-1.0", private_artifact_schema_ids)
         typed_output_schema_ids = public_api["skill_contracts"]["typed_output_schema_ids"]
+        architecture_output_schema_ids = {
+            item["schema"]["schema_id"]
+            for item in architecture_interface["public_contracts"]["outputs"]
+        }
+        self.assertEqual(len(architecture_output_schema_ids), 7)
+        self.assertEqual(
+            {
+                schema_id
+                for schema_id in typed_output_schema_ids
+                if schema_id.startswith("guru-architecture-baseline-output-")
+            },
+            architecture_output_schema_ids,
+        )
         self.assertIn("guru-normal-scenario-output-classified-1.0", typed_output_schema_ids)
         self.assertIn(
             "guru-normal-scenario-output-scope-confirmation-required-1.0",

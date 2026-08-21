@@ -13,7 +13,7 @@
   "entry_preconditions": [
     {"id": "runtime_dependency", "evidence": "compatible Guru Team runtime", "binding": "current installation", "freshness": "validated before invocation"},
     {"id": "profile_binding", "evidence": "one closed 2.0 profile input and lifecycle stage", "binding": "the exact caller, mode, profile, stage, task, and continuation", "freshness": "fresh for every stage judgment"},
-    {"id": "architecture_authority", "evidence": "live baseline and design-constitution locator plus identity and five principle identities", "binding": "the project-owned Architecture authority reread by the AI", "freshness": "identity changes require complete re-entry"},
+    {"id": "architecture_authority", "evidence": "live baseline plus explicit current-or-pending design-constitution locator, identity, status, and five principle identities", "binding": "the project-owned Architecture authority reread by the AI", "freshness": "identity or authority-status changes require complete re-entry"},
     {"id": "project_change_contract", "evidence": "project change-contract, required-concern-set identity, and current project-check descriptors", "binding": "the task-local project architecture contract and descriptor authority", "freshness": "scope, owner, boundary, applicability, descriptor, or check changes require re-entry"},
     {"id": "invocation_freshness", "evidence": "input digest, semantic gate, exact consumer and minimal output", "binding": "one call-local semantic round", "freshness": "baseline, constitution, contribution, project check, or committed range changes invalidate the result"}
   ],
@@ -41,11 +41,11 @@
     {"id": "fitness_regression_output", "path": "schemas/public-fitness-regression-output.schema.json"},
     {"id": "blocked_output", "path": "schemas/public-blocked-output.schema.json"}
   ],
-  "validators": [{"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-maintain-architecture-baseline", "objective_scope": "Validate the closed 2.0 profile, exact authority, committed-range and freshness binding, one-to-one owner-result project-check descriptor/result binding, semantic gate, unique consumer, and one minimal typed projection."}],
+  "validators": [{"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-maintain-architecture-baseline", "objective_scope": "Validate the closed 2.0 profile, exact authority status, existing current constitution locator, committed-range and freshness binding, one-to-one owner-result project-check descriptor/result binding, semantic gate, unique consumer, and one minimal profile-bound typed projection."}],
   "tests": ["tests/test_contract.py"],
   "platform_destinations": ["shared", "codex", "cursor", "claude"],
   "external_exits": [
-    {"id": "baseline_current", "evidence": "fresh current or reviewed-and-promoted Architecture state", "consumer": {"kind": "workflow", "id": "guru-architecture-baseline-current-router"}},
+    {"id": "baseline_current", "evidence": "fresh current constitution authority plus profile-bound current or reviewed-and-promoted Architecture state", "consumer": {"kind": "workflow", "id": "guru-architecture-baseline-current-router"}},
     {"id": "sync_required", "evidence": "stale or unpromoted Architecture identity", "consumer": {"kind": "skill", "id": "guru-maintain-architecture-baseline"}},
     {"id": "baseline_incomplete", "evidence": "missing Architecture authority", "consumer": {"kind": "workflow", "id": "guru-architecture-baseline-bootstrap-router"}},
     {"id": "architecture_conflict", "evidence": "current task conflicts with Architecture authority", "consumer": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"}},
@@ -53,7 +53,7 @@
     {"id": "fitness_regression", "evidence": "candidate or committed diff worsens Architecture fitness", "consumer": {"kind": "workflow", "id": "guru-architecture-baseline-check-router"}},
     {"id": "blocked", "evidence": "Architecture owner cannot select a safe route", "consumer": {"kind": "stop", "id": "architecture-baseline-blocked"}}
   ],
-  "reentry": {"identity": "profile, stage, baseline, constitution, project contract, contribution, and continuation identity", "freshness": "any bound identity or applicable scope change requires fresh semantic review", "stale_behavior": "fail_closed"},
+  "reentry": {"identity": "profile, stage, baseline, constitution status/identity, project contract, contribution, and continuation identity", "freshness": "any bound identity, authority status, locator availability, or applicable scope change requires fresh semantic review", "stale_behavior": "fail_closed"},
   "public_contracts": {
     "input": {
       "kind": "structured_json",

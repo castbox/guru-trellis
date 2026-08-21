@@ -8,8 +8,9 @@ exits, ADRs, history, evidence, and the design constitution or its unique
 locator. Guru Team owns the mandatory lifecycle and typed routes, not the
 project's architecture answer.
 
-The constitution projection contains one authority locator, one version or
-content identity, and exactly these five stable identity/name pairs:
+The constitution projection contains one explicit `current` or
+`pending_reviewed_promotion` authority status, one authority locator, one
+version or content identity, and exactly these five stable identity/name pairs:
 
 - `mature-practice-applicability` / `成熟实践与适用性`
 - `concept-semantic-completeness` / `概念与语义完整性`
@@ -40,7 +41,10 @@ The deterministic runtime only validates this separation, identity/freshness
 and committed-range binding, and route consistency.
 A no-impact `baseline_current` projection includes its concise reviewed reason
 so the direct stage consumer can audit the lightweight result without creating
-a contribution or ADR.
+a contribution or ADR. Every current projection also carries the producing
+profile and `constitution_status=current`; the current authority locator must
+resolve component-by-component to an existing regular repository file without
+a symlink-backed component.
 
 ## Task-local change contract
 
@@ -78,6 +82,12 @@ current identity. If live current advanced, `sync_required` returns to the same
 owner without overwriting. The promotion diff must receive a fresh Phase 2 and
 independent Branch Review. The resulting current identity is the only identity
 the next task may consume.
+
+Only a `baseline_current` produced by `task_impact_sync` may resume the exact
+matching stage. A current result from bootstrap or repair reruns the affected
+`task_impact_sync` stage; it does not resume that stage directly. A current
+promotion result always re-enters fresh Phase 2, Task Commit, and independent
+committed full-diff Branch Review before any downstream reuse.
 
 Bootstrap activates only a successor with the same baseline locator,
 `status=active`, and an identity distinct from the missing, draft, or

@@ -5372,6 +5372,19 @@ def stage_owner_execution(
     runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
     runtime_dir.mkdir(parents=True, exist_ok=True)
     (fixture / OWNER_INPUT).write_bytes(public_input.read_bytes())
+    public_payload = json.loads(public_input.read_text(encoding="utf-8"))
+    if skill_id == "guru-maintain-architecture-baseline":
+        constitution = public_payload["constitution"]
+        if constitution["authority_status"] == "current":
+            constitution_locator = Path(constitution["authority_locator"])
+            if constitution_locator.is_absolute() or ".." in constitution_locator.parts:
+                raise ValueError("architecture constitution fixture locator is unsafe")
+            constitution_target = fixture / constitution_locator
+            constitution_target.parent.mkdir(parents=True, exist_ok=True)
+            constitution_target.write_text(
+                "# Design Constitution\n\nCurrent project authority fixture.\n",
+                encoding="utf-8",
+            )
     run_git(fixture, "add", ".")
     run_git(fixture, "commit", "-q", "-m", "stage owner fixture")
     head = run_git(fixture, "rev-parse", "HEAD")
@@ -5403,7 +5416,6 @@ def stage_owner_execution(
             },
             fixture,
         )
-    public_payload = json.loads(public_input.read_text(encoding="utf-8"))
     public_mode = str(public_payload.get("mode") or "")
     fake_bin = write_fake_gh(execution_root, recipe)
     environment = {"PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}"}

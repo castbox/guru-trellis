@@ -24,10 +24,10 @@ complete committed diff. Publication and Acceptance/Finish may consume only a
 fresh no-change result or a reviewed and promoted contribution.
 
 The project authority owns all architecture and constitution prose. This
-package consumes only locators, verifiable identities, the five stable
-principle identities/short names, and task-local change/evidence contracts. It
-does not turn principles into a scorecard and does not encode language,
-framework, or business-specific checks.
+package consumes only authority status, locators, verifiable identities, the
+five stable principle identities/short names, and task-local change/evidence
+contracts. It does not turn principles into a scorecard and does not encode
+language, framework, or business-specific checks.
 
 Only task-owned contributions may be written before independent Branch Review.
 Shared current Architecture authority changes only through serialized
@@ -51,6 +51,13 @@ Bootstrap may project `baseline_current` only from an active successor at the
 same locator with a distinct identity. Repair always starts from an active
 baseline. Branch Review and promotion bind their nested reviewed range exactly
 to the caller-supplied structured committed range.
+
+Every `baseline_current` requires `authority_status=current`, an existing
+regular repository file at the constitution locator, and carries its exact
+`source_profile`. Only `task_impact_sync` may resume its matching lifecycle
+stage. Bootstrap and repair current results rerun that affected
+`task_impact_sync` stage; promotion current results return through fresh Phase
+2, Task Commit, and independent committed full-diff Branch Review.
 
 Public exits are `baseline_current`, `sync_required`, `baseline_incomplete`,
 `architecture_conflict`, `contract_incomplete`, `fitness_regression`, and

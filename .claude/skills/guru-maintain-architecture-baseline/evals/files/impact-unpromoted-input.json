@@ -9,6 +9,7 @@
   "baseline": {"locator": "docs/architecture/README.md", "identity": "current-v1", "status": "active"},
   "constitution": {
     "authority_locator": "docs/architecture/00-foundation/design-constitution.md",
+    "authority_status": "pending_reviewed_promotion",
     "identity_kind": "content",
     "identity": "constitution-v1",
     "principles": [

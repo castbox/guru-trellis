@@ -147,21 +147,25 @@ contribution 或 ADR。
   返回 `passed`。完整 worktree content identity 只保留在 owner-private checkpoint，本文件
   状态同步后由 live content fresh 重录，不复制 token。其他 task 的 AI owner 仍必须结合
   applicability 与 task real dependency 独立判断 `blocking`；runtime 不代替该判断。
-- evidence：Architecture source/installed contract `22/22`、source/installed graph、
-  source/installed fixed 10-scenario eval、三个阶段 consumer、RDT/package/finish/semantic
-  closure、preset ownership/apply/reapply/upgrade、dogfood drift、JSON/Python/Bash/task/diff
-  静态门禁均已对当前 candidate fresh 通过；详见 RDT `test.md`。当前 dirty candidate 还在无
-  `.git` 的隔离目标完成了 Trellis `0.6.15` 代表性 clean installation：公开 marketplace
-  初始化后明确覆盖当前 canonical workflow，应用当前 all-platform preset，并通过 installed
-  validation、Architecture `22/22`、installed/shared 十场景、Phase 2 context smoke、四平台
-  parity、reapply 与 zero-sidecar。该 targeted 证据不证明未发布 branch marketplace ref。
+- evidence：Architecture source/dogfood installed contract `22/22`、source/installed graph、
+  source/installed fixed 10-scenario eval、Architecture `5/7` interface 与 canonical/installed
+  `62/85` inventory、三个阶段 consumer、RDT/package/finish/semantic closure、preset
+  ownership/apply/reapply/upgrade、dogfood drift、JSON/Python/Bash/task/diff 静态门禁均已对
+  当前 candidate fresh 通过；详见 RDT `test.md`。当前 dirty candidate 还在无 `.git` 的隔离
+  目标完成了 Trellis `0.6.15` 代表性 clean installation：公开 marketplace 初始化后明确
+  覆盖当前 canonical workflow，应用当前 all-platform preset，并通过真实 installed public
+  graph、installed/shared 十场景 dispatcher、Phase 2 context smoke、四平台 parity、reapply
+  与 zero-sidecar。source-oriented unit harness 不是该无 `.git` 目标的 installed public
+  entry，因此不把其直接调用冒充 standalone pass。该 targeted 证据不证明未发布 branch
+  marketplace ref。
   正式 `guru-verify-extension-installation` 要求 clean source 与解析到当前 HEAD 的 requested
   ref；当前 dirty/unpublished 状态不具备合法 executor entry，也没有形成 `verified` typed
-  exit。Phase 2 的三个修复候选已在 current supported path 上重新判定为
-  `rejected_not_reproduced`，open finding 为零；原 committed-diff review finding closure 仍须
-  新 task commit 与 distinct fresh-final Branch Review 证明。serialized promotion、promotion
-  后 fresh gates 与新 exact-commit verification 仍为 pending，本 contribution 不把它们声明
-  为已完成。
+  exit。Phase 2 的三项 committed-diff finding 与最终 workflow literal-wrap candidate 已在
+  修复后的 current supported path 上重新判定为 `rejected_not_reproduced`；clean target 直接
+  运行 source-oriented unit harness 的观察为 `rejected_unsupported_entry`，open finding 为
+  零。原 committed-diff review finding closure 仍须新 task commit 与 distinct fresh-final
+  Branch Review 证明。serialized promotion、promotion 后 fresh gates 与新 exact-commit
+  verification 仍为 pending，本 contribution 不把它们声明为已完成。
 
 ## ADR-283-CANDIDATE
 

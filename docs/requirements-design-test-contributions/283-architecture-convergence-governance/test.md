@@ -54,31 +54,39 @@
 
 当前 complete worktree candidate 已 fresh 通过以下 current-scope 验证：
 
-- Architecture package contract/runtime：source 与 installed 均为 `22/22`；source package
-  graph 为 `21` active packages / `72` commands，installed graph 为 `21` active packages /
-  `20` invokes / `87` exits / `4229` managed files，零 conflict/sidecar。
+- Architecture package contract/runtime：source 与 dogfood installed 均为 `22/22`；source
+  package graph 为 `21` active packages / `72` commands，installed graph 为 `21` active
+  packages / `72` commands / `20` invokes / `87` exits / `4229` managed files，零
+  conflict/sidecar。Architecture public inventory 为 interface `5` inputs / `7` outputs，
+  canonical 与 installed manifest 均为 `62` inputs / `85` outputs，Architecture id 无缺失
+  且两份 inventory 一致。
 - Architecture source/shared 与 installed/shared eval 均覆盖固定 `SCN-024..033` 十个场景并
-  全部通过；`guru-approve-task-plan`、`guru-check-task`、`guru-review-branch` 的 source 与
-  installed contract/runtime tests 分别为 `21/21`、`9/9`、`15/15`，RDT package 为
-  `9/9`，package closure 为 `8/8`，finish-family integration 为 `6/6`，semantic
-  retrieval contract 为 `4/4`。
+  全部通过；`guru-approve-task-plan`、`guru-check-task`、`guru-review-branch` 的 source
+  complete package tests 分别为 `25/25`、`18/18`、`19/19`，dogfood installed contract
+  tests 分别为 `21/21`、`9/9`、`15/15`。RDT package 为 `9/9`，package closure 为
+  `8/8`，finish-family integration 为 `6/6`，semantic retrieval contract 为 `4/4`。
 - Preset upstream ownership `7/7`、installer apply/reapply `78/78`、upgrade contract
   `20/20` 通过；最终 all-platform reapply 为零增量且零 backup/new/conflict/sidecar，
   dogfood overlay drift 与递归 `.new/.bak` 检查通过。
-- 完整 base-to-worktree candidate 共 `376` 个现存文件；其中 `299` 个 JSON fresh parse、
-  `12` 个 Python 文件 compile，canonical Bash syntax、`task.py validate` 与完整 candidate
+- 完整 base-to-worktree candidate 共 `378` 个现存文件；其中 `300` 个 JSON fresh parse、
+  `13` 个 Python 文件 compile，canonical Bash syntax、`task.py validate` 与完整 candidate
   `git diff --check` 通过；task validation 仅保留既有大 spec 注入截断 warning。
 - 当前 dirty worktree candidate 已在无 `.git` 的隔离临时目标完成一个代表性 current-version
   clean installation：Trellis `0.6.15` 从公开 marketplace 初始化基础结构后，明确覆盖为当前
-  canonical workflow，再应用当前 all-platform preset；installed graph、Architecture
-  contract `22/22`、installed/shared 固定十场景、Phase 2 context smoke、四平台 parity、
-  reapply 与 recursive zero-sidecar 均通过。该证据证明当前本地 candidate 的安装态，不证明
-  未发布 branch 的 marketplace ref 或正式 standalone verifier typed exit。
+  canonical workflow，再应用当前 all-platform preset；真实 installed public graph、
+  installed/shared 固定十场景 public dispatcher、Phase 2 context smoke、Shared/Codex/Claude/
+  Cursor parity、frozen reapply 与 recursive zero-sidecar 均通过。package
+  `tests/test_contract.py` 是要求 source manifest 与 Git runtime 的 source-oriented unit
+  harness，不是无 `.git` 目标声明的 installed public entry；本证据不把该不支持的直接调用
+  冒充为 standalone pass。该 targeted 证据证明当前本地 candidate 的安装态，不证明未发布
+  branch 的 marketplace ref 或正式 standalone verifier typed exit。
 - `guru-check-task` 已对完整 base-to-worktree candidate 完成 schema 5.0 语义检查：九个
-  adequacy dimension 全部通过，三个修复候选在 current supported path 上均为
-  `rejected_not_reproduced`，open finding 与 blocking unverified item 均为零，typed exit 为
-  `passed`。owner-private content token 不复制到 durable Docs；本段状态同步后必须从 live
-  content 重录并由 checker 再次确认，最终结果只由 fresh private checkpoint 承接。
+  adequacy dimension 全部通过。三项 committed-diff finding 与最终 workflow literal-wrap
+  candidate 在修复后的 current supported path 上均为 `rejected_not_reproduced`；clean target
+  直接运行 source-oriented unit harness 的观察为 `rejected_unsupported_entry`。open finding
+  与 blocking unverified item 均为零，typed exit 为 `passed`。owner-private content token
+  不复制到 durable Docs；本段状态同步后从 live content 重录并由 checker 再次确认，最终
+  结果只由 fresh private checkpoint 承接。
 
 `guru-trellis-architecture-convergence@1` 因而对当前 Phase 2 candidate 为 `pass` 且
 `blocking=true`。以下后续门禁仍未完成且不在本段冒充通过：
@@ -95,4 +103,4 @@
 - #267 exact-candidate 全平台矩阵、tag、Release 与 immutable smoke 始终不属于 #283。
 
 当前 contribution validation state：
-`phase2_semantic_passed_with_fresh_private_checkpoint_after_status_sync_local_clean_install_formal_verifier_ineligible_and_post_phase2_gates_pending`。
+`phase2_semantic_passed_with_fresh_private_checkpoint_after_status_sync_local_public_entry_clean_install_formal_verifier_ineligible_and_post_phase2_gates_pending`。

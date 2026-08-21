@@ -2,8 +2,10 @@ import copy
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -12,7 +14,62 @@ from jsonschema import Draft202012Validator
 
 class ArchitectureBaselineContractTest(unittest.TestCase):
     def setUp(self):
-        self.package = Path(__file__).parents[1]
+        self.package = Path(__file__).resolve().parents[1]
+        self.repo_root = next(
+            parent
+            for parent in (self.package, *self.package.parents)
+            if (parent / "trellis/guru-team-extension.json").is_file()
+        )
+        self.fixture = tempfile.TemporaryDirectory()
+        self.repository = Path(self.fixture.name)
+        subprocess.run(
+            ["git", "init", "-q"],
+            cwd=self.repository,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        common_dir_raw = subprocess.run(
+            ["git", "rev-parse", "--git-common-dir"],
+            cwd=self.repo_root,
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        common_dir = Path(common_dir_raw)
+        if not common_dir.is_absolute():
+            common_dir = self.repo_root / common_dir
+        source_runtime_state = common_dir / "guru-team/python/active.json"
+        fixture_runtime_state = (
+            self.repository / ".git/guru-team/python/active.json"
+        )
+        fixture_runtime_state.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_runtime_state, fixture_runtime_state)
+        fixture_skills_root = self.repository / ".trellis/guru-team"
+        shutil.copytree(
+            self.repo_root / "trellis/skills/guru-team/runtime",
+            fixture_skills_root / "runtime",
+        )
+        self.fixture_package = (
+            fixture_skills_root
+            / "skills/packages/guru-maintain-architecture-baseline"
+        )
+        shutil.copytree(self.package, self.fixture_package)
+        self.constitution_path = (
+            self.repository
+            / "docs/architecture/00-foundation/design-constitution.md"
+        )
+        self.write_current_constitution()
+
+    def tearDown(self):
+        self.fixture.cleanup()
+
+    def write_current_constitution(self):
+        self.constitution_path.parent.mkdir(parents=True, exist_ok=True)
+        self.constitution_path.write_text(
+            "# Design Constitution\n\nCurrent project authority fixture.\n",
+            encoding="utf-8",
+        )
 
     @staticmethod
     def digest(value):
@@ -110,6 +167,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             "baseline_identity": public_input["baseline"]["identity"],
             "baseline_status": "active",
             "constitution_authority_locator": public_input["constitution"]["authority_locator"],
+            "constitution_authority_status": public_input["constitution"]["authority_status"],
             "constitution_identity_kind": public_input["constitution"]["identity_kind"],
             "constitution_identity": public_input["constitution"]["identity"],
             "change_contract_locator": public_input["project_contract"]["change_contract_locator"],
@@ -209,11 +267,12 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             for field in ("expected_current_identity", "current_identity", "sync_kind", "sync_target"):
                 owner[field] = copy.deepcopy(public_input[field])
         return subprocess.run(
-            [str(self.package / "scripts/invoke.sh"), "--invocation", "-"],
+            [str(self.fixture_package / "scripts/invoke.sh"), "--invocation", "-"],
             input=json.dumps({"public_input": public_input, "owner_result": owner}),
             text=True,
             capture_output=True,
             check=False,
+            cwd=self.repository,
         )
 
     def invoke_canonical(self, public_input, selected):
@@ -288,6 +347,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             capture_output=True,
             check=False,
             env=environment,
+            cwd=self.repository,
         )
 
     def test_preserves_public_graph_identity_and_selects_only_2_0(self):
@@ -311,6 +371,37 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         )
         self.assertTrue(all(item["schema"]["schema_id"].endswith("2.0") for item in interface["public_contracts"]["input"]["profiles"]))
         self.assertTrue(all(item["schema"]["schema_id"].endswith("2.0") for item in interface["public_contracts"]["outputs"]))
+        architecture_input_ids = {
+            interface["public_contracts"]["input"]["aggregate_schema"]["schema_id"],
+            *(
+                item["schema"]["schema_id"]
+                for item in interface["public_contracts"]["input"]["profiles"]
+            ),
+        }
+        architecture_output_ids = {
+            item["schema"]["schema_id"]
+            for item in interface["public_contracts"]["outputs"]
+        }
+        self.assertEqual(len(architecture_input_ids), 5)
+        self.assertEqual(len(architecture_output_ids), 7)
+        for manifest_path in (
+            self.repo_root / "trellis/guru-team-extension.json",
+            self.repo_root / ".trellis/guru-team/extension.json",
+        ):
+            with self.subTest(manifest=manifest_path):
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                extension = manifest.get("extension", manifest)
+                inventory = extension["public_api"]["skill_contracts"]
+                self.assertTrue(
+                    architecture_input_ids.issubset(
+                        inventory["public_input_schema_ids"]
+                    )
+                )
+                self.assertTrue(
+                    architecture_output_ids.issubset(
+                        inventory["typed_output_schema_ids"]
+                    )
+                )
         for path in (self.package / "schemas").glob("*.json"):
             self.assertNotIn("architecture-baseline-input-aggregate-1.0", path.read_text())
             self.assertNotIn("architecture-baseline-output-current-1.0", path.read_text())
@@ -348,6 +439,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         })
         self.assertEqual(result.returncode, 0, result.stderr)
         output = json.loads(result.stdout)
+        self.assertEqual(output["source_profile"], "task_impact_sync")
+        self.assertEqual(output["constitution_status"], "current")
         self.assertNotIn("project_check_descriptors", public_input)
         self.assertNotIn("contribution_locator", output)
         self.assertNotIn("project_checks", output)
@@ -382,10 +475,12 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
 
         current_output = {
             "exit_id": "baseline_current",
+            "source_profile": "task_impact_sync",
             "task_locator": public_input["task_locator"],
             "stage": public_input["stage"],
             "baseline_identity": public_input["baseline"]["identity"],
             "constitution_identity": public_input["constitution"]["identity"],
+            "constitution_status": "current",
             "impact_kind": "architecture_impact",
             "promotion_state": "no_change",
             "contribution_locator": "docs/architecture/contributions/example",
@@ -423,6 +518,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             "baseline_identity",
             "baseline_status",
             "constitution_authority_locator",
+            "constitution_authority_status",
             "constitution_identity_kind",
             "constitution_identity",
             "change_contract_locator",
@@ -442,6 +538,10 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         self.assertEqual(
             contribution["properties"]["constitution_identity_kind"]["enum"],
             ["version", "content"],
+        )
+        self.assertEqual(
+            contribution["properties"]["constitution_authority_status"]["enum"],
+            ["current", "pending_reviewed_promotion"],
         )
 
     def test_constitution_is_exactly_five_identity_name_pairs_without_checklist_fields(self):
@@ -553,6 +653,73 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
                 invalid_repair = copy.deepcopy(repair)
                 invalid_repair["baseline"]["status"] = status
                 self.assert_schema_invalid(repair_schema, invalid_repair)
+
+        repair["stage"] = "branch_review"
+        repair_current = {
+            "typed_exit": "baseline_current",
+            "task_locator": repair["task_locator"],
+            "baseline_identity": repair["baseline"]["identity"],
+            "constitution_identity": repair["constitution"]["identity"],
+            "impact_kind": "no_architecture_impact",
+            "impact_reason": "The bounded repair restored the declared authority.",
+            "promotion_state": "no_change",
+        }
+        result = self.invoke(repair, repair_current)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        repair_output = json.loads(result.stdout)
+        self.assertEqual(repair_output["source_profile"], "repair")
+        self.assertEqual(repair_output["stage"], "branch_review")
+        self.assertEqual(repair_output["constitution_status"], "current")
+        for contract_path in (
+            self.repo_root / "trellis/workflows/guru-team/workflow.md",
+            self.repo_root / "trellis/presets/guru-team/spec/workflow/workflow-contract.md",
+        ):
+            contract_text = contract_path.read_text(encoding="utf-8")
+            self.assertIn("source_profile=task_impact_sync", contract_text)
+            self.assertIn("source_profile=bootstrap_foundation|repair", contract_text)
+            self.assertIn("source_profile=promotion", contract_text)
+
+        pending = self.load("public-input-impact.json")
+        pending["constitution"]["authority_status"] = "pending_reviewed_promotion"
+        pending_current = {
+            "typed_exit": "baseline_current",
+            "task_locator": pending["task_locator"],
+            "baseline_identity": pending["baseline"]["identity"],
+            "constitution_identity": pending["constitution"]["identity"],
+            "impact_kind": "no_architecture_impact",
+            "impact_reason": "Pending authority is not current.",
+            "promotion_state": "no_change",
+        }
+        result = self.invoke(pending, pending_current)
+        self.assertEqual(result.returncode, 3)
+        self.assertEqual(
+            json.loads(result.stdout)["field_path"],
+            "public_input.constitution.authority_status",
+        )
+
+        current = self.load("public-input-impact.json")
+        self.constitution_path.unlink()
+        result = self.invoke(current, {
+            **pending_current,
+            "task_locator": current["task_locator"],
+            "baseline_identity": current["baseline"]["identity"],
+            "constitution_identity": current["constitution"]["identity"],
+            "impact_reason": "A missing authority cannot be current.",
+        })
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(json.loads(result.stdout)["code"], "unsafe_path")
+        self.write_current_constitution()
+
+        current["constitution"]["authority_locator"] = "."
+        result = self.invoke(current, {
+            **pending_current,
+            "task_locator": current["task_locator"],
+            "baseline_identity": current["baseline"]["identity"],
+            "constitution_identity": current["constitution"]["identity"],
+            "impact_reason": "A directory cannot be constitution authority.",
+        })
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(json.loads(result.stdout)["code"], "unsafe_path")
 
     def test_applicable_unverified_check_cannot_return_current(self):
         public_input = self.load("public-input-impact-architecture.json")
@@ -1121,6 +1288,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             [str(self.package / "scripts/invoke.sh"), "--invocation", "-"],
             input=json.dumps({"public_input": envelope, "owner_result": owner}),
             text=True, capture_output=True, check=False,
+            cwd=self.repository,
         )
         self.assertEqual(result.returncode, 3)
         self.assertEqual(json.loads(result.stdout)["code"], "stale_identity")
@@ -1136,6 +1304,27 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         text = json.dumps(evals).lower()
         for private_term in ("afizzy", "flutter", "viewmodel", "controller"):
             self.assertNotIn(private_term, text)
+        input_statuses = {
+            path.name: json.loads(path.read_text(encoding="utf-8"))["constitution"][
+                "authority_status"
+            ]
+            for path in (self.package / "evals/files").glob("*-input.json")
+        }
+        self.assertEqual(
+            input_statuses.pop("impact-unpromoted-input.json"),
+            "pending_reviewed_promotion",
+        )
+        self.assertEqual(set(input_statuses.values()), {"current"})
+        unpromoted = next(
+            item for item in evals if item["id"] == "unpromoted-contribution"
+        )
+        self.assertIn("sync_required(promotion_required)", unpromoted["prompt"])
+        unpromoted_facts = json.loads(
+            (self.package / "evals/files/unpromoted-contribution-facts.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertIn("pending_reviewed_promotion", unpromoted_facts["scenario"])
 
 
 if __name__ == "__main__":

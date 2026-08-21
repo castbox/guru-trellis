@@ -14,7 +14,7 @@
     "freshness_identity": {"type": "string", "minLength": 1}, "repair_scope": {"type": "string", "minLength": 1}, "issue_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
   },
   "$defs": {
-    "constitution": {"type": "object", "additionalProperties": false, "required": ["authority_locator", "identity_kind", "identity", "principles"], "properties": {"authority_locator": {"type": "string", "minLength": 1}, "identity_kind": {"enum": ["version", "content"]}, "identity": {"type": "string", "minLength": 1}, "principles": {"$ref": "#/$defs/principles"}}},
+    "constitution": {"type": "object", "additionalProperties": false, "required": ["authority_locator", "authority_status", "identity_kind", "identity", "principles"], "properties": {"authority_locator": {"type": "string", "minLength": 1}, "authority_status": {"enum": ["current", "pending_reviewed_promotion"]}, "identity_kind": {"enum": ["version", "content"]}, "identity": {"type": "string", "minLength": 1}, "principles": {"$ref": "#/$defs/principles"}}},
     "principles": {
       "type": "array",
       "minItems": 5,

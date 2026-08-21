@@ -4,6 +4,7 @@ import argparse
 import copy
 import hashlib
 import json
+import stat
 import sys
 from pathlib import Path
 
@@ -83,6 +84,48 @@ def _locator(value: object, field: str) -> None:
     path = Path(value)
     if path.is_absolute() or ".." in path.parts:
         raise CommandError("unsafe_path", field, "Use a repository-relative locator without parent traversal.")
+
+
+def _require_current_constitution(constitution: dict, field: str) -> None:
+    if constitution["authority_status"] != "current":
+        raise CommandError(
+            "semantic_result_invalid",
+            f"{field}.authority_status",
+            "baseline_current requires a promoted current design-constitution authority.",
+            3,
+        )
+    locator = constitution["authority_locator"]
+    _locator(locator, f"{field}.authority_locator")
+    parts = Path(locator).parts
+    if not parts:
+        raise CommandError(
+            "unsafe_path",
+            f"{field}.authority_locator",
+            "Current design-constitution authority must resolve to a regular repository file.",
+        )
+    current = Path.cwd()
+    for part in parts:
+        current /= part
+        try:
+            current_stat = current.lstat()
+        except OSError as exc:
+            raise CommandError(
+                "unsafe_path",
+                f"{field}.authority_locator",
+                "Current design-constitution authority must resolve to a regular repository file.",
+            ) from exc
+        if stat.S_ISLNK(current_stat.st_mode):
+            raise CommandError(
+                "unsafe_path",
+                f"{field}.authority_locator",
+                "Current design-constitution authority cannot use a symlink-backed locator.",
+            )
+    if not stat.S_ISREG(current_stat.st_mode):
+        raise CommandError(
+            "unsafe_path",
+            f"{field}.authority_locator",
+            "Current design-constitution authority must resolve to a regular repository file.",
+        )
 
 
 def _bind_identity(public: dict, owner: dict, field: str) -> None:
@@ -332,6 +375,7 @@ def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
         if "sync_target" in container:
             _locator(container["sync_target"]["locator"], f"{name}.sync_target.locator")
     if exit_id == "baseline_current":
+        _require_current_constitution(public["constitution"], "public_input.constitution")
         expected_baseline_identity = public["baseline"]["identity"]
         if public["profile"] == "bootstrap_foundation":
             successor = public["successor_baseline"]
@@ -431,5 +475,8 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             output[key] = owner[key]
     if exit_id == "baseline_current" and owner.get("impact_kind") == "no_architecture_impact":
         output["impact_reason"] = owner["impact_reason"]
+    if exit_id == "baseline_current":
+        output["source_profile"] = owner["profile"]
+        output["constitution_status"] = owner["constitution"]["authority_status"]
     validate_json(output, _schema(package_root, EXITS[exit_id]), "stdout")
     return copy.deepcopy(output)

@@ -139,15 +139,21 @@ or test. Phase 2 performs the first project-check and semantic before/after
 judgment. Branch Review independently recomputes those concerns over the
 complete committed diff and never reuses Phase 2 as review proof.
 
-Only a fresh `baseline_current` may resume the matching stage. Missing or stale
-Architecture evidence, `architecture_conflict`, `contract_incomplete`, or
-`fitness_regression` cannot reach Publication. Stale baseline, constitution,
-contribution, expected-current, or stage identity returns `sync_required` to
-the Architecture owner. Acceptance/Finish requires `reviewed_promoted` for a
-long-term Architecture change or a current `no_change` proof. Any promotion
-diff repeats Phase 2, Task Commit, and independent Branch Review before
-Publication and Acceptance/Finish rerun. This is routing-only integration;
-Publication and Finalizer keep their existing package-owned business semantics.
+Every fresh `baseline_current` binds `constitution_status=current`, an existing
+regular project-owned constitution locator, and its exact source profile. Only
+`source_profile=task_impact_sync` may resume the matching stage.
+`source_profile=bootstrap_foundation|repair` reruns
+`task_impact_sync(stage=<affected-stage>)` before that stage can resume.
+`source_profile=promotion` always re-enters fresh Phase 2, Task Commit, and
+independent committed full-diff Branch Review before Publication or
+Acceptance/Finish reruns. Missing or stale Architecture evidence,
+`architecture_conflict`, `contract_incomplete`, or `fitness_regression` cannot
+reach Publication. Stale baseline, constitution, contribution,
+expected-current, or stage identity returns `sync_required` to the Architecture
+owner. Acceptance/Finish requires `reviewed_promoted` for a long-term
+Architecture change or a current `no_change` proof. This is
+routing-only integration; Publication and Finalizer keep their existing
+package-owned business semantics.
 
 ### Workflow mode selection and Phase 0 — Issue-backed intake
 
