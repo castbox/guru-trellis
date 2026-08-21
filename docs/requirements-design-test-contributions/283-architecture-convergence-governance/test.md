@@ -61,19 +61,25 @@
   canonical 与 installed manifest 均为 `62` inputs / `85` outputs，Architecture id 无缺失
   且两份 inventory 一致。
 - Architecture source/shared 与 installed/shared eval 均覆盖固定 `SCN-024..033` 十个场景并
-  全部通过；`guru-approve-task-plan`、`guru-check-task`、`guru-review-branch` 的 source
-  complete package tests 分别为 `25/25`、`18/18`、`19/19`，dogfood installed contract
-  tests 分别为 `21/21`、`9/9`、`15/15`。RDT package 为 `9/9`，package closure 为
-  `8/8`，finish-family integration 为 `6/6`，semantic retrieval contract 为 `4/4`。
+  全部通过；`guru-approve-task-plan`、`guru-check-task`、`guru-review-branch` 的 source 与
+  dogfood installed current contract tests 均分别为 `21/21`、`9/9`、`15/15`。RDT package
+  为 `9/9`，package closure 为 `8/8`，finish-family integration 为 `6/6`，semantic
+  retrieval contract 为 `4/4`。
 - Preset upstream ownership `7/7`、installer apply/reapply `78/78`、upgrade contract
   `20/20` 通过；最终 all-platform reapply 为零增量且零 backup/new/conflict/sidecar，
   dogfood overlay drift 与递归 `.new/.bak` 检查通过。
-- 完整 base-to-worktree candidate 共 `378` 个现存文件；其中 `300` 个 JSON fresh parse、
-  `13` 个 Python 文件 compile，canonical Bash syntax、`task.py validate` 与完整 candidate
-  `git diff --check` 通过；task validation 仅保留既有大 spec 注入截断 warning。
+- 最后的 canonical finding fix 已把三处 workflow current-route 合同同步到
+  `.trellis/workflow.md`，并让 `check-dogfood-overlay-drift.sh` 同时比较 canonical 与 dogfood
+  workflow；真实临时 fixture 已证明相同 workflow 通过、stale workflow 稳定报告
+  `CHANGED .trellis/workflow.md`，当前仓库增强后的 drift checker 通过。
+- 完整 base-to-worktree candidate 共 `429` 个路径（`379` 个现存、`50` 个删除）；其中
+  `300` 个 JSON fresh parse、`13` 个 Python 文件 compile，canonical Bash syntax、
+  `task.py validate` 与完整 candidate `git diff --check` 通过；task validation 仅保留既有
+  大 spec 注入截断 warning。
 - 当前 dirty worktree candidate 已在无 `.git` 的隔离临时目标完成一个代表性 current-version
-  clean installation：Trellis `0.6.15` 从公开 marketplace 初始化基础结构后，明确覆盖为当前
-  canonical workflow，再应用当前 all-platform preset；真实 installed public graph、
+  clean installation（`/tmp/guru-283-clean-install-fix.HdawKn/project`）：Trellis `0.6.15`
+  从公开 marketplace 初始化基础结构后，明确覆盖为当前 canonical workflow，再应用当前
+  all-platform preset；真实 installed public graph、
   installed/shared 固定十场景 public dispatcher、Phase 2 context smoke、Shared/Codex/Claude/
   Cursor parity、frozen reapply 与 recursive zero-sidecar 均通过。package
   `tests/test_contract.py` 是要求 source manifest 与 Git runtime 的 source-oriented unit

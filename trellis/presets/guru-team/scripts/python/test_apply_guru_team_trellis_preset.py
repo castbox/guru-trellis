@@ -2141,17 +2141,66 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
 
     def test_dogfood_drift_checks_ownership_before_payload_bytes(self) -> None:
-        checker = (
+        checker_path = (
             self.guru_root
             / "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"
-        ).read_text(encoding="utf-8")
+        )
+        checker = checker_path.read_text(encoding="utf-8")
 
         ownership_gate = checker.index('"$OWNERSHIP_CHECK" --repo "$REPO_ROOT" --json')
+        workflow_check = checker.index('cmp -s "$workflow_source" "$workflow"')
         payload_loop = checker.index('while IFS= read -r source; do')
+        self.assertLess(ownership_gate, workflow_check)
         self.assertLess(ownership_gate, payload_loop)
         self.assertIn("Missing executable ownership validator", checker)
         self.assertIn("current Guru-owned claims", checker)
-        self.assertIn("three canonical Guru Team finish overlays", checker)
+        self.assertIn("canonical Guru Team workflow and finish overlays", checker)
+
+        fixture = self.repo / "dogfood-drift"
+        ownership_check = (
+            fixture
+            / "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
+        )
+        ownership_check.parent.mkdir(parents=True)
+        ownership_check.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+        ownership_check.chmod(0o755)
+        (fixture / "trellis/presets/guru-team/overlays").mkdir(parents=True)
+
+        workflow_source = fixture / "trellis/workflows/guru-team/workflow.md"
+        workflow_source.parent.mkdir(parents=True)
+        workflow_source.write_text("canonical workflow\n", encoding="utf-8")
+        workflow = fixture / ".trellis/workflow.md"
+        workflow.parent.mkdir(parents=True)
+        workflow.write_bytes(workflow_source.read_bytes())
+
+        semantic_source = (
+            fixture
+            / "trellis/presets/guru-team/spec/workflow/semantic-retrieval.md"
+        )
+        semantic_source.parent.mkdir(parents=True)
+        semantic_source.write_text("semantic retrieval\n", encoding="utf-8")
+        semantic = fixture / ".trellis/spec/workflow/semantic-retrieval.md"
+        semantic.parent.mkdir(parents=True)
+        semantic.write_bytes(semantic_source.read_bytes())
+
+        matched = subprocess.run(
+            [str(checker_path), "--repo", str(fixture)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(matched.returncode, 0, matched.stderr)
+
+        workflow.write_text("stale workflow\n", encoding="utf-8")
+        drifted = subprocess.run(
+            [str(checker_path), "--repo", str(fixture)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(drifted.returncode, 1)
+        self.assertIn("CHANGED .trellis/workflow.md", drifted.stdout)
+        self.assertIn("Dogfood workflow/overlay drift detected", drifted.stderr)
 
     def test_main_reports_explicit_all_platforms_only_for_all_platforms_flag(self) -> None:
         with mock.patch(

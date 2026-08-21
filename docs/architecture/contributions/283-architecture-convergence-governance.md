@@ -9,6 +9,9 @@
 - impact/path：`architecture_impact` / `target_native`。
 - live authority binding：`docs/architecture/README.md` /
   `current-main-0.6.5-guru.37` / `active`。
+- current Phase 2 design constitution authority：
+  `docs/architecture/00-foundation/baseline.md` / `current`；其 current identity 由
+  `current-main-0.6.5-guru.37` 绑定。不存在的 successor locator 不能冒充 current authority。
 - expected current identity at promotion：`current-main-0.6.5-guru.37`；successor identity
   只能由 reviewed promotion 分配。
 - contribution state：`phase2_reviewed_candidate_pending_independent_full_diff_review`；
@@ -53,7 +56,9 @@
 ## Design constitution projection candidate
 
 - authority owner：项目 `docs/architecture/`。
-- candidate locator：`docs/architecture/00-foundation/design-constitution.md`。
+- current Phase 2 locator：`docs/architecture/00-foundation/baseline.md`；authority status 为
+  `current`，本轮 Architecture owner 只从这个现存 regular file 消费 current constitution。
+- successor candidate locator：`docs/architecture/00-foundation/design-constitution.md`。
 - identity kind/version：`version` / `guru-trellis-design-constitution-v1`；当前状态为
   `pending-reviewed-promotion`，只有 promotion owner 验证并写入 shared authority 后才可
   标为 active。
@@ -94,7 +99,7 @@ contribution 或 ADR。
 | Concern | Applicability for #283 | Candidate evidence/route |
 | --- | --- | --- |
 | `authority-binding` | applicable | Guru 2.0 candidate + project `.37`; stale -> `sync_required` |
-| `constitution-binding` | applicable | candidate locator + pending identity; missing at promotion -> `contract_incomplete` |
+| `constitution-binding` | applicable | current `baseline.md` + pending successor locator/identity; missing at promotion -> `contract_incomplete` |
 | `boundary-and-decision` | applicable | proposed identities + `ADR-283-CANDIDATE` |
 | `owner-and-single-writer` | applicable | Architecture owner is sole shared-current promotion writer |
 | `compatibility-and-exit` | applicable | no dual-read; exit when all producers/consumers/projections accept only 2.0 |
@@ -149,10 +154,14 @@ contribution 或 ADR。
   applicability 与 task real dependency 独立判断 `blocking`；runtime 不代替该判断。
 - evidence：Architecture source/dogfood installed contract `22/22`、source/installed graph、
   source/installed fixed 10-scenario eval、Architecture `5/7` interface 与 canonical/installed
-  `62/85` inventory、三个阶段 consumer、RDT/package/finish/semantic closure、preset
+  `62/85` inventory、三个阶段 consumer（source 与 installed 均为 `21/9/15`）、
+  RDT/package/finish/semantic closure、preset
   ownership/apply/reapply/upgrade、dogfood drift、JSON/Python/Bash/task/diff 静态门禁均已对
-  当前 candidate fresh 通过；详见 RDT `test.md`。当前 dirty candidate 还在无 `.git` 的隔离
-  目标完成了 Trellis `0.6.15` 代表性 clean installation：公开 marketplace 初始化后明确
+  当前 `429` 路径 candidate（`379` 个现存、`50` 个删除）fresh 通过；最后的 workflow
+  projection 修复已由增强后的 canonical/dogfood drift checker 与 stale-workflow fixture 覆盖，
+  详见 RDT `test.md`。当前 dirty candidate 还在无 `.git` 的隔离目标
+  `/tmp/guru-283-clean-install-fix.HdawKn/project` 完成了 Trellis `0.6.15` 代表性 clean
+  installation：公开 marketplace 初始化后明确
   覆盖当前 canonical workflow，应用当前 all-platform preset，并通过真实 installed public
   graph、installed/shared 十场景 dispatcher、Phase 2 context smoke、四平台 parity、reapply
   与 zero-sidecar。source-oriented unit harness 不是该无 `.git` 目标的 installed public

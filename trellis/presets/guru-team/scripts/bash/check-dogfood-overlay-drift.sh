@@ -10,12 +10,11 @@ usage() {
 Usage: check-dogfood-overlay-drift.sh [--repo <path>]
 
 Validate the current Guru-owned claims and managed asset/package closure, then
-compare the three canonical Guru Team finish overlays
-with installed dogfood copies in this repository, and verify the managed
-semantic retrieval spec exists. These checks provide normal
-version/drift binding, not an authenticity boundary. The command is read-only
-and exits non-zero on ownership failure or when any finish overlay copy is
-missing or different.
+compare the canonical Guru Team workflow and finish overlays with installed
+dogfood copies in this repository, and verify the managed semantic retrieval
+spec exists. These checks provide normal version/drift binding, not an
+authenticity boundary. The command is read-only and exits non-zero on ownership
+failure or when any managed copy is missing or different.
 USAGE
 }
 
@@ -60,6 +59,16 @@ fi
 missing=0
 changed=0
 
+workflow_source="$REPO_ROOT/trellis/workflows/guru-team/workflow.md"
+workflow="$REPO_ROOT/.trellis/workflow.md"
+if [[ ! -f "$workflow_source" || ! -f "$workflow" ]]; then
+  printf 'MISSING %s\n' ".trellis/workflow.md"
+  missing=$((missing + 1))
+elif ! cmp -s "$workflow_source" "$workflow"; then
+  printf 'CHANGED %s\n' ".trellis/workflow.md"
+  changed=$((changed + 1))
+fi
+
 while IFS= read -r source; do
   relative="${source#$OVERLAY_ROOT/}"
   target="$REPO_ROOT/$relative"
@@ -85,9 +94,9 @@ elif ! cmp -s "$semantic_spec_source" "$semantic_spec"; then
 fi
 
 if [[ "$missing" -gt 0 || "$changed" -gt 0 ]]; then
-  printf 'Dogfood overlay drift detected: %s missing, %s changed\n' "$missing" "$changed" >&2
+  printf 'Dogfood workflow/overlay drift detected: %s missing, %s changed\n' "$missing" "$changed" >&2
   printf 'Review the current Guru-owned overlay drift, then run trellis/presets/guru-team/scripts/bash/apply.sh --repo %q and inspect any .new/.bak files.\n' "$REPO_ROOT" >&2
   exit 1
 fi
 
-echo "Dogfood overlay copies match canonical Guru Team overlays."
+echo "Dogfood workflow and overlay copies match canonical Guru Team sources."

@@ -229,7 +229,7 @@ The graph contains exactly 33 workflow targets and 21 stop targets.
 ### Workflow target behavior
 | Target | Global behavior |
 | --- | --- |
-| guru-architecture-baseline-current-router | Validate one fresh `baseline_current` stage result and resume only that stage's closed standard-task target; Publication and Acceptance/Finish additionally require `promotion_state=no_change` or `promotion_state=reviewed_promoted`. |
+| guru-architecture-baseline-current-router | Validate the current constitution status/file and dispatch a fresh `baseline_current` by source profile: task impact may resume only its matching stage, bootstrap/repair reruns that stage's task impact, and promotion returns through fresh Phase 2/commit/review; Publication and Acceptance/Finish additionally require `promotion_state=no_change` or `promotion_state=reviewed_promoted`. |
 | guru-architecture-baseline-bootstrap-router | Enter Architecture foundation bootstrap or bounded repair for the exact missing authority without expanding task scope. |
 | guru-architecture-baseline-planning-router | Return `architecture_conflict` to Planning and `contract_incomplete` to its declared Planning/repair owner; never reinterpret either as current evidence. |
 | guru-architecture-baseline-check-router | Return `fitness_regression` to implementation/check and require the affected downstream stages again. |
@@ -289,8 +289,13 @@ stage calls are fresh invocations, not duplicated markers or reusable results.
 | Publication | `task_impact_sync(stage=publication)` | `guru-review-task-publication` |
 | Acceptance/Finish | `task_impact_sync(stage=acceptance_finish)` | `guru-finalize-task` |
 
-`baseline_current` resumes only the matching row. A missing result stops that
-stage. `baseline_incomplete` enters bootstrap/repair;
+Every `baseline_current` carries `constitution_status=current` and its exact
+source profile. Only `source_profile=task_impact_sync` may resume the matching
+row. `source_profile=bootstrap_foundation|repair` must rerun
+`task_impact_sync(stage=<affected-stage>)` before that stage can resume, while
+`source_profile=promotion` always re-enters fresh Phase 2, Task Commit, and
+independent committed full-diff Branch Review before any downstream stage. A
+missing result stops that stage. `baseline_incomplete` enters bootstrap/repair;
 `architecture_conflict` or `contract_incomplete` returns to Planning/repair;
 `fitness_regression` returns to implementation/check; and `blocked` stops.
 Stale baseline, constitution, contribution, expected-current, or stage identity
@@ -442,7 +447,9 @@ consume only its declared exit. Planning cannot approve without a fresh
 Architecture change contract. Then invoke guru-approve-task-plan and consume
 only its declared exit. A missing, stale, conflicting, incomplete, or regressing
 Architecture result never reaches approval. A current
-`no_architecture_impact` result adds no contribution or ADR requirement.
+`no_architecture_impact` result adds no contribution or ADR requirement. The
+current result must bind an authority marked current whose repository-relative
+constitution locator resolves to a regular project-owned file.
 
 #### 1.5 Task activation
 
