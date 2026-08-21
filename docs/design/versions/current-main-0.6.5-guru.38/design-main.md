@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-版本：`current-main-0.6.5-guru.37`；状态：`superseded`；provenance：`code_recovered`，绑定 baseline `5c059f49…` + #260 compatibility task delta。
+版本：`current-main-0.6.5-guru.38`；状态：`active`；provenance：`code_recovered` + #283 reviewed promotion，绑定 baseline `2d34abfc…` + #283 architecture convergence task delta（精确 revision 为当前 Git HEAD）。
 
 ## 分层与 ownership
 
@@ -27,6 +27,15 @@
 - `DES-017` Official migration order：existing cell 先运行 official upgrade/update dry-run 与条件式 migrate，再 workflow preview/switch，最后 preset reapply、backup reconciliation、recursive sidecar 与 ownership/drift gate。
 - `DES-018` A/B compatibility：A=`worktree/github_pr`，B=`current/none`，使用隔离 clone；验证两种 merge order、零 metadata intersection、同 owner Finish/provider/cleanup recovery 与 retained-ref reachability；A archive 后 installed history preview 必须返回唯一 non-empty PR candidate并绑定其 `finish-summary.json`。真实 GitHub A proof与 deterministic local fixture 分开绑定。
 - `DES-019` Platform script boundary：`preview-change-context-history.sh` 是 package-private validator wrapper；platform public projection只发布 `scripts/invoke.sh`，matrix显式证明 private wrapper 未泄漏。
+- `DES-026` Architecture 双维合同：Guru Team 方法论维度拥有 mandatory stage invocation、semantic route 与 freshness；项目维度拥有 baseline、constitution、required concerns、project checks 与具体正确答案；两者只在 task-local Architecture change contract 相交且不复制对方正文。
+- `DES-027` Architecture lifecycle：current baseline/constitution -> Planning impact/path -> qualified implementation discovery re-entry -> Phase 2 project checks + before/after -> task contribution/necessary ADR -> committed full-diff Branch Review -> serialized promotion -> fresh Phase 2/commit/Branch Review -> successor identity consumed by downstream stages/tasks。
+- `DES-028` Design constitution authority：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current` 唯一拥有原则正文；公共 projection 只含 `mature-practice-applicability`、`concept-semantic-completeness`、`cohesion-change-isolation`、`minimum-necessary-complexity`、`debt-one-way-convergence` 五个 identity/short name。
+- `DES-029` Architecture impact：恰好选择 `target_native|legacy_boundary_convergence|dedicated_refactor_slice`；#283 以 `target_native` 原子切换 2.0 consumers，不保留 1.0 dual-read/adapter，也不关闭 release GAP。
+- `DES-030` Project change contract：`guru-trellis-architecture-change-contract-v1` 绑定 required concern set `guru-trellis-architecture-change-concerns-v1`，覆盖 authority、constitution、boundary/decision、owner/single-writer、compatibility/exit、GAP/deviation、parallel scope、evidence/freshness 与 review/promotion。
+- `DES-031` Project check：current descriptor `guru-trellis-architecture-convergence:repository:1` / check `guru-trellis-architecture-convergence@1` 绑定每个 stage 的 applicable scope、rule/decision/GAP refs、before/after、evidence 与 freshness；AI 判定 applicability/blocking/route，runtime 只校验 descriptor/result 一一绑定。
+- `DES-032` Architecture routes：缺适用 contract/constitution/check facts 为 `contract_incomplete`，与 current authority 冲突为 `architecture_conflict`，新增或恶化偏移/owner 扩张/无退出双写/closed GAP 重现为 `fitness_regression`，baseline/constitution/contribution/expected-current stale 为 `sync_required`。
+- `DES-033` Contribution/promotion isolation：task writer 只写 task-owned contribution；Architecture owner 是 shared-current single-writer。promotion 绑定 independent committed range 与 expected current，live identity 推进时禁止覆盖并让旧 task re-entry。
+- `DES-034` Distribution/validation boundary：2.0 schema/runtime、canonical/dogfood/installed、Shared/Codex/Claude/Cursor 与十个 project-neutral scenarios 原子一致；#283 只要求 targeted checks 与一个代表性 clean install，#267 独占 exact-candidate release matrix/tag/Release/immutable smoke。
 
 ## Public I/O 与 private state
 
@@ -105,4 +114,4 @@ delivery / Finish / cleanup
 
 ## 数据与恢复
 
-Task index/history 查询来自 task/archive；finish-summary 是 compact closeout history。Provider/base 状态从 live Git/GitHub 恢复；stale/mismatch 返回 owning typed route。两个并行 task 只写各自 task/worktree/contribution，promotion 由唯一 shared authority owner 串行投影；普通恢复不创建 handoff、shared ledger 或授权记录。Compatibility evidence只向下游输出 source/version、Finish profile、archive locator、tracked-write、commit reachability 与结果边界，不输出完整日志、用户授权或临时仓库状态。
+Task index/history 查询来自 task/archive；finish-summary 是 compact closeout history。Provider/base 状态从 live Git/GitHub 恢复；stale/mismatch 返回 owning typed route。两个并行 task 只写各自 task/worktree/contribution，promotion 由唯一 shared authority owner 串行投影；Architecture promotion diff 必须重新进入 Phase 2、task commit 与独立 Branch Review。普通恢复不创建 handoff、shared ledger 或授权记录。Compatibility evidence只向下游输出 source/version、Finish profile、archive locator、tracked-write、commit reachability 与结果边界，不输出完整日志、用户授权或临时仓库状态。

@@ -6,5 +6,8 @@
 | `ADR-002` | accepted | RDT 与 Architecture 保持独立 semantic owners，Bootstrap 只做编排与 cross-review |
 | `ADR-003` | accepted | current main as-built 与 stable released baseline 分开版本化 |
 | `ADR-004` | accepted | `.trellis/spec` 只做 minimal locator/usage projection |
+| `ADR-005` | accepted | 双维 authority 只在 task-local change contract 相交；shared current 由 expected-current-bound single writer 在 independent review 后 promotion，并强制 post-promotion re-entry |
 
 后续 supersede 时保留 predecessor/successor identity 与历史边界，不改写旧决策为 current evidence。
+
+`ADR-005` 正文见 [`005-architecture-lifecycle-convergence.md`](./005-architecture-lifecycle-convergence.md)。

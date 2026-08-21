@@ -1,6 +1,6 @@
 # 当前测试策略
 
-版本：`current-main-0.6.5-guru.37`；状态：`superseded`。
+版本：`current-main-0.6.5-guru.38`；状态：`active`。
 
 ## Evidence 分层
 
@@ -23,6 +23,15 @@
 | `TST-015` | capability preservation | before/after complete projection、template hash、mode、sidecar 与 Docs authority equality | 仅 version 字符串检查 |
 | `TST-016` | installed SSOT contracts | RDT/Architecture/Bootstrap profiles 与双 SSOT projection 保持 | package discovery 或 `--help` |
 | `TST-017` | A/B lifecycle and live provider | 独立 Finish routes、recovery、merge order、reachability 与真实 GitHub expected-head merge/closure | fake provider 单独结论 |
+| `TST-018` | architecture stage lifecycle | Planning/discovery/Phase 2/Branch Review/Publication/Acceptance invocation、freshness、unique consumer 与 post-promotion re-entry | 任一旧阶段结果或测试数量 |
+| `TST-019` | design constitution | unique locator + current version/content identity + exactly five stable identity/short names；正文 authority 隔离 | score、required verdict 或公共 checklist |
+| `TST-020` | architecture path | `target_native|legacy_boundary_convergence|dedicated_refactor_slice` 互斥，no-impact 独立 | 文件路径/数量分类 |
+| `TST-021` | task-local change contract | 双维 authority、required concern applicability、owner/single-writer、compatibility exit、parallel scope、deviation、evidence、review/promotion 完整 | optional 空字段或默认 route |
+| `TST-022` | project architecture check | current descriptor/result 一一绑定、before/after、blocking、evidence/unavailable reason、freshness 与 regression route | generic runtime 代替项目语义 |
+| `TST-023` | contribution and ADR | task-owned contribution 隔离、ADR trigger、independent review 与 expected-current-bound serialized promotion | implementation tests 代替 promotion |
+| `TST-024` | parallel stale | 独立 contribution scope、shared current/GAP/owner 禁止竞争、successor 后旧 task re-entry | 锁、shared ledger 或 TOCTOU 协议 |
+| `TST-025` | Architecture 2.0 atomic projection | schema/runtime/canonical/dogfood/installed/platform/consumers 无 legacy selector 或 dual-read | 部分投影或隐式 migration |
+| `TST-026` | #283 targeted validation | package/runtime/eval、十场景、preset reapply/drift/sidecar 与一个代表性 clean install | #267 exact-candidate matrix/tag/Release/smoke |
 
 ## 核心场景
 
@@ -44,6 +53,16 @@
 - `SCN-014`：每个 cell 运行 RDT、Architecture、Bootstrap 全 profile installed eval，并保持 #266 docs authority 与最小 spec projection。
 - `SCN-015`：local A/B 完成两种 merge order、零 metadata intersection、task-local archive、Finish/provider/cleanup 同 owner recovery 与 cleanup 后 reachability；B 的 GitHub 调用为零；A archive 后 history query 返回唯一 `PR #301` finish-summary candidate。
 - `SCN-016`：真实 A disposable repo 的 PR #2 在 expected source head 上 rebase merge，Issue #1 在 merge 后关闭；remote branch/repo cleanup 后 retained-ref proof仍成立。
+- `SCN-024 no-impact`：fresh minimal current result，不创建 contribution/ADR/project-check burden。
+- `SCN-025 target-native`：直接建立 target boundary 与唯一 owner；新增 legacy authority、dual-read 或 adapter 被阻断。
+- `SCN-026 legacy-boundary convergence`：decision/GAP、remaining debt、compatibility owner/exit 与 forbidden scope 完整且只收敛局部旧边界。
+- `SCN-027 dedicated refactor slice`：行为/API/规则不变，单一主写，小切片可验证、观测、回滚并有旧实现删除条件。
+- `SCN-028 scope expansion`：persistence/SDK/owner/boundary 等材料扩大使 Planning result stale 并 re-entry。
+- `SCN-029 fitness regression`：第二 authority、legacy owner 扩大、无退出双写或 closed GAP 重现返回 `fitness_regression`。
+- `SCN-030 parallel stale`：task A promotion 后，task B 的旧 current identity 返回 `sync_required`。
+- `SCN-031 unpromoted contribution`：实现/测试通过但 contribution/ADR/review/promotion 缺失时 Publication/Finish 阻断。
+- `SCN-032 next-task consumption`：successor baseline/constitution/decision/GAP/owner 是下一次 Planning 唯一 current input。
+- `SCN-033 missing external evidence`：保持 `evidence_gap|unverified`，不虚构 pass、GAP closure、排期或发布。
 - `CASE-001`：每个 active interface 的 external exit 恰有唯一 consumer 或 stop，registry/interface/workflow 闭包。
 - `CASE-002`：semantic gate 发生在 recorder/validator 前，脚本不接收或持久化授权。
 
@@ -51,5 +70,5 @@
 
 先读取 `.trellis/spec/workflow/quality-guidelines.md` 的 `Validation Scope Ownership`。普通 feature/docs/spec Issue 运行与 accepted scope 相关的最小可靠集合；完整多平台 Throwaway 只属于专项兼容/upgrade/release Issue。任何 SKIP、未配置 live 环境或历史 PR 声明都明确写成 `unverified`。
 
-完整矩阵只证明 `public_plus_local_candidate` 与 current source compatibility；`.37` stable tag、
+完整矩阵只证明 `public_plus_local_candidate` 与 current source compatibility；`.38` 是 knowledge identity，`.37` stable tag、
 GitHub Release 与 tag-pinned release smoke 必须继续标记为 #267 boundary。

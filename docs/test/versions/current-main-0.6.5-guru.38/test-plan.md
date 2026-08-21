@@ -1,7 +1,7 @@
 # 当前测试计划与证据
 
-版本：`current-main-0.6.5-guru.37`；状态：`superseded`；source baseline：main
-`5c059f4943edad7dfe25182a78af94759d41f9a1` + #260 compatibility task delta。
+版本：`current-main-0.6.5-guru.38`；状态：`active`；source baseline：main
+`2d34abfc9ea3ef488aedf529e022854050270db7` + #283 architecture convergence task delta。
 
 ## Replacement before-state authority
 
@@ -66,16 +66,26 @@ candidate tree 自引用失效。workflow evidence 是 `public_plus_local_candid
 remote branch 与 disposable repository 已删除，本地 scenario resources移动到 Trash且可恢复，
 删除远端后 retained-ref reachability 已重验。
 
+## #283 Architecture convergence and reviewed promotion
+
+| Check | Current result | Boundary |
+| --- | --- | --- |
+| complete committed task range | PASS：base `2d34abfc…` -> reviewed head `86a2cc1a…`，5 commits / 429 paths | promotion delta excluded until fresh re-entry |
+| Architecture semantic Branch Review | `baseline_current` / `architecture_impact` / `target_native` / `reviewed_candidate` | exact committed range、current descriptor/result、before/after independently recomputed |
+| independent `guru-review-branch` | schema 6.0 `passed`，open findings zero | current gate consumed；旧 gate只保留 ignored stale backup |
+| representative clean installation | PASS：Trellis `0.6.15`、public marketplace bootstrap、exact local committed workflow、all-platform preset、21 packages / 72 commands / 4229 managed files | local pre-push evidence；不是 formal verifier typed exit或 #267 matrix |
+| Architecture/RDT promotion | `.37` expected current -> `.38` current knowledge identity；design constitution/change contract/ADR/history/traceability 同步 | serialized owner gate 后必须 fresh Phase 2/commit/Branch Review |
+
+Architecture package的 source/dogfood `22/22`、两套固定十场景 `10/10`、Planning/Phase 2/Branch Review consumers `21/21`、`9/9`、`15/15`、RDT/package/finish/retrieval `9/9`、`8/8`、`6/6`、`4/4` 与 preset ownership/apply/upgrade `7/7`、`78/78`、`20/20` 均绑定 reviewed task candidate。promotion 仅把这些已审查的 contract/evidence 提升到 shared current；它不把 promotion-created diff 冒充为已复核。
+
 ## Current boundaries
 
 - `.37` stable tag、GitHub Release、tag-pinned clean install与 release smoke：`unverified`，owner=#267。
+- `.38` 只表示 current RDT/Architecture knowledge identity；extension manifest 仍为 `0.6.5-guru.37`，未发生 version bump。
 - #248 Acceptance/Finish handoff 与 #252 cleanup public owner未实现；本次只提供可消费兼容事实。
 - full matrix logs、临时 repository/runtime、用户授权与完整 hash bundle不进入 current SSOT。
-- #263/#264/#265 semantic contracts未在 #260 重写；已知 #264 Skill wording混入 selector
-  保持 pre-existing owner defect，不由本任务修复。
 - 所有 matrix run 都保持 `real_github_verified:false`；最终 candidate 的精确
   source/matrix identity 只保留在 runtime/conversation evidence，不替代独立真实
   GitHub A evidence。
 
-Phase 2 `guru-check-task`、reviewed commit、独立 Branch Review 与 Publication/Finalizer
-仍须绑定最终完整 diff后执行；此前证据不替代这些 gate。
+promotion-created diff 的 Phase 2 `guru-check-task`、新 task commit、独立 Branch Review 与 Publication/Finalizer仍须绑定最终完整 diff执行；此前证据不替代这些 gate。

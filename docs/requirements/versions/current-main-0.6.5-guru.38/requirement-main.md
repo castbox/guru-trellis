@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.37`；状态：`superseded`；基线：main `5c059f4943edad7dfe25182a78af94759d41f9a1` + #260 compatibility task delta。
+版本：`current-main-0.6.5-guru.38`；状态：`active`；基线：main `2d34abfc9ea3ef488aedf529e022854050270db7` + #283 architecture convergence task delta（精确 revision 为当前 Git HEAD）。
 
 ## 目标、角色与适用范围
 
@@ -30,6 +30,15 @@
 - `REQ-018`：升级前后 active Skill、interface、schema、exit、command、consumer、route、managed path、mode、template-hash 与 Docs authority 的完整投影不得出现未审查能力丢失。`verified`：21 active Skills、89 exits 与 installed projection 保持。
 - `REQ-019`：#263 RDT、#264 Architecture、#265 Bootstrap installed profiles 与 #266 双 SSOT/Architecture authority 必须在升级后保持；`.trellis/spec` 仍是最小 locator/index projection。`verified`：每个 cell 的 installed eval 与 docs projection check。
 - `REQ-020`：同一 clean base 的两个业务 task 必须保持 workspace/provider/archive/Finish/cleanup ownership 隔离；B 的 `none` route 不调用 GitHub，A 的真实 `github_pr` route 必须使用单独确认的 disposable repository，并在 cleanup 前后证明 required commit reachability。`verified`：local A/B matrix 与真实 GitHub A route。
+- `REQ-027`：Architecture Baseline 是标准 task 从 Planning、qualified implementation discovery、Phase 2、Branch Review、Publication 到 Acceptance/Finish 的唯一项目架构 SSOT；schema/runtime 只支撑 lifecycle，不成为架构判断 owner。
+- `REQ-028`：每个标准 task 必须进入 Architecture semantic owner，并在 task-local contract 同时绑定 Guru Team 方法论 identity 与项目 Architecture Baseline/change-contract identity；任一缺失、过期、冲突或材料边界扩大均 fail closed/re-entry。
+- `REQ-029`：项目 Architecture Baseline 必须唯一声明 current 设计宪法 locator 及 version/content identity。Guru Team 只消费 `mature-practice-applicability`、`concept-semantic-completeness`、`cohesion-change-isolation`、`minimum-necessary-complexity`、`debt-one-way-convergence` 五个 identity/short name，不拥有原则正文、解释、评分或逐项 verdict。
+- `REQ-030`：`architecture_impact` 必须恰好选择 `target_native`、`legacy_boundary_convergence` 或 `dedicated_refactor_slice`；`no_architecture_impact` 是独立快速结果。#283 采用 `target_native`，不新增 legacy authority、dual-read 或 migration adapter。
+- `REQ-031`：Architecture change contract 必须完整绑定 requirement/behavior authority、baseline/constitution、domain/integration/decision/GAP、required concerns、current/target owner、single-writer、compatibility exit、parallel scope、deviation/deletion conditions、design responsibility、before/after、project checks、evidence、contribution/ADR/review/promotion 与 expected current identity。
+- `REQ-032`：Phase 2 首次判断 candidate before/after，Branch Review 从 exact committed full diff 独立重算。项目检查结果绑定 current descriptor identity、applicability、rule/decision/GAP refs、`pass|fail|unverified`、evidence/unavailable reason 与 freshness；AI 根据真实依赖判断 blocking，新增或恶化偏移返回 `fitness_regression`。
+- `REQ-033`：普通 task 只写自己的 RDT/Architecture contribution；仅当 decision、原则权衡/例外、GAP lifecycle、owner/single-writer 或 compatibility exit 改变时创建 ADR candidate。shared current 由唯一 Architecture owner 在 independent review 后按 expected current identity 串行 promotion。
+- `REQ-034`：并行 task 使用不同 contribution locator，不得 review 前写 shared current、竞争同一 GAP/owner、形成双写或两个 current authority。任一 promotion 推进 current 后，旧 identity task 必须 `sync_required` 并重做 impact、satisfaction 与 parallel-scope 判断。
+- `REQ-035`：Architecture 2.0 schema/runtime、canonical/dogfood/installed/platform projection 与项目中立十场景必须原子承接上述 lifecycle，stable Skill/profile/exit ids 不变；外部 evidence 不可得时保持 `evidence_gap|unverified`。#267 release matrix/tag/Release/immutable smoke 与 business-repository refactor不属于 #283。
 
 ## 生命周期行为
 
@@ -41,7 +50,7 @@
 | `BEH-004` Review | exact commit、完整 branch range review、finding closure 与 fresh final review | commit/review Skills |
 | `BEH-005` Publish | PR readiness、deterministic finalization、expected-head merge、Issue closure verification | publication/finalize/merge Skills |
 | `BEH-006` Recovery | base evolution、provider recovery、stale/re-entry 保留唯一 mapped consumer，fail closed | reconcile 与 owning Skill |
-| `BEH-007` SSOT | RDT、Architecture、Bootstrap 维护 version/status/freshness 与最小投影 | #263/#264/#265 packages |
+| `BEH-007` SSOT | RDT、Architecture、Bootstrap 维护 version/status/freshness；Architecture 全阶段消费 current constitution/change contract，并通过 reviewed promotion 单向收敛 | RDT/Architecture/Bootstrap semantic owners |
 | `BEH-008` History/Finish | acceptance 后产生唯一 archive/finish result，index/history 可查询并保护 exact retained refs | Finalizer/Merge/task history owners |
 | `BEH-009` Distribution | marketplace install、official update/upgrade、workflow selection、preset reapply、sidecar/drift validation 按序执行 | marketplace/preset/verification owners |
 | `BEH-010` Terminal projection | Finalizer terminal cleanup 后从 archive/live ready authority 投影 `ready_for_merge`，真实 stale 继续拒绝 | `guru-finalize-task` |
@@ -53,4 +62,4 @@
 
 ## 非目标
 
-本 authority 不把 `.37` 称为已发布 stable release，不实现 #248/#252 public owner，也不把业务仓库私有 PRD、完整日志、临时 hash bundle 或用户授权写入 current intent。
+本 authority 的 `.38` 是 knowledge identity，不是 extension/release revision。本 authority 不把 extension `.37` 称为已发布 stable release，不实现 #248/#252 public owner，也不把业务仓库私有 PRD、完整日志、临时 hash bundle 或用户授权写入 current intent。
