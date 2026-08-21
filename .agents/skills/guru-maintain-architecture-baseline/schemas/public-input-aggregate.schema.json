@@ -1,1 +1,10 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","oneOf":[{"$ref":"public-input-bootstrap.schema.json"},{"$ref":"public-input-impact.schema.json"},{"$ref":"public-input-promotion.schema.json"},{"$ref":"public-input-repair.schema.json"}]}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-architecture-baseline-input-aggregate-2.0",
+  "oneOf": [
+    {"$ref": "public-input-bootstrap.schema.json"},
+    {"$ref": "public-input-impact.schema.json"},
+    {"$ref": "public-input-promotion.schema.json"},
+    {"$ref": "public-input-repair.schema.json"}
+  ]
+}

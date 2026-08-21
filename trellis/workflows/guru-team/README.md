@@ -114,6 +114,19 @@ semantic owner。六个 Gate exits 分别恢复原 route、进入 bounded Branch
 变化本身不使 authority、task-content review 或 Publication metadata stale；Finalizer 的
 `base_reconciliation_required` 与 `publication_review_stale` 是两个独立合同。
 
+每个 standard task 还必须在 Planning、qualified implementation discovery
+boundary expansion、Phase 2、committed full-diff Branch Review、Publication 与
+Acceptance/Finish 六个阶段重新调用
+`guru-maintain-architecture-baseline:task_impact_sync`。Planning 缺 current
+Architecture Baseline、design constitution 或 project change-contract 结果不能批准；
+scope/risk/owner/state authority/persistence/SDK/external/architecture boundary 扩大使
+旧结果 stale。Phase 2 首次判断 candidate before/after，Branch Review 必须从完整 committed
+diff 独立重算，不能复用 Phase 2。Publication 拒绝 missing/stale/conflict/incomplete/
+fitness regression/unpromoted state；Finish 只接受 current `no_change` 或
+`reviewed_promoted`。Promotion diff 必须重新进入 Phase 2、Task Commit 与 Branch Review，
+baseline advance 固定返回 `sync_required`。Global workflow 只拥有这些 stage router；
+Publication 与 Finalizer 的业务语义仍由各自 package 独占。
+
 新 Skill 必须引用 installed `.trellis/spec/workflow/semantic-retrieval.md`，不得在 workflow、
 README、平台 entry 或 package 中复制中英文概念族。完整 runtime、schema、commands、tests 与
 Shared/Codex/Claude/Cursor discovery copies 由 preset 根据 current registry 原子安装。升级顺序

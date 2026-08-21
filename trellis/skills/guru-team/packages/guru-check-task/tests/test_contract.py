@@ -198,6 +198,49 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         workflow = sources["workflow"].read_text(encoding="utf-8")
         self.assertIn("Official `trellis-*` agent files remain", workflow)
 
+    def test_phase2_consumes_current_architecture_checks_and_before_after(self) -> None:
+        repo = self.package.parents[4]
+        sources = {
+            "skill": self.package / "SKILL.md",
+            "contract": self.package / "references/contract.md",
+            "workflow": repo / "trellis/workflows/guru-team/workflow.md",
+        }
+        for label, path in sources.items():
+            with self.subTest(source=label):
+                text = " ".join(path.read_text(encoding="utf-8").split())
+                self.assertIn("task_impact_sync(stage=phase2)", text)
+                self.assertIn("project Architecture check", text)
+                self.assertIn("before/after", text)
+                self.assertNotIn("Afizzy", text)
+
+        for label in ("contract", "workflow"):
+            text = " ".join(sources[label].read_text(encoding="utf-8").split())
+            self.assertIn("fitness_regression", text)
+
+        expansion_terms = (
+            "scope", "risk", "owner", "state authority", "persistence",
+            "SDK lifecycle", "external integration", "architecture boundary",
+        )
+        for label in ("skill", "contract", "workflow"):
+            text = " ".join(sources[label].read_text(encoding="utf-8").split())
+            self.assertIn("stage=implementation_discovery", text)
+            for term in expansion_terms:
+                self.assertIn(term, text)
+            self.assertRegex(
+                text,
+                r"(?:invalidates|makes).*Planning(?:-stage)? Architecture result|Planning(?:-stage)? Architecture result.*stale",
+            )
+
+        workflow = sources["workflow"].read_text(encoding="utf-8")
+        phase = workflow.split("#### 2.2 Task check", 1)[1].split("## Phase 3", 1)[0]
+        self.assertLess(
+            phase.index("task_impact_sync(stage=phase2)"),
+            phase.index("Guru-check-task's passed exit"),
+        )
+        contract = " ".join(sources["contract"].read_text(encoding="utf-8").split())
+        self.assertIn("does not read Architecture private state", contract)
+        self.assertIn("None can be converted into a Phase 2 pass", contract)
+
     def test_package_json_has_no_authorization_or_routine_handoff_fields(self) -> None:
         forbidden = {
             "agent_assignment", "confirmation", "confirmation_ref",

@@ -15,6 +15,18 @@ authority, scope, design, implementation planning, acceptance verifiability,
 Docs SSOT, provenance, and supported unusual scenarios. The AI owns findings,
 revision actions, scope proposals, the final route, and delta classification.
 
+Before that review may return `approved`, consume a fresh
+`guru-maintain-architecture-baseline:task_impact_sync(stage=planning)`
+`baseline_current` result and reread its project-owned Architecture Baseline,
+design-constitution authority, and Architecture change-contract authority.
+Planning cannot approve a missing or stale Architecture result, a missing
+constitution or change contract, or an unresolved conflict, incomplete
+contract, regression, or sync route. Bind the current impact/change-path result
+inside the existing design-adequacy and provenance judgments; do not copy the
+Architecture owner's reasoning or turn constitution principles into a second
+checklist. A current `no_architecture_impact` result creates no contribution or
+ADR burden.
+
 Before an acceptance scenario, negative test, behavior constraint, or planning
 finding participates in that review, form only the profile-specific candidate
 set and invoke `guru-qualify-normal-scenario` with `planning_scenario_set`.

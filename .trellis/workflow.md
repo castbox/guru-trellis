@@ -229,6 +229,10 @@ The graph contains exactly 33 workflow targets and 21 stop targets.
 ### Workflow target behavior
 | Target | Global behavior |
 | --- | --- |
+| guru-architecture-baseline-current-router | Validate the current constitution status/file and dispatch a fresh `baseline_current` by source profile: task impact may resume only its matching stage, bootstrap/repair reruns that stage's task impact, and promotion returns through fresh Phase 2/commit/review; Publication and Acceptance/Finish additionally require `promotion_state=no_change` or `promotion_state=reviewed_promoted`. |
+| guru-architecture-baseline-bootstrap-router | Enter Architecture foundation bootstrap or bounded repair for the exact missing authority without expanding task scope. |
+| guru-architecture-baseline-planning-router | Return `architecture_conflict` to Planning and `contract_incomplete` to its declared Planning/repair owner; never reinterpret either as current evidence. |
+| guru-architecture-baseline-check-router | Return `fitness_regression` to implementation/check and require the affected downstream stages again. |
 | guru-requirements-design-test-ssot-current-router | Consume the reviewed authority locator, active version, scope, status, and freshness; the next owner rereads live Requirements, Design, and Test authority. |
 | guru-requirements-design-test-ssot-planning-router | Return the exact affected scope and revision code to the current planning or implementation owner. |
 | guru-requirements-design-test-ssot-bootstrap-router | Enter controlled foundation bootstrap or repair for the declared missing layer without expanding business scope. |
@@ -269,6 +273,48 @@ Every stop target returns the owning Skill result and safe remediation, then
 waits for changed authority or external state. A stop never guesses another
 route or exposes package-private state.
 
+### Mandatory Architecture stage routing
+
+Every standard task invokes the one stable
+`guru-maintain-architecture-baseline` owner through `task_impact_sync` at each
+applicable stage. The single mandatory marker above identifies the Skill; these
+stage calls are fresh invocations, not duplicated markers or reusable results.
+
+| Stage | Required Architecture call | Only current resume target |
+| --- | --- | --- |
+| Planning | `task_impact_sync(stage=planning)` | `guru-approve-task-plan` |
+| Qualified implementation expansion | `task_impact_sync(stage=implementation_discovery)` | `guru-phase2-implementation-coordinator` |
+| Phase 2 | `task_impact_sync(stage=phase2)` | `guru-check-task` |
+| Branch Review | `task_impact_sync(stage=branch_review)` over the committed full diff | `guru-review-branch` |
+| Publication | `task_impact_sync(stage=publication)` | `guru-review-task-publication` |
+| Acceptance/Finish | `task_impact_sync(stage=acceptance_finish)` | `guru-finalize-task` |
+
+Every `baseline_current` carries `constitution_status=current` and its exact
+source profile. Only `source_profile=task_impact_sync` may resume the matching
+row. `source_profile=bootstrap_foundation|repair` must rerun
+`task_impact_sync(stage=<affected-stage>)` before that stage can resume, while
+`source_profile=promotion` always re-enters fresh Phase 2, Task Commit, and
+independent committed full-diff Branch Review before any downstream stage. A
+missing result stops that stage. `baseline_incomplete` enters bootstrap/repair;
+`architecture_conflict` or `contract_incomplete` returns to Planning/repair;
+`fitness_regression` returns to implementation/check; and `blocked` stops.
+Stale baseline, constitution, contribution, expected-current, or stage identity
+always returns `sync_required` to the Architecture owner.
+`sync_required(sync_kind=promotion_required)` enters that owner's declared
+serialized promotion route; baseline/constitution advance or other stale
+authority is repaired or resynchronized by that owner and the affected stage
+is rerun.
+
+Publication rejects missing or stale Architecture evidence, every conflict,
+incomplete contract, fitness regression, and `promotion_state=reviewed_candidate`.
+Acceptance/Finish accepts a long-term Architecture change only as
+`reviewed_promoted`, or accepts a current `no_change` proof when shared current
+does not change. A promotion-created shared-current diff returns to fresh Phase
+2, a new task commit, and independent committed full-diff Branch Review before
+Publication and Acceptance/Finish rerun. This router establishes Architecture
+eligibility only; it does not absorb PR-publication or Finalizer business
+semantics from their owning packages.
+
 ### Mandatory qualification profiles
 
 The workflow invokes the stable `guru-qualify-normal-scenario` id at these exact
@@ -302,16 +348,16 @@ target is the existing `guru-resume-implementation` workflow API.
 
 ```text
 Phase 0: Intake  -> issue-backed base sync, context, clarification, review, workspace
-Phase 1: Plan    -> planning artifacts, plan approval, plan review pause, task activation
-Phase 2: Execute -> implementation, task check
-Phase 3: Finish  -> docs reconciliation, commit, branch review, publication, finalization
+Phase 1: Plan    -> planning artifacts, Architecture impact, plan approval, plan review pause, task activation
+Phase 2: Execute -> implementation discovery re-entry, Architecture candidate check, task check
+Phase 3: Finish  -> docs reconciliation, commit, Architecture full-diff review, publication/finish eligibility, finalization
 ```
 
 | State | Route |
 | --- | --- |
 | no active task | Tool-free classification, then Phase 0 for repo-changing work. |
-| planning | Produce the three planning documents and Docs SSOT Plan, run wording review, then invoke guru-approve-task-plan. |
-| in_progress | Validate the task worktree, implement the approved scope, then invoke guru-check-task. |
+| planning | Produce the three planning documents and Docs SSOT Plan, run wording review, obtain current Planning Architecture impact, then invoke guru-approve-task-plan. |
+| in_progress | Validate the task worktree, re-enter Architecture on qualifying expansion, implement the approved scope, then run the Phase 2 Architecture/check route. |
 | completed | Enter Phase 3 through the canonical guru-finish-work route. |
 
 [workflow-state:no_task]
@@ -325,8 +371,8 @@ suitability before bounded writes and never authorizes Git/GitHub publication.
 
 [workflow-state:planning]
 Complete prd.md, design.md, implement.md, and the Docs SSOT Plan. Run the
-planning wording route and guru-approve-task-plan. Automatically consume mapped
-non-approved exits. A checked approved exit enters the workflow-owned plan
+planning wording route, current Architecture Planning stage, and
+guru-approve-task-plan. Automatically consume mapped non-approved exits. A checked approved exit enters the workflow-owned plan
 presentation and dialogue-local review pause before task activation.
 [/workflow-state:planning]
 
@@ -337,7 +383,8 @@ invocation or task activation.
 
 [workflow-state:in_progress]
 Validate the task worktree, implement the approved scope, collect configured
-Trellis implementation/check evidence, and invoke guru-check-task. Do not create
+Trellis implementation/check evidence, consume the fresh Phase 2 Architecture
+stage, and invoke guru-check-task. Do not create
 implementation-handoff.md.
 [/workflow-state:in_progress]
 
@@ -393,7 +440,16 @@ of guru-review-contract-wording.
 
 #### 1.4 Task plan approval
 
-Invoke guru-approve-task-plan and consume only its declared exit.
+Mandatory invoke
+`guru-maintain-architecture-baseline:task_impact_sync(stage=planning)` and
+consume only its declared exit. Planning cannot approve without a fresh
+`baseline_current` result that binds the current design constitution and project
+Architecture change contract. Then invoke guru-approve-task-plan and consume
+only its declared exit. A missing, stale, conflicting, incomplete, or regressing
+Architecture result never reaches approval. A current
+`no_architecture_impact` result adds no contribution or ADR requirement. The
+current result must bind an authority marked current whose repository-relative
+constitution locator resolves to a regular project-owned file.
 
 #### 1.5 Task activation
 
@@ -480,9 +536,25 @@ mechanism revision returns here for remove/replace and a fresh invocation;
 blocked stops. The coordinator consumes the result in-process and writes no
 qualification artifact or checkpoint.
 
+After qualification, an expansion of scope, risk, owner, state authority,
+persistence, SDK lifecycle, external integration, or another architecture
+boundary makes the Planning Architecture result stale. Stop before the expanded
+edit or test and mandatory invoke
+`guru-maintain-architecture-baseline:task_impact_sync(stage=implementation_discovery)`.
+Only its fresh current route resumes this coordinator; stale authority returns
+`sync_required` and every other non-current exit follows its unique router.
+
 #### 2.2 Task check
 
-Invoke guru-check-task. Its passed exit first enters the active-task pair guard
+Mandatory invoke
+`guru-maintain-architecture-baseline:task_impact_sync(stage=phase2)` over the
+complete worktree candidate. Execute every applicable project Architecture
+check and perform the first semantic before/after satisfaction judgment. Only
+its fresh current route invokes guru-check-task; failed/unverified mandatory
+checks, conflict, incompleteness, stale identity, or fitness regression follow
+their Architecture routes and cannot become a Phase 2 pass.
+
+Guru-check-task's passed exit first enters the active-task pair guard
 with `resume_target=task_commit`; only the checked resumed route continues to
 guru-create-task-commit. Task or planning findings return through their
 declared workflow targets.
@@ -501,7 +573,13 @@ Branch Review.
 
 #### 3.5 Branch review
 
-Invoke guru-review-branch over the complete committed base-to-HEAD range.
+After the task-commit pair guard resolves, mandatory invoke
+`guru-maintain-architecture-baseline:task_impact_sync(stage=branch_review)`.
+The Architecture owner independently recomputes applicable checks and
+before/after satisfaction over the complete committed base-to-HEAD diff; it
+cannot reuse Phase 2. Only its fresh current route invokes guru-review-branch,
+which performs its own independent complete-range semantic review and likewise
+cannot use Phase 2 as Branch Review proof.
 Normal passed enters the pair guard with `resume_target=publication_review`.
 The `base_continuity` profile reviews only the reconciliation-selected delta,
 candidate, and affected validation; its distinct continuity_passed exit resumes
@@ -509,13 +587,31 @@ the original closed target without replacing the task-content review.
 
 #### 3.6 Publication review
 
-After branch review passes, invoke guru-review-task-publication. Its semantic owner authors and reviews the exact Chinese PR title/body from live authority.
+After Branch Review and its pair guard pass, mandatory invoke
+`guru-maintain-architecture-baseline:task_impact_sync(stage=publication)`.
+Only fresh `baseline_current` with `promotion_state=no_change` or
+`promotion_state=reviewed_promoted`
+may invoke guru-review-task-publication. Missing/stale evidence,
+`reviewed_candidate`, conflict, incomplete contract, or fitness regression is
+rejected through the Architecture router before Publication. The Publication
+semantic owner then authors and reviews the exact Chinese PR title/body from
+live authority.
 The checked ready DTO carries that payload directly to Finalizer without a task-local publication handoff file.
 `ready` enters the pair guard with `resume_target=task_finalization`; the caller
 must not push the reviewed/publication HEAD or create a PR first. Only the
 checked resumed route enters Finalizer.
 
 #### 3.7 Finalization
+
+After Publication ready and its pair guard resolve, mandatory invoke
+`guru-maintain-architecture-baseline:task_impact_sync(stage=acceptance_finish)`.
+A long-term Architecture change requires current `reviewed_promoted`; a task
+without shared-current change requires current `no_change` proof. Unpromoted or
+stale state returns `sync_required` to the Architecture owner. Any promotion
+diff re-enters fresh Phase 2, Task Commit, and independent Branch Review, then
+repeats Publication and Acceptance/Finish. Only the resulting current route
+invokes guru-finalize-task; this Architecture router does not interpret or
+extend Finalizer business semantics.
 
 Invoke guru-finalize-task and consume its declared exit; `ready_for_merge` immediately invokes `guru-merge-task-pr`, and only `merged` reaches the finish response after a separate expected-head confirmation, without base sync or direct Issue closure.
 
@@ -562,7 +658,23 @@ impact classification, candidate construction, validation selection, or review.
 Mapped implementation, planning, scope, bounded-continuity, resume, and blocked
 routes remain automatic and owner-specific.
 
-### Docs SSOT
+### Architecture Baseline
+
+The mandatory `guru-maintain-architecture-baseline` owner is the only semantic
+owner of Architecture impact, project-check applicability, contribution/ADR,
+promotion, and Architecture typed routes. Standard-task consumers reread live
+project authority and use only one fresh stage result. They never copy design
+constitution prose, project rules, or Architecture private state.
+
+Planning establishes current impact. Qualified implementation expansion
+invalidates it. Phase 2 performs the first candidate before/after judgment, and
+Branch Review independently recomputes over the committed full diff. Publication
+and Acceptance/Finish accept only current `no_change` or fully
+`reviewed_promoted` state. Shared current changes only by serialized promotion
+against expected current identity; a baseline advance returns `sync_required`,
+and a promotion diff repeats Phase 2 and Branch Review before downstream reuse.
+
+### Requirements, Design, and Test SSOT
 
 The mandatory `guru-maintain-requirements-design-test-ssot` owner runs
 `bootstrap_foundation` when the repository authority is absent or incompatible,

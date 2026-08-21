@@ -719,6 +719,20 @@ Installer 同时校验 current graph 与兼容合同要求保留的 legacy inven
 成新 shape。旧 DTO 无法建立 current transition 时 fail closed 并重跑 producer，不能从 ambient
 live state 补字段。
 
+`guru-maintain-architecture-baseline` 是该通用兼容规则的显式例外：其 public contract
+按 Issue #283 原子切换为 closed 2.0，旧 Architecture 1.0 schema、example、selector、
+dual-read 与 adapter 不保留，缺失或旧 `schema_version` 直接 fail closed。stable Skill id、
+四个 profile、七个 exit 与 consumer id 保持不变；canonical、installed、Shared、
+Codex、Claude、Cursor 和全部 stage consumer 必须在同一 candidate 中一致选择 2.0。
+
+Architecture 2.0 让每个 standard task 在 Planning、qualified implementation discovery、
+Phase 2、committed full-diff Branch Review、Publication 与 Acceptance/Finish mandatory
+消费项目 Architecture Baseline、设计宪法 identity 与 task-local Architecture change
+contract。项目 check 结果显式携带 AI 根据 applicability 和任务真实依赖判断的
+`blocking`；runtime 只校验 shape、freshness 与 route consistency。`unverified` /
+`evidence_gap` 不会被虚构为通过，只有被判断为 blocking 时才机械阻断 current route，
+非 blocking 缺口也不得用于关闭 GAP、批准例外或声明架构完成。
+
 Installed normal path 只调用一次 `guru-sync-base` public wrapper，并让 producer actual stdout
 逐 edge 进入下一 `--invocation -` call-local envelope。五个 semantic owner results 仅供当前
 wrapper 复验，不写

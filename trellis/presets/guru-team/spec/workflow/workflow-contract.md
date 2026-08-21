@@ -70,6 +70,7 @@ caller-owned stop targets and never appear in the business workflow.
 
 | Skill | Typed exit -> unique consumer |
 | --- | --- |
+| `guru-maintain-architecture-baseline` | `baseline_current -> guru-architecture-baseline-current-router`; `sync_required -> guru-maintain-architecture-baseline`; `baseline_incomplete -> guru-architecture-baseline-bootstrap-router`; `architecture_conflict -> guru-architecture-baseline-planning-router`; `contract_incomplete -> guru-architecture-baseline-planning-router`; `fitness_regression -> guru-architecture-baseline-check-router`; `blocked -> architecture-baseline-blocked` |
 | `guru-qualify-normal-scenario` | `classified -> guru-normal-scenario-classified-router`; `scope_confirmation_required -> guru-clarify-requirements`; `mechanism_revision_required -> guru-normal-scenario-mechanism-router`; `blocked -> normal-scenario-qualification-blocked` |
 | `guru-execute-task-free-change` | `completed -> guru-task-free-completed`; `resume_active_task -> guru-task-free-resume-active-task-router`; `scope_change -> guru-task-free-scope-change-router`; `location_required -> guru-execute-task-free-change`; `reselect_mode -> guru-select-workflow-mode`; `explicit_choice_required -> guru-execute-task-free-change`; `blocked -> task-free-change-blocked` |
 | `guru-sync-base` | `synced -> guru-discover-change-context`; `skipped -> original-request-route`; `blocked -> base-sync-blocked` |
@@ -120,6 +121,39 @@ acceptance, negative tests, implementation, P0-P3 findings, follow-up work, or
 publication blocking.
 
 ## Phase Route
+
+### Architecture stage consumption
+
+Every standard task mandatory invokes
+`guru-maintain-architecture-baseline:task_impact_sync` with one fresh stage at
+Planning, qualified `implementation_discovery` boundary expansion, Phase 2,
+committed full-diff Branch Review, Publication, and Acceptance/Finish. The one
+global mandatory marker identifies the stable Skill; a prior stage result never
+substitutes for the next invocation.
+
+Planning cannot approve without current baseline, design-constitution, and
+project change-contract evidence. Expansion of scope, risk, owner, state
+authority, persistence, SDK lifecycle, external integration, or another
+architecture boundary invalidates the Planning result before the expanded edit
+or test. Phase 2 performs the first project-check and semantic before/after
+judgment. Branch Review independently recomputes those concerns over the
+complete committed diff and never reuses Phase 2 as review proof.
+
+Every fresh `baseline_current` binds `constitution_status=current`, an existing
+regular project-owned constitution locator, and its exact source profile. Only
+`source_profile=task_impact_sync` may resume the matching stage.
+`source_profile=bootstrap_foundation|repair` reruns
+`task_impact_sync(stage=<affected-stage>)` before that stage can resume.
+`source_profile=promotion` always re-enters fresh Phase 2, Task Commit, and
+independent committed full-diff Branch Review before Publication or
+Acceptance/Finish reruns. Missing or stale Architecture evidence,
+`architecture_conflict`, `contract_incomplete`, or `fitness_regression` cannot
+reach Publication. Stale baseline, constitution, contribution,
+expected-current, or stage identity returns `sync_required` to the Architecture
+owner. Acceptance/Finish requires `reviewed_promoted` for a long-term
+Architecture change or a current `no_change` proof. This is
+routing-only integration; Publication and Finalizer keep their existing
+package-owned business semantics.
 
 ### Workflow mode selection and Phase 0 — Issue-backed intake
 

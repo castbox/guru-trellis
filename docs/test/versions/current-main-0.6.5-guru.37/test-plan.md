@@ -1,6 +1,6 @@
 # 当前测试计划与证据
 
-版本：`current-main-0.6.5-guru.37`；状态：`active`；source baseline：main
+版本：`current-main-0.6.5-guru.37`；状态：`superseded`；source baseline：main
 `5c059f4943edad7dfe25182a78af94759d41f9a1` + #260 compatibility task delta。
 
 ## Replacement before-state authority

@@ -49,6 +49,25 @@ follow-up. The planning checkpoint stores only the Planning owner's final
 direct-consumer conclusions and never contains or references qualification
 stdout, a result/report, locator, or checkpoint.
 
+## Architecture Stage Consumption
+
+The global workflow mandatory invokes
+`guru-maintain-architecture-baseline:task_impact_sync(stage=planning)` before
+this owner can approve Planning. This Skill consumes only the checked
+`baseline_current` route and rereads the live project-owned Architecture
+Baseline, design-constitution locator/identity, and Architecture change-contract
+locator/identity. It never reads Architecture private state or repeats that
+owner's impact, applicability, path, contribution, ADR, or route judgment.
+
+The current Planning result must cover the current task scope and bind both the
+Guru public contract and project Architecture contract. Missing or stale
+Architecture evidence, a missing constitution/change contract, or an unresolved
+`sync_required`, `baseline_incomplete`, `architecture_conflict`,
+`contract_incomplete`, or `fitness_regression` route cannot become `approved`.
+Those exits return through the global Architecture router to their unique owner.
+A current `no_architecture_impact` result is sufficient without a contribution,
+ADR, principle score, or new planning artifact.
+
 ## Semantic Review
 
 The owner rereads live authority and current files, then reviews these eight
@@ -56,7 +75,8 @@ dimensions:
 
 1. requirement authority;
 2. scope boundary;
-3. design adequacy;
+3. design adequacy, including consistency with the current Architecture impact
+   result and design constitution;
 4. implementation plan;
 5. acceptance verifiability;
 6. Docs SSOT;
@@ -68,6 +88,12 @@ classified by the AI against their actual semantic effect. A proven equivalent
 delta refreshes only the directly dependent owner identity. A requirement,
 scope, authority, design, acceptance, behavior, or verification change routes
 through the affected semantic owner.
+
+Architecture baseline, constitution, project change-contract, task scope, or
+impact-result drift is a semantic dependency change rather than equivalent
+formatting. It requires a fresh Architecture Planning result before this owner
+can reconsider approval. The Architecture result remains live stage evidence;
+it is not added to this Skill's public DTO or compact checkpoint.
 
 ## Private Result
 
@@ -113,7 +139,8 @@ valid public projection retires it before control reaches the next owner.
 ## Exits
 
 - `approved`: every dimension passed and the activation workflow receives only
-  `exit_id` and `task_ref`; the consumer must still satisfy its own
+  `exit_id` and `task_ref`, and the current Planning-stage Architecture result
+  is still fresh; the consumer must still satisfy its own
   presentation and dialogue-local review boundary.
 - `revision_required`: task-local revision actions return to this owner.
 - `clarify_scope`: exact scope proposal references route to requirements

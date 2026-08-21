@@ -2141,17 +2141,86 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
 
     def test_dogfood_drift_checks_ownership_before_payload_bytes(self) -> None:
-        checker = (
+        checker_path = (
             self.guru_root
             / "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"
-        ).read_text(encoding="utf-8")
+        )
+        checker = checker_path.read_text(encoding="utf-8")
 
         ownership_gate = checker.index('"$OWNERSHIP_CHECK" --repo "$REPO_ROOT" --json')
+        workflow_check = checker.index('cmp -s "$workflow_source" "$workflow"')
         payload_loop = checker.index('while IFS= read -r source; do')
+        self.assertLess(ownership_gate, workflow_check)
         self.assertLess(ownership_gate, payload_loop)
         self.assertIn("Missing executable ownership validator", checker)
         self.assertIn("current Guru-owned claims", checker)
-        self.assertIn("three canonical Guru Team finish overlays", checker)
+        self.assertIn("canonical Guru Team workflow and finish overlays", checker)
+
+        fixture = self.repo / "dogfood-drift"
+        ownership_check = (
+            fixture
+            / "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
+        )
+        ownership_check.parent.mkdir(parents=True)
+        ownership_check.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+        ownership_check.chmod(0o755)
+        (fixture / "trellis/presets/guru-team/overlays").mkdir(parents=True)
+
+        workflow_source = fixture / "trellis/workflows/guru-team/workflow.md"
+        workflow_source.parent.mkdir(parents=True)
+        workflow_source.write_text("canonical workflow\n", encoding="utf-8")
+        workflow = fixture / ".trellis/workflow.md"
+        workflow.parent.mkdir(parents=True)
+        workflow.write_bytes(workflow_source.read_bytes())
+
+        semantic_source = (
+            fixture
+            / "trellis/presets/guru-team/spec/workflow/semantic-retrieval.md"
+        )
+        semantic_source.parent.mkdir(parents=True)
+        semantic_source.write_text("semantic retrieval\n", encoding="utf-8")
+        semantic = fixture / ".trellis/spec/workflow/semantic-retrieval.md"
+        semantic.parent.mkdir(parents=True)
+        semantic.write_bytes(semantic_source.read_bytes())
+
+        matched = subprocess.run(
+            [str(checker_path), "--repo", str(fixture)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(matched.returncode, 0, matched.stderr)
+
+        workflow.write_text("stale workflow\n", encoding="utf-8")
+        drifted = subprocess.run(
+            [str(checker_path), "--repo", str(fixture)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(drifted.returncode, 1)
+        self.assertIn("CHANGED .trellis/workflow.md", drifted.stdout)
+        self.assertIn("Dogfood workflow/overlay drift detected", drifted.stderr)
+        self.assertIn("official Trellis workflow marketplace", drifted.stderr)
+        self.assertIn("preset apply does not manage this path", drifted.stderr)
+        self.assertNotIn("scripts/bash/apply.sh", drifted.stderr)
+
+        workflow.write_bytes(workflow_source.read_bytes())
+        semantic.write_text("stale semantic retrieval\n", encoding="utf-8")
+        preset_drifted = subprocess.run(
+            [str(checker_path), "--repo", str(fixture)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(preset_drifted.returncode, 1)
+        self.assertIn(
+            "CHANGED .trellis/spec/workflow/semantic-retrieval.md",
+            preset_drifted.stdout,
+        )
+        self.assertIn("Guru preset-owned overlay/spec copies", preset_drifted.stderr)
+        self.assertIn("scripts/bash/apply.sh", preset_drifted.stderr)
+        self.assertNotIn("official Trellis workflow marketplace", preset_drifted.stderr)
 
     def test_main_reports_explicit_all_platforms_only_for_all_platforms_flag(self) -> None:
         with mock.patch(
@@ -2545,8 +2614,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         for field, expected_count in (
-            ("public_input_schema_ids", 57),
-            ("typed_output_schema_ids", 78),
+            ("public_input_schema_ids", 62),
+            ("typed_output_schema_ids", 85),
             ("private_artifact_schema_ids", 18),
         ):
             self.assertEqual(
@@ -2555,6 +2624,32 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             )
             self.assertEqual(len(public_api["skill_contracts"][field]), expected_count)
         public_input_schema_ids = public_api["skill_contracts"]["public_input_schema_ids"]
+        architecture_interface = json.loads(
+            (
+                self.guru_root
+                / "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/interface.json"
+            ).read_text(encoding="utf-8")
+        )
+        architecture_input_schema_ids = {
+            architecture_interface["public_contracts"]["input"]["aggregate_schema"][
+                "schema_id"
+            ],
+            *(
+                item["schema"]["schema_id"]
+                for item in architecture_interface["public_contracts"]["input"][
+                    "profiles"
+                ]
+            ),
+        }
+        self.assertEqual(len(architecture_input_schema_ids), 5)
+        self.assertEqual(
+            {
+                schema_id
+                for schema_id in public_input_schema_ids
+                if schema_id.startswith("guru-architecture-baseline-input-")
+            },
+            architecture_input_schema_ids,
+        )
         self.assertIn("guru-normal-scenario-input-aggregate-1.0", public_input_schema_ids)
         self.assertIn(
             "guru-normal-scenario-input-implementation-discovery-1.0",
@@ -2590,6 +2685,19 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("guru-task-pr-merge-gate-2.0", private_artifact_schema_ids)
         self.assertNotIn("guru-task-pr-merge-gate-1.0", private_artifact_schema_ids)
         typed_output_schema_ids = public_api["skill_contracts"]["typed_output_schema_ids"]
+        architecture_output_schema_ids = {
+            item["schema"]["schema_id"]
+            for item in architecture_interface["public_contracts"]["outputs"]
+        }
+        self.assertEqual(len(architecture_output_schema_ids), 7)
+        self.assertEqual(
+            {
+                schema_id
+                for schema_id in typed_output_schema_ids
+                if schema_id.startswith("guru-architecture-baseline-output-")
+            },
+            architecture_output_schema_ids,
+        )
         self.assertIn("guru-normal-scenario-output-classified-1.0", typed_output_schema_ids)
         self.assertIn(
             "guru-normal-scenario-output-scope-confirmation-required-1.0",

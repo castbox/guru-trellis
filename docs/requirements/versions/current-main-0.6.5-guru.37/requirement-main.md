@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.37`；状态：`active`；基线：main `5c059f4943edad7dfe25182a78af94759d41f9a1` + #260 compatibility task delta（精确 revision 为当前 Git HEAD）。
+版本：`current-main-0.6.5-guru.37`；状态：`superseded`；基线：main `5c059f4943edad7dfe25182a78af94759d41f9a1` + #260 compatibility task delta。
 
 ## 目标、角色与适用范围
 

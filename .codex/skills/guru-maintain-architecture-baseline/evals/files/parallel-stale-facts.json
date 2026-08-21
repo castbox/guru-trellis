@@ -1,0 +1,1 @@
+{"scenario":"Another task advanced the current baseline identity.","owner_staging":{"recipe":"architecture-parallel-stale"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

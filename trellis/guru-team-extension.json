@@ -57,6 +57,11 @@
         "guru-team-skill-interface-1.6"
       ],
       "public_input_schema_ids": [
+        "guru-architecture-baseline-input-aggregate-2.0",
+        "guru-architecture-baseline-input-bootstrap-2.0",
+        "guru-architecture-baseline-input-impact-2.0",
+        "guru-architecture-baseline-input-promotion-2.0",
+        "guru-architecture-baseline-input-repair-2.0",
         "guru-extension-verify-installation-input-source-repository-verification-4.0",
         "guru-finalize-task-input-publication-ready-4.0",
         "guru-finalize-task-input-reprepare-preview-3.0",
@@ -116,6 +121,13 @@
         "guru-workflow-mode-input-initial-1.0"
       ],
       "typed_output_schema_ids": [
+        "guru-architecture-baseline-output-current-2.0",
+        "guru-architecture-baseline-output-sync-required-2.0",
+        "guru-architecture-baseline-output-incomplete-2.0",
+        "guru-architecture-baseline-output-conflict-2.0",
+        "guru-architecture-baseline-output-contract-incomplete-2.0",
+        "guru-architecture-baseline-output-fitness-regression-2.0",
+        "guru-architecture-baseline-output-blocked-2.0",
         "guru-extension-verify-installation-output-blocked-2.0",
         "guru-extension-verify-installation-output-verified-4.0",
         "guru-finalize-task-output-blocked-1.0",

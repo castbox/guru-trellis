@@ -19,6 +19,16 @@ Scope Ledger, complete review range, working tree, and invocation freshness.
 The Skill reads no Planning or Phase 2 checkpoint or Task Commit candidate.
 Input that does not satisfy the current public schema fails closed.
 
+Before the full-range review, the global workflow mandatory invokes
+`guru-maintain-architecture-baseline:task_impact_sync(stage=branch_review)`.
+That semantic owner independently reruns applicable project Architecture checks
+and recomputes before/after satisfaction from the complete committed
+base-to-HEAD diff. Branch Review consumes only its fresh checked current route,
+then rereads the live Architecture Baseline, design-constitution authority, and
+task-local Architecture change contract. It never opens Architecture private
+state; this consumer does not read Architecture private state and never treats
+the Phase 2 Architecture result as current Branch Review evidence.
+
 Every official independent-review worker is invoked with a prompt that
 authorizes approved-plan work only. If it observes a planning-external
 candidate, it stops before any edit, added test, self-fix, severity,
@@ -57,6 +67,16 @@ non-blocking observations and cannot become scope confirmation, negative tests,
 implementation, follow-up, or publication blockers,
 follow-ups or rejections.
 
+The complete-range review independently checks that the committed diff and any
+task-owned contribution agree with the current constitution, change path,
+required project checks, before/after state, GAP and owner transitions, and ADR
+trigger decision. Missing or stale Architecture identity routes
+`sync_required`; missing applicable contract/check facts route
+`contract_incomplete`; `architecture_conflict` returns to Planning; and a new or
+worsened deviation routes `fitness_regression` to implementation/check. These
+routes remain owned by `guru-maintain-architecture-baseline` and the global
+router, not by this package's five Branch Review exits.
+
 Return `implementation_required` for an open current-scope finding. After its
 fix passes Phase 2 and a fresh commit, run one internal closure judgment by the
 finding owner or, only after a real unfinished event, a replacement. Retain the
@@ -71,6 +91,12 @@ immediately dispatches a distinct fresh reviewer over the complete current
 range. That reviewer consumes the transient closure result, authors one
 `fresh_final_review`, and is the only reviewer whose compact passing gate is
 persisted. A closure reviewer never also performs the fresh final review.
+
+An Architecture promotion diff follows the same rule: it returns through fresh
+Phase 2 Architecture/check, a new task commit, and an independent complete-range
+Branch Review. Only that post-promotion review can support the later Publication
+Architecture stage; no pre-promotion Branch Review or Phase 2 conclusion is
+reused.
 
 Mapped finding-fix, stale, re-entry and final-review routes continue within the
 AI workflow. They are not user choices. A user prompt remains only for real
@@ -123,7 +149,8 @@ before owner evaluation; it is never dual-read, rewritten, or migrated.
 Return exactly one of:
 
 - `passed`: minimal `task_ref`, `branch_review_commit` seed for
-  `guru-review-task-publication`;
+  `guru-review-task-publication`, only after the current Branch Review-stage
+  Architecture result passes independently;
 - `continuity_passed`: exact pair and candidate identity to the workflow-owned
   `guru-base-continuity-passed-router`, which resumes the original target;
 - `implementation_required`: `branch_review_commit` and current finding refs;

@@ -1,1 +1,48 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","additionalProperties":false,"required":["profile","source_exit","mode","continuation_id"],"properties":{"profile":{"const":"bootstrap_foundation"},"source_exit":{"type":"string"},"mode":{"enum":["workflow","standalone"]},"continuation_id":{"type":"string"},"repo_locator":{"type":"string"},"baseline":{"type":"object"},"scope":{"type":"object"}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-architecture-baseline-input-bootstrap-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "profile", "source_exit", "mode", "continuation_id", "stage", "task_locator", "baseline", "constitution", "project_contract", "freshness_identity", "candidate_locator", "successor_baseline"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "profile": {"const": "bootstrap_foundation"},
+    "source_exit": {"type": "string", "minLength": 1},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "continuation_id": {"type": "string", "minLength": 1},
+    "stage": {"const": "planning"},
+    "task_locator": {"type": "string", "minLength": 1},
+    "baseline": {"$ref": "#/$defs/baseline"},
+    "constitution": {"$ref": "#/$defs/constitution"},
+    "project_contract": {"$ref": "#/$defs/projectContract"},
+    "freshness_identity": {"type": "string", "minLength": 1},
+    "candidate_locator": {"type": "string", "minLength": 1},
+    "successor_baseline": {"$ref": "#/$defs/successorBaseline"}
+  },
+  "$defs": {
+    "baseline": {"type": "object", "additionalProperties": false, "required": ["locator", "identity", "status"], "properties": {"locator": {"type": "string", "minLength": 1}, "identity": {"type": "string", "minLength": 1}, "status": {"enum": ["missing", "draft", "superseded"]}}},
+    "successorBaseline": {"type": "object", "additionalProperties": false, "required": ["locator", "identity", "status"], "properties": {"locator": {"type": "string", "minLength": 1}, "identity": {"type": "string", "minLength": 1}, "status": {"const": "active"}}},
+    "projectContract": {"type": "object", "additionalProperties": false, "required": ["guru_contract_identity", "change_contract_locator", "change_contract_identity", "required_concern_set_identity"], "properties": {"guru_contract_identity": {"const": "guru-maintain-architecture-baseline:2.0"}, "change_contract_locator": {"type": "string", "minLength": 1}, "change_contract_identity": {"type": "string", "minLength": 1}, "required_concern_set_identity": {"type": "string", "minLength": 1}}},
+    "constitution": {"type": "object", "additionalProperties": false, "required": ["authority_locator", "authority_status", "identity_kind", "identity", "principles"], "properties": {"authority_locator": {"type": "string", "minLength": 1}, "authority_status": {"enum": ["current", "pending_reviewed_promotion"]}, "identity_kind": {"enum": ["version", "content"]}, "identity": {"type": "string", "minLength": 1}, "principles": {"$ref": "#/$defs/principles"}}},
+    "principles": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {"oneOf": [
+        {"$ref": "#/$defs/p1"}, {"$ref": "#/$defs/p2"}, {"$ref": "#/$defs/p3"}, {"$ref": "#/$defs/p4"}, {"$ref": "#/$defs/p5"}
+      ]},
+      "allOf": [
+        {"contains": {"$ref": "#/$defs/p1"}},
+        {"contains": {"$ref": "#/$defs/p2"}},
+        {"contains": {"$ref": "#/$defs/p3"}},
+        {"contains": {"$ref": "#/$defs/p4"}},
+        {"contains": {"$ref": "#/$defs/p5"}}
+      ]
+    },
+    "p1": {"type": "object", "additionalProperties": false, "required": ["id", "short_name"], "properties": {"id": {"const": "mature-practice-applicability"}, "short_name": {"const": "成熟实践与适用性"}}},
+    "p2": {"type": "object", "additionalProperties": false, "required": ["id", "short_name"], "properties": {"id": {"const": "concept-semantic-completeness"}, "short_name": {"const": "概念与语义完整性"}}},
+    "p3": {"type": "object", "additionalProperties": false, "required": ["id", "short_name"], "properties": {"id": {"const": "cohesion-change-isolation"}, "short_name": {"const": "职责内聚与变化隔离"}}},
+    "p4": {"type": "object", "additionalProperties": false, "required": ["id", "short_name"], "properties": {"id": {"const": "minimum-necessary-complexity"}, "short_name": {"const": "最小必要复杂度"}}},
+    "p5": {"type": "object", "additionalProperties": false, "required": ["id", "short_name"], "properties": {"id": {"const": "debt-one-way-convergence"}, "short_name": {"const": "技术债务单向收敛"}}}
+  }
+}

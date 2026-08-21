@@ -26,6 +26,17 @@ to task work for remove/replace and fresh qualification; blocked stops. The
 review gate records only this owner's final classifications and direct-consumer
 witness, never a qualification artifact.
 
+Before this review can pass, consume a fresh
+`guru-maintain-architecture-baseline:task_impact_sync(stage=branch_review)`
+result. The Architecture owner independently recomputes project checks and
+before/after satisfaction from the complete committed base-to-HEAD diff. This
+Skill then rereads the current Architecture Baseline, design constitution, and
+task-local change contract as part of its own complete-range semantic review.
+Neither owner may reuse the Phase 2 Architecture result as Branch Review proof.
+A stale identity, incomplete contract, authority conflict, fitness regression,
+unreviewed contribution, or missing project check prevents `passed` and follows
+the Architecture result's unique global route.
+
 Every official independent-review worker invocation prompt authorizes
 approved-plan work only. A planning-external observation must stop before any
 edit, added test, self-fix, severity, classification, or route and return only
@@ -69,6 +80,11 @@ same-owner re-entry; a repeated invocation returns the same DTO without writing
 another checkpoint. Failed check or projection preserves the current regular
 checkpoint. A retired, mismatched, stale, unsafe, or symlink-backed checkpoint
 fails closed.
+
+If Architecture promotion changes shared current files, that diff returns to a
+fresh Phase 2 Architecture/check round, a new task commit, and this independent
+complete-range Branch Review. Publication cannot consume the pre-promotion
+review or a Phase 2 result in place of that fresh review.
 
 Aggregate public input schema 3.0 dispatches two profiles: `branch_review`
 schema 2.0 accepts only `initial_review` and `fresh_final_review`, while
