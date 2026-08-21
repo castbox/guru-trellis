@@ -28,18 +28,19 @@ def run(package_root, command, argv):
         if exc.code in _BLOCKED_OWNER_CODES:
             return {"exit_id":"blocked"}
         raise
+    authority_locator=checked["authority_repo_locator"]
     transition={
         "schema_version":"1.0",
-        "transition_id":f"base_current:{digest({'mode':mode,'repo_locator':repo_locator,'checked':checked})[:24]}",
+        "transition_id":f"base_current:{digest({'mode':mode,'repo_locator':authority_locator,'checked':checked})[:24]}",
         "stage":"base_current",
         "mode":mode,
-        "repo_locator":repo_locator,
+        "repo_locator":authority_locator,
         "base":{
             "source":resolved["source"],
             "selected_base":checked["selected_base"],
             "remote":resolved["remote"],
             "ordered_candidates":resolved["candidates"],
-            "decision_head":resolved["decision_checkout"]["head"],
+            "decision_head":checked["head"],
             "local_base_head":synced["git"]["local_head_after"],
             "remote_base_head":synced["git"]["remote_head_after"],
             "post_sync_resolution_sha256":checked["post_sync_resolution_sha256"],
@@ -49,7 +50,7 @@ def run(package_root, command, argv):
         "exit_id":"synced",
         "handoff_profile":"pre_task",
         "handoff_mode":mode,
-        "handoff_repo_locator":repo_locator,
+        "handoff_repo_locator":authority_locator,
         "handoff_base_branch":checked["selected_base"],
         "handoff_continuation_id":"stage0-current",
         "transition":transition,

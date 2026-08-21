@@ -24,11 +24,33 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    head=subprocess.run(["git","rev-parse","HEAD"],cwd=repo,check=True,text=True,stdout=subprocess.PIPE).stdout.strip()
    resolution={"schema_version":"1.0","skill_id":"guru-sync-base","status":"resolved","source":"explicit","selected_base":"main","remote":"origin","candidates":["main"],"decision_checkout":{"branch":"main","head":head,"clean":True}}
    provenance={"source":"explicit","selected_base":"main","remote":"origin","ordered_candidates":["main"],"decision_head":head,"local_base_head":head,"remote_base_head":head,"post_sync_resolution_sha256":prepare.digest(resolution)}
-   freshness=prepare.reviewed_base_freshness(repo,{"base_branch":"main","base_branch_candidates":[]},provenance,"main")
+   freshness=prepare.reviewed_base_freshness(repo,{"base_branch":"conflicting-config","base_branch_candidates":["dev"]},provenance,"main")
    self.assertEqual(freshness["post_sync_resolution"],resolution);self.assertTrue(freshness["three_way_equal"]);self.assertTrue(freshness["fresh"])
    self.assertEqual(freshness["facts_sha256"],prepare.digest({k:v for k,v in freshness.items() if k!="facts_sha256"}))
+   config_resolution={**resolution,"source":"config"}
+   config_provenance={**provenance,"source":"config","post_sync_resolution_sha256":prepare.digest(config_resolution)}
+   config_freshness=prepare.reviewed_base_freshness(repo,{"base_branch":"main","base_branch_candidates":["dev"]},config_provenance,None)
+   self.assertEqual(config_freshness["post_sync_resolution"],config_resolution);self.assertTrue(config_freshness["fresh"])
    invalid=dict(provenance);invalid.pop("remote_base_head")
    with self.assertRaisesRegex(ValueError,"exactly eight fields"):prepare.reviewed_base_freshness(repo,{"base_branch":"main","base_branch_candidates":[]},invalid,"main")
+
+ def test_prepare_base_freshness_accepts_ordered_candidate_provenance(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   root=Path(tmp);repo=root/"repo";remote=root/"origin.git"
+   subprocess.run(["git","init","-q","--bare",str(remote)],check=True)
+   subprocess.run(["git","init","-q","-b","main",str(repo)],check=True)
+   subprocess.run(["git","config","user.name","Workspace Test"],cwd=repo,check=True)
+   subprocess.run(["git","config","user.email","workspace@example.invalid"],cwd=repo,check=True)
+   (repo/"README.md").write_text("base\n");subprocess.run(["git","add","README.md"],cwd=repo,check=True);subprocess.run(["git","commit","-q","-m","test: base"],cwd=repo,check=True)
+   subprocess.run(["git","checkout","-q","-b","dev"],cwd=repo,check=True)
+   subprocess.run(["git","remote","add","origin",str(remote)],cwd=repo,check=True);subprocess.run(["git","push","-q","-u","origin","main","dev"],cwd=repo,check=True)
+   head=subprocess.run(["git","rev-parse","HEAD"],cwd=repo,check=True,text=True,stdout=subprocess.PIPE).stdout.strip()
+   candidates=["dev","main"]
+   resolution={"schema_version":"1.0","skill_id":"guru-sync-base","status":"resolved","source":"config-candidate","selected_base":"dev","remote":"origin","candidates":candidates,"decision_checkout":{"branch":"dev","head":head,"clean":True}}
+   provenance={"source":"config-candidate","selected_base":"dev","remote":"origin","ordered_candidates":candidates,"decision_head":head,"local_base_head":head,"remote_base_head":head,"post_sync_resolution_sha256":prepare.digest(resolution)}
+   freshness=prepare.reviewed_base_freshness(repo,{"base_branch":"","base_branch_candidates":candidates},provenance,None)
+   self.assertEqual(freshness["post_sync_resolution"],resolution);self.assertEqual(freshness["resolution"]["candidates"],candidates)
+   self.assertTrue(freshness["three_way_equal"]);self.assertTrue(freshness["fresh"])
 
  def test_command_and_error_contract_close(self):
   commands=json.loads((PACKAGE/"commands.json").read_text())

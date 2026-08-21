@@ -7,7 +7,10 @@ DEFAULT_BASE_CANDIDATES = ("dev", "develop", "main", "master")
 
 def digest(value): return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
 def git(root,*args,check=True):
-    p=subprocess.run(["git",*args],cwd=root,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    try:
+        p=subprocess.run(["git",*args],cwd=root,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    except OSError as exc:
+        raise CommandError("git_failed","repository",f"Git inspection failed: {exc}",4) from exc
     if check and p.returncode: raise CommandError("git_failed","repository",p.stderr.strip() or "Repair Git state and retry.",4)
     return p.stdout.strip()
 def repo(value):
@@ -90,7 +93,7 @@ def remote_default(root,remote):
             if value not in matches: matches.append(value)
     return matches[0] if len(matches)==1 else None
 
-def resolution(root,base,remote):
+def select_base(root,base,remote):
     remote=valid_remote(root,remote)
     if base:
         source="explicit"; base=valid_branch(root,base,"base"); candidates=[base]
@@ -111,6 +114,49 @@ def resolution(root,base,remote):
                 if not base: raise CommandError("git_failed","repository","Configure a valid base or repair the remote default branch.",4)
                 source="remote-default"
                 if base not in candidates: candidates.append(base)
-    if not clean(root): raise CommandError("git_failed","repository","Clean the decision checkout before synchronization.",4)
-    value={"schema_version":"1.0","skill_id":"guru-sync-base","status":"resolved","source":source,"selected_base":base,"remote":remote,"candidates":candidates,"decision_checkout":{"branch":branch(root),"head":head(root),"clean":True}}
+    return {"source":source,"selected_base":base,"remote":remote,"candidates":candidates}
+
+def _common_dir(root):
+    value=Path(git(root,"rev-parse","--git-common-dir"))
+    return (value if value.is_absolute() else root/value).resolve()
+
+def _registered_worktrees(root):
+    raw=git(root,"worktree","list","--porcelain","-z")
+    records=[]
+    record={}
+    for field in raw.split("\0"):
+        if not field:
+            if record: records.append(record); record={}
+            continue
+        key,separator,value=field.partition(" ")
+        record[key]=value if separator else True
+    if record: records.append(record)
+    return records
+
+def authority_checkout(root,selected_base):
+    selected_base=valid_branch(root,selected_base,"selected_base")
+    selected_ref=f"refs/heads/{selected_base}"
+    matches=[item for item in _registered_worktrees(root) if item.get("branch")==selected_ref]
+    if len(matches)!=1:
+        reason="missing" if not matches else "ambiguous"
+        raise CommandError("git_failed","repository.authority_checkout",f"The registered clean checkout for {selected_ref} is {reason}; repair the existing worktree registration and retry.",4)
+    item=matches[0]
+    path_value=item.get("worktree")
+    if not isinstance(path_value,str) or not path_value:
+        raise CommandError("git_failed","repository.authority_checkout","The selected-base worktree registration has no usable checkout path.",4)
+    authority=Path(path_value).resolve()
+    if git(authority,"rev-parse","--show-toplevel",check=False)!=str(authority) or _common_dir(authority)!=_common_dir(root):
+        raise CommandError("git_failed","repository.authority_checkout","The selected-base checkout does not match the session repository identity.",4)
+    local_head=head(root,selected_ref)
+    authority_head=head(authority)
+    if git(authority,"symbolic-ref","HEAD",check=False)!=selected_ref or item.get("HEAD")!=authority_head or authority_head!=local_head:
+        raise CommandError("git_failed","repository.authority_checkout","The selected-base checkout branch, HEAD, and local ref identity do not match.",4)
+    if not clean(authority):
+        raise CommandError("git_failed","repository.authority_checkout","Clean the selected-base authority checkout before synchronization.",4)
+    return authority
+
+def resolution(root,base,remote):
+    selected=select_base(root,base,remote)
+    authority=authority_checkout(root,selected["selected_base"])
+    value={"schema_version":"1.0","skill_id":"guru-sync-base","status":"resolved",**selected,"decision_checkout":{"branch":selected["selected_base"],"head":head(authority),"clean":True}}
     value["resolution_sha256"]=digest(value); return value

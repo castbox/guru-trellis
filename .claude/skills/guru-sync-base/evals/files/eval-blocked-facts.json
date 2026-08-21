@@ -1,8 +1,10 @@
 {
-  "scenario": "The selected base cannot be resolved to an existing local branch.",
+  "scenario": "The selected base exists but has no registered clean authority checkout; another lower-priority checkout exists and must not be selected.",
   "owner_evidence": {
     "formal_resolver": true,
-    "expected_failure": "unresolved_base"
+    "selection_precedes_authority_binding": true,
+    "base_reselection_forbidden": true,
+    "expected_failure": "missing_authority_checkout"
   },
   "public_invocation": {
     "arguments": [
