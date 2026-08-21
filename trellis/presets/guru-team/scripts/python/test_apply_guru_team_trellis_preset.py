@@ -2201,6 +2201,26 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertEqual(drifted.returncode, 1)
         self.assertIn("CHANGED .trellis/workflow.md", drifted.stdout)
         self.assertIn("Dogfood workflow/overlay drift detected", drifted.stderr)
+        self.assertIn("official Trellis workflow marketplace", drifted.stderr)
+        self.assertIn("preset apply does not manage this path", drifted.stderr)
+        self.assertNotIn("scripts/bash/apply.sh", drifted.stderr)
+
+        workflow.write_bytes(workflow_source.read_bytes())
+        semantic.write_text("stale semantic retrieval\n", encoding="utf-8")
+        preset_drifted = subprocess.run(
+            [str(checker_path), "--repo", str(fixture)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(preset_drifted.returncode, 1)
+        self.assertIn(
+            "CHANGED .trellis/spec/workflow/semantic-retrieval.md",
+            preset_drifted.stdout,
+        )
+        self.assertIn("Guru preset-owned overlay/spec copies", preset_drifted.stderr)
+        self.assertIn("scripts/bash/apply.sh", preset_drifted.stderr)
+        self.assertNotIn("official Trellis workflow marketplace", preset_drifted.stderr)
 
     def test_main_reports_explicit_all_platforms_only_for_all_platforms_flag(self) -> None:
         with mock.patch(

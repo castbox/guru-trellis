@@ -71,13 +71,14 @@
 - 最后的 canonical finding fix 已把三处 workflow current-route 合同同步到
   `.trellis/workflow.md`，并让 `check-dogfood-overlay-drift.sh` 同时比较 canonical 与 dogfood
   workflow；真实临时 fixture 已证明相同 workflow 通过、stale workflow 稳定报告
-  `CHANGED .trellis/workflow.md`，当前仓库增强后的 drift checker 通过。
+  `CHANGED .trellis/workflow.md` 并只提示官方 marketplace 恢复；另一个 preset-owned stale
+  spec fixture 只提示 preset `apply.sh`。当前仓库增强后的 drift checker 通过。
 - 完整 base-to-worktree candidate 共 `429` 个路径（`379` 个现存、`50` 个删除）；其中
   `300` 个 JSON fresh parse、`13` 个 Python 文件 compile，canonical Bash syntax、
   `task.py validate` 与完整 candidate `git diff --check` 通过；task validation 仅保留既有
   大 spec 注入截断 warning。
-- 当前 dirty worktree candidate 已在无 `.git` 的隔离临时目标完成一个代表性 current-version
-  clean installation（`/tmp/guru-283-clean-install-fix.HdawKn/project`）：Trellis `0.6.15`
+- 本轮候选已在无 `.git` 的隔离临时目标完成一个代表性 current-version clean
+  installation：Trellis `0.6.15`
   从公开 marketplace 初始化基础结构后，明确覆盖为当前 canonical workflow，再应用当前
   all-platform preset；真实 installed public graph、
   installed/shared 固定十场景 public dispatcher、Phase 2 context smoke、Shared/Codex/Claude/

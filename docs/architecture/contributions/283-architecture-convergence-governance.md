@@ -158,10 +158,10 @@ contribution 或 ADR。
   RDT/package/finish/semantic closure、preset
   ownership/apply/reapply/upgrade、dogfood drift、JSON/Python/Bash/task/diff 静态门禁均已对
   当前 `429` 路径 candidate（`379` 个现存、`50` 个删除）fresh 通过；最后的 workflow
-  projection 修复已由增强后的 canonical/dogfood drift checker 与 stale-workflow fixture 覆盖，
-  详见 RDT `test.md`。当前 dirty candidate 还在无 `.git` 的隔离目标
-  `/tmp/guru-283-clean-install-fix.HdawKn/project` 完成了 Trellis `0.6.15` 代表性 clean
-  installation：公开 marketplace 初始化后明确
+  projection 修复已由增强后的 canonical/dogfood drift checker 覆盖，stale-workflow 与
+  preset-spec fixture 分别验证 marketplace-owned workflow 和 preset-owned copy 的恢复提示，
+  详见 RDT `test.md`。本轮候选还在无 `.git` 的隔离临时目标完成了 Trellis `0.6.15`
+  代表性 clean installation：公开 marketplace 初始化后明确
   覆盖当前 canonical workflow，应用当前 all-platform preset，并通过真实 installed public
   graph、installed/shared 十场景 dispatcher、Phase 2 context smoke、四平台 parity、reapply
   与 zero-sidecar。source-oriented unit harness 不是该无 `.git` 目标的 installed public
