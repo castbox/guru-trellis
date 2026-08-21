@@ -17,7 +17,7 @@
   ],
   "primary_issue": {
     "number": 290,
-    "reason": "当前唯一、可独立交付的 implementation authority。",
+    "reason": "本 task 完整覆盖并仅关闭 Issue #290。",
     "title": "修复 Codex detached checkout 下 Phase 0 base authority checkout 路由",
     "url": "https://github.com/castbox/guru-trellis/issues/290"
   },

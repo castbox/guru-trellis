@@ -1,7 +1,7 @@
 {
   "id": "290-detached-base-authority-checkout",
   "name": "290-detached-base-authority-checkout",
-  "title": "#290 修复 detached session 下 selected-base authority checkout 路由",
+  "title": "#290 修复 detached session 的 base authority checkout 路由",
   "status": "in_progress",
   "branch": "fix/290-detached-base-authority-checkout",
   "base_branch": "main",
