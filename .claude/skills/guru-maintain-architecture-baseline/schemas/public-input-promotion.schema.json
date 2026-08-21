@@ -3,7 +3,7 @@
   "$id": "guru-architecture-baseline-input-promotion-2.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "profile", "source_exit", "mode", "continuation_id", "stage", "task_locator", "baseline", "constitution", "project_contract", "freshness_identity", "expected_current_identity", "current_identity", "sync_kind", "sync_target"],
+  "required": ["schema_version", "profile", "source_exit", "mode", "continuation_id", "stage", "task_locator", "baseline", "constitution", "project_contract", "freshness_identity", "expected_current_identity", "current_identity", "sync_kind", "sync_target", "committed_range"],
   "properties": {
     "schema_version": {"const": "2.0"}, "profile": {"const": "promotion"}, "source_exit": {"type": "string", "minLength": 1}, "mode": {"enum": ["workflow", "standalone"]}, "continuation_id": {"type": "string", "minLength": 1}, "stage": {"enum": ["planning", "implementation_discovery", "phase2", "branch_review", "publication", "acceptance_finish"]},
     "task_locator": {"type": "string", "minLength": 1},
@@ -11,9 +11,11 @@
     "constitution": {"$ref": "#/$defs/constitution"},
     "project_contract": {"type": "object", "additionalProperties": false, "required": ["guru_contract_identity", "change_contract_locator", "change_contract_identity", "required_concern_set_identity"], "properties": {"guru_contract_identity": {"const": "guru-maintain-architecture-baseline:2.0"}, "change_contract_locator": {"type": "string", "minLength": 1}, "change_contract_identity": {"type": "string", "minLength": 1}, "required_concern_set_identity": {"type": "string", "minLength": 1}}},
     "freshness_identity": {"type": "string", "minLength": 1}, "expected_current_identity": {"type": "string", "minLength": 1}, "current_identity": {"type": "string", "minLength": 1}, "sync_kind": {"enum": ["promotion_required", "baseline_advanced", "constitution_advanced", "contribution_stale", "repair"]},
-    "sync_target": {"$ref": "#/$defs/syncTarget"}
+    "sync_target": {"$ref": "#/$defs/syncTarget"},
+    "committed_range": {"$ref": "#/$defs/committedRange"}
   },
   "$defs": {
+    "committedRange": {"type": "object", "additionalProperties": false, "required": ["base_ref", "base_head", "review_head"], "properties": {"base_ref": {"type": "string", "minLength": 1}, "base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "review_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}}},
     "constitution": {"type": "object", "additionalProperties": false, "required": ["authority_locator", "identity_kind", "identity", "principles"], "properties": {"authority_locator": {"type": "string", "minLength": 1}, "identity_kind": {"enum": ["version", "content"]}, "identity": {"type": "string", "minLength": 1}, "principles": {"$ref": "#/$defs/principles"}}},
     "principles": {
       "type": "array",

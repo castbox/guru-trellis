@@ -26,5 +26,10 @@
     "change_contract_locator": "docs/architecture/06-governance/change-contract.md",
     "change_contract_identity": "project-change-contract-v1",
     "required_concern_set_identity": "project-concerns-v1"
+  },
+  "committed_range": {
+    "base_ref": "origin/main",
+    "base_head": "0123456789abcdef0123456789abcdef01234567",
+    "review_head": "89abcdef0123456789abcdef0123456789abcdef"
   }
 }

@@ -3,7 +3,7 @@
   "$id": "guru-architecture-baseline-input-bootstrap-2.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "profile", "source_exit", "mode", "continuation_id", "stage", "task_locator", "baseline", "constitution", "project_contract", "freshness_identity", "candidate_locator", "target_identity"],
+  "required": ["schema_version", "profile", "source_exit", "mode", "continuation_id", "stage", "task_locator", "baseline", "constitution", "project_contract", "freshness_identity", "candidate_locator", "successor_baseline"],
   "properties": {
     "schema_version": {"const": "2.0"},
     "profile": {"const": "bootstrap_foundation"},
@@ -17,10 +17,11 @@
     "project_contract": {"$ref": "#/$defs/projectContract"},
     "freshness_identity": {"type": "string", "minLength": 1},
     "candidate_locator": {"type": "string", "minLength": 1},
-    "target_identity": {"type": "string", "minLength": 1}
+    "successor_baseline": {"$ref": "#/$defs/successorBaseline"}
   },
   "$defs": {
-    "baseline": {"type": "object", "additionalProperties": false, "required": ["locator", "identity", "status"], "properties": {"locator": {"type": "string", "minLength": 1}, "identity": {"type": "string", "minLength": 1}, "status": {"enum": ["missing", "draft", "active", "superseded"]}}},
+    "baseline": {"type": "object", "additionalProperties": false, "required": ["locator", "identity", "status"], "properties": {"locator": {"type": "string", "minLength": 1}, "identity": {"type": "string", "minLength": 1}, "status": {"enum": ["missing", "draft", "superseded"]}}},
+    "successorBaseline": {"type": "object", "additionalProperties": false, "required": ["locator", "identity", "status"], "properties": {"locator": {"type": "string", "minLength": 1}, "identity": {"type": "string", "minLength": 1}, "status": {"const": "active"}}},
     "projectContract": {"type": "object", "additionalProperties": false, "required": ["guru_contract_identity", "change_contract_locator", "change_contract_identity", "required_concern_set_identity"], "properties": {"guru_contract_identity": {"const": "guru-maintain-architecture-baseline:2.0"}, "change_contract_locator": {"type": "string", "minLength": 1}, "change_contract_identity": {"type": "string", "minLength": 1}, "required_concern_set_identity": {"type": "string", "minLength": 1}}},
     "constitution": {"type": "object", "additionalProperties": false, "required": ["authority_locator", "identity_kind", "identity", "principles"], "properties": {"authority_locator": {"type": "string", "minLength": 1}, "identity_kind": {"enum": ["version", "content"]}, "identity": {"type": "string", "minLength": 1}, "principles": {"$ref": "#/$defs/principles"}}},
     "principles": {

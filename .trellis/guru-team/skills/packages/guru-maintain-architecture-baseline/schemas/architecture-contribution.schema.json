@@ -33,6 +33,7 @@
     "design_responsibility",
     "before_plan",
     "after_candidate",
+    "project_check_descriptors",
     "project_checks",
     "evidence",
     "expected_current_identity",
@@ -128,6 +129,12 @@
     },
     "before_plan": {"type": "string", "minLength": 1},
     "after_candidate": {"type": "string", "minLength": 1},
+    "project_check_descriptors": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/projectCheckDescriptor"}
+    },
     "project_checks": {
       "type": "array",
       "minItems": 1,
@@ -174,25 +181,30 @@
     "review": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "independent", "committed_diff_identity"],
+      "required": ["status", "independent", "committed_range"],
       "properties": {
         "status": {"enum": ["pending", "reviewed"]},
         "independent": {"type": "boolean"},
-        "committed_diff_identity": {"type": "string"}
+        "committed_range": {
+          "oneOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/committedRange"}
+          ]
+        }
       },
       "oneOf": [
         {
           "properties": {
             "status": {"const": "pending"},
             "independent": {"const": false},
-            "committed_diff_identity": {"const": ""}
+            "committed_range": {"type": "null"}
           }
         },
         {
           "properties": {
             "status": {"const": "reviewed"},
             "independent": {"const": true},
-            "committed_diff_identity": {"type": "string", "minLength": 1}
+            "committed_range": {"$ref": "#/$defs/committedRange"}
           }
         }
       ]
@@ -244,6 +256,16 @@
     }
   ],
   "$defs": {
+    "committedRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base_ref", "base_head", "review_head"],
+      "properties": {
+        "base_ref": {"type": "string", "minLength": 1},
+        "base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "review_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      }
+    },
     "refList": {
       "type": "array",
       "uniqueItems": true,
@@ -259,11 +281,35 @@
         "rationale": {"type": "string", "minLength": 1}
       }
     },
+    "projectCheckDescriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "descriptor_identity", "check_id", "check_version", "entrypoint", "applicable_scope", "rule_refs", "decision_refs", "gap_refs", "result_contract_identity", "freshness_source"],
+      "properties": {
+        "schema_version": {"const": "2.0"},
+        "descriptor_identity": {"type": "string", "minLength": 1},
+        "check_id": {"type": "string", "minLength": 1},
+        "check_version": {"type": "string", "minLength": 1},
+        "entrypoint": {"type": "string", "minLength": 1},
+        "applicable_scope": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "rule_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "decision_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "gap_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "result_contract_identity": {"const": "guru-project-architecture-check-result-2.0"},
+        "freshness_source": {"type": "string", "minLength": 1}
+      },
+      "anyOf": [
+        {"properties": {"rule_refs": {"minItems": 1}}},
+        {"properties": {"decision_refs": {"minItems": 1}}},
+        {"properties": {"gap_refs": {"minItems": 1}}}
+      ]
+    },
     "projectCheck": {
       "type": "object",
       "additionalProperties": false,
       "required": [
         "schema_version",
+        "descriptor_identity",
         "check_id",
         "check_version",
         "applicability",
@@ -279,6 +325,7 @@
       ],
       "properties": {
         "schema_version": {"const": "2.0"},
+        "descriptor_identity": {"type": "string", "minLength": 1},
         "check_id": {"type": "string", "minLength": 1},
         "check_version": {"type": "string", "minLength": 1},
         "applicability": {"enum": ["applicable", "not_applicable"]},
@@ -289,9 +336,9 @@
           "uniqueItems": true,
           "items": {"type": "string", "minLength": 1}
         },
-        "rule_refs": {"$ref": "#/$defs/refList"},
-        "decision_refs": {"$ref": "#/$defs/refList"},
-        "gap_refs": {"$ref": "#/$defs/refList"},
+        "rule_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "decision_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "gap_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
         "before": {
           "type": "object",
           "additionalProperties": false,
@@ -331,7 +378,7 @@
         },
         {
           "if": {"properties": {"applicability": {"const": "not_applicable"}}},
-          "then": {"properties": {"blocking": {"const": false}}}
+          "then": {"properties": {"blocking": {"const": false}, "status": {"const": "pass"}}}
         }
       ]
     }

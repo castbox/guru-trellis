@@ -90,11 +90,77 @@ def _bind_identity(public: dict, owner: dict, field: str) -> None:
         raise CommandError("stale_identity", f"owner_result.{field}", "Reread current architecture authority and repeat semantic review.", 3)
 
 
-def _check_project_checks(checks: object, freshness_identity: str, field: str) -> None:
+def _check_project_checks(
+    descriptors: object,
+    checks: object,
+    freshness_identity: str,
+    field: str,
+) -> None:
+    descriptor_field = "owner_result.project_check_descriptors"
+    if not isinstance(descriptors, list) or not descriptors:
+        raise CommandError(
+            "semantic_result_invalid",
+            descriptor_field,
+            "Architecture impact requires the current project Architecture check descriptors.",
+            3,
+        )
     if not isinstance(checks, list) or not checks:
         raise CommandError("semantic_result_invalid", field, "Architecture impact requires current project Architecture checks.", 3)
+    descriptors_by_identity: dict[str, tuple[int, dict]] = {}
+    for index, descriptor in enumerate(descriptors):
+        descriptor_item_field = f"{descriptor_field}.{index}"
+        identity = descriptor["descriptor_identity"]
+        if identity in descriptors_by_identity:
+            raise CommandError(
+                "semantic_result_invalid",
+                descriptor_item_field,
+                "Declare exactly one current project Architecture check descriptor identity.",
+                3,
+            )
+        _locator(descriptor["entrypoint"], f"{descriptor_item_field}.entrypoint")
+        descriptors_by_identity[identity] = (index, descriptor)
+    checks_by_identity: dict[str, int] = {}
     for index, check in enumerate(checks):
         check_field = f"{field}.{index}"
+        identity = check["descriptor_identity"]
+        if identity in checks_by_identity:
+            raise CommandError(
+                "semantic_result_invalid",
+                check_field,
+                "Record exactly one result for each project Architecture check descriptor identity.",
+                3,
+            )
+        checks_by_identity[identity] = index
+        descriptor_entry = descriptors_by_identity.get(identity)
+        if descriptor_entry is None:
+            raise CommandError(
+                "semantic_result_invalid",
+                check_field,
+                "Bind every project Architecture check result to one current owner-reviewed descriptor identity.",
+                3,
+            )
+        descriptor_index, descriptor = descriptor_entry
+        for binding_field in (
+            "check_id",
+            "check_version",
+            "applicable_scope",
+            "rule_refs",
+            "decision_refs",
+            "gap_refs",
+        ):
+            check_value = check[binding_field]
+            descriptor_value = descriptor[binding_field]
+            if isinstance(check_value, list):
+                matches = set(check_value) == set(descriptor_value)
+            else:
+                matches = check_value == descriptor_value
+            if not matches:
+                raise CommandError(
+                    "semantic_result_invalid",
+                    f"{check_field}.{binding_field}",
+                    f"Bind the result {binding_field} to owner_result.project_check_descriptors.{descriptor_index}.{binding_field}.",
+                    3,
+                )
         if check["freshness_identity"] != freshness_identity:
             raise CommandError("stale_identity", f"{check_field}.freshness_identity", "Rerun the project Architecture check for this invocation.", 3)
         status = check["status"]
@@ -107,21 +173,41 @@ def _check_project_checks(checks: object, freshness_identity: str, field: str) -
         elif status == "unverified":
             if not unavailable_reason or evidence_locator is not None:
                 raise CommandError("semantic_result_invalid", check_field, "An unverified project check requires an unavailable reason and cannot carry evidence.", 3)
-        if check["applicability"] == "not_applicable" and check["blocking"]:
-            raise CommandError("semantic_result_invalid", f"{check_field}.blocking", "A not-applicable project check cannot block the Architecture route.", 3)
+        if check["applicability"] == "not_applicable" and (
+            check["blocking"] or check["status"] != "pass"
+        ):
+            raise CommandError(
+                "semantic_result_invalid",
+                f"{check_field}.applicability",
+                "A not-applicable project check requires non-blocking passed evidence that proves the current applicability decision.",
+                3,
+            )
         if check["blocking"] and check["status"] != "pass":
             raise CommandError("semantic_result_invalid", f"{check_field}.status", "A blocking failed or unverified project check cannot produce baseline_current.", 3)
+    extra_descriptors = set(descriptors_by_identity) - set(checks_by_identity)
+    if extra_descriptors:
+        descriptor_index, _ = descriptors_by_identity[sorted(extra_descriptors)[0]]
+        raise CommandError(
+            "semantic_result_invalid",
+            f"{descriptor_field}.{descriptor_index}",
+            "Every current project Architecture check descriptor requires exactly one bound result.",
+            3,
+        )
 
 
-def _check_review(review: object, field: str) -> None:
+def _check_review(review: object, expected_range: object, field: str) -> None:
     if (
         not isinstance(review, dict)
         or review.get("status") != "reviewed"
         or review.get("independent") is not True
-        or not isinstance(review.get("committed_diff_identity"), str)
-        or not review["committed_diff_identity"].strip()
+        or review.get("committed_range") != expected_range
     ):
-        raise CommandError("semantic_result_invalid", field, "This stage requires an independent reviewed committed full-diff judgment.", 3)
+        raise CommandError(
+            "semantic_result_invalid",
+            field,
+            "This stage requires an independent review of the exact caller-supplied committed range.",
+            3,
+        )
 
 
 def _check_sync_route(value: dict, field: str) -> None:
@@ -169,18 +255,42 @@ def _check_architecture_current(public: dict, recorded: dict) -> None:
     if not recorded.get("impact_reason"):
         raise CommandError("semantic_result_invalid", "owner_result.impact_reason", "Record the reviewed Architecture impact reason.", 3)
     if recorded["impact_kind"] == "architecture_impact":
-        for field in ("change_path", "contribution_locator", "contribution_identity", "project_checks"):
+        for field in (
+            "change_path",
+            "contribution_locator",
+            "contribution_identity",
+            "project_check_descriptors",
+            "project_checks",
+        ):
             if field not in recorded:
-                raise CommandError("semantic_result_invalid", f"owner_result.{field}", "Architecture impact requires the reviewed task-local contribution and project checks.", 3)
-        _check_project_checks(recorded["project_checks"], public["freshness_identity"], "owner_result.project_checks")
+                raise CommandError("semantic_result_invalid", f"owner_result.{field}", "Architecture impact requires the reviewed task-local contribution and bound project checks.", 3)
+        if recorded.get("promotion_state") not in {"reviewed_candidate", "reviewed_promoted"}:
+            raise CommandError("semantic_result_invalid", "owner_result.promotion_state", "Architecture impact requires a reviewed candidate or reviewed promoted contribution.", 3)
+        _check_project_checks(
+            recorded["project_check_descriptors"],
+            recorded["project_checks"],
+            public["freshness_identity"],
+            "owner_result.project_checks",
+        )
         if public["stage"] == "branch_review":
-            _check_review(recorded.get("review"), "owner_result.review")
+            _check_review(
+                recorded.get("review"),
+                public.get("committed_range"),
+                "owner_result.review",
+            )
         if public["stage"] in {"publication", "acceptance_finish"} and recorded["promotion_state"] != "reviewed_promoted":
             raise CommandError("semantic_result_invalid", "owner_result.promotion_state", "Publication and Finish require reviewed promotion.", 3)
     else:
         if recorded["promotion_state"] != "no_change":
             raise CommandError("semantic_result_invalid", "owner_result.promotion_state", "No-impact work must project no_change.", 3)
-        for field in ("change_path", "contribution_locator", "contribution_identity", "project_checks", "review"):
+        for field in (
+            "change_path",
+            "contribution_locator",
+            "contribution_identity",
+            "project_check_descriptors",
+            "project_checks",
+            "review",
+        ):
             if field in recorded:
                 raise CommandError("semantic_result_invalid", f"owner_result.{field}", "No-impact work cannot create Architecture contribution or check burden.", 3)
 
@@ -222,7 +332,25 @@ def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
         if "sync_target" in container:
             _locator(container["sync_target"]["locator"], f"{name}.sync_target.locator")
     if exit_id == "baseline_current":
-        if recorded["baseline_identity"] != public["baseline"]["identity"]:
+        expected_baseline_identity = public["baseline"]["identity"]
+        if public["profile"] == "bootstrap_foundation":
+            successor = public["successor_baseline"]
+            if successor["locator"] != public["baseline"]["locator"]:
+                raise CommandError(
+                    "semantic_result_invalid",
+                    "public_input.successor_baseline.locator",
+                    "Bootstrap must activate the successor at the same Architecture Baseline locator.",
+                    3,
+                )
+            if successor["identity"] == public["baseline"]["identity"]:
+                raise CommandError(
+                    "semantic_result_invalid",
+                    "public_input.successor_baseline.identity",
+                    "Bootstrap must activate a distinct successor Architecture Baseline identity.",
+                    3,
+                )
+            expected_baseline_identity = successor["identity"]
+        if recorded["baseline_identity"] != expected_baseline_identity:
             raise CommandError("stale_identity", "owner_result.baseline_identity", "Reread the live baseline identity.", 3)
         if recorded["constitution_identity"] != public["constitution"]["identity"]:
             raise CommandError("stale_identity", "owner_result.constitution_identity", "Reread the live constitution identity.", 3)
@@ -235,7 +363,11 @@ def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
             if sync_kind == "promotion_required":
                 if recorded.get("impact_kind") != "architecture_impact" or recorded.get("promotion_state") != "reviewed_promoted":
                     raise CommandError("semantic_result_invalid", "owner_result.promotion_state", "Successful promotion must return reviewed_promoted architecture impact.", 3)
-                _check_review(recorded.get("review"), "owner_result.review")
+                _check_review(
+                    recorded.get("review"),
+                    public["committed_range"],
+                    "owner_result.review",
+                )
                 if (
                     recorded.get("contribution_locator") != target["locator"]
                     or recorded.get("contribution_identity") != target["current_identity"]

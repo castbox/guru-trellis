@@ -8,7 +8,7 @@
     "schema_version": {"const": "2.0"}, "profile": {"const": "repair"}, "source_exit": {"type": "string", "minLength": 1}, "mode": {"enum": ["workflow", "standalone"]}, "continuation_id": {"type": "string", "minLength": 1},
     "stage": {"enum": ["planning", "implementation_discovery", "phase2", "branch_review", "publication", "acceptance_finish"]},
     "task_locator": {"type": "string", "minLength": 1},
-    "baseline": {"type": "object", "additionalProperties": false, "required": ["locator", "identity", "status"], "properties": {"locator": {"type": "string", "minLength": 1}, "identity": {"type": "string", "minLength": 1}, "status": {"enum": ["missing", "draft", "active", "superseded"]}}},
+    "baseline": {"type": "object", "additionalProperties": false, "required": ["locator", "identity", "status"], "properties": {"locator": {"type": "string", "minLength": 1}, "identity": {"type": "string", "minLength": 1}, "status": {"const": "active"}}},
     "constitution": {"$ref": "#/$defs/constitution"},
     "project_contract": {"type": "object", "additionalProperties": false, "required": ["guru_contract_identity", "change_contract_locator", "change_contract_identity", "required_concern_set_identity"], "properties": {"guru_contract_identity": {"const": "guru-maintain-architecture-baseline:2.0"}, "change_contract_locator": {"type": "string", "minLength": 1}, "change_contract_identity": {"type": "string", "minLength": 1}, "required_concern_set_identity": {"type": "string", "minLength": 1}}},
     "freshness_identity": {"type": "string", "minLength": 1}, "repair_scope": {"type": "string", "minLength": 1}, "issue_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}

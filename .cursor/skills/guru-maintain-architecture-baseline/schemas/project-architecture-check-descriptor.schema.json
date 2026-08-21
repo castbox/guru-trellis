@@ -3,9 +3,10 @@
   "$id": "guru-project-architecture-check-descriptor-2.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "check_id", "check_version", "entrypoint", "applicable_scope", "rule_refs", "decision_refs", "gap_refs", "result_contract_identity", "freshness_source"],
+  "required": ["schema_version", "descriptor_identity", "check_id", "check_version", "entrypoint", "applicable_scope", "rule_refs", "decision_refs", "gap_refs", "result_contract_identity", "freshness_source"],
   "properties": {
     "schema_version": {"const": "2.0"},
+    "descriptor_identity": {"type": "string", "minLength": 1},
     "check_id": {"type": "string", "minLength": 1},
     "check_version": {"type": "string", "minLength": 1},
     "entrypoint": {"type": "string", "minLength": 1},

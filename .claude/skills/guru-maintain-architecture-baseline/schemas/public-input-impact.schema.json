@@ -10,9 +10,18 @@
     "baseline": {"type": "object", "additionalProperties": false, "required": ["locator", "identity", "status"], "properties": {"locator": {"type": "string", "minLength": 1}, "identity": {"type": "string", "minLength": 1}, "status": {"const": "active"}}},
     "constitution": {"$ref": "#/$defs/constitution"},
     "project_contract": {"type": "object", "additionalProperties": false, "required": ["guru_contract_identity", "change_contract_locator", "change_contract_identity", "required_concern_set_identity"], "properties": {"guru_contract_identity": {"const": "guru-maintain-architecture-baseline:2.0"}, "change_contract_locator": {"type": "string", "minLength": 1}, "change_contract_identity": {"type": "string", "minLength": 1}, "required_concern_set_identity": {"type": "string", "minLength": 1}}},
-    "freshness_identity": {"type": "string", "minLength": 1}, "requirement_authority": {"type": "string", "minLength": 1}, "behavior_authority": {"type": "string", "minLength": 1}
+    "freshness_identity": {"type": "string", "minLength": 1}, "requirement_authority": {"type": "string", "minLength": 1}, "behavior_authority": {"type": "string", "minLength": 1},
+    "committed_range": {"$ref": "#/$defs/committedRange"}
   },
+  "allOf": [
+    {
+      "if": {"properties": {"stage": {"const": "branch_review"}}, "required": ["stage"]},
+      "then": {"required": ["committed_range"]},
+      "else": {"not": {"required": ["committed_range"]}}
+    }
+  ],
   "$defs": {
+    "committedRange": {"type": "object", "additionalProperties": false, "required": ["base_ref", "base_head", "review_head"], "properties": {"base_ref": {"type": "string", "minLength": 1}, "base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "review_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}}},
     "constitution": {"type": "object", "additionalProperties": false, "required": ["authority_locator", "identity_kind", "identity", "principles"], "properties": {"authority_locator": {"type": "string", "minLength": 1}, "identity_kind": {"enum": ["version", "content"]}, "identity": {"type": "string", "minLength": 1}, "principles": {"$ref": "#/$defs/principles"}}},
     "principles": {
       "type": "array",

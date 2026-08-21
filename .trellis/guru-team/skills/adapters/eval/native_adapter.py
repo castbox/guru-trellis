@@ -1500,10 +1500,11 @@ def normalize_qualification_owner_extension(root: Path) -> None:
     )
 
 
-def owner_recipe(request: dict[str, Any]) -> tuple[str, Path]:
+def owner_recipe(request: dict[str, Any]) -> tuple[str, Path, dict[str, Any]]:
     workdir = Path(request["workdir"]).resolve()
     recipe: str | None = None
     public_input: Path | None = None
+    owner_staging: dict[str, Any] | None = None
     for relative in request.get("files", []):
         path = workdir / str(relative)
         try:
@@ -1520,13 +1521,14 @@ def owner_recipe(request: dict[str, Any]) -> tuple[str, Path]:
             if recipe is not None:
                 raise ValueError("multiple case files declare owner staging recipes")
             recipe = candidate
+            owner_staging = copy.deepcopy(staging)
         if payload.get("profile") and payload.get("mode"):
             if public_input is not None:
                 raise ValueError("multiple case files declare public inputs")
             public_input = path
-    if recipe is None or public_input is None:
+    if recipe is None or public_input is None or owner_staging is None:
         raise ValueError("semantic case does not declare one owner staging recipe and public input")
-    return recipe, public_input
+    return recipe, public_input, owner_staging
 
 
 def bind_owner_result_argument(
@@ -5313,7 +5315,7 @@ def stage_owner_execution(
         return package, fixture_runtime_target, {
             "PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}",
         }
-    recipe, public_input = owner_recipe(request)
+    recipe, public_input, owner_staging = owner_recipe(request)
     if skill_id in PRODUCTION_SKILLS:
         return stage_production_owner_execution(
             request,
@@ -5483,6 +5485,11 @@ def stage_owner_execution(
                 "architecture-legacy-convergence",
                 "architecture-refactor-slice",
             }:
+                descriptors = copy.deepcopy(owner_staging.get("project_check_descriptors"))
+                if not isinstance(descriptors, list) or not descriptors:
+                    raise ValueError(
+                        "architecture owner staging lacks project authority check descriptors"
+                    )
                 change_path = {
                     "architecture-target-native": "target_native",
                     "architecture-legacy-convergence": "legacy_boundary_convergence",
@@ -5499,22 +5506,27 @@ def stage_owner_execution(
                     "promotion_state": "reviewed_candidate",
                     "contribution_locator": "docs/architecture/contributions/eval-task",
                     "contribution_identity": "contribution-v1",
-                    "project_checks": [{
-                        "schema_version": "2.0",
-                        "check_id": "project-architecture",
-                        "check_version": "1",
-                        "applicability": "applicable",
-                        "blocking": True,
-                        "applicable_scope": ["target-boundary"],
-                        "rule_refs": ["RULE-owner"],
-                        "decision_refs": ["ADR-example"],
-                        "gap_refs": ["GAP-example"],
-                        "before": {"state": "one owner and one open GAP"},
-                        "after": {"state": "one owner and no worsened deviation"},
-                        "status": "pass",
-                        "evidence_locator": "docs/architecture/evidence/eval.md",
-                        "freshness_identity": str(public_payload["freshness_identity"]),
-                    }],
+                    "project_check_descriptors": descriptors,
+                    "project_checks": [
+                        {
+                            "schema_version": "2.0",
+                            "descriptor_identity": descriptor["descriptor_identity"],
+                            "check_id": descriptor["check_id"],
+                            "check_version": descriptor["check_version"],
+                            "applicability": "applicable",
+                            "blocking": True,
+                            "applicable_scope": copy.deepcopy(descriptor["applicable_scope"]),
+                            "rule_refs": copy.deepcopy(descriptor["rule_refs"]),
+                            "decision_refs": copy.deepcopy(descriptor["decision_refs"]),
+                            "gap_refs": copy.deepcopy(descriptor["gap_refs"]),
+                            "before": {"state": "one owner and one open GAP"},
+                            "after": {"state": "one owner and no worsened deviation"},
+                            "status": "pass",
+                            "evidence_locator": "docs/architecture/evidence/eval.md",
+                            "freshness_identity": str(public_payload["freshness_identity"]),
+                        }
+                        for descriptor in descriptors
+                    ],
                 }
             elif recipe == "architecture-scope-expansion":
                 selected = {

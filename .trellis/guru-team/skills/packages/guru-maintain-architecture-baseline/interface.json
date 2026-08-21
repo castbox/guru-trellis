@@ -14,8 +14,8 @@
     {"id": "runtime_dependency", "evidence": "compatible Guru Team runtime", "binding": "current installation", "freshness": "validated before invocation"},
     {"id": "profile_binding", "evidence": "one closed 2.0 profile input and lifecycle stage", "binding": "the exact caller, mode, profile, stage, task, and continuation", "freshness": "fresh for every stage judgment"},
     {"id": "architecture_authority", "evidence": "live baseline and design-constitution locator plus identity and five principle identities", "binding": "the project-owned Architecture authority reread by the AI", "freshness": "identity changes require complete re-entry"},
-    {"id": "project_change_contract", "evidence": "project change-contract and required-concern-set identity", "binding": "the task-local project architecture contract", "freshness": "scope, owner, boundary, applicability, or check changes require re-entry"},
-    {"id": "invocation_freshness", "evidence": "input digest, semantic gate, exact consumer and minimal output", "binding": "one call-local semantic round", "freshness": "baseline, constitution, contribution, project check, or committed diff changes invalidate the result"}
+    {"id": "project_change_contract", "evidence": "project change-contract, required-concern-set identity, and current project-check descriptors", "binding": "the task-local project architecture contract and descriptor authority", "freshness": "scope, owner, boundary, applicability, descriptor, or check changes require re-entry"},
+    {"id": "invocation_freshness", "evidence": "input digest, semantic gate, exact consumer and minimal output", "binding": "one call-local semantic round", "freshness": "baseline, constitution, contribution, project check, or committed range changes invalidate the result"}
   ],
   "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
   "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
@@ -23,7 +23,9 @@
     {"id": "bootstrap_input", "path": "examples/public-input-bootstrap.json"},
     {"id": "impact_input", "path": "examples/public-input-impact.json"},
     {"id": "promotion_input", "path": "examples/public-input-promotion.json"},
-    {"id": "repair_input", "path": "examples/public-input-repair.json"}
+    {"id": "repair_input", "path": "examples/public-input-repair.json"},
+    {"id": "project_check_descriptor", "path": "examples/project-architecture-check-descriptor.json"},
+    {"id": "project_check_result", "path": "examples/project-architecture-check-result.json"}
   ],
   "schemas": [
     {"id": "semantic_result", "path": "schemas/semantic-result.schema.json"},
@@ -39,7 +41,7 @@
     {"id": "fitness_regression_output", "path": "schemas/public-fitness-regression-output.schema.json"},
     {"id": "blocked_output", "path": "schemas/public-blocked-output.schema.json"}
   ],
-  "validators": [{"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-maintain-architecture-baseline", "objective_scope": "Validate the closed 2.0 profile, exact authority and freshness binding, project-check shape, semantic gate, unique consumer, and one minimal typed projection."}],
+  "validators": [{"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-maintain-architecture-baseline", "objective_scope": "Validate the closed 2.0 profile, exact authority, committed-range and freshness binding, one-to-one owner-result project-check descriptor/result binding, semantic gate, unique consumer, and one minimal typed projection."}],
   "tests": ["tests/test_contract.py"],
   "platform_destinations": ["shared", "codex", "cursor", "claude"],
   "external_exits": [
@@ -75,7 +77,7 @@
     ],
     "consumer_inputs": [
       {"id": "current_input", "consumer": {"kind": "workflow", "id": "guru-architecture-baseline-current-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "current_input", "path": "consumers/workflow/current.schema.json"}},
-      {"id": "sync_input", "consumer": {"kind": "skill", "id": "guru-maintain-architecture-baseline"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-maintain-architecture-baseline/interface.json", "input_kind": "structured_json", "profile_id": "promotion", "seed_fields": ["task_locator", "stage", "expected_current_identity", "current_identity", "sync_kind", "sync_target", "freshness_identity"], "authoring_fields": ["schema_version", "profile", "source_exit", "mode", "continuation_id", "baseline", "constitution", "project_contract"], "authoring_example": {"id": "promotion_authoring", "path": "examples/public-promotion-authoring.json"}}},
+      {"id": "sync_input", "consumer": {"kind": "skill", "id": "guru-maintain-architecture-baseline"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-maintain-architecture-baseline/interface.json", "input_kind": "structured_json", "profile_id": "promotion", "seed_fields": ["task_locator", "stage", "expected_current_identity", "current_identity", "sync_kind", "sync_target", "freshness_identity"], "authoring_fields": ["schema_version", "profile", "source_exit", "mode", "continuation_id", "baseline", "constitution", "project_contract", "committed_range"], "authoring_example": {"id": "promotion_authoring", "path": "examples/public-promotion-authoring.json"}}},
       {"id": "incomplete_input", "consumer": {"kind": "workflow", "id": "guru-architecture-baseline-bootstrap-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "incomplete_input", "path": "consumers/workflow/bootstrap.schema.json"}},
       {"id": "conflict_input", "consumer": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "conflict_input", "path": "consumers/workflow/planning.schema.json"}},
       {"id": "contract_input", "consumer": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "contract_input", "path": "consumers/workflow/planning.schema.json"}},

@@ -40,10 +40,17 @@ the closed 2.0 input/result/output contracts, exact identity/freshness binding,
 project-check shape, unique consumer, and minimal typed projection. Missing or
 1.0 input is rejected; it is never upgraded or dual-read.
 
-The public input carries only caller route and live authority identities. The
-AI owner result carries impact kind/reason and, when applicable, the one change
-path, contribution, project checks, and review state. A no-impact current output
-projects its concise reviewed reason but no contribution or ADR fields.
+The public input carries only caller route and live authority identities, plus
+the exact committed range when the stage needs one. The AI rereads the project
+Architecture change-contract authority and records its current project-check
+descriptors together with descriptor-identity-bound results in the owner
+result. A no-impact current output projects its concise reviewed reason but no
+contribution, descriptor, check, or ADR fields.
+
+Bootstrap may project `baseline_current` only from an active successor at the
+same locator with a distinct identity. Repair always starts from an active
+baseline. Branch Review and promotion bind their nested reviewed range exactly
+to the caller-supplied structured committed range.
 
 Public exits are `baseline_current`, `sync_required`, `baseline_incomplete`,
 `architecture_conflict`, `contract_incomplete`, `fitness_regression`, and

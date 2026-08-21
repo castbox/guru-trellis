@@ -54,26 +54,45 @@
 
 当前 complete worktree candidate 已 fresh 通过以下 current-scope 验证：
 
-- Architecture package contract/runtime：`16/16`；source package graph 为 `21` active
-  packages / `72` commands，installed graph 为 `21` active packages / `20` invokes /
-  `87` exits / `4232` managed files，零 conflict/sidecar。
+- Architecture package contract/runtime：source 与 installed 均为 `22/22`；source package
+  graph 为 `21` active packages / `72` commands，installed graph 为 `21` active packages /
+  `20` invokes / `87` exits / `4229` managed files，零 conflict/sidecar。
 - Architecture source/shared 与 installed/shared eval 均覆盖固定 `SCN-024..033` 十个场景并
-  全部通过；`guru-approve-task-plan`、`guru-check-task`、`guru-review-branch` 的 contract/runtime
-  consumer tests 分别为 `21+4`、`9+9`、`15+4` 通过；package closure 为 `8/8`。
+  全部通过；`guru-approve-task-plan`、`guru-check-task`、`guru-review-branch` 的 source 与
+  installed contract/runtime tests 分别为 `21/21`、`9/9`、`15/15`，RDT package 为
+  `9/9`，package closure 为 `8/8`，finish-family integration 为 `6/6`，semantic
+  retrieval contract 为 `4/4`。
 - Preset upstream ownership `7/7`、installer apply/reapply `78/78`、upgrade contract
-  `20/20` 通过；两次 all-platform reapply 均为零增量且零 backup/new/conflict/sidecar，
+  `20/20` 通过；最终 all-platform reapply 为零增量且零 backup/new/conflict/sidecar，
   dogfood overlay drift 与递归 `.new/.bak` 检查通过。
-- `301` 个受影响 JSON fresh parse、Python compile、Bash syntax、`task.py validate` 与
+- 完整 base-to-worktree candidate 共 `376` 个现存文件；其中 `299` 个 JSON fresh parse、
+  `12` 个 Python 文件 compile，canonical Bash syntax、`task.py validate` 与完整 candidate
   `git diff --check` 通过；task validation 仅保留既有大 spec 注入截断 warning。
+- 当前 dirty worktree candidate 已在无 `.git` 的隔离临时目标完成一个代表性 current-version
+  clean installation：Trellis `0.6.15` 从公开 marketplace 初始化基础结构后，明确覆盖为当前
+  canonical workflow，再应用当前 all-platform preset；installed graph、Architecture
+  contract `22/22`、installed/shared 固定十场景、Phase 2 context smoke、四平台 parity、
+  reapply 与 recursive zero-sidecar 均通过。该证据证明当前本地 candidate 的安装态，不证明
+  未发布 branch 的 marketplace ref 或正式 standalone verifier typed exit。
+- `guru-check-task` 已对完整 base-to-worktree candidate 完成 schema 5.0 语义检查：九个
+  adequacy dimension 全部通过，三个修复候选在 current supported path 上均为
+  `rejected_not_reproduced`，open finding 与 blocking unverified item 均为零，typed exit 为
+  `passed`。owner-private content token 不复制到 durable Docs；本段状态同步后必须从 live
+  content 重录并由 checker 再次确认，最终结果只由 fresh private checkpoint 承接。
 
 `guru-trellis-architecture-convergence@1` 因而对当前 Phase 2 candidate 为 `pass` 且
 `blocking=true`。以下后续门禁仍未完成且不在本段冒充通过：
 
-- `guru-verify-extension-installation` 只接受 clean source checkout；当前全部 candidate 尚未
-  commit，且本次恢复边界禁止创建新的 Git/Trellis 资源，因此代表性 clean standalone
-  install 延后到 reviewed commit 后、Publication 前执行。
-- independent committed full-diff Branch Review、serialized Architecture/RDT promotion、
-  promotion 后 Phase 2/Branch Review 重跑与 next-task consumption smoke 仍为 pending。
+- 正式 `guru-verify-extension-installation` 合同要求 source checkout clean 且 requested ref
+  解析到当前 HEAD；当前 worktree dirty、branch 尚未发布，因此本轮不具备合法 executor
+  entry，也未形成 `verified` typed exit。先前 exact `82f0469` 的
+  `blocked(reason_code=requested_ref_not_published)` 只保留为历史边界；不得把本轮 targeted
+  clean installation 冒充为正式 verifier pass。
+- 原 independent committed full-diff Branch Review 已返回 current-scope findings；对应代码
+  修复已进入当前 candidate，但 finding closure 仍须由新 task commit 与 distinct fresh-final
+  full-diff review 证明。serialized Architecture/RDT promotion、promotion 后 Phase 2/Branch
+  Review 重跑与 next-task consumption smoke 仍为 pending。
 - #267 exact-candidate 全平台矩阵、tag、Release 与 immutable smoke 始终不属于 #283。
 
-当前 contribution validation state：`phase2_current_scope_passed_with_post_commit_gate_pending`。
+当前 contribution validation state：
+`phase2_semantic_passed_with_fresh_private_checkpoint_after_status_sync_local_clean_install_formal_verifier_ineligible_and_post_phase2_gates_pending`。

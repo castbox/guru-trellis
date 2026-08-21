@@ -11,8 +11,9 @@
   `current-main-0.6.5-guru.37` / `active`。
 - expected current identity at promotion：`current-main-0.6.5-guru.37`；successor identity
   只能由 reviewed promotion 分配。
-- contribution state：`candidate_pending_review`；promotion state：
-  `required_not_started`；本文件不构成 CURRENT、accepted ADR 或 promotion 证明。
+- contribution state：`phase2_reviewed_candidate_pending_independent_full_diff_review`；
+  promotion state：`required_not_started`；本文件不构成 CURRENT、accepted ADR 或 promotion
+  证明。
 
 本 contribution 只提出让 Architecture Baseline 在完整 task 生命周期中单向收敛的长期
 治理增量。Architecture schema 2.0、runtime 和项目检查协议是 supporting infrastructure，
@@ -142,16 +143,25 @@ contribution 或 ADR。
 - project check：`guru-trellis-architecture-convergence@1`，覆盖 authority/path/
   concerns/before-after/single-writer/parallel stale/review/promotion freshness；本次 Phase 2
   对完整 worktree candidate 的当前结果为 `pass`、`blocking=true`。证据 locator 为 RDT
-  contribution 的 `test.md` 当前验证摘要；freshness 绑定本次 Architecture owner 与
-  `guru-check-task` 即将记录的完整 worktree content identity。其他 task 的 AI owner 仍必须
-  结合 applicability 与 task real dependency 独立判断 `blocking`；runtime 不代替该判断。
-- evidence：Architecture package、source/installed graph、source/installed fixed 10-scenario
-  eval、三个阶段 consumer、package closure、preset ownership/apply/reapply/upgrade、dogfood
-  drift、JSON/Python/Bash/task/diff 静态门禁均已对当前 candidate fresh 通过；详见 RDT
-  `test.md`。`guru-verify-extension-installation` 要求 clean source checkout，故代表性 clean
-  standalone install 保留为 reviewed commit 后、Publication 前的 required gate；independent
-  committed-diff Branch Review、serialized promotion 及 promotion 后 fresh gates 仍为 pending，
-  本 contribution 不把它们声明为已完成。
+  contribution 的 `test.md` 当前验证摘要；`guru-check-task` schema 5.0 已完成九维语义检查并
+  返回 `passed`。完整 worktree content identity 只保留在 owner-private checkpoint，本文件
+  状态同步后由 live content fresh 重录，不复制 token。其他 task 的 AI owner 仍必须结合
+  applicability 与 task real dependency 独立判断 `blocking`；runtime 不代替该判断。
+- evidence：Architecture source/installed contract `22/22`、source/installed graph、
+  source/installed fixed 10-scenario eval、三个阶段 consumer、RDT/package/finish/semantic
+  closure、preset ownership/apply/reapply/upgrade、dogfood drift、JSON/Python/Bash/task/diff
+  静态门禁均已对当前 candidate fresh 通过；详见 RDT `test.md`。当前 dirty candidate 还在无
+  `.git` 的隔离目标完成了 Trellis `0.6.15` 代表性 clean installation：公开 marketplace
+  初始化后明确覆盖当前 canonical workflow，应用当前 all-platform preset，并通过 installed
+  validation、Architecture `22/22`、installed/shared 十场景、Phase 2 context smoke、四平台
+  parity、reapply 与 zero-sidecar。该 targeted 证据不证明未发布 branch marketplace ref。
+  正式 `guru-verify-extension-installation` 要求 clean source 与解析到当前 HEAD 的 requested
+  ref；当前 dirty/unpublished 状态不具备合法 executor entry，也没有形成 `verified` typed
+  exit。Phase 2 的三个修复候选已在 current supported path 上重新判定为
+  `rejected_not_reproduced`，open finding 为零；原 committed-diff review finding closure 仍须
+  新 task commit 与 distinct fresh-final Branch Review 证明。serialized promotion、promotion
+  后 fresh gates 与新 exact-commit verification 仍为 pending，本 contribution 不把它们声明
+  为已完成。
 
 ## ADR-283-CANDIDATE
 
