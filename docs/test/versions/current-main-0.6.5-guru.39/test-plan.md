@@ -1,7 +1,7 @@
 # 当前测试计划与证据
 
-版本：`current-main-0.6.5-guru.38`；状态：`superseded`；source baseline：main
-`2d34abfc9ea3ef488aedf529e022854050270db7` + #283 architecture convergence task delta。
+版本：`current-main-0.6.5-guru.39`；状态：`active`；source baseline：task head
+`d4165f268d36e19139266d28519148c290f773a4` + #290 serialized promotion delta。
 
 ## Replacement before-state authority
 
@@ -78,10 +78,24 @@ remote branch 与 disposable repository 已删除，本地 scenario resources移
 
 Architecture package的 source/dogfood `22/22`、两套固定十场景 `10/10`、Planning/Phase 2/Branch Review consumers `21/21`、`9/9`、`15/15`、RDT/package/finish/retrieval `9/9`、`8/8`、`6/6`、`4/4` 与 preset ownership/apply/upgrade `7/7`、`78/78`、`20/20` 均绑定 reviewed task candidate。promotion 仅把这些已审查的 contract/evidence 提升到 shared current；它不把 promotion-created diff 冒充为已复核。
 
+## #290 detached base authority checkout
+
+| Check | Current result | Boundary |
+| --- | --- | --- |
+| canonical package tests | sync-base 15/15；workspace 6/6；integration 8/8 PASS | exact #290 package and producer-consumer behavior |
+| installed package tests | sync-base 15/15；workspace 6/6 PASS | installed dogfood behavior, not release matrix |
+| source/installed validators | 21 packages / 72 commands；sidecar/conflict/removal zero | current package graph and managed inventory |
+| projection/reapply/drift | canonical/installed affected bytes equal；all-platform apply and dogfood drift passed；`.new/.bak` zero | current candidate distribution only |
+| representative Codex detached wrapper | synced；authority locator and three-way equality passed | one normal installed path, not #267 matrix |
+| independent committed review | base `ec4df880…` -> task head `d4165f26…`；57 paths；Architecture and Branch Review passed with no P0-P3 finding | promotion-created diff requires fresh Phase 2/commit/Branch Review |
+
+The serialized Architecture/RDT promotion binds expected `.38`, reviewed contribution
+`53c3e44a…`, and successor `.39`. It does not publish extension `0.6.5-guru.37`.
+
 ## Current boundaries
 
 - `.37` stable tag、GitHub Release、tag-pinned clean install与 release smoke：`unverified`，owner=#267。
-- `.38` 只表示 current RDT/Architecture knowledge identity；extension manifest 仍为 `0.6.5-guru.37`，未发生 version bump。
+- `.39` 只表示 current RDT/Architecture knowledge identity；extension manifest 仍为 `0.6.5-guru.37`，未发生 version bump。
 - #248 Acceptance/Finish handoff 与 #252 cleanup public owner未实现；本次只提供可消费兼容事实。
 - full matrix logs、临时 repository/runtime、用户授权与完整 hash bundle不进入 current SSOT。
 - 所有 matrix run 都保持 `real_github_verified:false`；最终 candidate 的精确

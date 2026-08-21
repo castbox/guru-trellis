@@ -4,15 +4,15 @@
 
 - candidate identity：`architecture-contribution-290-base-authority-checkout-v1`。
 - source authority：Issue #290、`BEH-001`、`DES-004`、`DES-008`。
-- Architecture authority：`docs/architecture/README.md` / knowledge identity
-  `current-main-0.6.5-guru.38` / `active`。
+- serialized promotion source authority（gate 时）：`docs/architecture/README.md` /
+  knowledge identity `current-main-0.6.5-guru.38` / `active`。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` /
   `guru-trellis-design-constitution-v1` / `current`。
 - project change contract：`docs/architecture/06-governance/change-contract.md` /
   `guru-trellis-architecture-change-contract-v1` /
   `guru-trellis-architecture-change-concerns-v1`。
-- change path：`target_native`；promotion state：`reviewed_candidate`；本文件不构成
-  CURRENT authority。
+- change path：`target_native`；promotion state：`reviewed_promoted`；本 contribution
+  已由 expected `.38` serialized promotion 纳入 `.39` CURRENT authority。
 - expected current identity：`current-main-0.6.5-guru.38`。shared current 仅由
   Architecture promotion owner 在 independent committed full-diff review 后更新。
 
@@ -91,9 +91,10 @@ authority、dual-read、adapter 或第二套 resolver。
   projection equality 与 sidecar-zero 均通过；independent `trellis-check` 对完整 current
   candidate 给出 P0-P3 无 findings，observations 01/02/03 均不再复现。
 
-## Promotion boundary
+## Promotion result
 
-本文件保持 task-owned candidate，直到 #290 实现、Phase 2 与 independent committed
-full-diff Branch Review 完成。若 live Architecture current identity 不再是 `.38`，返回
-`sync_required` 并重做 impact；不得覆盖新 current。promotion 不开始 #267，不创建
-tag/Release，也不把发布矩阵写成 #290 completion evidence。
+完整 task range `origin/main@ec4df880…d4165f26` 已通过 independent Branch Review，
+Architecture project check 为 `pass`，open findings 为零。serialized promotion 绑定
+expected `.38` 与 contribution pre-promotion SHA-256 `53c3e44a5b62d1c446d0534c9f55777014e99949ea56bd370d15af020946b0f7`，
+激活 successor `.39`。promotion-created diff 必须 fresh 重走 Phase 2、commit 与 Branch
+Review。promotion 不开始 #267，不创建 tag/Release，也不把发布矩阵写成 #290 completion evidence。

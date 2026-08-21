@@ -1,8 +1,8 @@
 # ADR-006: selected-base authority checkout routing
 
-状态：`candidate`。Owner：Issue #290。Predecessor：无。Shared-current authority 仍为
-`ADR-001..005`；本文件仅在 independent committed full-diff review 与 serialized
-promotion 后进入 accepted index。
+状态：`accepted`。Owner：Issue #290。Predecessor：无。经 exact committed range
+`ec4df880…d4165f26` 的 independent Branch Review 与 expected `.38` serialized
+promotion 进入 `.39` shared-current authority。
 
 ## Context
 
@@ -58,7 +58,6 @@ Acceptance 由 #290 package/runtime/eval、schema compatibility、managed projec
 preset reapply/drift 与一个代表性 detached wrapper 正常路径共同验证。完整 release
 matrix、tag 与 GitHub Release 仍由 #267 独占。
 
-本 ADR 在 #290 independent committed full-diff Branch Review 通过前保持 candidate。
-promotion 必须绑定 expected Architecture identity `current-main-0.6.5-guru.38`；若 current
-已推进，先返回 `sync_required`。promotion diff 必须重新通过 Phase 2、task commit 与
-独立 Branch Review。
+本 ADR 已绑定 #290 independent committed full-diff Branch Review 与 expected Architecture
+identity `current-main-0.6.5-guru.38`，由 serialized promotion 接受为 `.39` current。
+promotion-created diff 仍必须重新通过 Phase 2、task commit 与独立 Branch Review。

@@ -1,6 +1,6 @@
 # 当前测试策略
 
-版本：`current-main-0.6.5-guru.38`；状态：`superseded`。
+版本：`current-main-0.6.5-guru.39`；状态：`active`。
 
 ## Evidence 分层
 
@@ -32,6 +32,10 @@
 | `TST-024` | parallel stale | 独立 contribution scope、shared current/GAP/owner 禁止竞争、successor 后旧 task re-entry | 锁、shared ledger 或 TOCTOU 协议 |
 | `TST-025` | Architecture 2.0 atomic projection | schema/runtime/canonical/dogfood/installed/platform/consumers 无 legacy selector 或 dual-read | 部分投影或隐式 migration |
 | `TST-026` | #283 targeted validation | package/runtime/eval、十场景、preset reapply/drift/sidecar 与一个代表性 clean install | #267 exact-candidate matrix/tag/Release/smoke |
+| `TST-027` | base selection and binding | explicit/config/ordered/remote-default precedence、same-common-dir exact checkout、missing/dirty/mismatch blocked | public publication 或多平台 release proof |
+| `TST-028` | authority synchronization | detached/current session、remote-ahead fast-forward、post-sync three-way equality 与 locator continuity | non-fast-forward recovery |
+| `TST-029` | downstream provenance | producer transition 到 workspace consumer 的 source/base/full-candidates exact freshness | producer private runtime 或历史 checkpoint |
+| `TST-030` | #290 distribution | canonical/installed/platform parity、inventory、reapply/drift/mode/sidecar-zero 与代表性 Codex detached wrapper | #267 release matrix/tag/Release |
 
 ## 核心场景
 
@@ -63,6 +67,13 @@
 - `SCN-031 unpromoted contribution`：实现/测试通过但 contribution/ADR/review/promotion 缺失时 Publication/Finish 阻断。
 - `SCN-032 next-task consumption`：successor baseline/constitution/decision/GAP/owner 是下一次 Planning 唯一 current input。
 - `SCN-033 missing external evidence`：保持 `evidence_gap|unverified`，不虚构 pass、GAP closure、排期或发布。
+- `SCN-034 explicit/config selection`：显式或 config `release/1.3.0` 在 clean main checkout 存在时仍只绑定 release authority。
+- `SCN-035 ordered no-fallback`：`dev -> main` 同时存在时选择 dev；dev checkout 缺失或 dirty 时 blocked，不回退 main。
+- `SCN-036 detached authority`：detached session 与 clean selected-base authority 同处 common-dir 时完成同步，handoff/transition locator 指向 authority。
+- `SCN-037 identity mismatch`：missing、ambiguous、dirty、inventory HEAD/branch/ref mismatch 分别稳定 fail closed。
+- `SCN-038 fast-forward continuity`：remote advance 只前进 authority checkout，detached session 不变，post-sync decision/local/remote heads 相等。
+- `SCN-039 source-aware freshness`：explicit/config/config-candidate/remote-default 的 source、selected base 与完整 candidates exact 匹配时通过，任一 drift 在 workspace preparation 前拒绝。
+- `SCN-040 distribution boundary`：canonical/installed/package/platform/reapply/drift/sidecar 和代表性 installed detached wrapper 通过，但不声明 #267 release-wide proof。
 - `CASE-001`：每个 active interface 的 external exit 恰有唯一 consumer 或 stop，registry/interface/workflow 闭包。
 - `CASE-002`：semantic gate 发生在 recorder/validator 前，脚本不接收或持久化授权。
 
@@ -70,5 +81,5 @@
 
 先读取 `.trellis/spec/workflow/quality-guidelines.md` 的 `Validation Scope Ownership`。普通 feature/docs/spec Issue 运行与 accepted scope 相关的最小可靠集合；完整多平台 Throwaway 只属于专项兼容/upgrade/release Issue。任何 SKIP、未配置 live 环境或历史 PR 声明都明确写成 `unverified`。
 
-完整矩阵只证明 `public_plus_local_candidate` 与 current source compatibility；`.38` 是 knowledge identity，`.37` stable tag、
+完整矩阵只证明 `public_plus_local_candidate` 与 current source compatibility；`.39` 是 knowledge identity，`.37` stable tag、
 GitHub Release 与 tag-pinned release smoke 必须继续标记为 #267 boundary。

@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.38`；状态：`superseded`；基线：main `2d34abfc9ea3ef488aedf529e022854050270db7` + #283 architecture convergence task delta。
+版本：`current-main-0.6.5-guru.39`；状态：`active`；基线：task head `d4165f268d36e19139266d28519148c290f773a4` + #290 serialized promotion delta（精确 revision 为当前 Git HEAD）。
 
 ## 目标、角色与适用范围
 
@@ -39,6 +39,14 @@
 - `REQ-033`：普通 task 只写自己的 RDT/Architecture contribution；仅当 decision、原则权衡/例外、GAP lifecycle、owner/single-writer 或 compatibility exit 改变时创建 ADR candidate。shared current 由唯一 Architecture owner 在 independent review 后按 expected current identity 串行 promotion。
 - `REQ-034`：并行 task 使用不同 contribution locator，不得 review 前写 shared current、竞争同一 GAP/owner、形成双写或两个 current authority。任一 promotion 推进 current 后，旧 identity task 必须 `sync_required` 并重做 impact、satisfaction 与 parallel-scope 判断。
 - `REQ-035`：Architecture 2.0 schema/runtime、canonical/dogfood/installed/platform projection 与项目中立十场景必须原子承接上述 lifecycle，stable Skill/profile/exit ids 不变；外部 evidence 不可得时保持 `evidence_gap|unverified`。#267 release matrix/tag/Release/immutable smoke 与 business-repository refactor不属于 #283。
+- `REQ-036`：base selection 必须固定按 explicit、config scalar、ordered exact local/remote refs、remote default 执行；current branch 与 worktree availability 不参与 selection，selected base 缺 checkout 时不得回退低优先级 candidate。
+- `REQ-037`：selected base 确定后只绑定同一 Git common-dir 中 registered、exact `refs/heads/<selected_base>`、clean 且 branch/HEAD/ref identity 一致的唯一 authority checkout。
+- `REQ-038`：Codex session checkout 允许 detached 且只作为 invocation shell；fetch、可选 `merge --ff-only`、checker equality 与 public repository locator 只使用 authority checkout。
+- `REQ-039`：authority missing、ambiguous、dirty 或 identity mismatch 必须稳定 `blocked`；不得 checkout、switch、创建 branch/worktree、reset、rebase、stash、force update 或重选 base。
+- `REQ-040`：invocation checkout 自身已绑定 selected base 时保持成功路径；behind authority 只允许 explicit remote-tracking refspec fetch 与 `merge --ff-only`。
+- `REQ-041`：`guru-base-sync-result-1.0`、Interface 1.4、public `synced|skipped|blocked` schemas、typed exits 与 transition shape 保持兼容，既有 locator 字段指向真实 authority checkout。
+- `REQ-042`：`guru-create-task-workspace` 必须按 producer provenance source 对 explicit、config、config-candidate、remote-default 的 current source、selected base 与完整 candidates exact revalidate，且不得导入 producer private runtime。
+- `REQ-043`：canonical、dogfood、installed 与 Shared/Codex/Claude/Cursor projection、preset reapply/drift/mode 和 sidecar-zero 必须一致；代表性 installed detached wrapper 只证明 #290 normal path，#267 继续独占 release matrix/tag/Release。
 
 ## 生命周期行为
 
@@ -62,4 +70,4 @@
 
 ## 非目标
 
-本 authority 的 `.38` 是 knowledge identity，不是 extension/release revision。本 authority 不把 extension `.37` 称为已发布 stable release，不实现 #248/#252 public owner，也不把业务仓库私有 PRD、完整日志、临时 hash bundle 或用户授权写入 current intent。
+本 authority 的 `.39` 是 knowledge identity，不是 extension/release revision。本 authority 不把 extension `.37` 称为已发布 stable release，不实现 #248/#252 public owner，也不把业务仓库私有 PRD、完整日志、临时 hash bundle 或用户授权写入 current intent。

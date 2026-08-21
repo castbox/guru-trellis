@@ -4,14 +4,14 @@ task_locator: ".trellis/tasks/08-21-290-detached-base-authority-checkout"
 issue_ref: "https://github.com/castbox/guru-trellis/issues/290"
 source_version: "current-main-0.6.5-guru.38"
 expected_current_version: "current-main-0.6.5-guru.38"
-candidate_successor_version: "assigned-by-reviewed-promotion"
-status: "candidate_pending_review"
+candidate_successor_version: "current-main-0.6.5-guru.39"
+status: "reviewed_promoted"
 authority_scope: "isolated_contribution"
 architecture_impact: "architecture_impact"
 change_path: "target_native"
 architecture_baseline:
   locator: "docs/architecture/README.md"
-  version: "current-main-0.6.5-guru.38"
+  version: "current-main-0.6.5-guru.39"
   status: "active"
 design_constitution:
   authority_owner: "docs/architecture"
@@ -22,8 +22,8 @@ design_constitution:
 architecture_candidate:
   contribution_locator: "docs/architecture/contributions/290-detached-base-authority-checkout.md"
   adr_locator: "docs/architecture/adr/006-base-authority-checkout-routing.md"
-  promotion_state: "reviewed_candidate"
+  promotion_state: "reviewed_promoted"
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
-promotion_decision: "pending_independent_review"
-shared_current_write: false
+promotion_decision: "reviewed_promoted"
+shared_current_write: true
