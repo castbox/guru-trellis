@@ -2,13 +2,13 @@
 
 ## Current identity
 
-- version：`current-main-0.6.5-guru.38`
+- version：`current-main-0.6.5-guru.39`
 - status：`active`
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
 - Architecture inheritance：`docs/architecture/README.md`，同版本、`active`
-- source binding：main `2d34abfc9ea3ef488aedf529e022854050270db7` + #283 architecture convergence task delta（精确 revision 为当前 Git HEAD）
+- source binding：task head `d4165f268d36e19139266d28519148c290f773a4` + #290 serialized promotion delta（精确 revision 为当前 Git HEAD）
 
 ## 读取与更新
 

@@ -44,17 +44,51 @@ def origin_repo(root: Path) -> str:
     return f"{match.group(1)}/{match.group(2)}" if match else ""
 
 
-def base(root: Path, values: dict[str, Any]) -> tuple[str, list[str]]:
-    configured = str(values.get("base_branch") or "").strip()
-    candidates = [configured] if configured else [str(item) for item in values.get("base_branch_candidates", [])]
-    available = [
-        name for name in candidates
-        if run(root, "git", "show-ref", "--verify", "--quiet", f"refs/heads/{name}").returncode == 0
-        or run(root, "git", "show-ref", "--verify", "--quiet", f"refs/remotes/origin/{name}").returncode == 0
+def live_base(
+    root: Path,
+    values: dict[str, Any],
+    base_assertion: str | None,
+    remote: str,
+) -> tuple[str, str, list[str]]:
+    if base_assertion:
+        return "explicit", base_assertion, [base_assertion]
+
+    configured = values.get("base_branch", "")
+    if configured is None:
+        configured = ""
+    if not isinstance(configured, str):
+        raise ValueError("Configured base branch must be a scalar string.")
+    configured = configured.strip()
+    if configured:
+        return "config", configured, [configured]
+
+    raw_candidates = values.get("base_branch_candidates", [])
+    if not isinstance(raw_candidates, list) or any(not isinstance(item, str) for item in raw_candidates):
+        raise ValueError("Configured base candidates must be a list of branch names.")
+    candidates: list[str] = []
+    for item in raw_candidates:
+        item = item.strip()
+        if item and item not in candidates:
+            candidates.append(item)
+    for candidate in candidates:
+        if (
+            run(root, "git", "show-ref", "--verify", "--quiet", f"refs/heads/{candidate}").returncode == 0
+            or run(root, "git", "show-ref", "--verify", "--quiet", f"refs/remotes/{remote}/{candidate}").returncode == 0
+        ):
+            return "config-candidate", candidate, candidates
+
+    process = run(root, "git", "ls-remote", "--symref", remote, "HEAD")
+    matches = [] if process.returncode else [
+        match.group(1)
+        for line in process.stdout.splitlines()
+        if (match := re.fullmatch(r"ref: refs/heads/([^\t]+)\tHEAD", line))
     ]
-    if not available:
-        raise ValueError("Could not resolve a configured base branch.")
-    return available[0], candidates
+    if len(matches) != 1:
+        raise ValueError("Could not resolve the remote default base branch.")
+    selected = matches[0]
+    if selected not in candidates:
+        candidates.append(selected)
+    return "remote-default", selected, candidates
 
 
 def json_argument(value: str | None) -> dict[str, Any]:
@@ -106,10 +140,14 @@ def reviewed_base_freshness(
     reviewed_digest = str(provenance.get("post_sync_resolution_sha256") or "")
     if not re.fullmatch(r"[0-9a-f]{64}", reviewed_digest):
         raise ValueError("Reviewed base provenance digest is invalid.")
-    if base_assertion and base_assertion != selected:
-        raise ValueError("Reviewed base provenance does not match --base-branch.")
-    resolved, _ = base(root, values)
-    if resolved != selected or candidates != [selected]:
+    current_source, resolved, current_candidates = live_base(
+        root, values, base_assertion, remote
+    )
+    if (
+        current_source != source
+        or resolved != selected
+        or candidates != current_candidates
+    ):
         raise ValueError("Reviewed base provenance no longer matches current resolution.")
     decision = {
         "branch": git(root, "branch", "--show-current"),
@@ -183,8 +221,9 @@ def prepare(root: Path, args: argparse.Namespace) -> dict[str, Any]:
     if not requirement:
         raise ValueError("No requirement description provided.")
     provenance = json_argument(args.reviewed_base_provenance)
-    selected, candidates = base(root, values)
     freshness = reviewed_base_freshness(root, values, provenance, args.base_branch)
+    selected = freshness["base_branch"]
+    candidates = freshness["resolution"]["candidates"]
     repo = str(values.get("github_repo") or "").strip() or origin_repo(root)
     if not repo:
         raise ValueError("Could not resolve GitHub repo.")

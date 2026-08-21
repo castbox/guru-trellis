@@ -1,0 +1,51 @@
+{
+  "close_issues": [
+    {
+      "number": 290,
+      "reason": "本 task 完整覆盖并仅关闭 Issue #290。",
+      "title": "修复 Codex detached checkout 下 Phase 0 base authority checkout 路由",
+      "url": "https://github.com/castbox/guru-trellis/issues/290"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 267,
+      "reason": "独立拥有 Release Gate、tag、Release 与累计矩阵，本 task 不执行。",
+      "title": "发布 Trellis v0.6.15 双 SSOT 稳定基线版本",
+      "url": "https://github.com/castbox/guru-trellis/issues/267"
+    }
+  ],
+  "primary_issue": {
+    "number": 290,
+    "reason": "本 task 完整覆盖并仅关闭 Issue #290。",
+    "title": "修复 Codex detached checkout 下 Phase 0 base authority checkout 路由",
+    "url": "https://github.com/castbox/guru-trellis/issues/290"
+  },
+  "related_issues": [
+    {
+      "number": 110,
+      "reason": "保留原始 guru-sync-base 同步合同。",
+      "title": "拆分 #98：实现 guru-sync-base 闭环 Skill",
+      "url": "https://github.com/castbox/guru-trellis/issues/110"
+    },
+    {
+      "number": 263,
+      "reason": "提供 detached intake 正常路径复现背景。",
+      "title": "建立 Requirements/Design/Test SSOT 原子闭环 Skill",
+      "url": "https://github.com/castbox/guru-trellis/issues/263"
+    },
+    {
+      "number": 264,
+      "reason": "提供 detached intake 正常路径复现背景。",
+      "title": "建立 Architecture Baseline 原子闭环 Skill",
+      "url": "https://github.com/castbox/guru-trellis/issues/264"
+    },
+    {
+      "number": 283,
+      "reason": "已完成的历史复现背景，不继承其 review 或 checkpoint。",
+      "title": "完善架构基线治理：建立单向收敛、三类变更路径与架构约束自动检查合同",
+      "url": "https://github.com/castbox/guru-trellis/issues/283"
+    }
+  ],
+  "schema_version": "2.0"
+}

@@ -1,7 +1,7 @@
 schema_version: "1.0"
 authority: design
 version: current-main-0.6.5-guru.38
-status: active
+status: superseded
 source_commit: 2d34abfc9ea3ef488aedf529e022854050270db7
 extension_manifest_version: 0.6.5-guru.37
 target_trellis_cli: 0.6.15

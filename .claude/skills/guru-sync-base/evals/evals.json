@@ -6,7 +6,7 @@
   "evals": [
     {
       "id": "synced-route",
-      "prompt": "For the staged repository-change scenario, invoke guru-sync-base with its scalar public signature. Let the formal resolver, executor, and checker derive the route from live Git facts.",
+      "prompt": "For the staged repository-change scenario, invoke guru-sync-base from a detached session checkout. Let the formal resolver select the base first, bind its registered clean authority checkout, and let the executor and checker derive the route from live Git facts.",
       "expected_exit": "synced",
       "expected_output": "The public DTO is the declared synced route.",
       "files": ["evals/files/eval-synced-facts.json"],
@@ -57,7 +57,7 @@
     },
     {
       "id": "blocked-route",
-      "prompt": "For the staged repository-change scenario with an unresolved selected base, invoke guru-sync-base with its scalar public signature and let the formal resolver fail closed.",
+      "prompt": "For the staged repository-change scenario whose selected base has no registered authority checkout, invoke guru-sync-base with its scalar public signature and let the formal resolver fail closed without reselecting another base.",
       "expected_exit": "blocked",
       "expected_output": "The public DTO is the declared blocked route.",
       "files": ["evals/files/eval-blocked-facts.json"],

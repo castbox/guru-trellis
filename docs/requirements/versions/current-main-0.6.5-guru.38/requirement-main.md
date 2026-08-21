@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.38`；状态：`active`；基线：main `2d34abfc9ea3ef488aedf529e022854050270db7` + #283 architecture convergence task delta（精确 revision 为当前 Git HEAD）。
+版本：`current-main-0.6.5-guru.38`；状态：`superseded`；基线：main `2d34abfc9ea3ef488aedf529e022854050270db7` + #283 architecture convergence task delta。
 
 ## 目标、角色与适用范围
 

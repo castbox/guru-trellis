@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-版本：`current-main-0.6.5-guru.38`；状态：`active`；provenance：`code_recovered` + #283 reviewed promotion，绑定 baseline `2d34abfc…` + #283 architecture convergence task delta（精确 revision 为当前 Git HEAD）。
+版本：`current-main-0.6.5-guru.38`；状态：`superseded`；provenance：`code_recovered` + #283 reviewed promotion，绑定 baseline `2d34abfc…` + #283 architecture convergence task delta。
 
 ## 分层与 ownership
 

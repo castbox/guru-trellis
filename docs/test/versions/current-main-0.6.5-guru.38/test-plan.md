@@ -1,6 +1,6 @@
 # 当前测试计划与证据
 
-版本：`current-main-0.6.5-guru.38`；状态：`active`；source baseline：main
+版本：`current-main-0.6.5-guru.38`；状态：`superseded`；source baseline：main
 `2d34abfc9ea3ef488aedf529e022854050270db7` + #283 architecture convergence task delta。
 
 ## Replacement before-state authority

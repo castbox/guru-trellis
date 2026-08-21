@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
@@ -13,6 +16,40 @@ class BaseSyncPackageContractTests(unittest.TestCase):
     def setUp(self) -> None:
         self.package = Path(__file__).resolve().parents[1]
         self.interface = json.loads((self.package / "interface.json").read_text(encoding="utf-8"))
+
+    def load_common(self):
+        runtime_root = self.package.parents[1]
+        if str(runtime_root) not in sys.path:
+            sys.path.insert(0, str(runtime_root))
+        spec = importlib.util.spec_from_file_location("guru_sync_base_test_common", self.package / "runtime/common.py")
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def load_workspace_prepare(self):
+        package_runtime = self.package.parent / "guru-create-task-workspace" / "runtime"
+        shared_runtime = self.package.parents[1]
+        previous_common = sys.modules.pop("common", None)
+        sys.path.insert(0, str(shared_runtime))
+        sys.path.insert(0, str(package_runtime))
+        try:
+            spec = importlib.util.spec_from_file_location(
+                "guru_create_task_workspace_test_prepare",
+                package_runtime / "prepare.py",
+            )
+            self.assertIsNotNone(spec)
+            self.assertIsNotNone(spec.loader)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+        finally:
+            sys.path.remove(str(package_runtime))
+            sys.path.remove(str(shared_runtime))
+            sys.modules.pop("common", None)
+            if previous_common is not None:
+                sys.modules["common"] = previous_common
 
     def test_identity_modes_stages_runtime_and_exits(self) -> None:
         self.assertEqual(self.interface["id"], "guru-sync-base")
@@ -243,6 +280,8 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             subprocess.run(["git", "-C", str(root), "add", "README.md", ".gitignore"], check=True)
             subprocess.run(["git", "-C", str(root), "commit", "-m", "test"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             subprocess.run(["git", "-C", str(root), "branch", "develop"], check=True)
+            develop_checkout = temp_root / "develop"
+            subprocess.run(["git", "-C", str(root), "worktree", "add", str(develop_checkout), "develop"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             subprocess.run(["git", "init", "--bare", str(remote)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             subprocess.run(["git", "-C", str(root), "remote", "add", "origin", str(remote)], check=True)
             subprocess.run(["git", "-C", str(root), "push", "origin", "main"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -277,6 +316,194 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             self.assertEqual(default["source"], "remote-default")
             self.assertEqual(default["selected_base"], "main")
             self.assertEqual(default["candidates"], ["missing", "main"])
+
+    def test_porcelain_z_parser_keeps_registered_worktree_records_separate(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            temp_root = Path(temp)
+            root = temp_root / "repo"
+            subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.name", "Test"], check=True)
+            (root / "README.md").write_text("test\n")
+            subprocess.run(["git", "-C", str(root), "add", "README.md"], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-m", "test"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "branch", "develop"], check=True)
+            develop = temp_root / "develop"
+            detached = temp_root / "detached"
+            subprocess.run(["git", "-C", str(root), "worktree", "add", str(develop), "develop"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "worktree", "add", "--detach", str(detached), "HEAD"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            records = self.load_common()._registered_worktrees(root)
+            self.assertEqual(len(records), 3)
+            self.assertEqual({item["worktree"] for item in records}, {str(root.resolve()), str(detached.resolve()), str(develop.resolve())})
+            by_path = {item["worktree"]: item for item in records}
+            self.assertEqual(by_path[str(root.resolve())]["branch"], "refs/heads/main")
+            self.assertEqual(by_path[str(develop.resolve())]["branch"], "refs/heads/develop")
+            self.assertTrue(by_path[str(detached.resolve())]["detached"])
+
+    def test_detached_session_binds_selected_authority_without_reselection(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            temp_root = Path(temp)
+            root = temp_root / "repo"
+            remote = temp_root / "remote.git"
+            subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.name", "Test"], check=True)
+            (root / "README.md").write_text("test\n")
+            (root / ".gitignore").write_text(".trellis/guru-team/config.yml\n")
+            subprocess.run(["git", "-C", str(root), "add", "README.md", ".gitignore"], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-m", "test"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "branch", "release/1.3.0"], check=True)
+            subprocess.run(["git", "-C", str(root), "branch", "dev"], check=True)
+            subprocess.run(["git", "init", "--bare", str(remote)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "remote", "add", "origin", str(remote)], check=True)
+            subprocess.run(["git", "-C", str(root), "push", "origin", "main", "release/1.3.0", "dev"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            release = temp_root / "release"
+            dev = temp_root / "dev"
+            session = temp_root / "session"
+            subprocess.run(["git", "-C", str(root), "worktree", "add", str(release), "release/1.3.0"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "worktree", "add", str(dev), "dev"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "worktree", "add", "--detach", str(session), "HEAD"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            def invoke(base: str | None = None) -> dict:
+                public = {"source_exit": "start", "mode": "workflow", "repo_root": str(session), "route": "repo_change"}
+                if base is not None:
+                    public["base_branch"] = base
+                result = subprocess.run(
+                    [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+                    input=json.dumps({"public_input": public}), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+                )
+                self.assertEqual(result.returncode, 0, result)
+                return json.loads(result.stdout)
+
+            explicit = invoke("release/1.3.0")
+            self.assertEqual(explicit["exit_id"], "synced")
+            self.assertEqual(explicit["transition"]["base"]["selected_base"], "release/1.3.0")
+            self.assertEqual(explicit["handoff_repo_locator"], str(release.resolve()))
+            self.assertEqual(explicit["transition"]["repo_locator"], str(release.resolve()))
+
+            config = session / ".trellis/guru-team/config.yml"
+            config.parent.mkdir(parents=True)
+            config.write_text("base_branch: main\nbase_branch_candidates:\n  - dev\n")
+            explicit_against_config = invoke("release/1.3.0")
+            explicit_freshness = self.load_workspace_prepare().reviewed_base_freshness(
+                release,
+                {"base_branch": "main", "base_branch_candidates": ["dev"]},
+                explicit_against_config["transition"]["base"],
+                "release/1.3.0",
+            )
+            self.assertTrue(explicit_freshness["fresh"])
+            self.assertTrue(explicit_freshness["three_way_equal"])
+
+            config.write_text("base_branch: release/1.3.0\nbase_branch_candidates: invalid\n")
+            configured = invoke()
+            self.assertEqual(configured["transition"]["base"]["source"], "config")
+            self.assertEqual(configured["handoff_repo_locator"], str(release.resolve()))
+
+            config.write_text("base_branch: \nbase_branch_candidates:\n  - dev\n  - main\n")
+            ordered = invoke()
+            self.assertEqual(ordered["transition"]["base"]["selected_base"], "dev")
+            self.assertEqual(ordered["handoff_repo_locator"], str(dev.resolve()))
+            ordered_provenance = ordered["transition"]["base"]
+            self.assertEqual(ordered_provenance["ordered_candidates"], ["dev", "main"])
+            ordered_freshness = self.load_workspace_prepare().reviewed_base_freshness(
+                dev,
+                {"base_branch": "", "base_branch_candidates": ["dev", "main"]},
+                ordered_provenance,
+                None,
+            )
+            self.assertTrue(ordered_freshness["fresh"])
+            self.assertTrue(ordered_freshness["three_way_equal"])
+
+            subprocess.run(["git", "-C", str(root), "worktree", "remove", str(dev)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.assertEqual(invoke(), {"exit_id": "blocked"})
+
+            config.write_text("base_branch: \nbase_branch_candidates:\n  - missing\n")
+            remote_default = invoke()
+            remote_default_provenance = remote_default["transition"]["base"]
+            self.assertEqual(remote_default_provenance["source"], "remote-default")
+            self.assertEqual(remote_default_provenance["ordered_candidates"], ["missing", "main"])
+            remote_default_freshness = self.load_workspace_prepare().reviewed_base_freshness(
+                root,
+                {"base_branch": "", "base_branch_candidates": ["missing"]},
+                remote_default_provenance,
+                None,
+            )
+            self.assertTrue(remote_default_freshness["fresh"])
+            self.assertTrue(remote_default_freshness["three_way_equal"])
+
+            (release / "dirty.txt").write_text("dirty\n")
+            self.assertEqual(invoke("release/1.3.0"), {"exit_id": "blocked"})
+
+    def test_authority_identity_mismatch_blocks_before_execution(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "repo"
+            subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.name", "Test"], check=True)
+            (root / "README.md").write_text("test\n")
+            subprocess.run(["git", "-C", str(root), "add", "README.md"], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-m", "test"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            common = self.load_common()
+            records = common._registered_worktrees(root)
+            records[0] = {**records[0], "HEAD": "0" * 40}
+            with mock.patch.object(common, "_registered_worktrees", return_value=records):
+                with self.assertRaisesRegex(Exception, "branch, HEAD, and local ref identity do not match"):
+                    common.authority_checkout(root, "main")
+
+    def test_detached_session_fast_forwards_only_authority_checkout(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            temp_root = Path(temp)
+            root = temp_root / "repo"
+            remote = temp_root / "remote.git"
+            subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.name", "Test"], check=True)
+            (root / "README.md").write_text("one\n")
+            subprocess.run(["git", "-C", str(root), "add", "README.md"], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-m", "one"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "init", "--bare", str(remote)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "remote", "add", "origin", str(remote)], check=True)
+            subprocess.run(["git", "-C", str(root), "push", "origin", "main"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            session = temp_root / "session"
+            producer = temp_root / "producer"
+            subprocess.run(["git", "-C", str(root), "worktree", "add", "--detach", str(session), "HEAD"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "clone", str(remote), str(producer)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(producer), "config", "user.email", "test@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(producer), "config", "user.name", "Test"], check=True)
+            (producer / "README.md").write_text("two\n")
+            subprocess.run(["git", "-C", str(producer), "commit", "-am", "two"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(producer), "push", "origin", "main"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            remote_head = subprocess.run(["git", "-C", str(producer), "rev-parse", "HEAD"], check=True, text=True, stdout=subprocess.PIPE).stdout.strip()
+
+            invocation = {"public_input": {"source_exit": "start", "mode": "workflow", "repo_root": str(session), "base_branch": "main", "route": "repo_change"}}
+            result = subprocess.run(
+                [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+                input=json.dumps(invocation), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload["exit_id"], "synced")
+            self.assertEqual(payload["handoff_repo_locator"], str(root.resolve()))
+            provenance = payload["transition"]["base"]
+            self.assertEqual(provenance["decision_head"], remote_head)
+            self.assertEqual(provenance["decision_head"], provenance["local_base_head"])
+            self.assertEqual(provenance["local_base_head"], provenance["remote_base_head"])
+            freshness = self.load_workspace_prepare().reviewed_base_freshness(
+                root,
+                {"base_branch": "main", "base_branch_candidates": []},
+                provenance,
+                "main",
+            )
+            self.assertTrue(freshness["fresh"])
+            self.assertTrue(freshness["three_way_equal"])
+            self.assertEqual(subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"], check=True, text=True, stdout=subprocess.PIPE).stdout.strip(), remote_head)
+            self.assertNotEqual(subprocess.run(["git", "-C", str(session), "rev-parse", "HEAD"], check=True, text=True, stdout=subprocess.PIPE).stdout.strip(), remote_head)
+            execute = (self.package / "runtime/execute.py").read_text(encoding="utf-8")
+            self.assertIn('git(authority,"fetch","--no-tags"', execute)
+            self.assertIn('git(authority,"merge","--ff-only"', execute)
+            for forbidden in ('git(authority,"checkout"', 'git(authority,"switch"', 'git(authority,"reset"', 'git(authority,"rebase"', 'git(authority,"stash"', '["git","branch"', '["git","worktree","add"'):
+                self.assertNotIn(forbidden, execute)
 
     def test_public_invoke_skipped_is_schema_valid(self) -> None:
         invocation = {"public_input": {"source_exit": "start", "mode": "workflow", "route": "original_request"}}

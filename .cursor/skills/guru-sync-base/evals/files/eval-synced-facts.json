@@ -1,7 +1,11 @@
 {
-  "scenario": "The selected local base exists, the checkout is clean, and its configured remote is reachable.",
+  "scenario": "The session checkout is detached and the selected local base has one clean registered authority checkout in the same Git common-dir.",
   "owner_evidence": {
     "formal_resolver": true,
+    "selection_precedes_authority_binding": true,
+    "session_checkout_detached": true,
+    "authority_checkout_registered_clean": true,
+    "public_repo_locator_is_authority": true,
     "formal_executor": true,
     "formal_checker": true
   },

@@ -40,16 +40,31 @@ order and never consults current branch as a fallback:
 Every entered branch value passes `git check-ref-format --branch`. Lower
 priority sources are not evaluated after a source selects a branch.
 Multiple existing candidates are not ambiguous: configured order is the
-priority. If no source selects a branch, resolution returns `blocked`. Resolve-only emits
-canonical JSON with source, selected base, remote, candidates, decision checkout
-branch and HEAD, plus `resolution_sha256`, on stdout only.
+priority. Current branch and worktree availability never participate in this
+selection stage. If no source selects a branch, resolution returns `blocked`.
+
+After selection is complete, runtime reads `git worktree list --porcelain -z`
+and binds only the unique registered worktree in the same Git common-dir whose
+branch field is exactly `refs/heads/<selected-base>`. The invocation checkout
+may be detached. The bound authority must be an exact repository root, remain
+symbolically attached to the selected branch, have registered HEAD == checkout
+HEAD == local selected-base ref, and be clean. Missing, ambiguous, dirty, or
+identity-mismatched authority returns stable `blocked`; runtime never reselects
+a lower-priority base and never creates, checks out, or switches a worktree.
+Resolve-only emits canonical JSON with source, selected base, remote,
+candidates, authority checkout branch and HEAD as the existing
+`decision_checkout`, plus `resolution_sha256`, on stdout only. The authority
+path remains invocation-local routing state and is not added to the closed
+result schema.
 
 ## Digest-Bound Execution
 
 Within the same public invocation, the runtime executes the `sync_executor`
 component with the same resolution inputs and exact expected pre-sync
-resolution digest. The executor recomputes the complete resolution object
-before its first fetch and rejects any mismatch. After synchronization, it
+resolution digest. The executor recomputes the complete resolution object and
+authority binding before its first fetch and rejects any mismatch. Fetch and
+any fast-forward run with the authority checkout as their working directory.
+After synchronization, it
 emits the full `post_sync_resolution` identity and
 `post_sync_resolution_sha256`. Already-equal execution may keep the same digest;
 fast-forward execution must produce a new digest bound to the synchronized HEAD.
@@ -66,7 +81,7 @@ has no GitHub issue, worktree or Trellis task mutation path.
 
 Execution performs only an explicit remote-tracking refspec fetch. An already
 equal local base is unchanged. A behind local base can fast-forward only when it
-is an ancestor of the fetched remote and the decision checkout is clean and
+is an ancestor of the fetched remote and the authority checkout is clean and
 currently on the selected base; then it uses `git merge --ff-only`. It never
 uses `git branch -f`, reset, checkout, stash, rebase, force, or implicit current
 branch selection.
@@ -78,6 +93,9 @@ equal after synchronization:
 decision checkout HEAD == local selected-base HEAD == remote-tracking HEAD
 ```
 
+Here `decision checkout` is the selected-base authority checkout, not the
+possibly detached invocation checkout.
+
 The executor emits a closed `guru-base-sync-result-1.0` object,
 `post_sync_resolution_sha256`, and `facts_sha256` on stdout. This deterministic Skill has no selected-base AI
 confirmation, post-execution AI Review Gate or conditional human confirmation.
@@ -88,7 +106,8 @@ The public wrapper internally runs `result_validator` against executor stdout
 and the expected pre-sync digest. The validator checks objective schema
 identity, closed field shape, facts digest, pre/post resolution identities,
 selected refs, clean state, and live three-way equality. It never fetches or
-mutates Git.
+mutates Git. Its internal return may carry the resolved authority locator to the
+public wrapper, but that field never enters `guru-base-sync-result-1.0`.
 
 - `synced`: the digest-bound executor and live Git validator passed; the typed
   result carries `post_sync_resolution_sha256` and workflow enters
@@ -128,3 +147,5 @@ caller-owned explicit selected-base scalar when present; when omitted, the
 wrapper passes the unspecified state to the same shared resolver, which retains
 configured scalar/candidate/remote-default fallback ownership. The
 private `guru-base-sync-result-1.0` stdout artifact is not projected to consumers.
+The existing `handoff_repo_locator` and `transition.repo_locator` fields point
+to the authority checkout so Discovery reads only the validator-passed base.

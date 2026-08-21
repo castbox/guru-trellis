@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.5-guru.38`
+- version：`current-main-0.6.5-guru.39`
 - status：`active`
-- source binding：main `2d34abfc9ea3ef488aedf529e022854050270db7` + #283 architecture convergence task delta（精确 revision 为当前 Git HEAD）
+- source binding：task head `d4165f268d36e19139266d28519148c290f773a4` + #290 serialized promotion delta（精确 revision 为当前 Git HEAD）
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`
 - required concern set：`guru-trellis-architecture-change-concerns-v1`

@@ -14,6 +14,14 @@ Skill. Load [references/contract.md](references/contract.md), then invoke
 envelope. The runtime alone executes the deterministic resolve, execute and
 check components before returning exactly one declared typed exit.
 
+Base resolution first selects the branch without consulting the current branch
+or registered-worktree availability. It then binds that fixed selection to the
+unique clean checkout registered for `refs/heads/<selected-base>` in the same
+Git common-dir. The invocation checkout may be detached. Fetch, fast-forward,
+live validation, and the public repository locator all use the bound authority
+checkout; missing, dirty, or mismatched authority identity returns `blocked`
+without selecting another base or creating/switching a checkout.
+
 Workflow mode may return `synced`, `skipped`, or `blocked`. Standalone mode
 may return only `synced` or `blocked`; it never enters issue intake, task
 creation, worktree creation, or change-context discovery. Resolution and result
