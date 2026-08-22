@@ -1,7 +1,0 @@
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"审核targeted tests、real wrapper transcript、installed parity与代表性throwaway证据。"}
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"审核active version migration、每字段direct consumer与private state删除。"}
-{"file":".trellis/spec/workflow/semantic-retrieval.md","reason":"审核Discovery current/history路径无回退且negative existence结论有足够证据。"}
-{"file":".trellis/spec/preset/upstream-ownership.md","reason":"审核managed claims、projection inventory、update/reapply与零sidecar。"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"审核Shared/Codex/Claude/Cursor投影和dogfood drift一致性。"}
-{"file":".trellis/spec/architecture/baseline-usage.md","reason":"审核Architecture impact、contribution、promotion与fresh gate绑定。"}
-{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"审核producer actual stdout到consumer input再到owner/checker/output的跨层闭环。"}

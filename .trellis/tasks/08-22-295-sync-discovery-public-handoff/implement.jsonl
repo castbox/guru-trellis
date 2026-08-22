@@ -1,7 +1,0 @@
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"约束public Skill I/O、versioned schema、private state与projection边界。"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"约束mandatory Sync-to-Discovery edge、typed exits、confirmation与Docs SSOT生命周期。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"约束base_current、Discovery owner result和consumer schema数据合同。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束Python/shell只执行deterministic validation且通过managed runtime。"}
-{"file":".trellis/spec/preset/installer.md","reason":"约束canonical、installed、platform、update/reapply和sidecar投影。"}
-{"file":".trellis/spec/architecture/baseline-usage.md","reason":"约束task-owned Architecture contribution与serialized promotion。"}
-{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"用于核对Sync output、Discovery input、owner result、checker和Clarify consumer的完整数据流。"}

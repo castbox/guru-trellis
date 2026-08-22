@@ -4,7 +4,7 @@
     "number": 295,
     "url": "https://github.com/castbox/guru-trellis/issues/295",
     "title": "修复 Phase 0 Sync Base 到 Context Discovery 的 public handoff 断链",
-    "reason": "本 task 仅覆盖 Issue #295 已接受的 Sync-to-Discovery public handoff、managed runtime 与必要分发验证范围。"
+    "reason": "仅在当前 task 的实现、targeted validation、代表性 clean throwaway、独立审查、发布与合并门禁全部完成后关闭 #295。"
   },
   "close_issues": [
     {
@@ -17,38 +17,56 @@
   "related_issues": [
     {
       "number": 286,
+      "url": "https://github.com/castbox/guru-trellis/issues/286",
+      "title": "修复 Phase 0 临时对象生命周期",
       "reason": "#286 owns the later temporary-object lifecycle and may start only after #295 reaches reviewed live main."
     },
     {
       "number": 287,
+      "url": "https://github.com/castbox/guru-trellis/issues/287",
+      "title": "修复 Guru Team preset staging",
       "reason": "#287 owns preset staging and is excluded from this task."
     },
     {
       "number": 250,
+      "url": "https://github.com/castbox/guru-trellis/issues/250",
+      "title": "Phase 0 owner 重构",
       "reason": "#250 owns the final Phase 0 owner graph and later retirement of this mandatory edge."
     },
     {
       "number": 247,
+      "url": "https://github.com/castbox/guru-trellis/issues/247",
+      "title": "Issue #247 后续串行范围",
       "reason": "#247 is a later serial scope and is not closed here."
     },
     {
       "number": 249,
+      "url": "https://github.com/castbox/guru-trellis/issues/249",
+      "title": "Issue #249 后续串行范围",
       "reason": "#249 is a later serial scope and is not closed here."
     },
     {
       "number": 261,
+      "url": "https://github.com/castbox/guru-trellis/issues/261",
+      "title": "Issue #261 后续串行范围",
       "reason": "#261 is a later serial scope and is not closed here."
     },
     {
       "number": 248,
+      "url": "https://github.com/castbox/guru-trellis/issues/248",
+      "title": "Issue #248 后续串行范围",
       "reason": "#248 is a later serial scope and is not closed here."
     },
     {
       "number": 252,
+      "url": "https://github.com/castbox/guru-trellis/issues/252",
+      "title": "Issue #252 后续串行范围",
       "reason": "#252 is a later serial scope and is not closed here."
     },
     {
       "number": 267,
+      "url": "https://github.com/castbox/guru-trellis/issues/267",
+      "title": "Issue #267 chain-end exact-candidate verification",
       "reason": "#267 owns the chain-end exact-candidate verification and is not closed here."
     }
   ],
