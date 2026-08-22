@@ -1,0 +1,12 @@
+{
+  "id": "08-22-286-temporary-lifecycle-stale-reaper",
+  "name": "08-22-286-temporary-lifecycle-stale-reaper",
+  "title": "#286 修复 Guru Team 临时目录正常路径泄漏并增加 stale 回收",
+  "status": "completed",
+  "branch": "feat/286-temporary-lifecycle-stale-reaper",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/286",
+  "completedAt": "2026-08-22"
+}

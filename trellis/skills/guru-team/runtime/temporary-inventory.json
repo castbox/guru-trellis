@@ -1,0 +1,67 @@
+[
+  {
+    "id": "preset_staging",
+    "owner": "preset_apply",
+    "kind": "directory",
+    "controlled_root": {"resolver": "TMPDIR"},
+    "exact_prefix": "guru-team-preset-stage-",
+    "created_by": "guru-team",
+    "live_probe": "caller supplied live/in-use state",
+    "stale_predicate": "closed object from prior run",
+    "normal_cleanup": "cleanup",
+    "next_run_recovery": "reap_stale",
+    "diagnostic_owner": "preset_apply"
+  },
+  {
+    "id": "throwaway_install",
+    "owner": "throwaway_install",
+    "kind": "directory",
+    "controlled_root": {"resolver": "TMPDIR"},
+    "exact_prefix": "guru-trellis-install.",
+    "created_by": "guru-team",
+    "live_probe": "caller supplied live/in-use state",
+    "stale_predicate": "closed object from prior run",
+    "normal_cleanup": "cleanup",
+    "next_run_recovery": "reap_stale",
+    "diagnostic_owner": "throwaway_install"
+  },
+  {
+    "id": "extension_verification",
+    "owner": "extension_verification",
+    "kind": "directory",
+    "controlled_root": {"resolver": "TMPDIR"},
+    "exact_prefix": "guru-extension-verification-",
+    "created_by": "guru-team",
+    "live_probe": "caller supplied live/in-use state",
+    "stale_predicate": "closed object from prior run",
+    "normal_cleanup": "cleanup",
+    "next_run_recovery": "reap_stale",
+    "diagnostic_owner": "extension_verification"
+  },
+  {
+    "id": "task_commit_input",
+    "owner": "task_commit",
+    "kind": "path",
+    "controlled_root": {"resolver": "TMPDIR"},
+    "exact_prefix": "guru-task-commit-input.",
+    "created_by": "guru-team",
+    "live_probe": "caller supplied live/in-use state",
+    "stale_predicate": "closed object from prior run",
+    "normal_cleanup": "cleanup",
+    "next_run_recovery": "reap_stale",
+    "diagnostic_owner": "task_commit"
+  },
+  {
+    "id": "phase2_input",
+    "owner": "phase2_verifier",
+    "kind": "file",
+    "controlled_root": {"resolver": "TMPDIR"},
+    "exact_prefix": "guru-phase2-input.",
+    "created_by": "guru-team",
+    "live_probe": "caller supplied live/in-use state",
+    "stale_predicate": "closed object from prior run",
+    "normal_cleanup": "cleanup",
+    "next_run_recovery": "reap_stale",
+    "diagnostic_owner": "phase2_verifier"
+  }
+]

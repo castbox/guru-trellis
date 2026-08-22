@@ -1,0 +1,32 @@
+{
+  "close_issues": [
+    {
+      "number": 286,
+      "reason": "Issue #286 is fully covered by this reviewed delivery unit.",
+      "title": "修复 Guru Team 临时目录正常路径泄漏并增加 stale 回收",
+      "url": "https://github.com/castbox/guru-trellis/issues/286"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 287,
+      "reason": "Phase B staging remains explicitly deferred.",
+      "title": "Issue #287 follow-up",
+      "url": "https://github.com/castbox/guru-trellis/issues/287"
+    },
+    {
+      "number": 267,
+      "reason": "Full exact-candidate matrix remains explicitly deferred.",
+      "title": "Issue #267 follow-up",
+      "url": "https://github.com/castbox/guru-trellis/issues/267"
+    }
+  ],
+  "primary_issue": {
+    "number": 286,
+    "reason": "Issue #286 is fully covered by this reviewed delivery unit.",
+    "title": "修复 Guru Team 临时目录正常路径泄漏并增加 stale 回收",
+    "url": "https://github.com/castbox/guru-trellis/issues/286"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}

@@ -66,6 +66,8 @@ except ModuleNotFoundError:
         reviewed_content_identity as canonical_reviewed_content_identity,
     )
 
+from runtime.temporary_lifecycle import temporary_directory
+
 DEFAULTS: dict[str, Any] = {
     "github_repo": "",
     "source_issue_required": False,
@@ -1792,7 +1794,7 @@ def extension_verification_execute_facts(
         "paths": [],
     }
     if target_head is not None and target_locator:
-        with tempfile.TemporaryDirectory(prefix="guru-extension-verification-") as tmp:
+        with temporary_directory("extension_verification") as tmp:
             temp_root = Path(tmp)
             target_checkout = temp_root / "target-checkout"
             source_checkout = temp_root / "extension-source-checkout"
