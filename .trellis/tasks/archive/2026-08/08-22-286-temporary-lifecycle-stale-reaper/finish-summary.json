@@ -1,0 +1,187 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-22T06:48:38Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-22-286-temporary-lifecycle-stale-reaper",
+    "title": "#286 修复 Guru Team 临时目录正常路径泄漏并增加 stale 回收",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "feat/286-temporary-lifecycle-stale-reaper",
+    "commits": [
+      "d274b49c92d6ff562c9afd5aab156c392d9b54fd",
+      "13b890ecbd47f35e5963244e8f04bee239bb2093"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/runtime/temporary-inventory.json",
+      ".trellis/guru-team/runtime/temporary_lifecycle.py",
+      ".trellis/guru-team/runtime/validate.py",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/execute.py",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/runtime/owner.py",
+      ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/design.md",
+      ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/implement.md",
+      ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/issue-scope-ledger.json",
+      ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/prd.md",
+      ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/task.json",
+      ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/design.md",
+      ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/implement.md",
+      ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/prd.md",
+      ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/task.json",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/execute.py",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/runtime/owner.py",
+      "trellis/skills/guru-team/runtime/temporary-inventory.json",
+      "trellis/skills/guru-team/runtime/temporary_lifecycle.py",
+      "trellis/skills/guru-team/runtime/tests/test_temporary_lifecycle.py",
+      "trellis/skills/guru-team/runtime/validate.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      286
+    ],
+    "close_issues": [
+      286
+    ],
+    "related_issues": [],
+    "followup_issues": [
+      267,
+      287
+    ],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/297"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#286 修复 Guru Team 临时目录正常路径泄漏并增加 stale 回收",
+    "outcome": "新增精确 temporary inventory、受控 root/prefix 匹配、正常与失败清理和 stale reaper。",
+    "changed_behavior": [
+      "新增精确 temporary inventory、受控 root/prefix 匹配、正常与失败清理和 stale reaper。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/design.md",
+          ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/implement.md",
+          ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/prd.md",
+          ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/design.md",
+          ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/implement.md",
+          ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/prd.md"
+        ],
+        "change": "新增精确 temporary inventory、受控 root/prefix 匹配、正常与失败清理和 stale reaper。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/runtime/temporary-inventory.json"
+        ],
+        "change": "新增精确 temporary inventory、受控 root/prefix 匹配、正常与失败清理和 stale reaper。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/runtime/temporary_lifecycle.py",
+          ".trellis/guru-team/runtime/validate.py",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/execute.py",
+          ".trellis/guru-team/skills/packages/guru-verify-extension-installation/runtime/owner.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/execute.py",
+          "trellis/skills/guru-team/packages/guru-verify-extension-installation/runtime/owner.py",
+          "trellis/skills/guru-team/runtime/temporary_lifecycle.py",
+          "trellis/skills/guru-team/runtime/tests/test_temporary_lifecycle.py",
+          "trellis/skills/guru-team/runtime/validate.py"
+        ],
+        "change": "新增精确 temporary inventory、受控 root/prefix 匹配、正常与失败清理和 stale reaper。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          "trellis/skills/guru-team/runtime/temporary-inventory.json"
+        ],
+        "change": "新增精确 temporary inventory、受控 root/prefix 匹配、正常与失败清理和 stale reaper。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/issue-scope-ledger.json",
+          ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/task.json",
+          ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/task.json"
+        ],
+        "change": "新增精确 temporary inventory、受控 root/prefix 匹配、正常与失败清理和 stale reaper。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#267",
+        "#286",
+        "#287"
+      ],
+      "pr_refs": [
+        "PR #297"
+      ],
+      "branches": [
+        "feat/286-temporary-lifecycle-stale-reaper"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/runtime/temporary-inventory.json",
+        ".trellis/guru-team/runtime/temporary_lifecycle.py",
+        ".trellis/guru-team/runtime/validate.py",
+        ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/execute.py",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/runtime/owner.py",
+        ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/design.md",
+        ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/implement.md",
+        ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/issue-scope-ledger.json",
+        ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/prd.md",
+        ".trellis/tasks/08-22-286-temporary-lifecycle-stale-reaper/task.json",
+        ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/design.md",
+        ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/implement.md",
+        ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/prd.md",
+        ".trellis/tasks/archive/2026-08/08-22-286-temporary-lifecycle-stale-reaper/task.json",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/execute.py",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/runtime/owner.py",
+        "trellis/skills/guru-team/runtime/temporary-inventory.json",
+        "trellis/skills/guru-team/runtime/temporary_lifecycle.py",
+        "trellis/skills/guru-team/runtime/tests/test_temporary_lifecycle.py",
+        "trellis/skills/guru-team/runtime/validate.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#286 修复 Guru Team 临时目录正常路径泄漏并增加 stale 回收",
+        "新增精确 temporary inventory、受控 root/prefix 匹配、正常与失败清理和 stale re",
+        "完成 extension.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#286 修复 Guru Team 临时目录正常路径泄漏并增加 stale 回收\n新增精确 temporary inventory、受控 root/prefix 匹配、正常与失败清理和 stale reaper。\n新增精确 temporary inventory、受控 root/prefix 匹配、正常与失败清理和 stale re\n完成 extension.json 相关变更"
+  }
+}
