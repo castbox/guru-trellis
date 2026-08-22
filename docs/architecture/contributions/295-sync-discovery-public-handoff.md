@@ -5,14 +5,14 @@
 - candidate identity: `architecture-contribution-295-sync-discovery-public-handoff-v1`.
 - requirement authority: GitHub Issue #295 and task `prd.md`.
 - behavior authority: task `design.md` and `implement.md`.
-- current baseline: `docs/architecture/README.md` /
-  `current-main-0.6.5-guru.39` / `active`.
+- promotion source baseline: `docs/architecture/README.md` /
+  `current-main-0.6.5-guru.39` / `active`; promoted current is `.40`.
 - design constitution: `docs/architecture/00-foundation/design-constitution.md` /
   `guru-trellis-design-constitution-v1` / `current`.
 - project change contract: `docs/architecture/06-governance/change-contract.md` /
   `guru-trellis-architecture-change-contract-v1` /
   `guru-trellis-architecture-change-concerns-v1`.
-- change path: `target_native`; promotion state: `reviewed_candidate`.
+- change path: `target_native`; promotion state: `reviewed_promoted`.
 - expected current identity: `current-main-0.6.5-guru.39`. Shared current remains
   owned by the serialized Architecture promotion step after independent full-diff
   review.
@@ -75,9 +75,11 @@ single-writer rule, GAP lifecycle, or compatibility exit. No new ADR is required
 - Phase 2, Branch Review, Publication, and Acceptance/Finish must rerun from their
   own fresh candidate or committed-range evidence.
 
-## Promotion contract
+## Promotion result
 
-Promotion is required only after the complete #295 committed diff has passed
-independent Branch Review. It must bind expected current identity
-`current-main-0.6.5-guru.39`; a live-current advance returns `sync_required`.
+Complete task range `origin/main@e7df696a…51609250` passed independent Branch Review
+and the Architecture project check. Serialized promotion bound expected `.39` and
+activated successor `.40`; promotion-created changes still require fresh Phase 2,
+task commit, and independent Branch Review. A live-current advance returns
+`sync_required`.
 Promotion does not authorize a tag, Release, or any excluded downstream Issue.

@@ -4,14 +4,14 @@ task_locator: ".trellis/tasks/08-22-295-sync-discovery-public-handoff"
 issue_ref: "https://github.com/castbox/guru-trellis/issues/295"
 source_version: "current-main-0.6.5-guru.39"
 expected_current_version: "current-main-0.6.5-guru.39"
-candidate_successor_version: "assigned-by-reviewed-promotion"
-status: "candidate_pending_review"
+candidate_successor_version: "current-main-0.6.5-guru.40"
+status: "reviewed_promoted"
 authority_scope: "isolated_contribution"
 architecture_impact: "architecture_impact"
 change_path: "target_native"
 architecture_baseline:
   locator: "docs/architecture/README.md"
-  version: "current-main-0.6.5-guru.39"
+  version: "current-main-0.6.5-guru.40"
   status: "active"
 design_constitution:
   authority_owner: "docs/architecture"
@@ -21,11 +21,11 @@ design_constitution:
   identity_status: "current"
 architecture_candidate:
   contribution_locator: "docs/architecture/contributions/295-sync-discovery-public-handoff.md"
-  promotion_state: "reviewed_candidate"
+  promotion_state: "reviewed_promoted"
 public_contracts:
   rdt_owner: "guru-maintain-requirements-design-test-ssot:task_impact_sync"
   architecture_candidate: "guru-maintain-architecture-baseline:2.0"
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
-promotion_decision: "pending_independent_review"
-shared_current_write: false
+promotion_decision: "reviewed_promoted"
+shared_current_write: true
