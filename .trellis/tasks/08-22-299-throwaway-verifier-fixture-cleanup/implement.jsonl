@@ -1,0 +1,7 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"实现前重读 public Skill package、profile 与 fixture contract。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 verifier cleanup 只执行确定性动作并保留原始失败。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"确定 targeted validation、代表性 throwaway 与 deferred full matrix 边界。"}
+{"file":".trellis/spec/preset/installer.md","reason":"约束 canonical installer、清理、安全路径与安装验证。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"确认 canonical、dogfood 与 upstream 管理边界。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"约束 reapply、projection 与 drift 验证。"}
+{"file":".trellis/spec/architecture/baseline-usage.md","reason":"绑定 current Architecture authority 与 no-impact 分类。"}

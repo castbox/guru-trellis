@@ -1293,14 +1293,26 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         self.assertEqual(result.returncode, 3)
         self.assertEqual(json.loads(result.stdout)["code"], "stale_identity")
 
-    def test_eval_inventory_covers_the_ten_approved_project_neutral_scenarios(self):
+    def test_eval_inventory_covers_all_profiles_and_approved_project_neutral_scenarios(self):
         evals = json.loads((self.package / "evals/evals.json").read_text())["evals"]
         self.assertEqual([item["id"] for item in evals], [
-            "no-impact", "target-native", "legacy-boundary-convergence",
+            "bootstrap-foundation-current", "no-impact", "target-native",
+            "legacy-boundary-convergence",
             "dedicated-refactor-slice", "scope-expansion", "fitness-regression",
             "parallel-stale", "unpromoted-contribution", "next-task-consumption",
-            "missing-external-evidence",
+            "missing-external-evidence", "repair-current-contract",
         ])
+        interface = json.loads((self.package / "interface.json").read_text())
+        declared_profiles = {
+            item["id"]
+            for item in interface["public_contracts"]["input"]["profiles"]
+        }
+        covered_profiles = {item["input_profile_id"] for item in evals}
+        self.assertEqual(covered_profiles, declared_profiles)
+        self.assertEqual(
+            covered_profiles,
+            {"bootstrap_foundation", "promotion", "repair", "task_impact_sync"},
+        )
         text = json.dumps(evals).lower()
         for private_term in ("afizzy", "flutter", "viewmodel", "controller"):
             self.assertNotIn(private_term, text)

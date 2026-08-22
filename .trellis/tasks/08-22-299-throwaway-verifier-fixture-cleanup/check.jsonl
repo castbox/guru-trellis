@@ -1,0 +1,6 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"检查四个 profile fixture 是否承接真实 package contract。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"检查 cleanup 未承担语义判断且保留首个失败。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查 targeted、installed 与代表性 throwaway 证据层级。"}
+{"file":".trellis/spec/preset/installer.md","reason":"检查清理路径、安装行为与 canonical owner 一致性。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"检查 reapply、managed projection 与 drift。"}
+{"file":".trellis/spec/architecture/baseline-usage.md","reason":"确认实现未扩大 Architecture impact。"}

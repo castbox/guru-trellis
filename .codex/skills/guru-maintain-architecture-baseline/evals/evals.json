@@ -5,6 +5,28 @@
   "skill_name": "guru-maintain-architecture-baseline",
   "evals": [
     {
+      "id": "bootstrap-foundation-current",
+      "prompt": "A reviewed foundation bootstrap activates one successor Architecture Baseline at the canonical locator without introducing a second authority.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The foundation bootstrap scenario returns baseline_current for the declared successor identity.",
+      "input_profile_id": "bootstrap_foundation",
+      "files": [
+        "evals/files/bootstrap-foundation-input.json",
+        "evals/files/bootstrap-foundation-current-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
       "id": "no-impact",
       "prompt": "A bounded documentation-equivalent change has no architecture impact and creates no contribution or ADR.",
       "expected_exit": "baseline_current",
@@ -220,6 +242,28 @@
             "pointer": "/exit_id",
             "operation": "equals",
             "expected": "contract_incomplete"
+          }
+        ]
+      }
+    },
+    {
+      "id": "repair-current-contract",
+      "prompt": "A reviewed repair restores the missing project Architecture check descriptor while preserving the active baseline and current constitution authority.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The repair scenario returns baseline_current after restoring the declared contract evidence.",
+      "input_profile_id": "repair",
+      "files": [
+        "evals/files/repair-current-input.json",
+        "evals/files/repair-current-contract-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
           }
         ]
       }
