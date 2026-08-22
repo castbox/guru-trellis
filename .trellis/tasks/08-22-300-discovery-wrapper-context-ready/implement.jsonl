@@ -1,4 +1,0 @@
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"实现前重读 public Skill I/O、dispatcher 与 private state 边界。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 runtime只能执行确定性 transport/validation。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"确定 targeted validation 与代表性 throwaway责任。"}
-{"file":".trellis/spec/architecture/baseline-usage.md","reason":"绑定 current Architecture、constitution 与 change contract。"}
