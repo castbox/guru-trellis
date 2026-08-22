@@ -6,10 +6,14 @@
     "title": "重构 Guru Team preset staging，避免全仓库物理复制导致磁盘占用线性增长",
     "reason": "本 task 完整覆盖 #287 的 managed-path transaction、保护语义、验证与 projection 范围。"
   },
-  "close_issues": [
-    {"number": 287, "url": "https://github.com/castbox/guru-trellis/issues/287", "title": "重构 Guru Team preset staging，避免全仓库物理复制导致磁盘占用线性增长", "reason": "仅在当前 task 的实现、独立审查与发布门禁完成后关闭 #287。"}
-  ],
+  "close_issues": [],
   "related_issues": [
+    {
+      "number": 287,
+      "url": "https://github.com/castbox/guru-trellis/issues/287",
+      "title": "重构 Guru Team preset staging，避免全仓库物理复制导致磁盘占用线性增长",
+      "reason": "本 task 完整覆盖 #287 的 managed-path transaction、保护语义、验证与 projection 范围。"
+    },
     {"number": 286, "url": "https://github.com/castbox/guru-trellis/issues/286", "title": "修复 Guru Team 临时目录正常路径泄漏并增加 stale 回收", "reason": "消费已合并的 temporary root/prefix/stale/cleanup lifecycle contract，不重新实现生命周期所有权。"},
     {"number": 267, "url": "https://github.com/castbox/guru-trellis/issues/267", "title": "Guru Team exact-candidate multi-platform Release Gate", "reason": "完整多平台 exact-candidate matrix 仍由 #267 拥有，本 task 不关闭。"}
   ],
