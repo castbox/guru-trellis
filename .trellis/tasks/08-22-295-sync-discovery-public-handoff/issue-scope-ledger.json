@@ -1,0 +1,56 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 295,
+    "url": "https://github.com/castbox/guru-trellis/issues/295",
+    "title": "修复 Phase 0 Sync Base 到 Context Discovery 的 public handoff 断链",
+    "reason": "本 task 仅覆盖 Issue #295 已接受的 Sync-to-Discovery public handoff、managed runtime 与必要分发验证范围。"
+  },
+  "close_issues": [
+    {
+      "number": 295,
+      "url": "https://github.com/castbox/guru-trellis/issues/295",
+      "title": "修复 Phase 0 Sync Base 到 Context Discovery 的 public handoff 断链",
+      "reason": "仅在当前 task 的实现、targeted validation、代表性 clean throwaway、独立审查、发布与合并门禁全部完成后关闭 #295。"
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 286,
+      "reason": "#286 owns the later temporary-object lifecycle and may start only after #295 reaches reviewed live main."
+    },
+    {
+      "number": 287,
+      "reason": "#287 owns preset staging and is excluded from this task."
+    },
+    {
+      "number": 250,
+      "reason": "#250 owns the final Phase 0 owner graph and later retirement of this mandatory edge."
+    },
+    {
+      "number": 247,
+      "reason": "#247 is a later serial scope and is not closed here."
+    },
+    {
+      "number": 249,
+      "reason": "#249 is a later serial scope and is not closed here."
+    },
+    {
+      "number": 261,
+      "reason": "#261 is a later serial scope and is not closed here."
+    },
+    {
+      "number": 248,
+      "reason": "#248 is a later serial scope and is not closed here."
+    },
+    {
+      "number": 252,
+      "reason": "#252 is a later serial scope and is not closed here."
+    },
+    {
+      "number": 267,
+      "reason": "#267 owns the chain-end exact-candidate verification and is not closed here."
+    }
+  ],
+  "followup_issues": []
+}

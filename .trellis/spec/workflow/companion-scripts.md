@@ -136,6 +136,13 @@ repositories. Keep them portable:
   canonical in `runtime/python-runtime.json` and `runtime/requirements.lock`.
 - PATH Python, active virtual environments, global packages, user site-packages,
   and `PYTHONPATH` are not command-runtime fallback sources.
+- Product package/runtime tests enter Python through the checkout-local managed
+  resolver, an existing managed test launcher, or the real public wrapper. A
+  bare PATH `python3` import result is never dependency evidence. A fixture whose
+  PATH Python cannot import `jsonschema` must still exercise the public wrapper
+  through its managed interpreter; missing/stale pointer, missing interpreter,
+  and dependency inventory drift remain explicit failures rather than skips or
+  passes.
 - In `verify-throwaway-install.sh`, the canonical bootstrap seed is the only
   direct PATH Python entry. After its JSON result exists, `source_python` must
   route source-owned checks through canonical `runtime/resolve-python.sh`, and
@@ -542,9 +549,14 @@ arrays and at least one must be non-empty; a separate issue binding or canonical
 query cannot satisfy this entry precondition. The next stage is the base-only
 live gate. Any base stale result returns before repository-bound query/current/
 deep-read locators, GitHub issues, reviewed blobs, or archive/history are read.
-Only a fresh base permits those remaining locator and live checks. Portable
-locator validation is structural and source-specific; it does not scan every
-payload string.
+The base-only gate consumes independent public input 2.0 plus `base_current`,
+reads the authority checkout live, and builds Discovery-owned
+`base_observation`; it never accepts or reconstructs the Sync private result or
+facts digest. Normal HEAD advance returns `refresh_base`. Dirty, wrong,
+missing, ambiguous, repo-mismatched, or structurally invalid authority returns
+`blocked`. Only a fresh base permits those remaining locator and live checks.
+Portable locator validation is structural and source-specific; it does not scan
+every payload string.
 Source-issue freshness accepts the normalized live GitHub states `open` and
 `closed`; duplicate candidates and a reviewed draft's created-issue binding
 remain independently open-only. Every 40-character reviewed Git identity must
@@ -787,7 +799,9 @@ Draft 2020-12 schema identity, `facts_sha256`, the pre-sync resolution digest,
 the post-sync resolution object/digest, selected refs, clean state, and
 decision/local/remote full-SHA equality against live Git. Its successful typed
 output carries `post_sync_resolution_sha256` for the next consumer instead of
-re-exporting the pre-sync digest. It does not fetch, merge, decide scope, judge
+re-exporting the pre-sync digest. That consumer is the owning public Sync
+wrapper, which emits only its declared output 2.0 and `base_current` 1.0
+transition. It does not fetch, merge, decide scope, judge
 semantic pass, choose a route, or manage evidence files. Its workflow-only
 `--record-skipped` path emits stdout-only machine facts after the AI has
 reviewed a non-repo route; standalone rejects that path.

@@ -47,7 +47,9 @@ No task artifact, public package, installed runtime, repo root, or repo-external
 temporary file stores them. The pre-sync digest binds only
 resolve-to-execute. `check-base-sync --result-json` validates schema, facts
 digest, both resolution identities, and stale live Git facts, then returns the
-post-sync digest to the next consumer. Already-equal execution may have equal
+post-sync digest to the owning public wrapper. That wrapper projects only the
+declared `base_current`; no downstream consumer receives or reconstructs the
+private result. Already-equal execution may have equal
 pre/post digests; fast-forward execution must not.
 Workflow and standalone create no evidence file, lease, release command or
 cleanup state.
@@ -72,10 +74,10 @@ HEAD, remote base HEAD, and `post_sync_resolution_sha256`. These HEAD roles are
 distinct contract fields and must not be folded into one generic `base_head`.
 It preserves an explicit selection as explicit when a later compatibility
 caller omits a CLI base; it does not rerun fallback precedence and relabel the
-source as `config-candidate`. Discovery and later refresh/workspace boundaries
-compare that reviewed provenance with live Git. A changed selected base,
-candidate order, remote, clean state, decision/local/remote HEAD, digest, or
-authoritative content is real drift and follows the declared refresh route.
+source as `config-candidate`. Discovery receives this `base_current` separately
+from its own caller-authored public input and compares the public identity with
+live Git before any semantic authority read. It never receives
+`guru-base-sync-result-1.0`, its facts digest, or a reconstruction of either.
 
 Each later stage contains only the prior identity plus fields directly consumed
 by its next checker. Complete issue bodies, scan or review history, findings,
@@ -102,6 +104,13 @@ input, exactly one current transition stage, and the current Skill's checked
 owner result. That result is never a public DTO or a cross-Skill transition.
 Unknown fields, missing or wrong stages, owner/input/target mismatch, stale
 identity, or multiple operations fail closed.
+
+For the active Discovery pre-task profile, caller-owned input is
+`guru-stage0-discover-change-context-input-pre-task-2.0`. It contains only the
+profile, source exit, mode, closed change clues, and caller continuation; repo
+and base authority remain exclusively in the independent `base_current` stage.
+The published 1.0 pre-task input remains an immutable legacy asset and is not
+selected by the current Interface.
 
 `prepare-task.base_freshness` is the current query projection and
 adds pre-sync resolution source/digest, post-sync resolution/digest, decision
@@ -136,13 +145,17 @@ parser and validating older configs.
 
 ## Change Context Discovery Result
 
-Schema `guru-change-context-owner-result-2.0` is the closed Draft 2020-12
+Schema `guru-change-context-owner-result-3.0` is the active closed Draft 2020-12
 stdout-only owner-result union whose `typed_exit` is exactly `context_ready`,
-`refresh_base`, or `blocked`. It embeds the validator-passed base result and
-current semantic evidence needed by the same owner loop, but it is neither a
+`refresh_base`, or `blocked`. It contains Discovery-owned live
+`base_observation` and current semantic evidence needed by the same owner loop,
+but it is neither a
 public handoff nor a tracked task artifact. Normal workflow and standalone
 execution transport the result through stdin/stdout and create no task,
 workspace, or ignored runtime file.
+The published owner-result 2.0 schema/example remain immutable legacy assets;
+the active Interface, recorder, checker, examples, and evals select 3.0 only.
+They do not accept, synthesize, or digest a Sync private result.
 The normalized `change_input` object contains the same ten clue-array kinds as
 the canonical query source and requires at least one non-empty array in both the
 published schema and runtime precondition gate. Neither `issue_binding` nor a
@@ -216,12 +229,16 @@ canonical GitHub issue/PR URL without query/fragment, and `git` is an exact
 Git. The schema and runtime both reject cross-kind locator substitution.
 
 Record and check accept the same owner result from stdin or an explicit file,
-validate schema, digests, base/live facts and reviewed blob identities, and
+validate schema, Discovery-owned base observation, live facts, semantic
+digests, and reviewed blob identities, and
 return canonical JSON or an objective checked exit on stdout. They never
 resolve, write, replace, or supersede a task artifact. A base error
 short-circuits before live issue/draft, reviewed-blob, or archive-preview reads;
-stale evidence reruns the complete owner from live authority without a prior
-result chain.
+normal local/remote HEAD advance or stale public HEAD returns `refresh_base`,
+while dirty, wrong-branch/ref, missing, ambiguous, repo-mismatched, or
+structurally invalid authority returns `blocked`. Neither route reconstructs a
+private Sync result. Stale evidence reruns the complete owner from live
+authority without a prior result chain.
 
 Every 40-character reviewed Git identity is resolved again from `HEAD:<path>`
 and its object type must be exactly `blob`. A tree, gitlink commit, tag,

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-discover-change-context-input-pre-task-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profile", "source_exit", "mode", "change_input", "continuation_id"],
+  "properties": {
+    "profile": {"const": "pre_task"},
+    "source_exit": {"enum": ["synced", "needs_context", "standalone_start"]},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "change_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["issue_refs", "pr_refs", "branches", "paths", "commands", "config_keys", "schema_fields", "symbols", "terms", "queries"],
+      "anyOf": [
+        {"properties": {"issue_refs": {"minItems": 1}}},
+        {"properties": {"pr_refs": {"minItems": 1}}},
+        {"properties": {"branches": {"minItems": 1}}},
+        {"properties": {"paths": {"minItems": 1}}},
+        {"properties": {"commands": {"minItems": 1}}},
+        {"properties": {"config_keys": {"minItems": 1}}},
+        {"properties": {"schema_fields": {"minItems": 1}}},
+        {"properties": {"symbols": {"minItems": 1}}},
+        {"properties": {"terms": {"minItems": 1}}},
+        {"properties": {"queries": {"minItems": 1}}}
+      ],
+      "properties": {
+        "issue_refs": {"$ref": "#/$defs/stringList"},
+        "pr_refs": {"$ref": "#/$defs/stringList"},
+        "branches": {"$ref": "#/$defs/stringList"},
+        "paths": {"$ref": "#/$defs/stringList"},
+        "commands": {"$ref": "#/$defs/stringList"},
+        "config_keys": {"$ref": "#/$defs/stringList"},
+        "schema_fields": {"$ref": "#/$defs/stringList"},
+        "symbols": {"$ref": "#/$defs/stringList"},
+        "terms": {"$ref": "#/$defs/stringList"},
+        "queries": {"$ref": "#/$defs/stringList"}
+      }
+    },
+    "continuation_id": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "stringList": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  }
+}

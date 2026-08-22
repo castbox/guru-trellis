@@ -37,9 +37,9 @@
     },
     {
       "id": "fresh_base",
-      "evidence": "validator-passed guru-base-sync-result-1.0 with selected base, decision checkout, base HEAD and post_sync_resolution_sha256",
-      "binding": "repository and selected base plus either the clean decision checkout or an exact active task branch/current worktree",
-      "freshness": "selected local/remote base refs and repository identity are revalidated before live reads and result acceptance; pre-task/standalone require the clean decision branch while active-task workflow permits ordinary task worktree edits"
+      "evidence": "public base_current transition plus Discovery-owned read-only live base observation",
+      "binding": "repository locator, selected base, remote, authority branch and public/live HEAD identity",
+      "freshness": "authority checkout, local and remote-tracking refs, repository identity and clean current state are observed before any live change, Docs, code, test or history read"
     },
     {
       "id": "repository_identity",
@@ -78,10 +78,18 @@
   "artifacts": [
     {
       "id": "change_context_owner_result_example",
+      "path": "examples/change-context-owner-result-3.0.json"
+    },
+    {
+      "id": "legacy_change_context_owner_result_example_2_0",
       "path": "examples/change-context-owner-result.json"
     },
     {
       "id": "public_input_pre_task_example",
+      "path": "examples/public-pre-task-input-2.0.json"
+    },
+    {
+      "id": "legacy_public_input_pre_task_example_1_0",
       "path": "examples/public-pre-task-input.json"
     },
     {
@@ -108,6 +116,10 @@
   "schemas": [
     {
       "id": "change_context_owner_result_schema",
+      "path": "schemas/change-context-owner-result-3.0.schema.json"
+    },
+    {
+      "id": "legacy_change_context_owner_result_schema_2_0",
       "path": "schemas/change-context-owner-result.schema.json"
     },
     {
@@ -116,6 +128,10 @@
     },
     {
       "id": "public_input_pre_task",
+      "path": "schemas/public-pre-task-input-2.0.schema.json"
+    },
+    {
+      "id": "legacy_public_input_pre_task_1_0",
       "path": "schemas/public-pre-task-input.schema.json"
     },
     {
@@ -196,7 +212,7 @@
     }
   ],
   "reentry": {
-    "identity": "mode, optional active task and task branch, repository, base post-sync digest, change-input digest, live-change digest, query digest, archive-manifest digest and owner-result digest",
+    "identity": "mode, optional active task and task branch, public base transition, Discovery live base observation, change-input digest, live-change digest, query digest, archive-manifest digest and owner-result digest",
     "freshness": "all live bindings are revalidated before acceptance; stale evidence restarts the complete Skill",
     "stale_behavior": "fail_closed"
   },
@@ -213,19 +229,19 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-stage0-discover-change-context-input-aggregate-1.0",
+        "schema_id": "guru-stage0-discover-change-context-input-aggregate-2.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
         {
           "id": "pre_task",
           "schema": {
-            "schema_id": "guru-stage0-discover-change-context-input-pre-task-1.0",
-            "path": "schemas/public-pre-task-input.schema.json"
+            "schema_id": "guru-stage0-discover-change-context-input-pre-task-2.0",
+            "path": "schemas/public-pre-task-input-2.0.schema.json"
           },
           "example": {
             "id": "pre_task_input",
-            "path": "examples/public-pre-task-input.json"
+            "path": "examples/public-pre-task-input-2.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -424,8 +440,8 @@
         "id": "change_context_owner_result",
         "kind": "gate_evidence",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-change-context-owner-result-2.0.json",
-          "path": "schemas/change-context-owner-result.schema.json"
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-change-context-owner-result-3.0.json",
+          "path": "schemas/change-context-owner-result-3.0.schema.json"
         },
         "persistence": "stdout_only_owner_private"
       },

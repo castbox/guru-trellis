@@ -1,8 +1,7 @@
 {
   "profile": "pre_task",
-  "source_exit": "start",
+  "source_exit": "synced",
   "mode": "workflow",
-  "repo_locator": "castbox/guru-trellis",
-  "base_branch": "main",
+  "change_input": {"issue_refs": [], "pr_refs": [], "branches": [], "paths": ["docs/requirements.md"], "commands": [], "config_keys": [], "schema_fields": [], "symbols": [], "terms": ["change context"], "queries": []},
   "continuation_id": "stage0-current"
 }

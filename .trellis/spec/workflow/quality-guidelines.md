@@ -322,11 +322,16 @@ workflow/preset reapply phase each run source/installed validation, production
 discovery smoke, current-only fixture invocation tests, and a final recursive zero
 `.new`/`.bak` scan.
 For `guru-discover-change-context`, tests must cover mode-precondition parity,
+active pre-task input 2.0 and owner-result 3.0 selection with immutable legacy
+input 1.0 / owner-result 2.0 bytes, independent `public_input` plus
+`base_current`, Discovery-owned live `base_observation`,
 stale-before-semantic-read ordering, exact/token score permutations, invalid
 isolation, deterministic sort/limit/projection, zero and 1-3 candidate paths,
 mem insufficiency gate, stdin/stdout record/check/invoke, pre-task and
 standalone zero-write, exact minimal DTO projection, real Git ref freshness,
-base-stale short-circuit before semantic reads, unknown current owner-state
+base-stale short-circuit before semantic reads, normal HEAD advance as
+`refresh_base`, dirty/wrong/missing/ambiguous/repo-mismatched authority as
+`blocked`, unknown current owner-state
 rejection, clean active-task normal routing with zero checkpoint, dirty
 active-task same-owner recovery, successful consume-and-clean,
 stale checkpoint deletion, unsafe cleanup rejection, and terminal zero residue,
@@ -335,6 +340,12 @@ from one search result, the bidirectional `blocked` exit/Gate matrix, all typed
 exits, source/installed distribution and clean
 throwaway update/reapply. Any reader of index siblings, workspace/runtime,
 repo-level history cache, or any file outside the current three-overlay set fails.
+The representative installed transcript must call the real Sync public wrapper,
+apply the declared Interface projection, call the real Discovery wrapper with
+its independent input and actual `base_current`, and project actual
+`context_ready` into the Clarify consumer schema. Calling the Sync low-level
+executor, importing private runtime, hand-authoring a private result/digest, or
+reconstructing one from `base_current` does not prove the public edge.
 For `guru-clarify-requirements`, tests must cover workflow/standalone
 precondition parity; initial issue, proposed draft, active-task scope change,
 and standalone entry kinds; repository-answerable evidence before user
@@ -1008,6 +1019,12 @@ gate also includes targeted reapply, canonical/installed equality, dogfood drift
 and a recursive zero-unknown-sidecar check. Missing pointer,
 missing/stale cache entry and failed dependency probe must remain distinct stable
 errors.
+
+For an ordinary Issue whose accepted scope is the Sync-to-Discovery public edge,
+the required clean-install proof is one representative clean throwaway with the
+real Sync -> declared projection -> Discovery -> Clarify chain, targeted
+update/reapply, parity/drift, and sidecar checks. It is not the dedicated full
+multi-platform or release matrix.
 
 The complete throwaway verifier additionally runs the README's raw command in
 two reproducible PATH environments. One temporary Python has neither pip nor

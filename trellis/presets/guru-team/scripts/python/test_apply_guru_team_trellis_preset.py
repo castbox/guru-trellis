@@ -1927,6 +1927,19 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             verifier,
         )
         self.assertIn("build_discovery_invocation", verifier)
+        self.assertIn("write_discovery_inputs", verifier)
+        self.assertNotIn('"sync_result"', verifier)
+        self.assertNotIn('"base_evidence"', verifier)
+        self.assertNotIn("installed_ephemeral_context_package_runtime", verifier)
+        self.assertIn('"base_observation": {}', verifier)
+        self.assertIn('"${1:-}" == "-C"', verifier)
+        self.assertIn('"${3:-}" == "remote"', verifier)
+        self.assertIn('"${4:-}" == "get-url"', verifier)
+        self.assertIn('--public-input "$DISCOVERY_STANDALONE_PUBLIC"', verifier)
+        self.assertIn('--transition "$DISCOVERY_STANDALONE_TRANSITION"', verifier)
+        self.assertIn("DISCOVERY_TASK_ROOT", verifier)
+        self.assertIn("DISCOVERY_WORKFLOW_CONTINUATION", verifier)
+        self.assertIn("DISCOVERY_RECOVERY_CONTINUATION", verifier)
         self.assertIn("DISCOVERY_STANDALONE_BASE_JSON", verifier)
         self.assertIn("DISCOVERY_WORKFLOW_BASE_JSON", verifier)
         self.assertNotIn("DISCOVERY_PUBLIC_INPUT_REL", verifier)
@@ -2045,6 +2058,17 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn("phase0-transcript/change-request.json", installed_phase0)
         self.assertIn("stage_transcript_owner_repo", installed_phase0)
         self.assertIn("project_installed_output", installed_phase0)
+        self.assertNotIn("def base_sync_payload(", installed_phase0)
+        self.assertNotIn('"sync_result"', installed_phase0)
+        self.assertNotIn('"base_evidence"', installed_phase0)
+        self.assertNotIn('"guru-base-sync-result-1.0"', installed_phase0)
+        self.assertIn('"schema_version": "3.0"', installed_phase0)
+        self.assertIn('"--public-input", public_path', installed_phase0)
+        self.assertIn('"--transition", transition_path', installed_phase0)
+        self.assertIn(
+            'root, "guru-sync-base", "synced", sync',
+            installed_phase0,
+        )
         self.assertIn("def reentry_transcripts(", installed_phase0)
         self.assertIn("def refresh_provenance_transcripts(", installed_phase0)
         self.assertIn("workspace_plan_for_transition", installed_phase0)
@@ -2056,6 +2080,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn("records", chain_source)
         self.assertNotIn("HAPPY_CASES", chain_source)
         self.assertNotIn("evals", chain_source)
+        self.assertNotIn("base_sync_payload", chain_source)
+        self.assertNotIn("sync_result", chain_source)
+        self.assertNotIn("base_evidence", chain_source)
+        self.assertIn("sync_projection", chain_source)
         installed_closeout = (
             self.guru_root
             / "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py"
@@ -2859,6 +2887,14 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertIn(
             "guru-base-sync-result-1.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        self.assertIn(
+            "guru-change-context-owner-result-3.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        self.assertNotIn(
+            "guru-change-context-owner-result-2.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn(

@@ -23,6 +23,79 @@ def load(repo,package_root,value,field):
  return v
 def digest(v):return hashlib.sha256(json.dumps(v,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).hexdigest()
 
+def _git(repo,*args):
+ proc=subprocess.run(["git","-C",str(repo),*args],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)
+ return proc.returncode,proc.stdout.strip()
+def _github_repo(remote_url):
+ match=re.fullmatch(r"(?:https://github\.com/|git@github\.com:)([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?)(?:\.git)?",remote_url)
+ return match.group(1) if match else None
+def _worktree_branches(repo):
+ code,text=_git(repo,"worktree","list","--porcelain")
+ if code:return []
+ rows=[];current={}
+ for line in [*text.splitlines(),""]:
+  if not line:
+   if current:rows.append(current);current={}
+  elif " " in line:
+   key,value=line.split(" ",1);current[key]=value
+ return rows
+def validate_public_input(package_root,value):
+ validate_json(value,package_root/"schemas/public-pre-task-input-2.0.schema.json","public_input")
+ return value
+def validate_transition(package_root,value):
+ path=package_root.parents[1]/"consumers/workflow/stage0/transitions/base-current.schema.json"
+ validate_json(value,path,"transition")
+ return value
+def observe_base_current(package_root,public_input,transition,expected_repo=None):
+ """Read the Sync public transition against live Git authority without mutation."""
+ validate_public_input(package_root,public_input);validate_transition(package_root,transition)
+ if public_input["mode"]!=transition["mode"]:
+  return {"classification":"blocked","reason":"mode_mismatch"}
+ locator=Path(transition["repo_locator"]).resolve()
+ if not locator.exists() or locator.is_symlink():return {"classification":"blocked","reason":"missing_authority"}
+ code,top=_git(locator,"rev-parse","--show-toplevel")
+ if code or Path(top).resolve()!=locator:return {"classification":"blocked","reason":"repo_locator_mismatch"}
+ base=transition["base"];selected=base["selected_base"];remote=base["remote"]
+ code,branch=_git(locator,"symbolic-ref","--short","HEAD")
+ if code or branch!=selected:return {"classification":"blocked","reason":"wrong_authority_branch"}
+ worktrees=[row for row in _worktree_branches(locator) if row.get("branch")==f"refs/heads/{selected}"]
+ if len(worktrees)!=1 or Path(worktrees[0].get("worktree","")).resolve()!=locator:
+  return {"classification":"blocked","reason":"ambiguous_authority"}
+ code,status=_git(locator,"status","--porcelain=v1")
+ if code or status:return {"classification":"blocked","reason":"dirty_authority"}
+ code,remote_url=_git(locator,"remote","get-url",remote);repo_name=_github_repo(remote_url) if not code else None
+ if not repo_name:return {"classification":"blocked","reason":"repository_identity_unavailable"}
+ if expected_repo and str(expected_repo).casefold()!=repo_name.casefold():return {"classification":"blocked","reason":"repository_mismatch"}
+ refs={}
+ for key,ref in (("decision_head","HEAD"),("local_head",f"refs/heads/{selected}"),("remote_head",f"refs/remotes/{remote}/{selected}")):
+  code,value=_git(locator,"rev-parse","--verify",ref)
+  if code or not re.fullmatch(r"[0-9a-f]{40}",value):return {"classification":"blocked","reason":"missing_base_ref"}
+  refs[key]=value
+ expected={"decision_head":base["decision_head"],"local_head":base["local_base_head"],"remote_head":base["remote_base_head"]}
+ if refs!=expected:
+  return {"classification":"refresh_base","reason":"base_head_advanced","repo":repo_name,"repo_locator":str(locator),"selected_base":selected,"remote":remote}
+ observation={"repo":repo_name,"repo_locator":str(locator),"selected_base":selected,"remote":remote,"authority_branch":branch,**refs,"clean":True,"current":True}
+ return {"classification":"current","reason":"base_current","repo":locator,"observation":observation}
+def bind_owner_to_public(package_root,repo,public_input,transition,owner_result):
+ repository=owner_result.get("repository") if isinstance(owner_result.get("repository"),dict) else {}
+ observation=observe_base_current(package_root,public_input,transition,repository.get("repo"))
+ if observation["classification"]!="current":raise CommandError("stale_identity","base_current",observation["reason"],3)
+ value=copy.deepcopy(owner_result);value["mode"]=public_input["mode"];value["change_input"]=copy.deepcopy(public_input["change_input"]);value["base_observation"]=observation["observation"]
+ live=observation["observation"]
+ if repository.get("selected_base")!=live["selected_base"] or repository.get("decision_branch")!=live["authority_branch"]:
+  raise CommandError("schema_mismatch","repository","Match the live base authority.")
+ value["canonical_query"]=canonical_query(value["change_input"]);value["history_preview"]=preview(repo,value["change_input"],value.get("history_preview",{}).get("limit",20));value["result_identity"]=identity(value);validate(package_root,value);return value
+def check_owner_binding(package_root,repo,public_input,transition,value):
+ repository=value.get("repository") if isinstance(value.get("repository"),dict) else {}
+ observation=observe_base_current(package_root,public_input,transition,repository.get("repo"))
+ if observation["classification"]!="current":return observation
+ if value.get("mode")!=public_input["mode"] or value.get("change_input")!=public_input["change_input"] or value.get("base_observation")!=observation["observation"]:
+  raise CommandError("stale_identity","owner_result","Rerun discovery from current public input and base authority.",3)
+ rebuilt=preview(repo,value["change_input"],value["history_preview"]["limit"])
+ if any(value["history_preview"].get(k)!=rebuilt.get(k) for k in ("query_sha256","archive_manifest_sha256","preview_sha256","manifest","candidates","invalid")) or value["result_identity"]!=identity(value):
+  raise CommandError("stale_identity","owner_result","Rerun discovery from current history.",3)
+ return observation
+
 QUERY_KINDS=("issue_refs","pr_refs","branches","paths","commands","config_keys","schema_fields","symbols","terms","queries")
 EXACT_WEIGHTS={"issue_refs":1000,"pr_refs":900,"branches":800,"paths":700,"commands":600,"config_keys":600,"schema_fields":600,"symbols":600,"terms":400,"queries":300}
 
@@ -116,8 +189,8 @@ def preview(repo,raw,limit):
  candidates.sort(key=lambda row:(-row["score"]["total"],-row["score"]["exact_match_count"],-row["score"]["token_match_count"],row["finish_summary_path"].encode("utf-8")));candidates=candidates[:limit];invalid=[copy.deepcopy(row) for row in manifest if row["status"]=="invalid"]
  out={"algorithm_id":"guru-context-history-score-1.0","canonical_query":q,"query_sha256":q["query_sha256"],"archive_manifest_sha256":digest(manifest),"limit":limit,"manifest":manifest,"candidates":candidates,"invalid":invalid};out["preview_sha256"]=digest({key:out[key] for key in ("algorithm_id","query_sha256","archive_manifest_sha256","limit","candidates","invalid")});return out
 def identity(v):
- base=v["base_evidence"];live=v["live_change"];hp=v["history_preview"];out={"query_sha256":v["canonical_query"]["query_sha256"],"archive_manifest_sha256":hp["archive_manifest_sha256"],"base_head":base["base_head"],"base_sync_facts_sha256":base["sync_result"]["facts_sha256"],"post_sync_resolution_sha256":base["post_sync_resolution_sha256"],"live_change_sha256":live["facts_sha256"]};out["payload_sha256"]=digest({k:v[k] for k in v if k!="result_identity"});out["result_sha256"]=digest(out);return out
-def validate(package_root,v):validate_json(v,package_root/"schemas/change-context-owner-result.schema.json","owner_result");return v
+ base=v["base_observation"];live=v["live_change"];hp=v["history_preview"];out={"query_sha256":v["canonical_query"]["query_sha256"],"archive_manifest_sha256":hp["archive_manifest_sha256"],"base_head":base["local_head"],"live_change_sha256":live["facts_sha256"]};out["payload_sha256"]=digest({k:v[k] for k in v if k!="result_identity"});out["result_sha256"]=digest(out);return out
+def validate(package_root,v):validate_json(v,package_root/"schemas/change-context-owner-result-3.0.schema.json","owner_result");return v
 def active_task(repo,value):
  p=(repo/str(value or "")).resolve();tasks=(repo/".trellis/tasks").resolve()
  if not p.is_dir() or p.is_symlink() or not p.is_relative_to(tasks):raise CommandError("unsafe_path","active_task","Use one active task below .trellis/tasks.")

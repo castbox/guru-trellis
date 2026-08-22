@@ -764,7 +764,9 @@ Current semantic input 固定 `applicability.status=required`，private result �
 owner checkpoint，校验失败则保留。
 
 `guru-discover-change-context` package 同时安装
-`guru-change-context-owner-result-2.0` schema/example、public schemas/examples、contract、
+active `guru-stage0-discover-change-context-input-pre-task-2.0` 与
+`guru-change-context-owner-result-3.0` schema/example、immutable legacy input 1.0 /
+owner-result 2.0 bytes、public schemas/examples、contract、
 tests 与三个 executable thin wrappers。Direct discovery 与 workflow route 使用相同
 fresh-base/change-input/evidence freshness preconditions。Runtime 只读取 archived
 `finish-summary.json:index.*`，使用 `guru-context-history-score-1.0`，不读取 workspace/runtime
@@ -792,6 +794,9 @@ fresh install 和 current update/reapply 必须保持这些 schema/runtime/wrapp
 executable modes 一致。`context_ready` 只交付 Clarify 所需的 route、mode、target locator 与
 continuation identity，不携带 private artifact locator；其 actual stdout 形成 workflow-owned
 `context_current`，而不是 repo-local prerequisite bundle。
+Discovery public input 与 Sync actual `base_current` 独立传入；runtime 先 live-read authority
+生成 owner-private `base_observation`。正常 HEAD advance 返回 `refresh_base`，invalid authority
+返回 `blocked`，任何路径都不重建 Sync private result/facts digest。
 `context_ready` 指向 active `guru-clarify-requirements`；source/installed validator 要求
 active Skill consumer 与唯一 workflow/stop target marker 均可解析。
 
@@ -865,6 +870,11 @@ retain/retarget、wording change、readiness/workspace 与 stop/re-entry familie
 隐藏 prerequisite locator 或 import shared runtime。Official `trellis update`、workflow
 preview/switch、preset reapply、dogfood drift、声明平台 byte/mode parity、managed provenance 和
 recursive zero `.new`/`.bak` 必须作为同一分发门禁通过。
+其中 Sync edge 必须执行 real Sync wrapper -> declared projection -> Discovery input 2.0 + actual
+`base_current` -> real Discovery wrapper -> Clarify projection；不得调用低层 Sync executor、读取
+private stdout transport、伪造 digest 或 import private package runtime。普通 #295 验证只要求一个
+代表性 clean throwaway，不扩张为完整多平台/Release matrix。所有产品 Python tests 与 wrappers
+经 checkout-local managed resolver；PATH Python 是否能 import `jsonschema` 不代表产品依赖通过。
 
 `guru-create-task-workspace` package 安装
 ignored-runtime `guru-task-workspace-plan-2.0`、`guru-task-workspace-result-2.0`、contract、examples、tests

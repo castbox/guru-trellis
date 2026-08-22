@@ -14,7 +14,9 @@ FINISH_SCHEMA=next(path for path in (
 for path in (SKILLS,LOCAL):
  if str(path) not in sys.path:sys.path.insert(0,str(path))
 from runtime.command import main
-from common import check_recovery,consume_recovery,preview,record_recovery
+from common import check_recovery,consume_recovery,observe_base_current,preview,record_recovery
+from check import run as check_run
+from invoke import run as invoke_run
 
 class PackageLocalRuntimeTest(unittest.TestCase):
  def test_command_and_error_contract_close(self):
@@ -55,7 +57,35 @@ class PackageLocalRuntimeTest(unittest.TestCase):
 
  def test_recovery_checkpoint_is_package_owned_and_short_lived(self):
   with tempfile.TemporaryDirectory() as name:
-   repo=Path(name);subprocess.run(["git","init","-q","-b","feat/context",str(repo)],check=True);td=repo/".trellis/tasks/08-12-context";td.mkdir(parents=True);task={"id":"08-12-context","status":"in_progress","branch":"feat/context"};(td/"task.json").write_text(json.dumps(task));payload=json.loads((PACKAGE/"examples/change-context-owner-result.json").read_text());payload["mode"]="workflow";path=record_recovery(PACKAGE,repo,td,task,payload,"resume-context");self.assertTrue(path.is_file());self.assertEqual(path,check_recovery(PACKAGE,repo,td,task,payload,"resume-context"));consume_recovery(path);self.assertFalse(path.exists());self.assertFalse(path.parent.exists())
+   repo=Path(name);subprocess.run(["git","init","-q","-b","feat/context",str(repo)],check=True);td=repo/".trellis/tasks/08-12-context";td.mkdir(parents=True);task={"id":"08-12-context","status":"in_progress","branch":"feat/context"};(td/"task.json").write_text(json.dumps(task));payload=json.loads((PACKAGE/"examples/change-context-owner-result-3.0.json").read_text());payload["mode"]="workflow";path=record_recovery(PACKAGE,repo,td,task,payload,"resume-context");self.assertTrue(path.is_file());self.assertEqual(path,check_recovery(PACKAGE,repo,td,task,payload,"resume-context"));consume_recovery(path);self.assertFalse(path.exists());self.assertFalse(path.parent.exists())
+
+ def test_live_base_observer_classifies_current_refresh_and_blocked_without_mutation(self):
+  with tempfile.TemporaryDirectory() as name:
+   repo=Path(name);subprocess.run(["git","init","-q","-b","main",str(repo)],check=True)
+   subprocess.run(["git","config","user.name","Observer Test"],cwd=repo,check=True);subprocess.run(["git","config","user.email","observer@example.invalid"],cwd=repo,check=True)
+   (repo/"tracked.txt").write_text("one\n");subprocess.run(["git","add","tracked.txt"],cwd=repo,check=True);subprocess.run(["git","commit","-q","-m","initial"],cwd=repo,check=True)
+   subprocess.run(["git","remote","add","origin","https://github.com/example/guru-extension.git"],cwd=repo,check=True)
+   head=subprocess.run(["git","rev-parse","HEAD"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip();subprocess.run(["git","update-ref","refs/remotes/origin/main",head],cwd=repo,check=True)
+   public={"profile":"pre_task","source_exit":"synced","mode":"workflow","change_input":{"issue_refs":["#295"],"pr_refs":[],"branches":[],"paths":[],"commands":[],"config_keys":[],"schema_fields":[],"symbols":[],"terms":[],"queries":[]},"continuation_id":"observer"}
+   transition={"schema_version":"1.0","transition_id":"base_current:test","stage":"base_current","mode":"workflow","repo_locator":str(repo),"base":{"source":"explicit","selected_base":"main","remote":"origin","ordered_candidates":["main"],"decision_head":head,"local_base_head":head,"remote_base_head":head,"post_sync_resolution_sha256":"a"*64}}
+   before=subprocess.run(["git","status","--porcelain=v1"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout
+   current=observe_base_current(PACKAGE,public,transition);self.assertEqual(current["classification"],"current");self.assertEqual(current["observation"]["repo"],"example/guru-extension")
+   self.assertEqual(before,subprocess.run(["git","status","--porcelain=v1"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout)
+   with tempfile.TemporaryDirectory() as inputs_name:
+    inputs=Path(inputs_name);owner=json.loads((PACKAGE/"examples/change-context-owner-result-3.0.json").read_text());owner["repository"]["repo"]="other/repository"
+    public_path=inputs/"public.json";transition_path=inputs/"transition.json";owner_path=inputs/"owner.json";invocation_path=inputs/"invocation.json"
+    public_path.write_text(json.dumps(public));transition_path.write_text(json.dumps(transition));owner_path.write_text(json.dumps(owner));invocation_path.write_text(json.dumps({"schema_version":"1.0","public_input":public,"transition":transition,"owner_context":{},"owner_result":owner}))
+    invoked=invoke_run(PACKAGE,{},["--root",str(repo),"--invocation",str(invocation_path)]);self.assertEqual(invoked,{"exit_id":"blocked"})
+    checked=check_run(PACKAGE,{"id":"check-context-discovery"},["--root",str(repo),"--input",str(owner_path),"--public-input",str(public_path),"--transition",str(transition_path)]);self.assertEqual(checked["typed_exit"],"blocked");self.assertEqual(checked["reason"],"repository_mismatch")
+    malformed=dict(owner);malformed.pop("repository");owner_path.write_text(json.dumps(malformed));invocation_path.write_text(json.dumps({"schema_version":"1.0","public_input":public,"transition":transition,"owner_context":{},"owner_result":malformed}))
+    self.assertEqual(invoke_run(PACKAGE,{},["--root",str(repo),"--invocation",str(invocation_path)]),{"exit_id":"blocked"})
+    malformed_checked=check_run(PACKAGE,{"id":"check-context-discovery"},["--root",str(repo),"--input",str(owner_path),"--public-input",str(public_path),"--transition",str(transition_path)]);self.assertEqual(malformed_checked["typed_exit"],"blocked");self.assertEqual(malformed_checked["reason"],"schema_mismatch")
+   subprocess.run(["git","commit","--allow-empty","-q","-m","advance"],cwd=repo,check=True);advanced=subprocess.run(["git","rev-parse","HEAD"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip();subprocess.run(["git","update-ref","refs/remotes/origin/main",advanced],cwd=repo,check=True)
+   self.assertEqual(observe_base_current(PACKAGE,public,transition)["classification"],"refresh_base")
+   transition["base"].update({"decision_head":advanced,"local_base_head":advanced,"remote_base_head":advanced})
+   (repo/"tracked.txt").write_text("dirty\n");self.assertEqual(observe_base_current(PACKAGE,public,transition)["reason"],"dirty_authority")
+   subprocess.run(["git","restore","tracked.txt"],cwd=repo,check=True);subprocess.run(["git","switch","-q","-c","other"],cwd=repo,check=True)
+   self.assertEqual(observe_base_current(PACKAGE,public,transition)["reason"],"wrong_authority_branch")
 
  def test_history_preview_reads_finish_summary_index_only(self):
   with tempfile.TemporaryDirectory() as name:

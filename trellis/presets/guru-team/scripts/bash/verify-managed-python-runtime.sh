@@ -58,6 +58,7 @@ PATH="$PATH_BIN:/usr/bin:/bin:/usr/sbin:/sbin" \
   "$SCRIPT_DIR/apply.sh" --repo "$TARGET" --platform codex > "$TEMP_ROOT/apply.json"
 
 FOCUSED_PATH="$PATH_BIN:/usr/bin:/bin:/usr/sbin:/sbin"
+SOURCE_RESOLVER="$SOURCE/trellis/skills/guru-team/runtime/resolve-python.sh"
 SOURCE_POINTER="$(
   "$BOOTSTRAP_PYTHON" "$SOURCE/trellis/skills/guru-team/runtime/bootstrap.py" \
     --repo "$SOURCE" \
@@ -70,6 +71,75 @@ TARGET_POINTER="$(
     --runtime-assets "$TARGET/.trellis/guru-team/runtime" \
     --print-active-pointer
 )"
+
+expect_source_runtime_error() {
+  local label="$1"
+  local expected_code="$2"
+  local expected_dependency="${3:-python-runtime}"
+  local stderr_path="$TEMP_ROOT/runtime-error-$label.json"
+  local status
+
+  set +e
+  PATH="$FOCUSED_PATH" \
+    "$SOURCE_RESOLVER" "$SOURCE" "$SOURCE/trellis/skills/guru-team/runtime" \
+    -c 'raise SystemExit("managed runtime unexpectedly executed")' \
+    > "$TEMP_ROOT/runtime-error-$label.stdout" 2> "$stderr_path"
+  status=$?
+  set -e
+  if [[ "$status" -ne 2 ]]; then
+    echo "focused runtime $label expected exit 2, got $status" >&2
+    exit 2
+  fi
+  "$BOOTSTRAP_PYTHON" - "$stderr_path" "$expected_code" "$expected_dependency" <<'PY'
+import json
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+expected = sys.argv[2]
+expected_dependency = sys.argv[3]
+payload = json.loads(path.read_text(encoding="utf-8"))
+assert payload["code"] == expected, payload
+assert payload["field_path"] == "runtime", payload
+assert payload["dependency"] == expected_dependency, payload
+assert payload["remediation"] == "trellis/presets/guru-team/scripts/bash/apply.sh --repo .", payload
+PY
+}
+
+mv "$SOURCE_POINTER" "$SOURCE_POINTER.saved"
+expect_source_runtime_error missing-pointer runtime_not_bootstrapped
+mv "$SOURCE_POINTER.saved" "$SOURCE_POINTER"
+
+cp "$SOURCE_POINTER" "$SOURCE_POINTER.saved"
+"$BOOTSTRAP_PYTHON" - "$SOURCE_POINTER" <<'PY'
+import json
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+payload = json.loads(path.read_text(encoding="utf-8"))
+payload["runtime_id"] = "0" * 24
+path.write_text(json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
+PY
+expect_source_runtime_error stale-pointer managed_runtime_missing
+mv "$SOURCE_POINTER.saved" "$SOURCE_POINTER"
+
+SOURCE_INTERPRETER="$("$BOOTSTRAP_PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["interpreter"])' "$SOURCE_POINTER")"
+mv "$SOURCE_INTERPRETER" "$SOURCE_INTERPRETER.saved"
+expect_source_runtime_error missing-interpreter managed_runtime_missing
+mv "$SOURCE_INTERPRETER.saved" "$SOURCE_INTERPRETER"
+
+SOURCE_LOCK="$SOURCE/trellis/skills/guru-team/runtime/requirements.lock"
+cp "$SOURCE_LOCK" "$SOURCE_LOCK.saved"
+printf '\n# focused dependency drift\n' >> "$SOURCE_LOCK"
+expect_source_runtime_error dependency-lock-drift managed_runtime_missing
+mv "$SOURCE_LOCK.saved" "$SOURCE_LOCK"
+
+SOURCE_JSONSCHEMA="$("$SOURCE_INTERPRETER" -c 'import jsonschema, pathlib; print(pathlib.Path(jsonschema.__file__).parent)')"
+mv "$SOURCE_JSONSCHEMA" "$SOURCE_JSONSCHEMA.saved"
+expect_source_runtime_error missing-dependency runtime_dependency_missing jsonschema
+mv "$SOURCE_JSONSCHEMA.saved" "$SOURCE_JSONSCHEMA"
+
 PATH="$FOCUSED_PATH" \
   "$SOURCE/trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh" \
   --root "$SOURCE" --mode source --json > "$TEMP_ROOT/source-validation.json"
@@ -224,6 +294,13 @@ result = {
     "installed_eval_execution": installed_eval_run["status"],
     "adapter_no_path_python_probes": sorted(adapter_probes),
     "compat_extension_version": source_compat["guru_team_extension"]["version"],
+    "runtime_error_codes": {
+        "missing_pointer": load("runtime-error-missing-pointer.json")["code"],
+        "stale_pointer": load("runtime-error-stale-pointer.json")["code"],
+        "missing_interpreter": load("runtime-error-missing-interpreter.json")["code"],
+        "dependency_lock_drift": load("runtime-error-dependency-lock-drift.json")["code"],
+        "missing_dependency": load("runtime-error-missing-dependency.json")["code"],
+    },
 }
 print(json.dumps(result, sort_keys=True))
 PY

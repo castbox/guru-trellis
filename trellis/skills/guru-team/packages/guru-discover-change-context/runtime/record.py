@@ -1,12 +1,11 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
-from common import active_task,identity,load,parse,preview,record_recovery,root,validate
+from common import active_task,bind_owner_to_public,load,parse,record_recovery,root
 from runtime.io import CommandError
 def run(package_root:Path,command:dict,argv:list[str])->dict:
- p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--mode",required=True,choices=("workflow","standalone"));p.add_argument("--input",required=True);p.add_argument("--expected-result-sha256");p.add_argument("--active-task");p.add_argument("--recovery-continuation-id");a=parse(p,argv);repo=root(package_root,a.root);v=load(repo,package_root,a.input,"input")
- if v.get("mode")!=a.mode:raise CommandError("schema_mismatch","mode","Match owner result mode.")
- v["canonical_query"]=__import__("common").canonical_query(v["change_input"]);v["history_preview"]=preview(repo,v["change_input"],v.get("history_preview",{}).get("limit",20));v["result_identity"]=identity(v);validate(package_root,v)
+ p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--mode",required=True,choices=("workflow","standalone"));p.add_argument("--input",required=True);p.add_argument("--public-input",required=True);p.add_argument("--transition",required=True);p.add_argument("--expected-result-sha256");p.add_argument("--active-task");p.add_argument("--recovery-continuation-id");a=parse(p,argv);repo=root(package_root,a.root);public=load(repo,package_root,a.public_input,"public_input");transition=load(repo,package_root,a.transition,"transition");v=bind_owner_to_public(package_root,repo,public,transition,load(repo,package_root,a.input,"input"))
+ if public.get("mode")!=a.mode:raise CommandError("schema_mismatch","mode","Match public input mode.")
  if a.recovery_continuation_id and not a.active_task:raise CommandError("invalid_arguments","recovery_continuation_id","Provide active-task identity for recovery.")
  if a.active_task:
   if a.mode!="workflow":raise CommandError("schema_mismatch","mode","Active-task context discovery is workflow-only.")

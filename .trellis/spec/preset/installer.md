@@ -196,8 +196,10 @@ publishes active id `guru-sync-base`, schema id
 The registry also installs active semantic `guru-discover-change-context` to
 the audited runtime root and selected shared/Codex/Cursor/Claude discovery
 roots. Its managed tree includes `SKILL.md`, interface, contract, the
-`guru-change-context-owner-result-2.0` schema/example, public schemas/examples,
-tests, and executable dispatcher-only wrappers. Managed companion assets include
+active `guru-stage0-discover-change-context-input-pre-task-2.0` and
+`guru-change-context-owner-result-3.0` schemas/examples, retained immutable
+legacy input 1.0 / owner-result 2.0 assets, public schemas/examples, tests, and
+executable dispatcher-only wrappers. Managed companion assets include
 `preview-change-context-history.sh`, `record-context-discovery.sh`, and
 `check-context-discovery.sh`; the extension manifest publishes the active id,
 owner-result schema id, and all three runtime command ids. Installed validation
@@ -207,6 +209,9 @@ Managed schema/runtime/tests must move together when duplicate candidate facts
 gain canonical repo/number/identity/URL/open-state/update-time digest and live
 freshness checks, or when the `blocked` exit/Gate state matrix changes; a mixed
 old-schema/new-runtime installation is drift and fails installed validation.
+The active graph supplies Discovery public input independently from actual Sync
+`base_current`; no installer fixture may reconstruct or expose the Sync private
+result or its facts digest.
 Installed and throwaway checks cover stdin/stdout record/check/invoke, zero
 repository writes, minimal public DTO projection, live stale restart, and lazy
 same-owner recovery checkpoint consume-and-clean. Upgrade/reapply may not leave
@@ -625,6 +630,11 @@ registry, extension, package, corpus, and selected-platform bytes and modes.
 The verifier scans recursively for `.new` and `.bak` after each transition.
 Clean throwaway installation runs the actual-stdout six-Skill transcript; an
 isolated package test or handwritten intermediate DTO does not prove activation.
+Its Sync-to-Discovery edge invokes the real Sync public wrapper, applies the
+declared projection, invokes Discovery with input 2.0 plus actual
+`base_current`, and projects actual `context_ready` to Clarify. Product Python
+checks use source/installed managed resolvers or those public wrappers; PATH
+Python dependency imports are not product-runtime evidence.
 
 ## Production Skill Atomic Activation
 

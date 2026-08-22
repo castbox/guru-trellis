@@ -883,7 +883,7 @@ def context_owner_for_issue(
     ]
     preview = json_stdout(run(preview_args, cwd=root, env=env), "context history preview")
     return {
-        "schema_version": "2.0",
+        "schema_version": "3.0",
         "skill_id": "guru-discover-change-context",
         "generated_at": "2026-01-01T00:00:00Z",
         "mode": "workflow",
@@ -965,27 +965,32 @@ def context_owner_for_issue(
 def checked_context_owner_for_issue(
     root: Path,
     env: dict[str, str],
+    public_input: dict[str, Any],
     transition: dict[str, Any],
-) -> tuple[dict[str, Any], dict[str, Any]]:
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     authored = context_owner_for_issue(root, env)
-    base = transition["base"]
-    authored["base_evidence"] = {
-        "schema_id": "guru-base-sync-result-1.0",
-        "sync_result": base_sync_payload(transition),
-        "remote": base["remote"],
-        "base_head": base["remote_base_head"],
-        "decision_head": base["decision_head"],
-        "local_head": base["local_base_head"],
-        "remote_head": base["remote_base_head"],
-        "post_sync_resolution_sha256": base["post_sync_resolution_sha256"],
-        "clean": True,
-    }
+    public_input = copy.deepcopy(public_input)
+    public_input["change_input"] = copy.deepcopy(authored["change_input"])
+    public_path = root.parent / f"discovery-public-{digest(public_input)[:16]}.json"
+    transition_path = root.parent / f"base-current-{digest(transition)[:16]}.json"
+    public_path.write_text(
+        json.dumps(public_input, ensure_ascii=False, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    transition_path.write_text(
+        json.dumps(transition, ensure_ascii=False, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     recorded = record_semantic(
         root,
         env,
         "guru-discover-change-context",
         "record-context-discovery.sh",
-        ["--mode", "workflow", "--input", "-"],
+        [
+            "--mode", "workflow", "--input", "-",
+            "--public-input", public_path,
+            "--transition", transition_path,
+        ],
         authored,
     )
     checked = record_semantic(
@@ -994,14 +999,17 @@ def checked_context_owner_for_issue(
         "guru-discover-change-context",
         "check-context-discovery.sh",
         [
-            "--input", "-", "--expected-result-sha256",
+            "--input", "-",
+            "--public-input", public_path,
+            "--transition", transition_path,
+            "--expected-result-sha256",
             recorded["result_identity"]["result_sha256"],
         ],
         recorded,
     )
     if checked.get("status") != "passed" or checked.get("typed_exit") != "context_ready":
         raise RuntimeError("current context owner did not pass its production checker")
-    return recorded, checked
+    return recorded, checked, public_input
 
 
 def clarification_owner_for_issue(
@@ -1540,57 +1548,16 @@ def assert_readiness_content_drift_rejected(
     return rows
 
 
-def base_sync_payload(transition: dict[str, Any]) -> dict[str, Any]:
+def base_current_payload(transition: dict[str, Any]) -> dict[str, Any]:
     base = transition["base"]
-    identity = {
+    return {
         "schema_version": "1.0",
-        "skill_id": "guru-sync-base",
-        "status": "resolved",
-        "source": base["source"],
-        "selected_base": base["selected_base"],
-        "remote": base["remote"],
-        "candidates": copy.deepcopy(base["ordered_candidates"]),
-        "decision_checkout": {
-            "branch": base["selected_base"],
-            "head": base["decision_head"],
-            "clean": True,
-        },
+        "transition_id": f"base_current:{base['post_sync_resolution_sha256'][:24]}",
+        "stage": "base_current",
+        "mode": transition["mode"],
+        "repo_locator": transition["repo_locator"],
+        "base": copy.deepcopy(base),
     }
-    if digest(identity) != base["post_sync_resolution_sha256"]:
-        raise RuntimeError("readiness transition base provenance is inconsistent")
-    payload = {
-        "schema_version": "1.0",
-        "skill_id": "guru-sync-base",
-        "status": "synced",
-        "resolution": {
-            "source": base["source"],
-            "selected_base": base["selected_base"],
-            "remote": base["remote"],
-            "candidates": copy.deepcopy(base["ordered_candidates"]),
-            "resolution_sha256": base["post_sync_resolution_sha256"],
-        },
-        "post_sync_resolution": identity,
-        "post_sync_resolution_sha256": base["post_sync_resolution_sha256"],
-        "decision_checkout": {
-            "branch": base["selected_base"],
-            "head_before": base["decision_head"],
-            "head_after": base["decision_head"],
-            "clean_before": True,
-            "clean_after": True,
-        },
-        "git": {
-            "local_ref": f"refs/heads/{base['selected_base']}",
-            "remote_ref": f"refs/remotes/{base['remote']}/{base['selected_base']}",
-            "local_head_before": base["local_base_head"],
-            "local_head_after": base["local_base_head"],
-            "remote_head_after": base["remote_base_head"],
-            "fetch_performed": True,
-            "fast_forwarded": False,
-        },
-        "fresh": True,
-    }
-    payload["facts_sha256"] = digest(payload)
-    return payload
 
 
 def workspace_transition_payloads(
@@ -1744,7 +1711,7 @@ def workspace_transition_payloads(
         "facts_sha256": transition["readiness_facts_sha256"],
     }
     return {
-        "base": base_sync_payload(transition),
+        "base": base_current_payload(transition),
         "clarity": clarity_payload,
         "wording": wording_payload,
         "readiness": readiness,
@@ -1756,7 +1723,11 @@ def workspace_prerequisite(
     payload: dict[str, Any],
 ) -> dict[str, Any]:
     identities = {
-        "base": ("guru-sync-base", "guru-base-sync-result-1.0", "synced"),
+        "base": (
+            "guru-sync-base",
+            "guru-stage0-transition-base-current-1.0",
+            "synced",
+        ),
         "clarity": (
             "guru-clarify-requirements",
             "guru-requirements-clarification-2.0",
@@ -1775,7 +1746,7 @@ def workspace_prerequisite(
     }
     skill_id, schema_id, typed_exit = identities[key]
     if key == "base":
-        facts = payload["facts_sha256"]
+        facts = context_digest(payload)
         content = None
         linkage = None
     elif key == "clarity":
@@ -1832,8 +1803,7 @@ def workspace_plan_for_transition(
     }
     scope["scope_sha256"] = context_digest(scope)
     base_payload = payloads["base"]
-    base_resolution = base_payload["resolution"]
-    base_git = base_payload["git"]
+    base = base_payload["base"]
     task_slug = "145-phase0-public-transcript"
     task_dir = (
         ".trellis/tasks/"
@@ -1872,14 +1842,14 @@ def workspace_plan_for_transition(
         },
         "scope": scope,
         "base": {
-            "selected_base": base_resolution["selected_base"],
-            "remote": base_resolution["remote"],
-            "base_ref": base_git["remote_ref"],
-            "decision_head": base_payload["decision_checkout"]["head_after"],
-            "local_head": base_git["local_head_after"],
-            "remote_head": base_git["remote_head_after"],
-            "post_sync_resolution_sha256": base_payload["post_sync_resolution_sha256"],
-            "sync_facts_sha256": base_payload["facts_sha256"],
+            "selected_base": base["selected_base"],
+            "remote": base["remote"],
+            "base_ref": f"refs/remotes/{base['remote']}/{base['selected_base']}",
+            "decision_head": base["decision_head"],
+            "local_head": base["local_base_head"],
+            "remote_head": base["remote_base_head"],
+            "post_sync_resolution_sha256": base["post_sync_resolution_sha256"],
+            "sync_facts_sha256": context_digest(base_payload),
         },
         "naming": {
             "branch_name": "feat/145-phase0-public-transcript",
@@ -1982,8 +1952,8 @@ def reentry_transcripts(
     needs_input, needs_projection = project_installed_output(
         root, "guru-clarify-requirements", "needs_context", needs
     )
-    discovery_owner, discovery_checked = checked_context_owner_for_issue(
-        root, env, needs["transition"]
+    discovery_owner, discovery_checked, needs_input = checked_context_owner_for_issue(
+        root, env, needs_input, needs["transition"]
     )
     discovery_envelope = {
         "schema_version": "1.0",
@@ -2135,24 +2105,21 @@ def six_step_transcript(
     )
     rows.append(row)
 
-    context_owner, context_checked = checked_context_owner_for_issue(
-        root, env, sync["transition"]
+    context_input, sync_projection = project_installed_output(
+        root, "guru-sync-base", "synced", sync
+    )
+    context_owner, context_checked, context_input = checked_context_owner_for_issue(
+        root, env, context_input, sync["transition"]
     )
     context_envelope = {
         "schema_version": "1.0",
-        "public_input": {
-            "profile": "pre_task",
-            "source_exit": "synced",
-            "mode": "workflow",
-            "repo_locator": "example/guru-extension",
-            "base_branch": "main",
-            "continuation_id": "stage0-current",
-        },
+        "public_input": context_input,
         "transition": sync["transition"],
         "owner_context": {},
         "owner_result": context_owner,
     }
     rows[-1]["next_input_sha256"] = digest(context_envelope)
+    rows[-1]["projection_id"] = sync_projection
     context, row = invoke_public(
         root, env, "guru-discover-change-context", context_envelope, "context_ready"
     )
@@ -2484,8 +2451,8 @@ def refresh_provenance_transcripts(
         context_input, sync_projection = project_installed_output(
             root, "guru-sync-base", "synced", sync
         )
-        context_owner, context_checked = checked_context_owner_for_issue(
-            root, env, sync["transition"]
+        context_owner, context_checked, context_input = checked_context_owner_for_issue(
+            root, env, context_input, sync["transition"]
         )
         context, context_row = invoke_public(
             root,

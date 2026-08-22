@@ -20,7 +20,10 @@ that a mechanism, duplicate, or historical decision is absent.
 
 Use the dispatcher-only wrappers for history preview, owner-result recording,
 and owner-result checking. Normal recording/checking is stdin/stdout-only and
-does not create a repository artifact. A caller-authored `refresh_base` result
+does not create a repository artifact. Pass the active Discovery 2.0 input and
+independent `base_current` transition to both owner commands with
+`--public-input <input> --transition <transition>`; no caller supplies or
+reconstructs a Sync private result. A caller-authored `refresh_base` result
 records only the observed current stale codes, then reruns the complete Skill
 through `guru-sync-base` and live authority.
 
