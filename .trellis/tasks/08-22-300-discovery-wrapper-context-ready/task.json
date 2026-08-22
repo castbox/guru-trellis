@@ -1,0 +1,29 @@
+{
+  "id": "300-discovery-wrapper-context-ready",
+  "name": "300-discovery-wrapper-context-ready",
+  "title": "#300 修复 Discovery public wrapper context_ready 降级",
+  "description": "修复合法 Discovery owner 经 public dispatcher wrapper 被错误降级为 blocked 的回归，并恢复 #299 standard Intake。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "createdAt": "2026-08-22",
+  "completedAt": null,
+  "branch": "fix/300-discovery-wrapper-context-ready",
+  "base_branch": "main",
+  "worktree_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/300-discovery-wrapper-context-ready",
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "issue": "300",
+    "issue_url": "https://github.com/castbox/guru-trellis/issues/300"
+  }
+}

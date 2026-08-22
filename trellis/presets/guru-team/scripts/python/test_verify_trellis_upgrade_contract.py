@@ -4,10 +4,12 @@ import ast
 import hashlib
 import importlib.util
 import json
+import os
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 REPO = Path(__file__).resolve().parents[5]
@@ -45,6 +47,77 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         cls.text = VERIFIER.read_text(encoding="utf-8")
         cls.matrix_text = MATRIX_HELPER.read_text(encoding="utf-8")
         cls.matrix = load_matrix_helper()
+        workflow_start = cls.text.index("preview_and_switch_managed_workflow() {")
+        workflow_end = cls.text.index('\nmkdir "$TARGET"', workflow_start)
+        cls.shell_workflow_function = cls.text[workflow_start:workflow_end]
+
+    def run_shell_workflow_switch(
+        self,
+        root: Path,
+        *,
+        current: str = "managed\n",
+        preview: str = "managed\n",
+        preexisting_sidecar: str | None = None,
+        force_failure: bool = False,
+    ) -> tuple[subprocess.CompletedProcess[str], Path, Path]:
+        target = root / "target"
+        workflow = target / ".trellis/workflow.md"
+        candidate = root / "trellis/workflows/guru-team/workflow.md"
+        fake_bin = root / "bin"
+        call_log = root / "trellis-calls.log"
+        workflow.parent.mkdir(parents=True)
+        candidate.parent.mkdir(parents=True)
+        fake_bin.mkdir()
+        workflow.write_text(current, encoding="utf-8")
+        candidate.write_text("managed\n", encoding="utf-8")
+        preview_path = root / "preview.md"
+        preview_path.write_text(preview, encoding="utf-8")
+        if preexisting_sidecar is not None:
+            Path(str(workflow) + preexisting_sidecar).write_text(
+                "preserve sidecar\n", encoding="utf-8"
+            )
+        fake_trellis = fake_bin / "trellis"
+        fake_trellis.write_text(
+            """#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\\n' "$*" >>"$FAKE_TRELLIS_CALL_LOG"
+if [[ " $* " == *" --create-new "* ]]; then
+  cp "$FAKE_TRELLIS_PREVIEW" "$PWD/.trellis/workflow.md.new"
+elif [[ " $* " == *" --force "* ]]; then
+  if [[ "$FAKE_TRELLIS_FORCE_FAILURE" == "1" ]]; then
+    printf '%s\\n' 'primary workflow switch failure' >&2
+    exit 41
+  fi
+  cp "$FAKE_TRELLIS_PREVIEW" "$PWD/.trellis/workflow.md"
+fi
+""",
+            encoding="utf-8",
+        )
+        fake_trellis.chmod(0o755)
+        script = f"""set -euo pipefail
+REPO_ROOT={json.dumps(str(root))}
+TARGET={json.dumps(str(target))}
+WORKFLOW_SOURCE=gh:example/guru-trellis/trellis#candidate
+USE_LOCAL_WORKFLOW_SAMPLE=0
+file_sha256() {{ python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$1"; }}
+apply_local_workflow_sample() {{ :; }}
+{self.shell_workflow_function}
+preview_and_switch_managed_workflow "$TARGET" targeted-shell-switch
+"""
+        result = subprocess.run(
+            ("bash", "-c", script),
+            cwd=REPO,
+            env={
+                "PATH": f"{fake_bin}:{os.environ['PATH']}",
+                "FAKE_TRELLIS_CALL_LOG": str(call_log),
+                "FAKE_TRELLIS_PREVIEW": str(preview_path),
+                "FAKE_TRELLIS_FORCE_FAILURE": "1" if force_failure else "0",
+            },
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        return result, workflow, call_log
 
     def test_default_entry_delegates_to_live_manifest_matrix(self) -> None:
         dispatch = self.text.index(
@@ -75,6 +148,70 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("Target already exists", result.stderr)
         self.assertNotIn("GURU_TEMP_FILES[@]: unbound variable", result.stderr)
+
+    def test_single_repo_shell_workflow_switch_managed_path_uses_preview_then_force(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result, workflow, call_log = self.run_shell_workflow_switch(root)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(workflow.read_text(encoding="utf-8"), "managed\n")
+            self.assertFalse(Path(str(workflow) + ".new").exists())
+            self.assertFalse(Path(str(workflow) + ".bak").exists())
+            calls = call_log.read_text(encoding="utf-8").splitlines()
+            self.assertEqual(len(calls), 2)
+            self.assertIn("--create-new", calls[0])
+            self.assertIn("--force", calls[1])
+
+    def test_single_repo_shell_workflow_switch_preserves_user_edit_and_sidecars(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result, workflow, call_log = self.run_shell_workflow_switch(
+                root, current="user edit\n"
+            )
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("not the expected managed before-candidate", result.stderr)
+            self.assertEqual(workflow.read_text(encoding="utf-8"), "user edit\n")
+            self.assertFalse(call_log.exists())
+
+        for suffix in (".new", ".bak"):
+            with self.subTest(sidecar=suffix), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                result, workflow, call_log = self.run_shell_workflow_switch(
+                    root, preexisting_sidecar=suffix
+                )
+                self.assertEqual(result.returncode, 2)
+                self.assertIn("unresolved .new/.bak", result.stderr)
+                self.assertEqual(
+                    Path(str(workflow) + suffix).read_text(encoding="utf-8"),
+                    "preserve sidecar\n",
+                )
+                self.assertFalse(call_log.exists())
+
+    def test_single_repo_shell_workflow_switch_retains_bad_preview_and_primary_error(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result, workflow, call_log = self.run_shell_workflow_switch(
+                root, preview="unexpected candidate\n"
+            )
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("does not match the expected marketplace candidate", result.stderr)
+            self.assertEqual(workflow.read_text(encoding="utf-8"), "managed\n")
+            self.assertEqual(
+                Path(str(workflow) + ".new").read_text(encoding="utf-8"),
+                "unexpected candidate\n",
+            )
+            self.assertEqual(len(call_log.read_text(encoding="utf-8").splitlines()), 1)
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result, workflow, call_log = self.run_shell_workflow_switch(
+                root, force_failure=True
+            )
+            self.assertEqual(result.returncode, 41)
+            self.assertIn("primary workflow switch failure", result.stderr)
+            self.assertNotIn("unbound variable", result.stderr)
+            self.assertEqual(workflow.read_text(encoding="utf-8"), "managed\n")
+            self.assertEqual(len(call_log.read_text(encoding="utf-8").splitlines()), 2)
 
     def test_nonempty_cleanup_removes_only_allowed_temporary_files(self) -> None:
         cleanup_start = self.text.index("GURU_TEMP_FILES=()")
@@ -159,10 +296,112 @@ exit 23
         ]
         self.assertLess(
             workflow_function.index('"--create-new"'),
-            workflow_function.index('input_text="y\\n"'),
+            workflow_function.index('"--force"'),
         )
-        self.assertNotIn('"--force"', workflow_function)
+        self.assertNotIn('input_text="y\\n"', workflow_function)
         self.assertNotIn('"latest"', self.matrix_text)
+
+    def test_managed_workflow_preview_and_force_switch_are_content_bound(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target, current, previous, work = (
+                root / "target", root / "current", root / "previous", root / "work"
+            )
+            workflow = target / ".trellis/workflow.md"
+            candidate = current / "trellis/workflows/guru-team/workflow.md"
+            before = previous / "trellis/workflows/guru-team/workflow.md"
+            for path, value in ((workflow, "before\n"), (before, "before\n"), (candidate, "candidate\n")):
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(value, encoding="utf-8")
+            work.mkdir()
+            calls: list[tuple[str, ...]] = []
+
+            def fake_run(argv, **kwargs):
+                args = tuple(str(value) for value in argv)
+                calls.append(args)
+                if "--create-new" in args:
+                    Path(str(workflow) + ".new").write_text("candidate\n", encoding="utf-8")
+                elif "--force" in args:
+                    workflow.write_text("candidate\n", encoding="utf-8")
+                return ""
+
+            with mock.patch.object(self.matrix, "_run", side_effect=fake_run):
+                self.matrix._preview_and_switch_workflow(
+                    target, Path("trellis"), {}, "gh:example/workflows#candidate",
+                    current, previous, False, work,
+                )
+            self.assertEqual(workflow.read_text(), "candidate\n")
+            self.assertIn("--create-new", calls[0])
+            self.assertIn("--force", calls[1])
+            self.assertFalse(Path(str(workflow) + ".new").exists())
+
+    def test_workflow_switch_preserves_user_edits_and_existing_sidecars(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target, current, previous = root / "target", root / "current", root / "previous"
+            workflow = target / ".trellis/workflow.md"
+            candidate = current / "trellis/workflows/guru-team/workflow.md"
+            before = previous / "trellis/workflows/guru-team/workflow.md"
+            for path, value in ((workflow, "user edit\n"), (before, "managed\n"), (candidate, "candidate\n")):
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(value, encoding="utf-8")
+            with mock.patch.object(self.matrix, "_run") as runner:
+                with self.assertRaisesRegex(self.matrix.MatrixError, "not the expected managed"):
+                    self.matrix._preview_and_switch_workflow(
+                        target, Path("trellis"), {}, "source", current, previous, False, root,
+                    )
+                runner.assert_not_called()
+            self.assertEqual(workflow.read_text(), "user edit\n")
+
+            workflow.write_text("managed\n", encoding="utf-8")
+            sidecar = Path(str(workflow) + ".new")
+            sidecar.write_text("unresolved\n", encoding="utf-8")
+            with mock.patch.object(self.matrix, "_run") as runner:
+                with self.assertRaisesRegex(self.matrix.MatrixError, "unresolved"):
+                    self.matrix._preview_and_switch_workflow(
+                        target, Path("trellis"), {}, "source", current, previous, False, root,
+                    )
+                runner.assert_not_called()
+            self.assertEqual(sidecar.read_text(), "unresolved\n")
+
+    def test_workflow_switch_retains_bad_preview_and_primary_switch_error(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target, current, previous = root / "target", root / "current", root / "previous"
+            workflow = target / ".trellis/workflow.md"
+            candidate = current / "trellis/workflows/guru-team/workflow.md"
+            before = previous / "trellis/workflows/guru-team/workflow.md"
+            for path, value in ((workflow, "managed\n"), (before, "managed\n"), (candidate, "candidate\n")):
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(value, encoding="utf-8")
+
+            def mismatched_preview(argv, **kwargs):
+                Path(str(workflow) + ".new").write_text("other\n", encoding="utf-8")
+                return ""
+
+            with mock.patch.object(self.matrix, "_run", side_effect=mismatched_preview):
+                with self.assertRaisesRegex(self.matrix.MatrixError, "does not match"):
+                    self.matrix._preview_and_switch_workflow(
+                        target, Path("trellis"), {}, "source", current, previous, False, root,
+                    )
+            self.assertEqual(Path(str(workflow) + ".new").read_text(), "other\n")
+
+            Path(str(workflow) + ".new").unlink()
+            calls = 0
+
+            def failing_switch(argv, **kwargs):
+                nonlocal calls
+                calls += 1
+                if calls == 1:
+                    Path(str(workflow) + ".new").write_text("candidate\n", encoding="utf-8")
+                    return ""
+                raise self.matrix.MatrixError("primary workflow switch failure")
+
+            with mock.patch.object(self.matrix, "_run", side_effect=failing_switch):
+                with self.assertRaisesRegex(self.matrix.MatrixError, "primary workflow switch failure"):
+                    self.matrix._preview_and_switch_workflow(
+                        target, Path("trellis"), {}, "source", current, previous, False, root,
+                    )
 
     def test_matrix_retains_legacy_representative_and_runs_parallel_finish(self) -> None:
         run_matrix = self.matrix_text[self.matrix_text.index("def run_matrix(") :]
@@ -503,31 +742,31 @@ exit 23
 
     def test_initial_install_upgrade_update_preview_and_reapply_order_is_closed(self) -> None:
         initial = self.text.index("trellis init -y --claude --codex --cursor")
+        initial_switch = self.text.index(
+            'preview_and_switch_managed_workflow "$TARGET" "initial-workflow-switch"',
+            initial,
+        )
         upgrade = self.text.index('trellis upgrade --tag "$TRELLIS_UPGRADE_TAG"')
         dry_run = self.text.index("trellis update --dry-run 2>&1", upgrade)
         migrate_branch = self.text.index('if grep -Fq "MIGRATION REQUIRED"', dry_run)
         migrate = self.text.index("trellis update --migrate --skip-all", migrate_branch)
         normal_update = self.text.index("    trellis update --skip-all\n", migrate)
-        preview = self.text.index(
-            'trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --create-new',
+        post_update_switch = self.text.index(
+            'preview_and_switch_managed_workflow "$TARGET" "post-update-workflow-switch"',
             normal_update,
-        )
-        switch = self.text.index(
-            'trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force',
-            preview,
         )
         reapply = self.text.index(
             'apply_guru_team_trellis_preset.py" \\\n  --repo "$TARGET"',
-            switch,
+            post_update_switch,
         )
-        self.assertLess(initial, upgrade)
+        self.assertLess(initial, initial_switch)
+        self.assertLess(initial_switch, upgrade)
         self.assertLess(upgrade, dry_run)
         self.assertLess(dry_run, migrate_branch)
         self.assertLess(migrate_branch, migrate)
         self.assertLess(migrate, normal_update)
-        self.assertLess(normal_update, preview)
-        self.assertLess(preview, switch)
-        self.assertLess(switch, reapply)
+        self.assertLess(normal_update, post_update_switch)
+        self.assertLess(post_update_switch, reapply)
         primary_update_segment = self.text[upgrade:reapply]
         self.assertNotIn("trellis update --force", primary_update_segment)
         self.assertIn("trellis update --migrate --skip-all", primary_update_segment)

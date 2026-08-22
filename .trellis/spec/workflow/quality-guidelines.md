@@ -592,7 +592,9 @@ apply/drift and sidecar checks and exercise clean
 marketplace init, preview/switch, preset apply, installed invocation,
 the selected version upgrade followed by dry-run-selected
 `trellis update --migrate --skip-all` or `trellis update --skip-all`, and
-workflow/preset reapply. This preserve contract never uses `--force`.
+workflow/preset reapply. The update and preset preserve paths do not use
+`--force`; the workflow switch uses explicit `--force` only after byte-equal
+managed-before and expected-preview validation proves replacement is safe.
 
 Phase 2 regression coverage must also prove that empty provenance/docs/
 reviewed-path/command evidence, empty adequacy references, missing current or
@@ -802,9 +804,16 @@ workflow and preset installation; isolated disposable npm prefix with
 `trellis update --dry-run`, followed by exactly one of
 `trellis update --migrate --skip-all` when output says `MIGRATION REQUIRED` or
 `trellis update --skip-all` otherwise; `--skip-all` preserves existing project
-modifications and continues non-interactively;
-marketplace workflow `--create-new` preview and active switch; then canonical
-preset reapply. Source, installed, dogfood, and selected-platform package bytes
+modifications and continues non-interactively. Before both the initial and
+post-update marketplace workflow switches, the verifier rejects pre-existing
+`.new` / `.bak` sidecars and requires the active workflow bytes to equal the
+expected managed before-candidate. It then uses `--create-new`, proves that the
+preview is the expected marketplace candidate while the active file remains
+unchanged, consumes only that validated preview, and runs the active switch
+with explicit `--force`. Unknown or user-modified active bytes and preview
+mismatches remain preserved and fail closed before replacement; a switch
+failure remains the primary error. The verifier then performs canonical preset
+reapply. Source, installed, dogfood, and selected-platform package bytes
 and executable modes, ownership, all ten real-entry profiles, active graph, and
 recursive zero `.new`/`.bak` are checked after the sequence. Development-machine
 global npm, business repositories, and Trellis upstream are never mutated by

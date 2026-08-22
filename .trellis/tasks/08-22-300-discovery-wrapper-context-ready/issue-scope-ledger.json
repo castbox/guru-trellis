@@ -1,0 +1,43 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 300,
+    "url": "https://github.com/castbox/guru-trellis/issues/300",
+    "title": "修复 Discovery public wrapper 将合法 context_ready owner 错误降级为 blocked",
+    "reason": "#300 是当前 task 的 live authority；PR 仅 Refs #300，Issue 在 merge 后保持 OPEN，直至从 fresh live main 完成 #287 representative clean throwaway 与声明验证并取得独立关闭授权。"
+  },
+  "close_issues": [],
+  "related_issues": [
+    {
+      "number": 300,
+      "url": "https://github.com/castbox/guru-trellis/issues/300",
+      "title": "修复 Discovery public wrapper 将合法 context_ready owner 错误降级为 blocked",
+      "reason": "本 PR 只能交付进入 live main 前的实现与候选验证；post-merge #287 fresh evidence 完成前不得使用 Closes #300。"
+    },
+    {
+      "number": 295,
+      "url": "https://github.com/castbox/guru-trellis/issues/295",
+      "title": "修复 Phase 0 Sync Base 到 Context Discovery 的 public handoff 断链",
+      "reason": "#300 是 #295 current public wrapper 合同的 correctness follow-up，不迁移 API、不重新关闭 #295。"
+    },
+    {
+      "number": 299,
+      "url": "https://github.com/castbox/guru-trellis/issues/299",
+      "title": "修复 throwaway verifier 的 architecture-baseline fixture 覆盖与失败清理",
+      "reason": "#299 / PR #302 已合并并作为当前 main 前置消费；本 task 不重新实现或关闭 #299。"
+    },
+    {
+      "number": 287,
+      "url": "https://github.com/castbox/guru-trellis/issues/287",
+      "title": "重构 Guru Team preset staging，避免全仓库物理复制导致磁盘占用线性增长",
+      "reason": "#287 / PR #298 消费 #300 的修复与 post-merge fresh throwaway evidence；本 task 不修改其产品实现、不合并 PR #298、不关闭 #287。"
+    },
+    {
+      "number": 267,
+      "url": "https://github.com/castbox/guru-trellis/issues/267",
+      "title": "发布 Trellis v0.6.15 双 SSOT 稳定基线版本",
+      "reason": "独立拥有完整 Release matrix；#300 只运行一个 representative clean/isolated throwaway，不承担或关闭 #267。"
+    }
+  ],
+  "followup_issues": []
+}

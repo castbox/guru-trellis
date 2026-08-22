@@ -1172,11 +1172,24 @@ def _preview_and_switch_workflow(
     env: Mapping[str, str],
     workflow_source: str,
     repo_root: Path,
+    previous_source_root: Path,
     local_sample: bool,
     work_root: Path,
 ) -> None:
+    workflow = target / ".trellis/workflow.md"
     sidecar = target / ".trellis/workflow.md.new"
-    sidecar.unlink(missing_ok=True)
+    backup = target / ".trellis/workflow.md.bak"
+    if sidecar.exists() or backup.exists():
+        raise MatrixError("workflow switch found an unresolved .new/.bak sidecar")
+    if not workflow.is_file() or workflow.is_symlink():
+        raise MatrixError("managed workflow is missing or not a regular file")
+    previous_candidate = previous_source_root / "trellis/workflows/guru-team/workflow.md"
+    if (
+        not previous_candidate.is_file()
+        or workflow.read_bytes() != previous_candidate.read_bytes()
+    ):
+        raise MatrixError("current workflow is not the expected managed before-candidate")
+    managed_before = workflow.read_bytes()
     _run(
         (
             str(binary),
@@ -1191,8 +1204,22 @@ def _preview_and_switch_workflow(
         env=env,
         log=work_root / "workflow-preview.log",
     )
-    if not sidecar.is_file():
+    if not sidecar.is_file() or sidecar.is_symlink():
         raise MatrixError("workflow preview did not create .trellis/workflow.md.new")
+    preview = sidecar.read_bytes()
+    if not preview:
+        raise MatrixError("workflow preview candidate is empty")
+    if workflow.read_bytes() != managed_before:
+        raise MatrixError("current workflow changed while validating the preview")
+    if not local_sample:
+        expected_candidate = repo_root / "trellis/workflows/guru-team/workflow.md"
+        if (
+            not expected_candidate.is_file()
+            or preview != expected_candidate.read_bytes()
+        ):
+            raise MatrixError("workflow preview does not match the expected marketplace candidate")
+    elif not any(_workflow_markers(sidecar).values()):
+        raise MatrixError("workflow preview has no Guru Team workflow markers")
     sidecar.unlink()
     _run(
         (
@@ -1202,17 +1229,25 @@ def _preview_and_switch_workflow(
             workflow_source,
             "--template",
             "guru-team",
+            "--force",
         ),
         cwd=target,
         env=env,
         log=work_root / "workflow-switch.log",
-        input_text="y\n",
     )
+    if workflow.read_bytes() != preview:
+        raise MatrixError("active workflow does not match the validated preview candidate")
     if local_sample:
         shutil.copyfile(
             repo_root / "trellis/workflows/guru-team/workflow.md",
-            target / ".trellis/workflow.md",
+            workflow,
         )
+        if workflow.read_bytes() != (
+            repo_root / "trellis/workflows/guru-team/workflow.md"
+        ).read_bytes():
+            raise MatrixError("local candidate workflow reapply did not converge")
+    if sidecar.exists() or backup.exists():
+        raise MatrixError("workflow switch left an unresolved .new/.bak sidecar")
 
 
 def _sidecars(target: Path) -> list[str]:
@@ -1754,6 +1789,7 @@ def _run_cell(
             env,
             workflow_source,
             repo_root,
+            source_root,
             local_sample,
             cell_root,
         )
