@@ -12,7 +12,7 @@
       "number": 300,
       "url": "https://github.com/castbox/guru-trellis/issues/300",
       "title": "修复 Discovery public wrapper 将合法 context_ready owner 错误降级为 blocked",
-      "reason": "本 PR 只能交付进入 live main 前的实现与候选验证；post-merge #287 fresh evidence 完成前不得使用 Closes #300。"
+      "reason": "#300 是当前 task 的 live authority；PR 仅 Refs #300，Issue 在 merge 后保持 OPEN，直至从 fresh live main 完成 #287 representative clean throwaway 与声明验证并取得独立关闭授权。"
     },
     {
       "number": 295,
