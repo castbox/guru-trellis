@@ -833,6 +833,10 @@ class LanguageGuidanceInstallerTest(unittest.TestCase):
         self.assertEqual(payload["language_guidance"]["replacement_count"], 1)
         self.assertEqual(payload["managed_transaction"]["strategy"], "managed_paths")
         self.assertGreater(payload["managed_transaction"]["source_bytes"], 0)
+        self.assertGreater(payload["managed_transaction"]["staged_bytes"], 0)
+        self.assertGreater(payload["managed_transaction"]["staged_file_count"], 0)
+        self.assertEqual(payload["managed_transaction"]["backup_bytes"], 0)
+        self.assertEqual(payload["managed_transaction"]["sidecar_bytes"], 0)
         self.assertEqual(payload["language_guidance"]["updated_paths"][0]["path"], ".trellis/spec/backend/index.md")
         self.assertIn(".trellis/spec/**/*.md", payload["language_guidance"]["scope"])
 

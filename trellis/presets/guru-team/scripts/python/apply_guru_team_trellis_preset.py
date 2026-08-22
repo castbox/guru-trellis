@@ -1911,6 +1911,15 @@ def preflight_managed_transaction(
         source_candidates.extend(
             canonical_skill_root / relative for relative in SKILL_RUNTIME_KERNEL_PATHS
         )
+    overlay_root = source_root / "trellis/presets/guru-team/overlays"
+    if overlay_root.is_dir():
+        source_candidates.extend(
+            path
+            for path in overlay_root.rglob("*")
+            if path.is_file()
+            and not path.is_symlink()
+            and overlay_selected(path.relative_to(overlay_root), set(ALL_PLATFORMS))
+        )
     for path in source_candidates:
         if path.is_file() and not path.is_symlink():
             source_bytes += path.stat().st_size
@@ -1929,6 +1938,38 @@ def preflight_managed_transaction(
     if available < estimated_peak:
         raise SystemExit(json.dumps({"code": "insufficient_managed_staging_space", **result}, sort_keys=True))
     return result
+
+
+def staged_transaction_bytes(staging_repo: Path, result: dict[str, Any]) -> dict[str, int]:
+    """Measure the bounded transaction output before activation."""
+    staged_file_count = 0
+    staged_bytes = 0
+    for path in staging_repo.rglob("*"):
+        if path.is_file() and not path.is_symlink():
+            staged_file_count += 1
+            staged_bytes += path.stat().st_size
+
+    def path_bytes(paths: list[Any], suffix: str) -> int:
+        total = 0
+        for value in paths:
+            if not isinstance(value, str) or not value.endswith(suffix):
+                continue
+            path = staging_repo / value
+            if path.is_file() and not path.is_symlink():
+                total += path.stat().st_size
+        return total
+
+    sidecar_paths: list[Any] = list(result.get("new_copies", []))
+    for section_name in ("skill_packages", "overlays"):
+        section = result.get(section_name)
+        if isinstance(section, dict):
+            sidecar_paths.extend(section.get("sidecars", []))
+    return {
+        "staged_file_count": staged_file_count,
+        "staged_bytes": staged_bytes,
+        "backup_bytes": path_bytes(result.get("managed_backups", []), ".bak"),
+        "sidecar_bytes": path_bytes(sidecar_paths, ".new"),
+    }
 
 
 def staged_file_matches_target(staged: Path, target: Path) -> bool:
@@ -2177,6 +2218,7 @@ def install_assets(
             **preflight,
             "preimage_file_count": preimage["file_count"],
             "preimage_bytes": preimage["bytes"],
+            **staged_transaction_bytes(staging_repo, result),
             "cleanup": "temporary_lifecycle",
         }
         skill_packages = result["skill_packages"]
