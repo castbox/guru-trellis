@@ -124,13 +124,16 @@ facts return the caller-authored `refresh_base` exit for complete re-entry from
 live authority. The commands do not reconstruct or persist a prior-result
 chain.
 
-Base evidence embeds the complete validator-passed
-`guru-base-sync-result-1.0`. Validation checks its schema and digests, then
-compares selected base/remote refs, GitHub repository identity, current HEAD,
-branch and cleanliness with live Git. Pre-task and standalone bind the clean
-decision branch. Active-task invocation instead binds the direct active task
-and its task branch, permits ordinary current-worktree edits, and still requires
-the selected local/remote base refs and repository identity to remain fresh.
+The caller supplies the Sync public `base_current` transition separately from
+Discovery public input. Before any issue, Docs, code, test, or history read, a
+read-only Discovery observer validates that transition and reads the authority
+checkout, GitHub repository identity, selected branch, local ref, remote-tracking
+ref, HEAD, cleanliness, and worktree ownership. It never fetches, checks out,
+resets, stashes, or writes a ref. A current transition becomes the owner-private
+`base_observation`; a normal HEAD advance returns `refresh_base`, while dirty,
+wrong, missing, mismatched, or ambiguous authority returns `blocked`. Neither
+the public input nor owner result reconstructs Sync private result or digest
+fields.
 
 Before `context_ready`, validation also binds the live issue or draft, reviewed
 Git blobs/content, canonical query, archive manifest and owner result. A base error
@@ -152,8 +155,11 @@ self-contained or portable.
 
 `pre_task` is the only public profile. After the owner loop,
 `scripts/invoke.sh --invocation -` validates the closed call-local public input,
-`base_current` transition, and checker-passed owner result, then derives the
-matching per-exit DTO without another live authority read or duplicate search.
+`base_current` transition, current live base observation, and checker-passed
+owner result, then derives the matching per-exit DTO without another duplicate
+search. Recorder and checker receive the same public input and transition via
+`--public-input <input> --transition <transition>`; they do not accept a private
+Sync artifact.
 `context_ready` contains route/profile/mode/target/continuation identity plus the
 minimal checker-bound `duplicate_snapshot`. Clarification validates and consumes
 that snapshot on the normal current path without repeating duplicate search or

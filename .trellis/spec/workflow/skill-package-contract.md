@@ -925,6 +925,11 @@ Resolution/result facts remain on stdout. The executor preserves
 equality without mutation, then returns the post-sync digest. The public wrapper
 projects the checked source, selected base, remote, ordered candidates,
 decision/local/remote HEADs, and post-sync digest into `base_current`.
+`guru-stage0-sync-base-output-synced-2.0` and
+`guru-stage0-transition-base-current-1.0` remain the sole active public success
+shape. The private result, `facts_sha256`, and result-identity digests stop at
+the Sync owner boundary; public `post_sync_resolution_sha256` remains part of
+`base_current`.
 Compatibility-only `prepare-task` requires that complete reviewed provenance,
 not only its digest; missing provenance blocks locally before GitHub read or
 fetch. It has no mutation guard and never produces a workflow transition;
@@ -939,18 +944,18 @@ sequence, AI candidate selection/deep-read, AI Review Gate, conditional human
 confirmation recorded as not required, same-snapshot recorder/validator, and
 the exits `context_ready`, `refresh_base`, and `blocked`.
 
-Its base evidence embeds the complete validator-passed
-`guru-base-sync-result-1.0` object rather than a HEAD-only projection. Runtime
-validation rechecks the result/schema digests, post-sync resolution, decision
-branch, selected remote refs, strict GitHub remote repository identity, and a
-fail-closed Git status read before later semantic sources. Pre-task and
-standalone validation bind the live checkout to the sync result's decision
-branch. Direct active task recording/checking instead binds the live checkout
-to `task.json.branch`, because task/worktree creation may move the same HEAD to
-a feature branch after the stdout snapshot was reviewed; it still requires the
-original HEAD, complete sync provenance, selected local/remote base refs,
-repository identity, direct active task locator/status, and the current task
-worktree's ordinary in-progress dirty paths. Active-task invocation identity is
+The active pre-task input is
+`guru-stage0-discover-change-context-input-pre-task-2.0`; it carries only
+Discovery caller-owned fields and is supplied independently from the current
+`base_current` transition. Runtime validates both closed domains, then reads the
+transition's authority checkout before any Issue, Docs, code, test, or history
+source. A current clean authority produces Discovery-owned `base_observation`.
+A normal HEAD advance returns `refresh_base`; dirty, wrong, missing, ambiguous,
+repo-mismatched, or structurally invalid authority returns `blocked`. Neither
+path imports, accepts, or reconstructs `guru-base-sync-result-1.0` or its
+digests. Direct active task recording/checking binds the live checkout to
+`task.json.branch` while retaining the same independent base-current
+precondition. Active-task invocation identity is
 supplied ephemerally and does not itself create a checkpoint; only an explicit
 recovery continuation enables lazy same-owner checkpoint persistence. A proposed draft
 that names a created issue carries a separate live issue binding whose body
@@ -990,8 +995,8 @@ Workflow/stop consumers must have exactly one matching
 `guru-workflow-target` / `guru-stop-target` marker; missing, duplicate,
 kind-mismatched, or dangling targets fail closed.
 
-The package publishes stdout-only owner-result schema
-`guru-change-context-owner-result-2.0`, scoring algorithm id
+The package publishes active stdout-only owner-result schema
+`guru-change-context-owner-result-3.0`, scoring algorithm id
 `guru-context-history-score-1.0`, and dispatcher-only wrappers for
 `preview-change-context-history`, `record-context-discovery`, and
 `check-context-discovery`. The history command may enumerate only
@@ -1000,6 +1005,10 @@ The package publishes stdout-only owner-result schema
 archive index/cache. Scripts validate AI-authored selection and Gate evidence
 but do not select candidates, judge sufficiency, decide duplicate reuse, or
 synthesize semantic pass.
+The prior pre-task input 1.0 and owner-result 2.0 schema/example bytes remain
+immutable legacy inventory outside the active Interface. Current runtime,
+examples, evals, and installation select input 2.0 plus owner-result 3.0 as one
+activation unit.
 
 Recorder/checker accept the current AI-authored result through stdin or one
 explicit file, compare it with current live facts, and return canonical/checked

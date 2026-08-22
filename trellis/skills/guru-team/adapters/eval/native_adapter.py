@@ -1583,11 +1583,6 @@ def stage0_contract_digest(value: Any) -> str:
 
 def stage0_eval_base(fixture: Path) -> dict[str, Any]:
     head = run_git(fixture, "rev-parse", "HEAD")
-    runtime = load_package_owner_runtime(
-        fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh",
-        "guru-sync-base",
-    )
-    resolution = runtime.resolution(fixture, "main", "origin")
     return {
         "source": "explicit",
         "selected_base": "main",
@@ -1596,7 +1591,9 @@ def stage0_eval_base(fixture: Path) -> dict[str, Any]:
         "decision_head": head,
         "local_base_head": head,
         "remote_base_head": head,
-        "post_sync_resolution_sha256": resolution["resolution_sha256"],
+        "post_sync_resolution_sha256": stage0_eval_hash(
+            "base-current", "explicit", "main", "origin", head
+        ),
     }
 
 
@@ -1616,22 +1613,15 @@ def stage0_eval_transition(
     mode = str(public_input.get("mode") or owner_result.get("mode") or "workflow")
     continuation = str(public_input.get("continuation_id") or "stage0-current")
     target = str(public_input.get("target_locator") or "")
-    base = stage0_eval_base(fixture) if skill_id != "guru-discover-change-context" else {
-        "source": "explicit",
-        "selected_base": "main",
-        "remote": "origin",
-        "ordered_candidates": ["main"],
-        "decision_head": run_git(fixture, "rev-parse", "HEAD"),
-        "local_base_head": run_git(fixture, "rev-parse", "HEAD"),
-        "remote_base_head": run_git(fixture, "rev-parse", "HEAD"),
-        "post_sync_resolution_sha256": str(
-            (owner_result.get("base_evidence") or {}).get("post_sync_resolution_sha256") or ""
-        ),
-    }
+    base = stage0_eval_base(fixture)
     common = {
         "schema_version": "1.0",
         "mode": mode,
-        "repo_locator": "example/guru-extension",
+        "repo_locator": (
+            str(fixture.resolve())
+            if skill_id == "guru-discover-change-context"
+            else "example/guru-extension"
+        ),
         "base": base,
     }
     context_digest = stage0_eval_hash("context", target, continuation, base)
@@ -1658,27 +1648,6 @@ def stage0_eval_transition(
         "stage": stage,
     }
     if stage == "base_current":
-        evidence = owner_result.get("base_evidence")
-        if isinstance(evidence, dict):
-            sync_result = evidence.get("sync_result")
-            resolution = (
-                sync_result.get("post_sync_resolution")
-                if isinstance(sync_result, dict)
-                else None
-            )
-            if isinstance(resolution, dict):
-                transition["base"] = {
-                    "source": resolution.get("source"),
-                    "selected_base": resolution.get("selected_base"),
-                    "remote": resolution.get("remote"),
-                    "ordered_candidates": resolution.get("candidates"),
-                    "decision_head": evidence.get("decision_head"),
-                    "local_base_head": evidence.get("local_head"),
-                    "remote_base_head": evidence.get("remote_head"),
-                    "post_sync_resolution_sha256": evidence.get(
-                        "post_sync_resolution_sha256"
-                    ),
-                }
         identity = transition["base"]["post_sync_resolution_sha256"]
         transition["transition_id"] = f"{stage}:{identity[:24]}"
         return transition
@@ -2688,41 +2657,6 @@ def build_task_free_change_owner(
     return owner
 
 
-def context_sync_result(runtime: Any, head: str) -> dict[str, Any]:
-    identity = {
-        "schema_version": "1.0",
-        "skill_id": "guru-sync-base",
-        "status": "resolved",
-        "source": "explicit",
-        "selected_base": "main",
-        "remote": "origin",
-        "candidates": ["main"],
-        "decision_checkout": {"branch": "main", "head": head, "clean": True},
-    }
-    resolution_sha256 = runtime.digest(identity)
-    result = {
-        "schema_version": "1.0", "skill_id": "guru-sync-base", "status": "synced",
-        "resolution": {
-            "source": "explicit", "selected_base": "main", "remote": "origin",
-            "candidates": ["main"], "resolution_sha256": resolution_sha256,
-        },
-        "post_sync_resolution": identity,
-        "post_sync_resolution_sha256": resolution_sha256,
-        "decision_checkout": {
-            "branch": "main", "head_before": head, "head_after": head,
-            "clean_before": True, "clean_after": True,
-        },
-        "git": {
-            "local_ref": "refs/heads/main", "remote_ref": "refs/remotes/origin/main",
-            "local_head_before": head, "local_head_after": head, "remote_head_after": head,
-            "fetch_performed": True, "fast_forwarded": False,
-        },
-        "fresh": True,
-    }
-    result["facts_sha256"] = runtime.digest(result)
-    return result
-
-
 def build_context_owner(
     runtime: Any,
     fixture: Path,
@@ -2730,21 +2664,24 @@ def build_context_owner(
     recipe: str,
 ) -> dict[str, Any]:
     payload = json.loads(
-        (package_root / "examples/change-context-owner-result.json").read_text(encoding="utf-8")
+        (package_root / "examples/change-context-owner-result-3.0.json").read_text(encoding="utf-8")
     )
     old_head = run_git(fixture, "rev-parse", "HEAD")
-    sync = context_sync_result(runtime, old_head)
     payload["repository"] = {
         "repo": "example/guru-extension", "selected_base": "main", "decision_branch": "main",
     }
-    payload["base_evidence"] = {
-        "schema_id": "guru-base-sync-result-1.0", "sync_result": sync, "remote": "origin",
-        "base_head": old_head, "decision_head": old_head, "local_head": old_head,
-        "remote_head": old_head, "post_sync_resolution_sha256": sync["post_sync_resolution_sha256"],
-        "clean": True,
+    payload["base_observation"] = {
+        "repo": "example/guru-extension", "repo_locator": str(fixture.resolve()),
+        "selected_base": "main", "remote": "origin", "authority_branch": "main",
+        "decision_head": old_head, "local_head": old_head, "remote_head": old_head,
+        "clean": True, "current": True,
     }
-    payload["change_input"]["issue_refs"] = []
-    payload["change_input"]["paths"] = ["docs/requirements.md"]
+    payload["change_input"] = {
+        "issue_refs": [], "pr_refs": [], "branches": [],
+        "paths": ["docs/requirements.md"], "commands": [],
+        "config_keys": [], "schema_fields": [], "symbols": [],
+        "terms": ["change context"], "queries": [],
+    }
     payload["live_change"]["issue_binding"] = None
     body_sha256 = hashlib.sha256(b"Stage 0 context owner staging draft").hexdigest()
     live_unsigned = {
@@ -2790,6 +2727,14 @@ def build_context_owner(
         payload["result_identity"] = runtime.identity(payload)
         return payload
     raise ValueError(f"unsupported context owner staging recipe: {recipe}")
+
+
+def workspace_base_fixture(runtime: Any, head: str) -> dict[str, Any]:
+    """Retain the existing #250 workspace prerequisite until that owner migrates."""
+    identity = {"schema_version":"1.0","skill_id":"guru-sync-base","status":"resolved","source":"explicit","selected_base":"main","remote":"origin","candidates":["main"],"decision_checkout":{"branch":"main","head":head,"clean":True}}
+    resolution_sha256=runtime.digest(identity)
+    value={"schema_version":"1.0","skill_id":"guru-sync-base","status":"synced","resolution":{"source":"explicit","selected_base":"main","remote":"origin","candidates":["main"],"resolution_sha256":resolution_sha256},"post_sync_resolution":identity,"post_sync_resolution_sha256":resolution_sha256,"decision_checkout":{"branch":"main","head_before":head,"head_after":head,"clean_before":True,"clean_after":True},"git":{"local_ref":"refs/heads/main","remote_ref":"refs/remotes/origin/main","local_head_before":head,"local_head_after":head,"remote_head_after":head,"fetch_performed":True,"fast_forwarded":False},"fresh":True}
+    value["facts_sha256"]=runtime.digest(value);return value
 
 
 def wording_review(
@@ -3108,8 +3053,7 @@ def workspace_prerequisites(
     body_sha256 = hashlib.sha256(body.encode("utf-8")).hexdigest()
 
     head = run_git(fixture, "rev-parse", "HEAD")
-    base = context_sync_result(runtime, head)
-
+    base = workspace_base_fixture(runtime, head)
     clarity_package = fixture / ".trellis/guru-team/skills/packages/guru-clarify-requirements"
     clarity = json.loads(
         (clarity_package / "examples/requirements-clarification.json").read_text(encoding="utf-8")

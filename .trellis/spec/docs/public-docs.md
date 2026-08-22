@@ -213,9 +213,12 @@ four-level order: explicit, scalar config, first existing ordered candidate
 (default `dev`, `develop`, `main`, `master`), then remote default; prohibit
 current-branch implicit fallback; require decision/local/remote HEAD equality;
 and explain that resolution/result facts stay on stdout, the executor emits a
-post-sync resolution digest, the validator passes only that digest forward,
-and each `prepare-task` guard consumes the previous post-sync digest and returns
-the next one before reads or mutation boundaries. They must not describe
+post-sync resolution digest, and the validator returns that digest only to the
+owning public wrapper. The wrapper exports only `base_current`; downstream
+Skills never receive the private result, `facts_sha256`, or private result
+identity. Each explicit compatibility
+`prepare-task` guard consumes its own reviewed provenance before reads or
+mutation boundaries. They must not describe
 evidence files, leases, release, or cleanup APIs. All three
 README files must list the active id, result schema,
 runtime commands, full-preset requirement, update/reapply steps, and
@@ -229,7 +232,14 @@ freshness parity, archived `finish-summary.json:index.*`-only reader,
 isolation, 1-3 candidate deep-read, zero-candidate success with empty
 selection/deep reads and consistent `mem_review=not_needed`, and the
 candidate-present four-source mem insufficiency gate. The current owner result
-uses schema `guru-change-context-owner-result-2.0`; record/check/public invoke
+uses schema `guru-change-context-owner-result-3.0`; active pre-task input is
+`guru-stage0-discover-change-context-input-pre-task-2.0`. The 1.0 input and 2.0
+owner-result remain immutable legacy bytes outside the active Interface.
+Public input and actual Sync `base_current` are independent call-local domains;
+Discovery live-reads the authority into owner-private `base_observation` and
+never reconstructs a Sync private result, `facts_sha256`, or result identity.
+Normal HEAD advance returns
+`refresh_base`; invalid authority returns `blocked`. Record/check/public invoke
 accept stdin and return stdout, while `context_ready` contains only the route,
 mode, target locator, and continuation identity required by Clarify. Normal
 pre-task and standalone paths write no task, workspace, or runtime artifact.
@@ -242,6 +252,10 @@ owner checkpoint that the same owner consumes and removes. They list exits
 Docs must not imply that
 the Skill chooses duplicate reuse/new target or that a script performs its AI
 Review Gate.
+Public validation examples use the real Sync wrapper, declared projection,
+Discovery wrapper, and Clarify projection through managed Python. A handwritten
+private payload, low-level Sync executor, private runtime import, or bare PATH
+Python import result is not public-edge evidence.
 They also state that duplicate candidate facts are digest-bound to canonical
 repo/number/identity/URL/open-state/update-time facts recomputed from the one
 duplicate search result without a second search/re-read, and that `blocked` is

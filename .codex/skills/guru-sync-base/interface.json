@@ -321,10 +321,16 @@
         },
         "payload_kind": "structured_json",
         "contract": {
-          "kind": "skill_input",
+          "kind": "skill_input_authoring_seed",
           "interface_path": "packages/guru-discover-change-context/interface.json",
           "input_kind": "structured_json",
-          "profile_id": "pre_task"
+          "profile_id": "pre_task",
+          "seed_fields": ["source_exit", "profile", "mode", "continuation_id"],
+          "authoring_fields": ["change_input"],
+          "authoring_example": {
+            "id": "pre_task_input",
+            "path": "examples/public-pre-task-input-2.0.json"
+          }
         },
         "transition": {
           "source_field": "transition",
@@ -373,14 +379,6 @@
           {
             "source": "handoff_mode",
             "target": "mode"
-          },
-          {
-            "source": "handoff_repo_locator",
-            "target": "repo_locator"
-          },
-          {
-            "source": "handoff_base_branch",
-            "target": "base_branch"
           },
           {
             "source": "handoff_continuation_id",

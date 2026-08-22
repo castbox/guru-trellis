@@ -1,0 +1,18 @@
+{
+  "profile": "pre_task",
+  "source_exit": "synced",
+  "mode": "workflow",
+  "change_input": {
+    "issue_refs": ["#295"],
+    "pr_refs": [],
+    "branches": [],
+    "paths": ["trellis/skills/guru-team/packages/guru-discover-change-context"],
+    "commands": [],
+    "config_keys": [],
+    "schema_fields": ["base_current"],
+    "symbols": ["observe_base_current"],
+    "terms": ["public handoff"],
+    "queries": []
+  },
+  "continuation_id": "stage0-current"
+}

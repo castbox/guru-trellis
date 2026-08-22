@@ -690,6 +690,10 @@ class SharedRuntimeTests(unittest.TestCase):
                 SKILLS / "packages" / skill_id,
                 installed_root / "skills/packages" / skill_id,
             )
+            shutil.copytree(
+                SKILLS / "consumers",
+                installed_root / "skills/consumers",
+            )
             projection = repo / ".agents" / "skills" / skill_id
             (projection / "scripts").mkdir(parents=True)
             shutil.copy2(
@@ -707,11 +711,17 @@ class SharedRuntimeTests(unittest.TestCase):
             subprocess.run(["git", "config", "user.email", "kernel@example.invalid"], cwd=repo, check=True)
             subprocess.run(["git", "add", "."], cwd=repo, check=True)
             subprocess.run(["git", "commit", "-q", "-m", "test: add installed runtime"], cwd=repo, check=True)
+            subprocess.run(["git", "remote", "add", "origin", "https://github.com/example/guru-extension.git"], cwd=repo, check=True)
+            subprocess.run(["git", "branch", "main"], cwd=repo, check=True)
+            authority = outside / "authority"
+            subprocess.run(["git", "worktree", "add", "-q", str(authority), "main"], cwd=repo, check=True)
+            head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=authority, text=True, stdout=subprocess.PIPE, check=True).stdout.strip()
+            subprocess.run(["git", "update-ref", "refs/remotes/origin/main", head], cwd=repo, check=True)
             owner = json.loads((
                 installed_root
                 / "skills/packages"
                 / skill_id
-                / "examples/change-context-owner-result.json"
+                / "examples/change-context-owner-result-3.0.json"
             ).read_text())
             public_output = json.loads((
                 installed_root
@@ -720,23 +730,49 @@ class SharedRuntimeTests(unittest.TestCase):
                 / "examples/public-context-ready-output-3.0.json"
             ).read_text())
             owner["mode"] = "workflow"
+            public_input = {
+                "profile": "pre_task",
+                "source_exit": "synced",
+                "mode": "workflow",
+                "change_input": owner["change_input"],
+                "continuation_id": "outside-cwd",
+            }
+            transition = {
+                "schema_version": "1.0",
+                "transition_id": "base_current:outside-cwd",
+                "stage": "base_current",
+                "mode": "workflow",
+                "repo_locator": str(authority),
+                "base": {
+                    **public_output["transition"]["base"],
+                    "decision_head": head,
+                    "local_base_head": head,
+                    "remote_base_head": head,
+                },
+            }
+            public_input_path = outside / "public-input.json"
+            transition_path = outside / "transition.json"
+            owner_path = outside / "owner.json"
+            public_input_path.write_text(json.dumps(public_input))
+            transition_path.write_text(json.dumps(transition))
+            owner_path.write_text(json.dumps(owner))
+            recorded = subprocess.run(
+                [
+                    str(installed_root / "skills/packages" / skill_id / "scripts/record-context-discovery.sh"),
+                    "--root", str(repo), "--mode", "workflow", "--input", str(owner_path),
+                    "--public-input", str(public_input_path), "--transition", str(transition_path),
+                    "--active-task", ".trellis/tasks/08-12-context",
+                ],
+                cwd=outside, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(recorded.returncode, 0, recorded)
             invocation = outside / "invocation.json"
             invocation.write_text(json.dumps({
                 "schema_version": "1.0",
-                "public_input": {
-                    "profile": "pre_task",
-                    "source_exit": "synced",
-                    "mode": "workflow",
-                    "repo_locator": "example/repo",
-                    "base_branch": "main",
-                    "continuation_id": "outside-cwd",
-                },
-                "transition": {
-                    "repo_locator": ".",
-                    "base": public_output["transition"]["base"],
-                },
+                "public_input": public_input,
+                "transition": transition,
                 "owner_context": {},
-                "owner_result": owner,
+                "owner_result": json.loads(recorded.stdout),
             }))
             result = subprocess.run(
                 [

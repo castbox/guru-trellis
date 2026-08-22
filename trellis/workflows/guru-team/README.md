@@ -308,6 +308,8 @@ resolution digest 绑定重新解析、fetch 与可选 `git merge --ff-only`，�
 focused diagnostic/test entry 使用，正常 workflow 不直接编排它们。`synced` 输出的
 `base_current` 保留 source、selected base、remote、ordered candidates、decision HEAD、
 local/remote base HEAD 和 post-sync digest；这些角色不得折叠为一个通用 `base_head`。
+它是 Sync 唯一 public transition，完整 private result 与 facts digest 只在 Sync owner 内
+由 checker 和 public wrapper 消费，下游不得重建。
 
 成功结果使用 `guru-base-sync-result-1.0`，并且必须证明 checkout clean、decision checkout
 HEAD、local base HEAD 与 remote-tracking HEAD 三方相等。`sync-base` 在 stdout 输出
@@ -347,10 +349,14 @@ invalid isolation、固定 sort/limit/projection。`trellis mem` 只有四类主
 解释命名 load-bearing decision 时才进入。完整 semantic evidence 保留在当前 AI cognition
 与调用期 owner result 中；record/check/public invoke 通过 stdin/stdout 串联，正常
 pre-task/standalone 不写 task、workspace 或 runtime artifact。Recorder/checker 执行
-published closed Draft 2020-12 `guru-change-context-owner-result-2.0` schema；调用只消费
-`base_current` 的最小 source-preserving provenance，并由 Discovery checker 结合 live Git
-复验 selected base、source、candidates、decision/local/remote HEAD 与 post-sync digest，不读取
-完整 upstream private sync result。Git status failure 不得冒充 clean，base stale 在 live issue/draft、
+published closed Draft 2020-12 `guru-change-context-owner-result-3.0` schema。Active pre-task
+input 是 `guru-stage0-discover-change-context-input-pre-task-2.0`；旧 input 1.0 与 owner-result
+2.0 bytes 只作为 immutable legacy inventory。Caller 将该 public input 与 Sync actual stdout 的
+独立 `base_current` 一起交给 Discovery；checker 结合 live Git 生成 owner-private
+`base_observation`，不读取、伪造或重建 upstream private sync result、`facts_sha256` 或 result
+identity。正常 HEAD advance
+返回 `refresh_base`；dirty、wrong、missing、ambiguous、repo mismatch 或结构错误返回
+`blocked`。Git status failure 不得冒充 clean，base stale 在 live issue/draft、
 reviewed blob 与 archive preview 前短路。Draft-created-issue binding live 校验原 reviewed
 body；caller-authored `refresh_base` 必须与 stable live stale codes 一致，`context_ready`
 对同一 stale 拒绝。Archive reader
@@ -378,21 +384,24 @@ gate 从同一次 open duplicate search 返回字段重算排除 reason/observat
 `blocked` exit 与 blocked AI Review Gate 在 schema/runtime 中
 双向绑定。
 
-Record/check production entry 先执行 pure schema/digest/semantic shape，再执行
-base-only live gate；repo-bound locator、issue、reviewed blob 与 archive/history 仅在 fresh
-base 后读取。`refresh_base` record/check 记录并核对当前 stable stale codes、superseded
-query/result digests、reason 与 detection time，然后要求整步从 live authority re-entry，
-不重建 snapshot ancestry。Base stale 随后只匹配 caller-authored refresh codes 后返回。
+Record/check production entry 先执行 pure schema/semantic shape，再执行独立 public input +
+`base_current` 的 base-only live gate；repo-bound locator、issue、reviewed blob 与
+archive/history 仅在 fresh base 后读取。`refresh_base` 要求重新调用完整 public Sync owner，
+不保存 private result chain 或重建 snapshot ancestry。
 `change_input` 十组 clue arrays 至少一组非空，issue binding/canonical query 不得
 替代。Portable locator 只按 source-specific closed structure 验证，不扫描整份 payload。
 
-Owner-result schema 是 `guru-change-context-owner-result-2.0`；managed commands 是
+Owner-result schema 是 `guru-change-context-owner-result-3.0`；managed commands 是
 `preview-change-context-history`、`record-context-discovery` 和
 `check-context-discovery`。Exits 是 `context_ready` -> active
 `guru-clarify-requirements`、`refresh_base` -> `guru-sync-base`、`blocked` ->
 `change-context-blocked`；source/installed validator 同时解析 active Skill consumer 及唯一
 workflow/stop target markers。`context_ready` 的 actual stdout 投影为 closed
 `context_current`，再与 Clarification 当前 semantic authoring fields 组成 call-local invocation。
+代表性 installed transcript 必须调用真实 Sync public wrapper，经 Interface 声明 projection
+构造 input 2.0 与独立 actual `base_current`，再调用真实 Discovery wrapper并把 actual
+`context_ready` 投影到 Clarify schema。产品 Python tests 经 managed resolver/public wrapper；
+low-level Sync executor、private import、手写 private digest 或 PATH Python import 都不算通过。
 
 ## Phase 0 Requirements Clarification
 

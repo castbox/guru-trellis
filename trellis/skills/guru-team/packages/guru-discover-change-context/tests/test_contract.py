@@ -73,7 +73,8 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             "writes no authorization field to owner state",
             "`scripts/invoke.sh --invocation -`",
             "`base_current` transition",
-            "complete validator-passed `guru-base-sync-result-1.0`",
+            "read-only Discovery observer",
+            "Neither the public input nor owner result reconstructs Sync private result",
             "live body digest must equal the original reviewed draft body digest",
             "source issue may be live `open` or `closed`",
             "resolves from `HEAD:<path>` to exactly a `blob`",
@@ -132,10 +133,10 @@ class ChangeContextPackageContractTests(unittest.TestCase):
                 self.assertIn("Install or upgrade the complete Guru Team preset", result.stderr)
 
     def test_schema_and_deidentified_example(self) -> None:
-        schema = json.loads((self.package / "schemas/change-context-owner-result.schema.json").read_text(encoding="utf-8"))
+        schema = json.loads((self.package / "schemas/change-context-owner-result-3.0.schema.json").read_text(encoding="utf-8"))
         recovery_schema = json.loads((self.package / "schemas/change-context-recovery.schema.json").read_text(encoding="utf-8"))
-        example = json.loads((self.package / "examples/change-context-owner-result.json").read_text(encoding="utf-8"))
-        self.assertEqual(schema["$id"], "https://github.com/castbox/guru-trellis/schemas/guru-change-context-owner-result-2.0.json")
+        example = json.loads((self.package / "examples/change-context-owner-result-3.0.json").read_text(encoding="utf-8"))
+        self.assertEqual(schema["$id"], "https://github.com/castbox/guru-trellis/schemas/guru-change-context-owner-result-3.0.json")
         self.assertEqual(recovery_schema["$id"], "https://github.com/castbox/guru-trellis/schemas/guru-change-context-recovery-1.0.json")
         private_artifacts = {
             item["id"]: item for item in self.interface["public_contracts"]["private_artifacts"]
@@ -190,9 +191,17 @@ class ChangeContextPackageContractTests(unittest.TestCase):
         valid_blocked = copy.deepcopy(blocked_with_passed_gate)
         valid_blocked["ai_review_gate"]["status"] = "blocked"
         self.assertEqual(list(validator.iter_errors(valid_blocked)), [])
-        missing_base_result = copy.deepcopy(example)
-        del missing_base_result["base_evidence"]["sync_result"]
-        self.assertNotEqual(list(validator.iter_errors(missing_base_result)), [])
+        missing_base_observation = copy.deepcopy(example)
+        del missing_base_observation["base_observation"]["local_head"]
+        self.assertNotEqual(list(validator.iter_errors(missing_base_observation)), [])
+        active_schema = json.dumps(schema, sort_keys=True)
+        self.assertNotIn("baseSyncResult", active_schema)
+        self.assertNotIn("sync_result", active_schema)
+        self.assertNotIn("base_sync_facts_sha256", active_schema)
+        legacy_owner = json.loads((self.package / "schemas/change-context-owner-result.schema.json").read_text(encoding="utf-8"))
+        legacy_input = json.loads((self.package / "schemas/public-pre-task-input.schema.json").read_text(encoding="utf-8"))
+        self.assertEqual(legacy_owner["$id"], "https://github.com/castbox/guru-trellis/schemas/guru-change-context-owner-result-2.0.json")
+        self.assertEqual(legacy_input["$id"], "guru-stage0-discover-change-context-input-pre-task-1.0")
         missing_issue_binding = copy.deepcopy(example)
         missing_issue_binding["live_change"]["issue_binding"] = None
         self.assertNotEqual(list(validator.iter_errors(missing_issue_binding)), [])
@@ -254,6 +263,32 @@ class ChangeContextPackageContractTests(unittest.TestCase):
         self.assertNotIn("/Users/", serialized)
         self.assertNotIn(".trellis/workspace/", serialized)
         self.assertNotIn(".trellis/.runtime/", serialized)
+
+    def test_active_public_input_and_both_reentry_projections_use_authoring_seed(self) -> None:
+        schema = json.loads((self.package / "schemas/public-pre-task-input-2.0.schema.json").read_text())
+        self.assertEqual(schema["$id"], "guru-stage0-discover-change-context-input-pre-task-2.0")
+        self.assertEqual(
+            set(schema["required"]),
+            {"profile", "source_exit", "mode", "change_input", "continuation_id"},
+        )
+        self.assertNotIn("repo_locator", schema["properties"])
+        self.assertNotIn("base_branch", schema["properties"])
+        for producer in ("guru-sync-base", "guru-clarify-requirements"):
+            interface = json.loads((self.package.parent / producer / "interface.json").read_text())
+            consumer = next(
+                item for item in interface["public_contracts"]["consumer_inputs"]
+                if item["consumer"] == {"kind": "skill", "id": "guru-discover-change-context"}
+            )
+            self.assertEqual(consumer["contract"]["kind"], "skill_input_authoring_seed")
+            self.assertEqual(consumer["contract"]["authoring_fields"], ["change_input"])
+            projection = next(
+                item for item in interface["public_contracts"]["projections"]
+                if item["consumer_input_id"] == consumer["id"]
+            )
+            self.assertEqual(
+                {item["target"] for item in projection["mappings"]},
+                {"source_exit", "profile", "mode", "continuation_id"},
+            )
 
 
 if __name__ == "__main__":
