@@ -5426,14 +5426,34 @@ def stage_owner_execution(
             if recipe in {
                 "architecture-no-impact",
                 "architecture-next-task",
+                "architecture-bootstrap-current",
+                "architecture-repair-current",
             }:
+                baseline_identity = str(public_payload["baseline"]["identity"])
+                impact_reason = (
+                    "The reviewed task changes no architecture authority, owner, "
+                    "boundary, decision, or GAP."
+                )
+                if recipe == "architecture-bootstrap-current":
+                    baseline_identity = str(
+                        public_payload["successor_baseline"]["identity"]
+                    )
+                    impact_reason = (
+                        "The reviewed foundation bootstrap activates the declared "
+                        "successor baseline without introducing a second authority."
+                    )
+                elif recipe == "architecture-repair-current":
+                    impact_reason = (
+                        "The reviewed repair restores the declared project Architecture "
+                        "contract without changing its authority boundary."
+                    )
                 selected = {
                     "typed_exit": "baseline_current",
                     "task_locator": str(public_payload["task_locator"]),
-                    "baseline_identity": str(public_payload["baseline"]["identity"]),
+                    "baseline_identity": baseline_identity,
                     "constitution_identity": str(public_payload["constitution"]["identity"]),
                     "impact_kind": "no_architecture_impact",
-                    "impact_reason": "The reviewed task changes no architecture authority, owner, boundary, decision, or GAP.",
+                    "impact_reason": impact_reason,
                     "promotion_state": "no_change",
                 }
             elif recipe in {

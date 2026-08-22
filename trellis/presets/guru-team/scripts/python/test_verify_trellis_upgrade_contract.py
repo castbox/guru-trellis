@@ -60,6 +60,54 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         self.assertIn('TRELLIS_TARGET_VERSION="${TRELLIS_TARGET_VERSION:-0.6.15}"', self.text)
         self.assertIn('TRELLIS_UPGRADE_TAG="${TRELLIS_UPGRADE_TAG:-0.6.15}"', self.text)
 
+    def test_empty_cleanup_preserves_the_primary_verifier_failure(self) -> None:
+        self.assertIn('if [[ "${#GURU_TEMP_FILES[@]}" -gt 0 ]]; then', self.text)
+        with tempfile.TemporaryDirectory() as directory:
+            work_dir = Path(directory)
+            (work_dir / "project").mkdir()
+            result = subprocess.run(
+                (str(VERIFIER), str(work_dir)),
+                cwd=REPO,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("Target already exists", result.stderr)
+        self.assertNotIn("GURU_TEMP_FILES[@]: unbound variable", result.stderr)
+
+    def test_nonempty_cleanup_removes_only_allowed_temporary_files(self) -> None:
+        cleanup_start = self.text.index("GURU_TEMP_FILES=()")
+        cleanup_end = self.text.index("trap cleanup_guru_temporary_objects", cleanup_start)
+        cleanup_source = self.text[cleanup_start:cleanup_end]
+        with tempfile.TemporaryDirectory() as directory:
+            work_dir = Path(directory)
+            allowed = work_dir / "guru-task-commit-input.allowed"
+            unrelated = work_dir / "unrelated.txt"
+            allowed.write_text("temporary\n", encoding="utf-8")
+            unrelated.write_text("preserve\n", encoding="utf-8")
+            script = f"""set -euo pipefail
+WORK_DIR={json.dumps(str(work_dir))}
+GURU_AUTO_WORK_DIR=0
+{cleanup_source}
+GURU_TEMP_FILES+=({json.dumps(str(allowed))})
+GURU_TEMP_FILES+=({json.dumps(str(unrelated))})
+trap cleanup_guru_temporary_objects EXIT
+printf '%s\\n' 'primary verifier failure' >&2
+exit 23
+"""
+            result = subprocess.run(
+                ("bash", "-c", script),
+                cwd=REPO,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 23)
+            self.assertIn("primary verifier failure", result.stderr)
+            self.assertFalse(allowed.exists())
+            self.assertTrue(unrelated.exists())
+
     def test_live_platform_authorities_derive_exact_six_cell_matrix(self) -> None:
         inventory = self.matrix.derive_platform_inventory(REPO)
         plan = self.matrix.build_matrix(REPO)

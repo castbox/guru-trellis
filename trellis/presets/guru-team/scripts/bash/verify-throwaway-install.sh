@@ -25,13 +25,15 @@ fi
 GURU_TEMP_FILES=()
 cleanup_guru_temporary_objects() {
   local path
-  for path in "${GURU_TEMP_FILES[@]}"; do
-    if [[ -n "$path" && -f "$path" ]]; then
-      case "$(basename "$path")" in
-        guru-task-commit-input.*|guru-phase2-input.*) rm -f -- "$path" ;;
-      esac
-    fi
-  done
+  if [[ "${#GURU_TEMP_FILES[@]}" -gt 0 ]]; then
+    for path in "${GURU_TEMP_FILES[@]}"; do
+      if [[ -n "$path" && -f "$path" ]]; then
+        case "$(basename "$path")" in
+          guru-task-commit-input.*|guru-phase2-input.*) rm -f -- "$path" ;;
+        esac
+      fi
+    done
+  fi
   if [[ "$GURU_AUTO_WORK_DIR" == 1 && -d "$WORK_DIR" && "$(basename "$WORK_DIR")" == guru-trellis-install.* ]]; then
     rm -rf -- "$WORK_DIR"
   fi

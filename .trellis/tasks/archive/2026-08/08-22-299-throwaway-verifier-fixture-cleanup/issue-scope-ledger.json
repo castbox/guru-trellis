@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 299,
+      "reason": "当前 task 唯一完整验收并允许关闭的 Issue。",
+      "title": "修复 throwaway verifier 的 architecture-baseline fixture 覆盖与失败清理",
+      "url": "https://github.com/castbox/guru-trellis/issues/299"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 299,
+    "reason": "当前 task 唯一完整验收并允许关闭的 Issue。",
+    "title": "修复 throwaway verifier 的 architecture-baseline fixture 覆盖与失败清理",
+    "url": "https://github.com/castbox/guru-trellis/issues/299"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}
