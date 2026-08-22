@@ -1,0 +1,31 @@
+{
+  "id": "287-managed-path-preset-staging",
+  "name": "287-managed-path-preset-staging",
+  "title": "#287 重构 Guru Team preset staging，避免全仓库物理复制导致磁盘占用线性增长",
+  "description": "Implement canonical managed-path preset staging while preserving #286 lifecycle, transaction, sidecar, installed validation, update/reapply/drift, and atomic recovery semantics.",
+  "status": "completed",
+  "dev_type": null,
+  "scope": "preset-managed-path-staging",
+  "package": null,
+  "priority": "P1",
+  "creator": "Wesley Wu",
+  "assignee": "Wesley Wu",
+  "createdAt": "2026-08-22",
+  "completedAt": "2026-08-23",
+  "branch": "codex/287-managed-path-preset-staging",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "issue": "287",
+    "close_issues": "287",
+    "worktree_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/287-managed-path-preset-staging",
+    "entry_head": "1c2dbe908387576493afa5654a4d020bfa865f74"
+  }
+}

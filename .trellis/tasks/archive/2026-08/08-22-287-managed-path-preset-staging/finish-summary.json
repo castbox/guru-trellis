@@ -1,0 +1,157 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-22T17:22:37Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-22-287-managed-path-preset-staging",
+    "title": "#287 重构 Guru Team preset staging，避免全仓库物理复制导致磁盘占用线性增长",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-22-287-managed-path-preset-staging",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/287-managed-path-preset-staging",
+    "commits": [
+      "7073715a27bba19fa5032611d53e642d3ae99abc",
+      "21336baec6bab3fa51e68f627167d003e516d379",
+      "356b90c8db9dd313dd715c8f680d0201a42fa457",
+      "225d148f0c9c0d97e19b8dc506ad98597a79f293",
+      "5282feaca7e362c011346d5225ad2cfd4bebf0d7",
+      "0261ffe13e149def2af8f3161937f062ae2ee003"
+    ],
+    "changed_paths": [
+      ".trellis/tasks/08-22-287-managed-path-preset-staging/check.jsonl",
+      ".trellis/tasks/08-22-287-managed-path-preset-staging/design.md",
+      ".trellis/tasks/08-22-287-managed-path-preset-staging/implement.jsonl",
+      ".trellis/tasks/08-22-287-managed-path-preset-staging/implement.md",
+      ".trellis/tasks/08-22-287-managed-path-preset-staging/issue-scope-ledger.json",
+      ".trellis/tasks/08-22-287-managed-path-preset-staging/prd.md",
+      ".trellis/tasks/08-22-287-managed-path-preset-staging/task.json",
+      ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/design.md",
+      ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/implement.md",
+      ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/prd.md",
+      ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/task.json",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+      "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      287
+    ],
+    "close_issues": [],
+    "related_issues": [
+      267,
+      286,
+      287
+    ],
+    "followup_issues": [
+      247
+    ],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/298"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#287 重构 Guru Team preset staging，避免全仓库物理复制导致磁盘占用线性增长",
+    "outcome": "将 preset transaction 从全仓库复制改为 canonical managed-path inventory，只物化受管理目标 preimage、声明的 sidecar/backup 与 transaction metadata。",
+    "changed_behavior": [
+      "将 preset transaction 从全仓库复制改为 canonical managed-path inventory，只物化受管理目标 preimage、声明的 sidecar/backup 与 transaction metadata。",
+      "复用 #286 的 temporary root、prefix、stale reaper、cleanup 与诊断保留合同，并保留用户修改保护、installed validation、update/reapply、drift 与 recovery 语义。",
+      "修正 space preflight，使重复 canonical source 按实际目标投影计入预计峰值；同时让 throwaway verifier 聚合四类 preset sidecar owner。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/08-22-287-managed-path-preset-staging/design.md",
+          ".trellis/tasks/08-22-287-managed-path-preset-staging/implement.md",
+          ".trellis/tasks/08-22-287-managed-path-preset-staging/prd.md",
+          ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/design.md",
+          ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/implement.md",
+          ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/prd.md"
+        ],
+        "change": "将 preset transaction 从全仓库复制改为 canonical managed-path inventory，只物化受管理目标 preimage、声明的 sidecar/backup 与 transaction metadata。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+          "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+        ],
+        "change": "将 preset transaction 从全仓库复制改为 canonical managed-path inventory，只物化受管理目标 preimage、声明的 sidecar/backup 与 transaction metadata。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-22-287-managed-path-preset-staging/check.jsonl",
+          ".trellis/tasks/08-22-287-managed-path-preset-staging/implement.jsonl",
+          ".trellis/tasks/08-22-287-managed-path-preset-staging/issue-scope-ledger.json",
+          ".trellis/tasks/08-22-287-managed-path-preset-staging/task.json",
+          ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/task.json"
+        ],
+        "change": "将 preset transaction 从全仓库复制改为 canonical managed-path inventory，只物化受管理目标 preimage、声明的 sidecar/backup 与 transaction metadata。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#247",
+        "#267",
+        "#286",
+        "#287"
+      ],
+      "pr_refs": [
+        "PR #298"
+      ],
+      "branches": [
+        "codex/287-managed-path-preset-staging"
+      ],
+      "paths": [
+        ".trellis/tasks/08-22-287-managed-path-preset-staging/check.jsonl",
+        ".trellis/tasks/08-22-287-managed-path-preset-staging/design.md",
+        ".trellis/tasks/08-22-287-managed-path-preset-staging/implement.jsonl",
+        ".trellis/tasks/08-22-287-managed-path-preset-staging/implement.md",
+        ".trellis/tasks/08-22-287-managed-path-preset-staging/issue-scope-ledger.json",
+        ".trellis/tasks/08-22-287-managed-path-preset-staging/prd.md",
+        ".trellis/tasks/08-22-287-managed-path-preset-staging/task.json",
+        ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/design.md",
+        ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/implement.md",
+        ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/prd.md",
+        ".trellis/tasks/archive/2026-08/08-22-287-managed-path-preset-staging/task.json",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+        "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#287 重构 Guru Team preset staging，避免全仓库物理复制导致磁盘占用线性增长",
+        "将 preset transaction 从全仓库复制改为 canonical managed-path invento",
+        "完成 check.jsonl 相关变更"
+      ]
+    },
+    "retrieval_text": "#287 重构 Guru Team preset staging，避免全仓库物理复制导致磁盘占用线性增长\n将 preset transaction 从全仓库复制改为 canonical managed-path inventory，只物化受管理目标 preimage、声明的 sidecar/backup 与 transaction metadata。\n复用 #286 的 temporary root、prefix、stale reaper、cleanup 与诊断保留合同，并保留用户修改保护、installed validation、update/reapply、drift 与 recovery 语义。\n修正 space preflight，使重复 canonical source 按实际目标投影计入预计峰值；同时让 throwaway verifier 聚合四类 preset sidecar owner。\n将 preset transaction 从全仓库复制改为 canonical managed-path invento\n完成 check.jsonl 相关变更"
+  }
+}

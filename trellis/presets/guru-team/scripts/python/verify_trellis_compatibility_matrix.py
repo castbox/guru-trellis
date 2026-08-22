@@ -1044,11 +1044,26 @@ def _apply_preset(
     skill_packages = _require_dict(
         payload.get("skill_packages"), "preset skill_packages"
     )
-    declared_sidecars = _require_string_list(
-        skill_packages.get("sidecars"), "preset skill package sidecars"
+    overlays = _require_dict(payload.get("overlays"), "preset overlays")
+    declared_sidecars = _sorted_strings(
+        path
+        for paths in (
+            _require_string_list(payload.get("new_copies"), "preset new copies"),
+            _require_string_list(
+                payload.get("managed_backups"), "preset managed backups"
+            ),
+            _require_string_list(
+                skill_packages.get("sidecars"), "preset skill package sidecars"
+            ),
+            _require_string_list(
+                overlays.get("sidecars"), "preset overlay sidecars"
+            ),
+        )
+        for path in paths
+        if Path(path).suffix in SIDECAR_SUFFIXES
     )
     actual_sidecars = _sidecars(target)
-    if _sorted_strings(declared_sidecars) != actual_sidecars:
+    if declared_sidecars != actual_sidecars:
         raise MatrixError(
             "preset sidecar inventory does not match the installed repository"
         )

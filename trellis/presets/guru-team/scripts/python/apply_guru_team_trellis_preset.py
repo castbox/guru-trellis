@@ -1721,6 +1721,9 @@ TRANSACTION_IGNORED_ROOTS = (
     Path(".trellis/workspace"),
 )
 
+MANAGED_TRANSACTION_SAFETY_MARGIN = 1.20
+MANAGED_TRANSACTION_FIXED_MARGIN_BYTES = 1024 * 1024
+
 
 def transaction_path_ignored(relative: Path) -> bool:
     return (
@@ -1730,37 +1733,254 @@ def transaction_path_ignored(relative: Path) -> bool:
     )
 
 
-def copy_repo_to_staging(repo: Path, staging_repo: Path) -> None:
-    repo = Path(os.path.abspath(repo))
+def _manifest_paths(manifest: dict[str, Any] | None) -> set[Path]:
+    """Project only paths already owned by a prior installed manifest."""
+    paths: set[Path] = set()
+    if not isinstance(manifest, dict):
+        return paths
+    install = manifest.get("install")
+    if isinstance(install, dict):
+        for key in ("managed_assets", "new_copies", "managed_backups"):
+            values = install.get(key)
+            if isinstance(values, list):
+                paths.update(Path(value) for value in values if isinstance(value, str))
+    for section_name in ("skill_packages", "overlays"):
+        section = manifest.get(section_name)
+        if not isinstance(section, dict):
+            continue
+        files = section.get("files")
+        if isinstance(files, list):
+            paths.update(
+                Path(item["path"])
+                for item in files
+                if isinstance(item, dict) and isinstance(item.get("path"), str)
+            )
+        for key in ("sidecars",):
+            values = section.get(key)
+            if isinstance(values, list):
+                paths.update(Path(value) for value in values if isinstance(value, str))
+        removals = section.get("removals")
+        if isinstance(removals, list):
+            paths.update(
+                Path(item["path"])
+                for item in removals
+                if isinstance(item, dict) and isinstance(item.get("path"), str)
+            )
+    return {path for path in paths if not path.is_absolute() and ".." not in path.parts}
 
-    def ignored(directory: str, names: list[str]) -> set[str]:
-        directory_path = Path(directory)
-        relative_directory = directory_path.relative_to(repo)
-        ignored_names: set[str] = set()
-        for name in names:
-            relative = relative_directory / name
-            if transaction_path_ignored(relative):
-                ignored_names.add(name)
-        return ignored_names
 
-    shutil.copytree(repo, staging_repo, symlinks=True, ignore=ignored)
+def managed_transaction_paths(
+    repo: Path,
+    dst: Path,
+    platforms: set[str],
+    all_platforms: bool,
+    previous_manifest: dict[str, Any] | None,
+    source_projections: dict[Path, Path] | None = None,
+) -> set[Path]:
+    """Return the bounded file inventory used by the staging transaction.
+
+    The inventory is intentionally assembled from canonical declarations and the
+    prior installed manifest. It never walks the target repository.
+    """
+    del all_platforms  # the selected set is already expanded by the caller
+    paths: set[Path] = {
+        Path("AGENTS.md"),
+        Path(".gitignore"),
+        Path(".trellis/config.yaml"),
+        # The workflow marketplace owns this file; validation reads it while
+        # preset activation still leaves its bytes outside the preset manifest.
+        Path(".trellis/workflow.md"),
+        lexical_repo_relative(repo, dst / "config.yml"),
+        lexical_repo_relative(repo, dst / "extension.json"),
+    }
+    projections = source_projections or managed_source_projections(
+        repo,
+        dst,
+        platforms,
+    )
+    paths.update(projections)
+    paths.update(_manifest_paths(previous_manifest))
+    # Preserve the existing bounded language-guidance behavior without opening
+    # the transaction to arbitrary repository documentation.
+    paths.update(
+        lexical_repo_relative(repo, path)
+        for path in language_guidance_targets(repo)
+    )
+    return {path for path in paths if not transaction_path_ignored(path)}
 
 
-def transaction_tree_files(root: Path) -> set[Path]:
-    files: set[Path] = set()
-    for directory, directory_names, file_names in os.walk(root, followlinks=False):
-        directory_path = Path(directory)
-        relative_directory = directory_path.relative_to(root)
-        directory_names[:] = [
-            name
-            for name in directory_names
-            if not transaction_path_ignored(relative_directory / name)
-        ]
-        for name in file_names:
-            relative = relative_directory / name
-            if not transaction_path_ignored(relative):
-                files.add(relative)
-    return files
+def managed_source_projections(
+    repo: Path,
+    dst: Path,
+    platforms: set[str],
+) -> dict[Path, Path]:
+    """Return each deterministic managed target and the source bytes it projects."""
+    source_root = guru_root_from_script()
+    workflow_source_root = source_root / "trellis/workflows/guru-team"
+    projections: dict[Path, Path] = {}
+
+    def add(source: Path, target: Path) -> None:
+        relative = lexical_repo_relative(repo, target)
+        existing = projections.get(relative)
+        if existing is not None and existing != source:
+            raise SystemExit(f"Conflicting managed source projection: {relative.as_posix()}")
+        projections[relative] = source
+
+    for source_relative, target_relative in MANAGED_SPEC_PATHS:
+        add(source_root / source_relative, repo / target_relative)
+    for relative in MANAGED_ASSET_PATHS:
+        add(workflow_source_root / relative, dst / relative)
+    add(workflow_source_root / MANAGED_CONFIG, dst / "config.yml")
+
+    overlay_root = source_root / "trellis/presets/guru-team/overlays"
+    for relative in GURU_OVERLAY_ENTRY_PATHS.values():
+        if overlay_selected(relative, platforms):
+            add(overlay_root / relative, repo / relative)
+
+    canonical_root = source_root / "trellis/skills/guru-team"
+    _, entries = skill_registry_entries(canonical_root)
+    installed_sources = [
+        canonical_root / "registry.json",
+        canonical_root / "tests/test_finish_family_integration.py",
+    ]
+    for shared_root_name in ("schemas", "adapters", "contracts", "consumers"):
+        shared_root = canonical_root / shared_root_name
+        if not shared_root.is_dir():
+            continue
+        for source in skill_package_source_files(shared_root):
+            if (
+                shared_root_name == "schemas"
+                and source.name not in CURRENT_SKILL_SHARED_SCHEMAS
+            ):
+                continue
+            installed_sources.append(source)
+    active_entries = [entry for entry in entries if entry.get("state") == "active"]
+    for entry in active_entries:
+        package_root = canonical_root / str(entry["package"])
+        installed_sources.extend(skill_package_source_files(package_root))
+    for source in installed_sources:
+        add(source, dst / "skills" / source.relative_to(canonical_root))
+    for relative in SKILL_RUNTIME_KERNEL_PATHS:
+        add(canonical_root / "runtime" / relative, dst / "runtime" / relative)
+
+    destination_roots = [
+        ("shared", Path(".agents/skills")),
+        *[
+            (platform, PLATFORM_OVERLAY_PREFIXES[platform][0] / "skills")
+            for platform in sorted(platforms)
+        ],
+    ]
+    for entry in active_entries:
+        skill_id = str(entry["id"])
+        package_root = canonical_root / str(entry["package"])
+        supported = set(entry.get("supported_platforms") or [])
+        for platform, target_root in destination_roots:
+            if platform not in supported:
+                continue
+            for source in skill_platform_public_files(package_root):
+                add(
+                    source,
+                    repo / target_root / skill_id / source.relative_to(package_root),
+                )
+    return projections
+
+
+def materialize_managed_preimage(
+    repo: Path,
+    staging_repo: Path,
+    inventory: set[Path],
+) -> dict[str, Any]:
+    """Copy only declared target preimages and report deterministic byte facts."""
+    staged_bytes = 0
+    staged_files = 0
+    for relative in sorted(inventory, key=lambda value: value.as_posix()):
+        source = repo / relative
+        if not source.exists() and not source.is_symlink():
+            continue
+        checked_relative, source_stat, error = lstat_repo_path(repo, source)
+        if error or checked_relative != relative or source_stat is None:
+            raise SystemExit(f"Unsafe managed transaction path: {relative.as_posix()}")
+        target = staging_repo / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if stat.S_ISLNK(source_stat.st_mode):
+            target.symlink_to(os.readlink(source))
+        elif stat.S_ISREG(source_stat.st_mode):
+            shutil.copyfile(source, target)
+            target.chmod(stat.S_IMODE(source_stat.st_mode))
+            staged_files += 1
+            staged_bytes += source_stat.st_size
+        else:
+            raise SystemExit(f"Managed transaction target must be regular or symlink: {relative.as_posix()}")
+    return {"file_count": staged_files, "bytes": staged_bytes}
+
+
+def preflight_managed_transaction(
+    temporary_root: Path,
+    repo: Path,
+    inventory: set[Path],
+    source_projections: dict[Path, Path],
+) -> dict[str, Any]:
+    logical_bytes = 0
+    for relative in inventory:
+        path = repo / relative
+        if path.is_file() and not path.is_symlink():
+            logical_bytes += path.stat().st_size
+    source_bytes = 0
+    for target, source in source_projections.items():
+        if target not in inventory:
+            raise SystemExit(f"Managed source projection is outside inventory: {target.as_posix()}")
+        if not source.is_file() or source.is_symlink():
+            raise SystemExit(f"Managed source projection is missing or unsafe: {source}")
+        source_bytes += source.stat().st_size
+    estimated_peak = int((logical_bytes + source_bytes) * MANAGED_TRANSACTION_SAFETY_MARGIN) + MANAGED_TRANSACTION_FIXED_MARGIN_BYTES
+    available = shutil.disk_usage(temporary_root).free
+    result = {
+        "strategy": "managed_paths",
+        "temporary_root": str(temporary_root),
+        "managed_file_count": len(inventory),
+        "managed_bytes": logical_bytes,
+        "source_bytes": source_bytes,
+        "source_projection_count": len(source_projections),
+        "estimated_peak_bytes": estimated_peak,
+        "safety_margin": MANAGED_TRANSACTION_SAFETY_MARGIN,
+        "available_bytes": available,
+        "cleanup": "temporary_lifecycle",
+    }
+    if available < estimated_peak:
+        raise SystemExit(json.dumps({"code": "insufficient_managed_staging_space", **result}, sort_keys=True))
+    return result
+
+
+def staged_transaction_bytes(staging_repo: Path, result: dict[str, Any]) -> dict[str, int]:
+    """Measure the bounded transaction output before activation."""
+    staged_file_count = 0
+    staged_bytes = 0
+    for path in staging_repo.rglob("*"):
+        if path.is_file() and not path.is_symlink():
+            staged_file_count += 1
+            staged_bytes += path.stat().st_size
+
+    def path_bytes(paths: list[Any], suffix: str) -> int:
+        total = 0
+        for value in paths:
+            if not isinstance(value, str) or not value.endswith(suffix):
+                continue
+            path = staging_repo / value
+            if path.is_file() and not path.is_symlink():
+                total += path.stat().st_size
+        return total
+
+    sidecar_paths: list[Any] = list(result.get("new_copies", []))
+    for section_name in ("skill_packages", "overlays"):
+        section = result.get(section_name)
+        if isinstance(section, dict):
+            sidecar_paths.extend(section.get("sidecars", []))
+    return {
+        "staged_file_count": staged_file_count,
+        "staged_bytes": staged_bytes,
+        "backup_bytes": path_bytes(result.get("managed_backups", []), ".bak"),
+        "sidecar_bytes": path_bytes(sidecar_paths, ".new"),
+    }
 
 
 def staged_file_matches_target(staged: Path, target: Path) -> bool:
@@ -1779,9 +1999,15 @@ def staged_file_matches_target(staged: Path, target: Path) -> bool:
     )
 
 
-def activate_staged_repository(staging_repo: Path, repo: Path) -> None:
-    staged_files = transaction_tree_files(staging_repo)
-    target_files = transaction_tree_files(repo)
+def activate_staged_repository(staging_repo: Path, repo: Path, managed_paths: set[Path]) -> None:
+    staged_files = {
+        relative for relative in managed_paths
+        if (staging_repo / relative).is_file() or (staging_repo / relative).is_symlink()
+    }
+    target_files = {
+        relative for relative in managed_paths
+        if (repo / relative).is_file() or (repo / relative).is_symlink()
+    }
     writes = sorted(
         (
             relative
@@ -1816,20 +2042,11 @@ def activate_staged_repository(staging_repo: Path, repo: Path) -> None:
         mode = stat.S_IMODE(staged.stat().st_mode)
         write_safe_repo_file(repo, repo / relative, staged.read_bytes(), mode)
 
-    staged_directories = {
-        path.relative_to(staging_repo)
-        for path in staging_repo.rglob("*")
-        if path.is_dir() and not path.is_symlink() and not transaction_path_ignored(path.relative_to(staging_repo))
-    }
     target_directories = sorted(
-        (
-            path
-            for path in repo.rglob("*")
-            if path.is_dir()
-            and not path.is_symlink()
-            and not transaction_path_ignored(path.relative_to(repo))
-            and path.relative_to(repo) not in staged_directories
-        ),
+        {
+            (repo / relative).parent
+            for relative in removals
+        },
         key=lambda path: len(path.parts),
         reverse=True,
     )
@@ -1984,8 +2201,30 @@ def install_assets(
         raise SystemExit("Canonical Guru Team skill package validation failed before preset mutation.")
     dst_relative = lexical_repo_relative(repo, dst)
     with _guru_temporary_directory("preset_staging") as temporary:
-        staging_repo = Path(temporary) / "repo"
-        copy_repo_to_staging(repo, staging_repo)
+        temporary_root = Path(temporary)
+        staging_repo = temporary_root / "repo"
+        previous_manifest = load_previous_installed_manifest(dst)
+        source_projections = managed_source_projections(
+            repo,
+            dst,
+            platforms or set(DEFAULT_PLATFORMS),
+        )
+        managed_paths = managed_transaction_paths(
+            repo,
+            dst,
+            platforms or set(DEFAULT_PLATFORMS),
+            all_platforms,
+            previous_manifest,
+            source_projections,
+        )
+        preflight = preflight_managed_transaction(
+            temporary_root,
+            repo,
+            managed_paths,
+            source_projections,
+        )
+        staging_repo.mkdir(parents=True, exist_ok=True)
+        preimage = materialize_managed_preimage(repo, staging_repo, managed_paths)
         result = _install_assets_in_place(
             src,
             staging_repo / dst_relative,
@@ -1997,6 +2236,13 @@ def install_assets(
             managed_python=managed_python,
         )
         result["python_runtime"] = python_runtime
+        result["managed_transaction"] = {
+            **preflight,
+            "preimage_file_count": preimage["file_count"],
+            "preimage_bytes": preimage["bytes"],
+            **staged_transaction_bytes(staging_repo, result),
+            "cleanup": "temporary_lifecycle",
+        }
         skill_packages = result["skill_packages"]
         overlays = result["overlays"]
         installed_validation = result["skill_installed_validation"]
@@ -2021,7 +2267,40 @@ def install_assets(
             and activation_validation.get("returncode") == 0
         )
         if activation_ready or recoverable_activation_ready:
-            activate_staged_repository(staging_repo, repo)
+            activation_paths = set(managed_paths)
+            activation_paths.update(
+                Path(path)
+                for path in result.get("installed", [])
+                + result.get("unchanged", [])
+                + result.get("updated_managed", [])
+                + result.get("replaced_overlays", [])
+                + result.get("new_copies", [])
+                + result.get("managed_backups", [])
+            )
+            for section_name in ("skill_packages", "overlays"):
+                section = result.get(section_name)
+                if isinstance(section, dict):
+                    activation_paths.update(
+                        Path(item["path"])
+                        for item in section.get("files", [])
+                        if isinstance(item, dict) and isinstance(item.get("path"), str)
+                    )
+                    activation_paths.update(
+                        Path(item["path"])
+                        for item in section.get("removals", [])
+                        if isinstance(item, dict) and isinstance(item.get("path"), str)
+                    )
+                    activation_paths.update(
+                        Path(path)
+                        for path in section.get("sidecars", [])
+                        if isinstance(path, str)
+                    )
+            activation_paths.update(
+                Path(item["path"])
+                for item in result.get("language_guidance", {}).get("updated_paths", [])
+                if isinstance(item, dict) and isinstance(item.get("path"), str)
+            )
+            activate_staged_repository(staging_repo, repo, activation_paths)
             activated_runtime = ensure_managed_python_runtime(repo, guru_root, activate=True)
             if activated_runtime.get("runtime_identity") != python_runtime.get("runtime_identity"):
                 raise_managed_runtime_error(str(python_runtime.get("runtime_identity") or "") or None)
@@ -2433,6 +2712,7 @@ def main() -> int:
         "replaced_overlays": result["replaced_overlays"],
         "updated_managed": result["updated_managed"],
         "managed_backups": result["managed_backups"],
+        "managed_transaction": result["managed_transaction"],
         "agents_principles": result["agents_principles"],
         "codex_dispatch": result["codex_dispatch"],
         "session_auto_commit": result["session_auto_commit"],

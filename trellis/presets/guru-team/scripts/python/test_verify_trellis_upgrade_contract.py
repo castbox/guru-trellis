@@ -740,9 +740,11 @@ exit 23
                 "if current.read_text() == 'before\\n':\n"
                 "    backup.write_bytes(current.read_bytes())\n"
                 "    current.write_text('candidate\\n')\n"
-                "    print(json.dumps({'status':'conflict','skill_packages':{'sidecars':[relative.as_posix()+'.bak']}}))\n"
+                "    print(json.dumps({'status':'conflict','new_copies':[],'managed_backups':[],"
+                "'skill_packages':{'sidecars':[relative.as_posix()+'.bak']},'overlays':{'sidecars':[]}}))\n"
                 "    raise SystemExit(2)\n"
-                "print(json.dumps({'status':'ok','skill_packages':{'sidecars':[]}}))\n"
+                "print(json.dumps({'status':'ok','new_copies':[],'managed_backups':[],"
+                "'skill_packages':{'sidecars':[]},'overlays':{'sidecars':[]}}))\n"
             )
 
             result = self.matrix._apply_preset(
@@ -763,6 +765,127 @@ exit 23
                 "reconciled known upgrade backups",
                 (root / "preset.log").read_text(),
             )
+
+    def test_existing_preset_reapply_reconciles_all_declared_backup_owners(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source"
+            previous = root / "previous"
+            target = root / "target"
+            relatives = {
+                "managed": Path(".trellis/guru-team/scripts/python/value.py"),
+                "skill": Path(".agents/skills/guru-example/SKILL.md"),
+                "overlay": Path(".codex/prompts/guru-example.md"),
+            }
+            for relative in relatives.values():
+                for base, value in (
+                    (source, "candidate\n"),
+                    (previous, "before\n"),
+                    (target, "before\n"),
+                ):
+                    path = base / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text(value)
+            installer = (
+                source
+                / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"
+            )
+            installer.parent.mkdir(parents=True, exist_ok=True)
+            serialized = {key: value.as_posix() for key, value in relatives.items()}
+            installer.write_text(
+                "import json,sys\n"
+                "from pathlib import Path\n"
+                "repo=Path(sys.argv[sys.argv.index('--repo')+1])\n"
+                f"relatives={serialized!r}\n"
+                "paths={key:Path(value) for key,value in relatives.items()}\n"
+                "if (repo/paths['managed']).read_text() == 'before\\n':\n"
+                "    for relative in paths.values():\n"
+                "        current=repo/relative\n"
+                "        Path(str(current)+'.bak').write_bytes(current.read_bytes())\n"
+                "        current.write_text('candidate\\n')\n"
+                "    print(json.dumps({\n"
+                "        'status':'conflict',\n"
+                "        'new_copies':[],\n"
+                "        'managed_backups':[paths['managed'].as_posix()+'.bak'],\n"
+                "        'skill_packages':{'sidecars':[paths['skill'].as_posix()+'.bak']},\n"
+                "        'overlays':{'sidecars':[paths['overlay'].as_posix()+'.bak']},\n"
+                "    }))\n"
+                "    raise SystemExit(2)\n"
+                "print(json.dumps({\n"
+                "    'status':'ok',\n"
+                "    'new_copies':[],\n"
+                "    'managed_backups':[],\n"
+                "    'skill_packages':{'sidecars':[]},\n"
+                "    'overlays':{'sidecars':[]},\n"
+                "}))\n"
+            )
+
+            result = self.matrix._apply_preset(
+                source,
+                target,
+                "claude",
+                root / "preset.log",
+                previous_root=previous,
+            )
+
+            expected = sorted(
+                relative.as_posix() + ".bak" for relative in relatives.values()
+            )
+            self.assertEqual(result["status"], "passed")
+            self.assertEqual(result["reconciled_backups"], expected)
+            for relative in relatives.values():
+                self.assertEqual((target / relative).read_text(), "candidate\n")
+                self.assertFalse(Path(str(target / relative) + ".bak").exists())
+
+    def test_existing_preset_reapply_preserves_declared_new_copy(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source"
+            previous = root / "previous"
+            target = root / "target"
+            relative = Path(".trellis/workflow.md")
+            for base in (source, previous, target):
+                path = base / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("before\n")
+            installer = (
+                source
+                / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"
+            )
+            installer.parent.mkdir(parents=True, exist_ok=True)
+            invocation_count = root / "invocation-count"
+            installer.write_text(
+                "import json,sys\n"
+                "from pathlib import Path\n"
+                "repo=Path(sys.argv[sys.argv.index('--repo')+1])\n"
+                f"relative=Path({relative.as_posix()!r})\n"
+                f"count=Path({str(invocation_count)!r})\n"
+                "count.write_text(str(int(count.read_text())+1) if count.exists() else '1')\n"
+                "new_copy=Path(str(repo/relative)+'.new')\n"
+                "new_copy.write_text('candidate\\n')\n"
+                "print(json.dumps({\n"
+                "    'status':'conflict',\n"
+                "    'new_copies':[relative.as_posix()+'.new'],\n"
+                "    'managed_backups':[],\n"
+                "    'skill_packages':{'sidecars':[]},\n"
+                "    'overlays':{'sidecars':[]},\n"
+                "}))\n"
+                "raise SystemExit(2)\n"
+            )
+
+            with self.assertRaisesRegex(
+                self.matrix.MatrixError, "unexpected preset migration sidecar"
+            ):
+                self.matrix._apply_preset(
+                    source,
+                    target,
+                    "claude",
+                    root / "preset.log",
+                    previous_root=previous,
+                )
+
+            self.assertEqual(invocation_count.read_text(), "1")
+            self.assertEqual(Path(str(target / relative) + ".new").read_text(), "candidate\n")
 
     def test_cli_install_and_upgrade_stay_in_disposable_prefix(self) -> None:
         self.assertIn('TRELLIS_CLI_PREFIX="$WORK_DIR/trellis-cli-prefix"', self.text)
