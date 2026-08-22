@@ -23,7 +23,7 @@
   ],
   "primary_issue": {
     "number": 286,
-    "reason": "Primary independently deliverable temporary lifecycle phase-A change.",
+    "reason": "Issue #286 is fully covered by this reviewed delivery unit.",
     "title": "修复 Guru Team 临时目录正常路径泄漏并增加 stale 回收",
     "url": "https://github.com/castbox/guru-trellis/issues/286"
   },
