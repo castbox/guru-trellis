@@ -1775,6 +1775,7 @@ def managed_transaction_paths(
     platforms: set[str],
     all_platforms: bool,
     previous_manifest: dict[str, Any] | None,
+    source_projections: dict[Path, Path] | None = None,
 ) -> set[Path]:
     """Return the bounded file inventory used by the staging transaction.
 
@@ -1792,11 +1793,12 @@ def managed_transaction_paths(
         lexical_repo_relative(repo, dst / "config.yml"),
         lexical_repo_relative(repo, dst / "extension.json"),
     }
-    for source_relative, target_relative in MANAGED_SPEC_PATHS:
-        del source_relative
-        paths.add(lexical_repo_relative(repo, repo / target_relative))
-    for relative in MANAGED_ASSET_PATHS:
-        paths.add(lexical_repo_relative(repo, dst / relative))
+    projections = source_projections or managed_source_projections(
+        repo,
+        dst,
+        platforms,
+    )
+    paths.update(projections)
     paths.update(_manifest_paths(previous_manifest))
     # Preserve the existing bounded language-guidance behavior without opening
     # the transaction to arbitrary repository documentation.
@@ -1804,51 +1806,83 @@ def managed_transaction_paths(
         lexical_repo_relative(repo, path)
         for path in language_guidance_targets(repo)
     )
-    paths.update(
-        lexical_repo_relative(repo, repo / path)
-        for path in GURU_OVERLAY_ENTRY_PATHS.values()
-        if overlay_selected(path, platforms)
-    )
+    return {path for path in paths if not transaction_path_ignored(path)}
 
-    canonical_root = guru_root_from_script() / "trellis/skills/guru-team"
-    registry, entries = skill_registry_entries(canonical_root)
-    del registry
-    desired_shared = [
+
+def managed_source_projections(
+    repo: Path,
+    dst: Path,
+    platforms: set[str],
+) -> dict[Path, Path]:
+    """Return each deterministic managed target and the source bytes it projects."""
+    source_root = guru_root_from_script()
+    workflow_source_root = source_root / "trellis/workflows/guru-team"
+    projections: dict[Path, Path] = {}
+
+    def add(source: Path, target: Path) -> None:
+        relative = lexical_repo_relative(repo, target)
+        existing = projections.get(relative)
+        if existing is not None and existing != source:
+            raise SystemExit(f"Conflicting managed source projection: {relative.as_posix()}")
+        projections[relative] = source
+
+    for source_relative, target_relative in MANAGED_SPEC_PATHS:
+        add(source_root / source_relative, repo / target_relative)
+    for relative in MANAGED_ASSET_PATHS:
+        add(workflow_source_root / relative, dst / relative)
+    add(workflow_source_root / MANAGED_CONFIG, dst / "config.yml")
+
+    overlay_root = source_root / "trellis/presets/guru-team/overlays"
+    for relative in GURU_OVERLAY_ENTRY_PATHS.values():
+        if overlay_selected(relative, platforms):
+            add(overlay_root / relative, repo / relative)
+
+    canonical_root = source_root / "trellis/skills/guru-team"
+    _, entries = skill_registry_entries(canonical_root)
+    installed_sources = [
         canonical_root / "registry.json",
         canonical_root / "tests/test_finish_family_integration.py",
     ]
     for shared_root_name in ("schemas", "adapters", "contracts", "consumers"):
         shared_root = canonical_root / shared_root_name
-        if shared_root.is_dir():
-            desired_shared.extend(skill_package_source_files(shared_root))
-    for entry in entries:
-        if entry.get("state") != "active":
+        if not shared_root.is_dir():
             continue
+        for source in skill_package_source_files(shared_root):
+            if (
+                shared_root_name == "schemas"
+                and source.name not in CURRENT_SKILL_SHARED_SCHEMAS
+            ):
+                continue
+            installed_sources.append(source)
+    active_entries = [entry for entry in entries if entry.get("state") == "active"]
+    for entry in active_entries:
         package_root = canonical_root / str(entry["package"])
-        desired_shared.extend(skill_package_source_files(package_root))
-    for source in desired_shared:
-        if source.is_file() and not source.is_symlink():
-            relative = source.relative_to(canonical_root)
-            paths.add(lexical_repo_relative(repo, dst / "skills" / relative))
+        installed_sources.extend(skill_package_source_files(package_root))
+    for source in installed_sources:
+        add(source, dst / "skills" / source.relative_to(canonical_root))
     for relative in SKILL_RUNTIME_KERNEL_PATHS:
-        paths.add(lexical_repo_relative(repo, dst / "runtime" / relative))
-    for entry in entries:
-        if entry.get("state") != "active":
-            continue
+        add(canonical_root / "runtime" / relative, dst / "runtime" / relative)
+
+    destination_roots = [
+        ("shared", Path(".agents/skills")),
+        *[
+            (platform, PLATFORM_OVERLAY_PREFIXES[platform][0] / "skills")
+            for platform in sorted(platforms)
+        ],
+    ]
+    for entry in active_entries:
+        skill_id = str(entry["id"])
         package_root = canonical_root / str(entry["package"])
         supported = set(entry.get("supported_platforms") or [])
-        for platform, target_root in (
-            [("shared", Path(".agents/skills"))]
-            + [(platform, PLATFORM_OVERLAY_PREFIXES[platform][0] / "skills") for platform in sorted(platforms)]
-        ):
+        for platform, target_root in destination_roots:
             if platform not in supported:
                 continue
             for source in skill_platform_public_files(package_root):
-                paths.add(lexical_repo_relative(
-                    repo,
-                    repo / target_root / str(entry["id"]) / source.relative_to(package_root),
-                ))
-    return {path for path in paths if not transaction_path_ignored(path)}
+                add(
+                    source,
+                    repo / target_root / skill_id / source.relative_to(package_root),
+                )
+    return projections
 
 
 def materialize_managed_preimage(
@@ -1884,6 +1918,7 @@ def preflight_managed_transaction(
     temporary_root: Path,
     repo: Path,
     inventory: set[Path],
+    source_projections: dict[Path, Path],
 ) -> dict[str, Any]:
     logical_bytes = 0
     for relative in inventory:
@@ -1891,38 +1926,12 @@ def preflight_managed_transaction(
         if path.is_file() and not path.is_symlink():
             logical_bytes += path.stat().st_size
     source_bytes = 0
-    source_root = guru_root_from_script()
-    workflow_source_root = source_root / "trellis/workflows/guru-team"
-    source_candidates = [
-        workflow_source_root / relative
-        for relative in MANAGED_ASSET_PATHS
-    ] + [
-        source_root / source_relative
-        for source_relative, _ in MANAGED_SPEC_PATHS
-    ]
-    canonical_skill_root = source_root / "trellis/skills/guru-team"
-    if canonical_skill_root.is_dir():
-        _, entries = skill_registry_entries(canonical_skill_root)
-        source_candidates.append(canonical_skill_root / "registry.json")
-        source_candidates.extend(
-            path for entry in entries if entry.get("state") == "active"
-            for path in skill_package_source_files(canonical_skill_root / str(entry["package"]))
-        )
-        source_candidates.extend(
-            canonical_skill_root / relative for relative in SKILL_RUNTIME_KERNEL_PATHS
-        )
-    overlay_root = source_root / "trellis/presets/guru-team/overlays"
-    if overlay_root.is_dir():
-        source_candidates.extend(
-            path
-            for path in overlay_root.rglob("*")
-            if path.is_file()
-            and not path.is_symlink()
-            and overlay_selected(path.relative_to(overlay_root), set(ALL_PLATFORMS))
-        )
-    for path in source_candidates:
-        if path.is_file() and not path.is_symlink():
-            source_bytes += path.stat().st_size
+    for target, source in source_projections.items():
+        if target not in inventory:
+            raise SystemExit(f"Managed source projection is outside inventory: {target.as_posix()}")
+        if not source.is_file() or source.is_symlink():
+            raise SystemExit(f"Managed source projection is missing or unsafe: {source}")
+        source_bytes += source.stat().st_size
     estimated_peak = int((logical_bytes + source_bytes) * MANAGED_TRANSACTION_SAFETY_MARGIN) + MANAGED_TRANSACTION_FIXED_MARGIN_BYTES
     available = shutil.disk_usage(temporary_root).free
     result = {
@@ -1931,9 +1940,11 @@ def preflight_managed_transaction(
         "managed_file_count": len(inventory),
         "managed_bytes": logical_bytes,
         "source_bytes": source_bytes,
+        "source_projection_count": len(source_projections),
         "estimated_peak_bytes": estimated_peak,
         "safety_margin": MANAGED_TRANSACTION_SAFETY_MARGIN,
         "available_bytes": available,
+        "cleanup": "temporary_lifecycle",
     }
     if available < estimated_peak:
         raise SystemExit(json.dumps({"code": "insufficient_managed_staging_space", **result}, sort_keys=True))
@@ -2193,14 +2204,25 @@ def install_assets(
         temporary_root = Path(temporary)
         staging_repo = temporary_root / "repo"
         previous_manifest = load_previous_installed_manifest(dst)
+        source_projections = managed_source_projections(
+            repo,
+            dst,
+            platforms or set(DEFAULT_PLATFORMS),
+        )
         managed_paths = managed_transaction_paths(
             repo,
             dst,
             platforms or set(DEFAULT_PLATFORMS),
             all_platforms,
             previous_manifest,
+            source_projections,
         )
-        preflight = preflight_managed_transaction(temporary_root, repo, managed_paths)
+        preflight = preflight_managed_transaction(
+            temporary_root,
+            repo,
+            managed_paths,
+            source_projections,
+        )
         staging_repo.mkdir(parents=True, exist_ok=True)
         preimage = materialize_managed_preimage(repo, staging_repo, managed_paths)
         result = _install_assets_in_place(

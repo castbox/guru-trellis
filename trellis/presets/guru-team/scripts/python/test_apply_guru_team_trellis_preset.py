@@ -2432,13 +2432,58 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             temporary_root = Path(temporary)
             staging_repo = temporary_root / "repo"
-            preflight = preset.preflight_managed_transaction(temporary_root, self.repo, inventory)
+            source_projections = preset.managed_source_projections(
+                self.repo,
+                self.install_dst,
+                {"codex", "cursor", "claude"},
+            )
+            preflight = preset.preflight_managed_transaction(
+                temporary_root,
+                self.repo,
+                inventory,
+                source_projections,
+            )
             staging_repo.mkdir()
             preimage = preset.materialize_managed_preimage(self.repo, staging_repo, inventory)
             self.assertEqual(preimage["bytes"], preflight["managed_bytes"])
             self.assertFalse((staging_repo / "build-output").exists())
             self.assertFalse((staging_repo / "untracked-large.bin").exists())
             self.assertEqual(preimage["file_count"], len(inventory))
+
+    def test_space_preflight_counts_target_projections_and_fails_before_materialization(self) -> None:
+        source_projections = preset.managed_source_projections(
+            self.repo,
+            self.install_dst,
+            {"codex", "cursor", "claude"},
+        )
+        projected_source_bytes = sum(
+            source.stat().st_size for source in source_projections.values()
+        )
+        unique_source_bytes = sum(
+            source.stat().st_size for source in set(source_projections.values())
+        )
+        self.assertGreater(projected_source_bytes, unique_source_bytes)
+
+        with (
+            mock.patch.object(
+                preset.shutil,
+                "disk_usage",
+                return_value=mock.Mock(free=0),
+            ),
+            mock.patch.object(preset, "materialize_managed_preimage") as materialize,
+        ):
+            with self.assertRaises(SystemExit) as raised:
+                self.install_current()
+
+        materialize.assert_not_called()
+        payload = json.loads(str(raised.exception))
+        self.assertEqual(payload["code"], "insufficient_managed_staging_space")
+        self.assertEqual(payload["strategy"], "managed_paths")
+        self.assertEqual(payload["available_bytes"], 0)
+        self.assertEqual(payload["source_bytes"], projected_source_bytes)
+        self.assertEqual(payload["source_projection_count"], len(source_projections))
+        self.assertGreater(payload["estimated_peak_bytes"], payload["source_bytes"])
+        self.assertEqual(payload["cleanup"], "temporary_lifecycle")
 
     def test_reapply_does_not_use_whole_repository_copy(self) -> None:
         with mock.patch.object(shutil, "copytree", side_effect=AssertionError("whole-repo copy")):
