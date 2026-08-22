@@ -17,7 +17,26 @@ ENGLISH_LANGUAGE_RULE_PATTERN='All documentation (must|should) be written in .*E
 
 if [[ -z "$WORK_DIR" ]]; then
   WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/guru-trellis-install.XXXXXX")"
+  GURU_AUTO_WORK_DIR=1
+else
+  GURU_AUTO_WORK_DIR=0
 fi
+
+GURU_TEMP_FILES=()
+cleanup_guru_temporary_objects() {
+  local path
+  for path in "${GURU_TEMP_FILES[@]}"; do
+    if [[ -n "$path" && -f "$path" ]]; then
+      case "$(basename "$path")" in
+        guru-task-commit-input.*|guru-phase2-input.*) rm -f -- "$path" ;;
+      esac
+    fi
+  done
+  if [[ "$GURU_AUTO_WORK_DIR" == 1 && -d "$WORK_DIR" && "$(basename "$WORK_DIR")" == guru-trellis-install.* ]]; then
+    rm -rf -- "$WORK_DIR"
+  fi
+}
+trap cleanup_guru_temporary_objects EXIT INT TERM
 
 mkdir -p "$WORK_DIR"
 TARGET="$WORK_DIR/project"
@@ -929,6 +948,7 @@ prepare_task_commit_candidate() {
   local authoring_json
   local prepared_json
   input_path="$(mktemp "${TMPDIR:-/tmp}/guru-task-commit-input.XXXXXX")"
+  GURU_TEMP_FILES+=("$input_path")
   authoring_json="$(installed_python "$TARGET" - "$TARGET" "$TASK_REL" "$profile" "$subject" "$input_path" "$passed_dto" <<'PY'
 import json
 import re
@@ -2469,6 +2489,7 @@ record_throwaway_phase2() {
   local owner_result
   local public_output
   input_path="$(mktemp "${TMPDIR:-/tmp}/guru-phase2-input.XXXXXX")"
+  GURU_TEMP_FILES+=("$input_path")
   installed_python "$TARGET" - "$TARGET" "$TASK_REL" "$summary" "$input_path" <<'PY'
 import json
 import sys

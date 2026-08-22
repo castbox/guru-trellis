@@ -5,11 +5,11 @@ import os
 import shlex
 import stat
 import subprocess
-import tempfile
 from pathlib import Path
 
 from common import capture_snapshot, git, load, parse, repo_rel, root, validate_candidate
 from runtime.io import CommandError
+from runtime.temporary_lifecycle import temporary_directory
 
 
 HOOK_NAMES = ("pre-commit", "prepare-commit-msg", "commit-msg", "post-commit")
@@ -230,7 +230,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     live_worktree_before = capture_snapshot(repo, live_snapshot_excluded)
     live_index_before = index_entries(repo)
     unrelated_index_before = index_entries(repo, exact)
-    with tempfile.TemporaryDirectory(prefix="guru-task-commit-") as temporary:
+    with temporary_directory("task_commit_input") as temporary:
         temp_root = Path(temporary)
         transaction = temp_root / "worktree"
         index_path = temp_root / "index"

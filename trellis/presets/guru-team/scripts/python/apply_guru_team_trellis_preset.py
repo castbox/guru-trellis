@@ -115,8 +115,27 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("requirements.lock"),
     Path("resolve-python.sh"),
     Path("schema.py"),
+    Path("temporary-inventory.json"),
+    Path("temporary_lifecycle.py"),
     Path("validate.py"),
 )
+
+
+def _guru_temporary_directory(entry_id: str):
+    """Load the installed/source shared lifecycle owner for this checkout."""
+    candidates = (
+        Path.cwd() / ".trellis/guru-team/runtime",
+        Path.cwd() / "trellis/skills/guru-team/runtime",
+    )
+    for runtime_root in candidates:
+        if (runtime_root / "temporary_lifecycle.py").is_file():
+            runtime_text = str(runtime_root)
+            if runtime_text not in sys.path:
+                sys.path.insert(0, runtime_text)
+            from temporary_lifecycle import temporary_directory
+
+            return temporary_directory(entry_id)
+    raise RuntimeError("Guru temporary lifecycle runtime is unavailable")
 ALWAYS_OVERLAY_PREFIXES = (Path(".agents"), Path(".trellis/agents"))
 CODEX_DISPATCH_HEADER = """#-------------------------------------------------------------------------------
 # Codex (dispatch behavior)
@@ -1964,7 +1983,7 @@ def install_assets(
     if source_validation.get("returncode") != 0:
         raise SystemExit("Canonical Guru Team skill package validation failed before preset mutation.")
     dst_relative = lexical_repo_relative(repo, dst)
-    with tempfile.TemporaryDirectory(prefix="guru-team-preset-stage-") as temporary:
+    with _guru_temporary_directory("preset_staging") as temporary:
         staging_repo = Path(temporary) / "repo"
         copy_repo_to_staging(repo, staging_repo)
         result = _install_assets_in_place(

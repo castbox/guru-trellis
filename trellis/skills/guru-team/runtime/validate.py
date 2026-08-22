@@ -29,6 +29,8 @@ APPROVED_KERNEL_FILES = {
     "requirements.lock",
     "resolve-python.sh",
     "schema.py",
+    "temporary-inventory.json",
+    "temporary_lifecycle.py",
     "validate.py",
 }
 
