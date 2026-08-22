@@ -1,2 +1,0 @@
-{"file":".trellis/spec/preset/installer.md","reason":"Review managed-path staging against installer safety and migration rules."}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Review targeted validation, projection equality, drift and clean fixture evidence."}
