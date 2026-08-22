@@ -1771,15 +1771,22 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             4,
         )
 
-        preview_assert = verifier.index('test -f "$TARGET/.trellis/workflow.md.new"')
-        preview_remove = verifier.index('rm -f "$TARGET/.trellis/workflow.md.new"', preview_assert)
-        initial_switch = verifier.index(
+        workflow_helper = verifier.index("preview_and_switch_managed_workflow() {")
+        preview_create = verifier.index(
+            'trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --create-new',
+            workflow_helper,
+        )
+        force_switch = verifier.index(
             'trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force',
-            preview_remove,
+            preview_create,
+        )
+        initial_switch = verifier.index(
+            'preview_and_switch_managed_workflow "$TARGET" "initial-workflow-switch"',
+            force_switch,
         )
         update = verifier.index("trellis update --dry-run 2>&1", initial_switch)
         workflow_reapply = verifier.index(
-            'trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force',
+            'preview_and_switch_managed_workflow "$TARGET" "post-update-workflow-switch"',
             update,
         )
         preset_reapply = verifier.index(
@@ -1801,8 +1808,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             preset_reapply,
         )
 
-        self.assertLess(preview_assert, preview_remove)
-        self.assertLess(preview_remove, initial_switch)
+        self.assertLess(preview_create, force_switch)
+        self.assertLess(force_switch, initial_switch)
         self.assertLess(initial_switch, update)
         self.assertLess(update, workflow_reapply)
         self.assertLess(workflow_reapply, preset_reapply)

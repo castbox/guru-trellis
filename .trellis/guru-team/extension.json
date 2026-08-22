@@ -404,11 +404,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-22T10:18:40Z",
+  "installed_at": "2026-08-22T14:46:40Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "1c2dbe908387576493afa5654a4d020bfa865f74",
-    "commit": "1c2dbe908387576493afa5654a4d020bfa865f74",
+    "ref": "00f902803af36c14d024e1ff2ddcac78bbe0ee53",
+    "commit": "00f902803af36c14d024e1ff2ddcac78bbe0ee53",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -497,7 +497,7 @@
       ".trellis/spec/workflow/skill-package-contract.md": "452e442ab22f9876ae7d92d2ca9bb70eeb0f38ef53f01fbc9d48f7c0fa0e1d3f",
       ".trellis/spec/workflow/data-contracts.md": "f06abece74cc94063d183e33b8ab8f5264736973ae7a57e715fb90fd541841a0",
       ".trellis/spec/workflow/companion-scripts.md": "14d8c517c610037c3ffde8861cac3b2baf5b1cf353bae9d99485c78311f88158",
-      ".trellis/spec/workflow/quality-guidelines.md": "4211991c77cb3d28bbb86324f756f4329f46b6c56799560969a50d4e9b2c7df6"
+      ".trellis/spec/workflow/quality-guidelines.md": "8f399a7b358ab08007574711391a446d7f3931e5d619557a6850784f7fefc73d"
     },
     "new_copies": [],
     "managed_backups": [],
@@ -631,7 +631,7 @@
       {
         "id": "guru-discover-change-context",
         "interface_sha256": "b5759ee8bfbe5acd3c911f6419f9121e04f784656a6f9386d7127ece0c82de14",
-        "tree_sha256": "0a6c22e68a4e24d99cb3b43d474b0c261564d999cbc59f63de2c3577ca88f898"
+        "tree_sha256": "062f11e95bf436806b57dad31fc45146bc44aaf646e6364feef2f77bee52b8a7"
       },
       {
         "id": "guru-execute-task-free-change",
@@ -8257,7 +8257,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/tests/test_runtime.py",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_runtime.py",
-        "sha256": "adb0be827c66ae35ccfc61f8f4165e5105c77462b4e98a0b60c29a72d81e1ed7",
+        "sha256": "f7fa03e5a30edadfbcdf789e4ee0ef4f9473c17b119e73cfabee95fff7317e00",
         "executable": false,
         "action": "unchanged"
       },
@@ -9055,7 +9055,7 @@
       {
         "path": ".trellis/guru-team/runtime/launch.sh",
         "source": "trellis/skills/guru-team/runtime/launch.sh",
-        "sha256": "5e4df5812a4b6f6b4d7cd7ff8b9f0253dfc29ebd89a8e1cf972f8f06908568d1",
+        "sha256": "ed2a60cdb3435b6634b9581cd0dfdb339bbbc0bd3f331a8e5b66d62d6a47562e",
         "executable": true,
         "action": "unchanged"
       },

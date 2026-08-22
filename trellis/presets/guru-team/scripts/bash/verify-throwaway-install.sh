@@ -1074,6 +1074,76 @@ apply_local_workflow_sample() {
   fi
 }
 
+preview_and_switch_managed_workflow() {
+  local target="${1:-$TARGET}"
+  local checkpoint="${2:-workflow-switch}"
+  local workflow="$target/.trellis/workflow.md"
+  local preview="$workflow.new"
+  local backup="$workflow.bak"
+  local expected_candidate="$REPO_ROOT/trellis/workflows/guru-team/workflow.md"
+  local preview_sha256
+
+  if [[ -e "$preview" || -L "$preview" || -e "$backup" || -L "$backup" ]]; then
+    echo "$checkpoint found an unresolved .new/.bak workflow sidecar" >&2
+    return 2
+  fi
+  if [[ ! -f "$workflow" || -L "$workflow" ]]; then
+    echo "$checkpoint managed workflow is missing or not a regular file" >&2
+    return 2
+  fi
+  if [[ ! -f "$expected_candidate" || -L "$expected_candidate" ]] || \
+    ! cmp -s "$workflow" "$expected_candidate"; then
+    echo "$checkpoint current workflow is not the expected managed before-candidate" >&2
+    return 2
+  fi
+
+  (
+    cd "$target"
+    trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --create-new
+  )
+  if [[ ! -f "$preview" || -L "$preview" ]]; then
+    echo "$checkpoint workflow preview did not create a regular .trellis/workflow.md.new" >&2
+    return 2
+  fi
+  if [[ ! -s "$preview" ]]; then
+    echo "$checkpoint workflow preview candidate is empty" >&2
+    return 2
+  fi
+  if ! cmp -s "$workflow" "$expected_candidate"; then
+    echo "$checkpoint current workflow changed while validating the preview" >&2
+    return 2
+  fi
+  if [[ "$USE_LOCAL_WORKFLOW_SAMPLE" == "1" ]]; then
+    if ! grep -q "Guru Team Development Workflow" "$preview"; then
+      echo "$checkpoint workflow preview has no Guru Team workflow marker" >&2
+      return 2
+    fi
+  elif ! cmp -s "$preview" "$expected_candidate"; then
+    echo "$checkpoint workflow preview does not match the expected marketplace candidate" >&2
+    return 2
+  fi
+
+  preview_sha256="$(file_sha256 "$preview")"
+  rm -f "$preview"
+  (
+    cd "$target"
+    trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force
+  )
+  if [[ "$(file_sha256 "$workflow")" != "$preview_sha256" ]]; then
+    echo "$checkpoint active workflow does not match the validated preview candidate" >&2
+    return 2
+  fi
+  apply_local_workflow_sample "$target"
+  if ! cmp -s "$workflow" "$expected_candidate"; then
+    echo "$checkpoint local candidate workflow reapply did not converge" >&2
+    return 2
+  fi
+  if [[ -e "$preview" || -L "$preview" || -e "$backup" || -L "$backup" ]]; then
+    echo "$checkpoint workflow switch left an unresolved .new/.bak sidecar" >&2
+    return 2
+  fi
+}
+
 mkdir "$TARGET"
 git -C "$TARGET" init -q
 git -C "$TARGET" remote add origin https://github.com/castbox/guru-trellis-throwaway.git
@@ -2666,25 +2736,7 @@ installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin);
 assert_embedded_runtime_checkpoint \
   "$TARGET" "$INITIAL_RUNTIME_CHECKPOINT" "$INITIAL_PHASE0_TRANSCRIPT_JSON" phase0-initial-install
 
-rm -f "$TARGET/.trellis/workflow.md.new"
-(
-  cd "$TARGET"
-  trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --create-new
-)
-test -f "$TARGET/.trellis/workflow.md.new"
-if [[ "$USE_LOCAL_WORKFLOW_SAMPLE" == "1" ]]; then
-  grep -q "Guru Team Development Workflow" "$TARGET/.trellis/workflow.md.new"
-else
-  grep -q 'guru-skill-invoke: {"skill":"guru-review-branch","required":true}' "$TARGET/.trellis/workflow.md.new"
-  ! grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md.new"
-fi
-rm -f "$TARGET/.trellis/workflow.md.new"
-test ! -e "$TARGET/.trellis/workflow.md.new"
-(
-  cd "$TARGET"
-  trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force
-)
-apply_local_workflow_sample
+preview_and_switch_managed_workflow "$TARGET" "initial-workflow-switch"
 grep -q 'guru-skill-invoke: {"skill":"guru-review-branch","required":true}' "$TARGET/.trellis/workflow.md"
 ! grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 
@@ -2717,21 +2769,9 @@ else
   printf '%s\n' "update" >"$WORK_DIR/trellis-update-mode.txt"
 fi
 
-rm -f "$TARGET/.trellis/workflow.md.new"
-(
-  cd "$TARGET"
-  trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --create-new
-)
-test -f "$TARGET/.trellis/workflow.md.new"
-rm -f "$TARGET/.trellis/workflow.md.new"
-test ! -e "$TARGET/.trellis/workflow.md.new"
 verify_task_publication_validator_wrappers "after-trellis-update"
 ownership_checkpoint "post-update-before-workflow-and-preset-reapply"
-(
-  cd "$TARGET"
-  trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force
-)
-apply_local_workflow_sample
+preview_and_switch_managed_workflow "$TARGET" "post-update-workflow-switch"
 source_python "$REPO_ROOT/trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py" \
   --repo "$TARGET" \
   --platform claude \

@@ -54,6 +54,44 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    wrapper=PACKAGE/validator["command"]
    self.assertTrue(os.access(wrapper,os.X_OK),wrapper)
    self.assertIn("source \"$LAUNCHER\" "+validator["runtime_command"],wrapper.read_text())
+  self.assertIn("export PYTHONDONTWRITEBYTECODE=1",(RUNTIME/"launch.sh").read_text())
+
+ def test_real_installed_public_wrapper_is_current_without_python_cache_residue(self):
+  with tempfile.TemporaryDirectory() as name:
+   case=Path(name);repo=case/"repo";inputs=case/"inputs";inputs.mkdir();repo.mkdir()
+   guru=repo/".trellis/guru-team";installed_package=guru/"skills/packages"/PACKAGE.name
+   ignore=shutil.ignore_patterns("__pycache__","*.pyc","*.pyo")
+   shutil.copytree(PACKAGE,installed_package,ignore=ignore)
+   shutil.copytree(SKILLS/"consumers",guru/"skills/consumers",ignore=ignore)
+   shutil.copytree(SKILLS/"schemas",guru/"skills/schemas",ignore=ignore)
+   shutil.copytree(RUNTIME,guru/"runtime",ignore=ignore)
+   (guru/"schemas").mkdir();shutil.copy2(FINISH_SCHEMA,guru/"schemas/finish-summary.schema.json")
+   public_wrapper=repo/".agents/skills"/PACKAGE.name/"scripts/invoke.sh";public_wrapper.parent.mkdir(parents=True);shutil.copy2(PACKAGE/"scripts/invoke.sh",public_wrapper);public_wrapper.chmod(0o755)
+   resolver=guru/"runtime/resolve-python.sh";resolver.write_text(f'#!/usr/bin/env bash\nshift 2\nexec {json.dumps(sys.executable)} "$@"\n');resolver.chmod(0o755)
+   subprocess.run(["git","init","-q","-b","main",str(repo)],check=True);subprocess.run(["git","config","user.name","Installed Wrapper Test"],cwd=repo,check=True);subprocess.run(["git","config","user.email","wrapper@example.invalid"],cwd=repo,check=True)
+   subprocess.run(["git","add","."],cwd=repo,check=True);subprocess.run(["git","commit","-q","-m","installed fixture"],cwd=repo,check=True);subprocess.run(["git","remote","add","origin","https://github.com/example/guru-extension.git"],cwd=repo,check=True)
+   head=subprocess.run(["git","rev-parse","HEAD"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip();subprocess.run(["git","update-ref","refs/remotes/origin/main",head],cwd=repo,check=True)
+   public={"profile":"pre_task","source_exit":"synced","mode":"workflow","change_input":{"issue_refs":["#300"],"pr_refs":[],"branches":[],"paths":["trellis/skills/guru-team/packages/guru-discover-change-context"],"commands":["invoke-guru-discover-change-context"],"config_keys":[],"schema_fields":["base_current"],"symbols":["check_owner_binding"],"terms":["public wrapper"],"queries":["Discovery public wrapper context ready"]},"continuation_id":"issue-300-installed-wrapper"}
+   transition={"schema_version":"1.0","transition_id":"base_current:issue300","stage":"base_current","mode":"workflow","repo_locator":str(repo.resolve()),"base":{"source":"explicit","selected_base":"main","remote":"origin","ordered_candidates":["main"],"decision_head":head,"local_base_head":head,"remote_base_head":head,"post_sync_resolution_sha256":"a"*64}}
+   public_path=inputs/"public.json";transition_path=inputs/"transition.json";public_path.write_text(json.dumps(public));transition_path.write_text(json.dumps(transition))
+   recorder=installed_package/"scripts/record-context-discovery.sh";owner_path=inputs/"owner.json"
+   recorded=subprocess.run([str(recorder),"--root",str(repo),"--mode","workflow","--input",str(installed_package/"examples/change-context-owner-result-3.0.json"),"--public-input",str(public_path),"--transition",str(transition_path)],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True);owner=json.loads(recorded.stdout);owner_path.write_text(recorded.stdout)
+   checked=subprocess.run([str(installed_package/"scripts/check-context-discovery.sh"),"--root",str(repo),"--input",str(owner_path),"--public-input",str(public_path),"--transition",str(transition_path)],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True)
+   self.assertEqual(json.loads(checked.stdout)["typed_exit"],"context_ready")
+   envelope={"schema_version":"1.0","public_input":public,"transition":transition,"owner_context":{},"owner_result":owner}
+   invoked=subprocess.run([str(public_wrapper),"--invocation","-"],cwd=repo,input=json.dumps(envelope),text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True,env={key:value for key,value in os.environ.items() if key!="PYTHONDONTWRITEBYTECODE"})
+   self.assertEqual(json.loads(invoked.stdout)["exit_id"],"context_ready")
+   self.assertEqual(subprocess.run(["git","status","--porcelain=v1"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout,"")
+   self.assertEqual(list(repo.rglob("__pycache__")),[])
+   invalid=json.loads(json.dumps(envelope));invalid["public_input"].pop("continuation_id")
+   invalid_result=subprocess.run([str(public_wrapper),"--invocation","-"],cwd=repo,input=json.dumps(invalid),text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True)
+   self.assertEqual(json.loads(invalid_result.stdout),{"exit_id":"blocked"})
+   mismatch=json.loads(json.dumps(envelope));mismatch["owner_result"]["repository"]["repo"]="other/repository"
+   mismatch_result=subprocess.run([str(public_wrapper),"--invocation","-"],cwd=repo,input=json.dumps(mismatch),text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True)
+   self.assertEqual(json.loads(mismatch_result.stdout),{"exit_id":"blocked"})
+   subprocess.run(["git","commit","--allow-empty","-q","-m","advance"],cwd=repo,check=True);advanced=subprocess.run(["git","rev-parse","HEAD"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip();subprocess.run(["git","update-ref","refs/remotes/origin/main",advanced],cwd=repo,check=True)
+   stale_result=subprocess.run([str(public_wrapper),"--invocation","-"],cwd=repo,input=json.dumps(envelope),text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True)
+   self.assertEqual(json.loads(stale_result.stdout)["exit_id"],"refresh_base")
 
  def test_recovery_checkpoint_is_package_owned_and_short_lived(self):
   with tempfile.TemporaryDirectory() as name:
