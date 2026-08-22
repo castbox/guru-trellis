@@ -1179,7 +1179,12 @@ def _preview_and_switch_workflow(
     workflow = target / ".trellis/workflow.md"
     sidecar = target / ".trellis/workflow.md.new"
     backup = target / ".trellis/workflow.md.bak"
-    if sidecar.exists() or backup.exists():
+    if (
+        sidecar.exists()
+        or sidecar.is_symlink()
+        or backup.exists()
+        or backup.is_symlink()
+    ):
         raise MatrixError("workflow switch found an unresolved .new/.bak sidecar")
     if not workflow.is_file() or workflow.is_symlink():
         raise MatrixError("managed workflow is missing or not a regular file")

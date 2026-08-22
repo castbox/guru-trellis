@@ -364,6 +364,43 @@ exit 23
                 runner.assert_not_called()
             self.assertEqual(sidecar.read_text(), "unresolved\n")
 
+    def test_workflow_switch_preserves_dangling_new_and_backup_symlinks(self) -> None:
+        for suffix in (".new", ".bak"):
+            with self.subTest(sidecar=suffix), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                target, current, previous = (
+                    root / "target",
+                    root / "current",
+                    root / "previous",
+                )
+                workflow = target / ".trellis/workflow.md"
+                candidate = current / "trellis/workflows/guru-team/workflow.md"
+                before = previous / "trellis/workflows/guru-team/workflow.md"
+                for path in (workflow, candidate, before):
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text("managed\n", encoding="utf-8")
+                sidecar = Path(str(workflow) + suffix)
+                dangling_target = root / f"missing{suffix}"
+                sidecar.symlink_to(dangling_target)
+
+                self.assertTrue(sidecar.is_symlink())
+                self.assertFalse(sidecar.exists())
+                with mock.patch.object(self.matrix, "_run") as runner:
+                    with self.assertRaisesRegex(self.matrix.MatrixError, "unresolved"):
+                        self.matrix._preview_and_switch_workflow(
+                            target,
+                            Path("trellis"),
+                            {},
+                            "source",
+                            current,
+                            previous,
+                            False,
+                            root,
+                        )
+                    runner.assert_not_called()
+                self.assertTrue(sidecar.is_symlink())
+                self.assertEqual(sidecar.readlink(), dangling_target)
+
     def test_workflow_switch_retains_bad_preview_and_primary_switch_error(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
