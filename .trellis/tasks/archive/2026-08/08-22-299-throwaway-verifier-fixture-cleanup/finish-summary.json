@@ -1,0 +1,260 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-22T11:12:49Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-22-299-throwaway-verifier-fixture-cleanup",
+    "title": "#299 修复 throwaway verifier fixture coverage 与 failure cleanup",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/299-throwaway-verifier-fixture-cleanup",
+    "commits": [
+      "85ac3caf4ab626a46c77a84790b16c3d4924c4c6",
+      "6fb84b22ee20750200a9fb11c8f2e3e0fbc2be48"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-maintain-architecture-baseline/evals/evals.json",
+      ".agents/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+      ".agents/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+      ".agents/skills/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+      ".agents/skills/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+      ".claude/skills/guru-maintain-architecture-baseline/evals/evals.json",
+      ".claude/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+      ".claude/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+      ".claude/skills/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+      ".claude/skills/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+      ".codex/skills/guru-maintain-architecture-baseline/evals/evals.json",
+      ".codex/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+      ".codex/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+      ".codex/skills/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+      ".codex/skills/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+      ".cursor/skills/guru-maintain-architecture-baseline/evals/evals.json",
+      ".cursor/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+      ".cursor/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+      ".cursor/skills/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+      ".cursor/skills/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/evals.json",
+      ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+      ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+      ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+      ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+      ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/tests/test_contract.py",
+      ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/check.jsonl",
+      ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/design.md",
+      ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/implement.jsonl",
+      ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/implement.md",
+      ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/issue-scope-ledger.json",
+      ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/prd.md",
+      ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/task.json",
+      ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/design.md",
+      ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/implement.md",
+      ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/prd.md",
+      ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/task.json",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/evals.json",
+      "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+      "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+      "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+      "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+      "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      299
+    ],
+    "close_issues": [
+      299
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/302"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#299 修复 throwaway verifier fixture coverage 与 failure cleanup",
+    "outcome": "补齐 Architecture Baseline 四个 profile 的 eval fixture 覆盖。",
+    "changed_behavior": [
+      "补齐 Architecture Baseline 四个 profile 的 eval fixture 覆盖。",
+      "`bootstrap_foundation` 与 `repair` fixture 分别遵守各自真实 profile contract，使 covered profile 与 declared profile 精确一致。",
+      "修复 macOS Bash 3.2 在 `set -u` 下展开空 `GURU_TEMP_FILES` 的二次失败，保留 verifier 首个失败的退出状态与主要诊断。",
+      "补充空数组、非空 allowlist cleanup、profile coverage 回归，并同步 canonical、installed 与 Agents/Codex/Claude/Cursor 投影和 extension manifest。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/design.md",
+          ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/implement.md",
+          ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/prd.md",
+          ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/design.md",
+          ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/implement.md",
+          ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/prd.md"
+        ],
+        "change": "补齐 Architecture Baseline 四个 profile 的 eval fixture 覆盖。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "补齐 Architecture Baseline 四个 profile 的 eval fixture 覆盖。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/tests/test_contract.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/tests/test_contract.py"
+        ],
+        "change": "补齐 Architecture Baseline 四个 profile 的 eval fixture 覆盖。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-maintain-architecture-baseline/evals/evals.json",
+          ".agents/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+          ".agents/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+          ".agents/skills/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+          ".agents/skills/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+          ".claude/skills/guru-maintain-architecture-baseline/evals/evals.json",
+          ".claude/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+          ".claude/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+          ".claude/skills/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+          ".claude/skills/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+          ".codex/skills/guru-maintain-architecture-baseline/evals/evals.json",
+          ".codex/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+          ".codex/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+          ".codex/skills/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+          ".codex/skills/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+          ".cursor/skills/guru-maintain-architecture-baseline/evals/evals.json",
+          ".cursor/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+          ".cursor/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+          ".cursor/skills/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+          ".cursor/skills/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/evals.json",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/evals.json",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/repair-current-input.json"
+        ],
+        "change": "补齐 Architecture Baseline 四个 profile 的 eval fixture 覆盖。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/check.jsonl",
+          ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/implement.jsonl",
+          ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/issue-scope-ledger.json",
+          ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/task.json",
+          ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/task.json"
+        ],
+        "change": "补齐 Architecture Baseline 四个 profile 的 eval fixture 覆盖。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#299"
+      ],
+      "pr_refs": [
+        "PR #302"
+      ],
+      "branches": [
+        "fix/299-throwaway-verifier-fixture-cleanup"
+      ],
+      "paths": [
+        ".agents/skills/guru-maintain-architecture-baseline/evals/evals.json",
+        ".agents/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+        ".agents/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+        ".agents/skills/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+        ".agents/skills/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+        ".claude/skills/guru-maintain-architecture-baseline/evals/evals.json",
+        ".claude/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+        ".claude/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+        ".claude/skills/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+        ".claude/skills/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+        ".codex/skills/guru-maintain-architecture-baseline/evals/evals.json",
+        ".codex/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+        ".codex/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+        ".codex/skills/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+        ".codex/skills/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+        ".cursor/skills/guru-maintain-architecture-baseline/evals/evals.json",
+        ".cursor/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+        ".cursor/skills/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+        ".cursor/skills/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+        ".cursor/skills/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/evals.json",
+        ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+        ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+        ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+        ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+        ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/tests/test_contract.py",
+        ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/check.jsonl",
+        ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/design.md",
+        ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/implement.jsonl",
+        ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/implement.md",
+        ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/issue-scope-ledger.json",
+        ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/prd.md",
+        ".trellis/tasks/08-22-299-throwaway-verifier-fixture-cleanup/task.json",
+        ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/design.md",
+        ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/implement.md",
+        ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/prd.md",
+        ".trellis/tasks/archive/2026-08/08-22-299-throwaway-verifier-fixture-cleanup/task.json",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+        "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/evals.json",
+        "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-current-facts.json",
+        "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/bootstrap-foundation-input.json",
+        "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/repair-current-contract-facts.json",
+        "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/repair-current-input.json",
+        "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#299 修复 throwaway verifier fixture coverage 与 failure cleanu",
+        "补齐 Architecture Baseline 四个 profile 的 eval fixture 覆盖。",
+        "完成 evals.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#299 修复 throwaway verifier fixture coverage 与 failure cleanup\n补齐 Architecture Baseline 四个 profile 的 eval fixture 覆盖。\n`bootstrap_foundation` 与 `repair` fixture 分别遵守各自真实 profile contract，使 covered profile 与 declared profile 精确一致。\n修复 macOS Bash 3.2 在 `set -u` 下展开空 `GURU_TEMP_FILES` 的二次失败，保留 verifier 首个失败的退出状态与主要诊断。\n补充空数组、非空 allowlist cleanup、profile coverage 回归，并同步 canonical、installed 与 Agents/Codex/Claude/Cursor 投影和 extension manifest。\n#299 修复 throwaway verifier fixture coverage 与 failure cleanu\n完成 evals.json 相关变更"
+  }
+}
