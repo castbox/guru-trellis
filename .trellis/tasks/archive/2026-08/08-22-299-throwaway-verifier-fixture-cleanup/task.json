@@ -1,0 +1,12 @@
+{
+  "id": "299-throwaway-verifier-fixture-cleanup",
+  "name": "299-throwaway-verifier-fixture-cleanup",
+  "title": "#299 修复 throwaway verifier fixture coverage 与 failure cleanup",
+  "status": "completed",
+  "branch": "fix/299-throwaway-verifier-fixture-cleanup",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/299",
+  "completedAt": "2026-08-22"
+}
