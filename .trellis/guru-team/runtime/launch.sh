@@ -48,5 +48,6 @@ if [[ ! -f "$SKILLS_ROOT/runtime/command.py" || ! -x "$SKILLS_ROOT/runtime/resol
   exit 2
 fi
 export PYTHONPATH="$SKILLS_ROOT"
+export PYTHONDONTWRITEBYTECODE=1
 cd "$REPO_ROOT"
 exec "$SKILLS_ROOT/runtime/resolve-python.sh" "$REPO_ROOT" "$SKILLS_ROOT/runtime" -m runtime.command "$PACKAGE_ROOT" "$COMMAND_ID" "$@"

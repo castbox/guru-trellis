@@ -1,0 +1,192 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-22T15:44:55Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-22-300-discovery-wrapper-context-ready",
+    "title": "#300 修复 Discovery public wrapper context_ready 降级",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-22-300-discovery-wrapper-context-ready",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/300-discovery-wrapper-context-ready",
+    "commits": [
+      "f309be441fc0bd343f1f5db7fb32ce8d4047a415",
+      "535eacf1c623e1198b7b90e9da85757af731d9c9",
+      "3c3a886fc8fe0584fe7cad090df21c7042d78a19"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/runtime/launch.sh",
+      ".trellis/guru-team/skills/packages/guru-discover-change-context/tests/test_runtime.py",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/check.jsonl",
+      ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/design.md",
+      ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/implement.jsonl",
+      ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/implement.md",
+      ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/issue-scope-ledger.json",
+      ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/prd.md",
+      ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/task.json",
+      ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/design.md",
+      ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/implement.md",
+      ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/prd.md",
+      ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/task.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+      "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py",
+      "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+      "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_runtime.py",
+      "trellis/skills/guru-team/runtime/launch.sh"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      300
+    ],
+    "close_issues": [],
+    "related_issues": [
+      267,
+      287,
+      295,
+      299,
+      300
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/303"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#300 修复 Discovery public wrapper context_ready 降级",
+    "outcome": "修复 installed Discovery public wrapper 运行时生成 Python bytecode、污染 authority checkout，导致合法 `context_ready` 被降级为 `blocked` 的问题。",
+    "changed_behavior": [
+      "修复 installed Discovery public wrapper 运行时生成 Python bytecode、污染 authority checkout，导致合法 `context_ready` 被降级为 `blocked` 的问题。",
+      "为 Python matrix 与 single-repository verifier 增加受管理 workflow 的 before-candidate 校验、`--create-new` preview 校验、显式 `--force` 切换和 `.new` / `.bak` fail-closed；用户修改与悬空 sidecar 均会保留并阻断。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/design.md",
+          ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/implement.md",
+          ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/prd.md",
+          ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/design.md",
+          ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/implement.md",
+          ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/prd.md"
+        ],
+        "change": "修复 installed Discovery public wrapper 运行时生成 Python bytecode、污染 authority checkout，导致合法 `context_ready` 被降级为 `blocked` 的问题。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "修复 installed Discovery public wrapper 运行时生成 Python bytecode、污染 authority checkout，导致合法 `context_ready` 被降级为 `blocked` 的问题。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md"
+        ],
+        "change": "修复 installed Discovery public wrapper 运行时生成 Python bytecode、污染 authority checkout，导致合法 `context_ready` 被降级为 `blocked` 的问题。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/runtime/launch.sh",
+          ".trellis/guru-team/skills/packages/guru-discover-change-context/tests/test_runtime.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+          "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_runtime.py",
+          "trellis/skills/guru-team/runtime/launch.sh"
+        ],
+        "change": "修复 installed Discovery public wrapper 运行时生成 Python bytecode、污染 authority checkout，导致合法 `context_ready` 被降级为 `blocked` 的问题。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/check.jsonl",
+          ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/implement.jsonl",
+          ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/issue-scope-ledger.json",
+          ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/task.json",
+          ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/task.json"
+        ],
+        "change": "修复 installed Discovery public wrapper 运行时生成 Python bytecode、污染 authority checkout，导致合法 `context_ready` 被降级为 `blocked` 的问题。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#267",
+        "#287",
+        "#295",
+        "#299",
+        "#300"
+      ],
+      "pr_refs": [
+        "PR #303"
+      ],
+      "branches": [
+        "fix/300-discovery-wrapper-context-ready"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/runtime/launch.sh",
+        ".trellis/guru-team/skills/packages/guru-discover-change-context/tests/test_runtime.py",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/check.jsonl",
+        ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/design.md",
+        ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/implement.jsonl",
+        ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/implement.md",
+        ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/issue-scope-ledger.json",
+        ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/prd.md",
+        ".trellis/tasks/08-22-300-discovery-wrapper-context-ready/task.json",
+        ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/design.md",
+        ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/implement.md",
+        ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/prd.md",
+        ".trellis/tasks/archive/2026-08/08-22-300-discovery-wrapper-context-ready/task.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+        "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py",
+        "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+        "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_runtime.py",
+        "trellis/skills/guru-team/runtime/launch.sh"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#300 修复 Discovery public wrapper context_ready 降级",
+        "修复 installed Discovery public wrapper 运行时生成 Python bytecode、",
+        "完成 extension.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#300 修复 Discovery public wrapper context_ready 降级\n修复 installed Discovery public wrapper 运行时生成 Python bytecode、污染 authority checkout，导致合法 `context_ready` 被降级为 `blocked` 的问题。\n为 Python matrix 与 single-repository verifier 增加受管理 workflow 的 before-candidate 校验、`--create-new` preview 校验、显式 `--force` 切换和 `.new` / `.bak` fail-closed；用户修改与悬空 sidecar 均会保留并阻断。\n修复 installed Discovery public wrapper 运行时生成 Python bytecode、\n完成 extension.json 相关变更"
+  }
+}

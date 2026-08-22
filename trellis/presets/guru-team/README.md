@@ -416,10 +416,12 @@ sampling from being reported as current-branch marketplace verification. When
 validating a feature branch or release, set `TRELLIS_WORKFLOW_SOURCE` to the exact
 existing branch/tag ref; only that run is evidence for that ref. When
 it does run, it also exercises the existing-project `trellis workflow
---create-new` preview, deletes the validated expected preview `.new`, then runs
-the active switch, dry-run-selected non-interactive update with `--skip-all`,
-workflow reapply, and preset reapply. It never uses `--force` for this preserve
-contract.
+--create-new` preview, verifies the current workflow against the exact managed
+before-candidate and the preview against the expected marketplace candidate,
+then consumes that preview and runs the active switch with explicit `--force`.
+Unknown or user-modified workflow bytes and pre-existing `.new` / `.bak`
+sidecars stop before replacement. The verifier then runs the dry-run-selected
+non-interactive update with `--skip-all`, workflow reapply, and preset reapply.
 It records ownership-gate JSON at three checkpoints: before the initial preset
 apply, after `trellis update` before workflow/preset reapply, and after preset
 reapply before final drift/sidecar checks. The installer itself repeats the
