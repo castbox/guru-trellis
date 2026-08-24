@@ -17,13 +17,19 @@
 当前 main 已验证 official Trellis `0.6.15` compatibility；`.37` stable tag、GitHub Release、
 tag-pinned install 与 release smoke 仍是 #267 的未验证发布边界。
 
-Guru Trellis 下一阶段产品进化目标的唯一正文位于
-[`evolution-goals.md`](./versions/current-main-0.6.5-guru.40/evolution-goals.md)，
-identity 为 `EVO-001..007`。它定义 accepted target，不把尚未实现的方向冒充
-current behavior。后续重构 Issue 和 planning 只引用 locator/identity、delta 与
-验收，不复制目标正文。
+Guru Trellis 下一阶段产品进化 Requirements 的唯一文档集位于
+[`evolution/`](./evolution/README.md)，主定义为
+[`evolution/requirement-main.md`](./evolution/requirement-main.md)，
+其中 `EVO-001..007` 为 `user_confirmed` 目标，`REQ-UC-EVO-*`、`EVO-REQ-*`、
+`EVO-NFR-*` 与 `EVO-CAP-*` 为待完成全稿审核的详细需求。它定义 target，不把尚未
+实现的方向冒充 current behavior。target authority、现有 Issue 链边界与阶段放行规则只在
+该主定义第 0 章维护，README 不复制正文。
 
-读取顺序：`evolution-goals.md` -> `requirement-main.md` ->
+Evolution Requirements 的入口/API/CLI 适用性只在 target
+[`README.md`](./evolution/README.md) 与主定义中维护。
+
+target 读取顺序：`evolution/requirement-main.md` ->
+`evolution/requirement-non-functional.md`。current runtime 读取顺序：`requirement-main.md` ->
 `requirement-non-functional.md` -> `traceability.md` -> `decisions.md`。Design、Test
 与 Architecture 入口分别位于 `docs/design/README.md`、`docs/test/README.md`、
 `docs/architecture/README.md`。

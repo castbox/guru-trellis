@@ -7,7 +7,7 @@ workflow and preset. It is not a product backend/frontend application.
 
 Use these specs when changing:
 
-- [Guru Trellis evolution goals](../../../docs/requirements/versions/current-main-0.6.5-guru.40/evolution-goals.md) for the accepted product outcomes that every substantial Guru Team refactor must preserve and advance.
+- [Guru Trellis evolution requirements](../../../docs/requirements/evolution/requirement-main.md) for the user-confirmed product outcomes and the current target Requirements draft; the document status controls which detailed requirements are approved.
 - [architecture-baseline.md](./architecture-baseline.md) for the Architecture Baseline owner and authority projection.
 - [requirements-design-test-ssot.md](./requirements-design-test-ssot.md) for the atomic Requirements, Design, and Test authority, contribution, and traceability contract.
 - [bootstrap-repository-ssot.md](./bootstrap-repository-ssot.md) for the one-time Bootstrap orchestration, cross-SSOT alignment, and minimal spec projection.
@@ -22,7 +22,7 @@ Use these specs when changing:
 
 Before editing workflow behavior:
 
-1. Read the [Guru Trellis evolution goals](../../../docs/requirements/versions/current-main-0.6.5-guru.40/evolution-goals.md), map the proposed refactor to `EVO-001..007`, and identify any unaffected goals before choosing implementation boundaries.
+1. Read the [Guru Trellis evolution requirements](../../../docs/requirements/evolution/requirement-main.md), map the proposed refactor to `EVO-001..007`, and identify any unaffected goals before choosing implementation boundaries.
 2. Read [workflow-contract.md](./workflow-contract.md).
 3. Read [companion-scripts.md](./companion-scripts.md) when changing Bash or Python helpers.
 4. Read [data-contracts.md](./data-contracts.md) when changing config, current task identity, runtime boundary, review-gate, issue ledger, or PR payload data.
