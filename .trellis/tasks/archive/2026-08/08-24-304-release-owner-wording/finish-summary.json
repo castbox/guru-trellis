@@ -1,0 +1,144 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-24T14:46:40Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-24-304-release-owner-wording",
+    "title": "#304 修正 Release owner 文案",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-24-304-release-owner-wording",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/304-release-owner-wording",
+    "commits": [
+      "a094a7b77befaf5cc0c75b4d83825bfd26e8abcd",
+      "3b459fc1873bf477dc3033a4182a6c33a91c38dd",
+      "deefb8a5f069b16c302c1127ab922d116deb439b"
+    ],
+    "changed_paths": [
+      ".trellis/tasks/08-24-304-release-owner-wording/design.md",
+      ".trellis/tasks/08-24-304-release-owner-wording/implement.md",
+      ".trellis/tasks/08-24-304-release-owner-wording/issue-scope-ledger.json",
+      ".trellis/tasks/08-24-304-release-owner-wording/prd.md",
+      ".trellis/tasks/08-24-304-release-owner-wording/task.json",
+      ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/design.md",
+      ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/implement.md",
+      ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/prd.md",
+      ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/task.json",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/workflows/guru-team/README.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      304
+    ],
+    "close_issues": [],
+    "related_issues": [
+      304
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/307"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#304 修正 Release owner 文案",
+    "outcome": "将 `README.md`、Guru Team workflow README 和 preset README 中重构前稳定版的 Release owner 从 stale #267 统一修正为独立 Release Issue #304。",
+    "changed_behavior": [
+      "将 `README.md`、Guru Team workflow README 和 preset README 中重构前稳定版的 Release owner 从 stale #267 统一修正为独立 Release Issue #304。",
+      "修正 task-local commit 边界表述并清理 planning 文档 EOF 空行，关闭 Branch Review findings。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/08-24-304-release-owner-wording/design.md",
+          ".trellis/tasks/08-24-304-release-owner-wording/implement.md",
+          ".trellis/tasks/08-24-304-release-owner-wording/prd.md",
+          ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/design.md",
+          ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/implement.md",
+          ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/prd.md",
+          "README.md"
+        ],
+        "change": "将 `README.md`、Guru Team workflow README 和 preset README 中重构前稳定版的 Release owner 从 stale #267 统一修正为独立 Release Issue #304。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md"
+        ],
+        "change": "将 `README.md`、Guru Team workflow README 和 preset README 中重构前稳定版的 Release owner 从 stale #267 统一修正为独立 Release Issue #304。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-24-304-release-owner-wording/issue-scope-ledger.json",
+          ".trellis/tasks/08-24-304-release-owner-wording/task.json",
+          ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/task.json"
+        ],
+        "change": "将 `README.md`、Guru Team workflow README 和 preset README 中重构前稳定版的 Release owner 从 stale #267 统一修正为独立 Release Issue #304。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "change": "将 `README.md`、Guru Team workflow README 和 preset README 中重构前稳定版的 Release owner 从 stale #267 统一修正为独立 Release Issue #304。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#304"
+      ],
+      "pr_refs": [
+        "PR #307"
+      ],
+      "branches": [
+        "codex/304-release-owner-wording"
+      ],
+      "paths": [
+        ".trellis/tasks/08-24-304-release-owner-wording/design.md",
+        ".trellis/tasks/08-24-304-release-owner-wording/implement.md",
+        ".trellis/tasks/08-24-304-release-owner-wording/issue-scope-ledger.json",
+        ".trellis/tasks/08-24-304-release-owner-wording/prd.md",
+        ".trellis/tasks/08-24-304-release-owner-wording/task.json",
+        ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/design.md",
+        ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/implement.md",
+        ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/prd.md",
+        ".trellis/tasks/archive/2026-08/08-24-304-release-owner-wording/task.json",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/workflows/guru-team/README.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#304 修正 Release owner 文案",
+        "将 `README.md`、Guru Team workflow README 和 preset README 中重构前",
+        "完成 design.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#304 修正 Release owner 文案\n将 `README.md`、Guru Team workflow README 和 preset README 中重构前稳定版的 Release owner 从 stale #267 统一修正为独立 Release Issue #304。\n修正 task-local commit 边界表述并清理 planning 文档 EOF 空行，关闭 Branch Review findings。\n将 `README.md`、Guru Team workflow README 和 preset README 中重构前\n完成 design.md 相关变更"
+  }
+}
