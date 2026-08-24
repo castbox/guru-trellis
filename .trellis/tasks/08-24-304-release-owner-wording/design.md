@@ -34,4 +34,3 @@ owner 替换不改写版本、验证结果、provenance classification、stable-
 - 无 public API、schema、CLI、installer、manifest、managed asset 或 runtime 变化。
 - 无数据、配置或状态迁移。
 - 回滚点是三个独立句子；任一位置不一致时整项文案修正不通过。
-
