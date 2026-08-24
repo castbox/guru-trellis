@@ -144,21 +144,20 @@ Chinese documentation contract.
 
 Stable workflow marketplace installs should pin the repo release tag that
 combines the target official Trellis CLI version and Guru Team revision, for
-example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.10`. The stable source for
-this release is annotated tag `v0.6.5-guru.10`, extension revision
-`0.6.5-guru.36`, and official `@mindfoldhq/trellis` `0.6.5`. Its tag object is
-`b5fd47e9dc45ca4d6950f87f38d495776ce676ce`; its peeled commit is
-`5c059f4943edad7dfe25182a78af94759d41f9a1`; and its GitHub Release is
-non-draft, non-prerelease, and zero-asset. Workflow marketplace and preset
-sources must use that same immutable tag. Unpinned
+example `gh:castbox/guru-trellis/trellis#v0.6.15-guru.1`. The release-facing
+target is annotated tag `v0.6.15-guru.1`, extension revision `0.6.5-guru.37`,
+and official `@mindfoldhq/trellis` `0.6.15`. Its tag object, peeled commit,
+GitHub Release, tag-pinned install, and post-publish smoke are not created or
+verified yet; #304 establishes those facts only after a fresh exact candidate
+passes every Release gate. Workflow marketplace and preset sources must use
+that same immutable tag. Unpinned
 `gh:castbox/guru-trellis/trellis` is a latest/canary source and should be
 reported as mutable provenance.
 
 Current `main` carries extension candidate `0.6.5-guru.37` targeting official
-Trellis `0.6.15`. Its six-cell compatibility, installed contracts, and A/B
-lifecycle evidence are `public_plus_local_candidate`; it is not a stable source.
-The independent pre-refactor stable Release Issue (#304) exclusively owns the `.37` tag, GitHub Release, tag-pinned install,
-and release smoke.
+Trellis `0.6.15`. The independent pre-refactor stable Release Issue (#304)
+must re-freeze the candidate after this repair and rerun the complete matrix;
+prior partial evidence does not establish the target tag or Release.
 
 ## Current Ownership Contract
 
@@ -233,7 +232,7 @@ command.
 ## Apply
 
 ```bash
-git clone --depth 1 --branch v0.6.5-guru.10 \
+git clone --depth 1 --branch v0.6.15-guru.1 \
   https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project \
@@ -453,7 +452,7 @@ Only the three additive Guru finish entries remain under
 `trellis/presets/guru-team/overlays/`. For a current installation, use this
 sequence:
 
-1. install the target official Trellis CLI, currently `0.6.5`;
+1. install the target official Trellis CLI, currently `0.6.15`;
 2. run the required Trellis version upgrade, then `trellis update --dry-run` and
    exactly one preserve-mode live update: `trellis update --migrate --skip-all`
    when migration is required, or `trellis update --skip-all` otherwise;
@@ -686,10 +685,10 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 standalone-only verifier 共声明 89 个 external exits。
 `guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
-invoke 与六个 exit marker。当前 source candidate 的 canonical extension version 为
-`0.6.5-guru.37`；stable source `v0.6.5-guru.10` 仍对应 extension revision
-`0.6.5-guru.36`，并以官方 Trellis CLI `0.6.5` 为目标。该 annotated tag 只在最终 candidate 通过 pre-tag gate 后创建，peeled commit
-为 `5c059f4943edad7dfe25182a78af94759d41f9a1`。Repo release
+invoke 与六个 exit marker。当前 release-facing source 的 canonical extension version 为
+`0.6.5-guru.37`，目标 stable source 为 `v0.6.15-guru.1`，并以官方 Trellis CLI
+`0.6.15` 为目标。该 annotated tag 只在重新冻结的 exact candidate 通过 pre-tag gate
+后创建；当前不声明 tag object、peeled commit、GitHub Release 或 post-publish smoke。Repo release
 tag 与 extension revision 是独立版本轴；workflow 与 preset 必须 pin 同一 immutable tag。
 本发布未取得 live GPT-5.6 Sol production semantic evidence；deterministic/no-model/
 fake-production 结果不能证明 pressure matrix、模型稳定性或未来模型行为。
@@ -923,7 +922,7 @@ Trellis workflow marketplace:
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.10 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.1 \
   --template guru-team
 ```
 

@@ -36,7 +36,8 @@ prefix 与 runtime，分别执行 clean `0.6.15` 和 existing `0.6.5 -> 0.6.15`�
 | final recursive `.new/.bak` | 6 | all `0` |
 | template hash unknown drift | 6 | all `0` |
 | candidate source binding | 1 | HEAD、tracked delta、untracked path/mode/content 与 isolated-index candidate tree 形成单一 `source_state`；run 前后 identity 相同 |
-| capability / installed projection | 6 | Skill package、ordinary managed asset、overlay executable mode 保持；extension identity 独立于 version field 比较，无 blocking loss |
+| capability projection | 6 | `workflow`、`task_data`、`docs_authority` 三组保持，无 blocking capability loss |
+| consistency / installed projection | 6 | Skill API/interface/schema/command、Skill package、ordinary managed asset、overlay mode、template hash、sidecar 与 extension identity/version binding 保持；任一漂移独立阻塞 |
 | Docs authority | 6 | recursive `docs/**` 全文件 hash 保持，Requirements/Design/Test/Architecture 均含 versioned body |
 | installed Phase 0/workspace/closeout | 6 | PASS |
 | post-archive history discovery | 1 | A archive 后返回唯一 non-empty `PR #301` candidate，locator 指向该 task 的 `finish-summary.json` |

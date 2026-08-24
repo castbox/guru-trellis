@@ -607,13 +607,15 @@ exit 23
         after = json.loads(json.dumps(before))
         after["extension"]["extension_id"] = "guru-team-drifted"
         identity_drift = self.matrix.compare_capabilities(before, after)
-        self.assertFalse(identity_drift["capabilities_preserved"])
+        self.assertTrue(identity_drift["capabilities_preserved"])
+        self.assertEqual(identity_drift["blocking_differences"], [])
         self.assertEqual(
-            [
-                difference["group"]
-                for difference in identity_drift["blocking_differences"]
-            ],
-            ["extension_identity"],
+            identity_drift["extension_identity"],
+            {
+                "before": {"extension_id": before["extension"]["extension_id"]},
+                "after": {"extension_id": "guru-team-drifted"},
+                "consistent": False,
+            },
         )
 
         after = json.loads(json.dumps(before))
@@ -629,6 +631,32 @@ exit 23
         api_projection_change = self.matrix.compare_capabilities(before, after)
         self.assertTrue(api_projection_change["capabilities_preserved"])
         self.assertEqual(api_projection_change["blocking_differences"], [])
+
+    def test_source_and_installed_consumers_block_identity_drift_independently(self) -> None:
+        before = self.matrix.capability_projection(REPO)
+        after = json.loads(json.dumps(before))
+        after["extension"]["extension_id"] = "guru-team-drifted"
+        comparison = self.matrix.compare_capabilities(before, after)
+
+        self.assertTrue(comparison["capabilities_preserved"])
+        self.assertFalse(comparison["extension_identity"]["consistent"])
+        for projection_name in ("source", "installed"):
+            with self.subTest(projection=projection_name), self.assertRaisesRegex(
+                self.matrix.MatrixError,
+                rf"^{projection_name} extension identity changed:",
+            ):
+                self.matrix._assert_projection_consistency(
+                    comparison, projection_name
+                )
+
+        self.assertIn(
+            '_assert_projection_consistency(comparison, "source")',
+            self.matrix_text,
+        )
+        self.assertIn(
+            '_assert_projection_consistency(installed_comparison, "installed")',
+            self.matrix_text,
+        )
 
     def test_installed_projection_and_template_hash_classification_are_current(self) -> None:
         installed = self.matrix.installed_capability_projection(REPO)

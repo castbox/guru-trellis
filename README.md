@@ -13,35 +13,28 @@ Guru Trellis 是 Guru Team 面向业务研发仓库提供的 Trellis 团队扩�
 
 [https://github.com/castbox/guru-trellis](https://github.com/castbox/guru-trellis)
 
-## 当前稳定版本
+## 本次发布固定身份
 
 | 组件 | 固定版本 |
 | --- | --- |
-| Guru Trellis repo tag | `v0.6.5-guru.10` |
-| Guru Team extension revision | `0.6.5-guru.36` |
-| 官方 `@mindfoldhq/trellis` CLI | `0.6.5` |
+| Guru Trellis repo tag | `v0.6.15-guru.1` |
+| Guru Team extension revision | `0.6.5-guru.37` |
+| 官方 `@mindfoldhq/trellis` CLI | `0.6.15` |
 
-repo tag 与 extension revision 是两个独立版本轴。稳定 workflow 与 preset 必须来自同一个
-immutable annotated tag `v0.6.5-guru.10`；tag object 是
-`b5fd47e9dc45ca4d6950f87f38d495776ce676ce`，peeled commit 是
-`5c059f4943edad7dfe25182a78af94759d41f9a1`。对应 GitHub Release 为 non-draft、
-non-prerelease、zero-asset release。
-
-当前 `main` 的兼容候选是 extension `0.6.5-guru.37` / 官方 Trellis `0.6.15`。
-它已通过 `claude|codex|cursor × clean|existing` 六个隔离 cell、完整 capability
-preservation、installed SSOT contracts 与 A/B Finish/cleanup compatibility；workflow
-证据边界为 `public_plus_local_candidate`。`.37` 尚不是 stable tag 或 GitHub Release，
-其发布、tag-pinned install 与 release smoke 只由独立的重构前稳定版 Release Issue（#304）拥有。
+repo tag 与 extension revision 是两个独立版本轴。本次发布的 workflow 与 preset
+固定使用同一个目标 annotated tag `v0.6.15-guru.1`。该 tag object、peeled commit、
+GitHub Release、tag-pinned install 与 post-publish smoke 尚未创建或验证；#304 必须在
+修复合并后重新冻结 exact candidate，并从头执行 Release gates。
 
 新仓库的非交互安装入口：
 
 ```bash
-npm install --global @mindfoldhq/trellis@0.6.5
+npm install --global @mindfoldhq/trellis@0.6.15
 trellis init -y --claude --codex --cursor \
   --workflow guru-team \
-  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.10
+  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.15-guru.1
 guru_trellis_source="$(mktemp -d)"
-git clone --depth 1 --branch v0.6.5-guru.10 \
+git clone --depth 1 --branch v0.6.15-guru.1 \
   https://github.com/castbox/guru-trellis.git "$guru_trellis_source"
 "$guru_trellis_source/trellis/presets/guru-team/scripts/bash/apply.sh" \
   --repo . --all-platforms
@@ -50,7 +43,7 @@ git clone --depth 1 --branch v0.6.5-guru.10 \
 已有仓库先安装固定 CLI 并 preview official update：
 
 ```bash
-npm install --global @mindfoldhq/trellis@0.6.5
+npm install --global @mindfoldhq/trellis@0.6.15
 trellis update --dry-run
 ```
 
@@ -70,13 +63,13 @@ trellis update --skip-all
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.10 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.1 \
   --template guru-team --create-new
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.10 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.1 \
   --template guru-team
 guru_trellis_source="$(mktemp -d)"
-git clone --depth 1 --branch v0.6.5-guru.10 \
+git clone --depth 1 --branch v0.6.15-guru.1 \
   https://github.com/castbox/guru-trellis.git "$guru_trellis_source"
 "$guru_trellis_source/trellis/presets/guru-team/scripts/bash/apply.sh" \
   --repo . --all-platforms

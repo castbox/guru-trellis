@@ -1,0 +1,188 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-24T16:59:31Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-24-304-release-readiness-fixes",
+    "title": "#304 修复 Release readiness blockers",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-24-304-release-readiness-fixes",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/304-release-readiness-fixes",
+    "commits": [
+      "46de3cb73e7bf62844e34342595d82b53df64316",
+      "65685992b2cc29ff363f1c56cee1d28bd2eeaa0e",
+      "9f8fd7f766e25247fe018243fb90741b7d93e13e"
+    ],
+    "changed_paths": [
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/tasks/08-24-304-release-readiness-fixes/design.md",
+      ".trellis/tasks/08-24-304-release-readiness-fixes/implement.md",
+      ".trellis/tasks/08-24-304-release-readiness-fixes/issue-scope-ledger.json",
+      ".trellis/tasks/08-24-304-release-readiness-fixes/prd.md",
+      ".trellis/tasks/08-24-304-release-readiness-fixes/task.json",
+      ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/design.md",
+      ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/implement.md",
+      ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/prd.md",
+      ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/task.json",
+      "README.md",
+      "docs/architecture/01-current/system.md",
+      "docs/architecture/04-integrations/distribution.md",
+      "docs/architecture/evidence/current-evidence.md",
+      "docs/design/versions/current-main-0.6.5-guru.40/capability-inventory.md",
+      "docs/design/versions/current-main-0.6.5-guru.40/design-main.md",
+      "docs/requirements/versions/current-main-0.6.5-guru.40/requirement-main.md",
+      "docs/test/versions/current-main-0.6.5-guru.40/test-plan.md",
+      "docs/test/versions/current-main-0.6.5-guru.40/test-strategy.md",
+      "docs/test/versions/current-main-0.6.5-guru.40/traceability.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+      "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py",
+      "trellis/workflows/guru-team/README.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      304
+    ],
+    "close_issues": [],
+    "related_issues": [
+      304
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/308"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#304 修复 Release readiness blockers",
+    "outcome": "将三份 release-facing README 统一到目标 tag v0.6.15-guru.1、extension 0.6.5-guru.37 与 Trellis CLI 0.6.15。",
+    "changed_behavior": [
+      "将三份 release-facing README 统一到目标 tag v0.6.15-guru.1、extension 0.6.5-guru.37 与 Trellis CLI 0.6.15。",
+      "收敛 current .40 Requirements、Design、Test、Architecture 中 capability loss 与 consistency/installation gate 的边界。",
+      "修正 verifier：capability loss 只比较 workflow、task_data、docs_authority；extension identity 由独立一致性结果表达，并继续在 source/installed consumer 中 fail closed。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/docs/public-docs.md",
+          ".trellis/tasks/08-24-304-release-readiness-fixes/design.md",
+          ".trellis/tasks/08-24-304-release-readiness-fixes/implement.md",
+          ".trellis/tasks/08-24-304-release-readiness-fixes/prd.md",
+          ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/design.md",
+          ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/implement.md",
+          ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/prd.md",
+          "README.md",
+          "docs/architecture/01-current/system.md",
+          "docs/architecture/04-integrations/distribution.md",
+          "docs/architecture/evidence/current-evidence.md",
+          "docs/design/versions/current-main-0.6.5-guru.40/capability-inventory.md",
+          "docs/design/versions/current-main-0.6.5-guru.40/design-main.md",
+          "docs/requirements/versions/current-main-0.6.5-guru.40/requirement-main.md",
+          "docs/test/versions/current-main-0.6.5-guru.40/test-plan.md",
+          "docs/test/versions/current-main-0.6.5-guru.40/test-strategy.md",
+          "docs/test/versions/current-main-0.6.5-guru.40/traceability.md"
+        ],
+        "change": "将三份 release-facing README 统一到目标 tag v0.6.15-guru.1、extension 0.6.5-guru.37 与 Trellis CLI 0.6.15。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md"
+        ],
+        "change": "将三份 release-facing README 统一到目标 tag v0.6.15-guru.1、extension 0.6.5-guru.37 与 Trellis CLI 0.6.15。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+          "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+        ],
+        "change": "将三份 release-facing README 统一到目标 tag v0.6.15-guru.1、extension 0.6.5-guru.37 与 Trellis CLI 0.6.15。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-24-304-release-readiness-fixes/issue-scope-ledger.json",
+          ".trellis/tasks/08-24-304-release-readiness-fixes/task.json",
+          ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/task.json"
+        ],
+        "change": "将三份 release-facing README 统一到目标 tag v0.6.15-guru.1、extension 0.6.5-guru.37 与 Trellis CLI 0.6.15。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "change": "将三份 release-facing README 统一到目标 tag v0.6.15-guru.1、extension 0.6.5-guru.37 与 Trellis CLI 0.6.15。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#304"
+      ],
+      "pr_refs": [
+        "PR #308"
+      ],
+      "branches": [
+        "codex/304-release-readiness-fixes"
+      ],
+      "paths": [
+        ".trellis/spec/docs/public-docs.md",
+        ".trellis/tasks/08-24-304-release-readiness-fixes/design.md",
+        ".trellis/tasks/08-24-304-release-readiness-fixes/implement.md",
+        ".trellis/tasks/08-24-304-release-readiness-fixes/issue-scope-ledger.json",
+        ".trellis/tasks/08-24-304-release-readiness-fixes/prd.md",
+        ".trellis/tasks/08-24-304-release-readiness-fixes/task.json",
+        ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/design.md",
+        ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/implement.md",
+        ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/prd.md",
+        ".trellis/tasks/archive/2026-08/08-24-304-release-readiness-fixes/task.json",
+        "README.md",
+        "docs/architecture/01-current/system.md",
+        "docs/architecture/04-integrations/distribution.md",
+        "docs/architecture/evidence/current-evidence.md",
+        "docs/design/versions/current-main-0.6.5-guru.40/capability-inventory.md",
+        "docs/design/versions/current-main-0.6.5-guru.40/design-main.md",
+        "docs/requirements/versions/current-main-0.6.5-guru.40/requirement-main.md",
+        "docs/test/versions/current-main-0.6.5-guru.40/test-plan.md",
+        "docs/test/versions/current-main-0.6.5-guru.40/test-strategy.md",
+        "docs/test/versions/current-main-0.6.5-guru.40/traceability.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+        "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py",
+        "trellis/workflows/guru-team/README.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#304 修复 Release readiness blockers",
+        "将三份 release-facing README 统一到目标 tag v0.6.15-guru.1、extension",
+        "完成 public-docs.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#304 修复 Release readiness blockers\n将三份 release-facing README 统一到目标 tag v0.6.15-guru.1、extension 0.6.5-guru.37 与 Trellis CLI 0.6.15。\n收敛 current .40 Requirements、Design、Test、Architecture 中 capability loss 与 consistency/installation gate 的边界。\n修正 verifier：capability loss 只比较 workflow、task_data、docs_authority；extension identity 由独立一致性结果表达，并继续在 source/installed consumer 中 fail closed。\n将三份 release-facing README 统一到目标 tag v0.6.15-guru.1、extension\n完成 public-docs.md 相关变更"
+  }
+}

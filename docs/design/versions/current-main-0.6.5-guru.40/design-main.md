@@ -16,14 +16,20 @@
   current checkout 与 live worktree facts；archive/`finish-summary.json` 是可查询历史，cleanup 只消费
   merge 后 exact branch/worktree/task reachability。
 - `DES-010` Compatibility：公共 Skill/schema/exit/command、managed paths 与平台 routes 形成
-  before/after inventory；update/upgrade 只能通过明确 migration/adapter 改变，不得静默删除能力。
+  独立 consistency/installation inventory；update/upgrade 只能通过明确 migration/adapter
+  改变，任何未迁移 projection drift 都阻塞安装成功，但不因此归类为 capability loss。
 - `DES-011` Provider recovery：Git/GitHub drift、base evolution、partial finalization 与重试状态由
   当前 owning Skill 的短生命周期 private state 恢复；unknown/stale/mismatch 进入唯一 typed route。
 - `DES-012` Finalizer terminal authority：正常 closeout 已退休 gate/transaction/plan 后，只有调用方提供的精确 retired owner locator 可触发 terminal reconstruction。runtime 读取六文件 archive 中的 durable summary，绑定 active/archive task locator、branch review commit、archive cleanliness，并重新读取 local/remote/Ready PR/title/body/base/branch/issue scope；全部一致才投影 `ready_for_merge`。
 - `DES-013` Verifier inventory：source validator 从 registry/interface 形成 active package ids、commands 与 complete package commands；Throwaway verifier 只比较 validator projection 与 installed projection，不维护数量常量。
 - `DES-014` Matrix orchestration：compatibility runner 由独立 cell executor 与 compact aggregator 组成；每个 cell 使用隔离 repo、npm prefix 与 runtime root，并输出 platform/scenario/version、inventory、template hash、sidecar 与 installed smoke 结论。runner 以 HEAD、tracked delta、untracked path/mode/content 与 isolated-index candidate tree 构成 source identity，且 run 前后必须一致。
 - `DES-015` Platform derivation：canonical/installed manifest、ownership claims、overlay entries 与 registry destinations 交叉派生声明平台；`.agents` 是 shared projection，不是独立 platform，集合不一致即 fail closed。
-- `DES-016` Capability comparison：before/after projection 按 `distribution`、`skill_api`、`workflow`、`task_data`、`docs_authority` 排序比较；distribution 覆盖 Skill package、ordinary managed asset 与 overlay executable mode，Docs authority 覆盖 recursive `docs/**` 且四个 domain 都含 versioned body。只有真实 version fields 可隔离比较，extension identity 漂移独立阻塞。
+- `DES-016` Capability comparison：before/after capability-loss gate 只比较 `workflow`、
+  `task_data`、`docs_authority`；Docs authority 覆盖 recursive `docs/**` 且四个 domain 都含
+  versioned body。`skill_api` 与 interface/schema/command projection、`distribution` 与
+  managed/installed inventory、mode、template hash、sidecar、平台 parity 及 extension
+  identity/version binding 由独立 consistency/installation gate 验证，任一漂移仍阻塞，
+  但其变化本身不构成 capability loss。
 - `DES-017` Official migration order：existing cell 先运行 official upgrade/update dry-run 与条件式 migrate，再 workflow preview/switch，最后 preset reapply、backup reconciliation、recursive sidecar 与 ownership/drift gate。
 - `DES-018` A/B compatibility：A=`worktree/github_pr`，B=`current/none`，使用隔离 clone；验证两种 merge order、零 metadata intersection、同 owner Finish/provider/cleanup recovery 与 retained-ref reachability；A archive 后 installed history preview 必须返回唯一 non-empty PR candidate并绑定其 `finish-summary.json`。真实 GitHub A proof与 deterministic local fixture 分开绑定。
 - `DES-019` Platform script boundary：`preview-change-context-history.sh` 是 package-private validator wrapper；platform public projection只发布 `scripts/invoke.sh`，matrix显式证明 private wrapper 未泄漏。
