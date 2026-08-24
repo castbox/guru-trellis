@@ -1,0 +1,12 @@
+{
+  "id": "304-release-owner-wording",
+  "name": "304-release-owner-wording",
+  "title": "#304 修正 Release owner 文案",
+  "status": "completed",
+  "branch": "codex/304-release-owner-wording",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/304",
+  "completedAt": "2026-08-24"
+}

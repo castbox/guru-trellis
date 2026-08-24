@@ -31,7 +31,7 @@ non-prerelease、zero-asset release。
 它已通过 `claude|codex|cursor × clean|existing` 六个隔离 cell、完整 capability
 preservation、installed SSOT contracts 与 A/B Finish/cleanup compatibility；workflow
 证据边界为 `public_plus_local_candidate`。`.37` 尚不是 stable tag 或 GitHub Release，
-其发布、tag-pinned install 与 release smoke 只由 #267 负责。
+其发布、tag-pinned install 与 release smoke 只由独立的重构前稳定版 Release Issue（#304）拥有。
 
 新仓库的非交互安装入口：
 

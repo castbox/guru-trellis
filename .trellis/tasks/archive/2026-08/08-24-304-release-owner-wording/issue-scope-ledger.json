@@ -1,0 +1,19 @@
+{
+  "close_issues": [],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 304,
+    "reason": "Primary authority for wording remediation and Release re-freeze.",
+    "title": "发布 v0.6.15-guru.1：冻结重构前 Guru Team 稳定基线（extension 0.6.5-guru.37）",
+    "url": "https://github.com/castbox/guru-trellis/issues/304"
+  },
+  "related_issues": [
+    {
+      "number": 304,
+      "reason": "Primary authority for wording remediation and Release re-freeze.",
+      "title": "发布 v0.6.15-guru.1：冻结重构前 Guru Team 稳定基线（extension 0.6.5-guru.37）",
+      "url": "https://github.com/castbox/guru-trellis/issues/304"
+    }
+  ],
+  "schema_version": "2.0"
+}
