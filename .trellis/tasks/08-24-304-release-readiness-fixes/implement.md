@@ -10,7 +10,7 @@
 - [ ] 修订 `.40` Test 的 `TST-015`、`SCN-013`、test plan capability row 与 traceability evidence wording。
 - [ ] 修订 Architecture distribution/current/evidence 中 capability-loss 与 consistency/installation 的边界。
 - [ ] 重新检索 `.trellis/spec`；仅在发现相反定义时做最小 projection 同步。
-- [ ] 检查 diff 只包含 accepted documentation/task scope，不含 verifier/workflow/Skill/schema/manifest/overlay/inventory 变化。
+- [ ] 检查 diff 只包含 accepted documentation/task scope，以及 amendment 授权的 verifier、两个直接 consumer 与 owning test 最小修正；不含其它 verifier、workflow、Skill/schema/manifest/overlay/inventory 变化。
 - [ ] 修正 `compare_capabilities()`：capability differences 只包含 `workflow`、`task_data`、`docs_authority`，extension identity 以独立一致性结果表达。
 - [ ] 让 source/installed matrix consumer 分别对 extension identity drift 保持独立 fail-closed 阻断。
 - [ ] 更新 owning test，覆盖 capability/identity 分类分离及两个 consumer 的独立阻断路径。

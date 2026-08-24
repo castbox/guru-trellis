@@ -2,7 +2,7 @@
 
 ## Approach
 
-本 task 是一次 current authority repair，不改变 executable contract。修改分为两个互相约束的文档面：release-facing installation identity 与 capability/consistency 分类。
+本 task 以 current authority repair 为主，并包含 Branch Review amendment 授权的最小 verifier correction。修改覆盖 release-facing installation identity、capability/consistency 分类，以及使既有 executable verifier 与该分类一致的两个直接 consumer 和 owning test；不改变 public executable contract。
 
 ## Release Identity Rules
 
@@ -68,9 +68,9 @@ Branch Review 对 committed range 的正常场景复现证明，当前 `compare_
 - 在 tag 创建前虚构已发布状态：只描述 target/current release source，不写未知 tag object 或 post-publish evidence。
 - 弱化安装门禁：每处修订都明确 API/schema/distribution inventory 仍可独立阻断 consistency/installation。
 - authority ID 断链：保留现有 REQ/DES/TST/SCN/ARCH IDs，只修正文案与映射解释。
-- scope 扩张到代码：用 `git diff --name-only` 和禁止路径检查阻断。
+- scope 扩张到授权 verifier correction 之外的代码：用 `git diff --name-only` 和禁止路径检查阻断。
 - 将 identity drift 误放行为非阻断：owning test 同时断言 capability preserved 与 identity inconsistent，并对 source/installed consumer 的独立阻断路径做定向验证。
 
 ## Rollback
 
-本 task 仅修改 Markdown 与 task planning。若语义 review 发现职责混淆，回到 task planning/authority repair，不修改 verifier 来迎合文档。
+本 task 修改 Markdown/task planning，并对 `compare_capabilities`、两个直接 consumer 与 owning test 做授权的最小修正。若语义 review 发现职责边界仍混淆，回到 task planning/authority repair，并整体修订或撤回该 bounded verifier correction；不得继续扩张 production verifier 范围来迎合文档。
