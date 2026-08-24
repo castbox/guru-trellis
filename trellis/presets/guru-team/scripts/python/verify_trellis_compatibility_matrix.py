@@ -758,14 +758,11 @@ def compare_capabilities(before: Mapping[str, Any], after: Mapping[str, Any]) ->
     after_identity = {
         key: value for key, value in after_extension.items() if key not in version_fields
     }
-    if before_identity != after_identity:
-        differences.append(
-            {
-                "group": "extension_identity",
-                "before": before_identity,
-                "after": after_identity,
-            }
-        )
+    extension_identity = {
+        "before": before_identity,
+        "after": after_identity,
+        "consistent": before_identity == after_identity,
+    }
     for group in ("workflow", "task_data", "docs_authority"):
         if before.get(group) != after.get(group):
             differences.append(
@@ -774,11 +771,31 @@ def compare_capabilities(before: Mapping[str, Any], after: Mapping[str, Any]) ->
     result = {
         "schema_version": SCHEMA_VERSION,
         "version_binding": version_binding,
+        "extension_identity": extension_identity,
         "blocking_differences": differences,
         "capabilities_preserved": not differences,
     }
     result["comparison_sha256"] = _digest(result)
     return result
+
+
+def _assert_projection_consistency(
+    comparison: Mapping[str, Any], projection_name: str
+) -> None:
+    if not comparison.get("capabilities_preserved"):
+        raise MatrixError(
+            f"{projection_name} capability projection changed outside version binding: "
+            + json.dumps(comparison.get("blocking_differences"), ensure_ascii=False)
+        )
+    extension_identity = _require_dict(
+        comparison.get("extension_identity"),
+        f"{projection_name} extension identity",
+    )
+    if extension_identity.get("consistent") is not True:
+        raise MatrixError(
+            f"{projection_name} extension identity changed: "
+            + json.dumps(extension_identity, ensure_ascii=False)
+        )
 
 
 def _run(
@@ -1833,22 +1850,12 @@ def _run_cell(
 
     after_projection = capability_projection(repo_root)
     comparison = compare_capabilities(before_projection, after_projection)
-    if not comparison["capabilities_preserved"]:
-        raise MatrixError(
-            "capability projection changed outside version binding: "
-            + json.dumps(comparison["blocking_differences"], ensure_ascii=False)
-        )
+    _assert_projection_consistency(comparison, "source")
     after_installed_projection = installed_capability_projection(target)
     installed_comparison = compare_capabilities(
         before_installed_projection, after_installed_projection
     )
-    if not installed_comparison["capabilities_preserved"]:
-        raise MatrixError(
-            "installed capability projection changed outside version binding: "
-            + json.dumps(
-                installed_comparison["blocking_differences"], ensure_ascii=False
-            )
-        )
+    _assert_projection_consistency(installed_comparison, "installed")
     result = validate_cell(
         target,
         platform,

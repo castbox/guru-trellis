@@ -11,6 +11,9 @@
 - [ ] 修订 Architecture distribution/current/evidence 中 capability-loss 与 consistency/installation 的边界。
 - [ ] 重新检索 `.trellis/spec`；仅在发现相反定义时做最小 projection 同步。
 - [ ] 检查 diff 只包含 accepted documentation/task scope，不含 verifier/workflow/Skill/schema/manifest/overlay/inventory 变化。
+- [ ] 修正 `compare_capabilities()`：capability differences 只包含 `workflow`、`task_data`、`docs_authority`，extension identity 以独立一致性结果表达。
+- [ ] 让 source/installed matrix consumer 分别对 extension identity drift 保持独立 fail-closed 阻断。
+- [ ] 更新 owning test，覆盖 capability/identity 分类分离及两个 consumer 的独立阻断路径。
 
 ## Validation
 
@@ -26,7 +29,7 @@
    rg -n "capability|skill_api|distribution|workflow|task_data|docs_authority|managed path|installed" docs/requirements/versions/current-main-0.6.5-guru.40 docs/design/versions/current-main-0.6.5-guru.40 docs/test/versions/current-main-0.6.5-guru.40 docs/architecture
    ```
 
-3. 运行包含 `compare_capabilities` 的定向测试；测试选择以当前仓库检索到的 owning test 为准，不修改 production verifier。
+3. 运行 `test_capability_comparison_isolates_version_binding` 及新增的 source/installed identity consistency consumer 定向测试，证明 identity drift 不构成 capability loss 但仍阻断 matrix。
 4. 运行 current source package/ownership validator 与 dogfood overlay drift check；README-only preset 改动不调用 apply/reapply 写入 dogfood。
 5. 验证 task 和 diff：
 
@@ -40,7 +43,7 @@
 
 ## Stop Conditions
 
-- 发现 verifier 实现与已确认边界不一致。
+- verifier 修正需要超出 `compare_capabilities`、两个直接 consumer 与 owning test。
 - 需要修改 workflow、Skill API/schema、installer inventory、manifest、overlay 或 candidate 功能代码。
 - 发现 target tag/Release 已出现或 `origin/main` 在实施前演进，需先走 base reconciliation/candidate authority refresh。
 - RDT/Architecture 修订无法保持现有 ID/traceability，需返回 Planning 而非临时扩张。

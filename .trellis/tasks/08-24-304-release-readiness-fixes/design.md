@@ -34,6 +34,15 @@ before/after projection
 
 前一组回答“用户可观察 workflow capability 是否丢失”；后一组回答“package/install projection 是否一致并可安装”。后一组任一 blocker 仍可阻断 release，但不应被命名为 capability loss。
 
+## Verifier Correction
+
+Branch Review 对 committed range 的正常场景复现证明，当前 `compare_capabilities()` 在仅改变 `extension.extension_id` 时仍返回 `capabilities_preserved=false`，并把 `extension_identity` 放入 `blocking_differences`。新 authority 要求最小修正为：
+
+- `blocking_differences` 与 `capabilities_preserved` 只反映 `workflow`、`task_data`、`docs_authority`；
+- comparison 结果用独立 `extension_identity` 对象保存 before、after 与 `consistent`；
+- source projection 和 installed projection consumer 分别检查 `extension_identity.consistent`，不一致继续以独立 identity consistency 错误阻断 matrix；
+- 不新增 public schema，不改变 Skill API、command、manifest、installed inventory 或 workflow contract。
+
 ## RDT Repair
 
 - Requirements：拆开 `REQ-013` 的安装完整性职责与 `REQ-018` 的 capability preservation 职责。
@@ -60,6 +69,7 @@ before/after projection
 - 弱化安装门禁：每处修订都明确 API/schema/distribution inventory 仍可独立阻断 consistency/installation。
 - authority ID 断链：保留现有 REQ/DES/TST/SCN/ARCH IDs，只修正文案与映射解释。
 - scope 扩张到代码：用 `git diff --name-only` 和禁止路径检查阻断。
+- 将 identity drift 误放行为非阻断：owning test 同时断言 capability preserved 与 identity inconsistent，并对 source/installed consumer 的独立阻断路径做定向验证。
 
 ## Rollback
 
