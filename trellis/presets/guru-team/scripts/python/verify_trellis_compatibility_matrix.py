@@ -732,7 +732,12 @@ def installed_capability_projection(target: Path) -> dict[str, Any]:
 
 
 def compare_capabilities(before: Mapping[str, Any], after: Mapping[str, Any]) -> dict[str, Any]:
-    """Compare semantic capability groups while isolating version binding."""
+    """Compare observable capabilities while isolating versioned projections.
+
+    Distribution inventories and Skill API/schema projections are implementation
+    assets. Their consistency is checked independently by the install and
+    package validators; they are not observable workflow capability markers.
+    """
 
     version_fields = (
         "version",
@@ -761,7 +766,7 @@ def compare_capabilities(before: Mapping[str, Any], after: Mapping[str, Any]) ->
                 "after": after_identity,
             }
         )
-    for group in ("distribution", "skill_api", "workflow", "task_data", "docs_authority"):
+    for group in ("workflow", "task_data", "docs_authority"):
         if before.get(group) != after.get(group):
             differences.append(
                 {"group": group, "before": before.get(group), "after": after.get(group)}

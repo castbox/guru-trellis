@@ -620,12 +620,15 @@ exit 23
         after["distribution"]["skill_package_files_and_modes"] = after[
             "distribution"
         ]["skill_package_files_and_modes"][1:]
-        mode_loss = self.matrix.compare_capabilities(before, after)
-        self.assertFalse(mode_loss["capabilities_preserved"])
-        self.assertEqual(
-            [difference["group"] for difference in mode_loss["blocking_differences"]],
-            ["distribution"],
-        )
+        projection_change = self.matrix.compare_capabilities(before, after)
+        self.assertTrue(projection_change["capabilities_preserved"])
+        self.assertEqual(projection_change["blocking_differences"], [])
+
+        after = json.loads(json.dumps(before))
+        after["skill_api"]["typed_output_schema_ids"] = []
+        api_projection_change = self.matrix.compare_capabilities(before, after)
+        self.assertTrue(api_projection_change["capabilities_preserved"])
+        self.assertEqual(api_projection_change["blocking_differences"], [])
 
     def test_installed_projection_and_template_hash_classification_are_current(self) -> None:
         installed = self.matrix.installed_capability_projection(REPO)
