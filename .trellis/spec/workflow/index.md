@@ -7,6 +7,7 @@ workflow and preset. It is not a product backend/frontend application.
 
 Use these specs when changing:
 
+- [Guru Trellis evolution goals](../../../docs/requirements/versions/current-main-0.6.5-guru.40/evolution-goals.md) for the accepted product outcomes that every substantial Guru Team refactor must preserve and advance.
 - [architecture-baseline.md](./architecture-baseline.md) for the Architecture Baseline owner and authority projection.
 - [requirements-design-test-ssot.md](./requirements-design-test-ssot.md) for the atomic Requirements, Design, and Test authority, contribution, and traceability contract.
 - [bootstrap-repository-ssot.md](./bootstrap-repository-ssot.md) for the one-time Bootstrap orchestration, cross-SSOT alignment, and minimal spec projection.
@@ -21,13 +22,14 @@ Use these specs when changing:
 
 Before editing workflow behavior:
 
-1. Read [workflow-contract.md](./workflow-contract.md).
-2. Read [companion-scripts.md](./companion-scripts.md) when changing Bash or Python helpers.
-3. Read [data-contracts.md](./data-contracts.md) when changing config, current task identity, runtime boundary, review-gate, issue ledger, or PR payload data.
-4. Read [skill-package-contract.md](./skill-package-contract.md) when changing public workflow skills, registry/interface schemas, workflow markers, installation, or typed exits.
-5. Read [quality-guidelines.md](./quality-guidelines.md) before validation or commit.
-6. Read shared guides under `.trellis/spec/guides/` when the change touches multiple generated surfaces or payload contracts.
-7. Read [semantic-retrieval.md](./semantic-retrieval.md) before an owner searches
+1. Read the [Guru Trellis evolution goals](../../../docs/requirements/versions/current-main-0.6.5-guru.40/evolution-goals.md), map the proposed refactor to `EVO-001..007`, and identify any unaffected goals before choosing implementation boundaries.
+2. Read [workflow-contract.md](./workflow-contract.md).
+3. Read [companion-scripts.md](./companion-scripts.md) when changing Bash or Python helpers.
+4. Read [data-contracts.md](./data-contracts.md) when changing config, current task identity, runtime boundary, review-gate, issue ledger, or PR payload data.
+5. Read [skill-package-contract.md](./skill-package-contract.md) when changing public workflow skills, registry/interface schemas, workflow markers, installation, or typed exits.
+6. Read [quality-guidelines.md](./quality-guidelines.md) before validation or commit.
+7. Read shared guides under `.trellis/spec/guides/` when the change touches multiple generated surfaces or payload contracts.
+8. Read [semantic-retrieval.md](./semantic-retrieval.md) before an owner searches
    Docs, code, tests, history, duplicate candidates, or consumers and may form a
    negative existence conclusion.
 

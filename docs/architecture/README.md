@@ -1,6 +1,6 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.5-guru.40`；状态：`active`；source baseline：task head `516092506cb7be21d9383f87325f3f776bb6ba80` + #295 serialized promotion delta（精确 revision 为当前 Git HEAD）。
+版本：`current-main-0.6.5-guru.40`；状态：`active`；source baseline：task head `516092506cb7be21d9383f87325f3f776bb6ba80` + #295 serialized promotion delta + `2026-08-24` 用户明确确认的 `EVO-001..007` target delta（精确 revision 为当前 Git HEAD）。
 
 本目录是唯一 Architecture Baseline authority。分区不可互换：FOUNDATION 是横向约束，CURRENT 只放证据证明的实现，TARGET 是已接受方向，GAP 是显式差距，PLAN 是已记录但未自动授权的执行顺序，ADR 是历史决策，EVIDENCE 只支撑判断。
 

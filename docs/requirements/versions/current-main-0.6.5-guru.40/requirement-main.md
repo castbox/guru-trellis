@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.40`；状态：`active`；基线：task head `516092506cb7be21d9383f87325f3f776bb6ba80` + #295 serialized promotion delta（精确 revision 为当前 Git HEAD）。
+版本：`current-main-0.6.5-guru.40`；状态：`active`；基线：task head `516092506cb7be21d9383f87325f3f776bb6ba80` + #295 serialized promotion delta + `2026-08-24` 用户明确确认的 `EVO-001..007` target delta（精确 revision 为当前 Git HEAD）。
 
 ## 目标、角色与适用范围
 
