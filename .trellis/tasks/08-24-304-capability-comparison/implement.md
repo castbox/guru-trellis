@@ -10,7 +10,11 @@
 4. 运行升级合同测试与 Python 编译检查。
 5. 运行 upstream ownership、dogfood overlay drift 和 `git diff --check`。
 6. 运行代表性本地 6-cell 兼容性矩阵，并明确记录 unpublished boundary。
-7. 完成 Trellis check；若无 finding，再准备独立 commit 副作用计划供用户确认。
+7. 将 RDT 与 Architecture 的两个最小 `.trellis/spec` projection 同步到 canonical
+   `.40` current identity/source binding，不修改 canonical authority 正文。
+8. 重新运行 projection/current-authority consistency、task validation、Phase 2 与
+   committed full-diff Branch Review；scope change 前的 gate 不作为当前 proof。
+9. 若无 finding，再准备独立 commit 副作用计划供用户确认。
 
 ## Validation Commands
 
@@ -22,6 +26,9 @@ python3 -m py_compile \
 trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
 trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 git diff --check
+rg -n 'current-main-0\.6\.5-guru\.39' \
+  .trellis/spec/docs/requirements-design-test-ssot.md \
+  .trellis/spec/architecture/baseline-usage.md
 ```
 
 兼容性矩阵使用当前仓库既有命令和 `--allow-local-sample` 执行；该结果只证明本地
@@ -31,4 +38,5 @@ candidate 行为，不替代 remote/tag-pinned Release gate。
 
 - 不修改 projection collector，避免掩盖安装或 package drift。
 - 测试同时保留正向非阻断与 workflow marker 负向阻断断言。
+- projection 只同步 current identity/locator/source binding，不复制 `.40` 正文。
 - 不在本阶段执行任何远程 Git/GitHub 或 Release 副作用。

@@ -15,6 +15,9 @@ Skill/workflow 能力标记丢失视为 capability loss，避免把内部 API/sc
   变化进入 `blocking_differences`。
 - `distribution` 与 `skill_api` 仍由安装、package、projection 和 consistency
   validators 独立验证；本需求不削弱这些验证。
+- Committed full-diff Branch Review 发现 `.trellis/spec` 的 RDT 与 Architecture
+  current identity 仍停在 `.39`，而 #304 的 canonical authority 已是 `.40`；该
+  projection drift 属于独立 consistency blocker，不属于 capability loss。
 
 ## Requirements
 
@@ -24,6 +27,8 @@ Skill/workflow 能力标记丢失视为 capability loss，避免把内部 API/sc
 4. `extension_identity`、`task_data` 和 `docs_authority` 的现有比较语义保持不变。
 5. 测试必须分别覆盖安装文件清单变化、Skill API/schema 投影变化和 workflow
    marker 丢失，防止边界再次混淆。
+6. RDT 与 Architecture 的最小 `.trellis/spec` projection 必须对齐 canonical
+   `.40` current identity 和 source binding，不修改 canonical authority 正文。
 
 ## Acceptance Criteria
 
@@ -37,12 +42,17 @@ Skill/workflow 能力标记丢失视为 capability loss，避免把内部 API/sc
 - AC-5：dogfood overlay drift 与 upstream ownership 定向验证继续通过。
 - AC-6：代表性本地兼容性矩阵通过；未发布分支的结果必须保留
   `unpublished_candidate_boundary=true`，不得冒充 tag-pinned Release proof。
+- AC-7：`.trellis/spec/docs/requirements-design-test-ssot.md` 与
+  `.trellis/spec/architecture/baseline-usage.md` 均只声明 `.40` 为 current，且与
+  `docs/**/README.md` 的 locator/status/source binding 一致。
+- AC-8：projection consistency、task validation 和 committed full-diff Branch
+  Review 重新通过，不复用 scope change 前的 Phase 2 或 Branch Review 结论。
 
 ## Out Of Scope
 
 - 不改变 capability projection 的采集结构或输出 schema。
 - 不删除 distribution、Skill API/schema、installed inventory 的独立验证。
+- 不修改 canonical Requirements/Design/Test/Architecture `.40` 正文。
 - 不修改 workflow exit、consumer、re-entry 或 stop marker。
 - 不执行 commit、push、PR、merge、tag、GitHub Release 或 Issue 关闭。
 - 不重新冻结 #304 的 exact Release candidate；该动作必须在修正合并后 fresh 执行。
-
