@@ -1,0 +1,11 @@
+{
+  "id": "08-24-305-evolution-requirements-design-planning",
+  "name": "08-24-305-evolution-requirements-design-planning",
+  "title": "#305 规划 Guru Trellis Evolution Requirements 与目标 Design（post_release）",
+  "status": "planning",
+  "branch": "codex/305-evolution-requirements-design-planning",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/305"
+}

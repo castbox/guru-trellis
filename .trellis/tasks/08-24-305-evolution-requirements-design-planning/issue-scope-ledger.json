@@ -1,0 +1,26 @@
+{
+  "close_issues": [
+    {
+      "number": 305,
+      "reason": "This task is scoped to complete the full reviewed planning contract of Issue #305.",
+      "title": "规划 Guru Trellis Evolution Requirements 与目标 Design（post_release）",
+      "url": "https://github.com/castbox/guru-trellis/issues/305"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 305,
+    "reason": "Issue #305 is the sole post_release Evolution Requirements and target Design planning authority.",
+    "title": "规划 Guru Trellis Evolution Requirements 与目标 Design（post_release）",
+    "url": "https://github.com/castbox/guru-trellis/issues/305"
+  },
+  "related_issues": [
+    {
+      "number": 304,
+      "reason": "Issue #304 remains the isolated pre-refactor Release authority and is not closed or mutated by this task.",
+      "title": "发布 v0.6.15-guru.1：冻结重构前 Guru Team 稳定基线（extension 0.6.5-guru.37）",
+      "url": "https://github.com/castbox/guru-trellis/issues/304"
+    }
+  ],
+  "schema_version": "2.0"
+}
