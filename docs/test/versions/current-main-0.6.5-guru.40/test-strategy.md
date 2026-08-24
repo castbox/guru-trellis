@@ -31,11 +31,11 @@
 | `TST-023` | contribution and ADR | task-owned contribution 隔离、ADR trigger、independent review 与 expected-current-bound serialized promotion | implementation tests 代替 promotion |
 | `TST-024` | parallel stale | 独立 contribution scope、shared current/GAP/owner 禁止竞争、successor 后旧 task re-entry | 锁、shared ledger 或 TOCTOU 协议 |
 | `TST-025` | Architecture 2.0 atomic projection | schema/runtime/canonical/dogfood/installed/platform/consumers 无 legacy selector 或 dual-read | 部分投影或隐式 migration |
-| `TST-026` | #283 targeted validation | package/runtime/eval、十场景、preset reapply/drift/sidecar 与一个代表性 clean install | #267 exact-candidate matrix/tag/Release/smoke |
+| `TST-026` | #283 targeted validation | package/runtime/eval、十场景、preset reapply/drift/sidecar 与一个代表性 clean install | 重构前稳定版 exact-candidate matrix/tag/Release/smoke |
 | `TST-027` | base selection and binding | explicit/config/ordered/remote-default precedence、same-common-dir exact checkout、missing/dirty/mismatch blocked | public publication 或多平台 release proof |
 | `TST-028` | authority synchronization | detached/current session、remote-ahead fast-forward、post-sync three-way equality 与 locator continuity | non-fast-forward recovery |
 | `TST-029` | downstream provenance | producer transition 到 workspace consumer 的 source/base/full-candidates exact freshness | producer private runtime 或历史 checkpoint |
-| `TST-030` | #290 distribution | canonical/installed/platform parity、inventory、reapply/drift/mode/sidecar-zero 与代表性 Codex detached wrapper | #267 release matrix/tag/Release |
+| `TST-030` | #290 distribution | canonical/installed/platform parity、inventory、reapply/drift/mode/sidecar-zero 与代表性 Codex detached wrapper | 独立的重构前稳定版 Release matrix/tag/Release |
 
 ## 核心场景
 
@@ -73,7 +73,7 @@
 - `SCN-037 identity mismatch`：missing、ambiguous、dirty、inventory HEAD/branch/ref mismatch 分别稳定 fail closed。
 - `SCN-038 fast-forward continuity`：remote advance 只前进 authority checkout，detached session 不变，post-sync decision/local/remote heads 相等。
 - `SCN-039 source-aware freshness`：explicit/config/config-candidate/remote-default 的 source、selected base 与完整 candidates exact 匹配时通过，任一 drift 在 workspace preparation 前拒绝。
-- `SCN-040 distribution boundary`：canonical/installed/package/platform/reapply/drift/sidecar 和代表性 installed detached wrapper 通过，但不声明 #267 release-wide proof。
+- `SCN-040 distribution boundary`：canonical/installed/package/platform/reapply/drift/sidecar 和代表性 installed detached wrapper 通过，但不声明重构前稳定版 release-wide proof。
 - `CASE-001`：每个 active interface 的 external exit 恰有唯一 consumer 或 stop，registry/interface/workflow 闭包。
 - `CASE-002`：semantic gate 发生在 recorder/validator 前，脚本不接收或持久化授权。
 
@@ -81,5 +81,5 @@
 
 先读取 `.trellis/spec/workflow/quality-guidelines.md` 的 `Validation Scope Ownership`。普通 feature/docs/spec Issue 运行与 accepted scope 相关的最小可靠集合；完整多平台 Throwaway 只属于专项兼容/upgrade/release Issue。任何 SKIP、未配置 live 环境或历史 PR 声明都明确写成 `unverified`。
 
-完整矩阵只证明 `public_plus_local_candidate` 与 current source compatibility；`.39` 是 knowledge identity，`.37` stable tag、
-GitHub Release 与 tag-pinned release smoke 必须继续标记为 #267 boundary。
+完整矩阵只证明 `public_plus_local_candidate` 与 current source compatibility；`.40` 是 knowledge identity，`.37` stable tag、
+GitHub Release 与 tag-pinned release smoke 必须继续标记为独立的重构前稳定版 Release boundary。

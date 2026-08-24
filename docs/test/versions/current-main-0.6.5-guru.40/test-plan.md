@@ -73,7 +73,7 @@ remote branch 与 disposable repository 已删除，本地 scenario resources移
 | complete committed task range | PASS：base `2d34abfc…` -> reviewed head `86a2cc1a…`，5 commits / 429 paths | promotion delta excluded until fresh re-entry |
 | Architecture semantic Branch Review | `baseline_current` / `architecture_impact` / `target_native` / `reviewed_candidate` | exact committed range、current descriptor/result、before/after independently recomputed |
 | independent `guru-review-branch` | schema 6.0 `passed`，open findings zero | current gate consumed；旧 gate只保留 ignored stale backup |
-| representative clean installation | PASS：Trellis `0.6.15`、public marketplace bootstrap、exact local committed workflow、all-platform preset、21 packages / 72 commands / 4229 managed files | local pre-push evidence；不是 formal verifier typed exit或 #267 matrix |
+| representative clean installation | PASS：Trellis `0.6.15`、public marketplace bootstrap、exact local committed workflow、all-platform preset、21 packages / 72 commands / 4229 managed files | local pre-push evidence；不是 formal verifier typed exit 或重构前稳定版 Release matrix |
 | Architecture/RDT promotion | `.37` expected current -> `.38` current knowledge identity；design constitution/change contract/ADR/history/traceability 同步 | serialized owner gate 后必须 fresh Phase 2/commit/Branch Review |
 
 Architecture package的 source/dogfood `22/22`、两套固定十场景 `10/10`、Planning/Phase 2/Branch Review consumers `21/21`、`9/9`、`15/15`、RDT/package/finish/retrieval `9/9`、`8/8`、`6/6`、`4/4` 与 preset ownership/apply/upgrade `7/7`、`78/78`、`20/20` 均绑定 reviewed task candidate。promotion 仅把这些已审查的 contract/evidence 提升到 shared current；它不把 promotion-created diff 冒充为已复核。
@@ -86,7 +86,7 @@ Architecture package的 source/dogfood `22/22`、两套固定十场景 `10/10`�
 | installed package tests | sync-base 15/15；workspace 6/6 PASS | installed dogfood behavior, not release matrix |
 | source/installed validators | 21 packages / 72 commands；sidecar/conflict/removal zero | current package graph and managed inventory |
 | projection/reapply/drift | canonical/installed affected bytes equal；all-platform apply and dogfood drift passed；`.new/.bak` zero | current candidate distribution only |
-| representative Codex detached wrapper | synced；authority locator and three-way equality passed | one normal installed path, not #267 matrix |
+| representative Codex detached wrapper | synced；authority locator and three-way equality passed | one normal installed path，不是重构前稳定版 Release matrix |
 | independent committed review | base `e7df696a…` -> task head `51609250…`；141 paths；Architecture and Branch Review passed with no P0-P3 finding | promotion-created diff requires fresh Phase 2/commit/Branch Review |
 
 The serialized Architecture/RDT promotion binds expected `.39`, reviewed contribution
@@ -95,8 +95,8 @@ It does not publish extension `0.6.5-guru.37`.
 
 ## Current boundaries
 
-- `.37` stable tag、GitHub Release、tag-pinned clean install与 release smoke：`unverified`，owner=#267。
-- `.39` 只表示 current RDT/Architecture knowledge identity；extension manifest 仍为 `0.6.5-guru.37`，未发生 version bump。
+- `v0.6.15-guru.1` / extension `.37` stable tag、GitHub Release、tag-pinned clean install 与 release smoke：`unverified`，owner 为独立的重构前稳定版 Release Issue。
+- `.40` 只表示 current RDT/Architecture knowledge identity；extension manifest 仍为 `0.6.5-guru.37`，未发生 version bump。
 - #248 Acceptance/Finish handoff 与 #252 cleanup public owner未实现；本次只提供可消费兼容事实。
 - full matrix logs、临时 repository/runtime、用户授权与完整 hash bundle不进入 current SSOT。
 

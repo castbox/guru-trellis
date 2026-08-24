@@ -33,6 +33,6 @@
 | `REQ-036`, `REQ-037` | `DES-035`, `DES-036` | `TST-027`, `SCN-034..035` | `ARCH-CUR-013`, `ADR-006` |
 | `REQ-038`, `REQ-039`, `REQ-040` | `DES-037..039` | `TST-027..028`, `SCN-034..037` | `ARCH-CUR-013`, `ADR-006` |
 | `REQ-041`, `REQ-042` | `DES-040`, `DES-041` | `TST-028`, `TST-029`, `SCN-038..039` | `ARCH-CUR-013` |
-| `REQ-043` | `DES-042` | `TST-030`, `SCN-040` | `EVD-014`, #267 boundary |
+| `REQ-043` | `DES-042` | `TST-030`, `SCN-040` | `EVD-014`, 独立的重构前稳定版 Release boundary |
 
 引用仅传 identity、locator、version/status，不复制正文。

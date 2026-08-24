@@ -2,7 +2,7 @@
 
 | Evidence ID | Class | Locator / identity | Supports |
 | --- | --- | --- | --- |
-| `EVD-001` | current source baseline | task head `d4165f268d36e19139266d28519148c290f773a4` + #290 serialized promotion delta（精确 revision 为当前 Git HEAD） | `ARCH-CUR-001..004,006..009,013` |
+| `EVD-001` | current source baseline | task head `d4165f268d36e19139266d28519148c290f773a4` + #290 serialized promotion delta；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD | `ARCH-CUR-001..004,006..009,013` |
 | `EVD-002` | stable release | annotated tag `v0.6.5-guru.10`；tag object `b5fd47e9dc45ca4d6950f87f38d495776ce676ce`；peeled commit `5c059f4943edad7dfe25182a78af94759d41f9a1`；non-draft/non-prerelease/zero-asset Release | `ARCH-CUR-005` only |
 | `EVD-003` | RDT package | Issue #263 CLOSED；reviewed `d53335a7…`；archive `eaf955e0…`；PR #279 merge `891c2147…` | `ARCH-CUR-003` |
 | `EVD-004` | Architecture package | Issue #264 CLOSED；reviewed `1cb2506b…`；PR #268 merge `37fdfe63…`；metadata head/merge `991080b6…` / `3b0f78c1…`；无 `finish-summary.json` | `ARCH-CUR-003` |
@@ -24,5 +24,6 @@ evidence，避免 tracked evidence 对 candidate tree 形成自引用。
 `EVD-009` 是独立完成的真实 provider evidence。当前 authority 组合消费两类证据，
 不声称任何 matrix JSON 已被改写，也不构造伪造的 combined artifact。
 
-详见 `docs/test/versions/current-main-0.6.5-guru.39/test-plan.md`。`.37` stable tag、
-GitHub Release、tag-pinned install 与 release smoke 仍保持 `unverified`，owner 为 #267。
+详见 `docs/test/versions/current-main-0.6.5-guru.40/test-plan.md`。`v0.6.15-guru.1` / extension
+`.37` stable tag、GitHub Release、tag-pinned install 与 release smoke 仍保持 `unverified`，
+owner 为独立的重构前稳定版 Release Issue；#267 属于后续重构链。

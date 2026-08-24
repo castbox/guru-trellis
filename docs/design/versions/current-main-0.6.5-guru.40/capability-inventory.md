@@ -1,6 +1,6 @@
 # Current Capability Inventory
 
-派生日期：2026-08-22；source：`trellis/skills/guru-team/registry.json` 与各 package `interface.json`；source baseline：task head `51609250…` + #295 serialized promotion delta（精确 revision 为当前 Git HEAD）；provenance：`code_recovered` + #260 exact matrix evidence + #283 architecture contract evidence + #290/#295 reviewed evidence。
+派生日期：2026-08-22；source：`trellis/skills/guru-team/registry.json` 与各 package `interface.json`；source baseline：task head `51609250…` + #295 serialized promotion delta；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD；provenance：`code_recovered` + #260 exact matrix evidence + #283 architecture contract evidence + #290/#295 reviewed evidence。
 
 | Skill id | External exits |
 | --- | --- |
@@ -53,4 +53,4 @@ Inventory freshness：registry entries、interface exits、manifest schema lists
 - Architecture current authority 是 `docs/architecture/README.md` / `current-main-0.6.5-guru.40` / `active`；设计宪法是 `docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`。
 - 项目 change contract 是 `docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`，current project check 是 `guru-trellis-architecture-convergence@1`。
 - source/dogfood package、两套十场景 eval、Planning/Phase 2/Branch Review consumers、RDT/finish/package closure 与一个代表性 clean install 已在 reviewed task head `86a2cc1a…` 通过；promotion delta仍须 fresh Phase 2/commit/Branch Review。
-- extension candidate 仍为 `0.6.5-guru.37`；`.39` 是 RDT/Architecture knowledge identity，不构成 version bump、tag 或 Release。
+- extension candidate 仍为 `0.6.5-guru.37`；`.40` 是 RDT/Architecture knowledge identity，不构成 version bump、tag 或 Release。

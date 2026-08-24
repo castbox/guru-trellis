@@ -32,8 +32,9 @@ Git/live facts 共同证明。
 - 修改、删除、合并或弱化任一 `EVO-*`、`REQ-UC-EVO-*`、`EVO-REQ-*`、
   `EVO-NFR-*` 或 `EVO-CAP-*`，必须先形成新的明确产品决定并更新本 SSOT。
 - 现有 `#247 -> #249 -> #250 -> #292 -> #293 -> #261 -> #248 -> #252 -> #267`
-  串行链只保留为一种候选实施拆分。它不是需求、设计、推进方案或实施顺序 authority，
-  也不得反向限制本文件的场景和验收范围。
+  串行链只保留为重构前稳定版发布后的候选实施拆分。它不是需求、设计、推进方案或实施
+  顺序 authority，也不是 `v0.6.15-guru.1` 的前置、owner 或验收范围；不得反向限制本文件的
+  场景和验收范围。
 - 本文件完成 Requirements 审核前不得进入 Evolution Design；Requirements、Design 和
   推进方案全部审核通过前不得据此创建新的实施 Issue 链。
 - 当前阶段不预选 Skill 边界、public DTO、schema、script、文件布局或 Issue 数量；这些
@@ -51,6 +52,10 @@ Git/live facts 共同证明。
 
 “不向前兼容旧合同”不得被解释为允许丢失 current 用户能力、破坏已有仓库迁移，或降低
 exact-candidate Release 的证明范围。
+
+本节只约束发布后的重构 candidate，不追溯修改重构前稳定版：`v0.6.15-guru.1` 有意冻结
+current 旧 graph、`issue-scope-ledger.json` 与现有稳定流程；该 pre-refactor release 不声称
+实现任何 `EVO-*` target，也不以本目录作为 Release blocker。
 
 ### 0.3 需求证据
 
@@ -272,7 +277,7 @@ RDT 与 Architecture 是语义不同且生命周期独立的两类 repository sh
 | `design_expansion_requirement` | 展开 impact 状态、conflict 决策、proposal lifecycle、各下游责任边界的 freshness、expected-current promotion、owner/single-writer/compatibility exit 与 fresh proof |
 | `risk_if_missed` | 首稿忽略 baseline、PRD 被架构改写、不必要 ADR、双 current、未经 review 的 shared Architecture 变更 |
 | `success_metrics` | 在同一个 exact-candidate Release gate 证据采集时间窗内，以 `EVO-FIX-ARCH-NO-IMPACT`、`EVO-FIX-ARCH-ALIGNED`、`EVO-FIX-ARCH-CONFLICT`、`EVO-FIX-ARCH-INCOMPLETE`、`EVO-FIX-ARCH-NEW-DECISION`、`EVO-FIX-ARCH-REVISION`、`EVO-FIX-ARCH-NO-ADR`、`EVO-FIX-FRESH-EQUIVALENT`、`EVO-FIX-FRESH-SCOPE`、`EVO-FIX-ARCH-DOWNSTREAM-FRESHNESS`、`EVO-FIX-ARCH-PROMOTION`、`EVO-FIX-PARALLEL` 各至少 1 条 exact trace 为样本；全部通过，且首稿未读 current authority、Planning 直接写 shared current、不必要 ADR、下游消费 stale Architecture binding 均为 0 |
-| `failure_impact` | 架构方法论无法被贯彻，#267 类发布即使完成也不是目标产品 |
+| `failure_impact` | 架构方法论无法被贯彻，后续重构版即使完成发布动作也不是目标产品 |
 | `acceptance_bar` | Architecture 场景 fixture 全覆盖，最终 approved plan 与 current baseline 对齐或包含明确、受治理的 evolution proposal |
 | `validation_strategy` | no-impact、aligned、conflict、missing/stale、new decision、existing decision revision、unnecessary ADR、downstream freshness 与 parallel promotion fixtures |
 | `source_req_refs` | `REQ-UC-EVO-008..016,019,022..026,028..029` |
@@ -851,7 +856,8 @@ Requirements 审核通过后由新的 Evolution Design/Test/Architecture contrib
 Requirements 审核通过后，下一阶段才定义：整体状态模型、唯一 semantic owner、Skill-first
 边界、public input/output 与 typed exits、最小 runtime state、platform projection、迁移方式、
 eval harness 和推进拆分。Design 与推进方案全部审核通过后，才以该 SSOT 创建全新的串行
-Issue 链；现有 `#247 -> #267` 链继续保持候选参考，不自动成为执行计划。
+Issue 链；现有 `#247 -> #267` 链继续保持发布后的候选参考，不自动成为执行计划，也不进入
+重构前稳定版 `v0.6.15-guru.1` 的 Release gate。
 
 ## 最终用户结果
 

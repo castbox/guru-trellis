@@ -10,8 +10,8 @@
 - `DDEC-008`（accepted）：完整 compatibility matrix 使用 live-derived declared platforms，每个 cell 同时安装 shared `.agents` public projection 与唯一 selected platform projection。
 - `DDEC-009`（accepted）：existing migration 以 `v0.6.5-guru.10` 为 immutable before-state；official update 产生的已知 replacement `.bak` 必须逐项 reconciliation，最终 recursive sidecar count 为 0。
 - `DDEC-010`（accepted）：A/B compatibility 与真实 GitHub A route 是验证 harness，不新增 #248 Acceptance 或 #252 cleanup public API。
-- `DDEC-011`（accepted）：`.37` current docs 可以记录 `public_plus_local_candidate` proof，但 stable tag/Release 与 tag-pinned install conclusion 只能由 #267 晋升。
+- `DDEC-011`（accepted）：`.37` current docs 可以记录 `public_plus_local_candidate` proof，但 `v0.6.15-guru.1` stable tag/Release 与 tag-pinned install conclusion 只能由独立的重构前稳定版 Release Issue 晋升。
 - `DDEC-012`（accepted）：Architecture Baseline 与 Guru Team lifecycle 保持双维 authority，只在 task-local change contract 相交；项目 constitution/change contract 拥有具体语义，public package只拥有 shape、stage routes 与 deterministic validation。
 - `DDEC-013`（accepted）：shared Architecture/RDT current 只由各自 semantic owner在 independent review 后串行 promotion；Architecture promotion 必须绑定 expected current 且强制 post-promotion Phase 2/commit/Branch Review。
-- `DDEC-014`（accepted）：`.39` 是 current knowledge identity，extension candidate 继续为 `0.6.5-guru.37`；knowledge promotion 不隐式授权 version bump、push 或 release。
+- `DDEC-014`（accepted）：`.40` 是 current knowledge identity，extension candidate 继续为 `0.6.5-guru.37`；knowledge promotion 不隐式授权 version bump、push 或 release。
 - `DDEC-015`（accepted）：`guru-sync-base` 以 selection -> authority binding 两阶段实现 detached normal path；worktree inventory 只服务 selected-base 后的 exact binding，不成为 base selection authority，也不引入 fallback、dual-read 或第二 resolver。

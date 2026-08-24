@@ -2,7 +2,7 @@
 
 以下事实只绑定 current source/release evidence，不推断未来能力。
 
-- `ARCH-CUR-001`（`code_recovered`）：task head `d4165f26…` + #290 serialized promotion delta（精确 revision 为当前 Git HEAD）包含 21 个 active Skill packages；registry 统一指向 interface/route/platform，20 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
+- `ARCH-CUR-001`（`code_recovered`）：task head `d4165f26…` + #290 serialized promotion delta 包含 21 个 active Skill packages；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD；registry 统一指向 interface/route/platform，20 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
 - `ARCH-CUR-002`（`code_recovered`）：global workflow 实现四 Phase，canonical package 位于 `trellis/**`，dogfood/installed 位于 `.trellis/**`，平台投影覆盖 Shared/Codex/Claude/Cursor。
 - `ARCH-CUR-003`（`code_recovered`）：RDT、Architecture Baseline、Repository Bootstrap 三个 semantic package 已 active，分别源自 #263/#264/#265。
 - `ARCH-CUR-004`（`source_confirmed` + `verified`）：current extension candidate 为 `0.6.5-guru.37`，target/tested Trellis CLI 为 `0.6.15`。
@@ -16,4 +16,4 @@
 - `ARCH-CUR-012`（`reviewed`）：#283 以 `target_native` 建立设计宪法 `guru-trellis-design-constitution-v1`、项目 change contract `guru-trellis-architecture-change-contract-v1`、project check `guru-trellis-architecture-convergence@1`、task-owned contribution、必要 ADR 与 expected-current-bound serialized promotion；shared current 单写且 promotion 后强制重新进入 Phase 2/commit/Branch Review。
 - `ARCH-CUR-013`（`source_confirmed` + `reviewed`）：`guru-sync-base` 先按 explicit、config scalar、ordered exact refs、remote default 选择 base，再绑定同一 common-dir 中 exact、clean、branch/HEAD/ref 一致的 authority checkout；detached session 仅承载调用，fetch、`merge --ff-only`、三向 equality 与 public repository locator 均由 authority checkout 独占，下游按 source 和完整 candidates exact revalidate。
 
-当前 Architecture knowledge identity 为 `.39`，extension candidate 仍为 `0.6.5-guru.37`。不声明 `.37` 已发布、tag-pinned `.37` install 或 release smoke 已通过；这些发布事实仍由 #267 独占。
+当前 Architecture knowledge identity 为 `.40`，extension candidate 仍为 `0.6.5-guru.37`。不声明 `v0.6.15-guru.1` / extension `.37` 已发布、tag-pinned `.37` install 或 release smoke 已通过；这些发布事实仍由独立的重构前稳定版 Release Issue 独占，#267 属于后续重构链。

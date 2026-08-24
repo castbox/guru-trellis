@@ -1,7 +1,7 @@
 # TARGET
 
 - `ARCH-TGT-001`（accepted direction）：RDT 与 Architecture authority 通过 task impact/contribution/promotion 持续维护，`.trellis/spec` 始终是最小 projection。
-- `ARCH-TGT-002`（accepted release target, `unverified`）：#267 在 exact merged main 上发布 `.37` immutable stable tag 与 GitHub Release。
+- `ARCH-TGT-002`（accepted release target, `unverified`）：独立的重构前稳定版 Release Issue 在 exact frozen `origin/main` 上发布 tag `v0.6.15-guru.1`、extension `.37`、Trellis `0.6.15` immutable stable tag 与 GitHub Release；#267 与下一阶段重构链明确排除。
 - `ARCH-TGT-003`（accepted release direction, `unverified`）：tag-pinned clean install、upgrade/update、consumer 与 release smoke 必须重验，不以 #260 的 `public_plus_local_candidate` 证据替代。
 - `ARCH-TGT-004`（accepted direction）：Guru Trellis 下一阶段产品进化以
   [`EVO-001..007`](../../requirements/evolution/requirement-main.md)

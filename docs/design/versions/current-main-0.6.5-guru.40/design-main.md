@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-版本：`current-main-0.6.5-guru.40`；状态：`active`；provenance：`code_recovered` + #283 architecture contract + #290/#295 reviewed promotion，绑定 task head `51609250…` + #295 serialized promotion delta（精确 revision 为当前 Git HEAD）。
+版本：`current-main-0.6.5-guru.40`；状态：`active`；provenance：`code_recovered` + #283 architecture contract + #290/#295 reviewed promotion，绑定 task head `51609250…` + #295 serialized promotion delta。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD。
 
 ## 分层与 ownership
 
@@ -35,7 +35,7 @@
 - `DES-031` Project check：current descriptor `guru-trellis-architecture-convergence:repository:1` / check `guru-trellis-architecture-convergence@1` 绑定每个 stage 的 applicable scope、rule/decision/GAP refs、before/after、evidence 与 freshness；AI 判定 applicability/blocking/route，runtime 只校验 descriptor/result 一一绑定。
 - `DES-032` Architecture routes：缺适用 contract/constitution/check facts 为 `contract_incomplete`，与 current authority 冲突为 `architecture_conflict`，新增或恶化偏移/owner 扩张/无退出双写/closed GAP 重现为 `fitness_regression`，baseline/constitution/contribution/expected-current stale 为 `sync_required`。
 - `DES-033` Contribution/promotion isolation：task writer 只写 task-owned contribution；Architecture owner 是 shared-current single-writer。promotion 绑定 independent committed range 与 expected current，live identity 推进时禁止覆盖并让旧 task re-entry。
-- `DES-034` Distribution/validation boundary：2.0 schema/runtime、canonical/dogfood/installed、Shared/Codex/Claude/Cursor 与十个 project-neutral scenarios 原子一致；#283 只要求 targeted checks 与一个代表性 clean install，#267 独占 exact-candidate release matrix/tag/Release/immutable smoke。
+- `DES-034` Distribution/validation boundary：2.0 schema/runtime、canonical/dogfood/installed、Shared/Codex/Claude/Cursor 与十个 project-neutral scenarios 原子一致；#283 只要求 targeted checks 与一个代表性 clean install，独立的重构前稳定版 Release Issue 独占 exact-candidate release matrix/tag/Release/immutable smoke。
 - `DES-035` Base selection：`select_base` 只读取 caller explicit value、repo config、exact local/remote refs 与 remote default，按固定 precedence 返回 source/base/remote/ordered candidates；current branch 与 worktree inventory 不参与选择。
 - `DES-036` Authority binding：selection 后解析同一 Git common-dir 的 registered worktrees，只接受 branch field exact 等于 `refs/heads/<selected_base>` 的唯一 checkout，并复核 toplevel、common-dir、branch、HEAD/local ref 与 clean identity。
 - `DES-037` Session/authority separation：session checkout 仅作为 invocation shell并允许 detached；authority checkout 独占 fetch、可选 `merge --ff-only`、checker clean/equality 与 public handoff locator。
@@ -43,7 +43,7 @@
 - `DES-039` Fast-forward execution：execute 在 authority cwd 使用 explicit refspec fetch；local==remote 时不 merge，local 为 remote ancestor 时只执行 `merge --ff-only`，diverged 或 remote-behind 阻断。
 - `DES-040` Public compatibility：closed result schema、Interface 1.4、`synced|skipped|blocked` exits 与 transition shape 不变；checker invocation-local authority path 仅投影到既有 locator 字段。
 - `DES-041` Downstream freshness：workspace consumer 按 transition source 重新解析 explicit/config/config-candidate/remote-default current authority，并 exact 比较 selected base 与完整 ordered candidates；freshness 前不执行 config-only resolution，不导入 producer private runtime。
-- `DES-042` Distribution evidence：canonical 与 installed package、Shared/Codex/Claude/Cursor projection、extension inventory、reapply/drift/mode/sidecar-zero 和一个 installed detached wrapper 分层证明 #290；release-wide matrix 仍由 #267 独占。
+- `DES-042` Distribution evidence：canonical 与 installed package、Shared/Codex/Claude/Cursor projection、extension inventory、reapply/drift/mode/sidecar-zero 和一个 installed detached wrapper 分层证明 #290；release-wide matrix 仍由独立的重构前稳定版 Release Issue 独占。
 
 ## Public I/O 与 private state
 

@@ -3,6 +3,11 @@
 本目录是 Guru Trellis 下一阶段 target Requirements 的唯一文档集。它定义尚未实现的产品
 目标、场景、功能/非功能要求和进入 Design 的条件，不声明 current runtime 已实现这些能力。
 
+阶段边界：本目录整体为 `post_release` target authority。重构前稳定版
+`v0.6.15-guru.1` / extension `0.6.5-guru.37` / Trellis `0.6.15` 冻结并验证 current 旧 graph；
+本目录不进入该 Release candidate 的 capability gate、前置依赖或完成声明。只有该稳定版发布
+闭环后，后续 Evolution Design、推进方案与新实施 Issue 链才能消费本目录。
+
 | 状态 | Locator | 职责 |
 | --- | --- | --- |
 | `requirements_draft` | [`requirement-main.md`](./requirement-main.md) | Authority、产品总述、第一/二章入口组织、功能需求、核心能力、验收 fixture、闭环、目标追踪和 Design gate |
