@@ -1,0 +1,12 @@
+{
+  "id": "304-capability-comparison",
+  "name": "304-capability-comparison",
+  "title": "#304 修正 capability preservation 判定",
+  "status": "completed",
+  "branch": "codex/304-capability-comparison",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/304",
+  "completedAt": "2026-08-24"
+}

@@ -1,0 +1,140 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-24T12:05:44Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-24-304-capability-comparison",
+    "title": "#304 修正 capability preservation 判定",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-24-304-capability-comparison",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/304-capability-comparison",
+    "commits": [
+      "8bb75139fa82556002ef8641cc4074afa868f785",
+      "e4b2d21f97fb652557939acc455e882db655e1df"
+    ],
+    "changed_paths": [
+      ".trellis/spec/architecture/baseline-usage.md",
+      ".trellis/spec/docs/requirements-design-test-ssot.md",
+      ".trellis/tasks/08-24-304-capability-comparison/design.md",
+      ".trellis/tasks/08-24-304-capability-comparison/implement.md",
+      ".trellis/tasks/08-24-304-capability-comparison/issue-scope-ledger.json",
+      ".trellis/tasks/08-24-304-capability-comparison/prd.md",
+      ".trellis/tasks/08-24-304-capability-comparison/task.json",
+      ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/design.md",
+      ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/implement.md",
+      ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/prd.md",
+      ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/task.json",
+      "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+      "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      304
+    ],
+    "close_issues": [],
+    "related_issues": [
+      304
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/306"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#304 修正 capability preservation 判定",
+    "outcome": "capability preservation 不再把 installed-file inventory 或内部 Skill API/schema projection 变化判定为 capability loss。",
+    "changed_behavior": [
+      "capability preservation 不再把 installed-file inventory 或内部 Skill API/schema projection 变化判定为 capability loss。",
+      "workflow marker、extension identity、task data 与 Docs authority 的既有阻断比较保持不变；安装与 projection consistency 仍由独立门禁验证。",
+      "将 RDT 与 Architecture 的最小 Agent projection 同步到 current `.40` authority。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/architecture/baseline-usage.md",
+          ".trellis/spec/docs/requirements-design-test-ssot.md",
+          ".trellis/tasks/08-24-304-capability-comparison/design.md",
+          ".trellis/tasks/08-24-304-capability-comparison/implement.md",
+          ".trellis/tasks/08-24-304-capability-comparison/prd.md",
+          ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/design.md",
+          ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/implement.md",
+          ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/prd.md"
+        ],
+        "change": "capability preservation 不再把 installed-file inventory 或内部 Skill API/schema projection 变化判定为 capability loss。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+          "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+        ],
+        "change": "capability preservation 不再把 installed-file inventory 或内部 Skill API/schema projection 变化判定为 capability loss。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-24-304-capability-comparison/issue-scope-ledger.json",
+          ".trellis/tasks/08-24-304-capability-comparison/task.json",
+          ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/task.json"
+        ],
+        "change": "capability preservation 不再把 installed-file inventory 或内部 Skill API/schema projection 变化判定为 capability loss。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#304"
+      ],
+      "pr_refs": [
+        "PR #306"
+      ],
+      "branches": [
+        "codex/304-capability-comparison"
+      ],
+      "paths": [
+        ".trellis/spec/architecture/baseline-usage.md",
+        ".trellis/spec/docs/requirements-design-test-ssot.md",
+        ".trellis/tasks/08-24-304-capability-comparison/design.md",
+        ".trellis/tasks/08-24-304-capability-comparison/implement.md",
+        ".trellis/tasks/08-24-304-capability-comparison/issue-scope-ledger.json",
+        ".trellis/tasks/08-24-304-capability-comparison/prd.md",
+        ".trellis/tasks/08-24-304-capability-comparison/task.json",
+        ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/design.md",
+        ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/implement.md",
+        ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/prd.md",
+        ".trellis/tasks/archive/2026-08/08-24-304-capability-comparison/task.json",
+        "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+        "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#304 修正 capability preservation 判定",
+        "capability preservation 不再把 installed-file inventory 或内部 Ski",
+        "完成 baseline-usage.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#304 修正 capability preservation 判定\ncapability preservation 不再把 installed-file inventory 或内部 Skill API/schema projection 变化判定为 capability loss。\nworkflow marker、extension identity、task data 与 Docs authority 的既有阻断比较保持不变；安装与 projection consistency 仍由独立门禁验证。\n将 RDT 与 Architecture 的最小 Agent projection 同步到 current `.40` authority。\ncapability preservation 不再把 installed-file inventory 或内部 Ski\n完成 baseline-usage.md 相关变更"
+  }
+}

@@ -2,13 +2,13 @@
 
 ## Current identity
 
-- version：`current-main-0.6.5-guru.39`
+- version：`current-main-0.6.5-guru.40`
 - status：`active`
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
 - Architecture inheritance：`docs/architecture/README.md`，同版本、`active`
-- source binding：task head `d4165f268d36e19139266d28519148c290f773a4` + #290 serialized promotion delta（精确 revision 为当前 Git HEAD）
+- source binding：task head `516092506cb7be21d9383f87325f3f776bb6ba80` + #295 serialized promotion delta + `2026-08-24` 用户明确确认的 `EVO-001..007` target delta（精确 revision 由包含本 authority 的 Git commit/tree identity 绑定）
 
 ## 读取与更新
 
