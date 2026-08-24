@@ -7,8 +7,8 @@
 3. 在 `trellis/presets/guru-team/README.md` 应用等价英文 owner 语义。
 4. 检查完整 diff，确认三个产品文件各只有一个句子变化。
 5. 运行定向文本检查和 `git diff --check`。
-6. 完成 Phase 2、task commit 与 committed full-diff Branch Review 后，再单独展示
-   commit、push 和 PR 副作用计划。
+6. 完成 Phase 2 后，单独展示 task commit 副作用计划；commit 完成后执行
+   committed full-diff Branch Review，再单独展示 push 和 PR 副作用计划。
 
 ## Validation Commands
 
@@ -30,4 +30,3 @@ git diff -- README.md \
 - 不修改 active Requirements 正文；实现只让公开 projection 承接既有 authority。
 - 不把规划或静态文本检查表述为重新冻结、安装验证或 Release gate 通过。
 - commit、push、PR、merge 与发布均保留独立确认边界。
-

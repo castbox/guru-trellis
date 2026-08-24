@@ -42,5 +42,5 @@ active `.40` Requirements authority 一致，不再把重构前稳定版发布�
 - 不修改、关闭或评论 #267。
 - 不改动 `docs/requirements/**`、`docs/design/**`、`docs/test/**` 或
   `docs/architecture/**`。
-- 不执行 commit、push、PR、merge、tag、GitHub Release、Issue 关闭或资源清理。
-
+- 除 workflow-required task commit 外，不执行 push、PR、merge、tag、
+  GitHub Release、Issue 关闭或资源清理。
