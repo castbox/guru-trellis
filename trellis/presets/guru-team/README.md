@@ -157,7 +157,7 @@ reported as mutable provenance.
 Current `main` carries extension candidate `0.6.5-guru.37` targeting official
 Trellis `0.6.15`. Its six-cell compatibility, installed contracts, and A/B
 lifecycle evidence are `public_plus_local_candidate`; it is not a stable source.
-Issue #267 exclusively owns the `.37` tag, GitHub Release, tag-pinned install,
+The independent pre-refactor stable Release Issue (#304) exclusively owns the `.37` tag, GitHub Release, tag-pinned install,
 and release smoke.
 
 ## Current Ownership Contract

@@ -50,7 +50,7 @@ revision 是独立版本轴；workflow marketplace 与 preset 必须来自同一
 当前 `main` candidate 为 extension `0.6.5-guru.37` / official Trellis `0.6.15`，已通过
 live-derived 六-cell compatibility matrix、installed contracts 和 A/B lifecycle proof；
 evidence classification 是 `public_plus_local_candidate`。它不是 stable source，`.37`
-tag、GitHub Release、tag-pinned install 与 release smoke 仍由 #267 独占。
+tag、GitHub Release、tag-pinned install 与 release smoke 仍只由独立的重构前稳定版 Release Issue（#304）拥有。
 
 已有 Trellis 项目切换 active workflow：
 
