@@ -34,14 +34,16 @@ officially supported explicit `--template <name>` path when a specific template
 is intended. If docs mention interactive template selection, describe it as an
 opt-in user choice, not as the team default or automated validation path.
 
-Stable install and upgrade docs must list the complete current release mapping:
-repo release tag, peeled source commit, extension revision, and target official
-Trellis CLI. The current mapping is annotated tag `v0.6.5-guru.10`, extension
-revision `0.6.5-guru.36`, and target CLI `0.6.5`. The tag is created only after
-the preparation PR merges and the exact remote candidate passes the pre-tag
-gate. Its peeled commit must equal that candidate and is recorded through
-immutable Git facts, GitHub Release notes, and release evidence; pre-candidate
-public docs must not guess or hard-code a future candidate commit. Repo release
+Stable install and upgrade docs must list the complete release-facing mapping:
+repo release tag, extension revision, and target official Trellis CLI. The
+current target mapping is annotated tag `v0.6.15-guru.1`, extension revision
+`0.6.5-guru.37`, and target CLI `0.6.15`. The tag is created only after the
+preparation PR merges and the exact remote candidate passes the pre-tag gate.
+Until then, docs must state that its tag object, peeled commit, GitHub Release,
+tag-pinned install, and post-publish smoke are unverified; they must not guess
+or hard-code a future candidate commit. After publication, the peeled commit
+must equal that candidate and is recorded through immutable Git facts, GitHub
+Release notes, and release evidence. Repo release
 tags and extension revisions are independent version axes; docs must bind the
 exact pair instead of assuming their Guru suffixes match. Workflow marketplace
 and preset sources must use the same immutable release tag. Unpinned or branch sources remain mutable

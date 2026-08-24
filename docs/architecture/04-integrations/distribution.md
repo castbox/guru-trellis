@@ -7,3 +7,12 @@
 - `ARCH-INT-005`：`get_context.py` 从 `.trellis/spec/**/index.md` 提供 Agent 读取入口，但 projection 不复制 authority 正文。
 - `ARCH-INT-006`：每个 declared platform cell 同时安装 shared `.agents` public projection 与唯一 selected platform projection；package-private validator scripts 不分发到平台 roots。
 - `ARCH-INT-007`：项目 Architecture check 通过 current descriptor/result identity、applicability、rule/decision/GAP refs、before/after、evidence/unavailable reason 与 freshness 接入 semantic owner；公共 runtime 只校验一一绑定和 route consistency，不执行或解释项目语义。
+
+## Capability 与 installation consistency 边界
+
+- Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
+  用户可观察 workflow capability 是否丢失。
+- `skill_api` 与 interface/schema/command projection、distribution、managed/installed file
+  inventory、mode、template hash、sidecar、声明平台 parity 及 extension identity/version
+  binding 属于独立 consistency/installation gate。任一不一致仍 fail closed 并阻塞 release，
+  但其变化本身不构成 capability loss。

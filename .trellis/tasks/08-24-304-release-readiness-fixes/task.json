@@ -1,0 +1,11 @@
+{
+  "id": "08-24-304-release-readiness-fixes",
+  "name": "08-24-304-release-readiness-fixes",
+  "title": "#304 修复 Release readiness blockers",
+  "status": "in_progress",
+  "branch": "codex/304-release-readiness-fixes",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/304"
+}

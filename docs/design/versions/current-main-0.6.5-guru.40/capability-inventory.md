@@ -42,10 +42,13 @@ Inventory freshness：registry entries、interface exits、manifest schema lists
 
 - live-derived platforms：`claude`、`codex`、`cursor`；每个平台均完成 clean/existing 两个隔离 cell，6/6 passed。
 - Trellis/project target：`0.6.15`；existing before：official `0.6.5` + `v0.6.5-guru.10` / extension `0.6.5-guru.36`。
-- after extension：`0.6.5-guru.37`；active Skills=`21`，external exits=`89`，source/installed/platform interface/schema/command/route 集合无 blocking loss。
+- after extension：`0.6.5-guru.37`；active Skills=`21`，external exits=`89`；capability-loss
+  comparison 的 `workflow`、`task_data`、`docs_authority` 三组无 blocking loss，
+  source/installed/platform interface/schema/command/route 集合由独立 consistency/installation
+  gate 保持一致。
 - 每个 cell执行 RDT 6-case/4-profile、Architecture 4-case/4-profile、Bootstrap 4-case/3-profile installed eval，并通过 Phase 0、workspace 与 closeout smoke。
 - six-cell recursive sidecar count=`0`，template-hash unknown drift=`0`；已知 update backups 仅在 reconciliation 中出现并在最终状态移除。
-- current-head dual PATH-runtime matrix SHA-256：`660422848f6efba9f1c3c6fcf2d9d23a1e8b710af8ffd10bf0f12e0954910f49`；workflow sample=`public_plus_local_candidate`，不等于 `.37` 已发布。Per-run wrapper summary digest包含临时 A/B fixture commit identity，因此不作为跨重跑稳定 capability identity。
+- current-head dual PATH-runtime matrix SHA-256：`660422848f6efba9f1c3c6fcf2d9d23a1e8b710af8ffd10bf0f12e0954910f49`；workflow sample=`public_plus_local_candidate`，不等于 `.37` 已发布。Per-run wrapper summary digest包含临时 A/B fixture commit identity，因此不作为跨重跑稳定 comparison identity。
 
 ## #283 Architecture convergence result
 

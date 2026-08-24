@@ -20,14 +20,19 @@
 - `REQ-012`：task/branch/worktree 使用绑定 Issue 与语义动作的名称；base evolution、GitHub provider
   failure 与 partial recovery 返回唯一 owning route，不从 Phase 0 重建已存在的 task。
   `code_recovered`：workspace、reconcile、publication/finalization packages。
-- `REQ-013`：install/update/upgrade/reapply 必须保留完整 capability inventory、managed path、
-  executable mode 与声明平台入口；未处理 `.new/.bak`、版本或 projection drift 必须阻塞成功声明。
+- `REQ-013`：install/update/upgrade/reapply 必须保持 Skill API、interface/schema/command、
+  distribution、managed/installed path、executable mode、声明平台入口、template hash、sidecar
+  与 extension identity/version binding 一致；任一不一致或未处理 `.new/.bak` 必须作为独立
+  consistency/installation blocker 阻塞成功声明，但其变化本身不构成 capability loss。
   `source_confirmed`：preset/upgrade contracts；`code_recovered`：installer 与 validators。
 - `REQ-014`：Finalizer 完成 archive、Ready PR 与 terminal cleanup 后，public wrapper 只可从已归档 durable summary、精确 retired owner locator 与当前 Git/GitHub ready facts 重建 terminal authority；缺 locator、archive/head/PR/scope 漂移或未退休 owner state 必须 fail closed。`source_confirmed`：Issue #275；`code_recovered`：Finalizer owner/runtime。
 - `REQ-015`：Throwaway verifier 的 active package、command 与 complete-package inventory 必须从 canonical registry/interface validation 派生；不得维护随新增 Skill 漂移的固定数量。`source_confirmed`：Issue #275；`code_recovered`：verifier inventory projection。
 - `REQ-016`：专项 compatibility owner 必须从 live manifest、ownership、overlay 与 registry 交叉派生声明平台，并对每个平台分别执行 clean official Trellis `0.6.15` 与 existing official `0.6.5 -> 0.6.15` 隔离 cell。`source_confirmed`：Issue #260；`verified`：六个 cell 全部通过。
 - `REQ-017`：existing cell 的 Guru before-state 必须是 immutable `v0.6.5-guru.10` / extension `0.6.5-guru.36`，并按 official upgrade、update dry-run、条件式 migrate、workflow preview/switch 与 preset reapply 顺序执行。`verified`：三个 existing cell。
-- `REQ-018`：升级前后 active Skill、interface、schema、exit、command、consumer、route、managed path、mode、template-hash 与 Docs authority 的完整投影不得出现未审查能力丢失。`verified`：21 active Skills、89 exits 与 installed projection 保持。
+- `REQ-018`：升级前后的 capability-loss comparison 只比较 `workflow`、`task_data` 与
+  `docs_authority`，三组均不得出现未审查能力丢失；Skill API/schema/command projection、
+  distribution 与 installed inventory 继续由 `REQ-013` 的独立 consistency/installation gate
+  阻塞。`verified`：三组 capability projection 保持。
 - `REQ-019`：#263 RDT、#264 Architecture、#265 Bootstrap installed profiles 与 #266 双 SSOT/Architecture authority 必须在升级后保持；`.trellis/spec` 仍是最小 locator/index projection。`verified`：每个 cell 的 installed eval 与 docs projection check。
 - `REQ-020`：同一 clean base 的两个业务 task 必须保持 workspace/provider/archive/Finish/cleanup ownership 隔离；B 的 `none` route 不调用 GitHub，A 的真实 `github_pr` route 必须使用单独确认的 disposable repository，并在 cleanup 前后证明 required commit reachability。`verified`：local A/B matrix 与真实 GitHub A route。
 - `REQ-027`：Architecture Baseline 是标准 task 从 Planning、qualified implementation discovery、Phase 2、Branch Review、Publication 到 Acceptance/Finish 的唯一项目架构 SSOT；schema/runtime 只支撑 lifecycle，不成为架构判断 owner。

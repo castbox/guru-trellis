@@ -16,7 +16,7 @@
 | `TST-012`, `SCN-009` | `REQ-014`, `BEH-010` | `DES-012`, `CON-004` | Finalizer focused package + Throwaway closeout evidence |
 | `TST-013`, `SCN-010` | `REQ-015` | `DES-013` | source/installed registry-derived inventory validation |
 | `TST-014`, `SCN-011..012` | `REQ-016`, `REQ-017`, `BEH-011` | `DES-014`, `DES-015`, `DES-017` | six-cell matrix summary + cell results |
-| `TST-015`, `SCN-013` | `REQ-018` | `DES-016`, `DES-019` | before/after capability and installed comparison |
+| `TST-015`, `SCN-013` | `REQ-018` | `DES-016`, `DES-019` | three-group capability comparison + independent consistency/installation comparison |
 | `TST-016`, `SCN-014` | `REQ-019` | `DES-007`, `DES-014` | installed RDT/Architecture/Bootstrap evals + docs projection checks |
 | `TST-017`, `SCN-015..016` | `REQ-020` | `DES-018` | local A/B lifecycle + real GitHub A merge/closure/cleanup evidence |
 | `TST-018`, `SCN-028`, `SCN-031..032` | `REQ-027`, `REQ-028` | `DES-026`, `DES-027`, `DES-032` | workflow stage routes + exact Phase 2/Branch Review/promotion re-entry |

@@ -20,7 +20,7 @@
 | `TST-012` | terminal projection | retired locator + archive summary + current ready facts 的正向投影与 stale 负例 | pre-archive Publication authority |
 | `TST-013` | inventory derivation | canonical registry/interface-derived ids/commands/complete packages 与 installed equality | 固定 magic count |
 | `TST-014` | full platform matrix | live-derived platform × clean/existing 的 official install/update 与 installed behavior | representative single-repo throwaway |
-| `TST-015` | capability preservation | before/after complete projection、template hash、mode、sidecar 与 Docs authority equality | 仅 version 字符串检查 |
+| `TST-015` | capability preservation | before/after `workflow`、`task_data`、`docs_authority` equality | Skill API/schema/distribution/install consistency 检查 |
 | `TST-016` | installed SSOT contracts | RDT/Architecture/Bootstrap profiles 与双 SSOT projection 保持 | package discovery 或 `--help` |
 | `TST-017` | A/B lifecycle and live provider | 独立 Finish routes、recovery、merge order、reachability 与真实 GitHub expected-head merge/closure | fake provider 单独结论 |
 | `TST-018` | architecture stage lifecycle | Planning/discovery/Phase 2/Branch Review/Publication/Acceptance invocation、freshness、unique consumer 与 post-promotion re-entry | 任一旧阶段结果或测试数量 |
@@ -53,7 +53,10 @@
 - `SCN-010`：新增或移除 active Skill 时 verifier 从 registry/interface 自动取得 inventory，并与 installed projection 做 exact equality。
 - `SCN-011`：`claude|codex|cursor × clean|existing` 六个独立 cell 全部使用 Trellis `0.6.15` 结束，sidecar 与 unknown template drift 为零；matrix `source_state` 绑定 HEAD、tracked/untracked candidate bytes/modes 与 candidate tree，run 前后 identity 一致。
 - `SCN-012`：existing cell 从 official `0.6.5` + `v0.6.5-guru.10` 运行 upgrade/update dry-run、条件式 migrate、workflow preview/switch 与 preset reapply。
-- `SCN-013`：before/after active id、interface/schema/exit/command/consumer/route、Skill package/ordinary managed asset/overlay executable mode、recursive `docs/**` authority 与 extension identity 无未审查 capability loss。
+- `SCN-013`：before/after `workflow`、`task_data`、`docs_authority` 三组无未审查
+  capability loss；active id、interface/schema/exit/command/consumer/route、Skill package、
+  ordinary managed asset、overlay executable mode、template hash、sidecar 与 extension identity
+  另由 consistency/installation gate exact 验证，任一漂移仍独立阻塞。
 - `SCN-014`：每个 cell 运行 RDT、Architecture、Bootstrap 全 profile installed eval，并保持 #266 docs authority 与最小 spec projection。
 - `SCN-015`：local A/B 完成两种 merge order、零 metadata intersection、task-local archive、Finish/provider/cleanup 同 owner recovery 与 cleanup 后 reachability；B 的 GitHub 调用为零；A archive 后 history query 返回唯一 `PR #301` finish-summary candidate。
 - `SCN-016`：真实 A disposable repo 的 PR #2 在 expected source head 上 rebase merge，Issue #1 在 merge 后关闭；remote branch/repo cleanup 后 retained-ref proof仍成立。
