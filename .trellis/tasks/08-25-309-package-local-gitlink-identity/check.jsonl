@@ -1,0 +1,2 @@
+{"file": "trellis/skills/guru-team/packages/guru-check-task/tests/test_runtime.py", "reason": "Validate real Gitlink state matrix"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Validate package installed parity and targeted gates"}

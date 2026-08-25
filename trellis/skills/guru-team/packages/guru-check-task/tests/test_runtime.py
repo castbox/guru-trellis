@@ -1,17 +1,30 @@
 from __future__ import annotations
-import copy, hashlib, json, os, subprocess, sys, tempfile, unittest
+import copy, hashlib, importlib.util, json, os, shutil, subprocess, sys, tempfile, unittest
 from pathlib import Path
 from jsonschema import Draft202012Validator
 
 PACKAGE=Path(__file__).resolve().parents[1]
 SKILLS=PACKAGE.parents[1]
-RUNTIME=SKILLS/"runtime"
-if str(SKILLS) not in sys.path: sys.path.insert(0,str(SKILLS))
+KERNEL_ROOT=SKILLS if (SKILLS/"runtime/command.py").is_file() else SKILLS.parent
+if str(KERNEL_ROOT) not in sys.path: sys.path.insert(0,str(KERNEL_ROOT))
 if str(PACKAGE/"runtime") not in sys.path: sys.path.insert(0,str(PACKAGE/"runtime"))
 from runtime.command import main
 from common import PHASE2_WORKTREE_CONTENT_ALGORITHM, content_identity, dirty_paths
+from runtime.io import CommandError
 
 class PackageLocalRuntimeTest(unittest.TestCase):
+ def git(self,repo,*args,input=None):
+  return subprocess.run(["git",*args],cwd=repo,input=input,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True).stdout.strip()
+
+ def gitlink_fixture(self,temporary):
+  source=Path(temporary)/"source";repo=Path(temporary)/"repo"
+  source.mkdir();self.git(source,"init","-q");self.git(source,"config","user.name","Test");self.git(source,"config","user.email","test@example.com")
+  (source/"tracked.txt").write_text("one\n");self.git(source,"add","tracked.txt");self.git(source,"commit","-qm","initial")
+  oid=self.git(source,"rev-parse","HEAD")
+  repo.mkdir();self.git(repo,"init","-q");self.git(repo,"config","user.name","Test");self.git(repo,"config","user.email","test@example.com")
+  self.git(repo,"-c","protocol.file.allow=always","submodule","add","-q",str(source),"module");self.git(repo,"commit","-qam","gitlink")
+  return repo,oid
+
  def test_command_and_error_contract_close(self):
   commands=json.loads((PACKAGE/"commands.json").read_text())
   catalog=json.loads((PACKAGE/"errors/catalog.json").read_text())
@@ -97,6 +110,76 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    self.assertEqual("guru-phase2-worktree-content-1.0",PHASE2_WORKTREE_CONTENT_ALGORITHM)
    self.assertEqual(expected,content_identity(repo))
    self.assertNotEqual(retired,content_identity(repo))
+
+ def test_content_identity_preserves_non_gitlink_payloads(self):
+  with tempfile.TemporaryDirectory() as temporary:
+   repo=Path(temporary);self.git(repo,"init","-q")
+   content=b"tracked\n";(repo/"file.txt").write_bytes(content);os.symlink("file.txt",repo/"link")
+   entries=[{"path":"file.txt","kind":"file","content_sha256":hashlib.sha256(content).hexdigest()},{"path":"link","kind":"symlink","target":"file.txt"},{"path":"missing","kind":"missing"}]
+   expected=hashlib.sha256(json.dumps({"algorithm":PHASE2_WORKTREE_CONTENT_ALGORITHM,"entries":entries},sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
+   self.assertEqual(expected,content_identity(repo,["file.txt","link","missing"]))
+
+ def test_content_identity_binds_initialized_and_uninitialized_gitlink_to_index_oid(self):
+  with tempfile.TemporaryDirectory() as temporary:
+   repo,oid=self.gitlink_fixture(temporary)
+   expected=digest=hashlib.sha256(json.dumps({"algorithm":PHASE2_WORKTREE_CONTENT_ALGORITHM,"entries":[{"path":"module","kind":"gitlink","mode":"160000","oid":oid}]},sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
+   self.assertEqual(expected,content_identity(repo,["module"]))
+   self.git(repo,"submodule","deinit","-f","--","module")
+   self.assertEqual(digest,content_identity(repo,["module"]))
+
+ def test_content_identity_rejects_gitlink_worktree_drift(self):
+  cases=("dirty","head_drift","deletion","replacement","root_mismatch")
+  for case in cases:
+   with self.subTest(case=case),tempfile.TemporaryDirectory() as temporary:
+    repo,_=self.gitlink_fixture(temporary);module=repo/"module"
+    if case=="dirty":(module/"tracked.txt").write_text("dirty\n")
+    elif case=="head_drift":
+     self.git(module,"config","user.name","Test");self.git(module,"config","user.email","test@example.com")
+     (module/"next.txt").write_text("next\n");self.git(module,"add","next.txt");self.git(module,"commit","-qm","next")
+    else:
+     shutil.rmtree(module)
+     if case=="replacement":module.write_text("replacement\n")
+     elif case=="root_mismatch":module.mkdir();(module/"ordinary.txt").write_text("not a submodule\n")
+    with self.assertRaises(CommandError) as raised:content_identity(repo,["module"])
+    self.assertEqual("stale_identity",raised.exception.code)
+
+ def test_content_identity_rejects_gitlink_pointer_drift_and_ambiguous_index(self):
+  for case in ("pointer_drift","index_deletion","staged_replacement","ambiguous_index"):
+   with self.subTest(case=case),tempfile.TemporaryDirectory() as temporary:
+    repo,oid=self.gitlink_fixture(temporary)
+    alternate=self.git(repo,"rev-parse","HEAD^{tree}")
+    if case=="pointer_drift":self.git(repo,"update-index","--cacheinfo",f"160000,{alternate},module")
+    elif case=="index_deletion":self.git(repo,"update-index","--force-remove","module")
+    elif case=="staged_replacement":
+     blob=self.git(repo,"hash-object","-w","--stdin",input="replacement\n");self.git(repo,"update-index","--add","--cacheinfo",f"100644,{blob},module")
+    else:
+     records=f"0 {oid}\tmodule\n160000 {oid} 1\tmodule\n160000 {alternate} 2\tmodule\n"
+     self.git(repo,"update-index","--index-info",input=records)
+    with self.assertRaises(CommandError) as raised:content_identity(repo,["module"])
+    self.assertEqual("stale_identity",raised.exception.code)
+
+ def test_phase2_record_and_check_accept_uninitialized_clean_gitlink(self):
+  with tempfile.TemporaryDirectory() as temporary:
+   repo,_=self.gitlink_fixture(temporary);self.git(repo,"submodule","deinit","-f","--","module")
+   task_dir=repo/".trellis/tasks/test-task";task_dir.mkdir(parents=True)
+   example=json.loads((PACKAGE/"examples/phase2-check.json").read_text())
+   fields={"mode","reviewed_paths","validation","docs_ssot","candidate_classifications","semantic_review","typed_exit","route","reason","consumer"}
+   authoring={key:copy.deepcopy(value) for key,value in example.items() if key in fields};authoring["reviewed_paths"]=["module"]
+   input_path=repo/".trellis/.runtime/phase2-authoring.json";input_path.parent.mkdir(parents=True);input_path.write_text(json.dumps(authoring))
+   environment={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"}
+   recorded=subprocess.run([str(PACKAGE/"scripts/record-phase2-check.sh"),"--root",str(repo),"--task","test-task","--input",str(input_path),"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
+   value=json.loads(recorded.stdout);self.assertEqual(content_identity(repo),value["reviewed_content_sha256"])
+   checked=subprocess.run([str(PACKAGE/"scripts/check-phase2-check.sh"),"--root",str(repo),"--task","test-task","--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
+   self.assertEqual("ok",json.loads(checked.stdout)["status"])
+
+ def test_phase2_gitlink_fallback_does_not_relax_task_commit_staging(self):
+  with tempfile.TemporaryDirectory() as temporary:
+   repo,_=self.gitlink_fixture(temporary);self.git(repo,"submodule","deinit","-f","--","module")
+   self.assertIsInstance(content_identity(repo,["module"]),str)
+   path=PACKAGE.parent/"guru-create-task-commit/runtime/common.py";spec=importlib.util.spec_from_file_location("task_commit_common_contract",path);module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+   self.assertNotIn("module",{row["path"] for row in module.capture_snapshot(repo)["entries"]})
+   alternate=self.git(repo,"rev-parse","HEAD");self.git(repo,"update-index","--cacheinfo",f"160000,{alternate},module")
+   with self.assertRaises(CommandError):module.capture_snapshot(repo)
 
  def test_public_wrapper_retains_only_passed_checkpoint_and_projects_all_exits(self):
   example=json.loads((PACKAGE/"examples/phase2-check.json").read_text())

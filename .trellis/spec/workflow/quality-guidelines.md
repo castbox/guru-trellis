@@ -599,7 +599,13 @@ managed-before and expected-preview validation proves replacement is safe.
 Phase 2 regression coverage must also prove that empty provenance/docs/
 reviewed-path/command evidence, empty adequacy references, missing current or
 scope-change trigger references, unknown/incomplete evidence-source closure,
-and every incorrect recorder-derived semantic digest fail closed. A real Git
+and every incorrect recorder-derived semantic digest fail closed. A real
+Gitlink fixture must prove uninitialized-clean and initialized-clean identity,
+stable superproject index-OID binding, unchanged non-Gitlink `1.0` identity,
+and fail-closed dirty, submodule-HEAD drift, index/commit pointer drift,
+deletion, replacement, root mismatch, and ambiguous index states. The same
+coverage must prove that Phase 2 acceptance of an unrelated uninitialized
+Gitlink does not grant Task Commit staging authority. A real Git
 metadata-descendant fixture must prove the current owner-private ignored-runtime
 Phase 2 checkpoint remains valid before Task Commit without adding assignment,
 status, liveness, review-round, or implementation-handoff metadata. Successful
