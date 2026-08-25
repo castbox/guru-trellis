@@ -918,6 +918,17 @@ witness, and one typed exit/route/reason/consumer. The private
 worktree paths and has one local deterministic consumer: the checker invoked
 inside the Phase 2 public wrapper before typed-output projection. It is
 distinct from the four-consumer durable `guru-reviewed-content-1.0` contract.
+Its supported atomic entries include regular files, executable files,
+symlinks, missing paths, and Gitlinks. An unchanged uninitialized Gitlink binds
+the unique stage-0 superproject index mode `160000` and OID after the current
+commit records the same pointer. An initialized Gitlink additionally requires
+an exact submodule root, clean status, and submodule `HEAD` equal to that OID.
+Dirty, HEAD-drifted, index/commit-pointer-drifted, deleted, replaced,
+root-mismatched, unmerged, or ambiguous Gitlinks fail closed. This is an
+additive `1.0` compatibility rule: the former runtime produced no valid digest
+for a Gitlink, while every previously supported non-Gitlink entry keeps its
+existing payload and digest. It does not relax Task Commit's separate rule that
+a Gitlink selected for staging must be initialized and clean.
 It detects reviewed-content drift and returns control to the AI owner for delta
 classification; it is not authorization, semantic approval, public handoff, or
 whole-chain authority. Live implementation output, Planning owner state, issue

@@ -1,5 +1,5 @@
 from __future__ import annotations
-import argparse, copy, hashlib, json, os, stat, subprocess, sys
+import argparse, copy, hashlib, json, os, re, stat, subprocess, sys
 from pathlib import Path
 from runtime.io import CommandError
 from runtime.schema import validate_json
@@ -35,9 +35,57 @@ def task(repo,value):
  return p
 def rel(repo,p):return p.resolve().relative_to(repo.resolve()).as_posix()
 def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
+def gitlink_entries(repo,paths):
+ selected=set(paths);index={};tree={}
+ staged=subprocess.run(["git","ls-files","--stage","-z"],cwd=repo,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+ if staged.returncode:raise CommandError("stale_identity","reviewed_paths",staged.stderr.decode("utf-8","replace").strip() or "Resolve the Git index.",3)
+ try:
+  for row in (x for x in staged.stdout.split(b"\0") if x):
+   meta,raw_path=row.split(b"\t",1);path=raw_path.decode("utf-8","strict")
+   if path in selected:index.setdefault(path,[]).append(tuple(meta.decode("ascii").split()))
+ except (UnicodeDecodeError,ValueError):raise CommandError("stale_identity","reviewed_paths","Resolve ambiguous Git index entries.",3)
+ committed=subprocess.run(["git","ls-tree","-r","-z","HEAD"],cwd=repo,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+ if committed.returncode==0:
+  try:
+   for row in (x for x in committed.stdout.split(b"\0") if x):
+    meta,raw_path=row.split(b"\t",1);path=raw_path.decode("utf-8","strict")
+    if path in selected:tree[path]=tuple(meta.decode("ascii").split())
+  except (UnicodeDecodeError,ValueError):raise CommandError("stale_identity","reviewed_paths","Resolve ambiguous committed entries.",3)
+ elif any(any(parts and parts[0]=="160000" for parts in rows) for rows in index.values()):raise CommandError("stale_identity","reviewed_paths","Gitlink commit bindings are unavailable.",3)
+ entries={}
+ for path in selected:
+  index_rows=index.get(path,[]);tree_row=tree.get(path)
+  has_gitlink=any(parts and parts[0]=="160000" for parts in index_rows) or bool(tree_row and tree_row[0]=="160000")
+  if not has_gitlink:continue
+  if len(index_rows)!=1 or len(index_rows[0])!=3:raise CommandError("stale_identity","reviewed_paths",f"Ambiguous Gitlink index identity: {path}",3)
+  mode,oid,stage=index_rows[0]
+  if mode!="160000" or stage!="0" or re.fullmatch(r"[0-9a-f]{40,64}",oid) is None or tree_row!=(mode,"commit",oid):raise CommandError("stale_identity","reviewed_paths",f"Gitlink index and commit bindings differ: {path}",3)
+  entries[path]={"path":path,"kind":"gitlink","mode":mode,"oid":oid}
+ return entries
+def validate_gitlink_worktree(repo,path):
+ target=repo/path
+ status=subprocess.run(["git","--literal-pathspecs","status","--porcelain=v1","-z","--ignore-submodules=none","--",path],cwd=repo,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+ if status.returncode or status.stdout:raise CommandError("stale_identity","reviewed_paths",f"Gitlink worktree state drifted: {path}",3)
+ try:metadata=target.lstat()
+ except FileNotFoundError:return
+ if not stat.S_ISDIR(metadata.st_mode):raise CommandError("stale_identity","reviewed_paths",f"Gitlink path was replaced: {path}",3)
+ try:
+  with os.scandir(target) as children:
+   if next(children,None) is None:return
+ except OSError as exc:raise CommandError("stale_identity","reviewed_paths",f"Gitlink worktree root is unavailable: {path}",3) from exc
+ top=subprocess.run(["git","-C",str(target),"rev-parse","--show-toplevel"],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+ head=subprocess.run(["git","-C",str(target),"rev-parse","--verify","HEAD^{commit}"],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+ dirty=subprocess.run(["git","-C",str(target),"status","--porcelain=v1","--untracked-files=all"],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+ if top.returncode or Path(top.stdout.strip()).resolve()!=target.resolve() or head.returncode or dirty.returncode or dirty.stdout:raise CommandError("stale_identity","reviewed_paths",f"Gitlink worktree identity is unavailable or dirty: {path}",3)
+ return head.stdout.strip()
 def file_set(repo,paths):
- rows=[]
+ rows=[];gitlinks=gitlink_entries(repo,paths)
  for path in sorted(paths,key=lambda value:value.encode()):
+  entry=gitlinks.get(path)
+  if entry is not None:
+   head=validate_gitlink_worktree(repo,path)
+   if head is not None and head!=entry["oid"]:raise CommandError("stale_identity","reviewed_paths",f"Gitlink HEAD differs from its index binding: {path}",3)
+   rows.append(entry);continue
   target=repo/path
   try:metadata=target.lstat()
   except FileNotFoundError:

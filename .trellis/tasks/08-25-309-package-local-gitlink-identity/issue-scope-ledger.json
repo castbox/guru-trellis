@@ -1,0 +1,26 @@
+{
+  "close_issues": [
+    {
+      "number": 309,
+      "reason": "The task covers the complete package-local Gitlink identity contract and regression matrix in Issue #309.",
+      "title": "[Bug] Package-local Phase 2 content identity rejects Gitlink paths",
+      "url": "https://github.com/castbox/guru-trellis/issues/309"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 309,
+    "reason": "Issue #309 is the sole independently deliverable bug authority.",
+    "title": "[Bug] Package-local Phase 2 content identity rejects Gitlink paths",
+    "url": "https://github.com/castbox/guru-trellis/issues/309"
+  },
+  "related_issues": [
+    {
+      "number": 186,
+      "reason": "Historical companion-runtime behavior that this migration regression must preserve.",
+      "title": "Task-bearing verification rejects unchanged uninitialized Gitlinks",
+      "url": "https://github.com/castbox/guru-trellis/issues/186"
+    }
+  ],
+  "schema_version": "2.0"
+}

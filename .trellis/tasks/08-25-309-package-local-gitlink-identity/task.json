@@ -1,0 +1,11 @@
+{
+  "id": "309-package-local-gitlink-identity",
+  "name": "309-package-local-gitlink-identity",
+  "title": "#309 修复 package-local Phase 2 Gitlink content identity",
+  "status": "in_progress",
+  "branch": "fix/309-package-local-gitlink-identity",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/309"
+}
