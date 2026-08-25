@@ -29,20 +29,20 @@ provenance 写入目标仓库的 `.trellis/guru-team/extension.json`，并通过
 ```bash
 trellis init -y --claude --codex --cursor \
   --workflow guru-team \
-  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.15-guru.1
+  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.15-guru.2
 ```
 
 `-y` 是团队默认安装路径的一部分，用于跳过交互式 spec template picker。自动验收、
 throwaway 安装验证和 README 默认命令都必须使用非交互形式；只有用户明确想手动选择
 spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`。
 
-本次发布 source 固定使用目标 repo release tag `#v0.6.15-guru.1`，并要求官方 Trellis CLI 安装到
+本次发布 source 固定使用目标 repo release tag `#v0.6.15-guru.2`，并要求官方 Trellis CLI 安装到
 `0.6.15`。维护者刻意跟随最新 `main` / canary 时可以去掉 `#ref` 或改用其它 branch/tag ref，
 但应在验证和排障报告中说明 source 是否为 mutable ref，以及是否仍以官方 Trellis `0.6.15`
 为目标基线。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
 并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 精确映射。本次 stable
-source 目标是 annotated tag `v0.6.15-guru.1`，canonical extension version 为
-`0.6.5-guru.37`。Repo release tag 与 extension revision 是独立版本轴；workflow
+source 目标是 annotated tag `v0.6.15-guru.2`，canonical extension version 为
+`0.6.15-guru.38`。Repo release tag 与 extension revision 是独立版本轴；workflow
 marketplace 与 preset 必须来自同一个 immutable tag。该 tag object、peeled source
 commit、GitHub Release、tag-pinned install 与 post-publish smoke 尚未创建或验证；#304
 必须在修复合并后重新冻结 exact candidate，并从头执行 Release gates。
@@ -51,7 +51,7 @@ commit、GitHub Release、tag-pinned install 与 post-publish smoke 尚未创建
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.1 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.2 \
   --template guru-team
 ```
 
@@ -166,8 +166,8 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 `.trellis/guru-team/runtime/resolve-python.sh`。缺 runtime、版本漂移或未解决 sidecar 时必须在
 业务副作用前 fail closed，不得回退 PATH Python。
 
-当前 release-facing source 的 canonical extension version 为 `0.6.5-guru.37`，目标
-release tag 为 `v0.6.15-guru.1`；二者的发布事实仍由 #304 Release gates 建立。
+当前 release-facing source 的 canonical extension version 为 `0.6.15-guru.38`，目标
+release tag 为 `v0.6.15-guru.2`；二者的发布事实仍由本次 hotfix Release gates 建立。
 Source/installed package validation 必须同时验证
 registry、20 invokes / 87 exits / 54 combined targets（33 workflow + 21 stop）
 business marker graph、21-package/89-exit closure、consumer

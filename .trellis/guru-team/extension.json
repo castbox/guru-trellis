@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5-guru.37",
+    "version": "0.6.15-guru.38",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.15",
@@ -404,11 +404,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-25T08:40:52Z",
+  "installed_at": "2026-08-25T08:51:16Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "f8d8b20de27c027db196d08f7f463f4e9cfc9fd8",
-    "commit": "f8d8b20de27c027db196d08f7f463f4e9cfc9fd8",
+    "ref": "739732736f202042a5e71d1911e1bfce9854901b",
+    "commit": "739732736f202042a5e71d1911e1bfce9854901b",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -611,7 +611,7 @@
       {
         "id": "guru-verify-extension-installation",
         "interface_sha256": "87925b8157721ce8f0142f3a46fccea145b0e0f5d6782a4b6bad85e76978d0f5",
-        "tree_sha256": "ead512b5c0c570c3834e22ce7b9ec78fc16383eb70ee8e5164a0bf45b18d4201"
+        "tree_sha256": "2500d34d78574ff8f544aed283c42021869fb73eb3be790f6f0cbe17c93467b3"
       },
       {
         "id": "guru-finalize-task",
@@ -5599,7 +5599,7 @@
         "source": "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
         "sha256": "b7c6a75daad0b9b4b0a85b321b90567acb0bbd08ea307449a4094c6a82e76cda",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/tests/test_runtime.py",
@@ -6661,9 +6661,9 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "01d0f0f736c64c99573dbd74727f29b56dba8d02c0648bff333befe0ca77c9d8",
+        "sha256": "ee54896dc57ff7505281d9c1eca16d2130463dd08a8d96b64aab73a8f3803321",
         "executable": false,
-        "action": "unchanged"
+        "action": "updated_managed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/SKILL.md",
