@@ -29,6 +29,17 @@ task-local Architecture change contract. It never opens Architecture private
 state; this consumer does not read Architecture private state and never treats
 the Phase 2 Architecture result as current Branch Review evidence.
 
+### Whitespace Candidate Hygiene
+
+An extra blank line at end of file, including multiple blank lines after the
+last meaningful line, is formatting noise rather than a Branch Review finding
+when it is the only observed issue and the file's meaningful bytes are
+unchanged. Keep it as a non-blocking observation and do not assign severity or
+route it to implementation. This exception is deliberately narrow: trailing
+spaces on non-blank lines, indentation changes, whitespace inside strings or
+configuration values, invalid encoding, and whitespace that changes a
+parser/linter/formatter contract remain reviewable candidates.
+
 Every official independent-review worker is invoked with a prompt that
 authorizes approved-plan work only. If it observes a planning-external
 candidate, it stops before any edit, added test, self-fix, severity,

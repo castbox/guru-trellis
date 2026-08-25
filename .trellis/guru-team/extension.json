@@ -404,11 +404,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-25T06:56:25Z",
+  "installed_at": "2026-08-25T08:40:52Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "a4b68d42b25e3d2173fac2db353295043590cca5",
-    "commit": "a4b68d42b25e3d2173fac2db353295043590cca5",
+    "ref": "f8d8b20de27c027db196d08f7f463f4e9cfc9fd8",
+    "commit": "f8d8b20de27c027db196d08f7f463f4e9cfc9fd8",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -596,7 +596,7 @@
       {
         "id": "guru-review-branch",
         "interface_sha256": "7e9521f47d26c164e497e96dbf79a642198d28bd07a9c1c72b3983b4e9490f6b",
-        "tree_sha256": "c7da93e5dbf7169248661d5f65d3f41bacf2075dc60235fd1418b22784a9b253"
+        "tree_sha256": "1e3baf5f473f594cb6349ff9d1c9a4b8c29eb8341418c4c447fb4e5a9ac3b560"
       },
       {
         "id": "guru-review-task-publication",
@@ -5198,7 +5198,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "a28cd7e52ee7839dbabfea69b822f8cd98477a65a65e5c4f0a281104def15d29",
+        "sha256": "c49261a9ed7fedc542bb1f7f8188899ffcabb5606daffb798c404246b2c6acf6",
         "executable": false,
         "action": "unchanged"
       },
@@ -5422,7 +5422,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "99ad54afcfde731c4d8685322638f350291ef53dcfb1250878de9ed2cc2c9145",
+        "sha256": "ec9f605083e788766f78bfa1f599f675bd914d2ce8963b6e36aa8d5a364ceaa5",
         "executable": false,
         "action": "unchanged"
       },
@@ -5597,9 +5597,9 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
-        "sha256": "08d0e72787ea70397951d35c695e4f69c9b7c7c345f70151a162d63363a065fe",
+        "sha256": "b7c6a75daad0b9b4b0a85b321b90567acb0bbd08ea307449a4094c6a82e76cda",
         "executable": false,
-        "action": "unchanged"
+        "action": "updated_managed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/tests/test_runtime.py",
@@ -20269,7 +20269,7 @@
       {
         "path": ".agents/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "a28cd7e52ee7839dbabfea69b822f8cd98477a65a65e5c4f0a281104def15d29",
+        "sha256": "c49261a9ed7fedc542bb1f7f8188899ffcabb5606daffb798c404246b2c6acf6",
         "executable": false,
         "action": "unchanged"
       },
@@ -20437,7 +20437,7 @@
       {
         "path": ".agents/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "99ad54afcfde731c4d8685322638f350291ef53dcfb1250878de9ed2cc2c9145",
+        "sha256": "ec9f605083e788766f78bfa1f599f675bd914d2ce8963b6e36aa8d5a364ceaa5",
         "executable": false,
         "action": "unchanged"
       },
@@ -20556,7 +20556,7 @@
       {
         "path": ".codex/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "a28cd7e52ee7839dbabfea69b822f8cd98477a65a65e5c4f0a281104def15d29",
+        "sha256": "c49261a9ed7fedc542bb1f7f8188899ffcabb5606daffb798c404246b2c6acf6",
         "executable": false,
         "action": "unchanged"
       },
@@ -20724,7 +20724,7 @@
       {
         "path": ".codex/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "99ad54afcfde731c4d8685322638f350291ef53dcfb1250878de9ed2cc2c9145",
+        "sha256": "ec9f605083e788766f78bfa1f599f675bd914d2ce8963b6e36aa8d5a364ceaa5",
         "executable": false,
         "action": "unchanged"
       },
@@ -20843,7 +20843,7 @@
       {
         "path": ".claude/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "a28cd7e52ee7839dbabfea69b822f8cd98477a65a65e5c4f0a281104def15d29",
+        "sha256": "c49261a9ed7fedc542bb1f7f8188899ffcabb5606daffb798c404246b2c6acf6",
         "executable": false,
         "action": "unchanged"
       },
@@ -21011,7 +21011,7 @@
       {
         "path": ".claude/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "99ad54afcfde731c4d8685322638f350291ef53dcfb1250878de9ed2cc2c9145",
+        "sha256": "ec9f605083e788766f78bfa1f599f675bd914d2ce8963b6e36aa8d5a364ceaa5",
         "executable": false,
         "action": "unchanged"
       },
@@ -21130,7 +21130,7 @@
       {
         "path": ".cursor/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "a28cd7e52ee7839dbabfea69b822f8cd98477a65a65e5c4f0a281104def15d29",
+        "sha256": "c49261a9ed7fedc542bb1f7f8188899ffcabb5606daffb798c404246b2c6acf6",
         "executable": false,
         "action": "unchanged"
       },
@@ -21298,7 +21298,7 @@
       {
         "path": ".cursor/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "99ad54afcfde731c4d8685322638f350291ef53dcfb1250878de9ed2cc2c9145",
+        "sha256": "ec9f605083e788766f78bfa1f599f675bd914d2ce8963b6e36aa8d5a364ceaa5",
         "executable": false,
         "action": "unchanged"
       },

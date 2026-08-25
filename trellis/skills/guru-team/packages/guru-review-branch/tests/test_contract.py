@@ -54,6 +54,93 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
+    def test_contract_keeps_eof_blank_lines_non_blocking_but_narrow(self):
+        skill = (PACKAGE / "SKILL.md").read_text()
+        contract = (PACKAGE / "references/contract.md").read_text()
+        for text in (skill, contract):
+            self.assertIn("extra blank line", text)
+            self.assertIn("non-blocking", text)
+            self.assertIn("trailing", text)
+            self.assertIn("spaces", text)
+            self.assertIn("indentation", text)
+
+    def test_eof_blank_line_reproduces_blocking_route_when_qualified(self):
+        """Pre-change behavior: a qualified EOF-only candidate blocks review."""
+        auth = self.auth("implementation_required")
+        auth["candidate_classifications"] = [{
+            "candidate_ref": "candidate:eof-blank-line",
+            "decision": "qualified_current",
+            "witness": {
+                "requirement_refs": ["formatting contract"],
+                "supported_entry_refs": ["entry:branch-review"],
+                "existing_caller_refs": ["caller:guru-review-branch"],
+                "honest_action_sequence": ["review the committed text file"],
+                "defect_observation": "The file ends with an extra blank line.",
+                "excluded_assumptions": [],
+            },
+            "consumer_use": "branch_review_route_checker",
+        }]
+        auth["semantic_review"]["qualified_findings"] = [{
+            "candidate_ref": "candidate:eof-blank-line",
+            "disposition": "qualified_finding",
+            "affected_behavior": "The file ends with an extra blank line.",
+            "path": "app.txt",
+            "evidence_refs": ["diff:app.txt"],
+            "finding_ref": "finding:eof-blank-line",
+            "severity": "P1",
+            "introduced_head": self.head,
+            "fix_head": None,
+            "closure_head": None,
+            "status": "open",
+            "closure_evidence": [],
+        }]
+        receipt = self.record(
+            self.public("initial_review"), auth, "implementation_required"
+        )
+        self.assertEqual("recorded", receipt["status"])
+        checked = self.run_wrapper(
+            "check-review-gate.sh",
+            "--task",
+            TASK_REF,
+            "--expected-exit",
+            "implementation_required",
+        )
+        self.assertEqual("implementation_required", checked["typed_exit"])
+
+    def test_eof_blank_line_is_non_blocking_after_policy(self):
+        """Post-change behavior: the same EOF-only candidate is rejected."""
+        auth = self.auth("passed")
+        auth["candidate_classifications"] = [{
+            "candidate_ref": "candidate:eof-blank-line",
+            "decision": "rejected_not_reproduced",
+            "witness": {
+                "requirement_refs": ["formatting contract"],
+                "supported_entry_refs": ["entry:branch-review"],
+                "existing_caller_refs": ["caller:guru-review-branch"],
+                "honest_action_sequence": ["review the committed text file"],
+                "defect_observation": "Only an EOF blank line is present; no semantic defect is reproduced.",
+                "excluded_assumptions": ["EOF-only whitespace is not a blocking finding."],
+            },
+            "consumer_use": "branch_review_route_checker",
+        }]
+        receipt = self.record(
+            self.public("initial_review"), auth, "passed"
+        )
+        self.assertEqual("recorded", receipt["status"])
+        checked = self.run_wrapper(
+            "check-review-gate.sh",
+            "--task",
+            TASK_REF,
+            "--expected-exit",
+            "passed",
+        )
+        self.assertEqual("passed", checked["typed_exit"])
+        output = self.run_wrapper(
+            "invoke.sh", "--task", TASK_REF,
+            "--input", self.write("eof.json", self.public("initial_review"))
+        )
+        self.assertEqual("passed", output["exit_id"])
+
     def git(self, *args):
         return subprocess.run(
             ["git", *args],

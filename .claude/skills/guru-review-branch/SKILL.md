@@ -33,6 +33,14 @@ before/after satisfaction from the complete committed base-to-HEAD diff. This
 Skill then rereads the current Architecture Baseline, design constitution, and
 task-local change contract as part of its own complete-range semantic review.
 Neither owner may reuse the Phase 2 Architecture result as Branch Review proof.
+A single extra blank line, or multiple blank lines, at the end of a text file
+is formatting noise when it is the only observed issue and the file's
+meaningful bytes are otherwise unchanged. Keep EOF-only whitespace as a
+non-blocking observation; it must not become a qualified P0-P3 finding or an
+`implementation_required` route. This narrow rule does not suppress trailing
+spaces on non-blank lines, indentation changes, changes inside
+strings/configuration values, invalid encoding, or whitespace that changes a
+parser/linter/formatter contract.
 A stale identity, incomplete contract, authority conflict, fitness regression,
 unreviewed contribution, or missing project check prevents `passed` and follows
 the Architecture result's unique global route.
