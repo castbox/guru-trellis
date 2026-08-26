@@ -52,11 +52,20 @@ commit、GitHub Release、tag-pinned install 与 post-publish smoke 尚未创建
 ```bash
 trellis workflow \
   --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.2 \
-  --template guru-team
+  --template guru-team --create-new
 ```
 
-只有在需要生成 `.trellis/workflow.md.new` 做人工 review、且不切换 active
-workflow 时，才使用 `--create-new`。
+先检查 `.trellis/workflow.md.new` 与当前 workflow 的字节、sidecar 和用户修改状态；确认
+预览可安全应用后，显式替换 active workflow：
+
+```bash
+trellis workflow \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.2 \
+  --template guru-team --force
+```
+
+`--create-new` 只生成预览，不是 active workflow 的应用确认；未通过上述检查时不得使用
+`--force`。
 
 ## Companion Assets
 

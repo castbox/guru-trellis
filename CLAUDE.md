@@ -164,7 +164,7 @@ Mandatory skill 缺失，或出现 unknown、multiple、unmapped exit，或出�
 - 从干净临时仓库或 throwaway repo 安装 workflow marketplace 和 preset。
 - 验证 `trellis/index.json` 能被 Trellis 识别，`guru-team` workflow id、path、type 正确。
 - 验证新项目可通过 `trellis init -u <name> --workflow guru-team --workflow-source gh:castbox/guru-trellis/trellis` 或 README 中等价命令安装 Guru Team workflow。
-- 验证已有项目可通过 `trellis workflow --marketplace gh:castbox/guru-trellis/trellis --template guru-team --create-new` 预览，并在确认后用不带 `--create-new` 的命令切换目标 `.trellis/workflow.md`。
+- 验证已有项目先通过 `trellis workflow --marketplace gh:castbox/guru-trellis/trellis --template guru-team --create-new` 预览；检查 `.trellis/workflow.md.new` 与当前 workflow 的字节、sidecar、用户修改状态和 live identity 后，再用同一 provider 显式 `--force` 应用目标 `.trellis/workflow.md`。`--create-new` 不是应用确认，无 flag replacement 不属于支持路径。
 - 验证 preset installer 能安装 `.trellis/guru-team/`、平台 overlay、脚本、schema、配置模板，且脚本有可执行权限。
 - 验证新安装项目在无历史 patch 的情况下可以运行 `get_context.py`、Phase 0 intake/preflight、planning、check、review gate、finish-work 的预期入口。
 - 验证 Codex / Claude / Cursor 等声明支持的平台入口文案一致，不出现某个平台仍停留旧流程的情况。

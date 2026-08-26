@@ -59,7 +59,9 @@ trellis update --migrate --skip-all
 trellis update --skip-all
 ```
 
-完成唯一一次 preserve-mode update 后，再切换 workflow 并 reapply 同 tag preset：
+完成适用的 preserve-mode install/upgrade/update 子步骤后，先检查
+`.trellis/workflow.md.new` 与当前 workflow 的字节、sidecar、用户修改状态和 live identity；
+确认预览可安全应用后，再切换 workflow 并 reapply 同 tag preset：
 
 ```bash
 trellis workflow \
@@ -67,7 +69,7 @@ trellis workflow \
   --template guru-team --create-new
 trellis workflow \
   --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.2 \
-  --template guru-team
+  --template guru-team --force
 guru_trellis_source="$(mktemp -d)"
 git clone --depth 1 --branch v0.6.15-guru.2 \
   https://github.com/castbox/guru-trellis.git "$guru_trellis_source"

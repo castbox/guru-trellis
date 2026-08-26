@@ -927,8 +927,20 @@ Trellis workflow marketplace:
 ```bash
 trellis workflow \
   --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.2 \
-  --template guru-team
+  --template guru-team --create-new
 ```
+
+先检查 `.trellis/workflow.md.new` 与当前 workflow 的字节、sidecar、用户修改状态和 live
+identity；确认预览可安全应用后，再使用同一 provider 显式替换 active workflow：
+
+```bash
+trellis workflow \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.2 \
+  --template guru-team --force
+```
+
+`--create-new` 只生成预览，不是 active workflow 的应用确认；未通过上述 preflight 时不得使用
+`--force`，无 flag replacement 不属于支持路径。
 
 ## Spec Bootstrap
 

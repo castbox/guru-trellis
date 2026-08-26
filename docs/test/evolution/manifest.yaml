@@ -1,0 +1,19 @@
+schema_version: "1.0"
+authority: test
+identity: guru-trellis-evolution-test-2026-08-26
+version: evolution-test-candidate-2026-08-26
+status: test_candidate_planned
+fixture_count: 47
+review_status: fresh_design_review_passed
+requirements_status: requirements_ready_for_design
+design_status: design_ready_for_delivery_planning
+requirements_locator: docs/requirements/evolution/requirement-main.md
+requirements_nfr_locator: docs/requirements/evolution/requirement-non-functional.md
+design_locator: docs/design/evolution/design-main.md
+design_contract_locator: docs/design/evolution/contracts.md
+fixture_plan_locator: docs/test/evolution/fixture-plan.md
+traceability_locator: docs/test/evolution/traceability.md
+current_test_source_ref: d907fcc5e17f23b6499648e5e9a208457f2d6f8b
+current_test_locator: docs/test/versions/current-main-0.6.5-guru.40/test-strategy.md
+execution_status: planned_not_executed
+provenance: REQ-REV-011..132 fresh Requirements gate passed on evolution-requirements-revision-2026-08-27; DES-REV-001..014 closed; fresh Design review and deterministic closure passed on 2026-08-27; fixtures remain planned_not_executed

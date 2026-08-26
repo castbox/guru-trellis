@@ -23,16 +23,19 @@ GitHub Release、tag-pinned install 与 post-publish smoke 仍为 `unverified`�
 Guru Trellis 下一阶段产品进化 Requirements 的唯一文档集位于
 [`evolution/`](./evolution/README.md)，主定义为
 [`evolution/requirement-main.md`](./evolution/requirement-main.md)，
-其中 `EVO-001..007` 为 `user_confirmed` 目标，`REQ-UC-EVO-*`、`EVO-REQ-*`、
-`EVO-NFR-*` 与 `EVO-CAP-*` 为待完成全稿审核的详细需求。它定义 target，不把尚未
-实现的方向冒充 current behavior。target authority、现有 Issue 链边界与阶段放行规则只在
-该主定义第 0 章维护，README 不复制正文。
+其中 `EVO-001..007` 为 `user_confirmed` 目标；`REQ-UC-EVO-*`、`EVO-REQ-*`、
+`EVO-NFR-*` 与 `EVO-CAP-*` 的 current candidate 已同步 `REQ-REV-011..132`，修订后 fresh
+Requirements、Strict technical 与确定性全稿门禁已通过，状态为
+`requirements_ready_for_design` / `requirements_trace_ready_for_design`。该文档集定义 target，
+不把尚未实现的方向冒充 current behavior，也不表示 Evolution Design 已审核。target authority、
+现有 Issue 链边界与阶段放行规则只在该主定义第 0 章维护，README 不复制正文。
 
 Evolution Requirements 的入口/API/CLI 适用性只在 target
 [`README.md`](./evolution/README.md) 与主定义中维护。
 
 target 读取顺序：`evolution/requirement-main.md` ->
-`evolution/requirement-non-functional.md`。current runtime 读取顺序：`requirement-main.md` ->
+`evolution/requirement-non-functional.md` -> `evolution/current-capability-inventory.md`；其中
+inventory 只承接 current-to-target trace，不替代前两份 Requirements 主定义。current runtime 读取顺序：`requirement-main.md` ->
 `requirement-non-functional.md` -> `traceability.md` -> `decisions.md`。Design、Test
 与 Architecture 入口分别位于 `docs/design/README.md`、`docs/test/README.md`、
 `docs/architecture/README.md`。
