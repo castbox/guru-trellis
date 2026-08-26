@@ -77,6 +77,9 @@ git clone --depth 1 --branch v0.6.15-guru.2 \
   --repo . --all-platforms
 ```
 
+`--create-new` 只生成预览，不会切换 active workflow；无 flag replacement 不属于支持
+路径，应用预览必须在上述检查通过后显式使用 `--force`。
+
 升级完成后必须处理全部 `.new` / `.bak`，再验证 source/installed/platform equality、
 managed inventory、受管 Python runtime、dogfood drift 和递归零 sidecar，才能声明升级成功。
 
