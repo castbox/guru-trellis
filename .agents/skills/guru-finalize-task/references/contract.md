@@ -15,6 +15,41 @@ files, and platform copies never create verifier applicability. Finalizer does
 not read or write `marketplace-verification.json`, verifier owner state,
 verification refs, or verifier recovery state.
 
+## Provenance Source And Target Binding
+
+Pre-PR provenance reprepare owns two independent temporary checkouts. The
+detached `target_reviewed_checkout` belongs to the task repository at
+`reviewed_content_head`; it is the only preset `--repo` target, manifest
+mutation owner, metadata-tail parent, and publication-lineage owner. The
+detached `extension_source_checkout` supplies only canonical Guru Trellis
+preset implementation bytes and must remain clean. The two paths remain
+separate in every mode.
+
+Finalizer resolves one private closed binding from the target reviewed
+manifest and the plan's canonical target repository identity:
+
+- `self_hosted` applies when source and target repository identities match. It
+  preserves #191 reprepare by accepting stale dirty/mutable manifest preimage,
+  but binds the new source checkout and postimage ref/commit to
+  `reviewed_content_head`.
+- `installed` applies when the identities differ. It requires the manifest's
+  canonical GitHub repo, equal full-OID ref/commit, `tree_state=clean`, and
+  `is_mutable_ref=false`; then it initializes an independent repository,
+  configures canonical `origin`, fetches that exact OID, checks out detached,
+  and validates repository identity, HEAD, and clean state.
+
+There is no fallback to the target tree, a mutable ref, hidden checkout, PATH
+package, global installation, or verifier runtime. The apply executable comes
+from `extension_source_checkout` and receives `target_reviewed_checkout`
+through `--repo`. Apply must leave source identity and clean state unchanged and
+may dirty only `.trellis/guru-team/extension.json` in the target. The existing
+field allowlist remains closed. The committed tail has exactly one parent equal
+to target `reviewed_content_head`; self-hosted postimage source ref/commit equal
+that head, while installed postimage repo/ref/commit preserve the selected
+immutable extension identity. Any failure stops before push, PR, archive,
+Ready, or Issue mutation and does not add a public profile, exit, transaction
+state, checkpoint, or verifier result.
+
 ## Transaction
 
 The deterministic transaction states are `push_content`, `bind_pr`, `archive`,

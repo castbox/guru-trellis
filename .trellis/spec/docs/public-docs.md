@@ -555,6 +555,16 @@ closeout-plan, task-bearing verifier, and verification re-entry schemas remain
 immutable compatibility assets but are absent from current Interface, manifest,
 eval, runtime, and documentation inventories.
 
+The READMEs also explain installed pre-PR provenance reprepare without exposing
+private implementation DTOs. The business reviewed checkout owns the target
+manifest tail and publication lineage; a separate clean detached extension
+source checkout supplies canonical preset bytes. Self-hosted source binds
+reviewed HEAD, while installed source binds the current manifest's immutable
+canonical repo/ref/commit through exact-OID fetch. The apply executable comes
+from source and receives the business checkout through `--repo`; neither the
+installed manifest nor this source checkout invokes or substitutes for the
+standalone verifier.
+
 The READMEs also name active semantic `guru-merge-task-pr`, its workflow and
 standalone inputs, three exits, repo-bound `gh` fact/merge operations,
 expected-head precondition, separate merge confirmation, and post-merge

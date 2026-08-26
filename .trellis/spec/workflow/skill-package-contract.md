@@ -1734,6 +1734,17 @@ Both modes produce the same minimal Merge handoff. Finalizer does
 not invoke verifier, emit `verification_required`, accept verification re-entry,
 read verifier owner state, or archive a verifier artifact.
 
+The package also owns one private closed `self_hosted|installed` provenance
+source binding for pre-PR reprepare. A target reviewed checkout owns only the
+business manifest mutation and tail lineage. A separate extension source
+checkout owns only canonical preset implementation bytes. Self-hosted binds
+source to target reviewed HEAD; installed binds source to the clean immutable
+repo/ref/commit in the target reviewed manifest and obtains it through
+canonical-origin exact-OID detached fetch. The apply entry comes from source
+and receives the target checkout through `--repo`. Binding/parser/checkout and
+mode-aware tail validation remain package-local; they do not import or call
+the standalone verifier lifecycle or expose a shared source resolver.
+
 For a transaction-bound recovery whose next transition is `archive`,
 `push_archive`, or `mark_ready`, exact transaction validation precedes pre-PR
 provenance inference. That stage ownership does not relax PR, payload, scope,

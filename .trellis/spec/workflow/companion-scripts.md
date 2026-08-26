@@ -1613,6 +1613,19 @@ a verification artifact. Business changed paths and the installed extension
 manifest have no verifier applicability semantics. Archive preparation permits
 exactly the six durable core files.
 
+Before an ordinary pre-PR metadata-tail reprepare, the executor creates a
+detached target checkout at the business `reviewed_content_head`, reads that
+commit's installed manifest, and resolves a separate clean detached extension
+source checkout. Self-hosted source is the target reviewed Git object;
+installed source is fetched from the manifest's canonical GitHub repository by
+exact full commit OID after configuring canonical `origin`. The preset entry is
+executed from the extension source with `--repo` bound to the target checkout.
+Source and target HEAD/repository/clean state are validated independently
+before apply, after apply, and before committing the target-only manifest tail.
+Any source-resolution, fetch, apply, source drift, target extra path, or
+binding-aware postimage failure stops before push, PR, archive, Ready, or Issue
+mutation and projects no credential-bearing locator.
+
 `guru-verify-extension-installation` retains the stable execute/record/check/
 invoke commands only for explicit `source_repository_verification` standalone
 use from a clean `castbox/guru-trellis` source checkout. Source preflight runs

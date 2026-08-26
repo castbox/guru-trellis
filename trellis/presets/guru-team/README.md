@@ -1058,6 +1058,17 @@ Finalizer never invokes or consumes extension verification. Business task,
 Publication, Finalizer, finish-work, re-entry, and recovery do not read a
 verifier DTO, owner checkpoint, verification ref, or task-local verification
 artifact. Publication's own `return_to_task_work` route remains unchanged.
+
+Pre-PR provenance reprepare uses two independent temporary checkouts. The
+business repository is checked out detached at `reviewed_content_head` and is
+the only `--repo` target, manifest mutation owner, and tail commit parent. A
+separate clean detached extension source checkout supplies the canonical preset
+entry. Self-hosted targets bind source to reviewed HEAD; installed targets read
+the current manifest's clean immutable canonical repo/ref/commit, configure
+canonical `origin`, fetch the exact full OID, and verify detached HEAD and clean
+state. Source and target remain distinct even in self-hosted mode. Missing,
+mutable, dirty, malformed, mismatched, or drifting source state stops before
+apply, push, PR, archive, or Ready and never falls back to a local/global copy.
 Shared prepare lexically `lstat`s each existing archive root, month, and final
 destination component, rejects every symlink including dangling and
 repo-internal targets without following it, and requires the final locator to
@@ -1319,6 +1330,14 @@ index-tracked but working-tree-deleted `closeout-plan.json` is retired as one
 active-side archive deletion with parent-blob continuity; it is not restored,
 moved, or retained.
 
+When a pre-PR tail is required, the apply executable comes from the resolved
+extension source checkout but receives the target reviewed checkout through
+`--repo`. Apply must leave source HEAD/clean state unchanged and may dirty only
+the target `.trellis/guru-team/extension.json`. The tail remains a single
+direct child of target reviewed HEAD. Self-hosted postimage ref/commit equal
+that reviewed HEAD; installed postimage repo/ref/commit retain the manifest-
+bound immutable Guru Trellis source identity instead of the business HEAD.
+
 The current retained set contains exactly 6 durable files: `task.json`,
 `prd.md`, `design.md`, `implement.md`, `issue-scope-ledger.json`, and
 `finish-summary.json`; there is no optional verifier artifact. Publication readiness,
@@ -1427,9 +1446,10 @@ standalone profile 显式调用，并只返回 `verified|blocked`。Source ident
 task-bearing field 或 dirty checkout 必须在 clone、tempdir、installer、artifact write 与
 mutation 前 fail closed；owner state 只在 source session ignored runtime 中短暂存在。
 
-Finalizer 的 current recovery 只接受自身 transaction 合同，不以 installed manifest
-provenance 或 changed path 创建 metadata tail 或 verifier route。任意 sidecar、managed
-byte drift 或业务安装副本问题由 installer/ownership owner 处理，不转交 standalone verifier。
+Finalizer 的 current recovery 只接受自身 transaction 合同。pre-PR provenance reprepare
+可以消费 reviewed target manifest 的 immutable source identity 并创建唯一 metadata tail，
+但绝不因此创建 verifier route；post-bind transaction 仍先于该 inference。任意 sidecar、
+managed byte drift 或业务安装副本问题由 installer/ownership owner 处理，不转交 standalone verifier。
 
 ## Eval 安装与升级清单
 

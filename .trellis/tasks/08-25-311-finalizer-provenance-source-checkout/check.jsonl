@@ -1,0 +1,7 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"审核 self-hosted/installed regression、representative closeout 与 evidence adequacy。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"验证 source binding、target parent、single-tail 与 immutable publication identity。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"验证 Finalizer 不读取 verifier lifecycle 且 public graph 无扩张。"}
+{"file":".trellis/spec/preset/installer.md","reason":"验证 canonical/installed/platform parity、exact source provenance、reapply 与 sidecar-zero。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"确认 reprepare、ordinary publication、Ready、Merge route 与授权边界未改变。"}
+{"file":".trellis/spec/architecture/baseline-usage.md","reason":"审核 target_native contribution、ADR、single writer 与 promotion freshness。"}
+{"file":".trellis/spec/docs/requirements-design-test-ssot.md","reason":"审核 RDT contribution trace、delta_first 与 shared-current reconciliation。"}

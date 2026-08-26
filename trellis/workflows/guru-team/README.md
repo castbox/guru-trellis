@@ -958,6 +958,15 @@ archive transaction 的 active-side retired deletion，并校验 transaction par
 commit path continuity；不会恢复或归档旧文件。已绑定 `existing_pr_recovery` 且进入
 `archive|push_archive|mark_ready` 时，先校验 exact transaction 再判断 pre-PR provenance，
 外部 extension source commit 与业务 reviewed-content commit 不同不会覆盖 post-bind stage。
+
+pre-PR provenance reprepare 使用两个独立 temporary checkout：business target 在
+`reviewed_content_head` detached checkout 中独占 manifest tail 与 publication lineage；
+extension source checkout 只提供 canonical preset implementation。self-hosted source绑定
+reviewed HEAD；installed source从 reviewed manifest 读取 canonical repo/ref/commit，以
+canonical `origin` 和 exact full-OID fetch 建立 detached clean checkout。apply executable
+来自 source，`--repo` 精确指向 target；apply 前后分别校验两个 checkout，target只能产生
+manifest dirty path，source必须保持原 HEAD 与 clean。任何 source/binding/apply/tail failure
+在 push、PR、archive、Ready 与 Issue mutation前停止，且不搜索隐藏 checkout或全局安装。
 共享 prepare 从 archive root 到 month/final destination 逐层 `lstat` 既有组件，不读取或
 跟随 symlink target；任何 symlink（含 dangling、repo 内 target）都拒绝，且 final locator
 必须不存在。official move 前重复同一检查，阻止 prepare-to-move 漂移。缺失的
@@ -1075,4 +1084,6 @@ Finalizer transaction 同时绑定 `reviewed_content_head` 与 `publication_head
 content push 后直接继续 Draft PR、archive 与 Ready transaction；installed manifest、
 README、docs、config、`.trellis/**` 或平台副本 changed path 都不会产生 verifier route。
 `reprepare_required` 只服务 Finalizer 自身 current transaction 的稳定重建，不读取 verifier
-owner state、verification ref 或 legacy task artifact。
+owner state、verification ref 或 legacy task artifact。该 route可以从 reviewed target manifest
+解析 immutable extension source并创建 binding-aware metadata tail，但不改变 post-bind recovery
+优先级，也不新增 verifier route。

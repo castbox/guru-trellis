@@ -336,6 +336,16 @@ installed-manifest schema 2.0 is accepted. Non-current schema versions,
 missing/extra top-level fields, or malformed current provenance fail closed
 before target mutation.
 
+The business Finalizer may consume this current manifest only as immutable
+extension-source provenance for its own pre-PR reprepare. It must validate a
+canonical repository identity, full commit OID, `tree_state=clean`, and
+`is_mutable_ref=false`, then obtain source in a separate detached checkout.
+The manifest never makes the business target an extension source checkout and
+never transfers standalone verifier ownership. Canonical apply bytes come from
+the bound extension source; the apply target remains the business reviewed
+checkout. Self-hosted source/target repository equality explicitly binds the
+reviewed target commit instead of falling back to an older manifest commit.
+
 When adding user-facing version fields, expose them through `check-env --json`
 or `version.sh --json`; scripts may record and validate objective facts, but
 must not decide whether an upgrade or rollback is semantically safe.
@@ -747,6 +757,14 @@ Finalizer does not invoke verifier, emit `verification_required`, accept
 verification re-entry, read owner state, or archive a task-local verifier result.
 The current archive contains exactly six durable files. Publication retains its
 own `return_to_task_work` route for actual content drift.
+
+Installed Finalizer provenance reprepare resolves the manifest-bound canonical
+extension repo/ref/commit into a separate exact-OID detached clean source
+checkout, invokes its preset entry with the business reviewed checkout as
+`--repo`, and commits only the binding-aware manifest tail in the business
+lineage. Self-hosted targets use the same closed binding contract with source
+commit equal to reviewed HEAD. This package-local behavior adds no installed
+managed claim, public profile, exit, transaction state, or verifier route.
 
 The complete source/installed package graph contains twenty-one active Skills and
 89 exits. The global business workflow projection is 20 invokes, 87 exits,

@@ -950,6 +950,18 @@ pre-PR provenance inference, the legacy path is committed only as an exact
 active-side deletion, the six-file current archive omits it, and PR/remote/
 payload/scope/plan/HEAD drift remains fail closed.
 
+Focused provenance reprepare coverage contains both closed source modes. The
+self-hosted fixture proves distinct source/target paths while both identities
+bind the reviewed commit. The installed fixture deliberately omits the
+canonical preset source tree from the business target and proves canonical
+origin, exact-OID fetch, detached/clean source, source-provided apply entry,
+target-only `--repo` mutation, mode-aware manifest postimage, one direct-parent
+tail, and unchanged source state. Negative fixtures cover missing/malformed
+repo/ref/commit, short OID, dirty/mutable identity, fetch or HEAD mismatch,
+dirty source, missing apply entry, source repo drift, business HEAD overwrite,
+extra target path/field, managed-byte drift, and sidecars. Static and runtime
+assertions keep verifier package/wrapper/command/artifact call count at zero.
+
 Representative business fixtures cover docs, code, config, `.trellis/**`,
 platform copies, and an installed extension manifest. Their complete
 Publication -> Finalizer -> Merge trace asserts zero verifier wrapper calls,
