@@ -147,6 +147,14 @@ if behavior == "source_dirty":
     (source_root / "source-dirty.txt").write_text("dirty\\n", encoding="utf-8")
 if behavior == "extra_target_path":
     (target_root / "unexpected.txt").write_text("unexpected\\n", encoding="utf-8")
+if behavior == "managed_byte_drift":
+    managed_path = target_root / ".trellis/spec/workflow/semantic-retrieval.md"
+    managed_path.write_text("managed after apply\\n", encoding="utf-8")
+if behavior in {{"managed_new_sidecar", "managed_backup_sidecar"}}:
+    suffix = ".new" if behavior == "managed_new_sidecar" else ".bak"
+    sidecar_path = target_root / f".trellis/spec/workflow/semantic-retrieval.md{{suffix}}"
+    sidecar_path.parent.mkdir(parents=True, exist_ok=True)
+    sidecar_path.write_text("managed sidecar\\n", encoding="utf-8")
 print(json.dumps({{"status": "ok"}}))
 """,
         encoding="utf-8",
@@ -1052,13 +1060,49 @@ class FinalizeTaskContractTests(unittest.TestCase):
 
     def test_provenance_tail_rejects_source_or_target_boundary_drift(self) -> None:
         cases = {
-            "missing_apply": "Canonical preset apply entry is unavailable for provenance preparation.",
-            "source_dirty": "Canonical preset apply modified the extension source checkout.",
-            "extra_target_path": "Canonical preset apply produced changes outside the provenance manifest.",
-            "source_repo_drift": "Canonical preset apply produced invalid provenance metadata.",
-            "business_head_as_source": "Canonical preset apply produced invalid provenance metadata.",
+            "missing_apply": (
+                "Canonical preset apply entry is unavailable for provenance preparation.",
+                None,
+            ),
+            "source_dirty": (
+                "Canonical preset apply modified the extension source checkout.",
+                None,
+            ),
+            "extra_target_path": (
+                "Canonical preset apply produced changes outside the provenance manifest.",
+                [GTT.PROVENANCE_TAIL_MANIFEST_PATH, "unexpected.txt"],
+            ),
+            "managed_byte_drift": (
+                "Canonical preset apply produced changes outside the provenance manifest.",
+                [
+                    GTT.PROVENANCE_TAIL_MANIFEST_PATH,
+                    ".trellis/spec/workflow/semantic-retrieval.md",
+                ],
+            ),
+            "managed_new_sidecar": (
+                "Canonical preset apply produced changes outside the provenance manifest.",
+                [
+                    GTT.PROVENANCE_TAIL_MANIFEST_PATH,
+                    ".trellis/spec/workflow/semantic-retrieval.md.new",
+                ],
+            ),
+            "managed_backup_sidecar": (
+                "Canonical preset apply produced changes outside the provenance manifest.",
+                [
+                    GTT.PROVENANCE_TAIL_MANIFEST_PATH,
+                    ".trellis/spec/workflow/semantic-retrieval.md.bak",
+                ],
+            ),
+            "source_repo_drift": (
+                "Canonical preset apply produced invalid provenance metadata.",
+                None,
+            ),
+            "business_head_as_source": (
+                "Canonical preset apply produced invalid provenance metadata.",
+                None,
+            ),
         }
-        for behavior, expected_message in cases.items():
+        for behavior, (expected_message, expected_dirty_paths) in cases.items():
             with self.subTest(behavior=behavior), tempfile.TemporaryDirectory() as raw:
                 sandbox = Path(raw)
                 source_repo = sandbox / "source"
@@ -1086,11 +1130,27 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     + "\n",
                     encoding="utf-8",
                 )
+                if behavior == "managed_byte_drift":
+                    managed_path = (
+                        target / ".trellis/spec/workflow/semantic-retrieval.md"
+                    )
+                    managed_path.parent.mkdir(parents=True)
+                    managed_path.write_text(
+                        "managed before apply\n",
+                        encoding="utf-8",
+                    )
                 reviewed = commit_provenance_fixture(target, "reviewed target")
-                with mock.patch.object(
-                    GTT,
-                    "run",
-                    side_effect=local_source_fetch_runner(source_repo, []),
+                with (
+                    mock.patch.object(
+                        GTT,
+                        "run",
+                        side_effect=local_source_fetch_runner(source_repo, []),
+                    ),
+                    mock.patch.object(
+                        GTT,
+                        "commit_provenance_metadata_tail",
+                        wraps=GTT.commit_provenance_metadata_tail,
+                    ) as commit_tail,
                 ):
                     with self.assertRaises(GTT.WorkflowError) as raised:
                         GTT.prepare_provenance_metadata_tail(
@@ -1099,6 +1159,12 @@ class FinalizeTaskContractTests(unittest.TestCase):
                             "castbox/business-repo",
                         )
                 self.assertEqual(str(raised.exception), expected_message)
+                if expected_dirty_paths is not None:
+                    self.assertEqual(
+                        raised.exception.payload["dirty_paths"],
+                        expected_dirty_paths,
+                    )
+                commit_tail.assert_not_called()
                 self.assertEqual(GTT.current_head(target), reviewed)
                 self.assertEqual(len(GTT.worktree_records(target)), 1)
 
