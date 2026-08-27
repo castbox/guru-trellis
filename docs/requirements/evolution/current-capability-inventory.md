@@ -446,7 +446,7 @@ Requirements coverage，不证明 target Design 已完成或 target runtime 已�
 | `REQ-036..046` | `CUR-CAP-003..004,017` | 全部有 successor |
 | `BEH-001..011` | `CUR-CAP-001..017,020` | 全部有 successor |
 | `NFR-001..005` | `CUR-CAP-001..004,011,017..019` | 全部有 successor |
-| `.40 TST-001..030`, `SCN-001..016,024..040`, `CASE-001..002` | 下节逐组映射到 `CUR-CAP-*`、target requirement 与 target fixture | 无 current test capability 被静默删除；具体 target test design 尚未开始 |
+| `.40 TST-001..030`, `SCN-001..016,024..040`, `CASE-001..002` | 下节逐组映射到 `CUR-CAP-*`、target requirement 与 target fixture | 无 current test capability 被静默删除；本 Requirements coverage 本身不证明 target Test，后续 target Test planning 已建立且 47 个 fixture 均为 `planned_not_executed` |
 
 `.40` Requirements 未定义 `REQ-021..026`，编号从 `REQ-020` 跳到 `REQ-027` 是 current
 authority 的既有事实，不是本 inventory 的 coverage 缺口。
@@ -469,9 +469,10 @@ authority 的既有事实，不是本 inventory 的 coverage 缺口。
 | `TST-027..030`, `SCN-034..040` | `CUR-CAP-004,006,017..019` | `EVO-REQ-009,011,028,051..056,060` | `EVO-FIX-DETACHED-READ`, `EVO-FIX-BASE-REFRESH`, `EVO-FIX-FULL-NORMAL`, `EVO-FIX-PROJECTION`, `EVO-FIX-CLEAN-INSTALL`, `EVO-FIX-MIGRATION`, `EVO-FIX-RELEASE` | base selection/sync/provenance/distribution 全部有 successor |
 
 集合差集：以上 source slice 的并集恰好为 `TST-001..030`、`SCN-001..016,024..040` 与
-`CASE-001..002`；source 孤儿 0、映射冲突 0、未知 target fixture 0。target Design/Test 尚未
-建立的具体 case shape 是阶段边界，不得用 `.40` PASS 冒充 target evidence。`test-plan.md` 的
-执行记录与 evidence boundary 只作为上述 source slice 的约束，不改变该编号并集。
+`CASE-001..002`；source 孤儿 0、映射冲突 0、未知 target fixture 0。具体 target Design/Test case
+shape 已由 [`docs/test/evolution/`](../../test/evolution/README.md) 建立为 reviewed planning candidate，
+47 个 fixture 仍全部为 `planned_not_executed`；不得用 `.40` PASS 冒充 target evidence。
+`test-plan.md` 的执行记录与 evidence boundary 只作为上述 source slice 的约束，不改变该编号并集。
 
 ## 6. New target deltas
 

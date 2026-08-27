@@ -27,8 +27,11 @@ Guru Trellis 下一阶段产品进化 Requirements 的唯一文档集位于
 `EVO-NFR-*` 与 `EVO-CAP-*` 的 current candidate 已同步 `REQ-REV-011..132`，修订后 fresh
 Requirements、Strict technical 与确定性全稿门禁已通过，状态为
 `requirements_ready_for_design` / `requirements_trace_ready_for_design`。该文档集定义 target，
-不把尚未实现的方向冒充 current behavior，也不表示 Evolution Design 已审核。target authority、
-现有 Issue 链边界与阶段放行规则只在该主定义第 0 章维护，README 不复制正文。
+不把尚未实现的方向冒充 current behavior；Requirements 状态本身不拥有或证明后续 Design gate。
+同一 #305 candidate 的 Evolution Design 已独立完成 fresh 全稿审核，current 状态由
+[`docs/design/evolution/README.md`](../design/evolution/README.md) 的
+`design_ready_for_delivery_planning` / `fresh_design_review_passed` 拥有。target authority、现有 Issue
+链边界与阶段放行规则只在 Requirements 主定义第 0 章维护，README 不复制正文。
 
 Evolution Requirements 的入口/API/CLI 适用性只在 target
 [`README.md`](./evolution/README.md) 与主定义中维护。

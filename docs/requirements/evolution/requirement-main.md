@@ -38,7 +38,9 @@ canonical workflow/Skill package 与必要 Git/live facts 证明。
 曾使上一轮结论 stale，当前 `REQ-REV-129..132` 已把 cache-friendly authority ordering、task 三件套的
 稳定上下文职责、AI-owned autonomous progression、导航/格式与下游 planning projection 同步到完整
 候选；修订后 exact candidate 的 fresh Requirements、Strict technical 与确定性闭包均已通过。当前
-状态为 `requirements_ready_for_design`；Evolution Design 审核与 implementation 均尚未开始。
+Requirements 状态仍为 `requirements_ready_for_design`；后续 Evolution Design exact candidate 已独立
+完成 fresh 全稿审核并达到 `design_ready_for_delivery_planning`，其 current 状态由
+[`docs/design/evolution/README.md`](../../design/evolution/README.md) 拥有；target implementation 尚未开始。
 
 ### 0.1 唯一消费规则
 
