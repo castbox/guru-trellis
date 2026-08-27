@@ -60,8 +60,11 @@
   implementation-discovery/Phase 2，均返回 `baseline_current / architecture_impact / target_native /
   reviewed_candidate`，project check 为 `pass/blocking=true`；fresh RDT `task_impact_sync` 返回
   `ssot_current`，`guru-check-task:finding_fix_rerun` recorder、checker 与 public wrapper 均返回
-  `passed`。四个历史 P1 finding 均为 `resolved`，没有 open P0-P3 finding；该结果仍不替代 T311-11
-  的真实 representative closeout。
+  `passed`。前序 source findings 已闭环；随后 fresh committed Branch Review 覆盖
+  `origin/main@d907fcc5...c3bc809b` 的 5 commits / 85 paths，并返回
+  `BR-311-SOURCE-004`（P1，PR 必须 refs-only 保持 #311 OPEN）与
+  `BR-311-SOURCE-005`（P2，task/Architecture committed status drift）两个当前 open finding。本轮正在
+  修复，尚不能声明 P0-P3 open finding 为零；该结果仍不替代 T311-11 的真实 representative closeout。
 - `T311-11` 仍为 `unverified`：已授权的代表性 disposable business closeout 使用 candidate
   `ea30cac7878bf8f36338e6bfdc67869fbecca009` 完成 fixture task commit 与 independent Branch Review，
   但 Branch Review 发现 `BR-311-FIXTURE-001`（P1）：首次 Publication 在没有 existing plan 时读取未
@@ -86,5 +89,6 @@
   public-input harness 修复后通过。该本地 fake-GitHub 证据不替代现有真实 fixture 的 fresh reinstall、
   Branch Review 与 GitHub Publication/Finalizer，因此 `T311-11` 仍为 `unverified`。
   `T311-12` 保持边界声明：#267 release-wide matrix、tag-pinned smoke、tag 与 GitHub Release 均未运行。
-- contribution 仍是 `candidate_pending_review`；本摘要不是 independent committed full-diff review、
-  serialized promotion、Publication 或 Acceptance/Finish 证据。
+- contribution 仍是 `candidate_pending_review`；fresh independent committed full-diff review 已执行但因
+  `BR-311-SOURCE-004/005` 返回 `implementation_required`，本摘要不是 passing Branch Review、serialized
+  promotion、Publication 或 Acceptance/Finish 证据。

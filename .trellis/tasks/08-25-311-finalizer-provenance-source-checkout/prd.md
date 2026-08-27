@@ -141,9 +141,10 @@ Live authority：<https://github.com/castbox/guru-trellis/issues/311>。
   通过。
 - [ ] A9 / R6：代表性 clean throwaway business closeout 完成完整 #311 路径；结果明确区别于 #267
   release-wide matrix。
-- [ ] A10：fresh committed `origin/main...HEAD` Branch Review 无 P0-P3 open finding；PR 只关闭 #311。
-- [ ] A11：reviewed merge identity 到达 live `main` 且 Issue #311 closed 后停止；不启动 #267 或修改
-  playable-ads-guru #29。
+- [ ] A10：fresh committed `origin/main...HEAD` Branch Review 无 P0-P3 open finding；PR 仅引用 #311，
+  `close_issues=[]`，合并时不得自动关闭该 Issue。
+- [ ] A11：reviewed merge identity 到达 live `main`，完成生产发布并重试错误文件；只有生产证据确认
+  最大根因已修复后，才可经单独确认关闭 Issue #311；不启动 #267 或修改 playable-ads-guru #29。
 - [ ] A12 / R7：focused fixtures 证明 pre-matrix、matrix-cell 与 post-matrix failure 在 cleanup 后仍有
   schema-valid bounded evidence，且不执行完整 live matrix、不对 `cdc55ca9` 做第 4 次 throwaway。
 

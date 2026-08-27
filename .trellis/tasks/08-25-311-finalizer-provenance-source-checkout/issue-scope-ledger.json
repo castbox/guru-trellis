@@ -1,20 +1,19 @@
 {
-  "close_issues": [
-    {
-      "number": 311,
-      "reason": "Issue #311 is the sole open implementation authority for this repair and is closed by this delivery.",
-      "title": "修复 installed business repo Finalizer provenance reprepare 的 source/target checkout 混淆",
-      "url": "https://github.com/castbox/guru-trellis/issues/311"
-    }
-  ],
+  "close_issues": [],
   "followup_issues": [],
   "primary_issue": {
     "number": 311,
-    "reason": "Issue #311 is the sole open implementation authority for this repair and is closed by this delivery.",
+    "reason": "Issue #311 remains the primary implementation authority but this PR is refs-only; closure requires separate confirmation after production retry evidence proves the maximum root cause is fixed.",
     "title": "修复 installed business repo Finalizer provenance reprepare 的 source/target checkout 混淆",
     "url": "https://github.com/castbox/guru-trellis/issues/311"
   },
   "related_issues": [
+    {
+      "number": 311,
+      "reason": "Issue #311 remains the primary implementation authority but this PR is refs-only; closure requires separate confirmation after production retry evidence proves the maximum root cause is fixed.",
+      "title": "修复 installed business repo Finalizer provenance reprepare 的 source/target checkout 混淆",
+      "url": "https://github.com/castbox/guru-trellis/issues/311"
+    },
     {
       "number": 191,
       "reason": "Issue #191 defines the clean provenance tail and pre-PR reprepare invariants and remains closed historical authority.",

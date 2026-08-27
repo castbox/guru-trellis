@@ -16,7 +16,8 @@
 - [x] `trellis-before-dev` 加载 curated `implement.jsonl`，重新核对 task/worktree/base 与 current specs。
 - [x] `guru-qualify-normal-scenario:requirements_scope_set` 对
   `NS-311-VERIFIER-FAILURE-DIAGNOSTICS` 返回 `classified/qualified_current`；用户接受该 verifier
-  diagnostic contract 为当前 #311 scope，close/related/followup ledger 不变。
+  diagnostic contract 为当前 #311 scope。后续 Branch Review 对用户明确要求的延迟 Issue closure
+  返回 `qualified_approved_expansion`，ledger 改为 refs-only，#311 在生产重试确认最大根因前保持 OPEN。
 
 ## 2. Establish Task-Owned Docs Delta
 
@@ -184,9 +185,12 @@
   recorder、checker 与 public wrapper 返回 `passed`，未复用旧 checkpoint。
 - [x] 使用 `guru-create-task-commit` 创建 finding-fix commit
   `ff1ace8950f127326b7524e0120ed4032f6c1aef`，只 stage 当轮 #311 文件。
-- [ ] 当前 terminal public-invoke harness finding-fix 重新执行 fresh Architecture/RDT/Phase 2 后创建 exact
-  revision commit。
-- [ ] 独立 Branch Review 覆盖 `origin/main...HEAD` 完整 committed diff，P0-P3 open finding 为零。
+- [x] 当前 terminal public-invoke harness finding-fix 重新执行 fresh Architecture/RDT/Phase 2 后创建 exact
+  revision commit `c3bc809b548f7a94e2175c82fe32171a5b8762a9`。
+- [ ] 独立 Branch Review 已覆盖 `origin/main@d907fcc5...c3bc809b` 的 5 commits / 85 paths；旧
+  `BR-311-SOURCE-001..003` 已闭环，当前 `BR-311-SOURCE-004`（refs-only close scope）与
+  `BR-311-SOURCE-005`（committed status drift）仍在本 finding-fix 轮处理，尚未达到 P0-P3 open finding
+  为零。
 - [ ] Architecture/RDT contribution 经独立 review 后执行 expected `.40` serialized promotion；
   promotion delta 重新进入 Phase 2、task commit 与 Branch Review。
 - [ ] Publication/Finalizer 只消费 fresh promoted/current evidence。

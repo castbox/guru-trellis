@@ -185,7 +185,11 @@ on verifier state.
 
 ## Review and promotion state
 
-- review：`pending`；independent committed range 尚未形成。
+- review：Architecture owner 已对
+  `origin/main@d907fcc5e17f23b6499648e5e9a208457f2d6f8b...c3bc809b548f7a94e2175c82fe32171a5b8762a9`
+  完成 `reviewed / independent=true` committed-range review，project check 为 `pass / blocking=true`；
+  完整 Branch Review 因 `BR-311-SOURCE-004/005` 返回 `implementation_required`，因此 contribution
+  仍是 `reviewed_candidate`，不冒充 promotion/current。
 - ADR：`required=true`；locator 为
   `docs/architecture/adr/007-finalizer-extension-source-target-binding.md`。
 - promotion：`required`；promoted identity 为空。
