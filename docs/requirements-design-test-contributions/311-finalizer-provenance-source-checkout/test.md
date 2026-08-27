@@ -88,7 +88,13 @@
   `b1d6fc00bed7c933b2b9613c5e6a8cfae604f9a5` clean candidate 的本地完整 integration 在 terminal
   public-input harness 修复后通过。该本地 fake-GitHub 证据不替代现有真实 fixture 的 fresh reinstall、
   Branch Review 与 GitHub Publication/Finalizer，因此 `T311-11` 仍为 `unverified`。
+  `4a50f88eaee972829aa636af54a5d2d0c033c011` 的 distinct fresh-final Branch Review 已闭环
+  `BR-311-SOURCE-004/005`，但 `check-inventory` 又稳定复现 `BR-311-SOURCE-006`（P1）：installed
+  closeout fake `git` 的 generated-shebang 当前 identity 为 `07004913deeb...`，inventory 仍登记
+  `da71f59de8d1...`，导致 focused routing suite 44 项中 5 项报错。canonical inventory 已精确替换
+  id 与完整 anchor，未改变 owner/kind/classification/launcher/ordinal 或 caller/routing 机制；本轮只允许
+  focused inventory/routing/projection 验证，不运行第 4 次完整 integration。
   `T311-12` 保持边界声明：#267 release-wide matrix、tag-pinned smoke、tag 与 GitHub Release 均未运行。
 - contribution 仍是 `candidate_pending_review`；fresh independent committed full-diff review 已执行但因
-  `BR-311-SOURCE-004/005` 返回 `implementation_required`，本摘要不是 passing Branch Review、serialized
+  `BR-311-SOURCE-006` 返回 `implementation_required`，本摘要不是 passing Branch Review、serialized
   promotion、Publication 或 Acceptance/Finish 证据。

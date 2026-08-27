@@ -157,6 +157,12 @@
   gate 的精确 retired locator。Finalizer terminal projection 定点测试、all-platform installer 投影测试及
   第 3 次且最后一次本地完整 integration 均通过（`Ran 1 test in 378.336s, OK`）；本轮不得第 4 次完整
   integration。
+- [x] `4a50f88eaee972829aa636af54a5d2d0c033c011` 的 distinct fresh-final Branch Review 已闭环
+  `BR-311-SOURCE-004/005`，并发现 `BR-311-SOURCE-006`（P1）：`b1d6fc00` 为 installed closeout
+  fake `git` 增加 `subprocess` 后，generated-shebang helper identity 已演进为 `07004913deeb...`，caller
+  inventory 仍保留 `da71f59de8d1...`。canonical inventory 已替换为唯一当前 identity；本修复只刷新
+  owner/kind/classification/launcher/ordinal 不变的确定性 anchor，不修改 caller 或 routing 机制，且不运行
+  第 4 次完整 integration。
 - [ ] 从上述 finding-fix 生成新的 clean candidate object，在现有 fixture worktree 上重新安装并完成
   fresh Phase 2、finding-fix commit 与 independent fresh-final Branch Review。
 - [ ] 执行 Publication `ready`、Finalizer preview、`reprepare_required`、execute、
@@ -187,10 +193,9 @@
   `ff1ace8950f127326b7524e0120ed4032f6c1aef`，只 stage 当轮 #311 文件。
 - [x] 当前 terminal public-invoke harness finding-fix 重新执行 fresh Architecture/RDT/Phase 2 后创建 exact
   revision commit `c3bc809b548f7a94e2175c82fe32171a5b8762a9`。
-- [ ] 独立 Branch Review 已覆盖 `origin/main@d907fcc5...c3bc809b` 的 5 commits / 85 paths；旧
-  `BR-311-SOURCE-001..003` 已闭环，当前 `BR-311-SOURCE-004`（refs-only close scope）与
-  `BR-311-SOURCE-005`（committed status drift）仍在本 finding-fix 轮处理，尚未达到 P0-P3 open finding
-  为零。
+- [ ] 独立 Branch Review 已覆盖 `origin/main@d907fcc5...4a50f88e` 的 6 commits / 85 paths；
+  `BR-311-SOURCE-001..005` 已闭环，当前 `BR-311-SOURCE-006`（secondary generated-shebang caller
+  inventory drift）仍在本 finding-fix 轮处理，尚未达到 P0-P3 open finding 为零。
 - [ ] Architecture/RDT contribution 经独立 review 后执行 expected `.40` serialized promotion；
   promotion delta 重新进入 Phase 2、task commit 与 Branch Review。
 - [ ] Publication/Finalizer 只消费 fresh promoted/current evidence。

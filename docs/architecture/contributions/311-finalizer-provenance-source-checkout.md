@@ -171,7 +171,11 @@ on verifier state.
   finding-fix 已通过 current focused regression。current candidate
   `a03f8ad1bf2bb98575df4a9376a88b480c7bfd5f` 的第 2 次 throwaway 诊断又发现 source secondary caller
   inventory 仍绑定旧 Finalizer apply AST anchor；canonical inventory 已收敛到唯一新 anchor
-  `f16c2314ce2a...`，focused routing tests `44/44` 与 source caller inventory validation 通过。current
+  `f16c2314ce2a...`，当轮 focused routing tests `44/44` 与 source caller inventory validation 通过。后续
+  `4a50f88e` fresh-final review 又发现 installed closeout fake `git` 的 generated-shebang identity 因
+  `b1d6fc00` 增加 `subprocess` 已演进为 `07004913deeb...`，inventory 仍保留
+  `da71f59de8d1...`；`BR-311-SOURCE-006` 只刷新该确定性 inventory anchor，不改变 caller、routing、
+  Architecture owner 或 ADR-007。current
   candidate `cdc55ca93bc28934bfaa1c4ba48aeef83baf3277` 的第 3 次且最后一次 throwaway 已进入 default
   matrix，但 outer verifier 只保留 stdout/stderr hash/size，失败 stage/cell/command/tail 随 cleanup
   丢失。`guru-qualify-normal-scenario:requirements_scope_set` 已将该正常路径缺陷资格化为
