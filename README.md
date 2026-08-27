@@ -187,6 +187,12 @@ Guru Team preset 提供面向规划、实现检查、任务提交、分支审查
 
 发布审核由 Publication 在同一个语义循环中生成并审查准确的中文 PR 标题与正文，随后以包含任务、分支审查提交和标题正文的五字段 4.0 结果直接交给 Finalizer，不再创建 task-local PR body 或索引交接文件。Finalizer 将该结果与实时仓库事实绑定为 closeout plan 3.0，并在草稿 PR 建立后一次生成 finish summary 2；历史归档中的 finish summary 1 仍可只读检索。
 
+安装到业务仓库后的 Finalizer 在需要刷新 provenance metadata tail 时，会把业务目标与
+Guru Trellis 扩展源码作为两个独立 checkout：业务 checkout 只接收 manifest tail，扩展源码
+checkout 只提供 canonical preset 实现。self-hosted 模式绑定业务 reviewed HEAD；installed
+模式按 manifest 中的 immutable repo/ref/commit 精确检出源码。它不会要求业务仓库携带
+`trellis/presets/**` source tree，也不会调用 standalone extension verifier。
+
 ### 多平台一致体验
 
 团队可以在 Codex、Claude Code、Cursor 等不同 AI 工具中使用同一套 Guru Team 语义。平台入口可以不同，但工作目标、判断原则和交付标准保持一致。
@@ -210,6 +216,9 @@ manifest 和 Skill package，也不会调用或路由到 `guru-verify-extension-
 origin、requested ref、resolved commit、HEAD 和 clean tree。验证目标由 source 流程创建
 clean throwaway repo，不绑定真实业务 task、branch、Finalizer plan 或 publication HEAD。
 任何携带 credential 的 locator 都会在外部动作和证据写入前被拒绝。
+兼容性 matrix 失败时，runtime 会在临时目录清理前保留 bounded、credential-safe 的
+stage/cell/command/exit/error-tail；无法解析终态时显式记录
+`unparseable_failure_output`。这些事实只属于 standalone verifier，不进入 Finalizer。
 
 源仓的完整 upgrade/update 验收使用隔离环境并严格按顺序执行：clean initial
 workflow/preset install；在 disposable npm prefix/container 中运行

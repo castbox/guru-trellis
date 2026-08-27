@@ -40,6 +40,11 @@ push the reviewed/publication HEAD or create/reuse a PR themselves. Finalizer
 performs its remote-branch and exact Open-PR preflight before the first new
 remote mutation; an unexpected existing PR, disallowed remote head, or parallel
 publication consumer fails closed instead of being normalized as recovery.
+On initial `publication_ready`, the same preview first classifies an exact
+existing PR, then, only when no PR and no remote branch exist, maps a still
+`prepared` installed plan with no metadata tail to
+`reprepare_required/provenance_metadata_tail`. That decision is read-only: it
+does not push, create a PR, archive, mark Ready, or mutate the Issue.
 
 The Finalizer-owned publication input is ignored-runtime, short-lived authority
 for exact title/body bytes. A provenance `reprepare_required` public DTO remains
@@ -1401,6 +1406,14 @@ ownership, sidecar, discovery, platform, README, and redaction capabilities. It
 records sanitized deterministic facts but does not choose capabilities or turn
 command success into semantic `verified`.
 
+The compatibility matrix emits one closed failure terminal before cleanup. It
+distinguishes `pre-matrix`, `matrix-cell`, and `post-matrix`, includes a cell id
+only for a cell failure, and carries a stable command label, exit code, and
+bounded credential-safe error tail. The throwaway wrapper passes this terminal
+through. The standalone verifier parses it inside the temporary-directory
+lifecycle and records `unparseable_failure_output` when the terminal is absent
+or malformed; stdout/stderr hashes and sizes do not substitute for these facts.
+
 The recorder consumes execution facts plus the completed AI adequacy/findings/
 redaction review and writes only ignored source-session owner state. The checker
 validates source identity, schema, capability evidence, redaction, and the actual
@@ -1612,6 +1625,19 @@ reads verifier owner state, accepts a verification re-entry profile, or retains
 a verification artifact. Business changed paths and the installed extension
 manifest have no verifier applicability semantics. Archive preparation permits
 exactly the six durable core files.
+
+Before an ordinary pre-PR metadata-tail reprepare, the executor creates a
+detached target checkout at the business `reviewed_content_head`, reads that
+commit's installed manifest, and resolves a separate clean detached extension
+source checkout. Self-hosted source is the target reviewed Git object;
+installed source is fetched from the manifest's canonical GitHub repository by
+exact full commit OID after configuring canonical `origin`. The preset entry is
+executed from the extension source with `--repo` bound to the target checkout.
+Source and target HEAD/repository/clean state are validated independently
+before apply, after apply, and before committing the target-only manifest tail.
+Any source-resolution, fetch, apply, source drift, target extra path, or
+binding-aware postimage failure stops before push, PR, archive, Ready, or Issue
+mutation and projects no credential-bearing locator.
 
 `guru-verify-extension-installation` retains the stable execute/record/check/
 invoke commands only for explicit `source_repository_verification` standalone

@@ -1,0 +1,44 @@
+{
+  "close_issues": [
+    {
+      "number": 311,
+      "reason": "Issue #311 is the sole open implementation authority for this repair and is closed by this delivery.",
+      "title": "修复 installed business repo Finalizer provenance reprepare 的 source/target checkout 混淆",
+      "url": "https://github.com/castbox/guru-trellis/issues/311"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 311,
+    "reason": "Issue #311 is the sole open implementation authority for this repair and is closed by this delivery.",
+    "title": "修复 installed business repo Finalizer provenance reprepare 的 source/target checkout 混淆",
+    "url": "https://github.com/castbox/guru-trellis/issues/311"
+  },
+  "related_issues": [
+    {
+      "number": 191,
+      "reason": "Issue #191 defines the clean provenance tail and pre-PR reprepare invariants and remains closed historical authority.",
+      "title": "修复 Finalizer 前 clean provenance tail 与 pre-PR plan reprepare 缺口",
+      "url": "https://github.com/castbox/guru-trellis/issues/191"
+    },
+    {
+      "number": 195,
+      "reason": "Issue #195 defines package-local runtime ownership and projection synchronization and remains closed historical authority.",
+      "title": "迁移全部 Guru Team Skills 到 package-local runtime 并删除单体实现",
+      "url": "https://github.com/castbox/guru-trellis/issues/195"
+    },
+    {
+      "number": 267,
+      "reason": "Issue #267 owns release publication after this repair and is not closed by this task.",
+      "title": "发布 v0.6.15-guru.1 全链路重构 exact-candidate 稳定版本",
+      "url": "https://github.com/castbox/guru-trellis/issues/267"
+    },
+    {
+      "number": 275,
+      "reason": "Issue #275 provides historical throwaway closeout and verifier inventory constraints and remains closed.",
+      "title": "修复 v0.6.5-guru.9 Throwaway closeout 回归并发布 replacement release",
+      "url": "https://github.com/castbox/guru-trellis/issues/275"
+    }
+  ],
+  "schema_version": "2.0"
+}

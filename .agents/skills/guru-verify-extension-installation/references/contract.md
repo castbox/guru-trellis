@@ -25,6 +25,16 @@ scans a real business task ref. Owner state is ignored source-session runtime
 only, is deleted after terminal consumption, and never appears under
 `.trellis/tasks/**`.
 
+The matrix runner owns one closed failure terminal. Before temporary cleanup it
+projects the failure stage (`pre-matrix`, `matrix-cell`, or `post-matrix`), an
+applicable cell id, stable command label, exit code, and a bounded error tail.
+The throwaway wrapper passes that terminal through, and this package parses and
+re-sanitizes it while the temporary roots still exist. Missing or malformed
+terminal output becomes `unparseable_failure_output`; it never silently falls
+back to digest/size-only evidence. Credential, token, authenticated remote, and
+environment-secret text is excluded from the tail. This evidence remains owned
+by standalone verification and is never consumed by Finalizer.
+
 ## Semantic Gate And Exits
 
 The AI owns capability selection, adequacy, findings, and the final route.

@@ -390,6 +390,101 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             adapter_text,
         )
 
+    def test_throwaway_failure_parses_structured_matrix_terminal_before_cleanup(self) -> None:
+        runtime = load_runtime()
+        terminal = {
+            "schema_version": "1.0",
+            "status": "failed",
+            "failure": {
+                "kind": "matrix_failure",
+                "stage": "matrix-cell",
+                "cell_id": "codex-clean",
+                "command_label": "run-skill-evals.sh",
+                "exit_code": 23,
+                "error_tail": (
+                    "github_pat_SECRET https://user:password@example.com/repo.git "
+                    "Authorization: Bearer bearer-secret "
+                    "GITHUB_TOKEN=environment-secret "
+                    "https://example.com/object?X-Goog-Signature=signed-secret "
+                    "-----BEGIN PRIVATE KEY----- private-secret"
+                ),
+            },
+        }
+        proc = subprocess.CompletedProcess(
+            [],
+            2,
+            "earlier output\n" + json.dumps(terminal) + "\n",
+            "",
+        )
+        failure = runtime.extension_verification_throwaway_failure(proc)
+        self.assertEqual(
+            {key: failure[key] for key in ("kind", "stage", "cell_id", "command_label", "exit_code")},
+            {
+                "kind": "matrix_failure",
+                "stage": "matrix-cell",
+                "cell_id": "codex-clean",
+                "command_label": "run-skill-evals.sh",
+                "exit_code": 23,
+            },
+        )
+        self.assertNotIn("github_pat_SECRET", failure["error_tail"])
+        self.assertNotIn("user:password", failure["error_tail"])
+        self.assertNotIn("bearer-secret", failure["error_tail"])
+        self.assertNotIn("environment-secret", failure["error_tail"])
+        self.assertNotIn("signed-secret", failure["error_tail"])
+        self.assertNotIn("private-secret", failure["error_tail"])
+
+    def test_throwaway_failure_marks_unparseable_output_explicitly(self) -> None:
+        runtime = load_runtime()
+        proc = subprocess.CompletedProcess(
+            [],
+            41,
+            "not-json github_pat_SECRET",
+            "https://user:password@example.com/repo.git",
+        )
+        failure = runtime.extension_verification_throwaway_failure(proc)
+        self.assertEqual(failure["kind"], "unparseable_failure_output")
+        self.assertIsNone(failure["stage"])
+        self.assertIsNone(failure["cell_id"])
+        self.assertEqual(failure["command_label"], "verify-throwaway-installation")
+        self.assertEqual(failure["exit_code"], 41)
+        self.assertNotIn("github_pat_SECRET", failure["error_tail"])
+        self.assertNotIn("user:password", failure["error_tail"])
+
+    def test_execution_facts_schema_accepts_bounded_failure_and_rejects_extra_fields(self) -> None:
+        runtime = load_runtime()
+        schema = runtime.extension_verification_recorder_input_schema(
+            REPO,
+            "execution-facts.schema.json",
+            "extension verification execution facts",
+        )
+        facts = load("examples/execution-facts.json")
+        facts["status"] = "failed"
+        facts["failure"] = {
+            "kind": "matrix_failure",
+            "stage": "post-matrix",
+            "cell_id": None,
+            "command_label": "verify_installed_parallel_finish.py",
+            "exit_code": 2,
+            "error_tail": "parallel finish failed",
+        }
+        self.assertEqual(
+            runtime.skill_json_schema_validation_errors(
+                facts,
+                schema,
+                "extension verification execution facts",
+            ),
+            [],
+        )
+        facts["failure"]["unexpected"] = True
+        self.assertTrue(
+            runtime.skill_json_schema_validation_errors(
+                facts,
+                schema,
+                "extension verification execution facts",
+            )
+        )
+
     def test_non_source_rejected_before_executor(self) -> None:
         runtime = load_runtime()
         with tempfile.TemporaryDirectory() as temp:

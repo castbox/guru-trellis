@@ -919,6 +919,13 @@ calls and zero verifier artifacts. Source success uses an isolated clean
 throwaway target and covers marketplace, preset, workflow, platform equality,
 ownership, update/reapply, sidecars, README commands, and redaction.
 
+Focused failure-evidence coverage injects pre-matrix, matrix-cell, and
+post-matrix failures without running the full live matrix. It proves cleanup-safe
+stage/cell/command/exit projection, a 2000-character maximum tail, credential and
+authenticated-remote removal, explicit `unparseable_failure_output`, closed
+schema rejection of extra fields, and retention alongside command hashes/sizes.
+These fixtures do not satisfy the release-wide matrix owner.
+
 The package-local production corpus contains two real-wrapper cases spanning
 `verified` and `blocked`. Shared/Codex/Claude/Cursor consume byte-identical
 canonical corpus and package bytes. Actual exit chooses the output schema before
@@ -950,6 +957,23 @@ pre-PR provenance inference, the legacy path is committed only as an exact
 active-side deletion, the six-file current archive omits it, and PR/remote/
 payload/scope/plan/HEAD drift remains fail closed.
 
+Focused provenance reprepare coverage contains both closed source modes. The
+self-hosted fixture proves distinct source/target paths while both identities
+bind the reviewed commit. The installed fixture deliberately omits the
+canonical preset source tree from the business target and proves canonical
+origin, exact-OID fetch, detached/clean source, source-provided apply entry,
+target-only `--repo` mutation, mode-aware manifest postimage, one direct-parent
+tail, and unchanged source state. Negative fixtures cover missing/malformed
+repo/ref/commit, short OID, dirty/mutable identity, fetch or HEAD mismatch,
+dirty source, missing apply entry, source repo drift, business HEAD overwrite,
+extra target path/field, managed-byte drift, and sidecars. Static and runtime
+assertions keep verifier package/wrapper/command/artifact call count at zero.
+The installed preview fixture also starts with no plan, remote branch, or PR and
+proves `publication_ready` returns
+`reprepare_required/provenance_metadata_tail` while push, PR creation, archive,
+Ready, and Issue mutation call counts stay zero. A paired existing-PR fixture
+proves fresh adoption and post-bind recovery still precede provenance inference.
+
 Representative business fixtures cover docs, code, config, `.trellis/**`,
 platform copies, and an installed extension manifest. Their complete
 Publication -> Finalizer -> Merge trace asserts zero verifier wrapper calls,
@@ -969,6 +993,14 @@ script modes match after fresh install, update, and preset reapply. Package
 closure is twenty-one active Skills and 89 exits; business global markers remain 20
 invokes, 87 exits, 33 workflow targets, and 21 stop targets. Upstream Finish
 assets remain unchanged.
+
+Installed package tests must execute in a clean business repository that does
+not contain the canonical `trellis/**` source tree. In a source repository, the
+Finalizer schema regression asserts the package-local current schema, canonical
+workflow schema, and dogfood installed shared schema. In an installed business
+repository, it asserts the package-local and target installed shared schemas and
+also proves the canonical workflow schema path is absent; installed tests must
+not read or otherwise depend on that source-only path.
 
 ## Base Evolution Gate Quality
 
