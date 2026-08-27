@@ -1066,6 +1066,74 @@ class FinalizeTaskContractTests(unittest.TestCase):
             self.assertIn("target-reviewed", str(target_checkout))
             self.assertEqual(len(GTT.worktree_records(root)), 1)
 
+    def test_initial_provenance_reprepare_accepts_absent_remote_only(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            task_dir = root / ".trellis/tasks/08-27-provenance-reprepare"
+            task_dir.mkdir(parents=True)
+            reviewed = "a" * 40
+            plan = {
+                "git": {
+                    "reviewed_content_head": reviewed,
+                    "branch_review_commit": reviewed,
+                    "head_branch": "fix/311-provenance-reprepare",
+                    "base_branch": "main",
+                    "remote": "origin",
+                    "repo": "castbox/business-repo",
+                },
+                "task": {
+                    "active_locator": task_dir.relative_to(root).as_posix(),
+                    "archive_locator": (
+                        ".trellis/tasks/archive/2026-08/08-27-provenance-reprepare"
+                    ),
+                },
+            }
+            worktrees = [
+                {
+                    "branch": "refs/heads/fix/311-provenance-reprepare",
+                    "worktree": str(root),
+                }
+            ]
+            with (
+                mock.patch.object(GTT, "current_head", return_value=reviewed),
+                mock.patch.object(
+                    GTT, "finalizer_tracked_pre_pr_artifacts", return_value=[]
+                ),
+                mock.patch.object(GTT, "worktree_records", return_value=worktrees),
+                mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=None),
+                mock.patch.object(GTT, "closeout_remote_branch_head", return_value=""),
+            ):
+                facts = GTT.finalizer_pre_pr_provenance_reprepare_preflight(
+                    root,
+                    task_dir,
+                    plan,
+                )
+            self.assertEqual(facts["remote_head"], "")
+            self.assertEqual(facts["reviewed_content_head"], reviewed)
+
+            with (
+                mock.patch.object(GTT, "current_head", return_value=reviewed),
+                mock.patch.object(
+                    GTT, "finalizer_tracked_pre_pr_artifacts", return_value=[]
+                ),
+                mock.patch.object(GTT, "worktree_records", return_value=worktrees),
+                mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=None),
+                mock.patch.object(
+                    GTT, "closeout_remote_branch_head", return_value="b" * 40
+                ),
+                mock.patch.object(GTT, "is_ancestor", return_value=False),
+                self.assertRaises(GTT.WorkflowError) as caught,
+            ):
+                GTT.finalizer_pre_pr_provenance_reprepare_preflight(
+                    root,
+                    task_dir,
+                    plan,
+                )
+            self.assertEqual(
+                caught.exception.payload["reason_code"],
+                "provenance_reprepare_remote_not_reviewed_head",
+            )
+
     def test_provenance_tail_preparation_fetches_installed_source_by_exact_oid(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             sandbox = Path(raw)

@@ -109,7 +109,8 @@ on verifier state.
   dependency was introduced.
 - initial `publication_ready` preview now classifies an exact existing PR first; when no PR and no remote branch
   exist, a tail-less installed `prepared` state maps to `reprepare_required/provenance_metadata_tail` before
-  push, PR creation, archive, Ready, or Issue mutation.
+  push, PR creation, archive, Ready, or Issue mutation. The matching executor preflight accepts an absent remote
+  or the exact reviewed head and still rejects every non-empty mismatched remote head.
 - compatibility matrix failures now emit one closed pre-matrix/matrix-cell/post-matrix terminal with the
   applicable cell, actual helper basename, exit code and 2000-character credential-safe tail. The standalone
   verifier parses it before temporary cleanup, preserves command hashes/sizes, and classifies malformed output
@@ -131,14 +132,15 @@ on verifier state.
 - Planning result：`pass`。当前计划固定一个 `target_native` path、一个 Finalizer binding owner、一个
   task writer、一个 promotion owner，并保留 self-hosted compatibility exit；没有新增 legacy
   authority、dual writer、public route 或 closed GAP regression。
-- Current candidate evidence：canonical/installed Finalizer 各 `58/58`（包括首次 Publication、无 existing
+- Current candidate evidence：canonical/installed Finalizer 各 `59/59`（包括首次 Publication、无 existing
   plan 的 target-repo binding，以及无 remote branch/PR 的 prepared-state provenance regression），
   canonical/installed verifier 各 `17/17`，preset installer `81/81`，upgrade contract `36/36`，
   throwaway routing + ownership `51/51`；source/installed validators 分别验证 21 packages / 72 commands
   与 21 packages / 72 commands / 4263 managed files。Finish family integration 的既有 clean candidate
   `6/6` 证据未被 verifier-only finding-fix 改写；fresh pre-commit rerun因当前 source 尚未形成 clean
-  commit 正确停止于 `provenance_tail_source_not_clean`，必须在 finding-fix commit 后对 exact clean
-  candidate 重跑，不得记为当前通过。all-platform
+  commit 正确停止于 `provenance_tail_source_not_clean`；`ff1ace8950f127326b7524e0120ed4032f6c1aef`
+  后的 clean-manifest run 继续暴露并修复过期单段 harness 与 absent-remote executor preflight，完整
+  integration 必须在下一 clean candidate 重跑，不得记为当前通过。all-platform
   reapply、dogfood drift、canonical/installed/platform byte-mode parity、recursive sidecar-zero、task
   validation、local-link、code-fence、terminology/cross-SSOT semantic review 与 `git diff --check` 均通过。
 - Phase 2 result：`pass` / `blocking=true`。完整 worktree candidate 只建立一个 package-local owner，

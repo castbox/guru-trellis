@@ -33,5 +33,7 @@ structured failure、stable helper label、outer parsing、closed schema、bound
 unparseable fallback 验证；Branch Review finding-fix 进一步覆盖 matrix 外 command 与
 inventory/ownership/sidecar/capability `postcheck_failure`、failed + null schema rejection，以及 AWS/GCP
 credential query 参数。必须形成不同 candidate object，才可在现有 fixture 上 fresh 重试完整
-closeout。该未验证项不被 local package validator、旧
+closeout。`ff1ace8950f127326b7524e0120ed4032f6c1aef` 后的 local Finish integration 已继续暴露并修复
+过期单段 harness 与 absent-remote executor preflight；canonical/installed Finalizer 当前各 `59/59`，
+但完整 integration 仍等待下一 clean candidate。该未验证项不被 local package validator、旧
 candidate 的 false green 或 #267 release-wide evidence 替代。

@@ -4442,10 +4442,11 @@ def finalizer_pre_pr_provenance_reprepare_preflight(
     if (
         previous_plan is None
         and previous_transaction is None
+        and remote_head
         and remote_head != reviewed_content_head
     ):
         raise WorkflowError(
-            "Provenance reprepare requires the remote branch at reviewed content HEAD.",
+            "Provenance reprepare requires no remote branch or the remote branch at reviewed content HEAD.",
             exit_code=2,
             payload={
                 "reason_code": "provenance_reprepare_remote_not_reviewed_head",

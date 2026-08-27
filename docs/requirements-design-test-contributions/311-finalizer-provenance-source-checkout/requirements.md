@@ -20,7 +20,8 @@ shared current 仍由 expected `.40` 的 serialized promotion owner 单写。
   保持 manifest-bound immutable extension repo/ref/commit，绝不写成 business HEAD。
 - `R311-08`：首次 `publication_ready` preview 必须先分类 exact existing PR；无 PR、无 remote branch 且
   缺 metadata tail 时，`prepared` 直接返回 `reprepare_required/provenance_metadata_tail`，push、PR create、
-  archive、Ready、Issue mutation 均为零。fresh/post-bind existing-PR recovery 仍先于 provenance inference；
+  archive、Ready、Issue mutation 均为零；对应 reprepare executor 必须接受 remote branch 不存在或精确位于
+  reviewed head，非空且不匹配的 remote head 继续 fail closed。fresh/post-bind existing-PR recovery 仍先于 provenance inference；
   public profiles、typed exits、transaction、Draft/Ready/archive/Merge handoff 与 terminal freshness不变。
 - `R311-09`：source binding 与 checkout helper 归 `guru-finalize-task` package-local runtime 所有；
   Finalizer 不调用或读取 verifier profile、gate、transaction、artifact、wrapper、owner state 或 exit。

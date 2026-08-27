@@ -143,6 +143,12 @@
   sidecar-zero 与 `git diff --check` 通过。Finish integration 的 fresh pre-commit rerun因当前 source 尚未
   形成 clean commit 正确停止于 `provenance_tail_source_not_clean`，必须在 finding-fix commit 后对 exact
   clean candidate 重跑，不得记为当前通过。
+- [x] finding-fix commit `ff1ace8950f127326b7524e0120ed4032f6c1aef` 后 reapply 得到 clean source
+  provenance；fresh Finish integration 越过 `provenance_tail_source_not_clean` 后先暴露 compatibility
+  harness 仍跳过 `reprepare_required`，修正为两段 gate/execute 后继续暴露 executor 错误要求 absent
+  remote 等于 reviewed head。source preflight 已改为仅接受 absent remote 或精确 reviewed head，非空 drift
+  仍 fail closed；canonical/installed Finalizer 各 `59/59`，apply/validator/parity/sidecar-zero 通过。完整
+  integration 必须在本轮 finding-fix 形成下一 clean commit 后重跑。
 - [ ] 从上述 finding-fix 生成新的 clean candidate object，在现有 fixture worktree 上重新安装并完成
   fresh Phase 2、finding-fix commit 与 independent fresh-final Branch Review。
 - [ ] 执行 Publication `ready`、Finalizer preview、`reprepare_required`、execute、
@@ -169,7 +175,9 @@
   `guru-check-task:finding_fix_rerun`；Architecture 两阶段均返回 `baseline_current` /
   `architecture_impact` / `target_native` / `reviewed_candidate`，RDT 返回 `ssot_current`，Phase 2
   recorder、checker 与 public wrapper 返回 `passed`，未复用旧 checkpoint。
-- [ ] 使用 `guru-create-task-commit` 创建 exact task commit，只 stage #311 文件。
+- [x] 使用 `guru-create-task-commit` 创建 finding-fix commit
+  `ff1ace8950f127326b7524e0120ed4032f6c1aef`，只 stage 当轮 #311 文件。
+- [ ] 当前 absent-remote finding-fix 重新执行 fresh Architecture/RDT/Phase 2 后创建 exact revision commit。
 - [ ] 独立 Branch Review 覆盖 `origin/main...HEAD` 完整 committed diff，P0-P3 open finding 为零。
 - [ ] Architecture/RDT contribution 经独立 review 后执行 expected `.40` serialized promotion；
   promotion delta 重新进入 Phase 2、task commit 与 Branch Review。

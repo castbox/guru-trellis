@@ -15,8 +15,9 @@
   `reviewed_content_head` / `publication_head` 分离与 second-tail rejection通过。
 - `T311-07`（R311-08）：initial installed `publication_ready` fixture 在无 plan、无 remote branch、无 PR、
   无 tail 时返回 `reprepare_required/provenance_metadata_tail`，并断言 push、PR create、archive、Ready、
-  Issue mutation 均未调用；fresh Draft/Ready adoption 与每个 post-bind transition 仍先于 provenance
-  inference，payload/scope/plan/remote/HEAD drift 保持 fail closed。
+  Issue mutation 均未调用；executor preflight 接受 absent remote 或精确 reviewed head，并继续拒绝非空
+  remote drift；fresh Draft/Ready adoption 与每个 post-bind transition 仍先于 provenance inference，
+  payload/scope/plan/remote/HEAD drift 保持 fail closed。
 - `T311-08`（R311-08/09）：四个 current input profiles、六个 exits、transaction/archive/terminal/Merge
   regression通过；首次 Publication 在没有 existing plan 时仍绑定 target repo 并在首次 preview 识别
   required tail；静态与 runtime fixture 的 verifier package/wrapper/command/artifact call count均为零。
@@ -43,11 +44,13 @@
 ## Current Phase 2 evidence
 
 - `T311-01..10` 与 `T311-13` 当前 worktree candidate 已通过：canonical/installed Finalizer 各
-  `58/58`，canonical/installed verifier 各 `17/17`，preset installer `81/81`，upgrade contract
+  `59/59`，canonical/installed verifier 各 `17/17`，preset installer `81/81`，upgrade contract
   `36/36`，throwaway routing + ownership `51/51`。Finish family integration 的既有 clean candidate
   `6/6` 证据未被 verifier-only finding-fix 改写；fresh pre-commit rerun因当前 source 尚未形成 clean
-  commit 正确停止于 `provenance_tail_source_not_clean`，必须在 finding-fix commit 后对 exact clean
-  candidate 重跑，不得记为当前通过。
+  commit 正确停止于 `provenance_tail_source_not_clean`。`ff1ace8950f127326b7524e0120ed4032f6c1aef`
+  commit 后的 clean-manifest run 进一步暴露 compatibility harness 仍跳过 `reprepare_required`，修正为两段
+  gate/execute 后又暴露 executor 错误拒绝 absent remote；source 已修复 preflight 并补齐正负回归。完整
+  integration 必须在本轮 finding-fix 形成下一 clean commit 后重跑，不得记为当前通过。
 - source validator 通过 21 packages / 72 commands；installed validator 通过 21 packages / 72
   commands / 4263 managed files，且 conflicts/sidecars 为零。
 - all-platform apply/reapply、dogfood drift、canonical/installed/Shared/Codex/Claude/Cursor byte-mode
@@ -77,7 +80,9 @@
   incomplete asset inventory；失败 cell/stage/command/error-tail 不可恢复。对该 candidate 禁止第 4 次
   throwaway。`T311-13` finding-fix 现已通过 focused pre-matrix/matrix-cell/post-matrix、stable helper
   command label、schema 5.0、outer parse/unparseable、2000-character bound、Authorization/env/signature
-  URL/private-key credential redaction 测试；未运行完整 matrix，下一步必须先形成新 candidate object。
+  URL/private-key credential redaction 测试；`ff1ace8950f127326b7524e0120ed4032f6c1aef` 后的 local Finish
+  integration 已继续定位并修复过期单段 harness 与 absent-remote executor preflight，canonical/installed
+  Finalizer 当前各 `59/59`。完整 integration 仍需下一 clean candidate，不得回退重试旧 candidate。
   `T311-12` 保持边界声明：#267 release-wide matrix、tag-pinned smoke、tag 与 GitHub Release 均未运行。
 - contribution 仍是 `candidate_pending_review`；本摘要不是 independent committed full-diff review、
   serialized promotion、Publication 或 Acceptance/Finish 证据。
