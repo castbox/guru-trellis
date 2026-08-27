@@ -961,6 +961,11 @@ repo/ref/commit, short OID, dirty/mutable identity, fetch or HEAD mismatch,
 dirty source, missing apply entry, source repo drift, business HEAD overwrite,
 extra target path/field, managed-byte drift, and sidecars. Static and runtime
 assertions keep verifier package/wrapper/command/artifact call count at zero.
+The installed preview fixture also starts with no plan, remote branch, or PR and
+proves `publication_ready` returns
+`reprepare_required/provenance_metadata_tail` while push, PR creation, archive,
+Ready, and Issue mutation call counts stay zero. A paired existing-PR fixture
+proves fresh adoption and post-bind recovery still precede provenance inference.
 
 Representative business fixtures cover docs, code, config, `.trellis/**`,
 platform copies, and an installed extension manifest. Their complete

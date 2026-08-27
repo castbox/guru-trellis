@@ -50,6 +50,14 @@ immutable extension identity. Any failure stops before push, PR, archive,
 Ready, or Issue mutation and does not add a public profile, exit, transaction
 state, checkpoint, or verifier result.
 
+Initial `publication_ready` preview classifies the unique existing PR before
+fresh provenance inference. If no PR and no remote branch exist, the ordinary
+plan remains `prepared`; when it has no metadata tail and its installed binding
+requires one, preview returns `reprepare_required` with reason
+`provenance_metadata_tail`. This preview is side-effect-free and does not push,
+create a PR, archive, mark Ready, or mutate the Issue. A matching existing-PR
+recovery, including its exact post-bind transaction, retains precedence.
+
 ## Transaction
 
 The deterministic transaction states are `push_content`, `bind_pr`, `archive`,

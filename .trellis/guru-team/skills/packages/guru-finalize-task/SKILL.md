@@ -29,6 +29,10 @@ source and target identity and clean state independently, permit only the
 binding-aware manifest tail, and stop before publication side effects on any
 resolution, checkout, apply, or validation failure. This package-local source
 binding never invokes or substitutes for extension verification.
+Initial `publication_ready` preview first classifies an exact existing PR. When
+no PR and no remote branch exist, a missing installed metadata tail maps the
+still-prepared plan directly to `reprepare_required` before push, PR creation,
+archive, Ready, or Issue mutation.
 
 Execute the semantic profile in order: preview, AI review, one exact bounded
 side-effect confirmation when required, gate record/check, deterministic

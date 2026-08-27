@@ -1672,6 +1672,14 @@ contract against the rebuilt plan. PR already
 created, archive started, reviewed content/scope drift, non-fast-forward remote,
 or manifest changes outside the allowlist remain fail-closed boundaries.
 
+On the first current `publication_ready` preview, Finalizer classifies an exact
+existing PR before fresh provenance inference. If both the PR and remote branch
+are absent, the no-plan state remains `prepared`; a required installed
+metadata tail maps that state directly to `reprepare_required` with
+`reason_code=provenance_metadata_tail`. Preview performs no push, PR creation,
+archive, Ready, or Issue mutation. Existing-PR recovery and its matching
+post-bind transaction retain precedence over this inference.
+
 An unused current schema 3.0 plan with the complete seven-field Git identity may
 use the same mapped base-evolution route without a legacy gate/request. Its
 recorded provenance tail must remain structurally valid, its publication head

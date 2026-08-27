@@ -302,6 +302,115 @@ class FinalizeTaskContractTests(unittest.TestCase):
             )
             self.assertEqual(result["plan_digest"], plan["plan_digest"])
 
+    def test_initial_installed_preview_requires_provenance_tail_before_remote_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            initialize_provenance_git_repo(root, "castbox/business-repo")
+            task_ref = ".trellis/tasks/08-26-initial-installed-publication"
+            task_dir = root / task_ref
+            task_dir.mkdir(parents=True)
+            (task_dir / "task.json").write_text(
+                json.dumps({"status": "in_progress"}) + "\n",
+                encoding="utf-8",
+            )
+            manifest_path = root / GTT.PROVENANCE_TAIL_MANIFEST_PATH
+            manifest_path.parent.mkdir(parents=True)
+            manifest_path.write_text(
+                json.dumps(
+                    provenance_manifest("castbox/guru-trellis", "b" * 40),
+                    ensure_ascii=False,
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            reviewed = commit_provenance_fixture(root, "reviewed business task")
+            plan = {
+                "plan_digest": "c" * 64,
+                "git": {
+                    "repo": "castbox/business-repo",
+                    "remote": "origin",
+                    "base_branch": "main",
+                    "head_branch": "fix/311-installed-preview",
+                    "branch_review_commit": reviewed,
+                    "publication_head": reviewed,
+                },
+                "publish": {
+                    "title": "fix: installed preview provenance",
+                    "body": "Closes #311",
+                },
+                "review": {"close_issues_reviewed": [311]},
+                "task": {"active_locator": task_ref},
+            }
+            prepared = {
+                "plan": plan,
+                "plan_digest": plan["plan_digest"],
+                "task": {"status": "in_progress"},
+                "task_context": {},
+                "ledger": {},
+                "body": plan["publish"]["body"],
+                "month_supersession": None,
+                "pre_pr_reprepare": None,
+                "migration_normalization": None,
+                "reviewed_content_head": reviewed,
+                "publication_head": reviewed,
+                "metadata_tail": None,
+            }
+            public_input = {
+                "profile": "publication_ready",
+                "mode": "workflow",
+                "task_ref": task_ref,
+                "branch_review_commit": reviewed,
+                "pr_title": plan["publish"]["title"],
+                "pr_body": plan["publish"]["body"],
+            }
+            publication = {
+                "status": "ok",
+                "owner_status": "current",
+                "typed_exit": "ready",
+                "task_ref": task_ref,
+                "branch_review_commit": reviewed,
+            }
+            args = SimpleNamespace(root=str(root))
+            no_op = mock.Mock()
+            with (
+                mock.patch.object(GTT, "load_config", return_value={}),
+                mock.patch.object(GTT, "finalization_read_transaction", return_value=None),
+                mock.patch.object(GTT, "finalization_publication_owner_result", return_value=publication),
+                mock.patch.object(GTT, "load_task_runtime_identity", return_value={}),
+                mock.patch.object(GTT, "assert_workspace_boundary", no_op),
+                mock.patch.object(GTT, "prepare_closeout", return_value=prepared),
+                mock.patch.object(GTT, "closeout_ledger_matches_plan_bytes", return_value=True),
+                mock.patch.object(GTT, "review_branch_content_continuity_errors", return_value=[]),
+                mock.patch.object(GTT, "closeout_remote_branch_head", return_value="") as remote_head,
+                mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=None) as resolve_pr,
+                mock.patch.object(GTT, "push_closeout_branch_if_needed") as push_branch,
+                mock.patch.object(GTT, "create_pull_request") as create_pr,
+                mock.patch.object(GTT, "run_gh_command") as ready_pr,
+                mock.patch.object(GTT, "execute_archive_metadata_transaction") as archive_task,
+            ):
+                context = GTT.finalization_preview_context(root, args, public_input)
+
+            self.assertEqual(context["transaction_state"], "reprepare_required")
+            self.assertEqual(
+                context["reprepare_reason_code"],
+                GTT.FINALIZATION_REPREPARE_PROVENANCE_TAIL,
+            )
+            self.assertEqual(context["publication_mode"], "ordinary_publication")
+            self.assertIsNone(context["existing_pr_recovery"])
+            remote_head.assert_called_once_with(root, plan)
+            resolve_pr.assert_called_once_with(
+                root,
+                plan["git"]["repo"],
+                plan["git"]["head_branch"],
+                plan["git"]["base_branch"],
+                plan["git"]["remote"],
+            )
+            push_branch.assert_not_called()
+            create_pr.assert_not_called()
+            ready_pr.assert_not_called()
+            archive_task.assert_not_called()
+
     def test_pre_move_continuity_rechecks_bindings_already_in_publication_parent(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)

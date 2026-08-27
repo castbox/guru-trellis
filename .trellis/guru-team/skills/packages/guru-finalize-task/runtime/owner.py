@@ -12014,22 +12014,24 @@ def finalization_preview_context(
                                     "publication_head": publication_head,
                                 },
                             )
-                if (
-                    state == "content_pushed"
-                    and prepared.get("metadata_tail") is None
-                    and finalizer_pre_pr_provenance_tail_applies(
-                        root,
-                        plan,
-                        current_transaction,
-                    )
-                ):
-                    state = "reprepare_required"
-                    reprepare_reason_code = FINALIZATION_REPREPARE_PROVENANCE_TAIL
     existing_pr_recovery: dict[str, Any] | None = None
     if not archived and isinstance(plan, dict):
         state, existing_pr_recovery = finalization_existing_pr_recovery_context(
             root, plan, current_transaction, state
         )
+    if (
+        not archived
+        and isinstance(prepared, dict)
+        and state in {"prepared", "content_pushed"}
+        and prepared.get("metadata_tail") is None
+        and finalizer_pre_pr_provenance_tail_applies(
+            root,
+            plan,
+            current_transaction,
+        )
+    ):
+        state = "reprepare_required"
+        reprepare_reason_code = FINALIZATION_REPREPARE_PROVENANCE_TAIL
     plan_ref = (
         f"closeout-plan:{plan['plan_digest']}"
         if archived

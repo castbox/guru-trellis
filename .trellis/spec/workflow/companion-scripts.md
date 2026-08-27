@@ -40,6 +40,11 @@ push the reviewed/publication HEAD or create/reuse a PR themselves. Finalizer
 performs its remote-branch and exact Open-PR preflight before the first new
 remote mutation; an unexpected existing PR, disallowed remote head, or parallel
 publication consumer fails closed instead of being normalized as recovery.
+On initial `publication_ready`, the same preview first classifies an exact
+existing PR, then, only when no PR and no remote branch exist, maps a still
+`prepared` installed plan with no metadata tail to
+`reprepare_required/provenance_metadata_tail`. That decision is read-only: it
+does not push, create a PR, archive, mark Ready, or mutate the Issue.
 
 The Finalizer-owned publication input is ignored-runtime, short-lived authority
 for exact title/body bytes. A provenance `reprepare_required` public DTO remains
