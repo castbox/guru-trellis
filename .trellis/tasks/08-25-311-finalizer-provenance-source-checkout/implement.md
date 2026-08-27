@@ -97,7 +97,7 @@
   调用；fresh/post-bind existing-PR recovery 继续先于 provenance inference。
 - [x] Existing fixture fresh candidate regression：installed verifier contract test 不再从业务 target
   读取 canonical `trellis/skills/**` adapter，改为从 package-local shared runtime 推导；canonical 与
-  dogfood installed verifier 均 `15/15`。
+  dogfood installed verifier 均 `17/17`。
 
 ## 8. Projection And Preset Validation
 
@@ -134,6 +134,15 @@
   credential-safe tests；本步不得运行完整 matrix/throwaway/live install。
 - [x] all-platform preset apply 同步 verifier package projection，运行 source/installed package validator、
   focused tests、byte/mode parity、ownership 与 sidecar-zero。
+- [x] Branch Review finding-fix：保留 preset direct subprocess 的真实 helper/exit identity；补齐 AWS/GCP
+  credential query 参数脱敏；matrix 外 command 与 inventory/ownership/sidecar/capability postcheck 失败
+  生成 `postcheck_failure`，schema 拒绝 failed + null failure。
+- [x] finding-fix fresh local regression：canonical/installed Finalizer 各 `58/58`，canonical/installed
+  verifier 各 `17/17`，preset installer `81/81`，upgrade contract `36/36`，routing `44/44`，ownership
+  `7/7`；source/installed validator、dogfood drift、upstream ownership、task validate、compile/JSON、
+  sidecar-zero 与 `git diff --check` 通过。Finish integration 的 fresh pre-commit rerun因当前 source 尚未
+  形成 clean commit 正确停止于 `provenance_tail_source_not_clean`，必须在 finding-fix commit 后对 exact
+  clean candidate 重跑，不得记为当前通过。
 - [ ] 从上述 finding-fix 生成新的 clean candidate object，在现有 fixture worktree 上重新安装并完成
   fresh Phase 2、finding-fix commit 与 independent fresh-final Branch Review。
 - [ ] 执行 Publication `ready`、Finalizer preview、`reprepare_required`、execute、

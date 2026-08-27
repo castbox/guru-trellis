@@ -32,8 +32,9 @@
   smoke、tag 与 GitHub Release，不把 focused proof表述为 release acceptance。
 - `T311-13`（R311-13）：focused fixtures 分别制造 pre-matrix、确定 matrix cell/command 与 post-matrix
   failure，断言 wrapper/outer owner 在 cleanup 后仍保留 schema-valid bounded facts；unparseable output
-  显式分类，secret markers/credential-bearing remote 不出现在 detail。该测试不执行完整 live matrix，
-  也不对 `cdc55ca9` 进行第 4 次 throwaway。
+  显式分类，failed + null 被 schema 拒绝，matrix 外 command 与 inventory/ownership/sidecar/capability
+  postcheck 均形成确定性 `postcheck_failure`，secret markers/credential-bearing remote 不出现在 detail。
+  该测试不执行完整 live matrix，也不对 `cdc55ca9` 进行第 4 次 throwaway。
 
 证据层级遵循 current Validation Scope Ownership：focused package/runtime 与一个代表性 clean target
 证明 #311 normal path；canonical/projection/reapply/drift证明 managed distribution；external closeout只有在
@@ -42,8 +43,11 @@
 ## Current Phase 2 evidence
 
 - `T311-01..10` 与 `T311-13` 当前 worktree candidate 已通过：canonical/installed Finalizer 各
-  `58/58`，canonical/installed verifier 各 `15/15`，preset installer `81/81`，upgrade contract
-  `35/35`，throwaway routing + ownership `51/51`，Finish family integration `6/6`。
+  `58/58`，canonical/installed verifier 各 `17/17`，preset installer `81/81`，upgrade contract
+  `36/36`，throwaway routing + ownership `51/51`。Finish family integration 的既有 clean candidate
+  `6/6` 证据未被 verifier-only finding-fix 改写；fresh pre-commit rerun因当前 source 尚未形成 clean
+  commit 正确停止于 `provenance_tail_source_not_clean`，必须在 finding-fix commit 后对 exact clean
+  candidate 重跑，不得记为当前通过。
 - source validator 通过 21 packages / 72 commands；installed validator 通过 21 packages / 72
   commands / 4263 managed files，且 conflicts/sidecars 为零。
 - all-platform apply/reapply、dogfood drift、canonical/installed/Shared/Codex/Claude/Cursor byte-mode

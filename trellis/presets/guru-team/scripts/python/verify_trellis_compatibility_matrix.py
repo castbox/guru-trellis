@@ -110,7 +110,7 @@ def _sanitize_failure_tail(value: str) -> str:
         text,
     )
     text = re.sub(
-        r"(?i)([?&](?:token|access_token|api[_-]?key|x-amz-signature|x-goog-signature)=)[^&\s]+",
+        r"(?i)([?&](?:token|access_token|api[_-]?key|awsaccesskeyid|x-amz-(?:credential|signature)|x-goog-(?:credential|signature))=)[^&\s]+",
         r"\1<redacted>",
         text,
     )
@@ -1143,7 +1143,12 @@ def _apply_preset(
         try:
             payload = _require_dict(json.loads(output), "preset result")
         except (json.JSONDecodeError, MatrixError) as exc:
-            raise MatrixError(f"preset returned invalid JSON: {output[-4000:]}") from exc
+            raise MatrixError(
+                f"preset returned invalid JSON: {output[-4000:]}",
+                command_label=_stable_command_label(argv),
+                exit_code=completed.returncode,
+                error_tail=output,
+            ) from exc
         return completed.returncode, output, payload
 
     returncode, output, payload = invoke()
@@ -1154,7 +1159,10 @@ def _apply_preset(
         return {"status": "passed", "reconciled_backups": []}
     if returncode != 2 or previous_root is None or payload.get("status") != "conflict":
         raise MatrixError(
-            f"preset apply failed ({returncode}): {output[-4000:]}"
+            f"preset apply failed ({returncode}): {output[-4000:]}",
+            command_label=_stable_command_label(argv),
+            exit_code=returncode,
+            error_tail=output,
         )
 
     skill_packages = _require_dict(

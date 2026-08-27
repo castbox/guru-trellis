@@ -923,7 +923,9 @@ Focused failure-evidence coverage injects pre-matrix, matrix-cell, and
 post-matrix failures without running the full live matrix. It proves cleanup-safe
 stage/cell/command/exit projection, a 2000-character maximum tail, credential and
 authenticated-remote removal, explicit `unparseable_failure_output`, closed
-schema rejection of extra fields, and retention alongside command hashes/sizes.
+schema rejection of extra fields and `failed` plus null failure, deterministic
+command/inventory/ownership/sidecar/capability `postcheck_failure`, and retention
+alongside command hashes/sizes.
 These fixtures do not satisfy the release-wide matrix owner.
 
 The package-local production corpus contains two real-wrapper cases spanning

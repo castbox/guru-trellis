@@ -37,5 +37,11 @@
         "paths": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "failed"}}, "required": ["status"]},
+      "then": {"properties": {"failure": {"type": "object"}}}
+    }
+  ]
 }

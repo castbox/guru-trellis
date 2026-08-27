@@ -30,6 +30,8 @@ canonical/installed `58/58` regression、source/installed validator、reapply、
 candidate `cdc55ca93bc28934bfaa1c4ba48aeef83baf3277` 的第 3 次且最后一次 throwaway 已进入 default
 matrix，但 exact failure facts 在 cleanup 后丢失；`R311-13/T311-13` 现已用 focused fixtures 完成
 structured failure、stable helper label、outer parsing、closed schema、bounded credential-safe tail 与
-unparseable fallback 验证。必须形成不同 candidate object，才可在现有 fixture 上 fresh 重试完整
+unparseable fallback 验证；Branch Review finding-fix 进一步覆盖 matrix 外 command 与
+inventory/ownership/sidecar/capability `postcheck_failure`、failed + null schema rejection，以及 AWS/GCP
+credential query 参数。必须形成不同 candidate object，才可在现有 fixture 上 fresh 重试完整
 closeout。该未验证项不被 local package validator、旧
 candidate 的 false green 或 #267 release-wide evidence 替代。

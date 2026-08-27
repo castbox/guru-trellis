@@ -406,6 +406,8 @@ class ExtensionVerificationContractTests(unittest.TestCase):
                     "Authorization: Bearer bearer-secret "
                     "GITHUB_TOKEN=environment-secret "
                     "https://example.com/object?X-Goog-Signature=signed-secret "
+                    "https://example.com/object?X-Amz-Credential=aws-access-id%2Fscope "
+                    "https://example.com/object?X-Goog-Credential=gcp-access-id%2Fscope "
                     "-----BEGIN PRIVATE KEY----- private-secret"
                 ),
             },
@@ -432,6 +434,8 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         self.assertNotIn("bearer-secret", failure["error_tail"])
         self.assertNotIn("environment-secret", failure["error_tail"])
         self.assertNotIn("signed-secret", failure["error_tail"])
+        self.assertNotIn("aws-access-id", failure["error_tail"])
+        self.assertNotIn("gcp-access-id", failure["error_tail"])
         self.assertNotIn("private-secret", failure["error_tail"])
 
     def test_throwaway_failure_marks_unparseable_output_explicitly(self) -> None:
@@ -484,6 +488,55 @@ class ExtensionVerificationContractTests(unittest.TestCase):
                 "extension verification execution facts",
             )
         )
+
+    def test_failed_execution_requires_structured_failure(self) -> None:
+        runtime = load_runtime()
+        schema = runtime.extension_verification_recorder_input_schema(
+            REPO,
+            "execution-facts.schema.json",
+            "extension verification execution facts",
+        )
+        facts = load("examples/execution-facts.json")
+        facts["status"] = "failed"
+        facts["failure"] = None
+
+        self.assertTrue(
+            runtime.skill_json_schema_validation_errors(
+                facts,
+                schema,
+                "extension verification execution facts",
+            )
+        )
+
+    def test_postcheck_failures_have_deterministic_structured_facts(self) -> None:
+        runtime = load_runtime()
+        complete_inventory = {"complete": True}
+        current_ownership = {"current_contract": True}
+        no_sidecars = {"paths": []}
+        complete_capability = [{"command_refs": ["command"], "asset_paths": ["asset"]}]
+        cases = (
+            ([], {"complete": False}, current_ownership, no_sidecars, complete_capability, "asset-inventory", 1, "post-matrix"),
+            ([], complete_inventory, {"current_contract": False}, no_sidecars, complete_capability, "ownership-inventory", 1, "post-matrix"),
+            ([], complete_inventory, current_ownership, {"paths": ["artifact.new"]}, complete_capability, "extension-sidecar-scan", 1, "post-matrix"),
+            ([], complete_inventory, current_ownership, no_sidecars, [{"command_refs": [], "asset_paths": []}], "capability-evidence", 1, "post-matrix"),
+            ([{"id": "clone_target", "exit_code": 9}], complete_inventory, current_ownership, no_sidecars, complete_capability, "clone_target", 9, "pre-matrix"),
+        )
+
+        for commands, inventory, ownership, sidecars, capabilities, expected_label, expected_exit, expected_stage in cases:
+            with self.subTest(expected_label=expected_label):
+                failure = runtime.extension_verification_postcheck_failure(
+                    commands,
+                    inventory,
+                    ownership,
+                    sidecars,
+                    capabilities,
+                )
+                self.assertEqual(failure["kind"], "postcheck_failure")
+                self.assertEqual(failure["stage"], expected_stage)
+                self.assertIsNone(failure["cell_id"])
+                self.assertEqual(failure["command_label"], expected_label)
+                self.assertEqual(failure["exit_code"], expected_exit)
+                self.assertTrue(failure["error_tail"])
 
     def test_non_source_rejected_before_executor(self) -> None:
         runtime = load_runtime()

@@ -35,6 +35,12 @@ back to digest/size-only evidence. Credential, token, authenticated remote, and
 environment-secret text is excluded from the tail. This evidence remains owned
 by standalone verification and is never consumed by Finalizer.
 
+A failed standalone command or a failed managed-asset inventory, ownership,
+sidecar, or capability-evidence postcheck produces one deterministic
+`postcheck_failure` with stage, stable command label, exit code, and bounded
+credential-safe tail. Current schemas reject `status=failed` with
+`failure=null`.
+
 ## Semantic Gate And Exits
 
 The AI owns capability selection, adequacy, findings, and the final route.

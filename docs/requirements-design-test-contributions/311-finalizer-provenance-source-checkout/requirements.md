@@ -34,7 +34,9 @@ shared current 仍由 expected `.40` 的 serialized promotion owner 单写。
 - `R311-13`：standalone extension verification 失败时，必须在 temporary workspace cleanup 前保留
   schema-valid 的 failure stage、适用的 matrix cell、稳定 command label、exit code 与 bounded error
   tail；现有 stdout/stderr hash/size 继续保留。failure detail 不得包含 credential、token、认证 remote
-  或环境 secret。该 evidence 只服务 #311 normal closeout 诊断，不进入 Finalizer lifecycle authority。
+  或环境 secret。任何 failed execution 均不得保留 null failure；matrix 外 command、asset inventory、
+  ownership、sidecar 或 capability postcheck 失败必须形成确定性的 `postcheck_failure`。该 evidence 只
+  服务 #311 normal closeout 诊断，不进入 Finalizer lifecycle authority。
 
 本 contribution 不修改 playable-ads-guru #29，不重开或关闭 #191/#195/#267/#275，不改变
 Finalizer public I/O，也不建立 legacy fallback、dual-read、shared source resolver 或 Finalizer-to-verifier

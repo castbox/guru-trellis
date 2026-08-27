@@ -41,7 +41,8 @@
   structured failure；throwaway wrapper 透传该终态，`guru-verify-extension-installation` outer owner 在
   cleanup 前解析并绑定到 command evidence。schema/example/tests 同步收敛，无法解析的 failure output
   显式分类，不静默退化为 hash-only。成功路径、asset inventory、capability 与 Finalizer verifier-zero
-  dependency 保持不变。
+  dependency 保持不变；matrix 外 command 或 inventory/ownership/sidecar/capability postcheck 失败以
+  `postcheck_failure` 收敛，failed execution 禁止 null failure。
 
 架构 before/after、required concerns 与 compatibility exit 由
 `docs/architecture/contributions/311-finalizer-provenance-source-checkout.md` 和 ADR-007拥有；本文只承接

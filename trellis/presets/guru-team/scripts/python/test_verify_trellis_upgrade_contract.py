@@ -460,6 +460,8 @@ exit 23
                 "github_pat_SECRET\nAuthorization: Bearer bearer-secret\n"
                 "GITHUB_TOKEN=environment-secret\n"
                 "https://example.com/object?X-Amz-Signature=signed-secret\n"
+                "https://example.com/object?X-Amz-Credential=aws-access-id%2Fscope\n"
+                "https://example.com/object?X-Goog-Credential=gcp-access-id%2Fscope\n"
                 "-----BEGIN PRIVATE KEY-----\nprivate-secret\n"
                 "-----END PRIVATE KEY-----\n"
                 + ("x" * 3000)
@@ -478,6 +480,8 @@ exit 23
         self.assertNotIn("bearer-secret", serialized)
         self.assertNotIn("environment-secret", serialized)
         self.assertNotIn("signed-secret", serialized)
+        self.assertNotIn("aws-access-id", serialized)
+        self.assertNotIn("gcp-access-id", serialized)
         self.assertNotIn("private-secret", serialized)
 
     def test_matrix_command_label_uses_the_invoked_helper_not_temporary_paths(self) -> None:
@@ -988,6 +992,38 @@ exit 23
 
             self.assertEqual(invocation_count.read_text(), "1")
             self.assertEqual(Path(str(target / relative) + ".new").read_text(), "candidate\n")
+
+    def test_preset_subprocess_failure_preserves_command_and_exit_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source"
+            target = root / "target"
+            installer = (
+                source
+                / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"
+            )
+            installer.parent.mkdir(parents=True)
+            installer.write_text(
+                "import json\n"
+                "print(json.dumps({'status': 'failed'}))\n"
+                "raise SystemExit(9)\n",
+                encoding="utf-8",
+            )
+
+            with self.assertRaises(self.matrix.MatrixError) as raised:
+                self.matrix._apply_preset(
+                    source,
+                    target,
+                    "codex",
+                    root / "preset.log",
+                )
+
+            self.assertEqual(
+                raised.exception.command_label,
+                "apply_guru_team_trellis_preset.py",
+            )
+            self.assertEqual(raised.exception.exit_code, 9)
+            self.assertIn('"status": "failed"', raised.exception.error_tail)
 
     def test_cli_install_and_upgrade_stay_in_disposable_prefix(self) -> None:
         self.assertIn('TRELLIS_CLI_PREFIX="$WORK_DIR/trellis-cli-prefix"', self.text)

@@ -1413,6 +1413,9 @@ bounded credential-safe error tail. The throwaway wrapper passes this terminal
 through. The standalone verifier parses it inside the temporary-directory
 lifecycle and records `unparseable_failure_output` when the terminal is absent
 or malformed; stdout/stderr hashes and sizes do not substitute for these facts.
+Nonzero standalone setup commands and failed asset-inventory, ownership,
+sidecar, or capability-evidence postchecks record `postcheck_failure`; a failed
+execution cannot retain a null failure object.
 
 The recorder consumes execution facts plus the completed AI adequacy/findings/
 redaction review and writes only ignored source-session owner state. The checker

@@ -133,9 +133,12 @@ on verifier state.
   authority、dual writer、public route 或 closed GAP regression。
 - Current candidate evidence：canonical/installed Finalizer 各 `58/58`（包括首次 Publication、无 existing
   plan 的 target-repo binding，以及无 remote branch/PR 的 prepared-state provenance regression），
-  canonical/installed verifier 各 `15/15`，preset installer `81/81`，upgrade contract `35/35`，
-  throwaway routing + ownership `51/51`，Finish family integration `6/6`；source/installed validators 分别
-  验证 21 packages / 72 commands 与 21 packages / 72 commands / 4263 managed files。all-platform
+  canonical/installed verifier 各 `17/17`，preset installer `81/81`，upgrade contract `36/36`，
+  throwaway routing + ownership `51/51`；source/installed validators 分别验证 21 packages / 72 commands
+  与 21 packages / 72 commands / 4263 managed files。Finish family integration 的既有 clean candidate
+  `6/6` 证据未被 verifier-only finding-fix 改写；fresh pre-commit rerun因当前 source 尚未形成 clean
+  commit 正确停止于 `provenance_tail_source_not_clean`，必须在 finding-fix commit 后对 exact clean
+  candidate 重跑，不得记为当前通过。all-platform
   reapply、dogfood drift、canonical/installed/platform byte-mode parity、recursive sidecar-zero、task
   validation、local-link、code-fence、terminology/cross-SSOT semantic review 与 `git diff --check` 均通过。
 - Phase 2 result：`pass` / `blocking=true`。完整 worktree candidate 只建立一个 package-local owner，

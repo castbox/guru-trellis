@@ -751,7 +751,7 @@ def extension_verification_sanitize_failure_tail(value: str) -> str:
         text,
     )
     text = re.sub(
-        r"(?i)([?&](?:token|access_token|api[_-]?key|x-amz-signature|x-goog-signature)=)[^&\s]+",
+        r"(?i)([?&](?:token|access_token|api[_-]?key|awsaccesskeyid|x-amz-(?:credential|signature)|x-goog-(?:credential|signature))=)[^&\s]+",
         r"\1<redacted>",
         text,
     )
@@ -930,6 +930,70 @@ def extension_verification_asset_inventory_summary(
         "relation_errors": relation_errors,
         "complete": complete,
     }
+
+def extension_verification_postcheck_failure(
+    commands: Sequence[Mapping[str, Any]],
+    asset_inventory: Mapping[str, Any],
+    ownership: Mapping[str, Any],
+    sidecars: Mapping[str, Any],
+    capabilities: Sequence[Mapping[str, Any]],
+) -> dict[str, Any] | None:
+    for command in commands:
+        exit_code = command.get("exit_code")
+        command_id = command.get("id")
+        if (
+            isinstance(exit_code, int)
+            and not isinstance(exit_code, bool)
+            and exit_code != 0
+            and isinstance(command_id, str)
+            and re.fullmatch(r"[A-Za-z0-9._:-]+", command_id)
+        ):
+            return {
+                "kind": "postcheck_failure",
+                "stage": "pre-matrix",
+                "cell_id": None,
+                "command_label": command_id,
+                "exit_code": exit_code,
+                "error_tail": extension_verification_sanitize_failure_tail(
+                    f"Standalone verification command {command_id} exited {exit_code}."
+                ),
+            }
+    checks = (
+        (
+            asset_inventory.get("complete") is not True,
+            "asset-inventory",
+            "Installed managed asset inventory is incomplete.",
+        ),
+        (
+            ownership.get("current_contract") is not True,
+            "ownership-inventory",
+            "Extension source ownership inventory is not current.",
+        ),
+        (
+            bool(sidecars.get("paths")),
+            "extension-sidecar-scan",
+            "Extension source contains unresolved .new or .bak sidecars.",
+        ),
+        (
+            any(
+                not item.get("command_refs") or not item.get("asset_paths")
+                for item in capabilities
+            ),
+            "capability-evidence",
+            "Selected capability lacks command or installed asset evidence.",
+        ),
+    )
+    for failed, command_label, message in checks:
+        if failed:
+            return {
+                "kind": "postcheck_failure",
+                "stage": "post-matrix",
+                "cell_id": None,
+                "command_label": command_label,
+                "exit_code": 1,
+                "error_tail": extension_verification_sanitize_failure_tail(message),
+            }
+    return None
 
 def extension_verification_installed_asset_facts(
     source_checkout: Path,
@@ -2195,6 +2259,14 @@ def extension_verification_execute_facts(
             commands,
             installed_asset_digests,
         )
+    if status == "failed" and failure is None:
+        failure = extension_verification_postcheck_failure(
+            commands,
+            asset_inventory,
+            ownership,
+            sidecars,
+            capabilities,
+        )
     return {
         "schema_version": EXTENSION_VERIFICATION_SCHEMA_VERSION,
         "target_repository": {
@@ -2230,7 +2302,9 @@ def extension_verification_sensitive_text(value: Any) -> bool:
         "x-access-token:",
         "-----BEGIN PRIVATE KEY-----",
         "X-Amz-Signature=",
+        "X-Amz-Credential=",
         "X-Goog-Signature=",
+        "X-Goog-Credential=",
     )
     return (
         bool(explicit_marker and explicit_marker in text)

@@ -23,4 +23,6 @@ cell id, stable command label, exit code, and a bounded credential-safe error
 tail. Preserve them in execution facts before the temporary lifecycle exits.
 Malformed terminal output is recorded explicitly as
 `unparseable_failure_output`; aggregate stdout/stderr digests remain present but
-never replace the structured failure facts.
+never replace the structured failure facts. A failed command or a failed
+inventory, ownership, sidecar, or capability postcheck likewise records one
+deterministic `postcheck_failure`; `status=failed` never carries `failure=null`.
