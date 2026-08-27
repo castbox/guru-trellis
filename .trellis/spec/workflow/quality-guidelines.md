@@ -982,6 +982,14 @@ closure is twenty-one active Skills and 89 exits; business global markers remain
 invokes, 87 exits, 33 workflow targets, and 21 stop targets. Upstream Finish
 assets remain unchanged.
 
+Installed package tests must execute in a clean business repository that does
+not contain the canonical `trellis/**` source tree. In a source repository, the
+Finalizer schema regression asserts the package-local current schema, canonical
+workflow schema, and dogfood installed shared schema. In an installed business
+repository, it asserts the package-local and target installed shared schemas and
+also proves the canonical workflow schema path is absent; installed tests must
+not read or otherwise depend on that source-only path.
+
 ## Base Evolution Gate Quality
 
 Source and installed contract tests cover all six

@@ -2876,26 +2876,35 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     self.assertEqual(alias.is_valid(instance), expected)
                     self.assertEqual(explicit.is_valid(instance), expected)
 
-    def test_current_closeout_projection_requires_retired_paths_without_mutating_legacy(self) -> None:
+    def test_current_closeout_projection_respects_source_and_installed_layouts_without_mutating_legacy(self) -> None:
         current = load("schemas/closeout-plan.schema.json")
         repo_root = next(
             parent for parent in (PACKAGE, *PACKAGE.parents) if (parent / ".git").exists()
         )
-        workflow_current = json.loads(
-            (repo_root / "trellis/workflows/guru-team/schemas/closeout-plan.schema.json").read_text(
-                encoding="utf-8"
-            )
+        workflow_schema_path = (
+            repo_root / "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
         )
-        installed_current = json.loads(
-            (repo_root / ".trellis/guru-team/schemas/closeout-plan.schema.json").read_text(
-                encoding="utf-8"
-            )
+        installed_schema_path = (
+            repo_root / ".trellis/guru-team/schemas/closeout-plan.schema.json"
         )
+        current_schemas = [current]
+        if workflow_schema_path.exists():
+            self.assertTrue(installed_schema_path.is_file())
+            current_schemas.extend(
+                json.loads(path.read_text(encoding="utf-8"))
+                for path in (workflow_schema_path, installed_schema_path)
+            )
+        else:
+            self.assertFalse(workflow_schema_path.exists())
+            self.assertTrue(installed_schema_path.is_file())
+            current_schemas.append(
+                json.loads(installed_schema_path.read_text(encoding="utf-8"))
+            )
         legacy_path = PACKAGE / "schemas/closeout-plan-3.0.schema.json"
         legacy = load("schemas/closeout-plan-3.0.schema.json")
 
         self.assertEqual(current["properties"]["schema_version"]["const"], "4.0")
-        for schema in (current, workflow_current, installed_current):
+        for schema in current_schemas:
             projection = schema["properties"]["projection"]
             self.assertIn("retired_tracked_paths", projection["required"])
             self.assertIn("retired_tracked_paths", projection["properties"])

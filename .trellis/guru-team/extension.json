@@ -404,11 +404,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-26T23:58:24Z",
+  "installed_at": "2026-08-27T02:23:37Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "d907fcc5e17f23b6499648e5e9a208457f2d6f8b",
-    "commit": "d907fcc5e17f23b6499648e5e9a208457f2d6f8b",
+    "ref": "bccf69484212c4294ee9a77f8761d595a0562f6a",
+    "commit": "bccf69484212c4294ee9a77f8761d595a0562f6a",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -497,7 +497,7 @@
       ".trellis/spec/workflow/skill-package-contract.md": "6741e31b4867782e14cde45106dce4c98f582976663d3993ad21ee2f514c51ca",
       ".trellis/spec/workflow/data-contracts.md": "913acbe3a5317ed69289dff52d22054561691b053801423d0fec02171addf69f",
       ".trellis/spec/workflow/companion-scripts.md": "0c1925b5844edea53c1894e742a4ce5b3553e2ca62ecad6673daf823e930e564",
-      ".trellis/spec/workflow/quality-guidelines.md": "94830209093be33c17676a0fbb83119fa6db23cc017c27c164ce33f0a1dc7f47"
+      ".trellis/spec/workflow/quality-guidelines.md": "3c191480769440247eb8ed823a27ac6607428928d77540f846c4e195e2a41262"
     },
     "new_copies": [],
     "managed_backups": [],
@@ -616,7 +616,7 @@
       {
         "id": "guru-finalize-task",
         "interface_sha256": "966406e679fd4a7ed9acc6090c54568018c8287cad402f9f0a0017cb9c66d2c6",
-        "tree_sha256": "b6e51b2a0fecf78aebe8fac3dda09596570d4d88bd43c78624f92458ec5ae481"
+        "tree_sha256": "4e64d68548972bb1dd239e7ad0b1b6f193604be510668f267c5d059f9e2871d4"
       },
       {
         "id": "guru-merge-task-pr",
@@ -7340,7 +7340,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
-        "sha256": "15e9d36dc784f8b65cb1e4cee1d8f4ed39429122f506a5a1d244a66f6e89a34b",
+        "sha256": "6ded52975281ca824e5bbca264790e6d38510a9e539d51672deea2f7f90ba0d3",
         "executable": false,
         "action": "unchanged"
       },
