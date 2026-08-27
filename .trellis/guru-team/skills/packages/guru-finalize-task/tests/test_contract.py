@@ -1366,9 +1366,16 @@ class FinalizeTaskContractTests(unittest.TestCase):
             GTT.run_stdout(["git", "remote", "add", "origin", str(remote)], cwd=root)
 
             source_root = PACKAGE.parents[4]
-            shutil.copytree(source_root / ".trellis/scripts", root / ".trellis/scripts")
+            shutil.copytree(
+                source_root / ".trellis/scripts",
+                root / ".trellis/scripts",
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+            )
             (root / ".trellis/config.yaml").write_text("{}\n", encoding="utf-8")
-            (root / ".gitignore").write_text(".trellis/.runtime/\n", encoding="utf-8")
+            (root / ".gitignore").write_text(
+                "__pycache__/\n*.py[cod]\n.trellis/.runtime/\n",
+                encoding="utf-8",
+            )
             GTT.run_stdout(["git", "branch", "-M", "feat/208"], cwd=root)
 
             old_task = root / ".trellis/tasks/archive/2026-08/old-ready-task"

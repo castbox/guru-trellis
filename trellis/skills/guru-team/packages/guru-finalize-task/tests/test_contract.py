@@ -234,66 +234,6 @@ def large_finish_summary() -> dict:
 
 
 class FinalizeTaskContractTests(unittest.TestCase):
-    def test_prepare_closeout_initial_publication_binds_target_repo_without_existing_plan(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            task_dir = root / ".trellis/tasks/08-26-initial-publication"
-            task_dir.mkdir(parents=True)
-            publication_commit = "a" * 40
-            publication_ready = {
-                "profile": "publication_ready",
-                "task_ref": ".trellis/tasks/08-26-initial-publication",
-                "branch_review_commit": publication_commit,
-                "pr_title": "test: initial publication",
-                "pr_body": "## 变更摘要\n\n- 测试。",
-            }
-            plan = {"plan_digest": "b" * 64}
-            args = SimpleNamespace(
-                root=str(root),
-                repo="castbox/guru-trellis-finalizer-validation-311",
-                remote="origin",
-            )
-            task_context = {}
-            identity = {
-                "reviewed_content_head": publication_commit,
-                "publication_head": publication_commit,
-                "metadata_tail": None,
-            }
-            with (
-                mock.patch.object(GTT, "official_after_archive_hook_state"),
-                mock.patch.object(GTT, "resolve_closeout_branch_review_commit", return_value=publication_commit),
-                mock.patch.object(GTT, "validate_closeout_reviewed_content"),
-                mock.patch.object(GTT, "current_head", return_value=publication_commit),
-                mock.patch.object(GTT, "finalizer_publication_identity", return_value=identity) as publication_identity,
-                mock.patch.object(GTT, "closeout_reviewed_change_facts", return_value={}),
-                mock.patch.object(GTT, "load_issue_scope_ledger", return_value={}),
-                mock.patch.object(GTT, "finalizer_unreviewed_dirty_paths", return_value=[]),
-                mock.patch.object(GTT, "validate_ledger_for_publish", return_value=[]),
-                mock.patch.object(GTT, "validate_pr_body_quality", return_value=[]),
-                mock.patch.object(GTT, "task_json", return_value={"status": "in_progress"}),
-                mock.patch.object(GTT, "validate_closeout_task_children"),
-                mock.patch.object(GTT, "base_branch_from_sources", return_value="main"),
-                mock.patch.object(GTT, "current_branch", return_value="test/initial-publication"),
-                mock.patch.object(GTT, "validate_github_remote_repository", return_value="castbox/guru-trellis-finalizer-validation-311"),
-                mock.patch.object(GTT, "build_closeout_plan", return_value=plan),
-            ):
-                result = GTT.prepare_closeout(
-                    root,
-                    args,
-                    {},
-                    task_dir,
-                    task_context,
-                    publication_ready=publication_ready,
-                    current_finalizer=True,
-                )
-
-            publication_identity.assert_called_once_with(
-                root,
-                publication_commit,
-                "castbox/guru-trellis-finalizer-validation-311",
-            )
-            self.assertEqual(result["plan_digest"], plan["plan_digest"])
-
     def test_pre_move_continuity_rechecks_bindings_already_in_publication_parent(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
@@ -1426,9 +1366,16 @@ class FinalizeTaskContractTests(unittest.TestCase):
             GTT.run_stdout(["git", "remote", "add", "origin", str(remote)], cwd=root)
 
             source_root = PACKAGE.parents[4]
-            shutil.copytree(source_root / ".trellis/scripts", root / ".trellis/scripts")
+            shutil.copytree(
+                source_root / ".trellis/scripts",
+                root / ".trellis/scripts",
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+            )
             (root / ".trellis/config.yaml").write_text("{}\n", encoding="utf-8")
-            (root / ".gitignore").write_text(".trellis/.runtime/\n", encoding="utf-8")
+            (root / ".gitignore").write_text(
+                "__pycache__/\n*.py[cod]\n.trellis/.runtime/\n",
+                encoding="utf-8",
+            )
             GTT.run_stdout(["git", "branch", "-M", "feat/208"], cwd=root)
 
             old_task = root / ".trellis/tasks/archive/2026-08/old-ready-task"

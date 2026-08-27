@@ -1,7 +1,0 @@
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"读取 installed manifest、Finalizer reviewed/publication identity 与 provenance-tail contract。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"实现双 checkout deterministic executor、pre-PR ordering 与 failure boundary。"}
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"保持 Finalizer package-local ownership、verifier isolation 与稳定 public exits。"}
-{"file":".trellis/spec/preset/installer.md","reason":"保持 canonical source provenance、managed apply、reapply 与 sidecar contract。"}
-{"file":".trellis/spec/docs/public-docs.md","reason":"同步 installed operator contract 与 source/target checkout 说明。"}
-{"file":".trellis/spec/architecture/baseline-usage.md","reason":"落实 task-owned Architecture contribution、ADR 与 serialized promotion。"}
-{"file":".trellis/spec/docs/requirements-design-test-ssot.md","reason":"落实 task-owned RDT delta、traceability 与 shared-current promotion boundary。"}

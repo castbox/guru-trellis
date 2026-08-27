@@ -7272,10 +7272,6 @@ def prepare_closeout(
     publication_commit = str(
         publication_ready.get("branch_review_commit") or ""
     ) if publication_ready is not None else ""
-    target_repo = normalize_github_repository(
-        str(args.repo or config.get("github_repo") or "").strip()
-        or infer_github_repo(root)
-    )
     if (
         existing_plan is not None
         and publication_ready is not None
@@ -7283,7 +7279,10 @@ def prepare_closeout(
         != str(existing_plan.get("git", {}).get("branch_review_commit") or "")
     ):
         prospective_git = {
-            "repo": target_repo,
+            "repo": normalize_github_repository(
+                str(args.repo or config.get("github_repo") or "").strip()
+                or infer_github_repo(root)
+            ),
             "remote": str(args.remote or publish_config(config).get("remote") or "origin"),
             "base_branch": base_branch_from_sources(args, task_json(task_dir), task_context),
             "head_branch": current_branch(root),
@@ -7338,7 +7337,7 @@ def prepare_closeout(
     publication_identity = finalizer_publication_identity(
         root,
         branch_review_commit,
-        target_repo,
+        prospective_git.get("repo"),
     )
     review_facts = closeout_reviewed_change_facts(
         root,
