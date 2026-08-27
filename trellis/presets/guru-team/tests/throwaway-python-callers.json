@@ -1356,12 +1356,12 @@
       "ordinal": 1
     },
     {
-      "id": "package-runtime-python_subprocess_second_hop-004063a10598",
+      "id": "package-runtime-python_subprocess_second_hop-f16c2314ce2a",
       "owner": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
-      "anchor_sha256": "004063a10598f725ebd26e7a0e373c7b5f3828f5b07ef03daee7a1347a8a5f44",
+      "anchor_sha256": "f16c2314ce2a58849f85dbaa00ebe495a6be7171d275b3c682acdc9ee38de6c3",
       "ordinal": 1
     },
     {
