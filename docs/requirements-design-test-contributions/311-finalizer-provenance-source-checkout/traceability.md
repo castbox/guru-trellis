@@ -32,8 +32,10 @@ matrix，但 exact failure facts 在 cleanup 后丢失；`R311-13/T311-13` 现�
 structured failure、stable helper label、outer parsing、closed schema、bounded credential-safe tail 与
 unparseable fallback 验证；Branch Review finding-fix 进一步覆盖 matrix 外 command 与
 inventory/ownership/sidecar/capability `postcheck_failure`、failed + null schema rejection，以及 AWS/GCP
-credential query 参数。必须形成不同 candidate object，才可在现有 fixture 上 fresh 重试完整
-closeout。`ff1ace8950f127326b7524e0120ed4032f6c1aef` 后的 local Finish integration 已继续暴露并修复
-过期单段 harness 与 absent-remote executor preflight；canonical/installed Finalizer 当前各 `59/59`，
-但完整 integration 仍等待下一 clean candidate。该未验证项不被 local package validator、旧
-candidate 的 false green 或 #267 release-wide evidence 替代。
+credential query 参数。`ff1ace8950f127326b7524e0120ed4032f6c1aef` 后的 local Finish integration 已继续暴露并修复
+过期单段 harness 与 absent-remote executor preflight；clean candidate
+`b1d6fc00bed7c933b2b9613c5e6a8cfae604f9a5` 的本地完整 integration 又定位 terminal public-input
+harness，并在复用原始 `publication_ready` 输入与第二轮 gate 精确 retired locator 后通过。该本地
+fake-GitHub 证据不替代现有真实 fixture 的 fresh reinstall、Branch Review 与 GitHub
+Publication/Finalizer；该 external 未验证项也不被 local package validator、旧 candidate 的 false green
+或 #267 release-wide evidence 替代。

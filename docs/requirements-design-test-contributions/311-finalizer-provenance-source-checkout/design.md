@@ -23,7 +23,9 @@
   binding contract。preview 先执行 side-effect-free existing-PR classification；无 PR 且初始 state 为
   `prepared` 时，再以同一 detector 映射 provenance reprepare。首次 reprepare preflight 接受 absent remote
   或精确 reviewed head，仅拒绝非空且不匹配的 remote head；fresh/post-bind recovery 均在 source resolution
-  之前保持优先级。
+  之前保持优先级。archive 后 terminal public invoke 复用原始 `publication_ready` 输入中的 PR title/body
+  authority，并消费第二轮 gate 的精确 retired locator；`reprepare_preview` 只负责第二轮 plan/gate，不作为
+  archive 后 terminal input。
 - `D311-08`：source checkout 与 target checkout 分别 cleanup；任一失败均不触碰 caller/sibling
   worktree，不产生 public新 exit，也不继续远端 mutation。
 

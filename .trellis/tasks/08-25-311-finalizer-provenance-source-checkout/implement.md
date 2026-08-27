@@ -149,6 +149,13 @@
   remote 等于 reviewed head。source preflight 已改为仅接受 absent remote 或精确 reviewed head，非空 drift
   仍 fail closed；canonical/installed Finalizer 各 `59/59`，apply/validator/parity/sidecar-zero 通过。完整
   integration 必须在本轮 finding-fix 形成下一 clean commit 后重跑。
+- [x] absent-remote finding-fix commit `b1d6fc00bed7c933b2b9613c5e6a8cfae604f9a5` 后 reapply 绑定 clean
+  source provenance。完整 Finish integration 第一次暴露 harness 中已删除的 `finalization_input_rel`，第二次
+  暴露 archive 后误用 `reprepare_preview` 导致其旧 `publication_head` 正确返回
+  `finalization_stale`；最终修正为 terminal public invoke 复用原始 `publication_ready` 输入并消费第二轮
+  gate 的精确 retired locator。Finalizer terminal projection 定点测试、all-platform installer 投影测试及
+  第 3 次且最后一次本地完整 integration 均通过（`Ran 1 test in 378.336s, OK`）；本轮不得第 4 次完整
+  integration。
 - [ ] 从上述 finding-fix 生成新的 clean candidate object，在现有 fixture worktree 上重新安装并完成
   fresh Phase 2、finding-fix commit 与 independent fresh-final Branch Review。
 - [ ] 执行 Publication `ready`、Finalizer preview、`reprepare_required`、execute、
@@ -177,7 +184,8 @@
   recorder、checker 与 public wrapper 返回 `passed`，未复用旧 checkpoint。
 - [x] 使用 `guru-create-task-commit` 创建 finding-fix commit
   `ff1ace8950f127326b7524e0120ed4032f6c1aef`，只 stage 当轮 #311 文件。
-- [ ] 当前 absent-remote finding-fix 重新执行 fresh Architecture/RDT/Phase 2 后创建 exact revision commit。
+- [ ] 当前 terminal public-invoke harness finding-fix 重新执行 fresh Architecture/RDT/Phase 2 后创建 exact
+  revision commit。
 - [ ] 独立 Branch Review 覆盖 `origin/main...HEAD` 完整 committed diff，P0-P3 open finding 为零。
 - [ ] Architecture/RDT contribution 经独立 review 后执行 expected `.40` serialized promotion；
   promotion delta 重新进入 Phase 2、task commit 与 Branch Review。

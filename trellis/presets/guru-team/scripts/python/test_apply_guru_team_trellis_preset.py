@@ -2172,6 +2172,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("def write_semantic_review(typed_exit: str)", installed_closeout)
         self.assertIn('write_semantic_review("reprepare_required")', installed_closeout)
         self.assertIn('write_semantic_review("ready_for_merge")', installed_closeout)
+        self.assertIn(
+            '"--input",\n        finalization_input.relative_to(root).as_posix(),',
+            installed_closeout,
+        )
         self.assertNotIn("verification_required", installed_closeout)
         self.assertIn('root.rglob("marketplace-verification.json")', installed_closeout)
         self.assertNotIn("copytree", installed_closeout)

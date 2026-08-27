@@ -1167,7 +1167,7 @@ def run_closeout(
     public_invoke = [
         str(wrappers["invoke"]),
         "--input",
-        finalization_input_rel,
+        finalization_input.relative_to(root).as_posix(),
     ]
     ready_payload = json.loads(
         run([*public_invoke, "--owner-result", gate_rel], root, env=env).stdout

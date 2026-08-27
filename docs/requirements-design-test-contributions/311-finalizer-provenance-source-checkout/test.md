@@ -28,7 +28,8 @@
   recursive `.new`/`.bak`/unknown-sidecar scan全部通过。
 - `T311-11`（R311-12）：经单独 GitHub mutation授权的 disposable business closeout覆盖 Publication
   `ready`、preview `reprepare_required`、execute、`reprepare_preview`、唯一 Draft PR、archive、Ready与
-  archive 后 `ready_for_merge`；重复 invoke不产生新 mutation。
+  archive 后 `ready_for_merge`；terminal invoke 使用原始 `publication_ready` 输入与第二轮 gate 的精确
+  retired locator，重复 invoke不产生新 mutation。
 - `T311-12`（R311-12）：任务报告明确列出未运行的 #267 release-wide multi-platform matrix、tag-pinned
   smoke、tag 与 GitHub Release，不把 focused proof表述为 release acceptance。
 - `T311-13`（R311-13）：focused fixtures 分别制造 pre-matrix、确定 matrix cell/command 与 post-matrix
@@ -45,12 +46,11 @@
 
 - `T311-01..10` 与 `T311-13` 当前 worktree candidate 已通过：canonical/installed Finalizer 各
   `59/59`，canonical/installed verifier 各 `17/17`，preset installer `81/81`，upgrade contract
-  `36/36`，throwaway routing + ownership `51/51`。Finish family integration 的既有 clean candidate
-  `6/6` 证据未被 verifier-only finding-fix 改写；fresh pre-commit rerun因当前 source 尚未形成 clean
-  commit 正确停止于 `provenance_tail_source_not_clean`。`ff1ace8950f127326b7524e0120ed4032f6c1aef`
-  commit 后的 clean-manifest run 进一步暴露 compatibility harness 仍跳过 `reprepare_required`，修正为两段
-  gate/execute 后又暴露 executor 错误拒绝 absent remote；source 已修复 preflight 并补齐正负回归。完整
-  integration 必须在本轮 finding-fix 形成下一 clean commit 后重跑，不得记为当前通过。
+  `36/36`，throwaway routing + ownership `51/51`。clean candidate
+  `b1d6fc00bed7c933b2b9613c5e6a8cfae604f9a5` reapply 后的本地完整 Finish integration 依次定位
+  harness 的未定义旧变量与 archive 后错误 `reprepare_preview` 输入；修正为原始 `publication_ready`
+  输入加第二轮 gate 精确 retired locator 后，第 3 次且最后一次运行通过（`Ran 1 test in 378.336s,
+  OK`）。本轮不再执行第 4 次完整 integration。
 - source validator 通过 21 packages / 72 commands；installed validator 通过 21 packages / 72
   commands / 4263 managed files，且 conflicts/sidecars 为零。
 - all-platform apply/reapply、dogfood drift、canonical/installed/Shared/Codex/Claude/Cursor byte-mode
@@ -81,8 +81,10 @@
   throwaway。`T311-13` finding-fix 现已通过 focused pre-matrix/matrix-cell/post-matrix、stable helper
   command label、schema 5.0、outer parse/unparseable、2000-character bound、Authorization/env/signature
   URL/private-key credential redaction 测试；`ff1ace8950f127326b7524e0120ed4032f6c1aef` 后的 local Finish
-  integration 已继续定位并修复过期单段 harness 与 absent-remote executor preflight，canonical/installed
-  Finalizer 当前各 `59/59`。完整 integration 仍需下一 clean candidate，不得回退重试旧 candidate。
+  integration 已继续定位并修复过期单段 harness 与 absent-remote executor preflight，随后
+  `b1d6fc00bed7c933b2b9613c5e6a8cfae604f9a5` clean candidate 的本地完整 integration 在 terminal
+  public-input harness 修复后通过。该本地 fake-GitHub 证据不替代现有真实 fixture 的 fresh reinstall、
+  Branch Review 与 GitHub Publication/Finalizer，因此 `T311-11` 仍为 `unverified`。
   `T311-12` 保持边界声明：#267 release-wide matrix、tag-pinned smoke、tag 与 GitHub Release 均未运行。
 - contribution 仍是 `candidate_pending_review`；本摘要不是 independent committed full-diff review、
   serialized promotion、Publication 或 Acceptance/Finish 证据。
