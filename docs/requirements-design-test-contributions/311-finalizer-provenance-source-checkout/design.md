@@ -30,7 +30,8 @@
 
 - `D311-09`：semantic source 只在 canonical Finalizer package、直接 owning specs/README 与 preset
   source中修改；all-platform preset apply 生成 dogfood/Shared/Codex/Claude/Cursor copies，生成副本不反向
-  成为 source。
+  成为 source。package tests 通过当前 package root 定位 shared runtime/adapter，使同一测试在
+  canonical 与 installed layout 中成立，不建立对 target canonical source tree 的隐式依赖。
 - `D311-10`：installer 继续独占 installed manifest provenance production；Finalizer只消费并为当前
   tail重放 canonical apply。verifier 仍是 standalone source-repository lifecycle owner，与 business
   Finalizer 零依赖。

@@ -95,6 +95,8 @@ Live authority：<https://github.com/castbox/guru-trellis/issues/311>。
   不得反向成为 source。
 - source/installed package graph、interface/schema/command、mode、managed provenance、reapply、
   drift 与 sidecar-zero 必须保持一致。
+- installed package contract tests 必须只从当前 package/shared installed runtime 推导依赖路径，不得
+  读取业务 target 不存在的 canonical `trellis/**` source tree。
 
 ### R6. 回归覆盖
 

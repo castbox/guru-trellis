@@ -21,7 +21,8 @@
   regression通过；首次 Publication 在没有 existing plan 时仍绑定 target repo 并在首次 preview 识别
   required tail；静态与 runtime fixture 的 verifier package/wrapper/command/artifact call count均为零。
 - `T311-09`（R311-09/11）：canonical package tests、installed package tests、source/installed validators、
-  contract/eval/registry/manifest checks、Shared/Codex/Claude/Cursor byte/mode parity通过。
+  contract/eval/registry/manifest checks、Shared/Codex/Claude/Cursor byte/mode parity通过；installed verifier
+  test 在不含 canonical `trellis/**` 的 business fixture 中仍能从 package-local shared adapter 运行。
 - `T311-10`（R311-11）：all-platform preset apply 和第二次 reapply idempotent；dogfood drift、ownership、
   recursive `.new`/`.bak`/unknown-sidecar scan全部通过。
 - `T311-11`（R311-12）：经单独 GitHub mutation授权的 disposable business closeout覆盖 Publication

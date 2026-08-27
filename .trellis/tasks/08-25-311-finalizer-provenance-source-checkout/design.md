@@ -209,6 +209,11 @@ Publication ready -> preview -> reprepare_required -> execute
 fixture 必须断言 apply executable 来自 extension source checkout，所有 target mutation 位于 business
 checkout，Finalizer verifier call count 为零。
 
+同一 installed business fixture 还必须直接运行 installed
+`guru-verify-extension-installation/tests/test_contract.py`。测试内共享 eval adapter 等依赖只能从当前
+package root 推导，不得硬编码 canonical `trellis/skills/**`；否则即使 source checkout 测试通过，也
+必须视为 installed layout regression。
+
 ### 7.3 Representative closeout
 
 在 disposable GitHub business repository 执行一个 closeout，证明 exact remote push、唯一 Draft PR、

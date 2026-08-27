@@ -27,7 +27,8 @@ shared current 仍由 expected `.40` 的 serialized promotion owner 单写。
 - `R311-10`：source resolution、fetch、checkout、apply 或 tail validation 失败时，在 PR、archive、Ready、
   Issue mutation 前 fail closed，并只输出稳定的非敏感 error/field locator。
 - `R311-11`：canonical、dogfood installed、Shared/Codex/Claude/Cursor package bytes/modes/contracts 必须
-  经 preset reapply 同步，drift 与 recursive sidecar 为零。
+  经 preset reapply 同步，drift 与 recursive sidecar 为零；installed package tests 必须从当前
+  package/shared installed runtime 解析依赖，不得要求业务 target 携带 canonical `trellis/**` source tree。
 - `R311-12`：验证范围是 package/runtime、两种 binding、installed no-source-tree fixture、一个代表性
   clean business closeout；#267 release-wide matrix、tag 与 Release 保持独立未验证边界。
 - `R311-13`：standalone extension verification 失败时，必须在 temporary workspace cleanup 前保留

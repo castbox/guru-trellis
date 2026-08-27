@@ -383,7 +383,7 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             [],
         )
         adapter_text = (
-            REPO / "trellis/skills/guru-team/adapters/eval/native_adapter.py"
+            PACKAGE.parents[1] / "adapters/eval/native_adapter.py"
         ).read_text(encoding="utf-8")
         self.assertIn(
             '"schema_version": runtime.EXTENSION_VERIFICATION_SCHEMA_VERSION',

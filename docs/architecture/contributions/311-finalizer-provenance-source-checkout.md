@@ -114,6 +114,9 @@ on verifier state.
   applicable cell, actual helper basename, exit code and 2000-character credential-safe tail. The standalone
   verifier parses it before temporary cleanup, preserves command hashes/sizes, and classifies malformed output
   as `unparseable_failure_output`; this remains verifier-private and adds no Finalizer edge.
+- standalone verifier contract tests resolve the shared eval adapter from the current package root, so the same
+  contract runs in canonical and installed layouts without requiring a business target to contain
+  `trellis/skills/**`.
 - canonical package, dogfood installed package, Shared/Codex/Claude/Cursor discovery projections, owning
   specs and operator docs are synchronized from the canonical preset source. No shared Architecture current
   file is modified by this task candidate.

@@ -95,6 +95,9 @@
 - [x] Finding-fix regression：首次 installed preview 在无 remote branch、无 PR、无 metadata tail 时由
   `prepared` 返回 `reprepare_required/provenance_metadata_tail`，且 push、PR create、archive、Ready 均未
   调用；fresh/post-bind existing-PR recovery 继续先于 provenance inference。
+- [x] Existing fixture fresh candidate regression：installed verifier contract test 不再从业务 target
+  读取 canonical `trellis/skills/**` adapter，改为从 package-local shared runtime 推导；canonical 与
+  dogfood installed verifier 均 `15/15`。
 
 ## 8. Projection And Preset Validation
 
