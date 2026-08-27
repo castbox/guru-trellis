@@ -1,8 +1,8 @@
 # ADR-007: Finalizer extension source and target reviewed checkout binding
 
-状态：`proposed`。Owner：Issue #311。Predecessor：#191 provenance-tail decision。该 candidate 只有在
-exact committed range 的 independent Branch Review 与 expected `.40` serialized promotion 通过后才
-进入 shared-current authority。
+状态：`accepted`。Owner：Issue #311。Predecessor：#191 provenance-tail decision。该决策绑定
+`origin/main@d907fcc5e17f23b6499648e5e9a208457f2d6f8b...651defee871d4bb07683547df09d1e0ac62b4a49`
+的 independent Branch Review，以及 expected `.40` -> successor `.41` serialized promotion。
 
 ## Context
 
@@ -73,15 +73,12 @@ remain reusable inside the package.
 
 ## Verification and promotion
 
-The Phase 2 candidate has focused self-hosted/installed binding tests, exact-OID and failure fixtures,
-manifest-only tail validation, post-bind recovery regression, canonical/installed/platform parity,
-reapply/drift/sidecar-zero, source/installed package validation and task/document checks. These prove the
-implemented owner and checkout boundary on the current worktree candidate; they do not constitute an
-independent committed-range review or promotion.
+The exact committed range passed Architecture review and distinct fresh-final Branch Review with project check
+`pass / blocking=true` and zero open P0-P3 findings. Focused canonical/installed binding, exact-OID, failure,
+manifest-tail, recovery, package, platform, reapply, drift and sidecar checks passed. The expected `.40`
+serialized Architecture/RDT promotion accepts this decision into `.41` current authority.
 
-Acceptance still requires one separately authorized representative clean business closeout. The full #267
-release matrix, tag-pinned smoke, tag, and GitHub Release remain outside this ADR and are unverified here.
-
-Promotion requires a fresh #311 Phase 2 result, exact task commit, independent `origin/main...HEAD` Branch
-Review with no open P0-P3 finding, and expected `.40` serialized Architecture/RDT promotion. A promotion-created
-diff repeats Phase 2, task commit, and Branch Review before Publication or Finish.
+The promotion-created diff still repeats Phase 2, task commit, and independent Branch Review before
+Publication or Finish. Existing real fixture fresh reinstall, Publication/Finalizer, production release and
+error-file retry remain required and `unverified`; Issue #311 remains OPEN. The independent release-wide matrix,
+tag-pinned smoke, tag, and GitHub Release remain outside this ADR and are not proven by ADR acceptance.

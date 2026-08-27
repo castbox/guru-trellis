@@ -1,6 +1,6 @@
 # 当前测试策略
 
-版本：`current-main-0.6.5-guru.40`；状态：`superseded`。
+版本：`current-main-0.6.5-guru.41`；状态：`active`。
 
 ## Evidence 分层
 
@@ -36,6 +36,11 @@
 | `TST-028` | authority synchronization | detached/current session、remote-ahead fast-forward、post-sync three-way equality 与 locator continuity | non-fast-forward recovery |
 | `TST-029` | downstream provenance | producer transition 到 workspace consumer 的 source/base/full-candidates exact freshness | producer private runtime 或历史 checkpoint |
 | `TST-030` | #290 distribution | canonical/installed/platform parity、inventory、reapply/drift/mode/sidecar-zero 与代表性 Codex detached wrapper | 独立的重构前稳定版 Release matrix/tag/Release |
+| `TST-031` | Finalizer source/target binding | closed mode、双 checkout、immutable source、apply target、tail lineage 与 postimage | 真实 GitHub fixture 或生产结果 |
+| `TST-032` | Initial reprepare and fail-close | existing-PR precedence、prepared-state inference、absent/exact remote 与 pre-mutation failure | archive 后 terminal live facts |
+| `TST-033` | Installed distribution isolation | canonical/installed package、verifier-zero dependency、preset projection、mode/drift/sidecar | release-wide matrix |
+| `TST-034` | Representative installed closeout | release-installed business repo 从 ready 到 Ready PR/terminal projection | 未 fresh 重试时保持 `unverified` |
+| `TST-035` | Structured verifier failure | stage/cell/command/exit/bounded safe tail、outer parse 与 postcheck classification | Finalizer lifecycle authority |
 
 ## 核心场景
 
@@ -77,6 +82,20 @@
 - `SCN-038 fast-forward continuity`：remote advance 只前进 authority checkout，detached session 不变，post-sync decision/local/remote heads 相等。
 - `SCN-039 source-aware freshness`：explicit/config/config-candidate/remote-default 的 source、selected base 与完整 candidates exact 匹配时通过，任一 drift 在 workspace preparation 前拒绝。
 - `SCN-040 distribution boundary`：canonical/installed/package/platform/reapply/drift/sidecar 和代表性 installed detached wrapper 通过，但不声明重构前稳定版 release-wide proof。
+- `SCN-041 self-hosted binding`：source repository identity 等于 target 时，extension source 固定为
+  reviewed head；apply 仍只修改独立 target checkout。
+- `SCN-042 installed no-source-tree`：business target 不含 `trellis/presets/**`，Finalizer 从 manifest
+  immutable source commit 建立 clean detached extension checkout，并生成唯一 manifest tail。
+- `SCN-043 invalid source`：missing/malformed/dirty/mutable/mismatched source 或 postimage 在任何
+  push/PR/archive/Ready/Issue mutation 前 fail closed。
+- `SCN-044 initial publication`：无 existing PR/remote/tail 的 `prepared` 输入返回 provenance
+  reprepare；absent 或 exact reviewed remote 可执行，非空 drift 继续拒绝。
+- `SCN-045 installed projection`：canonical/installed/平台 package 与 reapply bytes/mode 相同，
+  Finalizer 对 verifier lifecycle 保持零依赖。
+- `SCN-046 verifier failure evidence`：matrix 与 postcheck failure 在 cleanup 前形成 closed structured
+  facts，credential-safe tail 有界，failed + null 被拒绝。
+- `SCN-047 representative live closeout`：现有真实 fixture fresh reinstall 后完成 Publication/
+  Finalizer/Ready/terminal flow；在该复跑实际完成前状态为 `unverified`。
 - `CASE-001`：每个 active interface 的 external exit 恰有唯一 consumer 或 stop，registry/interface/workflow 闭包。
 - `CASE-002`：semantic gate 发生在 recorder/validator 前，脚本不接收或持久化授权。
 
@@ -84,5 +103,5 @@
 
 先读取 `.trellis/spec/workflow/quality-guidelines.md` 的 `Validation Scope Ownership`。普通 feature/docs/spec Issue 运行与 accepted scope 相关的最小可靠集合；完整多平台 Throwaway 只属于专项兼容/upgrade/release Issue。任何 SKIP、未配置 live 环境或历史 PR 声明都明确写成 `unverified`。
 
-完整矩阵只证明 `public_plus_local_candidate` 与 current source compatibility；`.40` 是 knowledge identity，`.37` stable tag、
+完整矩阵只证明 `public_plus_local_candidate` 与 current source compatibility；`.41` 是 knowledge identity，`.37` stable tag、
 GitHub Release 与 tag-pinned release smoke 必须继续标记为独立的重构前稳定版 Release boundary。

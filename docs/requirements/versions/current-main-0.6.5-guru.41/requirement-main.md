@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.40`；状态：`superseded`；基线：task head `516092506cb7be21d9383f87325f3f776bb6ba80` + #295 serialized promotion delta + `2026-08-24` 用户明确确认的 `EVO-001..007` target delta。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD。
+版本：`current-main-0.6.5-guru.41`；状态：`active`；基线：task head `651defee871d4bb07683547df09d1e0ac62b4a49` + #311 serialized promotion delta；#305 已确认的 `EVO-001..007` 保持独立 target authority。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD。
 
 ## 目标、角色与适用范围
 
@@ -75,10 +75,37 @@
 
 ## 非目标
 
-本 authority 的 `.40` 是 knowledge identity，不是 extension/release revision。本 authority 不把 extension `.37` 称为已发布 stable release，不实现 #248/#252 public owner，也不把业务仓库私有 PRD、完整日志、临时 hash bundle 或用户授权写入 current intent。
+本 authority 的 `.41` 是 knowledge identity，不是 extension/release revision。本 authority 不把 extension `.37` 称为已发布 stable release，不实现 #248/#252 public owner，也不把业务仓库私有 PRD、完整日志、临时 hash bundle 或用户授权写入 current intent。
 
 ## #295 current promotion additions
 
 - `REQ-044`：Sync public `base_current` 是进入 mandatory Discovery 的唯一 public transition；Discovery active input 2.0 与 owner-result 3.0 不得依赖或重建 Sync-private result/digest。
 - `REQ-045`：Discovery 独占 live `base_observation`，正常 current/refresh/blocked 路由和 managed runtime dependency contract 必须由 public wrapper 与声明的 Python resolver 验证。
 - `REQ-046`：canonical、dogfood、installed、Shared/Codex/Claude/Cursor、preset/reapply/update/drift、sidecar、interfaces/schemas/examples/tests/evals 作为同一 #295 active unit 收敛；验证范围仅为 accepted targeted checks 与一个代表性 clean throwaway。
+
+## #311 installed Finalizer provenance promotion
+
+- `REQ-047`：Finalizer provenance reprepare 必须建立互相独立的
+  `target_reviewed_checkout` 与 `extension_source_checkout`。前者独占业务 repository
+  mutation、metadata-tail lineage 与 commit；后者只提供 canonical preset bytes。closed
+  `self_hosted|installed` mode 分别绑定 target reviewed HEAD 或 target manifest 中 immutable
+  extension `repo/ref/commit`，不得 fallback、dual-read 或把 business HEAD 写成 extension source。
+- `REQ-048`：首次 `publication_ready` preview 必须先分类 exact existing PR；无 PR、无 remote
+  branch 且缺 metadata tail 时，`prepared` 返回
+  `reprepare_required/provenance_metadata_tail`。对应 executor preflight 只接受 absent remote 或
+  exact reviewed head；push、PR、archive、Ready 与 Issue mutation 在合法 tail 前均为零，既有
+  fresh/post-bind recovery 与 public profile/exit/transaction 合同保持。
+- `REQ-049`：source binding、两棵临时 checkout 与 tail producer 归
+  `guru-finalize-task` package-local runtime；installer 独占 manifest source provenance。
+  source resolution、fetch、checkout、apply 或 postimage validation 失败时在任何远端副作用前
+  fail closed。Finalizer 不调用或读取 verifier lifecycle、gate、artifact、owner state 或 exit。
+- `REQ-050`：canonical、dogfood installed、Shared/Codex/Claude/Cursor package bytes、mode、
+  contract、preset reapply、drift 与 recursive sidecar 必须一致；installed package test 从当前
+  package/shared installed runtime 解析依赖，不要求 business target 携带 canonical source tree。
+  本 Issue 的验证范围包含 focused runtime、installed no-source-tree 与一个代表性 business
+  closeout，不吸收独立 Release owner 的完整矩阵、tag 或 GitHub Release。
+- `REQ-051`：standalone extension verification 必须在 temporary workspace cleanup 前保留
+  schema-valid 的 failure stage、适用 matrix cell、稳定 command label、exit code 与 bounded
+  credential-safe error tail，并保留既有 stdout/stderr hash/size。matrix 外 command、asset
+  inventory、ownership、sidecar 或 capability failure 收敛为 `postcheck_failure`；failed execution
+  不得保留 null failure。该 evidence 只属于 verifier，Finalizer 零消费。

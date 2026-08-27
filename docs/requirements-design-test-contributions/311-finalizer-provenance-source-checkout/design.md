@@ -38,8 +38,8 @@
 - `D311-10`：installer 继续独占 installed manifest provenance production；Finalizer只消费并为当前
   tail重放 canonical apply。verifier 仍是 standalone source-repository lifecycle owner，与 business
   Finalizer 零依赖。
-- `D311-11`：task worktree 单写本 RDT/Architecture candidate；shared `.40` 不在实现阶段直接修改，
-  independent full-diff review 后由两个 promotion owner 串行生成 successor。
+- `D311-11`：task worktree 单写本 RDT/Architecture candidate；shared `.40` 未在实现阶段直接修改，
+  independent full-diff review 后由两个 promotion owner 串行生成并激活 successor `.41`。
 - `D311-12`：compatibility matrix runner 在 pre-matrix、matrix-cell 与 post-matrix 异常边界投影 bounded
   structured failure；throwaway wrapper 透传该终态，`guru-verify-extension-installation` outer owner 在
   cleanup 前解析并绑定到 command evidence。schema/example/tests 同步收敛，无法解析的 failure output

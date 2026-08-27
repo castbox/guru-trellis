@@ -26,8 +26,9 @@
   test 在不含 canonical `trellis/**` 的 business fixture 中仍能从 package-local shared adapter 运行。
 - `T311-10`（R311-11）：all-platform preset apply 和第二次 reapply idempotent；dogfood drift、ownership、
   recursive `.new`/`.bak`/unknown-sidecar scan全部通过。
-- `T311-11`（R311-12）：经单独 GitHub mutation授权的 disposable business closeout覆盖 Publication
-  `ready`、preview `reprepare_required`、execute、`reprepare_preview`、唯一 Draft PR、archive、Ready与
+- `T311-11`（R311-12）：经单独 GitHub mutation 授权后，现有真实 fixture 的 fresh reinstall 与
+  business closeout 应覆盖 Publication `ready`、preview `reprepare_required`、execute、
+  `reprepare_preview`、唯一 Draft PR、archive、Ready 与
   archive 后 `ready_for_merge`；terminal invoke 使用原始 `publication_ready` 输入与第二轮 gate 的精确
   retired locator，重复 invoke不产生新 mutation。
 - `T311-12`（R311-12）：任务报告明确列出未运行的 #267 release-wide multi-platform matrix、tag-pinned
@@ -44,57 +45,21 @@
 
 ## Current Phase 2 evidence
 
-- `T311-01..10` 与 `T311-13` 当前 worktree candidate 已通过：canonical/installed Finalizer 各
-  `59/59`，canonical/installed verifier 各 `17/17`，preset installer `81/81`，upgrade contract
-  `36/36`，throwaway routing + ownership `51/51`。clean candidate
-  `b1d6fc00bed7c933b2b9613c5e6a8cfae604f9a5` reapply 后的本地完整 Finish integration 依次定位
-  harness 的未定义旧变量与 archive 后错误 `reprepare_preview` 输入；修正为原始 `publication_ready`
-  输入加第二轮 gate 精确 retired locator 后，第 3 次且最后一次运行通过（`Ran 1 test in 378.336s,
-  OK`）。本轮不再执行第 4 次完整 integration。
-- source validator 通过 21 packages / 72 commands；installed validator 通过 21 packages / 72
-  commands / 4263 managed files，且 conflicts/sidecars 为零。
-- all-platform apply/reapply、dogfood drift、canonical/installed/Shared/Codex/Claude/Cursor byte-mode
-  parity、recursive sidecar-zero、task validation、local-link、code-fence、whitespace、terminology 与
-  cross-SSOT semantic review 均通过。
-- caller inventory 与 verifier failure-evidence finding-fix 后已重新执行 fresh Architecture
-  implementation-discovery/Phase 2，均返回 `baseline_current / architecture_impact / target_native /
-  reviewed_candidate`，project check 为 `pass/blocking=true`；fresh RDT `task_impact_sync` 返回
-  `ssot_current`，`guru-check-task:finding_fix_rerun` recorder、checker 与 public wrapper 均返回
-  `passed`。前序 source findings 已闭环；随后 fresh committed Branch Review 覆盖
-  `origin/main@d907fcc5...c3bc809b` 的 5 commits / 85 paths，并返回
-  `BR-311-SOURCE-004`（P1，PR 必须 refs-only 保持 #311 OPEN）与
-  `BR-311-SOURCE-005`（P2，task/Architecture committed status drift）两个当前 open finding。本轮正在
-  修复，尚不能声明 P0-P3 open finding 为零；该结果仍不替代 T311-11 的真实 representative closeout。
-- `T311-11` 仍为 `unverified`：已授权的代表性 disposable business closeout 使用 candidate
-  `ea30cac7878bf8f36338e6bfdc67869fbecca009` 完成 fixture task commit 与 independent Branch Review，
-  但 Branch Review 发现 `BR-311-FIXTURE-001`（P1）：首次 Publication 在没有 existing plan 时读取未
-  初始化的 `prospective_git`，在返回 `reprepare_required` 前稳定失败。后续 validation candidate
-  `8138e3dd355f088ad6d4b43548243134f7bbe7d5` 又暴露首次无 remote branch/PR 时 state 为 `prepared`，
-  provenance detector 只接受 `content_pushed`，preview 错误返回 `prepared`。source worktree 已分别修复
-  target-repo binding 与 initial prepared-state inference，并通过 canonical/installed `58/58`、两种
-  package validator、reapply/parity/sidecar checks。current candidate
-  `a03f8ad1bf2bb98575df4a9376a88b480c7bfd5f` 的第 2 次 throwaway 诊断随后发现 source secondary
-  caller inventory 仍登记旧 apply AST anchor `004063a10598...`；canonical inventory 已更新为唯一当前
-  anchor `f16c2314ce2a...`，focused routing tests `44/44`、source `check-inventory`、JSON 与 whitespace
-  checks 通过。该 source-only inventory 不属于 installed preset projection。随后形成的第 3 次
-  candidate 证据如下；不能把旧 candidate 的 false green 或被阻断的 closeout 记为通过。
-  第 3 次 current candidate `cdc55ca93bc28934bfaa1c4ba48aeef83baf3277` 已越过 caller inventory，
-  default compatibility matrix 失败但只留下 stdout `188e4847...` / 78220 bytes、空 stderr、exit 2 与
-  incomplete asset inventory；失败 cell/stage/command/error-tail 不可恢复。对该 candidate 禁止第 4 次
-  throwaway。`T311-13` finding-fix 现已通过 focused pre-matrix/matrix-cell/post-matrix、stable helper
-  command label、schema 5.0、outer parse/unparseable、2000-character bound、Authorization/env/signature
-  URL/private-key credential redaction 测试；`ff1ace8950f127326b7524e0120ed4032f6c1aef` 后的 local Finish
-  integration 已继续定位并修复过期单段 harness 与 absent-remote executor preflight，随后
-  `b1d6fc00bed7c933b2b9613c5e6a8cfae604f9a5` clean candidate 的本地完整 integration 在 terminal
-  public-input harness 修复后通过。该本地 fake-GitHub 证据不替代现有真实 fixture 的 fresh reinstall、
-  Branch Review 与 GitHub Publication/Finalizer，因此 `T311-11` 仍为 `unverified`。
-  `4a50f88eaee972829aa636af54a5d2d0c033c011` 的 distinct fresh-final Branch Review 已闭环
-  `BR-311-SOURCE-004/005`，但 `check-inventory` 又稳定复现 `BR-311-SOURCE-006`（P1）：installed
-  closeout fake `git` 的 generated-shebang 当前 identity 为 `07004913deeb...`，inventory 仍登记
-  `da71f59de8d1...`，导致 focused routing suite 44 项中 5 项报错。canonical inventory 已精确替换
-  id 与完整 anchor，未改变 owner/kind/classification/launcher/ordinal 或 caller/routing 机制；本轮只允许
-  focused inventory/routing/projection 验证，不运行第 4 次完整 integration。
-  `T311-12` 保持边界声明：#267 release-wide matrix、tag-pinned smoke、tag 与 GitHub Release 均未运行。
-- contribution 仍是 `candidate_pending_review`；fresh independent committed full-diff review 已执行但因
-  `BR-311-SOURCE-006` 返回 `implementation_required`，本摘要不是 passing Branch Review、serialized
-  promotion、Publication 或 Acceptance/Finish 证据。
+- `T311-01..10` 与 `T311-13` 已通过：canonical/installed Finalizer 各 `59/59`，
+  canonical/installed verifier 各 `17/17`，routing `44/44`，ownership `7/7`，upgrade `36/36`，
+  preset `81/81`；source/installed validator、all-platform apply/reapply、dogfood drift、平台
+  byte-mode parity 与 recursive sidecar-zero 均通过。
+- local fake-GitHub complete Finish integration 第 3 次且最后一次运行通过；同一对象、同一阶段不再
+  运行第 4 次完整 integration，也不得用新的真实 throwaway repository 规避该上限。
+- distinct fresh-final Branch Review 绑定
+  `origin/main@d907fcc5e17f23b6499648e5e9a208457f2d6f8b...651defee871d4bb07683547df09d1e0ac62b4a49`
+  的 7 commits / 85 paths；`BR-311-FIXTURE-001` 与 `BR-311-SOURCE-001..006` 全部闭环，
+  P0-P3 open findings 为零。
+- contribution 已由 expected `.40` serialized promotion 提升为 `.41` 的 `reviewed_promoted`；
+  promotion-created diff 仍须 fresh 重新进入 Phase 2、task commit 与 independent Branch Review，不能
+  把 promotion 本身冒充为已复核。
+- `T311-11` 仍为 `unverified`：current `651defee` 尚未在现有真实 fixture 上完成 fresh reinstall、
+  GitHub Publication/Finalizer、Ready 与 terminal flow；旧 candidate 的被阻断 closeout和本地
+  fake-GitHub integration 都不能替代该证据。
+- `T311-12` 保持边界声明：#267 release-wide matrix、tag-pinned smoke、tag 与 GitHub Release 均未运行。
+  生产发布与错误文件重试也仍为 `unverified`；Issue #311 必须保持 OPEN，直至复跑证明最大根因已修复。

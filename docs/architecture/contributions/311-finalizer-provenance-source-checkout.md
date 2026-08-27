@@ -5,14 +5,15 @@
 - candidate identity：`architecture-contribution-311-finalizer-extension-source-target-binding-v2`。
 - source authority：Issue #311、current `REQ-006`、`BEH-008`、`DES-001`、`DES-012` 与 #191
   clean provenance-tail contract。
-- current Architecture authority：`docs/architecture/README.md` /
-  `current-main-0.6.5-guru.40` / `active`。
+- serialized promotion source authority：`docs/architecture/README.md` /
+  `current-main-0.6.5-guru.40` / `active`；promoted current identity：
+  `current-main-0.6.5-guru.41` / `active`。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` /
   `guru-trellis-design-constitution-v1` / `current`。
 - project change contract：`docs/architecture/06-governance/change-contract.md` /
   `guru-trellis-architecture-change-contract-v1` /
   `guru-trellis-architecture-change-concerns-v1`。
-- change path：`target_native`；promotion state：`reviewed_candidate`。
+- change path：`target_native`；promotion state：`reviewed_promoted`。
 - expected current identity：`current-main-0.6.5-guru.40`。shared current 只由 Architecture promotion
   owner 在 independent committed full-diff review 后更新。
 
@@ -189,13 +190,15 @@ on verifier state.
 
 ## Review and promotion state
 
-- review：Architecture owner 已对
-  `origin/main@d907fcc5e17f23b6499648e5e9a208457f2d6f8b...c3bc809b548f7a94e2175c82fe32171a5b8762a9`
-  完成 `reviewed / independent=true` committed-range review，project check 为 `pass / blocking=true`；
-  完整 Branch Review 因 `BR-311-SOURCE-004/005` 返回 `implementation_required`，因此 contribution
-  仍是 `reviewed_candidate`，不冒充 promotion/current。
-- ADR：`required=true`；locator 为
+- review：Architecture owner 与 distinct fresh-final Branch Review 已对
+  `origin/main@d907fcc5e17f23b6499648e5e9a208457f2d6f8b...651defee871d4bb07683547df09d1e0ac62b4a49`
+  的 7 commits / 85 paths 完成 independent review，project check 为 `pass / blocking=true`，
+  `BR-311-FIXTURE-001` 与 `BR-311-SOURCE-001..006` 全部闭环，P0-P3 open findings 为零。
+- ADR：`required=true`；`ADR-007` 已由 expected `.40` serialized promotion 接受，locator 为
   `docs/architecture/adr/007-finalizer-extension-source-target-binding.md`。
-- promotion：`required`；promoted identity 为空。
-- contribution 在 implementation discovery、Phase 2 finding、committed full-diff review 或 current
-  authority变化后必须更新并重新进入 Architecture owner。
+- promotion：`reviewed_promoted`；pre-promotion contribution SHA-256 为
+  `a6e2835e2303c081c28296f9d635dabbb7bad2dffbe99466f2bd6d4e834058aa`；promoted identity 为
+  `current-main-0.6.5-guru.41`。
+- promotion-created diff 必须 fresh 重新进入 Phase 2、task commit 与 independent Branch Review。
+  真实 fixture、Publication/Finalizer、生产发布与错误文件重试仍为 `unverified`，Issue #311 保持
+  OPEN；#267 release-wide matrix、tag 与 GitHub Release 继续由独立 owner负责。

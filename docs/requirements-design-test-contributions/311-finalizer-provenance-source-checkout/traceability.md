@@ -17,25 +17,18 @@
 | `R311-13` | `D311-12` | `T311-13` | standalone verifier evidence and cleanup boundary |
 
 Architecture impact：`architecture_impact`；change path：`target_native`。本 contribution 与 Architecture
-contribution/ADR-007 在 independent committed full-diff review 和 expected `.40` serialized promotion前
-均保持 candidate；promotion-created diff仍须 fresh重新进入 Phase 2、task commit 与 Branch Review。
+contribution/ADR-007 已通过 independent committed full-diff review，并由 expected `.40` serialized
+promotion 提升到 `.41` 的 `reviewed_promoted`。promotion-created diff 仍须 fresh 重新进入 Phase 2、
+task commit 与 Branch Review。
 
-当前实现证据已覆盖 `R311-01..11` 对应的 `T311-01..10`，并覆盖 `R311-13/T311-13`；
-`R311-12/T311-11` 的 representative
-GitHub closeout 已获授权并执行到 independent Branch Review，但旧 candidate 因
-`BR-311-FIXTURE-001`（首次 Publication 无 existing plan 时 target repo 绑定变量未初始化）被 P1
-阻断；后续 validation candidate `8138e3dd355f088ad6d4b43548243134f7bbe7d5` 又证明首次无 remote
-branch/PR 的 `prepared` state 未进入 provenance inference。两个 source finding-fix 当前均通过
-canonical/installed `58/58` regression、source/installed validator、reapply、parity 与 sidecar-zero。
-candidate `cdc55ca93bc28934bfaa1c4ba48aeef83baf3277` 的第 3 次且最后一次 throwaway 已进入 default
-matrix，但 exact failure facts 在 cleanup 后丢失；`R311-13/T311-13` 现已用 focused fixtures 完成
-structured failure、stable helper label、outer parsing、closed schema、bounded credential-safe tail 与
-unparseable fallback 验证；Branch Review finding-fix 进一步覆盖 matrix 外 command 与
-inventory/ownership/sidecar/capability `postcheck_failure`、failed + null schema rejection，以及 AWS/GCP
-credential query 参数。`ff1ace8950f127326b7524e0120ed4032f6c1aef` 后的 local Finish integration 已继续暴露并修复
-过期单段 harness 与 absent-remote executor preflight；clean candidate
-`b1d6fc00bed7c933b2b9613c5e6a8cfae604f9a5` 的本地完整 integration 又定位 terminal public-input
-harness，并在复用原始 `publication_ready` 输入与第二轮 gate 精确 retired locator 后通过。该本地
-fake-GitHub 证据不替代现有真实 fixture 的 fresh reinstall、Branch Review 与 GitHub
-Publication/Finalizer；该 external 未验证项也不被 local package validator、旧 candidate 的 false green
-或 #267 release-wide evidence 替代。
+当前实现证据覆盖 `R311-01..11` 对应的 `T311-01..10` 与 `R311-13/T311-13`。distinct fresh-final
+Branch Review 绑定
+`origin/main@d907fcc5e17f23b6499648e5e9a208457f2d6f8b...651defee871d4bb07683547df09d1e0ac62b4a49`
+的 7 commits / 85 paths；`BR-311-FIXTURE-001` 与 `BR-311-SOURCE-001..006` 全部闭环，P0-P3 open
+findings 为零。
+
+`R311-12/T311-11` 仍为 `unverified`：current `651defee` 尚未在现有真实 fixture 上完成 fresh
+reinstall、GitHub Publication/Finalizer、Ready 与 terminal flow；local fake-GitHub 第 3 次且最后一次
+完整 integration 通过不替代该外部证据，且禁止第 4 次完整 integration或创建新的真实 throwaway repo。
+#267 release-wide matrix/tag/Release、生产发布与错误文件重试同样保持 `unverified`，Issue #311 保持
+OPEN，直至复跑证明最大根因已修复。

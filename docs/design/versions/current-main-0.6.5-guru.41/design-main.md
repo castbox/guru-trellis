@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-版本：`current-main-0.6.5-guru.40`；状态：`superseded`；provenance：`code_recovered` + #283 architecture contract + #290/#295 reviewed promotion，绑定 task head `51609250…` + #295 serialized promotion delta。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD。
+版本：`current-main-0.6.5-guru.41`；状态：`active`；provenance：`code_recovered` + #311 reviewed Architecture/RDT promotion，绑定 task head `651defee…` + #311 serialized promotion delta。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD。
 
 ## 分层与 ownership
 
@@ -62,6 +62,28 @@
 
 - `DES-043`：Sync 只投影 `base_current`，Discovery active input 2.0 由 caller authoring `change_input`，Discovery owner-result 3.0 独占 `base_observation` 与 live authority binding。
 - `DES-044`：Discovery public invoke/checker 在 semantic owner 之后只做 schema、identity、repo/ref/HEAD/clean 与 typed-route 校验；不得 import Sync private runtime、调用低层 executor 或伪造 result/digest。
+
+## #311 installed Finalizer provenance design
+
+- `DES-045` Closed binding resolver：Finalizer 从 target reviewed manifest 读取 source
+  `repo/ref/commit/tree_state/is_mutable_ref`，复用 package-local repository normalization 与 Git
+  primitives，构造 invocation-local `self_hosted|installed` binding。self-hosted source 固定为 target
+  reviewed HEAD；installed source 只接受 canonical repository 的 immutable full OID，并在独立
+  tempdir 完成 exact-OID fetch、detached checkout、origin/HEAD/clean 校验。
+- `DES-046` Apply and tail ownership：target reviewed checkout 始终由 target repository 在 reviewed
+  HEAD 建立；apply executable 只从 extension source checkout 定位，`--repo` 只指向 target。
+  apply 后分别验证 source identity/clean 不变、target dirty path 仅 manifest、字段 allowlist、
+  mode-specific source postimage、direct parent、single tail 与 publication head。preview 先分类 existing
+  PR，再处理无 remote 的初始 `prepared` provenance reprepare；executor 仅接受 absent remote 或 exact
+  reviewed head，terminal invoke 继续使用原始 publication input 与精确 retired locator。
+- `DES-047` Distribution and isolation：Finalizer package-local runtime 独占 binding、两棵 checkout
+  lifecycle 与 tail producer；installer 独占 manifest provenance；verifier lifecycle 与 Finalizer 无
+  import、call、artifact 或 exit edge。canonical source 经 preset 投影到 dogfood/Shared/Codex/Claude/
+  Cursor，package tests 从当前 package root 定位 shared runtime，生成副本不反向成为 source。
+- `DES-048` Verifier failure evidence：compatibility runner 在 pre-matrix、matrix-cell 与 post-matrix
+  异常边界输出 bounded structured failure；standalone verifier 在 cleanup 前解析并绑定 command
+  evidence，无法解析时显式分类。matrix 外 command 或 inventory/ownership/sidecar/capability failure
+  统一生成 `postcheck_failure`；该 private evidence 不进入 Finalizer authority。
 
 ## Capability owner map
 

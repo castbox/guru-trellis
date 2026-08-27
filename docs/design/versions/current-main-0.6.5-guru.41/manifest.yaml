@@ -1,0 +1,14 @@
+schema_version: "1.0"
+authority: design
+version: current-main-0.6.5-guru.41
+status: active
+source_commit: 651defee871d4bb07683547df09d1e0ac62b4a49
+extension_manifest_version: 0.6.5-guru.37
+target_trellis_cli: 0.6.15
+released_baseline: v0.6.5-guru.10
+requirements_locator: docs/requirements/versions/current-main-0.6.5-guru.41/requirement-main.md
+test_locator: docs/test/versions/current-main-0.6.5-guru.41/test-strategy.md
+architecture_locator: docs/architecture/README.md
+registry_locator: trellis/skills/guru-team/registry.json
+active_skill_count: 21
+provenance: code_recovered + #311 reviewed Architecture/RDT promotion

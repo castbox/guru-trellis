@@ -1,7 +1,7 @@
 # 当前测试计划与证据
 
-版本：`current-main-0.6.5-guru.40`；状态：`superseded`；source baseline：task head
-`516092506cb7be21d9383f87325f3f776bb6ba80` + #295 serialized promotion delta。
+版本：`current-main-0.6.5-guru.41`；状态：`active`；source baseline：task head
+`651defee871d4bb07683547df09d1e0ac62b4a49` + #311 serialized promotion delta。
 
 ## Replacement before-state authority
 
@@ -110,3 +110,22 @@ It does not publish extension `0.6.5-guru.37`.
   GitHub A evidence。
 
 promotion-created diff 的 Phase 2 `guru-check-task`、新 task commit、独立 Branch Review 与 Publication/Finalizer仍须绑定最终完整 diff执行；此前证据不替代这些 gate。
+
+## #311 installed Finalizer provenance evidence
+
+| Check | Current result | Boundary |
+| --- | --- | --- |
+| exact committed source range | `origin/main@d907fcc5…651defee`；7 commits / 85 paths；Architecture 与 distinct fresh-final Branch Review passed，P0-P3 open findings zero | promotion delta 仍需 fresh re-entry |
+| Finalizer package | canonical/installed 各 `59/59` | focused source/target、tail、prepared-state 与 terminal harness |
+| verifier package | canonical/installed 各 `17/17` | structured failure evidence；不是 Finalizer owner |
+| routing / ownership | `44/44` / `7/7` | caller inventory anchor 已刷新到 current generated helper identity |
+| upgrade / preset | `36/36` / `81/81` | targeted #311 regression；不替代独立 release matrix |
+| source / installed validation | 21 packages / 72 commands；installed 4263 managed files；reapply/drift/platform parity/sidecar zero passed | current candidate distribution only |
+| local complete Finish integration | 第 3 次且最后一次运行通过；禁止第 4 次 | fake GitHub harness，不替代真实 fixture |
+| representative real fixture | `unverified`：旧 candidate 已完成到 Branch Review并暴露 source findings；current `651defee` 尚未 fresh reinstall/Publication/Finalizer | 下一阶段必须复用现有 fixture，不创建新真实 repo |
+| production and error retry | `unverified` | Issue #311 保持 OPEN；完成 merge/生产发布/错误文件重试后另行判断最大根因 |
+
+本 promotion 绑定 contribution digest
+`a6e2835e2303c081c28296f9d635dabbb7bad2dffbe99466f2bd6d4e834058aa`、expected `.40` 与
+successor `.41`。它不发布 extension `0.6.5-guru.37`，不执行 #267 的 release-wide matrix、tag 或
+GitHub Release，也不把旧 candidate 的被阻断 closeout表述为当前通过。

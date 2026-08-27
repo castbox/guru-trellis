@@ -1,8 +1,9 @@
 # #311 Requirements contribution
 
 本 contribution 修复 `BEH-008` / `BEH-010` 的 installed business Finalizer 正常路径缺口，并保持
-`REQ-014` / `DES-012` 的 terminal freshness 与 verifier 隔离边界。它只形成 task-isolated candidate；
-shared current 仍由 expected `.40` 的 serialized promotion owner 单写。
+`REQ-014` / `DES-012` 的 terminal freshness 与 verifier 隔离边界。它先形成 task-isolated candidate，
+经 independent committed full-diff review 后由 serialized promotion owner 从 expected `.40` 提升到
+shared current `.41`。
 
 - `R311-01`：provenance reprepare 必须建立互相独立的 `target_reviewed_checkout` 与
   `extension_source_checkout`，前者独占业务 repository mutation，后者只提供 canonical preset bytes。
