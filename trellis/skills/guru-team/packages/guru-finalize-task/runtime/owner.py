@@ -3234,17 +3234,121 @@ def provenance_tail_manifest_field_diff(
         key=lambda item: item.encode("utf-8"),
     )
 
+def provenance_canonical_github_locator(repo_ref: str) -> str:
+    """Return the one credential-free GitHub locator accepted for source fetch."""
+    normalized = normalize_github_repository(repo_ref)
+    if not normalized:
+        return ""
+    return f"https://github.com/{normalized}.git"
+
+def provenance_source_binding_errors(
+    manifest: Any,
+    target_repo: Any,
+    reviewed_content_head: str,
+) -> tuple[dict[str, str] | None, list[str]]:
+    """Resolve the closed self-hosted/installed extension source identity."""
+    errors: list[str] = []
+    target_repo_ref = normalize_github_repository(target_repo)
+    if not target_repo_ref:
+        errors.append("provenance_tail_target_repo_invalid")
+    if re.fullmatch(r"[0-9a-f]{40}", str(reviewed_content_head or "")) is None:
+        errors.append("provenance_tail_reviewed_head_invalid")
+    if not isinstance(manifest, dict):
+        errors.append("provenance_tail_manifest_invalid")
+        return None, sorted(set(errors))
+    if manifest.get("schema_version") != "2.0":
+        errors.append("provenance_tail_manifest_schema_mismatch")
+    extension = manifest.get("extension")
+    if not isinstance(extension, dict) or extension.get("extension_id") != "guru-team":
+        errors.append("provenance_tail_extension_identity_mismatch")
+    source = manifest.get("source")
+    if not isinstance(source, dict):
+        errors.append("provenance_tail_source_missing")
+        return None, sorted(set(errors))
+
+    source_locator = source.get("repo")
+    source_repo_ref = parse_github_remote_repository_url(source_locator)
+    canonical_locator = provenance_canonical_github_locator(source_repo_ref)
+    if (
+        not isinstance(source_locator, str)
+        or not source_repo_ref
+        or source_locator != canonical_locator
+    ):
+        errors.append("provenance_tail_source_repo_invalid")
+    source_ref = source.get("ref")
+    source_commit = source.get("commit")
+    if re.fullmatch(r"[0-9a-f]{40}", str(source_ref or "")) is None:
+        errors.append("provenance_tail_source_ref_invalid")
+    if re.fullmatch(r"[0-9a-f]{40}", str(source_commit or "")) is None:
+        errors.append("provenance_tail_source_commit_invalid")
+    if source_ref != source_commit:
+        errors.append("provenance_tail_source_ref_commit_mismatch")
+    tree_state = source.get("tree_state")
+    mutable_ref = source.get("is_mutable_ref")
+    if tree_state not in {"clean", "dirty"}:
+        errors.append("provenance_tail_source_tree_state_invalid")
+    if not isinstance(mutable_ref, bool):
+        errors.append("provenance_tail_source_ref_mutability_invalid")
+    if errors:
+        return None, sorted(set(errors))
+
+    mode = "self_hosted" if source_repo_ref == target_repo_ref else "installed"
+    if mode == "installed" and tree_state != "clean":
+        errors.append("provenance_tail_source_not_clean")
+    if mode == "installed" and mutable_ref is not False:
+        errors.append("provenance_tail_source_ref_mutable")
+    if errors:
+        return None, sorted(set(errors))
+    bound_commit = (
+        reviewed_content_head if mode == "self_hosted" else str(source_commit)
+    )
+    return {
+        "mode": mode,
+        "target_repo": target_repo_ref,
+        "target_reviewed_head": reviewed_content_head,
+        "source_repo": source_repo_ref,
+        "source_locator": canonical_locator,
+        "source_ref": bound_commit,
+        "source_commit": bound_commit,
+    }, []
+
+def provenance_source_binding(
+    manifest: Any,
+    target_repo: Any,
+    reviewed_content_head: str,
+) -> dict[str, str]:
+    binding, errors = provenance_source_binding_errors(
+        manifest,
+        target_repo,
+        reviewed_content_head,
+    )
+    if binding is None or errors:
+        raise WorkflowError(
+            "Installed extension source provenance is invalid for Finalizer preparation.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_source_binding_invalid",
+                "errors": errors,
+            },
+        )
+    return binding
+
 def provenance_tail_manifest_errors(
     before: Any,
     after: Any,
     reviewed_content_head: str,
+    target_repo: Any,
 ) -> list[str]:
     """Validate the only manifest mutation allowed after reviewed content."""
     errors: list[str] = []
     if not isinstance(before, dict) or not isinstance(after, dict):
         return ["provenance_tail_manifest_invalid"]
-    if re.fullmatch(r"[0-9a-f]{40}", str(reviewed_content_head or "")) is None:
-        errors.append("provenance_tail_reviewed_head_invalid")
+    binding, binding_errors = provenance_source_binding_errors(
+        before,
+        target_repo,
+        reviewed_content_head,
+    )
+    errors.extend(binding_errors)
     changed = provenance_tail_manifest_field_diff(before, after)
     unexpected = sorted(
         set(changed) - PROVENANCE_TAIL_ALLOWED_FIELDS,
@@ -3255,10 +3359,12 @@ def provenance_tail_manifest_errors(
     source = after.get("source")
     if not isinstance(source, dict):
         errors.append("provenance_tail_source_missing")
-    else:
-        if source.get("ref") != reviewed_content_head:
+    elif binding is not None:
+        if source.get("repo") != binding["source_locator"]:
+            errors.append("provenance_tail_source_repo_mismatch")
+        if source.get("ref") != binding["source_ref"]:
             errors.append("provenance_tail_source_ref_mismatch")
-        if source.get("commit") != reviewed_content_head:
+        if source.get("commit") != binding["source_commit"]:
             errors.append("provenance_tail_source_commit_mismatch")
         if source.get("tree_state") != "clean":
             errors.append("provenance_tail_source_not_clean")
@@ -3309,7 +3415,7 @@ def provenance_tail_checkout_errors(
     root: Path,
     reviewed_content_head: str,
 ) -> list[str]:
-    """Check the source checkout preconditions without applying or committing."""
+    """Check one detached clean target checkout before apply or commit."""
     errors: list[str] = []
     try:
         head = current_head(root)
@@ -3324,11 +3430,143 @@ def provenance_tail_checkout_errors(
         errors.append("provenance_tail_checkout_not_clean")
     return sorted(set(errors))
 
+def provenance_extension_source_checkout_errors(
+    root: Path,
+    binding: dict[str, str],
+) -> list[str]:
+    """Validate extension source identity independently from the target checkout."""
+    errors: list[str] = []
+    try:
+        head = current_head(root)
+    except WorkflowError:
+        head = ""
+    if head != binding["source_commit"]:
+        errors.append("provenance_tail_extension_source_head_mismatch")
+    if current_branch(root) != "HEAD":
+        errors.append("provenance_tail_extension_source_not_detached")
+    if provenance_tail_git_status_paths(root):
+        errors.append("provenance_tail_extension_source_not_clean")
+    origin = run(
+        ["git", "remote", "get-url", "--all", "origin"],
+        cwd=root,
+        check=False,
+    )
+    urls = origin.stdout.splitlines() if origin.returncode == 0 else []
+    if (
+        not urls
+        or any(
+            parse_github_remote_repository_url(value) != binding["source_repo"]
+            for value in urls
+        )
+    ):
+        errors.append("provenance_tail_extension_source_repo_mismatch")
+    if binding["mode"] == "installed" and urls != [binding["source_locator"]]:
+        errors.append("provenance_tail_extension_source_origin_not_canonical")
+    return sorted(set(errors))
+
+def prepare_provenance_extension_source_checkout(
+    target_root: Path,
+    source_root: Path,
+    binding: dict[str, str],
+) -> None:
+    """Create the package-local detached source checkout for one binding mode."""
+    if binding["mode"] == "self_hosted":
+        proc = run(
+            [
+                "git",
+                "worktree",
+                "add",
+                "--detach",
+                str(source_root),
+                binding["source_commit"],
+            ],
+            cwd=target_root,
+            check=False,
+        )
+        if proc.returncode != 0:
+            raise WorkflowError(
+                "Could not create the self-hosted extension source checkout.",
+                exit_code=2,
+                payload={"reason_code": "provenance_source_checkout_create_failed"},
+            )
+    else:
+        init = run(
+            ["git", "init", "--quiet", str(source_root)],
+            check=False,
+        )
+        if init.returncode != 0:
+            raise WorkflowError(
+                "Could not initialize the installed extension source checkout.",
+                exit_code=2,
+                payload={"reason_code": "provenance_source_checkout_init_failed"},
+            )
+        origin = run(
+            ["git", "remote", "add", "origin", binding["source_locator"]],
+            cwd=source_root,
+            check=False,
+        )
+        if origin.returncode != 0:
+            raise WorkflowError(
+                "Could not configure the canonical extension source origin.",
+                exit_code=2,
+                payload={"reason_code": "provenance_source_origin_failed"},
+            )
+        fetch = run(
+            [
+                "git",
+                "fetch",
+                "--depth=1",
+                "origin",
+                binding["source_commit"],
+            ],
+            cwd=source_root,
+            check=False,
+        )
+        if fetch.returncode != 0:
+            raise WorkflowError(
+                "Could not fetch the immutable extension source commit.",
+                exit_code=2,
+                payload={"reason_code": "provenance_source_fetch_failed"},
+            )
+        resolved = run(
+            ["git", "rev-parse", "--verify", "FETCH_HEAD^{commit}"],
+            cwd=source_root,
+            check=False,
+        )
+        if (
+            resolved.returncode != 0
+            or resolved.stdout.strip() != binding["source_commit"]
+        ):
+            raise WorkflowError(
+                "Fetched extension source does not match the immutable manifest commit.",
+                exit_code=2,
+                payload={"reason_code": "provenance_source_fetch_mismatch"},
+            )
+        checkout = run(
+            ["git", "checkout", "--detach", binding["source_commit"]],
+            cwd=source_root,
+            check=False,
+        )
+        if checkout.returncode != 0:
+            raise WorkflowError(
+                "Could not detach the immutable extension source checkout.",
+                exit_code=2,
+                payload={"reason_code": "provenance_source_checkout_failed"},
+            )
+    errors = provenance_extension_source_checkout_errors(source_root, binding)
+    if errors:
+        raise WorkflowError(
+            "Extension source checkout failed its immutable clean-source contract.",
+            exit_code=2,
+            payload={"reason_code": "provenance_source_checkout_invalid", "errors": errors},
+        )
+
 def provenance_tail_commit_errors(
     root: Path,
     reviewed_content_head: str,
     publication_head: str,
     *,
+    target_repo: Any,
     require_current: bool = True,
 ) -> list[str]:
     """Validate one committed provenance tail and its reviewed/publication identities."""
@@ -3384,7 +3622,12 @@ def provenance_tail_commit_errors(
             errors.append("provenance_tail_manifest_unreadable")
         else:
             errors.extend(
-                provenance_tail_manifest_errors(before, after, reviewed_content_head)
+                provenance_tail_manifest_errors(
+                    before,
+                    after,
+                    reviewed_content_head,
+                    target_repo,
+                )
             )
     return sorted(set(errors))
 
@@ -3392,11 +3635,14 @@ def validate_provenance_metadata_tail(
     root: Path,
     reviewed_content_head: str,
     publication_head: str,
+    *,
+    target_repo: Any,
 ) -> dict[str, Any]:
     errors = provenance_tail_commit_errors(
         root,
         reviewed_content_head,
         publication_head,
+        target_repo=target_repo,
     )
     if errors:
         raise WorkflowError(
@@ -3416,6 +3662,7 @@ def commit_provenance_metadata_tail(
     root: Path,
     reviewed_content_head: str,
     *,
+    target_repo: Any,
     message: str = "chore(trellis): 更新 Guru Team provenance 元数据",
 ) -> dict[str, Any]:
     """Commit an already-applied manifest tail; no preset/apply is performed here."""
@@ -3430,17 +3677,28 @@ def commit_provenance_metadata_tail(
         )
     parent = read_json_from_git(root, f"{reviewed_content_head}:{PROVENANCE_TAIL_MANIFEST_PATH}")
     manifest = read_json(root / PROVENANCE_TAIL_MANIFEST_PATH)
-    errors = provenance_tail_manifest_errors(parent, manifest, reviewed_content_head)
+    errors = provenance_tail_manifest_errors(
+        parent,
+        manifest,
+        reviewed_content_head,
+        target_repo,
+    )
     if errors:
         raise WorkflowError("Provenance tail manifest is outside the allowlist.", exit_code=2, payload={"errors": errors})
     run_stdout(["git", "add", "--", PROVENANCE_TAIL_MANIFEST_PATH], cwd=root)
     run_stdout(["git", "commit", "--no-verify", "-m", message], cwd=root)
     publication_head = current_head(root)
-    return validate_provenance_metadata_tail(root, reviewed_content_head, publication_head)
+    return validate_provenance_metadata_tail(
+        root,
+        reviewed_content_head,
+        publication_head,
+        target_repo=target_repo,
+    )
 
 def finalizer_publication_identity(
     root: Path,
     reviewed_content_head: str,
+    target_repo: Any,
 ) -> dict[str, Any]:
     """Project the reviewed head and the optional single provenance tail."""
     if re.fullmatch(r"[0-9a-f]{40}", str(reviewed_content_head or "")) is None:
@@ -3457,7 +3715,12 @@ def finalizer_publication_identity(
             "Finalizer publication head is not a descendant of reviewed content.",
             exit_code=2,
         )
-    errors = provenance_tail_commit_errors(root, reviewed_content_head, publication_head)
+    errors = provenance_tail_commit_errors(
+        root,
+        reviewed_content_head,
+        publication_head,
+        target_repo=target_repo,
+    )
     if errors == ["provenance_tail_changed_paths_invalid"]:
         # Existing task/archive metadata commits are excluded from reviewed
         # content and are not provenance tails; keep their historical behavior.
@@ -3501,21 +3764,26 @@ def finalizer_pre_pr_provenance_tail_required(
     plan: dict[str, Any],
 ) -> bool:
     """Return whether the current pre-PR plan still carries stale provenance."""
-    reviewed = str(plan.get("git", {}).get("branch_review_commit") or "")
+    git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
+    reviewed = str(git.get("branch_review_commit") or "")
+    target_repo = git.get("repo")
     if re.fullmatch(r"[0-9a-f]{40}", reviewed) is None:
         raise WorkflowError("Finalizer reviewed content identity is invalid.", exit_code=2)
-    manifest = root / PROVENANCE_TAIL_MANIFEST_PATH
-    if not manifest.is_file() or manifest.is_symlink():
+    payload = read_json_from_git(
+        root,
+        f"{reviewed}:{PROVENANCE_TAIL_MANIFEST_PATH}",
+    )
+    binding = provenance_source_binding(payload, target_repo, reviewed)
+    publication = finalizer_publication_identity(root, reviewed, target_repo)
+    if publication["metadata_tail"] is not None:
         return False
-    try:
-        payload = read_json(manifest)
-    except WorkflowError:
-        return False
-    source = payload.get("source") if isinstance(payload, dict) else None
+    if binding["mode"] == "installed":
+        return True
+    source = payload["source"]
     return not (
-        isinstance(source, dict)
-        and source.get("ref") == reviewed
-        and source.get("commit") == reviewed
+        source.get("repo") == binding["source_locator"]
+        and source.get("ref") == binding["source_ref"]
+        and source.get("commit") == binding["source_commit"]
         and source.get("tree_state") == "clean"
         and source.get("is_mutable_ref") is False
     )
@@ -3523,29 +3791,56 @@ def finalizer_pre_pr_provenance_tail_required(
 def prepare_provenance_metadata_tail(
     root: Path,
     reviewed_content_head: str,
+    target_repo: Any,
 ) -> dict[str, Any]:
-    """Apply the canonical preset once in an isolated clean source checkout."""
+    """Apply source-owned preset bytes to one isolated target reviewed checkout."""
     if current_head(root) != reviewed_content_head:
         raise WorkflowError(
             "Provenance tail preparation requires the reviewed content HEAD.",
             exit_code=2,
         )
     with tempfile.TemporaryDirectory(prefix="guru-provenance-source-") as tmp:
-        source = Path(tmp) / "source"
+        target_reviewed_checkout = Path(tmp) / "target-reviewed"
+        extension_source_checkout = Path(tmp) / "extension-source"
         run_stdout(
-            ["git", "worktree", "add", "--detach", str(source), reviewed_content_head],
+            [
+                "git",
+                "worktree",
+                "add",
+                "--detach",
+                str(target_reviewed_checkout),
+                reviewed_content_head,
+            ],
             cwd=root,
         )
+        binding: dict[str, str] | None = None
         try:
-            pre_errors = provenance_tail_checkout_errors(source, reviewed_content_head)
+            pre_errors = provenance_tail_checkout_errors(
+                target_reviewed_checkout,
+                reviewed_content_head,
+            )
             if pre_errors:
                 raise WorkflowError(
-                    "Provenance source checkout is not a clean reviewed checkout.",
+                    "Provenance target checkout is not a clean reviewed checkout.",
                     exit_code=2,
                     payload={"errors": pre_errors},
                 )
+            parent = read_json_from_git(
+                target_reviewed_checkout,
+                f"{reviewed_content_head}:{PROVENANCE_TAIL_MANIFEST_PATH}",
+            )
+            binding = provenance_source_binding(
+                parent,
+                target_repo,
+                reviewed_content_head,
+            )
+            prepare_provenance_extension_source_checkout(
+                root,
+                extension_source_checkout,
+                binding,
+            )
             apply_script = (
-                source
+                extension_source_checkout
                 / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"
             )
             if not apply_script.is_file() or apply_script.is_symlink():
@@ -3558,35 +3853,74 @@ def prepare_provenance_metadata_tail(
                     sys.executable,
                     str(apply_script),
                     "--repo",
-                    str(source),
+                    str(target_reviewed_checkout),
                     "--all-platforms",
                     "--json",
                 ],
-                cwd=source,
+                cwd=extension_source_checkout,
             )
-            dirty = provenance_tail_git_status_paths(source)
+            source_errors = provenance_extension_source_checkout_errors(
+                extension_source_checkout,
+                binding,
+            )
+            if source_errors:
+                raise WorkflowError(
+                    "Canonical preset apply modified the extension source checkout.",
+                    exit_code=2,
+                    payload={"errors": source_errors},
+                )
+            dirty = provenance_tail_git_status_paths(target_reviewed_checkout)
             if dirty != [PROVENANCE_TAIL_MANIFEST_PATH]:
                 raise WorkflowError(
                     "Canonical preset apply produced changes outside the provenance manifest.",
                     exit_code=2,
                     payload={"dirty_paths": dirty},
                 )
-            parent = read_json_from_git(
-                source,
-                f"{reviewed_content_head}:{PROVENANCE_TAIL_MANIFEST_PATH}",
+            manifest = read_json(
+                target_reviewed_checkout / PROVENANCE_TAIL_MANIFEST_PATH
             )
-            manifest = read_json(source / PROVENANCE_TAIL_MANIFEST_PATH)
-            errors = provenance_tail_manifest_errors(parent, manifest, reviewed_content_head)
+            errors = provenance_tail_manifest_errors(
+                parent,
+                manifest,
+                reviewed_content_head,
+                target_repo,
+            )
             if errors:
                 raise WorkflowError(
                     "Canonical preset apply produced invalid provenance metadata.",
                     exit_code=2,
                     payload={"errors": errors},
                 )
-            result = commit_provenance_metadata_tail(source, reviewed_content_head)
+            result = commit_provenance_metadata_tail(
+                target_reviewed_checkout,
+                reviewed_content_head,
+                target_repo=target_repo,
+            )
             publication_head = str(result["publication_head"])
         finally:
-            run(["git", "worktree", "remove", "--force", str(source)], cwd=root, check=False)
+            if binding is not None and binding["mode"] == "self_hosted":
+                run(
+                    [
+                        "git",
+                        "worktree",
+                        "remove",
+                        "--force",
+                        str(extension_source_checkout),
+                    ],
+                    cwd=root,
+                    check=False,
+                )
+            run(
+                [
+                    "git",
+                    "worktree",
+                    "remove",
+                    "--force",
+                    str(target_reviewed_checkout),
+                ],
+                cwd=root,
+                check=False,
+            )
     run_stdout(["git", "merge", "--ff-only", publication_head], cwd=root)
     return {
         "reviewed_content_head": reviewed_content_head,
@@ -3760,6 +4094,7 @@ def finalizer_current_plan_base_evolution_supersession_preflight(
             root,
             previous_reviewed,
             previous_publication,
+            target_repo=previous_git.get("repo"),
             require_current=False,
         )
         or not is_ancestor(root, previous_publication, current_reviewed)
@@ -3870,6 +4205,7 @@ def finalizer_current_transaction_base_evolution_supersession_preflight(
             root,
             previous_reviewed,
             previous_publication,
+            target_repo=transaction.get("repo_ref"),
             require_current=False,
         )
     )
@@ -3984,6 +4320,7 @@ def finalizer_pre_pr_provenance_reprepare_preflight(
             root,
             reviewed_content_head,
             local_head,
+            target_repo=git.get("repo"),
         )
     )
     if existing_tail_errors:
@@ -4105,10 +4442,11 @@ def finalizer_pre_pr_provenance_reprepare_preflight(
     if (
         previous_plan is None
         and previous_transaction is None
+        and remote_head
         and remote_head != reviewed_content_head
     ):
         raise WorkflowError(
-            "Provenance reprepare requires the remote branch at reviewed content HEAD.",
+            "Provenance reprepare requires no remote branch or the remote branch at reviewed content HEAD.",
             exit_code=2,
             payload={
                 "reason_code": "provenance_reprepare_remote_not_reviewed_head",
@@ -6935,6 +7273,10 @@ def prepare_closeout(
     publication_commit = str(
         publication_ready.get("branch_review_commit") or ""
     ) if publication_ready is not None else ""
+    target_repo = normalize_github_repository(
+        str(args.repo or config.get("github_repo") or "").strip()
+        or infer_github_repo(root)
+    )
     if (
         existing_plan is not None
         and publication_ready is not None
@@ -6942,10 +7284,7 @@ def prepare_closeout(
         != str(existing_plan.get("git", {}).get("branch_review_commit") or "")
     ):
         prospective_git = {
-            "repo": normalize_github_repository(
-                str(args.repo or config.get("github_repo") or "").strip()
-                or infer_github_repo(root)
-            ),
+            "repo": target_repo,
             "remote": str(args.remote or publish_config(config).get("remote") or "origin"),
             "base_branch": base_branch_from_sources(args, task_json(task_dir), task_context),
             "head_branch": current_branch(root),
@@ -7000,6 +7339,7 @@ def prepare_closeout(
     publication_identity = finalizer_publication_identity(
         root,
         branch_review_commit,
+        target_repo,
     )
     review_facts = closeout_reviewed_change_facts(
         root,
@@ -10790,9 +11130,16 @@ def finalization_publication_owner_result(
                     "stale_reason": "publication_review_stale",
                 }
         try:
+            target_repo = (
+                plan.get("git", {}).get("repo")
+                if isinstance(plan, dict)
+                and isinstance(plan.get("git"), dict)
+                else infer_github_repo(root)
+            )
             publication_identity = finalizer_publication_identity(
                 root,
                 branch_review_commit,
+                target_repo,
             )
         except WorkflowError as exc:
             return {
@@ -11668,22 +12015,24 @@ def finalization_preview_context(
                                     "publication_head": publication_head,
                                 },
                             )
-                if (
-                    state == "content_pushed"
-                    and prepared.get("metadata_tail") is None
-                    and finalizer_pre_pr_provenance_tail_applies(
-                        root,
-                        plan,
-                        current_transaction,
-                    )
-                ):
-                    state = "reprepare_required"
-                    reprepare_reason_code = FINALIZATION_REPREPARE_PROVENANCE_TAIL
     existing_pr_recovery: dict[str, Any] | None = None
     if not archived and isinstance(plan, dict):
         state, existing_pr_recovery = finalization_existing_pr_recovery_context(
             root, plan, current_transaction, state
         )
+    if (
+        not archived
+        and isinstance(prepared, dict)
+        and state in {"prepared", "content_pushed"}
+        and prepared.get("metadata_tail") is None
+        and finalizer_pre_pr_provenance_tail_applies(
+            root,
+            plan,
+            current_transaction,
+        )
+    ):
+        state = "reprepare_required"
+        reprepare_reason_code = FINALIZATION_REPREPARE_PROVENANCE_TAIL
     plan_ref = (
         f"closeout-plan:{plan['plan_digest']}"
         if archived
@@ -12481,14 +12830,27 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 previous_transaction=previous_transaction,
                 allowed_current_gate=gate,
             )
-            publication = finalizer_publication_identity(root, reviewed_content_head)
+            target_repo = context["plan"]["git"]["repo"]
+            publication = finalizer_publication_identity(
+                root,
+                reviewed_content_head,
+                target_repo,
+            )
             provenance = (
                 publication
                 if publication["metadata_tail"] is not None
-                else prepare_provenance_metadata_tail(root, reviewed_content_head)
+                else prepare_provenance_metadata_tail(
+                    root,
+                    reviewed_content_head,
+                    target_repo,
+                )
             )
         elif reason_code == FINALIZATION_REPREPARE_ARCHIVE_MONTH:
-            publication = finalizer_publication_identity(root, reviewed_content_head)
+            publication = finalizer_publication_identity(
+                root,
+                reviewed_content_head,
+                context["plan"]["git"]["repo"],
+            )
             provenance = publication
         else:
             raise WorkflowError(

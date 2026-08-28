@@ -42,12 +42,13 @@
     "execution": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["target_repository", "extension_source", "status", "commands", "capabilities", "asset_expectations", "asset_digests", "asset_inventory", "ownership", "sidecars"],
+      "required": ["target_repository", "extension_source", "status", "commands", "failure", "capabilities", "asset_expectations", "asset_digests", "asset_inventory", "ownership", "sidecars"],
       "properties": {
         "target_repository": {"$ref": "#/$defs/targetRepository"},
         "extension_source": {"$ref": "#/$defs/extensionSource"},
         "status": {"enum": ["not_run", "passed", "failed", "blocked"]},
         "commands": {"type": "array", "items": {"$ref": "#/$defs/command"}},
+        "failure": {"$ref": "#/$defs/failure"},
         "capabilities": {"type": "array", "items": {"$ref": "#/$defs/capabilityFact"}},
         "asset_expectations": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/assetExpectation"}},
         "asset_digests": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/assetDigest"}},
@@ -74,7 +75,13 @@
             "paths": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
           }
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "failed"}}, "required": ["status"]},
+          "then": {"properties": {"failure": {"type": "object"}}}
+        }
+      ]
     },
     "semantic_review": {
       "type": "object",
@@ -219,6 +226,39 @@
         "stdout_size_bytes": {"type": "integer", "minimum": 0},
         "stderr_size_bytes": {"type": "integer", "minimum": 0}
       }
+    },
+    "failure": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "stage", "cell_id", "command_label", "exit_code", "error_tail"],
+          "properties": {
+            "kind": {"enum": ["matrix_failure", "unparseable_failure_output", "postcheck_failure"]},
+            "stage": {"enum": ["pre-matrix", "matrix-cell", "post-matrix", null]},
+            "cell_id": {"type": ["string", "null"], "minLength": 1},
+            "command_label": {"type": "string", "pattern": "^[A-Za-z0-9._:-]+$"},
+            "exit_code": {"type": "integer"},
+            "error_tail": {"type": "string", "maxLength": 2000}
+          },
+          "allOf": [
+            {
+              "if": {"properties": {"kind": {"const": "matrix_failure"}}, "required": ["kind"]},
+              "then": {"properties": {"stage": {"enum": ["pre-matrix", "matrix-cell", "post-matrix"]}}}
+            },
+            {
+              "if": {"properties": {"stage": {"const": "matrix-cell"}}, "required": ["stage"]},
+              "then": {"properties": {"cell_id": {"type": "string", "minLength": 1}}},
+              "else": {"properties": {"cell_id": {"type": "null"}}}
+            },
+            {
+              "if": {"properties": {"kind": {"const": "unparseable_failure_output"}}, "required": ["kind"]},
+              "then": {"properties": {"stage": {"type": "null"}, "cell_id": {"type": "null"}}}
+            }
+          ]
+        }
+      ]
     },
     "capabilityFact": {
       "type": "object",

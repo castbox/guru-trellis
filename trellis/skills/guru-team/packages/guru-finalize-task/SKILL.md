@@ -18,6 +18,22 @@ accepted only after that exact pre-push HEAD is transaction-bound, then converge
 the current Publication title/body, archive, preserve Ready or mark Draft
 Ready, and hand off to `guru-merge-task-pr`.
 
+When ordinary pre-PR reprepare requires a provenance metadata tail, keep the
+business target and Guru Trellis implementation in separate temporary
+checkouts. The detached target checkout at `reviewed_content_head` is the only
+`--repo` apply target and tail-commit owner. A second detached clean source
+checkout supplies the canonical preset entry: self-hosted mode binds it to the
+same repository at reviewed HEAD, while installed mode resolves the current
+manifest's canonical immutable repo/ref/commit through exact-OID fetch. Validate
+source and target identity and clean state independently, permit only the
+binding-aware manifest tail, and stop before publication side effects on any
+resolution, checkout, apply, or validation failure. This package-local source
+binding never invokes or substitutes for extension verification.
+Initial `publication_ready` preview first classifies an exact existing PR. When
+no PR and no remote branch exist, a missing installed metadata tail maps the
+still-prepared plan directly to `reprepare_required` before push, PR creation,
+archive, Ready, or Issue mutation.
+
 Execute the semantic profile in order: preview, AI review, one exact bounded
 side-effect confirmation when required, gate record/check, deterministic
 transition, and exactly one typed exit. Unknown, multiple, retired, stale, or

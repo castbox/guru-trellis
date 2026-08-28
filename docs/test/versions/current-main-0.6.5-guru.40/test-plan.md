@@ -1,6 +1,6 @@
 # 当前测试计划与证据
 
-版本：`current-main-0.6.5-guru.40`；状态：`active`；source baseline：task head
+版本：`current-main-0.6.5-guru.40`；状态：`superseded`；source baseline：task head
 `516092506cb7be21d9383f87325f3f776bb6ba80` + #295 serialized promotion delta。
 
 ## Replacement before-state authority

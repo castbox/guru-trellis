@@ -7,6 +7,10 @@
 - `ARCH-INT-005`：`get_context.py` 从 `.trellis/spec/**/index.md` 提供 Agent 读取入口，但 projection 不复制 authority 正文。
 - `ARCH-INT-006`：每个 declared platform cell 同时安装 shared `.agents` public projection 与唯一 selected platform projection；package-private validator scripts 不分发到平台 roots。
 - `ARCH-INT-007`：项目 Architecture check 通过 current descriptor/result identity、applicability、rule/decision/GAP refs、before/after、evidence/unavailable reason 与 freshness 接入 semantic owner；公共 runtime 只校验一一绑定和 route consistency，不执行或解释项目语义。
+- `ARCH-INT-008`：installed manifest 的 immutable `repo/ref/commit` 只定位 extension source；canonical
+  apply 以 `--repo target_reviewed_checkout` 写 target，postimage 分别验证 target lineage 与 extension
+  provenance。不得解析 mutable main、PATH/global package、hidden checkout 或 legacy fallback，也不
+  引入 verifier lifecycle edge。
 
 ## Capability 与 installation consistency 边界
 

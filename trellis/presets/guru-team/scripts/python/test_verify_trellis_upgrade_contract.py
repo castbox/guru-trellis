@@ -448,6 +448,81 @@ exit 23
         self.assertIn('"representative_root": "project"', run_matrix)
         self.assertIn('"external_boundaries"', run_matrix)
 
+    def test_matrix_failure_projection_is_bounded_structured_and_secret_safe(self) -> None:
+        failure = self.matrix.MatrixError(
+            "cell command failed",
+            stage="matrix-cell",
+            cell_id="codex-clean",
+            command_label="run-skill-evals.sh",
+            exit_code=17,
+            error_tail=(
+                "prefix\nhttps://user:password@example.com/repo.git\n"
+                "github_pat_SECRET\nAuthorization: Bearer bearer-secret\n"
+                "GITHUB_TOKEN=environment-secret\n"
+                "https://example.com/object?X-Amz-Signature=signed-secret\n"
+                "https://example.com/object?X-Amz-Credential=aws-access-id%2Fscope\n"
+                "https://example.com/object?X-Goog-Credential=gcp-access-id%2Fscope\n"
+                "-----BEGIN PRIVATE KEY-----\nprivate-secret\n"
+                "-----END PRIVATE KEY-----\n"
+                + ("x" * 3000)
+            ),
+        )
+        payload = self.matrix.matrix_failure_payload(failure)
+        self.assertEqual(payload["status"], "failed")
+        self.assertEqual(payload["failure"]["stage"], "matrix-cell")
+        self.assertEqual(payload["failure"]["cell_id"], "codex-clean")
+        self.assertEqual(payload["failure"]["command_label"], "run-skill-evals.sh")
+        self.assertEqual(payload["failure"]["exit_code"], 17)
+        self.assertLessEqual(len(payload["failure"]["error_tail"]), 2000)
+        serialized = json.dumps(payload)
+        self.assertNotIn("github_pat_SECRET", serialized)
+        self.assertNotIn("user:password", serialized)
+        self.assertNotIn("bearer-secret", serialized)
+        self.assertNotIn("environment-secret", serialized)
+        self.assertNotIn("signed-secret", serialized)
+        self.assertNotIn("aws-access-id", serialized)
+        self.assertNotIn("gcp-access-id", serialized)
+        self.assertNotIn("private-secret", serialized)
+
+    def test_matrix_command_label_uses_the_invoked_helper_not_temporary_paths(self) -> None:
+        self.assertEqual(
+            self.matrix._stable_command_label(
+                (
+                    "/tmp/project/.trellis/guru-team/runtime/resolve-python.sh",
+                    "/tmp/project",
+                    "/tmp/project/.trellis/guru-team/runtime",
+                    "/source/verify_installed_closeout.py",
+                    "--repo",
+                    "/tmp/project",
+                )
+            ),
+            "verify_installed_closeout.py",
+        )
+        self.assertEqual(
+            self.matrix._stable_command_label(("python3", "-m", "unittest")),
+            "python3",
+        )
+
+    def test_matrix_failure_context_distinguishes_pre_cell_and_post_stages(self) -> None:
+        pre = self.matrix.matrix_failure_payload(self.matrix.MatrixError("pre"))
+        self.assertEqual(pre["failure"]["stage"], "pre-matrix")
+        self.assertIsNone(pre["failure"]["cell_id"])
+
+        cell = self.matrix.MatrixError(
+            "command failed",
+            command_label="git",
+            exit_code=9,
+            error_tail="failed",
+        ).with_context("matrix-cell", "cursor-existing")
+        projected_cell = self.matrix.matrix_failure_payload(cell)
+        self.assertEqual(projected_cell["failure"]["stage"], "matrix-cell")
+        self.assertEqual(projected_cell["failure"]["cell_id"], "cursor-existing")
+
+        post = cell.with_context("post-matrix", None)
+        projected_post = self.matrix.matrix_failure_payload(post)
+        self.assertEqual(projected_post["failure"]["stage"], "post-matrix")
+        self.assertIsNone(projected_post["failure"]["cell_id"])
+
     def test_matrix_runs_installed_profile_corpora_and_binds_platform_projection(self) -> None:
         smoke = self.matrix_text[
             self.matrix_text.index("def _run_installed_smokes(") :
@@ -917,6 +992,38 @@ exit 23
 
             self.assertEqual(invocation_count.read_text(), "1")
             self.assertEqual(Path(str(target / relative) + ".new").read_text(), "candidate\n")
+
+    def test_preset_subprocess_failure_preserves_command_and_exit_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source"
+            target = root / "target"
+            installer = (
+                source
+                / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"
+            )
+            installer.parent.mkdir(parents=True)
+            installer.write_text(
+                "import json\n"
+                "print(json.dumps({'status': 'failed'}))\n"
+                "raise SystemExit(9)\n",
+                encoding="utf-8",
+            )
+
+            with self.assertRaises(self.matrix.MatrixError) as raised:
+                self.matrix._apply_preset(
+                    source,
+                    target,
+                    "codex",
+                    root / "preset.log",
+                )
+
+            self.assertEqual(
+                raised.exception.command_label,
+                "apply_guru_team_trellis_preset.py",
+            )
+            self.assertEqual(raised.exception.exit_code, 9)
+            self.assertIn('"status": "failed"', raised.exception.error_tail)
 
     def test_cli_install_and_upgrade_stay_in_disposable_prefix(self) -> None:
         self.assertIn('TRELLIS_CLI_PREFIX="$WORK_DIR/trellis-cli-prefix"', self.text)

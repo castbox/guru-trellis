@@ -1185,12 +1185,12 @@
   ],
   "secondary_callers": [
     {
-      "id": "helper-generated_shebang-da71f59de8d1",
+      "id": "helper-generated_shebang-07004913deeb",
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
       "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "da71f59de8d15f7a9fad65a7cf961eaadec0d089b340fd2abdd58c626ecc3e25",
+      "anchor_sha256": "07004913deebd9f3001b6ea126c8a0c172e934e76c4ede7a2b546ad4d61a53fc",
       "ordinal": 1
     },
     {
@@ -1356,12 +1356,12 @@
       "ordinal": 1
     },
     {
-      "id": "package-runtime-python_subprocess_second_hop-004063a10598",
+      "id": "package-runtime-python_subprocess_second_hop-f16c2314ce2a",
       "owner": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
-      "anchor_sha256": "004063a10598f725ebd26e7a0e373c7b5f3828f5b07ef03daee7a1347a8a5f44",
+      "anchor_sha256": "f16c2314ce2a58849f85dbaa00ebe495a6be7171d275b3c682acdc9ee38de6c3",
       "ordinal": 1
     },
     {

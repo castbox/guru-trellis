@@ -525,6 +525,13 @@ target and covers marketplace, preset, workflow, platform equality, ownership,
 update/reapply, sidecars, README commands, and redaction. Source-session owner
 state is ignored runtime and is deleted after direct consumption.
 
+The READMEs also state that a failed compatibility matrix retains a bounded
+credential-safe stage/cell/command/exit tail before temporary cleanup. Missing
+or malformed matrix terminal output is explicit
+`unparseable_failure_output`; command stdout/stderr hashes and sizes remain
+supplementary evidence. These facts are standalone-verifier-private and never
+enter Finalizer or business closeout DTOs.
+
 Install/update text requires canonical/installed/shared/Codex/Cursor/Claude byte
 identity, source and installed validation, real-wrapper eval, preset reapply
 after `trellis update`, dogfood drift, and zero unresolved `.new`/`.bak`. It
@@ -554,6 +561,16 @@ artifact. Current archive contains exactly six durable core files. Legacy
 closeout-plan, task-bearing verifier, and verification re-entry schemas remain
 immutable compatibility assets but are absent from current Interface, manifest,
 eval, runtime, and documentation inventories.
+
+The READMEs also explain installed pre-PR provenance reprepare without exposing
+private implementation DTOs. The business reviewed checkout owns the target
+manifest tail and publication lineage; a separate clean detached extension
+source checkout supplies canonical preset bytes. Self-hosted source binds
+reviewed HEAD, while installed source binds the current manifest's immutable
+canonical repo/ref/commit through exact-OID fetch. The apply executable comes
+from source and receives the business checkout through `--repo`; neither the
+installed manifest nor this source checkout invokes or substitutes for the
+standalone verifier.
 
 The READMEs also name active semantic `guru-merge-task-pr`, its workflow and
 standalone inputs, three exits, repo-bound `gh` fact/merge operations,
