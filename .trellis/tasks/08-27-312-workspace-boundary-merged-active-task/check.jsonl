@@ -1,8 +1,0 @@
-{"file":".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/prd.md","reason":"独立核对 R1-R5、A1-A9、Issue #312 与 Chengtuo #252 live proof 边界。"}
-{"file":".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/design.md","reason":"独立核对逐路径 Git 判定、review metadata fail-closed、双 owner 对称性与 rollback。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"验证允许条件仅为 current-base-tracked 且逐路径 clean，所有真实越界仍 fail closed。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"验证完整 fixture、distribution、downstream live proof 与 evidence adequacy。"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"确认 workspace/task identity、Git/GitHub side-effect 与 phase route 未改变。"}
-{"file":".trellis/spec/preset/installer.md","reason":"验证 canonical/installed/spec/manifest/platform managed parity 与 reapply。"}
-{"file":".trellis/spec/docs/requirements-design-test-ssot.md","reason":"审核 rdt_aligned、无 task-local contribution 和 shared current .40 不变。"}
-{"file":".trellis/spec/architecture/baseline-usage.md","reason":"审核 Architecture no-impact、无 contribution/ADR 与并行 base evolution 处理。"}

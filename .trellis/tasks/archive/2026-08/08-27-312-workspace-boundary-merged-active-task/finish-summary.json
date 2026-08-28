@@ -1,0 +1,188 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-28T06:08:28Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-27-312-workspace-boundary-merged-active-task",
+    "title": "#312 允许已合并的 active task 在原 worktree 中通过 workspace boundary",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/312-workspace-boundary-merged-active-task",
+    "commits": [
+      "b9f428c803ca3009b545ff13299348155718e6a4",
+      "68e138a5b8543a94d089266e2f0aa02c49f15d33"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/check.jsonl",
+      ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/design.md",
+      ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/implement.jsonl",
+      ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/implement.md",
+      ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/issue-scope-ledger.json",
+      ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/prd.md",
+      ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/task.json",
+      ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/design.md",
+      ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/implement.md",
+      ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/prd.md",
+      ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/task.json",
+      "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+      "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      312
+    ],
+    "close_issues": [
+      312
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/314"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#312 允许已合并的 active task 在原 worktree 中通过 workspace boundary",
+    "outcome": "修复 `guru-finalize-task` 与 `guru-review-task-publication` 的 source checkout task 文件分类。",
+    "changed_behavior": [
+      "修复 `guru-finalize-task` 与 `guru-review-task-publication` 的 source checkout task 文件分类。",
+      "仅放行当前 base/index 跟踪且 staged/worktree 均 clean 的普通规划文件。",
+      "保留 untracked、staged、unstaged、deleted、renamed、review metadata 与 `reviews/**` 的 fail-closed 阻断。",
+      "对齐 #312 Issue Scope Ledger 的 primary/close reason，满足当前 publication/finalizer identity 合同。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/design.md",
+          ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/implement.md",
+          ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/prd.md",
+          ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/design.md",
+          ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/implement.md",
+          ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/prd.md"
+        ],
+        "change": "修复 `guru-finalize-task` 与 `guru-review-task-publication` 的 source checkout task 文件分类。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "修复 `guru-finalize-task` 与 `guru-review-task-publication` 的 source checkout task 文件分类。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md"
+        ],
+        "change": "修复 `guru-finalize-task` 与 `guru-review-task-publication` 的 source checkout task 文件分类。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py"
+        ],
+        "change": "修复 `guru-finalize-task` 与 `guru-review-task-publication` 的 source checkout task 文件分类。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/check.jsonl",
+          ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/implement.jsonl",
+          ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/issue-scope-ledger.json",
+          ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/task.json",
+          ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/task.json"
+        ],
+        "change": "修复 `guru-finalize-task` 与 `guru-review-task-publication` 的 source checkout task 文件分类。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#312"
+      ],
+      "pr_refs": [
+        "PR #314"
+      ],
+      "branches": [
+        "codex/312-workspace-boundary-merged-active-task"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/check.jsonl",
+        ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/design.md",
+        ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/implement.jsonl",
+        ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/implement.md",
+        ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/issue-scope-ledger.json",
+        ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/prd.md",
+        ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/task.json",
+        ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/design.md",
+        ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/implement.md",
+        ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/prd.md",
+        ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/task.json",
+        "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+        "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#312 允许已合并的 active task 在原 worktree 中通过 workspace boundary",
+        "修复 `guru-finalize-task` 与 `guru-review-task-publication` 的 s",
+        "完成 extension.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#312 允许已合并的 active task 在原 worktree 中通过 workspace boundary\n修复 `guru-finalize-task` 与 `guru-review-task-publication` 的 source checkout task 文件分类。\n仅放行当前 base/index 跟踪且 staged/worktree 均 clean 的普通规划文件。\n保留 untracked、staged、unstaged、deleted、renamed、review metadata 与 `reviews/**` 的 fail-closed 阻断。\n对齐 #312 Issue Scope Ledger 的 primary/close reason，满足当前 publication/finalizer identity 合同。\n修复 `guru-finalize-task` 与 `guru-review-task-publication` 的 s\n完成 extension.json 相关变更"
+  }
+}
