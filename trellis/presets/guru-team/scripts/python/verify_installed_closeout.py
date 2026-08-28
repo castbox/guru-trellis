@@ -492,18 +492,34 @@ def install_fake_commands(fake_bin: Path) -> None:
         fake_bin / "git",
         managed_shebang + """
 import os
+import subprocess
 import sys
 
 args = sys.argv[1:]
+real_git = os.environ["INSTALLED_CLOSEOUT_REAL_GIT"]
+configured = subprocess.run(
+    [real_git, "config", "--get", "remote.origin.url"],
+    text=True,
+    capture_output=True,
+    check=False,
+).stdout.strip()
+canonical_source = "https://github.com/castbox/guru-trellis.git"
+visible_origin = (
+    canonical_source
+    if configured == canonical_source
+    else "https://github.com/microsoft/PowerToys.git"
+)
 if args == ["config", "--null", "--show-origin", "--get-all", "remote.origin.url"]:
-    sys.stdout.buffer.write(b"command line:\\0https://github.com/microsoft/PowerToys.git\\0")
+    sys.stdout.buffer.write(("command line:\\0" + visible_origin + "\\0").encode())
     raise SystemExit(0)
 if args == ["config", "--null", "--show-origin", "--get-all", "remote.origin.pushurl"]:
     raise SystemExit(1)
 if args[:2] == ["remote", "get-url"]:
-    print("https://github.com/microsoft/PowerToys.git")
+    print(visible_origin)
     raise SystemExit(0)
-real_git = os.environ["INSTALLED_CLOSEOUT_REAL_GIT"]
+if args[:3] == ["fetch", "--depth=1", "origin"] and configured == canonical_source:
+    source_repo = os.environ["INSTALLED_CLOSEOUT_EXTENSION_SOURCE_REPO"]
+    os.execv(real_git, [real_git, "fetch", "--depth=1", source_repo, *args[3:]])
 if args[:3] == ["ls-remote", "--heads", "origin"]:
     remote = os.environ["INSTALLED_CLOSEOUT_REMOTE"]
     os.execv(real_git, [real_git, "ls-remote", "--heads", remote, *args[3:]])
@@ -729,6 +745,9 @@ def run_closeout(
     env.update({
         "PATH": f"{fake_bin}{os.pathsep}{env.get('PATH', '')}",
         "INSTALLED_CLOSEOUT_REAL_GIT": real_git,
+        "INSTALLED_CLOSEOUT_EXTENSION_SOURCE_REPO": str(
+            Path(__file__).resolve().parents[5]
+        ),
         "INSTALLED_CLOSEOUT_REMOTE": str(remote),
         "INSTALLED_CLOSEOUT_BRANCH": branch,
         "INSTALLED_CLOSEOUT_PR_NUMBER": str(issue),
@@ -760,52 +779,68 @@ def run_closeout(
         encoding="utf-8",
     )
     semantic_review = runtime_dir / f"{issue}-semantic-review.json"
-    semantic_review.write_text(
-        json.dumps(
-            {
-                "schema_version": "3.0",
-                "skill_id": "guru-finalize-task",
-                "review": {
-                    "status": "passed",
-                    "summary": "The installed Finalizer plan is sufficient for the complete non-extension closeout transaction.",
-                },
-                "route": {
-                    "typed_exit": "ready_for_merge",
-                    "consumer": {
-                        "kind": "skill",
-                        "id": "guru-merge-task-pr",
-                    },
-                    "output": {"materialization": "executor"},
-                },
-            },
-            ensure_ascii=False,
-            indent=2,
+
+    def write_semantic_review(typed_exit: str) -> None:
+        consumer = (
+            "guru-finalize-task"
+            if typed_exit == "reprepare_required"
+            else "guru-merge-task-pr"
         )
-        + "\n",
-        encoding="utf-8",
-    )
-    finalization_input_rel = finalization_input.relative_to(root).as_posix()
+        semantic_review.write_text(
+            json.dumps(
+                {
+                    "schema_version": "3.0",
+                    "skill_id": "guru-finalize-task",
+                    "review": {
+                        "status": "passed",
+                        "summary": (
+                            "The installed Finalizer provenance reprepare is required "
+                            "before the non-extension closeout transaction."
+                            if typed_exit == "reprepare_required"
+                            else "The installed Finalizer plan is sufficient for the "
+                            "complete non-extension closeout transaction."
+                        ),
+                    },
+                    "route": {
+                        "typed_exit": typed_exit,
+                        "consumer": {"kind": "skill", "id": consumer},
+                        "output": {"materialization": "executor"},
+                    },
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+    write_semantic_review("reprepare_required")
     semantic_review_rel = semantic_review.relative_to(root).as_posix()
-    common_options = [
-        "--root", str(root),
-        "--json",
-        "--input", finalization_input_rel,
-        "--repo", REPO,
-        "--base-branch", BASE_BRANCH,
-        "--remote", "origin",
-    ]
-    preview_command = [str(wrappers["preview-finalization"]), *common_options]
-    record_command = [
-        str(wrappers["record-finalization-gate"]),
-        *common_options,
-        "--review-input",
-        semantic_review_rel,
-    ]
-    check_command = [str(wrappers["check-finalization-gate"]), *common_options]
-    execute_command = [
-        str(wrappers["execute-finalization-transition"]),
-        *common_options,
-    ]
+
+    def commands_for(input_path: Path) -> tuple[list[str], list[str], list[str], list[str]]:
+        common_options = [
+            "--root", str(root),
+            "--json",
+            "--input", input_path.relative_to(root).as_posix(),
+            "--repo", REPO,
+            "--base-branch", BASE_BRANCH,
+            "--remote", "origin",
+        ]
+        return (
+            [str(wrappers["preview-finalization"]), *common_options],
+            [
+                str(wrappers["record-finalization-gate"]),
+                *common_options,
+                "--review-input",
+                semantic_review_rel,
+            ],
+            [str(wrappers["check-finalization-gate"]), *common_options],
+            [str(wrappers["execute-finalization-transition"]), *common_options],
+        )
+
+    preview_command, record_command, check_command, execute_command = commands_for(
+        finalization_input
+    )
 
     resolved_gh = subprocess.run(
         ["/bin/sh", "-c", "command -v gh"],
@@ -835,15 +870,73 @@ def run_closeout(
         )
 
     dry_payload = json.loads(run(preview_command, root, env=env).stdout)
-    if dry_payload.get("side_effects") is not False:
-        raise RuntimeError("installed Finalizer preview reported side effects")
+    if (
+        dry_payload.get("side_effects") is not False
+        or dry_payload.get("transaction_state") != "reprepare_required"
+    ):
+        raise RuntimeError("installed Finalizer preview did not require provenance reprepare")
+    digest = dry_payload["closeout_plan_digest"]
+    recorded_payload = json.loads(run(record_command, root, env=env).stdout)
+    if (
+        recorded_payload.get("typed_exit") != "reprepare_required"
+        or recorded_payload.get("plan_digest") != digest
+    ):
+        raise RuntimeError("installed Finalizer recorder did not bind provenance reprepare")
+    checked_payload = json.loads(run(check_command, root, env=env).stdout)
+    if (
+        checked_payload.get("typed_exit") != "reprepare_required"
+        or checked_payload.get("plan_digest") != digest
+        or checked_payload.get("transaction_state") != "reprepare_required"
+    ):
+        raise RuntimeError("installed Finalizer checker did not preserve provenance reprepare")
+    reprepare_payload = single_json_stdout(
+        run(execute_command, root, env=env),
+        "installed Finalizer provenance reprepare",
+    )
+    reprepare_output = reprepare_payload.get("output")
+    if (
+        reprepare_payload.get("typed_exit") != "reprepare_required"
+        or reprepare_payload.get("replacement_transaction_created") is not True
+        or not isinstance(reprepare_output, dict)
+        or reprepare_output.get("exit_id") != "reprepare_required"
+        or reprepare_output.get("reason_code") != "provenance_tail_required"
+    ):
+        raise RuntimeError("installed Finalizer did not complete provenance reprepare")
+
+    reprepare_input = runtime_dir / f"{issue}-reprepare-preview.json"
+    write_json(
+        reprepare_input,
+        {
+            "profile": "reprepare_preview",
+            "mode": "workflow",
+            **{
+                key: reprepare_output[key]
+                for key in (
+                    "task_ref",
+                    "reason_code",
+                    "branch_review_commit",
+                    "publication_head",
+                )
+            },
+        },
+    )
+    write_semantic_review("ready_for_merge")
+    preview_command, record_command, check_command, execute_command = commands_for(
+        reprepare_input
+    )
+    dry_payload = json.loads(run(preview_command, root, env=env).stdout)
+    if (
+        dry_payload.get("side_effects") is not False
+        or dry_payload.get("transaction_state") != "prepared"
+    ):
+        raise RuntimeError("installed Finalizer reprepared preview was not publication-ready")
     digest = dry_payload["closeout_plan_digest"]
     recorded_payload = json.loads(run(record_command, root, env=env).stdout)
     if (
         recorded_payload.get("typed_exit") != "ready_for_merge"
         or recorded_payload.get("plan_digest") != digest
     ):
-        raise RuntimeError("installed Finalizer recorder did not bind the previewed plan")
+        raise RuntimeError("installed Finalizer recorder did not bind the reprepared plan")
     gate_path = Path(recorded_payload["artifact_path"])
     gate_rel = gate_path.relative_to(root).as_posix()
     checked_payload = json.loads(run(check_command, root, env=env).stdout)
@@ -852,7 +945,7 @@ def run_closeout(
         or checked_payload.get("plan_digest") != digest
         or checked_payload.get("transaction_state") != "prepared"
     ):
-        raise RuntimeError("installed Finalizer checker did not preserve the prepared plan")
+        raise RuntimeError("installed Finalizer checker did not preserve the reprepared plan")
 
     config_path = root / ".trellis/config.yaml"
     original_config = config_path.read_bytes() if config_path.exists() else None
@@ -1074,7 +1167,7 @@ def run_closeout(
     public_invoke = [
         str(wrappers["invoke"]),
         "--input",
-        finalization_input_rel,
+        finalization_input.relative_to(root).as_posix(),
     ]
     ready_payload = json.loads(
         run([*public_invoke, "--owner-result", gate_rel], root, env=env).stdout

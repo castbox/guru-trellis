@@ -46,10 +46,101 @@ DEFAULT_BEFORE_TAG = "v0.6.5-guru.10"
 DEFAULT_BEFORE_CLI = "0.6.5"
 DEFAULT_TARGET_CLI = "0.6.15"
 DEFAULT_PACKAGE = "@mindfoldhq/trellis"
+FAILURE_TAIL_LIMIT = 2000
+FAILURE_STAGES = {"pre-matrix", "matrix-cell", "post-matrix"}
 
 
 class MatrixError(RuntimeError):
     """A deterministic matrix precondition or cell check failed."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        stage: str = "pre-matrix",
+        cell_id: str | None = None,
+        command_label: str = "matrix-validation",
+        exit_code: int = 2,
+        error_tail: str | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.stage = stage
+        self.cell_id = cell_id
+        self.command_label = command_label
+        self.exit_code = exit_code
+        self.error_tail = error_tail if error_tail is not None else message
+
+    def with_context(self, stage: str, cell_id: str | None) -> "MatrixError":
+        return MatrixError(
+            str(self),
+            stage=stage,
+            cell_id=cell_id,
+            command_label=self.command_label,
+            exit_code=self.exit_code,
+            error_tail=self.error_tail,
+        )
+
+
+def _sanitize_failure_tail(value: str) -> str:
+    text = value.replace("\x00", "")
+    text = re.sub(
+        r"(?is)-----BEGIN [^-\r\n]*PRIVATE KEY-----.*?(?:-----END [^-\r\n]*PRIVATE KEY-----|$)",
+        "<redacted-private-key>",
+        text,
+    )
+    text = re.sub(r"(?i)(https?://)[^/\s@]+@", r"\1<redacted>@", text)
+    text = re.sub(
+        r"(?i)(github_pat_|ghp_|gho_|ghu_|ghs_|ghr_)[A-Za-z0-9_]+",
+        "<redacted-token>",
+        text,
+    )
+    text = re.sub(
+        r"(?i)(x-access-token:)[^@\s]+",
+        r"\1<redacted>",
+        text,
+    )
+    text = re.sub(
+        r"(?i)(authorization:\s*(?:bearer|basic)\s+)[^\s]+",
+        r"\1<redacted>",
+        text,
+    )
+    text = re.sub(
+        r"(?i)(\b[A-Z0-9_]*(?:TOKEN|PASSWORD|SECRET|API[_-]?KEY|ACCESS[_-]?KEY)[A-Z0-9_]*\b\s*[=:]\s*)[^\s&]+",
+        r"\1<redacted>",
+        text,
+    )
+    text = re.sub(
+        r"(?i)([?&](?:token|access_token|api[_-]?key|awsaccesskeyid|x-amz-(?:credential|signature)|x-goog-(?:credential|signature))=)[^&\s]+",
+        r"\1<redacted>",
+        text,
+    )
+    return text[-FAILURE_TAIL_LIMIT:]
+
+
+def _stable_command_label(argv: Sequence[str]) -> str:
+    executable = Path(str(argv[0])).name if argv else "unknown-command"
+    if executable in {"python", "python3", "resolve-python.sh"} and len(argv) > 1:
+        for value in argv[1:]:
+            candidate = Path(str(value)).name
+            if candidate.endswith((".py", ".sh")):
+                return candidate
+    return executable
+
+
+def matrix_failure_payload(exc: MatrixError) -> dict[str, Any]:
+    stage = exc.stage if exc.stage in FAILURE_STAGES else "pre-matrix"
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "status": "failed",
+        "failure": {
+            "kind": "matrix_failure",
+            "stage": stage,
+            "cell_id": exc.cell_id if stage == "matrix-cell" else None,
+            "command_label": exc.command_label,
+            "exit_code": exc.exit_code,
+            "error_tail": _sanitize_failure_tail(exc.error_tail),
+        },
+    }
 
 
 def _load_json(path: Path) -> Any:
@@ -825,7 +916,10 @@ def _run(
         log.write_text(output, encoding="utf-8")
     if completed.returncode != 0:
         raise MatrixError(
-            f"command failed ({completed.returncode}): {' '.join(argv)}\n{output[-4000:]}"
+            f"command failed ({completed.returncode}): {_stable_command_label(argv)}",
+            command_label=_stable_command_label(argv),
+            exit_code=completed.returncode,
+            error_tail=output,
         )
     return output if capture else ""
 
@@ -1049,7 +1143,12 @@ def _apply_preset(
         try:
             payload = _require_dict(json.loads(output), "preset result")
         except (json.JSONDecodeError, MatrixError) as exc:
-            raise MatrixError(f"preset returned invalid JSON: {output[-4000:]}") from exc
+            raise MatrixError(
+                f"preset returned invalid JSON: {output[-4000:]}",
+                command_label=_stable_command_label(argv),
+                exit_code=completed.returncode,
+                error_tail=output,
+            ) from exc
         return completed.returncode, output, payload
 
     returncode, output, payload = invoke()
@@ -1060,7 +1159,10 @@ def _apply_preset(
         return {"status": "passed", "reconciled_backups": []}
     if returncode != 2 or previous_root is None or payload.get("status") != "conflict":
         raise MatrixError(
-            f"preset apply failed ({returncode}): {output[-4000:]}"
+            f"preset apply failed ({returncode}): {output[-4000:]}",
+            command_label=_stable_command_label(argv),
+            exit_code=returncode,
+            error_tail=output,
         )
 
     skill_packages = _require_dict(
@@ -1889,108 +1991,123 @@ def _run_cell(
 
 
 def run_matrix(args: argparse.Namespace) -> dict[str, Any]:
-    repo_root = args.repo_root.resolve()
-    work_root = args.work_root.resolve()
-    if work_root.exists() and any(work_root.iterdir()):
-        raise MatrixError(f"matrix work root must be empty: {work_root}")
-    work_root.mkdir(parents=True, exist_ok=True)
-    matrix = build_matrix(repo_root)
-    source_before = source_state(repo_root)
-    before_commit = _git(repo_root, "rev-parse", f"{args.before_tag}^{{}}")
-    before_tag_object = _git(repo_root, "rev-parse", args.before_tag)
-    results = []
-    for cell in matrix["cells"]:
-        cell_root = work_root / str(cell["cell_id"])
-        cell_root.mkdir()
-        result = _run_cell(
-            repo_root=repo_root,
-            cell_root=cell_root,
-            platform=str(cell["platform"]),
-            scenario=str(cell["scenario"]),
-            workflow_source=args.workflow_source,
-            before_tag=args.before_tag,
-            before_cli=args.before_cli,
-            target_cli=args.target_cli,
-            allow_local_sample=args.allow_local_sample,
+    stage = "pre-matrix"
+    cell_id: str | None = None
+    try:
+        repo_root = args.repo_root.resolve()
+        work_root = args.work_root.resolve()
+        if work_root.exists() and any(work_root.iterdir()):
+            raise MatrixError(f"matrix work root must be empty: {work_root}")
+        work_root.mkdir(parents=True, exist_ok=True)
+        matrix = build_matrix(repo_root)
+        source_before = source_state(repo_root)
+        before_commit = _git(repo_root, "rev-parse", f"{args.before_tag}^{{}}")
+        before_tag_object = _git(repo_root, "rev-parse", args.before_tag)
+        results = []
+        for cell in matrix["cells"]:
+            stage = "matrix-cell"
+            cell_id = str(cell["cell_id"])
+            cell_root = work_root / cell_id
+            cell_root.mkdir()
+            result = _run_cell(
+                repo_root=repo_root,
+                cell_root=cell_root,
+                platform=str(cell["platform"]),
+                scenario=str(cell["scenario"]),
+                workflow_source=args.workflow_source,
+                before_tag=args.before_tag,
+                before_cli=args.before_cli,
+                target_cli=args.target_cli,
+                allow_local_sample=args.allow_local_sample,
+            )
+            result["cell_id"] = cell["cell_id"]
+            (cell_root / "cell-summary.json").write_bytes(_canonical_json(result))
+            results.append(result)
+
+        stage = "post-matrix"
+        cell_id = None
+
+        representative = next(
+            work_root / str(row["cell_id"]) / "project"
+            for row in matrix["cells"]
+            if row["scenario"] == "clean"
         )
-        result["cell_id"] = cell["cell_id"]
-        (cell_root / "cell-summary.json").write_bytes(_canonical_json(result))
-        results.append(result)
+        parallel_root = work_root / "parallel-finish"
+        installed_python = representative / ".trellis/guru-team/runtime/resolve-python.sh"
+        installed_runtime = representative / ".trellis/guru-team/runtime"
+        parallel_helper = (
+            repo_root
+            / "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py"
+        )
+        parallel_output = _run(
+            (
+                str(installed_python),
+                str(representative),
+                str(installed_runtime),
+                str(parallel_helper),
+                "--installed-repo",
+                str(representative),
+                "--work-root",
+                str(parallel_root),
+            ),
+            capture=True,
+            log=work_root / "parallel-finish.log",
+        )
+        parallel_finish = _require_dict(
+            json.loads(parallel_output), "parallel Finish compatibility summary"
+        )
+        if parallel_finish.get("status") != "passed":
+            raise MatrixError("parallel Finish compatibility fixture did not pass")
 
-    representative = next(
-        work_root / str(row["cell_id"]) / "project"
-        for row in matrix["cells"]
-        if row["scenario"] == "clean"
-    )
-    parallel_root = work_root / "parallel-finish"
-    installed_python = representative / ".trellis/guru-team/runtime/resolve-python.sh"
-    installed_runtime = representative / ".trellis/guru-team/runtime"
-    parallel_helper = (
-        repo_root
-        / "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py"
-    )
-    parallel_output = _run(
-        (
-            str(installed_python),
-            str(representative),
-            str(installed_runtime),
-            str(parallel_helper),
-            "--installed-repo",
-            str(representative),
-            "--work-root",
-            str(parallel_root),
-        ),
-        capture=True,
-        log=work_root / "parallel-finish.log",
-    )
-    parallel_finish = _require_dict(
-        json.loads(parallel_output), "parallel Finish compatibility summary"
-    )
-    if parallel_finish.get("status") != "passed":
-        raise MatrixError("parallel Finish compatibility fixture did not pass")
+        source_after = source_state(repo_root)
+        if source_after["identity_sha256"] != source_before["identity_sha256"]:
+            raise MatrixError("source repository changed while compatibility matrix was running")
 
-    source_after = source_state(repo_root)
-    if source_after["identity_sha256"] != source_before["identity_sha256"]:
-        raise MatrixError("source repository changed while compatibility matrix was running")
-
-    legacy_representative = work_root.parent / "project"
-    if legacy_representative.exists():
-        raise MatrixError(f"representative install root already exists: {legacy_representative}")
-    shutil.copytree(
-        representative,
-        legacy_representative,
-        ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc", "*.pyo"),
-    )
-    summary = {
-        "schema_version": SCHEMA_VERSION,
-        "status": "passed",
-        "source_commit": source_before["head"],
-        "source_state": source_before,
-        "source_identity_sha256": source_before["identity_sha256"],
-        "before_tag": args.before_tag,
-        "before_tag_object": before_tag_object,
-        "before_commit": before_commit,
-        "before_cli": args.before_cli,
-        "target_cli": args.target_cli,
-        "workflow_source": args.workflow_source,
-        "platform_inventory_sha256": matrix["platform_inventory_sha256"],
-        "matrix_sha256": matrix["matrix_sha256"],
-        "cell_count": len(results),
-        "cells": results,
-        "parallel_finish": parallel_finish,
-        "representative_root": "project",
-        "unpublished_candidate_boundary": any(
-            row["workflow_sample"] == "public_plus_local_candidate" for row in results
-        ),
-        "external_boundaries": [
-            "A github_pr route requires a separately confirmed dedicated disposable GitHub repository"
-        ]
-        if parallel_finish.get("a", {}).get("real_github_verified") is not True
-        else [],
-    }
-    summary["summary_sha256"] = _digest(summary)
-    (work_root / "matrix-summary.json").write_bytes(_canonical_json(summary))
-    return summary
+        legacy_representative = work_root.parent / "project"
+        if legacy_representative.exists():
+            raise MatrixError(
+                f"representative install root already exists: {legacy_representative}"
+            )
+        shutil.copytree(
+            representative,
+            legacy_representative,
+            ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc", "*.pyo"),
+        )
+        summary = {
+            "schema_version": SCHEMA_VERSION,
+            "status": "passed",
+            "source_commit": source_before["head"],
+            "source_state": source_before,
+            "source_identity_sha256": source_before["identity_sha256"],
+            "before_tag": args.before_tag,
+            "before_tag_object": before_tag_object,
+            "before_commit": before_commit,
+            "before_cli": args.before_cli,
+            "target_cli": args.target_cli,
+            "workflow_source": args.workflow_source,
+            "platform_inventory_sha256": matrix["platform_inventory_sha256"],
+            "matrix_sha256": matrix["matrix_sha256"],
+            "cell_count": len(results),
+            "cells": results,
+            "parallel_finish": parallel_finish,
+            "representative_root": "project",
+            "unpublished_candidate_boundary": any(
+                row["workflow_sample"] == "public_plus_local_candidate"
+                for row in results
+            ),
+            "external_boundaries": [
+                "A github_pr route requires a separately confirmed dedicated disposable GitHub repository"
+            ]
+            if parallel_finish.get("a", {}).get("real_github_verified") is not True
+            else [],
+        }
+        summary["summary_sha256"] = _digest(summary)
+        (work_root / "matrix-summary.json").write_bytes(_canonical_json(summary))
+        return summary
+    except MatrixError as exc:
+        raise exc.with_context(stage, cell_id) from exc
+    except (OSError, json.JSONDecodeError) as exc:
+        raise MatrixError(str(exc), stage=stage, cell_id=cell_id) from exc
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -2029,8 +2146,11 @@ def main() -> int:
             )
         else:
             result = run_matrix(args)
-    except (MatrixError, OSError, json.JSONDecodeError) as exc:
-        print(json.dumps({"status": "error", "error": str(exc)}, ensure_ascii=False))
+    except MatrixError as exc:
+        print(json.dumps(matrix_failure_payload(exc), ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+        return 2
+    except (OSError, json.JSONDecodeError) as exc:
+        print(json.dumps(matrix_failure_payload(MatrixError(str(exc))), ensure_ascii=False, sort_keys=True, separators=(",", ":")))
         return 2
     print(json.dumps(result, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
     return 0

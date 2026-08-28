@@ -1701,6 +1701,11 @@ to the standalone caller; neither has a Finalizer projection or workflow marker.
 
 Private execution and semantic result state is ignored source-session runtime,
 removed after direct consumption, and never written below `.trellis/tasks/**`.
+Current execution facts schema 5.0 adds one closed nullable failure object. A
+matrix failure records stage, applicable cell id, stable command label, exit
+code, and bounded credential-safe tail; malformed output records
+`unparseable_failure_output`. This remains package-private execution evidence
+and creates no public exit, Finalizer projection, or shared resolver.
 Changed paths, installed manifests, business repository state, Publication,
 Finalizer, finish-work, re-entry, and recovery cannot make this Skill applicable.
 Legacy workflow/task-bearing input, `not_required`, `return_to_task_work`, and
@@ -1733,6 +1738,17 @@ then converges metadata, archives, and preserves Ready or marks Draft Ready.
 Both modes produce the same minimal Merge handoff. Finalizer does
 not invoke verifier, emit `verification_required`, accept verification re-entry,
 read verifier owner state, or archive a verifier artifact.
+
+The package also owns one private closed `self_hosted|installed` provenance
+source binding for pre-PR reprepare. A target reviewed checkout owns only the
+business manifest mutation and tail lineage. A separate extension source
+checkout owns only canonical preset implementation bytes. Self-hosted binds
+source to target reviewed HEAD; installed binds source to the clean immutable
+repo/ref/commit in the target reviewed manifest and obtains it through
+canonical-origin exact-OID detached fetch. The apply entry comes from source
+and receives the target checkout through `--repo`. Binding/parser/checkout and
+mode-aware tail validation remain package-local; they do not import or call
+the standalone verifier lifecycle or expose a shared source resolver.
 
 For a transaction-bound recovery whose next transition is `archive`,
 `push_archive`, or `mark_ready`, exact transaction validation precedes pre-PR

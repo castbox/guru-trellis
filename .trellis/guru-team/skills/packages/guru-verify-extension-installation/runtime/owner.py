@@ -570,7 +570,7 @@ def task_commit_snapshot_entry(
 
 EXTENSION_VERIFICATION_SKILL_ID = "guru-verify-extension-installation"
 
-EXTENSION_VERIFICATION_SCHEMA_VERSION = "4.0"
+EXTENSION_VERIFICATION_SCHEMA_VERSION = "5.0"
 
 EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION = "5.0"
 
@@ -600,6 +600,14 @@ EXTENSION_VERIFICATION_ASSET_CATEGORIES = (
 EXTENSION_VERIFICATION_TARGET_CHECKOUT_OWNER = "target_checkout"
 
 EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER = "extension_source_checkout"
+
+EXTENSION_VERIFICATION_FAILURE_TAIL_LIMIT = 2000
+
+EXTENSION_VERIFICATION_FAILURE_STAGES = {
+    "pre-matrix",
+    "matrix-cell",
+    "post-matrix",
+}
 
 EXTENSION_VERIFICATION_CAPABILITY_ASSET_CATEGORIES = {
     "marketplace_index": ("workflow",),
@@ -712,6 +720,99 @@ def extension_verification_command_evidence(
         "stderr_sha256": evidence["stderr_sha256"],
         "stdout_size_bytes": evidence["stdout_size_bytes"],
         "stderr_size_bytes": evidence["stderr_size_bytes"],
+    }
+
+def extension_verification_sanitize_failure_tail(value: str) -> str:
+    text = value.replace("\x00", "")
+    text = re.sub(
+        r"(?is)-----BEGIN [^-\r\n]*PRIVATE KEY-----.*?(?:-----END [^-\r\n]*PRIVATE KEY-----|$)",
+        "<redacted-private-key>",
+        text,
+    )
+    text = re.sub(r"(?i)(https?://)[^/\s@]+@", r"\1<redacted>@", text)
+    text = re.sub(
+        r"(?i)(github_pat_|ghp_|gho_|ghu_|ghs_|ghr_)[A-Za-z0-9_]+",
+        "<redacted-token>",
+        text,
+    )
+    text = re.sub(
+        r"(?i)(x-access-token:)[^@\s]+",
+        r"\1<redacted>",
+        text,
+    )
+    text = re.sub(
+        r"(?i)(authorization:\s*(?:bearer|basic)\s+)[^\s]+",
+        r"\1<redacted>",
+        text,
+    )
+    text = re.sub(
+        r"(?i)(\b[A-Z0-9_]*(?:TOKEN|PASSWORD|SECRET|API[_-]?KEY|ACCESS[_-]?KEY)[A-Z0-9_]*\b\s*[=:]\s*)[^\s&]+",
+        r"\1<redacted>",
+        text,
+    )
+    text = re.sub(
+        r"(?i)([?&](?:token|access_token|api[_-]?key|awsaccesskeyid|x-amz-(?:credential|signature)|x-goog-(?:credential|signature))=)[^&\s]+",
+        r"\1<redacted>",
+        text,
+    )
+    return text[-EXTENSION_VERIFICATION_FAILURE_TAIL_LIMIT:]
+
+def extension_verification_throwaway_failure(
+    proc: subprocess.CompletedProcess[str],
+) -> dict[str, Any] | None:
+    if proc.returncode == 0:
+        return None
+    for line in reversed(proc.stdout.splitlines()):
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(payload, dict) or payload.get("status") != "failed":
+            continue
+        failure = payload.get("failure")
+        if not isinstance(failure, dict) or set(failure) != {
+            "kind",
+            "stage",
+            "cell_id",
+            "command_label",
+            "exit_code",
+            "error_tail",
+        }:
+            continue
+        stage = failure.get("stage")
+        cell_id = failure.get("cell_id")
+        command_label = failure.get("command_label")
+        exit_code = failure.get("exit_code")
+        error_tail = failure.get("error_tail")
+        if (
+            failure.get("kind") != "matrix_failure"
+            or stage not in EXTENSION_VERIFICATION_FAILURE_STAGES
+            or (stage == "matrix-cell" and not isinstance(cell_id, str))
+            or (stage != "matrix-cell" and cell_id is not None)
+            or not isinstance(command_label, str)
+            or not command_label
+            or not re.fullmatch(r"[A-Za-z0-9._:-]+", command_label)
+            or not isinstance(exit_code, int)
+            or isinstance(exit_code, bool)
+            or not isinstance(error_tail, str)
+        ):
+            continue
+        return {
+            "kind": "matrix_failure",
+            "stage": stage,
+            "cell_id": cell_id,
+            "command_label": command_label,
+            "exit_code": exit_code,
+            "error_tail": extension_verification_sanitize_failure_tail(error_tail),
+        }
+    combined = "\n".join(part for part in (proc.stdout, proc.stderr) if part)
+    return {
+        "kind": "unparseable_failure_output",
+        "stage": None,
+        "cell_id": None,
+        "command_label": "verify-throwaway-installation",
+        "exit_code": proc.returncode,
+        "error_tail": extension_verification_sanitize_failure_tail(combined),
     }
 
 def extension_verification_asset_inventory_summary(
@@ -829,6 +930,70 @@ def extension_verification_asset_inventory_summary(
         "relation_errors": relation_errors,
         "complete": complete,
     }
+
+def extension_verification_postcheck_failure(
+    commands: Sequence[Mapping[str, Any]],
+    asset_inventory: Mapping[str, Any],
+    ownership: Mapping[str, Any],
+    sidecars: Mapping[str, Any],
+    capabilities: Sequence[Mapping[str, Any]],
+) -> dict[str, Any] | None:
+    for command in commands:
+        exit_code = command.get("exit_code")
+        command_id = command.get("id")
+        if (
+            isinstance(exit_code, int)
+            and not isinstance(exit_code, bool)
+            and exit_code != 0
+            and isinstance(command_id, str)
+            and re.fullmatch(r"[A-Za-z0-9._:-]+", command_id)
+        ):
+            return {
+                "kind": "postcheck_failure",
+                "stage": "pre-matrix",
+                "cell_id": None,
+                "command_label": command_id,
+                "exit_code": exit_code,
+                "error_tail": extension_verification_sanitize_failure_tail(
+                    f"Standalone verification command {command_id} exited {exit_code}."
+                ),
+            }
+    checks = (
+        (
+            asset_inventory.get("complete") is not True,
+            "asset-inventory",
+            "Installed managed asset inventory is incomplete.",
+        ),
+        (
+            ownership.get("current_contract") is not True,
+            "ownership-inventory",
+            "Extension source ownership inventory is not current.",
+        ),
+        (
+            bool(sidecars.get("paths")),
+            "extension-sidecar-scan",
+            "Extension source contains unresolved .new or .bak sidecars.",
+        ),
+        (
+            any(
+                not item.get("command_refs") or not item.get("asset_paths")
+                for item in capabilities
+            ),
+            "capability-evidence",
+            "Selected capability lacks command or installed asset evidence.",
+        ),
+    )
+    for failed, command_label, message in checks:
+        if failed:
+            return {
+                "kind": "postcheck_failure",
+                "stage": "post-matrix",
+                "cell_id": None,
+                "command_label": command_label,
+                "exit_code": 1,
+                "error_tail": extension_verification_sanitize_failure_tail(message),
+            }
+    return None
 
 def extension_verification_installed_asset_facts(
     source_checkout: Path,
@@ -1793,6 +1958,7 @@ def extension_verification_execute_facts(
         "checkout_owner": EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
         "paths": [],
     }
+    failure: dict[str, Any] | None = None
     if target_head is not None and target_locator:
         with temporary_directory("extension_verification") as tmp:
             temp_root = Path(tmp)
@@ -2027,6 +2193,7 @@ def extension_verification_execute_facts(
                         ],
                     )
                 )
+                failure = extension_verification_throwaway_failure(throwaway_proc)
             asset_expectations: list[dict[str, Any]] = []
             installed_asset_digests: list[dict[str, Any]] = []
             asset_inventory = extension_verification_asset_inventory_summary(
@@ -2092,6 +2259,14 @@ def extension_verification_execute_facts(
             commands,
             installed_asset_digests,
         )
+    if status == "failed" and failure is None:
+        failure = extension_verification_postcheck_failure(
+            commands,
+            asset_inventory,
+            ownership,
+            sidecars,
+            capabilities,
+        )
     return {
         "schema_version": EXTENSION_VERIFICATION_SCHEMA_VERSION,
         "target_repository": {
@@ -2109,6 +2284,7 @@ def extension_verification_execute_facts(
         "extension_source": extension_source,
         "status": status,
         "commands": commands,
+        "failure": failure,
         "capabilities": capabilities,
         "asset_expectations": asset_expectations,
         "asset_digests": installed_asset_digests,
@@ -2126,7 +2302,9 @@ def extension_verification_sensitive_text(value: Any) -> bool:
         "x-access-token:",
         "-----BEGIN PRIVATE KEY-----",
         "X-Amz-Signature=",
+        "X-Amz-Credential=",
         "X-Goog-Signature=",
+        "X-Goog-Credential=",
     )
     return (
         bool(explicit_marker and explicit_marker in text)

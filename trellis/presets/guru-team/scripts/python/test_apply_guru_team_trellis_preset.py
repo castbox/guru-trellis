@@ -2169,8 +2169,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('hook_executed', installed_closeout)
         self.assertIn('installed-after-archive-hook-', installed_closeout)
         self.assertIn('ledger = {\n        "schema_version": "2.0",', installed_closeout)
+        self.assertIn("def write_semantic_review(typed_exit: str)", installed_closeout)
+        self.assertIn('write_semantic_review("reprepare_required")', installed_closeout)
+        self.assertIn('write_semantic_review("ready_for_merge")', installed_closeout)
         self.assertIn(
-            'semantic_review.write_text(\n        json.dumps(\n            {\n                "schema_version": "3.0",',
+            '"--input",\n        finalization_input.relative_to(root).as_posix(),',
             installed_closeout,
         )
         self.assertNotIn("verification_required", installed_closeout)

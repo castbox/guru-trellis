@@ -51,6 +51,7 @@
         "checkout_owner": "extension_source_checkout"
       }
     ],
+    "failure": null,
     "capabilities": [
       {
         "id": "marketplace_index",

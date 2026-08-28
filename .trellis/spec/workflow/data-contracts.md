@@ -1248,6 +1248,42 @@ implementation is stale: current loaders do not dual-read, migrate, rewrite,
 or synthesize it.
 Recovery is one fresh Branch Review over current authority and content.
 
+### Finalizer provenance source/target binding
+
+The pre-PR provenance metadata tail has two independent Git identities. The
+`target_reviewed_checkout` belongs to the task repository at
+`reviewed_content_head`; it is the only installer target, manifest mutation
+owner, metadata-tail commit parent, and publication-lineage owner. The
+`extension_source_checkout` supplies only canonical Guru Team preset bytes and
+must remain detached and clean. Neither checkout may be inferred from path
+presence, a hidden local checkout, `PATH`, or a global installation.
+
+Finalizer constructs one invocation-local closed binding from the installed
+manifest and current target repository identity:
+
+- `self_hosted`: source and target canonical repository identities are equal;
+  the source commit is the target `reviewed_content_head` and is checked out
+  from the target Git object database;
+- `installed`: identities differ; source repo/ref/commit are the manifest's
+  clean immutable identity, and a separate repository is initialized with a
+  canonical `origin`, exact full-OID fetch, detached checkout, exact HEAD, and
+  clean-state validation.
+
+There is no fallback or dual-read between modes. Missing or malformed source
+repo/ref/commit, a non-full OID, dirty or mutable provenance, origin/HEAD
+mismatch, or a dirty source checkout stops before target apply or any remote
+mutation. The binding is package-private and ephemeral; it is not a public DTO,
+checkpoint, transaction field, or verifier result.
+
+The apply executable comes from `extension_source_checkout`, while `--repo`
+names `target_reviewed_checkout`. After apply, the source checkout must retain
+its exact HEAD and clean state, and the target may contain only the installed
+manifest diff. The existing field allowlist remains closed. Self-hosted
+postimage source ref/commit bind `reviewed_content_head`; installed postimage
+repo/ref/commit retain the selected immutable extension identity. The committed
+tail has one parent equal to target `reviewed_content_head`, changes only
+`.trellis/guru-team/extension.json`, and is the unique valid publication child.
+
 ## Review Gate Artifact
 
 `review-branch.sh` writes compact schema 6.0 `review-gate.json` at the exact
@@ -1635,6 +1671,14 @@ preview validates current HEAD and the optional single-tail parent/allowlist
 contract against the rebuilt plan. PR already
 created, archive started, reviewed content/scope drift, non-fast-forward remote,
 or manifest changes outside the allowlist remain fail-closed boundaries.
+
+On the first current `publication_ready` preview, Finalizer classifies an exact
+existing PR before fresh provenance inference. If both the PR and remote branch
+are absent, the no-plan state remains `prepared`; a required installed
+metadata tail maps that state directly to `reprepare_required` with
+`reason_code=provenance_metadata_tail`. Preview performs no push, PR creation,
+archive, Ready, or Issue mutation. Existing-PR recovery and its matching
+post-bind transaction retain precedence over this inference.
 
 An unused current schema 3.0 plan with the complete seven-field Git identity may
 use the same mapped base-evolution route without a legacy gate/request. Its
