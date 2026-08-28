@@ -1293,8 +1293,12 @@ Workspace boundary helpers are deterministic validators and fact snapshots:
 - Task artifact arguments such as `--checked-artifact` must resolve inside the
   current task directory under the selected task worktree. Absolute paths are
   allowed only when they stay under that task directory.
-- Source checkout current-task artifacts, review metadata, or current-task dirty
-  paths are fail-closed boundary facts. The script must not decide whether a
+- Source checkout current-task artifacts are fail-closed unless the exact path
+  is an ordinary task/planning file that is tracked by the current base/index
+  and clean in both the index and working tree. Review/check metadata and the
+  `reviews/**` directory always remain blockers; untracked, staged, unstaged,
+  deleted, or renamed ordinary files remain blockers. Classification is
+  path-by-path Git fact collection. The script must not decide whether a
   sub-agent is stale, migrate a misplaced patch, or clean source checkout files;
   AI/human workflow owns those decisions.
 - `--allow-source-clean` may be used only for a clean source checkout probe that

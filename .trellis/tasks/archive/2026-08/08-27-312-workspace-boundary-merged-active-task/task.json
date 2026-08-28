@@ -1,0 +1,12 @@
+{
+  "id": "312-workspace-boundary-merged-active-task",
+  "name": "312-workspace-boundary-merged-active-task",
+  "title": "#312 允许已合并的 active task 在原 worktree 中通过 workspace boundary",
+  "status": "completed",
+  "branch": "codex/312-workspace-boundary-merged-active-task",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/312",
+  "completedAt": "2026-08-28"
+}

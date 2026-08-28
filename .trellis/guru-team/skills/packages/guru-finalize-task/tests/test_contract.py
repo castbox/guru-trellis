@@ -37,6 +37,50 @@ def load_runtime():
 GTT = load_runtime()
 
 
+def git_fixture_commit(root: Path, *paths: str) -> None:
+    subprocess.run(["git", "add", "--", *paths], cwd=root, check=True)
+    subprocess.run(["git", "commit", "-qm", "fixture"], cwd=root, check=True)
+
+
+def workspace_boundary_fixture() -> tuple[Path, Path, dict[str, object]]:
+    temp_root = Path(tempfile.mkdtemp(prefix="guru-workspace-boundary-"))
+    source = temp_root / "source"
+    source.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=source, check=True)
+    subprocess.run(["git", "config", "user.name", "Guru Test"], cwd=source, check=True)
+    subprocess.run(["git", "config", "user.email", "guru@example.com"], cwd=source, check=True)
+    task_relative = ".trellis/tasks/08-27-312-workspace-boundary-merged-active-task"
+    source_task = source / task_relative
+    source_task.mkdir(parents=True)
+    ordinary = (
+        "task.json",
+        "prd.md",
+        "design.md",
+        "implement.md",
+        "implement.jsonl",
+        "check.jsonl",
+        "issue-scope-ledger.json",
+    )
+    for name in ordinary:
+        (source_task / name).write_text(f"{name}\n", encoding="utf-8")
+    for name in GTT.WORKSPACE_BOUNDARY_REVIEW_METADATA:
+        (source_task / name).write_text("review\n", encoding="utf-8")
+    (source_task / "reviews").mkdir()
+    git_fixture_commit(source, f"{task_relative}/")
+    task_workspace = temp_root / "task-worktree"
+    task_workspace.mkdir()
+    context = {
+        "workspace_mode": "worktree",
+        "expected_workspace": task_workspace,
+        "actual_repo_root": task_workspace,
+        "source_checkout": source,
+        "task_dir": task_workspace / task_relative,
+        "task_dir_relative": task_relative,
+        "task_context_present": True,
+    }
+    return temp_root, source, context
+
+
 def shared_runtime_parent() -> Path:
     for parent in PACKAGE.parents:
         if (parent / "runtime/io.py").is_file():
@@ -242,6 +286,78 @@ def large_finish_summary() -> dict:
 
 
 class FinalizeTaskContractTests(unittest.TestCase):
+    def test_workspace_boundary_accepts_clean_tracked_planning_and_blocks_real_overlays(self) -> None:
+        temp_root, source, context = workspace_boundary_fixture()
+        try:
+            snapshot = GTT.collect_workspace_boundary_snapshot(context, {}, {})
+            suspicious = snapshot["suspicious_source_artifacts"]
+            suspicious_paths = {item["path"] for item in suspicious}
+            for name in (
+                "task.json",
+                "prd.md",
+                "design.md",
+                "implement.md",
+                "implement.jsonl",
+                "check.jsonl",
+                "issue-scope-ledger.json",
+            ):
+                self.assertNotIn(f"{context['task_dir_relative']}/{name}", suspicious_paths)
+            for name in GTT.WORKSPACE_BOUNDARY_REVIEW_METADATA:
+                self.assertIn(f"{context['task_dir_relative']}/{name}", suspicious_paths)
+            self.assertTrue(
+                any(item["kind"] == "same_task_reviews_dir" for item in suspicious)
+            )
+
+            untracked = source / context["task_dir_relative"] / "implement.jsonl"
+            subprocess.run(["git", "rm", "--cached", "-q", str(untracked.relative_to(source))], cwd=source, check=True)
+            snapshot = GTT.collect_workspace_boundary_snapshot(context, {}, {})
+            self.assertIn(
+                str(untracked.resolve()),
+                [item["absolute_path"] for item in snapshot["suspicious_source_artifacts"]],
+            )
+
+            blocked_context = dict(context)
+            blocked_context["actual_repo_root"] = source
+            blocked_context["task_dir"] = source / context["task_dir_relative"]
+            errors = GTT.workspace_boundary_errors(
+                blocked_context,
+                snapshot,
+                allow_source_clean=True,
+            )
+            self.assertTrue(any("current-task artifacts" in error for error in errors))
+        finally:
+            shutil.rmtree(temp_root)
+
+    def test_workspace_boundary_keeps_dirty_task_paths_fail_closed(self) -> None:
+        cases = {
+            "staged": lambda source, task: (
+                (task / "prd.md").write_text("staged\n", encoding="utf-8"),
+                subprocess.run(["git", "add", "--", str((task / "prd.md").relative_to(source))], cwd=source, check=True),
+            ),
+            "unstaged": lambda _source, task: (task / "design.md").write_text("unstaged\n", encoding="utf-8"),
+            "deleted": lambda _source, task: (task / "implement.md").unlink(),
+            "renamed": lambda source, task: subprocess.run(
+                ["git", "mv", str((task / "issue-scope-ledger.json").relative_to(source)), str((task / "renamed-ledger.json").relative_to(source))],
+                cwd=source,
+                check=True,
+            ),
+            "unrelated": lambda source, _task: (
+                (source / "unrelated.txt").write_text("unrelated\n", encoding="utf-8"),
+            ),
+        }
+        for label, mutate in cases.items():
+            with self.subTest(case=label):
+                temp_root, source, context = workspace_boundary_fixture()
+                try:
+                    mutate(source, source / context["task_dir_relative"])
+                    snapshot = GTT.collect_workspace_boundary_snapshot(context, {}, {})
+                    dirty = [item for item in snapshot["suspicious_source_artifacts"] if item["kind"] == "same_task_dirty_path"]
+                    if label == "unrelated":
+                        self.assertEqual(dirty, [])
+                    else:
+                        self.assertTrue(dirty)
+                finally:
+                    shutil.rmtree(temp_root)
     def test_prepare_closeout_initial_publication_binds_target_repo_without_existing_plan(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

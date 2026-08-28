@@ -2023,6 +2023,34 @@ def safe_git_status_paths(root: Path | None) -> list[str]:
     except (OSError, subprocess.SubprocessError):
         return []
 
+def source_path_is_tracked_clean(root: Path, relative_path: str) -> bool:
+    """Return whether one source path is tracked by Git and clean at every layer."""
+    try:
+        tracked = subprocess.run(
+            ["git", "ls-files", "--error-unmatch", "--", relative_path],
+            cwd=str(root),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if tracked.returncode != 0 or not tracked.stdout.strip():
+            return False
+        for diff_args in (
+            ["git", "diff", "--quiet", "--cached", "--", relative_path],
+            ["git", "diff", "--quiet", "--", relative_path],
+        ):
+            if subprocess.run(
+                diff_args,
+                cwd=str(root),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            ).returncode != 0:
+                return False
+        return True
+    except OSError:
+        return False
+
 def workspace_boundary_context(
     root: Path,
     config: dict[str, Any],
@@ -2078,7 +2106,11 @@ def collect_workspace_boundary_snapshot(
         source_task_dir = (source_checkout / task_relative).resolve()
         for name in WORKSPACE_BOUNDARY_SUSPICIOUS_TASK_ARTIFACTS:
             artifact = source_task_dir / name
-            if artifact.exists():
+            relative_path = f"{task_relative}/{name}"
+            if artifact.exists() and (
+                name in WORKSPACE_BOUNDARY_REVIEW_METADATA
+                or not source_path_is_tracked_clean(source_checkout, relative_path)
+            ):
                 suspicious.append(
                     {
                         "kind": "same_task_review_metadata" if name in WORKSPACE_BOUNDARY_REVIEW_METADATA else "same_task_artifact",
