@@ -1,0 +1,7 @@
+{"file":".trellis/tasks/08-27-312-workspace-boundary-merged-active-task/design.md","reason":"执行已批准的 Git-aware artifact 分类、双 owner 对称实现、真实 Git fixture 与 downstream proof。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"保持 workspace boundary snapshot、artifact locator、identity 与 allow-source-clean 合同。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"落实 tracked-clean、dirty、untracked、review metadata、wrong identity 与分发验证矩阵。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"保持 Finalizer/Publication package-local ownership、public interface 与 typed exits。"}
+{"file":".trellis/spec/preset/installer.md","reason":"按 canonical apply 同步 dogfood installed package、manifest、spec 与平台投影。"}
+{"file":".trellis/spec/docs/requirements-design-test-ssot.md","reason":"保持 current RDT .40 的 rdt_aligned 绑定与无 contribution 边界。"}
+{"file":".trellis/spec/architecture/baseline-usage.md","reason":"保持 Architecture no-impact、无 contribution/ADR 与 base reconciliation 边界。"}

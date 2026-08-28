@@ -440,7 +440,12 @@ When changing workspace boundary behavior, also run
 cwd, worktree mode without a matching `task.json`, ignored runtime mapping, and
 live Git worktree identity, source checkout same-task artifacts, wrong private
 gate/check checkpoint locators, planner-only prepare no-write behavior, and
-controlled `create_task` cwd.
+controlled `create_task` cwd. The source-checkout matrix must distinguish
+current-base-tracked and path-clean ordinary task/planning files (accepted
+projection) from untracked or staged/unstaged/deleted/renamed files (blocked),
+while tracked-clean review/check metadata and `reviews/**` remain blocked;
+unrelated dirty paths must not be misclassified. `--allow-source-clean` must
+not bypass any artifact blocker.
 
 For `guru-create-task-workspace`, tests must cover workflow/standalone
 precondition parity; every missing/stale/wrong-exit/target-mismatched

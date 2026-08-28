@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 312,
+      "reason": "修复与回归完成后由该 task 完整承接关闭。",
+      "title": "允许已合并的 active task 在原 worktree 中通过 workspace boundary",
+      "url": "https://github.com/castbox/guru-trellis/issues/312"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 312,
+    "reason": "当前 workspace boundary 缺陷的唯一独立交付目标。",
+    "title": "允许已合并的 active task 在原 worktree 中通过 workspace boundary",
+    "url": "https://github.com/castbox/guru-trellis/issues/312"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}
