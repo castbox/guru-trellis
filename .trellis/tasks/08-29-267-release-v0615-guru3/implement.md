@@ -58,17 +58,21 @@
   `target_native`、`ADR required=false` 与 pending independent review。
 - [x] 完成 planning wording review、RDT/Architecture Planning gates 与 fresh plan approval。
 - [x] 对 contribution candidate 运行 Phase 2；通过后展示并确认新的 task commit。
-- [ ] 对完整 committed range 执行独立 Branch Review；通过前不得写 shared `.42`。
+- [x] 对完整 committed range 执行独立 Branch Review；通过前不得写 shared `.42`。
 
 ## Serialized `.42` Promotion
 
-- [ ] contribution review 通过后，按 RDT 与 Architecture owner 的 fresh typed routes 确定
-  调用顺序并串行执行；不得并发写 shared current，也不得在 planning 阶段预选顺序。
-- [ ] RDT promotion 绑定 expected `.41` 并激活 `.42`，更新 Requirements/Design/Test
-  navigation、version history、current facts 与 traceability。
-- [ ] Architecture promotion 绑定 expected `.41` 并激活 `.42`，更新 README、CURRENT 与
+- [x] contribution review 通过后，按 Architecture 与 RDT owner 的 fresh typed routes 确定
+  Architecture -> RDT 调用顺序并串行执行；未并发写 shared current。
+- [x] Architecture promotion 绑定 expected `.41` 并激活 `.42`，更新 README、CURRENT 与
   evidence；不创建 ADR，不改变 decision/owner/GAP/compatibility。
-- [ ] 对 promotion-created diff 重新运行 Phase 2、task commit 与独立 Branch Review。
+- [x] RDT promotion 绑定 expected `.41` 并激活 `.42`，更新 Requirements/Design/Test
+  navigation、version history、current facts 与 traceability。
+- [x] 经 normal-scenario scope confirmation，将两条最小 `.trellis/spec` projection 加入
+  #267 r18 文件边界，并修正 `.42` promotion 顺序与 decision identity 不一致。
+- [x] 对 promotion-created diff 重新运行 fresh Phase 2，九维 semantic check 与当前
+  worktree content freshness 均通过。
+- [ ] 创建新 task commit，并对完整 committed range 执行独立 Branch Review。
 - [ ] 只有 post-promotion Branch Review 通过后才恢复 PR readiness。
 - [ ] 完成 PR readiness；title/body 使用具体中文，Issue trailer 只写 `Refs #267`，并写明
   tests、安全、部署、配置、schema、CI/CD、container/K8s/DB migration 影响。

@@ -67,10 +67,12 @@ confirmation。脚本只执行确定性 projection 与校验，不决定 Release
 - `.trellis/spec/docs/public-docs.md` 同步 stable public documentation contract 中的
   `.3/.39/CLI 0.6.15` mapping。
 - 当前 `.41` authority 中的 `.37` current-candidate facts 与 committed `.39` source
-  manifest 冲突。当前阶段只写
+  manifest 冲突。contribution 阶段只写
   `docs/requirements-design-test-contributions/267-release-v0615-guru3/` 与
   `docs/architecture/contributions/267-release-v0615-guru3.md`；shared current 仍由
   serialized promotion owners 单写。
+- promotion 已按 live owner dependency 先执行 Architecture、后执行 RDT；两条最小
+  `.trellis/spec` locator/usage projection 同步到 `.42/#267`，不形成第三 authority。
 - successor knowledge authority 固定为 `current-main-0.6.5-guru.42`。promotion 后
   `.42` 是唯一 active RDT/Architecture authority，`.41` 保留为 superseded history，
   current/canonical extension candidate 为 `0.6.15-guru.39`，Trellis CLI 保持

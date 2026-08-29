@@ -45,10 +45,11 @@ merge 与 PR #314 merge 都是 candidate ancestor；随后在同一 candidate �
 diff review、package/runtime、四平台、clean/existing install/update/reapply、installed
 Finalizer recovery、workspace-boundary、secret scan 与 residue-zero 门禁。
 
-当前 authority alignment 仍处于 task-owned contribution 阶段：`.41` 继续是 live current，
-`.42` 尚未 promotion，初始 commit `2a546100…` 不是 Publication 或 Release candidate。只有
-contribution review、serialized promotion 与 promotion-created diff 的 fresh review 全部通过后，
-`.42` 才能成为唯一 active knowledge authority。
+当前 authority alignment 已完成 contribution review 与 serialized promotion：`.42` 是唯一
+active RDT/Architecture knowledge authority，`.41` 保留为 superseded history；两条最小
+`.trellis/spec` projection 已同步到 `.42/#267`。promotion-created diff 的 fresh Phase 2
+已通过；新 task commit 与独立 Branch Review 仍待完成，因此初始 commit `2a546100…`
+以及当前 working-tree delta 都不是 Publication 或 Release candidate。
 
 tag 创建后必须从 tag-pinned clean source 完成 smoke；GitHub Release 创建后必须 live 回读
 tag object、peeled candidate、正式版状态、latest stable 与空 assets。任一 FAIL、SKIP、

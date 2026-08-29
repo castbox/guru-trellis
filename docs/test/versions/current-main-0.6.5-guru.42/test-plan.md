@@ -1,7 +1,7 @@
 # 当前测试计划与证据
 
-版本：`current-main-0.6.5-guru.41`；状态：`superseded`；successor：`current-main-0.6.5-guru.42`；source baseline：task head
-`651defee871d4bb07683547df09d1e0ac62b4a49` + #311 serialized promotion delta。
+版本：`current-main-0.6.5-guru.42`；状态：`active`；predecessor：`current-main-0.6.5-guru.41`；
+source baseline：reviewed task head `d3dca74b3a94569a095594477c15b032526f2381` + #267 expected `.41` serialized promotion delta。
 
 ## Replacement before-state authority
 
@@ -96,9 +96,9 @@ It does not publish extension `0.6.5-guru.37`.
 
 ## Current boundaries
 
-- `v0.6.15-guru.1` / extension `.37` stable tag、GitHub Release、tag-pinned clean install 与 release smoke：`unverified`，owner 为独立的重构前稳定版 Release Issue。
-- `.40` 只表示 current RDT/Architecture knowledge identity；extension manifest 仍为 `0.6.5-guru.37`，未发生 version bump。
-- #248 Acceptance/Finish handoff 与 #252 cleanup public owner未实现；本次只提供可消费兼容事实。
+- `v0.6.15-guru.3` / extension `0.6.15-guru.39` / Trellis `0.6.15` 是 #267 current target；stable tag、GitHub Release、tag-pinned clean install 与 release smoke 仍为 `unverified`。
+- `.42` 只表示 current RDT/Architecture knowledge identity；promotion 不等于 exact-candidate Release pass，也不授权 tag、Release 或 Issue closure。
+- #311 正式 `.3` business-repository Finalizer 原失败路径与错误文件重试仍为 `unverified`，Issue 保持 OPEN。
 - full matrix logs、临时 repository/runtime、用户授权与完整 hash bundle不进入 current SSOT。
 
 ## #295 promoted verification scope
@@ -129,3 +129,14 @@ promotion-created diff 的 Phase 2 `guru-check-task`、新 task commit、独立 
 `a6e2835e2303c081c28296f9d635dabbb7bad2dffbe99466f2bd6d4e834058aa`、expected `.40` 与
 successor `.41`。它不发布 extension `0.6.5-guru.37`，不执行 #267 的 release-wide matrix、tag 或
 GitHub Release，也不把旧 candidate 的被阻断 closeout表述为当前通过。
+
+## #267 release authority alignment evidence
+
+| Check | Current result | Boundary |
+| --- | --- | --- |
+| reviewed contribution range | `origin/main@3efcce72…d3dca74b`；2 commits / 22 paths；Architecture Branch Review 与 independent Branch Review passed，P0-P3 open findings zero | promotion-created diff 必须 fresh re-entry |
+| RDT promotion | expected `.41` -> `.42`；Requirements/Design/Test version、navigation、history 与 contribution status 串行更新 | 不证明 Architecture promotion 或 downstream Phase 2 |
+| Architecture promotion | expected `.41` -> `.42`；仅更新 README、CURRENT、evidence 与 contribution state；ADR `required=false` | 不改变 decision/owner/GAP/compatibility |
+| version mapping | `v0.6.15-guru.3 -> 0.6.15-guru.39 -> Trellis CLI 0.6.15` | tag、Release、latest stable 与 smoke 仍 `unverified` |
+| post-promotion lifecycle | pending fresh Phase 2、task commit 与 independent complete-range Branch Review | 旧 contribution review 不替代 |
+| #311 business proof | `unverified` | 正式 `.3` 发布后独立安装与错误路径重试；Issue 保持 OPEN |

@@ -5,15 +5,15 @@ issue_ref: "https://github.com/castbox/guru-trellis/issues/267"
 source_version: "current-main-0.6.5-guru.41"
 expected_current_version: "current-main-0.6.5-guru.41"
 candidate_successor_version: "current-main-0.6.5-guru.42"
-status: "candidate_pending_review"
-implementation_status: "planning_revision_approved"
-verification_status: "phase2_passed_independent_branch_review_pending"
+status: "reviewed_promoted"
+implementation_status: "serialized_rdt_promotion_completed"
+verification_status: "contribution_branch_review_passed_post_promotion_phase2_pending"
 authority_scope: "isolated_contribution"
 architecture_impact: "architecture_impact"
 change_path: "target_native"
 architecture_baseline:
   locator: "docs/architecture/README.md"
-  version: "current-main-0.6.5-guru.41"
+  version: "current-main-0.6.5-guru.42"
   status: "active"
 design_constitution:
   authority_owner: "docs/architecture"
@@ -24,11 +24,11 @@ design_constitution:
 architecture_candidate:
   contribution_locator: "docs/architecture/contributions/267-release-v0615-guru3.md"
   adr_required: false
-  promotion_state: "reviewed_candidate"
+  promotion_state: "reviewed_promoted"
 public_contracts:
   rdt_owner: "guru-maintain-requirements-design-test-ssot:task_impact_sync"
   architecture_candidate: "guru-maintain-architecture-baseline:2.0"
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
-promotion_decision: "pending_independent_review"
-shared_current_write: false
+promotion_decision: "reviewed_promoted"
+shared_current_write: true

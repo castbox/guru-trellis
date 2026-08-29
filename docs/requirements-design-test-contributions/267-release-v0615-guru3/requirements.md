@@ -2,8 +2,9 @@
 
 本 contribution 承接 live Issue #267 `2026-08-29-r18`。它修复 committed release
 manifest `0.6.15-guru.39` 与 active `current-main-0.6.5-guru.41` authority 中
-`0.6.5-guru.37` current-candidate facts 的冲突。当前文件是 task-owned candidate，
-不直接修改 shared current。
+`0.6.5-guru.37` current-candidate facts 的冲突。该 candidate 已通过独立 committed full-diff
+Branch Review，并由 expected `.41` RDT promotion owner 提升到 shared current `.42`；
+promotion-created diff 的 fresh Phase 2、commit 与 Branch Review 仍待执行。
 
 - `R267-AUTH-01`：successor knowledge authority 必须固定为
   `current-main-0.6.5-guru.42`，expected current 固定为 `.41`。
@@ -25,4 +26,5 @@ manifest `0.6.15-guru.39` 与 active `current-main-0.6.5-guru.41` authority 中
   不产生新的 close target，也不把 package test 表述为 exact-candidate Release pass。
 
 本 contribution 不修改 runtime、workflow、Skill package、schema、business repository、tag、
-GitHub Release 或 Issue 状态，也不创建 ADR。
+GitHub Release 或 Issue 状态，也不创建 ADR。当前 `.42` promotion 不等于 #267 Release pass，
+#311 post-release business proof 仍为独立未验证边界。

@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.41`；状态：`superseded`；successor：`current-main-0.6.5-guru.42`。本历史版本绑定 task head `651defee871d4bb07683547df09d1e0ac62b4a49` + #311 serialized promotion delta；正文不自引用可变 HEAD。
+版本：`current-main-0.6.5-guru.42`；状态：`active`；predecessor：`current-main-0.6.5-guru.41`；基线：reviewed task head `d3dca74b3a94569a095594477c15b032526f2381` + #267 expected `.41` serialized promotion delta；#305 已确认的 `EVO-001..007` 保持独立 target authority。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD。
 
 ## 目标、角色与适用范围
 
@@ -43,7 +43,7 @@
 - `REQ-032`：Phase 2 首次判断 candidate before/after，Branch Review 从 exact committed full diff 独立重算。项目检查结果绑定 current descriptor identity、applicability、rule/decision/GAP refs、`pass|fail|unverified`、evidence/unavailable reason 与 freshness；AI 根据真实依赖判断 blocking，新增或恶化偏移返回 `fitness_regression`。
 - `REQ-033`：普通 task 只写自己的 RDT/Architecture contribution；仅当 decision、原则权衡/例外、GAP lifecycle、owner/single-writer 或 compatibility exit 改变时创建 ADR candidate。shared current 由唯一 Architecture owner 在 independent review 后按 expected current identity 串行 promotion。
 - `REQ-034`：并行 task 使用不同 contribution locator，不得 review 前写 shared current、竞争同一 GAP/owner、形成双写或两个 current authority。任一 promotion 推进 current 后，旧 identity task 必须 `sync_required` 并重做 impact、satisfaction 与 parallel-scope 判断。
-- `REQ-035`：Architecture 2.0 schema/runtime、canonical/dogfood/installed/platform projection 与项目中立十场景必须原子承接上述 lifecycle，stable Skill/profile/exit ids 不变；外部 evidence 不可得时保持 `evidence_gap|unverified`。重构前稳定版 Release matrix/tag/Release/immutable smoke 与 business-repository refactor 不属于 #283；前者由独立 Release Issue 晋升，#267 属于后续重构链。
+- `REQ-035`：Architecture 2.0 schema/runtime、canonical/dogfood/installed/platform projection 与项目中立十场景必须原子承接上述 lifecycle，stable Skill/profile/exit ids 不变；外部 evidence 不可得时保持 `evidence_gap|unverified`。#267 Release matrix/tag/Release/immutable smoke 与 post-release business-repository proof 不属于 #283，必须由各自 live owner 和 exact evidence 晋升。
 - `REQ-036`：base selection 必须固定按 explicit、config scalar、ordered exact local/remote refs、remote default 执行；current branch 与 worktree availability 不参与 selection，selected base 缺 checkout 时不得回退低优先级 candidate。
 - `REQ-037`：selected base 确定后只绑定同一 Git common-dir 中 registered、exact `refs/heads/<selected_base>`、clean 且 branch/HEAD/ref identity 一致的唯一 authority checkout。
 - `REQ-038`：Codex session checkout 允许 detached 且只作为 invocation shell；fetch、可选 `merge --ff-only`、checker equality 与 public repository locator 只使用 authority checkout。
@@ -51,7 +51,7 @@
 - `REQ-040`：invocation checkout 自身已绑定 selected base 时保持成功路径；behind authority 只允许 explicit remote-tracking refspec fetch 与 `merge --ff-only`。
 - `REQ-041`：`guru-base-sync-result-1.0`、Interface 1.4、public `synced|skipped|blocked` schemas、typed exits 与 transition shape 保持兼容，既有 locator 字段指向真实 authority checkout。
 - `REQ-042`：`guru-create-task-workspace` 必须按 producer provenance source 对 explicit、config、config-candidate、remote-default 的 current source、selected base 与完整 candidates exact revalidate，且不得导入 producer private runtime。
-- `REQ-043`：canonical、dogfood、installed 与 Shared/Codex/Claude/Cursor projection、preset reapply/drift/mode 和 sidecar-zero 必须一致；代表性 installed detached wrapper 只证明 #290 normal path。重构前稳定版 release matrix/tag/Release 只由独立 Release Issue 拥有，不由 #267 或下一阶段重构 Issue 继承。
+- `REQ-043`：canonical、dogfood、installed 与 Shared/Codex/Claude/Cursor projection、preset reapply/drift/mode 和 sidecar-zero 必须一致；代表性 installed detached wrapper 只证明 #290 normal path。#267 的 `.3/.39/CLI 0.6.15` release matrix、tag 与 Release 必须在最终 exact candidate 上 fresh 执行，不能继承历史 task 或 package evidence。
 
 ## 生命周期行为
 
@@ -71,11 +71,11 @@
 
 ## 当前发布范围
 
-`source_confirmed`：最新已发布 stable release 是 annotated tag `v0.6.5-guru.10`，tag object `b5fd47e9dc45ca4d6950f87f38d495776ce676ce`，peeled commit `5c059f4943edad7dfe25182a78af94759d41f9a1`，extension revision `0.6.5-guru.36`，目标 Trellis CLI `0.6.5`。当前 source candidate 为 extension `0.6.5-guru.37` / Trellis `0.6.15`；下一重构前稳定 tag 固定为 `v0.6.15-guru.1`，其 tag、GitHub Release 与 tag-pinned smoke 只由独立的重构前稳定版 Release Issue 晋升。
+`source_confirmed`：最新已发布 stable release 是 annotated tag `v0.6.5-guru.10`，tag object `b5fd47e9dc45ca4d6950f87f38d495776ce676ce`，peeled commit `5c059f4943edad7dfe25182a78af94759d41f9a1`，extension revision `0.6.5-guru.36`，目标 Trellis CLI `0.6.5`。当前 source candidate 为 extension `0.6.15-guru.39` / Trellis `0.6.15`；#267 successor target 固定为 `v0.6.15-guru.3`。该 tag、GitHub Release、tag-pinned smoke 与 latest-stable identity 在 exact candidate 发布前仍为 `unverified`。
 
 ## 非目标
 
-本 authority 的 `.41` 是 knowledge identity，不是 extension/release revision。本 authority 不把 extension `.37` 称为已发布 stable release，不实现 #248/#252 public owner，也不把业务仓库私有 PRD、完整日志、临时 hash bundle 或用户授权写入 current intent。
+本 authority 的 `.42` 是 knowledge identity，不是 extension/release revision。本 authority 不把 extension `.39` 或目标 tag `.3` 称为已发布 stable release，不替代 #267 exact-candidate gates 或 #311 post-release business proof，也不把业务仓库私有 PRD、完整日志、临时 hash bundle或用户授权写入 current intent。
 
 ## #295 current promotion additions
 
@@ -109,3 +109,18 @@
   credential-safe error tail，并保留既有 stdout/stderr hash/size。matrix 外 command、asset
   inventory、ownership、sidecar 或 capability failure 收敛为 `postcheck_failure`；failed execution
   不得保留 null failure。该 evidence 只属于 verifier，Finalizer 零消费。
+
+## #267 release authority alignment
+
+- `REQ-052`：`current-main-0.6.5-guru.42` 必须是唯一 active Requirements/Design/Test 与
+  Architecture knowledge authority，`.41` 仅作为 superseded predecessor；active current source
+  candidate 固定为 extension `0.6.15-guru.39`、Trellis CLI `0.6.15`，Release target 固定为
+  `v0.6.15-guru.3`。
+- `REQ-053`：#267 的 full-diff review、exact-candidate matrix、annotated tag、GitHub Release 与
+  tag-pinned smoke 必须分别由 live evidence 晋升；promotion 或 package PASS 不得冒充已发布结果。
+- `REQ-054`：`.41 -> .42` 只更新 release/current facts、navigation、traceability、evidence 与
+  predecessor/successor binding；产品行为、Skill public API、Architecture decision、owner、
+  single-writer、GAP lifecycle 与 compatibility exit 保持不变，不创建 ADR。
+- `REQ-055`：RDT 与 Architecture reviewed contributions 必须按 expected `.41` 串行 promotion；
+  promotion-created diff 必须重新执行 Phase 2、task commit 与独立 committed full-diff Branch Review，
+  通过前 Publication 和 Release preparation fail closed。

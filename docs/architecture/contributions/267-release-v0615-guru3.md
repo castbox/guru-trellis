@@ -13,11 +13,12 @@
 - project change contract：`docs/architecture/06-governance/change-contract.md` /
   `guru-trellis-architecture-change-contract-v1` /
   `guru-trellis-architecture-change-concerns-v1`。
-- change path：`target_native`；promotion state：`reviewed_candidate`；ADR：
+- change path：`target_native`；promotion state：`reviewed_promoted`；ADR：
   `required=false`。
 
-当前文件是 task-owned candidate。shared current 仍由 serialized Architecture promotion
-owner 在独立 committed full-diff Branch Review 通过后单写。
+该 task-owned candidate 已通过独立 committed full-diff Branch Review，并由 serialized
+Architecture promotion owner 绑定 expected `.41` 激活为 shared current `.42`。promotion-created
+diff 的 fresh Phase 2、commit 与 Branch Review 仍待执行。
 
 ## Boundary and decision
 
@@ -73,10 +74,13 @@ exit，因此不创建 ADR。
 
 ## Review and promotion state
 
-- review：`pending independent committed full-diff Branch Review`。
+- review：`reviewed`；exact committed range 为
+  `3efcce72a0d47e38ec725aa8c0f8498992f3416f...d3dca74b3a94569a095594477c15b032526f2381`，
+  Architecture Branch Review 与 independent Branch Review 均 passed，open P0-P3 为零。
 - ADR：`required=false`。
 - expected current：`current-main-0.6.5-guru.41`。
 - candidate successor：`current-main-0.6.5-guru.42`。
-- promotion：`reviewed_candidate`；`shared_current_write=false`。
+- promotion：`reviewed_promoted`；`shared_current_write=true`；promoted identity：
+  `current-main-0.6.5-guru.42`。
 - live current advance、finding、project-check failure 或 stale contribution 返回对应 owner route，
   不覆盖 shared current。

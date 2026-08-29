@@ -34,8 +34,8 @@ base，不是最终 exact candidate。
   `.3` / `.39` / CLI `0.6.15`。
 - 修复 Branch Review 发现的 current-authority 冲突：先形成 task-owned RDT 与
   Architecture contributions，目标 successor knowledge authority 固定为
-  `current-main-0.6.5-guru.42`；通过独立 committed full-diff review 后再由两个
-  serialized promotion owners 激活 shared current `.42`。
+  `current-main-0.6.5-guru.42`；通过独立 committed full-diff review 后先由 Architecture
+  owner、再由 RDT owner 串行激活 shared current `.42`。
 - `.42` 只更新 release/current facts、traceability、navigation、evidence 与
   predecessor/successor binding；产品行为、Skill public API、Architecture decision、
   owner、single-writer、GAP lifecycle 与 compatibility exit 保持不变。
@@ -68,6 +68,8 @@ base，不是最终 exact candidate。
 - `trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py`；
 - `.trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py`；
 - `.trellis/spec/docs/public-docs.md`；
+- `.trellis/spec/architecture/baseline-usage.md`；
+- `.trellis/spec/docs/requirements-design-test-ssot.md`；
 - preset apply 生成的 `.trellis/guru-team/extension.json`；
 - `docs/requirements-design-test-contributions/267-release-v0615-guru3/**`；
 - `docs/architecture/contributions/267-release-v0615-guru3.md`；

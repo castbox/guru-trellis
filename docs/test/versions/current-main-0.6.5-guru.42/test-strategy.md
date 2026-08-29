@@ -1,6 +1,6 @@
 # 当前测试策略
 
-版本：`current-main-0.6.5-guru.41`；状态：`superseded`；successor：`current-main-0.6.5-guru.42`。
+版本：`current-main-0.6.5-guru.42`；状态：`active`；predecessor：`current-main-0.6.5-guru.41`。
 
 ## Evidence 分层
 
@@ -41,6 +41,10 @@
 | `TST-033` | Installed distribution isolation | canonical/installed package、verifier-zero dependency、preset projection、mode/drift/sidecar | release-wide matrix |
 | `TST-034` | Representative installed closeout | release-installed business repo 从 ready 到 Ready PR/terminal projection | 未 fresh 重试时保持 `unverified` |
 | `TST-035` | Structured verifier failure | stage/cell/command/exit/bounded safe tail、outer parse 与 postcheck classification | Finalizer lifecycle authority |
+| `TST-036` | current authority uniqueness | RDT/Architecture 只存在一个 active `.42`，`.41` 为 superseded，predecessor/successor 一致 | runtime behavior |
+| `TST-037` | release identity mapping | active surfaces 只声明 `.3/.39/CLI 0.6.15` current target，历史 `.37` 仅存在于明确 superseded/released evidence | tag、Release 或 smoke 已完成 |
+| `TST-038` | fact-only semantic diff | `.41...42` 不新增 behavior、public API、Architecture decision、owner、GAP、compatibility exit 或 ADR | downstream Phase 2/Branch Review |
+| `TST-039` | promotion lifecycle freshness | contribution review、RDT/Architecture serialized promotion、fresh Phase 2/commit/Branch Review 与 closure boundary | 任一旧 gate 或 package PASS |
 
 ## 核心场景
 
@@ -96,6 +100,9 @@
   facts，credential-safe tail 有界，failed + null 被拒绝。
 - `SCN-047 representative live closeout`：现有真实 fixture fresh reinstall 后完成 Publication/
   Finalizer/Ready/terminal flow；在该复跑实际完成前状态为 `unverified`。
+- `SCN-048 release authority promotion`：Architecture owner 先激活统一 `.42` baseline，RDT owner
+  后建立 `.42` versioned authority；任一 expected `.41` mismatch、multiple active、active `.37`
+  残留或 traceability 缺失均 fail closed，promotion diff 重新进入 Phase 2/commit/Branch Review。
 - `CASE-001`：每个 active interface 的 external exit 恰有唯一 consumer 或 stop，registry/interface/workflow 闭包。
 - `CASE-002`：semantic gate 发生在 recorder/validator 前，脚本不接收或持久化授权。
 
@@ -103,5 +110,6 @@
 
 先读取 `.trellis/spec/workflow/quality-guidelines.md` 的 `Validation Scope Ownership`。普通 feature/docs/spec Issue 运行与 accepted scope 相关的最小可靠集合；完整多平台 Throwaway 只属于专项兼容/upgrade/release Issue。任何 SKIP、未配置 live 环境或历史 PR 声明都明确写成 `unverified`。
 
-完整矩阵只证明 `public_plus_local_candidate` 与 current source compatibility；`.41` 是 knowledge identity，`.37` stable tag、
-GitHub Release 与 tag-pinned release smoke 必须继续标记为独立的重构前稳定版 Release boundary。
+完整矩阵只证明其绑定 candidate 的 compatibility；`.42` 是 knowledge identity，extension
+`0.6.15-guru.39` 与 target `v0.6.15-guru.3` 在 #267 exact-candidate matrix、tag、GitHub Release
+与 tag-pinned smoke 完成前必须继续标记为 `unverified`。

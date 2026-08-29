@@ -11,6 +11,7 @@
 | `R267-AUTH-07` | `D267-AUTH-07` | `T267-AUTH-07` | closure boundary |
 
 Current source authority is live Issue #267 `2026-08-29-r18`; task planning locators are
-`.trellis/tasks/08-29-267-release-v0615-guru3/{prd,design,implement}.md`。Architecture
-inheritance is `docs/architecture/README.md` / `current-main-0.6.5-guru.41` / `active`
-until serialized promotion completes。
+`.trellis/tasks/08-29-267-release-v0615-guru3/{prd,design,implement}.md`。Architecture promotion 已先将
+`docs/architecture/README.md` / `current-main-0.6.5-guru.42` / `active` 建立为 current baseline，
+随后 RDT promotion 将本 contribution 投影到继承该 baseline 的 `current-main-0.6.5-guru.42`。
+promotion-created diff 尚需 fresh Phase 2、commit 与 Branch Review。

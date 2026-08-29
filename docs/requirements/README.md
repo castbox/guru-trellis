@@ -6,7 +6,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.5-guru.41` | [requirement-main.md](./versions/current-main-0.6.5-guru.41/requirement-main.md) | #311 reviewed Architecture/RDT promotion，绑定 task head `651defee…` + #311 serialized promotion delta；#305 已确认的 `EVO-001..007` 保持独立 target authority |
+| `active` | `current-main-0.6.5-guru.42` | [requirement-main.md](./versions/current-main-0.6.5-guru.42/requirement-main.md) | #267 reviewed release-authority alignment，绑定 task head `d3dca74b…` + expected `.41` serialized promotion delta；#305 已确认的 `EVO-001..007` 保持独立 target authority |
+| `superseded` | `current-main-0.6.5-guru.41` | [requirement-main.md](./versions/current-main-0.6.5-guru.41/requirement-main.md) | #311 reviewed Architecture/RDT promotion |
 | `superseded` | `current-main-0.6.5-guru.40` | [requirement-main.md](./versions/current-main-0.6.5-guru.40/requirement-main.md) | #295 reviewed Architecture/RDT promotion + #305 target delta |
 | `superseded` | `current-main-0.6.5-guru.39` | [requirement-main.md](./versions/current-main-0.6.5-guru.39/requirement-main.md) | #290 reviewed Architecture/RDT promotion |
 | `superseded` | `current-main-0.6.5-guru.38` | [requirement-main.md](./versions/current-main-0.6.5-guru.38/requirement-main.md) | #283 reviewed Architecture/RDT promotion |
@@ -15,10 +16,11 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [requirement-main.md](./versions/current-main-0.6.5-guru.35/requirement-main.md) | #266 激活的历史 current snapshot |
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
-当前 main 已验证 official Trellis `0.6.15` compatibility。重构前稳定版发布目标固定为
-tag `v0.6.15-guru.1`、extension `0.6.5-guru.37`、Trellis CLI `0.6.15`；stable tag、
-GitHub Release、tag-pinned install 与 post-publish smoke 仍为 `unverified`，只由独立的
-重构前稳定版 Release Issue 晋升。#267 与下一阶段重构链不属于该发布的前置或 owner。
+当前 main 已验证 official Trellis `0.6.15` compatibility。current source candidate 为
+extension `0.6.15-guru.39`，#267 successor Release target 固定为 tag
+`v0.6.15-guru.3`；stable tag、GitHub Release、tag-pinned install 与 post-publish smoke
+仍为 `unverified`，只能由 #267 exact-candidate Release lifecycle 晋升。#311 的正式 `.3`
+业务仓安装与原错误路径重试保持独立 post-release proof。
 
 Guru Trellis 下一阶段产品进化 Requirements 的唯一文档集位于
 [`evolution/`](./evolution/README.md)，主定义为

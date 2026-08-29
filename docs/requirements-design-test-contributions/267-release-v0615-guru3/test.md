@@ -8,8 +8,9 @@
 - `T267-AUTH-03`（R267-AUTH-04）：对 `.41...42` authority diff 做语义审查，确认没有新增
   requirement/behavior、Design responsibility、Architecture decision/ADR、owner、GAP、
   compatibility exit 或 runtime change。
-- `T267-AUTH-04`（R267-AUTH-05）：在 contribution commit 的独立 Branch Review 通过前，
-  shared current `.42` locator 不存在且 `.41` 仍为唯一 live current。
+- `T267-AUTH-04`（R267-AUTH-05）：contribution commit 的独立 Branch Review 通过前，
+  shared current `.42` locator 不存在且 `.41` 仍为唯一 live current；通过后只允许 serialized
+  promotion owner 创建 `.42`，该历史边界已满足。
 - `T267-AUTH-05`（R267-AUTH-05/06）：promotion-created diff 重新运行 Phase 2、task
   commit 与独立 Branch Review；旧 `2a546100…` review、contribution review 或 prior Phase 2
   均不能替代 post-promotion evidence。
@@ -18,6 +19,6 @@
 - `T267-AUTH-07`（R267-AUTH-07）：`issue-scope-ledger.json` 保持 `close_issues=[]`，#311
   保持 related/open，PR payload 只使用 `Refs #267`。
 
-本 contribution 阶段只运行 planning、scope、RDT/Architecture contribution 与定向静态验证；
-正式 Release matrix、tag-pinned smoke、tag、GitHub Release 与业务仓 #311 proof 仍属于后续
-exact-candidate/post-publish 阶段。
+contribution review 已通过，Architecture 与 RDT serialized promotion 均已完成；promotion-created diff
+的 fresh Phase 2、commit、Branch Review 仍待执行。正式 Release matrix、tag-pinned smoke、tag、
+GitHub Release 与业务仓 #311 proof 仍属于后续 exact-candidate/post-publish 阶段。

@@ -7,8 +7,8 @@
   shared current 文件。
 - `D267-AUTH-02`：RDT contribution 以 `.41` 为 source/expected current、`.42` 为唯一
   candidate successor；Architecture contribution 使用相同 before/after identity。
-- `D267-AUTH-03`：contribution review 通过后，RDT 与 Architecture owner 必须根据各自
-  fresh typed route 串行执行 promotion，不在 planning artifact 中预选 owner 调用顺序；任一
+- `D267-AUTH-03`：contribution review 通过后，fresh owner dependency review 确定 Architecture
+  先激活统一 `.42` baseline、RDT 后建立并继承该 current `.42` versioned authority；两者串行执行，任一
   owner 发现 live current 不再是 `.41` 时返回 `sync_required`，不得覆盖新 authority。
 - `D267-AUTH-04`：promotion 只把已审核的 release/current fact delta 投影到
   Requirements、Design、Test、Architecture navigation/current/evidence；`.41` 的正文只
@@ -31,4 +31,5 @@
 
 Architecture before/after、required concerns、project check 与 promotion state 由
 `docs/architecture/contributions/267-release-v0615-guru3.md` 拥有；本文只承接 RDT
-design responsibilities。
+design responsibilities。Architecture 与 RDT serialized promotion 均已完成；post-promotion fresh
+Phase 2/commit/Branch Review 仍是后续 mandatory route。
