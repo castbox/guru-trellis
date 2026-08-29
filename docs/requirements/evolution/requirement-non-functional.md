@@ -299,6 +299,10 @@ Requirements、candidate 或 Release 的验收门槛；不得通过删减能力�
   代替三者。
 - `EVO-NFR-027`：首次全 pending、partial、unknown 三种 action 状态的优先级、owner、独立
   `file_state`/`context_state`/`sidecar_state`、不可逆边界与 exact re-entry 覆盖率必须为 100%；
+  每个需要确认的 next stock mutation 必须经唯一 `stock-policy-action-confirmation-wait`，正常清晰肯定进入
+  standalone/embedded/reapply 的 profile-fixed action re-entry，缺少确认保持 wait，明确拒绝进入对应
+  action-not-executed，material drift 零副作用重建 current plan；从 action-state continuation 直接执行待确认
+  mutation 或要求固定确认字符串的计数均为 0。
   `stock_policy_action_required` 被误报为 current、unknown 被猜测成功、已完成 action 被重放或
   在 identity/state/decision-relevant facts 已变化、过期或未知时未执行所需 fresh reread 的计数均为 0。
 - `EVO-NFR-028`：source-stimulus 的适用范围、六类 stimulus、固定优先级、句中提及负例、passive context 隔离和 source-class collision 均以 `requirement-main.md` 的 `EVO-REQ-076` 与 `EVO-FIX-LATEST-INTENT` 为唯一行为主定义。本条只验证：适用 fixture 的分类、exact binding、唯一 owner/consumer 与固定 rank 覆盖率为 100%；lifecycle-bound/passive context 不进入统计，unknown/multiple class、ordinary 误触 stock、internal return 重新顶层分流、explicit/ordinary 双匹配和被动 context 抢占请求的计数为 0。
@@ -486,7 +490,9 @@ Requirements、candidate 或 Release 的验收门槛；不得通过删减能力�
   `确认执行 <hash>`、hash/digest challenge、task/path/branch/SHA 重复、摘要复述、规定句式、
   script/validator/recorder 对用户确认的解析/匹配/验证，以及 confirmation/authorization 在 schema、DTO、
   gate、checkpoint、artifact、history 中的持久化计数均为 0。plan/live-fact digest 可服务局部确定性
-  freshness，但不得成为用户 challenge 或授权 authority。unrelated dirty/untracked files、worktree、
+  freshness，但不得成为用户 challenge 或授权 authority。Stock pending mutation 同样必须由命名的
+  `stock-policy-action-confirmation-wait` 承接，不能把 action-state continuation 直接当作 confirmation 或
+  mutation authority。unrelated dirty/untracked files、worktree、
   branch、task 和远程资源必须保持不变。
 
 ## 5. 非功能范围豁免

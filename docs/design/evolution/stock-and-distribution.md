@@ -71,10 +71,10 @@ declared projection cell；具体 emitted/not-emitted 状态仍由 host matrix �
 | `trellis-session-insight` / bundled skill | explicit | `managed_quarantine` | `.trellis/guru-team/stock-providers/trellis-session-insight/` non-discoverable source | `guru-session-memory-read-adapter-1.0` | standalone direct-answer or exact embedded caller | `provider_boundary_blocked` |
 | `trellis-break-loop` / `common/skills/break-loop.md` | explicit | `managed_quarantine` | `.trellis/guru-team/stock-providers/trellis-break-loop/` non-discoverable source | `guru-diagnostic-read-adapter-1.0` | standalone direct-answer or exact embedded caller | `provider_boundary_blocked` |
 | platform `trellis-research` | worker | `caller_bound_replacement` | Guru host agent projection with `discovery_research` profile | `guru-research-worker-adapter-1.0` | `guru-discover-change-context` | `provider_boundary_blocked` |
-| platform `trellis-implement` | worker | `caller_bound_replacement` | Guru host agent projection with `task_free|standard_phase2` profiles | `guru-platform-implementation-worker-adapter-1.0` | exactly one task-free/standard implementation owner | `provider_boundary_blocked` |
+| platform `trellis-implement` | worker | `caller_bound_replacement` | Guru host agent projection with `task_free\|standard_phase2` profiles | `guru-platform-implementation-worker-adapter-1.0` | exactly one task-free/standard implementation owner | `provider_boundary_blocked` |
 | platform `trellis-check` | worker | `caller_bound_replacement` | Guru host agent projection with `platform_phase2_check` profile | `guru-check-worker-adapter-1.0` | `guru-check-task` | `provider_boundary_blocked` |
 | channel `check` / `trellis/agents/check.md` | worker | `caller_bound_replacement` | Guru channel worker projection with `channel_phase2_check` profile | `guru-check-worker-adapter-1.0` with channel transport | spawning `guru-check-task` | `provider_boundary_blocked` |
-| channel `implement` / `trellis/agents/implement.md` | worker | `caller_bound_replacement` | Guru channel worker projection with `task_free|standard_phase2` profiles | `guru-channel-implementation-worker-adapter-1.0` with channel transport | exactly one spawning implementation owner | `provider_boundary_blocked` |
+| channel `implement` / `trellis/agents/implement.md` | worker | `caller_bound_replacement` | Guru channel worker projection with `task_free\|standard_phase2` profiles | `guru-channel-implementation-worker-adapter-1.0` with channel transport | exactly one spawning implementation owner | `provider_boundary_blocked` |
 
 Closure count is fixed at `suppressed=9`, `provider=1`, `explicit=2`, `worker=5`. Quarantined source is
 non-discoverable reference/provider material, never a Skill registry row, auto-match surface or alternate semantic
@@ -133,12 +133,17 @@ file/projection location and cannot imply, replace or broaden the action.
    aggregate when at least one action is completed and at least one remains pending; aggregate priority is
    `unknown > partial > action_required`. Re-entry live-reads the exact asset and executes only a pending action whose
    provider contract proves safe repetition; it never replays a completed mutation.
-7. Before any pending mutation, the stock owner displays that next exact asset/target/action and applies
-   `EVO-REQ-081`. Explicit refusal keeps every action state truthful and returns
-   `stock_policy_action_not_executed` with the same stock-owner continuation in standalone mode or
-   `returned_to_caller(policy_result=action_not_executed)` in embedded/reapply mode; it is not a policy defect.
-   A later explicit request to continue may use only that continuation to enter `standalone_action_reentry`; the
-   owner live-rereads the action set and never replays a completed mutation.
+7. Before any pending mutation, the stock owner displays that next exact asset/target/action under `EVO-REQ-081` and
+   enters the named dialogue-local `stock-policy-action-confirmation-wait`; an action-required/partial/unknown
+   continuation by itself never authorizes the mutation. Missing confirmation stays in that wait. A current clear
+   affirmative projects only the same continuation to `standalone_action_reentry`, the matching embedded
+   `*_action_reentry` or `reapply_action_reentry`; material target/action/state/fact drift performs zero mutation and
+   returns to that same profile to live-reread and redisplay. Explicit refusal keeps every action state truthful and
+   returns `stock_policy_action_not_executed` with the same stock-owner continuation in standalone mode or
+   `returned_to_caller(policy_result=action_not_executed)` in embedded/reapply mode; it is not a policy defect. A
+   later explicit request to continue may use only that continuation to re-enter the exact owner, which live-rereads
+   the action set and never replays a completed mutation. A deterministic action requiring no confirmation may bypass
+   only the wait, never the profile-fixed re-entry or current-state checks.
 
 `stock_policy_current` requires all applicable rows current, all successors reachable, no raw discoverable semantic
 route/worker, no unresolved sidecar and one activation candidate. A suppressed successor mismatch is a

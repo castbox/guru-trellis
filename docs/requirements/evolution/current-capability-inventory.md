@@ -540,7 +540,7 @@ shape 已由 [`docs/test/evolution/`](../../test/evolution/README.md) 建立为 
 
 | Removed shape/process | Current relation | 不保留理由 | 仍须证明的 successor |
 | --- | --- | --- | --- |
-| 21 active Skill、89 exits 及其具体 Skill/exit/schema id | `.40` inventory source identity | 固化数量会把 target 耦合 current graph | `CUR-CAP-001..023` 的 observable result 全量通过 |
+| 21 active Skill、89 exits 及其具体 Skill/exit/schema id | selected-base `.41` inventory source identity | 固化数量会把 target 耦合 current graph | `CUR-CAP-001..023` 的 observable result 全量通过 |
 | upstream `trellis-brainstorm` 作为 planning author | current workflow authoring mechanism | 用户已决定 Guru Team 完全替代 | `TARGET-DELTA-001..002` |
 | raw upstream `trellis-spec-bootstrap` 作为 spec-boundary author | current bootstrap implementation path | 会自行选择 `.trellis/spec` 边界并写 authority，和 Guru bootstrap/RDT owner 冲突 | `TARGET-DELTA-011..012` 与 `EVO-FIX-SSOT-BOOTSTRAP` |
 | raw upstream `trellis-before-dev` 的 auto-match/provider identity 与独立 spec 全文读取链 | current pre-implementation helper shape | 与 invocation-scoped authority reuse、task-free/标准 Phase 2 唯一 implementation owner 重叠 | `EVO-REQ-026` 的 Guru-owned `implementation_context`，并由两种 implementation profile 各自消费 |

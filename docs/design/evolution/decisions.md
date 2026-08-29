@@ -74,12 +74,15 @@ installed publication、verifier failure evidence与original-worktree continuity
   或 `确认执行 <hash>` 均不得成为 challenge；脚本、validator、recorder 不解析、匹配、验证或持久化
   用户确认。每个明确拒绝进入该owner命名的zero-side-effect refusal output；Merge、manual Issue closure、
   Finish/archive、delivery-terminal Cleanup与active-lifecycle disposition cleanup互不继承确认，refusal不得
-  伪装成blocked/provider defect。
+  伪装成blocked/provider defect。Stock action-required/partial/unknown continuation 只能先进入同一 owner 的
+  `stock-policy-action-confirmation-wait`；确认后才进入 profile-fixed action re-entry，不能直接成为 mutation authority。
 - `EVO-DDEC-020`（accepted）：standalone projection/stock、retained-host 与 embedded/reapply 使用互斥
   profile/exit schema。embedded child 只能返回 exact caller；不得取得 standalone blocked/current、
   workflow completion 或 caller terminal。reapply caller固定为Existing Migrator的ordered
   UPDATE/PRESET-REAPPLY cell；embedded Stock的current、required、partial、unknown、refusal与caller-finding
-  `returned_to_caller` variants字段互斥，只有action-state variant携带action continuation；Release publication
+  `returned_to_caller` variants字段互斥，只有action-state variant携带action continuation；该 continuation
+  经 exact caller 的 fixed edge 返回 Stock owner，并在需要 mutation 时先经过命名 confirmation wait，才可
+  投影到 standalone/embedded/reapply 的 profile-fixed action re-entry。Release publication
   的zero-completed/unknown progress与true partial也使用互斥 re-entry/block schema。
 - `EVO-DDEC-021`（accepted）：`EVO-DEL-01..08` 完成全部 39 个 public Skill 与 activation candidate 后才
   冻结 immutable matrix candidate。`EVO-DEL-09` 只对该 identity 执行完整矩阵；任一实现/合同修订都使

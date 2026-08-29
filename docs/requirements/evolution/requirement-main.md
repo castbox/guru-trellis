@@ -1620,11 +1620,17 @@ Trellis 拥有 `trellis-*` command/Skill、hook、agent、runtime agent、bundle
   `stock_policy_current`，也不得直接进入 `entry_route_selected`。若存在 `unknown`，它优先于
   `partial` 和 `action_required`；若至少一个 action 已完成且仍有 pending，则为
   `stock_policy_action_partial`。三个中间态都不是成功或 terminal，唯一 consumer 是对应
-  `stock-policy owner`/嵌入 caller 的 action owner；经当前对话中必要的真实副作用确认（若该
-  action 需要确认）后，或在无须确认的确定性 action 完成后，只能经
-  `stock_policy_action_reentry` 复用仍然 current 的 policy context；仅在 identity、state 或
-  decision-relevant facts 变化/过期/未知时定向 fresh reread，再重入未完成/安全 action。重入不得重放已完成或
-  不可逆 action，无法证明安全时保持同一 role-local blocked。
+  `stock-policy owner`/嵌入 caller 的 action owner。owner 可先做不产生副作用的 live state resolution；当
+  下一项 pending mutation 已唯一且需要确认时，必须先完整展示 current exact action plan，再进入同一 Stock
+  owner 的命名 dialogue-local pause `stock-policy-action-confirmation-wait`。该 wait 不是独立 Skill、public
+  DTO 或 authorization artifact：缺少确认时保持等待；“确认继续”“可以，继续”等 current 清晰肯定只把
+  `continuation_ref` 投影到 profile-fixed `standalone_action_reentry`、对应 embedded `*_action_reentry` 或
+  `reapply_action_reentry`；明确拒绝分别得到 standalone `stock_policy_action_not_executed` 或 embedded/reapply
+  `returned_to_caller(policy_result=action_not_executed)`；material target/scope/action/state/fact drift 使 wait
+  失效，并以零 mutation 返回同一 profile 的 action re-entry 重新读取和展示。无需确认的确定性 action 完成后
+  可直接进入同一 profile re-entry，但不得借此绕过任何待确认 mutation。所有 re-entry 只复用仍然 current 的
+  policy context；仅在 identity、state 或 decision-relevant facts 变化/过期/未知时定向 fresh reread，再重入
+  未完成/安全 action。重入不得重放已完成或不可逆 action，无法证明安全时保持同一 role-local blocked。
 - `EVO-REQ-076`：每个可能启动顶层 invocation 的用户输入（通常是一条用户消息；已绑定的
   provider/worker return、upstream CLI stimulus、native context 等内部或上游 event 不属于新的用户
   输入）在进入 source-stimulus ranking 或生成 `request_received` 前，必须先经过
@@ -2100,32 +2106,26 @@ request_received [admission receipt 已生成；随后完成适用的 isolation 
        `-> entry_route_selected
           `-> [已选 route/caller 实际触及 stock surface 时：stock_policy_evaluation]
              |-> stock_policy_action_unknown
-             |   -> stock_policy_action_reentry
-             |      -> [复用 envelope 中仍 current 的 stock policy/authority projection；仅在
-             |          identity/state/decision-relevant facts 变化、过期或未知时定向 reread：只重入
-             |          未完成或可安全重试 action]
-             |         |-> stock_policy_current
-             |         |-> upstream_suppression_blocked
-             |         |-> provider_boundary_blocked
-             |         `-> retained_context_blocked
+             |   `-> [Stock owner 零副作用解析 current state；无法唯一化则保持 exact role-local block]
              |-> stock_policy_action_partial
-             |   -> stock_policy_action_reentry
-             |      -> [复用同一 envelope 的 package/source/projection/file/context/sidecar state；
-             |          仅在 identity/state/decision-relevant facts 变化、过期或未知时定向 reread，
-             |          并按 exact owner 只重入 pending/安全 action]
-             |         |-> stock_policy_current
-             |         |-> upstream_suppression_blocked
-             |         |-> provider_boundary_blocked
-             |         `-> retained_context_blocked
              |-> stock_policy_action_required
-             |   -> stock_policy_action_reentry
-             |      -> [必要的真实副作用确认/确定性 action 完成后复用仍 current envelope；仅在
-             |          identity/state/decision-relevant facts 变化、过期或未知时定向 reread，
-             |          只执行 pending/安全 action]
-             |         |-> stock_policy_current
-             |         |-> upstream_suppression_blocked
-             |         |-> provider_boundary_blocked
-             |         `-> retained_context_blocked
+             |   `-> [上述三个中间态一旦得到唯一 next action]
+             |      |-> [无需确认的确定性 action 完成] -> stock_policy_action_reentry
+             |      `-> [完整展示 current exact pending mutation]
+             |          `-> stock-policy-action-confirmation-wait
+             |             |-> current clear affirmative -> stock_policy_action_reentry
+             |             |-> missing confirmation -> stock-policy-action-confirmation-wait
+             |             |-> explicit refusal -> stock_policy_action_not_executed |
+             |             |                         returned_to_caller(policy_result=action_not_executed)
+             |             `-> material drift -> [零 mutation：profile-fixed stock_policy_action_reentry]
+             |-> stock_policy_action_reentry
+             |   -> [复用 envelope 中仍 current 的 stock policy/authority projection；仅在
+             |       identity/state/decision-relevant facts 变化、过期或未知时定向 reread，只重入
+             |       未完成或可安全重试 action]
+             |      |-> stock_policy_current
+             |      |-> upstream_suppression_blocked
+             |      |-> provider_boundary_blocked
+             |      `-> retained_context_blocked
              `-> stock_policy_current
                  `-> [回到已选 caller 的 route-local continuation；不重新执行顶层 entry selection]
 entry_route_selected (admission clear/redirect；stock-touching route 先满足 stock_policy_current)
@@ -2729,7 +2729,7 @@ direct answer 的 terminal 与不可用事实诚实边界完成。
 | material additive 在不可逆远端副作用开始前到达 | 返回最早受影响 owner，按 freshness 失效并重算受影响 candidate/route/acceptance 与下游；不得保留 stale result 或跳过 gate |
 | material additive 在不可逆远端副作用开始后到达 | 原远端 owner 创建可发现且有唯一 consumer 的 `additive_change_pending`，保持 in-flight/published candidate 不变，并收敛为既定正常 current terminal、失败后 forward-recovered terminal 或 terminal block；任一结果 current 后，唯一 consumer 先分配新的 invocation identity/`context_envelope`，再恰好生成一次新的 `request_received`，随后按 `independent_request_isolation_gate -> pre_semantic_dispatch_guard` 顺序重新执行六类 exactly-one `entry_route_selected`，不得复用旧 identity/envelope/candidate/receipt；只有分类为 new change 才进入二级 mode selection 与独立 change lifecycle，其他分类由对应顶层 route 的唯一 owner 消费；不得默认 new change、提前消费、丢失、重排或写入旧 candidate |
 | mandatory capability/route 缺失或 ambiguous | fail closed；不得猜测下一步 |
-| stock policy 首次全 pending、部分完成或结果 `unknown` | 仅在已选 route/caller 的 stock action 中评估：首次所有 action 为 `pending` 且无 `completed/unknown` 时先得到 `stock_policy_action_required`；有 completed+pending 时得到 `stock_policy_action_partial`；任一未知/不一致时得到 `stock_policy_action_unknown`，优先级为 `unknown > partial > action_required`。三者均绑定 exact role/target/action、caller/profile、已完成/待执行动作、独立 `file_state`/`context_state`/`sidecar_state`、不可逆边界与唯一 owner，均不是成功/终端；经必要确认或确定性 action 后复用同一 `context_envelope` 中仍 current 的 policy/authority projection，仅在 identity/state/decision-relevant facts 变化、过期或未知时定向 fresh reread，再从 `stock_policy_action_reentry` 重入；standalone policy/projection 只能得到 `stock_policy_current`、对应 role-local blocked 或 `retained_context_blocked`，嵌入 clean-install/migration/Release 则只把最小 finding 投影给 caller。pre-entry guard 不执行 action 或 mutation；不得猜测成功、重放已完成/不可逆 action 或重新进入 `entry_route_selected` |
+| stock policy 首次全 pending、部分完成或结果 `unknown` | 仅在已选 route/caller 的 stock action 中评估：首次所有 action 为 `pending` 且无 `completed/unknown` 时先得到 `stock_policy_action_required`；有 completed+pending 时得到 `stock_policy_action_partial`；任一未知/不一致时得到 `stock_policy_action_unknown`，优先级为 `unknown > partial > action_required`。三者均绑定 exact role/target/action、caller/profile、已完成/待执行动作、独立 `file_state`/`context_state`/`sidecar_state`、不可逆边界与唯一 owner，均不是成功/终端。owner 可先零副作用解析 state；若下一项 mutation 需要确认，完整展示 current plan 后必须进入 `stock-policy-action-confirmation-wait`，清晰肯定才把 continuation 投影到 standalone、embedded 或 reapply 的 profile-fixed action re-entry，缺少确认继续等待，拒绝得到相应 action-not-executed，material drift 以零 mutation 返回同一 profile 重新读取/展示；无需确认的确定性 action 完成后才可直接 re-entry。随后复用同一 `context_envelope` 中仍 current 的 policy/authority projection，仅在 identity/state/decision-relevant facts 变化、过期或未知时定向 fresh reread；standalone policy/projection 只能得到 `stock_policy_current`、对应 role-local blocked 或 `retained_context_blocked`，嵌入 clean-install/migration/Release 则只把最小 finding 投影给 caller。pre-entry guard 不执行 action 或 mutation；从 action state continuation 直接执行待确认 mutation、猜测成功、重放已完成/不可逆 action或重新进入 `entry_route_selected` 的计数均为 0 |
 | `active_user_intent` / lifecycle-bound user message | 先执行 `lifecycle_intent_preclassification`，其结果必须恰好是 `lifecycle_bound_user_intent`、`independent_user_request` 或 `lifecycle_intent_binding_blocked`。bound 结果要求 exact lifecycle/invocation identity、唯一 owner/phase、scope/candidate/remote-boundary、host event identity、到达序列和因果 wait/response facts，并只能由 current/最早 owner 唯一分类为 owner-local additive、material additive 或 override，前三类只回 exact owner/最早 owner；independent request 先建立新 identity/envelope、恰好生成一次 admission receipt，再经 isolation safety gate 后进入 source/route selection；shared-scope pending 与 isolation blocked 均复用既有 receipt。predicate 不完整时 `lifecycle_intent_binding_blocked`，不得降级 ordinary 或进入 stock policy |
 | ordinary natural language、exact command/Skill selection、upstream CLI、Guru-bound provider/worker、worker return/context | 仅对已通过 lifecycle preclassification 的独立请求按 `EVO-REQ-076` 固定 rank 识别：return/context > caller-bound provider/worker > upstream CLI > exact command > exact Skill selection > ordinary natural language；句中提及 stock 名称但无 exact binding 走 ordinary natural language，internal return/context 不重新分流，同一 canonical identity 才折叠 command/selection，unknown/multiple source class fail closed；suppressed 命中先由 pre-entry guard redirect 或 fail closed，不执行精确移除/delete、quarantine 或 patch；这些 mutation 只能由已选且绑定的 maintenance/provider action 承接。provider/worker 缺 binding 得到 `provider_boundary_blocked`，明确只读 provider 经 `explicit_provider_result_current` 回 direct-answer owner |
 | 无 stock surface 的 direct answer、非 stock stop/history/specialist | 只经过 `pre_semantic_dispatch_guard` 的最小 source/matcher 读取，跳过完整 `stock_policy_evaluation`，直接进入唯一 Guru route；不得因 inventory 存在而扫描全部 provenance/file/sidecar 或产生 stock policy state |

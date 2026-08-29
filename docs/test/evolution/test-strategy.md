@@ -202,7 +202,11 @@ or fail the product contract.
   context isolation, with stock mutation count zero.
 - `EVO-FIX-STOCK-MAINTENANCE` owns selected absence/quarantine/replacement/context actions, user modification,
   sidecar, per-action `completed|pending|unknown`, aggregate partial/unknown/action-required priority and exact
-  re-entry. It also proves standalone suppression/provider blocked targets are distinct, every adapter block returns
+  re-entry. Every pending mutation must first pass the single profile-fixed
+  `stock-policy-action-confirmation-wait`: clear affirmative reaches only the matching standalone/embedded/reapply
+  action re-entry, missing confirmation remains waiting, refusal returns the exact action-not-executed shape, material
+  drift performs zero mutation and rebuilds the plan, and an action-state continuation can never directly authorize
+  mutation. It also proves standalone suppression/provider blocked targets are distinct, every adapter block returns
   synchronously to its profile-fixed caller without a public caller ref, refusal has an action-not-executed result
   that can re-enter only the same stock owner, every R01..R09 retained profile fixes one exact hook-policy/session/
   workflow-breadcrumb context owner, and standalone, retained-host and embedded/reapply exit sets are disjoint.
@@ -244,7 +248,8 @@ output-to-consumer-input projection, external-exit consumer closure,
 9 retained rows, one reference-manifest writer/caller-bound adapter family, one convergent authority/code-spec
 projection writer/return chain covering zero-promotion `authority_only`, same-range `with_code_spec` and an
 already-current double-none exit, one standalone
-`Projection -> Stock -> Projection fresh validation` chain, one exact-current Workspace no-mutation convergence path,
+`Projection -> Stock -> named action confirmation wait when mutation remains -> Stock action re-entry -> Projection
+fresh validation` chain, one exact-current Workspace no-mutation convergence path,
 one compound activation/implementation-entry confirmation, three independent provenance-tail/branch-push/Draft-PR
 confirmation subgraphs, one Finish-before-Merge chain with no-mutation current exits, standalone verifier
 evidence-before-cleanup and trace range coverage. Runtime, installed, provider and Release rows remain

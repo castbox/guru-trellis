@@ -24,5 +24,5 @@ provenance: >-
   merged-behavior reconciliation, Requirements-stage successor zero-loss and the final Requirements semantic,
   Strict technical and deterministic gates are current and clean; prior REQ-REV-011..132 and DES-REV-001..014
   review bindings are stale, all 50 fixtures have EVO-DES-001..073 allocation with Reconcile, Publish/Finish/Merge
-  and Projection ownership; DES-REV-001..043 are closed, the final fresh Design review and deterministic closure
+  and Projection ownership; DES-REV-001..047 are closed, the final fresh Design review and deterministic closure
   passed, evolution_refactor_eligible is current, and all fixtures remain planned_not_executed

@@ -111,8 +111,11 @@ publication terminal and standalone verifier failure lifecycle. The mapping is c
   code-spec-review-trigger-to-projection/fresh-review chain before raw meta/update-spec absence may pass; the chain
   selects only outstanding work and its fresh complete-diff review must converge already-current targets to exact
   double-none. Standalone stock action has exactly one producer and return path,
-  `Projection -> Stock -> Projection stock_policy_reentry -> fresh complete validation`; Stock cannot complete the
-  workflow or create a fifth distribution action.
+  `Projection -> Stock -> stock-policy-action-confirmation-wait -> Stock standalone_action_reentry -> Projection
+  stock_policy_reentry -> fresh complete validation` when a mutation remains; no-confirm deterministic action may
+  bypass only the wait, and no-mutation current bypasses the action subgraph. Embedded/reapply action-state variants
+  use the same named wait before their profile-fixed re-entry. Missing confirmation, refusal and material drift remain
+  zero-side-effect owner-local branches; Stock cannot complete the workflow or create a fifth distribution action.
 
 ## 4. Deterministic Planning Closure
 

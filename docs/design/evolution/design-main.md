@@ -498,7 +498,11 @@ standard change
   platform/channel check profiles互斥；raw worker path从 target dispatch inventory移除。
 - `EVO-DES-054`：pre-semantic guard只读 manifest与source stimulus。完整 policy evaluation只在
   stock-touching caller发生；首次全 pending、partial、unknown分别返回 action-required/partial/unknown，
-  复用 current envelope并只重入未完成或可安全重试 action。每个 atomic action 只记录
+  复用 current envelope并只重入未完成或可安全重试 action。action-state resolver 可先做零副作用 live
+  resolution；一旦 next pending mutation 唯一且需要确认，Stock owner 必须展示 current exact plan 并进入
+  `stock-policy-action-confirmation-wait`，只有 current 清晰肯定才可投影 continuation 到 profile-fixed action
+  re-entry；missing/refusal/material drift 分别保持 wait、进入 owner-specific action-not-executed、或零副作用
+  返回同一 profile 重新读取和展示。每个 atomic action 只记录
   `completed|pending|unknown`；partial只由 action set 聚合得出。`retained_host` profile拥有独立
   `retained_context_current|retained_context_blocked` public contract；R01..R09各由profile固定host/cell/action
   及唯一hook-policy/session/workflow-breadcrumb context owner，后者再向Admission/worker/current-owner提供
@@ -508,17 +512,22 @@ standard change
   `guru-validate-extension-projection:standalone`；`stock_policy_current`只回其`stock_policy_reentry`，不得直接
   `workflow-completed`。standalone suppression/provider failure分别进入
   `stock-suppression-maintenance-blocked`与`stock-provider-maintenance-blocked`，不使用未命名role-local block；
-  pending mutation拒绝得到携带同一continuation的`stock_policy_action_not_executed`；新明确继续意图只凭
-  该token进入`standalone_action_reentry`，embedded/reapply则以
+  pending mutation拒绝得到携带同一continuation的`stock_policy_action_not_executed`；新明确继续意图只把
+  该 token 交回 `stock-policy-action-confirmation-wait` 所属的 exact owner，重新 live-reread 后才可进入
+  `standalone_action_reentry`，embedded/reapply则以
   `returned_to_caller(policy_result=action_not_executed)`回profile-fixed caller。
   `reapply` profile 只固定回 `guru-migrate-existing-repository` 的 ordered update/preset-reapply cell，
   不存在未命名 standalone reapply caller。standalone action-required/partial/unknown各只输出closed
-  `continuation_ref`回`standalone_action_reentry`；exact Stock owner从自己的policy/continuation section解析
-  bound candidate/target与action state，caller不重复传入原始字段。embedded/reapply 的
+  `continuation_ref`给同一 Stock owner 的 action-state resolver；需要确认的 mutation 必须先进入
+  `stock-policy-action-confirmation-wait`，肯定后才到`standalone_action_reentry`。exact Stock owner从自己的
+  policy/continuation section解析 bound candidate/target与action state，caller不重复传入原始字段。embedded/reapply 的
   `returned_to_caller`使用互斥closed variants：current只携带policy ref；required/partial/unknown各携带
   `action_state_ref,continuation_ref`；refusal携带同形state/continuation；caller finding只携带finding refs。
-  另一variant字段一律非法，只有action state variant可把continuation投影到对应profile-fixed
-  `*_action_reentry`。
+  另一variant字段一律非法，只有action state variant可经 exact caller 的 fixed stock-action edge 返回 Stock
+  resolver，并在命名 wait 取得 current 肯定后把 continuation 投影到对应 profile-fixed
+  `embedded_clean_action_reentry`、`embedded_migration_action_reentry`、`embedded_release_action_reentry` 或
+  `reapply_action_reentry`；
+  continuation 本身不构成 mutation authority。
 - `EVO-DES-055`：official update/upgrade/init重新生成 stock path不是成功。preset reapply重建inventory、
   对 Design选定action执行current/blocked判断、处理`.new/.bak`，最后要求active semantic graph唯一、
   no unresolved sidecar、all successors reachable。update reapply 必须保留 dry-run discriminator 与所选
@@ -604,6 +613,10 @@ standard change
   `publication_preparation_not_executed -> task-publication-preparation-not-executed`、
   `branch_push_not_executed -> task-branch-push-not-executed`和
   `pr_creation_not_executed -> task-pr-creation-not-executed`，output只携带对应action的最小identity且互不兼容。
+  Stock maintenance 的需要确认 mutation 统一进入 `stock-policy-action-confirmation-wait`：normal affirmative
+  只进入 standalone/embedded/reapply 的 profile-fixed action re-entry，missing 保持 wait，refusal 使用各自
+  action-not-executed，material drift 零副作用返回 exact Stock owner 重建计划；不得从 action-state
+  continuation 直接执行 mutation。
   active-lifecycle disposition cleanup是唯一特殊形状：回复
   已含唯一retain/suspend choice时直接消费，否则只能得到
   `active_lifecycle_disposition_choice_required`并进入
@@ -682,7 +695,9 @@ Current `design_ready_for_delivery_planning` / `fresh_design_review_passed` cand
    保持原caller ownership。Trellis reference必须由独立manifest/
    caller-fixed adapter承接且raw meta write surface为0；authority-promotion/code-spec触发的projection必须由Bootstrap唯一
    owner写入并回fresh Check/Commit/Review；clean/migration/standalone-stock拒绝后的same-owner action re-entry必须
-   可构造，adapter output不得携带generic caller ref；R01..R09分别只交给exact host context owner，suppressed
+   可构造，Stock action-required/partial/unknown 还必须经唯一 `stock-policy-action-confirmation-wait` 闭合
+   normal affirmative、missing、refusal、material drift 与 standalone/embedded/reapply profile-fixed re-entry，
+   action-state continuation 直接执行待确认 mutation 的路径为0；adapter output不得携带generic caller ref；R01..R09分别只交给exact host context owner，suppressed
    admission success只交给Route Request；standalone Stock只能由Projection owner调用，current只回Projection
    `stock_policy_reentry`并fresh validation，embedded Stock variants字段互斥；publication provenance、branch
    push与Draft PR creation必须有三个互不兼容的prepare/wait/confirmation re-entry/refusal/recovery，且任一确认
@@ -704,7 +719,7 @@ Current `design_ready_for_delivery_planning` / `fresh_design_review_passed` cand
 
 Current gate passed against this revised candidate. #311/#312 merge, exact `.41` authority rebind, 83/13/50
 Requirements-stage successor zero-loss and the merge-bound fresh Requirements gate remain current. The complete
-Design/Test/Architecture/task projection closed `DES-REV-001..043`; the final fresh semantic review reported open
+Design/Test/Architecture/task projection closed `DES-REV-001..047`; the final fresh semantic review reported open
 P1=0, blocking P2=0, P3=0 and high-risk question=0, and deterministic closure passed. The closed gate therefore
 projects `design_ready_for_delivery_planning`, `fresh_design_review_passed` and `evolution_refactor_eligible`.
 This continuation remains in Phase 1 and stops at that completed Design gate; no implementation or delivery action
