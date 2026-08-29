@@ -23,6 +23,11 @@ Release、tag-pinned install 与 post-publish smoke 均尚未建立。
 - #267 release-owned：统一 stable install/update source、canonical/installed manifest、
   public README 与 verifier assertions，并在 merge 后对唯一 exact candidate 执行完整
   Release gates。
+- #267 authority alignment：初始 preparation commit 的独立 Branch Review 发现 `.39`
+  source manifest 与 active `.41` authority 中的 `.37` current-candidate facts 冲突。
+  r18 要求先通过 task-owned RDT/Architecture contributions 与 serialized promotion 激活
+  `current-main-0.6.5-guru.42`；`.42` 只同步 release/current facts 与 traceability，
+  不改变产品行为、Skill API、Architecture decision、owner、GAP 或 compatibility exit。
 
 ## 安装与升级
 
@@ -39,6 +44,11 @@ ownership、mode、overlay drift 与递归零 sidecar。
 merge 与 PR #314 merge 都是 candidate ancestor；随后在同一 candidate 上完成完整 committed
 diff review、package/runtime、四平台、clean/existing install/update/reapply、installed
 Finalizer recovery、workspace-boundary、secret scan 与 residue-zero 门禁。
+
+当前 authority alignment 仍处于 task-owned contribution 阶段：`.41` 继续是 live current，
+`.42` 尚未 promotion，初始 commit `2a546100…` 不是 Publication 或 Release candidate。只有
+contribution review、serialized promotion 与 promotion-created diff 的 fresh review 全部通过后，
+`.42` 才能成为唯一 active knowledge authority。
 
 tag 创建后必须从 tag-pinned clean source 完成 smoke；GitHub Release 创建后必须 live 回读
 tag object、peeled candidate、正式版状态、latest stable 与空 assets。任一 FAIL、SKIP、

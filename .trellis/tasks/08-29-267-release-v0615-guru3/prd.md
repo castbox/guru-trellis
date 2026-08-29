@@ -2,8 +2,8 @@
 
 ## Authority
 
-唯一 current contract 是 live Issue #267 body `2026-08-29-r17`。2026-08-20 与
-2026-08-21 的 Issue comments、`2026-08-23-r16` body、历史 task 和旧 Release
+唯一 current contract 是 live Issue #267 body `2026-08-29-r18`。2026-08-20 与
+2026-08-21 的 Issue comments、`2026-08-23-r16`、`2026-08-29-r17` body、历史 task 和旧 Release
 均为 non-contract history，不拥有本任务范围或发布身份。
 
 release preparation base 固定为
@@ -32,6 +32,13 @@ base，不是最终 exact candidate。
 - 将 stable install/update source、manifest、public README、workflow/preset
   README、verifier fixture 与 canonical/dogfood/installed projection 统一到
   `.3` / `.39` / CLI `0.6.15`。
+- 修复 Branch Review 发现的 current-authority 冲突：先形成 task-owned RDT 与
+  Architecture contributions，目标 successor knowledge authority 固定为
+  `current-main-0.6.5-guru.42`；通过独立 committed full-diff review 后再由两个
+  serialized promotion owners 激活 shared current `.42`。
+- `.42` 只更新 release/current facts、traceability、navigation、evidence 与
+  predecessor/successor binding；产品行为、Skill public API、Architecture decision、
+  owner、single-writer、GAP lifecycle 与 compatibility exit 保持不变。
 - 生成 release preparation committed candidate，并在 PR merge 后从 fresh
   live remote `main` 冻结 commit 与 tree。
 - 对 predecessor peeled commit 到 exact candidate 的完整 committed diff 执行
@@ -49,7 +56,8 @@ base，不是最终 exact candidate。
 
 ## Release Preparation 文件边界
 
-实现阶段只修改以下 release identity owner、projection、assertion 与 task 文件：
+实现阶段只修改以下 release identity owner、projection、authority contribution、assertion
+与 task 文件：
 
 - `README.md`；
 - `trellis/guru-team-extension.json`；
@@ -61,7 +69,15 @@ base，不是最终 exact candidate。
 - `.trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py`；
 - `.trellis/spec/docs/public-docs.md`；
 - preset apply 生成的 `.trellis/guru-team/extension.json`；
+- `docs/requirements-design-test-contributions/267-release-v0615-guru3/**`；
+- `docs/architecture/contributions/267-release-v0615-guru3.md`；
 - `.trellis/tasks/08-29-267-release-v0615-guru3/**`。
+
+shared current promotion 只在上述 contributions 通过独立 committed full-diff review 后执行；
+届时 promotion 仅修改 live Issue r18 明确列出的 Requirements/Design/Test `.41/.42`
+authority 与 `docs/architecture/README.md`、`01-current/system.md`、
+`evidence/current-evidence.md`。
+当前 contribution 阶段不得提前写 shared current。
 
 门禁发现功能缺陷、公共合同变化或上述边界外的 managed byte 变化时，任务停止在
 scope confirmation，不在 release preparation 中吸收修复。
@@ -94,7 +110,7 @@ scope confirmation，不在 release preparation 中吸收修复。
    `v0.6.15-guru.3`，extension revision 唯一为 `0.6.15-guru.39`，CLI 唯一为
    `0.6.15`；历史 task 与 released-history 文档不计入 mutable release surface。
 3. exact-candidate full diff review 的 P0/P1/P2/P3 未关闭 finding 数均为 `0`。
-4. Issue #267 的十二项 pre-tag gate 在同一 candidate 上全部 PASS；任一 FAIL、SKIP、
+4. Issue #267 的十三项 pre-tag gate 在同一 candidate 上全部 PASS；任一 FAIL、SKIP、
    stale、cross-SHA、unknown exit、multiple exit 或 residue 非零均阻断 tag。
 5. annotated tag peeled commit 与 frozen candidate 相同，tag-pinned smoke PASS。
 6. GitHub Release 为正式版、非 draft、非 prerelease、assets 为空，target 与 peeled
@@ -103,3 +119,6 @@ scope confirmation，不在 release preparation 中吸收修复。
    closeout 阶段仍为 OPEN。
 8. 正式 `.3` 发布后的独立业务仓安装、原 Finalizer 失败路径与错误文件路径重试全部
    PASS 时，#311 才具备独立关闭条件；任一 FAIL、SKIP、stale 或未验证结果均保持 OPEN。
+9. `current-main-0.6.5-guru.42` 经 task-owned contribution、独立 Branch Review 与
+   serialized promotion 激活为唯一 current RDT/Architecture authority；`.41` 作为
+   superseded history 保留，active current/canonical candidate 不再声明 `0.6.5-guru.37`。

@@ -36,9 +36,40 @@
   overlay drift、managed byte/mode parity、permission、registry/consumer graph、recursive
   sidecar-zero 与 secret scan。
 - [x] 调用 `guru-check-task`；任何 finding 修复后按实际影响重跑 freshness-dependent gates。
-- [ ] 展示 stage paths 与 commit message，取得独立确认后调用 `guru-create-task-commit`。
-- [ ] 对完整 `origin/main...HEAD` 执行 independent Branch Review；P0/P1/P2/P3 未关闭
-  finding 数必须全部为 `0`。
+- [x] 展示 stage paths 与 commit message，取得独立确认后调用 `guru-create-task-commit`；初始
+  preparation commit 为 `2a5461002856ebcb981156f892e41ef4020d3626`。
+- [x] 对初始完整 `origin/main...2a546100` 执行 independent Branch Review；发现
+  `BR-267-CAND-001`：`.39` source manifest 与 `.37` active authority 冲突，Architecture
+  owner 返回 `architecture_conflict -> planning`，未生成 passing review gate。
+
+## Phase 2R：r18 Authority Alignment Contribution
+
+- [x] 将 live Issue #267 body 修订为 `2026-08-29-r18`，明确 `.42` successor authority
+  scope、文件边界、promotion 顺序与第十三项 pre-tag gate。
+- [x] 通过 `requirements_scope_set` 将 authority alignment 分类为
+  `qualified_approved_expansion`，保持同一 #267 delivery unit。
+- [x] 更新本 task `prd.md`、`design.md`、`implement.md` 与 Release notes，删除 r17 的
+  `.41` 保持不变假设。
+- [x] 创建 RDT task-owned contribution
+  `docs/requirements-design-test-contributions/267-release-v0615-guru3/`，目标 `.42`，
+  `shared_current_write=false`。
+- [x] 创建 Architecture task-owned contribution
+  `docs/architecture/contributions/267-release-v0615-guru3.md`，绑定 expected `.41`、
+  `target_native`、`ADR required=false` 与 pending independent review。
+- [x] 完成 planning wording review、RDT/Architecture Planning gates 与 fresh plan approval。
+- [x] 对 contribution candidate 运行 Phase 2；通过后展示并确认新的 task commit。
+- [ ] 对完整 committed range 执行独立 Branch Review；通过前不得写 shared `.42`。
+
+## Serialized `.42` Promotion
+
+- [ ] contribution review 通过后，按 RDT 与 Architecture owner 的 fresh typed routes 确定
+  调用顺序并串行执行；不得并发写 shared current，也不得在 planning 阶段预选顺序。
+- [ ] RDT promotion 绑定 expected `.41` 并激活 `.42`，更新 Requirements/Design/Test
+  navigation、version history、current facts 与 traceability。
+- [ ] Architecture promotion 绑定 expected `.41` 并激活 `.42`，更新 README、CURRENT 与
+  evidence；不创建 ADR，不改变 decision/owner/GAP/compatibility。
+- [ ] 对 promotion-created diff 重新运行 Phase 2、task commit 与独立 Branch Review。
+- [ ] 只有 post-promotion Branch Review 通过后才恢复 PR readiness。
 - [ ] 完成 PR readiness；title/body 使用具体中文，Issue trailer 只写 `Refs #267`，并写明
   tests、安全、部署、配置、schema、CI/CD、container/K8s/DB migration 影响。
 - [ ] 分别展示并确认 push、PR create、Finalizer 与 merge；merge 只接受精确文本
