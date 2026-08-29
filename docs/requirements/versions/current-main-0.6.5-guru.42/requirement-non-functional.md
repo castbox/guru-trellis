@@ -1,6 +1,6 @@
 # 非功能需求与边界
 
-版本：`current-main-0.6.5-guru.41`；状态：`superseded`；successor：`current-main-0.6.5-guru.42`。
+版本：`current-main-0.6.5-guru.42`；状态：`active`；predecessor：`current-main-0.6.5-guru.41`。
 
 - `NFR-001`：canonical source 是长期源头；dogfood 与平台副本必须可从 preset/overlay 重建。
 - `NFR-002`：public DTO 只携带唯一 consumer 必需的最小 identity/freshness；Git/live 可重建事实与授权不得持久化。
@@ -16,7 +16,8 @@
 | `0.6.5 -> 0.6.15` official migration | `verified`：三个 existing platform cell | #260 |
 | replacement release `v0.6.5-guru.10` | `published`：annotated tag、zero-asset non-prerelease Release 与 consumer proof | #275 historical baseline |
 | 完整多平台 Throwaway matrix | `verified`：`claude|codex|cursor × clean|existing` 6/6，sidecar/unknown drift 均为 0 | #260 |
-| current candidate `v0.6.15-guru.1` / extension `0.6.5-guru.37` / Trellis `0.6.15` stable release | `unverified`，不得称已发布 | 独立的重构前稳定版 Release Issue |
+| current target `v0.6.15-guru.3` / extension `0.6.15-guru.39` / Trellis `0.6.15` stable release | `unverified`，不得称已发布 | Issue #267 exact-candidate Release lifecycle |
+| 正式 `.3` business-repository Finalizer 原失败路径与错误文件重试 | `unverified`，不得关闭 #311 | Issue #311 post-release proof |
 | workflow source | `public_plus_local_candidate`；证明 public marketplace + exact local candidate compatibility，不证明 `.37` tag-pinned install | #260 / 重构前稳定版 Release boundary |
 
 普通 task 的文档增量进入 `docs/requirements-design-test-contributions/<task-ref>/` 或经 semantic owner 判定的 narrow direct sync；两个并行 task 不写同一个 shared current 文件。Architecture 变化使用独立 impact/promotion route。该规则是维护责任边界，不是锁或并发协议。

@@ -2,14 +2,14 @@
 
 以下事实只绑定 current source/release evidence，不推断未来能力。
 
-- `ARCH-CUR-001`（`code_recovered`）：task head `651defee…` + #311 serialized promotion delta 包含 21 个 active Skill packages；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD；registry 统一指向 interface/route/platform，20 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
+- `ARCH-CUR-001`（`code_recovered`）：reviewed task head `d3dca74b…` + #267 expected `.41` serialized promotion delta 包含 21 个 active Skill packages；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD；registry 统一指向 interface/route/platform，20 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
 - `ARCH-CUR-002`（`code_recovered`）：global workflow 实现四 Phase，canonical package 位于 `trellis/**`，dogfood/installed 位于 `.trellis/**`，平台投影覆盖 Shared/Codex/Claude/Cursor。
 - `ARCH-CUR-003`（`code_recovered`）：RDT、Architecture Baseline、Repository Bootstrap 三个 semantic package 已 active，分别源自 #263/#264/#265。
-- `ARCH-CUR-004`（`source_confirmed` + `verified`）：current extension candidate 为 `0.6.5-guru.37`，target/tested Trellis CLI 为 `0.6.15`。
+- `ARCH-CUR-004`（`source_confirmed` + `verified`）：current extension candidate 为 `0.6.15-guru.39`，target/required/tested Trellis CLI 为 `0.6.15`；#267 successor Release target 为 `v0.6.15-guru.3`，尚未发布。
 - `ARCH-CUR-005`（`source_confirmed`）：最新 stable Release 为 annotated tag `v0.6.5-guru.10`，tag object `b5fd47e9…`，peeled commit `5c059f49…`；它是 `.36` / Trellis `0.6.5` released history，不等于 current main candidate。
 - `ARCH-CUR-006`（`code_recovered`）：preset/overlay 管理 `.trellis/guru-team/`、Guru Skills、平台 skills 与 finish-work entries；unknown local changes 使用 `.new/.bak` 保护语义。
 - `ARCH-CUR-007`（`code_recovered`）：Finalizer terminal projection 以精确 retired locator、六文件 archive summary 与 current local/remote/Ready PR/scope facts 共同构成 authority；archive 不替代 live provider，任何真实 drift fail closed。
-- `ARCH-CUR-008`（`verified`）：current source 与 dogfood 的 official Trellis target/project version 为 `0.6.15`；canonical extension candidate 为 `0.6.5-guru.37`。
+- `ARCH-CUR-008`（`verified`）：current source 与 dogfood 的 official Trellis target/project version 为 `0.6.15`；canonical extension candidate 为 `0.6.15-guru.39`。
 - `ARCH-CUR-009`（`verified`）：compatibility verifier 以 HEAD + tracked/untracked candidate
   bytes/modes + candidate tree 绑定 source state；capability-loss gate 只比较 `workflow`、
   `task_data`、`docs_authority`。live registry/interface/manifest/ownership 派生的 active ids、
@@ -29,8 +29,13 @@
 - `ARCH-CUR-015`（`source_confirmed` + `reviewed`）：standalone verifier 在 temporary cleanup 前保留
   bounded structured failure stage/cell/command/exit/safe-tail 与 postcheck classification；该 evidence
   保持 verifier-private，Finalizer 零消费。
+- `ARCH-CUR-016`（`source_confirmed` + `reviewed`）：#267 reviewed contribution 通过 expected `.41`
+  serialized promotion 建立唯一 active `.42` RDT/Architecture knowledge authority；该 delta 只更新
+  `.3/.39/CLI 0.6.15` current facts、navigation、traceability、evidence 与 predecessor/successor
+  binding，不改变 runtime、public API、Architecture decision、owner、GAP、compatibility exit 或 ADR。
 
-当前 Architecture knowledge identity 为 `.41`，extension candidate 仍为 `0.6.5-guru.37`。#311
-真实 fixture fresh reinstall、Publication/Finalizer、生产发布与错误文件重试仍为 `unverified`，Issue
-保持 OPEN。也不声明 `v0.6.15-guru.1` / extension `.37` 已发布、tag-pinned `.37` install 或 release
-smoke 已通过；这些发布事实仍由独立的重构前稳定版 Release Issue 独占，#267 属于后续重构链。
+当前 Architecture knowledge identity 为 `.42`，extension candidate 为 `0.6.15-guru.39`，Trellis
+CLI 为 `0.6.15`。#267 target `v0.6.15-guru.3` 的 exact-candidate matrix、tag、GitHub Release、
+latest-stable identity 与 tag-pinned smoke 仍为 `unverified`；knowledge promotion 不替代这些门禁。
+#311 正式 `.3` business-repository reinstall、原 Finalizer 失败路径与错误文件重试仍为
+`unverified`，Issue 保持 OPEN。

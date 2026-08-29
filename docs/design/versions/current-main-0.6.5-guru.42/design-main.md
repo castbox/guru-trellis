@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-版本：`current-main-0.6.5-guru.41`；状态：`superseded`；successor：`current-main-0.6.5-guru.42`；provenance：`code_recovered` + #311 reviewed Architecture/RDT promotion，绑定 task head `651defee…` + #311 serialized promotion delta。正文不自引用可变 HEAD。
+版本：`current-main-0.6.5-guru.42`；状态：`active`；predecessor：`current-main-0.6.5-guru.41`；provenance：`code_recovered` + #267 reviewed release-authority alignment，绑定 task head `d3dca74b…` + expected `.41` serialized promotion delta。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD。
 
 ## 分层与 ownership
 
@@ -84,6 +84,18 @@
   异常边界输出 bounded structured failure；standalone verifier 在 cleanup 前解析并绑定 command
   evidence，无法解析时显式分类。matrix 外 command 或 inventory/ownership/sidecar/capability failure
   统一生成 `postcheck_failure`；该 private evidence 不进入 Finalizer authority。
+- `DES-049` Serialized authority promotion：Architecture owner 先从 reviewed contribution 激活
+  `.42` baseline/current/evidence，RDT owner 随后建立完整 `.42` Requirements/Design/Test version、
+  navigation 与 predecessor history；两步均要求 live current 精确为 `.41`，不得并行或覆盖 advance。
+- `DES-050` Fact-only projection：`.42` 从 `.41` 继承全部 runtime behavior、public contracts、
+  Architecture decision、owner、GAP 与 compatibility exit，只更新 release/current mapping、
+  traceability、evidence 和 predecessor/successor identity，不创建 ADR 或第二 authority。
+- `DES-051` Release identity separation：knowledge `.42`、extension `0.6.15-guru.39`、Trellis CLI
+  `0.6.15` 与 target tag `v0.6.15-guru.3` 是独立 identity axes；tag、Release、latest-stable 与
+  tag-pinned smoke 只由 #267 exact candidate 的 live proof 晋升。
+- `DES-052` Promotion re-entry：owner promotion 只产生 shared-current working-tree diff；该 diff
+  必须重新通过 Phase 2、task commit 和独立 complete-range Branch Review，之后才可恢复 Publication。
+  #311 的正式 `.3` business-repository proof 与 closure 保持独立后续 owner。
 
 ## Capability owner map
 

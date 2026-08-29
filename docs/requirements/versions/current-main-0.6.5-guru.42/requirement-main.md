@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.39`；状态：`superseded`；基线：task head `d4165f268d36e19139266d28519148c290f773a4` + #290 serialized promotion delta（精确 revision 为当前 Git HEAD）。
+版本：`current-main-0.6.5-guru.42`；状态：`active`；predecessor：`current-main-0.6.5-guru.41`；基线：reviewed task head `d3dca74b3a94569a095594477c15b032526f2381` + #267 expected `.41` serialized promotion delta；#305 已确认的 `EVO-001..007` 保持独立 target authority。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD。
 
 ## 目标、角色与适用范围
 
@@ -20,14 +20,19 @@
 - `REQ-012`：task/branch/worktree 使用绑定 Issue 与语义动作的名称；base evolution、GitHub provider
   failure 与 partial recovery 返回唯一 owning route，不从 Phase 0 重建已存在的 task。
   `code_recovered`：workspace、reconcile、publication/finalization packages。
-- `REQ-013`：install/update/upgrade/reapply 必须保留完整 capability inventory、managed path、
-  executable mode 与声明平台入口；未处理 `.new/.bak`、版本或 projection drift 必须阻塞成功声明。
+- `REQ-013`：install/update/upgrade/reapply 必须保持 Skill API、interface/schema/command、
+  distribution、managed/installed path、executable mode、声明平台入口、template hash、sidecar
+  与 extension identity/version binding 一致；任一不一致或未处理 `.new/.bak` 必须作为独立
+  consistency/installation blocker 阻塞成功声明，但其变化本身不构成 capability loss。
   `source_confirmed`：preset/upgrade contracts；`code_recovered`：installer 与 validators。
 - `REQ-014`：Finalizer 完成 archive、Ready PR 与 terminal cleanup 后，public wrapper 只可从已归档 durable summary、精确 retired owner locator 与当前 Git/GitHub ready facts 重建 terminal authority；缺 locator、archive/head/PR/scope 漂移或未退休 owner state 必须 fail closed。`source_confirmed`：Issue #275；`code_recovered`：Finalizer owner/runtime。
 - `REQ-015`：Throwaway verifier 的 active package、command 与 complete-package inventory 必须从 canonical registry/interface validation 派生；不得维护随新增 Skill 漂移的固定数量。`source_confirmed`：Issue #275；`code_recovered`：verifier inventory projection。
 - `REQ-016`：专项 compatibility owner 必须从 live manifest、ownership、overlay 与 registry 交叉派生声明平台，并对每个平台分别执行 clean official Trellis `0.6.15` 与 existing official `0.6.5 -> 0.6.15` 隔离 cell。`source_confirmed`：Issue #260；`verified`：六个 cell 全部通过。
 - `REQ-017`：existing cell 的 Guru before-state 必须是 immutable `v0.6.5-guru.10` / extension `0.6.5-guru.36`，并按 official upgrade、update dry-run、条件式 migrate、workflow preview/switch 与 preset reapply 顺序执行。`verified`：三个 existing cell。
-- `REQ-018`：升级前后 active Skill、interface、schema、exit、command、consumer、route、managed path、mode、template-hash 与 Docs authority 的完整投影不得出现未审查能力丢失。`verified`：21 active Skills、89 exits 与 installed projection 保持。
+- `REQ-018`：升级前后的 capability-loss comparison 只比较 `workflow`、`task_data` 与
+  `docs_authority`，三组均不得出现未审查能力丢失；Skill API/schema/command projection、
+  distribution 与 installed inventory 继续由 `REQ-013` 的独立 consistency/installation gate
+  阻塞。`verified`：三组 capability projection 保持。
 - `REQ-019`：#263 RDT、#264 Architecture、#265 Bootstrap installed profiles 与 #266 双 SSOT/Architecture authority 必须在升级后保持；`.trellis/spec` 仍是最小 locator/index projection。`verified`：每个 cell 的 installed eval 与 docs projection check。
 - `REQ-020`：同一 clean base 的两个业务 task 必须保持 workspace/provider/archive/Finish/cleanup ownership 隔离；B 的 `none` route 不调用 GitHub，A 的真实 `github_pr` route 必须使用单独确认的 disposable repository，并在 cleanup 前后证明 required commit reachability。`verified`：local A/B matrix 与真实 GitHub A route。
 - `REQ-027`：Architecture Baseline 是标准 task 从 Planning、qualified implementation discovery、Phase 2、Branch Review、Publication 到 Acceptance/Finish 的唯一项目架构 SSOT；schema/runtime 只支撑 lifecycle，不成为架构判断 owner。
@@ -38,7 +43,7 @@
 - `REQ-032`：Phase 2 首次判断 candidate before/after，Branch Review 从 exact committed full diff 独立重算。项目检查结果绑定 current descriptor identity、applicability、rule/decision/GAP refs、`pass|fail|unverified`、evidence/unavailable reason 与 freshness；AI 根据真实依赖判断 blocking，新增或恶化偏移返回 `fitness_regression`。
 - `REQ-033`：普通 task 只写自己的 RDT/Architecture contribution；仅当 decision、原则权衡/例外、GAP lifecycle、owner/single-writer 或 compatibility exit 改变时创建 ADR candidate。shared current 由唯一 Architecture owner 在 independent review 后按 expected current identity 串行 promotion。
 - `REQ-034`：并行 task 使用不同 contribution locator，不得 review 前写 shared current、竞争同一 GAP/owner、形成双写或两个 current authority。任一 promotion 推进 current 后，旧 identity task 必须 `sync_required` 并重做 impact、satisfaction 与 parallel-scope 判断。
-- `REQ-035`：Architecture 2.0 schema/runtime、canonical/dogfood/installed/platform projection 与项目中立十场景必须原子承接上述 lifecycle，stable Skill/profile/exit ids 不变；外部 evidence 不可得时保持 `evidence_gap|unverified`。#267 release matrix/tag/Release/immutable smoke 与 business-repository refactor不属于 #283。
+- `REQ-035`：Architecture 2.0 schema/runtime、canonical/dogfood/installed/platform projection 与项目中立十场景必须原子承接上述 lifecycle，stable Skill/profile/exit ids 不变；外部 evidence 不可得时保持 `evidence_gap|unverified`。#267 Release matrix/tag/Release/immutable smoke 与 post-release business-repository proof 不属于 #283，必须由各自 live owner 和 exact evidence 晋升。
 - `REQ-036`：base selection 必须固定按 explicit、config scalar、ordered exact local/remote refs、remote default 执行；current branch 与 worktree availability 不参与 selection，selected base 缺 checkout 时不得回退低优先级 candidate。
 - `REQ-037`：selected base 确定后只绑定同一 Git common-dir 中 registered、exact `refs/heads/<selected_base>`、clean 且 branch/HEAD/ref identity 一致的唯一 authority checkout。
 - `REQ-038`：Codex session checkout 允许 detached 且只作为 invocation shell；fetch、可选 `merge --ff-only`、checker equality 与 public repository locator 只使用 authority checkout。
@@ -46,7 +51,7 @@
 - `REQ-040`：invocation checkout 自身已绑定 selected base 时保持成功路径；behind authority 只允许 explicit remote-tracking refspec fetch 与 `merge --ff-only`。
 - `REQ-041`：`guru-base-sync-result-1.0`、Interface 1.4、public `synced|skipped|blocked` schemas、typed exits 与 transition shape 保持兼容，既有 locator 字段指向真实 authority checkout。
 - `REQ-042`：`guru-create-task-workspace` 必须按 producer provenance source 对 explicit、config、config-candidate、remote-default 的 current source、selected base 与完整 candidates exact revalidate，且不得导入 producer private runtime。
-- `REQ-043`：canonical、dogfood、installed 与 Shared/Codex/Claude/Cursor projection、preset reapply/drift/mode 和 sidecar-zero 必须一致；代表性 installed detached wrapper 只证明 #290 normal path，#267 继续独占 release matrix/tag/Release。
+- `REQ-043`：canonical、dogfood、installed 与 Shared/Codex/Claude/Cursor projection、preset reapply/drift/mode 和 sidecar-zero 必须一致；代表性 installed detached wrapper 只证明 #290 normal path。#267 的 `.3/.39/CLI 0.6.15` release matrix、tag 与 Release 必须在最终 exact candidate 上 fresh 执行，不能继承历史 task 或 package evidence。
 
 ## 生命周期行为
 
@@ -66,8 +71,56 @@
 
 ## 当前发布范围
 
-`source_confirmed`：最新已发布 stable release 是 annotated tag `v0.6.5-guru.10`，tag object `b5fd47e9dc45ca4d6950f87f38d495776ce676ce`，peeled commit `5c059f4943edad7dfe25182a78af94759d41f9a1`，extension revision `0.6.5-guru.36`，目标 Trellis CLI `0.6.5`。当前 source candidate 为 extension `0.6.5-guru.37` / Trellis `0.6.15`；stable tag 与 GitHub Release 仍由 #267 拥有。
+`source_confirmed`：最新已发布 stable release 是 annotated tag `v0.6.5-guru.10`，tag object `b5fd47e9dc45ca4d6950f87f38d495776ce676ce`，peeled commit `5c059f4943edad7dfe25182a78af94759d41f9a1`，extension revision `0.6.5-guru.36`，目标 Trellis CLI `0.6.5`。当前 source candidate 为 extension `0.6.15-guru.39` / Trellis `0.6.15`；#267 successor target 固定为 `v0.6.15-guru.3`。该 tag、GitHub Release、tag-pinned smoke 与 latest-stable identity 在 exact candidate 发布前仍为 `unverified`。
 
 ## 非目标
 
-本 authority 的 `.39` 是 knowledge identity，不是 extension/release revision。本 authority 不把 extension `.37` 称为已发布 stable release，不实现 #248/#252 public owner，也不把业务仓库私有 PRD、完整日志、临时 hash bundle 或用户授权写入 current intent。
+本 authority 的 `.42` 是 knowledge identity，不是 extension/release revision。本 authority 不把 extension `.39` 或目标 tag `.3` 称为已发布 stable release，不替代 #267 exact-candidate gates 或 #311 post-release business proof，也不把业务仓库私有 PRD、完整日志、临时 hash bundle或用户授权写入 current intent。
+
+## #295 current promotion additions
+
+- `REQ-044`：Sync public `base_current` 是进入 mandatory Discovery 的唯一 public transition；Discovery active input 2.0 与 owner-result 3.0 不得依赖或重建 Sync-private result/digest。
+- `REQ-045`：Discovery 独占 live `base_observation`，正常 current/refresh/blocked 路由和 managed runtime dependency contract 必须由 public wrapper 与声明的 Python resolver 验证。
+- `REQ-046`：canonical、dogfood、installed、Shared/Codex/Claude/Cursor、preset/reapply/update/drift、sidecar、interfaces/schemas/examples/tests/evals 作为同一 #295 active unit 收敛；验证范围仅为 accepted targeted checks 与一个代表性 clean throwaway。
+
+## #311 installed Finalizer provenance promotion
+
+- `REQ-047`：Finalizer provenance reprepare 必须建立互相独立的
+  `target_reviewed_checkout` 与 `extension_source_checkout`。前者独占业务 repository
+  mutation、metadata-tail lineage 与 commit；后者只提供 canonical preset bytes。closed
+  `self_hosted|installed` mode 分别绑定 target reviewed HEAD 或 target manifest 中 immutable
+  extension `repo/ref/commit`，不得 fallback、dual-read 或把 business HEAD 写成 extension source。
+- `REQ-048`：首次 `publication_ready` preview 必须先分类 exact existing PR；无 PR、无 remote
+  branch 且缺 metadata tail 时，`prepared` 返回
+  `reprepare_required/provenance_metadata_tail`。对应 executor preflight 只接受 absent remote 或
+  exact reviewed head；push、PR、archive、Ready 与 Issue mutation 在合法 tail 前均为零，既有
+  fresh/post-bind recovery 与 public profile/exit/transaction 合同保持。
+- `REQ-049`：source binding、两棵临时 checkout 与 tail producer 归
+  `guru-finalize-task` package-local runtime；installer 独占 manifest source provenance。
+  source resolution、fetch、checkout、apply 或 postimage validation 失败时在任何远端副作用前
+  fail closed。Finalizer 不调用或读取 verifier lifecycle、gate、artifact、owner state 或 exit。
+- `REQ-050`：canonical、dogfood installed、Shared/Codex/Claude/Cursor package bytes、mode、
+  contract、preset reapply、drift 与 recursive sidecar 必须一致；installed package test 从当前
+  package/shared installed runtime 解析依赖，不要求 business target 携带 canonical source tree。
+  本 Issue 的验证范围包含 focused runtime、installed no-source-tree 与一个代表性 business
+  closeout，不吸收独立 Release owner 的完整矩阵、tag 或 GitHub Release。
+- `REQ-051`：standalone extension verification 必须在 temporary workspace cleanup 前保留
+  schema-valid 的 failure stage、适用 matrix cell、稳定 command label、exit code 与 bounded
+  credential-safe error tail，并保留既有 stdout/stderr hash/size。matrix 外 command、asset
+  inventory、ownership、sidecar 或 capability failure 收敛为 `postcheck_failure`；failed execution
+  不得保留 null failure。该 evidence 只属于 verifier，Finalizer 零消费。
+
+## #267 release authority alignment
+
+- `REQ-052`：`current-main-0.6.5-guru.42` 必须是唯一 active Requirements/Design/Test 与
+  Architecture knowledge authority，`.41` 仅作为 superseded predecessor；active current source
+  candidate 固定为 extension `0.6.15-guru.39`、Trellis CLI `0.6.15`，Release target 固定为
+  `v0.6.15-guru.3`。
+- `REQ-053`：#267 的 full-diff review、exact-candidate matrix、annotated tag、GitHub Release 与
+  tag-pinned smoke 必须分别由 live evidence 晋升；promotion 或 package PASS 不得冒充已发布结果。
+- `REQ-054`：`.41 -> .42` 只更新 release/current facts、navigation、traceability、evidence 与
+  predecessor/successor binding；产品行为、Skill public API、Architecture decision、owner、
+  single-writer、GAP lifecycle 与 compatibility exit 保持不变，不创建 ADR。
+- `REQ-055`：RDT 与 Architecture reviewed contributions 必须按 expected `.41` 串行 promotion；
+  promotion-created diff 必须重新执行 Phase 2、task commit 与独立 committed full-diff Branch Review，
+  通过前 Publication 和 Release preparation fail closed。
