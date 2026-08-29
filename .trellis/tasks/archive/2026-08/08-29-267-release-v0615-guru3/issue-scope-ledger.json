@@ -10,7 +10,7 @@
   "related_issues": [
     {
       "number": 267,
-      "reason": "The preparation PR references the Release owner without closing it; #267 closure is a separately reviewed post-release side effect.",
+      "reason": "Issue #267 is the sole semantic owner of preparation, exact-candidate validation, publication, and Release closeout.",
       "title": "发布 v0.6.15-guru.3：包含 #311/#312 修复的 exact-candidate successor Release",
       "url": "https://github.com/castbox/guru-trellis/issues/267"
     },
