@@ -1,8 +1,13 @@
 # Guru Trellis Evolution Target Design
 
-版本：`evolution-design-candidate-2026-08-26`；状态：`design_ready_for_delivery_planning`。本文件承接
-`EVO-001..007`、`EVO-CAP-001..004` 与 `TARGET-DELTA-001..013`，不改变 current `.40` runtime
-事实，也不授权实现或发布。
+版本：`evolution-design-candidate-2026-08-29`；状态：`design_ready_for_delivery_planning` /
+`fresh_design_review_passed` / `evolution_refactor_eligible`。本文件已从 current `requirements_ready_for_design` identity 重新承接
+`REQ-REV-011..138`、`EVO-001..007`、`EVO-CAP-001..004`、`EVO-REQ-001..083`、
+`EVO-NFR-001..033` 与 `TARGET-DELTA-001..013`。`EVO-DES-070..073` 分别拥有两阶段
+Evolution eligibility、#312 original-worktree/base continuity、#311 installed publication terminal
+continuity 与 standalone verifier failure evidence；它们与既有 `EVO-DES-001..069` 共同构成本轮 fresh
+Design review candidate。该 target Design 不改变 selected-base current `.41` runtime 事实，也不授权实现或
+发布；`.40` 仅为历史 comparison evidence。
 
 ## 1. System Boundary
 
@@ -287,9 +292,12 @@ user event
   `projection_kind=none|authority_only|with_code_spec`选择closed schema；每个outstanding
   `rdt_promotion_ref|architecture_promotion_ref`绑定contribution content、该reviewed committed range与
   expected-current identity，`with_code_spec`额外要求同range的outstanding `code_spec_contribution_ref`。
-  `projection_kind=none`表示既无outstanding authority promotion，也无current projection尚缺的code-spec
-  contribution；它只与`promotion_kind=none`组合。`authority_only`要求非none promotion且禁止code-spec ref，
-  `with_code_spec`可与任一promotion kind组合。router按 RDT -> Architecture 的稳定顺序调用selected
+  `projection_kind=none`表示既无outstanding authority promotion，也无current projection尚缺或stale的
+  authority locator/usage/freshness与code-spec contribution；它只与`promotion_kind=none`组合。
+  `authority_only`表示current projection只缺失或持有stale authority locator/usage/freshness，禁止code-spec
+  ref，并可与任一promotion kind组合，包括shared authority已经current时的`promotion_kind=none`正常repair；
+  `with_code_spec`可与任一promotion kind组合且必须携带same-range outstanding code-spec ref。router按 RDT ->
+  Architecture 的稳定顺序调用selected
   `promotion` profile；所有selected promotion current后，非none projection调用`.trellis/spec`唯一编排/写入
   owner `guru-bootstrap-repository-ssot:projection_refresh`的closed variant。该owner live-reread已promote的
   RDT/Architecture与current projection，仅在`with_code_spec`额外回读同range contribution；若目标projection
@@ -307,43 +315,47 @@ user event
 
 - `EVO-DES-033`：`guru-select-delivery-route` 在 reviewed candidate上恰好选择 `github_pr` 或 `none`。
   route 绑定后不能因 provider失败 fallback。
-- `EVO-DES-034`：GitHub route顺序为 publication review -> pre-delivery acceptance -> provider delivery/
-  Ready PR -> expected-head merge -> issue closure current/not-applicable -> delivery terminal。none route
-  只执行 local acceptance、issue closure not applicable 与 delivery terminal，GitHub I/O 为 0。none
-  acceptance 直接产生 closure consumer 所需的 `delivery_fact_ref`；GitHub route 由 merge result 产生该
-  ref，二者都不要求 closure owner猜测 provider facts。
-- `EVO-DES-035`：`guru-accept-task` 是两条 route共享的 pre-delivery semantic acceptance owner，按
-  route profile消费 current RDT/Architecture/validation/diff；它不重复 Branch Review。GitHub publication
-  先由`guru-publish-task-pr:push_prepare` live-reread exact remote branch：若bound task HEAD已在目标remote
-  branch current，则不展示mutation plan、不等待确认、不重复push，直接产生`branch_published`；只有尚待执行且
-  可安全执行的push才展示branch push计划，经
-  `task-branch-push-confirmation-wait -> push_confirmation_reentry`执行；push成功后才进入
-  `pr_create_prepare`重新live-read exact base/head PR：若同一PR已存在且live READY，则不展示creation plan、
-  不等待确认、不创建duplicate PR，直接产生`ready_pr_current`；只有尚待创建的PR才展示PR创建计划，经
-  `task-pr-creation-confirmation-wait -> pr_creation_confirmation_reentry`执行。两项有不同continuation、
-  refusal与provider recovery；push确认绝不授权PR创建。push refusal为`branch_push_not_executed`，PR创建
-  refusal为`pr_not_published`，各自保持真实branch/remote/PR状态；push recovery只回
-  `push_provider_reentry`，PR recovery只回`pr_provider_reentry`；prepare、confirmation re-entry与provider
-  re-entry每次都先live-reread，若外部状态已精确current则无mutation收敛，divergent/mismatched state进入该stage
-  recovery而不重复不可逆动作。PR 已创建且 live READY 时，Merge owner
-  再完整展示 repo/PR/base/head expected identity、merge method、close scope与post-merge verification；用户的
-  清晰语义肯定即可执行 expected-head merge，不要求固定 `合并PR`。merge refusal得到`pr_not_merged`并只从
-  Merge owner恢复。merge confirmation不授权manual Issue
-  closure；closure owner只读确认已current/not-applicable，或为exact manual close另行展示计划，拒绝得到
-  `issue_closure_not_applied`。Publish/Merge/Closure的provider recovery只把
-  `continuation_ref,repair_input`投影回各自profile；continuation绑定原acceptance/PR/delivery identity并由
-  exact owner live reread，re-entry不再要求caller重复原始字段。
-- `EVO-DES-036`：delivery-terminal router校验 route/acceptance/closure tuple并唯一产生
-  `delivery_terminal_ref`；`guru-finalize-task` 是semantic side-effect owner：它单独展示任何尚待执行的
-  archive/finish/history plan并取得语义确认，随后executor只完成机器可判定transition；拒绝得到
-  `finish_not_executed`，不能继承merge/closure确认。
-  `guru-clean-task-resources` 在 Finish current 后自行 live-read owned/unrelated/retained resources，生成并
-  审查 private cleanup plan；public input 不要求外部 producer 提供 `resource_plan_ref`。无 deletable
-  resource 时确定性完成，有删除项时输出`cleanup_confirmation_required`进入owner-local
-  `task-resource-cleanup-confirmation-wait`，清晰肯定只以`continuation_ref`进入`confirmation_reentry`；明确拒绝得到
-  `resources_retained -> workflow-completed`。Finish blocked只重入 Finish，cleanup blocked只重入 cleanup，
-  均只凭各自`continuation_ref,repair_input`定位原task/delivery/durable result并live reread，不要求恢复caller
-  重新携带原始refs，也不重放已完成动作。
+- `EVO-DES-034`：两条 route 都先完成 delivery readiness 与 pre-delivery acceptance。GitHub route随后按
+  publication provenance prepare -> publication-head push -> Draft PR -> official Finish/archive + archive push +
+  Ready -> archive-bound `ready_for_merge` -> expected-head merge -> issue closure -> delivery terminal -> owned
+  cleanup 的固定顺序执行。none route按 local Finish/archive -> issue closure not applicable -> delivery
+  terminal -> owned cleanup 执行，GitHub I/O 为 0。Finish 前后的 chained identity直接绑定 route、acceptance、
+  reviewed content、publication/archive head 与 durable result；Closure、Merge或Cleanup不得从ambient provider/
+  archive facts猜测前序结果。
+- `EVO-DES-035`：`guru-accept-task` 是两条 route共享的 pre-delivery semantic acceptance owner，按 route
+  profile消费 current RDT/Architecture/validation/diff，不重复 Branch Review。GitHub publication先由
+  `guru-publish-task-pr:provenance_prepare`绑定 `reviewed_content_ref` 并选择closed `self_hosted|installed`
+  mode：self-hosted source固定为target reviewed HEAD；installed source只从current installation manifest/
+  managed-byte/source-commit identity解析canonical repository immutable full OID，在独立clean detached
+  `extension_source_checkout`读取apply bytes；业务mutation、metadata-tail lineage与commit只发生在独立
+  `target_reviewed_checkout`。source/target lineage、cleanliness、source immutability、allowlisted provenance
+  fields、normalized reviewed-content equality、direct parent与single metadata tail任一不current，都在remote
+  mutation前进入publication owner recovery。缺tail时owner展示且只确认该metadata-only preparation；精确tail
+  current时零mutation产生`publication_head_current`。其后`push_prepare` live-reread exact remote branch，
+  bound publication HEAD已current时零push/确认产生`branch_published`，否则只确认branch push；
+  `pr_create_prepare`再live-rereadexact base/head PR，已存在的exact Draft/READY PR零creation/确认产生
+  `draft_pr_current`，否则只确认创建Draft PR。provenance prepare、push与PR creation使用三个互不兼容的
+  continuation/refusal/provider recovery；任一确认不授权下一action，re-entry均先live-reread并禁止重放。
+- `EVO-DES-036`：`guru-finalize-task` 在GitHub route只消费exact Draft/READY PR与publication head，在none
+  route只消费local acceptance；none Acceptance只输出`acceptance_ref`，不提前形成或传入delivery fact。它
+  live-reread task/archive/summary/remote/PR facts；已存在且精确匹配的official
+  archive、archive commit/push、Ready state与schema-valid `ready_for_merge`直接无mutation收敛。否则它展示一个
+  exact Finish transaction，确认后只生成compact summary、official archive与archive commit，安全push该
+  archive head并把同一PR转为Ready；partial/unknown/provider failure保留已完成/待执行action并只重入Finish，
+  不重放archive、push或Ready mutation。GitHub success输出archive-bound `ready_for_merge_ref`给Merge；none
+  success才作为该route唯一producer输出绑定durable result的`delivery_fact_ref`给Closure-N/A。Finish refusal为
+  `finish_not_executed`，不能
+  继承publication或其它确认。
+  `guru-merge-task-pr`只接受`ready_for_merge_ref`，重新验证PR live READY、base、archive expected head、summary/
+  scope binding后展示exact merge plan；清晰语义肯定即可expected-head merge，不要求固定`合并PR`。merge
+  refusal/repair只回Merge，merge确认不授权manual Issue closure。Closure读取Merge或none Finish产生的
+  `delivery_fact_ref`，只读current/N/A无需确认；exact manual close另行展示，拒绝得到
+  `issue_closure_not_applied`。delivery-terminal router从closure chained identity生成绑定durable result的
+  `delivery_terminal_ref`并直接进入Cleanup，不再调用第二次Finish。
+  `guru-clean-task-resources`自行live-read owned/unrelated/retained resources并审查private cleanup plan；无
+  deletable resource时确定性完成，有删除项时经owner-local confirmation re-entry执行，拒绝得到
+  `resources_retained -> workflow-completed`。Cleanup只凭自身continuation或delivery terminal恢复，不重放
+  publication、Finish、Merge或Closure。
 - `EVO-DES-037`：durable history由 `guru-query-lifecycle-history` 从 archive/finish/disposition 的
   compact terminal records解析；cleanup必须保留查询所需identity与retained ref reachability。
 
@@ -353,8 +365,11 @@ standard change
   -> RDT impact -> Architecture impact -> one plan author -> one approval
   -> implementation owner -> Phase 2 -> commit -> committed full-diff review
   -> contribution review/promotion/recheck when applicable
-  -> github_pr | none -> acceptance -> delivery terminal
-  -> Finish -> owned cleanup -> workflow completed
+  -> github_pr | none -> readiness -> acceptance
+     |-> github_pr -> provenance prepare -> push -> Draft PR -> Finish/archive/Ready
+     |               -> ready_for_merge -> merge -> closure
+     `-> none -> local Finish/archive -> closure N/A
+  -> delivery terminal -> owned cleanup -> workflow completed
 ```
 
 ## 6. Resume, Latest Intent And Disposition
@@ -531,7 +546,8 @@ standard change
 
 - `EVO-DES-060`：本Design与Evolution Test当前是 target contribution candidate；只有完整
   Design/Test/Architecture/task-planning fresh gate通过后才可称 reviewed/ready。未来implementation Issue
-  必须同时读取`.40` current与target delta，通过task-local contribution说明本slice的before/after。
+  必须同时读取 selected-base `.41` current 与 target delta，通过 task-local contribution 说明本 slice 的
+  before/after；`.40` 只作为历史 comparison evidence。
 - `EVO-DES-061`：每个requirement/behavior必须到达一个Design responsibility/contract和至少一个
   Test strategy/scenario/case。replacement/split/merge保留predecessor/successor；删除必须说明subtraction。
 - `EVO-DES-062`：Architecture task impact选择`target_native`，命中
@@ -539,12 +555,14 @@ standard change
   `debt-one-way-convergence`。task contribution拥有新owner graph、stock projection ownership、
   compatibility exit与promotion conditions。
 - `EVO-DES-063`：shared Architecture/RDT current只有在实现candidate independent review后由各自
-  owner serialized promotion；本planning task只创建contribution，不修改current/target正文或ADR index。
+  owner serialized promotion；本planning task只维护task-owned contribution，不修改shared current
+  Architecture、shared current RDT或ADR index。
 - `EVO-DES-064`：`.trellis/spec`只投影target contract的reading/usage rules、authority locators与定向
   freshness，不复制本Design、Requirements或Architecture正文。其唯一owner是
   `guru-bootstrap-repository-ssot:projection_refresh`，trigger恰好是fresh full-diff review确认仍存在尚未current
-  的shared promotion或code-spec projection工作；调用前所有selected shared promotion必须current，
-  `authority_only`与`with_code_spec`输入互斥，后者必须携带same-range outstanding contribution ref。owner先将
+  的shared promotion、authority locator/usage/freshness projection repair或code-spec projection工作；调用前
+  所有selected shared promotion（如有）必须current，`authority_only`与`with_code_spec`输入互斥，前者允许
+  `promotion_kind=none`且禁止code-spec ref，后者必须携带same-range outstanding contribution ref。owner先将
   current projection与selected authority/code-spec target identities比较，精确current时不得重写。其唯一成功回程是
   `spec_projection_ref -> guru-check-task:authority_reentry -> fresh Commit -> fresh Branch Review`。其它Skill、
   raw `trellis-update-spec`、hook、worker或preset reapply不得成为第二projection writer；回程后的fresh Branch
@@ -580,23 +598,71 @@ standard change
   current 对话语义判断；hash/digest 只可校验 owner-private plan freshness，script/validator/recorder
   不解析、匹配、验证或持久化回复，schema/DTO/gate/checkpoint/history 也不含 confirmation/authorization
   字段。明确拒绝必须选择该owner声明的zero-side-effect result；至少闭合base sync、Workspace、plan
-  activation、Commit、branch push、PR creation、READY merge、manual Issue closure、Finish/archive、post-Finish
+  activation、Commit、publication provenance-tail preparation、branch push、PR creation、READY merge、manual Issue closure、Finish/archive、delivery-terminal
   Cleanup、active-lifecycle disposition cleanup、clean install、migration、stock maintenance与Release，且
-  不得把refusal误报为blocked/provider defect。active-lifecycle disposition cleanup是唯一特殊形状：回复
+  不得把refusal误报为blocked/provider defect。Publish三个action分别使用
+  `publication_preparation_not_executed -> task-publication-preparation-not-executed`、
+  `branch_push_not_executed -> task-branch-push-not-executed`和
+  `pr_creation_not_executed -> task-pr-creation-not-executed`，output只携带对应action的最小identity且互不兼容。
+  active-lifecycle disposition cleanup是唯一特殊形状：回复
   已含唯一retain/suspend choice时直接消费，否则只能得到
   `active_lifecycle_disposition_choice_required`并进入
   `active-lifecycle-disposition-choice-wait`；choice current前删除为0，不能制造not-executed terminal或双结果。
-  cleanup confirmation与post-Finish Cleanup分别通过自己命名的dialogue-local wait及continuation re-entry；
+  disposition cleanup与delivery-terminal Cleanup分别通过自己命名的dialogue-local wait及continuation re-entry；
   confirmation reply/authorization永不进入DTO、checkpoint、gate、history或durable result。
 
-## 12. Terminal Design Gate
+## 12. Merged Capability Preservation And Eligibility
 
-`design_ready_for_delivery_planning` 要求：
+- `EVO-DES-070`：Evolution prerequisite采用两道不可互换的gate。Design入口只消费同一exact selected-base
+  identity下current `prerequisite_merge_identity_current`、`requirements_ready_for_design`与
+  `requirements_trace_ready_for_design`，不得重新把Design successor当作Requirements readiness前置。
+  Design owner展开83个Requirement、33个NFR、23个current capability、13个target delta与50个fixture，
+  验证每项至少到达一个语义充分的Design responsibility/contract和fixture mapping，并执行fresh full review；
+  只有Design差集、P1/P2/P3 finding和high-risk question均为0，才产生
+  `design_ready_for_delivery_planning` / `fresh_design_review_passed`，并由closed gate projection形成
+  `evolution_prerequisite_current -> evolution_refactor_eligible`。该projection只允许未来Evolution delivery
+  intake读取，不创建runtime resource或副作用，也不预选新的public Skill。selected base、merge、RDT/
+  Architecture、capability、Requirements、fixture或Design identity material drift使较晚gate stale并返回最早
+  受影响owner；等价identity refresh不重放unchanged semantic review。
+- `EVO-DES-071`：`guru-reconcile-task-base`在任何base/current-work continuation前，以live common-dir、cwd、
+  runtime mapping、task/worktree/branch identity和per-path ownership/state恢复唯一original active worktree。
+  current-base tracked且逐路径clean的same-task文件继续原worktree，不因路径存在或通用source-clean开关误阻断；
+  dirty/untracked same-task文件、`review.md`/`reviews/**`、review/check metadata或identity mismatch仍进入exact
+  Reconcile blocker。source checkout与task worktree的unrelated dirty状态保持原owner、原bytes/index/worktree
+  state，不被归为same-task blocker，也不得被本owner修改、stage、清理或忽略。该判断只改变
+  `reconciled|blocked`分类，不扩张allowed writes或绕过真实artifact/identity blocker。
+- `EVO-DES-072`：#311 installed publication preservation由现有owner分层承接而不增加public Skill：
+  `guru-publish-task-pr`拥有closed source/target binding、metadata-only publication preparation、branch push与
+  Draft PR；`guru-finalize-task`拥有summary、official archive、archive commit/push、Ready与schema-valid
+  `ready_for_merge`；`guru-merge-task-pr`只消费archive-bound expected head；Cleanup只在delivery terminal后运行。
+  Publish的三个拒绝输出分别终止于`task-publication-preparation-not-executed`、
+  `task-branch-push-not-executed`与`task-pr-creation-not-executed`，不得共享缺省terminal或遗漏consumer。
+  reviewed-content identity通过allowlisted provenance normalization保持不变，publication/archive head分别绑定
+  direct-parent lineage与exact generated bytes。self-hosted与installed均可达同一terminal；missing/mutable/
+  mismatched source、target-as-source、额外managed/task/sidecar/config diff与partial remote state各由exact owner
+  fail closed/recover。terminal reinvoke对metadata tail、branch push、PR、archive、archive push、Ready、merge和
+  cleanup的completed mutation replay均为0，Finalizer不读取verifier evidence。
+- `EVO-DES-073`：standalone extension verifier由
+  `guru-validate-extension-projection:standalone|standalone_reentry`拥有failure lifecycle。deterministic runner在
+  pre-matrix、matrix-cell或post-matrix真实failure边界先构造schema-valid non-null private failure result，字段
+  至少包含actual stage、applicable matrix cell、stable command label、exit code、bounded credential-safe tail与
+  stdout/stderr hash/size；matrix外command/asset inventory/ownership/sidecar/capability failure统一为
+  `postcheck_failure`。Projection owner校验并绑定`failure_ref`后才允许temporary cleanup，再输出
+  `projection_validation_blocked`到named stop；stop可展示current failure/unverified boundary，只把
+  `continuation_ref,repair_input`投影回`standalone_reentry`。raw stdout/stderr、authorization与完整lifecycle不进入
+  public DTO或durable history。embedded clean/migration/Release只返回caller-owned finding，不创建/读取
+  standalone failure state；Finish/Finalizer消费verifier lifecycle/gate/artifact/exit的edge为0。
+
+## 13. Terminal Design Gate
+
+Current `design_ready_for_delivery_planning` / `fresh_design_review_passed` candidate requires：
 
 1. 本目录与Evolution Test全稿完成且导航/链接/manifest current；
-2. `EVO-REQ-001..081`、`EVO-NFR-001..032`、`CUR-CAP-001..023`、`TARGET-DELTA-001..013`均有
+2. `EVO-REQ-001..083`、`EVO-NFR-001..033`、`CUR-CAP-001..023`、`TARGET-DELTA-001..013`均有
    Design/Test successor，差集为0；
-3. 47个`EVO-FIX-*`均有owner、candidate kind、evidence layer、blocked/re-entry和验收结果；
+3. 50个`EVO-FIX-*`均有owner、candidate kind、evidence layer、blocked/re-entry和验收结果；其中Evolution
+   prerequisite命中`EVO-DES-070`，base evolution命中`EVO-DES-071`，installed publication命中
+   `EVO-DES-072`，verifier failure命中`EVO-DES-073`；
 4. 17个stock asset action与9个retained host rows无unknown/duplicate/unbound consumer；
 5. every required public consumer input的来源恰好是common invocation binding、selected exit的
    `direct|select|rename|normalize` projection或该consumer exact section owner；缺失producer、generic frame、
@@ -618,8 +684,12 @@ standard change
    owner写入并回fresh Check/Commit/Review；clean/migration/standalone-stock拒绝后的same-owner action re-entry必须
    可构造，adapter output不得携带generic caller ref；R01..R09分别只交给exact host context owner，suppressed
    admission success只交给Route Request；standalone Stock只能由Projection owner调用，current只回Projection
-   `stock_policy_reentry`并fresh validation，embedded Stock variants字段互斥；branch push与PR creation必须有两个
-   prepare、wait、confirmation re-entry、refusal与provider recovery，且push confirmation不能构造PR-create确认；
+   `stock_policy_reentry`并fresh validation，embedded Stock variants字段互斥；publication provenance、branch
+   push与Draft PR creation必须有三个互不兼容的prepare/wait/confirmation re-entry/refusal/recovery，且任一确认
+   不能构造下一action；三个refusal必须分别投影到`task-publication-preparation-not-executed`、
+   `task-branch-push-not-executed`与`task-pr-creation-not-executed`，每个output/consumer唯一且可构造；
+   Finish必须在Merge前形成official archive/archive push/Ready与archive-bound
+   `ready_for_merge`，Merge后不得再次Finish；
    active-disposition cleanup拒绝在无唯一choice时恰好得到
    `active_lifecycle_disposition_choice_required`并进入一个choice wait，choice前删除为0；
    Workspace必须先live解析exact resource与ownership/isolation state；exact-current reuse必须直接
@@ -629,9 +699,13 @@ standard change
    确定性activation必须在owner内收敛，并以`approved -> guru-implement-task:initial`闭合，transition failure时
    implementation write为0；
 6. migration/projection/Release没有legacy consumer或断链；
-7. `EVO-DES-001..069` fresh independent Design review未解决P1、blocking P2、P3与high-risk open question均为0；
+7. `EVO-DES-001..073` fresh independent Design review未解决P1、blocking P2、P3与high-risk open question均为0；
 8. 只形成delivery Issue建议，不创建Issue、不实现、不激活task、不commit/push/PR/merge/release。
 
-Current gate result: the revised exact candidate closed `DES-REV-001..014`, passed the fresh independent full
-Design review and deterministic planning closure on `2026-08-27`, and has open `P1=0`, blocking `P2=0`, `P3=0`,
-high-risk question `=0`. The bound state is `design_ready_for_delivery_planning`; Phase 1 stops here.
+Current gate passed against this revised candidate. #311/#312 merge, exact `.41` authority rebind, 83/13/50
+Requirements-stage successor zero-loss and the merge-bound fresh Requirements gate remain current. The complete
+Design/Test/Architecture/task projection closed `DES-REV-001..043`; the final fresh semantic review reported open
+P1=0, blocking P2=0, P3=0 and high-risk question=0, and deterministic closure passed. The closed gate therefore
+projects `design_ready_for_delivery_planning`, `fresh_design_review_passed` and `evolution_refactor_eligible`.
+This continuation remains in Phase 1 and stops at that completed Design gate; no implementation or delivery action
+is authorized.

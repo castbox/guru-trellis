@@ -1,18 +1,27 @@
 schema_version: "1.0"
 authority: design
-identity: guru-trellis-evolution-design-2026-08-26
-version: evolution-design-candidate-2026-08-26
+identity: guru-trellis-evolution-design-2026-08-29
+version: evolution-design-candidate-2026-08-29
 status: design_ready_for_delivery_planning
 review_status: fresh_design_review_passed
 requirements_status: requirements_ready_for_design
 requirements_locator: docs/requirements/evolution/requirement-main.md
 requirements_nfr_locator: docs/requirements/evolution/requirement-non-functional.md
 capability_source_locator: docs/requirements/evolution/current-capability-inventory.md
-current_design_source_ref: d907fcc5e17f23b6499648e5e9a208457f2d6f8b
-current_design_locator: docs/design/versions/current-main-0.6.5-guru.40/design-main.md
+current_design_source_ref: 3efcce72a0d47e38ec725aa8c0f8498992f3416f
+current_design_locator: docs/design/versions/current-main-0.6.5-guru.41/design-main.md
 test_locator: docs/test/evolution/test-strategy.md
 architecture_locator: docs/architecture/README.md
 architecture_contribution_locator: docs/architecture/contributions/305-evolution-workflow-convergence.md
 design_constitution_locator: docs/architecture/00-foundation/design-constitution.md
 architecture_change_contract_locator: docs/architecture/06-governance/change-contract.md
-provenance: REQ-REV-011..132 fresh Requirements gate passed on evolution-requirements-revision-2026-08-27; DES-REV-001..014 closed; fresh Design review and deterministic closure passed on 2026-08-27
+provenance: >-
+  REQ-REV-133..138 added #311/#312 prerequisites, full installed publication terminal,
+  evidence-before-cleanup verifier failure preservation and unrelated-dirty isolation, split Requirements
+  readiness from refactor eligibility, and invalidated the prior REQ-REV-011..132 / DES-REV-001..014 review
+  binding; selected base 3efcce72 contains both merges, with #311 OPEN only for follow-up-only work and #312
+  CLOSED; .41 authority rebind, 83 requirements / 13 target deltas / 50 fixtures Requirements-stage successor
+  zero-loss, and the final Requirements semantic, Strict technical and deterministic gates are current and clean;
+  candidate EVO-DES-001..073 allocates all 50 fixtures through Reconcile, Publish/Finish/Merge and Projection
+  ownership; DES-REV-001..043 are closed, the final fresh Design review reported P1/P2/P3/high-risk counts all zero,
+  deterministic closure passed, and evolution_refactor_eligible is current without runtime implementation

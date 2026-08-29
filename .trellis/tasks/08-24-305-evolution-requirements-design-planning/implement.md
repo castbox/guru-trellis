@@ -2,58 +2,52 @@
 
 ## Boundary
 
-This is the execution plan for completing #305 Requirements/Design/Test planning. It is not an implementation
-plan for changing the Guru runtime. The approved plan has completed task activation and the live task status is
-`in_progress`; current Phase 2 scope is limited to checking and, if required, fixing this accepted document
-candidate. Runtime/workflow/Skill/schema/script/preset/overlay changes, stock mutation, installation, migration,
-provider action and Release remain outside this task scope.
+This is the execution and validation plan for the current #305 Phase 1 Design continuation. It is not an
+implementation plan for changing the Guru runtime. The live task status remains `in_progress` from a historical
+activation, but `REQ-REV-133..138` and the latest user decision keep the current continuation in Phase 1. #311/#312
+are merged into the selected base, their capabilities are rebound, Requirements is current, and reviewed Design/Test/
+Architecture/task projections now cover the complete 83/33/23/13/50/73 set. The fresh Design gate passed and this
+continuation stops in Phase 1. Runtime/workflow/Skill/schema/script/preset/overlay changes, stock mutation, installation,
+migration, provider action and Release remain outside this continuation.
 
 ## Test Authority
 
 - target strategy: `docs/test/evolution/test-strategy.md`.
-- fixture plan: `docs/test/evolution/fixture-plan.md` with 47 rows, all `planned_not_executed`.
+- fixture plan: `docs/test/evolution/fixture-plan.md` with 50 rows, all `planned_not_executed`; every row has candidate
+  Design ownership and `EVO-DES-001..073` mapping.
 - trace: `docs/test/evolution/traceability.md`.
-- current as-built Test remains `docs/test/versions/current-main-0.6.5-guru.40/` and supplies only current
-  capability context, not target execution PASS.
+- current as-built Test remains `docs/test/versions/current-main-0.6.5-guru.41/` at selected-base
+  `3efcce72…` and supplies only current capability context, not target execution PASS; `.40`/`d907fcc5…` is
+  historical comparison evidence.
 
 ## Candidate Execution Sequence
 
-1. Preserve the current `REQ-REV-011..132` Requirements-ready binding and verify no later material Requirements
-   change occurred before the fresh Design review.
-2. Complete Evolution Design navigation, main behavior, public contracts, stock/distribution decisions,
-   capability inventory, traceability, decisions and delivery slices.
-3. Complete Evolution Test navigation, manifest, evidence strategy, 47 fixture contracts and traceability.
-4. Complete task-owned Architecture contribution/ADR candidate without modifying shared current or ADR index.
-5. Run deterministic planning closure for ID sets, links, manifests, Markdown tables, 39 unique public Skill
-   identities / 43 profile rows, exactly 37 lifecycle owners plus two specialist non-owners, every
-   output-to-consumer-input projection, the complete recoverable-block profile
-   inventory, nine wording profiles, ten active four-result qualification profiles plus the standalone three-result
-   profile, 47 fixtures, 17 stock roles, nine retained rows, one Trellis-reference manifest/adapter family, one
-   Bootstrap-owned code-spec projection return chain that converges already-current full-diff work to double-none,
-   one standalone Projection/Stock/Projection fresh-validation chain, one compound
-   activation/implementation-entry confirmation, one exact-current Workspace no-mutation convergence path, and two
-   independent branch-push/PR-create confirmation graphs with no-mutation current exits.
-6. Run fresh independent full Design review. Fix all P1/P2/P3 findings and repeat deterministic closure plus the
-   full review against each changed exact candidate.
-7. When the exact candidate passes that fresh Design review and deterministic closure, bind Design/Test/Architecture/
-   task projections to `design_ready_for_delivery_planning`, record the current finding closure and stop that Phase 1
-   continuation before activation or implementation.
+1. Bind the selected-base #311/#312 Issue/PR/merge identities as related prerequisite inputs only; do not close,
+   implement, merge or otherwise mutate either Issue in #305.
+2. Freshly read selected-base `.41` RDT/Architecture/inventory, reclassify both merged results as current-base
+   capabilities, and compare all current capabilities against target requirements and normal-path fixtures.
+3. Complete `REQ-REV-133..138` across Requirements main/NFR/inventory and the 52 UC / 83 REQ / 33 NFR / 23 current
+   capability / 13 target delta / 50 fixture closure. #311 is folded into `CUR-CAP-013/014/017/018/019`, #312 into
+   `CUR-CAP-012`; no fifth core capability or duplicate `TARGET-DELTA-014` remains.
+4. Run deterministic structure/count/link/table/YAML/JSON checks against the exact current candidate.
+5. Run fresh full-document Requirements semantic and Strict technical reviews. Fix every P1/P2/P3 finding and rerun
+   both reviews against each changed candidate until both are clean.
+6. Only after steps 4-5 are current may the Requirements/trace statuses become
+   `requirements_ready_for_design` / `requirements_trace_ready_for_design`; rerun deterministic checks and both fresh
+   reviews against that final identity.
+7. Revise Design/Test/Architecture/task projections for the full current capability set. Allocate `EVO-DES-070..073`
+   to the two-stage gate, #312 Reconcile continuity, #311 Publish/Finish/Merge terminal and Projection-owned verifier
+   failure lifecycle; map all 50 fixtures without changing Requirements semantics.
+8. Run fresh full-document Design review across repository Design, Test projection, Architecture contribution and task
+   projections. Fix every P1/P2/P3/high-risk finding and rerun against the changed candidate until clean.
+9. Run deterministic set/link/table/YAML/JSON/consumer/recovery closure for 83/33/23/13/50/73, 39 public Skills,
+   43 profile rows, 37 lifecycle owners and two specialist non-owners.
+10. Only after steps 8-9 are current may Design become `design_ready_for_delivery_planning`, review become
+    `fresh_design_review_passed` and refactor become `evolution_refactor_eligible`; then stop in Phase 1.
 
-Current sequence result: steps 1-7 are complete for the revised exact planning candidate. `DES-REV-001..014` are
-closed; fresh review and deterministic closure passed with open `P1=0`, blocking `P2=0`, `P3=0`, high-risk question
-`=0`; that Phase 1 continuation stopped at `design_ready_for_delivery_planning`.
-
-Planning-artifact wording review, Architecture planning-impact, task-plan approval and task activation are distinct
-Phase 1 owners. The Design-review result neither authorizes nor establishes them; each owner consumes the current
-exact candidate and its own live authority when the workflow reaches it. A material Requirements, Design, acceptance,
-behavior or verification revision invalidates the bound Design review and returns to steps 5-6; an equivalent
-status/provenance correction refreshes only the directly affected owner.
-
-The approved plan was freshly presented and accepted, and task activation entered Phase 2 only to check and, if
-required, fix this accepted #305 Requirements/Design/Test/Architecture/task-planning candidate within the document
-scope named by this task. That completed activation does not authorize Evolution runtime, workflow, Skill, schema,
-script, preset, overlay, stock, install/migration, provider or Release implementation. Commit, push and PR actions
-remain separately gated.
+Current sequence result: steps 1-10 are complete. The final fresh Design review closed `DES-REV-001..043` with open
+P1=0, blocking P2=0, P3=0 and high-risk question=0; deterministic closure passed. The historical
+`DES-REV-001..014` result and task activation are not current evidence and authorize no Phase 2/runtime action.
 
 ## Planning Validation
 
@@ -61,12 +55,20 @@ remain separately gated.
 | --- | --- | --- |
 | whitespace/diff | `git diff --check` passes | no semantic or runtime claim |
 | navigation/links/manifests | all local locators resolve and candidate statuses agree | no installed projection claim |
-| closed ID sets | Requirements 81, NFR 32, Design 69, current capabilities 23, target deltas 13, fixtures 47 | presence alone does not prove semantic adequacy |
-| public graph | 39 unique public Skill identities / 43 profile rows; exactly 37 lifecycle owners include Admission/Route Request/Answer/Current Work/History while Wording/Qualification are the two specialist non-owners under their fixed callers; every consumer input is constructible without generic frame/private lookup; `bound_event_ref,event_sequence` reaches the registered lifecycle owner directly; Clarification/RDT/Architecture subprojection ownership and the full provider action-owner inventory are closed; every ordinary recoverable block maps to one Section 7.1 same-owner profile; lifecycle binding, independent isolation and Answer provider recovery are distinct; the Section 3.1 registry, four-owner remote convergence and post-owner/post-remote fresh Admission edges are closed; exact-current Workspace reuse returns `workspace_current -> task_impact_sync` with zero plan/confirmation/refusal/mutation, while creation/transfer/isolation alone enters confirmation; the single Approval plan displays activation plus immediate approved implementation entry/allowed writes, and its internal activation closes only as `approved -> guru-implement-task:initial` or its own block with zero implementation write; nine wording profiles and ten active four-result plus one standalone three-result qualification profile return only through original-caller continuations; Bootstrap returns authority bootstrap through an opaque continuation to the exact RDT/Architecture owner and returns only outstanding code-spec projection work to fresh Check, where the subsequent full-diff review can emit exact double-none for already-current targets; push and PR create have separate waits/continuations/refusals/recoveries plus no-mutation current exits; recoverable blocks are not mislabeled terminal, true terminal blocks have no fake continuation, and every external exit, explicit refusal and adapter blocked result has one named profile-fixed consumer/router/stop | adapters/routers counted separately; no runtime claim |
+| closed ID sets | Requirements 83, NFR 33, candidate Design 73, current capabilities 23, target deltas 13, fixtures 50 | presence alone does not prove semantic adequacy or current Design review |
+| public graph | 39 unique public Skill identities / 43 profile rows; exactly 37 lifecycle owners include Admission/Route Request/Answer/Current Work/History while Wording/Qualification are the two specialist non-owners under their fixed callers; every consumer input is constructible without generic frame/private lookup; `bound_event_ref,event_sequence` reaches the registered lifecycle owner directly; Clarification/RDT/Architecture subprojection ownership and the full provider action-owner inventory are closed; every ordinary recoverable block maps to one Section 7.1 same-owner profile; lifecycle binding, independent isolation and Answer provider recovery are distinct; the Section 3.1 registry, four-owner remote convergence and post-owner/post-remote fresh Admission edges are closed; exact-current Workspace reuse returns `workspace_current -> task_impact_sync` with zero plan/confirmation/refusal/mutation, while creation/transfer/isolation alone enters confirmation; the single Approval plan displays activation plus immediate approved implementation entry/allowed writes, and its internal activation closes only as `approved -> guru-implement-task:initial` or its own block with zero implementation write; nine wording profiles and ten active four-result plus one standalone three-result qualification profile return only through original-caller continuations; Bootstrap returns authority bootstrap through an opaque continuation to the exact RDT/Architecture owner and returns outstanding authority/code-spec projection work to fresh Check, including `promotion_kind=none,projection_kind=authority_only` when shared authority is current but its locator/usage/freshness projection needs repair; the subsequent full-diff review emits exact double-none only for already-current targets; provenance-tail preparation, push and PR create have separate waits/continuations/refusals/recoveries plus no-mutation current exits; recoverable blocks are not mislabeled terminal, true terminal blocks have no fake continuation, and every external exit, explicit refusal and adapter blocked result has one named profile-fixed consumer/router/stop | adapters/routers counted separately; no runtime claim |
+| delivery/recovery graph | accepted GitHub work enters provenance preparation before push and Draft PR; accepted none work carries only acceptance identity into Finish, has zero pre-Finish delivery fact and receives its sole `delivery_fact_ref` from successful Finish; Draft/READY PR enters Finish, archive-bound Ready enters Merge, Closure creates the delivery terminal and that terminal enters Cleanup only; Branch Review base evolution uses declared `base_reentry`; semantic confirmation traces include all three Publish actions and `EVO-DES-072`; Provider Recovery includes Projection-owned verifier evidence/re-entry through `EVO-DES-073` | planning projection only; no provider action or runtime claim |
 | stock closure | 17 exact rows with `9/1/2/5`; nine retained profiles bind nine exact host context owners; all suppressed rows have the one Route Request admission-success edge; selected action/owner/consumer/block present; raw meta successor binds the preset reference manifest/caller-fixed adapter/write route, raw update-spec successor binds promotion/Bootstrap projection/fresh review; embedded `policy_result` variants are disjoint; no generic adapter caller ref or standalone caller id; standalone refusal re-entry is exact; standalone action has the sole `Projection -> Stock -> Projection stock_policy_reentry -> fresh complete validation` path and Stock cannot complete the workflow or create a fifth distribution route | no file mutation or host matrix execution |
-| RDT impact | target Design/Test contribution and task projection are consistent with the exact ready Requirements candidate and were consumed by the passed fresh Design review | no current promotion |
-| Architecture impact | `architecture_impact/target_native`, all concerns current, contribution and ADR candidate present | no accepted ADR/shared-current promotion |
-| semantic Design review | zero open P1/P2/P3 and no high-risk question | binds only the current planning candidate |
+| RDT impact | Requirements and selected-base capability rebind are current; Test has complete candidate Design mapping and stays `planned_not_executed` | no runtime/Test execution or current promotion claim |
+| Architecture impact | task contribution is `design_ready_for_delivery_planning` / `fresh_design_review_passed` / `not_promoted`; selected-base current Architecture is input, while shared current and ADR index remain unchanged | no accepted ADR/shared-current promotion |
+| semantic Requirements review | fresh full-document semantic and Strict technical review passed for the final 83/13/50 candidate | Design eligibility only; no Design execution in this continuation |
+| semantic Design review | fresh full-document review passed for the complete 73-responsibility/50-fixture candidate with P1/P2/P3/high-risk counts all zero | establishes planning readiness only; no runtime/Test execution claim |
+
+Publish refusal closure is projected explicitly: provenance, branch-push and Draft-PR creation refusals emit
+`publication_preparation_not_executed`, `branch_push_not_executed` and `pr_creation_not_executed`; their outputs
+carry only the corresponding task/acceptance/head identity and terminate at the distinct
+`task-publication-preparation-not-executed`, `task-branch-push-not-executed` and
+`task-pr-creation-not-executed` consumers. No default refusal consumer or provider-block fallback is permitted.
 
 Historical package/runtime/installed/live/Release results are not rerun or relabeled. Any unavailable external fact
 is an explicit unverified boundary.
@@ -74,9 +76,12 @@ is an explicit unverified boundary.
 ## Docs SSOT Plan
 
 - Repository Requirements remains the only upstream authority in `docs/requirements/evolution/`; its current
-  `requirements_ready_for_design` / `requirements_trace_ready_for_design` identity is bound to
-  `evolution-requirements-revision-2026-08-27` and `REQ-REV-011..132`. This plan rereads it only on material drift;
-  fresh Design review passed and is bound as `design_ready_for_delivery_planning`.
+  `requirements_ready_for_design` / `requirements_trace_ready_for_design` identity is bound to `REQ-REV-011..138`.
+  The selected
+  post-#311/#312 base is bound to `3efcce72…` / `.41`; merge/lifecycle facts are current, while the #305 authority
+  rebind, merged-behavior reconciliation, Requirements-stage zero-loss comparison and fresh Requirements dual review
+  are current; every prior Design review binding remains stale, while the revised Design candidate has passed the
+  current fresh review and deterministic closure.
 - Normal execution orders applicable repository RDT, Architecture Baseline and task `prd.md`/`design.md`/
   `implement.md` as the stable primary context; decision-relevant live facts, current delta and unresolved items are
   the minimal changing tail. Cache is optional and never authority. Each AI owner judges directly from this context;
@@ -87,7 +92,8 @@ is an explicit unverified boundary.
   this file owns execution/validation/delivery mapping.
 - `.trellis/spec` receives no target projection during #305. A future reviewed implementation range may project
   only when Branch Review finds outstanding `authority_only|with_code_spec` work, every selected RDT/Architecture
-  promotion is current and the latter variant carries its same-range contribution ref that is still missing from
+  promotion, if any, is current; `authority_only` may pair with `promotion_kind=none` for missing/stale authority
+  locator/usage/freshness and carries no code-spec ref, while the latter variant carries its same-range contribution ref that is still missing from
   current projection, through `guru-bootstrap-repository-ssot:projection_refresh`, then must repeat
   Check/Commit/Branch Review. That fresh complete-diff review emits exact double-none when target authority/projection
   identities are already current and reopens material drift only. Platform/preset/workflow README and runtime
@@ -95,14 +101,18 @@ is an explicit unverified boundary.
 
 ## Delivery Mapping
 
-Future implementation is decomposed by `docs/design/evolution/delivery-plan.md` into dormant contract,
-admission/reference, planning, implementation/projection-refresh, delivery with separate branch-push/PR-create,
+The revised Design candidate decomposes possible future implementation in
+`docs/design/evolution/delivery-plan.md` into dormant contract,
+admission/reference, planning, implementation/projection-refresh, delivery with separate provenance/push/Draft-PR/
+Finish/Merge/Closure/Cleanup, Projection-owned verifier failure recovery,
 stock, clean-install, migration, full-matrix and exact-Release
-slices. Those are Issue suggestions only. Each requires fresh intake and its own RDT/Architecture
+slices. Requirements convergence, Design review and deterministic closure are current, but those suggestions remain
+non-actionable until a future independently authorized delivery intake. Each later
+slice requires fresh intake and its own RDT/Architecture
 contribution/review; exact resource-plan confirmation is required only when creation, transfer or isolation remains
 pending, while exact-current reuse bypasses plan/confirmation/refusal. None is implicitly authorized by approving
 this task plan.
 
-The eventual #305 planning delivery route, commit scope and PR action are selected only after the current Phase 2
-document check passes and a separate exact-action confirmation is obtained. No commit/push/PR is part of the current
-continuation.
+The eventual #305 planning delivery route, commit scope and PR action are selected only after this fresh Design gate
+and a later separately authorized workflow entry; the merge-bound fresh Requirements gate is current. Each external side effect still requires
+its own current exact-action plan. No commit/push/PR is part of the current continuation.

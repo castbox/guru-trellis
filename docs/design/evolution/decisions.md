@@ -1,7 +1,9 @@
 # Evolution Design Decisions
 
-状态：`design_ready_for_delivery_planning`。这些 decision 已随 `DES-REV-001..014` 的 revised exact
-candidate 通过 fresh Design 全稿审核；它们仍是 target contract decision，不是 current runtime 或 accepted ADR。
+状态：`design_ready_for_delivery_planning` / `fresh_design_review_passed` / `evolution_refactor_eligible`。这些decision已从current
+`requirements_ready_for_design` identity重审并补入#311/#312 prerequisite、`EVO-REQ-082..083`、
+installed publication、verifier failure evidence与original-worktree continuity；它们仍不是current runtime
+或accepted ADR。
 
 - `EVO-DDEC-001`（accepted）：采用 `target_native`。最终 candidate 只运行新合同；不保留旧 route、
   dual-read/write、legacy schema selector、compatibility wrapper 或 fallback。
@@ -17,7 +19,8 @@ candidate 通过 fresh Design 全稿审核；它们仍是 target contract decisi
   `direct|select|rename|normalize` projection；runtime-derived facts由exact consumer owner解析而不进入
   caller-authored input，禁止generic frame、implicit pass-through、producer checkpoint或ambient lookup补字段。
 - `EVO-DDEC-005`（accepted）：`docs/requirements/evolution/`、本 Design 与
-  `docs/test/evolution/` 是 target RDT authority；`.40` 继续是 current as-built authority。实施 task
+  `docs/test/evolution/` 是 target RDT authority；selected-base `.41` 继续是 current as-built authority，
+  `.40`只作historical comparison。实施 task
   通过 contribution/promotion 推进 current，不从 task 三件套反推 repository RDT。
 - `EVO-DDEC-006`（accepted）：standard Planning 新增唯一 author `guru-plan-task`，并保留一次
   `guru-approve-task-plan` semantic approval；normal path 删除 mandatory wording review、normal-scenario
@@ -70,7 +73,7 @@ candidate 通过 fresh Design 全稿审核；它们仍是 target contract decisi
   固定 `合并PR`。固定 prompt、口令、hash、digest、task id、path、branch、SHA、identity、摘要、规定句式
   或 `确认执行 <hash>` 均不得成为 challenge；脚本、validator、recorder 不解析、匹配、验证或持久化
   用户确认。每个明确拒绝进入该owner命名的zero-side-effect refusal output；Merge、manual Issue closure、
-  Finish/archive、post-Finish Cleanup与active-lifecycle disposition cleanup互不继承确认，refusal不得
+  Finish/archive、delivery-terminal Cleanup与active-lifecycle disposition cleanup互不继承确认，refusal不得
   伪装成blocked/provider defect。
 - `EVO-DDEC-020`（accepted）：standalone projection/stock、retained-host 与 embedded/reapply 使用互斥
   profile/exit schema。embedded child 只能返回 exact caller；不得取得 standalone blocked/current、
@@ -108,18 +111,27 @@ candidate 通过 fresh Design 全稿审核；它们仍是 target contract decisi
   `.trellis/spec`唯一编排/写入owner；Branch Review独立选择`promotion_kind`与
   `projection_kind=none|authority_only|with_code_spec`；两个discriminator只选择相对live target identity尚未
   current的工作，不按complete diff中贡献的历史存在性重复选择。所有selected RDT/Architecture promotion
-  （如有）current后，后两种生成`guru-code-spec-projection-1.0` locator/usage/freshness projection，且
+  （如有）current后，后两种生成`guru-code-spec-projection-1.0` locator/usage/freshness projection。
+  `authority_only`在current projection缺失或持有stale authority locator/usage/freshness时选中，禁止code-spec
+  ref，并允许与任一promotion kind组合，包括shared authority已经current时的`promotion_kind=none`；
   `with_code_spec`必须携带same-range、current projection尚未包含的reviewed contribution ref。
-  `projection_kind=none`只允许没有outstanding promotion且没有missing code-spec projection；回程后的fresh
+  `projection_kind=none`只允许没有outstanding promotion且没有任何missing/stale authority或code-spec projection；回程后的fresh
   Branch Review即使仍看见原贡献diff，也在promotion/projection target identities精确current时输出
   `promotion_kind=none,projection_kind=none`。material drift重新打开对应工作。成功只回fresh Check，再经
   新Commit与Branch Review；preset/reapply只验证identity/reachability，不能代写projection。
-- `EVO-DDEC-026`（accepted）：branch push与PR creation是`guru-publish-task-pr`内两个独立exact actions，
-  分别使用`push_prepare -> task-branch-push-confirmation-wait -> push_confirmation_reentry`和
-  `pr_create_prepare -> task-pr-creation-confirmation-wait -> pr_creation_confirmation_reentry`。两者拥有不同
-  continuation、refusal、provider recovery；每个prepare/re-entry先live-reread，bound HEAD已在remote current或
-  exact base/head PR已live READY时分别无写入产生`branch_published`或`ready_pr_current`，不得重复确认、push或
-  创建duplicate PR。push confirmation永不授权或构造PR-create confirmation，Merge仍是第三个独立owner/action。
+- `EVO-DDEC-026`（accepted）：metadata provenance preparation、branch push与Draft PR creation是
+  `guru-publish-task-pr`内三个独立exact actions，分别使用
+  `provenance_prepare -> task-publication-provenance-confirmation-wait -> provenance_confirmation_reentry`、
+  `push_prepare -> task-branch-push-confirmation-wait -> push_confirmation_reentry`和
+  `pr_create_prepare -> task-pr-creation-confirmation-wait -> pr_creation_confirmation_reentry`。三者拥有不同
+  continuation、refusal、provider recovery；三个拒绝分别闭合为
+  `publication_preparation_not_executed -> task-publication-preparation-not-executed`、
+  `branch_push_not_executed -> task-branch-push-not-executed`和
+  `pr_creation_not_executed -> task-pr-creation-not-executed`，每个output只携带该action的最小task/acceptance/head identity。
+  每个prepare/re-entry先live-reread，exact tail、bound HEAD或
+  exact base/head Draft/READY PR已current时分别无写入产生`publication_head_current`、`branch_published`或
+  `draft_pr_current`，不得重复确认、commit、push或创建duplicate PR。任一confirmation永不授权下一action；
+  PR current只进入Finish，不能直接Merge。
 - `EVO-DDEC-027`（accepted）：causally bound user event必须以`bound_event_ref,event_sequence`直达closed
   lifecycle owner；ref绑定host event identity/session/content，sequence只负责arrival order，不能单独承担事件
   语义或触发ambient host-history lookup。`authority_context`的Clarification requirement-delta、repository RDT与
@@ -147,6 +159,22 @@ candidate 通过 fresh Design 全稿审核；它们仍是 target contract decisi
   repo/Issue/base/branch/worktree/task/path与ownership/isolation全部匹配current change identity时，直接产生
   `workspace_current`并进入RDT task impact，plan display、confirmation wait、refusal branch与mutation均为0；
   只有creation、transfer或isolation待执行时才按`EVO-REQ-081`展示计划并等待dialogue-local确认。
+- `EVO-DDEC-033`（accepted）：#311/#312使用两阶段eligibility而不新增runtime wrapper Skill。
+  `requirements_ready_for_design`只放行Design；83/33/23/13/50 Design successor与fixture mapping差集为0且fresh
+  full review通过后，closed planning projection才产生`evolution_refactor_eligible`供未来delivery intake消费。
+  Material drift回最早authority owner，等价identity refresh不重放unchanged review。
+- `EVO-DDEC-034`（accepted）：#312 successor留在`guru-reconcile-task-base`。owner以original active
+  worktree identity和per-path状态判定；current-base tracked/path-clean same-task继续，unrelated dirty保持原owner
+  且不被修改，真实same-task dirty/untracked/review metadata/identity blocker继续fail closed。不得新增一个
+  source-clean wrapper或通过source checkout cleanliness绕过task-worktree blocker。
+- `EVO-DDEC-035`（accepted）：#311 publication不恢复旧Finalizer aggregate，也不把全部行为塞进Publish。
+  Publish拥有immutable extension source/target reviewed checkout、metadata tail、branch push与Draft PR；Finish
+  拥有summary、official archive、archive commit/push、Ready和archive-bound`ready_for_merge`；Merge只消费该
+  identity，Closure与Cleanup继续分离。这样保留current terminal continuity，同时维持one owner per action。
+- `EVO-DDEC-036`（accepted）：standalone verifier failure lifecycle归
+  `guru-validate-extension-projection`，其private structured failure必须先于temporary cleanup；public block只
+  增加direct-consumer需要的`failure_ref`，stop展示后只投影continuation/repair回same owner。Embedded
+  clean/migration/Release保持caller-owned finding，Finish/Finalizer对verifier state零edge。
 
 ## Rejected Directions
 

@@ -1,8 +1,10 @@
 # Evolution Stock And Distribution Design
 
-状态：`design_ready_for_delivery_planning`。本文件是 `EVO-REQ-052..056,068..081` 的 Design 主定义，选择
-17 个 official Trellis stock asset 的 target action，并定义 clean install、existing migration、
-update/reapply 与 activation。它不表示任何 stock 文件已经被 patch、隔离或删除。
+状态：`design_ready_for_delivery_planning` / `fresh_design_review_passed` / `evolution_refactor_eligible`。本文件已承接
+`EVO-REQ-052..056,068..083`中适用的distribution/stock边界：17个official Trellis stock asset的selected
+action不变，installed manifest额外作为Publish immutable extension-source binding authority，standalone
+Projection拥有evidence-before-cleanup verifier failure lifecycle。它不表示任何stock文件已经被patch、隔离
+或删除。
 
 ## 1. Source And Policy Ownership
 
@@ -36,6 +38,13 @@ update/reapply 与 activation。它不表示任何 stock 文件已经被 patch�
   target workflow；handoff 前 stock mutation count 为 0。
 - admission owner：`guru-admit-invocation` 只读 current policy，识别 collision 并 redirect/block；
   admission fixture 不执行 maintenance mutation。
+- installed publication handoff：installer仍是installation manifest source provenance的唯一writer；
+  `guru-publish-task-pr:provenance_prepare`只读该immutable repo/ref/full-commit与managed-byte identity，建立独立
+  extension source checkout，并把apply target固定为业务reviewed checkout。Publish不得把target HEAD反写成
+  source或fallback到self-hosted；Finish不得读取verifier state。
+- standalone verifier boundary：`guru-validate-extension-projection:standalone|standalone_reentry`在runner
+  failure后先绑定stage/cell/command/exit/bounded safe tail/hash-size private evidence，再允许temporary cleanup。
+  matrix外failure为`postcheck_failure`；embedded clean/migration/Release只接收caller-owned finding。
 
 选定 action family 恰好三种：`managed_absence`、`managed_quarantine`、
 `caller_bound_replacement`。九项 semantic route 选择 absence，是因为 patch 仍留下第二个自然语言
@@ -51,7 +60,7 @@ declared projection cell；具体 emitted/not-emitted 状态仍由 host matrix �
 | --- | --- | --- | --- | --- | --- | --- |
 | `trellis-start` / `common/commands/start.md` | suppressed | `managed_absence` | shared+host discoverable projection cells absent; policy row retained | `guru-admit-invocation -> guru-route-request -> guru-select-workflow-mode` | `guru-admit-invocation:request_admitted -> guru-route-request:top_level` | `upstream_suppression_blocked` |
 | `trellis-continue` / `common/commands/continue.md` | suppressed | `managed_absence` | shared+host discoverable projection cells absent; policy row retained | `guru-resolve-current-work` plus the Section 3.1 current-owner registry | `guru-admit-invocation:request_admitted -> guru-route-request:top_level` | `upstream_suppression_blocked` |
-| `trellis-finish-work` / `common/commands/finish-work.md` | suppressed | `managed_absence` | shared+host discoverable projection cells absent; policy row retained | delivery terminal -> `guru-finalize-task` | `guru-admit-invocation:request_admitted -> guru-route-request:top_level` | `upstream_suppression_blocked` |
+| `trellis-finish-work` / `common/commands/finish-work.md` | suppressed | `managed_absence` | shared+host discoverable projection cells absent; policy row retained | exact Draft/READY PR -> `guru-finalize-task:github_pr`; accepted none route -> `guru-finalize-task:none` | `guru-admit-invocation:request_admitted -> guru-route-request:top_level` | `upstream_suppression_blocked` |
 | `trellis-brainstorm` / `common/skills/brainstorm.md` | suppressed | `managed_absence` | shared+host discoverable projection cells absent; policy row retained | `guru-clarify-requirements` | `guru-admit-invocation:request_admitted -> guru-route-request:top_level` | `upstream_suppression_blocked` |
 | common `trellis-check` / `common/skills/check.md` | suppressed | `managed_absence` | shared+host discoverable projection cells absent; policy row retained | `guru-check-task` | `guru-admit-invocation:request_admitted -> guru-route-request:top_level` | `upstream_suppression_blocked` |
 | `trellis-spec-bootstrap` / bundled skill | suppressed | `managed_absence` | shared+host discoverable projection cells absent; policy row retained | `guru-bootstrap-repository-ssot` | `guru-admit-invocation:request_admitted -> guru-route-request:top_level` | `upstream_suppression_blocked` |
@@ -77,8 +86,9 @@ consumer of suppression success. The pre-semantic guard has exactly one successf
 cannot bypass that edge and directly call its eventual capability owner.
 
 The two removed write-capable surfaces have independent positive successor proofs. For `trellis-update-spec`,
-reachability means one same-range reviewed `with_code_spec` contribution still missing from current projection, every
-selected outstanding RDT/Architecture promotion current,
+reachability means either current authority locator/usage/freshness needs an `authority_only` repair (including
+`promotion_kind=none` when shared authority is already current) or one same-range reviewed `with_code_spec`
+contribution is still missing from current projection, with every selected outstanding RDT/Architecture promotion current,
 `guru-bootstrap-repository-ssot:projection_refresh` as the sole `.trellis/spec` writer, and
 `spec_projection_ref -> guru-check-task:authority_reentry -> fresh Commit -> fresh Branch Review -> exact double-none`
 after the projection target is already current; a raw Skill result cannot satisfy any edge. For `trellis-meta`,
@@ -223,7 +233,7 @@ There is no per-host partial activation, runtime selector, fallback or old/new d
    host cells;
 5. build and validate one activation manifest binding ownership, reference and code-spec projection identities;
 6. validate capability preservation, Skill/exit/consumer closure, modes, executable bits, sidecar zero and
-   installed provenance;
+   installed provenance, including the immutable source identity later consumed by publication preparation;
 7. activate and return `new_contract_current`.
 
 Any step finding returns `clean_install_blocked` with created resources and exact re-entry. It cannot switch to
@@ -267,6 +277,10 @@ history/ref reachability, target graph uniqueness and legacy consumer absence be
   validation return only `returned_to_caller` to clean, migration, Release or reapply; they cannot acquire a
   standalone or caller terminal. When standalone validation selects policy maintenance, Projection is the fixed
   Stock caller and Stock current returns only to Projection revalidation; Stock has no independent top-level terminal.
+- Standalone Projection failure is not a Finish or embedded-distribution result. Pre-matrix/matrix/post-matrix failure
+  binds non-null verifier-private evidence before temporary cleanup; the named Projection block may expose its
+  `failure_ref` for diagnosis and projects only continuation/repair back to `standalone_reentry`. Raw stdout/stderr,
+  full verifier lifecycle and authorization never enter public/durable state.
 - Release binds an immutable candidate and executes pre-publish, the shared `EVO-DES-069` dialogue-local semantic
   confirmation boundary, publication and tag-pinned post-publish stages. A clear affirmative after the unchanged
   exact plan enters publication directly; missing confirmation waits, refusal returns `release_not_published`, and

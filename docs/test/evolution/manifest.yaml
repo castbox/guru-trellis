@@ -1,9 +1,9 @@
 schema_version: "1.0"
 authority: test
-identity: guru-trellis-evolution-test-2026-08-26
-version: evolution-test-candidate-2026-08-26
+identity: guru-trellis-evolution-test-2026-08-29
+version: evolution-test-candidate-2026-08-29
 status: test_candidate_planned
-fixture_count: 47
+fixture_count: 50
 review_status: fresh_design_review_passed
 requirements_status: requirements_ready_for_design
 design_status: design_ready_for_delivery_planning
@@ -13,7 +13,16 @@ design_locator: docs/design/evolution/design-main.md
 design_contract_locator: docs/design/evolution/contracts.md
 fixture_plan_locator: docs/test/evolution/fixture-plan.md
 traceability_locator: docs/test/evolution/traceability.md
-current_test_source_ref: d907fcc5e17f23b6499648e5e9a208457f2d6f8b
-current_test_locator: docs/test/versions/current-main-0.6.5-guru.40/test-strategy.md
+current_test_source_ref: 3efcce72a0d47e38ec725aa8c0f8498992f3416f
+current_test_locator: docs/test/versions/current-main-0.6.5-guru.41/test-strategy.md
 execution_status: planned_not_executed
-provenance: REQ-REV-011..132 fresh Requirements gate passed on evolution-requirements-revision-2026-08-27; DES-REV-001..014 closed; fresh Design review and deterministic closure passed on 2026-08-27; fixtures remain planned_not_executed
+provenance: >-
+  REQ-REV-133..138 added #311/#312 prerequisite, full installed publication terminal,
+  evidence-before-cleanup standalone verifier failure preservation and unrelated-dirty isolation, and a two-stage
+  Requirements-ready then Design/refactor-ready 50-row fixture projection; selected base 3efcce72 includes PR
+  #313/#314 merges, with #311 OPEN only for follow-up-only work and #312 CLOSED; .41 authority rebind,
+  merged-behavior reconciliation, Requirements-stage successor zero-loss and the final Requirements semantic,
+  Strict technical and deterministic gates are current and clean; prior REQ-REV-011..132 and DES-REV-001..014
+  review bindings are stale, all 50 fixtures have EVO-DES-001..073 allocation with Reconcile, Publish/Finish/Merge
+  and Projection ownership; DES-REV-001..043 are closed, the final fresh Design review and deterministic closure
+  passed, evolution_refactor_eligible is current, and all fixtures remain planned_not_executed

@@ -1,6 +1,7 @@
 # Guru Trellis Evolution 非功能需求
 
-版本：`evolution-requirements-revision-2026-08-27`；状态：`requirements_ready_for_design`。
+版本：`evolution-requirements-revision-2026-08-29`；状态：
+`requirements_ready_for_design`。
 
 本文件是 Evolution Requirements 非功能约束的唯一主定义。功能范围与场景见
 [`requirement-main.md`](./requirement-main.md)，验收 fixture 与执行成本证据规则见该文件第 5 章。
@@ -53,7 +54,7 @@ Requirements、candidate 或 Release 的验收门槛；不得通过删减能力�
 ## 2. 可靠性、恢复与可用性
 
 `EVO-NFR-012..017` 按兼容、维护与安全语义定义在第 3、4 节；稳定编号不表示本节缺号或
-重复定义，`EVO-NFR-018..032` 继续承接本节后新增的 submodule/stock 边界。
+重复定义，`EVO-NFR-018..033` 继续承接本节后新增的 submodule/stock 与 Evolution prerequisite 边界。
 
 - `EVO-NFR-009`：本条只拥有 `EVO-REQ-010,041,047,076` 与对应 fixture 的可测质量门槛；preclassification、invocation identity/envelope、receipt、entry route、pending、owner、re-entry 和 terminal 的行为、字段与顺序均以 `requirement-main.md` 为唯一主定义，本条不重述。
   `EVO-FIX-ENTRY-ROUTING` 中，所有通过 pre-entry admission 的适用 independent invocation（包括无
@@ -101,7 +102,7 @@ Requirements、candidate 或 Release 的验收门槛；不得通过删减能力�
   attribution、live reread、exact-boundary re-entry 和 retained-ref/history reachability 覆盖率必须为
   100%；Delivery/archive/已 current Finish/已完成删除重放、cleanup owner 扩张、partial Finish 误报成功
   或 durable history 被隐藏的计数均为 0。
-- `EVO-NFR-010`：`EVO-REQ-039,053..054,056` 覆盖的 Delivery、distribution、clean install、
+- `EVO-NFR-010`：`EVO-REQ-039,053..054,056,083` 覆盖的 Delivery、distribution、clean install、
   existing migration 与 Release 外部 provider failure，以及 `EVO-REQ-032,060` 覆盖的 base
   movement/refresh failure，必须产生明确 current blocked/recovery 边界。provider 场景必须可解释
   current contract/capability、source owner/contract locator、target/action 与 unknown-outcome
@@ -124,6 +125,11 @@ Requirements、candidate 或 Release 的验收门槛；不得通过删减能力�
   形成对应事件并进入既定 recovery/blocked/terminal 边界；不能以继续等待或历史结果掩盖。相同事实
   不得重复产生语义 gate。该事件阈值只约束 correctness/可解释性，不引入耗时、rounds、bytes 或
   相对 baseline 的 PASS/FAIL 门槛。
+  对 standalone verifier execution failure，事件形成必须先于 temporary workspace cleanup，且
+  `EVO-FIX-VERIFIER-FAILURE-EVIDENCE` 中 matrix-command failure 与 matrix 外
+  `postcheck_failure` 的 structured evidence、owner attribution、blocked result 与 exact re-entry
+  覆盖率均为 100%；`failed + null failure`、cleanup 后补录、错误 stage/cell、Finalizer consumer 或
+  内嵌 caller finding 夺取 standalone ownership 的计数均为 0。
 - `EVO-NFR-011`：本条只拥有 `EVO-REQ-033` 并行隔离行为的质量门槛，并在同一 fixture 中验证
   `EVO-REQ-076` 的独立请求隔离 liveness；产品行为与状态顺序仍只由 `requirement-main.md` 主定义。
   对同一 exact base 上 A=`github_pr`、B=`none` 的双 task fixture，两种 completion/merge order 中
@@ -406,6 +412,42 @@ Requirements、candidate 或 Release 的验收门槛；不得通过删减能力�
   文件/合同/产品修改，先完成独立 `new change` lifecycle，只有后续 `distribution/release` 的
   exact-candidate Release action 才允许创建新 candidate，其它分类创建 candidate 的计数必须为 0。
   用户本地修改与 current Requirements/Design/Test/Architecture authority 按官方语义保留。
+- `EVO-NFR-033`：`EVO-REQ-082..083` 的 prerequisite freshness 与 capability-preservation gate 必须采用
+  exact、可复核且不复用旧结论的质量口径。六个维度必须分别记录
+  `accepted_implementation_scope`、`exact_merge_identity`、`merge_reachability`、
+  `accepted_scope_findings`、`issue_lifecycle` 与 `open_followup_only`；`OPEN/CLOSED` 只属于
+  lifecycle fact，不能替代其它五项。accepted scope 未完成、accepted-scope finding 未解决、exact
+  merge identity 不可验证、merge 不可从 selected base 到达、或 `OPEN` 但 follow-up 边界不清时，
+  Requirements-stage `evolution_prerequisite_blocked` 分类覆盖率必须为 100%，Evolution
+  Design/runtime/delivery/activation/cutover/Release 副作用为 0。当前 selected base 已包含 #311
+  PR #313/merge `21c7da1…` 与 #312 PR #314/merge `3efcce7…`；#311 的 `OPEN` 仅表示明确的
+  production release、错误文件重试和 Issue closure follow-up，#312 为 `CLOSED`。这些 lifecycle
+  结果不解除后续 fresh rebind、merged behavior reconciliation、requirement/normal-path fixture
+  zero-loss 或 Requirements review gate。
+
+  Requirements-stage prerequisite 成功样本必须在同一 exact selected-base identity 下证明：六维
+  classification 可追溯率 100%；RDT、Architecture 与 inventory rebind coverage 100%；`CUR-CAP-*`、
+  merged prerequisite capability 与 `TARGET-DELTA-001..013` 的 requirement/normal-path fixture successor
+  coverage 100%；`EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION`、`EVO-FIX-BASE-EVOLUTION` 与
+  `EVO-FIX-VERIFIER-FAILURE-EVIDENCE`、`EVO-FIX-EVOLUTION-PREREQUISITE` 的 Requirements-stage
+  assertions 全部 current；23 个 current capability、13 个 target delta、83 个 requirement 与 50 个
+  fixture 的 set closure 均 exact；capability
+  requirement/fixture 差集、旧 snapshot/review 复用、installed extension source/target reviewed checkout
+  混淆、base-tracked clean same-task false blocker、installed 路径未继续到唯一 Draft PR/archive/Ready/
+  `ready_for_merge` 或重放 completed mutation、verifier failure 为 null/cleanup 先于 evidence/
+  `postcheck_failure` 错误分类、source/task worktree unrelated dirty 误分类、
+  dirty/untracked/review-metadata/identity blocker 漏检，以及 Requirements gate current 前启动 Design
+  的计数均为 0。installed 与 self-hosted publication、clean-tracked continue、unrelated-dirty isolation
+  与真实 workspace blocker 的正反向覆盖率均为 100%。这些断言通过并完成 fresh Requirements 全稿审核后
+  只产生 `requirements_ready_for_design`；Design successor 不得成为该结果的前置。
+
+  Design/refactor-stage 成功样本必须继续绑定同一 exact selected-base capability set，证明全部 current/
+  merged capability 与 target delta 的 Design successor 和 fixture mapping coverage 100%、fresh Design
+  full-review finding 为 0，才产生 `evolution_refactor_eligible`；此前 runtime/delivery/activation/cutover/
+  Release 动作为 0。任何 merge/base/authority/behavior/requirement/fixture/Design-successor identity 的
+  material change 必须使对应较晚 eligibility stale，并从最早受影响 gate 重做 fresh Requirements 或
+  fresh Design 全稿审核；Requirements 阶段不得以满足本质量门槛为由预选 #311 的未来 owner、Skill、
+  DTO 或实现机制。
 - `EVO-NFR-014`：正常路径的 semantic owner 数量、持久 artifact 数量和 public data volume
   必须由直接业务责任/consumer 证明；不得为了“合同完整”新增 wrapper、schema 或 checkpoint。
   top-level specialist invocation 只允许 `REQ-UC-EVO-037` wording review-only 与
@@ -428,7 +470,11 @@ Requirements、candidate 或 Release 的验收门槛；不得通过删减能力�
 ## 4. 安全与隐私
 
 - `EVO-NFR-016`：prompt、log、artifact、Issue、PR、history 与测试证据不得泄露 secret、token、
-  private key、签名 URL、`.env`、数据库 URL、客户数据或敏感原始记录。
+  private key、签名 URL、`.env`、数据库 URL、客户数据或敏感原始记录。`EVO-REQ-083` 的 verifier
+  error tail 必须 bounded 且 credential-safe：在保留定位 stage/cell/command/exit 所需错误语义的同时，
+  对 credential、token、签名 URL 与敏感原始记录执行 redaction；tail 无界、包含 secret，或因过度
+  redaction 而无法判断实际 failure boundary 的计数均为 0。stdout/stderr 只持久化 hash/size，不因本
+  合同新增完整原始输出 artifact。
 - `EVO-NFR-017`：Git/GitHub/Trellis、Release 与 cleanup 副作用只能发生在 `EVO-REQ-081`
   已完整展示并取得 dialogue-local semantic confirmation 的 exact target/scope/action，且 provider live
   permission/visibility 与全部 decision-relevant facts current 的边界上；认证、权限、target identity 或

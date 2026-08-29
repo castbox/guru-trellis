@@ -1,14 +1,14 @@
 # Evolution Design Traceability
 
-状态：`design_ready_for_delivery_planning`。Requirements authority is
+状态：`design_ready_for_delivery_planning` / `fresh_design_review_passed` / `evolution_refactor_eligible`。Requirements authority is
 [`requirement-main.md`](../../requirements/evolution/requirement-main.md) and
 [`requirement-non-functional.md`](../../requirements/evolution/requirement-non-functional.md). This file owns
-Requirements-to-Design allocation; Test execution ownership remains in
+the current `REQ-REV-011..138` Requirements-to-Design allocation; Test execution ownership remains in
 [`../../test/evolution/fixture-plan.md`](../../test/evolution/fixture-plan.md).
 
 ## 1. Functional Requirement Coverage
 
-The ranges below are disjoint and their expanded union is exactly `EVO-REQ-001..081`.
+The expanded union below is exactly `EVO-REQ-001..083`.
 
 | Requirement range | Design responsibilities / contract owner | Acceptance fixtures |
 | --- | --- | --- |
@@ -17,9 +17,9 @@ The ranges below are disjoint and their expanded union is exactly `EVO-REQ-001..
 | `EVO-REQ-012` | `EVO-DES-023..027`; Plan author and approval with one displayed compound activation/approved-implementation-entry action and owner-local deterministic closure | Plan Normal, Semantic Confirmation |
 | `EVO-REQ-013..020` | `EVO-DES-024,029,031,060..063`; Architecture owner and contribution | Architecture fixture family |
 | `EVO-REQ-021..026` | `EVO-DES-009..011,023..027`; stable authority-content prefix, Clarification/RDT/Architecture subprojection owners, Plan/Approval | Reviewed Design, Plan Normal, Freshness fixtures |
-| `EVO-REQ-027..033` | `EVO-DES-028..032,064`; Implementation/Check/Commit/Reconcile/Review and outstanding-only post-review promotion/spec-projection convergence | Full Normal, Branch Finding, Base Evolution, Parallel, promotion fixtures |
+| `EVO-REQ-027..033` | `EVO-DES-028..032,064,071`; Implementation/Check/Commit/Reconcile/Review, #312 original-worktree/path-state classification and outstanding-only post-review promotion/spec-projection convergence | Full Normal, Branch Finding, Base Evolution, Parallel, promotion fixtures |
 | `EVO-REQ-034` | `EVO-DES-013..018,033..042`; route/terminal/disposition owners | Entry Routing, None, History Resume, Active Disposition |
-| `EVO-REQ-035..043` | `EVO-DES-033..042,066`; Delivery/Acceptance, separate branch push/PR create with already-current no-mutation exits, Merge/Closure/Finish/Cleanup and closed same-owner recovery inventory | Full Normal, None, Semantic Confirmation, Provider/Finish Recovery, History Resume |
+| `EVO-REQ-035..043` | `EVO-DES-033..042,066,072`; Delivery/Acceptance, separate provenance/push/Draft-PR actions, Finish/archive/Ready before archive-bound Merge, Closure/Cleanup and closed same-owner recovery inventory | Full Normal, None, Semantic Confirmation, Installed Provenance Publication, Provider/Finish Recovery, History Resume |
 | `EVO-REQ-044..050` | `EVO-DES-009..011,065..067`; private envelope, stable bound authority content and minimal evidence/DTOs | Plan Normal, Full Normal, Long Output, Latest Intent |
 | `EVO-REQ-051` | `EVO-DES-003,053,065`; AI semantic owners and bounded workers | Full Normal, Stock Coexistence |
 | `EVO-REQ-052..056` | `EVO-DES-043..048,056..059`; Distribution and activation owners, with Projection as the sole standalone Stock caller and Stock current returning to Projection revalidation | Projection, Stock Maintenance, Provider Recovery, Clean Install, Migration, Release |
@@ -30,11 +30,13 @@ The ranges below are disjoint and their expanded union is exactly `EVO-REQ-001..
 | `EVO-REQ-066` | `EVO-DES-020,068`; repository boundary | Submodule Boundary |
 | `EVO-REQ-067` | `EVO-DES-016,038..042`; current-work/disposition/history owners | Active Disposition, History Resume |
 | `EVO-REQ-068..080` | `EVO-DES-006,012,014,031,043,049..059,064,066`; stock policy, Projection-owned standalone maintenance/revalidation, manifest-bound Trellis reference, governed code-spec projection, caller-fixed adapters, R01..R09 retained profiles, host projection/distribution and exact recovery | Stock Coexistence, Stock Maintenance, Projection, SSOT Bootstrap, Clean Install, Migration |
-| `EVO-REQ-081` | `EVO-DES-022,030,035..036,041,044..055,069`; side-effect-owning semantic Skills, including separate branch-push/PR-create waits and active disposition cleanup, apply one shared dialogue-local confirmation contract and owner-specific refusal outputs, while exact-current Workspace reuse bypasses the boundary entirely | Semantic Confirmation, Active Disposition, Full Normal, Provider Recovery, Finish Recovery, Release |
+| `EVO-REQ-081` | `EVO-DES-022,030,035..036,041,044..055,069,072`; side-effect-owning semantic Skills, including separate provenance-tail/branch-push/PR-create waits and active disposition cleanup, apply one shared dialogue-local confirmation contract and owner-specific refusal outputs; Publish refusal exits `publication_preparation_not_executed`, `branch_push_not_executed`, `pr_creation_not_executed` each carry action-local identity to one distinct named consumer, while exact-current Workspace reuse bypasses the boundary entirely | Semantic Confirmation, Active Disposition, Full Normal, Provider Recovery, Finish Recovery, Release |
+| `EVO-REQ-082` | `EVO-DES-034..036,060..063,070..072`; two-stage prerequisite/refactor eligibility, #312 original-worktree continuity and #311 installed source/target through Draft PR/archive/Ready/`ready_for_merge` | Evolution Prerequisite, Installed Provenance Publication, Base Evolution |
+| `EVO-REQ-083` | `EVO-DES-043,048,065..068,070,073`; standalone Projection-owned non-null failure evidence before cleanup, exact blocked/re-entry and zero Finish/embedded ownership | Verifier Failure Evidence, Evolution Prerequisite, Projection |
 
 ## 2. Nonfunctional Requirement Coverage
 
-The ranges below expand to exactly `EVO-NFR-001..032`.
+The expanded union below is exactly `EVO-NFR-001..033`.
 
 | NFR range | Design mechanism | Measurement fixtures |
 | --- | --- | --- |
@@ -43,23 +45,24 @@ The ranges below expand to exactly `EVO-NFR-001..032`.
 | `EVO-NFR-012..013` | `EVO-DES-043..047,056..059`; live-derived projection and atomic install/migration | Projection, Clean Install, Migration, Release |
 | `EVO-NFR-014..015` | `EVO-DES-002..005,025,028..031,060..067`; semantic owner/minimal data/SSOT trace | Full Normal, RDT/Architecture Downstream Freshness |
 | `EVO-NFR-016` | `EVO-DES-048,066,068`; redaction and provider evidence boundary | Provider Recovery, Full Normal, Release |
-| `EVO-NFR-017` | `EVO-DES-022,030,035..036,041,044..055,069`; exact-plan semantic affirmation, stale-plan rejection, named refusal route and zero authorization persistence | Semantic Confirmation, Active Disposition, Full Normal, Provider Recovery, Finish Recovery, Release |
+| `EVO-NFR-017` | `EVO-DES-022,030,035..036,041,044..055,069,072`; exact-plan semantic affirmation, stale-plan rejection, named refusal route and zero authorization persistence across provenance-tail, push, PR creation and every later action owner | Semantic Confirmation, Active Disposition, Full Normal, Provider Recovery, Finish Recovery, Release |
 | `EVO-NFR-018` | `EVO-DES-020,068`; parent/nested repository isolation | Submodule Boundary |
 | `EVO-NFR-019..021` | `EVO-DES-014,049,052..054,057..058`; exact role/caller/context closure, including reference caller profiles | Stock Coexistence |
 | `EVO-NFR-022..027` | `EVO-DES-031,049..055,059,064`; selected action provenance, recovery and concrete successor reachability | Stock Maintenance, Projection, SSOT Bootstrap, Migration |
 | `EVO-NFR-028..032` | `EVO-DES-006,009..012,054,057..059`; source stimulus, setup partition, lazy context | Entry Routing, Latest Intent, Stock Coexistence, Stock Maintenance |
+| `EVO-NFR-033` | `EVO-DES-060..063,070..073`; exact two-stage freshness, merged-capability Design successor closure, installed publication continuity, base/worktree isolation and pre-cleanup verifier evidence | Evolution Prerequisite, Installed Provenance Publication, Verifier Failure Evidence, Base Evolution |
 
 ## 3. Capability And Goal Coverage
 
-- `CUR-CAP-001..023` and `TARGET-DELTA-001..013` have one row each in
+- `CUR-CAP-001..023` and `TARGET-DELTA-001..013` had one historical row each in
   [`capability-inventory.md`](./capability-inventory.md).
-- `EVO-001..007` are allocated to `EVO-DES-001..069` through the functional groups above.
+- `EVO-001..007` are allocated to `EVO-DES-001..073` through the functional groups above.
 - `EVO-CAP-001` is primarily `EVO-DES-001,006..018,033..048,069`.
 - `EVO-CAP-002` is primarily `EVO-DES-002,023,025,029,031,060..064`.
 - `EVO-CAP-003` is primarily `EVO-DES-024,029,031,060..063`.
 - `EVO-CAP-004` is primarily `EVO-DES-009..011,038..042,048,065..067,069`.
-- All 47 `EVO-FIX-*` identities have one execution-contract row in the Test fixture plan and one Requirements/
-  Design mapping row in Test traceability.
+- All 50 `EVO-FIX-*` identities have current Design mapping. The three post-`REQ-REV-132` rows map to
+  `EVO-DES-070..073`; #311 is carried by current capability successors rather than a new `TARGET-DELTA-014`.
 - All 39 target public Skills are declared in [`contracts.md`](./contracts.md); the Trellis-reference and worker/
   provider adapters plus thin routers are not counted as public Skills. `guru-bootstrap-repository-ssot` owns the
   additional projection profile without adding a public identity. Every public external exit names one
@@ -72,5 +75,5 @@ unknown `EVO-DES-*`/fixture, or relies on a task planning document as repository
 compact notation: deterministic closure expands it before comparing the expected sets.
 
 Semantic review additionally checks that a listed successor preserves the actual behavior; textual presence alone
-cannot pass. Test status stays planned until the exact implementation candidate/range is executed at its declared
-evidence layer.
+cannot pass. This mapping passed the current fresh Design review and deterministic closure. Test status stays planned
+until the exact implementation candidate/range is executed at its declared evidence layer.

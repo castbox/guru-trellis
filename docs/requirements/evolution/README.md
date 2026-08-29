@@ -11,9 +11,9 @@ snapshot 状态与阶段边界只在
 
 | 状态 | Locator | 职责 |
 | --- | --- | --- |
-| `requirements_ready_for_design` | [`requirement-main.md`](./requirement-main.md) | Authority、产品总述、第一/二章入口组织、功能需求、核心能力、验收 fixture、闭环、目标追踪和 Design gate；`REQ-REV-129..132` 已同步并通过修订后的 fresh Requirements、Strict technical 与确定性全稿门禁 |
-| `requirements_ready_for_design` | [`requirement-non-functional.md`](./requirement-non-functional.md) | 执行效率、安静性、上下文治理、可靠性、兼容/分发、安全和非功能范围豁免的唯一主定义；cache-friendly context 与 AI-owned progression 质量合同已通过 fresh exact-candidate 审核 |
-| `requirements_trace_ready_for_design` | [`current-capability-inventory.md`](./current-capability-inventory.md) | `.40` current 可观察能力、上一版 Design inventory 逐项 successor、capability-loss 与 consistency/installation 独立门禁、target delta 及 intentionally-not-retained 差集；stable-authority/context successor trace 已通过 fresh closure |
+| `requirements_ready_for_design` | [`requirement-main.md`](./requirement-main.md) | Authority、产品总述、入口组织、52 UC、83 功能需求、核心能力、50 个验收 fixture、闭环、目标追踪和 Design gate；`REQ-REV-133..138` 已把 #311/#312 定义为 selected-base current 前置并完成 requirement/normal-path fixture zero-loss projection，同一 exact identity 的 fresh Requirements semantic、Strict technical 与确定性闭包审核均已通过 |
+| `requirements_ready_for_design` | [`requirement-non-functional.md`](./requirement-non-functional.md) | 33 项执行效率、上下文治理、可靠性、兼容/分发、安全和范围豁免的唯一主定义；prerequisite freshness、capability preservation 与 verifier failure evidence 质量门槛已通过 fresh exact-candidate 审核 |
+| `requirements_trace_ready_for_design` | [`current-capability-inventory.md`](./current-capability-inventory.md) | selected-base `.41` current 可观察能力、23 个 `CUR-CAP-*`、13 个 `TARGET-DELTA-*` 与 50 个 normal-path fixture 的 successor/差集；#311 已折入 `CUR-CAP-013/014/017/018/019`，#312 已折入 `CUR-CAP-012`，Requirements-stage trace closure 已通过；历史 pre-`REQ-REV-133` Design mapping 绑定保持 stale，当前 50/50 mapping 与 fresh Design review 已 current |
 
 读取顺序：`requirement-main.md` -> `requirement-non-functional.md` ->
 `current-capability-inventory.md`。

@@ -1,6 +1,7 @@
 # Evolution Test Strategy
 
-状态：`test_candidate_planned` / `design_ready_for_delivery_planning`。This strategy verifies the target contract without confusing docs, static
+状态：`test_candidate_planned` / `design_ready_for_delivery_planning` / `fresh_design_review_passed` /
+`evolution_refactor_eligible`。This strategy verifies the target contract without confusing docs, static
 closure, runtime behavior, installed behavior, external facts or Release proof.
 
 ## 1. Evidence Layers
@@ -29,6 +30,8 @@ Every executed fixture binds:
 - owner/profile, direct consumer and expected typed terminal;
 - dependency identities used by the private envelope and their current/stale classification;
 - evidence layer actually executed, observed actions and explicit unverified boundaries.
+- for standalone verifier failure only, the pre-cleanup stage/cell/command/exit/safe-tail/hash-size evidence identity
+  and the subsequent cleanup/blocked/re-entry observation; embedded callers do not inherit that verifier lifecycle.
 
 Equivalent identity refresh may reuse unchanged semantic work only after live comparison. Material scope,
 authority, package, projection, provider or candidate change invalidates the earliest affected result and all
@@ -91,9 +94,10 @@ cross-OS hardening is added unless a future accepted requirement explicitly adds
 - Wording fixtures must cover the one standalone and four active content callers through all nine closed producer
   profiles. Pass, revision, content-changed and blocked outputs must return the unchanged caller continuation to the
   exact `wording_*_reentry`; arbitrary active callers, generic caller ids and direct router completion are invalid.
-- `guru-finalize-task` is semantic because it owns the exact archive/finish/history plan and confirmation boundary;
-  after that gate, its transition executor is tested deterministically against the current delivery/closure terminal.
-  Cleanup, resource choice and unsafe-state handling remain semantic at their owner.
+- `guru-finalize-task` is semantic because it consumes the exact Draft/READY PR and publication head, owns the
+  summary/official-archive/archive-commit-and-push/Ready plan and confirmation boundary, and alone emits the
+  archive-bound `ready_for_merge_ref`. Its transition executor records `completed|pending|unknown` deterministically;
+  Merge, Closure and Cleanup remain later semantic owners and cannot consume the Finish confirmation.
 - Plan fixtures treat `phase-1-task-activation` only as the deterministic substep inside
   `guru-approve-task-plan` after current semantic approval and confirmation. The one displayed exact next-action plan
   includes both task activation and immediate entry into the approved implementation scope/allowed writes, while
@@ -108,26 +112,42 @@ cross-OS hardening is added unless a future accepted requirement explicitly adds
 - Worker/provider fixtures assert that results return to the exact caller and cannot progress phase, approve, assign
   finding severity, mutate shared authority or create a second top-level route.
 - Provider fixtures derive the closed action inventory from `provider_context`: Git covers Sync, task-free/standard
-  local write, Commit and branch Publish; GitHub covers PR Publish, Merge and Closure; Trellis upstream covers clean
-  Install and existing Migration; Guru preset covers Install, Stock/Reapply and activation validation; Release owns
-  its four immutable-candidate stages; controlled adapters remain caller-fixed. Every declared action has exactly one
-  owner/profile/direct consumer, and no delivery-only subset may stand in for the complete inventory.
+  local write, Commit, publication-tail commit, branch Publish and Finish archive commit/push; GitHub covers Draft PR
+  Publish, Ready, Merge and Closure; Trellis upstream covers clean Install and existing Migration; standalone verifier,
+  Guru preset Install/Stock/Reapply/activation validation, Release's immutable-candidate stages and controlled adapters
+  retain their exact owners. Every declared action has exactly one owner/profile/direct consumer, and no delivery-only
+  subset may stand in for the complete inventory.
 - Authority/code-spec convergence fixtures compute promotion/projection inputs only from work outstanding against live
-  target identities. They bind each not-yet-current authority contribution and each same-range code-spec contribution
-  missing from the current projection, invoke only the selected authority owner plus
+  target identities. They bind each not-yet-current authority contribution, missing/stale authority
+  locator/usage/freshness projection and each same-range code-spec contribution missing from the current projection.
+  The normal no-promotion authority-repair cell requires
+  `promotion_kind=none,projection_kind=authority_only` with no promotion/code-spec ref; other cells bind only their
+  selected authority owner plus
   `guru-bootstrap-repository-ssot:projection_refresh`, and require
   `spec_projection_ref -> guru-check-task:authority_reentry -> fresh Commit -> fresh Branch Review`. The fresh complete
   diff still contains the original changes, but exact already-current authority/projection identities must yield
   `promotion_kind=none,projection_kind=none`; material drift reopens only the affected work. Raw `trellis-update-spec`,
   preset/reapply, hooks and workers have zero `.trellis/spec` writes.
-- Publication fixtures run prepare, confirmation and provider re-entry against both pending and already-current live
-  state. An exact remote branch already at the bound HEAD returns `branch_published` with zero push/confirmation; an
-  exact base/head PR already live READY returns `ready_pr_current` with zero creation/confirmation. Divergence routes
-  to the stage-specific recoverable block and never repeats push, creates a duplicate PR or crosses continuations.
+- Publication fixtures first resolve immutable extension source and target reviewed checkout, validate lineage and
+  normalized reviewed-content equality, and isolate metadata-tail preparation from branch push and Draft PR creation.
+  Each action has its own prepare/wait/refusal/provider re-entry. Refusal coverage requires
+  `publication_preparation_not_executed -> task-publication-preparation-not-executed`,
+  `branch_push_not_executed -> task-branch-push-not-executed` and
+  `pr_creation_not_executed -> task-pr-creation-not-executed`, with exactly the action-local minimal identity and no
+  shared/default consumer. Exact current metadata tail returns
+  `publication_head_current`, an exact remote branch at that head returns `branch_published`, and an exact base/head
+  Draft or READY PR returns `draft_pr_current`, all with zero mutation/confirmation. That result enters Finish, never
+  Merge. Finish alone produces summary/archive/archive-push/Ready and archive-bound `ready_for_merge_ref`; only then
+  may Merge run. Divergence re-enters only the owning stage and never repeats a completed mutation or crosses a
+  continuation.
 - Workspace fixtures live-resolve the exact repo/Issue/base/branch/worktree/task/path plus ownership/isolation state
   before constructing an action plan. An exact-current reuse emits `workspace_current` with zero plan display,
   confirmation wait, refusal branch and mutation; pending creation, transfer or isolation alone enters the
   `EVO-REQ-081` confirmation boundary.
+- Standalone verifier failure fixtures capture a schema-valid non-null failure before temporary workspace cleanup.
+  Matrix commands retain their applicable cell; matrix-external command/asset/ownership/sidecar/capability failures
+  are `postcheck_failure`. The verifier/projection owner alone returns the blocked result and exact re-entry;
+  Finalizer consumption and embedded-caller ownership takeover are invalid.
 
 ## 5. Context And Continuity Measurements
 
@@ -158,17 +178,20 @@ For each applicable normal run, measure exact counts rather than relative speed 
 - raw `trellis-before-dev` call and second spec full-read chain: zero;
 - raw `trellis-meta`/`trellis-update-spec` call, generic Trellis-reference caller, second `.trellis/spec` writer, or
   authority-promotion/code-spec-contribution path that skips projection refresh/fresh Check/Commit/Review: zero;
-- already-current authority promotion/projection selected again, already-current remote branch pushed again, exact
-  READY PR created again, or a no-mutation current path requesting confirmation: zero;
+- already-current authority promotion/projection selected again, current metadata tail recommitted, already-current
+  remote branch pushed again, exact Draft/READY PR created again, current archive/archive push/Ready repeated, or a
+  no-mutation current path requesting confirmation: zero;
 - current plan activation that terminates before `guru-implement-task:initial`, exposes an activation router/public
   result, or routes transition failure outside the Approval owner: zero;
 - fixed confirmation prompt/password/hash/digest/task-id/path/branch/SHA/identity/summary/prescribed-wording
   challenge, `确认执行 <hash>`, lexical `合并PR` gate, script/validator/recorder confirmation parsing and
   persisted authorization: zero;
 - explicit-refusal output without one named owner/re-entry, refusal mislabeled as blocked/provider defect, or one
-  confirmation consumed by a later Commit/branch-push/PR-create/Merge/Closure/Finish/Cleanup/disposition-cleanup/
+  confirmation consumed by a later Commit/provenance-tail/branch-push/PR-create/Finish/Merge/Closure/Cleanup/disposition-cleanup/
   Release action: zero;
 - secret/credential/raw sensitive record in output or artifact: zero.
+- verifier `failed + null failure`, cleanup before failure evidence, wrong stage/cell, unbounded or credential-bearing
+  error tail, full stdout/stderr persistence beyond hash/size, or Finalizer consumption of verifier evidence: zero.
 
 Elapsed time, rounds, token/byte compression and worker count are diagnostics only. They cannot independently pass
 or fail the product contract.
@@ -216,14 +239,23 @@ At this planning stage, allowed checks are static: file/link/manifest/table stru
 public Skill identities / 43 profile rows, exactly 37 lifecycle owners plus two specialist non-owners, every
 output-to-consumer-input projection, external-exit consumer closure,
   the complete Section 7.1 recovery inventory, nine wording profiles, ten active four-result qualification profiles
-  plus one standalone three-result profile, 47 fixture rows,
+  plus one standalone three-result profile, 50 fixture rows,
 17 stock rows,
-9 retained rows, one reference-manifest writer/caller-bound adapter family, one convergent code-spec projection
-writer/return chain with an already-current double-none exit, one standalone
+9 retained rows, one reference-manifest writer/caller-bound adapter family, one convergent authority/code-spec
+projection writer/return chain covering zero-promotion `authority_only`, same-range `with_code_spec` and an
+already-current double-none exit, one standalone
 `Projection -> Stock -> Projection fresh validation` chain, one exact-current Workspace no-mutation convergence path,
-one compound activation/implementation-entry confirmation, two independent branch-push/PR-create confirmation
-subgraphs with no-mutation current exits and trace range coverage. Runtime, installed, provider and Release rows remain
+one compound activation/implementation-entry confirmation, three independent provenance-tail/branch-push/Draft-PR
+confirmation subgraphs, one Finish-before-Merge chain with no-mutation current exits, standalone verifier
+evidence-before-cleanup and trace range coverage. Runtime, installed, provider and Release rows remain
 `planned_not_executed`.
 
-`design_ready_for_delivery_planning` requires static closure plus fresh independent semantic Design review with
-open P1, blocking P2, P3 and high-risk question counts all zero. It does not require or imply implementation tests.
+The current selected-base rebind, Requirements-stage successor zero-loss result and fresh Requirements review have
+established `requirements_ready_for_design`. All 50 fixture successors have reviewed Design allocation; the final
+fresh independent Design review reported open P1, blocking P2, P3 and high-risk question counts all zero, and the
+deterministic closure passed. Therefore `design_ready_for_delivery_planning`, `fresh_design_review_passed` and
+`evolution_refactor_eligible` are current. The prerequisite fixtures specifically preserve #311 through Draft
+PR/archive/Ready/`ready_for_merge` without
+completed-mutation replay and through evidence-before-cleanup standalone verifier failure handling, plus #312 through
+clean-tracked continuation, unrelated-dirty isolation and real blockers.
+The current Test projection is a Design-review candidate and does not require or imply implementation tests.

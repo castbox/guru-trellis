@@ -10,10 +10,15 @@
   Phase 1 随后新增的 Design/Test/Architecture/task-planning 文件不被倒算进该 Requirements evidence。
   当前 worktree candidate 由 live file set/content 定位，不再用固定文件数量冒充 freshness；HEAD 的提交
   时间为 `2026-08-25T06:37:25+08:00`，仅用于定位分支基线，不作为 current authority 或 evidence，
-  也不在本 task 内改写历史。本轮 current authority snapshot 已通过 fresh reconciliation 统一绑定
+  也不在本 task 内改写历史。本轮 pre-prerequisite authority snapshot 曾通过 fresh reconciliation 绑定
   `origin/main=d907fcc5e17f23b6499648e5e9a208457f2d6f8b`（提交时间
-  `2026-08-25T17:20:17+08:00`）；上一 snapshot
-  `a4b68d42b25e3d2173fac2db353295043590cca5` 只保留为历史 evidence，不再作为 current locator。
+  `2026-08-25T17:20:17+08:00`），该 ref 与 `.40` 只保留为历史 evidence。selected post-merge base
+  `3efcce72a0d47e38ec725aa8c0f8498992f3416f` 现已由 live `origin/main` 绑定，并包含 #311 PR #313/
+  merge `21c7da14798683193b460a5e7c5bd24c7c517804` 与 #312 PR #314/merge `3efcce72…`；本 task
+  worktree 未 rebase/merge，但本轮已从该 exact base fresh 读取 `.41` authority、完成 current-to-target
+  rebind，并针对同一 exact identity 通过 fresh Requirements gate。上一 snapshot
+  `a4b68d42b25e3d2173fac2db353295043590cca5` 只保留为历史 evidence，不再作为
+  current locator。
   每轮 gate 必须只读核对 live upstream drift；在后续阶段的独立 workflow 入口明确之前不
   rebase/merge，也不得把历史 ref、current authority 与 working-tree candidate 拼接成虚构 evidence。
 - Repository Requirements authority：`docs/requirements/evolution/README.md`、
@@ -24,30 +29,32 @@
 
 ## Current Phase Boundary
 
-- `EVO-EVD-043` 构成 material Requirements refinement；绑定 `REQ-REV-125..128` 的上一轮
-  fresh full-document、Strict technical 与确定性门禁曾因此 stale。`REQ-REV-129..132` 的修订与
-  跨层投影现已同步，修订后 exact candidate 的 fresh full-document、Strict technical 与确定性门禁
-  均已通过；current repository Requirements/trace 为 `requirements_ready_for_design` /
-  `requirements_trace_ready_for_design`。
-- Phase 1 已先完成 fresh Design 全稿 review、finding 修订、确定性闭包与
-  `design_ready_for_delivery_planning` 状态绑定，并在当时的 continuation 停止。随后各自独立拥有的
-  planning-artifact wording review、current Architecture planning impact 与 task-plan approval 直接消费了
-  current candidate 和 live authority；在 current approved plan 完整展示并取得 dialogue-local 确认后，
-  task activation 已执行，live task 状态为 `in_progress`。当前 continuation 因此处于 Phase 2，但只允许
-  检查并按需修订本 #305 Requirements/Design/Test/Architecture/task-planning 文档候选，不进入 Evolution
-  runtime 实现。Phase 1 的 Design-review 结果本身不推导后续 owner 结论或 activation 授权；这里记录的
-  `in_progress` 也不扩大 current Phase 2 的 document-only scope。
-- 本 task 已有 target `docs/design/evolution/`、`docs/test/evolution/`、task-owned Architecture contribution
-  和本 task `design.md`/`implement.md`，它们已同步并绑定 current Requirements exact identity，作为
-  `requirements_input_current` planning projection。
+- `EVO-EVD-044..047` / `REQ-REV-133..138` 是 material Requirements scope refinement：#311/#312 必须先完成并
+  合入 Evolution selected base，Evolution 再从 exact merge/base identity fresh rebind RDT、Architecture 与
+  capability inventory，并证明两项 current 能力和全部既有能力的 successor 差集为 0。当前 selected base
+  已包含两个 merge；六维 prerequisite live classification、`.41` RDT/Architecture/inventory rebind、merged
+  behavior reconciliation 与 83 requirements / 13 target deltas / 50 fixtures zero-loss comparison 已完成，
+  fresh Requirements semantic、Strict technical 与确定性闭包审核也已通过。绑定
+  `REQ-REV-011..132` 的 Requirements ready 与 `DES-REV-001..014` Design review 结论均已失效。
+- 当前 continuation 已在 Phase 1 完成 Requirements 全稿审核，repository Requirements/trace 状态为
+  `requirements_ready_for_design` / `requirements_trace_ready_for_design`。#311/#312 的
+  merge/lifecycle、authority rebind、merged behavior reconciliation、zero-loss 与 merge-bound fresh
+  Requirements 双审均 current；Evolution Design 候选投影、fresh 全稿审核与确定性闭包现已完成。
+- `task.json` 的 `in_progress` 是此前 activation 留下的 task lifecycle state，不是当前 Phase 2 或 runtime
+  实现授权。最新明确用户决定和本 task planning projection 将当前工作收窄为 Phase 1 Design gate；不执行
+  `task.py start` 或 Evolution runtime implementation。
+- `docs/design/evolution/`、`docs/test/evolution/`、task-owned Architecture contribution 与 task
+  `design.md`/`implement.md` 已形成 `design_ready_for_delivery_planning` / `fresh_design_review_passed` /
+  `evolution_refactor_eligible` 投影；#312 归
+  Reconcile，#311 publication 归 Publish/Finish/Merge，standalone verifier failure 归 Projection，且不新增
+  public Skill identity、lifecycle owner 或 target delta。
 - Repository Design/Test 是 target authority；task 三件套只引用 authority locator 并记录 #305 的
   delta、reconciliation、执行/验证/交付映射，不构成平行 RDT。
-- Phase 1 历史结果已抵达 `design_ready_for_delivery_planning`，当前 Phase 2 只复核并修订同一已接受的
-  document candidate。Design/Test ready 与 task `in_progress` 都不表示 runtime implemented、installed、
-  reviewed candidate published 或 released。
-- 不执行 runtime implementation、commit、push、PR、merge、tag、Release、Issue 链修改或
-  Git submodule 操作；除已完成的 task activation/status transition 外，不执行新的 lifecycle 副作用，
-  不修改 current RDT/Architecture shared authority，也不改 official Trellis source/npm/cache。
+- 历史 `design_ready_for_delivery_planning` 只证明 pre-`REQ-REV-133` candidate，不能作为 current gate、
+  delivery predecessor 或 merge 后审查证据。
+- 不执行 runtime implementation、commit、push、PR、merge、tag、Release、base sync、
+  Issue 链修改或 Git submodule 操作；不执行新的 lifecycle 副作用，不修改 shared current RDT/Architecture，
+  也不改 official Trellis source/npm/cache。
 - #304 是相关但隔离的 pre-refactor Release authority，不是本 Requirements gate 的前置或 owner。
 
 ## Review And Revision Delta
@@ -187,6 +194,12 @@
 | `REQ-REV-130` | P1 | 根 `docs/requirements/README.md` 仍声明 Evolution detailed Requirements 已通过 fresh 全稿门禁并处于 `requirements_ready_for_design`，与 target README、主定义、task PRD 和 trace projection 的 current draft 状态冲突，可能错误放行 Design | 将根 README 收敛为导航性 current draft 声明，明确历史 ready 结论因 material Requirements refinement 失效；不复制 gate 正文 | closed in current Requirements revision; fresh full-document review passed |
 | `REQ-REV-131` | P3 | `MIG-CELL-WORKFLOW-SWITCH` 的 step phase 在 `shared composite` 前后交叉使用 inline-code delimiter，破坏表格可读性并可能干扰 Markdown parser | 将三个 phase token 分别放入独立 inline-code span，保持既有 cutover 语义不变 | closed in current Requirements revision; fresh full-document review passed |
 | `REQ-REV-132` | blocking P2 | Requirements 主定义已明确 stable repository RDT -> Architecture Baseline -> task `prd.md`/`design.md`/`implement.md` context hierarchy、minimal live tail、cache 非 authority 与 AI owner 自主判断，但 Design/Test/Architecture/task projection 仍主要使用 generic envelope/reread 表述，未完整承接 cache unavailable 等价与零 human-style handoff/current-fact restatement，进入 Design 后可能再次丢失该合同 | 同步 `EVO-DES-011,067`、Test strategy、Plan/Full/Long-output fixture、Architecture concern/gap 与 task `design.md`/`implement.md`；只投影 stable locator/identity/order、最小变化 tail、cache 非正确性前提、AI 直接判断和零事务交接/事实复述，不新增 handoff/cache artifact 或开始 Design review | closed in current Requirements revision; fresh full-document review passed |
+| `REQ-REV-133` | blocking P2 | #311/#312 将先于 Evolution 完成，但 pre-`REQ-REV-133` candidate 仍绑定旧 base/能力清单并允许直接进入 Design/delivery，可能在重构中丢失 installed publication provenance source/target separation 或 original-worktree clean-tracked continuity | 新增 `REQ-UC-EVO-052`、`EVO-REQ-082`、`EVO-NFR-033`、`TARGET-DELTA-014` 与两项 fixture；扩展 `EVO-REQ-032/037/053` 和 base-evolution fixture；强制两项先 merge、exact base/RDT/Architecture/inventory rebind、全部能力 zero-loss comparison、merge-bound fresh Requirements/Design review，并把旧 Design/Test/Architecture/task projection 标为 stale；#312 折入既有 `CUR-CAP-012`，不新增核心能力或独立 delta，#311 的未来 owner 保持未选择 | closed in current Requirements revision; fresh full-document review passed |
+| `REQ-REV-134` | P1 | `REQ-REV-133` 把 Design successor 零差集和 fresh Design review 同时写入 `requirements_ready_for_design`，但又禁止在该 Requirements gate 前修订 stale Design，重新引入 `REQ-REV-002` 已关闭的循环门禁；既无法合法进入 Design，也可能诱使实现绕过 Requirements gate 或把旧 Design 冒充 current | 分成两道不可互换的 gate：exact post-#311/#312 base rebind、current-capability requirement/normal-path fixture 零差集和 fresh Requirements review 只产生 `requirements_ready_for_design`；随后 fresh Design 才分配全部 Design successor/fixture mapping，fresh Design review 通过后才产生 `evolution_refactor_eligible`。同步主定义、NFR、状态/回程、fixture、traceability、inventory、Design/Architecture/task projection | closed in current Requirements revision; fresh full-document review passed |
+| `REQ-REV-135` | blocking P2 | #312 live regression contract 明确要求 source checkout 与 task worktree 的无关 dirty 状态不被误归类，但 current successor 只覆盖 clean-tracked 放行与 same-task/review/identity blocker，可能让 Evolution 用更宽的路径存在性检查重新阻断或错误触碰无关改动 | 在 `EVO-REQ-032,082`、`EVO-NFR-033`、核心能力指标、base fixture、inventory、trace 和 planning projection 中加入 unrelated-dirty isolation：保持原归属且不被 same-task 误分类、修改、stage、清理或忽略，同时不放宽真实 blocker | closed in current Requirements revision; fresh full-document review passed |
+| `REQ-REV-136` | blocking P2 | #311 live acceptance 要求 installed provenance reprepare 继续到唯一 Draft PR、archive/Ready 和 archive 后 `ready_for_merge` 且不重复 mutation，但 current fixture 只明确到 fast-forward publication identity，可能保住 metadata tail 却丢失完整 publication terminal continuity | 扩展 `EVO-REQ-037,053,082`、`EVO-NFR-033`、installed fixture、`TARGET-DELTA-014`、inventory、trace 和 planning projection：同一 reviewed-content/publication continuity 必须到唯一 Draft PR、summary、official archive 与 archive push、Ready、schema-valid `ready_for_merge`，terminal reinvoke 不重复 Git/GitHub/archive mutation；self-hosted control 和真实 blocker 保持 | closed in current Requirements revision; fresh full-document review passed |
+| `REQ-REV-137` | P3 | merge 后 inventory 前半已把 #311 认定为 selected-base current capability，但后半仍把其 installed publication preservation 作为 `TARGET-DELTA-014`，并继续使用 `.40` Test closure；同一能力被同时分类为 current 与 new target，13/14 delta 计数和 successor comparison 自相矛盾 | 从 selected-base `.41` fresh 纳入 `REQ-047..051`、`TST-031..035`、`SCN-041..047`，把 #311 折入 `CUR-CAP-013/014/017/018/019`、#312 折入 `CUR-CAP-012`，删除重复 `TARGET-DELTA-014`，将 current coverage 与 completion contract 收敛为 23 current capabilities / 13 target deltas | closed in current Requirements revision; fresh full-document review passed |
+| `REQ-REV-138` | P3 | `.41` `REQ-051/TST-035/SCN-046` 要求 standalone verifier 在 cleanup 前保留 non-null structured failure evidence、matrix 外失败归类 `postcheck_failure` 且 Finalizer 零消费；current target 仅在 inventory 局部提及，缺少独立功能主定义、fixture、NFR 与全 projection 闭包 | 新增 `EVO-REQ-083` 与 `EVO-FIX-VERIFIER-FAILURE-EVIDENCE`，扩展 `EVO-NFR-010/016/033`，同步状态/回程、trace、Test、stale Design、Architecture contribution 与 task planning，形成 52 UC / 83 REQ / 33 NFR / 23 current capabilities / 13 target deltas / 50 fixtures | closed in current Requirements revision; fresh full-document review passed |
 
 ### Current revision alignment
 
@@ -214,9 +227,10 @@ Evidence 表的结构化列数，不改变证据语义。此说明是
 task-local 修订索引，不替代 Requirements SSOT；该轮当时的 gate 保持
 `requirements_draft` / `requirements_trace_draft`，直到 `REQ-REV-125..128` 的完整 projection 通过 fresh gate。
 该条件曾在 `REQ-REV-125..128` 的 candidate 上满足；`EVO-EVD-043` 后的
-`REQ-REV-129..132` 已完成正文与 projection 修订，并已通过修订后 exact candidate 的 fresh gate。
-current 状态以本文件 `Current Phase Boundary` 中的 `requirements_ready_for_design` /
-`requirements_trace_ready_for_design` 为准。
+`REQ-REV-129..132` 也曾通过修订后 exact candidate 的 fresh gate。`EVO-EVD-044` / `REQ-REV-133..136`
+随后使两轮结果都成为历史 evidence；`REQ-REV-137..138` 完成 selected-base rebind/zero-loss 修订，
+当前 exact identity 已取得 fresh review。current 状态只以本文件 `Current Phase Boundary` 中的
+`requirements_ready_for_design` / `requirements_trace_ready_for_design` 为准。
 
 `REQ-REV-105` 进一步把 isolation pending 的 liveness 收敛为事件/状态进展合同：只有存在可观察
 下一进展时才保持 pending；每次重评估必须 progress-refresh、safe-clear/re-entry 或 blocked，
@@ -292,6 +306,21 @@ projection 均显式使用同一 stable authority/task-doc prefix、minimal live
 correctness equivalence 与 AI-owned direct judgment，并把 human-style handoff/current-fact restatement
 计数固定为 0；该修订只同步 Phase 1 projection，不执行 Design review 或实现。
 
+`REQ-REV-133..136` 又将 #311/#312 收敛为 Evolution 强前置和完整 merged-capability preservation gate：两项在
+ selected base 可达以前，旧 Design/Test/Architecture/task projection 全部 stale；两项可达后仍必须先从
+ exact base fresh rebind authority/inventory、比较全部 requirement/normal-path fixture 差集并重做 Requirements
+ 全稿审核，之后才允许 Design re-entry；Design successor 与 fresh Design review 再单独放行 refactor。
+installed publication terminal continuity、clean-tracked/unrelated-dirty workspace behavior 与真实 blocker 均在
+同一能力集内。`EVO-EVD-045` 随后记录了 selected-base live reconciliation：#311 为 `OPEN + follow-up-only`
+而 #312 为 `CLOSED`，二者均已具备可达 merge identity；该修订不把 lifecycle 标签当作其它维度的替代，也不
+预选 #311 的 Design/runtime owner。
+
+`REQ-REV-137..138` 完成 merge 后 current-to-target 收敛：`.41` 的 #311 installed publication 与
+verifier failure behavior 是 selected-base current capability，不是第 14 个 new target delta；#311 因此
+折入 `CUR-CAP-013/014/017/018/019`，#312 折入 `CUR-CAP-012`。新增 `EVO-REQ-083` 与独立 verifier
+failure fixture 后，Requirements-stage closure 为 52 UC / 83 REQ / 33 NFR / 23 current capability /
+13 target delta / 50 fixture；Design 仍不获得任何新 owner/DTO/Skill allocation。
+
 ## Evidence Mapping
 
 | Evidence | Inherited review revisions | Live source / scope | What it proves | What it does not prove |
@@ -314,6 +343,10 @@ correctness equivalence 与 AI-owned direct judgment，并把 human-style handof
 | `EVO-EVD-041` | `REQ-REV-122..124` | `2026-08-26` 对当前 exact candidate 的 Requirements/Strict technical 复核：migration state projection、explicit-only caller/result table 与 capability-loss/consistency terminology 三项跨文档对读 | 证明三项局部合同已分别同步到 main state/return、NFR quality wording 与 inventory caller/result/closure，并保持 `requirements_draft` | 不证明 fresh full-document gate、fixture execution、provider mutation、implementation 或 Design readiness |
 | `EVO-EVD-042` | `REQ-REV-125` | `2026-08-26` 当前对话中的正常 Guru workflow 曾在 current 副作用计划后将 `确认执行 <hash>` 作为继续条件；live `.trellis/workflow.md`、Commit/Merge Skill 与 `guru-qualify-normal-scenario:requirements_scope_set` 复核结果为 `classified / qualified_current` | 证明 semantic confirmation 是 current capability preservation 与真实 normal-path defect，不是 attack hardening；Requirements 必须拥有完整 plan/semantic affirmative/stale/scope/READY-merge/script boundary 与 zero-count 验收 | 不证明 fresh Requirements/Design gate、fixture execution、implementation、commit、push、PR、merge、Release 或 cleanup 已发生 |
 | `EVO-EVD-043` | `REQ-REV-129` | `2026-08-27` 用户明确要求以 repository RDT SSOT、Architecture Baseline SSOT 与 task 三件套形成稳定可缓存主上下文，并由 AI owner 自主判断和执行；`guru-qualify-normal-scenario:requirements_scope_set` 对 cache-first authority context 与 AI-owned autonomous progression 均返回 `classified / qualified_approved_expansion` | 证明该原则属于 #305 既有低成本执行与 authority-integration 范围，必须形成 stable locator/identity/order、minimal live tail、cache-non-authority 与零事务交接/事实复述合同 | 不证明 runtime cache hit、相对性能提升、fresh Requirements/Design gate、implementation 或任何 Git/GitHub 副作用已发生 |
+| `EVO-EVD-044` | `REQ-REV-133..136` | `2026-08-27` 用户明确决定先完成 #311/#312 再开始 Evolution，并要求重构后不得丢失两项能力；live Issue authority 固定 installed provenance source/target separation 到完整 publication terminal continuity，以及 original-worktree clean-tracked continuity、unrelated-dirty isolation 与真实 blocker 的 observable contract | 证明两项是 Evolution prerequisite/current-capability preservation 输入，要求 exact merge/base rebind；requirement/normal-path fixture 零差集与 merge-bound fresh Requirements review 只放行 Design，随后 Design successor/mapping 零差集与 fresh Design review 才放行重构；#311 形成 mandatory `TARGET-DELTA-014`，#312 当前投影折入既有 `CUR-CAP-012`，二者均须在 merge 后 fresh reclassify | 不证明两项已 merge/current，不证明任何 Design owner/DTO/Skill、runtime implementation、base sync、review pass 或 Git/GitHub 副作用 |
+| `EVO-EVD-045` | `REQ-REV-133..136` | `2026-08-28` live selected-base reconciliation：`origin/main=3efcce72…` 已包含 PR #313/merge `21c7da1…`（#311）与 PR #314/merge `3efcce7…`（#312）；#311 accepted implementation scope 与 exact merge/reachability current，Issue `OPEN` 仅保留 production release、错误文件重试和 Issue closure follow-up；#312 accepted scope 与 exact merge/reachability current，Issue `CLOSED` | 证明 prerequisite 必须分别评估 accepted scope、exact merge identity、merge reachability、accepted-scope findings、Issue lifecycle 与 `open_followup_only`；当前 merge/lifecycle 维度已重绑定，但 inventory/RDT/Architecture fresh rebind、merged behavior reconciliation、requirement/normal-path zero-loss 与 fresh Requirements gate 仍是 Phase 1 阻断 | 不证明 Requirements gate、Design successor、runtime implementation、base sync、commit、push、PR、merge、Release 或 cleanup 已完成 |
+| `EVO-EVD-046` | `REQ-REV-137..138` | `2026-08-29` 对 selected base `.41` authority 的 fresh reconciliation：`REQ-047..051`、`TST-031..035`、`SCN-041..047` 明确 installed publication source/target、完整 terminal continuity、installed distribution isolation 与 evidence-before-cleanup standalone verifier failure contract | 证明 #311/#312 已可作为 selected-base current capability 分类，并要求 83/13/50 target successor closure；#311 不再重复建立 target delta | 不证明 fresh Requirements review、Design successor、runtime implementation 或发布已完成 |
+| `EVO-EVD-047` | `REQ-REV-137..138` | `2026-08-29` current-to-target set comparison 与 projection sync：23 个 `CUR-CAP-*`、13 个 `TARGET-DELTA-*`、83 个 `EVO-REQ-*` 和 50 个 `EVO-FIX-*` 均有 Requirements-stage successor；verifier failure fixture 与 installed publication fixture 互相独立 | 证明 authority rebind、merged-behavior reconciliation 与 Requirements-stage zero-loss current，可进入 fresh Requirements 双审 | 不证明双审已通过、Design 已更新、fixture 已执行或任何 Git/GitHub 副作用已发生 |
 
 The Requirements gate consumes these as research evidence only. A `STOCK-HANDOFF-*` or
 `upstream_suppression_blocked` branch is a complete Requirements result when its owner tuple,
@@ -325,12 +358,17 @@ explicit; it is not a claim that the Design owner already exists.
 - `EVO-001..007`、`EVO-CAP-001..004`：由 repository Requirements 主定义及 Goal trace 审核。
 - Finding 严重度只使用 `finding_severity=P1/P2/P3`；核心能力表中的 `P0/P1/P2` 只表示
   `capability_priority`，不引入或混用 `P0` finding。
-- `REQ-UC-EVO-001..051`、`EVO-REQ-001..081`、`EVO-NFR-001..032`：执行编号完整性、
+- `REQ-UC-EVO-001..052`、`EVO-REQ-001..083`、`EVO-NFR-001..033`：执行编号完整性、
   入口分支、唯一主定义与 fixture 可达性差集检查。
-- `.40` current capability：校验 live 21 active Skills / 89 external exits，并审核
-  `CUR-CAP-001..023`、previous Skill coverage、post-`.40` Gitlink/EOF current delta 与 Test capability successor closure；另外独立验证
+- `.41` current capability：校验 selected-base live 21 active Skills / 89 external exits，并审核
+  `CUR-CAP-001..023`、previous Skill coverage、post-`.41` Gitlink/EOF current delta 与 Test capability successor closure；`.40`/`d907fcc5…`
+  只作为历史 comparison evidence；另外独立验证
   `workflow/task_data/docs_authority` capability-loss 与 Skill API/distribution/installed
   consistency，禁止把后一类 drift 归类为 capability loss。
+- Prerequisite/current-to-target closure：`CUR-CAP-001..023`、`TARGET-DELTA-001..013` 与 50 个
+  Requirements fixture 均可达；当前 selected base 已包含 #311/#312 merge，并已按六维 prerequisite
+  classification 从 exact base fresh rebind、执行 merged-behavior reconciliation 与零差集比较。#311/#312
+  使用既有 current-capability successor，不新增 `EVO-CAP-005`、`TARGET-DELTA-014` 或更高 delta。
 - Stock closure：17 个 logical stock asset（`suppressed=9`、`provider=1`、`explicit=2`、
   `worker=5`）、一次 shared `.agents/skills` projection layer、三个 supported Guru host、每个
   host 的五类 invocation context、Codex/Claude/Cursor 的 hook configuration 与 `EVO-REQ-080`
@@ -369,16 +407,22 @@ explicit; it is not a claim that the Design owner already exists.
   只由 `EVO-FIX-STOCK-MAINTENANCE` 在已选 action 且 caller/scope/target/provenance 绑定后验证，
   并独立覆盖 pending/partial/unknown、user-modification、sidecar 与 blocked/re-entry。Admission
   通过不能推导 maintenance mutation 已验证，反之亦然。
-- Final gate：fresh 全稿复审无 P1、无阻断性 P2、无高风险 open question，输出
-  `requirements_ready_for_design` 后停止。
+- Current Phase 1 gate：当前 merge/lifecycle、authority rebind、merged behavior reconciliation、
+  requirement/normal-path fixture zero-loss 与 fresh Requirements 全稿双审均 current；Requirements P1、阻断性
+  P2、P3 与高风险 open question 均为 0，`requirements_ready_for_design` /
+  `requirements_trace_ready_for_design` 已恢复。Design successor/mapping 零差集、fresh Design review 与
+  确定性闭包均已通过，`evolution_refactor_eligible` 已建立；当前 continuation 在该 Phase 1 gate 停止。
 
 ## Fresh Requirements Gate
 
-- `REQ-REV-011..132` 的 current 正文修订已完成；`REQ-REV-029..132` 使 exact candidate 发生变化，
-  之前候选的 fresh review 结论不得复用。
-- 当前审核结果：`REQ-REV-129..132` 的 Requirements 主定义、NFR、核心能力、fixture、inventory、导航与
-  task/Design/Test/Architecture projection 已同步；修订后的 exact candidate 已通过 fresh full-document
-  semantic review、Strict technical review 与确定性闭包，未发现新的 P1、阻断性 P2 或高风险 open question。
-- 当前 gate：`requirements_ready_for_design` / `requirements_trace_ready_for_design`。Requirements gate
-  所在 continuation 已在 Phase 1 通过后停止；当前另经明确确认进入 Evolution Design 全稿审核，但仍不
-  激活 task、进入实现或承接后续 Planning gates。
+- `REQ-REV-011..138` 的 current 正文修订已完成；`REQ-REV-133` 使绑定旧 base/能力清单的 Requirements 与
+  Design review 结论 stale，任何旧 gate、snapshot 或局部 PASS 都不得复用。
+- 当前 Requirements 主定义、NFR、核心能力、fixture、inventory、导航与 task/Design/Test/Architecture
+  target projection 已同步为 52 UC / 83 REQ / 33 NFR / 23 current capabilities / 13 target deltas / 50 fixtures，
+  并绑定 selected-base `3efcce72…` 与 `.41` authority。
+- 本 continuation 已对该 exact candidate 重新执行 fresh Requirements semantic、Strict technical 与确定性
+  闭包审核；该双审绑定已经 current 的 prerequisite rebind、merged-behavior 与零差集结果，没有复用旧
+  review，P1、P2、P3 finding 与高风险 open question 均为 0。
+- 当前 Requirements gate：`requirements_ready_for_design` / `requirements_trace_ready_for_design`。本
+  continuation 随后已完成 Phase 1 Design allocation、fresh 全稿审核与确定性闭包，建立
+  `evolution_refactor_eligible` 并停在该 Phase 1 gate 终点；仍未进入实现或后续 delivery gate。

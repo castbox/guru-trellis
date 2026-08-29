@@ -6,7 +6,7 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.5-guru.41` | [requirement-main.md](./versions/current-main-0.6.5-guru.41/requirement-main.md) | #311 reviewed Architecture/RDT promotion，绑定 task head `651defee…` + #311 serialized promotion delta；#305 已确认的 `EVO-001..007` 保持独立 target authority |
+| `active` | `current-main-0.6.5-guru.41` | [requirement-main.md at selected base](https://github.com/castbox/guru-trellis/blob/3efcce72a0d47e38ec725aa8c0f8498992f3416f/docs/requirements/versions/current-main-0.6.5-guru.41/requirement-main.md) | #311 reviewed Architecture/RDT promotion，绑定 task head `651defee…` + #311 serialized promotion delta；#305 已确认的 `EVO-001..007` 保持独立 target authority |
 | `superseded` | `current-main-0.6.5-guru.40` | [requirement-main.md](./versions/current-main-0.6.5-guru.40/requirement-main.md) | #295 reviewed Architecture/RDT promotion + #305 target delta |
 | `superseded` | `current-main-0.6.5-guru.39` | [requirement-main.md](./versions/current-main-0.6.5-guru.39/requirement-main.md) | #290 reviewed Architecture/RDT promotion |
 | `superseded` | `current-main-0.6.5-guru.38` | [requirement-main.md](./versions/current-main-0.6.5-guru.38/requirement-main.md) | #283 reviewed Architecture/RDT promotion |
@@ -23,15 +23,19 @@ GitHub Release、tag-pinned install 与 post-publish smoke 仍为 `unverified`�
 Guru Trellis 下一阶段产品进化 Requirements 的唯一文档集位于
 [`evolution/`](./evolution/README.md)，主定义为
 [`evolution/requirement-main.md`](./evolution/requirement-main.md)，
-其中 `EVO-001..007` 为 `user_confirmed` 目标；`REQ-UC-EVO-*`、`EVO-REQ-*`、
-`EVO-NFR-*` 与 `EVO-CAP-*` 的 current candidate 已同步 `REQ-REV-011..132`，修订后 fresh
-Requirements、Strict technical 与确定性全稿门禁已通过，状态为
-`requirements_ready_for_design` / `requirements_trace_ready_for_design`。该文档集定义 target，
-不把尚未实现的方向冒充 current behavior；Requirements 状态本身不拥有或证明后续 Design gate。
-同一 #305 candidate 的 Evolution Design 已独立完成 fresh 全稿审核，current 状态由
-[`docs/design/evolution/README.md`](../design/evolution/README.md) 的
-`design_ready_for_delivery_planning` / `fresh_design_review_passed` 拥有。target authority、现有 Issue
-链边界与阶段放行规则只在 Requirements 主定义第 0 章维护，README 不复制正文。
+其中 `EVO-001..007` 为 `user_confirmed` 目标；`REQ-REV-133..138` 已把 #311/#312 定义为 Evolution
+Design/runtime 前置，并从 selected base 完成 `.41` RDT/Architecture/inventory rebind：#311 作为
+`CUR-CAP-013/014/017/018/019` 的 current observable capability 承接，#312 作为 `CUR-CAP-012` 的
+current base-continuity capability 承接。当前 candidate 已建立 52 UC / 83 REQ / 33 NFR / 23 current
+capabilities / 13 target deltas / 50 normal-path fixtures 的零差集 closure，并针对同一 exact identity 通过
+fresh Requirements semantic、Strict technical 与确定性闭包审核。Requirements 阶段状态为
+`requirements_ready_for_design` / `requirements_trace_ready_for_design`；其后的 fresh Design 已分配全部
+73 个 Design responsibilities 与 50 个 fixture mappings，并以全稿审核和确定性闭包单独放行 runtime
+refactor。该文档集定义 target，不把 OPEN Issue、旧 snapshot 或尚未实现的方向冒充 current behavior；
+pre-`REQ-REV-133` 的历史 `design_ready_for_delivery_planning` 结论仍然失效，`docs/design/evolution/` 当前为
+`design_ready_for_delivery_planning` / `fresh_design_review_passed` / `evolution_refactor_eligible`。target
+authority、Issue 链边界与阶段放行规则只在
+Requirements 主定义第 0/10 章维护，README 不复制正文。
 
 Evolution Requirements 的入口/API/CLI 适用性只在 target
 [`README.md`](./evolution/README.md) 与主定义中维护。
