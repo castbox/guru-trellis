@@ -28,6 +28,10 @@ Release、tag-pinned install 与 post-publish smoke 均尚未建立。
   r18 要求先通过 task-owned RDT/Architecture contributions 与 serialized promotion 激活
   `current-main-0.6.5-guru.42`；`.42` 只同步 release/current facts 与 traceability，
   不改变产品行为、Skill API、Architecture decision、owner、GAP 或 compatibility exit。
+- #267 r19 historical-status convergence：post-promotion Branch Review 发现 `.39` 的六个
+  versioned Requirements/Design/Test authority 文件仍直接声明 `active`。r19 仅将这些
+  status marker 改为 `superseded`，不改写历史正文或身份，使递归 status scan 与 `.42`
+  唯一 active 合同一致。
 
 ## 安装与升级
 
@@ -46,10 +50,11 @@ diff review、package/runtime、四平台、clean/existing install/update/reappl
 Finalizer recovery、workspace-boundary、secret scan 与 residue-zero 门禁。
 
 当前 authority alignment 已完成 contribution review 与 serialized promotion：`.42` 是唯一
-active RDT/Architecture knowledge authority，`.41` 保留为 superseded history；两条最小
-`.trellis/spec` projection 已同步到 `.42/#267`。promotion-created diff 的 fresh Phase 2
-已通过；新 task commit 与独立 Branch Review 仍待完成，因此初始 commit `2a546100…`
-以及当前 working-tree delta 都不是 Publication 或 Release candidate。
+current RDT/Architecture knowledge authority，`.39` 与 `.41` 保留为 superseded history；
+两条最小 `.trellis/spec` projection 已同步到 `.42/#267`。promotion-created diff 的 fresh
+Phase 2 与 task commit `351e61d1…` 已完成；独立 Branch Review 因 `.39` historical-status
+candidate 停在 scope confirmation。r19 本地 delta 尚需 fresh Phase 2、新 commit 与新的完整
+Branch Review，因此当前 branch 仍不是 Publication 或 Release candidate。
 
 tag 创建后必须从 tag-pinned clean source 完成 smoke；GitHub Release 创建后必须 live 回读
 tag object、peeled candidate、正式版状态、latest stable 与空 assets。任一 FAIL、SKIP、

@@ -2,9 +2,10 @@
 
 ## Authority
 
-唯一 current contract 是 live Issue #267 body `2026-08-29-r18`。2026-08-20 与
-2026-08-21 的 Issue comments、`2026-08-23-r16`、`2026-08-29-r17` body、历史 task 和旧 Release
-均为 non-contract history，不拥有本任务范围或发布身份。
+唯一 current contract 是 live Issue #267 body `2026-08-30-r19`。2026-08-20 与
+2026-08-21 的 Issue comments、`2026-08-23-r16`、`2026-08-29-r17`、
+`2026-08-29-r18` body、历史 task 和旧 Release 均为 non-contract history，不拥有本任务
+范围或发布身份。
 
 release preparation base 固定为
 `origin/main@3efcce72a0d47e38ec725aa8c0f8498992f3416f`。该 commit 只是 preparation
@@ -39,6 +40,10 @@ base，不是最终 exact candidate。
 - `.42` 只更新 release/current facts、traceability、navigation、evidence 与
   predecessor/successor binding；产品行为、Skill public API、Architecture decision、
   owner、single-writer、GAP lifecycle 与 compatibility exit 保持不变。
+- 修复 post-promotion Branch Review 发现的历史 status 冲突：仅将 `.39` 的六个
+  versioned Requirements/Design/Test authority status marker 从 `active` 改为
+  `superseded`，不改写其历史需求、设计、测试、source binding、extension identity 或
+  evidence 内容。
 - 生成 release preparation committed candidate，并在 PR merge 后从 fresh
   live remote `main` 冻结 commit 与 tree。
 - 对 predecessor peeled commit 到 exact candidate 的完整 committed diff 执行
@@ -71,15 +76,21 @@ base，不是最终 exact candidate。
 - `.trellis/spec/architecture/baseline-usage.md`；
 - `.trellis/spec/docs/requirements-design-test-ssot.md`；
 - preset apply 生成的 `.trellis/guru-team/extension.json`；
+- `docs/requirements/versions/current-main-0.6.5-guru.39/requirement-main.md`；
+- `docs/requirements/versions/current-main-0.6.5-guru.39/requirement-non-functional.md`；
+- `docs/design/versions/current-main-0.6.5-guru.39/design-main.md`；
+- `docs/design/versions/current-main-0.6.5-guru.39/manifest.yaml`；
+- `docs/test/versions/current-main-0.6.5-guru.39/test-plan.md`；
+- `docs/test/versions/current-main-0.6.5-guru.39/test-strategy.md`；
 - `docs/requirements-design-test-contributions/267-release-v0615-guru3/**`；
 - `docs/architecture/contributions/267-release-v0615-guru3.md`；
 - `.trellis/tasks/08-29-267-release-v0615-guru3/**`。
 
 shared current promotion 只在上述 contributions 通过独立 committed full-diff review 后执行；
-届时 promotion 仅修改 live Issue r18 明确列出的 Requirements/Design/Test `.41/.42`
-authority 与 `docs/architecture/README.md`、`01-current/system.md`、
-`evidence/current-evidence.md`。
-当前 contribution 阶段不得提前写 shared current。
+promotion 已按 live Issue r18 边界修改 Requirements/Design/Test `.41/.42` authority 与
+`docs/architecture/README.md`、`01-current/system.md`、`evidence/current-evidence.md`。
+r19 只追加上述六个 `.39` 历史 status marker，不重新打开 shared-current promotion，也不
+改变历史正文。
 
 门禁发现功能缺陷、公共合同变化或上述边界外的 managed byte 变化时，任务停止在
 scope confirmation，不在 release preparation 中吸收修复。
@@ -122,5 +133,6 @@ scope confirmation，不在 release preparation 中吸收修复。
 8. 正式 `.3` 发布后的独立业务仓安装、原 Finalizer 失败路径与错误文件路径重试全部
    PASS 时，#311 才具备独立关闭条件；任一 FAIL、SKIP、stale 或未验证结果均保持 OPEN。
 9. `current-main-0.6.5-guru.42` 经 task-owned contribution、独立 Branch Review 与
-   serialized promotion 激活为唯一 current RDT/Architecture authority；`.41` 作为
-   superseded history 保留，active current/canonical candidate 不再声明 `0.6.5-guru.37`。
+   serialized promotion 激活为唯一 current RDT/Architecture authority；`.39` 与 `.41`
+   均作为 superseded history 保留，递归 status scan 不再发现其它 active versioned
+   authority，active current/canonical candidate 不再声明 `0.6.5-guru.37`。

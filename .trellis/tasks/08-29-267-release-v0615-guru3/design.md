@@ -45,7 +45,9 @@ candidate freeze 立即失效并重新执行 Release preflight。
 Review 已发现 `.39` source manifest 与 `.37` active authority 冲突。该 commit 只作为
 被阻断的历史节点保留；r18 先形成 task-owned RDT/Architecture contributions，完成
 Phase 2、commit 与独立 Branch Review，再由 serialized promotion 激活 `.42`。promotion
-产生的 shared-current diff 必须重新执行 Phase 2、commit 与独立 Branch Review。
+产生的 shared-current diff 已重新执行 Phase 2 与 commit；post-promotion Branch Review
+随后发现历史 `.39` status marker 仍声明 active，r19 只追加该状态收敛后再重新进入
+Phase 2、commit 与独立 Branch Review。
 
 ## Source 与 Projection
 
@@ -74,9 +76,12 @@ confirmation。脚本只执行确定性 projection 与校验，不决定 Release
 - promotion 已按 live owner dependency 先执行 Architecture、后执行 RDT；两条最小
   `.trellis/spec` locator/usage projection 同步到 `.42/#267`，不形成第三 authority。
 - successor knowledge authority 固定为 `current-main-0.6.5-guru.42`。promotion 后
-  `.42` 是唯一 active RDT/Architecture authority，`.41` 保留为 superseded history，
+  `.42` 是唯一 active RDT/Architecture authority，`.39` 与 `.41` 保留为 superseded history，
   current/canonical extension candidate 为 `0.6.15-guru.39`，Trellis CLI 保持
   `0.6.15`。
+- r19 对 `.39` 的收敛只修改六个 versioned authority 文件的 status marker；历史内容、
+  source binding、extension identity 与 evidence 不变。递归 scan 必须只命中 `.42`
+  active，不以 README navigation 单独替代 versioned-file status 证明。
 - `.42` 只承接 release/current facts、traceability、navigation、evidence 与历史绑定；
   不改变产品行为、Skill public API、Architecture decision、owner、GAP 或
   compatibility exit。
@@ -88,10 +93,11 @@ confirmation。脚本只执行确定性 projection 与校验，不决定 Release
 
 ## Architecture Impact
 
-本 r18 scope 对 shared Architecture knowledge authority 存在受控
+本 r19 scope 对 shared Architecture knowledge authority 存在受控
 `architecture_impact / target_native`：变化是从 `.41` 到 `.42` 的 current fact、evidence
 与 predecessor/successor binding，不是 Architecture decision、owner topology、runtime
-boundary、GAP lifecycle 或 compatibility exit 变化。
+boundary、GAP lifecycle 或 compatibility exit 变化；新增 `.39` 历史 status 收敛不改变
+Architecture Baseline identity 或上述边界。
 
 Architecture contribution 绑定 current baseline `current-main-0.6.5-guru.41`、
 constitution `guru-trellis-design-constitution-v1`、change contract

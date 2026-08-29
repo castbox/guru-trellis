@@ -1,6 +1,6 @@
 # 当前测试策略
 
-版本：`current-main-0.6.5-guru.39`；状态：`active`。
+版本：`current-main-0.6.5-guru.39`；状态：`superseded`。
 
 ## Evidence 分层
 

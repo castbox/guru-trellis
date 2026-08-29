@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-版本：`current-main-0.6.5-guru.39`；状态：`active`；provenance：`code_recovered` + #283 architecture contract + #290 reviewed promotion，绑定 task head `d4165f26…` + #290 serialized promotion delta（精确 revision 为当前 Git HEAD）。
+版本：`current-main-0.6.5-guru.39`；状态：`superseded`；provenance：`code_recovered` + #283 architecture contract + #290 reviewed promotion，绑定 task head `d4165f26…` + #290 serialized promotion delta（精确 revision 为当前 Git HEAD）。
 
 ## 分层与 ownership
 

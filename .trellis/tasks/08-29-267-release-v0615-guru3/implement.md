@@ -72,7 +72,23 @@
   #267 r18 文件边界，并修正 `.42` promotion 顺序与 decision identity 不一致。
 - [x] 对 promotion-created diff 重新运行 fresh Phase 2，九维 semantic check 与当前
   worktree content freshness 均通过。
-- [ ] 创建新 task commit，并对完整 committed range 执行独立 Branch Review。
+- [x] 创建新 task commit `351e61d142811470e6035b958b11032b838508c2`，并对完整
+  `origin/main...HEAD` range 启动新的独立 Branch Review。
+- [x] post-promotion Branch Review 发现 `BR-267-POSTPROMO-CAND-001`：历史 `.39` 六个
+  versioned authority 文件仍声明 `active`；normal-scenario qualification 返回
+  `scope_confirmation_required`，未定级、未写 review gate。
+
+## Phase 2R2：r19 Historical Status Convergence
+
+- [x] 取得用户 scope choice，将六个 `.39` status marker 纳入同一 #267 delivery unit。
+- [x] 将 live Issue #267 body 修订为 `2026-08-30-r19`，明确六个精确路径、仅
+  `active -> superseded` 的边界与递归唯一-active gate。
+- [x] 更新 task PRD/design/implement/Release notes，使 planning 与 r19 live authority 一致。
+- [x] 仅修改六个 `.39` versioned authority status marker，不改写历史正文、source binding、
+  extension identity 或 evidence。
+- [ ] 对 r19 delta 重新运行 fresh Phase 2 与 Architecture/check gates。
+- [ ] 展示新的精确 stage paths 与 commit message，取得独立确认后创建 task commit。
+- [ ] 对新的完整 committed range 执行 distinct independent Branch Review。
 - [ ] 只有 post-promotion Branch Review 通过后才恢复 PR readiness。
 - [ ] 完成 PR readiness；title/body 使用具体中文，Issue trailer 只写 `Refs #267`，并写明
   tests、安全、部署、配置、schema、CI/CD、container/K8s/DB migration 影响。
