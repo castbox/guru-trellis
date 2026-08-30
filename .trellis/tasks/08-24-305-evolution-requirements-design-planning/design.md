@@ -3,25 +3,28 @@
 ## Authority
 
 - Change authority: GitHub Issue #305.
-- Requirements: `docs/requirements/evolution/` with current
-  `requirements_ready_for_design` / `requirements_trace_ready_for_design`, bound to `REQ-REV-011..138`; selected base
-  `3efcce72a0d47e38ec725aa8c0f8498992f3416f` contains PR #313/#314 merges, with #311 `OPEN` only for
+- Requirements: `docs/requirements/evolution/` with current `requirements_ready_for_design`, bound to
+  `REQ-REV-011..142`; selected base `5650df47fe17fe89b7cb616be6c9551608164832` contains PR #313/#314 merges,
+  the #267 fact-only authority promotion, the fact-only lifecycle-evidence/provenance/archive correction merged by
+  PR #316, the material installed platform-selection preservation merged by PR #317 and the fact-only
+  caller-inventory/provenance correction merged by PR #318, with #311 `OPEN` only for
   `follow-up-only` work and #312 `CLOSED`. Merge/lifecycle, #305 authority rebind, merged-behavior reconciliation and
-  the 83/13/50 Requirements-stage zero-loss comparison and fresh Requirements dual review are current.
-- Target Design: `docs/design/evolution/` / `guru-trellis-evolution-design-2026-08-29` /
+  the 84/34/13/50 Requirements-stage zero-loss projection and fresh Requirements dual review are current.
+- Target Design: `docs/design/evolution/` / `guru-trellis-evolution-design-2026-08-30` /
   `design_ready_for_delivery_planning` / `fresh_design_review_passed` / `evolution_refactor_eligible`.
-- Target Test: `docs/test/evolution/` / `guru-trellis-evolution-test-2026-08-29` /
-  `test_candidate_planned` / `design_ready_for_delivery_planning` / `fresh_design_review_passed`; all 50 Requirements
-  fixtures have reviewed Design allocation, `evolution_refactor_eligible` is current, and all fixtures remain
-  `planned_not_executed`.
-- Current as-built authority: `.41` RDT/Architecture at selected-base
-  `3efcce72a0d47e38ec725aa8c0f8498992f3416f`, source baseline
-  `651defee871d4bb07683547df09d1e0ac62b4a49` + #311 serialized promotion delta. The `.40` / `d907fcc5...`
-  snapshot is historical comparison evidence; target docs do not replace current before reviewed
-  implementation/promotion.
+- Target Test: `docs/test/evolution/` / `guru-trellis-evolution-test-2026-08-30` /
+  `test_candidate_planned` / `fresh_design_review_passed`; all 50 Requirements fixtures have synchronized Design
+  planning allocation, `evolution_refactor_eligible` is current, and all fixtures remain `planned_not_executed`.
+- Current as-built authority: `.42` RDT/Architecture at selected-base
+  `5650df47fe17fe89b7cb616be6c9551608164832`, source baseline
+  `d3dca74b3a94569a095594477c15b032526f2381` + #267 expected `.41` serialized promotion delta. The `.41` /
+  `3efcce72...`, `.40` / `d907fcc5...` and prior selected-base `736ef333...` / `9f560ec1...` snapshots are historical comparison
+  evidence. PR #317 is material current runtime evidence folded into existing successor ownership; target docs do not
+  replace current before reviewed implementation/promotion.
 
 This file is a task projection, not parallel Design authority. Repository Design alone owns behavior/public contracts;
-this continuation projects its revised `EVO-DES-001..073` candidate and the current fresh Design gate result.
+this continuation projects its revised `EVO-DES-001..073` candidate. Fresh Design review and deterministic closure
+have passed for the `REQ-REV-142` candidate without authorizing implementation.
 
 ## Current-To-Target Reconciliation
 
@@ -29,7 +32,9 @@ The historical pre-`REQ-REV-133` projection in `docs/design/evolution/capability
 `CUR-CAP-001..023` and `TARGET-DELTA-001..013`. Current Requirements fold #311 into
 `CUR-CAP-013/014/017/018/019` and #312 into `CUR-CAP-012`; selected-base current-to-target comparison therefore keeps
 13 target deltas and removes the duplicate historical `TARGET-DELTA-014`. `EVO-REQ-082..083`, `EVO-NFR-033` and the
-three post-`REQ-REV-132` fixtures are allocated by `EVO-DES-070..073` with zero candidate successor gap.
+three post-`REQ-REV-132` fixtures are allocated by `EVO-DES-070..073`; `EVO-REQ-084` / `EVO-NFR-034` platform-set
+preservation is projected through existing `EVO-DES-035,043,059,070,072` and the existing installed-publication
+fixture. The candidate keeps 73 Design responsibilities and 50 fixture mappings with zero projected successor gap.
 Private current schemas, wrapper routes, aggregate gate artifacts and 21/89 magic counts are not preserved as
 target API.
 
@@ -84,8 +89,8 @@ Target decisions:
 ## Review And Revision Delta
 
 The status phrase `closed in revised candidate; fresh review passed` (and equivalent `closed in candidate` wording)
-in the historical table below refers only to the pre-`REQ-REV-133` Design candidate. It is not a current Design gate
-result; the current prerequisite row and the Design Gate section below are authoritative for this continuation.
+in the historical table below refers only to a pre-`REQ-REV-142` Design candidate. It is not a current Design gate
+result; the current prerequisite/platform rows and the Design Gate section below are authoritative for this continuation.
 
 | Finding group | Design closure | Status |
 | --- | --- | --- |
@@ -98,7 +103,9 @@ result; the current prerequisite row and the Design Gate section below are autho
 | Distribution | UPDATE dry-run selects exactly one `--migrate --skip-all\|--skip-all` branch; ownership 3.0 forbids mutation until ownership 4.0 validation | closed in candidate |
 | Delivery slicing | Slice 02 defers stock-guard closure to Slice 06; candidate freezes after all 39 Skills at Slice 08; Slice 09 is immutable matrix only and Slice 10 Release-only | closed in candidate |
 | Historical Requirements change | `EVO-REQ-081`, `TARGET-DELTA-013`, `EVO-DES-069` and the 47th semantic-confirmation fixture were bound to the pre-`REQ-REV-133` reviewed candidate | historical closure only; stale |
-| Current prerequisite/rebind change | `REQ-REV-133..138` adds `EVO-REQ-082..083`, `EVO-NFR-033`, two-stage eligibility, full installed publication terminal continuity, unrelated-dirty isolation, evidence-before-cleanup verifier failure preservation and three fixtures; selected-base comparison folds #311/#312 into existing current capabilities and removes duplicate `TARGET-DELTA-014` | Requirements ready; Design allocation, fresh review and deterministic closure passed |
+| Current prerequisite/rebind change | `REQ-REV-133..140` adds `EVO-REQ-082..083`, `EVO-NFR-033`, two-stage eligibility, full installed publication terminal continuity, unrelated-dirty isolation, evidence-before-cleanup verifier failure preservation and three fixtures; selected-base comparison folds #311/#312 into existing current capabilities, removes duplicate `TARGET-DELTA-014`, rebinds the unchanged capability set to fact-only `.42` authority, then rebinds the same set to `9f560ec1…` after a fact-only lifecycle/provenance/archive delta | historical closure only; stale under `REQ-REV-141` |
+| Current platform-selection advance | `REQ-REV-141` adds `EVO-REQ-084` / `EVO-NFR-034`, rebinds selected base to `736ef333…`, and projects exact selected-list/all-platforms preservation plus pre-checkout/apply/commit invalid-identity failure into existing Publish/Finish/Projection responsibilities and the installed-publication fixture; no public Skill, exit, target delta, fixture or Design responsibility is added | Requirements review current; current fresh Design review passed after the subsequent fact-only rebind |
+| Current fact-only base rebind | `REQ-REV-142` rebinds selected base to `5650df47…`, classifies PR #318 caller-inventory/Issue-ledger/provenance/archive changes as fact-only, and preserves all 52/84/34/23/13/50/73/39/43/37/21/89 sets plus #311/#312/#317 successor allocation | Requirements review and fresh Design review current |
 | Confirmation contract projection | Design summaries, Release wait transitions, Architecture contribution, fixture and task projection carry the complete prohibited-challenge set and AI-only reply judgment | closed in candidate |
 | Planning/Architecture projection | task PRD records only the objective Phase 1 route, not a prior user confirmation; Architecture contribution scope includes Evolution Requirements/Design/Test | closed in candidate |
 | Planning gate order | fresh full Design review precedes wording/RDT/Architecture/task-plan approval; any later content revision returns to deterministic closure and fresh exact-candidate Design review | closed in candidate |
@@ -161,18 +168,22 @@ result; the current prerequisite row and the Design Gate section below are autho
 | `DES-REV-046` / P3 | the task implementation projection claimed platform, preset and workflow README files were not changed even though this branch's planning work changed root/platform instructions plus workflow/preset README prose | the projection now truthfully enumerates planning documentation/instruction changes and separately states that no runtime Skill, schema, script, installer, preset-overlay or workflow executable projection was changed | closed in revised candidate; current fresh review passed |
 | `DES-REV-047` / blocking P2 | 34 actual GFM table rows in task Design, public contracts and stock/distribution used unescaped pipe characters inside inline-code alternatives, so GitHub rendering split cells and truncated public Skill profile, I/O and consumer contracts | escaped every internal alternative separator in the three files and added the final GFM table parse to deterministic closure; the current parsed tables have zero inline-code raw-pipe defects | closed in revised candidate; current fresh review passed |
 | `DES-REV-048` / blocking P2 | `EVO-DES-010` required a generic invocation envelope under `.trellis/.runtime/guru-team/invocations/`, even though Admission isolation can wait before route/task ownership and Requirements require admission, pre-task, task-free and standalone execution to remain repository-side-effect-free | removed the generic repository envelope store; pre-route/pre-task/task-free/standalone continuation now stays in the call stack or host current session, missing/stale state uses exact-owner block/re-entry plus live reconstruction, and any post-task private checkpoint is restricted to one exact Skill's existing task-local ignored state consumed only by its same-owner public wrapper | closed in revised candidate; current fresh review passed |
+| `DES-REV-049` / P3 | current Design/Test/Architecture/task projections remained bound to selected-base `.41` / `3efcce72…` after live current authority advanced to `.42` / `a41b8a34…`; although the promotion is fact-only, the stale source identity invalidated the prior fresh Design gate and could cause either release facts to be missed or `.42` authority-only requirements/tests to be misclassified as new Evolution behavior | rebind every current-as-built locator to `.42` / `a41b8a34…`, carry `.3/.39/CLI 0.6.15` as unverified release facts, and preserve all 23 current capabilities / 13 target deltas / 50 fixtures / 73 Design responsibilities plus the 21-Skill/89-exit source inventory. The follow-up fresh review found three residual stale-current groups under the same finding: the Requirements preservation trace still named `.41`, the generic `new_target` classification/introduction/completion clauses still treated `.40` as the sole exclusion baseline, and the prerequisite fixture positive path still named `.41` rebind. `DES-REV-049` re-closes them with the `.42` current locator, a selected-base-current capability/PASS exclusion rule and `.42` rebind plus `.41...42` fact-only promotion, then reruns the complete Design/Test/Architecture/task review and deterministic closure | reclosed in revised candidate after residual stale-current correction; current fresh review passed |
+| `DES-REV-050` / blocking P2 | after the exact candidate closed `DES-REV-049`, live `origin/main` advanced from `a41b8a34…` to `9f560ec1…`; the delta is fact-only, but Design/Test/Architecture/task locators and the fresh Design gate remained bound to the old selected base | rebind every current-as-built locator to `.42` / `9f560ec1…`; classify `f5c47d28…`, `f7c5866e…`, `7d7db281…` and `9f560ec1…` as #267 lifecycle-evidence/provenance/archive/merge facts only; preserve all 23 current capabilities / 13 target deltas / 50 fixtures / 73 Design responsibilities / 21 active Skills / 89 exits, plus `.3/.39/CLI 0.6.15` and all unverified Release boundaries; rerun the complete Design/Test/Architecture/task review and deterministic closure | closed in revised candidate; current fresh review passed |
+| `DES-REV-051` / blocking P2 | after `REQ-REV-140` and `DES-REV-050` became current, the Design main SSOT still bound its source to `REQ-REV-011..139` and its terminal gate to `DES-REV-001..049`, while secondary current projections claimed the later ranges | rebind the Design main source range to `REQ-REV-011..140`, close the terminal gate through `DES-REV-051`, synchronize every current gate projection, preserve the historical `DES-REV-050` evidence itself, and rerun the complete Requirements/Design/Test/Architecture/task review plus deterministic closure | closed in revised candidate; current fresh review passed |
+| `DES-REV-052` / blocking P2 | fresh Design review observed live `origin/main` advance from candidate-bound `736ef333…` to PR #318 merge `5650df47…`; consuming the old exact-base binding would violate the candidate freshness contract even though the delta is fact-only | rebind every current-as-built locator to `.42` / `5650df47…`, preserve `736ef333…` only as the PR #317 historical boundary, classify `736ef333...5650df47` as caller-inventory/provenance consistency evidence only, preserve all Requirements/Design/Test/Architecture/task sets and rerun the complete review plus deterministic closure | closed in revised candidate; fresh review passed |
 
 ## Architecture Alignment
 
 - profile: `guru-maintain-architecture-baseline:task_impact_sync(stage=planning)`.
 - impact/path: `architecture_impact` / `target_native`.
-- current at selected base: `current-main-0.6.5-guru.41`, source baseline
-  `651defee871d4bb07683547df09d1e0ac62b4a49` + #311 serialized promotion delta, constitution
+- current at selected base: `current-main-0.6.5-guru.42`, source baseline
+  `d3dca74b3a94569a095594477c15b032526f2381` + #267 expected `.41` serialized promotion delta, constitution
   `guru-trellis-design-constitution-v1`, change contract
   `guru-trellis-architecture-change-contract-v1`.
 - task contribution:
   `docs/architecture/contributions/305-evolution-workflow-convergence.md`.
-- contribution state: `design_ready_for_delivery_planning` / `fresh_design_review_passed` / `not_promoted`.
+- contribution state: `fresh_design_review_passed` / `not_promoted`.
 - hit principles: `concept-semantic-completeness`, `cohesion-change-isolation`,
   `minimum-necessary-complexity`, `debt-one-way-convergence`.
 - ADR: `ADR-305-CANDIDATE` is required because owner topology, compatibility exit, stock ownership and
@@ -198,28 +209,20 @@ compatibility layer; dormant target source may be built serially, but runtime cu
 
 ## Design Gate
 
-The selected base already contains accepted #311/#312 merges, exact `.41` RDT/Architecture/capability identities are
-rebound, and the complete 83-requirement / 13-target-delta / 50-fixture Requirements-stage successor set has zero gap.
-The merge-bound Requirements candidate has passed both fresh full-document reviews. This continuation has allocated
-successors/mappings for all current Requirements and fixtures and has now completed a fresh independent semantic
-review of the complete Design/Test/Architecture/task-planning candidate. That review reported open `P1=0`, blocking
-`P2=0`, `P3=0`, high-risk question `=0`.
+The selected base already contains accepted #311/#312 merges, exact `.42` RDT/Architecture/capability identities,
+PR #317 platform-selection runtime evidence and PR #318 fact-only caller-inventory/provenance correction at
+`origin/main@5650df47…`. The complete 84-requirement /
+34-NFR / 13-target-delta / 50-fixture Requirements-stage successor projection has zero gap, and the fresh Requirements
+semantic, Strict technical and deterministic closure gates have passed for this identity. Therefore
+`requirements_ready_for_design` / `requirements_trace_ready_for_design` are current.
 
-The fresh review explicitly closed `DES-REV-001..048`; lexical presence without the three publication subgraphs,
-their already-current no-mutation exits, the reference caller/return contract, a projection trigger/return chain that
-includes zero-promotion authority-only repair and converges from the complete diff to outstanding-work double-none,
-direct bound-event delivery, complete authority/
-provider ownership, the exact 37-owner/two-specialist lifecycle partition, zero generic repository invocation-envelope
-write before task ownership, host-session-only pre-task/task-free/standalone continuation and the same-Skill/
-same-wrapper post-task checkpoint boundary, the standalone
-Projection/Stock/Projection fresh-validation chain with its named stock action confirmation wait, the selected-base `.41` inventory identity, the truthful planning-document change boundary, GFM-safe public contract tables, the compound activation/implementation-entry confirmation and
-the exact-current Workspace no-mutation path and current Phase 1 stop boundary is not sufficient.
+The revised Design/Test/Architecture/task projection maps `EVO-REQ-084` / `EVO-NFR-034` into existing
+`EVO-DES-035,043,059,070,072`, preserves 73 Design responsibilities and all 50 fixture mappings, and adds no public
+Skill, external exit, lifecycle owner or target delta. The pre-`REQ-REV-142` `DES-REV-001..052` review and
+deterministic closure remain stale historical evidence; the current exact candidate has completed fresh full-document
+review and deterministic closure with P1/P2/P3 findings and high-risk open questions all zero.
 
-Current result: `REQ-REV-133..138` invalidated the pre-`REQ-REV-133` review result and split Requirements readiness
-from refactor eligibility. Selected-base authority rebind and Requirements-stage zero-loss are current; Design/Test/
-Architecture/task projections now carry `design_ready_for_delivery_planning` / `fresh_design_review_passed` /
-`evolution_refactor_eligible`, with 73 Design responsibilities and all 50 fixture mappings allocated. This
-continuation remains in Phase 1 and stops at the completed Design review and deterministic closure.
-
-The gate does not activate the task or authorize code, stock mutation, install/migration execution, commit, remote
-delivery or Release.
+Current result: `design_ready_for_delivery_planning` / `fresh_design_review_passed` /
+`evolution_refactor_eligible`. This continuation remains in Phase 1 and stops after Design gate closure. It does not
+activate the task or authorize code, stock mutation,
+install/migration execution, commit, remote delivery or Release.

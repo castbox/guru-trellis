@@ -1,6 +1,6 @@
 # Guru Trellis Evolution 非功能需求
 
-版本：`evolution-requirements-revision-2026-08-29`；状态：
+版本：`evolution-requirements-revision-2026-08-30`；状态：
 `requirements_ready_for_design`。
 
 本文件是 Evolution Requirements 非功能约束的唯一主定义。功能范围与场景见
@@ -54,7 +54,8 @@ Requirements、candidate 或 Release 的验收门槛；不得通过删减能力�
 ## 2. 可靠性、恢复与可用性
 
 `EVO-NFR-012..017` 按兼容、维护与安全语义定义在第 3、4 节；稳定编号不表示本节缺号或
-重复定义，`EVO-NFR-018..033` 继续承接本节后新增的 submodule/stock 与 Evolution prerequisite 边界。
+重复定义，`EVO-NFR-018..034` 继续承接本节后新增的 submodule/stock、Evolution prerequisite 与
+installed platform-selection preservation 边界。
 
 - `EVO-NFR-009`：本条只拥有 `EVO-REQ-010,041,047,076` 与对应 fixture 的可测质量门槛；preclassification、invocation identity/envelope、receipt、entry route、pending、owner、re-entry 和 terminal 的行为、字段与顺序均以 `requirement-main.md` 为唯一主定义，本条不重述。
   `EVO-FIX-ENTRY-ROUTING` 中，所有通过 pre-entry admission 的适用 independent invocation（包括无
@@ -431,13 +432,17 @@ Requirements、candidate 或 Release 的验收门槛；不得通过删减能力�
 
   Requirements-stage prerequisite 成功样本必须在同一 exact selected-base identity 下证明：六维
   classification 可追溯率 100%；RDT、Architecture 与 inventory rebind coverage 100%；`CUR-CAP-*`、
-  merged prerequisite capability 与 `TARGET-DELTA-001..013` 的 requirement/normal-path fixture successor
+  merged prerequisite capability、PR #317 platform-selection advance 与 `TARGET-DELTA-001..013` 的
+  requirement/normal-path fixture successor
   coverage 100%；`EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION`、`EVO-FIX-BASE-EVOLUTION` 与
   `EVO-FIX-VERIFIER-FAILURE-EVIDENCE`、`EVO-FIX-EVOLUTION-PREREQUISITE` 的 Requirements-stage
-  assertions 全部 current；23 个 current capability、13 个 target delta、83 个 requirement 与 50 个
+  assertions 全部 current；`EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION` 还必须覆盖
+  `EVO-REQ-084` / `EVO-NFR-034` 的 exact platform-set preservation；23 个 current capability、13 个
+  target delta、84 个 requirement、34 个 NFR 与 50 个
   fixture 的 set closure 均 exact；capability
   requirement/fixture 差集、旧 snapshot/review 复用、installed extension source/target reviewed checkout
-  混淆、base-tracked clean same-task false blocker、installed 路径未继续到唯一 Draft PR/archive/Ready/
+  混淆、installed platform subset 扩张/丢失/重排、invalid platform identity 延迟到 source checkout/
+  preset apply/commit 后才失败、base-tracked clean same-task false blocker、installed 路径未继续到唯一 Draft PR/archive/Ready/
   `ready_for_merge` 或重放 completed mutation、verifier failure 为 null/cleanup 先于 evidence/
   `postcheck_failure` 错误分类、source/task worktree unrelated dirty 误分类、
   dirty/untracked/review-metadata/identity blocker 漏检，以及 Requirements gate current 前启动 Design
@@ -452,6 +457,16 @@ Requirements、candidate 或 Release 的验收门槛；不得通过删减能力�
   material change 必须使对应较晚 eligibility stale，并从最早受影响 gate 重做 fresh Requirements 或
   fresh Design 全稿审核；Requirements 阶段不得以满足本质量门槛为由预选 #311 的未来 owner、Skill、
   DTO 或实现机制。
+- `EVO-NFR-034`：`EVO-REQ-084` 的 installed platform-selection preservation 必须对同一 exact
+  candidate 达到 100% 正反向覆盖。正向至少覆盖 Claude-only、Codex-only、Cursor-only、两个平台的
+  合法 subset、`all_platforms=true` 的完整 canonical set，以及 `all_platforms=false` 的显式完整 set；
+  每个 cell 的 parent/post-reprepare selected set 必须完全相同，subset 扩张、平台丢失、重排和隐式
+  fallback 计数均为 0。反向必须分别覆盖四个 locator missing/type-invalid、selected list empty、
+  duplicate、unsorted、unknown、三处 mismatch、`all_platforms` 非 boolean，以及 `true` 配非完整集合；
+  每个 invalid cell 的 extension source checkout、preset apply、provenance commit、managed-path/sidecar
+  mutation 计数均为 0，并保留可定位到 platform-selection identity 的 deterministic failure。平台保真
+  检查不得替代 immutable source、target lineage、reviewed-content equality、provenance allowlist 或
+  terminal publication continuity gate；这些 gate 的覆盖与 owner 仍按其主合同独立成立。
 - `EVO-NFR-014`：正常路径的 semantic owner 数量、持久 artifact 数量和 public data volume
   必须由直接业务责任/consumer 证明；不得为了“合同完整”新增 wrapper、schema 或 checkpoint。
   top-level specialist invocation 只允许 `REQ-UC-EVO-037` wording review-only 与

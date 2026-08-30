@@ -1,10 +1,14 @@
 # Evolution Stock And Distribution Design
 
-状态：`design_ready_for_delivery_planning` / `fresh_design_review_passed` / `evolution_refactor_eligible`。本文件已承接
-`EVO-REQ-052..056,068..083`中适用的distribution/stock边界：17个official Trellis stock asset的selected
-action不变，installed manifest额外作为Publish immutable extension-source binding authority，standalone
-Projection拥有evidence-before-cleanup verifier failure lifecycle。它不表示任何stock文件已经被patch、隔离
-或删除。
+状态：`design_ready_for_delivery_planning` / `fresh_design_review_passed` /
+`evolution_refactor_eligible`。本文件作为已审核 planning projection
+承接 `EVO-REQ-052..056,068..084` 中适用的 distribution/stock 边界及 `EVO-NFR-034`：17 个 official
+Trellis stock asset 的 selected action 不变，installed manifest 继续作为 Publish immutable
+extension-source binding authority，standalone Projection 拥有 evidence-before-cleanup verifier failure
+lifecycle。PR #317 exact installed platform-set preservation 只通过既有
+`EVO-DES-035,043,059,070,072` 与 `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION` 承接，不新增 public profile、
+Design responsibility、fixture、stock action 或 owner。本状态只证明 planning Design gate 已通过，不表示
+任何 stock 文件已经被 patch、隔离或删除。
 
 ## 1. Source And Policy Ownership
 

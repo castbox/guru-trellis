@@ -1,8 +1,10 @@
 # Evolution Design Decisions
 
-状态：`design_ready_for_delivery_planning` / `fresh_design_review_passed` / `evolution_refactor_eligible`。这些decision已从current
-`requirements_ready_for_design` identity重审并补入#311/#312 prerequisite、`EVO-REQ-082..083`、
-installed publication、verifier failure evidence与original-worktree continuity；它们仍不是current runtime
+状态：`design_ready_for_delivery_planning` / `fresh_design_review_passed` /
+`evolution_refactor_eligible`。这些 decision 已按 current
+`requirements_ready_for_design` candidate 补入 #311/#312 prerequisite、`EVO-REQ-082..084`、
+installed publication、exact platform-set preservation、verifier failure evidence 与 original-worktree continuity；
+它们已通过 fresh Design review，但仍不是 current runtime
 或accepted ADR。
 
 - `EVO-DDEC-001`（accepted）：采用 `target_native`。最终 candidate 只运行新合同；不保留旧 route、
@@ -22,8 +24,10 @@ installed publication、verifier failure evidence与original-worktree continuity
   `direct|select|rename|normalize` projection；runtime-derived facts由exact consumer owner解析而不进入
   caller-authored input，禁止generic frame、implicit pass-through、producer checkpoint或ambient lookup补字段。
 - `EVO-DDEC-005`（accepted）：`docs/requirements/evolution/`、本 Design 与
-  `docs/test/evolution/` 是 target RDT authority；selected-base `.41` 继续是 current as-built authority，
-  `.40`只作historical comparison。实施 task
+  `docs/test/evolution/` 是 target RDT authority；selected-base `.42` 继续是 current as-built authority，
+  `.41`/`.40`只作historical comparison。`.42` 的 release-authority additions 是 fact-only；
+  `9f560ec1...736ef333` 的 platform-selection advance 是 material current behavior，但由既有 Publish/
+  Finish/Projection responsibility 承接，不改变 target owner、public contract、capability/delta/fixture allocation。实施 task
   通过 contribution/promotion 推进 current，不从 task 三件套反推 repository RDT。
 - `EVO-DDEC-006`（accepted）：standard Planning 新增唯一 author `guru-plan-task`，并保留一次
   `guru-approve-task-plan` semantic approval；normal path 删除 mandatory wording review、normal-scenario
@@ -139,7 +143,11 @@ installed publication、verifier failure evidence与original-worktree continuity
   每个prepare/re-entry先live-reread，exact tail、bound HEAD或
   exact base/head Draft/READY PR已current时分别无写入产生`publication_head_current`、`branch_published`或
   `draft_pr_current`，不得重复确认、commit、push或创建duplicate PR。任一confirmation永不授权下一action；
-  PR current只进入Finish，不能直接Merge。
+  PR current只进入Finish，不能直接Merge。installed `provenance_prepare` 还必须在 immutable source checkout
+  前验证 parent manifest 三处 non-empty/sorted/unique/canonical/equal selected lists 与 boolean
+  `all_platforms`：只有 `true` + full canonical set 使用 `--all-platforms`，否则 repeated `--platform` 保留
+  exact selection；invalid identity 在 source checkout/preset apply/commit 前进入既有 `provenance_reentry`，
+  target managed mutation 为 0。该约束不新增 profile、DTO、continuation、owner 或 refusal exit。
 - `EVO-DDEC-027`（accepted）：causally bound user event必须以`bound_event_ref,event_sequence`直达closed
   lifecycle owner；ref绑定host event identity/session/content，sequence只负责arrival order，不能单独承担事件
   语义或触发ambient host-history lookup。`authority_context`的Clarification requirement-delta、repository RDT与
@@ -168,7 +176,7 @@ installed publication、verifier failure evidence与original-worktree continuity
   `workspace_current`并进入RDT task impact，plan display、confirmation wait、refusal branch与mutation均为0；
   只有creation、transfer或isolation待执行时才按`EVO-REQ-081`展示计划并等待dialogue-local确认。
 - `EVO-DDEC-033`（accepted）：#311/#312使用两阶段eligibility而不新增runtime wrapper Skill。
-  `requirements_ready_for_design`只放行Design；83/33/23/13/50 Design successor与fixture mapping差集为0且fresh
+  `requirements_ready_for_design`只放行Design；84/34/23/13/50 Design successor与fixture mapping差集为0且fresh
   full review通过后，closed planning projection才产生`evolution_refactor_eligible`供未来delivery intake消费。
   Material drift回最早authority owner，等价identity refresh不重放unchanged review。
 - `EVO-DDEC-034`（accepted）：#312 successor留在`guru-reconcile-task-base`。owner以original active

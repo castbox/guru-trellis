@@ -4,38 +4,45 @@
 
 - candidate identity: `architecture-contribution-305-evolution-workflow-convergence-v1`.
 - requirement authority: `docs/requirements/evolution/` with current gate
-  `requirements_ready_for_design` / `requirements_trace_ready_for_design`, bound to `REQ-REV-011..138`; selected base
-  `origin/main@3efcce72a0d47e38ec725aa8c0f8498992f3416f` contains PR #313/#314 merges, with #311 still `OPEN` only
+  `requirements_ready_for_design`, bound to `REQ-REV-011..142`; selected base
+  `origin/main@5650df47fe17fe89b7cb616be6c9551608164832` contains PR #313/#314 merges, the #267
+  fact-only `.42` authority promotion, the fact-only lifecycle-evidence/provenance/archive correction merged by PR #316
+  and the material installed platform-selection preservation merged by PR #317, plus the fact-only
+  caller-inventory/provenance correction merged by PR #318, with #311 still `OPEN` only
   for `follow-up-only` work and #312 `CLOSED`. Merge/lifecycle, #305's authority rebind, merged-behavior reconciliation
-  and the 83/13/50 Requirements-stage zero-loss comparison and fresh Requirements dual review are current.
+  and the 84/34/13/50 Requirements-stage zero-loss projection is current; fresh Requirements semantic, Strict technical and deterministic closure gates have passed.
 - behavior authority: `docs/design/evolution/` is `design_ready_for_delivery_planning` /
   `fresh_design_review_passed` / `evolution_refactor_eligible`; `docs/test/evolution/` is a 50-row
   `test_candidate_planned` projection with all post-`REQ-REV-132` fixtures allocated and no fixture executed.
 - task: `08-24-305-evolution-requirements-design-planning`.
-- current Architecture at the selected base: `docs/architecture/README.md` / `current-main-0.6.5-guru.41` /
-  `active`, source baseline `651defee871d4bb07683547df09d1e0ac62b4a49` + #311 serialized promotion delta. The
-  `.40` authority is historical comparison evidence only.
+- current Architecture at the selected base: `docs/architecture/README.md` / `current-main-0.6.5-guru.42` /
+  `active`, source baseline `d3dca74b3a94569a095594477c15b032526f2381` + #267 expected `.41` serialized
+  promotion delta. The `.41` and `.40` authorities are historical comparison evidence only.
 - design constitution: `docs/architecture/00-foundation/design-constitution.md` /
   `guru-trellis-design-constitution-v1` / `current`.
 - project change contract: `docs/architecture/06-governance/change-contract.md` /
   `guru-trellis-architecture-change-contract-v1` /
   `guru-trellis-architecture-change-concerns-v1`.
-- impact/path candidate: `architecture_impact` / `target_native`; selected-base input has been rebound, the current
-  Design continuation reassessed #311/#312 ownership, and the fresh full Design review and deterministic closure passed.
-- contribution state: `design_ready_for_delivery_planning` / `fresh_design_review_passed` / `not_promoted`.
+- impact/path candidate: `architecture_impact` / `target_native`; selected-base input has been rebound and the current
+  planning projection reassessed #311/#312/PR #317 ownership and PR #318 fact-only evidence; fresh Requirements and
+  fresh Design reviews are current.
+- contribution state: `fresh_design_review_passed` / `not_promoted`.
 - promotion state: `not_authorized_not_started`; expected current at any future promotion is freshly reread live
   current, not a value reserved by this planning document.
 
 This contribution revises the pre-`REQ-REV-133` target decision without promoting shared Architecture or the ADR
 index. #312 original-worktree continuity stays in Reconcile, #311 installed publication spans Publish/Finish/Merge,
-and standalone verifier failure evidence stays in Projection. Both Issues are merged and repository authority/
-inventory is rebound; the merge-bound Requirements gate, fresh Design review and deterministic closure are current,
-the impact candidate is current, and this continuation stops at the completed Phase 1 Design gate.
+standalone verifier failure evidence stays in Projection, and PR #317 exact platform-set preservation remains inside
+the existing Publish/Finish/Projection responsibilities. Both prerequisite Issues are merged and repository authority/
+inventory is rebound; the Requirements projection, fresh Requirements gates and fresh Design gate are current. This
+continuation stops at the Phase 1 Design gate boundary without entering implementation.
 
 ## Boundary And Decision
 
-Selected-base current `.41` implements a four-Phase Guru workflow with 21 active public Skill packages and 89 exits.
-The pre-`.41` `.40` snapshot is comparison evidence only. It already
+Selected-base current `.42` implements a four-Phase Guru workflow with 21 active public Skill packages and 89 exits.
+The predecessor `.41` and `.40` snapshots are comparison evidence only. The tracked `.42` promotion adds
+release/current authority facts rather than runtime behavior; PR #317 on the selected base separately advances
+Finalizer runtime by preserving parent installed platform selection during provenance reprepare. Current Guru Team already
 owns strong RDT/Architecture, review, provider and finalization capabilities, but the top-level flow still assumes
 file-changing task work as the dominant entry, task planning carries too much coordination context, standard
 implementation lacks one explicit owner, and official Trellis stock Skills/workers can remain discoverable beside
@@ -123,6 +130,11 @@ The target boundary is one user invocation from admission to exactly one termina
 16. one Projection-owned standalone verifier failure lifecycle: pre-matrix, matrix and post-matrix failures bind a
     schema-valid non-null safe failure reference before temporary cleanup, then expose only the exact blocked/re-entry
     path. Embedded caller findings remain caller-owned and Finish never consumes verifier state.
+17. one installed publication platform-preservation invariant inside the existing Publish owner: the parent manifest's
+    three selected lists are non-empty/sorted/unique/canonical/equal, `all_platforms=true` maps only a full set to
+    `--all-platforms`, every false selection maps to repeated exact `--platform`, and invalid identity fails before
+    extension source checkout/preset apply/commit with zero target managed mutation. This adds no public profile,
+    responsibility, fixture, Skill or exit.
 
 Marketplace workflow id `guru-team` remains stable as the distribution entry. The runtime contract behind it is a
 new breaking identity. Stable id retention is therefore paired with an explicit migration contract, not a claim
@@ -132,15 +144,15 @@ of old/new API compatibility.
 
 | Concern | Applicability | #305 candidate contract |
 | --- | --- | --- |
-| `authority-binding` | applicable | bind Guru Architecture 2.0, active `.41` at the selected base, current RDT, constitution and change contract; `.40` is historical comparison evidence and target docs never claim current runtime |
+| `authority-binding` | applicable | bind Guru Architecture 2.0, active `.42` at the selected base, current RDT, constitution and change contract; `.41`/`.40` are historical comparison evidence and target docs never claim current runtime |
 | `constitution-binding` | applicable | hit `concept-semantic-completeness`, `cohesion-change-isolation`, `minimum-necessary-complexity`, `debt-one-way-convergence`; no principle prose copied into public DTOs |
 | `boundary-and-decision` | applicable | one invocation boundary, 39-Skill owner graph, host-session-local private envelope with zero generic repository store, same-owner task-checkpoint exception, stock control plane and atomic activation are the selected target |
 | `owner-and-single-writer` | applicable | every semantic step has one Skill owner; stock policy has one preset transaction owner; reapply is fixed to Existing Migrator; shared RDT/Architecture promotion remains serialized |
 | `compatibility-and-exit` | applicable | `target_native`; no legacy adapter/selector/dual-read; migration final validation proves zero legacy consumer before activation |
 | `gap-and-deviation` | applicable | plan closes current entry/implementation/stock/distribution ownership gaps; no release GAP or unrelated current debt is absorbed |
 | `parallel-scope` | applicable | future slices may build dormant target packages in isolated tasks; activation and shared-current promotion each remain single-writer |
-| `evidence-and-freshness` | applicable | `REQ-REV-133..138` invalidates the pre-#311/#312 base and Design review binding. Exact merge/base, `.41` RDT/Architecture/inventory rebind, full installed publication plus verifier-failure preservation, clean-tracked/unrelated-dirty workspace behavior, all other capability requirement/normal-path fixture successor zero-loss and fresh Requirements dual review are current; `EVO-DES-070..073`, all 50 fixture mappings, fresh Design review and deterministic closure are current |
-| `review-and-promotion` | applicable | the revised contribution is `design_ready_for_delivery_planning` / `fresh_design_review_passed` but remains `not_promoted`; any later implementation contribution/ADR promotion still requires committed full-diff review and expected-current reread |
+| `evidence-and-freshness` | applicable | `REQ-REV-133..142` invalidates the pre-#311/#312, pre-`.42`, pre-`9f560ec1`, pre-`736ef333` and pre-`5650df47` base/Design review bindings. Exact merge/base, `.42` RDT/Architecture/inventory rebind, fact-only `.3/.39/CLI 0.6.15` candidate/target alignment plus `a41b8a34...9f560ec1` and `736ef333...5650df47` evidence corrections, PR #317 latest-stable `.2/.38/CLI 0.6.15` correction and exact platform-set preservation, full installed publication plus verifier-failure preservation, clean-tracked/unrelated-dirty workspace behavior and all other capability requirement/normal-path fixture successor zero-loss are current; fresh Requirements dual review, `EVO-DES-070..073`, all 50 mappings, fresh Design review and Design deterministic closure are current |
+| `review-and-promotion` | applicable | the revised contribution is `fresh_design_review_passed` / `not_promoted`; any later implementation contribution/ADR promotion still requires committed full-diff review and expected-current reread |
 
 ## Owner And Single-Writer Model
 
@@ -198,7 +210,7 @@ only validate an already selected profile/exit and project to the declared consu
 | `ARCH-305-GAP-007` | the earlier Design placed a generic invocation envelope in repository runtime before route/task ownership, contradicting repository-side-effect-free admission, pre-task, task-free and standalone paths | keep pre-route/pre-task/task-free/standalone state in the call stack or host current-session continuation; missing/stale continuation uses the exact owner's block/re-entry plus live reconstruction; after task creation only an exact Skill's existing task-local ignored checkpoint may retain non-reconstructible state for its same-owner public wrapper, never as shared or downstream-readable state | Entry Routing/Task Free/Full Normal/Long Output fixtures and `EVO-DDEC-037` |
 
 These are task candidate refs, not active shared `ARCH-GAP-*` identities. Future promotion decides the successor
-baseline identities after implementation evidence. Existing `.40` GAP/release ownership, including #267/#304
+baseline identities after implementation evidence. Existing `.42` GAP/release ownership, including #267/#304
 boundaries, is retained and not closed here. No new legacy deviation is planned.
 
 ## Parallel Scope
@@ -214,38 +226,43 @@ boundaries, is retained and not closed here. No new legacy deviation is planned.
 
 ## Before, After, Checks And Evidence
 
-- before evidence: selected-base `.41` Architecture/RDT plus 21-Skill/89-exit inventory at
-  `3efcce72...`, with the pre-`.41` `.40` snapshot at `d907fcc5...` retained as historical comparison evidence;
-  frozen official Trellis `0.6.15` stock snapshot and live #311/#312 authority. Current Evolution Requirements contain
-  52 UC, 83 REQ, 33 NFR, 23 current capabilities, 13 target deltas and 50 fixtures. Their live gate is
-  `requirements_ready_for_design` / `requirements_trace_ready_for_design`; the selected base and `.41` current
-  Architecture identity are bound; #305's own rebind, reconciliation, Requirements-stage zero-loss comparison and fresh
-  Requirements dual review are current.
+- before evidence: selected-base `.42` Architecture/RDT plus 21-Skill/89-exit inventory at
+  `5650df47...`, with prior selected-base snapshots at `736ef333...`, `9f560ec1...` and `a41b8a34...`, predecessor `.41` snapshot at
+  `3efcce72...` and `.40` snapshot at `d907fcc5...`
+  retained as historical comparison evidence;
+  frozen official Trellis `0.6.15` stock snapshot and live #311/#312/#317 authority. Current Evolution Requirements contain
+  52 UC, 84 REQ, 34 NFR, 23 current capabilities, 13 target deltas and 50 fixtures. Their live gate is
+  `requirements_ready_for_design`; the selected base and `.42` current Architecture identity are bound, and #305's
+  rebind/reconciliation/Requirements-stage zero-loss projection plus fresh Requirements dual review are current.
 - revised Design candidate: `EVO-DES-001..073`, 39 public Skill contracts with exactly 37 lifecycle owners/two
   specialist non-owners and a closed recovery inventory, exact
   17-asset/9-profile-fixed-retained-row decisions, independent Trellis-reference/code-spec-projection identities,
   one standalone Projection/Stock/Projection fresh-validation chain with a named Stock action confirmation pause,
   one exact-current Workspace no-mutation path,
   one compound activation/implementation-entry confirmation, convergent already-current promotion/projection handling,
-  isolated provenance/push/Draft-PR confirmation subgraphs with no-mutation current exits, Finish-before-Merge,
+  isolated provenance/push/Draft-PR confirmation subgraphs with no-mutation current exits, exact installed
+  platform-set preservation inside the existing publication fixture, Finish-before-Merge,
   Projection-owned verifier evidence, 50 allocated fixtures and ten serial delivery suggestions. The selected-base
   comparison removed duplicate `TARGET-DELTA-014`.
-- Planning project check: the pre-`REQ-REV-133` `DES-REV-001..014` result is stale. Current Phase 1 Requirements
-  set/link/table closure and fresh semantic/Strict technical review passed with `P1=0`, `P2=0`, `P3=0` and no blocking
-  open question. The revised Design/Architecture/Test mapping is current: the final fresh Design review closed
-  `DES-REV-001..048` with open `P1=0`, blocking `P2=0`, `P3=0` and high-risk question `=0`, and deterministic closure
-  passed. No package/runtime/installed/provider/Release evidence or Architecture promotion exists yet.
+- Planning project check: the pre-`REQ-REV-133` `DES-REV-001..014` and pre-`REQ-REV-142`
+  `DES-REV-001..052` results are stale. Current Phase 1 Requirements set/link/table closure and fresh
+  semantic/Strict technical review are current. The revised Design/Architecture/Test mapping is a synchronized
+  planning projection; fresh Design review and deterministic closure have passed for this identity. No target
+  package/runtime/installed/provider/Release evidence or Architecture promotion exists yet.
 - later evidence: each implementation slice must bind exact candidate/range, execute only its owned fixtures and
   record unverified matrix boundaries. Atomic migration and full matrix/Release cannot be inferred from ordinary
   slice tests.
 - freshness: current planning authority ref is selected-base
-  `3efcce72a0d47e38ec725aa8c0f8498992f3416f`; `d907fcc5e17f23b6499648e5e9a208457f2d6f8b` is historical `.40`
+  `5650df47fe17fe89b7cb616be6c9551608164832`; `736ef3335f1b1b0dcbf92f1e8e53343f922aa32a`, `9f560ec191851f82768d5e7aa031e6d852c34f14`
+  and `a41b8a34d237e1863225d069ca9c6b5ad6ae476a` are prior selected-base snapshots,
+  `3efcce72a0d47e38ec725aa8c0f8498992f3416f` is historical `.41`
+  comparison evidence and `d907fcc5e17f23b6499648e5e9a208457f2d6f8b` is historical `.40`
   comparison evidence. Any live authority advance is reread and semantically reconciled before a later stage uses
   this result.
 
 ## ADR-305-CANDIDATE
 
-- status: `design_ready_for_delivery_planning_fresh_design_review_passed_not_promoted`; not an accepted ADR.
+- status: `fresh_design_review_passed_not_promoted`; not an accepted ADR.
 - trigger: #305 changes long-term system boundary, public owner topology, compatibility strategy, stock
   projection ownership and activation semantics.
 - decision: adopt the target-native Evolution contract with one host-session-local invocation envelope and zero
@@ -271,12 +288,13 @@ boundaries, is retained and not closed here. No new legacy deviation is planned.
 
 ## Explicit Boundaries
 
-- #305 ends at reviewed Requirements/Design/Test/planning and delivery suggestions. It does not implement or
+- #305 ends at reviewed Requirements plus reviewed Design/Test/Architecture planning projection and delivery suggestions. It does not implement or
   activate any target contract.
-- #311/#312 are accepted and merged into the selected base; exact-base RDT/Architecture/inventory rebind and
-  all-capability requirement/normal-path fixture zero-loss comparison and merge-bound fresh Requirements review are
-  current. Every Design successor and fixture mapping is reviewed, and `evolution_refactor_eligible` is current.
-  This contribution does not implement or close either prerequisite.
+- #311/#312 are accepted and merged into the selected base; PR #317 platform-selection preservation is also current.
+  Exact-base RDT/Architecture/inventory rebind and all-capability requirement/normal-path fixture zero-loss projection
+  are synchronized, and merge-bound fresh Requirements review is current. Design successors and fixture
+  mappings have passed fresh Design review and deterministic closure, so `evolution_refactor_eligible` is current. This contribution
+  does not implement or close either prerequisite or claim PR #317 target behavior is already implemented by Evolution.
 - This contribution does not create delivery Issues, change #267/#304, initialize submodules, modify current
   Architecture/RDT, publish a tag/Release or claim any fixture executed.
 - Official Trellis documentation and supported extension surfaces remain authoritative for implementation;

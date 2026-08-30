@@ -1,9 +1,12 @@
 # Evolution Delivery Plan
 
-状态：`design_ready_for_delivery_planning` / `fresh_design_review_passed` / `evolution_refactor_eligible` /
-`issue_suggestions_only`。This revised slice projection incorporates #311/#312 merged capabilities and is now a
-reviewed planning suggestion set. It remains non-actionable until a future independently authorized delivery intake.
-It does not create Issues, activate this task, implement, commit, publish or Release.
+状态：`fresh_design_review_passed` / `evolution_refactor_eligible` / `issue_suggestions_only`。This revised slice
+projection incorporates #311/#312 merged capabilities and carries PR #317 exact installed platform-set preservation
+through the existing `EVO-DES-035,043,059,070,072` responsibilities and
+`EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION`; it adds no delivery slice. This is a reviewed planning suggestion set,
+but remains non-actionable until a future delivery intake is independently authorized against the current
+`evolution_refactor_eligible` identity. It does not
+create Issues, activate this task, implement, commit, publish or Release.
 
 ## 1. Sequencing Contract
 

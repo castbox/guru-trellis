@@ -1,10 +1,12 @@
 # Evolution Public Contracts
 
-状态：`design_ready_for_delivery_planning` / `fresh_design_review_passed` / `evolution_refactor_eligible`。本文件已将`REQ-REV-133..138`、
-`EVO-REQ-082..083`与#311/#312 merged capability分配到既有39个public Skill identity：Base Reconcile
+状态：`design_ready_for_delivery_planning` / `fresh_design_review_passed` /
+`evolution_refactor_eligible`。本文件已将 `REQ-REV-133..142`、
+`EVO-REQ-082..084` 与 #311/#312/PR #317 current capability 分配到既有 39 个 public Skill identity：Base Reconcile
 承接original-worktree continuity，Publish/Finish/Merge承接installed publication terminal，Projection承接
-standalone verifier failure evidence。新增profile不增加public Skill、lifecycle owner或specialist数量；它仍
-不是runtime registry/interface/schema，也不授权实现。target contract identity 为
+standalone verifier failure evidence，Publish 的既有 installed profile 承接 exact platform-set preservation。
+新增 profile 不增加 public Skill、lifecycle owner 或 specialist 数量；该 projection 已通过 fresh Design review，
+但仍不是runtime registry/interface/schema，也不授权实现。target contract identity 为
 `guru-team-evolution-contract-1.0`，只通过 existing-migration 的一次原子 activation 成为 current。
 
 ## 1. Contract Set And Ownership
@@ -298,6 +300,16 @@ under the shared external `ssot_current`/`baseline_current` route. `impact_kind`
 | `guru-resolve-issue-closure` / `github_pr`, `none`, `provider_reentry` | semantic | initial=`task_ref,delivery_fact_ref`; provider re-entry=`continuation_ref,repair_input`. The Closure owner resolves the original delivery identity from its continuation and rereads live Issue state | read-only current/not-applicable needs no confirmation; when an exact manual closure mutation is required, this owner separately displays it under `EVO-REQ-081` and never reuses merge confirmation; `closure_current` -> `closure_ref` -> `guru-delivery-terminal-router`; `closure_not_applicable` -> `reason_ref` -> same router; `issue_closure_not_applied` -> `task_ref,delivery_fact_ref` -> `issue-closure-not-applied`; `closure_recovery_required` -> `continuation_ref,repair_input` -> same Skill `provider_reentry`; `blocked` -> `continuation_ref,repair_input` -> `issue-closure-blocked` |
 | `guru-finalize-task` / `github_pr`, `none`, `confirmation_reentry`, `finish_reentry` | semantic | github=`task_ref,acceptance_ref,pr_ref,publication_head_ref`; none=`task_ref,acceptance_ref`; confirmation re-entry=`continuation_ref`; repair=`continuation_ref,repair_input`. The continuation fixes route, task, acceptance, current task/archive/summary state and, for GitHub, the exact PR/publication/remote identities | it first live-reads exact task/archive/summary/remote/PR state. Already-current official archive, generated summary, archive commit/push, READY PR and schema-valid archive-bound result emit `ready_for_merge -> ready_for_merge_ref -> guru-merge-task-pr` with zero mutation/confirmation. Otherwise one exact Finish transaction plan covers only summary, official archive, archive commit/push and Ready transition; clear confirmation enters `confirmation_reentry`, refusal emits `finish_not_executed -> task_ref,acceptance_ref -> task-finish-not-executed`. The executor/recovery records completed/pending/unknown steps and never repeats archive, push or Ready. GitHub success emits `ready_for_merge_ref`; none success alone emits `finished_none -> delivery_fact_ref` binding the current durable result -> `guru-resolve-issue-closure:none`. `finish_blocked` re-enters only `finish_reentry`. Finish never merges/closes/cleans and never reads standalone verifier state |
 | `guru-clean-task-resources` / `prepare`, `confirmation_reentry`, `cleanup_reentry` | semantic | prepare=`task_ref,delivery_terminal_ref`; confirmation re-entry=`continuation_ref`; cleanup repair re-entry=`continuation_ref,repair_input`. The terminal ref binds the already-finished durable result; continuation also binds current resource-plan identity | the Skill live-reads owned/unrelated/retained resources, authors and reviews its private exact cleanup plan and skips confirmation when deletable owned resources are empty; otherwise `cleanup_confirmation_required -> continuation_ref -> task-resource-cleanup-confirmation-wait`, whose clear current affirmative enters `confirmation_reentry`, missing confirmation remains waiting and refusal returns `resources_retained`; `cleaned\|resources_retained -> durable_result_ref -> workflow-completed`; `blocked` re-enters only `cleanup_reentry`. Cleanup cannot replay Publish, Finish, Merge or Closure |
+
+For the existing `guru-publish-task-pr:provenance_prepare` installed profile, the Design projection for
+`EVO-REQ-084` adds no public input/output field or exit. Before the immutable extension-source checkout is created,
+the owner reads the parent installed manifest and deterministically validates
+`install.selected_platforms`, `install.all_platforms`, `skill_packages.selected_platforms` and
+`overlays.selected_platforms`. The three lists must be non-empty, sorted, unique, canonical and equal. Only
+`all_platforms=true` plus the full canonical set projects `--all-platforms`; every `false` selection projects repeated
+ordered `--platform`, including an explicit full set. Invalid identity raises the existing provenance preparation
+recovery before source checkout, preset apply or commit, with target managed mutation zero. This is an internal
+projection of the existing installed mode and `provenance_reentry`, not a new profile, continuation, DTO or owner.
 
 `guru-accepted-route-router` invokes `guru-publish-task-pr:provenance_prepare` only for `github_pr` and
 `guru-finalize-task:none` only for `none`. Every `acceptance_ref`, `publication_head_ref`, `ready_for_merge_ref`,

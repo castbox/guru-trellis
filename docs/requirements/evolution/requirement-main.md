@@ -1,8 +1,8 @@
 # Guru Trellis Evolution Requirements
 
-版本：`evolution-requirements-revision-2026-08-29`；文档状态：`requirements_ready_for_design`；目标层
+版本：`evolution-requirements-revision-2026-08-30`；文档状态：`requirements_ready_for_design`；目标层
 `EVO-001..007` 状态：`user_confirmed`；详细需求层状态：`evidence_ready`；最后修订：
-`2026-08-29`。
+`2026-08-30`。
 
 ## 0. Authority、状态与阶段边界
 
@@ -21,16 +21,23 @@ fixture，不拥有或复制非功能正文。
 
 它定义 target，不声明 current runtime 已经实现、验证或发布这些结果。本候选用于
 current-to-target trace 的 selected-base authority snapshot 为
-`source_ref=3efcce72a0d47e38ec725aa8c0f8498992f3416f`。该 immutable ref 是当前
-`origin/main`，包含 #311 merge commit `21c7da14798683193b460a5e7c5bd24c7c517804` 与
-#312 merge commit `3efcce72a0d47e38ec725aa8c0f8498992f3416f`；其中 active RDT/Design/Test/
-Architecture authority 为 `current-main-0.6.5-guru.41`，其 source baseline 为
-`651defee871d4bb07683547df09d1e0ac62b4a49` + #311 serialized promotion delta。所有 current
+`source_ref=5650df47fe17fe89b7cb616be6c9551608164832`。该 immutable ref 是当前
+`origin/main`，包含 #311 merge commit `21c7da14798683193b460a5e7c5bd24c7c517804`、
+#312 merge commit `3efcce72a0d47e38ec725aa8c0f8498992f3416f`、#267 release-authority merge
+`a41b8a34d237e1863225d069ca9c6b5ad6ae476a`、其 evidence-fix PR #316 merge
+`9f560ec191851f82768d5e7aa031e6d852c34f14`、修复 installed Finalizer 平台选择保真的 PR #317 merge
+`736ef3335f1b1b0dcbf92f1e8e53343f922aa32a` 与 caller-inventory consistency PR #318 merge
+`5650df47fe17fe89b7cb616be6c9551608164832`；其中 active RDT/Design/Test/Architecture authority 为
+`current-main-0.6.5-guru.42`，其 source baseline 为 reviewed task head
+`d3dca74b3a94569a095594477c15b032526f2381` + #267 expected `.41` serialized promotion delta。所有 current
 结论必须从该 immutable ref 的 exact path 读取；后续 `origin/main` 漂移不得被本候选隐式吸收，
 必须重新绑定并复审。当前未 rebase 的 task worktree 仍只是本轮 candidate 载体，不能与该 ref
 拼接成虚构 authority。
 
-`.40` / `d907fcc5e17f23b6499648e5e9a208457f2d6f8b` 与更早的 `a4b68d42…` 只保留为历史
+上一 selected base `736ef3335f1b1b0dcbf92f1e8e53343f922aa32a`、更早 selected base
+`9f560ec191851f82768d5e7aa031e6d852c34f14`、`.41` /
+`3efcce72a0d47e38ec725aa8c0f8498992f3416f`、`.40` /
+`d907fcc5e17f23b6499648e5e9a208457f2d6f8b` 与更早的 `a4b68d42…` 只保留为历史
 current-to-target comparison evidence，不再称为 current authority。具体
 Requirements/Design/Test/Architecture 路径与读取方式由
 [`current-capability-inventory.md` 第 1 节](./current-capability-inventory.md#1-authority-与一致性关系)
@@ -43,14 +50,26 @@ Issue closure 等明确 follow-up；#312 的 accepted implementation 已由 PR #
 CLOSED。Issue lifecycle 不再单独决定 prerequisite：accepted scope 未解决、exact merge identity
 不可验证或 merge 不可从 selected base 到达时仍必须 blocked；若 accepted scope 已 current、merge
 可达且 OPEN 只表示明确 out-of-scope follow-up，则不因 OPEN 单独阻断。当前 candidate 已完成
-selected-base `.41` RDT/Architecture/inventory fresh reconciliation、merged-behavior comparison 与全部
-capability requirement/normal-path fixture 零差集，并已针对同一 exact identity 通过 fresh
-Requirements semantic、Strict technical 与确定性闭包审核。current continuation 随后已针对同一 exact
-identity 分配全部 73 个 Design responsibilities 与 50 个 fixture mappings，完成 fresh Evolution Design
-全稿审核和确定性闭包，并得到 `design_ready_for_delivery_planning` / `fresh_design_review_passed` /
-`evolution_refactor_eligible`。当前仍停留在 Phase 1 Design gate 终点；runtime implementation、delivery、
-cutover 与 Release 仍不在本阶段。只有 pre-`REQ-REV-133` 的旧 Design/Test/Architecture/task planning
-绑定保持 stale；current projection 是已审核 target planning，不得冒充 current runtime/as-built 结论。
+selected-base `.42` RDT/Architecture/inventory fresh reconciliation、`.41...42` fact-only authority
+comparison、`a41b8a34...9f560ec1` fact-only release-lifecycle/provenance evidence comparison，以及
+`9f560ec1...736ef333` 中 PR #317 的 installed platform-selection runtime advance。该新 current
+capability 已同步为第 84 项 target requirement、第 34 项 NFR，并继续折入既有
+`CUR-CAP-013/014/017` 与 installed-publication fixture；merged-behavior comparison 与全部 capability
+requirement/normal-path fixture 零差集已经重建；fresh Requirements semantic、Strict technical 与
+确定性闭包审核已针对同一 exact identity 完成，P1/P2/P3 finding 与 high-risk open question 均为 0。
+`736ef333...5650df47` 仅更新 Finalizer caller-inventory identity、#267 Issue disposition、dogfood
+provenance 与 task archive/merge facts，不改变 runtime behavior、public Skill contract、`.42` authority、
+Release identity 或任一 Evolution 集合。`.42` 的 `REQ-052..055`、`DES-049..052`、
+`TST-036..039`、`SCN-048` 只承接 `.3/.39/CLI 0.6.15` candidate/target alignment 与 promotion lifecycle；
+PR #317 已把 latest stable current 修正为 `.2/.38/CLI 0.6.15`，`.3/.39` 仍 unverified，
+不增加 Evolution capability、target delta、fixture 或 runtime behavior。current continuation 随后已针对同一 exact
+identity 分配的 73 个 Design responsibilities 与 50 个 fixture mappings 同步修订后的 planning
+projection，并完成 fresh Design 全稿审核与确定性闭包，P1/P2/P3 finding 与 high-risk open question 均为 0。
+Pre-`REQ-REV-142` Design review 与 eligibility 仍为 stale historical evidence；当前状态为
+`requirements_ready_for_design` / `design_ready_for_delivery_planning` / `fresh_design_review_passed` /
+`evolution_refactor_eligible`；仍停留在 Phase 1 Design gate closure boundary，runtime implementation、delivery、
+cutover 与 Release 均不在本阶段。pre-`REQ-REV-133` 与 pre-`REQ-REV-142` 的 Design/Test/Architecture/task
+review 绑定都只作历史 stale 证据，不得冒充 current runtime/as-built 或 current planning pass。
 
 ### 0.1 唯一消费规则
 
@@ -138,6 +157,10 @@ exact-candidate Release 的证明范围。
 | `EVO-EVD-045` | `2026-08-28` live reconciliation：PR #313 的 merge commit `21c7da14798683193b460a5e7c5bd24c7c517804` 已进入 `origin/main@3efcce72a0d47e38ec725aa8c0f8498992f3416f`，#311 accepted implementation scope 已合入且 exact merge 可达；#311 Issue 仍 `OPEN`，PR 明确保留 production release、错误文件重试与 Issue closure follow-up。PR #314 的 merge commit `3efcce72a0d47e38ec725aa8c0f8498992f3416f` 已进入同一 selected base，#312 accepted implementation 已合入且 Issue `CLOSED`；`.41` RDT/Design/Test/Architecture authority 绑定 source baseline `651defee871d4bb07683547df09d1e0ac62b4a49` + #311 promotion | 证明 accepted implementation scope、exact merge identity、base reachability 与 Issue lifecycle 必须分开建模：#311 的 OPEN 仅因明确 out-of-scope follow-up，不单独阻断 Evolution prerequisite；#312 的 CLOSED 也不能替代 merge/reachability 或 accepted-scope verification。当前仍需从 selected base 完成 capability rebind、requirement/normal-path fixture 零差集与 fresh Requirements gate；不证明 target Design、runtime 或发布已完成 |
 | `EVO-EVD-046` | `2026-08-29` 对 selected base 的 fresh authority reconciliation：`.41` 新增 `REQ-047..051`、`TST-031..035` 与 `SCN-041..047`；#311 的 current observable capability 除 installed/self-hosted publication continuity 外，还要求 standalone verifier 在 temporary cleanup 前产生 non-null structured failure evidence，matrix 外失败归类为 `postcheck_failure`，且 Finalizer 零消费；#312 保持 original-worktree clean-tracked continuity 与 unrelated-dirty isolation | 证明 #311 必须折入 `CUR-CAP-013/014/017/018/019`、#312 必须折入 `CUR-CAP-012`，并要求新增 `EVO-REQ-083` 与独立 verifier failure fixture。两项都已是 selected-base current capability，不再用 `new_target` delta 冒充；不证明 Design successor、runtime 或发布已完成 |
 | `EVO-EVD-047` | `2026-08-29` current-to-target 全集 comparison：23 个 `CUR-CAP-*`、`.41` Requirements/Behavior/NFR/Test capability 与 13 个真正的 target delta 均已获得 target requirement 和 normal-path fixture successor；#311 的 installed publication 能力由 current-capability successor 承接，原 `TARGET-DELTA-014` 因重复分类被删除 | 证明 Requirements candidate 的 52 UC / 83 REQ / 33 NFR / 23 current capability / 13 target delta / 50 fixture projection 可进入 fresh 全稿审核；旧 82/33/14/49 closure、旧 review 与旧 Design mapping 不得复用，fresh 双审前仍不产生 `requirements_ready_for_design` |
+| `EVO-EVD-048` | `2026-08-30` live `origin/main=a41b8a34d237e1863225d069ca9c6b5ad6ae476a` 已把唯一 active RDT/Architecture authority 从 `.41` 提升为 `.42`，current extension candidate 为 `0.6.15-guru.39`、target Release 为 `v0.6.15-guru.3`、Trellis CLI 为 `0.6.15`；tag、GitHub Release、tag-pinned smoke 与 #311 post-release proof 仍为 `unverified`。`.41...42` semantic diff 只新增 authority/release identity、traceability、evidence 与 promotion lifecycle facts，21 active Skills / 89 exits及 runtime behavior 不变 | 证明 `REQ-REV-139` 必须 fresh 重绑 current authority，同时把 `.42` 新增 `REQ-052..055`、`DES-049..052`、`TST-036..039`、`SCN-048` 归类为 fact-only evidence；23 current capabilities、13 target deltas、50 fixtures 和 73 Design responsibilities 不变。该证据不证明 `.3` 已发布、Evolution runtime 已实现、base 已同步或任何 Git/GitHub 副作用已发生 |
+| `EVO-EVD-049` | `2026-08-30` live `origin/main=9f560ec191851f82768d5e7aa031e6d852c34f14` 相对上一 selected base `a41b8a34…` 仅包含 #267 post-merge lifecycle evidence 修正 `f5c47d28…`、dogfood provenance metadata 更新 `f7c5866e…`、该修正 task archive `7d7db281…` 与 PR #316 merge `9f560ec1…`；`.trellis/guru-team/extension.json` 的 extension/CLI version 不变，仅 source provenance 改为 `f5c47d287516309bbb7d3cba75fbb927476f495d`，`.42` Architecture evidence 与 Test plan 只校正 lifecycle facts | 证明 `REQ-REV-140` / `DES-REV-050` 必须把 exact selected-base locator fresh 重绑到 `9f560ec1…`，但不得新增或删除 UC、REQ、NFR、current capability、target delta、fixture、Design responsibility、Skill、exit 或 runtime behavior；`.42`、`.3/.39/CLI 0.6.15` 与所有未验证 Release 边界保持不变。该证据不证明 base 已同步、任何实现/发布副作用已发生或 #267/#311 post-release gate 已完成 |
+| `EVO-EVD-050` | `2026-08-30` live `origin/main=736ef3335f1b1b0dcbf92f1e8e53343f922aa32a` 经 PR #317 合入 #267 pre-tag finding 修复：installed Finalizer provenance reprepare 现从 parent manifest 的 `install.selected_platforms`、`install.all_platforms`、`skill_packages.selected_platforms` 与 `overlays.selected_platforms` 派生 preset apply 平台参数；selected lists 必须非空、排序、去重、只含 `claude\|codex\|cursor` 且三处完全一致。`all_platforms=true` 只接受完整 canonical set 并使用 `--all-platforms`；否则按 exact selection 重复 `--platform <name>`，包括显式完整三平台，禁止把任一 subset 扩张为全平台。missing/malformed/duplicate/unsorted/unknown/inconsistent identity 在 extension source checkout、preset apply 与 commit 前 fail closed。PR 同时把 latest stable current fact 修正为 `v0.6.15-guru.2` / extension `.38` / CLI `0.6.15`；`.3/.39` 仍是未验证 successor | 证明 `REQ-REV-141` 必须将 selected base 重绑到 `736ef333…`，把平台选择保真作为 material current capability advance 同步为 `EVO-REQ-084` / `EVO-NFR-034`，折入 `CUR-CAP-013/014/017` 与 `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION`，并使旧 Requirements/Design review freshness 失效。它不新增 UC、核心能力、target delta、fixture、Design responsibility、Skill 或 exit，也不证明 Evolution runtime 已实现、`.3` 已发布或 fresh Requirements/Design review 已通过 |
+| `EVO-EVD-051` | `2026-08-30` live `origin/main=5650df47fe17fe89b7cb616be6c9551608164832` 经 PR #318 合入 #267 Finalizer caller-inventory consistency 修复：唯一 second-hop inventory row 只更新 `id` 与 `anchor_sha256`，Issue Scope Ledger 保持 related-only；后续提交只更新 dogfood provenance、task archive 与 merge facts。PR body 明确 Finalizer runtime、routing discovery、public Skill API/schema/typed exit、Release identity、extension revision 与 current `.42` authority 均不改变 | 证明 `REQ-REV-142` 必须把 exact selected-base locator 从 `736ef333…` 重绑到 `5650df47…`，并把该 delta 归类为 fact-only inventory/provenance correction；52/84/34/23/13/50/73/39/43/37/21/89 与 #311/#312/#317 successor 全部保持。它不证明 base 已同步、Evolution runtime 已实现、`.3/.39` 已发布或 fresh Requirements/Design review 已通过 |
 
 ## 1. 产品总述
 
@@ -1350,6 +1373,11 @@ terminal。
     cwd/runtime mapping/worktree/task/branch identity mismatch 仍阻断；通用 source-clean 开关不得绕过
     artifact 或 identity blocker。source checkout 与 task worktree 中无关 dirty 状态不得被归入同 task
     blocker，也不得因本放行合同被修改、stage、清理或忽略。
+  - selected-base installed publication successor 还必须按 `EVO-REQ-084` 保留 parent manifest 的 exact
+    platform selection。该能力在 PR #317 后属于 current `CUR-CAP-013/014/017`，不是新的 target delta；
+    任一 subset 扩张、manifest identity 漏检或 invalid selection 在 source checkout/preset apply/commit 后才
+    被发现，都必须先返回 Requirements owner 修订，不得用旧 installed-publication fixture 或 Design pass
+    冒充 current successor。
 
   Requirements gate 与 refactor gate 必须分离。首先，只有 `CUR-CAP-*` 全集、从 selected base fresh
   reclassify 的 #311/#312 capability 与所有 `TARGET-DELTA-*` 都有 target requirement 和正常路径
@@ -1379,6 +1407,23 @@ terminal。
   或 Release 的 consistency/capability check 仍只向其 exact caller 返回最小 finding，不取得 standalone
   verifier ownership。本需求只约束可观察结果、错误分类、consumer 与顺序，不预选 schema id、文件路径、
   script 或内部记录机制。
+- `EVO-REQ-084`：Evolution 必须无损保留 installed Finalizer provenance reprepare 的平台选择
+  identity，不得把已安装的单平台或平台子集扩张为全部 supported platforms。每次 preparation 必须从
+  reviewed target 的 parent installed manifest 读取且只读取
+  `install.selected_platforms`、`install.all_platforms`、`skill_packages.selected_platforms` 与
+  `overlays.selected_platforms`：三处 selected list 都必须是非空、已排序、无重复、成员只属于
+  canonical closed set `claude|codex|cursor`，并且三处逐项完全相同；`install.all_platforms` 必须是
+  boolean。`all_platforms=true` 只在 selected list 等于完整 canonical set 时合法，并向 preset provider
+  传递 `--all-platforms`；`all_platforms=false` 必须按 manifest 中的 exact ordered selection 为每个平台
+  重复传递 `--platform <name>`，即使该显式 selection 恰好包含完整三平台也不得改写为
+  `--all-platforms`。任一 locator missing、类型错误、空集合、未排序、重复、未知平台、三处不一致，或
+  `all_platforms=true` 与非完整集合冲突，必须在 immutable extension source checkout、preset apply 和
+  provenance commit 前 fail closed；target reviewed checkout 不得产生 managed mutation，existing
+  publication/reviewed-content identity 与 recovery owner 保持 current。正向路径必须证明 Claude-only、
+  Codex-only、Cursor-only、任意合法 subset 与 all-platform 安装在 reprepare 后保持 parent exact platform
+  set，metadata tail 仍只改变既有 allowlisted provenance fields。本需求只拥有平台 identity 的输入、
+  校验、provider projection、失败时序与可观察保真结果，不预选 Evolution 内部 helper、schema、文件路径
+  或新增 public Skill/exit。
 - `EVO-REQ-057`：显式 contract wording review 必须保持可独立调用、scope-bounded、
   semantic finding/revision/return-to-caller 闭环，并区分 review-only 与 change-scoped 两种
   caller contract。review-only 的 `pass`、route-level `specialist_revision_required` 与 `blocked` 结果必须分别由唯一 caller
@@ -1775,7 +1820,7 @@ package 中不存在；因此矩阵中的该 caller 只能标记 `current_drift`
 
 #### Current capability preservation trace
 
-完整 current 能力、`.41` Design inventory 的 21 个 active Skill 逐项 successor、current
+完整 current 能力、`.42` Design inventory 的 21 个 active Skill 逐项 successor、current
 Requirements/NFR/Test coverage、target delta 与 intentionally-not-retained 差集统一维护在
 [`current-capability-inventory.md`](./current-capability-inventory.md)。本文件不复制该追踪表；
 任何 current capability 没有 target requirement/fixture successor 时，`EVO-REQ-055` 不成立。
@@ -1837,7 +1882,7 @@ envelope/receipt 继续，不能生成第二次 receipt。
 | `EVO-FIX-PLAN-NORMAL` | `REQ-UC-EVO-001,002,009,017,018,033,042` | clear Issue + reviewed design + current aligned RDT/Architecture 从请求进入到 `plan_ready`；entry-route/change-mode selection 前无方案性 repository work/副作用；RDT 前置回读和 impact 先于 task planning；RDT、Architecture 与三份 task 文件按稳定 identity/order 构成主要 context，live delta 位于最小变化 tail；task 三件套仅含 current locator/适用引用与 task-local delta；AI 直接据此完成一次 authoring、一次 evidence-backed approval，零 routine clarification、事务型 handoff、assignment/signoff 或 already-current fact restatement |
 | `EVO-FIX-BRANCH-FINDING` | `REQ-UC-EVO-020,022` | finding 修订后 fresh check/commit/full-diff review 闭环 |
 | `EVO-FIX-BASE-EVOLUTION` | `REQ-UC-EVO-021,052` | 无关 base delta 不全链失效；相关 delta 返回最早受影响 owner 且不重建 task。固定 #312 正常场景：active task 的规划文件已合入 current base、原 task 仍 `in_progress`、原 worktree 继续；source checkout 中 current-base-tracked 且逐路径 clean 的同 task 文件不进入 blocker。分别在 source checkout 与 task worktree 注入不属于该 task artifact/identity 的 unrelated dirty 状态，证明它们保持原归属、不被误分类且不被修改/stage/清理；分别注入 untracked/dirty 同 task 文件、`review.md`/`reviews/**`、review/check metadata、错误 cwd/runtime mapping/worktree/task/branch identity，全部仍 fail closed；`--allow-source-clean` 或等价通用开关不得绕过这些 blocker |
-| `EVO-FIX-EVOLUTION-PREREQUISITE` | `REQ-UC-EVO-052` | 分别固定六维度结果：accepted implementation scope 未完成、accepted scope 有未解决 finding、exact PR/merge identity 不可验证、merge 不可从 selected base 到达、以及 `OPEN` 但 follow-up 边界不清，均得到 `evolution_prerequisite_blocked` 且 Evolution Design/runtime/delivery/cutover/Release 动作为 0；`OPEN` 且仅因明确 out-of-scope follow-up 保持开放不得单独阻断，`CLOSED` 也不能替代 merge/reachability 或 accepted-scope verification。当前正例固定 #311 PR #313/merge `21c7da1…` reachable + `OPEN` follow-up-only、#312 PR #314/merge `3efcce7…` reachable + `CLOSED`，再从 exact selected-base identity fresh 读取 `.41` RDT/Architecture/inventory，逐项比较最终 merged contract 与 observable behavior，证明全部既有能力及 #311/#312 的 requirement/normal-path fixture 差集为 0；其中 #311 必须同时到达 installed publication 与 verifier failure evidence 两项独立正常路径。fresh Requirements 全稿审核后只得到 `requirements_ready_for_design`。随后 Design 为同一能力集分配 successor/mapping 并执行 fresh Design 全稿审核，差集与 finding 均为 0 后才得到 `evolution_refactor_eligible`；在此之前所有 runtime/delivery/cutover/Release 动作为 0。旧 `d907fcc5...` snapshot、旧 ready/review 结论、Issue 摘要或局部 PASS 复用计数为 0；任何后续 material authority/capability drift 使对应较晚 eligibility stale 并回到最早受影响 gate |
+| `EVO-FIX-EVOLUTION-PREREQUISITE` | `REQ-UC-EVO-052` | 分别固定六维度结果：accepted implementation scope 未完成、accepted scope 有未解决 finding、exact PR/merge identity 不可验证、merge 不可从 selected base 到达、以及 `OPEN` 但 follow-up 边界不清，均得到 `evolution_prerequisite_blocked` 且 Evolution Design/runtime/delivery/cutover/Release 动作为 0；`OPEN` 且仅因明确 out-of-scope follow-up 保持开放不得单独阻断，`CLOSED` 也不能替代 merge/reachability 或 accepted-scope verification。当前正例固定 #311 PR #313/merge `21c7da1…` reachable + `OPEN` follow-up-only、#312 PR #314/merge `3efcce7…` reachable + `CLOSED`，再从 exact `origin/main@5650df47…` fresh 读取 `.42` RDT/Architecture/inventory；验证 `.41...42`、`a41b8a34...9f560ec1` 与 `736ef333...5650df47` 仅为 fact-only promotion/evidence delta，并把 `9f560ec1...736ef333` 的 PR #317 platform-selection advance reclassify 为既有 `CUR-CAP-013/014/017`。逐项比较最终 merged contract 与 observable behavior，证明全部既有能力及 #311/#312/#317 的 requirement/normal-path fixture 差集为 0；installed publication 必须同时到达 exact platform-set preservation，#311 还必须到达 verifier failure evidence 的独立正常路径。fresh Requirements 全稿审核后只得到 `requirements_ready_for_design`。随后 Design 为同一能力集分配 successor/mapping 并执行 fresh Design 全稿审核，差集与 finding 均为 0 后才得到 `evolution_refactor_eligible`；在此之前所有 runtime/delivery/cutover/Release 动作为 0。旧 `736ef333...`、`9f560ec1...`、`3efcce72...` / `.41`、`d907fcc5...` / `.40` snapshot、旧 ready/review 结论、Issue 摘要或局部 PASS 复用计数为 0；任何后续 material authority/capability drift 使对应较晚 eligibility stale 并回到最早受影响 gate |
 | `EVO-FIX-ARCH-PROMOTION` | `REQ-UC-EVO-023` | serialized promotion 后 fresh Phase 2/commit/review |
 | `EVO-FIX-ARCH-DOWNSTREAM-FRESHNESS` | `REQ-UC-EVO-019,022..023,025..026,028..029` | 在 `github_pr` 与 `none` 两种 route 中，current Architecture binding 从 Implementation 经 Phase 2、full-diff review、对应 publication/local acceptance readiness、Acceptance 到 Finish 均可追踪；在各下游责任边界注入正常 identity-equivalent 与 material authority change，前者不重复语义审核，后者返回最早受影响 owner，任何 gate 不消费 stale binding；Cleanup 不重新判断 Architecture |
 | `EVO-FIX-RDT-DOWNSTREAM-FRESHNESS` | `REQ-UC-EVO-019..020,022,025..026,028..029,042` | current RDT binding/impact/contribution 从 Planning 经 Implementation、Phase 2、full-diff review、两种 delivery readiness、Acceptance 到 Finish 可追踪；Implementation discovery 会及时回写 task-local contribution；等价 identity 不重审全文，material RDT change 返回最早受影响 owner，任何 gate 不消费 stale RDT，Cleanup 不重新判断 RDT |
@@ -1851,7 +1896,7 @@ envelope/receipt 继续，不能生成第二次 receipt。
 | `EVO-FIX-LATEST-INTENT` | `REQ-UC-EVO-030..031` | 分别在无副作用、Phase 2 后已有可逆本地副作用、不可逆远端副作用前后、长运行 wait 中和 compression/resume 前后注入 override/additive 指令；下一响应必须先消费最新意图。无副作用 override 停止旧 route；停止 current 后，唯一 request-entry consumer 为 override 分配新的 invocation identity/`context_envelope`，恰好生成一次新的 admission `request_received`，随后按 `independent_request_isolation_gate -> pre_semantic_dispatch_guard -> entry_route_selected` 顺序重新执行六类 exactly-one route；本地副作用 override 停止新增写入并保留具有唯一 resume owner 的 exact `suspended_current_work`，随后由唯一 request-entry consumer 使用全新的 identity/envelope、恰好一次 admission receipt，并按同一 isolation/guard/entry 顺序重新分类，新 lifecycle 在任何标准资源副作用前完成 scope/plan confirmation，资源准备后同 scope 完成 reconciliation、异 scope 证明 isolation，不自动提交/丢弃/清理。上述 bound override 的 preclassification 事件本身不得生成 receipt 或再次 preclassify。不可逆远端副作用后的 generic override 保持旧 candidate 不变，分别等待旧 route 正常形成既定 current terminal、失败后 forward recover 至 current terminal 或 terminal block；任一结果 current 后，唯一 request-entry consumer 先为 latest override 分配新的 invocation identity/`context_envelope`，再恰好生成一次新的 admission `request_received`，随后按 `independent_request_isolation_gate -> pre_semantic_dispatch_guard -> entry_route_selected` 顺序重新分类，不得复用旧 identity/envelope/candidate/receipt，并分别验证它恰好分类为 direct answer、new change、resume/recovery/history、distribution/release、specialist review 或 stop 之一，只有 new change 进入二级 mode selection，错误默认 new change 为 0。additive 交叉验证三类：不改变 scope/candidate/route/terminal acceptance 的 owner-local 请求，以及只补充 recovery 输入的请求，均按到达顺序由 current/最早 owner 消费；不可逆远端副作用前的 material additive 返回最早受影响 owner 并重算 freshness；不可逆远端副作用开始后的 material additive 形成绑定原 lifecycle 与到达顺序、可发现且有唯一 consumer 的 `additive_change_pending`，不修改旧 in-flight/published candidate，并分别验证旧 route 正常成功、失败后 forward recover 至 current terminal 与 terminal block 三种收敛；任一结果 current 后，唯一 consumer 先为 pending intent 分配新的 invocation identity/`context_envelope`，再恰好生成一次新的 admission `request_received`，随后按 `independent_request_isolation_gate -> pre_semantic_dispatch_guard -> entry_route_selected` 顺序重新执行六类 exactly-one route，不得复用旧 identity/envelope/candidate/receipt，分别验证它恰好分类为 direct answer、new change、resume/recovery/history、distribution/release、specialist review 或 stop 之一，只有 new change 进入二级 mode selection，错误默认 new change 为 0。所有 pending/latest intent 的丢失、重排、重复消费、提前消费、无 consumer、错误 entry route 与旧 candidate mutation 均为 0 |
 | `EVO-FIX-LONG-OUTPUT` | `REQ-UC-EVO-032` | 多次 wait 只返回 delta，稳定 authority/task-doc context 不随累计 stdout 重复注入；invalid handle、累计 stdout 重注入、长 handoff summary 与 already-current fact restatement 均为 0 |
 | `EVO-FIX-PROJECTION` | `REQ-UC-EVO-034` | shared `.agents/skills` projection layer + Codex/Claude/Cursor 三个 supported host，以及 canonical/dogfood/installed/preset 的语义一致性只含新合同；target draft 在 current runtime、安装结果和发布说明中均不得被声明为 current/implemented。分别在 `workflow/task_data/docs_authority` 注入 capability loss，并在 Skill API/interface/schema/command、distribution/managed-installed inventory、mode/template hash/sidecar、平台 parity、extension identity/version binding 注入 consistency/installation drift；top-level standalone 两类 failure 都只由 projection owner 得到绑定 exact candidate/surface/gate/mismatch 的 `projection_validation_blocked`，后一类不得被分类为 capability loss。修复后重入 exact `projection_validation`，不得切换 install/migration/Release 或把任一局部 current 冒充 `projection_current` |
-| `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION` | `REQ-UC-EVO-052` | 从与 current installation manifest/managed-byte/source-commit identity 精确绑定的正式安装构造一个不含 canonical Guru source tree 的 clean business repository，分别执行 installed 与 self-hosted publication control。installed 路径必须从 immutable extension source staging 执行 provenance prepare，同时把 target reviewed checkout 作为独立 lineage/cleanliness boundary；metadata tail 只改变 manifest 声明的 provenance 字段，reviewed-content identity 不变，并继续形成唯一 fast-forward publication identity、唯一 Draft PR、summary、official archive 与 archive push、Ready 及 archive 后 schema-valid `ready_for_merge`，再次 invoke 不重复 Git/GitHub/archive mutation。缺失、mutable、mismatched extension source、把 target 当 source、额外 managed byte/task/sidecar/config diff 均阻断且不降低既有 Issue scope/plan/remote/Ready/archive/recovery gate；installed 与 self-hosted 正常路径均可继续，source/target checkout 混淆和 terminal mutation 重放计数均为 0 |
+| `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION` | `REQ-UC-EVO-052` | 从与 current installation manifest/managed-byte/source-commit identity 精确绑定的正式安装构造一个不含 canonical Guru source tree 的 clean business repository，分别执行 installed 与 self-hosted publication control。installed 路径必须从 immutable extension source staging 执行 provenance prepare，同时把 target reviewed checkout 作为独立 lineage/cleanliness boundary；metadata tail 只改变 manifest 声明的 provenance 字段，reviewed-content identity 不变，并继续形成唯一 fast-forward publication identity、唯一 Draft PR、summary、official archive 与 archive push、Ready 及 archive 后 schema-valid `ready_for_merge`，再次 invoke 不重复 Git/GitHub/archive mutation。平台保真矩阵必须覆盖 Claude-only、Codex-only、Cursor-only、合法 subset、all-platform 与显式 full-set selection：三处 selected lists exact equal，`all_platforms=true` 只映射完整 set + `--all-platforms`，其它合法 selection 只按原顺序重复 `--platform`，post-reprepare set 与 parent 完全相同。missing/type-invalid/empty/duplicate/unsorted/unknown/mismatch 或 invalid `all_platforms` 在 extension source checkout、preset apply 与 commit 前阻断，managed mutation 为 0。缺失、mutable、mismatched extension source、把 target 当 source、额外 managed byte/task/sidecar/config diff 同样阻断且不降低既有 Issue scope/plan/remote/Ready/archive/recovery gate；installed 与 self-hosted 正常路径均可继续，source/target checkout 混淆、subset expansion 和 terminal mutation 重放计数均为 0 |
 | `EVO-FIX-VERIFIER-FAILURE-EVIDENCE` | `REQ-UC-EVO-052` | 分别让一个适用 matrix command 与一个 matrix 外 postcheck 正常失败；每次都必须在 temporary workspace cleanup 前由 standalone verifier 形成 schema-valid、non-null evidence，精确记录实际 stage、适用 matrix cell、稳定 command label、exit code、bounded credential-safe error tail 与 stdout/stderr hash/size，matrix 外 failure 明确归类为 `postcheck_failure`。evidence 形成后才执行 cleanup，并能由 verifier blocked/recovery owner 查询 current failure、unverified boundary 与 exact re-entry；修复输入后只重入 verifier 的对应执行边界。`failed + null failure`、错误 cell/stage、无界或含 secret 的 tail、cleanup 先于 evidence、Finalizer 读取 verifier lifecycle/gate/artifact/exit，以及内嵌 install/migration/Release finding 夺取 standalone ownership 的计数均为 0 |
 | `EVO-FIX-CLEAN-INSTALL` | `REQ-UC-EVO-035` | 仅从 `distribution_state_preclassification=clean_target` 的 repository 执行 supported install；clean predicate 必须证明 active `.trellis/workflow.md` 缺失，且没有任何可唯一归属的 official Trellis/Guru managed installation state，包括 official config/template-hash/scripts/spec/task/workspace/manifest、Guru current workflow/managed projection、未处理 sidecar、active/resumable lifecycle、archive/finish/history 或 retained ref。non-Guru active workflow 的 identity/provenance/owner 或当前安全 transition plan 未唯一收敛时，先形成 `foreign_workflow -> distribution_state_blocked`；收敛后只重入 preclassification 并转为 `existing_migration_target`。可唯一归属的 official Trellis footprint 与上述两类 workflow 状态都作为该 clean fixture 的负例，不得当作普通用户文件或 clean 输入。任一 official/partial/legacy surface 或无法唯一归属的 mixed/unknown state 必须改走 migration 或 `distribution_state_blocked`，不得进入成功路径。成功依次形成 application/validation current 并得到 `new_contract_current`。分别在 application 与 validation 注入本地 finding、内嵌两类 projection-gate finding 及 timeout/unavailable、认证/配额、unknown-outcome/partial-success provider failure；内嵌 validator 只返回最小 finding，clean-install owner 仍唯一得到绑定 exact step、created resources、最后确认 live state 与 unverified boundary 的 `clean_install_blocked` 或 exact-step recovery。前提恢复后重入 exact clean-install step，不生成 `projection_validation_blocked`、`pre_migration_current_preserved`，不猜测旧 authority、切换 distribution route 或把 partial install 冒充 target current |
 | `EVO-FIX-MIGRATION` | `REQ-UC-EVO-035` | 仅从 `distribution_state_preclassification=existing_migration_target` 的 repository 执行一个 composite migration invocation；除存在 Guru current workflow 外，必须覆盖只有可唯一归属 official Trellis config/template-hash/scripts/spec/task/workspace/manifest、但 workflow/Guru projection 缺失的 installation footprint，以及 workflow 缺失但可唯一归属的 `.trellis/guru-team/`、shared/host managed projection、`.new/.bak` sidecar、active/resumable lifecycle、archive/finish/history 或 retained ref 等 partial/legacy target。non-Guru active workflow 只有在 identity/provenance/owner 与当前安全 transition plan 均唯一收敛后，才经 preclassification 进入该 existing migration fixture，并由 WORKFLOW-SWITCH 保留至唯一 cutover；在此之前先形成 `foreign_workflow -> distribution_state_blocked`，不得让 WORKFLOW-SWITCH 自动替换它，也不得要求先 mutation 才取得 migration 分类；mixed/unknown/unowned/multiple identity 必须先得到 `distribution_state_blocked`，不得猜测 clean 或 migration。共享 preflight 后按 `MIG-CELL-INSTALL -> MIG-CELL-UPGRADE -> MIG-CELL-UPDATE -> MIG-CELL-WORKFLOW-SWITCH -> MIG-CELL-PRESET-REAPPLY` 顺序执行适用 provider substep；INSTALL 的 `trellis init -y --skip-existing` 只补齐缺失 official/platform files，不替换 existing workflow，workflow target 由显式 preview/force substep 建立。每个 invocation 只执行适用 substep；全部 `not_applicable` 仍须形成 composite current 并执行一次 final validation。preflight 固定包含一个 active/resumable task、一个 completed archive/finish/history result 与 retained commit/ref，先证明逐项 preservation/migration 判定；WORKFLOW-SWITCH 的显式 `--force`（或在该有序 boundary 对已字节相等 target 的 current 观测）是唯一 cutover boundary，invocation-entry byte equality 本身不提前推进 composite cutover，final validation current 前不得派发 target consumer。不可承接项只在 cutover 前得到 `pre_migration_current_preserved` 并停止。只有 composite final validation 成功后 active work 经新合同恢复、archived result 经新合同查询、retained ref/history 保持可达且 legacy runtime consumer 为 0；任何 substep 不单独产生 migration terminal。对共享 preflight、每个 step-local provider/finding、内嵌两类 projection-gate finding 与 provider timeout/auth/quota/unknown-outcome/partial-success 分别取证；内嵌 validator 只返回最小 finding，由 migration owner 按 live cutover state 唯一落入 `pre_migration_current_preserved`、`new_contract_current` 或 `migration_blocked`，不得产生 `projection_validation_blocked`；cutover 后只 forward recover/blocked，不留下旧新 consumer 混合状态或静默历史丢失 |
@@ -2654,6 +2699,8 @@ direct answer 的 terminal 与不可用事实诚实边界完成。
 | #311/#312 的 accepted scope 未完成、accepted-scope finding 未解决、exact merge/base identity 不可验证或 merge 不可达，或 `OPEN` follow-up 边界不清 | 得到 `evolution_prerequisite_blocked`；Evolution Design/runtime/delivery slice/activation/migration cutover/Release 动作为 0。修复后只重入 `evolution_prerequisite_evaluation`；不得用 Issue closed、PR 存在或旧 snapshot 猜测 current。`OPEN` 且仅因明确 out-of-scope follow-up 不单独阻断，`CLOSED` 也不能替代其它维度 |
 | 六维 prerequisite 已 current，但 current RDT/Architecture/capability inventory 尚未从 exact selected base rebind，或 merged observable behavior 与 Issue accepted contract 未完成 reconciliation | 保持 `evolution_prerequisite_blocked`；fresh 读取 current authority并从最早受影响 Requirements owner修订。旧 `d907fcc5...` snapshot、旧 ready/review、Issue 摘要或局部 PASS 不得作为 current successor evidence |
 | exact prerequisite/base authority 已 rebind，但 #311/#312 或任一既有 capability 缺 target requirement/正常路径 fixture | 保持 `evolution_prerequisite_blocked`；补齐 requirement 与 fixture 后只重入 `merged_requirement_fixture_successor_comparison`，不得进入 Design 或预选 #311 runtime owner |
+| installed platform selection 合法且 exact preservation current | 以 parent manifest 的三处相同 selected list 与 `all_platforms` boolean 形成唯一 provider argv；完成 reprepare 后继续原 installed publication owner，不新增 route、Skill、exit、fixture 或 target delta |
+| installed platform selection missing/malformed/empty/duplicate/unsorted/unknown/inconsistent，或 `all_platforms=true` 未绑定完整 canonical set | 在 extension source checkout、preset apply 与 provenance commit 前得到 platform-selection invalid；target managed mutation 为 0，只从原 installed publication preparation/recovery owner fresh re-entry，不得 fallback 到 `--all-platforms`、self-hosted 或其它 delivery route |
 | exact prerequisite/base authority current、全部 capability 的 requirement/正常路径 fixture 差集为 0 | fresh 执行 Requirements 全稿审核；review current 后只得到 `requirements_ready_for_design` 并允许 fresh Design，runtime/delivery/activation/cutover/Release 仍为 0。任一 Requirements finding 或后续 material drift 使该资格 stale 并返回最早受影响 gate |
 | `requirements_ready_for_design` current，但 #311/#312 或任一其它 current capability 缺 Design successor/fixture mapping，或 fresh Design review 未通过 | 保持 `evolution_prerequisite_blocked`；返回 Design owner 补齐同一能力集并 fresh review，不得启动 runtime 重构，也不得回填旧 Design review 冒充 current |
 | 同一 exact selected-base identity 下 Requirements gate current、全部 Design successor/mapping 差集为 0 且 fresh Design review current | 得到 `evolution_prerequisite_current -> evolution_refactor_eligible`。任一后续 material drift 使对应较晚 eligibility stale 并返回最早受影响 gate |
@@ -2841,7 +2888,7 @@ direct answer 的 terminal 与不可用事实诚实边界完成。
 | `REQ-UC-EVO-047..048` | `EVO-REQ-068..080` | `EVO-NFR-019..032`；对应 `EVO-FIX-STOCK-COEXISTENCE`；必须逐项覆盖 17 个 logical stock asset、一个 shared `.agents/skills` projection layer、三个 supported host、每个 host 的五类 invocation context、`9/1/2/5` role closure、真实或明确标记的 caller/profile/typed-result/consumer handoff、lifecycle/source-stimulus/matcher 互斥（含 active user intent 与 passive context 负例）、suppressed semantic admission redirect/fail-closed 与 provider/explicit/worker boundary；raw before-dev/update-spec/meta 的 Guru successor 能力必须无损可达，platform/channel implement 均覆盖 task-free 与标准 Phase 2 owner。实际 patch/absence/quarantine/delete 只由 `EVO-FIX-STOCK-MAINTENANCE` 的已选 caller 承接，适用 authority slice 的 RDT/Architecture `authority_context` 不得重复读取 |
 | `REQ-UC-EVO-049..050` | `EVO-REQ-072..080` | `EVO-NFR-022..032`；对应 `EVO-FIX-STOCK-MAINTENANCE`；必须覆盖 fresh install、existing migration、update/upgrade 的 dry-run discriminator 与两条 exact command 分支、workflow switch、preset reapply、`--force`/`--create-new`、user modification/deletion 与 `.new/.bak` sidecar 的最小 provenance、所选 action 的 pending/partial/unknown blocked/re-entry、Codex 三种 hooks 配置、capability preservation 与 mixed-graph prevention；未选 action 不要求额外验证 |
 | `REQ-UC-EVO-051` | `EVO-REQ-081` | `EVO-NFR-017`；对应 `EVO-FIX-SEMANTIC-CONFIRMATION`；必须覆盖完整 current 计划后的多种语义肯定、READY PR merge、疑问/限制/修改/拒绝、material plan drift、exact-action scope isolation，以及固定口令、identity challenge、摘要复述、脚本解析和 authorization persistence 全部为 0 |
-| `REQ-UC-EVO-052` | `EVO-REQ-032,037,053,082..083` | `EVO-NFR-010,016,033`；对应 `EVO-FIX-BASE-EVOLUTION`, `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION`, `EVO-FIX-VERIFIER-FAILURE-EVIDENCE`, `EVO-FIX-EVOLUTION-PREREQUISITE`；必须证明 #311/#312 exact merge/base prerequisite、RDT/Architecture/inventory fresh rebind、全部 current capability successor 差集为 0、installed publication source/target identity 分离及其 Draft PR/archive/Ready/terminal continuity、cleanup 前 non-null credential-safe verifier failure evidence、original-worktree clean-tracked continuity 与 unrelated-dirty 隔离，同时保留真实 provenance/workspace blocker。旧 ready/review 复用、source/target 混淆、null failure、terminal mutation 重放、clean tracked false block、unrelated dirty 误分类和 prerequisite 未 current 即启动 Evolution 的计数均为 0 |
+| `REQ-UC-EVO-052` | `EVO-REQ-032,037,053,082..084` | `EVO-NFR-010,016,033..034`；对应 `EVO-FIX-BASE-EVOLUTION`, `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION`, `EVO-FIX-VERIFIER-FAILURE-EVIDENCE`, `EVO-FIX-EVOLUTION-PREREQUISITE`；必须证明 #311/#312 exact merge/base prerequisite、RDT/Architecture/inventory fresh rebind、全部 current capability successor 差集为 0、installed publication source/target identity 分离、exact installed platform-set preservation 及其 Draft PR/archive/Ready/terminal continuity、cleanup 前 non-null credential-safe verifier failure evidence、original-worktree clean-tracked continuity 与 unrelated-dirty 隔离，同时保留真实 provenance/workspace blocker。旧 ready/review 复用、source/target 混淆、subset 扩张、invalid platform identity 延迟失败、null failure、terminal mutation 重放、clean tracked false block、unrelated dirty 误分类和 prerequisite 未 current 即启动 Evolution 的计数均为 0 |
 
 `EVO-REQ-053` 的 clean-install mapping 必须引用上文 clean-install observable contract；
 `EVO-REQ-054` 的 migration mapping 必须引用同一个 composite invocation 中的
@@ -2864,20 +2911,24 @@ identity/provenance/owner 或当前安全 transition plan 未唯一收敛时，�
 
 | Goal | 场景 | 功能需求 | 非功能/验收 |
 | --- | --- | --- | --- |
-| `EVO-001` | `REQ-UC-EVO-001..007,014,039..043,052` | `EVO-REQ-002..011,021..022,059..062,064,066,082..083` | `EVO-FIX-INTAKE-CLEAR`, `EVO-FIX-INTAKE-REVIEWED-DESIGN`, `EVO-FIX-INTAKE-UNCLEAR`, `EVO-FIX-NO-ISSUE`, `EVO-FIX-TASK-FREE`, `EVO-FIX-TECH-REVISION`, `EVO-FIX-DETACHED-READ`, `EVO-FIX-CHANGE-REQUEST`, `EVO-FIX-BASE-REFRESH`, `EVO-FIX-SSOT-BOOTSTRAP`, `EVO-FIX-RDT-LIFECYCLE`, `EVO-FIX-SUBMODULE-BOUNDARY`, `EVO-FIX-VERIFIER-FAILURE-EVIDENCE`, `EVO-FIX-EVOLUTION-PREREQUISITE` |
+| `EVO-001` | `REQ-UC-EVO-001..007,014,039..043,052` | `EVO-REQ-002..011,021..022,059..062,064,066,082..084` | `EVO-FIX-INTAKE-CLEAR`, `EVO-FIX-INTAKE-REVIEWED-DESIGN`, `EVO-FIX-INTAKE-UNCLEAR`, `EVO-FIX-NO-ISSUE`, `EVO-FIX-TASK-FREE`, `EVO-FIX-TECH-REVISION`, `EVO-FIX-DETACHED-READ`, `EVO-FIX-CHANGE-REQUEST`, `EVO-FIX-BASE-REFRESH`, `EVO-FIX-SSOT-BOOTSTRAP`, `EVO-FIX-RDT-LIFECYCLE`, `EVO-FIX-SUBMODULE-BOUNDARY`, `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION`, `EVO-FIX-VERIFIER-FAILURE-EVIDENCE`, `EVO-FIX-EVOLUTION-PREREQUISITE` |
 | `EVO-002` | `REQ-UC-EVO-008..016,019,022..026,028..029` | `EVO-REQ-013..020,026..031,033,035,040,063` | `EVO-CAP-003`, `EVO-FIX-ARCH-NO-IMPACT`, `EVO-FIX-ARCH-ALIGNED`, `EVO-FIX-ARCH-CONFLICT`, `EVO-FIX-ARCH-INCOMPLETE`, `EVO-FIX-ARCH-NEW-DECISION`, `EVO-FIX-ARCH-REVISION`, `EVO-FIX-ARCH-NO-ADR`, `EVO-FIX-FRESH-EQUIVALENT`, `EVO-FIX-FRESH-SCOPE`, `EVO-FIX-ARCH-DOWNSTREAM-FRESHNESS`, `EVO-FIX-ARCH-PROMOTION`, `EVO-FIX-PARALLEL` |
 | `EVO-003` | `REQ-UC-EVO-006..007,015..016,019..030,040..043,046,052` | `EVO-REQ-001,007..009,026..043,045..047,060..067,082..083` | `EVO-CAP-001,EVO-CAP-002`, `EVO-NFR-007,009..011,015,018,033`, `EVO-FIX-BASE-REFRESH`, `EVO-FIX-SSOT-BOOTSTRAP`, `EVO-FIX-RDT-LIFECYCLE`, `EVO-FIX-RDT-DOWNSTREAM-FRESHNESS`, `EVO-FIX-ACTIVE-DISPOSITION`, `EVO-FIX-SUBMODULE-BOUNDARY`, `EVO-FIX-VERIFIER-FAILURE-EVIDENCE`, `EVO-FIX-EVOLUTION-PREREQUISITE` |
 | `EVO-004` | `REQ-UC-EVO-001..051` | `EVO-REQ-010..012,024..025,027..028,034,040,051,057..081` | `EVO-NFR-007,009,014..015,017,019..031`, `EVO-FIX-ENTRY-ROUTING`, `EVO-FIX-REQUEST-STOP`, `EVO-FIX-ACTIVE-DISPOSITION`, `EVO-FIX-SEMANTIC-CONFIRMATION`, `EVO-FIX-WORDING-EXPLICIT`, `EVO-FIX-QUALIFY-EXPLICIT`, `EVO-FIX-CHANGE-REQUEST`, `EVO-FIX-FINISH-RECOVERY`, `EVO-FIX-STOCK-COEXISTENCE`, `EVO-FIX-STOCK-MAINTENANCE`；每个 direct-answer/readiness/specialist/Finish/Cleanup/disposition/stock-policy result 都必须回到唯一 caller/owner 或 terminal，不得把 re-entry 误报为 workflow completion；source class、caller/profile/typed result、首次 action-required、update 分支、hooks 配置与 dialogue-local semantic confirmation 不得遗漏 |
 | `EVO-005` | `REQ-UC-EVO-017..018,030..033,045..046,051..052` | `EVO-REQ-010,023..026,032,044..050,067,081..082` | `EVO-CAP-004`, `EVO-NFR-001..009,017,033`, `EVO-FIX-ENTRY-ROUTING`, `EVO-FIX-PLAN-NORMAL`, `EVO-FIX-HISTORY-RESUME`, `EVO-FIX-ACTIVE-DISPOSITION`, `EVO-FIX-SEMANTIC-CONFIRMATION`, `EVO-FIX-LATEST-INTENT`, `EVO-FIX-LONG-OUTPUT`, `EVO-FIX-BASE-EVOLUTION`, `EVO-FIX-EVOLUTION-PREREQUISITE` |
 | `EVO-006` | `REQ-UC-EVO-019..033,037..038,042..046,051` | `EVO-REQ-010,027..050,057..058,062,065..067,081` | `EVO-CAP-001..004`, `EVO-FIX-ENTRY-ROUTING`, `EVO-FIX-REQUEST-STOP`, `EVO-FIX-ACTIVE-DISPOSITION`, `EVO-FIX-SEMANTIC-CONFIRMATION`, `EVO-FIX-FULL-NORMAL`, `EVO-FIX-NONE`, `EVO-FIX-PROVIDER-RECOVERY`, `EVO-FIX-FINISH-RECOVERY`, `EVO-FIX-WORDING-EXPLICIT`, `EVO-FIX-QUALIFY-EXPLICIT`, `EVO-FIX-RDT-DOWNSTREAM-FRESHNESS`, `EVO-FIX-SUBMODULE-BOUNDARY` |
-| `EVO-007` | `REQ-UC-EVO-034..036,047..052` | `EVO-REQ-010,037,039,052..056,068..083` | `EVO-CAP-001..004`, `EVO-NFR-009..017,019..033`, `EVO-FIX-ENTRY-ROUTING`, `EVO-FIX-PROJECTION`, `EVO-FIX-PROVIDER-RECOVERY`, `EVO-FIX-CLEAN-INSTALL`, `EVO-FIX-MIGRATION`, `EVO-FIX-RELEASE`, `EVO-FIX-SEMANTIC-CONFIRMATION`, `EVO-FIX-STOCK-COEXISTENCE`, `EVO-FIX-STOCK-MAINTENANCE`, `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION`, `EVO-FIX-VERIFIER-FAILURE-EVIDENCE`, `EVO-FIX-EVOLUTION-PREREQUISITE` |
+| `EVO-007` | `REQ-UC-EVO-034..036,047..052` | `EVO-REQ-010,037,039,052..056,068..084` | `EVO-CAP-001..004`, `EVO-NFR-009..017,019..034`, `EVO-FIX-ENTRY-ROUTING`, `EVO-FIX-PROJECTION`, `EVO-FIX-PROVIDER-RECOVERY`, `EVO-FIX-CLEAN-INSTALL`, `EVO-FIX-MIGRATION`, `EVO-FIX-RELEASE`, `EVO-FIX-SEMANTIC-CONFIRMATION`, `EVO-FIX-STOCK-COEXISTENCE`, `EVO-FIX-STOCK-MAINTENANCE`, `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION`, `EVO-FIX-VERIFIER-FAILURE-EVIDENCE`, `EVO-FIX-EVOLUTION-PREREQUISITE` |
 
-绑定 `REQ-REV-011..132` 的 pre-`REQ-REV-133` Design/Test/Architecture reviewed projection 仍作为
-历史 stale 边界保留；`REQ-REV-133..138` 增加并收敛 #311/#312 prerequisite 与 83/33/13/50 closure 后，
-current continuation 已修订这些 projection、完成 50/50 Design mapping、fresh Evolution Design 全稿审核
-与确定性闭包。当前状态为 `design_ready_for_delivery_planning` / `fresh_design_review_passed` /
-`evolution_refactor_eligible`；该 current Design gate 只证明规划与后续重构资格，不构成 implementation、
-fixture execution 或 shared current promotion 证据。
+绑定 `REQ-REV-011..132` 的 pre-`REQ-REV-133` projection 与绑定 selected base `736ef333…` 的
+pre-`REQ-REV-142` Design review 都只作为历史 stale 边界保留。`REQ-REV-141` 将 current authority 重绑到
+`736ef333…`，把 PR #317 material platform-selection capability 收敛为 `EVO-REQ-084` /
+`EVO-NFR-034`，并保持 52 UC / 23 current capability / 13 target delta / 50 fixture / 73 Design
+responsibility 不变；`REQ-REV-142` 再把 exact source 重绑到 `5650df47…`，将 PR #318 归类为 fact-only
+caller-inventory/provenance correction，并保持全部集合和 successor 不变。current continuation 已同步
+Design/Test/Architecture planning projection，并完成 current exact candidate 的 fresh Design review 与确定性闭包；
+状态为 `requirements_ready_for_design` / `design_ready_for_delivery_planning` /
+`fresh_design_review_passed` / `evolution_refactor_eligible`，但不构成 implementation、fixture execution 或
+shared current promotion 证据。
 
 ## 9. 非目标
 
@@ -2912,7 +2963,7 @@ fixture execution 或 shared current promotion 证据。
 3. `EVO-CAP-001..004` 的核心能力收敛结果具有用户确认；当前由确认四项独立 `P0` 的
    `EVO-EVD-010` 与收敛执行成本验收口径的 `EVO-EVD-007` 共同满足；
 4. [`current-capability-inventory.md`](./current-capability-inventory.md) 的 completion contract
-   全部满足：`.41` current Skill、current Requirements/Behavior/NFR/Test capability 孤儿项为 0，
+   全部满足：`.42` current Skill、current Requirements/Behavior/NFR/Test capability 孤儿项为 0，
    每个 retained capability 均有 target requirement 与 fixture successor，17 个 logical stock
    asset、shared-layer/three-host projection matrix 与各 host context matrix 无未知、重复或孤儿项；
    role count 必须为 `suppressed_semantic_route=9`、`provider_only=1`、`explicit_only=2`、
@@ -3024,20 +3075,44 @@ transition plan current 后只经 preclassification 正向进入 existing migrat
   Requirements-only continuation 曾对 exact candidate 执行 fresh Requirements semantic、Strict technical
   与确定性闭包审核，P1、P2、P3 finding 与高风险 open question 均为 0，状态恢复为
   `requirements_ready_for_design` / `requirements_trace_ready_for_design`，并在 Phase 1 Requirements gate
-  停止而未执行 Evolution Design 全稿审核。current continuation 随后已完成 Design/Test/Architecture/task
+  停止而未执行 Evolution Design 全稿审核。`REQ-REV-139` 随后因 live `origin/main` 推进而将 current
+  authority 从 `3efcce72…` / `.41` fresh 重绑到 `a41b8a34…` / `.42`，同步
+  `0.6.15-guru.39` / `v0.6.15-guru.3` / CLI `0.6.15` current facts，并证明 `.42` 的
+  `REQ-052..055`、`DES-049..052`、`TST-036..039`、`SCN-048` 只属于 fact-only authority/release
+  alignment；23 current capabilities、13 target deltas、50 fixtures、73 Design responsibilities、21 active
+  Skills 与 89 exits 均未改变。current continuation 随后已完成 Design/Test/Architecture/task
   projection 修订、fresh Design 全稿审核与确定性闭包，仍停留在 Phase 1；它不激活 Evolution 实现，也不
   执行 commit/push/PR/merge/Release/base sync 或 shared current promotion。
+  `REQ-REV-140` 又因 live `origin/main` 从 `a41b8a34…` 推进到 `9f560ec1…` 而重新绑定 exact
+  selected-base identity；四个新增提交只修正 #267 post-merge lifecycle evidence、dogfood provenance 与
+  task archive/merge facts，active `.42` RDT/Architecture version、`.3/.39/CLI 0.6.15` identity、产品/runtime
+  behavior 和 52/83/33/23/13/50/73/21/89 集合均未改变。该 fact-only rebind 后重新执行 Requirements 与
+  Design 全稿审核和确定性闭包，仍只恢复 Phase 1 gate，不授权任何实现或 Git/GitHub 副作用。
+  `REQ-REV-141` 随后处理 live `origin/main` 从 `9f560ec1…` 推进到 `736ef333…` 的 material current
+  capability advance：PR #317 让 installed Finalizer provenance reprepare 从 parent manifest 保留 exact
+  selected platform set，并在 invalid identity 时于 extension source checkout、preset apply 与 commit 前
+  fail closed；同时 latest stable current fact 修正为 `.2/.38/CLI 0.6.15`，`.3/.39` 仍未验证。该 revision
+  新增 `EVO-EVD-050`、`EVO-REQ-084` 与 `EVO-NFR-034`，扩展既有
+  `CUR-CAP-013/014/017` 和 `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION`，形成
+  52/84/34/23/13/50/73/21/89 closure；它不新增 UC、核心能力、target delta、fixture、Design
+  responsibility、Skill 或 exit。旧 Requirements/Design review freshness 与
+  `evolution_refactor_eligible` 已失效；当前先执行 fresh Requirements 全稿语义、Strict technical 与
+  确定性闭包审核，并停在 fresh Design review 前。
+  `REQ-REV-142` 随后处理 live `origin/main` 从 `736ef333…` 推进到 `5650df47…` 的 fact-only
+  caller-inventory/provenance correction；不改变 Finalizer runtime、public Skill contract、`.42` authority、
+  Release identity 或任何 Requirements/Design/Test 集合，只刷新 exact current locator 并重做 freshness gate。
 
 `REQ-REV-133..136` 将 #311/#312 定义为前置而非并行建议，补齐两项完整 observable contract，并把文档资格与重构资格分离：新增 `REQ-UC-EVO-052`、`EVO-REQ-082`、
 `EVO-NFR-033`、`TARGET-DELTA-014`、installed-provenance 与 prerequisite fixture，并扩展
 `EVO-REQ-032/037/053` 和 base-evolution fixture。它只建立 Requirements 与 stale planning projection，
 不把两项 OPEN Issue 冒充 current 能力、不预选 #311 owner，也不改变 shared RDT/Architecture。
 
-`EVO-REQ-082..083` 的 prerequisite/capability-preservation 合同与 merge 后 fresh Requirements gate
-通过后，current Design continuation 已重新定义整体状态模型、唯一 semantic owner、Skill-first
-边界、public input/output 与 typed exits、最小 runtime state、platform projection、迁移方式、
-eval harness 和推进拆分，并完成 fresh Design 全稿审核。只有 current planning candidate 的后续门禁
-全部通过且另行取得资源创建授权后，才以该 SSOT 创建全新的串行 Issue 链；当前 Design gate 本身不
+`EVO-REQ-082..084` 的 prerequisite/capability-preservation 合同已同步到 current planning projection；
+绑定 pre-`REQ-REV-142` 的整体状态模型、唯一 semantic owner、Skill-first 边界、public input/output 与
+typed exits、最小 runtime state、platform projection、迁移方式、eval harness 和推进拆分只作 stale 历史
+候选，不再持有 current pass。Requirements 与 Design 已分别针对同一 current candidate 完成各自 fresh
+gate；仍须另行取得资源创建授权后，才可按该 SSOT 创建全新的串行 Issue 链；
+当前 Requirements continuation 本身不
 创建或激活任何资源。现有 `#247 -> #267` 链继续保持发布后的候选参考，不自动成为执行计划，也不进入
 重构前稳定版 `v0.6.15-guru.1` 的 Release gate。
 
@@ -3055,7 +3130,8 @@ eval harness 和推进拆分，并完成 fresh Design 全稿审核。只有 curr
 
 > #311 与 #312 必须先成为 selected base 的 current 能力；Evolution 随后从该 exact base 重新读取
 > RDT/Architecture/能力清单并证明 installed provenance publication 与 original-worktree continuity 都有
-> 无损 successor，不能以旧 review、旧 snapshot 或重构后的相似实现替代。
+> 无损 successor，其中 installed provenance reprepare 还必须逐项保留 parent manifest 的 exact 平台
+> selection，任何单平台或 subset 都不能被扩张；不能以旧 review、旧 snapshot 或重构后的相似实现替代。
 
 Guru Trellis 的本轮进化只有在同一个 exact candidate 上对 `EVO-001..007`、全部适用
 `REQ-UC-EVO-*`、`EVO-REQ-*` 和 `EVO-NFR-*` 建立 current、可复现、无互相矛盾的端到端

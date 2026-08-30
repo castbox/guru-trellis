@@ -1,10 +1,13 @@
 # Evolution Capability Successor Inventory
 
-状态：`design_ready_for_delivery_planning` / `fresh_design_review_passed` / `evolution_refactor_eligible`。本文件已从selected-base `.41`重新审核
+状态：`design_ready_for_delivery_planning` / `fresh_design_review_passed` /
+`evolution_refactor_eligible`。本文件已从 selected-base
+`5650df47…` 重新投影
 `CUR-CAP-001..023`与`TARGET-DELTA-001..013`的Design successor。#311通过
 `CUR-CAP-013/014/017/018/019`到达installed publication terminal与standalone verifier failure evidence，
 #312通过`CUR-CAP-012`到达original-worktree clean-tracked continuation、unrelated-dirty isolation和真实blocker；
-不建立第14个target delta。Current facts remain owned by
+不建立第14个target delta；PR #317 exact installed platform-set preservation 折入
+`CUR-CAP-013/014/017` 与既有 fixture，不新增 successor row。Current facts remain owned by
 [`current-capability-inventory.md`](../../requirements/evolution/current-capability-inventory.md); this file owns
 only target Design allocation.
 
@@ -24,11 +27,11 @@ only target Design allocation.
 | `CUR-CAP-010` | preserve bounded task-free loop and escalation | mode/task-free owner; `EVO-DES-015,022` | `EVO-FIX-TASK-FREE`, `EVO-FIX-LATEST-INTENT` |
 | `CUR-CAP-011` | preserve semantic Phase 2 and targeted validation | Implementation/Check owners; `EVO-DES-028..030` | `EVO-FIX-FULL-NORMAL`, `EVO-FIX-BRANCH-FINDING` |
 | `CUR-CAP-012` | preserve exact commit/base reconciliation/full-diff review plus #312 original-worktree continuity | Commit/Reconcile/Review; `EVO-DES-030..032,071` keeps current-base tracked path-clean same-task files in the original worktree, leaves unrelated dirty untouched and preserves every real artifact/identity blocker | `EVO-FIX-BRANCH-FINDING`, `EVO-FIX-BASE-EVOLUTION`, `EVO-FIX-EVOLUTION-PREREQUISITE` |
-| `CUR-CAP-013` | preserve truthful delivery readiness and two routes | delivery owners with separate provenance-tail/push/Draft-PR/Finish/archive/Ready/Merge actions and already-current no-mutation exits; none Acceptance carries only acceptance current and enters Finish without a delivery fact; `EVO-DES-033..036,072` | `EVO-FIX-FULL-NORMAL`, `EVO-FIX-NONE`, `EVO-FIX-SEMANTIC-CONFIRMATION`, `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION` |
-| `CUR-CAP-014` | preserve expected-head/closure/terminal correctness | Publish/Finish/Merge/Closure owners with stage-local recovery, archive-bound `ready_for_merge`, none Finish as the sole none-route delivery-fact producer and live completed-state convergence; `EVO-DES-034..036,072` | `EVO-FIX-PROVIDER-RECOVERY`, `EVO-FIX-FINISH-RECOVERY`, `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION` |
+| `CUR-CAP-013` | preserve truthful delivery readiness, two routes and exact installed platform selection | delivery owners with separate provenance-tail/push/Draft-PR/Finish/archive/Ready/Merge actions and already-current no-mutation exits; installed provenance prepare validates three selected lists plus `all_platforms` before source checkout/apply/commit and never expands a subset; none Acceptance carries only acceptance current and enters Finish without a delivery fact; `EVO-DES-033..036,072` | `EVO-FIX-FULL-NORMAL`, `EVO-FIX-NONE`, `EVO-FIX-SEMANTIC-CONFIRMATION`, `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION` |
+| `CUR-CAP-014` | preserve expected-head/closure/terminal correctness and platform-preserving reprepare continuity | Publish/Finish/Merge/Closure owners with stage-local recovery, archive-bound `ready_for_merge`, exact parent/post-reprepare platform set, none Finish as the sole none-route delivery-fact producer and live completed-state convergence; `EVO-DES-034..036,072` | `EVO-FIX-PROVIDER-RECOVERY`, `EVO-FIX-FINISH-RECOVERY`, `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION` |
 | `CUR-CAP-015` | preserve queryable history and owned cleanup | history/Finish/Cleanup/disposition; `EVO-DES-036..042` | `EVO-FIX-HISTORY-RESUME`, `EVO-FIX-ACTIVE-DISPOSITION` |
 | `CUR-CAP-016` | preserve RDT/Architecture bootstrap, contribution, promotion and minimal spec projection | three repository authority owners plus outstanding-only, already-current-aware Bootstrap `projection_refresh`, including zero-promotion `authority_only` repair for missing/stale authority locator/usage/freshness; `EVO-DES-023..024,031,060..064` | `EVO-FIX-SSOT-BOOTSTRAP`, `EVO-FIX-RDT-LIFECYCLE`, `EVO-FIX-ARCH-PROMOTION` |
-| `CUR-CAP-017` | preserve canonical/dogfood/installed/host consistency and immutable installed source | projection/install/migration/Publish owners; standalone policy maintenance returns to fresh Projection validation, while installed publication separates immutable extension source from reviewed target; `EVO-DES-043..047,056..059,072` | `EVO-FIX-PROJECTION`, `EVO-FIX-STOCK-MAINTENANCE`, `EVO-FIX-CLEAN-INSTALL`, `EVO-FIX-MIGRATION`, `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION` |
+| `CUR-CAP-017` | preserve canonical/dogfood/installed/host consistency, immutable installed source and exact installed platform set | projection/install/migration/Publish owners; standalone policy maintenance returns to fresh Projection validation, while installed publication separates immutable extension source from reviewed target and projects `--all-platforms` only for manifest true+full-set, otherwise repeated exact `--platform`; `EVO-DES-043..047,056..059,072` | `EVO-FIX-PROJECTION`, `EVO-FIX-STOCK-MAINTENANCE`, `EVO-FIX-CLEAN-INSTALL`, `EVO-FIX-MIGRATION`, `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION` |
 | `CUR-CAP-018` | preserve live-derived inventory and separate loss/consistency gates | Projection validator owns standalone execution and `postcheck_failure` classification; `EVO-DES-043,059,073` | `EVO-FIX-PROJECTION`, `EVO-FIX-RELEASE`, `EVO-FIX-VERIFIER-FAILURE-EVIDENCE` |
 | `CUR-CAP-019` | preserve evidence layers and minimal validation ownership | Check/Projection/Release owners; Projection binds non-null credential-safe failure before cleanup and Finish consumes none of it; `EVO-DES-030,043..048,065..067,073` | `EVO-FIX-PLAN-NORMAL`, `EVO-FIX-FULL-NORMAL`, `EVO-FIX-RELEASE`, `EVO-FIX-VERIFIER-FAILURE-EVIDENCE` |
 | `CUR-CAP-020` | preserve normal parallel isolation and both delivery routes | admission/lifecycle/delivery/cleanup graph; `EVO-DES-033..042` | `EVO-FIX-PARALLEL`, `EVO-FIX-NONE` |
@@ -38,7 +41,9 @@ only target Design allocation.
 
 No capability is accepted by name/count alone. The target can replace current private schemas, artifacts and
 wrapper routes, but each row must remain observable through its listed owner and fixture. Current `21 Skills / 89
-exits` is a selected-base `.41` source identity, not a target magic count.
+exits` is a selected-base `.42` source identity, not a target magic count. The `.41...42` authority promotion and
+`a41b8a34...9f560ec1` and `736ef333...5650df47` deltas are fact-only; `9f560ec1...736ef333` is a material current behavior advance but is fully
+absorbed by the three existing successor rows and therefore creates no additional successor row or target delta.
 
 ## 2. Target Delta Allocation
 

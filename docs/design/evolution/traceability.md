@@ -1,14 +1,15 @@
 # Evolution Design Traceability
 
-状态：`design_ready_for_delivery_planning` / `fresh_design_review_passed` / `evolution_refactor_eligible`。Requirements authority is
+状态：`design_ready_for_delivery_planning` / `fresh_design_review_passed` /
+`evolution_refactor_eligible`。Requirements authority is
 [`requirement-main.md`](../../requirements/evolution/requirement-main.md) and
 [`requirement-non-functional.md`](../../requirements/evolution/requirement-non-functional.md). This file owns
-the current `REQ-REV-011..138` Requirements-to-Design allocation; Test execution ownership remains in
+the current `REQ-REV-011..142` Requirements-to-Design planning allocation; Test execution ownership remains in
 [`../../test/evolution/fixture-plan.md`](../../test/evolution/fixture-plan.md).
 
 ## 1. Functional Requirement Coverage
 
-The expanded union below is exactly `EVO-REQ-001..083`.
+The expanded union below is exactly `EVO-REQ-001..084`.
 
 | Requirement range | Design responsibilities / contract owner | Acceptance fixtures |
 | --- | --- | --- |
@@ -33,10 +34,11 @@ The expanded union below is exactly `EVO-REQ-001..083`.
 | `EVO-REQ-081` | `EVO-DES-022,030,035..036,041,044..055,069,072`; side-effect-owning semantic Skills, including separate provenance-tail/branch-push/PR-create waits, the profile-fixed `stock-policy-action-confirmation-wait` and active disposition cleanup, apply one shared dialogue-local confirmation contract and owner-specific refusal outputs; Stock action-state continuation never directly authorizes mutation, while Publish refusal exits `publication_preparation_not_executed`, `branch_push_not_executed`, `pr_creation_not_executed` each carry action-local identity to one distinct named consumer, and exact-current Workspace reuse bypasses the boundary entirely | Semantic Confirmation, Stock Maintenance, Active Disposition, Full Normal, Provider Recovery, Finish Recovery, Release |
 | `EVO-REQ-082` | `EVO-DES-034..036,060..063,070..072`; two-stage prerequisite/refactor eligibility, #312 original-worktree continuity and #311 installed source/target through Draft PR/archive/Ready/`ready_for_merge` | Evolution Prerequisite, Installed Provenance Publication, Base Evolution |
 | `EVO-REQ-083` | `EVO-DES-043,048,065..068,070,073`; standalone Projection-owned non-null failure evidence before cleanup, exact blocked/re-entry and zero Finish/embedded ownership | Verifier Failure Evidence, Evolution Prerequisite, Projection |
+| `EVO-REQ-084` | `EVO-DES-035,043,059,070,072`; existing installed publication/Projection responsibilities validate the three exact selected lists plus `all_platforms`, preserve subset/full-set argv semantics and fail before source checkout/apply/commit without adding a public profile or responsibility | Installed Provenance Publication, Evolution Prerequisite, Projection |
 
 ## 2. Nonfunctional Requirement Coverage
 
-The expanded union below is exactly `EVO-NFR-001..033`.
+The expanded union below is exactly `EVO-NFR-001..034`.
 
 | NFR range | Design mechanism | Measurement fixtures |
 | --- | --- | --- |
@@ -51,6 +53,7 @@ The expanded union below is exactly `EVO-NFR-001..033`.
 | `EVO-NFR-022..027` | `EVO-DES-031,049..055,059,064,069`; selected action provenance, named confirmation wait, exact recovery and concrete successor reachability | Stock Maintenance, Semantic Confirmation, Projection, SSOT Bootstrap, Migration |
 | `EVO-NFR-028..032` | `EVO-DES-006,009..012,054,057..059`; source stimulus, setup partition, lazy context | Entry Routing, Latest Intent, Stock Coexistence, Stock Maintenance |
 | `EVO-NFR-033` | `EVO-DES-060..063,070..073`; exact two-stage freshness, merged-capability Design successor closure, installed publication continuity, base/worktree isolation and pre-cleanup verifier evidence | Evolution Prerequisite, Installed Provenance Publication, Verifier Failure Evidence, Base Evolution |
+| `EVO-NFR-034` | `EVO-DES-035,043,059,070,072`; positive single/subset/all platform parity and invalid manifest identity zero-source-checkout/apply/commit/mutation coverage remain inside the existing installed publication fixture | Installed Provenance Publication, Evolution Prerequisite, Projection |
 
 ## 3. Capability And Goal Coverage
 
@@ -61,8 +64,9 @@ The expanded union below is exactly `EVO-NFR-001..033`.
 - `EVO-CAP-002` is primarily `EVO-DES-002,023,025,029,031,060..064`.
 - `EVO-CAP-003` is primarily `EVO-DES-024,029,031,060..063`.
 - `EVO-CAP-004` is primarily `EVO-DES-009..011,038..042,048,065..067,069`.
-- All 50 `EVO-FIX-*` identities have current Design mapping. The three post-`REQ-REV-132` rows map to
-  `EVO-DES-070..073`; #311 is carried by current capability successors rather than a new `TARGET-DELTA-014`.
+- All 50 `EVO-FIX-*` identities have a current planning mapping. The post-`REQ-REV-132` rows map to
+  `EVO-DES-070..073`; #311 and PR #317 are carried by current capability successors rather than a new
+  `TARGET-DELTA-014` or fixture.
 - All 39 target public Skills are declared in [`contracts.md`](./contracts.md); the Trellis-reference and worker/
   provider adapters plus thin routers are not counted as public Skills. `guru-bootstrap-repository-ssot` owns the
   additional projection profile without adding a public identity. Every public external exit names one
@@ -77,5 +81,6 @@ compact notation: deterministic closure expands it before comparing the expected
 Semantic review additionally checks that a listed successor preserves the actual behavior; textual presence alone
 cannot pass. It also verifies that admission/pre-route/pre-task/task-free/standalone envelope persistence below
 `.trellis/tasks/**`, `.trellis/workspace/**` or `.trellis/.runtime/**` is zero, and that any task-local checkpoint has
-only the same Skill public-wrapper as consumer. This mapping passed the current fresh Design review and deterministic closure. Test status stays planned
-until the exact implementation candidate/range is executed at its declared evidence layer.
+only the same Skill public-wrapper as consumer. This mapping is synchronized and has passed fresh Design review plus
+deterministic closure for `REQ-REV-142`; Test status stays planned until the exact implementation candidate/range is
+executed at its declared evidence layer.

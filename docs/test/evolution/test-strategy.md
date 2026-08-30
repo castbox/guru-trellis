@@ -1,7 +1,6 @@
 # Evolution Test Strategy
 
-状态：`test_candidate_planned` / `design_ready_for_delivery_planning` / `fresh_design_review_passed` /
-`evolution_refactor_eligible`。This strategy verifies the target contract without confusing docs, static
+状态：`test_candidate_planned` / `fresh_design_review_passed` / `evolution_refactor_eligible`。This strategy verifies the target contract without confusing docs, static
 closure, runtime behavior, installed behavior, external facts or Release proof.
 
 ## 1. Evidence Layers
@@ -33,6 +32,9 @@ Every executed fixture binds:
 - evidence layer actually executed, observed actions and explicit unverified boundaries.
 - for standalone verifier failure only, the pre-cleanup stage/cell/command/exit/safe-tail/hash-size evidence identity
   and the subsequent cleanup/blocked/re-entry observation; embedded callers do not inherit that verifier lifecycle.
+- for installed provenance preparation, the parent manifest's three exact selected lists plus `all_platforms`, the
+  projected provider argv, parent/post-reprepare set equality and the pre-extension-source-checkout/apply/commit
+  failure observation; this remains part of the existing installed-publication fixture identity.
 
 Equivalent identity refresh may reuse unchanged semantic work only after live comparison. Material scope,
 authority, package, projection, provider or candidate change invalidates the earliest affected result and all
@@ -259,17 +261,20 @@ already-current double-none exit, one standalone
 `Projection -> Stock -> named action confirmation wait when mutation remains -> Stock action re-entry -> Projection
 fresh validation` chain, one exact-current Workspace no-mutation convergence path,
 one compound activation/implementation-entry confirmation, three independent provenance-tail/branch-push/Draft-PR
-confirmation subgraphs, one Finish-before-Merge chain with no-mutation current exits, standalone verifier
+  confirmation subgraphs, one platform-preserving installed reprepare matrix with invalid-identity zero extension
+  source checkout/apply/commit/managed mutation, one Finish-before-Merge chain with no-mutation current exits, standalone verifier
 evidence-before-cleanup, zero admission/pre-route/pre-task/task-free/standalone generic repository-envelope paths,
 same-Skill/same-wrapper ownership for any task-local checkpoint and trace range coverage. Runtime, installed, provider and Release rows remain
 `planned_not_executed`.
 
-The current selected-base rebind, Requirements-stage successor zero-loss result and fresh Requirements review have
-established `requirements_ready_for_design`. All 50 fixture successors have reviewed Design allocation; the final
-fresh independent Design review reported open P1, blocking P2, P3 and high-risk question counts all zero, and the
-deterministic closure passed. Therefore `design_ready_for_delivery_planning`, `fresh_design_review_passed` and
+The current selected-base rebind and Requirements-stage successor zero-loss projection bind
+`origin/main@5650df47…`, 84 Requirements, 34 NFR and the existing 50 fixture families. Fresh Requirements semantic,
+Strict technical and deterministic closure gates have passed, so `requirements_ready_for_design` is current. All 50 fixture successors retain Design planning
+allocation. The pre-`REQ-REV-142` fresh Design review and deterministic closure remain stale historical evidence;
+current fresh Design review and deterministic closure have passed, so `fresh_design_review_passed` /
 `evolution_refactor_eligible` are current. The prerequisite fixtures specifically preserve #311 through Draft
 PR/archive/Ready/`ready_for_merge` without
 completed-mutation replay and through evidence-before-cleanup standalone verifier failure handling, plus #312 through
-clean-tracked continuation, unrelated-dirty isolation and real blockers.
+clean-tracked continuation, unrelated-dirty isolation and real blockers, and PR #317 through exact installed
+platform-set preservation with invalid identity blocked before extension source checkout/apply/commit.
 The current Test projection is a Design-review candidate and does not require or imply implementation tests.

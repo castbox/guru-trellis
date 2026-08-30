@@ -1,7 +1,6 @@
 # Evolution Test Traceability
 
-状态：`test_candidate_planned` / `design_ready_for_delivery_planning` / `fresh_design_review_passed` /
-`evolution_refactor_eligible`. The execution-contract mapping is the 50-row table in
+状态：`test_candidate_planned` / `fresh_design_review_passed` / `evolution_refactor_eligible`. The execution-contract mapping is the 50-row table in
 [`fixture-plan.md`](./fixture-plan.md); this file owns cross-authority set closure without duplicating fixture steps.
 
 ## 1. Requirements To Fixture Families
@@ -21,6 +20,7 @@
 | `EVO-REQ-081` | Semantic Confirmation, including the three distinct Publish refusal exits/outputs/consumers; Active Disposition, Full Normal, Provider Recovery, Finish Recovery, Stock Maintenance, Clean Install, Migration, Release |
 | `EVO-REQ-082` | Evolution Prerequisite, Installed Provenance Publication, Base Evolution |
 | `EVO-REQ-083` | Verifier Failure Evidence, Evolution Prerequisite, Projection |
+| `EVO-REQ-084` | Installed Provenance Publication, Evolution Prerequisite, Projection |
 
 | Quality set | Fixture families |
 | --- | --- |
@@ -33,14 +33,16 @@
 | `EVO-NFR-018` | Submodule Boundary |
 | `EVO-NFR-019..032` | Stock Coexistence, Stock Maintenance, Entry Routing, Latest Intent, Projection, Migration |
 | `EVO-NFR-033` | Evolution Prerequisite, Installed Provenance Publication, Verifier Failure Evidence, Base Evolution |
+| `EVO-NFR-034` | Installed Provenance Publication, Evolution Prerequisite, Projection |
 
 ## 2. Design Responsibility To Fixture Families
 
-The table below is the revised candidate projection over `REQ-REV-133..138`. The selected-base six-dimension
+The table below is the revised candidate projection over `REQ-REV-133..142`. The selected-base six-dimension
 classification, authority rebind, merged-behavior reconciliation and Requirements-stage successor zero-loss are
 current. `EVO-DES-070..073` allocate the two-stage eligibility gate, #312 original-worktree continuity, #311 installed
-publication terminal and standalone verifier failure lifecycle. The mapping is complete and the full Design gate is
-`fresh_design_review_passed`, establishing `evolution_refactor_eligible` while fixture execution remains pending.
+publication terminal and standalone verifier failure lifecycle; existing `EVO-DES-035/072` also carry PR #317 exact
+platform-set preservation. The mapping is complete and current as a reviewed planning projection;
+`evolution_refactor_eligible` is current while fixture execution remains pending.
 
 | Design set | Fixture families |
 | --- | --- |
@@ -66,15 +68,17 @@ publication terminal and standalone verifier failure lifecycle. The mapping is c
   [`../../design/evolution/capability-inventory.md`](../../design/evolution/capability-inventory.md).
 - Each `TARGET-DELTA-001..013` has a Requirements allocation and acceptance family. #311 is no longer duplicated as
   a new target delta: its installed publication and verifier failure behaviors are current capabilities carried by
-  `CUR-CAP-013/014/017/018/019` and target `EVO-REQ-037,053,082..083`.
-- All 50 `EVO-FIX-*` identities have one Requirements execution-contract row and one current reviewed Design
-  mapping; the original 47 mappings are reconciled with the three new rows rather than reused as stale review proof.
+  `CUR-CAP-013/014/017/018/019` and target `EVO-REQ-037,053,082..084`; PR #317 exact platform-set preservation is
+  folded into `CUR-CAP-013/014/017` and the same installed fixture.
+- All 50 `EVO-FIX-*` identities have one Requirements execution-contract row and one Design planning mapping; the
+  mappings are synchronized but not reused as pre-`REQ-REV-142` review proof.
 - `EVO-FIX-EVOLUTION-PREREQUISITE` records six independent dimensions for each prerequisite. Its current positive
   sample is #311 PR #313/merge `21c7da1…` reachable with `OPEN + follow-up-only`, and #312 PR #314/merge
   `3efcce7…` reachable with `CLOSED`; neither lifecycle label substitutes for accepted scope, exact identity,
   reachability or accepted-scope finding verification. Inventory rebind, merged-behavior reconciliation and
-  requirement/normal-path zero-loss and fresh Requirements review are current; Design successor allocation, fresh
-  Design review and deterministic closure are also current, establishing `evolution_refactor_eligible`.
+  requirement/normal-path zero-loss is current for `origin/main@5650df47…`; fresh Requirements semantic, Strict
+  technical and deterministic closure gates have passed, and the later fresh Design review/deterministic closure has
+  made the Design successor allocation current.
 - Stock acceptance expands to exactly 17 role rows, nine retained host rows, one shared layer, three supported
   hosts and the per-host setup partition defined by Design.
 - Public contract acceptance derives the target Skill set live from `contracts.md`; the Design candidate contains
@@ -125,8 +129,8 @@ publication terminal and standalone verifier failure lifecycle. The mapping is c
 
 The planning checker expands all `NNN..MMM` ranges and asserts exact equality for:
 
-- `EVO-REQ-001..083`;
-- `EVO-NFR-001..033`;
+- `EVO-REQ-001..084`;
+- `EVO-NFR-001..034`;
 - `EVO-DES-001..073`;
 - `CUR-CAP-001..023`;
 - `TARGET-DELTA-001..013`;
@@ -140,16 +144,17 @@ qualification caller profiles, 17 stock decision rows, nine profile-fixed retain
   zero-promotion `authority_only` repair and same-range `with_code_spec`, one standalone
   Projection/Stock/Projection fresh-validation chain, one exact-current Workspace no-mutation convergence path, one
   compound activation/implementation-entry confirmation, three isolated provenance-tail/push/Draft-PR confirmation
-  subgraphs, one Finish-before-Merge chain with no-mutation current exits and one Projection-owned standalone verifier
+  subgraphs, one installed platform-preservation matrix with invalid identity blocked before extension source
+  checkout/apply/commit, one Finish-before-Merge chain with no-mutation current exits and one Projection-owned standalone verifier
   evidence-before-cleanup lifecycle, zero generic invocation-envelope repository state and one same-owner consumer
   for every allowed task-local checkpoint.
-These objective checks do not replace the now-current fresh semantic Requirements and Design reviews and cannot
-establish either semantic result by themselves; they only verify deterministic closure for the same current candidate.
+These objective checks do not replace either semantic review. The fresh Requirements semantic, Strict technical and
+fresh Design reviews are current. The checks verify deterministic closure for the same current candidate.
 
 Prerequisite closure is deliberately two-stage: exact-base rebind plus requirement/normal-path fixture zero gap and
 fresh Requirements review established `requirements_ready_for_design`; the subsequent Design successor/
-fixture-mapping zero gap, fresh Design review and deterministic closure established `evolution_refactor_eligible`. The second result is
-not a precondition of the first. The Requirements fixture set includes #311's complete installed publication terminal
+fixture-mapping zero gap, fresh Design review and deterministic closure established `evolution_refactor_eligible`.
+Both results are current, and the second remains not a precondition of the first. The Requirements fixture set includes #311's complete installed publication terminal
 through Draft PR/archive/Ready/`ready_for_merge` with zero completed-mutation replay, evidence-before-cleanup
-standalone verifier failure preservation, and #312's unrelated-dirty
+standalone verifier failure preservation, PR #317 exact installed platform-set preservation, and #312's unrelated-dirty
 isolation alongside clean-tracked continuation and real blocker preservation.
