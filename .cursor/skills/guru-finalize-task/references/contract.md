@@ -63,6 +63,23 @@ requires one, preview returns `reprepare_required` with reason
 create a PR, archive, mark Ready, or mutate the Issue. A matching existing-PR
 recovery, including its exact post-bind transaction, retains precedence.
 
+## Official After-Archive Hook Preflight
+
+Every preview and execute path enters the same official Trellis
+`hooks.after_archive` preflight before selecting an eval-staging, active-task,
+archived-task, terminal, or recovery context. Missing or empty hook state maps
+to the canonical empty command set. A non-empty, ambiguous, unsafe, unreadable,
+or unparsable hook declaration fails with
+`stage=after-archive-hook-preflight`; a configured non-empty command list also
+reports `hook_executed=false` and its exact command count.
+
+The preflight never executes an official hook command. Rejection occurs before
+task move/completion, archive, local or remote HEAD mutation, push, PR access or
+mutation, Ready transition, Issue mutation, or closeout state change. Eval
+staging cannot return its preview context before this check. The existing
+`prepare_closeout` preflight remains a second read-only defense for direct
+preparation callers that do not enter through the common preview dispatcher.
+
 ## Transaction
 
 The deterministic transaction states are `push_content`, `bind_pr`, `archive`,

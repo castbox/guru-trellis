@@ -350,7 +350,216 @@ def large_finish_summary() -> dict:
     }
 
 
+def eval_after_archive_hook_fixture(
+    root: Path,
+) -> tuple[dict[str, object], Path]:
+    task_ref = ".trellis/tasks/current"
+    task_dir = root / task_ref
+    task_dir.mkdir(parents=True)
+    (task_dir / "task.json").write_text(
+        json.dumps(
+            {
+                "id": "current",
+                "name": "current",
+                "title": "Finalization hook preflight",
+                "status": "in_progress",
+                "branch": "main",
+                "base_branch": "main",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    parser_source_dir = next(
+        parent / ".trellis/scripts/common"
+        for parent in PACKAGE.parents
+        if (parent / ".trellis/scripts/common/config.py").is_file()
+    )
+    parser_target_dir = root / ".trellis/scripts/common"
+    parser_target_dir.mkdir(parents=True)
+    (parser_target_dir / "__init__.py").write_text("", encoding="utf-8")
+    for name in ("config.py", "paths.py"):
+        shutil.copy2(parser_source_dir / name, parser_target_dir / name)
+
+    sentinel = root / "after-archive-hook-sentinel"
+    (root / ".trellis/config.yaml").write_text(
+        "hooks:\n"
+        "  after_archive:\n"
+        f'    - "touch {sentinel}"\n',
+        encoding="utf-8",
+    )
+    public_input: dict[str, object] = {
+        "profile": "publication_ready",
+        "mode": "workflow",
+        "task_ref": task_ref,
+        "branch_review_commit": "a" * 40,
+        "pr_title": "fix: reject official after_archive hooks",
+        "pr_body": "Refs #267",
+    }
+    plan_digest = "b" * 64
+    eval_dir = root / ".trellis/.runtime/guru-team/evals"
+    eval_dir.mkdir(parents=True)
+    (eval_dir / "finalization-context.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "2.0",
+                "task_ref": task_ref,
+                "plan_ref": f"closeout-plan:{plan_digest}",
+                "plan_digest": plan_digest,
+                "branch_review_commit": "a" * 40,
+                "publication_head": "a" * 40,
+                "archive_locator": ".trellis/tasks/archive/2026-08/current",
+                "repo_ref": "example/guru-extension",
+                "remote": "origin",
+                "head_branch": "main",
+                "publication_status": "current",
+                "publication_stale_reason": None,
+                "transaction_state": "prepared",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return public_input, sentinel
+
+
 class FinalizeTaskContractTests(unittest.TestCase):
+    def test_eval_staging_preview_rejects_nonempty_after_archive_hook_before_context(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            public_input, sentinel = eval_after_archive_hook_fixture(root)
+            args = SimpleNamespace(root=str(root), input="input.json")
+            with mock.patch.dict(
+                os.environ,
+                {"GURU_TEAM_EVAL_STAGING": "1"},
+                clear=False,
+            ):
+                self.assertIsNotNone(
+                    GTT.finalization_eval_preview_context(root, public_input)
+                )
+                with (
+                    mock.patch.object(GTT, "repo_root", return_value=root),
+                    mock.patch.object(
+                        GTT,
+                        "finalization_public_input",
+                        return_value=(public_input, root / "input.json"),
+                    ),
+                    mock.patch.object(
+                        GTT,
+                        "finalization_eval_preview_context",
+                        side_effect=AssertionError(
+                            "eval context must not be selected before hook preflight"
+                        ),
+                    ) as eval_context,
+                    mock.patch.object(GTT, "execute_archive_metadata_transaction") as archive,
+                    mock.patch.object(GTT, "push_closeout_branch_if_needed") as push,
+                    mock.patch.object(GTT, "resolve_closeout_pull_request") as resolve_pr,
+                    mock.patch.object(GTT, "create_pull_request") as create_pr,
+                    mock.patch.object(GTT, "update_pull_request_metadata") as update_pr,
+                    mock.patch.object(GTT, "ensure_closeout_pr_ready") as ready_pr,
+                    mock.patch.object(GTT, "run_gh_command") as gh,
+                ):
+                    with self.assertRaises(GTT.WorkflowError) as caught:
+                        GTT.cmd_preview_finalization(args)
+
+            self.assertEqual(
+                caught.exception.payload,
+                {
+                    "stage": "after-archive-hook-preflight",
+                    "configured_command_count": 1,
+                    "hook_executed": False,
+                },
+            )
+            self.assertFalse(sentinel.exists())
+            eval_context.assert_not_called()
+            for mutation in (
+                archive,
+                push,
+                resolve_pr,
+                create_pr,
+                update_pr,
+                ready_pr,
+                gh,
+            ):
+                mutation.assert_not_called()
+
+    def test_eval_staging_execute_gate_check_rejects_nonempty_after_archive_hook_without_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            public_input, sentinel = eval_after_archive_hook_fixture(root)
+            gate = load("examples/task-finalization-gate.json")
+            args = SimpleNamespace(
+                root=str(root),
+                input="input.json",
+                gate="gate.json",
+            )
+            with mock.patch.dict(
+                os.environ,
+                {"GURU_TEAM_EVAL_STAGING": "1"},
+                clear=False,
+            ):
+                self.assertIsNotNone(
+                    GTT.finalization_eval_preview_context(root, public_input)
+                )
+                with (
+                    mock.patch.object(GTT, "repo_root", return_value=root),
+                    mock.patch.object(
+                        GTT,
+                        "finalization_public_input",
+                        return_value=(public_input, root / "input.json"),
+                    ),
+                    mock.patch.object(
+                        GTT,
+                        "finalization_gate_input",
+                        return_value=(gate, root / "gate.json"),
+                    ),
+                    mock.patch.object(GTT, "finalization_package_root", return_value=PACKAGE),
+                    mock.patch.object(
+                        GTT,
+                        "finalization_eval_preview_context",
+                        side_effect=AssertionError(
+                            "eval context must not be selected before hook preflight"
+                        ),
+                    ) as eval_context,
+                    mock.patch.object(GTT, "cmd_finish_work") as finish_work,
+                    mock.patch.object(GTT, "execute_archive_metadata_transaction") as archive,
+                    mock.patch.object(GTT, "push_closeout_branch_if_needed") as push,
+                    mock.patch.object(GTT, "resolve_closeout_pull_request") as resolve_pr,
+                    mock.patch.object(GTT, "create_pull_request") as create_pr,
+                    mock.patch.object(GTT, "update_pull_request_metadata") as update_pr,
+                    mock.patch.object(GTT, "ensure_closeout_pr_ready") as ready_pr,
+                    mock.patch.object(GTT, "run_gh_command") as gh,
+                    mock.patch.object(GTT, "finalization_write_transaction") as transaction,
+                    mock.patch.object(GTT, "write_json") as write_json,
+                ):
+                    with self.assertRaises(GTT.WorkflowError) as caught:
+                        GTT.cmd_execute_finalization_transition(args)
+
+            self.assertEqual(
+                caught.exception.payload,
+                {
+                    "stage": "after-archive-hook-preflight",
+                    "configured_command_count": 1,
+                    "hook_executed": False,
+                },
+            )
+            self.assertFalse(sentinel.exists())
+            eval_context.assert_not_called()
+            for mutation in (
+                finish_work,
+                archive,
+                push,
+                resolve_pr,
+                create_pr,
+                update_pr,
+                ready_pr,
+                gh,
+                transaction,
+                write_json,
+            ):
+                mutation.assert_not_called()
+
     def test_workspace_boundary_accepts_clean_tracked_planning_and_blocks_real_overlays(self) -> None:
         temp_root, source, context = workspace_boundary_fixture()
         try:

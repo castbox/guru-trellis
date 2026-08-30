@@ -1,0 +1,31 @@
+{
+  "close_issues": [],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 267,
+    "reason": "Issue #267 is the sole semantic owner of the v0.6.15-guru.3 Release Gate and this newly confirmed blocker remediation.",
+    "title": "发布 v0.6.15-guru.3：包含 #311/#312 修复的 exact-candidate successor Release",
+    "url": "https://github.com/castbox/guru-trellis/issues/267"
+  },
+  "related_issues": [
+    {
+      "number": 267,
+      "reason": "Issue #267 remains open until the annotated tag, Release, tag-pinned smoke, and live closeout pass.",
+      "title": "发布 v0.6.15-guru.3：包含 #311/#312 修复的 exact-candidate successor Release",
+      "url": "https://github.com/castbox/guru-trellis/issues/267"
+    },
+    {
+      "number": 311,
+      "reason": "The installed business-repository Finalizer path remains a required Release validation boundary and Issue #311 stays open.",
+      "title": "修复 installed business repo Finalizer provenance reprepare 的 source/target checkout 混淆",
+      "url": "https://github.com/castbox/guru-trellis/issues/311"
+    },
+    {
+      "number": 312,
+      "reason": "The merged workspace-boundary prerequisite remains part of the exact-candidate regression matrix and is not reopened.",
+      "title": "允许已合并的 active task 在原 worktree 中通过 workspace boundary",
+      "url": "https://github.com/castbox/guru-trellis/issues/312"
+    }
+  ],
+  "schema_version": "2.0"
+}

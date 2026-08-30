@@ -11964,6 +11964,7 @@ def finalization_preview_context(
     args: argparse.Namespace,
     public_input: dict[str, Any],
 ) -> dict[str, Any]:
+    official_after_archive_hook_state(root)
     eval_context = finalization_eval_preview_context(root, public_input)
     if eval_context is not None:
         return eval_context
