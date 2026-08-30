@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.41`；状态：`active`；基线：task head `651defee871d4bb07683547df09d1e0ac62b4a49` + #311 serialized promotion delta；#305 已确认的 `EVO-001..007` 保持独立 target authority。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD。
+版本：`current-main-0.6.5-guru.41`；状态：`superseded`；successor：`current-main-0.6.5-guru.42`。本历史版本绑定 task head `651defee871d4bb07683547df09d1e0ac62b4a49` + #311 serialized promotion delta；正文不自引用可变 HEAD。
 
 ## 目标、角色与适用范围
 

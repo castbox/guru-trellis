@@ -2,13 +2,13 @@
 
 ## Current identity
 
-- version：`current-main-0.6.5-guru.41`
+- version：`current-main-0.6.5-guru.42`
 - status：`active`
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
 - Architecture inheritance：`docs/architecture/README.md`，同版本、`active`
-- source binding：task head `651defee871d4bb07683547df09d1e0ac62b4a49` + #311 serialized promotion delta；#305 已确认的 `EVO-001..007` target delta 保持独立 target authority（精确 revision 由包含本 authority 的 Git commit/tree identity 绑定）
+- source binding：reviewed task head `d3dca74b3a94569a095594477c15b032526f2381` + #267 expected `.41` serialized promotion delta；#305 已确认的 `EVO-001..007` target delta 保持独立 target authority（精确 revision 由包含本 authority 的 Git commit/tree identity 绑定）
 
 ## 读取与更新
 
@@ -18,4 +18,4 @@
 
 ## Freshness
 
-每次 gate 必须重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 和 source binding。locator 不存在、版本不一致、traceability 断裂或 projection 落后时，不得沿用本页，进入 owner `repair`。Released `v0.6.5-guru.10` 与 future extension `0.6.5-guru.37` stable publication 不得覆盖 current knowledge identity。
+每次 gate 必须重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 和 source binding。locator 不存在、版本不一致、traceability 断裂或 projection 落后时，不得沿用本页，进入 owner `repair`。Released `v0.6.5-guru.10` 与 target `v0.6.15-guru.3` / extension `0.6.15-guru.39` publication identity 不得覆盖 current knowledge identity。

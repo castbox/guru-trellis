@@ -1,0 +1,309 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-29T18:44:36Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-29-267-release-v0615-guru3",
+    "title": "#267 发布 v0.6.15-guru.3 successor Release",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-29-267-release-v0615-guru3",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/267-release-v0615-guru3",
+    "commits": [
+      "2a5461002856ebcb981156f892e41ef4020d3626",
+      "d3dca74b3a94569a095594477c15b032526f2381",
+      "351e61d142811470e6035b958b11032b838508c2",
+      "490b302a94439320f7176f2e5d856991249ee65f"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+      ".trellis/spec/architecture/baseline-usage.md",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/docs/requirements-design-test-ssot.md",
+      ".trellis/tasks/08-29-267-release-v0615-guru3/design.md",
+      ".trellis/tasks/08-29-267-release-v0615-guru3/implement.md",
+      ".trellis/tasks/08-29-267-release-v0615-guru3/issue-scope-ledger.json",
+      ".trellis/tasks/08-29-267-release-v0615-guru3/prd.md",
+      ".trellis/tasks/08-29-267-release-v0615-guru3/release-notes-zh.md",
+      ".trellis/tasks/08-29-267-release-v0615-guru3/task.json",
+      ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/design.md",
+      ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/implement.md",
+      ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/prd.md",
+      ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/task.json",
+      "README.md",
+      "docs/architecture/01-current/system.md",
+      "docs/architecture/README.md",
+      "docs/architecture/contributions/267-release-v0615-guru3.md",
+      "docs/architecture/evidence/current-evidence.md",
+      "docs/design/README.md",
+      "docs/design/versions/current-main-0.6.5-guru.39/design-main.md",
+      "docs/design/versions/current-main-0.6.5-guru.39/manifest.yaml",
+      "docs/design/versions/current-main-0.6.5-guru.41/design-main.md",
+      "docs/design/versions/current-main-0.6.5-guru.41/manifest.yaml",
+      "docs/design/versions/current-main-0.6.5-guru.42/capability-inventory.md",
+      "docs/design/versions/current-main-0.6.5-guru.42/decisions.md",
+      "docs/design/versions/current-main-0.6.5-guru.42/design-main.md",
+      "docs/design/versions/current-main-0.6.5-guru.42/manifest.yaml",
+      "docs/design/versions/current-main-0.6.5-guru.42/traceability.md",
+      "docs/requirements-design-test-contributions/267-release-v0615-guru3/design.md",
+      "docs/requirements-design-test-contributions/267-release-v0615-guru3/manifest.yaml",
+      "docs/requirements-design-test-contributions/267-release-v0615-guru3/requirements.md",
+      "docs/requirements-design-test-contributions/267-release-v0615-guru3/test.md",
+      "docs/requirements-design-test-contributions/267-release-v0615-guru3/traceability.md",
+      "docs/requirements/README.md",
+      "docs/requirements/versions/current-main-0.6.5-guru.39/requirement-main.md",
+      "docs/requirements/versions/current-main-0.6.5-guru.39/requirement-non-functional.md",
+      "docs/requirements/versions/current-main-0.6.5-guru.41/requirement-main.md",
+      "docs/requirements/versions/current-main-0.6.5-guru.41/requirement-non-functional.md",
+      "docs/requirements/versions/current-main-0.6.5-guru.42/decisions.md",
+      "docs/requirements/versions/current-main-0.6.5-guru.42/requirement-main.md",
+      "docs/requirements/versions/current-main-0.6.5-guru.42/requirement-non-functional.md",
+      "docs/requirements/versions/current-main-0.6.5-guru.42/traceability.md",
+      "docs/test/README.md",
+      "docs/test/versions/current-main-0.6.5-guru.39/test-plan.md",
+      "docs/test/versions/current-main-0.6.5-guru.39/test-strategy.md",
+      "docs/test/versions/current-main-0.6.5-guru.41/test-plan.md",
+      "docs/test/versions/current-main-0.6.5-guru.41/test-strategy.md",
+      "docs/test/versions/current-main-0.6.5-guru.42/test-plan.md",
+      "docs/test/versions/current-main-0.6.5-guru.42/test-strategy.md",
+      "docs/test/versions/current-main-0.6.5-guru.42/traceability.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "trellis/workflows/guru-team/README.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      267
+    ],
+    "close_issues": [],
+    "related_issues": [
+      267,
+      311,
+      312
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/315"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#267 发布 v0.6.15-guru.3 successor Release",
+    "outcome": "将 stable install/update source、canonical/installed manifest、公开 README 与 verifier assertion 统一到 `v0.6.15-guru.3`、extension revision `0.6.15-guru.39` 和 Trellis CLI `0.6.15`。",
+    "changed_behavior": [
+      "将 stable install/update source、canonical/installed manifest、公开 README 与 verifier assertion 统一到 `v0.6.15-guru.3`、extension revision `0.6.15-guru.39` 和 Trellis CLI `0.6.15`。",
+      "激活 `current-main-0.6.5-guru.42` 为唯一 current Requirements/Design/Test/Architecture authority，并将 `.39`、`.41` 保留为 superseded history。",
+      "release preparation HEAD `490b302a` 已包含 #311 fix `5b3b7bef`、PR #313 merge `21c7da14` 与 PR #314 merge `3efcce72`。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "config",
+        "name": "config",
+        "paths": [
+          "docs/design/versions/current-main-0.6.5-guru.39/manifest.yaml",
+          "docs/design/versions/current-main-0.6.5-guru.41/manifest.yaml",
+          "docs/design/versions/current-main-0.6.5-guru.42/manifest.yaml",
+          "docs/requirements-design-test-contributions/267-release-v0615-guru3/manifest.yaml"
+        ],
+        "change": "将 stable install/update source、canonical/installed manifest、公开 README 与 verifier assertion 统一到 `v0.6.15-guru.3`、extension revision `0.6.15-guru.39` 和 Trellis CLI `0.6.15`。"
+      },
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/architecture/baseline-usage.md",
+          ".trellis/spec/docs/public-docs.md",
+          ".trellis/spec/docs/requirements-design-test-ssot.md",
+          ".trellis/tasks/08-29-267-release-v0615-guru3/design.md",
+          ".trellis/tasks/08-29-267-release-v0615-guru3/implement.md",
+          ".trellis/tasks/08-29-267-release-v0615-guru3/prd.md",
+          ".trellis/tasks/08-29-267-release-v0615-guru3/release-notes-zh.md",
+          ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/design.md",
+          ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/implement.md",
+          ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/prd.md",
+          "README.md",
+          "docs/architecture/01-current/system.md",
+          "docs/architecture/README.md",
+          "docs/architecture/contributions/267-release-v0615-guru3.md",
+          "docs/architecture/evidence/current-evidence.md",
+          "docs/design/README.md",
+          "docs/design/versions/current-main-0.6.5-guru.39/design-main.md",
+          "docs/design/versions/current-main-0.6.5-guru.41/design-main.md",
+          "docs/design/versions/current-main-0.6.5-guru.42/capability-inventory.md",
+          "docs/design/versions/current-main-0.6.5-guru.42/decisions.md",
+          "docs/design/versions/current-main-0.6.5-guru.42/design-main.md",
+          "docs/design/versions/current-main-0.6.5-guru.42/traceability.md",
+          "docs/requirements-design-test-contributions/267-release-v0615-guru3/design.md",
+          "docs/requirements-design-test-contributions/267-release-v0615-guru3/requirements.md",
+          "docs/requirements-design-test-contributions/267-release-v0615-guru3/test.md",
+          "docs/requirements-design-test-contributions/267-release-v0615-guru3/traceability.md",
+          "docs/requirements/README.md",
+          "docs/requirements/versions/current-main-0.6.5-guru.39/requirement-main.md",
+          "docs/requirements/versions/current-main-0.6.5-guru.39/requirement-non-functional.md",
+          "docs/requirements/versions/current-main-0.6.5-guru.41/requirement-main.md",
+          "docs/requirements/versions/current-main-0.6.5-guru.41/requirement-non-functional.md",
+          "docs/requirements/versions/current-main-0.6.5-guru.42/decisions.md",
+          "docs/requirements/versions/current-main-0.6.5-guru.42/requirement-main.md",
+          "docs/requirements/versions/current-main-0.6.5-guru.42/requirement-non-functional.md",
+          "docs/requirements/versions/current-main-0.6.5-guru.42/traceability.md",
+          "docs/test/README.md",
+          "docs/test/versions/current-main-0.6.5-guru.39/test-plan.md",
+          "docs/test/versions/current-main-0.6.5-guru.39/test-strategy.md",
+          "docs/test/versions/current-main-0.6.5-guru.41/test-plan.md",
+          "docs/test/versions/current-main-0.6.5-guru.41/test-strategy.md",
+          "docs/test/versions/current-main-0.6.5-guru.42/test-plan.md",
+          "docs/test/versions/current-main-0.6.5-guru.42/test-strategy.md",
+          "docs/test/versions/current-main-0.6.5-guru.42/traceability.md"
+        ],
+        "change": "将 stable install/update source、canonical/installed manifest、公开 README 与 verifier assertion 统一到 `v0.6.15-guru.3`、extension revision `0.6.15-guru.39` 和 Trellis CLI `0.6.15`。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "将 stable install/update source、canonical/installed manifest、公开 README 与 verifier assertion 统一到 `v0.6.15-guru.3`、extension revision `0.6.15-guru.39` 和 Trellis CLI `0.6.15`。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md"
+        ],
+        "change": "将 stable install/update source、canonical/installed manifest、公开 README 与 verifier assertion 统一到 `v0.6.15-guru.3`、extension revision `0.6.15-guru.39` 和 Trellis CLI `0.6.15`。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py"
+        ],
+        "change": "将 stable install/update source、canonical/installed manifest、公开 README 与 verifier assertion 统一到 `v0.6.15-guru.3`、extension revision `0.6.15-guru.39` 和 Trellis CLI `0.6.15`。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-29-267-release-v0615-guru3/issue-scope-ledger.json",
+          ".trellis/tasks/08-29-267-release-v0615-guru3/task.json",
+          ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/task.json"
+        ],
+        "change": "将 stable install/update source、canonical/installed manifest、公开 README 与 verifier assertion 统一到 `v0.6.15-guru.3`、extension revision `0.6.15-guru.39` 和 Trellis CLI `0.6.15`。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "change": "将 stable install/update source、canonical/installed manifest、公开 README 与 verifier assertion 统一到 `v0.6.15-guru.3`、extension revision `0.6.15-guru.39` 和 Trellis CLI `0.6.15`。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#267",
+        "#311",
+        "#312"
+      ],
+      "pr_refs": [
+        "PR #315"
+      ],
+      "branches": [
+        "codex/267-release-v0615-guru3"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+        ".trellis/spec/architecture/baseline-usage.md",
+        ".trellis/spec/docs/public-docs.md",
+        ".trellis/spec/docs/requirements-design-test-ssot.md",
+        ".trellis/tasks/08-29-267-release-v0615-guru3/design.md",
+        ".trellis/tasks/08-29-267-release-v0615-guru3/implement.md",
+        ".trellis/tasks/08-29-267-release-v0615-guru3/issue-scope-ledger.json",
+        ".trellis/tasks/08-29-267-release-v0615-guru3/prd.md",
+        ".trellis/tasks/08-29-267-release-v0615-guru3/release-notes-zh.md",
+        ".trellis/tasks/08-29-267-release-v0615-guru3/task.json",
+        ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/design.md",
+        ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/implement.md",
+        ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/prd.md",
+        ".trellis/tasks/archive/2026-08/08-29-267-release-v0615-guru3/task.json",
+        "README.md",
+        "docs/architecture/01-current/system.md",
+        "docs/architecture/README.md",
+        "docs/architecture/contributions/267-release-v0615-guru3.md",
+        "docs/architecture/evidence/current-evidence.md",
+        "docs/design/README.md",
+        "docs/design/versions/current-main-0.6.5-guru.39/design-main.md",
+        "docs/design/versions/current-main-0.6.5-guru.39/manifest.yaml",
+        "docs/design/versions/current-main-0.6.5-guru.41/design-main.md",
+        "docs/design/versions/current-main-0.6.5-guru.41/manifest.yaml",
+        "docs/design/versions/current-main-0.6.5-guru.42/capability-inventory.md",
+        "docs/design/versions/current-main-0.6.5-guru.42/decisions.md",
+        "docs/design/versions/current-main-0.6.5-guru.42/design-main.md",
+        "docs/design/versions/current-main-0.6.5-guru.42/manifest.yaml",
+        "docs/design/versions/current-main-0.6.5-guru.42/traceability.md",
+        "docs/requirements-design-test-contributions/267-release-v0615-guru3/design.md",
+        "docs/requirements-design-test-contributions/267-release-v0615-guru3/manifest.yaml",
+        "docs/requirements-design-test-contributions/267-release-v0615-guru3/requirements.md",
+        "docs/requirements-design-test-contributions/267-release-v0615-guru3/test.md",
+        "docs/requirements-design-test-contributions/267-release-v0615-guru3/traceability.md",
+        "docs/requirements/README.md",
+        "docs/requirements/versions/current-main-0.6.5-guru.39/requirement-main.md",
+        "docs/requirements/versions/current-main-0.6.5-guru.39/requirement-non-functional.md",
+        "docs/requirements/versions/current-main-0.6.5-guru.41/requirement-main.md",
+        "docs/requirements/versions/current-main-0.6.5-guru.41/requirement-non-functional.md",
+        "docs/requirements/versions/current-main-0.6.5-guru.42/decisions.md",
+        "docs/requirements/versions/current-main-0.6.5-guru.42/requirement-main.md",
+        "docs/requirements/versions/current-main-0.6.5-guru.42/requirement-non-functional.md",
+        "docs/requirements/versions/current-main-0.6.5-guru.42/traceability.md",
+        "docs/test/README.md",
+        "docs/test/versions/current-main-0.6.5-guru.39/test-plan.md",
+        "docs/test/versions/current-main-0.6.5-guru.39/test-strategy.md",
+        "docs/test/versions/current-main-0.6.5-guru.41/test-plan.md",
+        "docs/test/versions/current-main-0.6.5-guru.41/test-strategy.md",
+        "docs/test/versions/current-main-0.6.5-guru.42/test-plan.md",
+        "docs/test/versions/current-main-0.6.5-guru.42/test-strategy.md",
+        "docs/test/versions/current-main-0.6.5-guru.42/traceability.md",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "trellis/workflows/guru-team/README.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#267 发布 v0.6.15-guru.3 successor Release",
+        "将 stable install/update source、canonical/installed manifest、",
+        "完成 extension.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#267 发布 v0.6.15-guru.3 successor Release\n将 stable install/update source、canonical/installed manifest、公开 README 与 verifier assertion 统一到 `v0.6.15-guru.3`、extension revision `0.6.15-guru.39` 和 Trellis CLI `0.6.15`。\n激活 `current-main-0.6.5-guru.42` 为唯一 current Requirements/Design/Test/Architecture authority，并将 `.39`、`.41` 保留为 superseded history。\nrelease preparation HEAD `490b302a` 已包含 #311 fix `5b3b7bef`、PR #313 merge `21c7da14` 与 PR #314 merge `3efcce72`。\n将 stable install/update source、canonical/installed manifest、\n完成 extension.json 相关变更"
+  }
+}
