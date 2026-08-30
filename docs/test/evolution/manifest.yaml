@@ -1,0 +1,33 @@
+schema_version: "1.0"
+authority: test
+identity: guru-trellis-evolution-test-2026-08-30
+version: evolution-test-candidate-2026-08-30
+status: test_candidate_planned
+fixture_count: 50
+review_status: fresh_design_review_passed
+requirements_status: requirements_ready_for_design
+design_status: design_ready_for_delivery_planning
+requirements_locator: docs/requirements/evolution/requirement-main.md
+requirements_nfr_locator: docs/requirements/evolution/requirement-non-functional.md
+design_locator: docs/design/evolution/design-main.md
+design_contract_locator: docs/design/evolution/contracts.md
+fixture_plan_locator: docs/test/evolution/fixture-plan.md
+traceability_locator: docs/test/evolution/traceability.md
+current_test_source_ref: 5650df47fe17fe89b7cb616be6c9551608164832
+current_test_locator: docs/test/versions/current-main-0.6.5-guru.42/test-strategy.md
+execution_status: planned_not_executed
+provenance: >-
+  REQ-REV-133..142 added #311/#312 prerequisite, full installed publication terminal,
+  evidence-before-cleanup standalone verifier failure preservation and unrelated-dirty isolation, and a two-stage
+  Requirements-ready then Design/refactor-ready 50-row fixture projection; selected base 5650df47 includes PR
+  #313/#314 merges, the fact-only .42 authority promotion, the fact-only #267 lifecycle-evidence/provenance/archive
+  update through PR #316, PR #317 exact installed platform-selection preservation and PR #318 fact-only
+  caller-inventory/provenance correction, with #311 OPEN only for
+  follow-up-only work and #312
+  CLOSED; .42 authority rebind,
+  merged-behavior reconciliation and Requirements-stage successor zero-loss are current for 84 requirements /
+  34 NFR, and fresh Requirements semantic, Strict technical and deterministic closure gates have passed; prior REQ-REV-011..132, DES-REV-001..014 and
+  pre-REQ-REV-142 DES-REV-001..052 review bindings are stale. All 50 fixtures retain EVO-DES-001..073 planning
+  allocation with Reconcile, Publish/Finish/Merge and Projection ownership; current fresh Design review and
+  deterministic closure passed with zero P1/P2/P3 findings and zero high-risk open questions, establishing
+  evolution_refactor_eligible while all fixtures remain planned_not_executed
