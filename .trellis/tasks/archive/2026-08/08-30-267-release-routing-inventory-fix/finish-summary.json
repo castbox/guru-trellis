@@ -1,0 +1,130 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-30T10:42:47Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-30-267-release-routing-inventory-fix",
+    "title": "#267 修复 Release routing caller inventory 锚点",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-30-267-release-routing-inventory-fix",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/267-release-routing-inventory-fix",
+    "commits": [
+      "5afe15a6cad28e95c81a8b56c54d4b774de6a105",
+      "1cd5290122c0f4a650d8f3428e59fe51d776f739"
+    ],
+    "changed_paths": [
+      ".trellis/tasks/08-30-267-release-routing-inventory-fix/design.md",
+      ".trellis/tasks/08-30-267-release-routing-inventory-fix/implement.md",
+      ".trellis/tasks/08-30-267-release-routing-inventory-fix/issue-scope-ledger.json",
+      ".trellis/tasks/08-30-267-release-routing-inventory-fix/prd.md",
+      ".trellis/tasks/08-30-267-release-routing-inventory-fix/task.json",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/design.md",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/implement.md",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/prd.md",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/task.json",
+      "trellis/presets/guru-team/tests/throwaway-python-callers.json"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      267
+    ],
+    "close_issues": [],
+    "related_issues": [
+      267
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/318"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#267 修复 Release routing caller inventory 锚点",
+    "outcome": "将 Finalizer canonical caller inventory 中过期的 subprocess second-hop identity `f16c2314ce2a...` 精确更新为 current discovery identity `e38ded41d714...`，目标记录只改变 `id` 与 `anchor_sha256`。",
+    "changed_behavior": [
+      "将 Finalizer canonical caller inventory 中过期的 subprocess second-hop identity `f16c2314ce2a...` 精确更新为 current discovery identity `e38ded41d714...`，目标记录只改变 `id` 与 `anchor_sha256`。",
+      "将 Issue #267 的唯一 related disposition 与 `primary_issue` reason 精确对齐，继续保持 `close_issues=[]` 和 related-only 语义。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/08-30-267-release-routing-inventory-fix/design.md",
+          ".trellis/tasks/08-30-267-release-routing-inventory-fix/implement.md",
+          ".trellis/tasks/08-30-267-release-routing-inventory-fix/prd.md",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/design.md",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/implement.md",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/prd.md"
+        ],
+        "change": "将 Finalizer canonical caller inventory 中过期的 subprocess second-hop identity `f16c2314ce2a...` 精确更新为 current discovery identity `e38ded41d714...`，目标记录只改变 `id` 与 `anchor_sha256`。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/tests/throwaway-python-callers.json"
+        ],
+        "change": "将 Finalizer canonical caller inventory 中过期的 subprocess second-hop identity `f16c2314ce2a...` 精确更新为 current discovery identity `e38ded41d714...`，目标记录只改变 `id` 与 `anchor_sha256`。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-30-267-release-routing-inventory-fix/issue-scope-ledger.json",
+          ".trellis/tasks/08-30-267-release-routing-inventory-fix/task.json",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/task.json"
+        ],
+        "change": "将 Finalizer canonical caller inventory 中过期的 subprocess second-hop identity `f16c2314ce2a...` 精确更新为 current discovery identity `e38ded41d714...`，目标记录只改变 `id` 与 `anchor_sha256`。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#267"
+      ],
+      "pr_refs": [
+        "PR #318"
+      ],
+      "branches": [
+        "codex/267-release-routing-inventory-fix"
+      ],
+      "paths": [
+        ".trellis/tasks/08-30-267-release-routing-inventory-fix/design.md",
+        ".trellis/tasks/08-30-267-release-routing-inventory-fix/implement.md",
+        ".trellis/tasks/08-30-267-release-routing-inventory-fix/issue-scope-ledger.json",
+        ".trellis/tasks/08-30-267-release-routing-inventory-fix/prd.md",
+        ".trellis/tasks/08-30-267-release-routing-inventory-fix/task.json",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/design.md",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/implement.md",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/prd.md",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-routing-inventory-fix/task.json",
+        "trellis/presets/guru-team/tests/throwaway-python-callers.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#267 修复 Release routing caller inventory 锚点",
+        "将 Finalizer canonical caller inventory 中过期的 subprocess secon",
+        "完成 design.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#267 修复 Release routing caller inventory 锚点\n将 Finalizer canonical caller inventory 中过期的 subprocess second-hop identity `f16c2314ce2a...` 精确更新为 current discovery identity `e38ded41d714...`，目标记录只改变 `id` 与 `anchor_sha256`。\n将 Issue #267 的唯一 related disposition 与 `primary_issue` reason 精确对齐，继续保持 `close_issues=[]` 和 related-only 语义。\n将 Finalizer canonical caller inventory 中过期的 subprocess secon\n完成 design.md 相关变更"
+  }
+}
