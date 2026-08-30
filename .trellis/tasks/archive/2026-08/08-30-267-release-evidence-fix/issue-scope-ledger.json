@@ -1,0 +1,31 @@
+{
+  "close_issues": [],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 267,
+    "reason": "Issue #267 remains the sole semantic owner of the .3 Release and this recovery fix.",
+    "title": "发布 v0.6.15-guru.3：包含 #311/#312 修复的 exact-candidate successor Release",
+    "url": "https://github.com/castbox/guru-trellis/issues/267"
+  },
+  "related_issues": [
+    {
+      "number": 267,
+      "reason": "Issue #267 remains the sole semantic owner of the .3 Release and this recovery fix.",
+      "title": "发布 v0.6.15-guru.3：包含 #311/#312 修复的 exact-candidate successor Release",
+      "url": "https://github.com/castbox/guru-trellis/issues/267"
+    },
+    {
+      "number": 311,
+      "reason": "Required Release content; remains open until separate formal .3 business-repository proof.",
+      "title": "修复 installed business repo Finalizer provenance reprepare 的 source/target checkout 混淆",
+      "url": "https://github.com/castbox/guru-trellis/issues/311"
+    },
+    {
+      "number": 312,
+      "reason": "Closed historical prerequisite already present in main and not modified by this recovery task.",
+      "title": "允许已合并的 active task 在原 worktree 中通过 workspace boundary",
+      "url": "https://github.com/castbox/guru-trellis/issues/312"
+    }
+  ],
+  "schema_version": "2.0"
+}

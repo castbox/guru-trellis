@@ -1,0 +1,130 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-30T05:42:59Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-30-267-release-evidence-fix",
+    "title": "#267 修复 post-merge lifecycle authority evidence",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-30-267-release-evidence-fix",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/267-release-evidence-fix",
+    "commits": [
+      "f5c47d287516309bbb7d3cba75fbb927476f495d"
+    ],
+    "changed_paths": [
+      ".trellis/tasks/08-30-267-release-evidence-fix/design.md",
+      ".trellis/tasks/08-30-267-release-evidence-fix/implement.md",
+      ".trellis/tasks/08-30-267-release-evidence-fix/issue-scope-ledger.json",
+      ".trellis/tasks/08-30-267-release-evidence-fix/prd.md",
+      ".trellis/tasks/08-30-267-release-evidence-fix/task.json",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/design.md",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/implement.md",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/prd.md",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/task.json",
+      "docs/architecture/evidence/current-evidence.md",
+      "docs/test/versions/current-main-0.6.5-guru.42/test-plan.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      267
+    ],
+    "close_issues": [],
+    "related_issues": [
+      267,
+      311,
+      312
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/316"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#267 修复 post-merge lifecycle authority evidence",
+    "outcome": "修正唯一 active `.42` Architecture evidence 与 Test plan 中对 PR #315 已完成 lifecycle 的过期 `pending` 表述。",
+    "changed_behavior": [
+      "修正唯一 active `.42` Architecture evidence 与 Test plan 中对 PR #315 已完成 lifecycle 的过期 `pending` 表述。",
+      "两处 current authority 现已一致记录 promotion、r19、Phase 2、task commit、独立 Branch Review、Publication/Finalizer 与 PR #315 merge 已完成。",
+      "recovery PR merge、fresh exact-candidate review、十三项 pre-tag gates、tag、tag-pinned smoke、GitHub Release 与 #311 正式业务仓证明继续保持未验证。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/08-30-267-release-evidence-fix/design.md",
+          ".trellis/tasks/08-30-267-release-evidence-fix/implement.md",
+          ".trellis/tasks/08-30-267-release-evidence-fix/prd.md",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/design.md",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/implement.md",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/prd.md",
+          "docs/architecture/evidence/current-evidence.md",
+          "docs/test/versions/current-main-0.6.5-guru.42/test-plan.md"
+        ],
+        "change": "修正唯一 active `.42` Architecture evidence 与 Test plan 中对 PR #315 已完成 lifecycle 的过期 `pending` 表述。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-30-267-release-evidence-fix/issue-scope-ledger.json",
+          ".trellis/tasks/08-30-267-release-evidence-fix/task.json",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/task.json"
+        ],
+        "change": "修正唯一 active `.42` Architecture evidence 与 Test plan 中对 PR #315 已完成 lifecycle 的过期 `pending` 表述。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#267",
+        "#311",
+        "#312"
+      ],
+      "pr_refs": [
+        "PR #316"
+      ],
+      "branches": [
+        "codex/267-release-evidence-fix"
+      ],
+      "paths": [
+        ".trellis/tasks/08-30-267-release-evidence-fix/design.md",
+        ".trellis/tasks/08-30-267-release-evidence-fix/implement.md",
+        ".trellis/tasks/08-30-267-release-evidence-fix/issue-scope-ledger.json",
+        ".trellis/tasks/08-30-267-release-evidence-fix/prd.md",
+        ".trellis/tasks/08-30-267-release-evidence-fix/task.json",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/design.md",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/implement.md",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/prd.md",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-evidence-fix/task.json",
+        "docs/architecture/evidence/current-evidence.md",
+        "docs/test/versions/current-main-0.6.5-guru.42/test-plan.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#267 修复 post-merge lifecycle authority evidence",
+        "修正唯一 active `.42` Architecture evidence 与 Test plan 中对 PR #3",
+        "完成 design.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#267 修复 post-merge lifecycle authority evidence\n修正唯一 active `.42` Architecture evidence 与 Test plan 中对 PR #315 已完成 lifecycle 的过期 `pending` 表述。\n两处 current authority 现已一致记录 promotion、r19、Phase 2、task commit、独立 Branch Review、Publication/Finalizer 与 PR #315 merge 已完成。\nrecovery PR merge、fresh exact-candidate review、十三项 pre-tag gates、tag、tag-pinned smoke、GitHub Release 与 #311 正式业务仓证明继续保持未验证。\n修正唯一 active `.42` Architecture evidence 与 Test plan 中对 PR #3\n完成 design.md 相关变更"
+  }
+}
