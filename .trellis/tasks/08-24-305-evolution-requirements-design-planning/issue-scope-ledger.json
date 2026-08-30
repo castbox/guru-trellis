@@ -1,0 +1,38 @@
+{
+  "close_issues": [
+    {
+      "number": 305,
+      "reason": "This task is scoped to complete the full reviewed planning contract of Issue #305.",
+      "title": "规划 Guru Trellis Evolution Requirements 与目标 Design（post_release）",
+      "url": "https://github.com/castbox/guru-trellis/issues/305"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 305,
+    "reason": "Issue #305 is the sole post_release Evolution Requirements and target Design planning authority.",
+    "title": "规划 Guru Trellis Evolution Requirements 与目标 Design（post_release）",
+    "url": "https://github.com/castbox/guru-trellis/issues/305"
+  },
+  "related_issues": [
+    {
+      "number": 304,
+      "reason": "Issue #304 remains the isolated pre-refactor Release authority and is not closed or mutated by this task.",
+      "title": "发布 v0.6.15-guru.1：冻结重构前 Guru Team 稳定基线（extension 0.6.5-guru.37）",
+      "url": "https://github.com/castbox/guru-trellis/issues/304"
+    },
+    {
+      "number": 311,
+      "reason": "Issue #311 is a merged Evolution prerequisite and current-capability preservation input; its accepted implementation is present in the selected base, its remaining open work is follow-up-only, and this task neither closes nor implements that follow-up.",
+      "title": "修复 installed business repo Finalizer provenance reprepare 的 source/target checkout 混淆",
+      "url": "https://github.com/castbox/guru-trellis/issues/311"
+    },
+    {
+      "number": 312,
+      "reason": "Issue #312 is a merged Evolution prerequisite and current-capability preservation input; its accepted implementation is present in the selected base and the Issue is closed, and this task neither closes nor reimplements it.",
+      "title": "允许已合并的 active task 在原 worktree 中通过 workspace boundary",
+      "url": "https://github.com/castbox/guru-trellis/issues/312"
+    }
+  ],
+  "schema_version": "2.0"
+}
