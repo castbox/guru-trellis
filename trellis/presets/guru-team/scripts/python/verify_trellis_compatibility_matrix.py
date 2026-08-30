@@ -982,12 +982,54 @@ def _local_before_tag_identity(
     return values[0], values[1], "".join(outputs)
 
 
+def _local_before_tag_ref_exists(repo_root: Path, tag_ref: str) -> bool:
+    """Return whether one exact local tag ref exists."""
+
+    resolved = subprocess.run(
+        (
+            "git",
+            "-C",
+            str(repo_root),
+            "show-ref",
+            "--verify",
+            "--quiet",
+            tag_ref,
+        ),
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    if resolved.returncode == 0:
+        return True
+    if resolved.returncode == 1:
+        return False
+    raise MatrixError(
+        f"failed to inspect local before tag ref: {tag_ref}",
+        command_label="git",
+        exit_code=resolved.returncode or 2,
+        error_tail=resolved.stdout
+        or f"failed to inspect local before tag ref: {tag_ref}",
+    )
+
+
 def resolve_before_tag(repo_root: Path, before_tag: str) -> dict[str, Any]:
     """Resolve one local before tag, fetching only that exact tag when absent."""
 
     tag_name, tag_ref = _before_tag_ref(repo_root, before_tag)
-    tag_object, commit, _ = _local_before_tag_identity(repo_root, tag_ref)
-    if tag_object is not None and commit is not None:
+    local_ref_exists = _local_before_tag_ref_exists(repo_root, tag_ref)
+    tag_object, commit, resolution_tail = _local_before_tag_identity(
+        repo_root,
+        tag_ref,
+    )
+    if local_ref_exists:
+        if tag_object is None or commit is None:
+            raise MatrixError(
+                f"local before tag is not a resolvable commit: {tag_ref}",
+                command_label="git",
+                error_tail=resolution_tail
+                or f"local before tag is not a resolvable commit: {tag_ref}",
+            )
         return {
             "before_tag": tag_name,
             "before_tag_object": tag_object,

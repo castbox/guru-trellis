@@ -504,6 +504,68 @@ exit 23
                 },
             )
 
+    def test_before_tag_existing_noncommit_ref_is_pre_matrix_failure_without_fetch_or_cells(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkout, tag_name, _, _, candidate = self.create_shallow_before_tag_fixture(
+                root
+            )
+            blob = subprocess.run(
+                ("git", "hash-object", "tracked.txt"),
+                cwd=checkout,
+                text=True,
+                stdout=subprocess.PIPE,
+                check=True,
+            ).stdout.strip()
+            subprocess.run(
+                (
+                    "git",
+                    "-c",
+                    "user.name=Matrix Test",
+                    "-c",
+                    "user.email=matrix@example.com",
+                    "tag",
+                    "-a",
+                    tag_name,
+                    blob,
+                    "-m",
+                    "non-commit before tag",
+                ),
+                cwd=checkout,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+            with mock.patch.object(
+                self.matrix,
+                "build_matrix",
+                return_value=self.one_cell_matrix(),
+            ), mock.patch.object(
+                self.matrix,
+                "source_state",
+                return_value={"head": candidate, "identity_sha256": "source"},
+            ), mock.patch.object(
+                self.matrix,
+                "_run",
+            ) as run_command, mock.patch.object(
+                self.matrix,
+                "_run_cell",
+            ) as run_cell:
+                with self.assertRaises(self.matrix.MatrixError) as raised:
+                    self.matrix.run_matrix(
+                        self.matrix_args(checkout, root / "work", tag_name)
+                    )
+            failure = self.matrix.matrix_failure_payload(raised.exception)["failure"]
+            self.assertEqual(failure["stage"], "pre-matrix")
+            self.assertIsNone(failure["cell_id"])
+            self.assertIn("not a resolvable commit", str(raised.exception))
+            self.assertIn("expected commit type", failure["error_tail"])
+            run_command.assert_not_called()
+            run_cell.assert_not_called()
+            self.assertEqual(list((root / "work").iterdir()), [])
+
     def test_before_tag_missing_remote_is_pre_matrix_failure_with_zero_cells(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

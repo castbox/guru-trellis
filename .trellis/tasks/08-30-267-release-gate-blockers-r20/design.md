@@ -40,17 +40,21 @@ fetch_performed
 
 1. 将 `before_tag` 规范化为单个 tag name；拒绝空值、parent traversal、revision operator 与非
    `refs/tags` identity。
-2. 执行 local `rev-parse --verify <tag>` 与 `rev-parse --verify <tag>^{commit}`。
-3. 两项都成功时返回，`fetch_performed=false`。
-4. 任一项失败时执行：
+2. 检查 exact local `refs/tags/<tag>` 是否存在，并执行 local
+   `rev-parse --verify <tag>` 与 `rev-parse --verify <tag>^{commit}`。
+3. local ref 存在且两项解析都成功时返回，`fetch_performed=false`。
+4. local ref 存在但 tag object 或 peeled commit 任一项不可解析时，立即抛出
+   `MatrixError`；不得 fetch。现有 outer terminal 将其投影为 `stage=pre-matrix`、
+   `cell_id=null`，且 matrix cell count 为 `0`。
+5. 只有 local ref 不存在时才执行：
 
    ```text
    git fetch --no-tags --depth=1 origin refs/tags/<tag>:refs/tags/<tag>
    ```
 
-5. fetch 成功后重新执行两项 `rev-parse --verify`；两项都成功时返回，
+6. fetch 成功后重新执行两项 `rev-parse --verify`；两项都成功时返回，
    `fetch_performed=true`。
-6. fetch 或重解析失败时抛出 `MatrixError`。现有 outer terminal 将其投影为
+7. fetch 或重解析失败时抛出 `MatrixError`。现有 outer terminal 将其投影为
    `stage=pre-matrix`、`cell_id=null`、确定 command label/exit 与 credential-safe tail。
 
 fetch 只新增 exact tag ref 与其 reachable object，不修改 checkout HEAD、index、tracked bytes、
@@ -65,6 +69,7 @@ source clone 只 shallow fetch candidate commit。测试固定覆盖：
 | --- | --- |
 | local tag absent, remote tag present | exact fetch once, object/peeled identity match |
 | local tag present | zero fetch, object/peeled identity match |
+| local tag present, object or peeled commit invalid | pre-matrix failure, zero fetch, zero cells |
 | remote tag absent | pre-matrix failure, zero cells |
 | malformed before-tag | pre-matrix failure, zero fetch, zero cells |
 
