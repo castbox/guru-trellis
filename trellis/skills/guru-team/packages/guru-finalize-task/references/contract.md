@@ -43,10 +43,15 @@ package, global installation, or verifier runtime. The apply executable comes
 from `extension_source_checkout` and receives `target_reviewed_checkout`
 through `--repo`. Apply must leave source identity and clean state unchanged and
 may dirty only `.trellis/guru-team/extension.json` in the target. The existing
-field allowlist remains closed. The committed tail has exactly one parent equal
-to target `reviewed_content_head`; self-hosted postimage source ref/commit equal
-that head, while installed postimage repo/ref/commit preserve the selected
-immutable extension identity. Any failure stops before push, PR, archive,
+field allowlist remains closed. Reapply may additionally change
+`skill_packages.files` and `overlays.files` only when both lists retain their
+length and order, every entry retains all non-`action` fields, and every entry
+changes exactly from `action=installed` to `action=unchanged`. Any other action,
+entry, order, or content change remains outside the allowlist. The committed
+tail has exactly one parent equal to target `reviewed_content_head`;
+self-hosted postimage source ref/commit equal that head, while installed
+postimage repo/ref/commit preserve the selected immutable extension identity.
+Any failure stops before push, PR, archive,
 Ready, or Issue mutation and does not add a public profile, exit, transaction
 state, checkpoint, or verifier result.
 

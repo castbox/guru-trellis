@@ -78,6 +78,14 @@ public `branch_review_commit`, the shared content identity, and live Git.
 repository snapshot. Any dirty reviewed-content path makes
 `review_range_and_working_tree` fail and prevents `ready`.
 
+The provenance metadata-tail manifest allowlist remains closed. Reapply may
+change `skill_packages.files` and `overlays.files` only when both lists retain
+their length and order, every entry retains all non-`action` fields, and every
+entry changes exactly from `action=installed` to `action=unchanged`. Any other
+action, entry, order, or content change remains outside the allowlist; source
+binding, the manifest-only dirty path, reviewed-content parent, and publication
+lineage checks remain unchanged.
+
 ## Gate and exits
 
 After the AI Gate and required confirmation, record and check the one

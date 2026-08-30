@@ -1,0 +1,12 @@
+{
+  "id": "267-release-gate-blockers-r20",
+  "name": "267-release-gate-blockers-r20",
+  "title": "#267 修复 .3 Release Gate blockers r20",
+  "status": "completed",
+  "branch": "codex/267-release-gate-blockers-r20",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/267",
+  "completedAt": "2026-08-31"
+}

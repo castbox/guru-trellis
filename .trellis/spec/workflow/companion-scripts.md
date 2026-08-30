@@ -1421,6 +1421,20 @@ Nonzero standalone setup commands and failed asset-inventory, ownership,
 sidecar, or capability-evidence postchecks record `postcheck_failure`; a failed
 execution cannot retain a null failure object.
 
+The compatibility matrix runner also owns exact before-tag availability. It
+first checks whether the exact local `refs/tags/<before-tag>` ref exists. When
+it exists, the runner resolves its tag object and peeled commit locally; if
+either resolution fails, it emits a structured `pre-matrix` failure with no
+cell id and zero executed cells and performs no fetch. Only when the exact
+local ref is absent may it fetch
+`refs/tags/<before-tag>:refs/tags/<before-tag>` from the source checkout's
+canonical `origin`, with `--no-tags --depth=1`, and it must then resolve both
+objects before the first matrix cell. A malformed tag name, missing remote tag,
+failed fetch, or failed post-fetch resolution remains the same structured
+zero-cell `pre-matrix` failure. This path never fabricates a tag, fetches the
+complete tag set, changes checkout HEAD, selects a mutable branch, or converts
+the failure to PASS or SKIP.
+
 The recorder consumes execution facts plus the completed AI adequacy/findings/
 redaction review and writes only ignored source-session owner state. The checker
 validates source identity, schema, capability evidence, redaction, and the actual
@@ -1645,6 +1659,18 @@ before apply, after apply, and before committing the target-only manifest tail.
 Any source-resolution, fetch, apply, source drift, target extra path, or
 binding-aware postimage failure stops before push, PR, archive, Ready, or Issue
 mutation and projects no credential-bearing locator.
+
+Finalizer and Publication retain package-local metadata-tail manifest
+validators with the same closed reapply action rule. Their unconditional field
+allowlist does not include `skill_packages.files` or `overlays.files`. Either
+container is removed from the unexpected-diff set only when before and after
+are same-length, same-order lists of objects, every non-`action` field remains
+identical, and every entry changes exactly from `installed` to `unchanged`.
+Another action transition, an added/removed/reordered entry, or any path,
+source, destination, hash, mode, or platform change remains
+`provenance_tail_manifest_fields_outside_allowlist`. This classification does
+not relax source binding, target-only mutation, reviewed-content parent, direct
+publication lineage, clean-checkout, or managed-byte checks.
 
 `guru-verify-extension-installation` retains the stable execute/record/check/
 invoke commands only for explicit `source_repository_verification` standalone

@@ -18,6 +18,10 @@ import jsonschema
 PACKAGE = Path(__file__).resolve().parents[1]
 REPO = PACKAGE.parents[4]
 RUNTIME_PATH = PACKAGE / "runtime/owner.py"
+MATRIX_HELPER_PATH = (
+    REPO
+    / "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+)
 
 
 def load(relative: str):
@@ -26,6 +30,17 @@ def load(relative: str):
 
 def load_runtime():
     spec = importlib.util.spec_from_file_location("guru_verify_extension_installation_runtime", RUNTIME_PATH)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def load_matrix_helper():
+    spec = importlib.util.spec_from_file_location(
+        "guru_verify_extension_installation_matrix_helper",
+        MATRIX_HELPER_PATH,
+    )
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -139,6 +154,119 @@ class ExtensionVerificationContractTests(unittest.TestCase):
                 "refs/heads/main^{}",
             ],
         )
+
+    def test_exact_oid_shallow_source_defers_historical_tag_to_matrix_owner(self) -> None:
+        runtime = load_runtime()
+        matrix = load_matrix_helper()
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            remote = root / "origin.git"
+            source = root / "source"
+            checkout = root / "extension-source-checkout"
+            tag_name = "v0.6.5-guru.10"
+            subprocess.run(("git", "init", "--bare", "--quiet", str(remote)), check=True)
+            subprocess.run(("git", "init", "--quiet", str(source)), check=True)
+            subprocess.run(
+                ("git", "config", "user.email", "verifier@example.com"),
+                cwd=source,
+                check=True,
+            )
+            subprocess.run(
+                ("git", "config", "user.name", "Verifier Test"),
+                cwd=source,
+                check=True,
+            )
+            tracked = source / "tracked.txt"
+            tracked.write_text("before\n", encoding="utf-8")
+            subprocess.run(("git", "add", "tracked.txt"), cwd=source, check=True)
+            subprocess.run(
+                ("git", "commit", "--quiet", "-m", "before"),
+                cwd=source,
+                check=True,
+            )
+            subprocess.run(
+                ("git", "tag", "-a", tag_name, "-m", "before tag"),
+                cwd=source,
+                check=True,
+            )
+            tag_object = subprocess.run(
+                ("git", "rev-parse", tag_name),
+                cwd=source,
+                text=True,
+                stdout=subprocess.PIPE,
+                check=True,
+            ).stdout.strip()
+            before_commit = subprocess.run(
+                ("git", "rev-parse", f"{tag_name}^{{commit}}"),
+                cwd=source,
+                text=True,
+                stdout=subprocess.PIPE,
+                check=True,
+            ).stdout.strip()
+            tracked.write_text("candidate\n", encoding="utf-8")
+            subprocess.run(("git", "add", "tracked.txt"), cwd=source, check=True)
+            subprocess.run(
+                ("git", "commit", "--quiet", "-m", "candidate"),
+                cwd=source,
+                check=True,
+            )
+            candidate = subprocess.run(
+                ("git", "rev-parse", "HEAD"),
+                cwd=source,
+                text=True,
+                stdout=subprocess.PIPE,
+                check=True,
+            ).stdout.strip()
+            subprocess.run(
+                ("git", "remote", "add", "origin", str(remote)),
+                cwd=source,
+                check=True,
+            )
+            subprocess.run(
+                ("git", "push", "--quiet", "origin", "HEAD:refs/heads/main"),
+                cwd=source,
+                check=True,
+            )
+            subprocess.run(
+                ("git", "push", "--quiet", "origin", f"refs/tags/{tag_name}"),
+                cwd=source,
+                check=True,
+            )
+
+            resolution = runtime.extension_verification_resolve_source_reference(
+                str(remote),
+                candidate,
+                checkout,
+            )
+            self.assertEqual(resolution["status"], "passed")
+            self.assertTrue(resolution["checkout_prepared"])
+            subprocess.run(
+                ("git", "checkout", "--quiet", "--detach", candidate),
+                cwd=checkout,
+                check=True,
+            )
+            fetch_command = next(
+                row["argv"]
+                for row in resolution["commands"]
+                if row["id"] == "fetch_extension_source_commit"
+            )
+            self.assertEqual(fetch_command, ["git", "fetch", "--depth=1", "origin", candidate])
+            self.assertNotEqual(
+                subprocess.run(
+                    ("git", "rev-parse", "--verify", f"refs/tags/{tag_name}"),
+                    cwd=checkout,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                ).returncode,
+                0,
+            )
+
+            identity = matrix.resolve_before_tag(checkout, tag_name)
+
+            self.assertEqual(identity["before_tag_object"], tag_object)
+            self.assertEqual(identity["before_commit"], before_commit)
+            self.assertTrue(identity["fetch_performed"])
 
     def test_standalone_source_identity_uses_public_exact_oid_not_manifest_generation_head(self) -> None:
         runtime = load_runtime()

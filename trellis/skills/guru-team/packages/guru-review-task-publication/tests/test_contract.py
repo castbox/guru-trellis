@@ -78,6 +78,47 @@ def load_runtime():
 GTT = load_runtime()
 
 
+def provenance_file_action_sections(action: str) -> dict[str, dict[str, object]]:
+    return {
+        "skill_packages": {
+            "files": [
+                {
+                    "path": ".trellis/guru-team/skills/registry.json",
+                    "source": "trellis/skills/guru-team/registry.json",
+                    "sha256": "1" * 64,
+                    "executable": False,
+                    "action": action,
+                },
+                {
+                    "path": ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+                    "source": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+                    "sha256": "2" * 64,
+                    "executable": False,
+                    "action": action,
+                },
+            ],
+        },
+        "overlays": {
+            "files": [
+                {
+                    "path": ".claude/commands/guru/finish-work.md",
+                    "source": "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+                    "sha256": "3" * 64,
+                    "executable": False,
+                    "action": action,
+                },
+                {
+                    "path": ".codex/prompts/guru-finish-work.md",
+                    "source": "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+                    "sha256": "4" * 64,
+                    "executable": False,
+                    "action": action,
+                },
+            ],
+        },
+    }
+
+
 def large_finish_summary() -> dict:
     paths = [f"changes/path-{index:04d}.txt" for index in range(2001)]
     title = "Large finish summary"
@@ -580,6 +621,131 @@ class TaskPublicationContractTest(unittest.TestCase):
                 self.assertIn(
                     "provenance_tail_manifest_fields_outside_allowlist",
                     GTT.provenance_tail_manifest_errors(before, invalid, head),
+                )
+
+    def test_provenance_tail_file_action_transition_is_closed(self) -> None:
+        head = "a" * 40
+        before = {
+            "installed_at": "before",
+            "source": {
+                "ref": "before",
+                "commit": "before",
+                "tree_state": "dirty",
+                "is_mutable_ref": True,
+            },
+            "install": {
+                "managed_assets": [
+                    ".trellis/spec/workflow/semantic-retrieval.md"
+                ]
+            },
+        }
+        before.update(provenance_file_action_sections("installed"))
+        after = copy.deepcopy(before)
+        after["installed_at"] = "after"
+        after["source"].update(
+            {
+                "ref": head,
+                "commit": head,
+                "tree_state": "clean",
+                "is_mutable_ref": False,
+            }
+        )
+        for container in GTT.PROVENANCE_TAIL_FILE_ACTION_CONTAINERS:
+            section_name, field_name = container.split(".", 1)
+            for item in after[section_name][field_name]:
+                item["action"] = "unchanged"
+
+        self.assertNotIn(
+            "skill_packages.files",
+            GTT.PROVENANCE_TAIL_ALLOWED_FIELDS,
+        )
+        self.assertNotIn("overlays.files", GTT.PROVENANCE_TAIL_ALLOWED_FIELDS)
+        self.assertEqual(
+            GTT.provenance_tail_manifest_errors(before, after, head),
+            [],
+        )
+        for container in GTT.PROVENANCE_TAIL_FILE_ACTION_CONTAINERS:
+            self.assertTrue(
+                GTT.provenance_tail_safe_file_action_transition(
+                    before,
+                    after,
+                    container,
+                )
+            )
+
+        def reverse_action(before_value: dict, after_value: dict) -> None:
+            before_value["skill_packages"]["files"][0]["action"] = "unchanged"
+            after_value["skill_packages"]["files"][0]["action"] = "installed"
+
+        def mutate_after_action(_before_value: dict, after_value: dict) -> None:
+            after_value["overlays"]["files"][0]["action"] = "updated_managed"
+
+        def mutate_path(_before_value: dict, after_value: dict) -> None:
+            after_value["skill_packages"]["files"][0]["path"] += ".changed"
+
+        def mutate_hash(_before_value: dict, after_value: dict) -> None:
+            after_value["overlays"]["files"][0]["sha256"] = "f" * 64
+
+        def mutate_mode(_before_value: dict, after_value: dict) -> None:
+            after_value["skill_packages"]["files"][0]["executable"] = True
+
+        def mutate_mode_type(_before_value: dict, after_value: dict) -> None:
+            after_value["skill_packages"]["files"][0]["executable"] = 0
+
+        def mutate_source(_before_value: dict, after_value: dict) -> None:
+            after_value["overlays"]["files"][0]["source"] += ".changed"
+
+        def mutate_destination(_before_value: dict, after_value: dict) -> None:
+            after_value["skill_packages"]["files"][0]["destination"] = "other"
+
+        def mutate_platform(_before_value: dict, after_value: dict) -> None:
+            after_value["overlays"]["files"][0]["platform"] = "cursor"
+
+        def add_entry(_before_value: dict, after_value: dict) -> None:
+            after_value["skill_packages"]["files"].append(
+                copy.deepcopy(after_value["skill_packages"]["files"][0])
+            )
+
+        def remove_entry(_before_value: dict, after_value: dict) -> None:
+            after_value["overlays"]["files"].pop()
+
+        def reorder_entries(_before_value: dict, after_value: dict) -> None:
+            after_value["skill_packages"]["files"].reverse()
+
+        def replace_with_non_object(_before_value: dict, after_value: dict) -> None:
+            after_value["overlays"]["files"][0] = "not-an-object"
+
+        def replace_with_non_list(_before_value: dict, after_value: dict) -> None:
+            after_value["skill_packages"]["files"] = "not-a-list"
+
+        cases = (
+            ("unchanged_to_installed", reverse_action),
+            ("installed_to_updated_managed", mutate_after_action),
+            ("path", mutate_path),
+            ("hash", mutate_hash),
+            ("mode", mutate_mode),
+            ("mode_type", mutate_mode_type),
+            ("source", mutate_source),
+            ("destination", mutate_destination),
+            ("platform", mutate_platform),
+            ("entry_added", add_entry),
+            ("entry_removed", remove_entry),
+            ("entry_reordered", reorder_entries),
+            ("non_object_entry", replace_with_non_object),
+            ("non_list_container", replace_with_non_list),
+        )
+        for name, mutate in cases:
+            with self.subTest(case=name):
+                invalid_before = copy.deepcopy(before)
+                invalid_after = copy.deepcopy(after)
+                mutate(invalid_before, invalid_after)
+                self.assertIn(
+                    "provenance_tail_manifest_fields_outside_allowlist",
+                    GTT.provenance_tail_manifest_errors(
+                        invalid_before,
+                        invalid_after,
+                        head,
+                    ),
                 )
 
     def test_package_local_runtime_has_no_retired_verifier_or_monolith_route(self) -> None:
