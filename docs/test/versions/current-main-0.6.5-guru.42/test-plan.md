@@ -134,9 +134,9 @@ GitHub Release，也不把旧 candidate 的被阻断 closeout表述为当前通�
 
 | Check | Current result | Boundary |
 | --- | --- | --- |
-| reviewed contribution range | `origin/main@3efcce72…d3dca74b`；2 commits / 22 paths；Architecture Branch Review 与 independent Branch Review passed，P0-P3 open findings zero | promotion-created diff 必须 fresh re-entry |
+| reviewed contribution range | `origin/main@3efcce72…d3dca74b`；2 commits / 22 paths；Architecture Branch Review 与 independent Branch Review passed，P0-P3 open findings zero | promotion `351e61d1` 与 r19 修复 `490b302a` 均已完成 fresh Phase 2、task commit 与 independent Branch Review re-entry |
 | RDT promotion | expected `.41` -> `.42`；Requirements/Design/Test version、navigation、history 与 contribution status 串行更新 | 不证明 Architecture promotion 或 downstream Phase 2 |
 | Architecture promotion | expected `.41` -> `.42`；仅更新 README、CURRENT、evidence 与 contribution state；ADR `required=false` | 不改变 decision/owner/GAP/compatibility |
 | version mapping | `v0.6.15-guru.3 -> 0.6.15-guru.39 -> Trellis CLI 0.6.15` | tag、Release、latest stable 与 smoke 仍 `unverified` |
-| post-promotion lifecycle | pending fresh Phase 2、task commit 与 independent complete-range Branch Review | 旧 contribution review 不替代 |
+| post-promotion lifecycle | r19 fresh Phase 2、task commit `490b302a`、independent complete-range Branch Review、PR readiness 与 Finalizer 已完成；PR #315 已 merge 为 `a41b8a34` | post-merge predecessor-to-candidate full-diff review 发现 P2 `BR-267-FULL-CAND-001`；修复 merge 与 fresh review 前 tag 保持阻断 |
 | #311 business proof | `unverified` | 正式 `.3` 发布后独立安装与错误路径重试；Issue 保持 OPEN |
