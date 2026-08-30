@@ -928,6 +928,104 @@ def _git(repo: Path, *args: str, capture: bool = True) -> str:
     return _run(("git", "-C", str(repo), *args), capture=capture).strip()
 
 
+def _before_tag_ref(repo_root: Path, before_tag: str) -> tuple[str, str]:
+    """Return one exact tag name/ref without accepting revision expressions."""
+
+    tag_name = before_tag.strip()
+    if not tag_name or tag_name != before_tag or tag_name.startswith("refs/"):
+        raise MatrixError(
+            "before tag must be one exact tag name",
+            command_label="git",
+        )
+    tag_ref = f"refs/tags/{tag_name}"
+    checked = subprocess.run(
+        ("git", "-C", str(repo_root), "check-ref-format", tag_ref),
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    if checked.returncode != 0:
+        raise MatrixError(
+            f"invalid before tag name: {tag_name}",
+            command_label="git",
+            exit_code=checked.returncode or 2,
+            error_tail=checked.stdout or f"invalid before tag name: {tag_name}",
+        )
+    return tag_name, tag_ref
+
+
+def _local_before_tag_identity(
+    repo_root: Path,
+    tag_ref: str,
+) -> tuple[str | None, str | None, str]:
+    """Resolve the exact tag ref and its peeled commit without raising."""
+
+    outputs: list[str] = []
+    values: list[str | None] = []
+    for revision in (tag_ref, f"{tag_ref}^{{commit}}"):
+        resolved = subprocess.run(
+            ("git", "-C", str(repo_root), "rev-parse", "--verify", revision),
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            check=False,
+        )
+        output = resolved.stdout or ""
+        outputs.append(output)
+        oid = output.strip()
+        values.append(
+            oid
+            if resolved.returncode == 0 and re.fullmatch(r"[0-9a-f]{40}", oid)
+            else None
+        )
+    return values[0], values[1], "".join(outputs)
+
+
+def resolve_before_tag(repo_root: Path, before_tag: str) -> dict[str, Any]:
+    """Resolve one local before tag, fetching only that exact tag when absent."""
+
+    tag_name, tag_ref = _before_tag_ref(repo_root, before_tag)
+    tag_object, commit, _ = _local_before_tag_identity(repo_root, tag_ref)
+    if tag_object is not None and commit is not None:
+        return {
+            "before_tag": tag_name,
+            "before_tag_object": tag_object,
+            "before_commit": commit,
+            "fetch_performed": False,
+        }
+
+    _run(
+        (
+            "git",
+            "fetch",
+            "--no-tags",
+            "--depth=1",
+            "origin",
+            f"{tag_ref}:{tag_ref}",
+        ),
+        cwd=repo_root,
+        capture=True,
+    )
+    tag_object, commit, resolution_tail = _local_before_tag_identity(
+        repo_root,
+        tag_ref,
+    )
+    if tag_object is None or commit is None:
+        raise MatrixError(
+            f"before tag remains unavailable after exact fetch: {tag_ref}",
+            command_label="git",
+            error_tail=resolution_tail
+            or f"before tag remains unavailable after exact fetch: {tag_ref}",
+        )
+    return {
+        "before_tag": tag_name,
+        "before_tag_object": tag_object,
+        "before_commit": commit,
+        "fetch_performed": True,
+    }
+
+
 def source_state(repo_root: Path) -> dict[str, Any]:
     """Bind one HEAD plus the exact tracked and untracked candidate delta."""
 
@@ -2001,8 +2099,10 @@ def run_matrix(args: argparse.Namespace) -> dict[str, Any]:
         work_root.mkdir(parents=True, exist_ok=True)
         matrix = build_matrix(repo_root)
         source_before = source_state(repo_root)
-        before_commit = _git(repo_root, "rev-parse", f"{args.before_tag}^{{}}")
-        before_tag_object = _git(repo_root, "rev-parse", args.before_tag)
+        before_identity = resolve_before_tag(repo_root, args.before_tag)
+        before_tag = str(before_identity["before_tag"])
+        before_commit = str(before_identity["before_commit"])
+        before_tag_object = str(before_identity["before_tag_object"])
         results = []
         for cell in matrix["cells"]:
             stage = "matrix-cell"
@@ -2015,7 +2115,7 @@ def run_matrix(args: argparse.Namespace) -> dict[str, Any]:
                 platform=str(cell["platform"]),
                 scenario=str(cell["scenario"]),
                 workflow_source=args.workflow_source,
-                before_tag=args.before_tag,
+                before_tag=before_tag,
                 before_cli=args.before_cli,
                 target_cli=args.target_cli,
                 allow_local_sample=args.allow_local_sample,
@@ -2079,7 +2179,7 @@ def run_matrix(args: argparse.Namespace) -> dict[str, Any]:
             "source_commit": source_before["head"],
             "source_state": source_before,
             "source_identity_sha256": source_before["identity_sha256"],
-            "before_tag": args.before_tag,
+            "before_tag": before_tag,
             "before_tag_object": before_tag_object,
             "before_commit": before_commit,
             "before_cli": args.before_cli,

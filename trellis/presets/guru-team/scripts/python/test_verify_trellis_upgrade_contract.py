@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import ast
 import hashlib
 import importlib.util
@@ -50,6 +51,134 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         workflow_start = cls.text.index("preview_and_switch_managed_workflow() {")
         workflow_end = cls.text.index('\nmkdir "$TARGET"', workflow_start)
         cls.shell_workflow_function = cls.text[workflow_start:workflow_end]
+
+    def create_shallow_before_tag_fixture(
+        self,
+        root: Path,
+        *,
+        push_tag: bool = True,
+    ) -> tuple[Path, str, str, str, str]:
+        remote = root / "origin.git"
+        source = root / "source"
+        checkout = root / "checkout"
+        tag_name = "v0.6.5-guru.10"
+        subprocess.run(("git", "init", "--bare", "--quiet", str(remote)), check=True)
+        subprocess.run(("git", "init", "--quiet", str(source)), check=True)
+        subprocess.run(
+            ("git", "config", "user.email", "matrix@example.com"),
+            cwd=source,
+            check=True,
+        )
+        subprocess.run(
+            ("git", "config", "user.name", "Matrix Test"),
+            cwd=source,
+            check=True,
+        )
+        tracked = source / "tracked.txt"
+        tracked.write_text("before\n", encoding="utf-8")
+        subprocess.run(("git", "add", "tracked.txt"), cwd=source, check=True)
+        subprocess.run(
+            ("git", "commit", "--quiet", "-m", "before"),
+            cwd=source,
+            check=True,
+        )
+        subprocess.run(
+            ("git", "tag", "-a", tag_name, "-m", "before tag"),
+            cwd=source,
+            check=True,
+        )
+        tag_object = subprocess.run(
+            ("git", "rev-parse", tag_name),
+            cwd=source,
+            text=True,
+            stdout=subprocess.PIPE,
+            check=True,
+        ).stdout.strip()
+        before_commit = subprocess.run(
+            ("git", "rev-parse", f"{tag_name}^{{commit}}"),
+            cwd=source,
+            text=True,
+            stdout=subprocess.PIPE,
+            check=True,
+        ).stdout.strip()
+        tracked.write_text("candidate\n", encoding="utf-8")
+        subprocess.run(("git", "add", "tracked.txt"), cwd=source, check=True)
+        subprocess.run(
+            ("git", "commit", "--quiet", "-m", "candidate"),
+            cwd=source,
+            check=True,
+        )
+        candidate = subprocess.run(
+            ("git", "rev-parse", "HEAD"),
+            cwd=source,
+            text=True,
+            stdout=subprocess.PIPE,
+            check=True,
+        ).stdout.strip()
+        subprocess.run(
+            ("git", "remote", "add", "origin", str(remote)),
+            cwd=source,
+            check=True,
+        )
+        subprocess.run(
+            ("git", "push", "--quiet", "origin", "HEAD:refs/heads/main"),
+            cwd=source,
+            check=True,
+        )
+        if push_tag:
+            subprocess.run(
+                ("git", "push", "--quiet", "origin", f"refs/tags/{tag_name}"),
+                cwd=source,
+                check=True,
+            )
+        subprocess.run(("git", "init", "--quiet", str(checkout)), check=True)
+        subprocess.run(
+            ("git", "remote", "add", "origin", str(remote)),
+            cwd=checkout,
+            check=True,
+        )
+        subprocess.run(
+            ("git", "fetch", "--depth=1", "origin", candidate),
+            cwd=checkout,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+        subprocess.run(
+            ("git", "checkout", "--quiet", "--detach", "FETCH_HEAD"),
+            cwd=checkout,
+            check=True,
+        )
+        return checkout, tag_name, tag_object, before_commit, candidate
+
+    def one_cell_matrix(self) -> dict[str, object]:
+        return {
+            "platform_inventory_sha256": "inventory",
+            "matrix_sha256": "matrix",
+            "cells": [
+                {
+                    "cell_id": "codex-clean",
+                    "platform": "codex",
+                    "scenario": "clean",
+                }
+            ],
+        }
+
+    def matrix_args(
+        self,
+        checkout: Path,
+        work_root: Path,
+        before_tag: str,
+    ) -> argparse.Namespace:
+        return argparse.Namespace(
+            repo_root=checkout,
+            work_root=work_root,
+            workflow_source="gh:castbox/guru-trellis/trellis#candidate",
+            before_tag=before_tag,
+            before_cli="0.6.5",
+            target_cli="0.6.15",
+            allow_local_sample=False,
+        )
 
     def run_shell_workflow_switch(
         self,
@@ -263,6 +392,171 @@ exit 23
             ],
         )
         self.assertTrue(all(cell["shared_projection"] for cell in plan["cells"]))
+
+    def test_before_tag_exact_fetch_resolves_identity_and_enters_first_cell(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkout, tag_name, tag_object, before_commit, candidate = (
+                self.create_shallow_before_tag_fixture(root)
+            )
+            missing = subprocess.run(
+                ("git", "rev-parse", "--verify", f"refs/tags/{tag_name}"),
+                cwd=checkout,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertNotEqual(missing.returncode, 0)
+            with mock.patch.object(
+                self.matrix,
+                "build_matrix",
+                return_value=self.one_cell_matrix(),
+            ), mock.patch.object(
+                self.matrix,
+                "source_state",
+                return_value={"head": candidate, "identity_sha256": "source"},
+            ), mock.patch.object(
+                self.matrix,
+                "_run_cell",
+                side_effect=self.matrix.MatrixError("sentinel cell failure"),
+            ) as run_cell, mock.patch.object(
+                self.matrix,
+                "_run",
+                wraps=self.matrix._run,
+            ) as run_command:
+                with self.assertRaises(self.matrix.MatrixError) as raised:
+                    self.matrix.run_matrix(
+                        self.matrix_args(checkout, root / "work", tag_name)
+                    )
+
+            fetches = [
+                call.args[0]
+                for call in run_command.call_args_list
+                if call.args and tuple(call.args[0])[:2] == ("git", "fetch")
+            ]
+            self.assertEqual(
+                fetches,
+                [
+                    (
+                        "git",
+                        "fetch",
+                        "--no-tags",
+                        "--depth=1",
+                        "origin",
+                        f"refs/tags/{tag_name}:refs/tags/{tag_name}",
+                    )
+                ],
+            )
+            self.assertEqual(raised.exception.stage, "matrix-cell")
+            self.assertEqual(raised.exception.cell_id, "codex-clean")
+            run_cell.assert_called_once()
+            self.assertEqual(
+                subprocess.run(
+                    ("git", "rev-parse", f"refs/tags/{tag_name}"),
+                    cwd=checkout,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    check=True,
+                ).stdout.strip(),
+                tag_object,
+            )
+            self.assertEqual(
+                subprocess.run(
+                    ("git", "rev-parse", f"refs/tags/{tag_name}^{{commit}}"),
+                    cwd=checkout,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    check=True,
+                ).stdout.strip(),
+                before_commit,
+            )
+
+    def test_before_tag_local_identity_performs_no_fetch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkout, tag_name, tag_object, before_commit, _ = (
+                self.create_shallow_before_tag_fixture(root)
+            )
+            subprocess.run(
+                (
+                    "git",
+                    "fetch",
+                    "--no-tags",
+                    "--depth=1",
+                    "origin",
+                    f"refs/tags/{tag_name}:refs/tags/{tag_name}",
+                ),
+                cwd=checkout,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+            with mock.patch.object(self.matrix, "_run") as run_command:
+                identity = self.matrix.resolve_before_tag(checkout, tag_name)
+            run_command.assert_not_called()
+            self.assertEqual(
+                identity,
+                {
+                    "before_tag": tag_name,
+                    "before_tag_object": tag_object,
+                    "before_commit": before_commit,
+                    "fetch_performed": False,
+                },
+            )
+
+    def test_before_tag_missing_remote_is_pre_matrix_failure_with_zero_cells(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkout, tag_name, _, _, candidate = self.create_shallow_before_tag_fixture(
+                root,
+                push_tag=False,
+            )
+            with mock.patch.object(
+                self.matrix,
+                "build_matrix",
+                return_value=self.one_cell_matrix(),
+            ), mock.patch.object(
+                self.matrix,
+                "source_state",
+                return_value={"head": candidate, "identity_sha256": "source"},
+            ), mock.patch.object(self.matrix, "_run_cell") as run_cell:
+                with self.assertRaises(self.matrix.MatrixError) as raised:
+                    self.matrix.run_matrix(
+                        self.matrix_args(checkout, root / "work", tag_name)
+                    )
+            failure = self.matrix.matrix_failure_payload(raised.exception)["failure"]
+            self.assertEqual(failure["stage"], "pre-matrix")
+            self.assertIsNone(failure["cell_id"])
+            run_cell.assert_not_called()
+            self.assertEqual(list((root / "work").iterdir()), [])
+
+    def test_malformed_before_tag_is_pre_matrix_failure_without_fetch_or_cells(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkout = root / "checkout"
+            checkout.mkdir()
+            with mock.patch.object(
+                self.matrix,
+                "build_matrix",
+                return_value=self.one_cell_matrix(),
+            ), mock.patch.object(
+                self.matrix,
+                "source_state",
+                return_value={"head": "a" * 40, "identity_sha256": "source"},
+            ), mock.patch.object(self.matrix, "_run") as run_command, mock.patch.object(
+                self.matrix,
+                "_run_cell",
+            ) as run_cell:
+                with self.assertRaises(self.matrix.MatrixError) as raised:
+                    self.matrix.run_matrix(
+                        self.matrix_args(checkout, root / "work", "../bad^{commit}")
+                    )
+            failure = self.matrix.matrix_failure_payload(raised.exception)["failure"]
+            self.assertEqual(failure["stage"], "pre-matrix")
+            self.assertIsNone(failure["cell_id"])
+            run_command.assert_not_called()
+            run_cell.assert_not_called()
+            self.assertEqual(list((root / "work").iterdir()), [])
 
     def test_matrix_executor_uses_exact_upgrade_and_conditional_migrate(self) -> None:
         upgrade = self.matrix_text.index('(str(binary), "upgrade", "--tag", target_cli)')

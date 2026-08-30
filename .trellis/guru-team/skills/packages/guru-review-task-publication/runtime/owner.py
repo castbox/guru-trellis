@@ -111,6 +111,11 @@ PROVENANCE_TAIL_ALLOWED_FIELDS = frozenset({
     "source.is_mutable_ref",
 })
 
+PROVENANCE_TAIL_FILE_ACTION_CONTAINERS = (
+    "skill_packages.files",
+    "overlays.files",
+)
+
 PROVENANCE_TAIL_OBJECT_PRESENCE = object()
 
 AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
@@ -3736,6 +3741,59 @@ def provenance_tail_manifest_field_diff(
         key=lambda item: item.encode("utf-8"),
     )
 
+def provenance_tail_safe_file_action_transition(
+    before: Any,
+    after: Any,
+    container: str,
+) -> bool:
+    """Accept only an ordered installed-to-unchanged files transition."""
+    if container not in PROVENANCE_TAIL_FILE_ACTION_CONTAINERS:
+        return False
+    if not isinstance(before, dict) or not isinstance(after, dict):
+        return False
+    section_name, field_name = container.split(".", 1)
+    before_section = before.get(section_name)
+    after_section = after.get(section_name)
+    if not isinstance(before_section, dict) or not isinstance(after_section, dict):
+        return False
+    before_files = before_section.get(field_name)
+    after_files = after_section.get(field_name)
+    if not isinstance(before_files, list) or not isinstance(after_files, list):
+        return False
+    if len(before_files) != len(after_files):
+        return False
+    for before_item, after_item in zip(before_files, after_files):
+        if not isinstance(before_item, dict) or not isinstance(after_item, dict):
+            return False
+        if before_item.get("action") != "installed":
+            return False
+        if after_item.get("action") != "unchanged":
+            return False
+        before_identity = dict(before_item)
+        after_identity = dict(after_item)
+        before_identity.pop("action", None)
+        after_identity.pop("action", None)
+        try:
+            before_bytes = json.dumps(
+                before_identity,
+                allow_nan=False,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode("utf-8")
+            after_bytes = json.dumps(
+                after_identity,
+                allow_nan=False,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode("utf-8")
+        except (TypeError, ValueError):
+            return False
+        if before_bytes != after_bytes:
+            return False
+    return True
+
 def provenance_tail_manifest_errors(
     before: Any,
     after: Any,
@@ -3748,10 +3806,18 @@ def provenance_tail_manifest_errors(
     if re.fullmatch(r"[0-9a-f]{40}", str(reviewed_content_head or "")) is None:
         errors.append("provenance_tail_reviewed_head_invalid")
     changed = provenance_tail_manifest_field_diff(before, after)
-    unexpected = sorted(
-        set(changed) - PROVENANCE_TAIL_ALLOWED_FIELDS,
-        key=lambda item: item.encode("utf-8"),
-    )
+    unexpected = set(changed) - PROVENANCE_TAIL_ALLOWED_FIELDS
+    for container in PROVENANCE_TAIL_FILE_ACTION_CONTAINERS:
+        if (
+            container in unexpected
+            and provenance_tail_safe_file_action_transition(
+                before,
+                after,
+                container,
+            )
+        ):
+            unexpected.remove(container)
+    unexpected = sorted(unexpected, key=lambda item: item.encode("utf-8"))
     if unexpected:
         errors.append("provenance_tail_manifest_fields_outside_allowlist")
     source = after.get("source")

@@ -933,6 +933,14 @@ command/inventory/ownership/sidecar/capability `postcheck_failure`, and retentio
 alongside command hashes/sizes.
 These fixtures do not satisfy the release-wide matrix owner.
 
+Focused before-tag coverage uses a local bare remote and an exact-SHA shallow
+source checkout. It proves a missing local annotated tag is fetched through one
+exact `--no-tags --depth=1` tag refspec and then resolves to the expected tag
+object and peeled commit; an already-local tag performs no fetch. Missing remote
+and malformed tag cases remain `pre-matrix` failures with no cell id and zero
+executed cells. These focused fixtures do not claim the six-cell live matrix or
+tag-pinned Release proof.
+
 The package-local production corpus contains two real-wrapper cases spanning
 `verified` and `blocked`. Shared/Codex/Claude/Cursor consume byte-identical
 canonical corpus and package bytes. Actual exit chooses the output schema before
@@ -975,6 +983,15 @@ repo/ref/commit, short OID, dirty/mutable identity, fetch or HEAD mismatch,
 dirty source, missing apply entry, source repo drift, business HEAD overwrite,
 extra target path/field, managed-byte drift, and sidecars. Static and runtime
 assertions keep verifier package/wrapper/command/artifact call count at zero.
+
+Finalizer and Publication owning tests additionally share one closed manifest
+action table. A positive postimage contains both `skill_packages.files` and
+`overlays.files` and changes each ordered entry only from `installed` to
+`unchanged`. Negative rows cover another action transition, non-action field
+drift, entry addition/removal, and reordering, and retain the stable
+`provenance_tail_manifest_fields_outside_allowlist` result. Passing this table
+does not replace the existing source-binding, manifest-only changed-path,
+reviewed-content parent, publication-lineage, managed-byte, or sidecar tests.
 The installed preview fixture also starts with no plan, remote branch, or PR and
 proves `publication_ready` returns
 `reprepare_required/provenance_metadata_tail` while push, PR creation, archive,
