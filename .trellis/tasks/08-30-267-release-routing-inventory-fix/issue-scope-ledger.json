@@ -1,0 +1,19 @@
+{
+  "close_issues": [],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 267,
+    "reason": "Issue #267 是本次 .3 Release 与当前 pre-tag routing inventory 修复的唯一 semantic owner。",
+    "title": "发布 v0.6.15-guru.3：包含 #311/#312 修复的 exact-candidate successor Release",
+    "url": "https://github.com/castbox/guru-trellis/issues/267"
+  },
+  "related_issues": [
+    {
+      "number": 267,
+      "reason": "本 task 只修复 release verifier caller inventory，不关闭 Release Issue。",
+      "title": "发布 v0.6.15-guru.3：包含 #311/#312 修复的 exact-candidate successor Release",
+      "url": "https://github.com/castbox/guru-trellis/issues/267"
+    }
+  ],
+  "schema_version": "2.0"
+}
