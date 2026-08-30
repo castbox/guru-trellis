@@ -1,0 +1,242 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-30T16:19:44Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-30-267-release-gate-blockers-r20",
+    "title": "#267 修复 .3 Release Gate blockers r20",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-30-267-release-gate-blockers-r20",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/267-release-gate-blockers-r20",
+    "commits": [
+      "96a71421f5ccc0a033b3a6dabe67cb3874d6d902",
+      "0a67c00af6d7e507fdd9729eacc5ace01fe0ea05",
+      "9ac683e876186d035d201b64cb395707010d2268",
+      "91537c5949890b8f90c7afb51e9127f8e74efd07"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-finalize-task/references/contract.md",
+      ".agents/skills/guru-review-task-publication/references/contract.md",
+      ".claude/skills/guru-finalize-task/references/contract.md",
+      ".claude/skills/guru-review-task-publication/references/contract.md",
+      ".codex/skills/guru-finalize-task/references/contract.md",
+      ".codex/skills/guru-review-task-publication/references/contract.md",
+      ".cursor/skills/guru-finalize-task/references/contract.md",
+      ".cursor/skills/guru-review-task-publication/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/tasks/08-30-267-release-gate-blockers-r20/design.md",
+      ".trellis/tasks/08-30-267-release-gate-blockers-r20/implement.md",
+      ".trellis/tasks/08-30-267-release-gate-blockers-r20/issue-scope-ledger.json",
+      ".trellis/tasks/08-30-267-release-gate-blockers-r20/prd.md",
+      ".trellis/tasks/08-30-267-release-gate-blockers-r20/task.json",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/design.md",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/implement.md",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/prd.md",
+      ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/task.json",
+      "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+      "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py",
+      "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+      "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      267
+    ],
+    "close_issues": [],
+    "related_issues": [
+      267,
+      311,
+      312
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/320"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#267 修复 .3 Release Gate blockers r20",
+    "outcome": "修复 exact-SHA shallow source 的 before-tag 可用性：本地 exact tag ref 仅在缺失时执行限定 refspec fetch；已存在但 tag object 或 peeled commit 不可解析时，直接以 `pre-matrix`、零 fetch、零 cell 失败。",
+    "changed_behavior": [
+      "修复 exact-SHA shallow source 的 before-tag 可用性：本地 exact tag ref 仅在缺失时执行限定 refspec fetch；已存在但 tag object 或 peeled commit 不可解析时，直接以 `pre-matrix`、零 fetch、零 cell 失败。",
+      "修复 Finalizer 与 Publication provenance-tail 校验：只接受 `skill_packages.files` 与 `overlays.files` 中逐条、等长、同序、其余字段不变的 `installed -> unchanged`。",
+      "同步 canonical、dogfood 与四个平台的受管合同、runtime、测试和 manifest projection。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/tasks/08-30-267-release-gate-blockers-r20/design.md",
+          ".trellis/tasks/08-30-267-release-gate-blockers-r20/implement.md",
+          ".trellis/tasks/08-30-267-release-gate-blockers-r20/prd.md",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/design.md",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/implement.md",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/prd.md"
+        ],
+        "change": "修复 exact-SHA shallow source 的 before-tag 可用性：本地 exact tag ref 仅在缺失时执行限定 refspec fetch；已存在但 tag object 或 peeled commit 不可解析时，直接以 `pre-matrix`、零 fetch、零 cell 失败。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "修复 exact-SHA shallow source 的 before-tag 可用性：本地 exact tag ref 仅在缺失时执行限定 refspec fetch；已存在但 tag object 或 peeled commit 不可解析时，直接以 `pre-matrix`、零 fetch、零 cell 失败。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md"
+        ],
+        "change": "修复 exact-SHA shallow source 的 before-tag 可用性：本地 exact tag ref 仅在缺失时执行限定 refspec fetch；已存在但 tag object 或 peeled commit 不可解析时，直接以 `pre-matrix`、零 fetch、零 cell 失败。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+          ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+          "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+          "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py"
+        ],
+        "change": "修复 exact-SHA shallow source 的 before-tag 可用性：本地 exact tag ref 仅在缺失时执行限定 refspec fetch；已存在但 tag object 或 peeled commit 不可解析时，直接以 `pre-matrix`、零 fetch、零 cell 失败。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-finalize-task/references/contract.md",
+          ".agents/skills/guru-review-task-publication/references/contract.md",
+          ".claude/skills/guru-finalize-task/references/contract.md",
+          ".claude/skills/guru-review-task-publication/references/contract.md",
+          ".codex/skills/guru-finalize-task/references/contract.md",
+          ".codex/skills/guru-review-task-publication/references/contract.md",
+          ".cursor/skills/guru-finalize-task/references/contract.md",
+          ".cursor/skills/guru-review-task-publication/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md"
+        ],
+        "change": "修复 exact-SHA shallow source 的 before-tag 可用性：本地 exact tag ref 仅在缺失时执行限定 refspec fetch；已存在但 tag object 或 peeled commit 不可解析时，直接以 `pre-matrix`、零 fetch、零 cell 失败。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-30-267-release-gate-blockers-r20/issue-scope-ledger.json",
+          ".trellis/tasks/08-30-267-release-gate-blockers-r20/task.json",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/task.json"
+        ],
+        "change": "修复 exact-SHA shallow source 的 before-tag 可用性：本地 exact tag ref 仅在缺失时执行限定 refspec fetch；已存在但 tag object 或 peeled commit 不可解析时，直接以 `pre-matrix`、零 fetch、零 cell 失败。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#267",
+        "#311",
+        "#312"
+      ],
+      "pr_refs": [
+        "PR #320"
+      ],
+      "branches": [
+        "codex/267-release-gate-blockers-r20"
+      ],
+      "paths": [
+        ".agents/skills/guru-finalize-task/references/contract.md",
+        ".agents/skills/guru-review-task-publication/references/contract.md",
+        ".claude/skills/guru-finalize-task/references/contract.md",
+        ".claude/skills/guru-review-task-publication/references/contract.md",
+        ".codex/skills/guru-finalize-task/references/contract.md",
+        ".codex/skills/guru-review-task-publication/references/contract.md",
+        ".cursor/skills/guru-finalize-task/references/contract.md",
+        ".cursor/skills/guru-review-task-publication/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/tasks/08-30-267-release-gate-blockers-r20/design.md",
+        ".trellis/tasks/08-30-267-release-gate-blockers-r20/implement.md",
+        ".trellis/tasks/08-30-267-release-gate-blockers-r20/issue-scope-ledger.json",
+        ".trellis/tasks/08-30-267-release-gate-blockers-r20/prd.md",
+        ".trellis/tasks/08-30-267-release-gate-blockers-r20/task.json",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/design.md",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/implement.md",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/prd.md",
+        ".trellis/tasks/archive/2026-08/08-30-267-release-gate-blockers-r20/task.json",
+        "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+        "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py",
+        "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+        "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#267 修复 .3 Release Gate blockers r20",
+        "修复 exact-SHA shallow source 的 before-tag 可用性：本地 exact tag re",
+        "完成 contract.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#267 修复 .3 Release Gate blockers r20\n修复 exact-SHA shallow source 的 before-tag 可用性：本地 exact tag ref 仅在缺失时执行限定 refspec fetch；已存在但 tag object 或 peeled commit 不可解析时，直接以 `pre-matrix`、零 fetch、零 cell 失败。\n修复 Finalizer 与 Publication provenance-tail 校验：只接受 `skill_packages.files` 与 `overlays.files` 中逐条、等长、同序、其余字段不变的 `installed -> unchanged`。\n同步 canonical、dogfood 与四个平台的受管合同、runtime、测试和 manifest projection。\n修复 exact-SHA shallow source 的 before-tag 可用性：本地 exact tag re\n完成 contract.md 相关变更"
+  }
+}
