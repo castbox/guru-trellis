@@ -79,7 +79,7 @@ git diff --check
 ```
 
 Downstream live proof 从
-`/Users/wumengye/Documents/GoProjects/chengtuo-resume-worktrees/252-full-reparse-root-cause`
+`<business-repository-task-worktree>`
 执行其 installed checker，并同步核对 source checkout `git status`、worktree identity 与 runtime mapping。
 
 ## 4. Risk And Rollback

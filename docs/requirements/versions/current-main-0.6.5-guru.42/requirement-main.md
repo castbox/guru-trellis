@@ -71,7 +71,7 @@
 
 ## 当前发布范围
 
-`source_confirmed`：最新已发布 stable release 是 annotated tag `v0.6.5-guru.10`，tag object `b5fd47e9dc45ca4d6950f87f38d495776ce676ce`，peeled commit `5c059f4943edad7dfe25182a78af94759d41f9a1`，extension revision `0.6.5-guru.36`，目标 Trellis CLI `0.6.5`。当前 source candidate 为 extension `0.6.15-guru.39` / Trellis `0.6.15`；#267 successor target 固定为 `v0.6.15-guru.3`。该 tag、GitHub Release、tag-pinned smoke 与 latest-stable identity 在 exact candidate 发布前仍为 `unverified`。
+`source_confirmed`：最新已发布 stable release 是 annotated tag `v0.6.15-guru.2`，tag object `641ed35e91c4a58cc7083ab2e4811d30e392fbed`，peeled commit `d907fcc5e17f23b6499648e5e9a208457f2d6f8b`，extension revision `0.6.15-guru.38`，目标 Trellis CLI `0.6.15`。当前 source candidate 为 extension `0.6.15-guru.39` / Trellis `0.6.15`；#267 successor target 固定为 `v0.6.15-guru.3`。该 tag、GitHub Release、tag-pinned smoke 与 latest-stable identity 在 exact candidate 发布前仍为 `unverified`。
 
 ## 非目标
 

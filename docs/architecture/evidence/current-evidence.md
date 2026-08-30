@@ -3,7 +3,7 @@
 | Evidence ID | Class | Locator / identity | Supports |
 | --- | --- | --- | --- |
 | `EVD-001` | current source baseline | reviewed task head `d3dca74b3a94569a095594477c15b032526f2381` + #267 expected `.41` serialized promotion delta；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD | `ARCH-CUR-001..004,006..009,013..016` |
-| `EVD-002` | stable release | annotated tag `v0.6.5-guru.10`；tag object `b5fd47e9dc45ca4d6950f87f38d495776ce676ce`；peeled commit `5c059f4943edad7dfe25182a78af94759d41f9a1`；non-draft/non-prerelease/zero-asset Release | `ARCH-CUR-005` only |
+| `EVD-002` | stable release | annotated tag `v0.6.15-guru.2`；tag object `641ed35e91c4a58cc7083ab2e4811d30e392fbed`；peeled commit `d907fcc5e17f23b6499648e5e9a208457f2d6f8b`；extension `0.6.15-guru.38`；target/required/tested Trellis CLI `0.6.15`；non-draft/non-prerelease/zero-asset Release | `ARCH-CUR-005` only |
 | `EVD-003` | RDT package | Issue #263 CLOSED；reviewed `d53335a7…`；archive `eaf955e0…`；PR #279 merge `891c2147…` | `ARCH-CUR-003` |
 | `EVD-004` | Architecture package | Issue #264 CLOSED；reviewed `1cb2506b…`；PR #268 merge `37fdfe63…`；metadata head/merge `991080b6…` / `3b0f78c1…`；无 `finish-summary.json` | `ARCH-CUR-003` |
 | `EVD-005` | Bootstrap package | Issue #265 CLOSED；reviewed `f2c67098…`；archive `de1c6e26…`；PR #280 merge `3c0d4a2f…`；archive/merge tree `45e8b402…` | `ARCH-CUR-003` |

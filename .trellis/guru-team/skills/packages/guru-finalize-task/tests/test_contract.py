@@ -95,7 +95,13 @@ def provenance_manifest(
     installed_at: str = "before",
     tree_state: str = "clean",
     is_mutable_ref: bool = False,
+    selected_platforms: list[str] | None = None,
+    all_platforms: bool | None = None,
 ) -> dict:
+    if selected_platforms is None:
+        selected_platforms = ["claude", "codex", "cursor"]
+    if all_platforms is None:
+        all_platforms = selected_platforms == ["claude", "codex", "cursor"]
     return {
         "schema_version": "2.0",
         "extension": {"extension_id": "guru-team"},
@@ -108,9 +114,17 @@ def provenance_manifest(
             "is_mutable_ref": is_mutable_ref,
         },
         "install": {
+            "selected_platforms": selected_platforms,
+            "all_platforms": all_platforms,
             "managed_assets": [
                 ".trellis/spec/workflow/semantic-retrieval.md"
             ],
+        },
+        "skill_packages": {
+            "selected_platforms": list(selected_platforms),
+        },
+        "overlays": {
+            "selected_platforms": list(selected_platforms),
         },
     }
 
@@ -157,6 +171,7 @@ from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--repo", required=True)
+parser.add_argument("--platform", action="append", choices=("claude", "codex", "cursor"))
 parser.add_argument("--all-platforms", action="store_true")
 parser.add_argument("--json", action="store_true")
 args = parser.parse_args()
@@ -172,6 +187,15 @@ target_head = subprocess.run(
 ).stdout.strip()
 manifest_path = target_root / ".trellis/guru-team/extension.json"
 manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+requested_platforms = (
+    ["claude", "codex", "cursor"]
+    if args.all_platforms
+    else sorted(args.platform or [])
+)
+if requested_platforms != manifest["install"]["selected_platforms"]:
+    raise SystemExit("preset apply platform selection did not match parent manifest")
+if args.all_platforms is not manifest["install"]["all_platforms"]:
+    raise SystemExit("preset apply all-platforms identity did not match parent manifest")
 manifest["installed_at"] = "after"
 manifest["source"]["ref"] = source_head
 manifest["source"]["commit"] = source_head
@@ -1113,6 +1137,275 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 )
                 self.assertIsNone(binding)
                 self.assertTrue(errors)
+
+    def test_provenance_apply_platform_args_preserve_exact_manifest_selection(self) -> None:
+        cases = {
+            "claude": (["claude"], False, ["--platform", "claude"]),
+            "codex": (["codex"], False, ["--platform", "codex"]),
+            "cursor": (["cursor"], False, ["--platform", "cursor"]),
+            "codex_cursor": (
+                ["codex", "cursor"],
+                False,
+                ["--platform", "codex", "--platform", "cursor"],
+            ),
+            "all_explicit": (
+                ["claude", "codex", "cursor"],
+                False,
+                [
+                    "--platform",
+                    "claude",
+                    "--platform",
+                    "codex",
+                    "--platform",
+                    "cursor",
+                ],
+            ),
+            "all_flag": (
+                ["claude", "codex", "cursor"],
+                True,
+                ["--all-platforms"],
+            ),
+        }
+        for name, (selected, all_platforms, expected) in cases.items():
+            with self.subTest(name=name):
+                manifest = provenance_manifest(
+                    "castbox/guru-trellis",
+                    "b" * 40,
+                    selected_platforms=selected,
+                    all_platforms=all_platforms,
+                )
+                self.assertEqual(
+                    GTT.provenance_apply_platform_args(manifest),
+                    expected,
+                )
+
+    def test_provenance_apply_platform_args_reject_invalid_manifest_selection(self) -> None:
+        cases = {
+            "manifest_missing": lambda payload: payload.clear(),
+            "install_missing": lambda payload: payload.pop("install"),
+            "selected_missing": lambda payload: payload["install"].pop(
+                "selected_platforms"
+            ),
+            "selected_type": lambda payload: payload["install"].update(
+                {"selected_platforms": "claude"}
+            ),
+            "member_type": lambda payload: payload["install"].update(
+                {"selected_platforms": ["claude", 1]}
+            ),
+            "empty": lambda payload: payload["install"].update(
+                {"selected_platforms": []}
+            ),
+            "duplicate": lambda payload: payload["install"].update(
+                {"selected_platforms": ["claude", "claude"]}
+            ),
+            "unsorted": lambda payload: payload["install"].update(
+                {"selected_platforms": ["cursor", "codex"]}
+            ),
+            "unknown": lambda payload: payload["install"].update(
+                {"selected_platforms": ["gemini"]}
+            ),
+            "locator_mismatch": lambda payload: payload["overlays"].update(
+                {"selected_platforms": ["codex"]}
+            ),
+            "all_platforms_type": lambda payload: payload["install"].update(
+                {"all_platforms": 1}
+            ),
+            "subset_flag_true": lambda payload: (
+                payload["install"].update(
+                    {"selected_platforms": ["claude"], "all_platforms": True}
+                ),
+                payload["skill_packages"].update(
+                    {"selected_platforms": ["claude"]}
+                ),
+                payload["overlays"].update(
+                    {"selected_platforms": ["claude"]}
+                ),
+            ),
+        }
+        for name, mutate in cases.items():
+            with self.subTest(name=name):
+                manifest = provenance_manifest(
+                    "castbox/guru-trellis",
+                    "b" * 40,
+                )
+                mutate(manifest)
+                with self.assertRaises(GTT.WorkflowError) as raised:
+                    GTT.provenance_apply_platform_args(manifest)
+                self.assertEqual(
+                    raised.exception.payload["reason_code"],
+                    "provenance_platform_selection_invalid",
+                )
+
+    def test_invalid_provenance_platform_selection_stops_before_source_or_apply(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            initialize_provenance_git_repo(root, "castbox/guru-trellis")
+            write_provenance_apply_fixture(root)
+            manifest = provenance_manifest(
+                "castbox/guru-trellis",
+                "b" * 40,
+                tree_state="dirty",
+                is_mutable_ref=True,
+                selected_platforms=["claude"],
+            )
+            manifest["overlays"]["selected_platforms"] = ["codex"]
+            manifest_path = root / GTT.PROVENANCE_TAIL_MANIFEST_PATH
+            manifest_path.parent.mkdir(parents=True)
+            manifest_path.write_text(
+                json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            reviewed = commit_provenance_fixture(root, "reviewed task")
+            parent_bytes = manifest_path.read_bytes()
+            observed: list[tuple[list[str], Path | None]] = []
+            with (
+                mock.patch.object(
+                    GTT,
+                    "run",
+                    side_effect=local_source_fetch_runner(root, observed),
+                ),
+                mock.patch.object(
+                    GTT,
+                    "prepare_provenance_extension_source_checkout",
+                    wraps=GTT.prepare_provenance_extension_source_checkout,
+                ) as prepare_source,
+                mock.patch.object(
+                    GTT,
+                    "commit_provenance_metadata_tail",
+                    wraps=GTT.commit_provenance_metadata_tail,
+                ) as commit_tail,
+            ):
+                with self.assertRaises(GTT.WorkflowError) as raised:
+                    GTT.prepare_provenance_metadata_tail(
+                        root,
+                        reviewed,
+                        "castbox/guru-trellis",
+                    )
+            self.assertEqual(
+                raised.exception.payload["reason_code"],
+                "provenance_platform_selection_invalid",
+            )
+            prepare_source.assert_not_called()
+            commit_tail.assert_not_called()
+            self.assertFalse(
+                any(
+                    len(cmd) > 1
+                    and cmd[1].endswith("apply_guru_team_trellis_preset.py")
+                    for cmd, _cwd in observed
+                )
+            )
+            self.assertEqual(GTT.current_head(root), reviewed)
+            self.assertEqual(manifest_path.read_bytes(), parent_bytes)
+            self.assertEqual(GTT.provenance_tail_git_status_paths(root), [])
+            self.assertEqual(len(GTT.worktree_records(root)), 1)
+
+    def test_provenance_tail_preparation_preserves_platform_selection_matrix(self) -> None:
+        cases = {
+            "claude": (["claude"], False, ["--platform", "claude"]),
+            "codex": (["codex"], False, ["--platform", "codex"]),
+            "cursor": (["cursor"], False, ["--platform", "cursor"]),
+            "codex_cursor": (
+                ["codex", "cursor"],
+                False,
+                ["--platform", "codex", "--platform", "cursor"],
+            ),
+            "all_explicit": (
+                ["claude", "codex", "cursor"],
+                False,
+                [
+                    "--platform",
+                    "claude",
+                    "--platform",
+                    "codex",
+                    "--platform",
+                    "cursor",
+                ],
+            ),
+            "all_flag": (
+                ["claude", "codex", "cursor"],
+                True,
+                ["--all-platforms"],
+            ),
+        }
+        for name, (selected, all_platforms, expected_args) in cases.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as raw:
+                root = Path(raw)
+                initialize_provenance_git_repo(root, "castbox/guru-trellis")
+                write_provenance_apply_fixture(root)
+                manifest_path = root / GTT.PROVENANCE_TAIL_MANIFEST_PATH
+                manifest_path.parent.mkdir(parents=True)
+                manifest_path.write_text(
+                    json.dumps(
+                        provenance_manifest(
+                            "castbox/guru-trellis",
+                            "b" * 40,
+                            tree_state="dirty",
+                            is_mutable_ref=True,
+                            selected_platforms=selected,
+                            all_platforms=all_platforms,
+                        ),
+                        ensure_ascii=False,
+                        indent=2,
+                    )
+                    + "\n",
+                    encoding="utf-8",
+                )
+                reviewed = commit_provenance_fixture(root, "reviewed task")
+                observed: list[tuple[list[str], Path | None]] = []
+                with mock.patch.object(
+                    GTT,
+                    "run",
+                    side_effect=local_source_fetch_runner(root, observed),
+                ):
+                    result = GTT.prepare_provenance_metadata_tail(
+                        root,
+                        reviewed,
+                        "castbox/guru-trellis",
+                    )
+
+                applied = json.loads(manifest_path.read_text(encoding="utf-8"))
+                for locator in ("install", "skill_packages", "overlays"):
+                    self.assertEqual(
+                        applied[locator]["selected_platforms"],
+                        selected,
+                    )
+                self.assertEqual(
+                    applied["install"]["all_platforms"],
+                    all_platforms,
+                )
+                changed_paths = subprocess.run(
+                    [
+                        "git",
+                        "diff-tree",
+                        "--no-commit-id",
+                        "--name-only",
+                        "-r",
+                        result["publication_head"],
+                    ],
+                    cwd=root,
+                    check=True,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                ).stdout.splitlines()
+                self.assertEqual(
+                    changed_paths,
+                    [GTT.PROVENANCE_TAIL_MANIFEST_PATH],
+                )
+                apply_calls = [
+                    cmd
+                    for cmd, _cwd in observed
+                    if len(cmd) > 1
+                    and cmd[1].endswith("apply_guru_team_trellis_preset.py")
+                ]
+                self.assertEqual(len(apply_calls), 1)
+                command = apply_calls[0]
+                repo_index = command.index("--repo")
+                self.assertEqual(
+                    command[repo_index + 2:-1],
+                    expected_args,
+                )
+                self.assertEqual(command[-1], "--json")
+                self.assertEqual(len(GTT.worktree_records(root)), 1)
 
     def test_provenance_tail_preparation_separates_self_hosted_source_and_target(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
