@@ -30,9 +30,9 @@ Design review candidate。该 target Design 不改变 selected-base current `.41
 
 | Plane | Unique owner | Durable boundary | Forbidden responsibility |
 | --- | --- | --- | --- |
-| Invocation admission | `guru-admit-invocation` | 默认 call-local；只在 pending/blocked/resume 有直接 consumer 时写 private checkpoint | 产品 route、文件 mutation、approval |
+| Invocation admission | `guru-admit-invocation` | 默认 call/host-session-local；pending/blocked/resume 只使用 producer-owned host continuation，repository checkpoint 为 0 | 产品 route、文件 mutation、approval |
 | Request routing | `guru-route-request` | 不持久化 route history | downstream semantic work、副作用 |
-| Stock policy | `guru-maintain-stock-projection` | canonical policy + installed provenance；action recovery 可 private | 产品 scope、finding、publication |
+| Stock policy | `guru-maintain-stock-projection` | canonical policy + installed provenance；action recovery 使用 host continuation，或仅在 task current 时使用 same-Skill checkpoint | 产品 scope、finding、publication |
 | Standard change | Phase-specific Guru Skills | task RDT contribution、task planning、必要 terminal history | parallel authority、legacy route |
 | Repository RDT | `guru-maintain-requirements-design-test-ssot` | repository current/target/contribution | task planning 成为 repository authority |
 | Architecture | `guru-maintain-architecture-baseline` | baseline/current + task contribution/ADR | schema/runtime 决定架构答案 |
@@ -66,10 +66,17 @@ Design review candidate。该 target Design 不改变 selected-base current `.41
 - `EVO-DES-009`：`context_envelope` 是 owner-private closed object，逻辑 section 只有：
   `request`, `lifecycle_binding`, `authority_context`, `stock_policy_context`, `provider_context`,
   `implementation_context`, `dependency_versions`, `continuation`。section 按需产生；N/A 不读取正文。
-- `EVO-DES-010`：envelope 默认只在调用栈内。跨 user turn、provider unknown、isolation pending 或
-  exact recovery 需要时，写入 `.trellis/.runtime/guru-team/invocations/<invocation-id>.json`；consumer
-  完成、stale 或 terminal 后删除文件与空目录。禁止写 authorization、完整 stdout/review history、
-  可 live 重建的 Git/GitHub/Trellis facts或全文 RDT。
+- `EVO-DES-010`：envelope 在 admission、pre-route、pre-task、task-free 与 standalone 边界只能存在于
+  当前调用栈或 host 的 current session/continuation 中；这些边界在 `.trellis/tasks/**`、
+  `.trellis/workspace/**` 与 `.trellis/.runtime/**` 的 file mutation 均为 0。跨 user turn、provider unknown、
+  isolation pending 或 exact recovery 只由 producer-owned host continuation 携带
+  `invocation_id,context_revision,continuation_ref,repair_input` 中该 re-entry 必需的最小子集，并由 exact
+  owner 结合 live authority 重建自己的 authorized view；continuation 缺失、stale 或不可唯一解析时进入
+  既有 owner block/re-entry，不得静默创建 generic repository envelope file。只有 task 已存在且 exact
+  Skill owner 的不可重建状态具有同 owner public-wrapper 这一直接 consumer 时，才可按该 Skill 既有合同
+  使用 task-local ignored owner-private checkpoint；它不是 `context_envelope`，不得跨 Skill 共享或由下游
+  consumer 读取，并在 current consumption、stale replacement 或 terminal 后由 owner 删除。任何载体均
+  禁止写 authorization、完整 stdout/review history、可 live 重建的 Git/GitHub/Trellis facts 或全文 RDT。
 - `EVO-DES-011`：public consumer 只接收 `invocation_id`、`context_revision` 与该 exit 的最小业务
   projection，不接收 envelope path/body/digest bundle。normal workflow 的 call-local
   `authority_context` 按 applicable repository RDT、Architecture Baseline/constitution/change contract、active
@@ -80,8 +87,9 @@ Design review candidate。该 target Design 不改变 selected-base current `.41
   constitution/change-contract subprojection；Plan/Approval/Implementation/Check/Review/Readiness/Acceptance
   直接使用适用的同一 bound content view，而不是消费前一 owner 的摘要或 handoff。每个 source family只由其
   section owner完成一次首次 live content read；后续 semantic owner从 current stable prefix判断，不再次用
-  tool全文读取同一 source。跨 turn 持久 envelope 仍只保存可恢复 locator/identity与最小continuation，绝不
-  保存全文 RDT。public edge与provider consumer只取得自己的 authorized minimal projection；这条最小 DTO
+  tool全文读取同一 source。跨 turn host continuation 与允许的 active-task same-owner checkpoint 仍只保存
+  可恢复 locator/identity 与最小 continuation，绝不保存 envelope 正文或全文 RDT。public edge与provider
+  consumer只取得自己的 authorized minimal projection；这条最小 DTO
   规则不得把 semantic owner实际需要的 current authority正文替换成 producer summary。host/model/provider
   cache 命中、缺失或不可用都不得改变 authority、freshness、route 或 result。每个 semantic owner 直接据
   current prefix/tail 判断并执行，不消费 human-style assignment/signoff/transaction handoff 或
@@ -205,8 +213,9 @@ user event
   repo/Issue/base/branch/worktree/task/path 与 ownership/isolation state；public input 不接收无 producer 的
   `resource_plan_ref`。若全部 required resource 已精确匹配 current change identity，且无 creation、transfer
   或 isolation action 待执行，则直接产生 `workspace_current -> task_impact_sync`，user-visible plan、确认
-  wait、refusal branch 与 mutation 均为 0。否则 Workspace owner 自行生成、语义审查并 owner-private 保存
-  exact resource/transfer-or-isolation plan，按 `EVO-DES-069` 展示 current 计划并取得 dialogue-local 语义
+  wait、refusal branch 与 mutation 均为 0。否则 Workspace owner 自行生成、语义审查并只在 current call/
+  host-session continuation 中 owner-private 保存 exact resource/transfer-or-isolation plan；确认前 generic
+  repository plan/envelope/checkpoint write 为 0。owner 按 `EVO-DES-069` 展示 current 计划并取得 dialogue-local 语义
   确认。task-free escalation 已先经过 Sync/Discovery/Clarification/Readiness；suspended profile 仍必须由
   Workspace owner 生成并确认 transfer/isolation plan，资源建立后在 Planning 前验证唯一 owner。明确拒绝
   只返回 `workspace_not_created -> task-workspace-not-created`，保持 source/partial work 可发现且资源副作用
@@ -498,7 +507,8 @@ standard change
   platform/channel check profiles互斥；raw worker path从 target dispatch inventory移除。
 - `EVO-DES-054`：pre-semantic guard只读 manifest与source stimulus。完整 policy evaluation只在
   stock-touching caller发生；首次全 pending、partial、unknown分别返回 action-required/partial/unknown，
-  复用 current envelope并只重入未完成或可安全重试 action。action-state resolver 可先做零副作用 live
+  复用 current call/host-session envelope并只重入未完成或可安全重试 action；standalone profile不得为此写
+  repository envelope/checkpoint。action-state resolver 可先做零副作用 live
   resolution；一旦 next pending mutation 唯一且需要确认，Stock owner 必须展示 current exact plan 并进入
   `stock-policy-action-confirmation-wait`，只有 current 清晰肯定才可投影 continuation 到 profile-fixed action
   re-entry；missing/refusal/material drift 分别保持 wait、进入 owner-specific action-not-executed、或零副作用
@@ -541,8 +551,9 @@ standard change
   `trellis/skills/guru-team/`、`trellis/presets/guru-team/`。dogfood与installed copies不是authoritative。
 - `EVO-DES-057`：Shared是一次`.agents/skills` projection layer；supported hosts只有Codex、Claude、
   Cursor。每个平台从同一 registry/interface生成Guru Skills与worker/explicit entries，不复制业务语义。
-- `EVO-DES-058`：hooks只注入短 workflow-state/envelope locator或caller-bound context；passive startup/
-  session/subagent/channel context不得消费请求或生成route。hooks-disabled/no-hook仍由main-session Guru
+- `EVO-DES-058`：hooks只注入短 workflow-state、host-session continuation handle或caller-bound context，
+  不注入或解析 repository envelope path/body；passive startup/session/subagent/channel context不得消费请求或
+  生成route。hooks-disabled/no-hook仍由main-session Guru
   entry执行相同contract。per-host setup 使用 Requirements 的七个 exact cells：
   `enabled_approved|enabled_pending|enabled_denied|feature_off_config_present|feature_on_config_absent|
   feature_off_config_absent|configuration_unknown`；高层 enabled/disabled/no-hook 仅为派生视图。
@@ -719,7 +730,7 @@ Current `design_ready_for_delivery_planning` / `fresh_design_review_passed` cand
 
 Current gate passed against this revised candidate. #311/#312 merge, exact `.41` authority rebind, 83/13/50
 Requirements-stage successor zero-loss and the merge-bound fresh Requirements gate remain current. The complete
-Design/Test/Architecture/task projection closed `DES-REV-001..047`; the final fresh semantic review reported open
+Design/Test/Architecture/task projection closed `DES-REV-001..048`; the final fresh semantic review reported open
 P1=0, blocking P2=0, P3=0 and high-risk question=0, and deterministic closure passed. The closed gate therefore
 projects `design_ready_for_delivery_planning`, `fresh_design_review_passed` and `evolution_refactor_eligible`.
 This continuation remains in Phase 1 and stops at that completed Design gate; no implementation or delivery action

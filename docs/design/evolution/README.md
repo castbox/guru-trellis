@@ -5,7 +5,7 @@
 standalone verifier failure evidence 与 original-worktree continuity 已分别归入 two-stage eligibility、
 Publish/Finish/Merge、Projection 和 Reconcile owner。Requirements 现为 52 UC / 83 REQ / 33 NFR / 23 current
 capability / 13 target delta / 50 fixture；候选 Design 为 `EVO-DES-001..073`，50/50 fixture 均有 Design
-mapping。原 `DES-REV-001..014` review 绑定仍然失效；当前完整候选已关闭 `DES-REV-001..047`，fresh 全稿
+mapping。原 `DES-REV-001..014` review 绑定仍然失效；当前完整候选已关闭 `DES-REV-001..048`，fresh 全稿
 审核得到 open P1、blocking P2、P3 与 high-risk question 全部为 0，并通过确定性闭包，因此已成为
 `design_ready_for_delivery_planning` / `fresh_design_review_passed` / `evolution_refactor_eligible`。#311/#312 merge、`.41`
 RDT/Architecture/inventory fresh rebind、requirement/normal-path fixture successor 零差集与 merge 后 fresh

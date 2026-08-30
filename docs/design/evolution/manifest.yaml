@@ -23,5 +23,5 @@ provenance: >-
   CLOSED; .41 authority rebind, 83 requirements / 13 target deltas / 50 fixtures Requirements-stage successor
   zero-loss, and the final Requirements semantic, Strict technical and deterministic gates are current and clean;
   candidate EVO-DES-001..073 allocates all 50 fixtures through Reconcile, Publish/Finish/Merge and Projection
-  ownership; DES-REV-001..047 are closed, the final fresh Design review reported P1/P2/P3/high-risk counts all zero,
+  ownership; DES-REV-001..048 are closed, the final fresh Design review reported P1/P2/P3/high-risk counts all zero,
   deterministic closure passed, and evolution_refactor_eligible is current without runtime implementation

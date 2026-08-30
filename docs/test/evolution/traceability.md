@@ -13,7 +13,7 @@
 | `EVO-REQ-012..026` | Plan Normal, all Architecture planning/freshness fixtures, SSOT Bootstrap |
 | `EVO-REQ-027..033` | Full Normal, Branch Finding, Base Evolution, Architecture Promotion with outstanding-only spec projection refresh and already-current double-none convergence, Parallel, RDT freshness |
 | `EVO-REQ-034..043` | Entry Routing, None, Full Normal, Semantic Confirmation with separate provenance-tail/push/PR-create actions and already-current no-mutation exits, Provider/Finish Recovery, History Resume, Active Disposition |
-| `EVO-REQ-044..050` | Plan Normal, Full Normal, Latest Intent, Long Output |
+| `EVO-REQ-044..050` | Plan Normal, Full Normal, Latest Intent, Long Output, including host-continuation-only pre-task/standalone recovery and same-owner task checkpoint ownership |
 | `EVO-REQ-051..056` | Full Normal, Projection, Provider Recovery, Clean Install, Migration, Release |
 | `EVO-REQ-057..058` | Wording Explicit, Qualify Explicit with profile-fixed Clarification, original-caller candidate rebuild and fresh qualification |
 | `EVO-REQ-059..067` | Change Request, Base Refresh, SSOT Bootstrap with exact RDT/Architecture caller return and projection-refresh return to Check, RDT Lifecycle/Freshness, Submodule Boundary, Active Disposition |
@@ -24,8 +24,8 @@
 
 | Quality set | Fixture families |
 | --- | --- |
-| `EVO-NFR-001..008` | Plan Normal, Full Normal, Long Output |
-| `EVO-NFR-009..011` | Entry Routing, Latest Intent, Parallel, Provider/Finish Recovery, History Resume, Verifier Failure Evidence |
+| `EVO-NFR-001..008` | Plan Normal, Full Normal, Long Output, with zero generic repository-envelope state |
+| `EVO-NFR-009..011` | Entry Routing, Latest Intent, Parallel, Provider/Finish Recovery, History Resume, Verifier Failure Evidence, with host-continuation isolation and same-owner task checkpoint boundaries |
 | `EVO-NFR-012..013` | Projection, Clean Install, Migration, Release |
 | `EVO-NFR-014..015` | Full Normal, Branch Finding, RDT/Architecture Downstream Freshness |
 | `EVO-NFR-016` | Provider Recovery, Full Normal, Release, Verifier Failure Evidence |
@@ -45,7 +45,7 @@ publication terminal and standalone verifier failure lifecycle. The mapping is c
 | Design set | Fixture families |
 | --- | --- |
 | `EVO-DES-001..005` | Full Normal, Projection, RDT/Architecture Lifecycle |
-| `EVO-DES-006..018` | Entry Routing, Request Stop, Latest Intent, History Resume and specialist fixtures; lifecycle-bound acceptance requires direct `bound_event_ref,event_sequence` projection to one of exactly 37 owners, including Admission/Route Request/Answer/Current Work/History, rejects sequence-only/ambient lookup, and leaves Wording/Qualification ownership with their fixed original callers |
+| `EVO-DES-006..018` | Entry Routing, Request Stop, Latest Intent, History Resume and specialist fixtures; lifecycle-bound acceptance requires direct `bound_event_ref,event_sequence` projection to one of exactly 37 owners, including Admission/Route Request/Answer/Current Work/History, rejects sequence-only/ambient lookup, leaves Wording/Qualification ownership with their fixed original callers, and keeps admission/isolation cross-turn state in host continuation with zero repository-envelope write |
 | `EVO-DES-019..022` | intake, task-free, change-request, base, detached-read and exact-current Workspace no-mutation fixtures |
 | `EVO-DES-023..027` | Plan Normal, RDT Lifecycle and Architecture planning family; the one exact Approval plan must display activation plus immediate approved implementation entry/allowed writes, then its deterministic activation must close directly to `guru-implement-task:initial` or its own recovery block with zero implementation write |
 | `EVO-DES-028..032` | Full Normal, Branch Finding, Base Evolution, promotion/projection/freshness fixtures |
@@ -53,7 +53,7 @@ publication terminal and standalone verifier failure lifecycle. The mapping is c
 | `EVO-DES-043..048` | Projection, Clean Install, Migration, Release, Provider Recovery |
 | `EVO-DES-049..059` | Stock Coexistence, Stock Maintenance, Projection, Clean Install, Migration |
 | `EVO-DES-060..064` | RDT Lifecycle/Freshness, all Architecture contribution/promotion fixtures, Bootstrap-only spec projection refresh |
-| `EVO-DES-065..068` | Plan Normal, Full Normal, Long Output, Provider Recovery, Submodule Boundary |
+| `EVO-DES-065..068` | Plan Normal, Full Normal, Long Output, Provider Recovery, Submodule Boundary; pre-task/standalone context is call/host-session-local and any task checkpoint has only its same Skill wrapper as consumer |
 | `EVO-DES-069` | Semantic Confirmation, Active Disposition, Full Normal, Provider Recovery, Finish Recovery, Stock Maintenance, Clean Install, Migration, Release |
 | `EVO-DES-070` | Evolution Prerequisite, Installed Provenance Publication, Verifier Failure Evidence |
 | `EVO-DES-071` | Base Evolution, Evolution Prerequisite |
@@ -95,6 +95,10 @@ publication terminal and standalone verifier failure lifecycle. The mapping is c
   downstream semantic owners use the same applicable stable bound content rather than summary handoffs, and the
   complete Git/GitHub/Trellis-upstream/Guru-preset/Release plus controlled-adapter provider action inventory gives
   every declared action one exact owner/profile/direct consumer.
+- Invocation-state closure proves admission/pre-route/pre-task/task-free/standalone cross-turn recovery uses only the
+  current host continuation, generic files below `.trellis/tasks/**`, `.trellis/workspace/**` and
+  `.trellis/.runtime/**` are zero, and any post-task private checkpoint is consumed and retired only by the same
+  Skill public-wrapper rather than by another Skill.
 - Publication confirmation closure proves provenance-tail preparation, branch push and Draft PR creation have
   distinct prepare/wait/confirmation-reentry/refusal/provider-recovery identities; no stage accepts another stage's
   continuation. Exact already-current tail, remote branch and Draft/READY PR return current results without mutation
@@ -137,7 +141,8 @@ qualification caller profiles, 17 stock decision rows, nine profile-fixed retain
   Projection/Stock/Projection fresh-validation chain, one exact-current Workspace no-mutation convergence path, one
   compound activation/implementation-entry confirmation, three isolated provenance-tail/push/Draft-PR confirmation
   subgraphs, one Finish-before-Merge chain with no-mutation current exits and one Projection-owned standalone verifier
-  evidence-before-cleanup lifecycle.
+  evidence-before-cleanup lifecycle, zero generic invocation-envelope repository state and one same-owner consumer
+  for every allowed task-local checkpoint.
 These objective checks do not replace the now-current fresh semantic Requirements and Design reviews and cannot
 establish either semantic result by themselves; they only verify deterministic closure for the same current candidate.
 

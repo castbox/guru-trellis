@@ -45,12 +45,17 @@ Evolution lifecycle needs to route and recover independently.
 The target boundary is one user invocation from admission to exactly one terminal. It introduces:
 
 1. `guru-team-evolution-contract-1.0` with 39 public closed-loop Skills and uniquely consumed external exits;
-2. one private invocation-scoped `guru-context-envelope-1.0` whose stable primary prefix is applicable repository
+2. one host-session-local private `guru-context-envelope-1.0` whose stable primary prefix is applicable repository
    RDT -> Architecture Baseline/constitution/change contract -> task `prd.md`/`design.md`/`implement.md`, with lazy
-   stock/provider/implementation projections and a minimal decision-relevant live tail; cache is optional and never
-   authority, while each AI owner judges the same applicable bound content directly without assignment/signoff/
-   transaction handoff or fact restatement. Clarification, RDT and Architecture own disjoint requirement-delta/
-   reviewed-design, repository-RDT and baseline/constitution/change-contract subprojections respectively;
+   stock/provider/implementation projections and a minimal decision-relevant live tail. During admission, pre-route,
+   pre-task, task-free and standalone execution it exists only in the call stack or host current-session continuation
+   and performs zero repository write; a missing or stale continuation enters the exact owner's existing block/re-entry
+   and reconstructs from live authority. After a task is current, only the exact Skill may use its existing task-local
+   ignored owner-private checkpoint for non-reconstructible state consumed by that same Skill's public wrapper; it is
+   neither a shared envelope nor readable by downstream Skills. Cache is optional and never authority, while each AI
+   owner judges the same applicable bound content directly without assignment/signoff/transaction handoff or fact
+   restatement. Clarification, RDT and Architecture own disjoint requirement-delta/reviewed-design, repository-RDT and
+   baseline/constitution/change-contract subprojections respectively;
 3. one standard plan author and one approval, plus one standard implementation owner. Approval displays one compound
    exact next-action plan covering both task activation and immediate entry into the approved implementation
    scope/allowed writes while excluding Commit and later delivery actions; it owns the post-confirmation deterministic
@@ -129,7 +134,7 @@ of old/new API compatibility.
 | --- | --- | --- |
 | `authority-binding` | applicable | bind Guru Architecture 2.0, active `.41` at the selected base, current RDT, constitution and change contract; `.40` is historical comparison evidence and target docs never claim current runtime |
 | `constitution-binding` | applicable | hit `concept-semantic-completeness`, `cohesion-change-isolation`, `minimum-necessary-complexity`, `debt-one-way-convergence`; no principle prose copied into public DTOs |
-| `boundary-and-decision` | applicable | one invocation boundary, 39-Skill owner graph, private envelope, stock control plane and atomic activation are the selected target |
+| `boundary-and-decision` | applicable | one invocation boundary, 39-Skill owner graph, host-session-local private envelope with zero generic repository store, same-owner task-checkpoint exception, stock control plane and atomic activation are the selected target |
 | `owner-and-single-writer` | applicable | every semantic step has one Skill owner; stock policy has one preset transaction owner; reapply is fixed to Existing Migrator; shared RDT/Architecture promotion remains serialized |
 | `compatibility-and-exit` | applicable | `target_native`; no legacy adapter/selector/dual-read; migration final validation proves zero legacy consumer before activation |
 | `gap-and-deviation` | applicable | plan closes current entry/implementation/stock/distribution ownership gaps; no release GAP or unrelated current debt is absorbed |
@@ -141,7 +146,7 @@ of old/new API compatibility.
 
 | Boundary | Current/target owner rule |
 | --- | --- |
-| top-level admission and lifecycle binding | target `guru-admit-invocation`; `lifecycle_bound` carries a host identity/session/current-content `bound_event_ref` plus monotonic `event_sequence` directly to one of exactly 37 registered owners, including Admission/Route Request/Answer/Current Work/History; Wording/Qualification remain specialist non-owners under their fixed original callers; lifecycle-binding and post-receipt isolation blocks have different owner re-entry, post-owner/post-remote pending intent uses two fresh-entry profiles, and hooks/stock surfaces cannot create a second entry or ambient event lookup |
+| top-level admission and lifecycle binding | target `guru-admit-invocation` owns admission binding, the single receipt and post-receipt isolation before route selection; `lifecycle_bound` carries a host identity/session/current-content `bound_event_ref` plus monotonic `event_sequence` directly to one of exactly 37 registered owners, including Admission/Route Request/Answer/Current Work/History. Cross-turn isolation uses only the producer-owned host current-session continuation; missing/stale continuation enters Admission's exact isolation block/re-entry and live reconstruction with zero repository envelope write. Wording/Qualification remain specialist non-owners under their fixed original callers; lifecycle-binding and post-receipt isolation blocks have different owner re-entry, post-owner/post-remote pending intent uses two fresh-entry profiles, and hooks/stock surfaces cannot create a second entry or ambient event lookup |
 | route selection | `guru-route-request`; secondary mode/distribution classification remains with its exact route owner |
 | task planning | `guru-plan-task`, then one `guru-approve-task-plan` review; one displayed compound plan covers activation plus immediate approved implementation entry/allowed writes and excludes Commit/later delivery; its confirmed deterministic activation is an internal substep whose current transition alone emits `approved -> guru-implement-task:initial`, while objective failure remains in Approval recovery with zero implementation write |
 | standard implementation | `guru-implement-task`; worker is caller-bound evidence/execution only |
@@ -152,7 +157,7 @@ of old/new API compatibility.
 | stock action/provenance | current ownership 3.0 forbids upstream-path mutation; one preset transaction first validates ownership 4.0 exact post-projection claims, then `guru-maintain-stock-projection` may act without acquiring source ownership. Standalone action is produced only by Projection and returns current only to its `stock_policy_reentry` for fresh full validation; when any standalone/embedded/reapply mutation remains, the same Stock owner first enters `stock-policy-action-confirmation-wait`, and only a current clear affirmative reaches the profile-fixed action re-entry. Stock never treats an action-state continuation as mutation authority and never completes the route |
 | provider result | closed Git actions cover Sync, task-free/standard local write, Commit, publication tail/branch push and Finish archive commit/push; GitHub covers Draft PR, Ready, Merge and Closure; standalone verifier, Trellis clean Install/existing Migration, Guru preset Install/Stock/Reapply/activation validation, Release stages and controlled adapters retain exact owners. Provenance/push/Draft-PR/Finish continuations are disjoint, the three Publish refusals carry action-local minimal identity to three distinct named consumers, exact current states use no-mutation exits, only Finish emits archive-bound `ready_for_merge_ref`, none Acceptance emits no delivery fact and none Finish is its sole route-local producer, direct Answer owns adapter recovery, Release progress variants stay disjoint, and Merge/Closure carry exact continuations |
 | side-effect confirmation | each exact semantic action owner first resolves whether an action remains. No-mutation current exits bypass plan/confirmation/refusal; otherwise the owner authors/displays its private plan, judges dialogue-local affirmation under the full item-7 prohibition set and owns one named zero-side-effect refusal output, including disposition cleanup. Publish specifically maps provenance, push and PR-create refusal to `task-publication-preparation-not-executed`, `task-branch-push-not-executed` and `task-pr-creation-not-executed`; Stock routes a current pending mutation through `stock-policy-action-confirmation-wait`, with affirmative/missing/refusal/drift closed to its exact standalone/embedded/reapply owner. Exact-current Workspace reuse returns `workspace_current` with zero plan display, confirmation wait and mutation; scripts/schemas/DTOs never parse, match, validate or persist the reply/authorization |
-| public input construction | selected exit projection or exact consumer-owned live-fact projection only; no generic frame, implicit relay, producer checkpoint, envelope-file or ambient runtime lookup |
+| public input construction | selected exit projection or exact consumer-owned live-fact projection only; no generic frame, implicit relay, producer checkpoint, envelope-file or ambient runtime lookup. A task-local ignored checkpoint, when allowed, is readable only by its same-Skill public wrapper and can never satisfy a downstream Skill input |
 | clarification/bootstrap return | exact producer profile plus unchanged caller-owned continuation; Clarification returns scope choice to the original qualification caller, while Bootstrap returns authority identities only to the originating RDT/Architecture owner |
 | blocked/recovery return | ordinary blocks use the complete same-owner inventory in `contracts.md`; lifecycle owners come only from the closed registry, irreversible remote disposition uses the four-owner named convergence wait, wording/qualification use closed original-caller returns, and terminal blocks start a new invocation and cannot enter a repair profile |
 | retained/adapter caller | retained R01..R09 profiles fix nine exact hook-policy/session/workflow-breadcrumb context owners and each controlled-adapter profile fixes its direct caller; no public caller id/ref is accepted or returned |
@@ -190,6 +195,7 @@ only validate an already selected profile/exit and project to the declared consu
 | `ARCH-305-GAP-004` | projected stock semantic/worker surfaces may compete with Guru owners and standalone stock action lacks a closed producer/return | exact 9/1/2/5 policy plus nine retained nonsemantic rows, manifest-bound meta successor, review-trigger-bound update-spec successor and sole `Projection -> Stock -> named action confirmation wait when mutation remains -> Stock action re-entry -> Projection fresh validation` standalone chain | Stock Coexistence/Maintenance/Projection fixtures |
 | `ARCH-305-GAP-005` | distribution/finalizer/verifier responsibilities and recovery are aggregated | route-specific projection/install/migration/Release; separate provenance/push/Draft-PR/Finish/Merge/Closure/Cleanup actions; Projection-owned failure-evidence-before-cleanup | distribution/recovery/installed-provenance/verifier fixtures |
 | `ARCH-305-GAP-006` | Workspace create-or-reuse conflates exact-current reuse with a pending resource mutation confirmation | live-resolve resource and ownership/isolation state first; exact-current reuse emits `workspace_current` with zero plan/confirmation/refusal/mutation, while only creation/transfer/isolation enters the confirmation boundary | Semantic Confirmation/Task Free/Full Normal fixtures |
+| `ARCH-305-GAP-007` | the earlier Design placed a generic invocation envelope in repository runtime before route/task ownership, contradicting repository-side-effect-free admission, pre-task, task-free and standalone paths | keep pre-route/pre-task/task-free/standalone state in the call stack or host current-session continuation; missing/stale continuation uses the exact owner's block/re-entry plus live reconstruction; after task creation only an exact Skill's existing task-local ignored checkpoint may retain non-reconstructible state for its same-owner public wrapper, never as shared or downstream-readable state | Entry Routing/Task Free/Full Normal/Long Output fixtures and `EVO-DDEC-037` |
 
 These are task candidate refs, not active shared `ARCH-GAP-*` identities. Future promotion decides the successor
 baseline identities after implementation evidence. Existing `.40` GAP/release ownership, including #267/#304
@@ -227,7 +233,7 @@ boundaries, is retained and not closed here. No new legacy deviation is planned.
 - Planning project check: the pre-`REQ-REV-133` `DES-REV-001..014` result is stale. Current Phase 1 Requirements
   set/link/table closure and fresh semantic/Strict technical review passed with `P1=0`, `P2=0`, `P3=0` and no blocking
   open question. The revised Design/Architecture/Test mapping is current: the final fresh Design review closed
-  `DES-REV-001..047` with open `P1=0`, blocking `P2=0`, `P3=0` and high-risk question `=0`, and deterministic closure
+  `DES-REV-001..048` with open `P1=0`, blocking `P2=0`, `P3=0` and high-risk question `=0`, and deterministic closure
   passed. No package/runtime/installed/provider/Release evidence or Architecture promotion exists yet.
 - later evidence: each implementation slice must bind exact candidate/range, execute only its owned fixtures and
   record unverified matrix boundaries. Atomic migration and full matrix/Release cannot be inferred from ordinary
@@ -242,17 +248,22 @@ boundaries, is retained and not closed here. No new legacy deviation is planned.
 - status: `design_ready_for_delivery_planning_fresh_design_review_passed_not_promoted`; not an accepted ADR.
 - trigger: #305 changes long-term system boundary, public owner topology, compatibility strategy, stock
   projection ownership and activation semantics.
-- decision: adopt the target-native Evolution contract with one invocation envelope, one semantic owner per
-  closed step, preset-owned exact stock projection policy, manifest-bound Trellis reference, Bootstrap-only minimal
+- decision: adopt the target-native Evolution contract with one host-session-local invocation envelope and zero
+  generic repository envelope store before task ownership; after task creation, permit only an exact Skill's existing
+  task-local ignored owner-private checkpoint for non-reconstructible state consumed by that same Skill's public
+  wrapper. Keep one semantic owner per closed step, preset-owned exact stock projection policy, manifest-bound Trellis reference, Bootstrap-only minimal
   authority/code-spec projection including zero-promotion authority repair, separate provenance/push/Draft-PR/Finish/Merge actions, Projection-owned verifier failure
   evidence and atomic existing-repository migration under the retained `guru-team` marketplace id.
 - rejected: patching stock prompts while keeping their matchers; modifying upstream/global package state; keeping
   raw stock providers/workers discoverable; task artifacts as repository RDT; old/new dual-read or fallback;
-  partial platform activation; one finalizer/verifier aggregate owning unrelated semantic terminals.
+  partial platform activation; one finalizer/verifier aggregate owning unrelated semantic terminals; a generic
+  `.trellis/.runtime/**` invocation-envelope store or any downstream read of another Skill's private checkpoint.
 - consequence: implementation is split into dormant serial slices and activates only when the full graph is
   current. Existing repositories require an explicit migration; unknown/user-modified/sidecar state blocks rather
-  than being overwritten. Runtime context and handoffs shrink, while semantic reviews and capability evidence
-  remain mandatory at their unique owners.
+  than being overwritten. Admission, pre-route, pre-task, task-free and standalone continuation creates no repository
+  state; lost host continuation is reconstructed at the exact owner, while narrowly allowed post-task checkpoint state
+  remains same-Skill/same-wrapper private. Runtime context and handoffs shrink, while semantic reviews and capability
+  evidence remain mandatory at their unique owners.
 - acceptance condition: after prerequisite convergence and fresh Design allocation, reviewed implementation of every
   selected owner/action and all then-applicable fixture families,
   full committed-diff review, reviewed task contribution/ADR, expected-current serialized promotion, atomic

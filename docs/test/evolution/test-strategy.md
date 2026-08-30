@@ -10,7 +10,7 @@ closure, runtime behavior, installed behavior, external facts or Release proof.
 | --- | --- | --- |
 | `static_contract` | ids, schemas, tables, links, graph closure, exact owner/consumer and projection inventory | AI semantic sufficiency or runtime behavior |
 | `semantic_eval` | representative honest inputs produce the right scope/finding/route/revision decision | side-effect execution or installed parity |
-| `package_runtime` | validators/executors/private envelope and producer-consumer transitions behave for the exact source candidate | host projection or external provider |
+| `package_runtime` | validators/executors, call/host-session-local envelope, task-local same-owner checkpoint boundary and producer-consumer transitions behave for the exact source candidate | host projection or external provider |
 | `workflow_integration` | one invocation follows the declared owner graph, freshness and re-entry without duplicate work | clean/existing installation across hosts |
 | `projection_installed` | canonical/dogfood/installed/shared/host bytes, modes, graph, stock action and sidecar behavior | an unexecuted matrix cell or remote outcome |
 | `controlled_provider` | Git/GitHub/Trellis provider inputs, receipts, partial/unknown outcome and forward recovery under a controlled target | production or immutable Release facts |
@@ -28,7 +28,8 @@ Every executed fixture binds:
 - `fixture_id`, candidate kind and exact source/commit/tree or installed/release identity;
 - applicable Requirements, Design and public contract identities;
 - owner/profile, direct consumer and expected typed terminal;
-- dependency identities used by the private envelope and their current/stale classification;
+- dependency identities used by the call/host-session-local envelope or an allowed task-local same-owner checkpoint,
+  plus their current/stale classification and direct consumer;
 - evidence layer actually executed, observed actions and explicit unverified boundaries.
 - for standalone verifier failure only, the pre-cleanup stage/cell/command/exit/safe-tail/hash-size evidence identity
   and the subsequent cleanup/blocked/re-entry observation; embedded callers do not inherit that verifier lifecycle.
@@ -63,6 +64,10 @@ cross-OS hardening is added unless a future accepted requirement explicitly adds
   `direct|select|rename|normalize`. A consumer-owned live fact must be absent from caller-authored input and resolved
   through its exact envelope section owner; generic frames, implicit pass-through, private checkpoint/envelope-file
   reads, ambient Git lookup and runtime-source interpretation all fail the contract fixture.
+- Admission/pre-route/pre-task/task-free/standalone fixtures require call/host-session-local continuation and zero
+  generic repository envelope/checkpoint path or write. Missing/stale continuation must reach the exact owner's
+  existing block/re-entry and live reconstruction. Once a task is current, any allowed ignored checkpoint has one
+  exact same-Skill public-wrapper consumer and is never readable by a downstream Skill.
 - Admission fixtures keep lifecycle causality/identity failure (`binding_blocked -> binding_reentry`) separate from
   post-receipt isolation failure (`independent_request_isolation_blocked -> isolation_repair_reentry`). Post-owner and
   post-remote pending intents enter only their two fresh Admission profiles; isolation recovery reuses the existing
@@ -143,7 +148,8 @@ cross-OS hardening is added unless a future accepted requirement explicitly adds
 - Workspace fixtures live-resolve the exact repo/Issue/base/branch/worktree/task/path plus ownership/isolation state
   before constructing an action plan. An exact-current reuse emits `workspace_current` with zero plan display,
   confirmation wait, refusal branch and mutation; pending creation, transfer or isolation alone enters the
-  `EVO-REQ-081` confirmation boundary.
+  `EVO-REQ-081` confirmation boundary, whose unconfirmed plan remains only in the current call/host session and creates
+  no generic repository plan/envelope/checkpoint state.
 - Standalone verifier failure fixtures capture a schema-valid non-null failure before temporary workspace cleanup.
   Matrix commands retain their applicable cell; matrix-external command/asset/ownership/sidecar/capability failures
   are `postcheck_failure`. The verifier/projection owner alone returns the blocked result and exact re-entry;
@@ -153,7 +159,9 @@ cross-OS hardening is added unless a future accepted requirement explicitly adds
 
 For each applicable normal run, measure exact counts rather than relative speed claims:
 
-- independent invocation envelope creation and admission receipt: exactly one;
+- independent call/host-session-local invocation envelope construction and admission receipt: exactly one;
+- generic repository-envelope path creation/write during admission, pre-route, pre-task, task-free or standalone:
+  zero; every allowed post-task checkpoint has exactly one same-Skill public-wrapper consumer;
 - lifecycle-bound event new envelope/receipt/top-level reroute: zero;
 - lifecycle-bound event missing `bound_event_ref`, losing host identity/session/current content, or requiring ambient
   host-history lookup: zero;
@@ -252,7 +260,8 @@ already-current double-none exit, one standalone
 fresh validation` chain, one exact-current Workspace no-mutation convergence path,
 one compound activation/implementation-entry confirmation, three independent provenance-tail/branch-push/Draft-PR
 confirmation subgraphs, one Finish-before-Merge chain with no-mutation current exits, standalone verifier
-evidence-before-cleanup and trace range coverage. Runtime, installed, provider and Release rows remain
+evidence-before-cleanup, zero admission/pre-route/pre-task/task-free/standalone generic repository-envelope paths,
+same-Skill/same-wrapper ownership for any task-local checkpoint and trace range coverage. Runtime, installed, provider and Release rows remain
 `planned_not_executed`.
 
 The current selected-base rebind, Requirements-stage successor zero-loss result and fresh Requirements review have

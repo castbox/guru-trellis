@@ -34,8 +34,9 @@ authority/provider section owner 在同一 envelope 内完成首次 live read �
 call-local stable authority prefix；需要这些 authority 语义的 AI owner直接消费同一bound content view，
 不消费producer摘要、handoff或再次用tool全文读取。cache miss/unavailable仍构造同一prefix且不改变判断。
 consumer public edge只经owner runtime取得自己的authorized minimal projection；live fact正文不进入DTO，
-只有direct consumer必需的最小identity/freshness token可以进入该exit的closed output。跨turn持久envelope
-不得保存全文RDT。
+只有direct consumer必需的最小identity/freshness token可以进入该exit的closed output。跨turn只允许
+producer-owned host continuation或task存在后的same-owner private checkpoint保存不可live重建且有直接
+consumer的最小状态；不得持久化generic envelope或全文RDT。
 
 private `context_envelope` 不作为 public input/output。任何 output 均不得包含 envelope path/body、
 authorization、完整正文、完整 finding/review history、stdout、Git snapshot、per-file hash bundle、
@@ -505,10 +506,19 @@ continuation_ref,unverified_boundaries`; terminal rejection is a non-retryable p
 fourth action state. The action owner updates this private state only after live reread. Public exits project only
 the minimal result/continuation fields already declared above; no consumer receives the full provider contract.
 
-Envelope default is process-local. Cross-turn isolation/provider/recovery writes only
-`.trellis/.runtime/guru-team/invocations/<invocation-id>.json`; current consumer completion, stale replacement or
-terminal deletes it and empty directories. A public consumer resolves only its authorized projection through the
-owner runtime, never the envelope file.
+The envelope is call-local or host-session-local throughout admission, pre-route, pre-task, task-free and standalone
+execution. Cross-turn isolation, provider recovery and exact recovery use only the producer-owned host continuation
+and the minimum `invocation_id`, `context_revision`, `continuation_ref` and `repair_input` subset required by the exact
+re-entry. Those boundaries create no file below `.trellis/tasks/**`, `.trellis/workspace/**` or
+`.trellis/.runtime/**`; in particular, no generic invocation-envelope repository path exists.
+
+After a task and its exact Skill owner are current, that Skill may use only its already-declared task-local ignored
+owner-private checkpoint for non-reconstructible state with the same Skill's public wrapper as direct consumer. The
+wrapper checks and retires that state on current consumption; stale replacement and terminal cleanup remain
+owner-local. Such a checkpoint is not the `context_envelope`, is never shared across Skills, and is never read or
+deleted by a downstream consumer. Missing, stale or unresolvable host continuation returns the declared owner
+block/re-entry and live reconstruction path instead of creating repository state. A public consumer always receives
+only its authorized typed projection.
 
 Controlled provider contracts are private caller adapters, not auto-discoverable Skills:
 

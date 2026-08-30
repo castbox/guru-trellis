@@ -13,7 +13,10 @@ installed publication、verifier failure evidence与original-worktree continuity
 - `EVO-DDEC-003`（accepted）：global workflow 只拥有 invocation/phase 顺序、mandatory Skill id、
   typed-exit consumer 和 fail-closed stop；每项 semantic responsibility 由一个 closed-loop Skill 独占。
 - `EVO-DDEC-004`（accepted）：每个 independent invocation 只建立一个 owner-private
-  `context_envelope`。RDT、Architecture、stock 与 provider facts 只由各 section owner首次读取和定向
+  `context_envelope`。在 admission/pre-route/pre-task/task-free/standalone 中，它只存在于调用栈或 host current
+  session/continuation，不写 repository file；task current 后也只有 exact Skill 可为同 owner public-wrapper 的
+  不可重建状态使用自己既有的 task-local private checkpoint，该 checkpoint 不是共享 envelope。RDT、
+  Architecture、stock 与 provider facts 只由各 section owner首次读取和定向
   refresh，consumer经owner runtime取得authorized minimal projection，不形成第二条authority读取链；
   无依赖变化时不得全文重读。public edge 只允许 selected exit 的
   `direct|select|rename|normalize` projection；runtime-derived facts由exact consumer owner解析而不进入
@@ -54,8 +57,10 @@ installed publication、verifier failure evidence与original-worktree continuity
   `MIGRATION REQUIRED` 时只走 `--migrate --skip-all`，否则只走 `--skip-all`；force/create-new 不替代该
   canonical 分支。
 - `EVO-DDEC-014`（accepted）：invocation/task/provider recovery 使用可消费的短生命周期 private state；
-  durable history只保留 cleanup 后仍不可重建的 terminal identity/result。授权、完整 stdout、完整 review
-  history与 live 可重建 facts 永不持久化。
+  pre-route/pre-task/task-free/standalone 的跨 turn 状态只由 host continuation承接，repository write为0；task
+  current 后的 owner-private checkpoint 也只服务同一 Skill public-wrapper，不成为跨 Skill handoff。durable
+  history只保留 cleanup 后仍不可重建的 terminal identity/result。授权、完整 stdout、完整 review history与
+  live 可重建 facts 永不持久化。
 - `EVO-DDEC-015`（accepted）：Architecture impact 为 `architecture_impact/target_native`，因为本设计
   改变 entry owner、single writer、compatibility exit 与 distribution ownership；因此需要 task-owned
   contribution 与 ADR candidate，但本任务不 promotion shared current。
@@ -178,6 +183,12 @@ installed publication、verifier failure evidence与original-worktree continuity
   `guru-validate-extension-projection`，其private structured failure必须先于temporary cleanup；public block只
   增加direct-consumer需要的`failure_ref`，stop展示后只投影continuation/repair回same owner。Embedded
   clean/migration/Release保持caller-owned finding，Finish/Finalizer对verifier state零edge。
+- `EVO-DDEC-037`（accepted）：不建立generic repository invocation-envelope store。Admission isolation wait、
+  standalone Answer/provider repair、pre-task Planning recovery与其它无task continuation均使用host-native
+  current-session continuation；丢失或stale时走exact owner既有blocked/re-entry并从live authority重建。只有
+  task current 后，单一Skill对其同owner public-wrapper确有不可重建直接消费状态时，才使用该Skill既有
+  task-local ignored checkpoint。此边界保留跨turn恢复能力，同时满足pre-task/standalone repository
+  side-effect-free与private-state ownership合同。
 
 ## Rejected Directions
 
@@ -187,6 +198,8 @@ installed publication、verifier failure evidence与original-worktree continuity
 - 保留所有 raw stock surface 再叠加 Guru guard；会继续产生双匹配和重复上下文。
 - 为了避免 breaking migration 保留 legacy adapter；与 single-contract target 冲突。
 - 将完整 invocation envelope、review artifact 或 authorization 搬进 public DTO；没有直接 consumer。
+- 在 admission、pre-route、pre-task、task-free 或 standalone 正常路径把generic invocation envelope写入
+  `.trellis/.runtime/**`；这会违反repository side-effect-free与same-owner private-checkpoint边界。
 - 把 `确认执行 <hash>`、固定 prompt/口令、hash/digest/task/path/branch/SHA/identity/摘要复述、规定句式
   或 `合并PR` 词法匹配作为继续条件；这会把 AI 语义判断错误下放给字符串协议并把 freshness token
   误作授权 authority。
