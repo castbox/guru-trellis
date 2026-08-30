@@ -404,11 +404,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-30T14:09:25Z",
+  "installed_at": "2026-08-30T15:09:16Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "96a71421f5ccc0a033b3a6dabe67cb3874d6d902",
-    "commit": "96a71421f5ccc0a033b3a6dabe67cb3874d6d902",
+    "ref": "9ac683e876186d035d201b64cb395707010d2268",
+    "commit": "9ac683e876186d035d201b64cb395707010d2268",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -496,7 +496,7 @@
       ".trellis/spec/workflow/workflow-contract.md": "a4e7251bfe1c5ec085774d8fa5519b1e59f274d49f6a2105d62b5cccd1abee3d",
       ".trellis/spec/workflow/skill-package-contract.md": "e6835ff832bad48647d5d494ba9896d3c7e37769aa88645b2ff01c384430bf62",
       ".trellis/spec/workflow/data-contracts.md": "f69f21cf100a9d36e93222728afc3b60b3a97be42037d4952ce1f2cf94640225",
-      ".trellis/spec/workflow/companion-scripts.md": "bd04a6c15518b6eb7352b990382ee452e1815061c568165eaa6e9ebe09f2a07e",
+      ".trellis/spec/workflow/companion-scripts.md": "91112c0939e5cbdd318b36da77ca56f3b281b673f04c101c7c2fff7bfdb99714",
       ".trellis/spec/workflow/quality-guidelines.md": "2aad8463f616f8174a7f685eb7e8551d23cc5d3073c8ef080fd0e0fc13589f63"
     },
     "new_copies": [],

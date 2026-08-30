@@ -1422,15 +1422,18 @@ sidecar, or capability-evidence postchecks record `postcheck_failure`; a failed
 execution cannot retain a null failure object.
 
 The compatibility matrix runner also owns exact before-tag availability. It
-first resolves the local `refs/tags/<before-tag>` tag object and peeled commit.
-When either object is unavailable locally, it may fetch only
+first checks whether the exact local `refs/tags/<before-tag>` ref exists. When
+it exists, the runner resolves its tag object and peeled commit locally; if
+either resolution fails, it emits a structured `pre-matrix` failure with no
+cell id and zero executed cells and performs no fetch. Only when the exact
+local ref is absent may it fetch
 `refs/tags/<before-tag>:refs/tags/<before-tag>` from the source checkout's
-canonical `origin`, with `--no-tags --depth=1`, and must then resolve both
-objects again before the first matrix cell. A malformed tag name, missing
-remote tag, failed fetch, or failed post-fetch resolution remains a structured
-`pre-matrix` failure with no cell id and zero executed cells. This path never
-fabricates a tag, fetches the complete tag set, changes checkout HEAD, selects a
-mutable branch, or converts the failure to PASS or SKIP.
+canonical `origin`, with `--no-tags --depth=1`, and it must then resolve both
+objects before the first matrix cell. A malformed tag name, missing remote tag,
+failed fetch, or failed post-fetch resolution remains the same structured
+zero-cell `pre-matrix` failure. This path never fabricates a tag, fetches the
+complete tag set, changes checkout HEAD, selects a mutable branch, or converts
+the failure to PASS or SKIP.
 
 The recorder consumes execution facts plus the completed AI adequacy/findings/
 redaction review and writes only ignored source-session owner state. The checker
