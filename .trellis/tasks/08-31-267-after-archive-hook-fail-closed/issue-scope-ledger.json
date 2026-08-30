@@ -9,6 +9,12 @@
   },
   "related_issues": [
     {
+      "number": 267,
+      "reason": "Issue #267 is the sole semantic owner of the v0.6.15-guru.3 Release Gate and this newly confirmed blocker remediation.",
+      "title": "发布 v0.6.15-guru.3：包含 #311/#312 修复的 exact-candidate successor Release",
+      "url": "https://github.com/castbox/guru-trellis/issues/267"
+    },
+    {
       "number": 311,
       "reason": "The installed business-repository Finalizer path remains a required Release validation boundary and Issue #311 stays open.",
       "title": "修复 installed business repo Finalizer provenance reprepare 的 source/target checkout 混淆",
