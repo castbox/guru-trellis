@@ -404,11 +404,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-30T16:57:03Z",
+  "installed_at": "2026-08-30T19:26:14Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "91537c5949890b8f90c7afb51e9127f8e74efd07",
-    "commit": "91537c5949890b8f90c7afb51e9127f8e74efd07",
+    "ref": "29019d24a65fa4f4718ec2b2f2e07b483f27bb4c",
+    "commit": "29019d24a65fa4f4718ec2b2f2e07b483f27bb4c",
     "tree_state": "clean",
     "is_mutable_ref": false
   },
@@ -616,7 +616,7 @@
       {
         "id": "guru-finalize-task",
         "interface_sha256": "966406e679fd4a7ed9acc6090c54568018c8287cad402f9f0a0017cb9c66d2c6",
-        "tree_sha256": "9768012ded9641eeb80ff0e14d0561136cf69c44505d2ab4f56700f301a09c1c"
+        "tree_sha256": "0a06f3e08af828c6739624f810b05907b7555d75a271bb45454fcd4dfe29d24e"
       },
       {
         "id": "guru-merge-task-pr",
@@ -6990,7 +6990,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "924dfc1e56545a634a04f62b774bf884b1cb4b38abfac181a0cf18370b62fe8b",
+        "sha256": "451d3b7f27262e2d35ed03dfa0fafa4f9448495091335bfd6e963c3c99e3a3a4",
         "executable": false,
         "action": "unchanged"
       },
@@ -7032,7 +7032,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
-        "sha256": "ba332324c5b0bf485395e3ecc04f018da6146eeabf8d3775ca0c89d2bda282d4",
+        "sha256": "5b5b9fabf1daf8b0feae5a5b01a1feb779057f8ed902c7b0708bd066b8f01c33",
         "executable": false,
         "action": "unchanged"
       },
@@ -7340,7 +7340,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
-        "sha256": "b0f3594f7e333f5b54728f3cbc57289e99d07edbdec2951fffd488212a0bd420",
+        "sha256": "50ca441f9e20eb2f73b5e3541e2b40d2487c3e52707ccca3eeaac45d52dfb022",
         "executable": false,
         "action": "unchanged"
       },
@@ -24441,7 +24441,7 @@
       {
         "path": ".agents/skills/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "924dfc1e56545a634a04f62b774bf884b1cb4b38abfac181a0cf18370b62fe8b",
+        "sha256": "451d3b7f27262e2d35ed03dfa0fafa4f9448495091335bfd6e963c3c99e3a3a4",
         "executable": false,
         "action": "unchanged"
       },
@@ -24882,7 +24882,7 @@
       {
         "path": ".codex/skills/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "924dfc1e56545a634a04f62b774bf884b1cb4b38abfac181a0cf18370b62fe8b",
+        "sha256": "451d3b7f27262e2d35ed03dfa0fafa4f9448495091335bfd6e963c3c99e3a3a4",
         "executable": false,
         "action": "unchanged"
       },
@@ -25323,7 +25323,7 @@
       {
         "path": ".claude/skills/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "924dfc1e56545a634a04f62b774bf884b1cb4b38abfac181a0cf18370b62fe8b",
+        "sha256": "451d3b7f27262e2d35ed03dfa0fafa4f9448495091335bfd6e963c3c99e3a3a4",
         "executable": false,
         "action": "unchanged"
       },
@@ -25764,7 +25764,7 @@
       {
         "path": ".cursor/skills/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "924dfc1e56545a634a04f62b774bf884b1cb4b38abfac181a0cf18370b62fe8b",
+        "sha256": "451d3b7f27262e2d35ed03dfa0fafa4f9448495091335bfd6e963c3c99e3a3a4",
         "executable": false,
         "action": "unchanged"
       },
