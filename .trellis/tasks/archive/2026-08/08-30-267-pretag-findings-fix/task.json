@@ -1,0 +1,12 @@
+{
+  "id": "267-pretag-findings-fix",
+  "name": "267-pretag-findings-fix",
+  "title": "#267 修复 pre-tag findings 并恢复 v0.6.15-guru.3 发布门禁",
+  "status": "completed",
+  "branch": "codex/267-pretag-findings-fix",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/267",
+  "completedAt": "2026-08-30"
+}

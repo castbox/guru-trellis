@@ -113,6 +113,8 @@ PROVENANCE_TAIL_ALLOWED_FIELDS = frozenset({
 
 PROVENANCE_TAIL_OBJECT_PRESENCE = object()
 
+PROVENANCE_APPLY_PLATFORMS = ("claude", "codex", "cursor")
+
 AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 
 REVIEW_REPORT_ARTIFACT = "review.md"
@@ -3365,6 +3367,74 @@ def provenance_source_binding(
         )
     return binding
 
+def provenance_apply_platform_args(manifest: Any) -> list[str]:
+    """Project one reviewed installed platform identity into preset apply argv."""
+    errors: list[str] = []
+    selected_by_locator: dict[str, list[str]] = {}
+    for object_name in ("install", "skill_packages", "overlays"):
+        container = manifest.get(object_name) if isinstance(manifest, dict) else None
+        if not isinstance(container, dict):
+            errors.append(f"provenance_platform_selection_{object_name}_missing")
+            continue
+        selected = container.get("selected_platforms")
+        if not isinstance(selected, list):
+            errors.append(
+                f"provenance_platform_selection_{object_name}_type_invalid"
+            )
+            continue
+        if not selected:
+            errors.append(f"provenance_platform_selection_{object_name}_empty")
+            continue
+        if any(not isinstance(platform, str) for platform in selected):
+            errors.append(
+                f"provenance_platform_selection_{object_name}_member_invalid"
+            )
+            continue
+        if len(selected) != len(set(selected)):
+            errors.append(
+                f"provenance_platform_selection_{object_name}_duplicate"
+            )
+        if selected != sorted(selected):
+            errors.append(
+                f"provenance_platform_selection_{object_name}_not_sorted"
+            )
+        if any(platform not in PROVENANCE_APPLY_PLATFORMS for platform in selected):
+            errors.append(
+                f"provenance_platform_selection_{object_name}_unknown"
+            )
+        selected_by_locator[object_name] = selected
+
+    if len(selected_by_locator) == 3:
+        selections = list(selected_by_locator.values())
+        if selections[1:] != selections[:-1]:
+            errors.append("provenance_platform_selection_mismatch")
+
+    install = manifest.get("install") if isinstance(manifest, dict) else None
+    all_platforms = install.get("all_platforms") if isinstance(install, dict) else None
+    if not isinstance(all_platforms, bool):
+        errors.append("provenance_platform_selection_all_platforms_invalid")
+    elif "install" in selected_by_locator:
+        full_selection = selected_by_locator["install"] == list(
+            PROVENANCE_APPLY_PLATFORMS
+        )
+        if all_platforms and not full_selection:
+            errors.append("provenance_platform_selection_all_platforms_mismatch")
+
+    if errors:
+        raise WorkflowError(
+            "Installed platform selection is invalid for Finalizer preparation.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_platform_selection_invalid",
+                "errors": sorted(set(errors)),
+            },
+        )
+
+    selected = selected_by_locator["install"]
+    if all_platforms:
+        return ["--all-platforms"]
+    return [item for platform in selected for item in ("--platform", platform)]
+
 def provenance_tail_manifest_errors(
     before: Any,
     after: Any,
@@ -3866,6 +3936,7 @@ def prepare_provenance_metadata_tail(
                 target_repo,
                 reviewed_content_head,
             )
+            platform_args = provenance_apply_platform_args(parent)
             prepare_provenance_extension_source_checkout(
                 root,
                 extension_source_checkout,
@@ -3886,7 +3957,7 @@ def prepare_provenance_metadata_tail(
                     str(apply_script),
                     "--repo",
                     str(target_reviewed_checkout),
-                    "--all-platforms",
+                    *platform_args,
                     "--json",
                 ],
                 cwd=extension_source_checkout,

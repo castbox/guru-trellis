@@ -1,0 +1,31 @@
+{
+  "close_issues": [],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 267,
+    "reason": "Primary release-owner contract for the v0.6.15-guru.3 pre-tag findings fix.",
+    "title": "发布 v0.6.15-guru.3：包含 #311/#312 修复的 exact-candidate successor Release",
+    "url": "https://github.com/castbox/guru-trellis/issues/267"
+  },
+  "related_issues": [
+    {
+      "number": 267,
+      "reason": "Primary release-owner contract for the v0.6.15-guru.3 pre-tag findings fix.",
+      "title": "发布 v0.6.15-guru.3：包含 #311/#312 修复的 exact-candidate successor Release",
+      "url": "https://github.com/castbox/guru-trellis/issues/267"
+    },
+    {
+      "number": 311,
+      "reason": "Required fix is included in the release contract but remains open pending formal .3 business-repository validation.",
+      "title": "修复 installed business repo Finalizer provenance reprepare 的 source/target checkout 混淆",
+      "url": "https://github.com/castbox/guru-trellis/issues/311"
+    },
+    {
+      "number": 312,
+      "reason": "Merged workspace-boundary fix remains part of the exact-candidate release verification scope.",
+      "title": "允许已合并的 active task 在原 worktree 中通过 workspace boundary",
+      "url": "https://github.com/castbox/guru-trellis/issues/312"
+    }
+  ],
+  "schema_version": "2.0"
+}

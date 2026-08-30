@@ -6,7 +6,7 @@
 - `ARCH-CUR-002`（`code_recovered`）：global workflow 实现四 Phase，canonical package 位于 `trellis/**`，dogfood/installed 位于 `.trellis/**`，平台投影覆盖 Shared/Codex/Claude/Cursor。
 - `ARCH-CUR-003`（`code_recovered`）：RDT、Architecture Baseline、Repository Bootstrap 三个 semantic package 已 active，分别源自 #263/#264/#265。
 - `ARCH-CUR-004`（`source_confirmed` + `verified`）：current extension candidate 为 `0.6.15-guru.39`，target/required/tested Trellis CLI 为 `0.6.15`；#267 successor Release target 为 `v0.6.15-guru.3`，尚未发布。
-- `ARCH-CUR-005`（`source_confirmed`）：最新 stable Release 为 annotated tag `v0.6.5-guru.10`，tag object `b5fd47e9…`，peeled commit `5c059f49…`；它是 `.36` / Trellis `0.6.5` released history，不等于 current main candidate。
+- `ARCH-CUR-005`（`source_confirmed`）：最新 stable Release 为 annotated tag `v0.6.15-guru.2`，tag object `641ed35e…`，peeled commit `d907fcc5…`；它是 `.38` / Trellis `0.6.15` released history，不等于 current main candidate。
 - `ARCH-CUR-006`（`code_recovered`）：preset/overlay 管理 `.trellis/guru-team/`、Guru Skills、平台 skills 与 finish-work entries；unknown local changes 使用 `.new/.bak` 保护语义。
 - `ARCH-CUR-007`（`code_recovered`）：Finalizer terminal projection 以精确 retired locator、六文件 archive summary 与 current local/remote/Ready PR/scope facts 共同构成 authority；archive 不替代 live provider，任何真实 drift fail closed。
 - `ARCH-CUR-008`（`verified`）：current source 与 dogfood 的 official Trellis target/project version 为 `0.6.15`；canonical extension candidate 为 `0.6.15-guru.39`。

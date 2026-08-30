@@ -1,0 +1,165 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-30T08:22:40Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-30-267-pretag-findings-fix",
+    "title": "#267 修复 pre-tag findings 并恢复 v0.6.15-guru.3 发布门禁",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-30-267-pretag-findings-fix",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/267-pretag-findings-fix",
+    "commits": [
+      "ef5a916ab8bb59a8f6d26d4576ea38d850877233"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/tasks/08-30-267-pretag-findings-fix/design.md",
+      ".trellis/tasks/08-30-267-pretag-findings-fix/implement.md",
+      ".trellis/tasks/08-30-267-pretag-findings-fix/issue-scope-ledger.json",
+      ".trellis/tasks/08-30-267-pretag-findings-fix/prd.md",
+      ".trellis/tasks/08-30-267-pretag-findings-fix/task.json",
+      ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/implement.md",
+      ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/design.md",
+      ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/implement.md",
+      ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/prd.md",
+      ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/task.json",
+      "docs/architecture/01-current/system.md",
+      "docs/architecture/evidence/current-evidence.md",
+      "docs/requirements/versions/current-main-0.6.5-guru.42/requirement-main.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      267
+    ],
+    "close_issues": [],
+    "related_issues": [
+      267,
+      311,
+      312
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/317"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#267 修复 pre-tag findings 并恢复 v0.6.15-guru.3 发布门禁",
+    "outcome": "Finalizer 在生成 provenance metadata tail 时，从已审核安装 manifest 精确恢复 `claude`、`codex`、`cursor` 平台选择，不再无条件使用 `--all-platforms`。",
+    "changed_behavior": [
+      "Finalizer 在生成 provenance metadata tail 时，从已审核安装 manifest 精确恢复 `claude`、`codex`、`cursor` 平台选择，不再无条件使用 `--all-platforms`。",
+      "对缺失、类型错误、重复、未排序、未知或三处不一致的平台 identity 保持 fail closed，并在 source checkout/apply/commit 之前停止。",
+      "同步 canonical 与 dogfood installed package、回归测试、#267 task artifact，以及当前 Release/RDT/Architecture evidence。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/08-30-267-pretag-findings-fix/design.md",
+          ".trellis/tasks/08-30-267-pretag-findings-fix/implement.md",
+          ".trellis/tasks/08-30-267-pretag-findings-fix/prd.md",
+          ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/implement.md",
+          ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/design.md",
+          ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/implement.md",
+          ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/prd.md",
+          "docs/architecture/01-current/system.md",
+          "docs/architecture/evidence/current-evidence.md",
+          "docs/requirements/versions/current-main-0.6.5-guru.42/requirement-main.md"
+        ],
+        "change": "Finalizer 在生成 provenance metadata tail 时，从已审核安装 manifest 精确恢复 `claude`、`codex`、`cursor` 平台选择，不再无条件使用 `--all-platforms`。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "Finalizer 在生成 provenance metadata tail 时，从已审核安装 manifest 精确恢复 `claude`、`codex`、`cursor` 平台选择，不再无条件使用 `--all-platforms`。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "change": "Finalizer 在生成 provenance metadata tail 时，从已审核安装 manifest 精确恢复 `claude`、`codex`、`cursor` 平台选择，不再无条件使用 `--all-platforms`。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-30-267-pretag-findings-fix/issue-scope-ledger.json",
+          ".trellis/tasks/08-30-267-pretag-findings-fix/task.json",
+          ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/task.json"
+        ],
+        "change": "Finalizer 在生成 provenance metadata tail 时，从已审核安装 manifest 精确恢复 `claude`、`codex`、`cursor` 平台选择，不再无条件使用 `--all-platforms`。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#267",
+        "#311",
+        "#312"
+      ],
+      "pr_refs": [
+        "PR #317"
+      ],
+      "branches": [
+        "codex/267-pretag-findings-fix"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/tasks/08-30-267-pretag-findings-fix/design.md",
+        ".trellis/tasks/08-30-267-pretag-findings-fix/implement.md",
+        ".trellis/tasks/08-30-267-pretag-findings-fix/issue-scope-ledger.json",
+        ".trellis/tasks/08-30-267-pretag-findings-fix/prd.md",
+        ".trellis/tasks/08-30-267-pretag-findings-fix/task.json",
+        ".trellis/tasks/archive/2026-08/08-27-312-workspace-boundary-merged-active-task/implement.md",
+        ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/design.md",
+        ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/implement.md",
+        ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/prd.md",
+        ".trellis/tasks/archive/2026-08/08-30-267-pretag-findings-fix/task.json",
+        "docs/architecture/01-current/system.md",
+        "docs/architecture/evidence/current-evidence.md",
+        "docs/requirements/versions/current-main-0.6.5-guru.42/requirement-main.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#267 修复 pre-tag findings 并恢复 v0.6.15-guru.3 发布门禁",
+        "Finalizer 在生成 provenance metadata tail 时，从已审核安装 manifest 精确恢",
+        "完成 extension.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#267 修复 pre-tag findings 并恢复 v0.6.15-guru.3 发布门禁\nFinalizer 在生成 provenance metadata tail 时，从已审核安装 manifest 精确恢复 `claude`、`codex`、`cursor` 平台选择，不再无条件使用 `--all-platforms`。\n对缺失、类型错误、重复、未排序、未知或三处不一致的平台 identity 保持 fail closed，并在 source checkout/apply/commit 之前停止。\n同步 canonical 与 dogfood installed package、回归测试、#267 task artifact，以及当前 Release/RDT/Architecture evidence。\nFinalizer 在生成 provenance metadata tail 时，从已审核安装 manifest 精确恢\n完成 extension.json 相关变更"
+  }
+}
