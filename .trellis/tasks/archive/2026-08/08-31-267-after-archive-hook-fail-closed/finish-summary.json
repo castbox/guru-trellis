@@ -1,0 +1,180 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-30T19:17:51Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-31-267-after-archive-hook-fail-closed",
+    "title": "#267 修复 after_archive hook fail-closed Release Gate 阻塞",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-31-267-after-archive-hook-fail-closed",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/267-after-archive-hook-fail-closed",
+    "commits": [
+      "02a275e988384172af9a4a4692b123a4bfdb1219",
+      "833a6262a23bfaa4278bb774611da30053454891",
+      "29019d24a65fa4f4718ec2b2f2e07b483f27bb4c"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-finalize-task/references/contract.md",
+      ".claude/skills/guru-finalize-task/references/contract.md",
+      ".codex/skills/guru-finalize-task/references/contract.md",
+      ".cursor/skills/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/design.md",
+      ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/implement.md",
+      ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/issue-scope-ledger.json",
+      ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/prd.md",
+      ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/task.json",
+      ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/design.md",
+      ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/implement.md",
+      ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/prd.md",
+      ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/task.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      267
+    ],
+    "close_issues": [],
+    "related_issues": [
+      267,
+      311,
+      312
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/321"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#267 修复 after_archive hook fail-closed Release Gate 阻塞",
+    "outcome": "在 Finalizer preview context 选择前执行 official `after_archive` hook preflight，避免 eval-staging early return 绕过 fail-closed 检查。",
+    "changed_behavior": [
+      "在 Finalizer preview context 选择前执行 official `after_archive` hook preflight，避免 eval-staging early return 绕过 fail-closed 检查。",
+      "同步 canonical、installed 与平台投影，并补充 preview/execute 回归验证。",
+      "修正 Issue Scope Ledger 的 primary/related 精确 disposition，使 Publication Review 可基于 exact candidate 继续。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/design.md",
+          ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/implement.md",
+          ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/prd.md",
+          ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/design.md",
+          ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/implement.md",
+          ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/prd.md"
+        ],
+        "change": "在 Finalizer preview context 选择前执行 official `after_archive` hook preflight，避免 eval-staging early return 绕过 fail-closed 检查。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "在 Finalizer preview context 选择前执行 official `after_archive` hook preflight，避免 eval-staging early return 绕过 fail-closed 检查。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "change": "在 Finalizer preview context 选择前执行 official `after_archive` hook preflight，避免 eval-staging early return 绕过 fail-closed 检查。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-finalize-task/references/contract.md",
+          ".claude/skills/guru-finalize-task/references/contract.md",
+          ".codex/skills/guru-finalize-task/references/contract.md",
+          ".cursor/skills/guru-finalize-task/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md"
+        ],
+        "change": "在 Finalizer preview context 选择前执行 official `after_archive` hook preflight，避免 eval-staging early return 绕过 fail-closed 检查。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/issue-scope-ledger.json",
+          ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/task.json",
+          ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/task.json"
+        ],
+        "change": "在 Finalizer preview context 选择前执行 official `after_archive` hook preflight，避免 eval-staging early return 绕过 fail-closed 检查。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#267",
+        "#311",
+        "#312"
+      ],
+      "pr_refs": [
+        "PR #321"
+      ],
+      "branches": [
+        "codex/267-after-archive-hook-fail-closed"
+      ],
+      "paths": [
+        ".agents/skills/guru-finalize-task/references/contract.md",
+        ".claude/skills/guru-finalize-task/references/contract.md",
+        ".codex/skills/guru-finalize-task/references/contract.md",
+        ".cursor/skills/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/design.md",
+        ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/implement.md",
+        ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/issue-scope-ledger.json",
+        ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/prd.md",
+        ".trellis/tasks/08-31-267-after-archive-hook-fail-closed/task.json",
+        ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/design.md",
+        ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/implement.md",
+        ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/prd.md",
+        ".trellis/tasks/archive/2026-08/08-31-267-after-archive-hook-fail-closed/task.json",
+        "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#267 修复 after_archive hook fail-closed Release Gate 阻塞",
+        "在 Finalizer preview context 选择前执行 official `after_archive` h",
+        "完成 contract.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#267 修复 after_archive hook fail-closed Release Gate 阻塞\n在 Finalizer preview context 选择前执行 official `after_archive` hook preflight，避免 eval-staging early return 绕过 fail-closed 检查。\n同步 canonical、installed 与平台投影，并补充 preview/execute 回归验证。\n修正 Issue Scope Ledger 的 primary/related 精确 disposition，使 Publication Review 可基于 exact candidate 继续。\n在 Finalizer preview context 选择前执行 official `after_archive` h\n完成 contract.md 相关变更"
+  }
+}

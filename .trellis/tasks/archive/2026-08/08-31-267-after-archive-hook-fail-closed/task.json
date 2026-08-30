@@ -2,10 +2,11 @@
   "id": "267-after-archive-hook-fail-closed",
   "name": "267-after-archive-hook-fail-closed",
   "title": "#267 修复 after_archive hook fail-closed Release Gate 阻塞",
-  "status": "in_progress",
+  "status": "completed",
   "branch": "codex/267-after-archive-hook-fail-closed",
   "base_branch": "main",
   "creator": "wesleywu",
   "assignee": "wesleywu",
-  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/267"
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/267",
+  "completedAt": "2026-08-31"
 }
