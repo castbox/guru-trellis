@@ -17,6 +17,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import time
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -24,6 +25,21 @@ from typing import Any, Mapping, Sequence
 
 class ParallelFinishError(RuntimeError):
     """The deterministic compatibility fixture failed."""
+
+
+DEFAULT_COMMAND_TIMEOUT_SECONDS = 300.0
+
+
+def command_timeout_seconds() -> float:
+    """Return the bounded subprocess timeout used by the fixture."""
+    raw = os.environ.get("GURU_PARALLEL_FINISH_TIMEOUT_SECONDS", "")
+    if not raw:
+        return DEFAULT_COMMAND_TIMEOUT_SECONDS
+    try:
+        value = float(raw)
+    except ValueError:
+        return DEFAULT_COMMAND_TIMEOUT_SECONDS
+    return value if value > 0 else DEFAULT_COMMAND_TIMEOUT_SECONDS
 
 
 def run(
@@ -37,9 +53,26 @@ def run(
     process_env["PYTHONDONTWRITEBYTECODE"] = "1"
     if env:
         process_env.update(env)
-    result = subprocess.run(
-        list(argv), cwd=cwd, env=process_env, text=True, capture_output=True, check=False
-    )
+    started = time.monotonic()
+    timeout = command_timeout_seconds()
+    try:
+        result = subprocess.run(
+            list(argv),
+            cwd=cwd,
+            env=process_env,
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout or ""
+        stderr = exc.stderr or ""
+        elapsed = time.monotonic() - started
+        raise ParallelFinishError(
+            f"command timed out after {timeout:.3f}s ({elapsed:.3f}s elapsed): "
+            f"{' '.join(argv)}\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        ) from exc
     if check and result.returncode != 0:
         raise ParallelFinishError(
             f"command failed ({result.returncode}): {' '.join(argv)}\n"

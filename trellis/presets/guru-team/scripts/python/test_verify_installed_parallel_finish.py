@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -20,6 +21,25 @@ def load_module():
 
 
 class InstalledParallelFinishTests(unittest.TestCase):
+    def test_run_reports_bounded_timeout_diagnostics(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            previous = os.environ.get("GURU_PARALLEL_FINISH_TIMEOUT_SECONDS")
+            os.environ["GURU_PARALLEL_FINISH_TIMEOUT_SECONDS"] = "0.01"
+            try:
+                with self.assertRaises(module.ParallelFinishError) as raised:
+                    module.run(
+                        ("/bin/sh", "-c", "sleep 1"),
+                        Path(directory),
+                    )
+            finally:
+                if previous is None:
+                    os.environ.pop("GURU_PARALLEL_FINISH_TIMEOUT_SECONDS", None)
+                else:
+                    os.environ["GURU_PARALLEL_FINISH_TIMEOUT_SECONDS"] = previous
+        self.assertIn("command timed out after 0.010s", str(raised.exception))
+        self.assertIn("/bin/sh -c sleep 1", str(raised.exception))
+
     def test_real_git_fixture_preserves_isolation_and_reachability(self) -> None:
         module = load_module()
         with tempfile.TemporaryDirectory() as directory:
