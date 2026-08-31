@@ -364,6 +364,24 @@ class TaskPublicationContractTest(unittest.TestCase):
             with self.subTest(case=name):
                 self.assertIn(expected_error, GTT.finish_summary_errors(invalid))
 
+    def test_generated_search_phrases_trim_truncation_whitespace(self) -> None:
+        title = "任务" + "x" * (59 - len("任务")) + " "
+        body = "## 变更摘要\n- 修复一个足够具体且合法的行为变更描述"
+
+        index = GTT.build_finish_summary_index(title, body, ["runtime/owner.py"])
+
+        self.assertEqual(len(index["search_terms"]["phrases"][0]), 59)
+        self.assertEqual(index["search_terms"]["phrases"][0], title.rstrip())
+        self.assertEqual(
+            GTT.finish_summary_text_errors(
+                index["search_terms"]["phrases"][0],
+                "index.search_terms.phrases[0]",
+                2,
+                120,
+            ),
+            [],
+        )
+
     class WrapperOwner:
         class WorkflowError(RuntimeError):
             def __init__(self, message: str, **_kwargs) -> None:

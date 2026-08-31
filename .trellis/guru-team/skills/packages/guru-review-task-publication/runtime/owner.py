@@ -715,6 +715,7 @@ def build_finish_summary_index(
     phrases: list[str] = []
     normalized: set[str] = set()
     for phrase in phrase_candidates:
+        phrase = phrase.strip()
         key = finish_summary_normalized_text(phrase)
         if len(phrase) >= 2 and key and key not in normalized:
             phrases.append(phrase)
