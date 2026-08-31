@@ -131,7 +131,7 @@ def _sanitize_failure_tail(value: str) -> str:
 
 def _stable_command_label(argv: Sequence[str]) -> str:
     executable = Path(str(argv[0])).name if argv else "unknown-command"
-    if executable in {"python", "python3", "resolve-python.sh"} and len(argv) > 1:
+    if (executable.startswith("python") or executable == "resolve-python.sh") and len(argv) > 1:
         for value in argv[1:]:
             candidate = Path(str(value)).name
             if candidate.endswith((".py", ".sh")):
