@@ -6,6 +6,8 @@ def _o(r):
  s=importlib.util.spec_from_file_location("finalize_owner",r/"runtime/owner.py");m=importlib.util.module_from_spec(s);assert s and s.loader;s.loader.exec_module(m);return m
 def run(package_root:Path,command:dict,argv:list[str])->dict:
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--input",required=True);p.add_argument("--owner-result",required=True)
+ for x in ("repo","base_branch","remote","title","task_name"): p.add_argument("--"+x.replace("_","-"))
+ p.add_argument("--validation",action="append")
  a=parse_arguments(p,argv);o=_o(package_root)
  def invoke_owner():
   root=o.repo_root(Path(a.root or "."));public,_=o.finalization_public_input(root,a.input);owner,path=o.finalization_gate_input(root,public,a.owner_result)

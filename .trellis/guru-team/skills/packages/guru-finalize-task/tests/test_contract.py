@@ -2227,13 +2227,34 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     invoke.run(
                         PACKAGE,
                         {"id": "invoke-guru-finalize-task"},
-                        ["--input", "input.json", "--owner-result", "gate.json"],
+                        [
+                            "--input", "input.json", "--owner-result", "gate.json",
+                            "--repo", "castbox/example", "--base-branch", "main",
+                            "--remote", "origin", "--title", "Release",
+                            "--task-name", "08-31-322", "--validation", "go-test",
+                            "--validation", "contract-tests",
+                        ],
                     ),
                     output,
                 )
             runtime.finalization_gate_input.assert_called_once_with(
                 root, public, "gate.json"
             )
+            checked_args = runtime.check_finalization_gate_result.call_args.args[1]
+            self.assertEqual(checked_args.repo, "castbox/example")
+            self.assertEqual(checked_args.base_branch, "main")
+            self.assertEqual(checked_args.remote, "origin")
+            self.assertEqual(checked_args.title, "Release")
+            self.assertEqual(checked_args.task_name, "08-31-322")
+            self.assertEqual(checked_args.validation, ["go-test", "contract-tests"])
+
+            with self.assertRaises(Exception) as raised:
+                invoke.run(
+                    PACKAGE,
+                    {"id": "invoke-guru-finalize-task"},
+                    ["--input", "input.json", "--owner-result", "gate.json", "--unknown", "x"],
+                )
+            self.assertEqual(getattr(raised.exception, "code", None), "invalid_arguments")
 
     def test_private_owner_failure_preserves_fail_closed_diagnostics(self) -> None:
         sys.path.insert(0, str(shared_runtime_parent()))
