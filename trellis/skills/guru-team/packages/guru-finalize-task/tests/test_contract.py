@@ -2078,6 +2078,42 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 "provenance_source_fetch_mismatch",
             )
 
+    def test_installed_source_fetch_falls_back_to_head_only_for_not_our_ref(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            sandbox = Path(raw)
+            source_repo = sandbox / "source"
+            source_repo.mkdir()
+            initialize_provenance_git_repo(source_repo, "castbox/guru-trellis")
+            write_provenance_apply_fixture(source_repo)
+            source_head = commit_provenance_fixture(source_repo, "source preset")
+            target = sandbox / "business"
+            target.mkdir()
+            initialize_provenance_git_repo(target, "castbox/business-repo")
+            expected = GTT.provenance_source_binding(
+                provenance_manifest("castbox/guru-trellis", source_head),
+                "castbox/business-repo",
+                "e" * 40,
+            )
+            original_run = GTT.run
+            calls: list[list[str]] = []
+
+            def fetch_with_refusal(cmd, cwd=None, check=True, env=None):
+                if cmd[:4] == ["git", "fetch", "--depth=1", "origin"]:
+                    calls.append(cmd)
+                    if cmd[-1] == source_head:
+                        return subprocess.CompletedProcess(cmd, 1, "", "fatal: couldn't find remote ref\nnot our ref")
+                    cmd = ["git", "fetch", "--depth=1", str(source_repo), source_head]
+                return original_run(cmd, cwd=cwd, check=check, env=env)
+
+            checkout = sandbox / "checkout"
+            with mock.patch.object(GTT, "run", side_effect=fetch_with_refusal):
+                GTT.prepare_provenance_extension_source_checkout(
+                    source_repo,
+                    checkout,
+                    expected,
+                )
+            self.assertEqual([call[-1] for call in calls], [source_head, "HEAD"])
+
     def test_provenance_tail_rejects_source_or_target_boundary_drift(self) -> None:
         cases = {
             "missing_apply": (

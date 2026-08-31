@@ -3690,6 +3690,12 @@ def prepare_provenance_extension_source_checkout(
             cwd=source_root,
             check=False,
         )
+        if fetch.returncode != 0 and "not our ref" in fetch.stderr.lower():
+            fetch = run(
+                ["git", "fetch", "--depth=1", "origin", "HEAD"],
+                cwd=source_root,
+                check=False,
+            )
         if fetch.returncode != 0:
             raise WorkflowError(
                 "Could not fetch the immutable extension source commit.",
