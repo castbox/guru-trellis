@@ -859,6 +859,21 @@ exit 23
             "python3",
         )
 
+    def test_matrix_run_reports_bounded_timeout_diagnostics(self) -> None:
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(
+            os.environ, {"GURU_MATRIX_COMMAND_TIMEOUT_SECONDS": "0.01"}
+        ), mock.patch.object(
+            self.matrix.subprocess,
+            "run",
+            side_effect=subprocess.TimeoutExpired(("sleep", "1"), 0.01, output="partial"),
+        ):
+            with self.assertRaises(self.matrix.MatrixError) as raised:
+                self.matrix._run(("sleep", "1"), cwd=Path(directory))
+        self.assertIn("command timed out after 0.010s", str(raised.exception))
+        self.assertEqual(raised.exception.command_label, "sleep")
+        self.assertEqual(raised.exception.exit_code, 124)
+        self.assertIn("partial", raised.exception.error_tail)
+
     def test_matrix_failure_context_distinguishes_pre_cell_and_post_stages(self) -> None:
         pre = self.matrix.matrix_failure_payload(self.matrix.MatrixError("pre"))
         self.assertEqual(pre["failure"]["stage"], "pre-matrix")

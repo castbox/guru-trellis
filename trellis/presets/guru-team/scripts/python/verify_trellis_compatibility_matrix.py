@@ -48,6 +48,7 @@ DEFAULT_TARGET_CLI = "0.6.15"
 DEFAULT_PACKAGE = "@mindfoldhq/trellis"
 FAILURE_TAIL_LIMIT = 2000
 FAILURE_STAGES = {"pre-matrix", "matrix-cell", "post-matrix"}
+DEFAULT_COMMAND_TIMEOUT_SECONDS = 600.0
 
 
 class MatrixError(RuntimeError):
@@ -79,6 +80,17 @@ class MatrixError(RuntimeError):
             exit_code=self.exit_code,
             error_tail=self.error_tail,
         )
+
+
+def command_timeout_seconds() -> float:
+    raw = os.environ.get("GURU_MATRIX_COMMAND_TIMEOUT_SECONDS", "")
+    if not raw:
+        return DEFAULT_COMMAND_TIMEOUT_SECONDS
+    try:
+        value = float(raw)
+    except ValueError:
+        return DEFAULT_COMMAND_TIMEOUT_SECONDS
+    return value if value > 0 else DEFAULT_COMMAND_TIMEOUT_SECONDS
 
 
 def _sanitize_failure_tail(value: str) -> str:
@@ -901,16 +913,30 @@ def _run(
     merged_env = os.environ.copy()
     if env:
         merged_env.update(env)
-    completed = subprocess.run(
-        list(argv),
-        cwd=str(cwd) if cwd else None,
-        env=merged_env,
-        text=True,
-        input=input_text,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        check=False,
-    )
+    timeout = command_timeout_seconds()
+    try:
+        completed = subprocess.run(
+            list(argv),
+            cwd=str(cwd) if cwd else None,
+            env=merged_env,
+            text=True,
+            input=input_text,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            check=False,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        output = exc.output or ""
+        raise MatrixError(
+            f"command timed out after {timeout:.3f}s: {_stable_command_label(argv)}",
+            command_label=_stable_command_label(argv),
+            exit_code=124,
+            error_tail=(
+                f"command timed out after {timeout:.3f}s\n"
+                f"stdout:\n{output}"
+            ),
+        ) from exc
     output = completed.stdout or ""
     if log:
         log.write_text(output, encoding="utf-8")
