@@ -3632,6 +3632,31 @@ def provenance_extension_source_checkout_errors(
         errors.append("provenance_tail_extension_source_origin_not_canonical")
     return sorted(set(errors))
 
+def provenance_tail_manifest_postimage(
+    parent: dict[str, Any],
+    binding: dict[str, str],
+) -> dict[str, Any]:
+    """Build the Finalizer-only provenance tail without reinstalling the preset."""
+    postimage = copy.deepcopy(parent)
+    source = postimage.get("source")
+    if not isinstance(source, dict):
+        raise WorkflowError(
+            "Provenance tail manifest source is missing.",
+            exit_code=2,
+            payload={"reason_code": "provenance_tail_source_missing"},
+        )
+    source.update(
+        {
+            "repo": binding["source_locator"],
+            "ref": binding["source_ref"],
+            "commit": binding["source_commit"],
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+    )
+    postimage["source"] = source
+    return postimage
+
 def prepare_provenance_extension_source_checkout(
     target_root: Path,
     source_root: Path,
@@ -3951,8 +3976,6 @@ def finalizer_pre_pr_provenance_tail_required(
     publication = finalizer_publication_identity(root, reviewed, target_repo)
     if publication["metadata_tail"] is not None:
         return False
-    if binding["mode"] == "installed":
-        return True
     source = payload["source"]
     return not (
         source.get("repo") == binding["source_locator"]
@@ -4008,31 +4031,13 @@ def prepare_provenance_metadata_tail(
                 target_repo,
                 reviewed_content_head,
             )
-            platform_args = provenance_apply_platform_args(parent)
+            # Keep the installed platform matrix fail-closed without invoking
+            # the full preset installer or changing managed files.
+            provenance_apply_platform_args(parent)
             prepare_provenance_extension_source_checkout(
                 root,
                 extension_source_checkout,
                 binding,
-            )
-            apply_script = (
-                extension_source_checkout
-                / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"
-            )
-            if not apply_script.is_file() or apply_script.is_symlink():
-                raise WorkflowError(
-                    "Canonical preset apply entry is unavailable for provenance preparation.",
-                    exit_code=2,
-                )
-            run_stdout(
-                [
-                    sys.executable,
-                    str(apply_script),
-                    "--repo",
-                    str(target_reviewed_checkout),
-                    *platform_args,
-                    "--json",
-                ],
-                cwd=extension_source_checkout,
             )
             source_errors = provenance_extension_source_checkout_errors(
                 extension_source_checkout,
@@ -4040,14 +4045,19 @@ def prepare_provenance_metadata_tail(
             )
             if source_errors:
                 raise WorkflowError(
-                    "Canonical preset apply modified the extension source checkout.",
+                    "Provenance source checkout is not clean or canonical.",
                     exit_code=2,
                     payload={"errors": source_errors},
                 )
+            postimage = provenance_tail_manifest_postimage(parent, binding)
+            write_json(
+                target_reviewed_checkout / PROVENANCE_TAIL_MANIFEST_PATH,
+                postimage,
+            )
             dirty = provenance_tail_git_status_paths(target_reviewed_checkout)
             if dirty != [PROVENANCE_TAIL_MANIFEST_PATH]:
                 raise WorkflowError(
-                    "Canonical preset apply produced changes outside the provenance manifest.",
+                    "Provenance tail producer produced changes outside the provenance manifest.",
                     exit_code=2,
                     payload={"dirty_paths": dirty},
                 )
@@ -4062,7 +4072,7 @@ def prepare_provenance_metadata_tail(
             )
             if errors:
                 raise WorkflowError(
-                    "Canonical preset apply produced invalid provenance metadata.",
+                    "Provenance tail producer produced invalid metadata.",
                     exit_code=2,
                     payload={"errors": errors},
                 )

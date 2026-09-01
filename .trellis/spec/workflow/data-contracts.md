@@ -1275,14 +1275,16 @@ mismatch, or a dirty source checkout stops before target apply or any remote
 mutation. The binding is package-private and ephemeral; it is not a public DTO,
 checkpoint, transaction field, or verifier result.
 
-The apply executable comes from `extension_source_checkout`, while `--repo`
-names `target_reviewed_checkout`. After apply, the source checkout must retain
-its exact HEAD and clean state, and the target may contain only the installed
-manifest diff. The existing field allowlist remains closed. Self-hosted
-postimage source ref/commit bind `reviewed_content_head`; installed postimage
-repo/ref/commit retain the selected immutable extension identity. The committed
-tail has one parent equal to target `reviewed_content_head`, changes only
-`.trellis/guru-team/extension.json`, and is the unique valid publication child.
+The Finalizer provenance producer reads canonical bytes from
+`extension_source_checkout` but does not invoke the full preset installer and
+does not mutate the source checkout. It may write only the installed manifest
+in `target_reviewed_checkout`. The existing field allowlist remains closed.
+Self-hosted postimage source ref/commit bind `reviewed_content_head`; installed
+postimage repo/ref/commit retain the selected immutable extension identity. A
+tail, when required, has one parent equal to target `reviewed_content_head`,
+changes only `.trellis/guru-team/extension.json`, and is the unique valid
+publication child. An installed manifest that already satisfies its immutable
+source binding requires no tail and remains published at the reviewed head.
 
 ## Review Gate Artifact
 
@@ -1651,7 +1653,7 @@ repository, remote ref, `branch_review_commit`, and local/remote reviewed-conten
 identity. It never writes verification state into the scope ledger. Missing,
 duplicate, altered, path-bound, or stale verification evidence fails closed.
 
-Before PR creation or archive, stale/dirty installed provenance may select the
+Before PR creation or archive, stale provenance may select the
 single mapped `reprepare_required` route. Its gate retains a private marker
 until the deterministic executor prepares one metadata tail in an isolated
 detached checkout and retires the old owner-private plan, Finalizer gate, and
@@ -1674,7 +1676,7 @@ or manifest changes outside the allowlist remain fail-closed boundaries.
 
 On the first current `publication_ready` preview, Finalizer classifies an exact
 existing PR before fresh provenance inference. If both the PR and remote branch
-are absent, the no-plan state remains `prepared`; a required installed
+are absent, the no-plan state remains `prepared`; a required provenance
 metadata tail maps that state directly to `reprepare_required` with
 `reason_code=provenance_metadata_tail`. Preview performs no push, PR creation,
 archive, Ready, or Issue mutation. Existing-PR recovery and its matching
@@ -1682,8 +1684,9 @@ post-bind transaction retain precedence over this inference.
 
 An unused current schema 3.0 plan with the complete seven-field Git identity may
 use the same mapped base-evolution route without a legacy gate/request. Its
-recorded provenance tail must remain structurally valid, its publication head
-must be an ancestor of the new reviewed head, and the remote branch must remain
+recorded provenance tail, when present, must remain structurally valid, its
+publication head must be an ancestor of the new reviewed head, and the remote
+branch must remain
 at or before the predecessor reviewed-content head. A remote at the predecessor
 publication tail or any later descendant proves an outbound publication side
 effect and fails closed. The task and plan remain active, unarchived, and
