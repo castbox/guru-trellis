@@ -61,7 +61,11 @@ def _workspace_boundary(args: argparse.Namespace) -> dict[str, Any]:
     config = owner.load_config(root)
     task_dir = owner.resolve_task_dir(root, args.task)
     try:
-        task_context = owner.load_task_runtime_identity(task_dir, config)
+        task_context = owner.load_task_runtime_identity(
+            task_dir,
+            config,
+            allow_rebuild=False,
+        )
     except owner.WorkflowError as exc:
         raise owner.WorkflowError(
             "Workspace boundary validation failed.",

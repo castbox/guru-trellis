@@ -503,9 +503,16 @@ return only to their declared consumers.
 
 #### 2.1 Implementation
 
-Before edits, validate:
+Before the first edit, and again immediately before every subsequent source,
+test, or task-artifact write, validate the live boundary:
 
     .trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
+
+The check is read-only at this boundary. Missing or stale task/runtime/worktree
+identity is a fail-closed stop; do not rebuild mappings, switch directories,
+stash, copy, migrate, clean, or continue writing. A `created` result from
+`guru-create-task-workspace` is required before planning or implementation may
+write anything.
 
 Read the planning artifacts, curated specs, and live diff from that worktree.
 Use the configured Trellis implement/check agents when available; their
@@ -629,9 +636,13 @@ Reprepare keeps title/body in Finalizer owner-private state while its public DTO
 
 ### Workspace and task boundary
 
-- In worktree mode, every task-local write occurs only after
-  check-workspace-boundary.sh confirms that expected workspace equals the
-  current repository root.
+- In worktree mode, every source, test, and task-local write occurs only after
+  a fresh read-only `check-workspace-boundary.sh` confirms that the expected
+  task workspace, current repository root/cwd, branch, task.json, task branch,
+  ignored runtime mappings, and live Git worktree registration still match.
+  The check must be repeated before each write, not only once when the phase
+  starts. Missing `created` evidence or any identity/conflict drift blocks the
+  write and routes to explicit recovery or re-selection.
 - Editors without an explicit working-directory option use absolute paths under
   that confirmed task worktree.
 - Task activation consumes only guru-approve-task-plan:approved.
