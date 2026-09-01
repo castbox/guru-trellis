@@ -692,7 +692,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
             )
             self.assertEqual(result["plan_digest"], plan["plan_digest"])
 
-    def test_initial_installed_preview_requires_provenance_tail_before_remote_mutation(self) -> None:
+    def test_initial_installed_preview_accepts_immutable_provenance_without_tail(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             initialize_provenance_git_repo(root, "castbox/business-repo")
@@ -781,11 +781,8 @@ class FinalizeTaskContractTests(unittest.TestCase):
             ):
                 context = GTT.finalization_preview_context(root, args, public_input)
 
-            self.assertEqual(context["transaction_state"], "reprepare_required")
-            self.assertEqual(
-                context["reprepare_reason_code"],
-                GTT.FINALIZATION_REPREPARE_PROVENANCE_TAIL,
-            )
+            self.assertEqual(context["transaction_state"], "prepared")
+            self.assertIsNone(context.get("reprepare_reason_code"))
             self.assertEqual(context["publication_mode"], "ordinary_publication")
             self.assertIsNone(context["existing_pr_recovery"])
             remote_head.assert_called_once_with(root, plan)
@@ -1771,14 +1768,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     if len(cmd) > 1
                     and cmd[1].endswith("apply_guru_team_trellis_preset.py")
                 ]
-                self.assertEqual(len(apply_calls), 1)
-                command = apply_calls[0]
-                repo_index = command.index("--repo")
-                self.assertEqual(
-                    command[repo_index + 2:-1],
-                    expected_args,
-                )
-                self.assertEqual(command[-1], "--json")
+                self.assertEqual(apply_calls, [])
                 self.assertEqual(len(GTT.worktree_records(root)), 1)
 
     def test_provenance_tail_preparation_separates_self_hosted_source_and_target(self) -> None:
@@ -1841,12 +1831,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 if len(cmd) > 1
                 and cmd[1].endswith("apply_guru_team_trellis_preset.py")
             ]
-            self.assertEqual(len(apply_calls), 1)
-            apply_cmd, source_cwd = apply_calls[0]
-            target_checkout = Path(apply_cmd[apply_cmd.index("--repo") + 1])
-            self.assertNotEqual(source_cwd, target_checkout)
-            self.assertIn("extension-source", str(source_cwd))
-            self.assertIn("target-reviewed", str(target_checkout))
+            self.assertEqual(apply_calls, [])
             self.assertEqual(len(GTT.worktree_records(root)), 1)
 
     def test_initial_provenance_reprepare_accepts_absent_remote_only(self) -> None:
@@ -1917,7 +1902,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 "provenance_reprepare_remote_not_reviewed_head",
             )
 
-    def test_provenance_tail_preparation_fetches_installed_source_by_exact_oid(self) -> None:
+    def test_installed_provenance_with_immutable_source_needs_no_tail(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             sandbox = Path(raw)
             source_repo = sandbox / "source"
@@ -1955,94 +1940,14 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     "repo": "castbox/business-repo",
                 }
             }
-            self.assertTrue(
-                GTT.finalizer_pre_pr_provenance_tail_required(target, plan)
-            )
-
-            observed: list[tuple[list[str], Path | None]] = []
-            with mock.patch.object(
-                GTT,
-                "run",
-                side_effect=local_source_fetch_runner(source_repo, observed),
-            ):
-                result = GTT.prepare_provenance_metadata_tail(
-                    target,
-                    reviewed,
-                    "castbox/business-repo",
-                )
-
-            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-            self.assertEqual(manifest["source"]["repo"], "https://github.com/castbox/guru-trellis.git")
-            self.assertEqual(manifest["source"]["ref"], source_head)
-            self.assertEqual(manifest["source"]["commit"], source_head)
-            self.assertNotEqual(source_head, reviewed)
-            self.assertEqual(
-                subprocess.run(
-                    ["git", "show", "-s", "--format=%P", result["publication_head"]],
-                    cwd=target,
-                    check=True,
-                    text=True,
-                    stdout=subprocess.PIPE,
-                ).stdout.strip(),
-                reviewed,
-            )
-            self.assertEqual(
-                subprocess.run(
-                    [
-                        "git",
-                        "diff-tree",
-                        "--no-commit-id",
-                        "--name-only",
-                        "-r",
-                        result["publication_head"],
-                    ],
-                    cwd=target,
-                    check=True,
-                    text=True,
-                    stdout=subprocess.PIPE,
-                ).stdout.splitlines(),
-                [GTT.PROVENANCE_TAIL_MANIFEST_PATH],
-            )
             self.assertFalse(
                 GTT.finalizer_pre_pr_provenance_tail_required(target, plan)
             )
-            fetch_calls = [
-                cmd
-                for cmd, _cwd in observed
-                if cmd[:4] == ["git", "fetch", "--depth=1", "origin"]
-            ]
-            self.assertEqual(
-                fetch_calls,
-                [["git", "fetch", "--depth=1", "origin", source_head]],
-            )
-            origin_calls = [
-                cmd
-                for cmd, _cwd in observed
-                if cmd[:4] == ["git", "remote", "add", "origin"]
-            ]
-            self.assertEqual(
-                origin_calls,
-                [[
-                    "git",
-                    "remote",
-                    "add",
-                    "origin",
-                    "https://github.com/castbox/guru-trellis.git",
-                ]],
-            )
-            apply_calls = [
-                (cmd, cwd)
-                for cmd, cwd in observed
-                if len(cmd) > 1
-                and cmd[1].endswith("apply_guru_team_trellis_preset.py")
-            ]
-            self.assertEqual(len(apply_calls), 1)
-            apply_cmd, source_cwd = apply_calls[0]
-            self.assertIn("extension-source", str(source_cwd))
-            self.assertIn(
-                "target-reviewed",
-                apply_cmd[apply_cmd.index("--repo") + 1],
-            )
+
+            before = manifest_path.read_bytes()
+            self.assertEqual(GTT.current_head(target), reviewed)
+            self.assertEqual(GTT.provenance_tail_git_status_paths(target), [])
+            self.assertEqual(manifest_path.read_bytes(), before)
 
     def test_installed_source_fetch_must_resolve_the_manifest_oid(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
@@ -2114,115 +2019,24 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 )
             self.assertEqual([call[-1] for call in calls], [source_head, "HEAD"])
 
-    def test_provenance_tail_rejects_source_or_target_boundary_drift(self) -> None:
-        cases = {
-            "missing_apply": (
-                "Canonical preset apply entry is unavailable for provenance preparation.",
-                None,
+    def test_provenance_tail_producer_rejects_manifest_boundary_drift(self) -> None:
+        parent = provenance_manifest("castbox/guru-trellis", "b" * 40)
+        binding = GTT.provenance_source_binding(
+            parent,
+            "castbox/guru-trellis",
+            "c" * 40,
+        )
+        postimage = GTT.provenance_tail_manifest_postimage(parent, binding)
+        postimage["unexpected"] = True
+        self.assertIn(
+            "provenance_tail_manifest_fields_outside_allowlist",
+            GTT.provenance_tail_manifest_errors(
+                parent,
+                postimage,
+                "c" * 40,
+                "castbox/guru-trellis",
             ),
-            "source_dirty": (
-                "Canonical preset apply modified the extension source checkout.",
-                None,
-            ),
-            "extra_target_path": (
-                "Canonical preset apply produced changes outside the provenance manifest.",
-                [GTT.PROVENANCE_TAIL_MANIFEST_PATH, "unexpected.txt"],
-            ),
-            "managed_byte_drift": (
-                "Canonical preset apply produced changes outside the provenance manifest.",
-                [
-                    GTT.PROVENANCE_TAIL_MANIFEST_PATH,
-                    ".trellis/spec/workflow/semantic-retrieval.md",
-                ],
-            ),
-            "managed_new_sidecar": (
-                "Canonical preset apply produced changes outside the provenance manifest.",
-                [
-                    GTT.PROVENANCE_TAIL_MANIFEST_PATH,
-                    ".trellis/spec/workflow/semantic-retrieval.md.new",
-                ],
-            ),
-            "managed_backup_sidecar": (
-                "Canonical preset apply produced changes outside the provenance manifest.",
-                [
-                    GTT.PROVENANCE_TAIL_MANIFEST_PATH,
-                    ".trellis/spec/workflow/semantic-retrieval.md.bak",
-                ],
-            ),
-            "source_repo_drift": (
-                "Canonical preset apply produced invalid provenance metadata.",
-                None,
-            ),
-            "business_head_as_source": (
-                "Canonical preset apply produced invalid provenance metadata.",
-                None,
-            ),
-        }
-        for behavior, (expected_message, expected_dirty_paths) in cases.items():
-            with self.subTest(behavior=behavior), tempfile.TemporaryDirectory() as raw:
-                sandbox = Path(raw)
-                source_repo = sandbox / "source"
-                source_repo.mkdir()
-                initialize_provenance_git_repo(source_repo, "castbox/guru-trellis")
-                if behavior == "missing_apply":
-                    (source_repo / "README.md").write_text(
-                        "source without preset apply\n",
-                        encoding="utf-8",
-                    )
-                else:
-                    write_provenance_apply_fixture(source_repo, behavior)
-                source_head = commit_provenance_fixture(source_repo, "source preset")
-                target = sandbox / "business"
-                target.mkdir()
-                initialize_provenance_git_repo(target, "castbox/business-repo")
-                manifest_path = target / GTT.PROVENANCE_TAIL_MANIFEST_PATH
-                manifest_path.parent.mkdir(parents=True)
-                manifest_path.write_text(
-                    json.dumps(
-                        provenance_manifest("castbox/guru-trellis", source_head),
-                        ensure_ascii=False,
-                        indent=2,
-                    )
-                    + "\n",
-                    encoding="utf-8",
-                )
-                if behavior == "managed_byte_drift":
-                    managed_path = (
-                        target / ".trellis/spec/workflow/semantic-retrieval.md"
-                    )
-                    managed_path.parent.mkdir(parents=True)
-                    managed_path.write_text(
-                        "managed before apply\n",
-                        encoding="utf-8",
-                    )
-                reviewed = commit_provenance_fixture(target, "reviewed target")
-                with (
-                    mock.patch.object(
-                        GTT,
-                        "run",
-                        side_effect=local_source_fetch_runner(source_repo, []),
-                    ),
-                    mock.patch.object(
-                        GTT,
-                        "commit_provenance_metadata_tail",
-                        wraps=GTT.commit_provenance_metadata_tail,
-                    ) as commit_tail,
-                ):
-                    with self.assertRaises(GTT.WorkflowError) as raised:
-                        GTT.prepare_provenance_metadata_tail(
-                            target,
-                            reviewed,
-                            "castbox/business-repo",
-                        )
-                self.assertEqual(str(raised.exception), expected_message)
-                if expected_dirty_paths is not None:
-                    self.assertEqual(
-                        raised.exception.payload["dirty_paths"],
-                        expected_dirty_paths,
-                    )
-                commit_tail.assert_not_called()
-                self.assertEqual(GTT.current_head(target), reviewed)
-                self.assertEqual(len(GTT.worktree_records(target)), 1)
+        )
 
     def test_invoke_unwraps_public_input_locator_before_gate_check(self) -> None:
         sys.path.insert(0, str(shared_runtime_parent()))

@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 325,
+      "reason": "Issue #325 的完整验收范围由本 task 覆盖。",
+      "title": "修复 Finalizer provenance reprepare 调用完整 preset apply 导致业务 PR 冲突",
+      "url": "https://github.com/castbox/guru-trellis/issues/325"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 325,
+    "reason": "Issue #325 的完整验收范围由本 task 覆盖。",
+    "title": "修复 Finalizer provenance reprepare 调用完整 preset apply 导致业务 PR 冲突",
+    "url": "https://github.com/castbox/guru-trellis/issues/325"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}
