@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"定义 workspace boundary、validation scope 与实现阶段写入前校验的项目约定。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"定义 Standard intake、Phase 2 implementation 路由及 fail-closed 过渡合同。"}
+{"file":"trellis/workflows/guru-team/workflow.md","reason":"canonical workflow 的 Phase 2 implementation 与 workspace/task boundary 入口。"}
+{"file":"trellis/skills/guru-team/packages/guru-create-task-workspace/references/contract.md","reason":"现有 task/worktree 创建与 created typed exit 的输入输出边界。"}

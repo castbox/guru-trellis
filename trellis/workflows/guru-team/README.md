@@ -761,18 +761,21 @@ Public DTO 与 tracked task artifact 不携带本机绝对路径，只有 ignore
 `workspace_mode: worktree` 下，task artifact 写入边界由 current `task.json`、当前 checkout、
 `.trellis/.runtime/guru-team/**`、`git worktree list` 和
 `check-workspace-boundary.sh --task` 推导/校验。
-在写入或校验 `planning-approval.json`、`phase2-check.json` 或
-`review-gate.json` 前，从目标 worktree 运行：
+在写入源码、测试、task artifact，或写入/校验
+`planning-approval.json`、`phase2-check.json`、`review-gate.json` 前，从目标
+worktree 重新运行：
 
 ```bash
 .trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
 ```
 
-该 validator 只提供机器事实：expected workspace、actual repo root、source checkout
+该 validator 每次调用只读当前机器事实：expected workspace、actual repo root、source checkout
 status、task worktree status、source checkout 中可疑同名 task artifact / review
 metadata，以及 fail-closed 错误。它不判断 sub-agent 是否 stale，不迁移误写 patch，也不
 清理 source checkout；这些仍由 AI/human workflow 决定。手工编辑工具不能接收显式
 working directory 时，必须使用 boundary helper 已确认的当前 task worktree 下的绝对路径。
+缺失 `created` 结果或任一 task/worktree/runtime identity 不一致时，不得重建 mapping、切换
+目录、stash、复制、迁移、清理或继续写入；必须进入明确 recovery 或重新选择 workspace。
 
 `create-task-workspace` 在 GitHub 或 worktree/task mutation boundary 重验 reviewed
 resolution、本地 decision/base/remote-tracking facts，并通过只读 `git ls-remote --heads`
