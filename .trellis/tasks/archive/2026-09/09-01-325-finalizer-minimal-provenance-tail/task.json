@@ -2,10 +2,11 @@
   "id": "09-01-325-finalizer-minimal-provenance-tail",
   "name": "09-01-325-finalizer-minimal-provenance-tail",
   "title": "#325 修复 Finalizer provenance reprepare 调用完整 preset apply 导致业务 PR 冲突",
-  "status": "in_progress",
+  "status": "completed",
   "branch": "codex/325-finalizer-minimal-provenance-tail",
   "base_branch": "main",
   "creator": "wesleywu",
   "assignee": "wesleywu",
-  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/325"
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/325",
+  "completedAt": "2026-09-01"
 }
