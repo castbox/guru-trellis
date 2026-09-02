@@ -1823,3 +1823,27 @@ delta, temporary candidate, conflict resolution, and affected validation. A
 continuity pass establishes integration readiness for that exact pair; it does
 not rewrite the prior reviewed HEAD. Required task bytes return to
 implementation, while planning or authority changes route to their real owner.
+
+## Recommended Stage Facades
+
+A semantic package may declare one recommended Happy Path facade when several
+deterministic package commands previously forced the Agent to re-read the same
+authority and manually relay intermediate locators. The facade does not change
+`judgment_mode`: the AI still completes scope, sufficiency, finding, revision,
+route, and confirmation decisions before the deterministic invocation that
+consumes them.
+
+The facade may build one process-local checked context containing current
+authority identity, normalized live facts, the already completed semantic
+result, objective validation, operation counters, and a minimal mutation or
+recovery receipt. It must not persist authorization, select a semantic exit,
+read another Skill's private checkpoint, or use a pre-mutation snapshot as
+post-mutation proof. A successful terminal projection retires facade-owned
+temporary state before returning.
+
+Existing public command IDs and schema IDs remain callable until a separate
+migration removes them. `commands.json`, `interface.json`, `SKILL.md`, wrapper,
+contract, tests, installed manifest, and all declared projections must agree on
+which entry is recommended and which entries are compatibility-only. Source
+validation rejects multiple recommended facades or a facade entrypoint outside
+the supported package runtime command surface.

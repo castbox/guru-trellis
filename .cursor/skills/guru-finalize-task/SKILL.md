@@ -34,11 +34,28 @@ no PR and no remote branch exist, a missing installed metadata tail maps the
 still-prepared plan directly to `reprepare_required` before push, PR creation,
 archive, Ready, or Issue mutation.
 
-Execute the semantic profile in order: preview, AI review, one exact bounded
-side-effect confirmation when required, gate record/check, deterministic
-transition, and exactly one typed exit. Unknown, multiple, retired, stale, or
-unmapped inputs and exits fail closed. Retired verification re-entry input
-requires a fresh current Publication result and full Finalizer reprepare.
+The unique recommended Happy Path is:
+
+1. Run `preview-finalization` once and present its exact side-effect plan.
+2. Complete the AI review and obtain a clear dialogue-local confirmation for
+   that preview's `confirmation_identity`; do not persist the reply.
+3. Run `finalize-task-happy-path --input ... --review-input ...
+   --confirmed-preview-sha256 ...` once.
+
+The facade records and checks the completed AI review, executes the current
+transaction, and internally continues only mapped same-plan provenance/archive
+reprepare, existing-PR adoption, resumable transaction recovery, and terminal
+output-loss recovery. A scope, repository/base/head authority, reviewed commit,
+PR title/body, close-Issue set, publication mode, or side-effect-set change
+returns a stable exit and requires a new preview and confirmation. The digest
+identifies the plan only; it is not authorization and is never persisted.
+
+`record-finalization-gate`, `check-finalization-gate`,
+`execute-finalization-transition`, and `invoke-guru-finalize-task` remain
+compatibility, focused-test, diagnostic, and recovery commands. Unknown,
+multiple, retired, stale, or unmapped inputs and exits fail closed. Retired
+verification re-entry input requires a fresh current Publication result and
+full Finalizer reprepare.
 An already Ready same-plan transaction is a terminal read-only recovery: live
 facts are revalidated and the current Merge DTO is materialized without
 repeating any Git or GitHub mutation.

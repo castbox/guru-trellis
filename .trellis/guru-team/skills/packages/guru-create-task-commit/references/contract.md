@@ -72,6 +72,38 @@ ambiguous.
 
 ## Validation And Execution
 
+### Recommended Happy Path Facade 1.0
+
+The unique recommended normal path is one
+`scripts/prepare-task-commit.sh` call followed, after the unchanged action is
+confirmed in the current conversation, by one
+`scripts/invoke-happy-path-v1.sh` call. Its stable command id is
+`invoke-guru-create-task-commit-happy-path-v1`. The facade accepts only the
+prepared package-owned candidate locator; it never accepts confirmation,
+authorization, a selected exit, message authoring, or replacement Git facts.
+
+The facade reuses the existing exact executor directly. It does not call the
+compatibility checker first because the executor already performs the same
+authoritative candidate validation at the mutation boundary. It then projects
+the executor's actual result through the existing public output schemas. Thus
+the normal Agent path is two package invocations rather than prepare, check,
+create, and legacy projection, while preserving one pre-confirmation prepare
+and one post-confirmation authoritative validation.
+
+After a successful ref mutation and executor cleanup, the facade writes one
+minimal ignored `task_commit_happy_path_result` receipt. The receipt binds the
+exact candidate locator, task/base/ref identity, parent, commit tree, and raw
+message digest. Retrying the same facade locator after stdout loss performs
+only live immutable-Git verification and returns the same `committed` DTO; it
+does not run hooks, create a commit, or update a ref again. A changed ref,
+parent, tree, or message fails closed. The next complete prepare for the same
+task retires the previous receipt before creating its new candidate.
+
+`check-task-commit-plan.sh`, `create-task-commit.sh`, and `invoke.sh` remain
+stable compatibility/testing/diagnostic entries. Legacy callers may keep their
+existing orchestration during migration; the facade does not alter their ids,
+arguments, or output semantics.
+
 `scripts/prepare-task-commit.sh` canonicalizes and validates candidate 5.0
 before any required confirmation. `scripts/check-task-commit-plan.sh` repeats
 objective validation immediately before execution. `scripts/create-task-commit.sh` repeats

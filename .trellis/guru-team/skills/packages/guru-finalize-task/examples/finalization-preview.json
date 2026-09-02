@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "status": "ok",
+  "side_effects": false,
+  "input_locator": "examples/public-publication-ready-input.json",
+  "profile": "publication_ready",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/07-26-174-task-finalization",
+  "plan_ref": "finalization:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "closeout_plan": {},
+  "closeout_plan_bytes_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "closeout_plan_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "transaction_state": "prepared",
+  "publication_status": "current",
+  "publication_stale_reason": null,
+  "expected_actions": [
+    "content_pushed",
+    "draft_bound",
+    "projection_validated",
+    "archive_moved",
+    "archive_pushed",
+    "ready"
+  ],
+  "publication_mode": "ordinary_publication",
+  "existing_pr_recovery": null,
+  "confirmation_identity": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+}

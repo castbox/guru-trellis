@@ -14,6 +14,13 @@ def _owner(package_root: Path):
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--root")
+    if command["id"] == "watch-task-pr-checks":
+        parser.add_argument("--repo", required=True)
+        parser.add_argument("--pull-request", required=True, type=int)
+        parser.add_argument("--expected-head", required=True)
+        parser.add_argument("--timeout-seconds", type=int, default=1800)
+        parser.add_argument("--interval-seconds", type=int, default=10)
+        return _owner(package_root).cmd_watch_task_pr_checks(parser.parse_args(argv))
     parser.add_argument("--input", required=True)
     parser.add_argument("--gate")
     values = parser.parse_args(argv)

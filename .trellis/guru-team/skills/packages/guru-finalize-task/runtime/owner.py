@@ -11822,6 +11822,8 @@ def finalization_current_archived_context(
         "publication_branch_review_commit": transaction["branch_review_commit"],
         "reprepare_reason_code": None,
         "verification": None,
+        "publication_mode": str(transaction.get("mode") or "ordinary_publication"),
+        "existing_pr_recovery": copy.deepcopy(transaction.get("adopted_pr")),
     }
 
 def finalization_current_terminal_context(
@@ -11978,6 +11980,8 @@ def finalization_current_terminal_context(
         "publication_branch_review_commit": identity["branch_review_commit"],
         "reprepare_reason_code": None,
         "verification": None,
+        "publication_mode": "ordinary_publication",
+        "existing_pr_recovery": None,
     }
 
 def finalization_preview_context(
@@ -12276,9 +12280,77 @@ def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     public_input, input_locator = finalization_public_input(root, args.input)
     context = finalization_preview_context(root, args, public_input)
+    return finalization_preview_receipt(root, public_input, input_locator, context)
+
+
+def finalization_confirmation_projection(
+    public_input: dict[str, Any],
+    context: dict[str, Any],
+) -> dict[str, Any] | None:
+    plan = context.get("plan")
+    if not isinstance(plan, dict):
+        return None
+    publication_mode = str(
+        context.get("publication_mode")
+        or (
+            "existing_pr_recovery"
+            if isinstance(context.get("existing_pr_recovery"), dict)
+            else "ordinary_publication"
+        )
+    )
+    side_effects = (
+        [
+            "bind_existing_pr_transaction",
+            "push_or_preserve_exact_publication_head",
+            "converge_or_preserve_pr_metadata",
+            "archive",
+            "push_archive",
+            "mark_or_preserve_ready",
+            "verify_three_way_head",
+        ]
+        if publication_mode == "existing_pr_recovery"
+        else [
+            "push_exact_publication_head",
+            "create_draft_pr",
+            "archive",
+            "push_archive",
+            "mark_ready",
+            "verify_three_way_head",
+        ]
+    )
+    return {
+        "schema_version": "1.0",
+        "task_ref": str(public_input.get("task_ref") or plan["task"]["active_locator"]),
+        "repo_ref": plan["git"]["repo"],
+        "base_branch": plan["git"]["base_branch"],
+        "head_branch": plan["git"]["head_branch"],
+        "branch_review_commit": plan["git"]["branch_review_commit"],
+        "pr_title": plan["publish"]["title"],
+        "pr_body": plan["publish"]["body"],
+        "close_issues": list(plan["review"]["close_issues_reviewed"]),
+        "publication_mode": publication_mode,
+        "side_effects": side_effects,
+    }
+
+
+def finalization_confirmation_identity(
+    public_input: dict[str, Any],
+    context: dict[str, Any],
+) -> str | None:
+    projection = finalization_confirmation_projection(public_input, context)
+    return canonical_json_sha256(projection) if projection is not None else None
+
+
+def finalization_preview_receipt(
+    root: Path,
+    public_input: dict[str, Any],
+    input_locator: str,
+    context: dict[str, Any],
+) -> dict[str, Any]:
     plan = context["plan"]
     if plan is None:
-        return {
+        receipt = {
+            "schema_version": "1.0",
             "status": "ok",
             "side_effects": False,
             "input_locator": input_locator,
@@ -12298,42 +12370,72 @@ def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
             "expected_actions": [],
             "publication_mode": "ordinary_publication",
             "existing_pr_recovery": None,
+            "confirmation_identity": None,
         }
-    return {
-        "status": "ok",
-        "side_effects": False,
-        "input_locator": input_locator,
-        "profile": public_input["profile"],
-        "mode": public_input["mode"],
-        "task_ref": public_input["task_ref"],
-        "plan_ref": context["plan_ref"],
-        "closeout_plan": plan,
-        "closeout_plan_bytes_sha256": hashlib.sha256(
-            closeout_json_artifact_bytes(plan)
-        ).hexdigest(),
-        "closeout_plan_digest": plan["plan_digest"],
-        "branch_review_commit": plan["git"]["branch_review_commit"],
-        "transaction_state": context["transaction_state"],
-        "publication_mode": context.get("publication_mode", "ordinary_publication"),
-        "existing_pr_recovery": copy.deepcopy(context.get("existing_pr_recovery")),
-        "expected_actions": (
-            [
-                "bind_existing_pr_transaction",
-                "push_exact_publication_head"
-                if context.get("existing_pr_recovery", {}).get("push_required")
-                else "preserve_existing_remote_head",
-                "converge_pr_metadata"
-                if context.get("existing_pr_recovery", {}).get("metadata_update_required")
-                else "preserve_current_pr_metadata",
-                "archive",
-                "push_archive",
-                context.get("existing_pr_recovery", {}).get("ready_action"),
-                "verify_three_way_head",
-            ]
-            if context.get("existing_pr_recovery") is not None
-            else list(CLOSEOUT_TRANSITIONS[1:])
-        ),
-    }
+    else:
+        receipt = {
+            "schema_version": "1.0",
+            "status": "ok",
+            "side_effects": False,
+            "input_locator": input_locator,
+            "profile": public_input["profile"],
+            "mode": public_input["mode"],
+            "task_ref": public_input["task_ref"],
+            "plan_ref": context["plan_ref"],
+            "closeout_plan": plan,
+            "closeout_plan_bytes_sha256": hashlib.sha256(
+                closeout_json_artifact_bytes(plan)
+            ).hexdigest(),
+            "closeout_plan_digest": plan["plan_digest"],
+            "branch_review_commit": plan["git"]["branch_review_commit"],
+            "transaction_state": context["transaction_state"],
+            "publication_status": context["publication_status"],
+            "publication_stale_reason": context["publication_stale_reason"],
+            "publication_mode": context.get("publication_mode", "ordinary_publication"),
+            "existing_pr_recovery": copy.deepcopy(context.get("existing_pr_recovery")),
+            "expected_actions": (
+                [
+                    "bind_existing_pr_transaction",
+                    "push_exact_publication_head"
+                    if context.get("existing_pr_recovery", {}).get("push_required")
+                    else "preserve_existing_remote_head",
+                    "converge_pr_metadata"
+                    if context.get("existing_pr_recovery", {}).get("metadata_update_required")
+                    else "preserve_current_pr_metadata",
+                    "archive",
+                    "push_archive",
+                    context.get("existing_pr_recovery", {}).get("ready_action"),
+                    "verify_three_way_head",
+                ]
+                if context.get("existing_pr_recovery") is not None
+                else list(CLOSEOUT_TRANSITIONS[1:])
+            ),
+            "confirmation_identity": finalization_confirmation_identity(
+                public_input,
+                context,
+            ),
+        }
+    errors: list[str] = []
+    schema = skill_read_schema(
+        finalization_package_root(root) / "schemas/finalization-preview-1.0.schema.json",
+        "task finalization preview receipt",
+        errors,
+    )
+    if isinstance(schema, dict):
+        errors.extend(
+            skill_json_schema_validation_errors(
+                receipt,
+                schema,
+                "task finalization preview receipt",
+            )
+        )
+    if errors or not isinstance(schema, dict):
+        raise WorkflowError(
+            "Task finalization preview receipt is invalid.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return receipt
 
 def finalization_output_contract(
     root: Path,
@@ -12607,6 +12709,25 @@ def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
     public_input, _ = finalization_public_input(root, args.input)
     reviewed = finalization_semantic_review_input(root, args.review_input)
     context = finalization_preview_context(root, args, public_input)
+    return finalization_record_gate_result(
+        root,
+        public_input,
+        reviewed,
+        context,
+        dry_run=bool(getattr(args, "dry_run", False)),
+        include_private=False,
+    )
+
+
+def finalization_record_gate_result(
+    root: Path,
+    public_input: dict[str, Any],
+    reviewed: dict[str, Any],
+    context: dict[str, Any],
+    *,
+    dry_run: bool,
+    include_private: bool,
+) -> dict[str, Any]:
     finalization_validate_route(
         root,
         public_input,
@@ -12650,16 +12771,20 @@ def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
     committed_recovery = (
         context["transaction_state"] in FINALIZATION_COMMITTED_RECOVERY_STATES
     )
-    if not getattr(args, "dry_run", False) and not committed_recovery:
+    if not dry_run and not committed_recovery:
         write_json(artifact_path, gate)
-    return {
+    result = {
         "status": "ok",
         "artifact_path": str(artifact_path),
         "typed_exit": gate["route"]["typed_exit"],
         "plan_ref": context["plan_ref"],
         "plan_digest": plan["plan_digest"] if plan is not None else None,
-        "dry_run": bool(getattr(args, "dry_run", False)),
+        "dry_run": dry_run,
     }
+    if include_private:
+        result["gate"] = gate
+        result["gate_path"] = artifact_path
+    return result
 
 def finalization_gate_input(
     root: Path,
@@ -12789,14 +12914,33 @@ def check_finalization_gate_result(
     *,
     allow_pending_transition: bool = False,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
+    preview_args = copy.copy(args)
+    preview_args._finalization_checked_gate = gate
+    context = finalization_preview_context(root, preview_args, public_input)
+    return check_finalization_gate_context(
+        root,
+        public_input,
+        gate,
+        gate_path,
+        context,
+        allow_pending_transition=allow_pending_transition,
+    )
+
+
+def check_finalization_gate_context(
+    root: Path,
+    public_input: dict[str, Any],
+    gate: dict[str, Any],
+    gate_path: Path,
+    context: dict[str, Any],
+    *,
+    allow_pending_transition: bool = False,
+) -> tuple[dict[str, Any], dict[str, Any]]:
     errors = skill_json_schema_validation_errors(
         gate,
         finalization_gate_schema(root),
         "task finalization gate",
     )
-    preview_args = copy.copy(args)
-    preview_args._finalization_checked_gate = gate
-    context = finalization_preview_context(root, preview_args, public_input)
     transition_gate = task_finalization_transition_path(root, context["task_dir"])
     if (
         gate_path.resolve() == transition_gate.resolve()
@@ -12976,18 +13120,13 @@ def finalization_gate_with_ready_for_merge_output(
         )
     return updated
 
-def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, Any]:
-    root = repo_root(Path(args.root or os.getcwd()))
-    public_input, _ = finalization_public_input(root, args.input)
-    gate, gate_path = finalization_gate_input(root, public_input, args.gate)
-    gate, context = check_finalization_gate_result(
-        root,
-        args,
-        public_input,
-        gate,
-        gate_path,
-        allow_pending_transition=True,
-    )
+def execute_finalization_transition_result(
+    root: Path,
+    args: argparse.Namespace,
+    public_input: dict[str, Any],
+    gate: dict[str, Any],
+    context: dict[str, Any],
+) -> dict[str, Any]:
     exit_id = gate["route"]["typed_exit"]
     task_dir = context["task_dir"]
     if exit_id == "reprepare_required":
@@ -13247,6 +13386,27 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
         "typed_exit": exit_id,
         "output": copy.deepcopy(gate["route"]["output"]),
     }
+
+
+def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    public_input, _ = finalization_public_input(root, args.input)
+    gate, gate_path = finalization_gate_input(root, public_input, args.gate)
+    gate, context = check_finalization_gate_result(
+        root,
+        args,
+        public_input,
+        gate,
+        gate_path,
+        allow_pending_transition=True,
+    )
+    return execute_finalization_transition_result(
+        root,
+        args,
+        public_input,
+        gate,
+        context,
+    )
 
 def context_sort(values: set[str] | list[str]) -> list[str]:
     return sorted(set(values), key=lambda item: item.encode("utf-8"))

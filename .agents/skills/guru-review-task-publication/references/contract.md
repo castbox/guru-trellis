@@ -1,5 +1,33 @@
 # Task Publication Review Contract
 
+## Recommended Happy Path
+
+The only recommended normal invocation is the versioned package command
+`review-task-publication` through `scripts/review-task-publication.sh`:
+
+```bash
+scripts/review-task-publication.sh \
+  --root <repository> \
+  --input <public-input.json> \
+  --semantic-result <ai-completed-publication-result.json>
+```
+
+The AI completes the ten-dimension semantic review before this call. The
+facade validates that the semantic result belongs to the exact public profile,
+task, reviewed commit, intent, and stale reason; then it performs the existing
+record, objective check, public projection, and checkpoint retirement in one
+process. Its `TaskPublicationInvocationContext` is invocation-local only: it
+reuses one objective Publication snapshot and one checked owner result between
+record and check, is never persisted or exposed in the public DTO, and is not
+semantic authority.
+
+The facade preserves the existing `ready`, `return_to_task_work`, and `blocked`
+outputs. Metadata-only revision remains inside the AI owner loop. Reviewed
+content, durable docs, task, ledger, or publication metadata drift still fails
+the existing bindings or returns through the AI-authored current route; the
+facade never selects or changes that route. The legacy record/check/invoke
+commands remain supported for compatibility, tests, and bounded diagnosis.
+
 ## Structured invocation diagnostics
 
 Recorder, checker, invocation, and dry-run use one sanitized owner-error

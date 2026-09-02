@@ -176,6 +176,129 @@
       "runtime_role": "execute"
     },
     {
+      "id": "complete-task-pr-merge",
+      "owner": "guru-merge-task-pr",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Ready-for-merge input.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--review-input",
+          "required": false,
+          "kind": "json",
+          "description": "Completed semantic review for a new confirmed transaction; omit only for exact recovery.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--gate",
+          "required": false,
+          "kind": "string",
+          "description": "Exact private gate locator for recovery.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "merge_precondition_failed",
+        "internal_error"
+      ],
+      "side_effect": "github_write",
+      "schema_bindings": [
+        "schemas/public-ready-for-merge-input-2.0.schema.json",
+        "schemas/task-pr-merge-gate-2.0.schema.json"
+      ],
+      "validator_id": "merge_happy_path",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "watch-task-pr-checks",
+      "owner": "guru-merge-task-pr",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--repo",
+          "required": true,
+          "kind": "string",
+          "description": "Exact owner/repository identity.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--pull-request",
+          "required": true,
+          "kind": "string",
+          "description": "Positive pull request number.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--expected-head",
+          "required": true,
+          "kind": "string",
+          "description": "Expected immutable PR head SHA.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--timeout-seconds",
+          "required": false,
+          "kind": "string",
+          "description": "Non-negative external CI wait budget in seconds.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--interval-seconds",
+          "required": false,
+          "kind": "string",
+          "description": "Positive polling interval in seconds.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "merge_precondition_failed",
+        "internal_error"
+      ],
+      "side_effect": "github_read",
+      "schema_bindings": [
+        "schemas/check-watcher-result.schema.json"
+      ],
+      "validator_id": "required_checks_watcher",
+      "runtime_role": "check"
+    },
+    {
       "id": "invoke-task-pr-merge",
       "owner": "guru-merge-task-pr",
       "entrypoint": "runtime/invoke.py",

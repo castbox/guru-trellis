@@ -606,6 +606,204 @@ class TaskPublicationContractTest(unittest.TestCase):
         self.assertEqual(raised.exception.code, "internal_error")
         self.assertTrue(self.last_wrapper_checkpoint.is_file())
 
+    class FacadeContext:
+        def __init__(self, root: Path, task_ref: str) -> None:
+            self.task_dir = root / task_ref
+            self.checked_owner_result = None
+            self.operation_counts = {}
+
+        def count(self, operation: str) -> None:
+            self.operation_counts[operation] = self.operation_counts.get(operation, 0) + 1
+
+    class FacadeOwner:
+        class WorkflowError(RuntimeError):
+            def __init__(self, message: str, *, payload=None, **_kwargs) -> None:
+                super().__init__(message)
+                self.payload = payload or {}
+
+        def __init__(self, root: Path, owner_result: dict, checkpoint: Path) -> None:
+            self.root = root
+            self.owner_result = owner_result
+            self.checkpoint = checkpoint
+            self.record_calls = 0
+            self.check_calls = 0
+            self.context = None
+            outer = self
+
+            class ContextFactory:
+                @staticmethod
+                def create(context_root: Path, task_ref: str):
+                    outer.context = TaskPublicationContractTest.FacadeContext(
+                        context_root,
+                        task_ref,
+                    )
+                    return outer.context
+
+            self.TaskPublicationInvocationContext = ContextFactory
+
+        def repo_root(self, _path: Path) -> Path:
+            return self.root
+
+        @staticmethod
+        def read_json(path: Path) -> dict:
+            return json.loads(path.read_text(encoding="utf-8"))
+
+        @staticmethod
+        def skill_json_loads(value: str, _label: str) -> dict:
+            return json.loads(value)
+
+        def cmd_record_task_publication_review(self, _args, *, invocation_context) -> dict:
+            self.record_calls += 1
+            invocation_context.checked_owner_result = copy.deepcopy(self.owner_result)
+            self.checkpoint.parent.mkdir(parents=True, exist_ok=True)
+            self.checkpoint.write_text(json.dumps(self.owner_result), encoding="utf-8")
+            invocation_context.count("semantic.record")
+            invocation_context.count("objective.check")
+            return copy.deepcopy(self.owner_result)
+
+        def cmd_check_task_publication_review(self, _args, *, invocation_context) -> dict:
+            self.check_calls += 1
+            invocation_context.count("checkpoint.verify")
+            return {"owner_result": copy.deepcopy(invocation_context.checked_owner_result)}
+
+        def task_publication_path(self, _root: Path, _task: Path) -> Path:
+            return self.checkpoint
+
+    def run_happy_path_facade(
+        self,
+        owner_result: dict,
+        *,
+        semantic_overrides: dict | None = None,
+    ) -> tuple[dict, "TaskPublicationContractTest.FacadeOwner"]:
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name)
+        public = {
+            "profile": "publication_review",
+            "mode": "workflow",
+            "task_ref": owner_result["task_ref"],
+            "branch_review_commit": owner_result["branch_review_commit"],
+            "review_intent": "initial_review",
+        }
+        semantic = {
+            "profile": public["profile"],
+            "mode": public["mode"],
+            "review_intent": public["review_intent"],
+            "pr_payload": copy.deepcopy(owner_result["pr_payload"]),
+            "candidate_classifications": copy.deepcopy(
+                owner_result["candidate_classifications"]
+            ),
+            "dimensions": copy.deepcopy(owner_result["dimensions"]),
+            "findings": copy.deepcopy(owner_result["findings"]),
+            "conclusions": copy.deepcopy(owner_result["conclusions"]),
+            "route": copy.deepcopy(owner_result["route"]),
+        }
+        semantic.update(semantic_overrides or {})
+        public_path = root / "public.json"
+        semantic_path = root / "semantic.json"
+        public_path.write_text(json.dumps(public), encoding="utf-8")
+        semantic_path.write_text(json.dumps(semantic), encoding="utf-8")
+        checkpoint = root / "owner/pr-readiness.json"
+        fake_owner = self.FacadeOwner(root, owner_result, checkpoint)
+        with mock.patch.object(PUBLIC_WRAPPER, "_owner", return_value=fake_owner):
+            output = PUBLIC_WRAPPER.run(
+                PACKAGE,
+                {"id": "review-task-publication"},
+                [
+                    "--root",
+                    str(root),
+                    "--input",
+                    str(public_path),
+                    "--semantic-result",
+                    str(semantic_path),
+                ],
+            )
+        return output, fake_owner
+
+    def test_happy_path_facade_projects_three_exits_with_one_record_and_check(
+        self,
+    ) -> None:
+        cases = (
+            ("ready", copy.deepcopy(self.readiness_example)),
+            ("return_to_task_work", self.return_payload()),
+            ("blocked", self.blocked_payload()),
+        )
+        for exit_id, owner_result in cases:
+            with self.subTest(exit=exit_id):
+                output, fake_owner = self.run_happy_path_facade(owner_result)
+                self.assertEqual(output["exit_id"], exit_id)
+                self.assertEqual(fake_owner.record_calls, 1)
+                self.assertEqual(fake_owner.check_calls, 1)
+                self.assertEqual(
+                    fake_owner.context.operation_counts,
+                    {
+                        "semantic.record": 1,
+                        "objective.check": 1,
+                        "checkpoint.verify": 1,
+                        "public.project": 1,
+                    },
+                )
+                self.assertFalse(fake_owner.checkpoint.exists())
+
+    def test_happy_path_facade_rejects_semantic_result_for_another_invocation(
+        self,
+    ) -> None:
+        from runtime.io import CommandError
+
+        with self.assertRaises(CommandError) as raised:
+            self.run_happy_path_facade(
+                copy.deepcopy(self.readiness_example),
+                semantic_overrides={"review_intent": "metadata_revision_review"},
+            )
+        self.assertEqual(raised.exception.code, "publication_input_invalid")
+
+    def test_invocation_context_reuses_one_objective_snapshot(self) -> None:
+        context = GTT.TaskPublicationInvocationContext(
+            root=Path("/repo"),
+            config={},
+            task_dir=Path("/repo/.trellis/tasks/task"),
+            task_context={},
+        )
+        invocation = {
+            "task_ref": ".trellis/tasks/task",
+            "branch_review_commit": "a" * 40,
+            "pr_payload": {"title": "标题", "body": "正文"},
+        }
+        snapshot = ({}, [], {}, {})
+        with mock.patch.object(
+            GTT,
+            "task_publication_entry_precondition_bindings",
+            return_value=snapshot,
+        ) as capture:
+            self.assertIs(context.entry_bindings(invocation), snapshot)
+            self.assertIs(context.entry_bindings(copy.deepcopy(invocation)), snapshot)
+        capture.assert_called_once()
+        self.assertEqual(context.operation_counts, {"publication.snapshot": 1})
+
+    def test_invocation_context_does_not_reuse_changed_publication_metadata(self) -> None:
+        context = GTT.TaskPublicationInvocationContext(
+            root=Path("/repo"),
+            config={},
+            task_dir=Path("/repo/.trellis/tasks/task"),
+            task_context={},
+        )
+        invocation = {
+            "task_ref": ".trellis/tasks/task",
+            "branch_review_commit": "a" * 40,
+            "pr_payload": {"title": "标题", "body": "正文"},
+        }
+        with mock.patch.object(
+            GTT,
+            "task_publication_entry_precondition_bindings",
+            return_value=({}, [], {}, {}),
+        ) as capture:
+            context.entry_bindings(invocation)
+            changed = copy.deepcopy(invocation)
+            changed["pr_payload"]["body"] = "修订正文"
+            context.entry_bindings(changed)
+        self.assertEqual(capture.call_count, 2)
+        self.assertEqual(context.operation_counts, {"publication.snapshot": 2})
+
     def test_provenance_tail_accepts_only_semantic_spec_managed_hash(self) -> None:
         head = "a" * 40
         before = {
@@ -886,6 +1084,53 @@ class TaskPublicationContractTest(unittest.TestCase):
             profiles[1]["schema"]["schema_id"],
             "guru-production-review-task-publication-input-publication-review-stale-3.0",
         )
+
+    def test_one_recommended_happy_path_keeps_legacy_command_budget(self) -> None:
+        commands = json.loads((PACKAGE / "commands.json").read_text(encoding="utf-8"))[
+            "commands"
+        ]
+        by_id = {item["id"]: item for item in commands}
+        self.assertEqual(
+            self.interface["public_contracts"]["invocation"]["wrapper"],
+            "scripts/review-task-publication.sh",
+        )
+        self.assertEqual(
+            self.interface["public_contracts"]["invocation"]["example_argv"],
+            [
+                "--input",
+                "examples/public-publication-review-input.json",
+                "--semantic-result",
+                "examples/public-publication-review-authoring.json",
+            ],
+        )
+        self.assertEqual(
+            by_id["review-task-publication"]["validator_id"],
+            "publication_happy_path",
+        )
+        legacy = {
+            "record-task-publication-review",
+            "check-task-publication-review",
+            "invoke-guru-review-task-publication",
+        }
+        self.assertTrue(legacy <= set(by_id))
+        legacy_command_invocations = len(legacy)
+        happy_path_command_invocations = 1
+        reduction = (
+            legacy_command_invocations - happy_path_command_invocations
+        ) / legacy_command_invocations
+        self.assertGreaterEqual(reduction, 0.5)
+        legacy_complete_snapshot_operations = (
+            "record.preflight",
+            "record.validation",
+            "check.validation",
+            "invoke.recheck",
+        )
+        legacy_complete_snapshot_reads = len(legacy_complete_snapshot_operations)
+        happy_path_complete_snapshot_reads = 1
+        snapshot_reduction = (
+            legacy_complete_snapshot_reads - happy_path_complete_snapshot_reads
+        ) / legacy_complete_snapshot_reads
+        self.assertGreaterEqual(snapshot_reduction, 0.7)
 
     def test_stale_profile_contains_only_direct_reentry_inputs(self) -> None:
         schema = json.loads(
@@ -1504,7 +1749,10 @@ class TaskPublicationContractTest(unittest.TestCase):
                 continue
             if layout not in {"canonical", "installed-shared"}:
                 with self.subTest(layout=layout, projection="public-only"):
-                    self.assertTrue(os.access(package_root / "scripts/invoke.sh", os.X_OK))
+                    public_wrapper = self.interface["public_contracts"]["invocation"][
+                        "wrapper"
+                    ]
+                    self.assertTrue(os.access(package_root / public_wrapper, os.X_OK))
                     for validator_id in validator_ids:
                         self.assertFalse(
                             (package_root / validators[validator_id]["command"]).exists()

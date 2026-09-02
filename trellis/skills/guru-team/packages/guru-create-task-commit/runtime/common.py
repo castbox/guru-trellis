@@ -97,6 +97,13 @@ def candidate_path(repo,td):
  existing=sorted(root.glob("[0-9][0-9][0-9].json"))
  if len(existing)>1:raise CommandError("stale_identity","candidate","Resolve ambiguous private candidates.",3)
  return (existing[0] if existing else root/"001.json"),(existing[0].stem if existing else "001")
+def canonical_candidate_locator(repo,value):
+ path=Path(str(value or ""));path=path if path.is_absolute() else repo/path
+ try:relative=path.resolve().relative_to((repo/".trellis/.runtime/guru-team/task-commit-plans").resolve())
+ except ValueError as exc:raise CommandError("unsafe_path","candidate_artifact","Use the candidate locator returned by prepare-task-commit.") from exc
+ if len(relative.parts)!=2 or not re.fullmatch(r"[0-9]{3}\.json",relative.name):raise CommandError("unsafe_path","candidate_artifact","Use the candidate locator returned by prepare-task-commit.")
+ return path,relative.as_posix(),relative.parent.name,relative.stem
+def commit_result_path(repo,task_key,sequence):return repo/".trellis/.runtime/guru-team/task-commit-results"/task_key/f"{sequence}.json"
 def build_candidate(package_root,repo,public,authoring):
  profile=public.get("profile");schemas={"initial_commit":"public-initial-commit-input.schema.json","revision_reentry":"public-revision-reentry-input.schema.json","finding_fix_commit":"public-finding-fix-commit-input.schema.json","recovery_resume":"public-recovery-resume-input.schema.json"}
  if profile not in schemas:raise CommandError("schema_mismatch","input.profile","Use one declared task commit profile.")
@@ -122,7 +129,10 @@ def build_candidate(package_root,repo,public,authoring):
  if not isinstance(review,dict) or review.get("status") not in {"passed","revision-required","blocked"} or not isinstance(review.get("evidence"),list) or not review["evidence"]:raise CommandError("schema_mismatch","ai_review","Provide the completed AI review.")
  base=str(task.get("base_branch") or "main");base_ref=f"origin/{base}" if git(repo,"rev-parse","--verify",f"origin/{base}",check=False).returncode==0 else base
  candidate={"$schema":"https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json","schema_version":"5.0","skill_id":"guru-create-task-commit","sequence":sequence,"task":{"id":task["id"],"path":public["task_ref"],"status":"in_progress","branch":task["branch"]},"git":{"base_branch":base,"base_ref":base_ref,"pre_commit_head":git(repo,"rev-parse","HEAD").stdout.strip(),"phase2_commit_anchor":public["phase2_commit_anchor"]},"dirty_snapshot":snapshot,"path_classifications":sorted(classifications,key=lambda x:x["path"]),"exact_stage_paths":sorted(exact),"message":canonical_message(authoring.get("message") if isinstance(authoring.get("message"),dict) else {},issue),"ai_review":{"status":review["status"],"summary":normalize(review.get("summary"),"ai_review.summary"),"evidence":[normalize(x,"ai_review.evidence") for x in review["evidence"]]}}
- validate_candidate(package_root,repo,candidate);cp.write_text(json.dumps(candidate,ensure_ascii=False,indent=2)+"\n");return cp,candidate
+ validate_candidate(package_root,repo,candidate);cp.write_text(json.dumps(candidate,ensure_ascii=False,indent=2)+"\n");receipt=commit_result_path(repo,td.name,sequence);receipt.unlink(missing_ok=True)
+ try:receipt.parent.rmdir()
+ except OSError:pass
+ return cp,candidate
 def validate_candidate(package_root,repo,c):
  validate(package_root,c)
  if git(repo,"rev-parse","HEAD").stdout.strip()!=c["git"]["pre_commit_head"] or git(repo,"rev-parse","--abbrev-ref","HEAD").stdout.strip()!=c["task"]["branch"]:raise CommandError("stale_identity","git.pre_commit_head","Reprepare candidate from current branch HEAD.",3)

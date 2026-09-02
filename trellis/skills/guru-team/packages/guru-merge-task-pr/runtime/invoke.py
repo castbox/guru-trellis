@@ -16,4 +16,10 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     parser.add_argument("--root")
     parser.add_argument("--input", required=True)
     parser.add_argument("--gate")
-    return _owner(package_root).cmd_invoke_task_pr_merge(parser.parse_args(argv))
+    parser.add_argument("--review-input")
+    values = parser.parse_args(argv)
+    handler = {
+        "invoke-task-pr-merge": _owner(package_root).cmd_invoke_task_pr_merge,
+        "complete-task-pr-merge": _owner(package_root).cmd_complete_task_pr_merge,
+    }[command["id"]]
+    return handler(values)

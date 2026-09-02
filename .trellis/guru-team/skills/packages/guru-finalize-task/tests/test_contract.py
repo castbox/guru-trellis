@@ -34,6 +34,25 @@ def load_runtime():
     return module
 
 
+def load_facade():
+    sys.path.insert(0, str(shared_runtime_parent()))
+    sys.path.insert(0, str(PACKAGE / "runtime"))
+    previous_common = sys.modules.pop("common", None)
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "finalize_task_happy_path_test",
+            PACKAGE / "runtime/facade.py",
+        )
+        assert spec and spec.loader
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        sys.modules.pop("common", None)
+        if previous_common is not None:
+            sys.modules["common"] = previous_common
+
+
 GTT = load_runtime()
 
 
@@ -2196,6 +2215,291 @@ class FinalizeTaskContractTests(unittest.TestCase):
         )
         for validator in interface["validators"]:
             self.assertIn("runtime/launch.sh", (PACKAGE / validator["command"]).read_text(encoding="utf-8"))
+
+    def test_happy_path_uses_supported_invoke_entrypoint_and_legacy_remains(self) -> None:
+        commands = load("commands.json")["commands"]
+        by_id = {item["id"]: item for item in commands}
+        self.assertEqual(
+            by_id["finalize-task-happy-path"]["entrypoint"],
+            "runtime/invoke.py",
+        )
+        self.assertEqual(
+            by_id["invoke-guru-finalize-task"]["entrypoint"],
+            "runtime/invoke.py",
+        )
+        jsonschema.Draft202012Validator(
+            load("../../schemas/skill-commands.schema.json")
+        ).validate(load("commands.json"))
+
+    def test_happy_path_confirmation_identity_tracks_only_material_plan(self) -> None:
+        public_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": ".trellis/tasks/09-02-330-finalizer",
+        }
+        plan = {
+            "task": {"active_locator": public_input["task_ref"]},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "base_branch": "main",
+                "head_branch": "fix/330-finalizer",
+                "branch_review_commit": "a" * 40,
+            },
+            "publish": {"title": "feat: finalizer", "body": "Closes #330"},
+            "review": {"close_issues_reviewed": [330]},
+        }
+        context = {
+            "plan": plan,
+            "publication_mode": "ordinary_publication",
+            "transaction_state": "prepared",
+            "reprepare_reason_code": None,
+            "published_transition_complete": False,
+        }
+        identity = GTT.finalization_confirmation_identity(public_input, context)
+        same_plan_progress = copy.deepcopy(context)
+        same_plan_progress.update(
+            transaction_state="archived",
+            reprepare_reason_code=GTT.FINALIZATION_REPREPARE_ARCHIVE_MONTH,
+            published_transition_complete=True,
+        )
+        self.assertEqual(
+            GTT.finalization_confirmation_identity(public_input, same_plan_progress),
+            identity,
+        )
+
+        mutations = (
+            ("scope", lambda value: value["plan"]["review"].update(close_issues_reviewed=[330, 331])),
+            ("repo", lambda value: value["plan"]["git"].update(repo="castbox/other")),
+            ("base", lambda value: value["plan"]["git"].update(base_branch="release")),
+            ("head", lambda value: value["plan"]["git"].update(head_branch="fix/other")),
+            ("commit", lambda value: value["plan"]["git"].update(branch_review_commit="b" * 40)),
+            ("title", lambda value: value["plan"]["publish"].update(title="feat: changed")),
+            ("body", lambda value: value["plan"]["publish"].update(body="Closes #330\n\nChanged")),
+            ("side_effect_set", lambda value: value.update(publication_mode="existing_pr_recovery")),
+        )
+        for label, mutate in mutations:
+            changed = copy.deepcopy(context)
+            mutate(changed)
+            with self.subTest(label=label):
+                self.assertNotEqual(
+                    GTT.finalization_confirmation_identity(public_input, changed),
+                    identity,
+                )
+
+    def test_happy_path_stale_confirmation_blocks_before_record_or_execute(self) -> None:
+        facade = load_facade()
+        record = mock.Mock(side_effect=AssertionError("must block before record"))
+        execute = mock.Mock(side_effect=AssertionError("must block before execute"))
+
+        class WorkflowError(RuntimeError):
+            pass
+
+        owner = SimpleNamespace(
+            WorkflowError=WorkflowError,
+            repo_root=lambda path: Path("/repo"),
+            finalization_public_input=lambda *_: (
+                {"profile": "publication_ready", "mode": "workflow", "task_ref": "task"},
+                "input.json",
+            ),
+            finalization_semantic_review_input=lambda *_: {
+                "route": {"typed_exit": "ready_for_merge"}
+            },
+            finalization_preview_context=lambda *_: {
+                "plan": {},
+                "transaction_state": "prepared",
+                "published_transition_complete": False,
+            },
+            finalization_confirmation_identity=lambda *_: "b" * 64,
+            finalization_record_gate_result=record,
+            execute_finalization_transition_result=execute,
+            finalization_output_contract=lambda *_: {},
+            skill_json_schema_validation_errors=lambda *_: [],
+        )
+        counters: dict[str, int] = {}
+        output = facade.execute_happy_path(
+            owner,
+            SimpleNamespace(
+                root="/repo",
+                input="input.json",
+                review_input="review.json",
+                confirmed_preview_sha256="a" * 64,
+            ),
+            counters=counters,
+        )
+        self.assertEqual(output["exit_id"], "blocked")
+        self.assertEqual(output["reason_code"], "invalid_private_state")
+        record.assert_not_called()
+        execute.assert_not_called()
+        self.assertEqual(counters["terminal.post_exit_operation"], 0)
+
+    def test_happy_path_mapped_reprepare_converges_and_cleans_once(self) -> None:
+        facade = load_facade()
+        task_dir = Path("/repo/.trellis/tasks/09-02-330-finalizer")
+        plan = {
+            "git": {
+                "branch_review_commit": "a" * 40,
+                "publication_head": "a" * 40,
+            }
+        }
+        contexts = iter(
+            [
+                {
+                    "plan": plan,
+                    "task_dir": task_dir,
+                    "transaction_state": "reprepare_required",
+                    "published_transition_complete": False,
+                    "reprepare_reason_code": "archive_month_changed",
+                },
+                {
+                    "plan": plan,
+                    "task_dir": task_dir,
+                    "transaction_state": "prepared",
+                    "published_transition_complete": False,
+                    "reprepare_reason_code": None,
+                },
+            ]
+        )
+        reprepare_output = {
+            "exit_id": "reprepare_required",
+            "task_ref": "task",
+            "reason_code": "archive_month_changed",
+            "branch_review_commit": "a" * 40,
+            "publication_head": "a" * 40,
+        }
+        ready_output = {"exit_id": "ready_for_merge"}
+        execute = mock.Mock(
+            side_effect=[
+                {"typed_exit": "reprepare_required", "output": reprepare_output},
+                {"typed_exit": "ready_for_merge", "output": ready_output},
+            ]
+        )
+        cleanup = mock.Mock(return_value=[])
+        owner = SimpleNamespace(
+            WorkflowError=RuntimeError,
+            FINALIZATION_REPREPARE_ARCHIVE_MONTH="archive_month_changed",
+            FINALIZATION_REPREPARE_PROVENANCE_TAIL="provenance_tail_required",
+            FINALIZATION_EXECUTOR_OUTPUT_MARKER={"executor": True},
+            FINALIZATION_CONSUMERS={
+                "reprepare_required": {"kind": "skill", "id": "guru-finalize-task"}
+            },
+            repo_root=lambda path: Path("/repo"),
+            finalization_public_input=lambda *_: (
+                {"profile": "publication_ready", "mode": "workflow", "task_ref": "task"},
+                "input.json",
+            ),
+            finalization_semantic_review_input=lambda *_: {
+                "schema_version": "3.0",
+                "skill_id": "guru-finalize-task",
+                "review": {},
+                "route": {"typed_exit": "ready_for_merge", "output": ready_output},
+            },
+            finalization_preview_context=lambda *_: next(contexts),
+            finalization_confirmation_identity=lambda *_: "c" * 64,
+            finalization_reprepare_public_output=lambda *_args, **_kwargs: reprepare_output,
+            finalization_record_gate_result=lambda _root, _input, reviewed, _context, **_kwargs: {
+                "gate": {"route": reviewed["route"]},
+                "gate_path": Path("/repo/gate.json"),
+            },
+            check_finalization_gate_context=lambda _root, _input, gate, _path, _context, **_kwargs: (gate, {}),
+            execute_finalization_transition_result=execute,
+            finalization_output_contract=lambda *_: {},
+            skill_json_schema_validation_errors=lambda *_: [],
+            finalization_retire_current_state=cleanup,
+        )
+        counters: dict[str, int] = {}
+        output = facade.execute_happy_path(
+            owner,
+            SimpleNamespace(
+                root="/repo",
+                input="input.json",
+                review_input="review.json",
+                confirmed_preview_sha256="c" * 64,
+            ),
+            counters=counters,
+        )
+        self.assertEqual(output, ready_output)
+        self.assertEqual(execute.call_count, 2)
+        cleanup.assert_called_once_with(Path("/repo"), Path(task_dir))
+        self.assertEqual(counters["mapped.reprepare"], 1)
+        self.assertEqual(counters["owner_state.cleanup"], 1)
+        self.assertEqual(counters["terminal.post_exit_operation"], 0)
+
+    def test_happy_path_terminal_stdout_loss_recovery_needs_no_digest_or_cleanup(self) -> None:
+        facade = load_facade()
+        ready_output = {"exit_id": "ready_for_merge"}
+        cleanup = mock.Mock(side_effect=AssertionError("terminal recovery is read-only"))
+        owner = SimpleNamespace(
+            WorkflowError=RuntimeError,
+            repo_root=lambda path: Path("/repo"),
+            finalization_public_input=lambda *_: (
+                {"profile": "same_plan_resume", "mode": "workflow", "task_ref": "task"},
+                "input.json",
+            ),
+            finalization_semantic_review_input=lambda *_: {
+                "route": {"typed_exit": "ready_for_merge", "output": ready_output}
+            },
+            finalization_preview_context=lambda *_: {
+                "plan": {},
+                "task_dir": Path("/repo/archive/task"),
+                "transaction_state": "ready",
+                "published_transition_complete": True,
+            },
+            finalization_confirmation_identity=lambda *_: "d" * 64,
+            finalization_record_gate_result=lambda _root, _input, reviewed, _context, **_kwargs: {
+                "gate": {"route": reviewed["route"]},
+                "gate_path": Path("/repo/gate.json"),
+            },
+            check_finalization_gate_context=lambda _root, _input, gate, _path, _context, **_kwargs: (gate, {}),
+            execute_finalization_transition_result=lambda *_: {
+                "typed_exit": "ready_for_merge",
+                "output": ready_output,
+                "retired_owner_state": True,
+            },
+            finalization_output_contract=lambda *_: {},
+            skill_json_schema_validation_errors=lambda *_: [],
+            finalization_retire_current_state=cleanup,
+        )
+        counters: dict[str, int] = {}
+        output = facade.execute_happy_path(
+            owner,
+            SimpleNamespace(
+                root="/repo",
+                input="input.json",
+                review_input="review.json",
+                confirmed_preview_sha256=None,
+            ),
+            counters=counters,
+        )
+        self.assertEqual(output, ready_output)
+        cleanup.assert_not_called()
+        self.assertNotIn("mapped.reprepare", counters)
+        self.assertNotIn("owner_state.cleanup", counters)
+        self.assertEqual(counters["terminal.post_exit_operation"], 0)
+
+    def test_happy_path_budget_and_recommended_invocation_are_exact(self) -> None:
+        facade = load_facade()
+        self.assertEqual(
+            facade.happy_path_budget(),
+            {
+                "legacy_command_invocations": 5,
+                "happy_path_command_invocations": 1,
+                "command_reduction_percent": 80,
+                "legacy_full_preview_reads": 5,
+                "happy_path_full_preview_reads": 1,
+                "full_preview_read_reduction_percent": 80,
+            },
+        )
+        interface = load("interface.json")
+        public = [
+            item for item in interface["validators"]
+            if item["id"] == "public_invocation"
+        ]
+        legacy = [
+            item for item in interface["validators"]
+            if item["id"] == "legacy_public_invocation"
+        ]
+        self.assertEqual([item["runtime_command"] for item in public], ["finalize-task-happy-path"])
+        self.assertEqual([item["runtime_command"] for item in legacy], ["invoke-guru-finalize-task"])
 
     def test_current_contract_has_no_verifier_edge_or_reentry(self) -> None:
         interface = load("interface.json")

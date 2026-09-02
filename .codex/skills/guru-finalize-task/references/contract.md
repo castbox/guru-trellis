@@ -9,6 +9,32 @@ The four inputs are `publication_ready`, `same_plan_resume`,
 `base_reconciliation_required`, `publication_review_stale`, `resume_finalization`, `reprepare_required`,
 `ready_for_merge`, and `blocked`.
 
+The versioned preview receipt is `guru-finalize-task-preview-1.0`. Its
+`confirmation_identity` is the canonical digest of the current task,
+repository/base/head branches, reviewed commit, exact PR title/body, exact
+close-Issue set, publication mode, and maximum side-effect set. It excludes
+transaction progress, archive month, plan digest, publication metadata-tail
+commit, and the user's reply so mapped same-plan deterministic continuation and
+output-loss recovery do not persist or reinterpret authorization.
+
+`finalize-task-happy-path` is the only recommended post-confirmation facade.
+It accepts current public input, the AI-authored semantic review, and the
+confirmed preview identity. The facade performs one invocation-local preview,
+records/checks the semantic gate against that checked context, and invokes the
+existing transaction engine. The legacy public invoke and the separate
+record/check/execute commands remain compatible but are not the normal Agent
+path.
+
+When the checked state is provenance-tail or archive-month
+`reprepare_required` and the AI-reviewed target is `ready_for_merge`, the facade
+may execute that declared deterministic transition, rebuild the target-owned
+`reprepare_preview` input in memory, and continue only when the confirmation
+identity remains equal. Existing-PR adoption and resumable/archive/Ready
+recovery continue through their existing bound transactions. Any changed
+scope, authority, PR payload, publication mode, side-effect set, unknown route,
+or unmatched identity stops with an existing typed exit; no facade code chooses
+a new semantic destination.
+
 Extension installation verification is unreachable from this package. Changed
 paths, installed extension manifests, documentation, configuration, `.trellis`
 files, and platform copies never create verifier applicability. Finalizer does

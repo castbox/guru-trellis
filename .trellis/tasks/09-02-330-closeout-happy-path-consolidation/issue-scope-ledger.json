@@ -1,0 +1,45 @@
+{
+  "close_issues": [
+    {
+      "number": 330,
+      "reason": "本 task 完整承接该独立交付单元。",
+      "title": "收敛 Commit、Publication、Finalizer、Merge 正常路径并消除重复检查开销",
+      "url": "https://github.com/castbox/guru-trellis/issues/330"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 267,
+      "reason": "继续承担完整 release-wide 多平台 exact-candidate 验证。",
+      "title": "发布 v0.6.15-guru.3：包含 #311/#312 修复的 exact-candidate successor Release",
+      "url": "https://github.com/castbox/guru-trellis/issues/267"
+    }
+  ],
+  "primary_issue": {
+    "number": 330,
+    "reason": "本 task 完整承接该独立交付单元。",
+    "title": "收敛 Commit、Publication、Finalizer、Merge 正常路径并消除重复检查开销",
+    "url": "https://github.com/castbox/guru-trellis/issues/330"
+  },
+  "related_issues": [
+    {
+      "number": 106,
+      "reason": "提供 Merge executor 与仓库策略相关历史边界，但不替代 #330。",
+      "title": "延后实施：用 Guru Team Merge Executor 与 GitHub ruleset 强制 #92 合并提交合同",
+      "url": "https://github.com/castbox/guru-trellis/issues/106"
+    },
+    {
+      "number": 108,
+      "reason": "提供 Phase 2 与 Docs SSOT 门禁边界，但不替代 #330。",
+      "title": "Guru Team：在 Phase 2 引入代码与 Docs SSOT 减法审计门禁",
+      "url": "https://github.com/castbox/guru-trellis/issues/108"
+    },
+    {
+      "number": 311,
+      "reason": "提供 Finalizer provenance reprepare 已有机制与约束。",
+      "title": "修复 installed business repo Finalizer provenance reprepare 的 source/target checkout 混淆",
+      "url": "https://github.com/castbox/guru-trellis/issues/311"
+    }
+  ],
+  "schema_version": "2.0"
+}
