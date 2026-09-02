@@ -404,11 +404,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-02T12:59:47Z",
+  "installed_at": "2026-09-02T13:48:42Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "107053f9ec18ef4df01d01c1871e7a798b0e3ae4",
-    "commit": "107053f9ec18ef4df01d01c1871e7a798b0e3ae4",
+    "ref": "6832a5274641079163066be5e89124b6297181b9",
+    "commit": "6832a5274641079163066be5e89124b6297181b9",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
