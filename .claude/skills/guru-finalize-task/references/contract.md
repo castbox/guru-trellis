@@ -114,16 +114,38 @@ is exactly `ordinary_publication` or `existing_pr_recovery`. Ordinary mode still
 requires no Open PR before its first mutation. Recovery mode binds the unique
 same-repository PR, its initial Draft/Ready state, exact pre-push remote HEAD,
 publication HEAD and reviewed scope before mutation. Fresh adoption requires a
-strict-ancestor HEAD; equality is accepted only by the same bound recovery
-transaction after its exact push. It pushes only the exact publication commit by fast-forward,
+strict-ancestor HEAD. Equality is accepted by the same bound recovery
+transaction after its exact push, or by one exact current
+`ordinary_publication/push_content` transaction that is still unbound while
+remote branch, PR and Publication HEAD already equal. That narrow path compares
+the complete rebuilt transaction identity and live PR metadata bytes, then
+converts the same owner transaction to `existing_pr_recovery/bind_pr` before PR,
+archive or Ready mutation. It never performs a second publication push or PR
+create. Recovery pushes only the exact publication commit by fast-forward,
 converges title/body from current Publication, preserves Ready, or applies the
 existing Draft-to-Ready transition.
+
+Preview reports the exact PR, equal/strict ancestry, push decision, initial
+Draft/Ready state, per-field title/body byte comparison, metadata convergence
+decision and Ready action. Execute rereads those facts before conversion and
+persists the original metadata comparison plus convergence decision in the
+owner-private recovery binding. An equal-HEAD `bind_pr` resume requires that
+binding and accepts only the original bound metadata or, when convergence was
+required, the exact current Publication title/body produced by an already
+successful edit before an interrupted transaction advance. This retry performs
+no second edit. An inconsistent decision or any other live title/body drift is
+rejected before the first remaining mutation. PR identity, HEAD, Draft state,
+title/body or scope drift fails closed without rewriting the ordinary transaction. Fresh
+equal-HEAD adoption without that exact ordinary owner transaction remains
+`existing_pr_unbound_equal_head`.
 
 Once that exact transaction owns `archive`, `push_archive`, or `mark_ready`, its
 bound PR, payload, close scope, plan digest, and HEAD identities are validated
 before any pre-PR provenance inference. A matching post-bind recovery continues
-from its recorded transition; any mismatch fails closed instead of falling back
-to fresh PR adoption or provenance reprepare.
+from its recorded transition. The original metadata binding remains recovery
+evidence while current Publication and live reread own convergence after
+`bind_pr`; any mismatch fails closed instead of falling back to fresh PR
+adoption or provenance reprepare.
 
 If archive move, commit, and push complete before Draft-to-Ready succeeds, the
 archived task retains the exact `archive`/`push_archive` transaction stage. A

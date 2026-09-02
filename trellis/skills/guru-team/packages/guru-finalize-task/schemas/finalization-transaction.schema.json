@@ -38,7 +38,18 @@
         "number": {"type": "integer", "minimum": 1},
         "url": {"type": "string", "minLength": 1},
         "initial_is_draft": {"type": "boolean"},
-        "pre_push_remote_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+        "pre_push_remote_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "metadata_update_required": {"type": "boolean"},
+        "metadata_comparison": {
+          "type": "object", "additionalProperties": false,
+          "required": ["live_title", "live_body", "title_matches", "body_matches"],
+          "properties": {
+            "live_title": {"type": "string"},
+            "live_body": {"type": "string"},
+            "title_matches": {"type": "boolean"},
+            "body_matches": {"type": "boolean"}
+          }
+        }
       }
     }
   },

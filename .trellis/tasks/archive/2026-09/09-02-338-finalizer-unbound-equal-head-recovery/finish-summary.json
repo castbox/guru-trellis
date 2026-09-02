@@ -1,0 +1,270 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-02T19:14:37Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-02-338-finalizer-unbound-equal-head-recovery",
+    "title": "#338 修复 Finalizer 未绑定相等 HEAD 恢复",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/338-finalizer-unbound-equal-head-recovery",
+    "commits": [
+      "bcee2df8ff0efcf8b5a9be1b40443b75702d7414",
+      "99362bc15a5bc83ee02e291d486f203efc8aee95",
+      "7cc7cac15ab20da383cb670680e47bb426c42717"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-finalize-task/SKILL.md",
+      ".agents/skills/guru-finalize-task/references/contract.md",
+      ".claude/skills/guru-finalize-task/SKILL.md",
+      ".claude/skills/guru-finalize-task/references/contract.md",
+      ".codex/skills/guru-finalize-task/SKILL.md",
+      ".codex/skills/guru-finalize-task/references/contract.md",
+      ".cursor/skills/guru-finalize-task/SKILL.md",
+      ".cursor/skills/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/finalization-transaction.schema.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/check.jsonl",
+      ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/design.md",
+      ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/implement.jsonl",
+      ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/implement.md",
+      ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/issue-scope-ledger.json",
+      ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/prd.md",
+      ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/task.json",
+      ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/design.md",
+      ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/implement.md",
+      ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/prd.md",
+      ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/task.json",
+      "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/design.md",
+      "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/manifest.yaml",
+      "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/requirements.md",
+      "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/test.md",
+      "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/traceability.md",
+      "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+      "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+      "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/finalization-transaction.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      338
+    ],
+    "close_issues": [
+      338
+    ],
+    "related_issues": [
+      208,
+      249,
+      251,
+      333
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/340"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#338 修复 Finalizer 未绑定相等 HEAD 恢复",
+    "outcome": "为 `ordinary_publication/push_content` 且尚未绑定 PR 的精确同计划 transaction 增加受控 equal-HEAD recovery。",
+    "changed_behavior": [
+      "为 `ordinary_publication/push_content` 且尚未绑定 PR 的精确同计划 transaction 增加受控 equal-HEAD recovery。",
+      "在首个剩余外部 mutation 前绑定唯一 Open PR、三方一致 HEAD、原始 Draft/Ready 状态、live metadata comparison 与 convergence decision。",
+      "PR metadata 已一致时零 edit；存在字节差异时精确收敛到 current Publication，再从 archive、archive push 与 Ready handling 继续。",
+      "修复 metadata edit 成功但 transaction 仍停在 `bind_pr` 时的重试：接受 exact Publication postcondition，不重复 edit，任意第三 metadata 状态仍 fail closed。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "config",
+        "name": "config",
+        "paths": [
+          "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/manifest.yaml"
+        ],
+        "change": "为 `ordinary_publication/push_content` 且尚未绑定 PR 的精确同计划 transaction 增加受控 equal-HEAD recovery。"
+      },
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/design.md",
+          ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/implement.md",
+          ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/prd.md",
+          ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/design.md",
+          ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/implement.md",
+          ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/prd.md",
+          "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/design.md",
+          "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/requirements.md",
+          "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/test.md",
+          "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/traceability.md"
+        ],
+        "change": "为 `ordinary_publication/push_content` 且尚未绑定 PR 的精确同计划 transaction 增加受控 equal-HEAD recovery。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "为 `ordinary_publication/push_content` 且尚未绑定 PR 的精确同计划 transaction 增加受控 equal-HEAD recovery。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+          "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md"
+        ],
+        "change": "为 `ordinary_publication/push_content` 且尚未绑定 PR 的精确同计划 transaction 增加受控 equal-HEAD recovery。"
+      },
+      {
+        "kind": "schema",
+        "name": "schema",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/finalization-transaction.schema.json",
+          "trellis/skills/guru-team/packages/guru-finalize-task/schemas/finalization-transaction.schema.json"
+        ],
+        "change": "为 `ordinary_publication/push_content` 且尚未绑定 PR 的精确同计划 transaction 增加受控 equal-HEAD recovery。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "change": "为 `ordinary_publication/push_content` 且尚未绑定 PR 的精确同计划 transaction 增加受控 equal-HEAD recovery。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-finalize-task/SKILL.md",
+          ".agents/skills/guru-finalize-task/references/contract.md",
+          ".claude/skills/guru-finalize-task/SKILL.md",
+          ".claude/skills/guru-finalize-task/references/contract.md",
+          ".codex/skills/guru-finalize-task/SKILL.md",
+          ".codex/skills/guru-finalize-task/references/contract.md",
+          ".cursor/skills/guru-finalize-task/SKILL.md",
+          ".cursor/skills/guru-finalize-task/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md"
+        ],
+        "change": "为 `ordinary_publication/push_content` 且尚未绑定 PR 的精确同计划 transaction 增加受控 equal-HEAD recovery。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/check.jsonl",
+          ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/implement.jsonl",
+          ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/issue-scope-ledger.json",
+          ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/task.json",
+          ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/task.json"
+        ],
+        "change": "为 `ordinary_publication/push_content` 且尚未绑定 PR 的精确同计划 transaction 增加受控 equal-HEAD recovery。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#208",
+        "#249",
+        "#251",
+        "#333",
+        "#338"
+      ],
+      "pr_refs": [
+        "PR #340"
+      ],
+      "branches": [
+        "fix/338-finalizer-unbound-equal-head-recovery"
+      ],
+      "paths": [
+        ".agents/skills/guru-finalize-task/SKILL.md",
+        ".agents/skills/guru-finalize-task/references/contract.md",
+        ".claude/skills/guru-finalize-task/SKILL.md",
+        ".claude/skills/guru-finalize-task/references/contract.md",
+        ".codex/skills/guru-finalize-task/SKILL.md",
+        ".codex/skills/guru-finalize-task/references/contract.md",
+        ".cursor/skills/guru-finalize-task/SKILL.md",
+        ".cursor/skills/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/SKILL.md",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/finalization-transaction.schema.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/check.jsonl",
+        ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/design.md",
+        ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/implement.jsonl",
+        ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/implement.md",
+        ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/issue-scope-ledger.json",
+        ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/prd.md",
+        ".trellis/tasks/09-02-338-finalizer-unbound-equal-head-recovery/task.json",
+        ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/design.md",
+        ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/implement.md",
+        ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/prd.md",
+        ".trellis/tasks/archive/2026-09/09-02-338-finalizer-unbound-equal-head-recovery/task.json",
+        "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/design.md",
+        "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/manifest.yaml",
+        "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/requirements.md",
+        "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/test.md",
+        "docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/traceability.md",
+        "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+        "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+        "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/schemas/finalization-transaction.schema.json",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#338 修复 Finalizer 未绑定相等 HEAD 恢复",
+        "为 `ordinary_publication/push_content` 且尚未绑定 PR 的精确同计划 transa",
+        "完成 SKILL.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#338 修复 Finalizer 未绑定相等 HEAD 恢复\n为 `ordinary_publication/push_content` 且尚未绑定 PR 的精确同计划 transaction 增加受控 equal-HEAD recovery。\n在首个剩余外部 mutation 前绑定唯一 Open PR、三方一致 HEAD、原始 Draft/Ready 状态、live metadata comparison 与 convergence decision。\nPR metadata 已一致时零 edit；存在字节差异时精确收敛到 current Publication，再从 archive、archive push 与 Ready handling 继续。\n修复 metadata edit 成功但 transaction 仍停在 `bind_pr` 时的重试：接受 exact Publication postcondition，不重复 edit，任意第三 metadata 状态仍 fail closed。\n为 `ordinary_publication/push_content` 且尚未绑定 PR 的精确同计划 transa\n完成 SKILL.md 相关变更"
+  }
+}

@@ -7130,7 +7130,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/finalization-transaction.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/schemas/finalization-transaction.schema.json",
-        "sha256": "f80fc957487246792bfab877a8f027231d9905b5aaf3b9cc4f0dfc1246b07eb0",
+        "sha256": "b19cf6fd71e5f98113993dbf2ff75a612fbb7a6b4c0176abfd6273374d911404",
         "executable": false,
         "action": "unchanged"
       },

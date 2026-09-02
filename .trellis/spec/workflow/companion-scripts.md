@@ -1638,8 +1638,19 @@ remote mutation interval. Preview and execute rebuild live Git/GitHub/Trellis
 facts and bind exact Publication input. Ordinary publication still requires no
 Open PR. `existing_pr_recovery` separately binds the unique same-repository PR,
 remote/PR pre-push HEAD, fresh strict-ancestor relation, transaction-bound
-post-push equality, original Draft/Ready
-state, and current close scope before mutation. The executor pushes only the
+post-push equality, or one exact unbound ordinary `push_content` transaction
+whose remote/PR/Publication HEAD already equal. The unbound equal path compares
+the complete rebuilt transaction identity plus live PR metadata bytes, converts
+that same transaction to `existing_pr_recovery/bind_pr` before any remaining
+external mutation, persists the original metadata comparison and convergence
+decision in its owner-private binding, and does not repeat publication push or
+PR creation. An equal-HEAD `bind_pr` resume requires that internally consistent
+binding and accepts only the original live metadata or, when the persisted
+decision required convergence, the exact current Publication payload left by an
+already-successful edit before transaction advance; the latter performs no
+second edit. Any third metadata state remains blocked, as does fresh equal-HEAD
+adoption without that transaction. Recovery retains the original Draft/Ready state
+and current close scope before mutation. The executor pushes only the
 exact publication commit by non-force fast-forward, converges reviewed metadata,
 archives, then preserves Ready or performs Draft-to-Ready. Finalizer never calls extension verification,
 reads verifier owner state, accepts a verification re-entry profile, or retains
