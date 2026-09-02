@@ -10,7 +10,7 @@
   "followup_issues": [],
   "primary_issue": {
     "number": 333,
-    "reason": "Primary independently deliverable active-package Issue-create and recovery repair.",
+    "reason": "Fully covered by this task; close only after reviewed implementation and validation.",
     "title": "[Bug] Make guru-create-task-workspace Issue creation recoverable and idempotent",
     "url": "https://github.com/castbox/guru-trellis/issues/333"
   },
