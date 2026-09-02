@@ -2,13 +2,13 @@
 
 ## Current identity
 
-- version：`current-main-0.6.5-guru.42`
+- version：`current-main-0.6.5-guru.43`
 - status：`active`
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
 - Architecture inheritance：`docs/architecture/README.md`，同版本、`active`
-- source binding：reviewed task head `d3dca74b3a94569a095594477c15b032526f2381` + #267 expected `.41` serialized promotion delta；#305 已确认的 `EVO-001..007` target delta 保持独立 target authority（精确 revision 由包含本 authority 的 Git commit/tree identity 绑定）
+- source binding：contribution identity `architecture-contribution-335-repository-private-release-orchestration-v1`，继承 `current-main-0.6.5-guru.42` authority；#305 已确认的 `EVO-001..007` target delta 保持独立 target authority（精确 revision 由包含本 authority 的 Git object/tree identity 绑定；本 projection 不记录可变 HEAD 或 lifecycle 状态）
 
 ## 读取与更新
 

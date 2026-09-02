@@ -1,0 +1,12 @@
+{
+  "id": "335-release-guru-trellis-version",
+  "name": "335-release-guru-trellis-version",
+  "title": "#335 建立 guru-trellis 仓库私有正式发布 Skill",
+  "status": "completed",
+  "branch": "feat/335-release-guru-trellis-version",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/335",
+  "completedAt": "2026-09-03"
+}

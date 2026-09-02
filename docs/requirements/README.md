@@ -6,7 +6,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.5-guru.42` | [requirement-main.md at selected base](https://github.com/castbox/guru-trellis/blob/5650df47fe17fe89b7cb616be6c9551608164832/docs/requirements/versions/current-main-0.6.5-guru.42/requirement-main.md) | #267 reviewed release-authority alignment、post-merge evidence fix、PR #317 installed platform-selection preservation 与 PR #318 fact-only caller-inventory/provenance correction；`.42` tracked version 保持，#305 已确认的 `EVO-001..007` 是独立 target authority |
+| `active` | `current-main-0.6.5-guru.43` | [requirement-main.md](./versions/current-main-0.6.5-guru.43/requirement-main.md) | contribution identity `architecture-contribution-335-repository-private-release-orchestration-v1`，继承 `.42` authority；只建立本仓库 Skill 的稳定合同，不执行 tag/Release 或记录 lifecycle 状态；#305 已确认的 `EVO-001..007` 是独立 target authority |
+| `superseded` | `current-main-0.6.5-guru.42` | [requirement-main.md](./versions/current-main-0.6.5-guru.42/requirement-main.md) | #267 reviewed release-authority alignment 与后续 fact-only corrections |
 | `superseded` | `current-main-0.6.5-guru.41` | [requirement-main.md](./versions/current-main-0.6.5-guru.41/requirement-main.md) | #311 reviewed Architecture/RDT promotion |
 | `superseded` | `current-main-0.6.5-guru.40` | [requirement-main.md](./versions/current-main-0.6.5-guru.40/requirement-main.md) | #295 reviewed Architecture/RDT promotion + #305 target delta |
 | `superseded` | `current-main-0.6.5-guru.39` | [requirement-main.md](./versions/current-main-0.6.5-guru.39/requirement-main.md) | #290 reviewed Architecture/RDT promotion |
@@ -30,7 +31,7 @@ Guru Trellis 下一阶段产品进化 Requirements 的唯一文档集位于
 Design/runtime 前置，并从 selected base 完成 `.42` RDT/Architecture/inventory rebind：#311 作为
 `CUR-CAP-013/014/017/018/019` 的 current observable capability 承接，#312 作为 `CUR-CAP-012` 的
 current base-continuity capability 承接；PR #317 的 exact installed platform-set preservation 折入
-`CUR-CAP-013/014/017`。当前 candidate 已建立 52 UC / 84 REQ / 34 NFR / 23 current
+`CUR-CAP-013/014/017`。当前 candidate 已建立 52 UC / 84 REQ / 34 NFR / 24 current
 capabilities / 13 target deltas / 50 normal-path fixtures 的零差集 closure；fresh Requirements semantic、
 Strict technical 与确定性闭包审核已针对 `origin/main@5650df47…` 通过，P1/P2/P3 finding 与 high-risk open
 question 均为 0。`.42` 相对 `.41` 仅增加
@@ -39,6 +40,10 @@ stable current 修正为 `.2/.38/CLI 0.6.15`，`.3/.39` 仍 unverified；这些 
 产品能力、target delta 或 fixture；`a41b8a34...9f560ec1` 又只修正 #267 lifecycle evidence、dogfood
 provenance 与 archive/merge facts；`9f560ec1...736ef333` 是 material platform-selection runtime advance；
 `736ef333...5650df47` 再次只修正 caller-inventory consistency、Issue disposition、dogfood provenance 与 archive/merge facts。
+`.43` 在这些 current facts 上新增 `REQ-056..062`、`BEH-012`、`NFR-006`，仅定义
+`release-guru-trellis-version` 的仓库私有两阶段编排、freshness 与独立 mutation confirmation；不新增
+Evolution target delta 或 fixture；current capability 增加为 `CUR-CAP-024`，由既有 target deltas 承接，
+也不表示任何版本已发布。
 Requirements 阶段状态为 `requirements_ready_for_design`，trace 状态为
 `requirements_trace_ready_for_design`；Design/Test/Architecture 的 73 个 Design
 responsibilities 与 50 个 fixture mappings 已同步为 planning projection；pre-`REQ-REV-142` Design pass 仍为

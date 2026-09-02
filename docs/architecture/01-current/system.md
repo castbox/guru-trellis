@@ -33,9 +33,15 @@
   serialized promotion 建立唯一 active `.42` RDT/Architecture knowledge authority；该 delta 只更新
   `.3/.39/CLI 0.6.15` current facts、navigation、traceability、evidence 与 predecessor/successor
   binding，不改变 runtime、public API、Architecture decision、owner、GAP、compatibility exit 或 ADR。
+- `ARCH-CUR-017`（`code_recovered`）：仓库私有 `release-guru-trellis-version` Skill 只服务
+  `castbox/guru-trellis` 正式版本发布，组合 standard intake、Phase 2、Task Commit、Branch Review、
+  Publication、Finalizer 与 Merge owners，并在 preparation merge 后重新冻结 exact candidate。它不进入
+  Guru Team public registry、marketplace、preset、overlay 或业务仓库安装投影，也不创建公共 I/O、
+  typed exit、runtime state machine 或 task-local release body authority。
 
-当前 Architecture knowledge identity 为 `.42`，extension candidate 为 `0.6.15-guru.39`，Trellis
+当前 Architecture knowledge identity 为 `.43`，extension candidate 为 `0.6.15-guru.39`，Trellis
 CLI 为 `0.6.15`。#267 target `v0.6.15-guru.3` 的 exact-candidate matrix、tag、GitHub Release、
 latest-stable identity 与 tag-pinned smoke 仍为 `unverified`；knowledge promotion 不替代这些门禁。
 #311 正式 `.3` business-repository reinstall、原 Finalizer 失败路径与错误文件重试仍为
-`unverified`，Issue 保持 OPEN。
+`unverified`，Issue 保持 OPEN。Requirements/Design/Test 与 Architecture 共同使用 `.43` current
+knowledge identity；该 authority 对齐不证明 exact-candidate Release gate 或任何发布 mutation 已完成。
