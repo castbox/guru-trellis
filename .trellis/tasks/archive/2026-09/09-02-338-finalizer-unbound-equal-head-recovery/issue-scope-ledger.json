@@ -10,7 +10,7 @@
   "followup_issues": [],
   "primary_issue": {
     "number": 338,
-    "reason": "Issue #338 is the independently deliverable Finalizer recovery defect and the only close target.",
+    "reason": "Fully covered by this task; close only after reviewed implementation, validation, merge, and live closure verification.",
     "title": "[Bug] 支持 Finalizer 恢复已推送且未绑定的同计划 PR",
     "url": "https://github.com/castbox/guru-trellis/issues/338"
   },

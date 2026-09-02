@@ -1,4 +1,0 @@
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Check targeted validation ownership, projection parity, drift, and deferred release matrix boundary"}
-{"file":"docs/test/README.md","reason":"Verify the task-owned test delta inherits the current Test authority and traceability contract"}
-{"file":".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/prd.md","reason":"Confirm arbitrary unbound equal-HEAD PRs remain rejected outside the exact Issue #338 transaction state"}
-{"file":".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/prd.md","reason":"Check Ready and Draft recovery, metadata convergence, fail-closed scope, and idempotency inheritance"}
