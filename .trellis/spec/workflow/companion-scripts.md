@@ -1645,8 +1645,11 @@ that same transaction to `existing_pr_recovery/bind_pr` before any remaining
 external mutation, persists the original metadata comparison and convergence
 decision in its owner-private binding, and does not repeat publication push or
 PR creation. An equal-HEAD `bind_pr` resume requires that internally consistent
-binding and unchanged live metadata; fresh equal-HEAD adoption without that
-transaction remains blocked. Recovery retains the original Draft/Ready state
+binding and accepts only the original live metadata or, when the persisted
+decision required convergence, the exact current Publication payload left by an
+already-successful edit before transaction advance; the latter performs no
+second edit. Any third metadata state remains blocked, as does fresh equal-HEAD
+adoption without that transaction. Recovery retains the original Draft/Ready state
 and current close scope before mutation. The executor pushes only the
 exact publication commit by non-force fast-forward, converges reviewed metadata,
 archives, then preserves Ready or performs Draft-to-Ready. Finalizer never calls extension verification,

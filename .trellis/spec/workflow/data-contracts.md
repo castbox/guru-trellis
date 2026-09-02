@@ -1378,8 +1378,11 @@ execute rereads them, converts the same schema 3.0 transaction to
 decision in its additive private `adopted_pr` binding before any PR, archive or
 Ready mutation. Existing strict-ancestor transactions without those additive
 fields remain valid, while an equal-HEAD `bind_pr` resume requires internally
-consistent fields and unchanged live metadata. No second transaction,
-publication push or PR create is permitted. Fresh equal-HEAD adoption without
+consistent fields and accepts only the original bound metadata or, when the
+decision required convergence, an exact current Publication payload left by a
+successful edit before the interrupted transaction advance. The converged retry
+performs no second edit; every other metadata state fails closed. No second
+transaction, publication push or PR create is permitted. Fresh equal-HEAD adoption without
 this owner transaction remains invalid. The current Ledger close scope must equal the PR close
 scope before metadata mutation. Current Publication title/body is the only
 convergence authority. Any identity, scope, payload, original state, ancestry,

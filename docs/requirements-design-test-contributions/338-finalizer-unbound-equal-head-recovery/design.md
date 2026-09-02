@@ -15,7 +15,8 @@
 - `D338-05`：executor 在任何剩余外部 mutation 前重新分类 live facts、与 preview 做 exact equality、写入一次
   converted transaction，然后复用现有 preflight、metadata convergence、archive、push_archive 与 Ready owner。
 - `D338-06`：equal-HEAD transaction 在 `bind_pr` 阶段先验证原始 metadata binding；推进到 `archive` 后所有
-  retry 进入现有 bound recovery，metadata convergence 后的 exact payload、scope、PR identity 与 HEAD 仍由
-  current live reread 验证。
+  retry 进入现有 bound recovery。若 PR edit 已成功但 transaction 尚未来得及推进，`bind_pr` retry 仅接受
+  原始 binding 或 `metadata_update_required=true` 时已精确等于 current Publication 的收敛后 payload，后者零
+  重复 edit；其他 title/body、scope、PR identity 与 HEAD drift 仍由 current live reread 阻断。
 - `D338-07`：canonical package 是唯一实现 source；preset apply 生成 installed/platform copies。Architecture
   仍为 `no_architecture_impact`，因为 owner、persistence type、public DTO 与 dependency direction 均未改变。

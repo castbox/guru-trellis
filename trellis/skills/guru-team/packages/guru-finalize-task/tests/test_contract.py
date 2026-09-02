@@ -4104,6 +4104,28 @@ class FinalizeTaskContractTests(unittest.TestCase):
             "existing_pr_transaction_drift",
         )
 
+        live_pr["body"] = plan["publish"]["body"]
+        self.assertEqual(preflight(transaction), (live_pr, head))
+        with (
+            mock.patch.object(
+                GTT, "resolve_closeout_pull_request", return_value=live_pr
+            ),
+            mock.patch.object(GTT, "current_head", return_value=head),
+            mock.patch.object(
+                GTT, "closeout_task_dir_from_plan", return_value=Path("/repo/task")
+            ),
+            mock.patch.object(
+                GTT, "validate_closeout_pull_request_identity"
+            ) as validate_identity,
+            mock.patch.object(GTT, "update_pull_request_metadata") as update,
+        ):
+            rebound = GTT.ensure_closeout_bound_pr(
+                Path("/repo"), plan, plan["publish"]["body"], transaction
+            )
+        self.assertEqual(rebound, live_pr)
+        update.assert_not_called()
+        validate_identity.assert_called_once()
+
         live_pr["body"] = "changed before bind\n\nCloses #338"
         with self.assertRaises(GTT.WorkflowError) as drift_error:
             preflight(transaction)

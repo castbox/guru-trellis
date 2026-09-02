@@ -11,7 +11,8 @@
   `pre_push_remote_head` transition field；private schema 同时接受新 shape 和旧 strict-ancestor shape。
 - `T338-05`（R338-05/08）：preview-to-execute metadata 漂移返回 `existing_pr_recovery_drift`，transaction write
   call count 为零；unchanged path 恰好写入一次 converted transaction。Equal-HEAD `bind_pr` resume 对缺失或
-  内部不一致 decision、live title/body 相对原始 binding 漂移 fail closed，匹配 binding 正常继续。
+  内部不一致 decision fail closed；live title/body 仅允许原始 binding 或已精确收敛的 current Publication
+  payload，任意其他漂移阻断。已收敛 retry 正常继续且不重复 PR edit。
 - `T338-06`（R338-06/07）：existing metadata convergence regression 证明差异路径一次 edit、相等路径零 edit、
   PR create 为零；Ready preservation 与 Draft-to-Ready 现有 fixture 保持通过。
 - `T338-07`（R338-07/08）：existing real-topology recovery fixture 保持 archive interruption/retry、force-push、

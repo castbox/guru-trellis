@@ -104,9 +104,12 @@ Draft/Ready state, per-field title/body byte comparison, metadata convergence
 decision and Ready action. Execute rereads those facts before conversion and
 persists the original metadata comparison plus convergence decision in the
 owner-private recovery binding. An equal-HEAD `bind_pr` resume requires that
-binding and rejects an inconsistent decision or live title/body drift before
-the first remaining mutation. PR identity, HEAD, Draft state, title/body or
-scope drift fails closed without rewriting the ordinary transaction. Fresh
+binding and accepts only the original bound metadata or, when convergence was
+required, the exact current Publication title/body produced by an already
+successful edit before an interrupted transaction advance. This retry performs
+no second edit. An inconsistent decision or any other live title/body drift is
+rejected before the first remaining mutation. PR identity, HEAD, Draft state,
+title/body or scope drift fails closed without rewriting the ordinary transaction. Fresh
 equal-HEAD adoption without that exact ordinary owner transaction remains
 `existing_pr_unbound_equal_head`.
 

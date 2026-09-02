@@ -8572,12 +8572,24 @@ def finalization_pre_mutation_remote_preflight(
                 recovery.get("metadata_comparison"),
                 recovery.get("metadata_update_required"),
             )
-            if (
-                existing_pr.get("title") != metadata_comparison["live_title"]
-                or existing_pr.get("body") != metadata_comparison["live_body"]
+            live_metadata = {
+                "title": existing_pr.get("title"),
+                "body": existing_pr.get("body"),
+            }
+            original_metadata = {
+                "title": metadata_comparison["live_title"],
+                "body": metadata_comparison["live_body"],
+            }
+            converged_metadata = {
+                "title": transaction["publication"]["title"],
+                "body": transaction["publication"]["body"],
+            }
+            if live_metadata != original_metadata and not (
+                recovery["metadata_update_required"]
+                and live_metadata == converged_metadata
             ):
                 raise WorkflowError(
-                    "Equal-HEAD recovery PR metadata changed after transaction binding.",
+                    "Equal-HEAD recovery PR metadata differs from both its original binding and exact Publication convergence.",
                     exit_code=2,
                     payload={"reason_code": "existing_pr_recovery_drift"},
                 )

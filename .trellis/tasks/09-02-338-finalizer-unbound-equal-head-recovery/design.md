@@ -128,6 +128,10 @@ Planning impact 为 `no_architecture_impact`。变更保留 Finalizer 单一 own
 recovery transaction、六个 exits 与 Merge dependency。`minimum-necessary-complexity` 通过窄 predicate 和
 schema reuse 落实；没有 architecture contribution 或 ADR。
 
+Branch Review finding `BR-338-002` 补充同一状态机的中断恢复：Equal-HEAD `bind_pr` 仅接受原始 metadata
+binding，或在原决策要求 convergence 时接受已经精确等于 current Publication 的收敛后 payload；后者不重复
+edit，任意第三种 metadata 状态继续 fail closed。该修订不新增 transaction stage、schema id 或公共合同。
+
 ## 10. Rollback
 
 回滚以本 task 的 canonical package/spec/RDT delta 为单位，再运行 preset apply 恢复 generated copies。

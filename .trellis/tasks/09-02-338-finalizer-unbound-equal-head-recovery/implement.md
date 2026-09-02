@@ -17,6 +17,8 @@
 1. 创建 `docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/`。
 2. 定义 requirement/behavior、design responsibility/contract、test strategy/scenario/case 与 traceability。
 3. 绑定 current `.43` RDT 与 Architecture identity，不直接改写 shared current。
+4. 修复 `BR-338-002`：覆盖 PR metadata edit 成功而 transaction 仍停在 `bind_pr` 的普通中断窗口；重试接受
+   exact Publication postcondition、零重复 edit，其他 metadata drift 保持阻断。
 4. 在最终 Phase 2 check 前完成 RDT owner review、serialized promotion 与 promotion-diff recheck。
 
 ## 3. Phase B: Focused Regression First

@@ -404,11 +404,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-02T18:33:03Z",
+  "installed_at": "2026-09-02T19:04:56Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "bcee2df8ff0efcf8b5a9be1b40443b75702d7414",
-    "commit": "bcee2df8ff0efcf8b5a9be1b40443b75702d7414",
+    "ref": "99362bc15a5bc83ee02e291d486f203efc8aee95",
+    "commit": "99362bc15a5bc83ee02e291d486f203efc8aee95",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -495,9 +495,9 @@
       ".trellis/spec/workflow/semantic-retrieval.md": "2c9a3097949979e84d42e15811278df1b047ec4c2101f3019e887e7799aef483",
       ".trellis/spec/workflow/workflow-contract.md": "a4e7251bfe1c5ec085774d8fa5519b1e59f274d49f6a2105d62b5cccd1abee3d",
       ".trellis/spec/workflow/skill-package-contract.md": "e6835ff832bad48647d5d494ba9896d3c7e37769aa88645b2ff01c384430bf62",
-      ".trellis/spec/workflow/data-contracts.md": "b0f0bf86c3a94744a53c3a31de0c4c899bcf8cd7a66cfbeaf123c0c070ea488e",
-      ".trellis/spec/workflow/companion-scripts.md": "922714a791a5073075f7dddd24bc1574bfd745b1dc2abb950e17191ff0107188",
-      ".trellis/spec/workflow/quality-guidelines.md": "9adb5ccb95d2ee2de6878390b4f8b5a29c44814f7a556acd9702016a17816dc8"
+      ".trellis/spec/workflow/data-contracts.md": "0aba22b38a8d8e3ccca8fae60a29f2cea9fce3da094f6c73bf8059c942ef46fa",
+      ".trellis/spec/workflow/companion-scripts.md": "61c4a2c1641122f4651a683a9fa8ae7c151e85978c652c15f96df4c990d08b26",
+      ".trellis/spec/workflow/quality-guidelines.md": "cb27d7a509d0e01dabb033e4a249ff9e5959baa2cfa49bbbeca621332371e143"
     },
     "new_copies": [],
     "managed_backups": [],
@@ -616,7 +616,7 @@
       {
         "id": "guru-finalize-task",
         "interface_sha256": "966406e679fd4a7ed9acc6090c54568018c8287cad402f9f0a0017cb9c66d2c6",
-        "tree_sha256": "3bda261fdcd4be78bda07b219a33339ab3af4b363170f57b3d631894e221c2e8"
+        "tree_sha256": "003fd68098e546f4e0177873e668435d10e003083d75d15b7f0c3c7721a1a1ad"
       },
       {
         "id": "guru-merge-task-pr",
@@ -6990,7 +6990,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "25d89fb32bd17e877934a8c4aca6f272d0269238e7b31da3411868430fa0be25",
+        "sha256": "15ec0df59329fdb43220a7352ceb69fd5e5c7ea4e6529f15d50860fbcd4e6a02",
         "executable": false,
         "action": "unchanged"
       },
@@ -7032,7 +7032,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
-        "sha256": "ea7918dbb811f038e0b551de4f22e3cce9e28c11efccbb661deb4f64c8e43017",
+        "sha256": "fc62586130bce462252a8f63d17619c9098edad5405675965ba695239190ed62",
         "executable": false,
         "action": "unchanged"
       },
@@ -7340,7 +7340,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
-        "sha256": "4e006db5c096fe28f3ee058fe83402ec0e6c26203389c4f8e6dffe88e4e3b7e2",
+        "sha256": "86935b9e65cf96d8436635593bffded070d5225b4aa22a598f82f074df47f3fb",
         "executable": false,
         "action": "unchanged"
       },
@@ -24441,7 +24441,7 @@
       {
         "path": ".agents/skills/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "25d89fb32bd17e877934a8c4aca6f272d0269238e7b31da3411868430fa0be25",
+        "sha256": "15ec0df59329fdb43220a7352ceb69fd5e5c7ea4e6529f15d50860fbcd4e6a02",
         "executable": false,
         "action": "unchanged"
       },
@@ -24882,7 +24882,7 @@
       {
         "path": ".codex/skills/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "25d89fb32bd17e877934a8c4aca6f272d0269238e7b31da3411868430fa0be25",
+        "sha256": "15ec0df59329fdb43220a7352ceb69fd5e5c7ea4e6529f15d50860fbcd4e6a02",
         "executable": false,
         "action": "unchanged"
       },
@@ -25323,7 +25323,7 @@
       {
         "path": ".claude/skills/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "25d89fb32bd17e877934a8c4aca6f272d0269238e7b31da3411868430fa0be25",
+        "sha256": "15ec0df59329fdb43220a7352ceb69fd5e5c7ea4e6529f15d50860fbcd4e6a02",
         "executable": false,
         "action": "unchanged"
       },
@@ -25764,7 +25764,7 @@
       {
         "path": ".cursor/skills/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "25d89fb32bd17e877934a8c4aca6f272d0269238e7b31da3411868430fa0be25",
+        "sha256": "15ec0df59329fdb43220a7352ceb69fd5e5c7ea4e6529f15d50860fbcd4e6a02",
         "executable": false,
         "action": "unchanged"
       },
