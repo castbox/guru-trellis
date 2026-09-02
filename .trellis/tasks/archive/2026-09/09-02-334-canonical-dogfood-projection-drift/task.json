@@ -2,10 +2,11 @@
   "id": "334-canonical-dogfood-projection-drift",
   "name": "334-canonical-dogfood-projection-drift",
   "title": "#334 修复 canonical 与 dogfood 投影漂移",
-  "status": "in_progress",
+  "status": "completed",
   "branch": "fix/334-canonical-dogfood-projection-drift",
   "base_branch": "main",
   "creator": "wesleywu",
   "assignee": "wesleywu",
-  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/334"
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/334",
+  "completedAt": "2026-09-02"
 }
