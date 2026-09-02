@@ -10,7 +10,8 @@ Live authority：GitHub Issue #338，2026-09-02 当前正文。
 
 ## 2. Confirmed Facts
 
-- 当前基线为 `main@107053f9ec18ef4df01d01c1871e7a798b0e3ae4`。
+- Planning 基线为 `main@107053f9ec18ef4df01d01c1871e7a798b0e3ae4`；Phase 2 后已按 base
+  reconciliation rebase 到 `main@70abda408f428949a09964ebc6e85cc86b867929`。
 - `classify_existing_pr_recovery()` 在 remote/PR/publication HEAD 取值一致且调用方未传入
   `allow_equal=true` 时返回 `existing_pr_unbound_equal_head`。
 - `finalization_existing_pr_recovery_context()` 仅处理无 transaction 的严格祖先接管，或已处于
@@ -115,7 +116,7 @@ metadata convergence 后仍有字节差异、stale plan/gate/Branch Review/Publi
 策略：`delta_first`。
 
 - Phase 2 先创建 `docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/`
-  的 Requirements、Design、Test 与 traceability delta，绑定 current `.42` authority。
+  的 Requirements、Design、Test 与 traceability delta，绑定 current `.43` authority。
 - Durable workflow contract 更新范围为
   `trellis/skills/guru-team/packages/guru-finalize-task/{SKILL.md,references/contract.md}`、
   `.trellis/spec/workflow/{data-contracts,companion-scripts,quality-guidelines}.md`。

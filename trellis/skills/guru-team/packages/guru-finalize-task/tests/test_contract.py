@@ -3995,6 +3995,8 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 **pr,
                 "initial_is_draft": False,
                 "pre_push_remote_head": head,
+                "metadata_update_required": True,
+                "metadata_comparison": recovery["metadata_comparison"],
             },
         )
         for field in (
@@ -4010,6 +4012,105 @@ class FinalizeTaskContractTests(unittest.TestCase):
         ):
             self.assertEqual(converted[field], ordinary[field])
         self.assertNotIn("pre_push_remote_head", converted)
+
+    def test_equal_head_bind_resume_requires_original_metadata_decision(self) -> None:
+        head = "b" * 40
+        plan = {
+            "plan_digest": "d" * 64,
+            "task": {"active_locator": ".trellis/tasks/338"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "remote": "origin",
+                "base_branch": "main",
+                "head_branch": "fix/338",
+                "branch_review_commit": head,
+                "publication_head": head,
+            },
+            "review": {"close_issues_reviewed": [338]},
+            "publish": {"title": "current", "body": "Closes #338"},
+        }
+        pr_identity = {
+            "number": 337,
+            "url": "https://github.com/castbox/guru-trellis/pull/337",
+        }
+        comparison = {
+            "live_title": "current",
+            "live_body": "Closes #338\n",
+            "title_matches": True,
+            "body_matches": False,
+        }
+        adopted_pr = {
+            **pr_identity,
+            "initial_is_draft": False,
+            "pre_push_remote_head": head,
+            "metadata_update_required": True,
+            "metadata_comparison": comparison,
+        }
+        transaction = GTT.finalization_transaction_from_plan(
+            plan,
+            next_transition="bind_pr",
+            pr=pr_identity,
+            mode="existing_pr_recovery",
+            adopted_pr=adopted_pr,
+        )
+        live_pr = {
+            **pr_identity,
+            "headRefName": "fix/338",
+            "baseRefName": "main",
+            "headRefOid": head,
+            "headRepository": {"nameWithOwner": "castbox/guru-trellis"},
+            "headRepositoryOwner": {"login": "castbox"},
+            "isCrossRepository": False,
+            "isDraft": False,
+            "title": comparison["live_title"],
+            "body": comparison["live_body"],
+        }
+
+        def preflight(current_transaction: dict[str, Any]) -> tuple[dict[str, Any] | None, str]:
+            with (
+                mock.patch.object(
+                    GTT, "resolve_closeout_pull_request", return_value=live_pr
+                ),
+                mock.patch.object(
+                    GTT, "closeout_remote_branch_head", return_value=head
+                ),
+            ):
+                return GTT.finalization_pre_mutation_remote_preflight(
+                    Path("/repo"), plan, current_transaction
+                )
+
+        self.assertEqual(preflight(transaction), (live_pr, head))
+
+        for missing_field in (
+            "metadata_comparison",
+            "metadata_update_required",
+        ):
+            with self.subTest(missing_field=missing_field):
+                missing = copy.deepcopy(transaction)
+                missing["adopted_pr"].pop(missing_field)
+                with self.assertRaises(GTT.WorkflowError) as missing_error:
+                    preflight(missing)
+                self.assertEqual(
+                    missing_error.exception.payload["reason_code"],
+                    "existing_pr_transaction_drift",
+                )
+
+        inconsistent = copy.deepcopy(transaction)
+        inconsistent["adopted_pr"]["metadata_update_required"] = False
+        with self.assertRaises(GTT.WorkflowError) as inconsistent_error:
+            preflight(inconsistent)
+        self.assertEqual(
+            inconsistent_error.exception.payload["reason_code"],
+            "existing_pr_transaction_drift",
+        )
+
+        live_pr["body"] = "changed before bind\n\nCloses #338"
+        with self.assertRaises(GTT.WorkflowError) as drift_error:
+            preflight(transaction)
+        self.assertEqual(
+            drift_error.exception.payload["reason_code"],
+            "existing_pr_recovery_drift",
+        )
 
     def test_unbound_equal_head_adoption_writes_once_and_blocks_preview_drift(self) -> None:
         head = "b" * 40
@@ -4158,6 +4259,33 @@ class FinalizeTaskContractTests(unittest.TestCase):
         self.assertEqual(advanced["adopted_pr"], adopted)
         self.assertEqual(advanced["pr"], pr)
         self.assertNotIn("pre_push_remote_head", advanced)
+
+        equal_adopted = {
+            **pr,
+            "initial_is_draft": False,
+            "pre_push_remote_head": "b" * 40,
+            "metadata_update_required": True,
+            "metadata_comparison": {
+                "live_title": "当前标题",
+                "live_body": "Closes #208\n",
+                "title_matches": True,
+                "body_matches": False,
+            },
+        }
+        equal_transaction = GTT.finalization_transaction_from_plan(
+            plan,
+            next_transition="bind_pr",
+            pr=pr,
+            mode="existing_pr_recovery",
+            adopted_pr=equal_adopted,
+        )
+        jsonschema.Draft202012Validator(
+            load("schemas/finalization-transaction.schema.json")
+        ).validate(equal_transaction)
+        equal_advanced = GTT.finalization_advance_transaction(
+            plan, equal_transaction, next_transition="archive"
+        )
+        self.assertEqual(equal_advanced["adopted_pr"], equal_adopted)
 
     def test_transaction_schema_keeps_publication_modes_mutually_exclusive(self) -> None:
         schema = jsonschema.Draft202012Validator(

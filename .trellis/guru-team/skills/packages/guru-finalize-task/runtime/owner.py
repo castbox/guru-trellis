@@ -8083,6 +8083,52 @@ def classify_unbound_equal_head_recovery(
         allow_equal=True,
     )
 
+def finalization_validate_recovery_metadata_decision(
+    publication: dict[str, Any],
+    metadata_comparison: Any,
+    metadata_update_required: Any,
+) -> dict[str, Any]:
+    """Validate the persisted original metadata snapshot and convergence decision."""
+    if (
+        not isinstance(metadata_comparison, dict)
+        or set(metadata_comparison)
+        != {"live_title", "live_body", "title_matches", "body_matches"}
+        or not isinstance(metadata_comparison.get("live_title"), str)
+        or not isinstance(metadata_comparison.get("live_body"), str)
+        or not isinstance(metadata_comparison.get("title_matches"), bool)
+        or not isinstance(metadata_comparison.get("body_matches"), bool)
+        or not isinstance(metadata_update_required, bool)
+    ):
+        raise WorkflowError(
+            "Existing PR recovery transaction metadata decision is incomplete.",
+            exit_code=2,
+            payload={"reason_code": "existing_pr_transaction_drift"},
+        )
+    expected_comparison = {
+        "live_title": metadata_comparison["live_title"],
+        "live_body": metadata_comparison["live_body"],
+        "title_matches": (
+            metadata_comparison["live_title"] == publication.get("title")
+        ),
+        "body_matches": (
+            metadata_comparison["live_body"] == publication.get("body")
+        ),
+    }
+    expected_update_required = not (
+        expected_comparison["title_matches"]
+        and expected_comparison["body_matches"]
+    )
+    if (
+        metadata_comparison != expected_comparison
+        or metadata_update_required is not expected_update_required
+    ):
+        raise WorkflowError(
+            "Existing PR recovery transaction metadata decision is inconsistent.",
+            exit_code=2,
+            payload={"reason_code": "existing_pr_transaction_drift"},
+        )
+    return copy.deepcopy(metadata_comparison)
+
 def finalization_convert_unbound_equal_head_transaction(
     plan: dict[str, Any],
     transaction: dict[str, Any],
@@ -8115,11 +8161,20 @@ def finalization_convert_unbound_equal_head_transaction(
             exit_code=2,
             payload={"reason_code": "existing_pr_recovery_drift"},
         )
+    metadata_comparison = finalization_validate_recovery_metadata_decision(
+        transaction["publication"],
+        recovery.get("metadata_comparison"),
+        recovery.get("metadata_update_required"),
+    )
     adopted_pr = {
         "number": pr["number"],
         "url": pr["url"],
         "initial_is_draft": bool(recovery["initial_is_draft"]),
         "pre_push_remote_head": publication_head,
+        "metadata_update_required": bool(
+            recovery["metadata_update_required"]
+        ),
+        "metadata_comparison": metadata_comparison,
     }
     return finalization_transaction_from_plan(
         plan,
@@ -8507,6 +8562,25 @@ def finalization_pre_mutation_remote_preflight(
                 exit_code=2,
                 payload={"reason_code": "existing_pr_scope_drift"},
             )
+        if (
+            transaction.get("next_transition") == "bind_pr"
+            and recovery.get("pre_push_remote_head")
+            == transaction.get("publication_head")
+        ):
+            metadata_comparison = finalization_validate_recovery_metadata_decision(
+                transaction["publication"],
+                recovery.get("metadata_comparison"),
+                recovery.get("metadata_update_required"),
+            )
+            if (
+                existing_pr.get("title") != metadata_comparison["live_title"]
+                or existing_pr.get("body") != metadata_comparison["live_body"]
+            ):
+                raise WorkflowError(
+                    "Equal-HEAD recovery PR metadata changed after transaction binding.",
+                    exit_code=2,
+                    payload={"reason_code": "existing_pr_recovery_drift"},
+                )
         if transaction.get("next_transition") not in {"push_content", "bind_pr"}:
             validate_closeout_remote_pull_request_identity(
                 plan,

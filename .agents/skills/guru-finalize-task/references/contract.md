@@ -101,16 +101,22 @@ existing Draft-to-Ready transition.
 
 Preview reports the exact PR, equal/strict ancestry, push decision, initial
 Draft/Ready state, per-field title/body byte comparison, metadata convergence
-decision and Ready action. Execute rereads those facts before conversion; PR
-identity, HEAD, Draft state, title/body or scope drift fails closed without
-rewriting the ordinary transaction. Fresh equal-HEAD adoption without that exact
-ordinary owner transaction remains `existing_pr_unbound_equal_head`.
+decision and Ready action. Execute rereads those facts before conversion and
+persists the original metadata comparison plus convergence decision in the
+owner-private recovery binding. An equal-HEAD `bind_pr` resume requires that
+binding and rejects an inconsistent decision or live title/body drift before
+the first remaining mutation. PR identity, HEAD, Draft state, title/body or
+scope drift fails closed without rewriting the ordinary transaction. Fresh
+equal-HEAD adoption without that exact ordinary owner transaction remains
+`existing_pr_unbound_equal_head`.
 
 Once that exact transaction owns `archive`, `push_archive`, or `mark_ready`, its
 bound PR, payload, close scope, plan digest, and HEAD identities are validated
 before any pre-PR provenance inference. A matching post-bind recovery continues
-from its recorded transition; any mismatch fails closed instead of falling back
-to fresh PR adoption or provenance reprepare.
+from its recorded transition. The original metadata binding remains recovery
+evidence while current Publication and live reread own convergence after
+`bind_pr`; any mismatch fails closed instead of falling back to fresh PR
+adoption or provenance reprepare.
 
 If archive move, commit, and push complete before Draft-to-Ready succeeds, the
 archived task retains the exact `archive`/`push_archive` transaction stage. A

@@ -1,7 +1,7 @@
 # #338 Requirements contribution
 
-本 contribution 修复 current `.42` Finalizer 同计划恢复缺口，不改变 public Skill、typed exits、transaction
-schema 或 Merge consumer。
+本 contribution 修复 current `.43` Finalizer 同计划恢复缺口，不改变 public Skill、typed exits、owner-private
+transaction schema id/version 或 Merge consumer。
 
 - `R338-01`：fresh、无 owner transaction 的 equal-HEAD Open PR 必须继续以
   `existing_pr_unbound_equal_head` 拒绝。
@@ -13,7 +13,8 @@ schema 或 Merge consumer。
 - `R338-04`：preview 必须 side-effect-free 投影 exact PR、`ancestry=equal`、`push_required=false`、原始
   Draft/Ready、title/body 字节比较、metadata decision 与 Ready action。
 - `R338-05`：execute 必须在 PR edit、archive 或 Ready mutation 前把同一个 ordinary transaction 转换并
-  持久化为 `existing_pr_recovery/bind_pr`，不得创建第二个 transaction、重复 publication push 或创建 PR。
+  持久化为 `existing_pr_recovery/bind_pr`，绑定原始 live title/body comparison 与 metadata convergence
+  decision；不得创建第二个 transaction、重复 publication push 或创建 PR。
 - `R338-06`：title/body 任一字节差异触发一次 current Publication metadata convergence；末尾 LF 属于差异，
   update 后必须 exact reread，metadata 相等路径零 edit。
 - `R338-07`：Ready 保持 Ready，Draft 仅执行一次 Draft-to-Ready；same-plan retry 从 exact transition 恢复，

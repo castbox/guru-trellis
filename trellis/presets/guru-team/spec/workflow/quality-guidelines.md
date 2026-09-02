@@ -900,10 +900,13 @@ already-pushed Publication HEAD, and the unique Open PR at that same remote HEAD
 Preview must report equal ancestry, no push, original Draft/Ready, exact PR and
 per-field title/body byte comparison; a trailing-LF-only body difference must
 require one metadata edit. Execute must persist exactly one ordinary-to-recovery
-conversion before external mutation, then reuse existing archive/Ready replay.
-Tests keep fresh equal-HEAD rejection, prove metadata-equal zero edit, Ready and
-Draft paths, same-plan retry zero duplicate mutation, and fail before conversion
-on PR/HEAD/Draft/metadata/scope/plan/stage/binding/archive drift.
+conversion, including the original metadata comparison and convergence decision,
+before external mutation, then reuse existing archive/Ready replay. Tests keep
+fresh equal-HEAD rejection, preserve legacy strict-ancestor transaction validity,
+require the persisted decision for equal-HEAD `bind_pr`, prove matching metadata,
+metadata-equal zero edit, Ready and Draft paths, same-plan retry zero duplicate
+mutation, and fail before mutation on missing/inconsistent decision or
+PR/HEAD/Draft/metadata/scope/plan/stage/binding/archive drift.
 Finish-family integration additionally proves current finish-summary schema 2
 is derived once from the reviewed payload and live facts, historical schema 1
 remains discoverable, and the current runtime/inventories contain no retired

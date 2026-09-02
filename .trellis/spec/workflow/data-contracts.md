@@ -1372,12 +1372,15 @@ of `publication_head`; equality is valid after the exact pre-push HEAD and
 publication HEAD are bound by the same recovery transaction, or while one exact
 current `ordinary_publication/push_content` transaction remains unbound and the
 remote, PR and Publication HEADs already equal. In the latter case preview keeps
-the live title/body bytes and field-equality facts invocation-local; execute
-rereads them, converts the same schema 3.0 transaction to
-`existing_pr_recovery/bind_pr`, and persists that conversion before any PR,
-archive or Ready mutation. No second transaction, publication push or PR create
-is permitted. Fresh equal-HEAD adoption without this owner transaction remains
-invalid. The current Ledger close scope must equal the PR close
+the live title/body bytes, field-equality facts and convergence decision;
+execute rereads them, converts the same schema 3.0 transaction to
+`existing_pr_recovery/bind_pr`, and persists the original comparison and
+decision in its additive private `adopted_pr` binding before any PR, archive or
+Ready mutation. Existing strict-ancestor transactions without those additive
+fields remain valid, while an equal-HEAD `bind_pr` resume requires internally
+consistent fields and unchanged live metadata. No second transaction,
+publication push or PR create is permitted. Fresh equal-HEAD adoption without
+this owner transaction remains invalid. The current Ledger close scope must equal the PR close
 scope before metadata mutation. Current Publication title/body is the only
 convergence authority. Any identity, scope, payload, original state, ancestry,
 archive, or transaction drift fails closed. Schema 2.0 remains immutable at its
@@ -1386,8 +1389,10 @@ explicit versioned path and cannot adopt an existing PR.
 After the exact recovery transaction binds its PR and advances to `archive`,
 `push_archive`, or `mark_ready`, it is the current stage authority. Preview
 validates its complete minimal identity before applying any pre-PR provenance
-inference; a matching transaction resumes its recorded transition, while a
-mismatch fails closed and cannot fall back to fresh adoption or reprepare.
+inference; the persisted original metadata remains decision evidence, while
+current Publication and live reread own convergence. A matching transaction
+resumes its recorded transition, while a mismatch fails closed and cannot fall
+back to fresh adoption or reprepare.
 
 Archive commit/push may complete before a Draft-to-Ready call returns. In that
 normal interruption window the archived task and owner transaction retain

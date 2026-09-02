@@ -1642,9 +1642,12 @@ post-push equality, or one exact unbound ordinary `push_content` transaction
 whose remote/PR/Publication HEAD already equal. The unbound equal path compares
 the complete rebuilt transaction identity plus live PR metadata bytes, converts
 that same transaction to `existing_pr_recovery/bind_pr` before any remaining
-external mutation, and does not repeat publication push or PR creation. Fresh
-equal-HEAD adoption without that transaction remains blocked. Recovery retains
-the original Draft/Ready state and current close scope before mutation. The executor pushes only the
+external mutation, persists the original metadata comparison and convergence
+decision in its owner-private binding, and does not repeat publication push or
+PR creation. An equal-HEAD `bind_pr` resume requires that internally consistent
+binding and unchanged live metadata; fresh equal-HEAD adoption without that
+transaction remains blocked. Recovery retains the original Draft/Ready state
+and current close scope before mutation. The executor pushes only the
 exact publication commit by non-force fast-forward, converges reviewed metadata,
 archives, then preserves Ready or performs Draft-to-Ready. Finalizer never calls extension verification,
 reads verifier owner state, accepts a verification re-entry profile, or retains

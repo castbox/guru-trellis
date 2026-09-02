@@ -16,7 +16,7 @@
 
 1. 创建 `docs/requirements-design-test-contributions/338-finalizer-unbound-equal-head-recovery/`。
 2. 定义 requirement/behavior、design responsibility/contract、test strategy/scenario/case 与 traceability。
-3. 绑定 current `.42` RDT 与 Architecture identity，不直接改写 shared current。
+3. 绑定 current `.43` RDT 与 Architecture identity，不直接改写 shared current。
 4. 在最终 Phase 2 check 前完成 RDT owner review、serialized promotion 与 promotion-diff recheck。
 
 ## 3. Phase B: Focused Regression First
@@ -38,11 +38,13 @@
 ## 5. Phase D: Transaction Conversion And Execution
 
 1. 在首个剩余 mutation 前把 exact ordinary transaction 转换为 current existing recovery transaction。
-2. 绑定 PR identity、一致 HEAD、initial Draft/Ready、Publication payload、scope 与 plan digest。
+2. 绑定 PR identity、一致 HEAD、initial Draft/Ready、原始 live title/body comparison、
+   `metadata_update_required`、Publication payload、scope 与 plan digest。
 3. 跳过 publication push 和 PR create，复用 bind、metadata convergence、archive、push_archive、Ready
    handling 与 terminal projection。
 4. 验证 metadata equal 路径零 edit，末尾 LF 路径一次 edit 和 post-update exact reread。
-5. 验证 retry 不重复 edit、archive move/commit/push 或 Ready mutation。
+5. 验证 equal-HEAD `bind_pr` 恢复对缺失/不一致原始 metadata decision 和 live drift fail closed；推进到
+   `archive` 后 retry 不重复 edit、archive move/commit/push 或 Ready mutation。
 
 ## 6. Phase E: Contracts, Durable Docs, Projection
 

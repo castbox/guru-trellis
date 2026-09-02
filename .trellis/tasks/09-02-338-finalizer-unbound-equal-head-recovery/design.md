@@ -64,11 +64,14 @@ transaction 的 plan identity、未绑定状态与 `next_transition=push_content
 - 写入 `pr` 与 `adopted_pr`；
 - 保留 task/repo/base/branch/review/publication/plan/payload/scope identity；
 - `pre_push_remote_head=publication_head`；
+- 在 `adopted_pr` 中绑定 preview 已复核的原始 live title/body、逐字段 byte-equality facts 与
+  `metadata_update_required` 决策；
 - `next_transition=bind_pr`，随后复用 current binding transition 推进到 `archive`；
 - 在任何 PR edit、archive 或 Ready mutation 前重新读取并验证 live identity。
 
-Current schema 已承载该形状，因此不迁移 schema。若实现证明 schema validator 无法表达该转换，停止并重新
-审查公共兼容合同，不在本 task 静默改变 schema 语义。
+Current owner-private transaction schema 3.0 以 additive optional fields 承载上述绑定；schema id/version、public
+Skill I/O 与 strict-ancestor legacy transaction 兼容性保持不变。Equal-HEAD `bind_pr` runtime 必须要求并验证这些
+字段，缺失、内部决策不一致或 live metadata 相对原始绑定漂移时在首个剩余 mutation 前阻断。
 
 ## 5. Metadata And Remaining Mutations
 
@@ -82,6 +85,8 @@ Current schema 已承载该形状，因此不迁移 schema。若实现证明 sch
 6. terminal 验证 local/remote/PR HEAD 与 Ready 状态，输出 `ready_for_merge`。
 
 PR metadata edit 与 close-scope验证必须共用 live reread，防止末尾 LF 收敛误改变 Issue disposition。
+当 transaction 已推进到 `archive` 或更后阶段时，原始 metadata 只作为已完成 bind 决策证据保留；current
+Publication payload 与 live reread 继续拥有 convergence 和 retry authority。
 
 ## 6. Recovery And Drift
 
