@@ -37,4 +37,3 @@
 - 不修改 Trellis upstream、全局 npm、`node_modules` 或业务仓库。
 - 不改变 Guru Team public Skill I/O、typed exits、marketplace workflow、preset installer 或业务仓库投影。
 - 不增加恶意 actor、对抗输入、并发竞态、锁、TOCTOU、fault injection 或跨 OS crash-consistency 范围。
-

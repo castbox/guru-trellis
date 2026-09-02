@@ -27,6 +27,8 @@ Skill 将 preparation 路由到现有 standard intake，并复用以下 owners�
 
 Skill 不复制上述 owner 的内部步骤，也不把 Review、Publication 或 Finalizer 结论写回 tracked task。Finalizer 现行 reviewed-content identity 合同明确排除的 provenance/archive metadata tail 不构成 delivery content 变化，不触发第二次完整 Branch Review。
 
+若 fresh base 在 Finalizer 前正常前进，现有 `base_reconciliation_required` exit 必须在无 closeout plan 的路径上按自身 exact base facts 完成 preview、recorder、checker 与 public projection。该路径若被通用 plan-based identity 校验错误阻断，实施可窄修 Finalizer canonical runtime 及其 current-checkout dogfood 投影；修复不得改变 public schema、typed exit、consumer 或 transaction 行为。
+
 ### Post-Merge Exact Candidate
 
 preparation PR 合并后，Skill 丢弃 preparation branch HEAD、旧 Branch Review、Publication 和 release evidence，fresh fetch `origin/main` 并冻结 candidate commit/tree。candidate 必须能由 live merge/base facts证明来源，且所有 release checks 绑定同一 candidate。
@@ -59,6 +61,6 @@ tracked task 和 durable docs 不保存 HEAD、时间戳、阶段进度、Gate �
 
 ## Test Design
 
-repo-private contract tests 校验四投影字节一致、public inventories 零泄漏、forbidden tracked artifacts 为零、独立 confirmation boundaries 和 fail-closed wording。honest-path integration fixture 使用临时 Git 仓库与现有 reviewed-content helper，证明：稳定计划 -> 最终内容 commit -> 一次完整 Branch Review -> Publication -> Finalizer；lifecycle metadata 不改变 identity，而 delivery/durable/config/script/test 变化改变 identity 并要求 re-review。
+repo-private contract tests 校验四投影字节一致、public inventories 零泄漏、forbidden tracked artifacts 为零、独立 confirmation boundaries 和 fail-closed wording。honest-path integration fixture 使用临时 Git 仓库与现有 reviewed-content helper，证明：稳定计划 -> 最终内容 commit -> 一次完整 Branch Review -> Publication -> Finalizer；Finalizer package 回归另以正常 base 前进证明 planless `base_reconciliation_required` 可通过 preview、recorder、checker 与 public wrapper。lifecycle metadata 不改变 identity，而 delivery/durable/config/script/test 变化改变 identity 并要求 re-review。
 
 测试不伪造恶意状态，不依赖 Issue #332 资源，不创建真实 tag、Release、PR 或业务仓库安装。

@@ -6,4 +6,3 @@
 {"file":".trellis/spec/architecture/baseline-usage.md","reason":"按 Planning/Phase 2/Branch Review/Publication/Finish 生命周期消费 Architecture Baseline owner。"}
 {"file":"docs/architecture/00-foundation/design-constitution.md","reason":"约束 release orchestration 的 owner composition、最小状态和长期架构归属。"}
 {"file":"README.md","reason":"新增仓库维护者可发现的 repo-private正式发布入口。"}
-

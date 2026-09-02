@@ -12,7 +12,8 @@
 - `T335-04`（R335-03/06/07）：honest-path 临时 Git fixture 执行稳定 planning -> 最终交付内容 ->
   Task Commit -> 一次完整 Branch Review，并把 checker-passed 结果依次交给 Publication 与 Finalizer
   production wrappers；断言没有 task-local release notes/status/body、release-status metadata commit
-  或第二次完整 Branch Review。
+  或第二次完整 Branch Review。Finalizer package 另以普通 base 前进 fixture 执行 preview -> recorder ->
+  checker -> public wrapper，断言 exact `base_reconciliation_required` 输出可达且无 closeout mutation。
 - `T335-05`（R335-07/08）：在同一 reviewed delivery identity 上创建、替换和退休 owner-private
   lifecycle metadata，identity 保持不变；分别改变 Skill、durable docs、配置、schema、script 和 test
   bytes，identity 必须变化且相关 gate 返回 stale/re-review route。

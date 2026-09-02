@@ -19,7 +19,9 @@
   typed exits、recorder/validator、确认和副作用。
 - `D335-05`：最终 delivery content commit 后只执行一次覆盖完整 `origin/<base>...HEAD` 的独立
   Branch Review。Publication 和 Finalizer 只消费其现有最小 handoff；允许的 lifecycle-only
-  metadata 不回写 delivery content，因此不触发第二次完整 Review。
+  metadata 不回写 delivery content，因此不触发第二次完整 Review。Finalizer 前发生正常 base 前进时，
+  已声明的 planless `base_reconciliation_required` route 先按自身 exact base facts 校验，再进入既有
+  reconciliation owner；不得因通用 plan identity 为空而拒绝该 route，也不得改变其 public I/O。
 - `D335-06`：merge 后重新 fetch `origin/main`，从 live merge/base facts 建立 invocation-local exact
   candidate。preparation branch identity、旧 gates 和旧 release evidence 不作为 candidate authority，
   cross-SHA 或 lineage gap 直接停止。
