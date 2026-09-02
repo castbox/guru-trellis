@@ -1,0 +1,183 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-02T10:43:39Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-02-334-canonical-dogfood-projection-drift",
+    "title": "#334 修复 canonical 与 dogfood 投影漂移",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/334-canonical-dogfood-projection-drift",
+    "commits": [
+      "55e5bb906281a9c76c35d03b3fac4b47ccd8ac3f",
+      "98fa3105b6f886e0f19ea723751fddf87f434fb9"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-finalize-task/references/contract.md",
+      ".claude/skills/guru-finalize-task/commands.json",
+      ".claude/skills/guru-finalize-task/references/contract.md",
+      ".codex/skills/guru-finalize-task/references/contract.md",
+      ".cursor/skills/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/check.jsonl",
+      ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/design.md",
+      ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/implement.jsonl",
+      ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/implement.md",
+      ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/issue-scope-ledger.json",
+      ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/prd.md",
+      ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/task.json",
+      ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/design.md",
+      ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/implement.md",
+      ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/prd.md",
+      ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/task.json",
+      "trellis/presets/guru-team/spec/workflow/data-contracts.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      334
+    ],
+    "close_issues": [
+      334
+    ],
+    "related_issues": [
+      333
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/336"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#334 修复 canonical 与 dogfood 投影漂移",
+    "outcome": "恢复 canonical preset 中现有 Finalizer provenance 数据合同。",
+    "changed_behavior": [
+      "恢复 canonical preset 中现有 Finalizer provenance 数据合同。",
+      "将 installed Finalizer 测试及 Shared、Codex、Claude、Cursor 投影收敛到 canonical 当前内容。",
+      "更新 dogfood extension inventory 与当前 self-hosted apply provenance。",
+      "对齐 #334 primary Issue 与 close disposition 的 ledger identity。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/design.md",
+          ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/implement.md",
+          ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/prd.md",
+          ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/design.md",
+          ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/implement.md",
+          ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/prd.md"
+        ],
+        "change": "恢复 canonical preset 中现有 Finalizer provenance 数据合同。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "恢复 canonical preset 中现有 Finalizer provenance 数据合同。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/spec/workflow/data-contracts.md"
+        ],
+        "change": "恢复 canonical preset 中现有 Finalizer provenance 数据合同。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "change": "恢复 canonical preset 中现有 Finalizer provenance 数据合同。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-finalize-task/references/contract.md",
+          ".claude/skills/guru-finalize-task/commands.json",
+          ".claude/skills/guru-finalize-task/references/contract.md",
+          ".codex/skills/guru-finalize-task/references/contract.md",
+          ".cursor/skills/guru-finalize-task/references/contract.md"
+        ],
+        "change": "恢复 canonical preset 中现有 Finalizer provenance 数据合同。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/check.jsonl",
+          ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/implement.jsonl",
+          ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/issue-scope-ledger.json",
+          ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/task.json",
+          ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/task.json"
+        ],
+        "change": "恢复 canonical preset 中现有 Finalizer provenance 数据合同。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#333",
+        "#334"
+      ],
+      "pr_refs": [
+        "PR #336"
+      ],
+      "branches": [
+        "fix/334-canonical-dogfood-projection-drift"
+      ],
+      "paths": [
+        ".agents/skills/guru-finalize-task/references/contract.md",
+        ".claude/skills/guru-finalize-task/commands.json",
+        ".claude/skills/guru-finalize-task/references/contract.md",
+        ".codex/skills/guru-finalize-task/references/contract.md",
+        ".cursor/skills/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/check.jsonl",
+        ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/design.md",
+        ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/implement.jsonl",
+        ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/implement.md",
+        ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/issue-scope-ledger.json",
+        ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/prd.md",
+        ".trellis/tasks/09-02-334-canonical-dogfood-projection-drift/task.json",
+        ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/design.md",
+        ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/implement.md",
+        ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/prd.md",
+        ".trellis/tasks/archive/2026-09/09-02-334-canonical-dogfood-projection-drift/task.json",
+        "trellis/presets/guru-team/spec/workflow/data-contracts.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#334 修复 canonical 与 dogfood 投影漂移",
+        "恢复 canonical preset 中现有 Finalizer provenance 数据合同。",
+        "完成 contract.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#334 修复 canonical 与 dogfood 投影漂移\n恢复 canonical preset 中现有 Finalizer provenance 数据合同。\n将 installed Finalizer 测试及 Shared、Codex、Claude、Cursor 投影收敛到 canonical 当前内容。\n更新 dogfood extension inventory 与当前 self-hosted apply provenance。\n对齐 #334 primary Issue 与 close disposition 的 ledger identity。\n完成 contract.md 相关变更"
+  }
+}

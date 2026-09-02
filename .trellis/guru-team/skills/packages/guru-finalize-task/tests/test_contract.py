@@ -632,6 +632,36 @@ class FinalizeTaskContractTests(unittest.TestCase):
                         self.assertTrue(dirty)
                 finally:
                     shutil.rmtree(temp_root)
+
+    def test_workspace_boundary_does_not_rebuild_missing_runtime_mapping(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="guru-boundary-no-rebuild-") as temporary:
+            root = Path(temporary)
+            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.name", "Guru Test"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.email", "guru@example.com"], cwd=root, check=True)
+            task_dir = root / ".trellis/tasks/09-01-327-boundary"
+            task_dir.mkdir(parents=True)
+            (task_dir / "task.json").write_text(
+                json.dumps(
+                    {
+                        "id": "327-boundary",
+                        "name": "327-boundary",
+                        "title": "boundary",
+                        "status": "in_progress",
+                        "branch": "main",
+                        "base_branch": "main",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            git_fixture_commit(root, ".trellis/tasks/09-01-327-boundary/task.json")
+            config = {"runtime_root": str(root / ".runtime")}
+            with mock.patch.object(GTT, "rebuild_runtime_mappings") as rebuild:
+                with self.assertRaises(GTT.WorkflowError) as caught:
+                    GTT.load_task_runtime_identity(task_dir, config, allow_rebuild=False)
+            rebuild.assert_not_called()
+            self.assertIn("could not derive or rebuild", str(caught.exception))
+            self.assertFalse((root / ".runtime").exists())
     def test_prepare_closeout_initial_publication_binds_target_repo_without_existing_plan(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -1729,10 +1759,10 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     side_effect=local_source_fetch_runner(root, observed),
                 ):
                     result = GTT.prepare_provenance_metadata_tail(
-                        root,
-                        reviewed,
-                        "castbox/guru-trellis",
-                    )
+                    root,
+                    reviewed,
+                    "castbox/guru-trellis",
+                )
 
                 applied = json.loads(manifest_path.read_text(encoding="utf-8"))
                 for locator in ("install", "skill_packages", "overlays"):
@@ -1792,6 +1822,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 + "\n",
                 encoding="utf-8",
             )
+            parent_bytes = manifest_path.read_bytes()
             commit_provenance_fixture(root, "preset installed")
             (root / "task.txt").write_text("reviewed\n", encoding="utf-8")
             reviewed = commit_provenance_fixture(root, "reviewed task")
@@ -1820,8 +1851,13 @@ class FinalizeTaskContractTests(unittest.TestCase):
             self.assertEqual(result["reviewed_content_head"], reviewed)
             self.assertNotEqual(result["publication_head"], reviewed)
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            parent = json.loads(parent_bytes.decode("utf-8"))
             self.assertEqual(manifest["source"]["ref"], reviewed)
             self.assertEqual(manifest["source"]["commit"], reviewed)
+            self.assertEqual(manifest["installed_at"], parent["installed_at"])
+            self.assertEqual(manifest["install"], parent["install"])
+            self.assertEqual(manifest["skill_packages"], parent["skill_packages"])
+            self.assertEqual(manifest["overlays"], parent["overlays"])
             self.assertFalse(
                 GTT.finalizer_pre_pr_provenance_tail_required(root, plan)
             )

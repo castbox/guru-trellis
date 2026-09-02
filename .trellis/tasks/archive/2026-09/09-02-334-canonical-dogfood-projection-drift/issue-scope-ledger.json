@@ -1,0 +1,26 @@
+{
+  "close_issues": [
+    {
+      "number": 334,
+      "reason": "Primary independently deliverable projection-drift fix.",
+      "title": "[Bug] 修复 #325/#327 遗留的 canonical 与 dogfood 投影漂移",
+      "url": "https://github.com/castbox/guru-trellis/issues/334"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 334,
+    "reason": "Primary independently deliverable projection-drift fix.",
+    "title": "[Bug] 修复 #325/#327 遗留的 canonical 与 dogfood 投影漂移",
+    "url": "https://github.com/castbox/guru-trellis/issues/334"
+  },
+  "related_issues": [
+    {
+      "number": 333,
+      "reason": "Issue 334 is a prerequisite; Issue 333 implementation remains separate.",
+      "title": "[Bug] Make guru-create-task-workspace Issue creation recoverable and idempotent",
+      "url": "https://github.com/castbox/guru-trellis/issues/333"
+    }
+  ],
+  "schema_version": "2.0"
+}
