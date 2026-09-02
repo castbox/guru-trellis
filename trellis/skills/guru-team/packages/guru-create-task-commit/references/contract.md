@@ -90,14 +90,21 @@ the normal Agent path is two package invocations rather than prepare, check,
 create, and legacy projection, while preserving one pre-confirmation prepare
 and one post-confirmation authoritative validation.
 
-After a successful ref mutation and executor cleanup, the facade writes one
-minimal ignored `task_commit_happy_path_result` receipt. The receipt binds the
-exact candidate locator, task/base/ref identity, parent, commit tree, and raw
-message digest. Retrying the same facade locator after stdout loss performs
-only live immutable-Git verification and returns the same `committed` DTO; it
-does not run hooks, create a commit, or update a ref again. A changed ref,
-parent, tree, or message fails closed. The next complete prepare for the same
-task retires the previous receipt before creating its new candidate.
+After the commit object, parent, tree and message are verified and the live
+pre-publication conditions still hold, the exact executor writes one minimal
+ignored `task_commit_happy_path_result` receipt before `git update-ref`. The
+receipt binds the exact candidate locator, task/base/ref identity, parent,
+commit tree and raw message digest. It is not a committed result by itself: the
+facade projects `committed` only when the live symbolic ref points to the bound
+commit and all receipt identities verify. If ref mutation did not occur, the
+candidate remains authoritative for a normal retry and the executor may
+replace the prewritten receipt. If interruption occurs after ref mutation, the
+facade uses the candidate plus receipt to finish the exact-path live-index
+postconditions and cleanup without rerunning hooks, creating another commit or
+updating the ref again. A changed ref, parent, tree or message fails closed.
+The next complete prepare for the same task retires the previous receipt before
+creating its new candidate. Compatibility executor calls do not request or
+write this facade-owned receipt.
 
 `check-task-commit-plan.sh`, `create-task-commit.sh`, and `invoke.sh` remain
 stable compatibility/testing/diagnostic entries. Legacy callers may keep their

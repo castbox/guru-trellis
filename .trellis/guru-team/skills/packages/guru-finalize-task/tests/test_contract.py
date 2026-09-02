@@ -2666,6 +2666,17 @@ class FinalizeTaskContractTests(unittest.TestCase):
             interrupt_archive=False,
         )
 
+    def test_happy_path_adopts_unbound_equal_head_without_republishing(self) -> None:
+        for metadata_variant in ("equal", "trailing_lf"):
+            with self.subTest(metadata_variant=metadata_variant):
+                self._assert_existing_pr_recovery_real_topology(
+                    recovery_ancestry="equal",
+                    initial_is_draft=False,
+                    metadata_variant=metadata_variant,
+                    interrupt_archive=False,
+                    through_happy_path_facade=True,
+                )
+
     def _assert_existing_pr_recovery_real_topology(
         self,
         *,
@@ -2673,9 +2684,13 @@ class FinalizeTaskContractTests(unittest.TestCase):
         initial_is_draft: bool = True,
         metadata_variant: str = "different",
         interrupt_archive: bool = True,
+        through_happy_path_facade: bool = False,
     ) -> None:
         self.assertIn(recovery_ancestry, {"strict_ancestor", "equal"})
         self.assertIn(metadata_variant, {"different", "trailing_lf", "equal"})
+        if through_happy_path_facade:
+            self.assertEqual(recovery_ancestry, "equal")
+            self.assertFalse(interrupt_archive)
         with tempfile.TemporaryDirectory() as temporary:
             temporary_root = Path(temporary)
             root = temporary_root / "repo"
@@ -3018,8 +3033,39 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     "output": copy.deepcopy(GTT.FINALIZATION_EXECUTOR_OUTPUT_MARKER),
                 }
             }
-            args = SimpleNamespace(root=str(root), input=input_locator, gate="gate.json")
+            review_locator = ".trellis/.runtime/guru-team/issue-251/review.json"
+            review_path = root / review_locator
+            review_path.write_text(
+                json.dumps(load("examples/semantic-review-input.json")) + "\n",
+                encoding="utf-8",
+            )
+            args = SimpleNamespace(
+                root=str(root),
+                input=input_locator,
+                review_input=review_locator,
+                confirmed_preview_sha256=None,
+                gate="gate.json",
+            )
             no_op = mock.Mock()
+            facade = load_facade() if through_happy_path_facade else None
+            facade_counters: dict[str, int] = {}
+            executed_results: list[dict[str, Any]] = []
+            terminal_transactions: list[dict[str, Any]] = []
+            original_execute_transition = GTT.execute_finalization_transition_result
+
+            def recording_execute_transition(*execute_args, **execute_kwargs):
+                result = original_execute_transition(*execute_args, **execute_kwargs)
+                executed_results.append(result)
+                archived_task_dir = result.get("archived_task_dir")
+                if isinstance(archived_task_dir, str):
+                    transaction = GTT.finalization_read_transaction(
+                        root,
+                        Path(archived_task_dir),
+                    )
+                    if isinstance(transaction, dict):
+                        terminal_transactions.append(copy.deepcopy(transaction))
+                return result
+
             patches = (
                 mock.patch.object(GTT, "finalization_gate_input", return_value=(gate, root / "gate.json")),
                 mock.patch.object(
@@ -3065,6 +3111,11 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 mock.patch.object(GTT, "validate_publish_identity_and_remote_head", no_op),
                 mock.patch.object(GTT, "finalization_live_open_close_issues", return_value=[]),
                 mock.patch.object(GTT, "finalization_package_root", return_value=PACKAGE),
+                mock.patch.object(
+                    GTT,
+                    "execute_finalization_transition_result",
+                    side_effect=recording_execute_transition,
+                ),
             )
             with ExitStack() as stack:
                 for patcher in patches:
@@ -3111,7 +3162,16 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     ],
                 )
                 self.assertEqual(set(mutations.values()), {0})
-                if interrupt_archive:
+                if through_happy_path_facade:
+                    args.confirmed_preview_sha256 = preview["confirmation_identity"]
+                    output = facade.execute_happy_path(
+                        GTT,
+                        args,
+                        counters=facade_counters,
+                    )
+                    completed = executed_results[-1]
+                    self.assertEqual(output, completed["output"])
+                elif interrupt_archive:
                     with self.assertRaisesRegex(
                         GTT.WorkflowError, "task.py archive move failed"
                     ):
@@ -3234,8 +3294,10 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     completed = GTT.cmd_execute_finalization_transition(args)
                 self.assertEqual(completed["stage"], "ready")
                 self.assertEqual(completed["typed_exit"], "ready_for_merge")
-                transaction = GTT.finalization_read_transaction(
-                    root, root / archive_locator
+                transaction = (
+                    terminal_transactions[-1]
+                    if through_happy_path_facade
+                    else GTT.finalization_read_transaction(root, root / archive_locator)
                 )
                 self.assertEqual(transaction["mode"], "existing_pr_recovery")
                 self.assertEqual(
@@ -3294,6 +3356,16 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     ):
                         if event in mutation_events:
                             self.assertLess(conversion_index, mutation_events.index(event))
+
+                if through_happy_path_facade:
+                    self.assertEqual(facade_counters["terminal.post_exit_operation"], 0)
+                    self.assertIsNone(
+                        GTT.finalization_find_transaction_by_task_ref(
+                            root,
+                            active_locator,
+                        )
+                    )
+                    return
 
                 terminal_snapshot = copy.deepcopy(mutations)
                 terminal = GTT.cmd_execute_finalization_transition(args)

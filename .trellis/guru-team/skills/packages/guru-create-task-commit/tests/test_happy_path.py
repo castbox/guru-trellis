@@ -18,6 +18,7 @@ for path in (SKILLS, LOCAL):
 
 from runtime.io import CommandError
 from common import capture_snapshot, commit_result_path
+import execute
 import invoke
 import record
 
@@ -186,6 +187,60 @@ class HappyPathFacadeTest(unittest.TestCase):
         self.assertTrue(receipt.is_file())
         self.assertEqual("preserved\n", (self.repo / "unrelated.txt").read_text())
         self.assertEqual("before", self.git("show", "HEAD:unrelated.txt"))
+
+    def test_post_ref_interruption_recovers_same_dto_without_duplicate_mutation(self) -> None:
+        execute_calls = 0
+        original_execute = invoke.execute_commit
+        original_git = execute.git
+
+        def counted_execute(*args, **kwargs):
+            nonlocal execute_calls
+            execute_calls += 1
+            return original_execute(*args, **kwargs)
+
+        def interrupt_after_update_ref(repo, *args, **kwargs):
+            result = original_git(repo, *args, **kwargs)
+            if args and args[0] == "update-ref":
+                raise RuntimeError("simulated interruption after update-ref")
+            return result
+
+        invoke.execute_commit = counted_execute
+        execute.git = interrupt_after_update_ref
+        self.addCleanup(setattr, invoke, "execute_commit", original_execute)
+        self.addCleanup(setattr, execute, "git", original_git)
+        ref = "refs/heads/feature/happy-path"
+        reflog_before = self.git("reflog", "show", "--format=%H", ref).splitlines()
+        commits_before = int(self.git("rev-list", "--count", "HEAD"))
+
+        with self.assertRaisesRegex(RuntimeError, "after update-ref"):
+            self.invoke_facade()
+
+        commit = self.git("rev-parse", "HEAD")
+        receipt = commit_result_path(self.repo, "09-02-happy-path", "001")
+        reflog_after_interruption = self.git(
+            "reflog", "show", "--format=%H", ref
+        ).splitlines()
+        self.assertTrue(self.candidate_path.exists())
+        self.assertTrue(receipt.is_file())
+        self.assertEqual(commits_before + 1, int(self.git("rev-list", "--count", "HEAD")))
+        self.assertEqual(len(reflog_before) + 1, len(reflog_after_interruption))
+
+        execute.git = original_git
+        recovered = self.invoke_facade()
+        recovered_again = self.invoke_facade()
+
+        self.assertEqual(recovered, recovered_again)
+        self.assertEqual("committed", recovered["exit_id"])
+        self.assertEqual(commit, recovered["branch_review_commit"])
+        self.assertEqual(1, execute_calls)
+        self.assertFalse(self.candidate_path.exists())
+        self.assertEqual("", self.git("diff", "--cached", "--name-only"))
+        self.assertEqual("M unrelated.txt", self.git("status", "--short", "--untracked-files=no"))
+        self.assertEqual(
+            reflog_after_interruption,
+            self.git("reflog", "show", "--format=%H", ref).splitlines(),
+        )
+        self.assertEqual(commits_before + 1, int(self.git("rev-list", "--count", "HEAD")))
 
     def test_recovery_rejects_changed_head_without_reexecuting(self) -> None:
         self.invoke_facade()

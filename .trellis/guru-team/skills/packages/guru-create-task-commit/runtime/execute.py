@@ -1,14 +1,27 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import os
 import shlex
 import stat
 import subprocess
 from pathlib import Path
 
-from common import capture_snapshot, git, load, parse, repo_rel, root, validate_candidate
+from common import (
+    canonical_candidate_locator,
+    capture_snapshot,
+    commit_result_path,
+    git,
+    load,
+    parse,
+    repo_rel,
+    root,
+    validate_candidate,
+)
 from runtime.io import CommandError
+from runtime.schema import validate_json
 from runtime.temporary_lifecycle import temporary_directory
 
 
@@ -188,6 +201,128 @@ def _verify_commit(
         )
 
 
+def _write_happy_path_receipt(
+    package_root: Path,
+    repo: Path,
+    candidate_locator: str,
+    candidate: dict,
+    commit: str,
+    branch_ref: str,
+) -> dict:
+    receipt = {
+        "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-happy-path-result-1.0.json",
+        "schema_version": "1.0",
+        "skill_id": "guru-create-task-commit",
+        "candidate_artifact": candidate_locator,
+        "task_ref": candidate["task"]["path"],
+        "base_ref": candidate["git"]["base_ref"],
+        "branch_ref": branch_ref,
+        "pre_commit_head": candidate["git"]["pre_commit_head"],
+        "commit_sha": commit,
+        "commit_tree": git(repo, "show", "-s", "--format=%T", commit).stdout.strip(),
+        "message_sha256": hashlib.sha256(
+            _raw_commit_message(repo, commit).encode()
+        ).hexdigest(),
+    }
+    validate_json(
+        receipt,
+        package_root / "schemas/happy-path-result.schema.json",
+        "happy_path_result",
+    )
+    _path, _relative, task_key, sequence = canonical_candidate_locator(
+        repo, candidate_locator
+    )
+    target = commit_result_path(repo, task_key, sequence)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n")
+    return receipt
+
+
+def recover_published_happy_path_commit(
+    package_root: Path,
+    repo: Path,
+    candidate_locator: str,
+    candidate: dict,
+    receipt: dict,
+) -> None:
+    validate_json(
+        candidate,
+        package_root / "schemas/task-commit-candidate.schema.json",
+        "candidate",
+    )
+    expected = {
+        "candidate_artifact": candidate_locator,
+        "task_ref": candidate["task"]["path"],
+        "base_ref": candidate["git"]["base_ref"],
+        "pre_commit_head": candidate["git"]["pre_commit_head"],
+        "message_sha256": hashlib.sha256(candidate["message"]["bytes"].encode()).hexdigest(),
+    }
+    if any(receipt.get(key) != value for key, value in expected.items()):
+        raise CommandError(
+            "stale_identity",
+            "happy_path_result",
+            "The recovery receipt no longer matches the prepared candidate.",
+            3,
+        )
+    commit = receipt["commit_sha"]
+    _verify_commit(
+        repo,
+        commit,
+        receipt["pre_commit_head"],
+        receipt["commit_tree"],
+        candidate["message"]["bytes"],
+        [],
+    )
+    exact = set(candidate["exact_stage_paths"])
+    unrelated_index_before = index_entries(repo, exact)
+    try:
+        git(repo, "reset", "-q", commit, "--", *candidate["exact_stage_paths"])
+    except CommandError as error:
+        raise _commit_failure(
+            stage="live_ref_published",
+            message="The published commit recovery could not refresh the live index.",
+            pre_commit_head=receipt["pre_commit_head"],
+            commit_sha=commit,
+            hook_results=[],
+        ) from error
+    if index_entries(repo, exact) != unrelated_index_before:
+        raise _commit_failure(
+            stage="live_ref_published",
+            message="The published commit recovery changed unrelated semantic index entries.",
+            pre_commit_head=receipt["pre_commit_head"],
+            commit_sha=commit,
+            hook_results=[],
+        )
+    if git(
+        repo,
+        "diff",
+        "--cached",
+        "--quiet",
+        commit,
+        "--",
+        *candidate["exact_stage_paths"],
+        check=False,
+    ).returncode:
+        raise _commit_failure(
+            stage="live_ref_published",
+            message="The published commit recovery left reviewed paths staged.",
+            pre_commit_head=receipt["pre_commit_head"],
+            commit_sha=commit,
+            hook_results=[],
+        )
+    candidate_path, _relative, _task_key, _sequence = canonical_candidate_locator(
+        repo, candidate_locator
+    )
+    candidate_path.unlink(missing_ok=True)
+    phase2 = (
+        repo
+        / ".trellis/.runtime/guru-team/owner-checkpoints"
+        / Path(candidate["task"]["path"]).name
+        / "phase2-check.json"
+    )
+    phase2.unlink(missing_ok=True)
+
+
 def _registered_worktrees(repo: Path) -> set[Path]:
     process = git(repo, "worktree", "list", "--porcelain")
     return {
@@ -351,6 +486,23 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
                     pre_commit_head=pre,
                     commit_sha=created_commit,
                     hook_results=results,
+                )
+
+            happy_path_locator = command.get("_happy_path_candidate_locator")
+            if happy_path_locator is not None:
+                if not isinstance(happy_path_locator, str):
+                    raise CommandError(
+                        "invalid_arguments",
+                        "candidate_artifact",
+                        "Use the exact prepared candidate locator.",
+                    )
+                _write_happy_path_receipt(
+                    package_root,
+                    repo,
+                    happy_path_locator,
+                    candidate,
+                    created_commit,
+                    branch,
                 )
 
             git(repo, "update-ref", branch, created_commit, pre)
