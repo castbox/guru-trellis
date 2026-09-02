@@ -14,9 +14,14 @@ and never reads verifier DTOs, checkpoints, refs, or task artifacts. Ordinary
 publication continues through a new Draft PR. A separately previewed
 `existing_pr_recovery` may adopt only the unique same-repository Open PR whose
 remote/PR HEAD is a strict ancestor of the publication HEAD. Equality is
-accepted only after that exact pre-push HEAD is transaction-bound, then converge
-the current Publication title/body, archive, preserve Ready or mark Draft
-Ready, and hand off to `guru-merge-task-pr`.
+accepted only after that exact pre-push HEAD is transaction-bound, or when the
+current exact `ordinary_publication/push_content` transaction is still unbound
+and remote/PR/Publication HEAD already equal. The latter path rereads exact PR,
+scope, Draft/Ready and metadata bytes, converts the same owner transaction to
+`existing_pr_recovery/bind_pr` before any remaining external mutation, and
+never repeats publication push or PR creation. Both paths then converge the
+current Publication title/body, archive, preserve Ready or mark Draft Ready,
+and hand off to `guru-merge-task-pr`.
 
 When ordinary pre-PR reprepare requires a provenance metadata tail, keep the
 business target and Guru Trellis implementation in separate temporary
