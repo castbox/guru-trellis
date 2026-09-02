@@ -2,7 +2,7 @@
   "close_issues": [
     {
       "number": 334,
-      "reason": "Issue 334 acceptance is fully owned by this task.",
+      "reason": "Primary independently deliverable projection-drift fix.",
       "title": "[Bug] 修复 #325/#327 遗留的 canonical 与 dogfood 投影漂移",
       "url": "https://github.com/castbox/guru-trellis/issues/334"
     }
