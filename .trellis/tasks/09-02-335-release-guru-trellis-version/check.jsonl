@@ -1,8 +1,0 @@
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查定向验证、honest-path、stale、投影一致性和完整分支 Review 覆盖。"}
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"证明私有 Skill 未进入公共 package graph、registry、schema 或 typed exit inventory。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"验证 tracked content 与 lifecycle-only private metadata 的 identity 分离。"}
-{"file":".trellis/spec/docs/public-docs.md","reason":"检查 README、canonical owner 和平台投影的文档一致性。"}
-{"file":"docs/requirements/README.md","reason":"核对 current Requirements authority 与 task contribution 的关系。"}
-{"file":"docs/design/README.md","reason":"核对 current Design authority 与 task contribution 的关系。"}
-{"file":"docs/test/README.md","reason":"核对 current Test authority 与 task contribution 的关系。"}
-{"file":"docs/architecture/README.md","reason":"核对 current Architecture identity、change contract 和 contribution 路由。"}
