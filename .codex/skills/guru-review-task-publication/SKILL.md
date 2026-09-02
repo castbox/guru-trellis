@@ -7,8 +7,19 @@ description: Review task publication readiness through ten semantic dimensions, 
 
 Use after `guru-review-branch:passed`, or for a checker-declared stale
 finalization handback. Read `references/contract.md`, author the selected public
-input profile, complete the semantic review, then call the package recorder and
-checker through the shared dispatcher.
+input profile, and complete the semantic review. The single recommended Happy
+Path is `review-task-publication`: pass the public input and the AI-completed
+semantic result, and let that facade record, objectively check, project, and
+retire the private checkpoint in one invocation.
+
+Use the exact authoring fields, enums, route rules, and valid JSON template in
+`references/contract.md`. The facade derives task, reviewed-commit, and content
+identity fields; do not guess or repeat them in the semantic result.
+
+Do not read package runtime, schemas, examples, evals, or tests for the normal
+path. `record-task-publication-review`, `check-task-publication-review`, and
+`invoke-guru-review-task-publication` remain compatibility, testing, and bounded
+recovery commands only.
 
 The stale profile requires the Finalizer-projected `branch_review_commit`.
 Bind the checked owner result to that same commit. Normal content continuity drift

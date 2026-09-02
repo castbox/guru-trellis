@@ -1174,3 +1174,21 @@ This focused gate does not replace the complete extension release verification:
 the full capability suite, marketplace matrix, official Trellis update, complete
 platform throwaway matrix, and business-repository upgrade smoke remain separate
 cumulative release evidence.
+
+## Closeout Facade Validation
+
+Run the old and recommended paths against the same sanitized fixture and compare
+typed exit, public DTO, semantic input, objective blocker, mutation count/order,
+recovery behavior, and temporary-state lifecycle. The recommended four-stage
+path must reduce command invocations by at least 50% and repeated complete
+authority reads by at least 70%, with `terminal.post_exit_operation=0`. These
+are hard structural acceptance checks.
+
+The fixture matrix includes Commit hook/drift/active-operation/stdout-loss,
+Publication ready/metadata/content/ledger routes, Finalizer same-plan
+reprepare/recovery and changed-plan reconfirmation, and Merge pending/success/
+failure/head drift/default/non-default/refs-only closure plus mutation-output
+loss. It must also prove one expected-head-bound watcher and reject stacked
+`gh run watch` plus Agent polling. Wall-clock medians are reported by Agent,
+deterministic command, GitHub API, and external CI wait; a slow external sample
+does not independently fail a task whose correctness and operation budgets pass.

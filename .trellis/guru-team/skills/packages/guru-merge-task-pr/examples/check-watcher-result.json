@@ -1,0 +1,12 @@
+{
+  "status": "checks_succeeded",
+  "repo_ref": "castbox/guru-trellis",
+  "pr_number": 176,
+  "expected_head_sha": "1111111111111111111111111111111111111111",
+  "actual_head_sha": "1111111111111111111111111111111111111111",
+  "poll_count": 2,
+  "external_ci_wait_ms": 10000,
+  "checks": [
+    {"name": "required-ci", "state": "SUCCESS", "bucket": "pass"}
+  ]
+}

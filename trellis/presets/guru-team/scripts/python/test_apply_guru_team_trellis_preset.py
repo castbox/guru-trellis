@@ -2108,17 +2108,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn("rules/" + "branches/", installed_closeout)
         for wrapper_name in (
             "preview-finalization",
-            "record-finalization-gate",
-            "check-finalization-gate",
-            "execute-finalization-transition",
-            "invoke",
+            "finalize-task-happy-path",
         ):
             self.assertIn(f'"{wrapper_name}"', installed_closeout)
         for wrapper_name in (
-            "preview-task-pr-merge",
-            "record-task-pr-merge",
-            "check-task-pr-merge",
-            "execute-task-pr-merge",
+            "complete-task-pr-merge",
         ):
             self.assertIn(f'"{wrapper_name}"', installed_closeout)
         self.assertNotIn(
@@ -2137,11 +2131,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             "record-phase2-check.sh",
             "check-phase2-check.sh",
             "prepare-task-commit.sh",
-            "create-task-commit.sh",
+            "invoke-happy-path-v1.sh",
             "review-branch.sh",
             "check-review-gate.sh",
         ):
             self.assertIn(f'"{wrapper_name}"', installed_closeout)
+        self.assertIn("review-task-publication.sh", installed_closeout)
         self.assertIn('owners["guru-approve-task-plan"]', installed_closeout)
         self.assertIn('owners["guru-check-task"]', installed_closeout)
         self.assertIn('owners["guru-create-task-commit"]', installed_closeout)
@@ -2169,13 +2164,9 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('hook_executed', installed_closeout)
         self.assertIn('installed-after-archive-hook-', installed_closeout)
         self.assertIn('ledger = {\n        "schema_version": "2.0",', installed_closeout)
-        self.assertIn("def write_semantic_review(typed_exit: str)", installed_closeout)
-        self.assertIn('write_semantic_review("reprepare_required")', installed_closeout)
-        self.assertIn('write_semantic_review("ready_for_merge")', installed_closeout)
-        self.assertIn(
-            '"--input",\n        finalization_input.relative_to(root).as_posix(),',
-            installed_closeout,
-        )
+        self.assertIn("def write_semantic_review()", installed_closeout)
+        self.assertIn("write_semantic_review()", installed_closeout)
+        self.assertIn("finalization_input.relative_to(root).as_posix()", installed_closeout)
         self.assertNotIn("verification_required", installed_closeout)
         self.assertIn('root.rglob("marketplace-verification.json")', installed_closeout)
         self.assertNotIn("copytree", installed_closeout)

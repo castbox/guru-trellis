@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-merge-task-pr-check-watcher-result-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "repo_ref",
+    "pr_number",
+    "expected_head_sha",
+    "actual_head_sha",
+    "poll_count",
+    "external_ci_wait_ms",
+    "checks"
+  ],
+  "properties": {
+    "status": {
+      "enum": [
+        "checks_succeeded",
+        "checks_failed",
+        "checks_pending_timeout",
+        "head_changed"
+      ]
+    },
+    "repo_ref": {"type": "string", "pattern": "^[^/]+/[^/]+$"},
+    "pr_number": {"type": "integer", "minimum": 1},
+    "expected_head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "actual_head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "poll_count": {"type": "integer", "minimum": 1},
+    "external_ci_wait_ms": {"type": "integer", "minimum": 0},
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "state", "bucket"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "state": {"type": "string", "minLength": 1},
+          "bucket": {"enum": ["pass", "fail", "pending", "skipping", "cancel"]}
+        }
+      }
+    }
+  }
+}

@@ -67,6 +67,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 "merge_commit": {"oid": "2" * 40},
             },
             "base_ref": {"name": "main", "head_sha": "2" * 40},
+            "repository_policy": {"allowed_methods": ["merge"]},
             "merge_commit": {
                 "sha": "2" * 40,
                 "subject": public_input["reviewed_merge_message"]["subject"],
@@ -80,6 +81,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 "closed_at": "2026-08-14T10:00:01Z" if closed else None,
             }],
         }
+        facts["facts_sha256"] = GTT.canonical_json_sha256(facts)
         output = GTT.task_pr_merge_terminal_output(public_input, facts, gate)
         return public_input, facts, gate, output
 
@@ -632,8 +634,8 @@ class MergeTaskPrContractTest(unittest.TestCase):
 
     def test_runtime_has_expected_head_merge_and_no_issue_close_or_local_sync(self) -> None:
         source = Path(GTT.__file__).read_text(encoding="utf-8")
-        start = source.index("def cmd_execute_task_pr_merge")
-        end = source.index("def cmd_invoke_task_pr_merge", start)
+        start = source.index("def task_pr_merge_execute_checked")
+        end = source.index("def task_pr_merge_terminal_output", start)
         executor = source[start:end]
         self.assertIn('"--match-head-commit"', executor)
         self.assertIn('"--subject"', executor)
@@ -871,6 +873,332 @@ class MergeTaskPrContractTest(unittest.TestCase):
             GTT.parse_iso_datetime("2026-08-05T06:20:54Z"),
             GTT.parse_iso_datetime("2026-08-05T06:21:00Z"),
         )
+
+    def semantic_merge_review(self) -> dict:
+        return {
+            "semantic_review": {
+                "dimensions": [
+                    {
+                        "id": identifier,
+                        "status": "passed",
+                        "summary": "Current reviewed evidence passes.",
+                    }
+                    for identifier in GTT.TASK_PR_MERGE_DIMENSIONS
+                ]
+            },
+            "route": {"typed_exit": "merged", "merge_method": "merge"},
+        }
+
+    def pre_merge_facts(self, public_input: dict, pre_base_head: str) -> dict:
+        facts = {
+            "schema_version": "2.0",
+            "skill_id": "guru-merge-task-pr",
+            "repo_ref": public_input["repo_ref"],
+            "pr": {
+                "number": public_input["pr_number"],
+                "url": public_input["pr_url"],
+                "state": "OPEN",
+                "is_draft": False,
+                "head_sha": public_input["expected_head_sha"],
+                "base_branch": public_input["expected_base_branch"],
+                "head_branch": public_input["expected_head_branch"],
+                "mergeable": "MERGEABLE",
+                "merge_state_status": "CLEAN",
+                "review_decision": "APPROVED",
+                "checks": [{"name": "required-ci", "state": "SUCCESS"}],
+                "merged_at": None,
+                "merge_commit": None,
+            },
+            "repository_policy": {"allowed_methods": ["merge"]},
+            "base_ref": {
+                "name": public_input["expected_base_branch"],
+                "head_sha": pre_base_head,
+            },
+            "merge_commit": None,
+            "close_issues": public_input["expected_close_issues"],
+            "issues": [
+                {"number": number, "state": "OPEN", "closed_at": None}
+                for number in public_input["expected_close_issues"]
+            ],
+        }
+        facts["facts_sha256"] = GTT.canonical_json_sha256(facts)
+        return facts
+
+    def write_review(self, root: Path) -> Path:
+        path = root / "review.json"
+        path.write_text(json.dumps(self.semantic_merge_review()), encoding="utf-8")
+        return path
+
+    def test_happy_path_facade_uses_one_pre_one_post_and_retires_terminal_state(self) -> None:
+        public_input, post, gate_seed, expected = self.terminal_fixture()
+        pre = self.pre_merge_facts(public_input, gate_seed["pre_merge_base_head"])
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            review = self.write_review(root)
+            args = Namespace(
+                root=temp_dir,
+                input="input.json",
+                review_input=str(review),
+                gate=None,
+            )
+            with (
+                mock.patch.object(GTT, "repo_root", return_value=root),
+                mock.patch.object(GTT, "task_pr_merge_json_input", return_value=public_input),
+                mock.patch.object(
+                    GTT, "task_pr_merge_live_facts", side_effect=[pre, post]
+                ) as snapshots,
+                mock.patch.object(GTT, "require_gh_auth"),
+                mock.patch.object(
+                    GTT,
+                    "run",
+                    return_value=Namespace(returncode=0, stderr="", stdout=""),
+                ) as mutation,
+            ):
+                result = GTT.cmd_complete_task_pr_merge(args)
+
+            self.assertEqual(result, expected)
+            self.assertEqual(snapshots.call_count, 2)
+            self.assertEqual(mutation.call_count, 1)
+            self.assertIn("--match-head-commit", mutation.call_args.args[0])
+            self.assertFalse(GTT.task_pr_merge_gate_path(root, public_input).exists())
+            self.assertFalse(GTT.task_pr_merge_body_path(root, public_input).exists())
+
+    def test_happy_path_facade_non_default_branch_returns_terminal_closure_mismatch(self) -> None:
+        public_input, post, gate_seed, _ = self.terminal_fixture(closed=False)
+        public_input["expected_base_branch"] = "dev"
+        public_input["reviewed_merge_message"] = self.reviewed_message(base="dev")
+        post["pr"]["base_branch"] = "dev"
+        post["merge_commit"]["subject"] = public_input["reviewed_merge_message"]["subject"]
+        post["merge_commit"]["body"] = public_input["reviewed_merge_message"]["body"]
+        post["base_ref"]["name"] = "dev"
+        pre = self.pre_merge_facts(public_input, gate_seed["pre_merge_base_head"])
+        expected = GTT.task_pr_merge_terminal_output(public_input, post, gate_seed)
+        self.assertEqual(expected["exit_id"], "closure_mismatch")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            args = Namespace(
+                root=temp_dir,
+                input="input.json",
+                review_input=str(self.write_review(root)),
+                gate=None,
+            )
+            with (
+                mock.patch.object(GTT, "repo_root", return_value=root),
+                mock.patch.object(GTT, "task_pr_merge_json_input", return_value=public_input),
+                mock.patch.object(GTT, "task_pr_merge_live_facts", side_effect=[pre, post]) as snapshots,
+                mock.patch.object(GTT, "require_gh_auth"),
+                mock.patch.object(
+                    GTT, "run", return_value=Namespace(returncode=0, stderr="", stdout="")
+                ) as mutation,
+            ):
+                result = GTT.cmd_complete_task_pr_merge(args)
+
+        self.assertEqual(result, expected)
+        self.assertEqual(snapshots.call_count, 2)
+        self.assertEqual(mutation.call_count, 1)
+
+    def test_happy_path_facade_refs_only_reads_no_issue_terminal_scope(self) -> None:
+        public_input, post, gate_seed, _ = self.terminal_fixture()
+        public_input["expected_close_issues"] = []
+        public_input["reviewed_merge_message"] = self.reviewed_message(issue=330)
+        post["close_issues"] = []
+        post["issues"] = []
+        post["merge_commit"]["subject"] = public_input["reviewed_merge_message"]["subject"]
+        post["merge_commit"]["body"] = public_input["reviewed_merge_message"]["body"]
+        pre = self.pre_merge_facts(public_input, gate_seed["pre_merge_base_head"])
+        expected = GTT.task_pr_merge_terminal_output(public_input, post, gate_seed)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            args = Namespace(
+                root=temp_dir,
+                input="input.json",
+                review_input=str(self.write_review(root)),
+                gate=None,
+            )
+            with (
+                mock.patch.object(GTT, "repo_root", return_value=root),
+                mock.patch.object(GTT, "task_pr_merge_json_input", return_value=public_input),
+                mock.patch.object(GTT, "task_pr_merge_live_facts", side_effect=[pre, post]) as snapshots,
+                mock.patch.object(GTT, "require_gh_auth"),
+                mock.patch.object(
+                    GTT, "run", return_value=Namespace(returncode=0, stderr="", stdout="")
+                ) as mutation,
+            ):
+                result = GTT.cmd_complete_task_pr_merge(args)
+
+        self.assertEqual(result, expected)
+        self.assertEqual(result["exit_id"], "merged")
+        self.assertEqual(snapshots.call_count, 2)
+        self.assertEqual(mutation.call_count, 1)
+
+    def test_happy_path_facade_recovers_lost_mutation_output_with_one_snapshot(self) -> None:
+        public_input, post, gate_seed, expected = self.terminal_fixture()
+        pre = self.pre_merge_facts(public_input, gate_seed["pre_merge_base_head"])
+        gate = GTT.task_pr_merge_gate_from_facts(
+            public_input, pre, self.semantic_merge_review()
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            gate_path = GTT.task_pr_merge_gate_path(root, public_input)
+            GTT.write_json(gate_path, gate)
+            args = Namespace(
+                root=temp_dir,
+                input="input.json",
+                review_input=None,
+                gate=None,
+            )
+            with (
+                mock.patch.object(GTT, "repo_root", return_value=root),
+                mock.patch.object(GTT, "task_pr_merge_json_input", return_value=public_input),
+                mock.patch.object(GTT, "task_pr_merge_live_facts", return_value=post) as snapshots,
+                mock.patch.object(GTT, "run") as mutation,
+                mock.patch.object(GTT, "require_gh_auth") as auth,
+            ):
+                result = GTT.cmd_complete_task_pr_merge(args)
+
+            self.assertEqual(result, expected)
+            self.assertEqual(snapshots.call_count, 1)
+            mutation.assert_not_called()
+            auth.assert_not_called()
+            self.assertFalse(gate_path.exists())
+
+    def test_happy_path_facade_recovers_merged_facts_without_private_gate(self) -> None:
+        public_input, post, _, expected = self.terminal_fixture()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            args = Namespace(
+                root=temp_dir,
+                input="input.json",
+                review_input=str(self.write_review(root)),
+                gate=None,
+            )
+            with (
+                mock.patch.object(GTT, "repo_root", return_value=root),
+                mock.patch.object(GTT, "task_pr_merge_json_input", return_value=public_input),
+                mock.patch.object(GTT, "task_pr_merge_live_facts", return_value=post) as snapshots,
+                mock.patch.object(GTT, "write_json") as gate_write,
+                mock.patch.object(GTT, "run") as mutation,
+                mock.patch.object(GTT, "require_gh_auth") as auth,
+            ):
+                result = GTT.cmd_complete_task_pr_merge(args)
+
+            self.assertEqual(result, expected)
+            self.assertEqual(snapshots.call_count, 1)
+            gate_write.assert_not_called()
+            mutation.assert_not_called()
+            auth.assert_not_called()
+            self.assertFalse(GTT.task_pr_merge_gate_path(root, public_input).exists())
+            self.assertFalse(GTT.task_pr_merge_body_path(root, public_input).exists())
+
+    def test_happy_path_facade_merged_recovery_fails_closed_on_identity_drift(self) -> None:
+        public_input, post, _, _ = self.terminal_fixture()
+        cases = []
+        invalid_parents = json.loads(json.dumps(post))
+        invalid_parents["merge_commit"]["parents"] = ["3" * 40]
+        invalid_parents["facts_sha256"] = GTT.canonical_json_sha256(
+            {key: value for key, value in invalid_parents.items() if key != "facts_sha256"}
+        )
+        cases.append(("parents", public_input, invalid_parents))
+
+        changed_message = json.loads(json.dumps(public_input))
+        changed_message["reviewed_merge_message"] = self.reviewed_message(
+            summary="变更后的合并摘要"
+        )
+        cases.append(("reviewed message", changed_message, post))
+
+        for label, current_input, facts in cases:
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as temp_dir:
+                root = Path(temp_dir)
+                args = Namespace(
+                    root=temp_dir,
+                    input="input.json",
+                    review_input=str(self.write_review(root)),
+                    gate=None,
+                )
+                with (
+                    mock.patch.object(GTT, "repo_root", return_value=root),
+                    mock.patch.object(GTT, "task_pr_merge_json_input", return_value=current_input),
+                    mock.patch.object(GTT, "task_pr_merge_live_facts", return_value=facts),
+                    mock.patch.object(GTT, "write_json") as gate_write,
+                    mock.patch.object(GTT, "run") as mutation,
+                ):
+                    with self.assertRaises(GTT.WorkflowError):
+                        GTT.cmd_complete_task_pr_merge(args)
+                gate_write.assert_not_called()
+                mutation.assert_not_called()
+
+    def test_required_check_watcher_returns_all_stable_fact_states(self) -> None:
+        base_args = {
+            "root": "/repo",
+            "repo": "castbox/guru-trellis",
+            "pull_request": 330,
+            "expected_head": "1" * 40,
+            "timeout_seconds": 0,
+            "interval_seconds": 1,
+        }
+        cases = [
+            ("checks_succeeded", "1" * 40, [{"name": "ci", "state": "SUCCESS", "bucket": "pass"}]),
+            ("checks_failed", "1" * 40, [{"name": "ci", "state": "FAILURE", "bucket": "fail"}]),
+            ("checks_pending_timeout", "1" * 40, [{"name": "ci", "state": "PENDING", "bucket": "pending"}]),
+            ("head_changed", "2" * 40, []),
+        ]
+        for expected_status, actual_head, checks in cases:
+            with self.subTest(status=expected_status):
+                with (
+                    mock.patch.object(GTT, "repo_root", return_value=Path("/repo")),
+                    mock.patch.object(
+                    GTT,
+                    "gh_json",
+                    return_value={"number": 330, "headRefOid": actual_head},
+                    ) as head_read,
+                    mock.patch.object(
+                        GTT, "task_pr_merge_required_checks", return_value=checks
+                    ) as check_read,
+                    mock.patch.object(GTT.time, "monotonic", side_effect=[10.0, 10.0]),
+                ):
+                    result = GTT.cmd_watch_task_pr_checks(Namespace(**base_args))
+                self.assertEqual(result["status"], expected_status)
+                self.assertEqual(result["poll_count"], 1)
+                head_read.assert_called_once()
+                if expected_status == "head_changed":
+                    check_read.assert_not_called()
+                else:
+                    check_read.assert_called_once()
+
+    def test_happy_path_and_watcher_contracts_preserve_legacy_commands(self) -> None:
+        commands = json.loads((PACKAGE / "commands.json").read_text(encoding="utf-8"))
+        ids = {item["id"] for item in commands["commands"]}
+        self.assertTrue({
+            "preview-task-pr-merge",
+            "record-task-pr-merge",
+            "check-task-pr-merge",
+            "execute-task-pr-merge",
+            "invoke-task-pr-merge",
+            "complete-task-pr-merge",
+            "watch-task-pr-checks",
+        } <= ids)
+        self.assertEqual(
+            self.interface["public_contracts"]["invocation"]["wrapper"],
+            "scripts/complete-task-pr-merge.sh",
+        )
+        watcher_schema = json.loads(
+            (PACKAGE / "schemas/check-watcher-result.schema.json").read_text(encoding="utf-8")
+        )
+        watcher_example = json.loads(
+            (PACKAGE / "examples/check-watcher-result.json").read_text(encoding="utf-8")
+        )
+        import jsonschema
+        self.assertEqual(
+            list(jsonschema.Draft202012Validator(watcher_schema).iter_errors(watcher_example)),
+            [],
+        )
+        watcher_source = Path(GTT.__file__).read_text(encoding="utf-8")
+        watcher_source = watcher_source[watcher_source.index("def cmd_watch_task_pr_checks"):]
+        self.assertNotIn("gh run watch", watcher_source)
+        self.assertNotIn("--watch", watcher_source)
+        self.assertNotIn("cmd_execute_task_pr_merge", watcher_source)
 
     def test_evals_cover_all_exits_and_primary_blockers(self) -> None:
         corpus = json.loads((PACKAGE / "evals/evals.json").read_text(encoding="utf-8"))

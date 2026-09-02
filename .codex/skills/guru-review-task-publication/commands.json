@@ -125,6 +125,60 @@
       "runtime_role": "check"
     },
     {
+      "id": "review-task-publication",
+      "owner": "guru-review-task-publication",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Public input.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--semantic-result",
+          "required": true,
+          "kind": "json",
+          "description": "AI-completed semantic Publication result.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "publication_stale",
+        "publication_input_invalid",
+        "reviewed_content_continuity_failed",
+        "github_cli_missing",
+        "github_auth_failed",
+        "github_repo_access_denied",
+        "github_permission_denied",
+        "github_api_unavailable",
+        "github_response_incomplete",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [
+        "schemas/public-invocation-error.schema.json",
+        "schemas/pr-readiness.schema.json"
+      ],
+      "validator_id": "publication_happy_path",
+      "runtime_role": "invoke"
+    },
+    {
       "id": "invoke-guru-review-task-publication",
       "owner": "guru-review-task-publication",
       "entrypoint": "runtime/invoke.py",

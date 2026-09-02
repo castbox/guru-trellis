@@ -448,3 +448,27 @@ Branch Review, or Publication. Publication stale remains limited to its own PR
 payload, issue scope, validation statement, deployment, and security metadata.
 Finalizer exposes `base_reconciliation_required` separately and never
 relabels a base-only mismatch as Publication stale.
+
+## Closeout Happy Path Routing
+
+Commit, Publication, Finalizer, and Merge remain four independent semantic
+Skills. Each package declares exactly one recommended normal-path facade while
+retaining older record/check/execute/invoke commands as compatibility, testing,
+or bounded recovery entries. The normal sequence is:
+
+- Commit: one `prepare-task-commit`, one dialogue-local action confirmation,
+  then one `invoke-guru-create-task-commit-happy-path-v1`.
+- Publication: after the AI semantic review, one `review-task-publication`.
+- Finalizer: one read-only preview, one dialogue-local Finalizer confirmation,
+  then one `finalize-task-happy-path`.
+- Merge: at most one expected-head-bound `watch-task-pr-checks` while checks are
+  pending, then one dialogue-local merge confirmation and one
+  `complete-task-pr-merge`.
+
+A facade may reuse facts only within one invocation, for one exact authority
+identity, and only until a mutation boundary. It may automatically consume a
+mapped deterministic recovery/reprepare only when the package proves the
+semantic plan and side-effect set are unchanged. Material scope, authority,
+payload, head, plan, or action changes return to the owning semantic step and
+invalidate the previous confirmation. Every Merge exit is terminal for that
+Skill; its consumer or stop target runs next, with no post-exit polling or work.

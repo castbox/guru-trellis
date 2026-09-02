@@ -1994,3 +1994,29 @@ while any legacy Publication stale reason is classified by its current owner:
 base-only mismatch routes to base reconciliation and content/metadata stale
 remains Publication-owned. Migration does not rewrite active task artifacts,
 read another package's private state, or restore the retired shared dispatcher.
+
+## Closeout Facade Invocation State
+
+Closeout facade state is package-local, ignored, and bounded to one direct
+consumer. Publication's current full snapshot is process-local and reused only
+by its record/check/projection sequence. Finalizer's preview identity is a
+dialogue-local confirmation binding, not authorization evidence; any retained
+transaction records only the minimum same-owner recovery state already required
+by the Finalizer contract. Merge binds its pre-merge snapshot to repo, PR,
+expected head, reviewed message, policy/check facts, close scope, and pre-merge
+base head, then discards it after terminal projection.
+
+Commit may retain a minimal success receipt after the live ref has advanced so
+loss of invocation stdout can recover the exact published commit without a
+second commit or ref mutation. The receipt binds candidate locator, task, base,
+branch, pre-commit head, commit/tree, and commit-message identity; it carries no
+review narrative, authorization, timestamp, live repository snapshot, or
+cross-Skill authority. Normal consumption removes it together with the
+candidate and consumed Phase 2 checkpoint.
+
+Operation-count evidence uses normalized categories for complete authority
+reads, record/check/project operations, mutations, recovery inspection,
+watcher polls, and post-terminal operations. It is test evidence rather than a
+public Skill DTO or durable audit artifact. Wall-clock samples are observational
+and must separate Agent orchestration, deterministic command, GitHub API, and
+external CI wait.

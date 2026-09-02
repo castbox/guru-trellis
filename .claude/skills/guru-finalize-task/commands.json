@@ -183,8 +183,41 @@
       "runtime_role": "execute"
     },
     {
-      "id": "invoke-guru-finalize-task",
+      "id": "finalize-task-happy-path",
       "validator_id": "public_invocation",
+      "owner": "guru-finalize-task",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {"flag": "--root", "required": false, "kind": "string", "description": "Repository root.", "repeatable": false, "conflicts": []},
+        {"flag": "--input", "required": true, "kind": "json", "description": "Current Finalizer public input.", "repeatable": false, "conflicts": []},
+        {"flag": "--review-input", "required": true, "kind": "json", "description": "AI-authored semantic review for the confirmed plan.", "repeatable": false, "conflicts": []},
+        {"flag": "--confirmed-preview-sha256", "required": false, "kind": "string", "description": "Preview confirmation identity; required only before a mutating ready_for_merge route.", "repeatable": false, "conflicts": []},
+        {"flag": "--repo", "required": false, "kind": "string", "description": "Repository identity override.", "repeatable": false, "conflicts": []},
+        {"flag": "--base-branch", "required": false, "kind": "string", "description": "Base branch override.", "repeatable": false, "conflicts": []},
+        {"flag": "--remote", "required": false, "kind": "string", "description": "Git remote override.", "repeatable": false, "conflicts": []},
+        {"flag": "--title", "required": false, "kind": "string", "description": "Publication title override.", "repeatable": false, "conflicts": []},
+        {"flag": "--task-name", "required": false, "kind": "string", "description": "Task name override.", "repeatable": false, "conflicts": []},
+        {"flag": "--validation", "required": false, "kind": "string", "description": "Validation result (repeatable).", "repeatable": true, "conflicts": []}
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "finalization_stale",
+        "internal_error"
+      ],
+      "side_effect": "github_write",
+      "schema_bindings": [
+        "schemas/finalization-preview-1.0.schema.json",
+        "schemas/semantic-review-input-3.0.schema.json",
+        "schemas/public-invocation-error.schema.json"
+      ],
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "invoke-guru-finalize-task",
+      "validator_id": "legacy_public_invocation",
       "owner": "guru-finalize-task",
       "entrypoint": "runtime/invoke.py",
       "arguments": [

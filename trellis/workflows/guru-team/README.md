@@ -139,7 +139,9 @@ Shared/Codex/Claude/Cursor discovery copies 由 preset 根据 current registry �
 
 guru-review-branch 是 sole Phase 3.5 semantic owner。Branch Review passed 后，
 workflow mandatory invoke guru-review-task-publication；Publication owner 直接从 live
-authority 生成并审查 exact Chinese PR title/body。其 ready 4.0 DTO 无损投影 payload，
+authority 生成并审查 exact Chinese PR title/body，并通过单一
+`review-task-publication` facade 在同一 invocation-local snapshot 内完成
+record/check/projection。其 ready 4.0 DTO 无损投影 payload，
 只有 ready 进入 guru-finalize-task。Finalizer 的 stale、resume 与 reprepare exits
 按 Interface 自动路由，不形成新的用户 continuation gate；业务 Finalizer 不调用、投影或
 读取 extension verifier。
@@ -153,6 +155,15 @@ expected-head merge，并传递 `--subject/--body-file`；执行后只读验证 
 双 parent、subject/body、remote base 以及 Issues 由 GitHub 自动关闭。`merged` 才进入
 finish response；`merge_blocked` 与 `closure_mismatch` 分别 fail closed，任何 Guru 命令都不
 调用 Issue-close API、update PR branch、同步本地 `main` 或清理资源。
+
+四阶段正常调用面固定为：Commit 一次 `prepare-task-commit` 加一次确认后的
+`invoke-guru-create-task-commit-happy-path-v1`；Publication 一次
+`review-task-publication`；Finalizer 一次 preview 加一次确认后的
+`finalize-task-happy-path`；Merge 在 checks pending 时至多一次
+`watch-task-pr-checks`，再经独立确认调用一次 `complete-task-pr-merge`。旧的
+record/check/execute/invoke 命令保留为兼容、测试和有界诊断入口。Merge 的
+`merged|merge_blocked|closure_mismatch` 均为当前 Skill terminal，返回后不再 polling、
+重复读取、base sync、Issue mutation 或 cleanup。
 
 Finalizer stale DTO 只增加 Publication 唯一 consumer 直接使用的
 `branch_review_commit`；真实 descendant content
@@ -598,6 +609,11 @@ candidate，AI 负责 scope/path/message/mechanical review；展示唯一 commit
 recovery；既有 tracked plan 只读兼容。`committed`、`revision-required`、`blocked`
 分别由 Branch Review/finding closure、skill re-entry、fail-closed stop 唯一消费；finding
 fix 必须先返回完整 Phase 2，并创建新 sequence。
+
+正常成功路径由 `prepare-task-commit` 生成 reviewed candidate locator；当前对话确认
+exact commit action 后，仅调用一次 `invoke-guru-create-task-commit-happy-path-v1`。
+`check-commit-messages`、`create-task-commit` 与 legacy aggregate invoke 继续可用于
+兼容、测试或失败诊断，但不再要求 Agent 在正常路径逐条编排。
 
 Exact executor 在临时 detached worktree 与 isolated index 中调用真实 `git commit -F`，
 因此 repository 的 `pre-commit`、`prepare-commit-msg`、`commit-msg`、`post-commit`
