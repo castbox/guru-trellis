@@ -211,6 +211,54 @@
           "description": "Owner result.",
           "repeatable": false,
           "conflicts": []
+        },
+        {
+          "flag": "--repo",
+          "required": false,
+          "kind": "string",
+          "description": "Repository identity override.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--base-branch",
+          "required": false,
+          "kind": "string",
+          "description": "Base branch override.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--remote",
+          "required": false,
+          "kind": "string",
+          "description": "Git remote override.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--title",
+          "required": false,
+          "kind": "string",
+          "description": "Publication title override.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--task-name",
+          "required": false,
+          "kind": "string",
+          "description": "Task name override.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--validation",
+          "required": false,
+          "kind": "string",
+          "description": "Validation result (repeatable).",
+          "repeatable": true,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",

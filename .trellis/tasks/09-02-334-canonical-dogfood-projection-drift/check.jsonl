@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查 package、canonical/dogfood/installed、声明平台、reapply、drift 与 sidecar 验证是否覆盖 #334。"}
+{"file":".trellis/spec/preset/installer.md","reason":"检查 canonical-first 投影、manifest inventory、known managed upgrade 与 unknown conflict 行为。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"检查 all-platform parity、dogfood drift、ownership 和零 .new/.bak。"}
+{"file":"docs/architecture/06-governance/change-contract.md","reason":"复核本任务仅恢复现有投影一致性，Architecture 结论保持 no_architecture_impact。"}

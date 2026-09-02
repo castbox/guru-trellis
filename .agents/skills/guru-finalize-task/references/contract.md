@@ -39,14 +39,13 @@ manifest and the plan's canonical target repository identity:
   and validates repository identity, HEAD, and clean state.
 
 There is no fallback to the target tree, a mutable ref, hidden checkout, PATH
-package, global installation, or verifier runtime. The apply executable comes
-from `extension_source_checkout` and receives `target_reviewed_checkout`
-through `--repo`. Apply must leave source identity and clean state unchanged and
-may dirty only `.trellis/guru-team/extension.json` in the target. The existing
-field allowlist remains closed. Reapply may additionally change
-`skill_packages.files` and `overlays.files` only when both lists retain their
-length and order, every entry retains all non-`action` fields, and every entry
-changes exactly from `action=installed` to `action=unchanged`. Any other action,
+package, global installation, or verifier runtime. The provenance producer reads
+canonical bytes from `extension_source_checkout` and writes only
+`.trellis/guru-team/extension.json` in `target_reviewed_checkout`; it does not
+invoke the full preset installer. The source identity and clean state remain
+unchanged. The existing
+field allowlist remains closed. The producer preserves the existing install,
+skill-package, overlay, and `installed_at` inventory. Any unexpected action,
 entry, order, or content change remains outside the allowlist. The committed
 tail has exactly one parent equal to target `reviewed_content_head`;
 self-hosted postimage source ref/commit equal that head, while installed
@@ -59,7 +58,8 @@ Initial `publication_ready` preview classifies the unique existing PR before
 fresh provenance inference. If no PR and no remote branch exist, the ordinary
 plan remains `prepared`; when it has no metadata tail and its installed binding
 requires one, preview returns `reprepare_required` with reason
-`provenance_metadata_tail`. This preview is side-effect-free and does not push,
+`provenance_metadata_tail` only when the existing immutable source binding is
+not already valid. This preview is side-effect-free and does not push,
 create a PR, archive, mark Ready, or mutate the Issue. A matching existing-PR
 recovery, including its exact post-bind transaction, retains precedence.
 

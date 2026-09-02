@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"提供 #325 已合并 Finalizer provenance 合同的当前 dogfood 事实与 canonical 恢复目标。"}
+{"file":".trellis/spec/preset/installer.md","reason":"定义 canonical source、all-platform apply、installed projection、managed upgrade 与 sidecar 行为。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"定义 Shared/Codex/Cursor/Claude 投影、dogfood drift、reapply 与零 sidecar 边界。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"定义 ordinary workflow defect 的最小可靠验证范围和 release-wide matrix 排除边界。"}
