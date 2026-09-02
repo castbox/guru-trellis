@@ -78,12 +78,26 @@ Branch Review, Publication result, and all earlier release evidence. Fresh-fetch
 commit and tree. Every release check and later mutation must bind that same
 candidate identity; the preparation reviewed HEAD is never substituted for it.
 
-Before any tag mutation, perform the release Issue's scoped minimum gate:
-predecessor-to-candidate full diff, version-axis mapping, source and installed
-validators, Shared/Codex/Claude/Cursor parity, install/update/reapply checks,
-secret scan, residue check, and independent semantic review. This Skill MUST
-NOT expand the task into the cumulative multi-platform Release Gate matrix
-owned by a dedicated Release Gate Issue.
+Before any tag mutation, perform the release Issue's scoped minimum gate. Run
+it from the clean candidate checkout with `HEAD` equal to `candidate_commit`,
+and bind every command and result to `predecessor_tag` and `candidate_commit`:
+
+| Gate | Stable repository locator and executable entrypoint |
+| --- | --- |
+| candidate lineage and predecessor-to-candidate full diff | `git rev-parse HEAD`, `git rev-parse "${predecessor_tag}^{commit}"`, `git merge-base --is-ancestor "${predecessor_tag}^{commit}" "${candidate_commit}^{commit}"`, `git diff --find-renames --find-copies "${predecessor_tag}^{commit}" "${candidate_commit}^{commit}" --`, and `git diff --name-status "${predecessor_tag}^{commit}" "${candidate_commit}^{commit}" --` |
+| version-axis mapping and public release text | Fresh-read `README.md`, `trellis/guru-team-extension.json`, `.trellis/spec/docs/public-docs.md`, `trellis/workflows/guru-team/README.md`, and `trellis/presets/guru-team/README.md` from the candidate tree; run `git show "${candidate_commit}:trellis/guru-team-extension.json" \| python3 -m json.tool` and `git show "${candidate_commit}:README.md"` and compare the target repository tag, extension revision, and official Trellis CLI version with the six invocation inputs. |
+| source and installed validators | `./trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh --root . --mode source --json` and `./.trellis/guru-team/scripts/bash/check-skill-packages.sh --root . --mode installed --json` |
+| Shared/Codex/Claude/Cursor parity | Run the source validator once for each stable projection root: `for root in .agents/skills .codex/skills .claude/skills .cursor/skills; do ./trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh --root . --mode source --platform-root "$root" --json; done`, then byte-compare the release Skill's `SKILL.md` and `references/contract.md` across those four roots. |
+| ownership, preset, and dogfood drift | `./trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json`, `./trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms`, and `./trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh --repo .`; inspect and reject any unexpected mutation from reapply. |
+| install/update/reapply checks | Run the existing single-repository compatibility profile against the exact candidate: `GURU_TEAM_THROWAWAY_SINGLE_REPO_COMPATIBILITY=1 TRELLIS_WORKFLOW_SOURCE="gh:castbox/guru-trellis/trellis#${candidate_commit}" ./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh`. This one clean Shared/Codex/Claude/Cursor install plus existing-project update/reapply flow is the ordinary Issue's targeted proof, not the verifier's default cumulative multi-platform Release Gate matrix. |
+| secret scan | Derive the exact changed-file set with `git diff --name-only --diff-filter=ACMRT "${predecessor_tag}^{commit}" "${candidate_commit}^{commit}" --` and run the current environment's real secret-scanning capability over those candidate file bytes. A missing scanner, incomplete file set, alert, or unavailable result is `SKIP` or `FAIL`, not a pass. |
+| residue check; residue and diff hygiene | `git status --short`, `git diff --check`, and `find . \( -type d -name '__pycache__' -o -type f \( -name '*.pyc' -o -name '*.pyo' -o -name '*.new' -o -name '*.bak' \) \) -print`; any unexpected output is blocking. |
+
+After these deterministic results are current, independently review the full
+diff, version mapping, command outputs, secret-scan result, residue result, and
+unverified boundaries. This Skill MUST NOT replace these targeted locators with
+an ad hoc command set and MUST NOT expand the task into the cumulative
+multi-platform Release Gate matrix owned by a dedicated Release Gate Issue.
 
 Immediately before the GitHub Release mutation, generate the Release title and
 body from the live Issue, exact candidate diff, current validation evidence,
@@ -135,12 +149,18 @@ that authorizes only that displayed action:
 | branch/worktree/task cleanup | cleanup boundary |
 
 Confirmation for one row cannot authorize, pre-authorize, or be reused for any
-other row. When the current Finalizer owner presents one exact atomic
-transaction containing more than one of its rows, the confirmation covers only
-that displayed transaction and never a later retry, merge, tag, smoke, Release,
-Issue closure, or cleanup. A failed action does not authorize a retry. Tag,
-smoke, Release, Issue closure, merge, and cleanup remain independently
-reviewable even when the same user performs them consecutively.
+other row. In this repository-private release route, branch push, PR creation,
+and the Finalizer archive/Ready mutation MUST each be displayed in a separate
+confirmation request and MUST each receive its own current-dialogue answer
+immediately before that row executes. An atomic or bundled Finalizer preview or
+answer MUST NOT authorize actions from more than one table row, even when the
+underlying owner can execute them as one transaction. Keep `guru-finalize-task`
+as the unchanged semantic and mutation owner, use only its existing public I/O
+and same-owner recovery, and add no public Finalizer field, exit, consumer, or
+owner; this private orchestrator only imposes the stricter per-row interaction
+boundary before allowing the owner to continue. A failed action does not
+authorize a retry. Tag, smoke, Release, Issue closure, merge, and cleanup remain
+independently reviewable even when the same user performs them consecutively.
 
 ## Fail-Closed Stops
 

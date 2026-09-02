@@ -22,6 +22,7 @@ ROOTS = {
 RUNTIME_MODULE = REPO / ".trellis/guru-team/runtime/reviewed_content.py"
 PUBLIC_SKILLS = REPO / "trellis/skills/guru-team"
 TASK_REF = ".trellis/tasks/09-02-release"
+TASK_COMMIT_PACKAGE = PUBLIC_SKILLS / "packages/guru-create-task-commit"
 PUBLICATION_PACKAGE = PUBLIC_SKILLS / "packages/guru-review-task-publication"
 FINALIZER_PACKAGE = PUBLIC_SKILLS / "packages/guru-finalize-task"
 
@@ -161,10 +162,11 @@ class SkillContractTest(unittest.TestCase):
             "Shared/Codex/Claude/Cursor parity",
             "install/update/reapply checks",
             "secret scan",
-            "residue check",
         ):
             with self.subTest(post_merge_gate=post_merge_gate):
                 self.assertIn(post_merge_gate, normalized)
+        self.assertIn("residue", normalized)
+        self.assertIn("diff hygiene", normalized)
         honest_path = (
             "stable_plan -> final_delivery_content -> guru-create-task-commit -> "
             "final_delivery_content_commit -> guru-review-branch_once -> "
@@ -307,8 +309,7 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         self.write("schemas/release.schema.json", '{"revision": "v1"}\n')
         self.write("scripts/release.sh", "#!/usr/bin/env bash\necho v1\n")
         self.write("tests/test_release.py", "EXPECTED = 'v1'\n")
-        self.git("add", ".")
-        self.git("commit", "-qm", "final delivery content")
+        self.delivery_commit = self.create_delivery_commit()
 
     def tearDown(self) -> None:
         self.temp.cleanup()
@@ -347,6 +348,114 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(value), encoding="utf-8")
         return path
+
+    def create_delivery_commit(self) -> dict[str, object]:
+        phase2_anchor = self.git("rev-parse", "HEAD")
+        self.git("update-ref", "refs/remotes/origin/main", phase2_anchor)
+        self.write(
+            ".trellis/.runtime/guru-team/owner-checkpoints/09-02-release/"
+            "phase2-check.json",
+            json.dumps(
+                {
+                    "typed_exit": "passed",
+                    "task_ref": TASK_REF,
+                    "phase2_capture_commit": phase2_anchor,
+                }
+            )
+            + "\n",
+        )
+        public_input = self.write_json(
+            "inputs/task-commit-public.json",
+            {
+                "profile": "initial_commit",
+                "mode": "workflow",
+                "task_ref": TASK_REF,
+                "source_exit": "passed",
+                "phase2_commit_anchor": phase2_anchor,
+            },
+        )
+        reviewed_paths = (
+            f"{TASK_REF}/design.md",
+            f"{TASK_REF}/implement.md",
+            f"{TASK_REF}/issue-scope-ledger.json",
+            f"{TASK_REF}/prd.md",
+            f"{TASK_REF}/task.json",
+            ".agents/skills/release/SKILL.md",
+            "README.md",
+            "config/release.yml",
+            "schemas/release.schema.json",
+            "scripts/release.sh",
+            "tests/test_release.py",
+        )
+        authoring = {
+            "path_classifications": [
+                {
+                    "path": path,
+                    "category": "task-reviewed",
+                    "reason": "The release delivery path passed the fixture Phase 2 review.",
+                    "coverage_source": "guru-check-task fixture",
+                }
+                for path in reviewed_paths
+            ],
+            "message": {
+                "type": "feat",
+                "scope": "release",
+                "summary": "create final delivery content",
+                "background": "Issue #335 requires one owner-created delivery commit.",
+                "changes": "Commit the reviewed release Skill, task, docs, config, schema, script, and test bytes.",
+                "boundaries": "Keep publication and release side effects outside this fixture.",
+                "validations": "Run the repo-private honest-path contract test.",
+            },
+            "ai_review": {
+                "status": "passed",
+                "summary": "The exact delivery paths and commit message are current and sufficient.",
+                "evidence": ["The fixture Phase 2 result covers every staged path."],
+            },
+        }
+        prepared = self.run_package_wrapper(
+            TASK_COMMIT_PACKAGE,
+            "prepare-task-commit.sh",
+            "--input",
+            public_input.relative_to(self.repo),
+            "--candidate-json",
+            json.dumps(authoring),
+        )
+        candidate = Path(str(prepared["candidate_artifact"]))
+        checked = self.run_package_wrapper(
+            TASK_COMMIT_PACKAGE,
+            "check-task-commit-plan.sh",
+            "--candidate-artifact",
+            candidate,
+        )
+        self.assertEqual("committed", checked["typed_exit"])
+        executed = self.run_package_wrapper(
+            TASK_COMMIT_PACKAGE,
+            "create-task-commit.sh",
+            "--candidate-artifact",
+            candidate,
+        )
+        invocation = self.write_json(
+            "inputs/task-commit-invocation.json",
+            {
+                "result": {
+                    **executed,
+                    "typed_exit": "committed",
+                    "task_ref": TASK_REF,
+                    "base_ref": "origin/main",
+                    "branch_review_commit": executed["commit_sha"],
+                }
+            },
+        )
+        output = self.run_package_wrapper(
+            TASK_COMMIT_PACKAGE,
+            "invoke.sh",
+            "--invocation",
+            invocation.relative_to(self.repo),
+        )
+        self.assertEqual("committed", output["exit_id"])
+        self.assertEqual(output["branch_review_commit"], self.git("rev-parse", "HEAD"))
+        self.assertFalse(candidate.exists())
+        return output
 
     def run_branch_wrapper(
         self, name: str, *args: object, ok: bool = True
@@ -482,8 +591,11 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         return output
 
     def run_finalizer_wrapper(
-        self, publication_output: dict[str, object]
-    ) -> dict[str, object]:
+        self,
+        publication_output: dict[str, object],
+        reviewed: str,
+        delivery_head: str,
+    ) -> tuple[dict[str, object], str]:
         public_input = {
             "profile": "publication_ready",
             "mode": "workflow",
@@ -500,25 +612,30 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         public_path = self.write_json("inputs/finalizer-public.json", public_input)
         plan_digest = "b" * 64
         plan_ref = f"closeout-plan:{plan_digest}"
-        self.write(
-            ".trellis/.runtime/guru-team/evals/finalization-context.json",
-            json.dumps({
+        archive_ref = ".trellis/tasks/archive/2026-09/09-02-release"
+
+        def write_context(transaction_state: str, publication_head: str) -> None:
+            self.write(
+                ".trellis/.runtime/guru-team/evals/finalization-context.json",
+                json.dumps({
                 "schema_version": "2.0",
                 "task_ref": TASK_REF,
                 "plan_ref": plan_ref,
                 "plan_digest": plan_digest,
                 "branch_review_commit": publication_output["branch_review_commit"],
-                "publication_head": self.git("rev-parse", "HEAD"),
-                "archive_locator": ".trellis/tasks/archive/2026-09/09-02-release",
+                "publication_head": publication_head,
+                "archive_locator": archive_ref,
                 "repo_ref": "castbox/guru-trellis",
                 "remote": "origin",
                 "head_branch": self.git("branch", "--show-current"),
                 "publication_status": "current",
                 "publication_stale_reason": None,
-                "transaction_state": "content_pushed",
-            })
-            + "\n",
-        )
+                "transaction_state": transaction_state,
+                })
+                + "\n",
+            )
+
+        write_context("prepared", delivery_head)
         review_path = self.write_json(
             "inputs/finalizer-review.json",
             {
@@ -529,13 +646,9 @@ class ReviewedContentIdentityTest(unittest.TestCase):
                     "summary": "The exact current plan can resume without metadata commits.",
                 },
                 "route": {
-                    "typed_exit": "resume_finalization",
-                    "consumer": {"kind": "skill", "id": "guru-finalize-task"},
-                    "output": {
-                        "exit_id": "resume_finalization",
-                        "task_ref": TASK_REF,
-                        "plan_ref": plan_ref,
-                    },
+                    "typed_exit": "ready_for_merge",
+                    "consumer": {"kind": "skill", "id": "guru-merge-task-pr"},
+                    "output": {"materialization": "executor"},
                 },
             },
         )
@@ -548,7 +661,7 @@ class ReviewedContentIdentityTest(unittest.TestCase):
             env=eval_env,
         )
         self.assertFalse(preview["side_effects"])
-        self.assertEqual("content_pushed", preview["transaction_state"])
+        self.assertEqual("prepared", preview["transaction_state"])
         recorded = self.run_package_wrapper(
             FINALIZER_PACKAGE,
             "record-finalization-gate.sh",
@@ -568,18 +681,62 @@ class ReviewedContentIdentityTest(unittest.TestCase):
             gate_path.resolve().relative_to(self.repo.resolve()),
             env=eval_env,
         )
-        self.assertEqual("resume_finalization", checked["typed_exit"])
-        output = self.run_package_wrapper(
+        self.assertEqual("ready_for_merge", checked["typed_exit"])
+        self.assertEqual("prepared", checked["transaction_state"])
+
+        for relative in (
+            "task.json",
+            "prd.md",
+            "design.md",
+            "implement.md",
+            "issue-scope-ledger.json",
+        ):
+            self.write(
+                f"{archive_ref}/{relative}",
+                (self.repo / TASK_REF / relative).read_text(encoding="utf-8"),
+            )
+        self.write(f"{archive_ref}/finish-summary.json", "{}\n")
+        self.assertEqual(reviewed, self.identity(include_worktree=True)["sha256"])
+        self.commit_paths("archive lifecycle metadata", archive_ref)
+        archive_head = self.git("rev-parse", "HEAD")
+        self.assertEqual(delivery_head, self.git("rev-parse", f"{archive_head}^"))
+        self.assertEqual("1", self.git("rev-list", "--count", f"{delivery_head}..HEAD"))
+        self.assertEqual(reviewed, self.identity()["sha256"])
+        write_context("ready", archive_head)
+
+        mock_bin = self.inputs / "bin"
+        mock_bin.mkdir(parents=True, exist_ok=True)
+        mock_gh = mock_bin / "gh"
+        mock_gh.write_text(
+            "#!/usr/bin/env bash\n"
+            "set -euo pipefail\n"
+            "if [[ \"${1:-}\" == auth && \"${2:-}\" == status ]]; then exit 0; fi\n"
+            "if [[ \"${1:-}\" == issue && \"${2:-}\" == view && \"${3:-}\" == 174 ]]; then\n"
+            "  printf '%s\\n' "
+            "'{\"number\":174,\"state\":\"OPEN\",\"url\":\"https://github.com/castbox/guru-trellis/issues/174\"}'\n"
+            "  exit 0\n"
+            "fi\n"
+            "exit 1\n",
+            encoding="utf-8",
+        )
+        mock_gh.chmod(0o755)
+        terminal_env = {
+            **eval_env,
+            "PATH": f"{mock_bin}{os.pathsep}{os.environ['PATH']}",
+        }
+        executed = self.run_package_wrapper(
             FINALIZER_PACKAGE,
-            "invoke.sh",
+            "execute-finalization-transition.sh",
             "--input",
             public_path.relative_to(self.repo),
-            "--owner-result",
+            "--gate",
             gate_path.resolve().relative_to(self.repo.resolve()),
-            env=eval_env,
+            env=terminal_env,
         )
-        self.assertTrue(gate_path.exists())
-        return output
+        self.assertEqual("ready_recovered", executed["stage"])
+        self.assertEqual("ready_for_merge", executed["typed_exit"])
+        self.assertFalse(gate_path.exists())
+        return executed["output"], archive_head
 
     def record_branch_review(self) -> tuple[Path, Path]:
         base = self.git("rev-parse", "HEAD^")
@@ -653,7 +810,8 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         )
 
     def test_honest_path_runs_branch_publication_and_finalizer_wrappers(self) -> None:
-        delivery_head = self.git("rev-parse", "HEAD")
+        delivery_head = str(self.delivery_commit["branch_review_commit"])
+        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
         reviewed = self.identity()["sha256"]
         public_input, checkpoint = self.record_branch_review()
         self.assertTrue(checkpoint.is_file())
@@ -690,9 +848,17 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         publication = self.run_publication_wrapper(projected, reviewed)
         self.assertEqual("ready", publication["exit_id"])
         self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
-        finalizer = self.run_finalizer_wrapper(publication)
-        self.assertEqual("resume_finalization", finalizer["exit_id"])
-        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
+        finalizer, archive_head = self.run_finalizer_wrapper(
+            publication,
+            reviewed,
+            delivery_head,
+        )
+        self.assertEqual("ready_for_merge", finalizer["exit_id"])
+        self.assertEqual(archive_head, finalizer["expected_head_sha"])
+        self.assertEqual(archive_head, self.git("rev-parse", "HEAD"))
+        self.assertEqual(delivery_head, self.git("rev-parse", f"{archive_head}^"))
+        self.assertEqual("1", self.git("rev-list", "--count", f"{delivery_head}..HEAD"))
+        self.assertEqual(reviewed, self.identity(include_worktree=True)["sha256"])
 
         registry = json.loads((PUBLIC_SKILLS / "registry.json").read_text())
         by_id = {item["id"]: item for item in registry["skills"]}
