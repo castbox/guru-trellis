@@ -1,6 +1,6 @@
 # 当前测试策略
 
-版本：`current-main-0.6.5-guru.42`；状态：`superseded`；successor：`current-main-0.6.5-guru.43`。
+版本：`current-main-0.6.5-guru.43`；状态：`active`；predecessor：`current-main-0.6.5-guru.42`。
 
 ## Evidence 分层
 
@@ -41,10 +41,16 @@
 | `TST-033` | Installed distribution isolation | canonical/installed package、verifier-zero dependency、preset projection、mode/drift/sidecar | release-wide matrix |
 | `TST-034` | Representative installed closeout | release-installed business repo 从 ready 到 Ready PR/terminal projection | 未 fresh 重试时保持 `unverified` |
 | `TST-035` | Structured verifier failure | stage/cell/command/exit/bounded safe tail、outer parse 与 postcheck classification | Finalizer lifecycle authority |
-| `TST-036` | current authority uniqueness | RDT/Architecture 只存在一个 active `.42`，`.41` 为 superseded，predecessor/successor 一致 | runtime behavior |
+| `TST-036` | historical #267 authority uniqueness | #267 `.41 -> .42` promotion 后 RDT/Architecture 只存在一个 active `.42`，`.41` 为 superseded，predecessor/successor 一致；当前 active 已由 `.43` 承接 | runtime behavior |
 | `TST-037` | release identity mapping | active surfaces 只声明 `.3/.39/CLI 0.6.15` current target，历史 `.37` 仅存在于明确 superseded/released evidence | tag、Release 或 smoke 已完成 |
-| `TST-038` | fact-only semantic diff | `.41...42` 不新增 behavior、public API、Architecture decision、owner、GAP、compatibility exit 或 ADR | downstream Phase 2/Branch Review |
-| `TST-039` | promotion lifecycle freshness | contribution review、RDT/Architecture serialized promotion、fresh Phase 2/commit/Branch Review 与 closure boundary | 任一旧 gate 或 package PASS |
+| `TST-038` | historical fact-only semantic diff | #267 `.41...42` 不新增 behavior、public API、Architecture decision、owner、GAP、compatibility exit 或 ADR | downstream Phase 2/Branch Review |
+| `TST-039` | historical promotion lifecycle freshness | #267 contribution review、RDT/Architecture serialized promotion、fresh Phase 2/commit/Branch Review 与 closure boundary | 任一旧 gate 或 package PASS |
+| `TST-040` | repo-private projection boundary | Shared/Codex/Claude/Cursor private definitions parity，public package/marketplace/preset/installed inventory zero inclusion | 公共 Skill installation |
+| `TST-041` | invocation and owner composition | 六项输入、fresh authority、两阶段 classification、既有 lifecycle owner composition 与 unsupported route fail closed | 复制 owner internal procedure |
+| `TST-042` | honest-path and reconciliation | production preview/recorder/checker/public wrappers 的稳定计划到 Finalizer 单次 Review 路径，以及 planless base reconciliation | 实际 PR/merge/release |
+| `TST-043` | reviewed-content freshness | lifecycle checkpoint 创建/替换/退休不改 identity；Skill/docs/config/schema/script/test delivery drift 使 gate stale | malicious tamper model |
+| `TST-044` | live payload and action boundary | PR/Release payload 即时 authoring、forbidden tracked artifacts、每项外部动作独立 confirmation | payload 或 mutation 已发布 |
+| `TST-045` | scoped post-merge contract | exact candidate、minimum gates、sidecar/residue、FAIL/SKIP/stale/cross-SHA stop 与零真实 release mutation | 累计 Release Gate matrix |
 
 ## 核心场景
 
@@ -100,16 +106,31 @@
   facts，credential-safe tail 有界，failed + null 被拒绝。
 - `SCN-047 representative live closeout`：现有真实 fixture fresh reinstall 后完成 Publication/
   Finalizer/Ready/terminal flow；在该复跑实际完成前状态为 `unverified`。
-- `SCN-048 release authority promotion`：Architecture owner 先激活统一 `.42` baseline，RDT owner
-  后建立 `.42` versioned authority；任一 expected `.41` mismatch、multiple active、active `.37`
-  残留或 traceability 缺失均 fail closed，promotion diff 重新进入 Phase 2/commit/Branch Review。
+- `SCN-048 historical release authority promotion`：#267 Architecture owner 先激活统一 `.42`
+  baseline，RDT owner 后建立 `.42` versioned authority；任一 expected `.41` mismatch、multiple active、
+  active `.37` 残留或 traceability 缺失均 fail closed，promotion diff 重新进入 Phase 2/commit/Branch
+  Review；该场景是 `.43` 继承的历史合同与证据。
+- `SCN-049 repo-private preparation honest path`：稳定 planning 与最终 delivery commit 后执行唯一一次
+  complete-range Branch Review，再进入 Publication 与 Finalizer，不产生 tracked release-status metadata commit。
+- `SCN-050 planless base reconciliation`：Finalizer 前发生正常 base 前进时，exact base facts 先得到
+  `base_reconciliation_required`，不因通用 plan identity 为空而误拒绝，也不执行 closeout mutation。
+- `SCN-051 lifecycle checkpoint stability`：owner-private checkpoint 创建、替换和退休不改变
+  reviewed-content identity 或 delivery commit。
+- `SCN-052 delivery drift staleness`：修改 Skill、durable docs、配置、schema、script 或 test bytes 时，
+  受影响的 Phase 2/Review/Publication/Finalizer/exact-candidate gate stale。
+- `SCN-053 private inventory isolation`：四个 project-local projection 存在且一致，但公共 registry、
+  marketplace、preset、overlay、extension manifest 与 installed inventories 均不存在该 Skill ID。
 - `CASE-001`：每个 active interface 的 external exit 恰有唯一 consumer 或 stop，registry/interface/workflow 闭包。
 - `CASE-002`：semantic gate 发生在 recorder/validator 前，脚本不接收或持久化授权。
+- `CASE-003`：missing/multiple input、live mismatch、cross-candidate、lineage gap、FAIL、SKIP、stale
+  或 unsupported exit 均在 mutation 前失败，不存在 fallback。
+- `CASE-004`：merge、tag、tag-pinned validation、Release、Issue closure 与 cleanup 的 action-local
+  confirmation 互不授权，旧确认不能跨动作复用或持久化。
 
 ## 选择规则
 
 先读取 `.trellis/spec/workflow/quality-guidelines.md` 的 `Validation Scope Ownership`。普通 feature/docs/spec Issue 运行与 accepted scope 相关的最小可靠集合；完整多平台 Throwaway 只属于专项兼容/upgrade/release Issue。任何 SKIP、未配置 live 环境或历史 PR 声明都明确写成 `unverified`。
 
-完整矩阵只证明其绑定 candidate 的 compatibility；`.42` 是 knowledge identity，extension
+完整矩阵只证明其绑定 candidate 的 compatibility；`.43` 是 knowledge identity，extension
 `0.6.15-guru.39` 与 target `v0.6.15-guru.3` 在 #267 exact-candidate matrix、tag、GitHub Release
 与 tag-pinned smoke 完成前必须继续标记为 `unverified`。

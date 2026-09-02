@@ -1,7 +1,7 @@
 # 当前测试计划与证据
 
-版本：`current-main-0.6.5-guru.42`；状态：`superseded`；successor：`current-main-0.6.5-guru.43`；
-历史边界保持 #267 release-authority alignment 与后续 fact-only corrections。
+版本：`current-main-0.6.5-guru.43`；状态：`active`；predecessor：`current-main-0.6.5-guru.42`；
+source baseline：contribution identity `architecture-contribution-335-repository-private-release-orchestration-v1` + inherited `.42` authority + containing Git object/tree identity。
 
 ## Replacement before-state authority
 
@@ -97,7 +97,7 @@ It does not publish extension `0.6.5-guru.37`.
 ## Current boundaries
 
 - `v0.6.15-guru.3` / extension `0.6.15-guru.39` / Trellis `0.6.15` 是 #267 current target；stable tag、GitHub Release、tag-pinned clean install 与 release smoke 仍为 `unverified`。
-- `.42` 只表示 current RDT/Architecture knowledge identity；promotion 不等于 exact-candidate Release pass，也不授权 tag、Release 或 Issue closure。
+- `.43` 只表示 current RDT/Architecture knowledge identity；promotion 不等于 exact-candidate Release pass，也不授权 tag、Release 或 Issue closure。
 - #311 正式 `.3` business-repository Finalizer 原失败路径与错误文件重试仍为 `unverified`，Issue 保持 OPEN。
 - full matrix logs、临时 repository/runtime、用户授权与完整 hash bundle不进入 current SSOT。
 
@@ -140,3 +140,18 @@ GitHub Release，也不把旧 candidate 的被阻断 closeout表述为当前通�
 | version mapping | `v0.6.15-guru.3 -> 0.6.15-guru.39 -> Trellis CLI 0.6.15` | tag、Release、latest stable 与 smoke 仍 `unverified` |
 | post-promotion lifecycle | r19 fresh Phase 2、task commit `490b302a`、independent complete-range Branch Review、PR readiness 与 Finalizer 已完成；PR #315 已 merge 为 `a41b8a34` | post-merge predecessor-to-candidate full-diff review 发现 P2 `BR-267-FULL-CAND-001`；修复 merge 与 fresh review 前 tag 保持阻断 |
 | #311 business proof | `unverified` | 正式 `.3` 发布后独立安装与错误路径重试；Issue 保持 OPEN |
+
+## #335 repository-private release orchestration verification authority
+
+| Contract surface | Required proof | Boundary |
+| --- | --- | --- |
+| private identity | Shared/Codex/Claude/Cursor project-local definition parity；public registry/marketplace/preset/overlay/manifest/installed inventory zero inclusion | 不安装到业务仓库 |
+| preparation composition | standard intake、Phase 2、Task Commit、一次完整 Branch Review、Publication、Finalizer、Merge owner 引用完整且不复制内部 contract | 不创建真实 PR 或 merge |
+| honest-path convergence | 稳定 planning 与 final delivery commit 后，lifecycle metadata 创建/替换/退休不改变 reviewed identity 或 delivery commit，Publication/Finalizer 无第二次 Review | 不把运行结果写回 tracked SSOT |
+| freshness | Skill/durable/config/schema/script/test bytes 变化使相关 gate stale；owner-private lifecycle metadata 不触发内容重审 | 不覆盖 hostile-input 或竞态模型 |
+| post-merge contract | exact candidate lineage、required minimum checks、cross-SHA/FAIL/SKIP/stale stop 与完整累计矩阵边界明确 | 不执行 tag、Release 或 smoke |
+| independent mutations | merge、tag、tag-pinned smoke、Release、Issue closure、cleanup 分别要求 fresh preview 与当前对话确认 | 一次确认不得复用 |
+
+该表定义 #335 的可重复验证责任，不记录本次 task 的 HEAD、Gate 结果、finding closure、tag/smoke/
+Release 状态或时间。实际结果由对应 Phase 2、Branch Review、Publication、Finalizer 与 post-merge
+owner 在其候选上即时生成。

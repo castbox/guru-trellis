@@ -1,12 +1,16 @@
 # 非功能需求与边界
 
-版本：`current-main-0.6.5-guru.42`；状态：`superseded`；successor：`current-main-0.6.5-guru.43`。
+版本：`current-main-0.6.5-guru.43`；状态：`active`；predecessor：`current-main-0.6.5-guru.42`。
 
 - `NFR-001`：canonical source 是长期源头；dogfood 与平台副本必须可从 preset/overlay 重建。
 - `NFR-002`：public DTO 只携带唯一 consumer 必需的最小 identity/freshness；Git/live 可重建事实与授权不得持久化。
 - `NFR-003`：unknown/multiple/unmapped exit、stale identity、缺失 mandatory Skill 必须 fail closed。
-- `NFR-004`：验证按 Issue ownership 最小化；普通 docs/spec Bootstrap 不运行完整多平台或 exact release-candidate matrix。
+- `NFR-004`：验证按 Issue ownership 最小化；普通 docs/spec Bootstrap 与 repo-private release
+  orchestration contract task 不运行完整累计多平台或 exact release-candidate matrix。
 - `NFR-005`：日志、Issue、PR、task、evidence 不得泄露 secret、token、数据库 URL、客户数据。
+- `NFR-006`：release orchestration 不保存 tracked release lifecycle、动态 checklist、payload body、
+  用户授权或可重新推导状态；reviewed-content 只覆盖实际 delivery bytes，owner-private checkpoint
+  保持最小且在 consumer 完成后退休。
 
 ## 兼容与未验证边界
 

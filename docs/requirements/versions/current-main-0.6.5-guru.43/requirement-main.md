@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.42`；状态：`superseded`；successor：`current-main-0.6.5-guru.43`。本历史版本保持 #267 release-authority alignment 与后续 fact-only corrections 的既有边界；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定。
+版本：`current-main-0.6.5-guru.43`；状态：`active`；predecessor：`current-main-0.6.5-guru.42`；基线：contribution identity `architecture-contribution-335-repository-private-release-orchestration-v1`，继承 `.42` authority；#305 已确认的 `EVO-001..007` 保持独立 target authority。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
 
 ## 目标、角色与适用范围
 
@@ -75,7 +75,7 @@
 
 ## 非目标
 
-本 authority 的 `.42` 是 knowledge identity，不是 extension/release revision。本 authority 不把 extension `.39` 或目标 tag `.3` 称为已发布 stable release，不替代 #267 exact-candidate gates 或 #311 post-release business proof，也不把业务仓库私有 PRD、完整日志、临时 hash bundle或用户授权写入 current intent。
+历史 #267 authority 中的 `.42` 是 knowledge identity，不是 extension/release revision。当前 `.43` authority 继承该 release identity separation，不把 extension `.39` 或目标 tag `.3` 称为已发布 stable release，不替代 #267 exact-candidate gates 或 #311 post-release business proof，也不把业务仓库私有 PRD、完整日志、临时 hash bundle或用户授权写入 current intent。
 
 ## #295 current promotion additions
 
@@ -110,17 +110,50 @@
   inventory、ownership、sidecar 或 capability failure 收敛为 `postcheck_failure`；failed execution
   不得保留 null failure。该 evidence 只属于 verifier，Finalizer 零消费。
 
-## #267 release authority alignment
+## 历史 #267 release authority alignment
 
-- `REQ-052`：`current-main-0.6.5-guru.42` 必须是唯一 active Requirements/Design/Test 与
-  Architecture knowledge authority，`.41` 仅作为 superseded predecessor；active current source
-  candidate 固定为 extension `0.6.15-guru.39`、Trellis CLI `0.6.15`，Release target 固定为
-  `v0.6.15-guru.3`。
-- `REQ-053`：#267 的 full-diff review、exact-candidate matrix、annotated tag、GitHub Release 与
-  tag-pinned smoke 必须分别由 live evidence 晋升；promotion 或 package PASS 不得冒充已发布结果。
-- `REQ-054`：`.41 -> .42` 只更新 release/current facts、navigation、traceability、evidence 与
-  predecessor/successor binding；产品行为、Skill public API、Architecture decision、owner、
-  single-writer、GAP lifecycle 与 compatibility exit 保持不变，不创建 ADR。
-- `REQ-055`：RDT 与 Architecture reviewed contributions 必须按 expected `.41` 串行 promotion；
-  promotion-created diff 必须重新执行 Phase 2、task commit 与独立 committed full-diff Branch Review，
-  通过前 Publication 和 Release preparation fail closed。
+- `REQ-052`：#267 的 `.41 -> .42` authority alignment 合同要求
+  `current-main-0.6.5-guru.42` 成为当时唯一 active Requirements/Design/Test 与 Architecture
+  knowledge authority，`.41` 成为 superseded predecessor；该历史合同固定 source candidate 为
+  extension `0.6.15-guru.39`、Trellis CLI `0.6.15`，Release target 为 `v0.6.15-guru.3`。当前 active
+  authority 已由 successor `.43` 承接。
+- `REQ-053`：#267 历史合同要求 full-diff review、exact-candidate matrix、annotated tag、GitHub Release
+  与 tag-pinned smoke 分别由 live evidence 晋升；promotion 或 package PASS 不得冒充已发布结果。
+- `REQ-054`：#267 的历史 `.41 -> .42` delta 只更新 release/current facts、navigation、
+  traceability、evidence 与 predecessor/successor binding；产品行为、Skill public API、Architecture
+  decision、owner、single-writer、GAP lifecycle 与 compatibility exit 保持不变，且不创建 ADR。
+- `REQ-055`：#267 历史合同要求 RDT 与 Architecture reviewed contributions 按 expected `.41`
+  串行 promotion；promotion-created diff 重新执行 Phase 2、task commit 与独立 committed full-diff
+  Branch Review，通过前 Publication 和 Release preparation fail closed。
+
+## #335 repository-private release orchestration
+
+- `REQ-056`：正式发布入口的 Skill ID 固定为 `release-guru-trellis-version`，只存在于本仓库
+  Shared/Codex/Claude/Cursor project-local discovery roots；公共 Skill package、marketplace、preset、
+  overlay、registry、extension manifest 和业务仓库 installed projection 均不得包含它。
+- `REQ-057`：每次 invocation 必须从当前请求取得 repository、current release Issue、目标 repo tag、
+  目标 extension revision、official Trellis CLI version 与 predecessor tag，并 fresh 读取 live Issue、
+  Git/GitHub、version surfaces 和现有 lifecycle owner contracts。preparation merge 后必须从 fresh
+  `origin/main` 冻结 lineage 可证明的 exact candidate；旧 preparation identity 与 evidence 不可复用。
+- `REQ-058`：preparation 阶段必须复用 standard intake、Phase 2、Task Commit、一次完整 Branch Review、
+  Publication、Finalizer 与 Merge owners；本 Skill 不复制、替代、缩短或削弱这些 owner 的判断、typed
+  route、freshness、confirmation 或 fail-closed 合同。
+- `REQ-059`：PR title/body 由 Publication 根据 live Issue、完整 diff、验证结果与当前 candidate 即时
+  生成并审查；GitHub Release title/body 在 Release 动作前按 post-merge exact candidate 即时生成并
+  审查。两类 payload 只交给各自唯一 consumer，不建立 task-local handoff。
+- `REQ-060`：owner-private lifecycle checkpoint 只按既有 owner 合同短期存在并退休；正常 lifecycle
+  metadata 不改变 reviewed-content identity，不产生 release-status metadata commit 或第二次内容 Review。
+  Skill、source、durable docs、配置、schema、script 或 test bytes 变化必须使受影响的
+  Phase 2、Branch Review、Publication、Finalizer 或 exact-candidate gate stale，并返回对应 owner
+  重新验证。
+- `REQ-061`：stale、cross-SHA、lineage 不可证明、live identity mismatch、FAIL、SKIP、unknown、
+  multiple 或 unmapped exit 必须停止在当前 owner；不得用 metadata commit 建立恢复点或继续发布动作。
+- `REQ-062`：post-merge minimum gate 保留 predecessor-to-candidate full diff、版本映射、source/
+  installed validators、四平台 parity、install/update/reapply、secret scan、residue check 与 tag-pinned
+  smoke；本仓库私有编排不扩张为完整累计多平台 Release Gate 矩阵。merge、annotated tag、
+  tag-pinned smoke、GitHub Release、Issue closure 与 cleanup 是独立 transaction，每项动作前取得
+  不可复用、不可持久化的当前对话确认。
+
+- `BEH-012` Repository Release Orchestration：从 preparation owner composition，经唯一完整 Branch
+  Review、Publication、Finalizer 与 merge，到 post-merge exact candidate、scoped validation 和独立
+  release actions；任一 stale/mismatch/failure 返回当前 owning boundary。

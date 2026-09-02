@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-版本：`current-main-0.6.5-guru.42`；状态：`superseded`；successor：`current-main-0.6.5-guru.43`；provenance：`code_recovered` + #267 reviewed release-authority alignment 与后续 fact-only corrections。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定。
+版本：`current-main-0.6.5-guru.43`；状态：`active`；predecessor：`current-main-0.6.5-guru.42`；provenance：`code_recovered` + contribution identity `architecture-contribution-335-repository-private-release-orchestration-v1` + inherited `.42` authority。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
 
 ## 分层与 ownership
 
@@ -84,18 +84,54 @@
   异常边界输出 bounded structured failure；standalone verifier 在 cleanup 前解析并绑定 command
   evidence，无法解析时显式分类。matrix 外 command 或 inventory/ownership/sidecar/capability failure
   统一生成 `postcheck_failure`；该 private evidence 不进入 Finalizer authority。
-- `DES-049` Serialized authority promotion：Architecture owner 先从 reviewed contribution 激活
-  `.42` baseline/current/evidence，RDT owner 随后建立完整 `.42` Requirements/Design/Test version、
-  navigation 与 predecessor history；两步均要求 live current 精确为 `.41`，不得并行或覆盖 advance。
-- `DES-050` Fact-only projection：`.42` 从 `.41` 继承全部 runtime behavior、public contracts、
-  Architecture decision、owner、GAP 与 compatibility exit，只更新 release/current mapping、
-  traceability、evidence 和 predecessor/successor identity，不创建 ADR 或第二 authority。
-- `DES-051` Release identity separation：knowledge `.42`、extension `0.6.15-guru.39`、Trellis CLI
-  `0.6.15` 与 target tag `v0.6.15-guru.3` 是独立 identity axes；tag、Release、latest-stable 与
-  tag-pinned smoke 只由 #267 exact candidate 的 live proof 晋升。
-- `DES-052` Promotion re-entry：owner promotion 只产生 shared-current working-tree diff；该 diff
-  必须重新通过 Phase 2、task commit 和独立 complete-range Branch Review，之后才可恢复 Publication。
-  #311 的正式 `.3` business-repository proof 与 closure 保持独立后续 owner。
+- `DES-049` Historical serialized authority promotion：#267 的 Architecture owner 从 reviewed
+  contribution 激活 `.42` baseline/current/evidence，RDT owner 随后建立完整 `.42`
+  Requirements/Design/Test version、navigation 与 predecessor history；两步均绑定当时 live current
+  `.41`，不得并行或覆盖 advance。该 `.42` authority 现由 successor `.43` 继承。
+- `DES-050` Historical fact-only projection：#267 的 `.42` 从 `.41` 继承全部 runtime behavior、
+  public contracts、Architecture decision、owner、GAP 与 compatibility exit，只更新 release/current
+  mapping、traceability、evidence 和 predecessor/successor identity，不创建 ADR 或第二 authority。
+- `DES-051` Release identity separation：历史 #267 knowledge `.42`、extension `0.6.15-guru.39`、
+  Trellis CLI `0.6.15` 与 target tag `v0.6.15-guru.3` 是独立 identity axes；当前 `.43` 继承该
+  separation，tag、Release、latest-stable 与 tag-pinned smoke 仍只由 #267 exact candidate 的 live proof 晋升。
+- `DES-052` Historical promotion re-entry：#267 owner promotion 只产生 shared-current working-tree
+  diff；该 diff 按历史合同重新通过 Phase 2、task commit 和独立 complete-range Branch Review 后才恢复
+  Publication。#311 的正式 `.3` business-repository proof 与 closure 保持独立后续 owner。
+
+## #335 repository-private release orchestration design
+
+- `DES-053` Private projection boundary：`.agents/skills/release-guru-trellis-version/` 是本仓库共享
+  Markdown 语义定义，Codex/Claude/Cursor roots 保存 project-local discovery projection；公共 package、
+  registry、marketplace、preset、overlay、extension manifest 与业务仓 installed inventory 均保持零包含。
+- `DES-054` Invocation-local preflight：每次调用聚合六项最小输入与 fresh live Issue/Git/GitHub/version
+  facts，分类 preparation 或 post-merge exact-candidate stage。缺失、歧义、mismatch、unknown/multiple/
+  unmapped exit 均 fail closed；恢复时重读 live authority。
+- `DES-055` Preparation composition：standard intake 之后依序调用现有 Phase 2、Task Commit、Branch
+  Review、Publication、Finalizer 与 Merge owners；每个 owner 独占内部 judgment、typed exit、
+  recorder/validator、确认与副作用，私有 Skill 不复制内部流程。最终 delivery content commit 后执行一次
+  覆盖完整 `origin/<base>...HEAD` 的独立 Branch Review；Publication 与 Finalizer 只消费既有最小
+  handoff，lifecycle-only metadata 不回写 delivery content，也不触发第二次 Review。Finalizer 正常 base
+  前进仍走既有 planless `base_reconciliation_required` route。
+- `DES-056` Exact-candidate reset：preparation merge 后重新 fetch `origin/main`，仅从 live merge/base
+  facts 建立 exact candidate；preparation identity、旧 gates 与旧 release evidence 全部丢弃，cross-SHA
+  或 lineage gap 在 mutation 前停止。predecessor full diff、版本映射、source/installed validators、
+  四平台 parity、install/update/reapply、secret scan、residue 与 tag-pinned smoke 必须绑定同一 candidate；
+  完整累计多平台矩阵保留给专门 Release Gate owner。
+- `DES-057` Live payload and durable-state boundary：Publication 在 PR 动作前即时生成并审查 PR payload；
+  Release boundary 在 GitHub Release 动作前即时生成并审查 Release payload。payload 只存在于当前 owner
+  handoff，不写 task-local release notes、body、status 或动态 checklist，也不持久化用户授权。
+- `DES-058` Reviewed-content classification：实际交付、Skill、durable docs、配置、schema、script 与
+  tests 进入 content identity 并触发 gate freshness；owner-private checkpoint 与 lifecycle metadata 不
+  进入该 identity，consumer 完成后按 owner 合同退休。planless `base_reconciliation_required` 先验证
+  exact base facts，再执行既有 generic plan identity 检查。
+- `DES-059` Independent transactions：merge、annotated tag、tag-pinned smoke、GitHub Release、Issue
+  closure 与 cleanup 各自拥有精确 preview、当前对话确认与 mutation；Skill 只路由下一 owner，不保存
+  授权、阶段或动作结果，unsupported exit 无 fallback。
+
+- `CON-005`：repo-private Skill 不声明 public interface/schema/runtime/typed exit，也不进入 registry、
+  extension inventory 或业务仓 installed projection。
+- `CON-006`：orchestrator 只消费既有 owner 的 public minimal outputs；不得读取其 private artifact、
+  复制 transaction implementation 或把 action-local confirmation 扩张到其它动作。
 
 ## Capability owner map
 
