@@ -1,0 +1,11 @@
+{
+  "id": "333-create-task-workspace-issue-recovery",
+  "name": "333-create-task-workspace-issue-recovery",
+  "title": "#333 Make guru-create-task-workspace Issue creation recoverable and idempotent",
+  "status": "in_progress",
+  "branch": "fix/333-create-task-workspace-issue-recovery",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/333"
+}

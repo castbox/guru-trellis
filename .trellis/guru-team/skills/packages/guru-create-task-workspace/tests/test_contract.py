@@ -1,5 +1,5 @@
 from __future__ import annotations
-import copy,importlib.util,json,shutil,subprocess,sys,tempfile,unittest
+import copy,hashlib,importlib.util,json,os,shutil,subprocess,sys,tempfile,unittest
 from unittest import mock
 from datetime import datetime,timezone
 from pathlib import Path
@@ -21,6 +21,11 @@ class WorkspaceTest(unittest.TestCase):
  def make_plan(self):
   task="08-12-027-workspace";plan=json.loads((PACKAGE/"examples/task-workspace-plan.json").read_text());plan["mode"]="standalone";plan["target"].update({"repo":"example/repo","issue_number":27,"url":"https://github.com/example/repo/issues/27","title_sha256":__import__('hashlib').sha256(b"Create a reviewed task workspace").hexdigest(),"body_sha256":__import__('hashlib').sha256(b"").hexdigest()});plan["base"].update({"base_ref":"HEAD","decision_head":self.head,"local_head":self.head,"remote_head":self.head});plan["naming"].update({"branch_name":"feat/027-workspace","workspace_slug":"027-workspace","task_slug":"027-workspace","task_title":"#27 Workspace"});plan["side_effects"]["task_artifacts"]=[f".trellis/tasks/{task}/issue-scope-ledger.json"];plan["side_effects"]["runtime_mappings"]=[".trellis/.runtime/guru-team/workspaces/027-workspace.json",".trellis/.runtime/guru-team/tasks/027-workspace.json"]
   plan["scope"]["primary"].update({"number":27,"url":"https://github.com/example/repo/issues/27"});plan["scope"]["close"]=[copy.deepcopy(plan["scope"]["primary"])];return self.refresh(plan)
+ def draft_plan(self,title="Reviewed issue",body="Reviewed body",labels=None):
+  labels=list(labels or ["runtime"]);plan=copy.deepcopy(self.plan);reviewed=common.digest({"title":title,"body":body,"labels":labels})
+  plan["invocation"].update({"target_kind":"reviewed_draft","action_scope":"github_issue_mutation"});plan["target"].update({"kind":"reviewed_draft","issue_number":None,"url":None,"state":None,"updated_at":None,"title_sha256":hashlib.sha256(title.encode()).hexdigest(),"body_sha256":hashlib.sha256(body.encode()).hexdigest(),"draft":{"draft_id":"draft-112","source_request_sha256":"1"*64,"title":title,"body":body,"labels":labels,"reviewed_draft_sha256":reviewed}});plan["scope"].update({"primary":None,"close":[],"scope_sha256":common.digest({"primary":None,"close":[],"related":[],"followup":[]})});plan["side_effects"].update({"operations":["create_issue"],"task_artifacts":[],"runtime_mappings":[],"command_argv":["create-task-workspace","--input","draft.json"],"stop_after":"created_issue_refresh"});plan["freshness"]["captured_at"]="2026-01-01T00:00:00Z";return self.refresh(plan)
+ def issue_row(self,number=112,title="Reviewed issue",body="Reviewed body",labels=None,state="OPEN",created_at="2026-01-01T00:00:01Z",updated_at="2026-01-01T00:00:01Z",repo="example/repo"):
+  return {"number":number,"url":f"https://github.com/{repo}/issues/{number}","state":state,"title":title,"body":body,"createdAt":created_at,"updatedAt":updated_at,"labels":[{"name":label} for label in (labels or ["runtime"])]}
  def execute_and_check(self,plan=None):
   plan=plan or self.plan;pp=self.write("plan.json",plan)
   live={"number":27,"url":"https://github.com/example/repo/issues/27","state":"OPEN","title":"Create a reviewed task workspace","body":"","updatedAt":"2026-01-01T00:00:00Z"}
@@ -127,13 +132,84 @@ class WorkspaceTest(unittest.TestCase):
   with mock.patch.object(execute,"count_operation",side_effect=calls.append),mock.patch.object(execute,"github",return_value=live):
    result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(path)])
   self.assertEqual(["workspace.mutation_boundary_recheck"],calls);self.assertEqual(("no_side_effect","refresh_review",True),(result["variant"],result["typed_exit"],result["no_side_effect"]["zero_writes"]));self.assertEqual(before,self.mutation_state(workspace))
- def test_reviewed_draft_creates_and_rereads_issue_before_refresh(self):
-  plan=copy.deepcopy(self.plan);title="Reviewed issue";body="Reviewed body";reviewed=common.digest({"title":title,"body":body,"labels":["runtime"]})
-  plan["invocation"].update({"target_kind":"reviewed_draft","action_scope":"github_issue_mutation"});plan["target"].update({"kind":"reviewed_draft","issue_number":None,"url":None,"state":None,"updated_at":None,"title_sha256":__import__('hashlib').sha256(title.encode()).hexdigest(),"body_sha256":__import__('hashlib').sha256(body.encode()).hexdigest(),"draft":{"draft_id":"draft-112","source_request_sha256":"1"*64,"title":title,"body":body,"labels":["runtime"],"reviewed_draft_sha256":reviewed}});plan["scope"].update({"primary":None,"close":[],"scope_sha256":common.digest({"primary":None,"close":[],"related":[],"followup":[]})});plan["side_effects"].update({"operations":["create_issue"],"task_artifacts":[],"runtime_mappings":[],"command_argv":["create-task-workspace","--input","draft.json"],"stop_after":"created_issue_refresh"});r=common.digest(common.reviewable(plan));plan["freshness"]["reviewable_plan_sha256"]=r;plan["ai_review_gate"]["reviewed_plan_sha256"]=r;plan["freshness"]["plan_sha256"]=common.plan_digest(plan);pp=self.write("draft.json",plan)
-  live={"number":112,"url":"https://github.com/example/repo/issues/112","state":"OPEN","title":title,"body":body,"updatedAt":"2026-08-12T00:00:00Z","labels":[{"name":"runtime"}]}
-  with mock.patch.object(execute,"github",side_effect=[{"url":live["url"]},live]),mock.patch.object(check,"github",return_value=live):
+ def test_github_json_and_created_issue_url_decoders_are_strict(self):
+  self.assertEqual({"number":112},execute.decode_github_json('{"number":112}\n'));self.assertEqual([],execute.decode_github_json("[]\n"))
+  for raw in ('"text"','112','null','not-json','{"value":NaN}','[Infinity]'):
+   with self.subTest(json=raw),self.assertRaises(CommandError) as raised:execute.decode_github_json(raw)
+   self.assertEqual("invalid_json",raised.exception.code)
+  expected="https://github.com/example/repo/issues/112"
+  for raw in (expected,expected+"\n",expected+"\r\n"):
+   self.assertEqual((expected,112),execute.decode_created_issue_url("example/repo",raw))
+  for raw in (""," "+expected,"\t"+expected,expected+"\nextra",expected+"\n\n","http://github.com/example/repo/issues/112","https://github.com/other/repo/issues/112",expected+"?",expected+"?x=1",expected+"#",expected+"#fragment","https://github.com/example/repo/issues/0112"):
+   with self.subTest(url=raw),self.assertRaises(CommandError):execute.decode_created_issue_url("example/repo",raw)
+ def test_reviewed_draft_zero_match_creates_once_preserving_exact_bytes(self):
+  title=" Reviewed issue ";body="Reviewed body\nsecond line\n";plan=self.draft_plan(title,body);pp=self.write("draft.json",plan);live=self.issue_row(title=title,body=body)
+  with mock.patch.object(execute,"github",side_effect=[[],live]),mock.patch.object(execute,"run_gh",return_value=live["url"]+"\n") as created,mock.patch.object(check,"github",return_value=live):
    result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]);self.assertEqual(("created_issue","refresh_review"),(result["variant"],result["typed_exit"]));rp=self.write("draft-result.json",result);checked=check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
-  self.assertEqual("passed",checked["checker"]["status"]);self.assertFalse((self.parent/"repo-worktrees/027-workspace").exists())
+  created.assert_called_once_with("example/repo","issue","create","--title",title,"--body",body,"--label","runtime");self.assertEqual("passed",checked["checker"]["status"]);self.assertFalse((self.parent/"repo-worktrees/027-workspace").exists())
+ def test_reviewed_draft_one_match_recovers_without_create(self):
+  plan=self.draft_plan();pp=self.write("recover.json",plan);live=self.issue_row()
+  with mock.patch.object(execute,"github",side_effect=[[live],live]),mock.patch.object(execute,"run_gh") as created:
+   result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  created.assert_not_called();self.assertEqual((112,live["url"],"refresh_review"),(result["created_issue"]["number"],result["created_issue"]["canonical_url"],result["typed_exit"]))
+ def test_reviewed_draft_multiple_matches_block_before_create(self):
+  plan=self.draft_plan();pp=self.write("ambiguous.json",plan);rows=[self.issue_row(112),self.issue_row(113)]
+  with mock.patch.object(execute,"github",return_value=rows),mock.patch.object(execute,"run_gh") as created,self.assertRaises(CommandError) as raised:execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  created.assert_not_called();self.assertEqual(("stale_identity","target"),(raised.exception.code,raised.exception.field_path))
+ def test_reviewed_draft_lookup_allows_999_rows_but_blocks_1000(self):
+  plan=self.draft_plan();pp=self.write("lookup-limit.json",plan);live=self.issue_row()
+  rows=[self.issue_row(number=1000+index,title="Other issue") for index in range(999)]
+  with mock.patch.object(execute,"github",side_effect=[rows,live]),mock.patch.object(execute,"run_gh",return_value=live["url"]+"\n") as created:
+   result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  self.assertEqual(112,result["created_issue"]["number"]);created.assert_called_once()
+  with mock.patch.object(execute,"github",return_value=[live]*1000),mock.patch.object(execute,"run_gh") as created,self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  created.assert_not_called()
+ def test_reviewed_draft_lookup_exact_filter_rejects_mismatches(self):
+  plan=self.draft_plan();base=self.issue_row();variants=[]
+  for field,value in (("title","Other"),("body","Other"),("state","CLOSED"),("createdAt","2025-12-31T23:59:59Z")):
+   row=copy.deepcopy(base);row[field]=value;variants.append((field,row))
+  labels=copy.deepcopy(base);labels["labels"]=[{"name":"other"}];variants.append(("labels",labels))
+  for name,row in variants:
+   with self.subTest(name=name),mock.patch.object(execute,"github",return_value=[row]):self.assertEqual([],execute.find_reviewed_draft_issues(plan))
+  malformed=copy.deepcopy(base);malformed.pop("updatedAt")
+  with mock.patch.object(execute,"github",return_value=[malformed]),self.assertRaises(CommandError):execute.find_reviewed_draft_issues(plan)
+  wrong_repo=copy.deepcopy(base);wrong_repo["url"]="https://github.com/other/repo/issues/112"
+  with mock.patch.object(execute,"github",return_value=[wrong_repo]),self.assertRaises(CommandError):execute.find_reviewed_draft_issues(plan)
+ def test_live_binding_and_checker_reject_identity_drift(self):
+  plan=self.draft_plan();live=self.issue_row()
+  with mock.patch.object(execute,"github",return_value=live):binding=execute.bind_reviewed_issue(plan,112)
+  for name,change in (("number",{"number":113,"url":"https://github.com/example/repo/issues/113"}),("url",{"url":"https://github.com/other/repo/issues/112"}),("state",{"state":"CLOSED"}),("title",{"title":"Other"}),("body",{"body":"Other"}),("labels",{"labels":[{"name":"other"}]}),("updated",{"updatedAt":"not-a-time"})):
+   drift=copy.deepcopy(live);drift.update(change)
+   with self.subTest(name=name),mock.patch.object(execute,"github",return_value=drift),self.assertRaises(CommandError):execute.bind_reviewed_issue(plan,112)
+  result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":"2026-01-01T00:00:01Z","mode":plan["mode"],"variant":"created_issue","plan_sha256":plan["freshness"]["plan_sha256"],"executor":common.stage("passed",["bound"]),"checker":common.stage("not_run",[]),"created_issue":binding,"created_workspace":None,"no_side_effect":None,"typed_exit":"refresh_review","reason":"bound","consumer":common.CONSUMERS["refresh_review"],"facts_sha256":""};result=common.finalize(PACKAGE,result);pp=self.write("drift-plan.json",plan);rp=self.write("drift-result.json",result);drift=copy.deepcopy(live);drift["labels"]=[{"name":"other"}]
+  with mock.patch.object(check,"github",return_value=drift),self.assertRaises(CommandError):check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
+ def test_stateful_fake_gh_recovers_partial_success_without_second_create(self):
+  plan=self.draft_plan();pp=self.write("stateful-plan.json",plan);state_path=self.write("gh-state.json",{"create_count":0,"issue":None,"fail_next_view":True});fake_bin=self.parent/"fake-bin";fake_bin.mkdir();fake_gh=fake_bin/"gh"
+  fake_gh.write_text(f'''#!{sys.executable}
+import json,sys
+from pathlib import Path
+state_path=Path({str(state_path)!r})
+state=json.loads(state_path.read_text())
+args=sys.argv[1:]
+expected_list=['issue','list','--state','open','--search','created:>=2026-01-01','--limit','1000','--json','number,url,state,title,body,createdAt,updatedAt,labels','--repo','example/repo']
+if args==expected_list:
+ print(json.dumps([] if state['issue'] is None else [state['issue']]));raise SystemExit(0)
+if args[:2]==['issue','create']:
+ title=args[args.index('--title')+1];body=args[args.index('--body')+1]
+ labels=[args[index+1] for index,value in enumerate(args[:-1]) if value=='--label']
+ state['create_count']+=1
+ state['issue']={{'number':112,'url':'https://github.com/example/repo/issues/112','state':'OPEN','title':title,'body':body,'createdAt':'2026-01-01T00:00:01Z','updatedAt':'2026-01-01T00:00:01Z','labels':[{{'name':label}} for label in labels]}}
+ state_path.write_text(json.dumps(state));print(state['issue']['url']);raise SystemExit(0)
+if args[:2]==['issue','view'] and state['issue'] is not None:
+ if state['fail_next_view']:
+  state['fail_next_view']=False;state_path.write_text(json.dumps(state));print('injected view failure',file=sys.stderr);raise SystemExit(1)
+ print(json.dumps(state['issue']));raise SystemExit(0)
+print('unsupported fake gh command: '+' '.join(args),file=sys.stderr);raise SystemExit(9)
+''');fake_gh.chmod(0o755);path=f"{fake_bin}{os.pathsep}{os.environ.get('PATH','')}"
+  with mock.patch.dict(os.environ,{"PATH":path}):
+   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+   result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]);rp=self.write("stateful-result.json",result);checked=check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
+  state=json.loads(state_path.read_text());self.assertEqual(1,state["create_count"]);self.assertEqual((112,state["issue"]["url"],"refresh_review","passed"),(result["created_issue"]["number"],result["created_issue"]["canonical_url"],result["typed_exit"],checked["checker"]["status"]));self.assertFalse((self.parent/"repo-worktrees/027-workspace").exists());self.assertEqual("main",self.git("branch","--show-current"))
  def test_runtime_has_no_placeholder_or_monolith(self):
   for p in LOCAL.glob("*.py"):
    t=p.read_text();self.assertNotIn("mutation is unavailable",t);self.assertNotIn("guru_team_trellis.py",t);self.assertNotIn("typed_output(package_root",t)
