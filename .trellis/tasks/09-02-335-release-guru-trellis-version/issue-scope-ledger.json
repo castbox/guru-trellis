@@ -1,0 +1,44 @@
+{
+  "close_issues": [
+    {
+      "number": 335,
+      "reason": "Issue #335 is the sole independently deliverable authority for the repository-private release orchestration Skill.",
+      "title": "建立 guru-trellis 仓库私有正式发布 Skill",
+      "url": "https://github.com/castbox/guru-trellis/issues/335"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 335,
+    "reason": "Issue #335 is the sole independently deliverable authority for the repository-private release orchestration Skill.",
+    "title": "建立 guru-trellis 仓库私有正式发布 Skill",
+    "url": "https://github.com/castbox/guru-trellis/issues/335"
+  },
+  "related_issues": [
+    {
+      "number": 177,
+      "reason": "Closed prerequisite contract; this task consumes it without reopening or changing it.",
+      "title": "隔离 reviewed content identity 与 task/publication metadata",
+      "url": "https://github.com/castbox/guru-trellis/issues/177"
+    },
+    {
+      "number": 270,
+      "reason": "Closed prerequisite identity contract; this task consumes it without changing public Skill I/O.",
+      "title": "统一 guru-reviewed-content-1.0 identity 算法与跨阶段 freshness 合同",
+      "url": "https://github.com/castbox/guru-trellis/issues/270"
+    },
+    {
+      "number": 330,
+      "reason": "Related efficiency feedback; this task does not close or expand into Issue #330.",
+      "title": "用户反馈 commit/publication/merge pr 这几个阶段的进程过长",
+      "url": "https://github.com/castbox/guru-trellis/issues/330"
+    },
+    {
+      "number": 332,
+      "reason": "Paused release consumer; its branch, worktree, task, runtime state, review evidence and publication state remain untouched and unreused.",
+      "title": "发布 v0.6.15-guru.5：提升 Guru Team 内部版本并完成 exact-candidate 正式发布",
+      "url": "https://github.com/castbox/guru-trellis/issues/332"
+    }
+  ],
+  "schema_version": "2.0"
+}

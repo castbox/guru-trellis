@@ -1,0 +1,9 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"确认公共 guru-* Skill package I/O、typed exit 与 repo-private Skill 的隔离边界。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"复用 standard intake、Phase 2、Task Commit、Branch Review、Publication、Finalizer 与 merge owners 的全局路由。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"遵守 reviewed-content identity、Publication/Finalizer private state 和 release tag identity 的现行合同。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"定义 honest-path、freshness、平台投影、release validation 与 residue 的定向测试责任。"}
+{"file":".trellis/spec/docs/requirements-design-test-ssot.md","reason":"按 task-owned contribution 承接 RDT 影响并保持 shared current promotion owner。"}
+{"file":".trellis/spec/architecture/baseline-usage.md","reason":"按 Planning/Phase 2/Branch Review/Publication/Finish 生命周期消费 Architecture Baseline owner。"}
+{"file":"docs/architecture/00-foundation/design-constitution.md","reason":"约束 release orchestration 的 owner composition、最小状态和长期架构归属。"}
+{"file":"README.md","reason":"新增仓库维护者可发现的 repo-private正式发布入口。"}
+
