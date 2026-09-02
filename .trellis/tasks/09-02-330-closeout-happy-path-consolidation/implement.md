@@ -58,10 +58,10 @@
 python3 -m json.tool trellis/index.json
 find trellis/skills/guru-team/runtime trellis/skills/guru-team/packages -name '*.py' -type f -print0 | xargs -0 python3 -m py_compile
 bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh
-python3 -m unittest discover -s trellis/skills/guru-team/packages/guru-create-task-commit -p 'test_*.py'
-python3 -m unittest discover -s trellis/skills/guru-team/packages/guru-review-task-publication -p 'test_*.py'
-python3 -m unittest discover -s trellis/skills/guru-team/packages/guru-finalize-task -p 'test_*.py'
-python3 -m unittest discover -s trellis/skills/guru-team/packages/guru-merge-task-pr -p 'test_*.py'
+python3 -m unittest discover -s trellis/skills/guru-team/packages/guru-create-task-commit/tests -p 'test_*.py'
+python3 -m unittest discover -s trellis/skills/guru-team/packages/guru-review-task-publication/tests -p 'test_*.py'
+python3 -m unittest discover -s trellis/skills/guru-team/packages/guru-finalize-task/tests -p 'test_*.py'
+python3 -m unittest discover -s trellis/skills/guru-team/packages/guru-merge-task-pr/tests -p 'test_*.py'
 .trellis/guru-team/scripts/bash/check-skill-packages.sh --json --mode source
 .trellis/guru-team/scripts/bash/check-skill-packages.sh --json --mode installed
 trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
