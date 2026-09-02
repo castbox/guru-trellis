@@ -7989,6 +7989,12 @@ def classify_existing_pr_recovery(
                 "reviewed_close_issues": reviewed_scope,
             },
         )
+    metadata_comparison = {
+        "live_title": pr.get("title"),
+        "live_body": pr.get("body"),
+        "title_matches": pr.get("title") == plan["publish"]["title"],
+        "body_matches": pr.get("body") == plan["publish"]["body"],
+    }
     return {
         "mode": "existing_pr_recovery",
         "pr": {"number": pr["number"], "url": pr["url"]},
@@ -7998,12 +8004,158 @@ def classify_existing_pr_recovery(
         "publication_head": publication_head,
         "ancestry": ancestry,
         "push_required": ancestry == "strict_ancestor",
-        "metadata_update_required": (
-            pr.get("title") != plan["publish"]["title"]
-            or pr.get("body") != plan["publish"]["body"]
+        "metadata_update_required": not (
+            metadata_comparison["title_matches"]
+            and metadata_comparison["body_matches"]
         ),
+        "metadata_comparison": metadata_comparison,
         "ready_action": "mark_ready" if pr["isDraft"] else "preserve_ready",
     }
+
+def classify_unbound_equal_head_recovery(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Adopt only one exact ordinary transaction whose publication is already pushed."""
+    if (
+        transaction.get("mode") != "ordinary_publication"
+        or transaction.get("next_transition") != "push_content"
+        or transaction.get("pr") is not None
+        or transaction.get("adopted_pr") is not None
+    ):
+        return None
+    finalization_validate_transaction_plan(transaction, plan)
+    git = plan["git"]
+    candidate = resolve_closeout_pull_request(
+        root,
+        git["repo"],
+        git["head_branch"],
+        git["base_branch"],
+        git["remote"],
+    )
+    if candidate is None:
+        terminal_prs = resolve_closeout_terminal_pull_requests(
+            root,
+            git["repo"],
+            git["head_branch"],
+            git["base_branch"],
+            git["remote"],
+        )
+        if terminal_prs:
+            raise WorkflowError(
+                "Unbound equal-HEAD recovery found a Closed or Merged pull request for the immutable head/base.",
+                exit_code=2,
+                payload={
+                    "reason_code": "pre_finalizer_terminal_pr_exists",
+                    "pull_requests": terminal_prs,
+                },
+            )
+        return None
+    remote_head = closeout_remote_branch_head(root, plan)
+    publication_head = str(
+        git.get("publication_head") or git.get("branch_review_commit") or ""
+    )
+    if remote_head != str(candidate.get("headRefOid") or ""):
+        return classify_existing_pr_recovery(
+            root,
+            plan,
+            candidate,
+            remote_head,
+            allow_equal=True,
+        )
+    if remote_head != publication_head:
+        raise WorkflowError(
+            "Unbound ordinary recovery requires identical remote, PR, and Publication HEADs.",
+            exit_code=2,
+            payload={
+                "reason_code": "existing_pr_unbound_equal_head_required",
+                "remote_head": remote_head,
+                "pr_head": candidate.get("headRefOid"),
+                "publication_head": publication_head,
+            },
+        )
+    return classify_existing_pr_recovery(
+        root,
+        plan,
+        candidate,
+        remote_head,
+        allow_equal=True,
+    )
+
+def finalization_convert_unbound_equal_head_transaction(
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+    pr: dict[str, Any],
+    recovery: dict[str, Any],
+) -> dict[str, Any]:
+    """Convert one exact ordinary owner transaction into its bound recovery shape."""
+    finalization_validate_transaction_plan(transaction, plan)
+    publication_head = str(
+        plan["git"].get("publication_head")
+        or plan["git"].get("branch_review_commit")
+        or ""
+    )
+    if (
+        transaction.get("mode") != "ordinary_publication"
+        or transaction.get("next_transition") != "push_content"
+        or transaction.get("pr") is not None
+        or transaction.get("adopted_pr") is not None
+        or recovery.get("mode") != "existing_pr_recovery"
+        or recovery.get("ancestry") != "equal"
+        or recovery.get("push_required") is not False
+        or recovery.get("publication_head") != publication_head
+        or recovery.get("pre_push_remote_head") != publication_head
+        or recovery.get("pr")
+        != {"number": pr.get("number"), "url": pr.get("url")}
+        or not isinstance(recovery.get("initial_is_draft"), bool)
+    ):
+        raise WorkflowError(
+            "Unbound equal-HEAD recovery no longer matches its exact ordinary transaction.",
+            exit_code=2,
+            payload={"reason_code": "existing_pr_recovery_drift"},
+        )
+    adopted_pr = {
+        "number": pr["number"],
+        "url": pr["url"],
+        "initial_is_draft": bool(recovery["initial_is_draft"]),
+        "pre_push_remote_head": publication_head,
+    }
+    return finalization_transaction_from_plan(
+        plan,
+        next_transition="bind_pr",
+        pr=pr,
+        mode="existing_pr_recovery",
+        adopted_pr=adopted_pr,
+    )
+
+def finalization_adopt_unbound_equal_head_transaction(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+    recovery_preview: dict[str, Any],
+) -> dict[str, Any]:
+    """Reread exact live facts, convert once, and persist before external mutation."""
+    current_recovery = classify_unbound_equal_head_recovery(
+        root,
+        plan,
+        transaction,
+    )
+    if current_recovery is None or current_recovery != recovery_preview:
+        raise WorkflowError(
+            "Unbound equal-HEAD recovery facts changed after semantic preview.",
+            exit_code=2,
+            payload={"reason_code": "existing_pr_recovery_drift"},
+        )
+    converted = finalization_convert_unbound_equal_head_transaction(
+        plan,
+        transaction,
+        current_recovery["pr"],
+        current_recovery,
+    )
+    finalization_write_transaction(root, task_dir, converted)
+    return converted
 
 def finalization_existing_pr_recovery_context(
     root: Path,
@@ -8027,6 +8179,15 @@ def finalization_existing_pr_recovery_context(
         return "existing_pr_recovery", classify_existing_pr_recovery(
             root, plan, candidate
         )
+    if current_transaction.get("mode") == "ordinary_publication":
+        recovery = classify_unbound_equal_head_recovery(
+            root,
+            plan,
+            current_transaction,
+        )
+        if recovery is None:
+            return state, None
+        return "existing_pr_recovery", recovery
     if current_transaction.get("mode") != "existing_pr_recovery":
         return state, None
     candidate, remote_head = finalization_pre_mutation_remote_preflight(
@@ -8038,6 +8199,12 @@ def finalization_existing_pr_recovery_context(
         )
     recovery = current_transaction["adopted_pr"]
     publication_head = str(current_transaction["publication_head"])
+    metadata_comparison = {
+        "live_title": candidate.get("title"),
+        "live_body": candidate.get("body"),
+        "title_matches": candidate.get("title") == plan["publish"]["title"],
+        "body_matches": candidate.get("body") == plan["publish"]["body"],
+    }
     return state, {
         "mode": "existing_pr_recovery",
         "pr": {"number": candidate["number"], "url": candidate["url"]},
@@ -8051,10 +8218,11 @@ def finalization_existing_pr_recovery_context(
             else "strict_ancestor"
         ),
         "push_required": remote_head != publication_head,
-        "metadata_update_required": (
-            candidate.get("title") != plan["publish"]["title"]
-            or candidate.get("body") != plan["publish"]["body"]
+        "metadata_update_required": not (
+            metadata_comparison["title_matches"]
+            and metadata_comparison["body_matches"]
         ),
+        "metadata_comparison": metadata_comparison,
         "ready_action": (
             "mark_ready" if recovery["initial_is_draft"] else "preserve_ready"
         ),
@@ -10333,13 +10501,28 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             == legacy_plan.get("plan_digest")
         )
         recovery_preview = getattr(args, "existing_pr_recovery", None)
+        if (
+            isinstance(transaction, dict)
+            and transaction.get("mode") == "ordinary_publication"
+            and isinstance(recovery_preview, dict)
+        ):
+            transaction = finalization_adopt_unbound_equal_head_transaction(
+                root,
+                task_dir,
+                plan,
+                transaction,
+                recovery_preview,
+            )
+            prior_transaction = transaction
         recovered_legacy_pr, pre_push_remote_head = finalization_pre_mutation_remote_preflight(
             root,
             plan,
             prior_transaction,
             allow_legacy_plan_recovery=legacy_plan_recovery,
             existing_pr_recovery=(
-                recovery_preview if isinstance(recovery_preview, dict) else None
+                recovery_preview
+                if transaction is None and isinstance(recovery_preview, dict)
+                else None
             ),
         )
         if retired_projection_rebound:

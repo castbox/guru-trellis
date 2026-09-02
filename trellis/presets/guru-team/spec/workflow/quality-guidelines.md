@@ -893,6 +893,17 @@ multiple/fork/closed identity, repo/head/base mismatch, unknown or non-ancestor
 HEAD, force-push drift, scope/payload/Publication drift, archive conflict and
 unknown transaction state. Ordinary first publication continues to reject any
 Open PR without an explicitly previewed recovery binding.
+
+Unbound equal-HEAD recovery coverage additionally starts from an exact current
+`ordinary_publication/push_content` transaction with no `pr` or `adopted_pr`, an
+already-pushed Publication HEAD, and the unique Open PR at that same remote HEAD.
+Preview must report equal ancestry, no push, original Draft/Ready, exact PR and
+per-field title/body byte comparison; a trailing-LF-only body difference must
+require one metadata edit. Execute must persist exactly one ordinary-to-recovery
+conversion before external mutation, then reuse existing archive/Ready replay.
+Tests keep fresh equal-HEAD rejection, prove metadata-equal zero edit, Ready and
+Draft paths, same-plan retry zero duplicate mutation, and fail before conversion
+on PR/HEAD/Draft/metadata/scope/plan/stage/binding/archive drift.
 Finish-family integration additionally proves current finish-summary schema 2
 is derived once from the reviewed payload and live facts, historical schema 1
 remains discoverable, and the current runtime/inventories contain no retired

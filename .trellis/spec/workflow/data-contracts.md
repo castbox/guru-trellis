@@ -1368,8 +1368,16 @@ minimal immutable inputs immediately before mutation.
 
 Recovery requires one unique non-fork Open PR on the exact repository/head/base.
 The PR and remote HEAD must agree. Fresh adoption requires a strict Git ancestor
-of `publication_head`; equality is valid only after the exact pre-push HEAD and
-publication HEAD are bound by the same recovery transaction. The current Ledger close scope must equal the PR close
+of `publication_head`; equality is valid after the exact pre-push HEAD and
+publication HEAD are bound by the same recovery transaction, or while one exact
+current `ordinary_publication/push_content` transaction remains unbound and the
+remote, PR and Publication HEADs already equal. In the latter case preview keeps
+the live title/body bytes and field-equality facts invocation-local; execute
+rereads them, converts the same schema 3.0 transaction to
+`existing_pr_recovery/bind_pr`, and persists that conversion before any PR,
+archive or Ready mutation. No second transaction, publication push or PR create
+is permitted. Fresh equal-HEAD adoption without this owner transaction remains
+invalid. The current Ledger close scope must equal the PR close
 scope before metadata mutation. Current Publication title/body is the only
 convergence authority. Any identity, scope, payload, original state, ancestry,
 archive, or transaction drift fails closed. Schema 2.0 remains immutable at its

@@ -1,0 +1,4 @@
+{"file":"trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md","reason":"Keep the canonical Finalizer recovery contract aligned with Issue #338"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"Reconcile owner-private transaction and exact PR identity semantics"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Preserve the deterministic preview, transaction, mutation, and recovery boundary"}
+{"file":".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/design.md","reason":"Reuse the reviewed strict-ancestor adoption and metadata convergence design without widening it"}

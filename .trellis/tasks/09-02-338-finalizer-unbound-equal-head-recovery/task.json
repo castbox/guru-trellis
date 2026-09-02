@@ -1,0 +1,11 @@
+{
+  "id": "09-02-338-finalizer-unbound-equal-head-recovery",
+  "name": "09-02-338-finalizer-unbound-equal-head-recovery",
+  "title": "#338 修复 Finalizer 未绑定相等 HEAD 恢复",
+  "status": "in_progress",
+  "branch": "fix/338-finalizer-unbound-equal-head-recovery",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/338"
+}

@@ -1,0 +1,44 @@
+{
+  "close_issues": [
+    {
+      "number": 338,
+      "reason": "Fully covered by this task; close only after reviewed implementation, validation, merge, and live closure verification.",
+      "title": "[Bug] 支持 Finalizer 恢复已推送且未绑定的同计划 PR",
+      "url": "https://github.com/castbox/guru-trellis/issues/338"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 338,
+    "reason": "Issue #338 is the independently deliverable Finalizer recovery defect and the only close target.",
+    "title": "[Bug] 支持 Finalizer 恢复已推送且未绑定的同计划 PR",
+    "url": "https://github.com/castbox/guru-trellis/issues/338"
+  },
+  "related_issues": [
+    {
+      "number": 208,
+      "reason": "Existing strict-ancestor PR adoption mechanism reused but not reopened or closed.",
+      "title": "支持 Finalizer 安全接管同一变更请求的既有 Ready PR",
+      "url": "https://github.com/castbox/guru-trellis/issues/208"
+    },
+    {
+      "number": 249,
+      "reason": "Future workspace-owner cutover boundary; not modified or closed by this task.",
+      "title": "解耦业务 repo workspace preparation 与 upstream task creation",
+      "url": "https://github.com/castbox/guru-trellis/issues/249"
+    },
+    {
+      "number": 251,
+      "reason": "Existing post-bind same-plan recovery mechanism reused but not reopened or closed.",
+      "title": "修复 Finalizer post-bind same-plan 恢复误入 provenance reprepare 与 legacy closeout-plan 归档缺口",
+      "url": "https://github.com/castbox/guru-trellis/issues/251"
+    },
+    {
+      "number": 333,
+      "reason": "Provides the real PR #337 topology only; its business implementation remains out of scope.",
+      "title": "[Bug] Make guru-create-task-workspace Issue creation recoverable and idempotent",
+      "url": "https://github.com/castbox/guru-trellis/issues/333"
+    }
+  ],
+  "schema_version": "2.0"
+}
