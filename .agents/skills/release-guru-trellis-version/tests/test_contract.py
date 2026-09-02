@@ -328,9 +328,9 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
 
-    def identity(self) -> dict[str, str]:
+    def identity(self, *, include_worktree: bool = False) -> dict[str, str]:
         value = REVIEWED_CONTENT.reviewed_content_identity(
-            self.repo, commit="HEAD", include_worktree=False
+            self.repo, commit="HEAD", include_worktree=include_worktree
         )
         self.assertEqual("guru-reviewed-content-1.0", value["algorithm"])
         return value
@@ -592,7 +592,7 @@ class ReviewedContentIdentityTest(unittest.TestCase):
                 "task_ref": TASK_REF,
                 "base_ref": "origin/main",
                 "branch_review_commit": self.git("rev-parse", "HEAD"),
-                "review_intent": "fresh_final_review",
+                "review_intent": "initial_review",
             },
         )
         semantic = self.write_json(
@@ -653,9 +653,11 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         )
 
     def test_honest_path_runs_branch_publication_and_finalizer_wrappers(self) -> None:
+        delivery_head = self.git("rev-parse", "HEAD")
         reviewed = self.identity()["sha256"]
         public_input, checkpoint = self.record_branch_review()
         self.assertTrue(checkpoint.is_file())
+        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
 
         metadata = {
             ".trellis/workspace/test/journal.md": "workspace metadata\n",
@@ -664,8 +666,15 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         }
         for relative, content in metadata.items():
             self.write(relative, content)
-        self.commit_paths("owner lifecycle metadata", *metadata, force=True)
-        self.assertEqual(reviewed, self.identity()["sha256"])
+        self.assertEqual(reviewed, self.identity(include_worktree=True)["sha256"])
+        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
+
+        self.write(
+            ".trellis/.runtime/guru-team/checkpoint.json",
+            '{"state":"replaced"}\n',
+        )
+        self.assertEqual(reviewed, self.identity(include_worktree=True)["sha256"])
+        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
 
         checked = self.run_branch_wrapper(
             "check-review-gate.sh", "--task", TASK_REF, "--expected-exit", "passed"
@@ -676,10 +685,14 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         )
         self.assertEqual("passed", projected["exit_id"])
         self.assertFalse(checkpoint.exists())
+        self.assertEqual(reviewed, self.identity(include_worktree=True)["sha256"])
+        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
         publication = self.run_publication_wrapper(projected, reviewed)
         self.assertEqual("ready", publication["exit_id"])
+        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
         finalizer = self.run_finalizer_wrapper(publication)
         self.assertEqual("resume_finalization", finalizer["exit_id"])
+        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
 
         registry = json.loads((PUBLIC_SKILLS / "registry.json").read_text())
         by_id = {item["id"]: item for item in registry["skills"]}
