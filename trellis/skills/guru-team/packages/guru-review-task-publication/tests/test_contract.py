@@ -1132,6 +1132,76 @@ class TaskPublicationContractTest(unittest.TestCase):
         ) / legacy_complete_snapshot_reads
         self.assertGreaterEqual(snapshot_reduction, 0.7)
 
+    def test_public_contract_exposes_complete_valid_semantic_authoring_template(self) -> None:
+        import jsonschema
+
+        skill = (PACKAGE / "SKILL.md").read_text(encoding="utf-8")
+        contract = (PACKAGE / "references/contract.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("exact authoring fields, enums, route rules", skill)
+        start = "<!-- publication-semantic-result-template:start -->"
+        end = "<!-- publication-semantic-result-template:end -->"
+        documented = contract.split(start, 1)[1].split(end, 1)[0]
+        template = json.loads(
+            documented.split("```json", 1)[1].split("```", 1)[0]
+        )
+        self.assertEqual(
+            set(template),
+            {
+                "profile",
+                "mode",
+                "review_intent",
+                "pr_payload",
+                "candidate_classifications",
+                "dimensions",
+                "findings",
+                "conclusions",
+                "route",
+            },
+        )
+        self.assertEqual(
+            [item["id"] for item in template["dimensions"]],
+            list(GTT.TASK_PUBLICATION_DIMENSIONS),
+        )
+        materialized = {
+            "schema_version": "5.0",
+            "skill_id": "guru-review-task-publication",
+            "task_ref": ".trellis/tasks/09-02-example",
+            "branch_review_commit": "a" * 40,
+            "reviewed_content_sha256": "b" * 64,
+            **template,
+        }
+        for field in ("profile", "mode", "review_intent"):
+            materialized.pop(field)
+        self.assertEqual(
+            list(
+                jsonschema.Draft202012Validator(
+                    self.readiness_schema
+                ).iter_errors(materialized)
+            ),
+            [],
+        )
+        self.assertEqual(
+            GTT.task_publication_semantic_errors(
+                materialized,
+                branch_review_commit=materialized["branch_review_commit"],
+            ),
+            [],
+        )
+        normalized_contract = " ".join(contract.split())
+        for required_text in (
+            "qualified_current",
+            "rejected_out_of_scope",
+            "metadata_revision",
+            "external_blocker",
+            '`status` is `passed`, `finding`, or `blocked`',
+            '`status` is `open` or `closed`',
+            '`{"typed_exit":"return_to_task_work"}`',
+            '`{"typed_exit":"blocked","reason_code":"...","remediation":"..."}`',
+        ):
+            self.assertIn(required_text, normalized_contract)
+
     def test_stale_profile_contains_only_direct_reentry_inputs(self) -> None:
         schema = json.loads(
             (

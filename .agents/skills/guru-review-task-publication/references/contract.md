@@ -28,6 +28,172 @@ the existing bindings or returns through the AI-authored current route; the
 facade never selects or changes that route. The legacy record/check/invoke
 commands remain supported for compatibility, tests, and bounded diagnosis.
 
+## Semantic result authoring contract
+
+The semantic-result file is the AI-owned judgment submitted to the facade. For
+`publication_review`, it contains exactly these nine top-level members:
+`profile`, `mode`, `review_intent`, `pr_payload`,
+`candidate_classifications`, `dimensions`, `findings`, `conclusions`, and
+`route`. For `publication_review_stale`, add the tenth member `stale_reason` and
+use `review_intent=stale_reentry_review`.
+
+Do not add `task_ref`, `branch_review_commit`, `reviewed_content_sha256`,
+schema identity, timestamps, digests, or live repository facts. The facade
+derives those private and objective bindings from the public input and current
+repository state.
+
+Author the members as follows:
+
+- `pr_payload` has exactly non-empty `title` and `body` strings.
+- `candidate_classifications` contains every candidate that participated in
+  the final route. Each item has exactly `candidate_ref`, `decision`, `witness`,
+  and `consumer_use=publication_route_checker`. `decision` is one of
+  `qualified_current`, `qualified_explicit_nonstandard`,
+  `qualified_approved_expansion`, `rejected_no_authority`,
+  `rejected_unsupported_entry`, `rejected_not_reproduced`, or
+  `rejected_out_of_scope`. `witness` has exactly `requirement_refs`,
+  `supported_entry_refs`, `existing_caller_refs`, `honest_action_sequence`,
+  `defect_observation`, and `excluded_assumptions`; every list except
+  `excluded_assumptions` is non-empty.
+- `dimensions` contains the exact ordered ten ids listed below. Every item has
+  exactly `id`, `status`, `summary`, and non-empty `evidence_refs`; `status` is
+  `passed`, `finding`, or `blocked`.
+- `findings` contains zero or more items with exactly `finding_ref`,
+  `candidate_ref`, `dimension`, `summary`, `scope_basis`, `evidence_refs`,
+  `affected_artifacts`, `route_class`, `status`, and `closure_evidence`.
+  `route_class` is `metadata_revision`, `task_work`, or `external_blocker`;
+  `status` is `open` or `closed`. An open finding has an empty
+  `closure_evidence`; a closed finding has non-empty closure evidence. Every
+  non-passed dimension has a matching open finding, and an open finding cannot
+  reference a passed dimension.
+- `conclusions` has exactly `issue_scope`, `docs_ssot`, and
+  `safety_deployment`. Each conclusion has exactly `status`, `summary`, and
+  non-empty `evidence_refs`, using the same three statuses as dimensions.
+- `route` is exactly `{"typed_exit":"ready"}`,
+  `{"typed_exit":"return_to_task_work"}`, or
+  `{"typed_exit":"blocked","reason_code":"...","remediation":"..."}`.
+  `ready` requires all dimensions and conclusions passed and all findings
+  closed. `return_to_task_work` requires at least one `finding` dimension and
+  an open `task_work` finding, permits no blocked dimension or conclusion, and
+  carries only task-work open findings. `blocked` requires a blocked dimension,
+  a blocked conclusion, and an open `external_blocker` finding.
+
+The following is a complete valid initial `ready` authoring template. Replace
+the placeholder prose and evidence refs with the current review; duplicate or
+remove candidate items as needed, but keep the declared object shapes exact.
+
+<!-- publication-semantic-result-template:start -->
+```json
+{
+  "profile": "publication_review",
+  "mode": "workflow",
+  "review_intent": "initial_review",
+  "pr_payload": {
+    "title": "具体的中文 PR 标题",
+    "body": "## 变更摘要\n\n- 具体结果。\n\n## 验证结果\n\n- 当前验证证据。\n\n## Issue 关闭范围\n\n- Closes #123。\n\n## 安全与部署影响\n\n- 如实说明。"
+  },
+  "candidate_classifications": [
+    {
+      "candidate_ref": "candidate:publication:no-defect",
+      "decision": "rejected_not_reproduced",
+      "witness": {
+        "requirement_refs": ["issue:#123"],
+        "supported_entry_refs": ["entry:publication-review"],
+        "existing_caller_refs": ["caller:guru-review-task-publication"],
+        "honest_action_sequence": ["Review the current publication payload and complete diff."],
+        "defect_observation": "Current evidence does not reproduce a publication defect.",
+        "excluded_assumptions": []
+      },
+      "consumer_use": "publication_route_checker"
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "diff_outcome_consistency",
+      "status": "passed",
+      "summary": "The diff matches the reviewed outcome.",
+      "evidence_refs": ["git:branch_review_commit"]
+    },
+    {
+      "id": "issue_scope_closure",
+      "status": "passed",
+      "summary": "Issue closure matches the current ledger.",
+      "evidence_refs": ["issue-scope-ledger.json"]
+    },
+    {
+      "id": "pr_body_quality",
+      "status": "passed",
+      "summary": "The PR body is specific and reviewable.",
+      "evidence_refs": ["pr_payload"]
+    },
+    {
+      "id": "validation_claims",
+      "status": "passed",
+      "summary": "Validation claims match current evidence.",
+      "evidence_refs": ["validation:current"]
+    },
+    {
+      "id": "branch_review_summary",
+      "status": "passed",
+      "summary": "The Branch Review conclusion is current.",
+      "evidence_refs": ["git:branch_review_commit"]
+    },
+    {
+      "id": "docs_ssot_reconciliation",
+      "status": "passed",
+      "summary": "Docs SSOT reconciliation is complete.",
+      "evidence_refs": ["durable-docs"]
+    },
+    {
+      "id": "safety_deployment_impact",
+      "status": "passed",
+      "summary": "Safety and deployment impact are stated.",
+      "evidence_refs": ["pr_payload#安全与部署影响"]
+    },
+    {
+      "id": "finish_summary_semantics",
+      "status": "passed",
+      "summary": "The finish summary projection is current.",
+      "evidence_refs": ["pr_payload#变更摘要"]
+    },
+    {
+      "id": "metadata_tail_integrity",
+      "status": "passed",
+      "summary": "Only the allowed metadata tail follows content review.",
+      "evidence_refs": ["git-status"]
+    },
+    {
+      "id": "artifact_binding_freshness",
+      "status": "passed",
+      "summary": "Every directly consumed owner result is current.",
+      "evidence_refs": ["owner-checkers"]
+    }
+  ],
+  "findings": [],
+  "conclusions": {
+    "issue_scope": {
+      "status": "passed",
+      "summary": "The current close scope is complete.",
+      "evidence_refs": ["issue-scope-ledger.json"]
+    },
+    "docs_ssot": {
+      "status": "passed",
+      "summary": "The approved Docs SSOT plan is reconciled.",
+      "evidence_refs": ["durable-docs"]
+    },
+    "safety_deployment": {
+      "status": "passed",
+      "summary": "There is no undisclosed safety or deployment impact.",
+      "evidence_refs": ["pr_payload#安全与部署影响"]
+    }
+  },
+  "route": {
+    "typed_exit": "ready"
+  }
+}
+```
+<!-- publication-semantic-result-template:end -->
+
 ## Structured invocation diagnostics
 
 Recorder, checker, invocation, and dry-run use one sanitized owner-error

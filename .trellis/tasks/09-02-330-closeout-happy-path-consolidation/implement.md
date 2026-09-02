@@ -81,7 +81,8 @@ git diff --check
 ## Implementation Evidence
 
 - 四阶段 operation budget 已由 `closeout-118-sanitized.json` 和 package/integration assertions 固化：recommended command invocation 相对 compatibility route 下降至少 50%，重复完整事实读取下降至少 70%，terminal 后 operation 为 0。
-- package tests 全部通过：Commit Happy Path 4、Commit contract 4、Publication 40、Finalizer 76、Merge 39；closeout integration 4、finish-family integration 6、preset installer 81。
+- Publication 实际 Happy Path 发现并修复 `PUB-FINDING-001`：允许读取的 `SKILL.md` / public contract 现已完整定义 semantic-result 字段、枚举、route 约束与可验证 JSON 模板，正常调用不再需要读取 runtime/schema/examples/evals/tests。
+- package tests 全部通过：Commit Happy Path 4、Commit contract 4、Publication 41、Finalizer 76、Merge 39；closeout integration 4、finish-family integration 6、preset installer 81。
 - source/installed package validator、upstream ownership、dogfood overlay drift、task validation、Python compilation 与 `git diff --check` 均通过；preset reapply 后 sidecar 为 0，七个已核验 known-upgrade `.bak` 已按恢复合同处理。
 - 代表性 clean installed Happy Path 位于 `/private/tmp/guru-330-installed-q8ZTnb`：四阶段到达 `ready_for_merge` / `merged`，mutation 顺序严格为 `pr_create`、`pr_ready`、`pr_merge`，第二次 Merge facade 调用从 live merged facts 恢复同一 DTO，未再次 mutation，owner-private checkpoint 已消费，terminal transaction artifact 为 0。
 - wall-clock 仅保留观察口径；本轮没有把 5-10 次真实 GitHub/CI 样本 median 伪装成硬验收。已知 #118 的约 19.8 分钟主要来自外部 CI polling，#330 的硬成败按 correctness、行为等价、operation budget、freshness/recovery 与 compatibility 判定。

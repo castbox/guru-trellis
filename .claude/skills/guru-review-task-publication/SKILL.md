@@ -12,6 +12,10 @@ Path is `review-task-publication`: pass the public input and the AI-completed
 semantic result, and let that facade record, objectively check, project, and
 retire the private checkpoint in one invocation.
 
+Use the exact authoring fields, enums, route rules, and valid JSON template in
+`references/contract.md`. The facade derives task, reviewed-commit, and content
+identity fields; do not guess or repeat them in the semantic result.
+
 Do not read package runtime, schemas, examples, evals, or tests for the normal
 path. `record-task-publication-review`, `check-task-publication-review`, and
 `invoke-guru-review-task-publication` remain compatibility, testing, and bounded
