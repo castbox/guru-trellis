@@ -12563,6 +12563,29 @@ def finalization_validate_route(
                 exit_code=2,
                 payload={"errors": errors},
             )
+        if exit_id == "base_reconciliation_required":
+            facts = context.get("base_reconciliation")
+            if not isinstance(facts, dict) or output != {
+                "exit_id": exit_id,
+                **{
+                    key: facts[key]
+                    for key in (
+                        "task_ref",
+                        "task_head",
+                        "publication_head",
+                        "selected_base_ref",
+                        "old_base_head",
+                        "new_base_head",
+                        "branch_review_commit",
+                        "resume_target",
+                    )
+                },
+            }:
+                raise WorkflowError(
+                    "base_reconciliation_required does not match the current base pair.",
+                    exit_code=2,
+                )
+            return
         expected_task_ref = (
             plan["task"]["archive_locator"]
             if exit_id == "ready_for_merge"
@@ -12593,11 +12616,6 @@ def finalization_validate_route(
                     exit_code=2,
                 )
     publication_status = context.get("publication_status", "current")
-    if exit_id == "base_reconciliation_required":
-        facts = context.get("base_reconciliation")
-        if not isinstance(facts, dict) or output != {"exit_id": exit_id, **{key: facts[key] for key in ("task_ref", "task_head", "publication_head", "selected_base_ref", "old_base_head", "new_base_head", "branch_review_commit", "resume_target")}}:
-            raise WorkflowError("base_reconciliation_required does not match the current base pair.", exit_code=2)
-        return
     if context.get("transaction_state") == "base_reconciliation_required" and exit_id != "blocked":
         raise WorkflowError("Current base evolution requires reconciliation or a blocked route.", exit_code=2)
     if exit_id == "publication_review_stale":

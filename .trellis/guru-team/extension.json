@@ -404,11 +404,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-02T17:44:54Z",
+  "installed_at": "2026-09-02T18:20:54Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "9a520c21e4ed139154e5be423e71c82174bb94ab",
-    "commit": "9a520c21e4ed139154e5be423e71c82174bb94ab",
+    "ref": "24abcad7a4871870a3955122d58fb27f01fea666",
+    "commit": "24abcad7a4871870a3955122d58fb27f01fea666",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -616,7 +616,7 @@
       {
         "id": "guru-finalize-task",
         "interface_sha256": "1510ae20c3bcfa3f1acbb453a200c599dd6e8677327e5d11f4a1cb4a6292c4e2",
-        "tree_sha256": "7bdb4e1c11a012477a6a5994f4f31b0fc60693e6371df5564fae14c8f26ae4fa"
+        "tree_sha256": "3269c177fcfe5f95bae9fef3bf22245bcf39a4cc95bfcc6c3f89e9aee9616079"
       },
       {
         "id": "guru-merge-task-pr",
@@ -7074,7 +7074,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
-        "sha256": "524b6aa43e555183947d1cd545cd2b82151f3dbd4d0185e62d4fc70959e65b16",
+        "sha256": "75040956cfdc16656efbc334c9343150b3835db7cb72379797eb7bf341e821aa",
         "executable": false,
         "action": "unchanged"
       },
@@ -7396,7 +7396,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
-        "sha256": "913d79b23ecb6054ab642ae13dba36f5e2571b01c962d0d8ec59d4490853893a",
+        "sha256": "9e8757ad078b7c2084da6b1c0a5b3861bfb546b93c7d2658e0679f2d68c56cf5",
         "executable": false,
         "action": "unchanged"
       },
@@ -30627,7 +30627,56 @@
         "action": "unchanged"
       }
     ],
-    "removals": [],
+    "removals": [
+      {
+        "path": ".agents/skills/guru-finalize-task/scripts/invoke.sh",
+        "action": "already_missing"
+      },
+      {
+        "path": ".agents/skills/guru-merge-task-pr/scripts/invoke.sh",
+        "action": "already_missing"
+      },
+      {
+        "path": ".agents/skills/guru-review-task-publication/scripts/invoke.sh",
+        "action": "already_missing"
+      },
+      {
+        "path": ".claude/skills/guru-finalize-task/scripts/invoke.sh",
+        "action": "already_missing"
+      },
+      {
+        "path": ".claude/skills/guru-merge-task-pr/scripts/invoke.sh",
+        "action": "already_missing"
+      },
+      {
+        "path": ".claude/skills/guru-review-task-publication/scripts/invoke.sh",
+        "action": "already_missing"
+      },
+      {
+        "path": ".codex/skills/guru-finalize-task/scripts/invoke.sh",
+        "action": "already_missing"
+      },
+      {
+        "path": ".codex/skills/guru-merge-task-pr/scripts/invoke.sh",
+        "action": "already_missing"
+      },
+      {
+        "path": ".codex/skills/guru-review-task-publication/scripts/invoke.sh",
+        "action": "already_missing"
+      },
+      {
+        "path": ".cursor/skills/guru-finalize-task/scripts/invoke.sh",
+        "action": "already_missing"
+      },
+      {
+        "path": ".cursor/skills/guru-merge-task-pr/scripts/invoke.sh",
+        "action": "already_missing"
+      },
+      {
+        "path": ".cursor/skills/guru-review-task-publication/scripts/invoke.sh",
+        "action": "already_missing"
+      }
+    ],
     "conflicts": [],
     "sidecars": []
   },

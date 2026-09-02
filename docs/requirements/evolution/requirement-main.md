@@ -20,19 +20,18 @@
 fixture，不拥有或复制非功能正文。
 
 它定义 target，不声明 current runtime 已经实现、验证或发布这些结果。本候选用于
-current-to-target trace 的 selected-base authority snapshot 为
-`source_ref=5650df47fe17fe89b7cb616be6c9551608164832`。该 immutable ref 是当前
-`origin/main`，包含 #311 merge commit `21c7da14798683193b460a5e7c5bd24c7c517804`、
+current-to-target trace 的历史 selected-base authority snapshot 为
+`source_ref=5650df47fe17fe89b7cb616be6c9551608164832`。该 immutable ref 包含 #311 merge commit
+`21c7da14798683193b460a5e7c5bd24c7c517804`、
 #312 merge commit `3efcce72a0d47e38ec725aa8c0f8498992f3416f`、#267 release-authority merge
 `a41b8a34d237e1863225d069ca9c6b5ad6ae476a`、其 evidence-fix PR #316 merge
 `9f560ec191851f82768d5e7aa031e6d852c34f14`、修复 installed Finalizer 平台选择保真的 PR #317 merge
 `736ef3335f1b1b0dcbf92f1e8e53343f922aa32a` 与 caller-inventory consistency PR #318 merge
-`5650df47fe17fe89b7cb616be6c9551608164832`；其中 active RDT/Design/Test/Architecture authority 为
-`current-main-0.6.5-guru.42`，其 source baseline 为 reviewed task head
-`d3dca74b3a94569a095594477c15b032526f2381` + #267 expected `.41` serialized promotion delta。所有 current
-结论必须从该 immutable ref 的 exact path 读取；后续 `origin/main` 漂移不得被本候选隐式吸收，
-必须重新绑定并复审。当前未 rebase 的 task worktree 仍只是本轮 candidate 载体，不能与该 ref
-拼接成虚构 authority。
+`5650df47fe17fe89b7cb616be6c9551608164832`。active RDT/Design/Test/Architecture authority 现为
+`current-main-0.6.5-guru.43`，由包含 current locators 的 Git commit/tree identity 绑定；`.43` 只增加
+#335 repo-private release orchestration current contract，并由既有 Evolution route/execution continuity
+与 distribution constraints 承接，不增加 target requirement、capability、delta 或 fixture。后续
+`origin/main` 漂移不得被本候选隐式吸收，task worktree 也不能与历史 ref 拼接成虚构 authority。
 
 上一 selected base `736ef3335f1b1b0dcbf92f1e8e53343f922aa32a`、更早 selected base
 `9f560ec191851f82768d5e7aa031e6d852c34f14`、`.41` /
