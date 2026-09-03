@@ -61,10 +61,10 @@ dialogue-local and is never persisted.
 
 ## Integrated Public Graph
 
-The current package registry contains exactly 22 active Skill ids and 93
+The current package registry contains exactly 23 active Skill ids and 96
 external exits. Twenty-one Skills participate in the business-task workflow,
-whose global graph contains 21 mandatory invokes, 91 mapped exits, 35 workflow
-targets, and 22 stop targets. `guru-verify-extension-installation` is the remaining
+whose global graph contains 22 mandatory invokes, 94 mapped exits, 35 workflow
+targets, and 23 stop targets. `guru-verify-extension-installation` is the remaining
 standalone-only source-repository Skill; its two exits return directly to its
 caller-owned stop targets and never appear in the business workflow.
 
@@ -87,7 +87,8 @@ caller-owned stop targets and never appear in the business workflow.
 | `guru-review-task-publication` | `ready -> guru-finalize-task`; `return_to_task_work -> guru-task-publication-work-router`; `blocked -> task-publication-review-blocked` |
 | `guru-verify-extension-installation` (standalone only) | `verified -> extension-installation-verification-verified`; `blocked -> extension-installation-verification-blocked` |
 | `guru-finalize-task` | `publication_review_stale -> guru-review-task-publication`; `resume_finalization -> guru-finalize-task`; `reprepare_required -> guru-finalize-task`; `ready_for_merge -> guru-merge-task-pr`; `blocked -> task-finalization-blocked` |
-| `guru-merge-task-pr` | `merged -> guru-finalization-finish-response`; `merge_blocked -> task-pr-merge-blocked`; `closure_mismatch -> task-pr-closure-mismatch` |
+| `guru-merge-task-pr` | `merged -> guru-finalization-finish-response`; `merge_blocked -> task-pr-merge-blocked`; `phase2_reentry_required -> guru-restore-archived-task`; `closure_mismatch -> task-pr-closure-mismatch` |
+| `guru-restore-archived-task` | `restored_to_phase2 -> guru-resume-implementation`; `restore_blocked -> task-pr-phase2-reentry-blocked` |
 
 Missing Skill packages, missing or duplicate markers, unknown/multiple/unmapped
 exits, a consumer mismatch, a dangling target, a kind mismatch, or an invalid
@@ -317,7 +318,11 @@ Finalizer `ready_for_merge` is not completion. It proves that the unique PR is
 Ready, still points at the reviewed expected head, and every `close_issues`
 entry remains Open before merge. The workflow immediately and mandatorily
 invokes `guru-merge-task-pr`; only `merged` reaches the finish response.
-`merge_blocked` and `closure_mismatch` stop at their distinct consumers.
+`phase2_reentry_required` invokes `guru-restore-archived-task` without merge
+confirmation or remote mutation. Exact restoration resumes Phase 2 through
+`guru-resume-implementation`; restore conflicts stop at
+`task-pr-phase2-reentry-blocked`. External blockers remain `merge_blocked`, and
+`closure_mismatch` remains the post-merge closure stop.
 
 `guru-merge-task-pr` is a semantic, remote-only post-publication route. It
 compares live PR base/head branches and close keywords with Finalizer's minimal

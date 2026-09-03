@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-restore-archived-task-semantic-review-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "profile", "mode", "review_intent", "classification", "requires_task_content_change", "finding_refs"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "profile": {"const": "restore_archived_task"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "review_intent": {"const": "task_work_reentry"},
+    "classification": {"const": "task_work"},
+    "requires_task_content_change": {"const": true},
+    "finding_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"}}
+  }
+}

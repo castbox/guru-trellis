@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "task-pr-phase2-reentry-blocked-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "exit_id", "reason_code", "remediation", "zero_writes"],
+  "properties": {"schema_version": {"const": "1.0"}, "exit_id": {"const": "restore_blocked"}, "reason_code": {"type": "string", "minLength": 1}, "remediation": {"type": "string", "minLength": 1}, "zero_writes": {"const": true}}
+}

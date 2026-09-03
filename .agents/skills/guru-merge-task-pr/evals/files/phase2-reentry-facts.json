@@ -1,0 +1,1 @@
+{"scenario":"A current-scope content finding requires the exact archived task to return to Phase 2 without executing a merge mutation.","owner_staging":{"recipe":"merge-phase2-reentry"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--gate",".trellis/.runtime/guru-team/task-pr-merge/eval/task-pr-merge-gate.json"]}}

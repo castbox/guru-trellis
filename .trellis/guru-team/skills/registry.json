@@ -267,6 +267,23 @@
       "workflow_route_id": "task-pr-merge"
     },
     {
+      "id": "guru-restore-archived-task",
+      "state": "active",
+      "name": "guru-restore-archived-task",
+      "package": "packages/guru-restore-archived-task",
+      "interface": "packages/guru-restore-archived-task/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "workflow_integration_state": "integrated",
+      "supported_platforms": [
+        "shared",
+        "codex",
+        "cursor",
+        "claude"
+      ],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "task-pr-phase2-reentry"
+    },
+    {
       "id": "guru-sync-base",
       "state": "active",
       "name": "guru-sync-base",
