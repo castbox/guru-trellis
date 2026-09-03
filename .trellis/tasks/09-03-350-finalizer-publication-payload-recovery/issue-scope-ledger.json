@@ -1,0 +1,51 @@
+{
+  "close_issues": [
+    {
+      "number": 350,
+      "reason": "Primary independently deliverable Finalizer publication payload recovery fix.",
+      "title": "修复 Finalizer 在 base evolution recovery 中无法收敛正常 Publication payload 演进",
+      "url": "https://github.com/castbox/guru-trellis/issues/350"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 249,
+      "reason": "Explicit boundary only; this task does not modify or close the broader workspace preparation issue.",
+      "title": "解耦业务 repo workspace preparation 与 upstream task creation",
+      "url": "https://github.com/castbox/guru-trellis/issues/249"
+    }
+  ],
+  "primary_issue": {
+    "number": 350,
+    "reason": "Primary independently deliverable Finalizer publication payload recovery fix.",
+    "title": "修复 Finalizer 在 base evolution recovery 中无法收敛正常 Publication payload 演进",
+    "url": "https://github.com/castbox/guru-trellis/issues/350"
+  },
+  "related_issues": [
+    {
+      "number": 333,
+      "reason": "Real reproduction source only; its implementation, PR and owner-private transaction remain untouched.",
+      "title": "[Bug] Make guru-create-task-workspace Issue creation recoverable and idempotent",
+      "url": "https://github.com/castbox/guru-trellis/issues/333"
+    },
+    {
+      "number": 342,
+      "reason": "Defines the direct provenance-tail transaction rebind contract preserved by this task.",
+      "title": "修复 Finalizer provenance metadata tail 演进后未绑定 transaction 无法恢复既有 PR",
+      "url": "https://github.com/castbox/guru-trellis/issues/342"
+    },
+    {
+      "number": 344,
+      "reason": "Defines the exact base-evolution recovery classifier composed by this task.",
+      "title": "Finalizer 无法恢复经过 base evolution 的既有任务 PR transaction",
+      "url": "https://github.com/castbox/guru-trellis/issues/344"
+    },
+    {
+      "number": 347,
+      "reason": "Defines the base-evolution plus single legal provenance-tail topology extended by this task.",
+      "title": "Finalizer 无法恢复 base evolution 后带合法 provenance tail 的既有 PR transaction",
+      "url": "https://github.com/castbox/guru-trellis/issues/347"
+    }
+  ],
+  "schema_version": "2.0"
+}

@@ -8196,11 +8196,24 @@ def classify_provenance_tail_transaction_rebind(
         return None
     errors = provenance_tail_transaction_rebind_errors(root, plan, transaction)
     base_evolution = False
-    if errors and set(errors) <= PROVENANCE_TAIL_INAPPLICABLE_ERRORS:
-        base_evolution = provenance_tail_transaction_rebind_is_base_evolution(
-            root, plan, transaction
-        )
-        if not base_evolution:
+    if errors:
+        error_set = set(errors)
+        if error_set <= PROVENANCE_TAIL_INAPPLICABLE_ERRORS:
+            base_evolution = provenance_tail_transaction_rebind_is_base_evolution(
+                root, plan, transaction
+            )
+            if not base_evolution:
+                base_evolution = (
+                    provenance_tail_transaction_rebind_base_evolution_tail_parent(
+                        root, plan, transaction
+                    )
+                    is not None
+                )
+        elif (
+            "publication" in error_set
+            and error_set - {"publication"}
+            <= PROVENANCE_TAIL_INAPPLICABLE_ERRORS
+        ):
             base_evolution = (
                 provenance_tail_transaction_rebind_base_evolution_tail_parent(
                     root, plan, transaction

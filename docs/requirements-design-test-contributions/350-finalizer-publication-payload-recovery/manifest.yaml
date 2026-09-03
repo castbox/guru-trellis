@@ -1,0 +1,4 @@
+schema_version: "1.0"
+issue: 350
+title: "修复 Finalizer 在 base evolution recovery 中收敛正常 Publication payload 演进"
+status: task_owned_contribution
