@@ -154,6 +154,17 @@ class SolutionMechanismQualificationRuntimeTest(unittest.TestCase):
         self.assertEqual("stale_identity", raised.exception.code)
         self.assertEqual("public_input.target.planning_identity", raised.exception.field_path)
 
+    def test_repo_root_rejects_symlink_before_resolving(self) -> None:
+        real_root = self.repo / "real-repository-root"
+        real_root.mkdir()
+        alias = self.repo / "repository-alias"
+        alias.symlink_to(real_root, target_is_directory=True)
+        public_input = self.public_input("task_free_pre_write")
+        public_input["target"]["repo_locator"] = "repository-alias"
+
+        with self.assertRaisesRegex(CommandError, "regular repository root"):
+            qualification_common._repo_root(public_input)
+
     def test_stdin_only_contract_rejects_every_locator_argument(self) -> None:
         for module, flag in ((qualification_record, "--input"), (qualification_check, "--input"), (qualification_invoke, "--invocation")):
             with self.subTest(module=module.__name__), self.assertRaises(CommandError) as raised:

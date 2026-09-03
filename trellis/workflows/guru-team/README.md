@@ -279,6 +279,32 @@ README 与 release-facing text 均不得声称 pressure matrix 或模型稳定�
 本发布未取得 live GPT-5.6 Sol production semantic evidence；deterministic/no-model/
 fake-production 结果不能证明 pressure matrix、模型稳定性或未来模型行为。
 
+## Solution Mechanism Qualification
+
+Public closed-loop Skill `guru-qualify-solution-mechanism` 是拟议解决机制资格的唯一语义
+Owner，与 `guru-qualify-normal-scenario` 分离：前者只判断机制是否能够承接业务 authority，后者只判断问题场景是否具备资格。Global workflow 在与场景资格相同的十个 profile
+边界 mandatory invoke 该 Skill：
+`task_free_pre_write|task_free_evolution|requirements_scope_set|change_request_candidate_set|planning_scenario_set|implementation_discovery|base_impact_candidate_set|phase2_candidate_set|branch_review_candidate_set|publication_candidate_set`。
+
+该 package 的四个 typed exits 及唯一 consumer 为：
+
+- `classified` -> `guru-solution-mechanism-classified-router` -> 原 profile Owner；
+- `scope_confirmation_required` -> `guru-clarify-requirements:solution_mechanism_scope_confirmation`；
+- `mechanism_revision_required` -> `guru-solution-mechanism-mechanism-router` -> 原 Owner remove/replace 后 fresh rerun；
+- `blocked` -> `solution-mechanism-qualification-blocked`。
+
+调用方只提供当前 profile 的 candidate set、固定 caller/target identity 和 live locators；Skill
+直接读取 requirement、planning、architecture/spec、dependency/caller graph、diff、tests
+与 repository contract，完成 semantic review 后通过 `invoke-guru-qualify-solution-mechanism`
+输出单一 typed exit。`record-solution-mechanism-qualification` 与
+`check-solution-mechanism-qualification` 只校验 shape、identity、freshness、candidate 覆盖和
+consumer binding，不判断机制语义。结果保持 invocation-local，不创建 qualification report、
+ledger、handoff、checkpoint 或其他持久化资格 artifact。
+
+OS/kernel/process/descriptor primitive 不得承接业务 authority；命中此类机制只能返回
+`mechanism_revision_required`，不能降级为 scope confirmation。普通文件和目录仅用于普通
+state、artifact、日志、cache、配置或 durable record 保存与读取时保持允许。
+
 ## Phase 0 Public Transition And Invocation
 
 Phase 0 由六个 mandatory Skills 和 23 个既有 typed exits 构成。正常 forward path 使用
@@ -1092,7 +1118,7 @@ label、exit code 与 bounded credential-safe tail；无法解析时显式记录
 ## Skill 行为评测
 
 安装完整 Guru Team preset 后，可用 `discover-skill-evals` 发现 current Interface
-1.4/1.5 package 的 `evals/evals.json`，并用 `run-skill-evals` 经
+1.4/1.5/1.6 package 的 `evals/evals.json`，并用 `run-skill-evals` 经
 `shared|codex|claude|cursor` adapter 实际执行 public wrapper。Schema id 是
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading

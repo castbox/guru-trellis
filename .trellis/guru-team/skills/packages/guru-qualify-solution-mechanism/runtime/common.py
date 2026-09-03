@@ -106,8 +106,11 @@ def _validate_locator(value: str, field: str) -> None:
 
 def _repo_root(public_input: dict) -> Path:
     locator = public_input["target"]["repo_locator"]
-    candidate = Path(locator).resolve()
-    if not candidate.is_dir() or candidate.is_symlink():
+    candidate = Path(locator)
+    if candidate.is_symlink():
+        raise CommandError("unsafe_path", "public_input.target.repo_locator", "Use the current regular repository root.")
+    candidate = candidate.resolve()
+    if not candidate.is_dir():
         raise CommandError("unsafe_path", "public_input.target.repo_locator", "Use the current regular repository root.")
     return candidate
 

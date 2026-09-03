@@ -72,6 +72,7 @@ caller-owned stop targets and never appear in the business workflow.
 | --- | --- |
 | `guru-maintain-architecture-baseline` | `baseline_current -> guru-architecture-baseline-current-router`; `sync_required -> guru-maintain-architecture-baseline`; `baseline_incomplete -> guru-architecture-baseline-bootstrap-router`; `architecture_conflict -> guru-architecture-baseline-planning-router`; `contract_incomplete -> guru-architecture-baseline-planning-router`; `fitness_regression -> guru-architecture-baseline-check-router`; `blocked -> architecture-baseline-blocked` |
 | `guru-qualify-normal-scenario` | `classified -> guru-normal-scenario-classified-router`; `scope_confirmation_required -> guru-clarify-requirements`; `mechanism_revision_required -> guru-normal-scenario-mechanism-router`; `blocked -> normal-scenario-qualification-blocked` |
+| `guru-qualify-solution-mechanism` | `classified -> guru-solution-mechanism-classified-router`; `scope_confirmation_required -> guru-clarify-requirements`; `mechanism_revision_required -> guru-solution-mechanism-mechanism-router`; `blocked -> solution-mechanism-qualification-blocked` |
 | `guru-execute-task-free-change` | `completed -> guru-task-free-completed`; `resume_active_task -> guru-task-free-resume-active-task-router`; `scope_change -> guru-task-free-scope-change-router`; `location_required -> guru-execute-task-free-change`; `reselect_mode -> guru-select-workflow-mode`; `explicit_choice_required -> guru-execute-task-free-change`; `blocked -> task-free-change-blocked` |
 | `guru-sync-base` | `synced -> guru-discover-change-context`; `skipped -> original-request-route`; `blocked -> base-sync-blocked` |
 | `guru-discover-change-context` | `context_ready -> guru-clarify-requirements`; `refresh_base -> guru-sync-base`; `blocked -> change-context-blocked` |
@@ -119,6 +120,42 @@ edit or test. Its existing deterministic resume target remains
 `guru-resume-implementation`. Rejected candidates never enter clarification,
 acceptance, negative tests, implementation, P0-P3 findings, follow-up work, or
 publication blocking.
+
+### Solution-mechanism qualification invocation
+
+`guru-qualify-solution-mechanism` is the only semantic owner for proposed
+solution-mechanism qualification. It is independent from
+`guru-qualify-normal-scenario`: the former judges whether a mechanism can carry
+business authority, while the latter judges whether a problem scenario is
+qualified. The global workflow names the same ten closed profiles and consumes
+the four exits declared by the solution-mechanism interface.
+
+The ten profiles are `task_free_pre_write`, `task_free_evolution`,
+`requirements_scope_set`, `change_request_candidate_set`,
+`planning_scenario_set`, `implementation_discovery`,
+`base_impact_candidate_set`, `phase2_candidate_set`,
+`branch_review_candidate_set`, and `publication_candidate_set`. Each caller
+provides only its profile-specific candidate set and live locators; the Skill
+reads current requirement, planning, architecture/spec, dependency/caller
+graph, diff, tests, and repository contract before making its semantic judgment.
+
+The exits route as follows: `classified` returns through
+`guru-solution-mechanism-classified-router` to the original profile owner;
+`scope_confirmation_required` invokes
+`guru-clarify-requirements:solution_mechanism_scope_confirmation`;
+`mechanism_revision_required` returns through
+`guru-solution-mechanism-mechanism-router` for remove/replace and fresh
+qualification; and `blocked` stops at
+`solution-mechanism-qualification-blocked`. A forbidden
+OS/kernel/process/descriptor mechanism cannot enter scope confirmation.
+
+The package's `record-solution-mechanism-qualification` and
+`check-solution-mechanism-qualification` commands are deterministic
+recorder/validator components only. They validate shape, identity, freshness,
+candidate coverage, and consumer binding; they do not judge mechanism,
+architecture, sufficiency, severity, decision, or route. The public invocation
+emits one call-local typed exit and creates no qualification artifact,
+checkpoint, ledger, handoff, or result locator.
 
 ## Phase Route
 
