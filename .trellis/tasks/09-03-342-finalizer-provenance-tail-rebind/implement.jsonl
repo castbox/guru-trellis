@@ -1,5 +1,0 @@
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"Finalizer owner-private transaction、reviewed/publication HEAD 与 existing-PR recovery 数据合同。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Finalizer deterministic preview、transaction write、mutation ordering 与 script boundary。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Targeted Finalizer、installed projection、reapply、drift 与 sidecar 验证范围。"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"Finalizer public graph、typed exit consumer 与 semantic/deterministic owner 边界。"}
-{"file":".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/research/finalizer-provenance-tail-rebind.md","reason":"Issue #342 当前调用链、#338 复用点和测试矩阵研究结论。"}
