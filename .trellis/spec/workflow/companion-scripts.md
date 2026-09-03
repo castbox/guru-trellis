@@ -1658,6 +1658,16 @@ a verification artifact. Business changed paths and the installed extension
 manifest have no verifier applicability semantics. Archive preparation permits
 exactly the six durable core files.
 
+When an old unbound ordinary `push_content` transaction differs from the rebuilt
+plan only because one validated provenance metadata tail advanced the reviewed
+and Publication HEAD, preview performs this classification before generic
+base-evolution supersession. It requires the old Publication HEAD at both the
+remote and unique PR, then delegates PR/scope/metadata facts to the existing
+strict-ancestor classifier. Execute reruns those facts and writes the final
+current-plan bound `existing_pr_recovery/push_content` transaction before any
+push, PR edit, archive or Ready mutation. It pushes the new Publication HEAD
+once and never invokes the equal-HEAD conversion or creates a PR.
+
 Before an ordinary pre-PR metadata-tail reprepare, the executor creates a
 detached target checkout at the business `reviewed_content_head`, reads that
 commit's installed manifest, and resolves a separate clean detached extension

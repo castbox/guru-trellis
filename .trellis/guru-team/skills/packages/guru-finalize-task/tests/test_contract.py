@@ -2666,6 +2666,21 @@ class FinalizeTaskContractTests(unittest.TestCase):
             interrupt_archive=False,
         )
 
+    def test_provenance_tail_rebind_ready_lf_executes_exactly_once(self) -> None:
+        self._assert_existing_pr_recovery_real_topology(
+            initial_is_draft=False,
+            metadata_variant="trailing_lf",
+            predecessor_transaction_rebind=True,
+        )
+
+    def test_provenance_tail_rebind_metadata_equal_draft_executes_exactly_once(self) -> None:
+        self._assert_existing_pr_recovery_real_topology(
+            initial_is_draft=True,
+            metadata_variant="equal",
+            interrupt_archive=False,
+            predecessor_transaction_rebind=True,
+        )
+
     def test_happy_path_adopts_unbound_equal_head_without_republishing(self) -> None:
         for metadata_variant in ("equal", "trailing_lf"):
             with self.subTest(metadata_variant=metadata_variant):
@@ -2685,12 +2700,15 @@ class FinalizeTaskContractTests(unittest.TestCase):
         metadata_variant: str = "different",
         interrupt_archive: bool = True,
         through_happy_path_facade: bool = False,
+        predecessor_transaction_rebind: bool = False,
     ) -> None:
         self.assertIn(recovery_ancestry, {"strict_ancestor", "equal"})
         self.assertIn(metadata_variant, {"different", "trailing_lf", "equal"})
         if through_happy_path_facade:
             self.assertEqual(recovery_ancestry, "equal")
             self.assertFalse(interrupt_archive)
+        if predecessor_transaction_rebind:
+            self.assertEqual(recovery_ancestry, "strict_ancestor")
         with tempfile.TemporaryDirectory() as temporary:
             temporary_root = Path(temporary)
             root = temporary_root / "repo"
@@ -2775,14 +2793,23 @@ class FinalizeTaskContractTests(unittest.TestCase):
             extension_manifest.parent.mkdir(parents=True, exist_ok=True)
             extension_manifest.write_text(
                 json.dumps(
-                    {
-                        "source": {
-                            "ref": old_head,
-                            "commit": old_head,
-                            "tree_state": "clean",
-                            "is_mutable_ref": False,
+                    (
+                        provenance_manifest(
+                            "castbox/guru-trellis",
+                            "c" * 40,
+                            tree_state="dirty",
+                            is_mutable_ref=True,
+                        )
+                        if predecessor_transaction_rebind
+                        else {
+                            "source": {
+                                "ref": old_head,
+                                "commit": old_head,
+                                "tree_state": "clean",
+                                "is_mutable_ref": False,
+                            }
                         }
-                    },
+                    ),
                     indent=2,
                 )
                 + "\n",
@@ -2793,9 +2820,61 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 json.dumps({"schema_version": "2.0", "historical": True}) + "\n",
                 encoding="utf-8",
             )
-            marker.write_text("reviewed repair\n", encoding="utf-8")
+            if not predecessor_transaction_rebind:
+                marker.write_text("reviewed repair\n", encoding="utf-8")
             GTT.run_stdout(["git", "add", "."], cwd=root)
-            GTT.run_stdout(["git", "commit", "-q", "-m", "reviewed repair"], cwd=root)
+            GTT.run_stdout(
+                [
+                    "git",
+                    "commit",
+                    "-q",
+                    "-m",
+                    (
+                        "predecessor publication"
+                        if predecessor_transaction_rebind
+                        else "reviewed repair"
+                    ),
+                ],
+                cwd=root,
+            )
+            committed_head = GTT.current_head(root)
+            recovery_remote_head = (
+                committed_head if predecessor_transaction_rebind else old_head
+            )
+            if predecessor_transaction_rebind:
+                GTT.run_stdout(
+                    [
+                        "git",
+                        "push",
+                        "-q",
+                        "--force",
+                        "origin",
+                        f"{recovery_remote_head}:refs/heads/feat/208",
+                    ],
+                    cwd=root,
+                )
+                parent_manifest = json.loads(
+                    extension_manifest.read_text(encoding="utf-8")
+                )
+                extension_manifest.write_text(
+                    json.dumps(
+                        GTT.provenance_tail_manifest_postimage(
+                            parent_manifest,
+                            {
+                                "source_locator": "https://github.com/castbox/guru-trellis.git",
+                                "source_ref": recovery_remote_head,
+                                "source_commit": recovery_remote_head,
+                            },
+                        ),
+                        indent=2,
+                    )
+                    + "\n",
+                    encoding="utf-8",
+                )
+                GTT.run_stdout(["git", "add", "."], cwd=root)
+                GTT.run_stdout(
+                    ["git", "commit", "-q", "-m", "provenance tail"], cwd=root
+                )
             publication_head = GTT.current_head(root)
             self.assertTrue(GTT.is_ancestor(root, old_head, publication_head))
             self.assertNotEqual(old_head, publication_head)
@@ -2895,7 +2974,9 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 "headRefName": "feat/208",
                 "baseRefName": "main",
                 "headRefOid": (
-                    publication_head if recovery_ancestry == "equal" else old_head
+                    publication_head
+                    if recovery_ancestry == "equal"
+                    else recovery_remote_head
                 ),
                 "headRepository": {"nameWithOwner": "castbox/guru-trellis"},
                 "headRepositoryOwner": {"login": "castbox"},
@@ -2991,9 +3072,10 @@ class FinalizeTaskContractTests(unittest.TestCase):
 
             def recording_write_transaction(current_root, current_task_dir, transaction):
                 if (
-                    recovery_ancestry == "equal"
+                    (recovery_ancestry == "equal" or predecessor_transaction_rebind)
                     and transaction.get("mode") == "existing_pr_recovery"
-                    and transaction.get("next_transition") == "bind_pr"
+                    and transaction.get("next_transition")
+                    == ("push_content" if predecessor_transaction_rebind else "bind_pr")
                 ):
                     mutation_events.append("convert_transaction")
                 return original_write_transaction(
@@ -3120,12 +3202,22 @@ class FinalizeTaskContractTests(unittest.TestCase):
             with ExitStack() as stack:
                 for patcher in patches:
                     stack.enter_context(patcher)
-                if recovery_ancestry == "equal":
+                if recovery_ancestry == "equal" or predecessor_transaction_rebind:
+                    transaction_plan = plan
+                    if predecessor_transaction_rebind:
+                        transaction_plan = copy.deepcopy(plan)
+                        transaction_plan["plan_digest"] = "f" * 64
+                        transaction_plan["git"]["branch_review_commit"] = (
+                            recovery_remote_head
+                        )
+                        transaction_plan["git"]["publication_head"] = (
+                            recovery_remote_head
+                        )
                     GTT.finalization_write_transaction(
                         root,
                         active_task,
                         GTT.finalization_transaction_from_plan(
-                            plan,
+                            transaction_plan,
                             next_transition="push_content",
                             pre_push_remote_head=old_head,
                         ),
@@ -3184,7 +3276,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                         (
                             publication_head
                             if recovery_ancestry == "equal"
-                            else old_head
+                            else recovery_remote_head
                         ),
                     )
                     predecessor_transaction = copy.deepcopy(transaction)
@@ -3302,7 +3394,11 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 self.assertEqual(transaction["mode"], "existing_pr_recovery")
                 self.assertEqual(
                     transaction["adopted_pr"]["pre_push_remote_head"],
-                    publication_head if recovery_ancestry == "equal" else old_head,
+                    (
+                        publication_head
+                        if recovery_ancestry == "equal"
+                        else recovery_remote_head
+                    ),
                 )
                 self.assertEqual(transaction["next_transition"], "mark_ready")
                 archive_head = GTT.current_head(root)
@@ -3344,10 +3440,11 @@ class FinalizeTaskContractTests(unittest.TestCase):
                         "ready": 1 if initial_is_draft else 0,
                     },
                 )
-                if recovery_ancestry == "equal":
+                if recovery_ancestry == "equal" or predecessor_transaction_rebind:
                     self.assertEqual(mutation_events.count("convert_transaction"), 1)
                     conversion_index = mutation_events.index("convert_transaction")
                     for event in (
+                        "content_push",
                         "metadata_edit",
                         "archive",
                         "archive_commit",
@@ -4316,6 +4413,194 @@ class FinalizeTaskContractTests(unittest.TestCase):
             },
         )
         write.assert_not_called()
+
+    def test_provenance_tail_transaction_rebind_classifies_strict_ancestor(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            GTT.run_stdout(["git", "init", "-q"], cwd=root)
+            GTT.run_stdout(["git", "config", "user.name", "Guru Test"], cwd=root)
+            GTT.run_stdout(
+                ["git", "config", "user.email", "guru@example.invalid"], cwd=root
+            )
+            GTT.run_stdout(["git", "branch", "-M", "fix/342"], cwd=root)
+            manifest_path = root / GTT.PROVENANCE_TAIL_MANIFEST_PATH
+            manifest_path.parent.mkdir(parents=True)
+            manifest_path.write_text(
+                json.dumps(
+                    provenance_manifest(
+                        "castbox/guru-trellis",
+                        "c" * 40,
+                        tree_state="dirty",
+                        is_mutable_ref=True,
+                    ),
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            GTT.run_stdout(["git", "add", "."], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "old publication"], cwd=root)
+            old_head = GTT.current_head(root)
+
+            before = json.loads(manifest_path.read_text(encoding="utf-8"))
+            after = GTT.provenance_tail_manifest_postimage(
+                before,
+                {
+                    "source_locator": "https://github.com/castbox/guru-trellis.git",
+                    "source_ref": old_head,
+                    "source_commit": old_head,
+                },
+            )
+            manifest_path.write_text(
+                json.dumps(after, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            GTT.run_stdout(["git", "add", "."], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "provenance tail"], cwd=root)
+            current_head = GTT.current_head(root)
+
+            current_plan = {
+                "plan_digest": "d" * 64,
+                "task": {"active_locator": ".trellis/tasks/342"},
+                "git": {
+                    "repo": "castbox/guru-trellis",
+                    "remote": "origin",
+                    "head_branch": "fix/342",
+                    "base_branch": "main",
+                    "branch_review_commit": current_head,
+                    "publication_head": current_head,
+                },
+                "review": {"close_issues_reviewed": [342]},
+                "publish": {"title": "current", "body": "Closes #342"},
+            }
+            predecessor_plan = copy.deepcopy(current_plan)
+            predecessor_plan["plan_digest"] = "e" * 64
+            predecessor_plan["git"]["branch_review_commit"] = old_head
+            predecessor_plan["git"]["publication_head"] = old_head
+            transaction = GTT.finalization_transaction_from_plan(
+                predecessor_plan,
+                next_transition="push_content",
+                pre_push_remote_head="a" * 40,
+            )
+            pr = {
+                "number": 337,
+                "url": "https://github.com/castbox/guru-trellis/pull/337",
+                "headRefOid": old_head,
+                "isDraft": False,
+                "title": "current",
+                "body": "Closes #342\n",
+            }
+            with (
+                mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=pr),
+                mock.patch.object(
+                    GTT, "closeout_remote_branch_head", return_value=old_head
+                ),
+            ):
+                recovery = GTT.classify_provenance_tail_transaction_rebind(
+                    root,
+                    current_plan,
+                    transaction,
+                )
+            self.assertEqual(recovery["ancestry"], "strict_ancestor")
+            self.assertTrue(recovery["push_required"])
+            self.assertEqual(recovery["pre_push_remote_head"], old_head)
+            self.assertEqual(recovery["publication_head"], current_head)
+            self.assertTrue(recovery["metadata_update_required"])
+
+            active_task_dir = root / current_plan["task"]["active_locator"]
+            active_task_dir.mkdir(parents=True)
+            finish_summary = active_task_dir / GTT.FINISH_SUMMARY_ARTIFACT
+            finish_summary.write_text("{}\n", encoding="utf-8")
+            with self.assertRaises(GTT.WorkflowError) as archive_error:
+                GTT.classify_provenance_tail_transaction_rebind(
+                    root,
+                    current_plan,
+                    transaction,
+                )
+            self.assertEqual(
+                archive_error.exception.payload["reason_code"],
+                "provenance_tail_transaction_rebind_invalid",
+            )
+            self.assertIn("archive_state", archive_error.exception.payload["errors"])
+            finish_summary.unlink()
+
+            for field, mutate in (
+                ("task_ref", lambda value: value.update(task_ref=".trellis/tasks/other")),
+                ("repo_ref", lambda value: value.update(repo_ref="castbox/other")),
+                ("base_branch", lambda value: value.update(base_branch="dev")),
+                ("branch", lambda value: value.update(branch="fix/other")),
+                (
+                    "publication",
+                    lambda value: value["publication"].update(title="changed"),
+                ),
+                ("close_issues", lambda value: value.update(close_issues=[341])),
+            ):
+                with self.subTest(field=field):
+                    drifted = copy.deepcopy(transaction)
+                    mutate(drifted)
+                    with self.assertRaises(GTT.WorkflowError) as drift_error:
+                        GTT.classify_provenance_tail_transaction_rebind(
+                            root,
+                            current_plan,
+                            drifted,
+                        )
+                    self.assertEqual(
+                        drift_error.exception.payload["reason_code"],
+                        "provenance_tail_transaction_rebind_invalid",
+                    )
+
+            for field, value in (
+                ("mode", "existing_pr_recovery"),
+                ("next_transition", "archive"),
+                ("pr", {"number": 337, "url": pr["url"]}),
+                ("adopted_pr", {"number": 337, "url": pr["url"]}),
+            ):
+                with self.subTest(non_candidate=field):
+                    non_candidate = copy.deepcopy(transaction)
+                    non_candidate[field] = value
+                    self.assertIsNone(
+                        GTT.classify_provenance_tail_transaction_rebind(
+                            root,
+                            current_plan,
+                            non_candidate,
+                        )
+                    )
+
+            with (
+                mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=pr),
+                mock.patch.object(
+                    GTT, "closeout_remote_branch_head", return_value="a" * 40
+                ),
+                self.assertRaises(GTT.WorkflowError) as remote_error,
+            ):
+                GTT.classify_provenance_tail_transaction_rebind(
+                    root,
+                    current_plan,
+                    transaction,
+                )
+            self.assertEqual(
+                remote_error.exception.payload["reason_code"],
+                "provenance_tail_transaction_rebind_remote_head_mismatch",
+            )
+
+            business_path = root / "business.txt"
+            business_path.write_text("changed\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "."], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "business change"], cwd=root)
+            invalid_plan = copy.deepcopy(current_plan)
+            invalid_plan["plan_digest"] = "f" * 64
+            invalid_plan["git"]["branch_review_commit"] = GTT.current_head(root)
+            invalid_plan["git"]["publication_head"] = GTT.current_head(root)
+            with self.assertRaises(GTT.WorkflowError) as raised:
+                GTT.classify_provenance_tail_transaction_rebind(
+                    root,
+                    invalid_plan,
+                    transaction,
+                )
+            self.assertEqual(
+                raised.exception.payload["reason_code"],
+                "provenance_tail_transaction_rebind_invalid",
+            )
 
     def test_unbound_equal_head_conversion_preserves_plan_identity(self) -> None:
         head = "b" * 40
