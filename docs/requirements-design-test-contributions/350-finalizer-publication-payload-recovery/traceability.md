@@ -2,6 +2,12 @@
 
 | Requirement | Design | Test |
 | --- | --- | --- |
-| Allow normal Publication title/body evolution only for exact base evolution plus one legal tail | Publication mismatch bypasses pure fallback and requires the composed tail-parent classifier | Base-plus-tail metadata assertions and pure-base mismatch regression |
-| Preserve fail-closed identity and business-drift checks | No changes to task/repo/branch/scope/HEAD/provenance validators | Negative drift matrix |
-| Preserve public compatibility and idempotent execution | No schema/exit/stage changes; existing bound transaction engine | Execution/retry cardinality tests |
+| `R350-01` | `D350-01`, `D350-02` | `T350-01`, `T350-02` |
+| `R350-02` | `D350-01`, `D350-02` | `T350-02`, `T350-03` |
+| `R350-03` | `D350-03` | `T350-04`, `T350-05` |
+
+Architecture remains `no_architecture_impact` against
+`docs/architecture/README.md@current-main-0.6.5-guru.43` with active status.
+This task-local contribution does not request shared Requirements/Design/Test
+promotion: `promotion_decision=no_shared_promotion` and
+`shared_current_write=false`.
