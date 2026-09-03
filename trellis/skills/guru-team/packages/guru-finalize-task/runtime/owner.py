@@ -8012,6 +8012,149 @@ def classify_existing_pr_recovery(
         "ready_action": "mark_ready" if pr["isDraft"] else "preserve_ready",
     }
 
+def provenance_tail_transaction_rebind_errors(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+) -> list[str]:
+    """Validate the one supported predecessor-to-current provenance identity step."""
+    git = plan["git"]
+    active_task_dir = root / str(plan["task"]["active_locator"])
+    current_publication_head = str(
+        git.get("publication_head") or git.get("branch_review_commit") or ""
+    )
+    errors = [
+        field
+        for field, matches in (
+            ("task_ref", transaction.get("task_ref") == plan["task"]["active_locator"]),
+            ("repo_ref", transaction.get("repo_ref") == git.get("repo")),
+            ("base_branch", transaction.get("base_branch") == git.get("base_branch")),
+            ("branch", transaction.get("branch") == git.get("head_branch")),
+            (
+                "publication",
+                transaction.get("publication")
+                == {
+                    "title": plan["publish"]["title"],
+                    "body": plan["publish"]["body"],
+                },
+            ),
+            (
+                "close_issues",
+                transaction.get("close_issues")
+                == plan["review"]["close_issues_reviewed"],
+            ),
+            (
+                "current_reviewed_publication_head",
+                git.get("branch_review_commit") == current_publication_head,
+            ),
+            (
+                "archive_state",
+                not (active_task_dir / FINISH_SUMMARY_ARTIFACT).exists(),
+            ),
+        )
+        if not matches
+    ]
+    predecessor_reviewed_head = str(transaction.get("branch_review_commit") or "")
+    predecessor_publication_head = str(transaction.get("publication_head") or "")
+    if predecessor_reviewed_head != predecessor_publication_head:
+        errors.extend(
+            provenance_tail_commit_errors(
+                root,
+                predecessor_reviewed_head,
+                predecessor_publication_head,
+                target_repo=git.get("repo"),
+                require_current=False,
+            )
+        )
+    errors.extend(
+        provenance_tail_commit_errors(
+            root,
+            predecessor_publication_head,
+            current_publication_head,
+            target_repo=git.get("repo"),
+        )
+    )
+    return sorted(set(errors))
+
+def classify_provenance_tail_transaction_rebind(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Classify one old unbound publication transaction against a legal new tail."""
+    if (
+        transaction.get("mode") != "ordinary_publication"
+        or transaction.get("next_transition") != "push_content"
+        or transaction.get("pr") is not None
+        or transaction.get("adopted_pr") is not None
+    ):
+        return None
+    errors = provenance_tail_transaction_rebind_errors(root, plan, transaction)
+    if errors:
+        raise WorkflowError(
+            "Task finalization transaction cannot rebind across the current provenance tail.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_tail_transaction_rebind_invalid",
+                "errors": errors,
+            },
+        )
+    git = plan["git"]
+    candidate = resolve_closeout_pull_request(
+        root,
+        git["repo"],
+        git["head_branch"],
+        git["base_branch"],
+        git["remote"],
+    )
+    if candidate is None:
+        terminal_prs = resolve_closeout_terminal_pull_requests(
+            root,
+            git["repo"],
+            git["head_branch"],
+            git["base_branch"],
+            git["remote"],
+        )
+        if terminal_prs:
+            raise WorkflowError(
+                "Provenance-tail transaction rebind found a Closed or Merged pull request for the immutable head/base.",
+                exit_code=2,
+                payload={
+                    "reason_code": "pre_finalizer_terminal_pr_exists",
+                    "pull_requests": terminal_prs,
+                },
+            )
+        return None
+    remote_head = closeout_remote_branch_head(root, plan)
+    predecessor_publication_head = str(transaction["publication_head"])
+    if remote_head != predecessor_publication_head:
+        raise WorkflowError(
+            "Provenance-tail transaction rebind requires the remote and PR at the predecessor Publication HEAD.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_tail_transaction_rebind_remote_head_mismatch",
+                "remote_head": remote_head,
+                "predecessor_publication_head": predecessor_publication_head,
+            },
+        )
+    recovery = classify_existing_pr_recovery(
+        root,
+        plan,
+        candidate,
+        remote_head,
+    )
+    if (
+        recovery.get("ancestry") != "strict_ancestor"
+        or recovery.get("push_required") is not True
+        or recovery.get("pre_push_remote_head") != predecessor_publication_head
+    ):
+        raise WorkflowError(
+            "Provenance-tail transaction rebind no longer matches strict-ancestor recovery.",
+            exit_code=2,
+            payload={"reason_code": "existing_pr_recovery_drift"},
+        )
+    return recovery
+
 def classify_unbound_equal_head_recovery(
     root: Path,
     plan: dict[str, Any],
@@ -8204,6 +8347,91 @@ def finalization_adopt_unbound_equal_head_transaction(
             payload={"reason_code": "existing_pr_recovery_drift"},
         )
     converted = finalization_convert_unbound_equal_head_transaction(
+        plan,
+        transaction,
+        current_recovery["pr"],
+        current_recovery,
+    )
+    finalization_write_transaction(root, task_dir, converted)
+    return converted
+
+def finalization_convert_provenance_tail_transaction(
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+    pr: dict[str, Any],
+    recovery: dict[str, Any],
+) -> dict[str, Any]:
+    """Project one legal predecessor transaction into current strict recovery."""
+    publication_head = str(
+        plan["git"].get("publication_head")
+        or plan["git"].get("branch_review_commit")
+        or ""
+    )
+    predecessor_publication_head = str(transaction.get("publication_head") or "")
+    if (
+        transaction.get("mode") != "ordinary_publication"
+        or transaction.get("next_transition") != "push_content"
+        or transaction.get("pr") is not None
+        or transaction.get("adopted_pr") is not None
+        or recovery.get("mode") != "existing_pr_recovery"
+        or recovery.get("ancestry") != "strict_ancestor"
+        or recovery.get("push_required") is not True
+        or recovery.get("publication_head") != publication_head
+        or recovery.get("pre_push_remote_head") != predecessor_publication_head
+        or recovery.get("pr")
+        != {"number": pr.get("number"), "url": pr.get("url")}
+        or not isinstance(recovery.get("initial_is_draft"), bool)
+    ):
+        raise WorkflowError(
+            "Provenance-tail recovery no longer matches its predecessor transaction.",
+            exit_code=2,
+            payload={"reason_code": "existing_pr_recovery_drift"},
+        )
+    metadata_comparison = finalization_validate_recovery_metadata_decision(
+        {
+            "title": plan["publish"]["title"],
+            "body": plan["publish"]["body"],
+        },
+        recovery.get("metadata_comparison"),
+        recovery.get("metadata_update_required"),
+    )
+    adopted_pr = {
+        "number": pr["number"],
+        "url": pr["url"],
+        "initial_is_draft": bool(recovery["initial_is_draft"]),
+        "pre_push_remote_head": predecessor_publication_head,
+        "metadata_update_required": bool(recovery["metadata_update_required"]),
+        "metadata_comparison": metadata_comparison,
+    }
+    return finalization_transaction_from_plan(
+        plan,
+        next_transition="push_content",
+        pr=pr,
+        pre_push_remote_head=predecessor_publication_head,
+        mode="existing_pr_recovery",
+        adopted_pr=adopted_pr,
+    )
+
+def finalization_adopt_provenance_tail_transaction(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+    recovery_preview: dict[str, Any],
+) -> dict[str, Any]:
+    """Reread, bind, and persist strict recovery before its publication push."""
+    current_recovery = classify_provenance_tail_transaction_rebind(
+        root,
+        plan,
+        transaction,
+    )
+    if current_recovery is None or current_recovery != recovery_preview:
+        raise WorkflowError(
+            "Provenance-tail recovery facts changed after semantic preview.",
+            exit_code=2,
+            payload={"reason_code": "existing_pr_recovery_drift"},
+        )
+    converted = finalization_convert_provenance_tail_transaction(
         plan,
         transaction,
         current_recovery["pr"],
@@ -10592,13 +10820,22 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             and transaction.get("mode") == "ordinary_publication"
             and isinstance(recovery_preview, dict)
         ):
-            transaction = finalization_adopt_unbound_equal_head_transaction(
-                root,
-                task_dir,
-                plan,
-                transaction,
-                recovery_preview,
-            )
+            if recovery_preview.get("ancestry") == "strict_ancestor":
+                transaction = finalization_adopt_provenance_tail_transaction(
+                    root,
+                    task_dir,
+                    plan,
+                    transaction,
+                    recovery_preview,
+                )
+            else:
+                transaction = finalization_adopt_unbound_equal_head_transaction(
+                    root,
+                    task_dir,
+                    plan,
+                    transaction,
+                    recovery_preview,
+                )
             prior_transaction = transaction
         recovered_legacy_pr, pre_push_remote_head = finalization_pre_mutation_remote_preflight(
             root,
@@ -12266,6 +12503,7 @@ def finalization_preview_context(
     archived = task_dir_is_archived(root, task_dir)
     config = load_config(root)
     reprepare_reason_code: str | None = None
+    transaction_rebind_recovery: dict[str, Any] | None = None
     if archived:
         transaction_match = finalization_find_transaction_by_task_ref(
             root,
@@ -12416,6 +12654,38 @@ def finalization_preview_context(
                                 plan,
                             )
                         )
+                    elif (
+                        current_transaction.get("mode") == "ordinary_publication"
+                        and current_transaction.get("next_transition") == "push_content"
+                        and current_transaction.get("pr") is None
+                        and current_transaction.get("adopted_pr") is None
+                    ):
+                        transaction_rebind_recovery = (
+                            classify_provenance_tail_transaction_rebind(
+                                root,
+                                plan,
+                                current_transaction,
+                            )
+                        )
+                        if transaction_rebind_recovery is None:
+                            base_evolution = (
+                                finalizer_current_transaction_base_evolution_supersession_preflight(
+                                    root,
+                                    task_dir,
+                                    current_transaction,
+                                    plan,
+                                    allowed_gate=getattr(
+                                        args,
+                                        "_finalization_checked_gate",
+                                        None,
+                                    ),
+                                )
+                            )
+                            prepared["pre_pr_reprepare"] = {
+                                "previous_transaction": copy.deepcopy(current_transaction),
+                                "prior_state": "content_pushed",
+                                "base_evolution": base_evolution,
+                            }
                     else:
                         base_evolution = (
                             finalizer_current_transaction_base_evolution_supersession_preflight(
@@ -12481,9 +12751,13 @@ def finalization_preview_context(
                             )
     existing_pr_recovery: dict[str, Any] | None = None
     if not archived and isinstance(plan, dict):
-        state, existing_pr_recovery = finalization_existing_pr_recovery_context(
-            root, plan, current_transaction, state
-        )
+        if transaction_rebind_recovery is not None:
+            state = "existing_pr_recovery"
+            existing_pr_recovery = transaction_rebind_recovery
+        else:
+            state, existing_pr_recovery = finalization_existing_pr_recovery_context(
+                root, plan, current_transaction, state
+            )
     if (
         not archived
         and isinstance(prepared, dict)

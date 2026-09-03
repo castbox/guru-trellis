@@ -1,0 +1,255 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-03T06:08:10Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-03-342-finalizer-provenance-tail-rebind",
+    "title": "#342 修复 Finalizer provenance-tail transaction rebind",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/342-finalizer-provenance-tail-rebind",
+    "commits": [
+      "69a702bcdb851d18c7b484fc2ef8309647a5833c"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-finalize-task/SKILL.md",
+      ".agents/skills/guru-finalize-task/references/contract.md",
+      ".claude/skills/guru-finalize-task/SKILL.md",
+      ".claude/skills/guru-finalize-task/references/contract.md",
+      ".codex/skills/guru-finalize-task/SKILL.md",
+      ".codex/skills/guru-finalize-task/references/contract.md",
+      ".cursor/skills/guru-finalize-task/SKILL.md",
+      ".cursor/skills/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/check.jsonl",
+      ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/design.md",
+      ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/implement.jsonl",
+      ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/implement.md",
+      ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/issue-scope-ledger.json",
+      ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/prd.md",
+      ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/research/finalizer-provenance-tail-rebind.md",
+      ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/task.json",
+      ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/design.md",
+      ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/implement.md",
+      ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/prd.md",
+      ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/task.json",
+      "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/design.md",
+      "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/manifest.yaml",
+      "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/requirements.md",
+      "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/test.md",
+      "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/traceability.md",
+      "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+      "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+      "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      342
+    ],
+    "close_issues": [
+      342
+    ],
+    "related_issues": [
+      249,
+      333,
+      338
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/343"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#342 修复 Finalizer provenance-tail transaction rebind",
+    "outcome": "在 Finalizer 当前 transaction 与重建 plan 不一致时，先识别旧 `ordinary_publication/push_content` 未绑定 transaction 跨单个合法 provenance metadata tail 的窄恢复路径。",
+    "changed_behavior": [
+      "在 Finalizer 当前 transaction 与重建 plan 不一致时，先识别旧 `ordinary_publication/push_content` 未绑定 transaction 跨单个合法 provenance metadata tail 的窄恢复路径。",
+      "要求旧 Publication HEAD 与唯一远端/PR HEAD 一致，复用既有 strict-ancestor classifier，并在首个外部 mutation 前写入 current-plan-bound `existing_pr_recovery/push_content` transaction。",
+      "新的当前 Publication HEAD 仅推送一次；后续继续复用 metadata convergence、archive、archive push、Ready 保持或 Draft-to-Ready 以及 terminal recovery，且不创建新 PR。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "config",
+        "name": "config",
+        "paths": [
+          "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/manifest.yaml"
+        ],
+        "change": "在 Finalizer 当前 transaction 与重建 plan 不一致时，先识别旧 `ordinary_publication/push_content` 未绑定 transaction 跨单个合法 provenance metadata tail 的窄恢复路径。"
+      },
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/design.md",
+          ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/implement.md",
+          ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/prd.md",
+          ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/research/finalizer-provenance-tail-rebind.md",
+          ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/design.md",
+          ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/implement.md",
+          ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/prd.md",
+          "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/design.md",
+          "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/requirements.md",
+          "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/test.md",
+          "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/traceability.md"
+        ],
+        "change": "在 Finalizer 当前 transaction 与重建 plan 不一致时，先识别旧 `ordinary_publication/push_content` 未绑定 transaction 跨单个合法 provenance metadata tail 的窄恢复路径。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "在 Finalizer 当前 transaction 与重建 plan 不一致时，先识别旧 `ordinary_publication/push_content` 未绑定 transaction 跨单个合法 provenance metadata tail 的窄恢复路径。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+          "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md"
+        ],
+        "change": "在 Finalizer 当前 transaction 与重建 plan 不一致时，先识别旧 `ordinary_publication/push_content` 未绑定 transaction 跨单个合法 provenance metadata tail 的窄恢复路径。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "change": "在 Finalizer 当前 transaction 与重建 plan 不一致时，先识别旧 `ordinary_publication/push_content` 未绑定 transaction 跨单个合法 provenance metadata tail 的窄恢复路径。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-finalize-task/SKILL.md",
+          ".agents/skills/guru-finalize-task/references/contract.md",
+          ".claude/skills/guru-finalize-task/SKILL.md",
+          ".claude/skills/guru-finalize-task/references/contract.md",
+          ".codex/skills/guru-finalize-task/SKILL.md",
+          ".codex/skills/guru-finalize-task/references/contract.md",
+          ".cursor/skills/guru-finalize-task/SKILL.md",
+          ".cursor/skills/guru-finalize-task/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md"
+        ],
+        "change": "在 Finalizer 当前 transaction 与重建 plan 不一致时，先识别旧 `ordinary_publication/push_content` 未绑定 transaction 跨单个合法 provenance metadata tail 的窄恢复路径。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/check.jsonl",
+          ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/implement.jsonl",
+          ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/issue-scope-ledger.json",
+          ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/task.json",
+          ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/task.json"
+        ],
+        "change": "在 Finalizer 当前 transaction 与重建 plan 不一致时，先识别旧 `ordinary_publication/push_content` 未绑定 transaction 跨单个合法 provenance metadata tail 的窄恢复路径。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#249",
+        "#333",
+        "#338",
+        "#342"
+      ],
+      "pr_refs": [
+        "PR #343"
+      ],
+      "branches": [
+        "fix/342-finalizer-provenance-tail-rebind"
+      ],
+      "paths": [
+        ".agents/skills/guru-finalize-task/SKILL.md",
+        ".agents/skills/guru-finalize-task/references/contract.md",
+        ".claude/skills/guru-finalize-task/SKILL.md",
+        ".claude/skills/guru-finalize-task/references/contract.md",
+        ".codex/skills/guru-finalize-task/SKILL.md",
+        ".codex/skills/guru-finalize-task/references/contract.md",
+        ".cursor/skills/guru-finalize-task/SKILL.md",
+        ".cursor/skills/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/SKILL.md",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/check.jsonl",
+        ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/design.md",
+        ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/implement.jsonl",
+        ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/implement.md",
+        ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/issue-scope-ledger.json",
+        ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/prd.md",
+        ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/research/finalizer-provenance-tail-rebind.md",
+        ".trellis/tasks/09-03-342-finalizer-provenance-tail-rebind/task.json",
+        ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/design.md",
+        ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/implement.md",
+        ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/prd.md",
+        ".trellis/tasks/archive/2026-09/09-03-342-finalizer-provenance-tail-rebind/task.json",
+        "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/design.md",
+        "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/manifest.yaml",
+        "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/requirements.md",
+        "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/test.md",
+        "docs/requirements-design-test-contributions/342-finalizer-provenance-tail-rebind/traceability.md",
+        "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+        "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+        "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#342 修复 Finalizer provenance-tail transaction rebind",
+        "在 Finalizer 当前 transaction 与重建 plan 不一致时，先识别旧 `ordinary_publ",
+        "完成 SKILL.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#342 修复 Finalizer provenance-tail transaction rebind\n在 Finalizer 当前 transaction 与重建 plan 不一致时，先识别旧 `ordinary_publication/push_content` 未绑定 transaction 跨单个合法 provenance metadata tail 的窄恢复路径。\n要求旧 Publication HEAD 与唯一远端/PR HEAD 一致，复用既有 strict-ancestor classifier，并在首个外部 mutation 前写入 current-plan-bound `existing_pr_recovery/push_content` transaction。\n新的当前 Publication HEAD 仅推送一次；后续继续复用 metadata convergence、archive、archive push、Ready 保持或 Draft-to-Ready 以及 terminal recovery，且不创建新 PR。\n在 Finalizer 当前 transaction 与重建 plan 不一致时，先识别旧 `ordinary_publ\n完成 SKILL.md 相关变更"
+  }
+}

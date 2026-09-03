@@ -125,6 +125,18 @@ create. Recovery pushes only the exact publication commit by fast-forward,
 converges title/body from current Publication, preserves Ready, or applies the
 existing Draft-to-Ready transition.
 
+Before generic current-transaction base-evolution supersession, one predecessor
+ordinary transaction may be rebound when all non-HEAD task/repository/base/head,
+Publication payload and close-scope fields remain exact; its PR bindings are
+still absent; its old Publication HEAD equals the unique Open same-repository
+PR and remote HEAD; and the current reviewed/publication HEAD is exactly one
+direct-child tail accepted by `provenance_tail_commit_errors()`. Preview then
+uses the existing strict-ancestor classifier and reports one required push.
+Execute repeats both classifications and atomically replaces the predecessor
+with a current-plan `existing_pr_recovery/push_content` transaction before the
+new Publication push. The equal-HEAD `bind_pr` conversion and its no-push
+predicate remain unchanged.
+
 Preview reports the exact PR, equal/strict ancestry, push decision, initial
 Draft/Ready state, per-field title/body byte comparison, metadata convergence
 decision and Ready action. Execute rereads those facts before conversion and
