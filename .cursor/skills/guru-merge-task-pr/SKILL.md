@@ -12,9 +12,11 @@ Issue set. Before invocation, author and review the exact Chinese
 `chore(merge)` subject/body plus its primary Issue and concrete Chinese summary,
 then rebuild the same live evidence.
 
-Read [references/contract.md](references/contract.md), run the preview, perform
-the semantic gate, and ask once for the exact merge action. After confirmation,
-call the single recommended facade:
+Read [references/contract.md](references/contract.md), run the preview, and
+perform the semantic gate. A current task-work content finding returns
+`phase2_reentry_required` without merge confirmation or remote mutation. Only a
+fully passed merge route asks once for the exact merge action. After that
+confirmation, call the single recommended facade:
 
 ```bash
 scripts/complete-task-pr-merge.sh --input <public-input.json> \
@@ -23,8 +25,9 @@ scripts/complete-task-pr-merge.sh --input <public-input.json> \
 
 It records the already-completed review, reuses one pre-merge snapshot, performs
 one expected-head merge, captures one post-merge snapshot, projects exactly one
-of `merged`, `merge_blocked`, or `closure_mismatch`, and retires the private
-gate/body state before returning. On exact recovery, rerun the same facade with
+of `merged`, `merge_blocked`, `phase2_reentry_required`, or
+`closure_mismatch`, and retires the private gate/body state before returning.
+On exact recovery, rerun the same facade with
 the same `--input`; it resolves the package-owned current gate, or accepts that
 exact locator through `--gate`. `--review-input` is not required when the
 current gate already exists.
@@ -35,6 +38,11 @@ not the recommended normal path.
 An already persisted terminal output is recovered only after read-only live
 revalidation of the exact merge SHA, two parents, reviewed subject/body, remote
 base ref and closure facts; recovery never repeats the merge mutation.
+
+`phase2_reentry_required` is reserved for an AI-reviewed current-scope finding
+that requires changing the archived task's content. External CI, policy,
+permission, provider, mergeability, or other non-task blockers remain
+`merge_blocked`.
 
 Fail closed on stale head, base/head branch drift, PR-body close-scope drift,
 Draft/Open/readiness drift, unknown policy, incomplete GitHub response, or

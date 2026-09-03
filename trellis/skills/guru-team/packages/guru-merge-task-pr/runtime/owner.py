@@ -940,11 +940,15 @@ def task_pr_merge_gate_from_facts(
         raise WorkflowError("Task PR merge semantic review input must be an object.", exit_code=2)
     review = task_pr_merge_semantic_review(review_payload.get("semantic_review"))
     route = review_payload.get("route")
-    if not isinstance(route, dict) or route.get("typed_exit") not in {"merged", "merge_blocked"}:
+    if not isinstance(route, dict) or route.get("typed_exit") not in {
+        "merged", "merge_blocked", "phase2_reentry_required"
+    }:
         raise WorkflowError("Task PR merge semantic route is invalid.", exit_code=2)
     blockers = task_pr_merge_preflight_errors(public_input, facts)
     passed = all(row["status"] == "passed" for row in review["dimensions"])
-    if route["typed_exit"] == "merged":
+    if route["typed_exit"] == "phase2_reentry_required":
+        normalized_route = task_pr_merge_phase2_reentry_route(public_input, facts, review, route)
+    elif route["typed_exit"] == "merged":
         method = route.get("merge_method")
         if (
             blockers
@@ -975,6 +979,105 @@ def task_pr_merge_gate_from_facts(
         "reviewed_message_sha256": canonical_json_sha256(public_input["reviewed_merge_message"]),
         "semantic_review": review,
         "route": normalized_route,
+    }
+
+
+def task_pr_merge_phase2_reentry_route(
+    public_input: dict[str, Any],
+    facts: dict[str, Any],
+    review: dict[str, Any],
+    route: dict[str, Any],
+) -> dict[str, Any]:
+    """Validate the semantic handoff without deciding task scope in code."""
+    required = {
+        "typed_exit", "scope_classification", "requires_task_content_change",
+        "blocked_dimension", "repo_ref", "pr_number", "pr_url",
+        "expected_head_sha", "expected_base_branch", "expected_head_branch",
+        "issue_number", "task_id", "archive_locator", "active_locator",
+        "archive_commit", "finding_refs", "resume_target",
+    }
+    if set(route) != required:
+        raise WorkflowError("Task PR phase-2 re-entry route is incomplete.", exit_code=2)
+    if route["scope_classification"] != "task_work" or route["requires_task_content_change"] is not True:
+        raise WorkflowError("Task PR phase-2 re-entry requires a task-work content finding.", exit_code=2)
+    if route["resume_target"] != "phase-2":
+        raise WorkflowError("Task PR phase-2 re-entry has an invalid resume target.", exit_code=2)
+    if route["blocked_dimension"] not in TASK_PR_MERGE_DIMENSIONS:
+        raise WorkflowError("Task PR phase-2 re-entry has an invalid blocked dimension.", exit_code=2)
+    dimensions = {row["id"]: row for row in review["dimensions"]}
+    if dimensions[route["blocked_dimension"]]["status"] != "blocked":
+        raise WorkflowError("Task PR phase-2 re-entry requires a blocked semantic dimension.", exit_code=2)
+
+    identity = {
+        "repo_ref": public_input["repo_ref"],
+        "pr_number": public_input["pr_number"],
+        "pr_url": public_input["pr_url"],
+        "expected_head_sha": public_input["expected_head_sha"],
+        "expected_base_branch": public_input["expected_base_branch"],
+        "expected_head_branch": public_input["expected_head_branch"],
+    }
+    if any(route[key] != value for key, value in identity.items()):
+        raise WorkflowError("Task PR phase-2 re-entry route does not match PR identity.", exit_code=2)
+    pr = facts["pr"]
+    if (
+        pr["state"] != "OPEN"
+        or pr["number"] != public_input["pr_number"]
+        or pr["url"] != public_input["pr_url"]
+        or pr["head_sha"] != public_input["expected_head_sha"]
+        or pr["base_branch"] != public_input["expected_base_branch"]
+        or pr["head_branch"] != public_input["expected_head_branch"]
+        or facts["close_issues"] != public_input["expected_close_issues"]
+    ):
+        raise WorkflowError("Task PR phase-2 re-entry route is stale against live PR identity.", exit_code=2)
+
+    issue_number = route["issue_number"]
+    if (
+        not is_strict_int(issue_number) or issue_number < 1
+        or public_input["expected_close_issues"]
+        and issue_number not in public_input["expected_close_issues"]
+    ):
+        raise WorkflowError("Task PR phase-2 re-entry Issue identity is invalid.", exit_code=2)
+    task_id = route["task_id"]
+    if not isinstance(task_id, str) or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", task_id) is None:
+        raise WorkflowError("Task PR phase-2 re-entry task identity is invalid.", exit_code=2)
+    archive_locator = route["archive_locator"]
+    active_locator = route["active_locator"]
+    if (
+        not isinstance(archive_locator, str)
+        or re.fullmatch(r"\.trellis/tasks/archive/[0-9]{4}-[0-9]{2}/[A-Za-z0-9][A-Za-z0-9._-]*", archive_locator) is None
+        or not isinstance(active_locator, str)
+        or re.fullmatch(r"\.trellis/tasks/[A-Za-z0-9][A-Za-z0-9._-]*", active_locator) is None
+    ):
+        raise WorkflowError("Task PR phase-2 re-entry task locators are invalid.", exit_code=2)
+    archive_commit = route["archive_commit"]
+    finding_refs = route["finding_refs"]
+    if (
+        not isinstance(archive_commit, str)
+        or re.fullmatch(r"[0-9a-f]{40}", archive_commit) is None
+        or not isinstance(finding_refs, list)
+        or not finding_refs
+        or any(not isinstance(ref, str) or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:/-]*", ref) is None for ref in finding_refs)
+        or finding_refs != sorted(set(finding_refs))
+    ):
+        raise WorkflowError("Task PR phase-2 re-entry archive or finding identity is invalid.", exit_code=2)
+    return {
+        "typed_exit": "phase2_reentry_required",
+        "scope_classification": "task_work",
+        "requires_task_content_change": True,
+        "blocked_dimension": route["blocked_dimension"],
+        "repo_ref": public_input["repo_ref"],
+        "pr_number": public_input["pr_number"],
+        "pr_url": public_input["pr_url"],
+        "expected_head_sha": public_input["expected_head_sha"],
+        "expected_base_branch": public_input["expected_base_branch"],
+        "expected_head_branch": public_input["expected_head_branch"],
+        "issue_number": issue_number,
+        "task_id": task_id,
+        "archive_locator": archive_locator,
+        "active_locator": active_locator,
+        "archive_commit": archive_commit,
+        "finding_refs": finding_refs,
+        "resume_target": "phase-2",
     }
 
 
@@ -1133,6 +1236,13 @@ def check_task_pr_merge_result_with_facts(
                 "remediation": route.get("remediation"),
             },
         }
+    if route.get("typed_exit") == "phase2_reentry_required":
+        normalized_route = task_pr_merge_phase2_reentry_route(public_input, facts, gate["semantic_review"], route)
+        return {
+            "status": "passed",
+            "typed_exit": "phase2_reentry_required",
+            "output": task_pr_merge_phase2_reentry_output(normalized_route),
+        }
     method = route.get("merge_method")
     if (
         blockers
@@ -1154,6 +1264,25 @@ def task_pr_merge_retire_terminal_state(
         pass
 
 
+def task_pr_merge_phase2_reentry_output(route: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "exit_id": "phase2_reentry_required",
+        "repo_ref": route["repo_ref"],
+        "pr_number": route["pr_number"],
+        "pr_url": route["pr_url"],
+        "expected_head_sha": route["expected_head_sha"],
+        "expected_base_branch": route["expected_base_branch"],
+        "expected_head_branch": route["expected_head_branch"],
+        "issue_number": route["issue_number"],
+        "task_id": route["task_id"],
+        "archive_locator": route["archive_locator"],
+        "active_locator": route["active_locator"],
+        "archive_commit": route["archive_commit"],
+        "finding_refs": route["finding_refs"],
+        "resume_target": route["resume_target"],
+    }
+
+
 def task_pr_merge_execute_checked(
     root: Path,
     public_input: dict[str, Any],
@@ -1161,6 +1290,12 @@ def task_pr_merge_execute_checked(
     gate: dict[str, Any],
     checked: dict[str, Any],
 ) -> dict[str, Any]:
+    if checked.get("typed_exit") == "phase2_reentry_required":
+        return {
+            "status": "routed",
+            "typed_exit": "phase2_reentry_required",
+            "output": checked["output"],
+        }
     if checked.get("typed_exit") in {"merged", "closure_mismatch"}:
         if gate.get("terminal_output") is None:
             gate["terminal_output"] = checked["output"]
@@ -1325,6 +1460,10 @@ def cmd_complete_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
 
     checked = check_task_pr_merge_result_with_facts(public_input, gate, pre)
     if checked.get("typed_exit") == "merge_blocked":
+        output = checked["output"]
+        task_pr_merge_retire_terminal_state(root, public_input, gate_path)
+        return output
+    if checked.get("typed_exit") == "phase2_reentry_required":
         output = checked["output"]
         task_pr_merge_retire_terminal_state(root, public_input, gate_path)
         return output

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-merge-task-pr-output-phase2-reentry-required-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id", "repo_ref", "pr_number", "pr_url", "expected_head_sha",
+    "expected_base_branch", "expected_head_branch", "issue_number", "task_id",
+    "archive_locator", "active_locator", "archive_commit", "finding_refs", "resume_target"
+  ],
+  "properties": {
+    "exit_id": {"const": "phase2_reentry_required"},
+    "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+    "pr_number": {"type": "integer", "minimum": 1},
+    "pr_url": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/pull/[1-9][0-9]*$"},
+    "expected_head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "expected_base_branch": {"type": "string", "minLength": 1},
+    "expected_head_branch": {"type": "string", "minLength": 1},
+    "issue_number": {"type": "integer", "minimum": 1},
+    "task_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "archive_locator": {"type": "string", "pattern": "^\\.trellis/tasks/archive/[0-9]{4}-[0-9]{2}/[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "active_locator": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "archive_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "finding_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"}
+    },
+    "resume_target": {"const": "phase-2"}
+  }
+}

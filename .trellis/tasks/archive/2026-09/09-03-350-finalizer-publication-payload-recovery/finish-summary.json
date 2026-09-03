@@ -1,0 +1,235 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-03T16:42:30Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-03-350-finalizer-publication-payload-recovery",
+    "title": "#350 修复 Finalizer 在 base evolution recovery 中收敛正常 Publication payload 演进",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/350-finalizer-publication-payload-recovery",
+    "commits": [
+      "5c77fd5461e674a23694bdb31706798286649399",
+      "d5905eda9ebb4dbb5e13079eb5f8bbc3f3c39d7c",
+      "5a8e2b045dc2a2fff4f7eb04bdbae4f88f306ac4"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-finalize-task/references/contract.md",
+      ".claude/skills/guru-finalize-task/references/contract.md",
+      ".codex/skills/guru-finalize-task/references/contract.md",
+      ".cursor/skills/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/check.jsonl",
+      ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/design.md",
+      ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/implement.jsonl",
+      ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/implement.md",
+      ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/issue-scope-ledger.json",
+      ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/prd.md",
+      ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/task.json",
+      ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/design.md",
+      ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/implement.md",
+      ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/prd.md",
+      ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/task.json",
+      "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/design.md",
+      "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/manifest.yaml",
+      "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/requirements.md",
+      "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/test.md",
+      "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/traceability.md",
+      "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+      "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      350
+    ],
+    "close_issues": [
+      350
+    ],
+    "related_issues": [
+      333,
+      342,
+      344,
+      347
+    ],
+    "followup_issues": [
+      249
+    ],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/352"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#350 修复 Finalizer 在 base evolution recovery 中收敛正常 Publication payload 演进",
+    "outcome": "修复 Finalizer 在 exact base evolution 加单一合法 direct-child provenance metadata tail 的 existing-PR recovery 中，将 fresh Publication title/body 演进误判为 provenance rebind 失败的问题。",
+    "changed_behavior": [
+      "修复 Finalizer 在 exact base evolution 加单一合法 direct-child provenance metadata tail 的 existing-PR recovery 中，将 fresh Publication title/body 演进误判为 provenance rebind 失败的问题。",
+      "仅对该组合 topology 放行 Publication metadata mismatch，并继续复用既有 PR metadata convergence；pure base evolution、direct tail、业务 delta、身份/scope/PR/transaction drift 仍 fail-closed。",
+      "保持 public I/O、typed exit、transaction stage/schema、PR #337 与 #333 owner-private transaction 不变。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "config",
+        "name": "config",
+        "paths": [
+          "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/manifest.yaml"
+        ],
+        "change": "修复 Finalizer 在 exact base evolution 加单一合法 direct-child provenance metadata tail 的 existing-PR recovery 中，将 fresh Publication title/body 演进误判为 provenance rebind 失败的问题。"
+      },
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/design.md",
+          ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/implement.md",
+          ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/prd.md",
+          ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/design.md",
+          ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/implement.md",
+          ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/prd.md",
+          "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/design.md",
+          "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/requirements.md",
+          "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/test.md",
+          "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/traceability.md"
+        ],
+        "change": "修复 Finalizer 在 exact base evolution 加单一合法 direct-child provenance metadata tail 的 existing-PR recovery 中，将 fresh Publication title/body 演进误判为 provenance rebind 失败的问题。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "修复 Finalizer 在 exact base evolution 加单一合法 direct-child provenance metadata tail 的 existing-PR recovery 中，将 fresh Publication title/body 演进误判为 provenance rebind 失败的问题。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md"
+        ],
+        "change": "修复 Finalizer 在 exact base evolution 加单一合法 direct-child provenance metadata tail 的 existing-PR recovery 中，将 fresh Publication title/body 演进误判为 provenance rebind 失败的问题。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "change": "修复 Finalizer 在 exact base evolution 加单一合法 direct-child provenance metadata tail 的 existing-PR recovery 中，将 fresh Publication title/body 演进误判为 provenance rebind 失败的问题。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-finalize-task/references/contract.md",
+          ".claude/skills/guru-finalize-task/references/contract.md",
+          ".codex/skills/guru-finalize-task/references/contract.md",
+          ".cursor/skills/guru-finalize-task/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md"
+        ],
+        "change": "修复 Finalizer 在 exact base evolution 加单一合法 direct-child provenance metadata tail 的 existing-PR recovery 中，将 fresh Publication title/body 演进误判为 provenance rebind 失败的问题。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/check.jsonl",
+          ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/implement.jsonl",
+          ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/issue-scope-ledger.json",
+          ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/task.json",
+          ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/task.json"
+        ],
+        "change": "修复 Finalizer 在 exact base evolution 加单一合法 direct-child provenance metadata tail 的 existing-PR recovery 中，将 fresh Publication title/body 演进误判为 provenance rebind 失败的问题。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#249",
+        "#333",
+        "#342",
+        "#344",
+        "#347",
+        "#350"
+      ],
+      "pr_refs": [
+        "PR #352"
+      ],
+      "branches": [
+        "codex/350-finalizer-publication-payload-recovery"
+      ],
+      "paths": [
+        ".agents/skills/guru-finalize-task/references/contract.md",
+        ".claude/skills/guru-finalize-task/references/contract.md",
+        ".codex/skills/guru-finalize-task/references/contract.md",
+        ".cursor/skills/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/check.jsonl",
+        ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/design.md",
+        ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/implement.jsonl",
+        ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/implement.md",
+        ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/issue-scope-ledger.json",
+        ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/prd.md",
+        ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery/task.json",
+        ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/design.md",
+        ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/implement.md",
+        ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/prd.md",
+        ".trellis/tasks/archive/2026-09/09-03-350-finalizer-publication-payload-recovery/task.json",
+        "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/design.md",
+        "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/manifest.yaml",
+        "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/requirements.md",
+        "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/test.md",
+        "docs/requirements-design-test-contributions/350-finalizer-publication-payload-recovery/traceability.md",
+        "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+        "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#350 修复 Finalizer 在 base evolution recovery 中收敛正常 Publicatio",
+        "修复 Finalizer 在 exact base evolution 加单一合法 direct-child prove",
+        "完成 contract.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#350 修复 Finalizer 在 base evolution recovery 中收敛正常 Publication payload 演进\n修复 Finalizer 在 exact base evolution 加单一合法 direct-child provenance metadata tail 的 existing-PR recovery 中，将 fresh Publication title/body 演进误判为 provenance rebind 失败的问题。\n仅对该组合 topology 放行 Publication metadata mismatch，并继续复用既有 PR metadata convergence；pure base evolution、direct tail、业务 delta、身份/scope/PR/transaction drift 仍 fail-closed。\n保持 public I/O、typed exit、transaction stage/schema、PR #337 与 #333 owner-private transaction 不变。\n#350 修复 Finalizer 在 base evolution recovery 中收敛正常 Publicatio\n修复 Finalizer 在 exact base evolution 加单一合法 direct-child prove\n完成 contract.md 相关变更"
+  }
+}

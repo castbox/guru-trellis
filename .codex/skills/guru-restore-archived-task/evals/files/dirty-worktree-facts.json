@@ -1,0 +1,1 @@
+{"scenario":"dirty-worktree","source":"examples/live-facts.json","expected_zero_write":true}

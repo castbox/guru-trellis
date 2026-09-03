@@ -573,11 +573,13 @@ contracts、source-session private result schema、两例 production corpus 与 
 `guru-finalize-task` 另行安装四个 distinct profiles、六个 `exit_id` outputs、
 private gate、七条 production eval cases 与 finalization runtime wrappers。独立
 `guru-merge-task-pr` 再安装 active 2.0 workflow/standalone inputs、private gate、
-保留 immutable 1.0 compatibility assets，并安装三个
-exits 与五个 merge runtime wrappers。Requirements/Design/Test SSOT package 另提供
+保留 immutable 1.0 compatibility assets，并安装四个 exits 与五个 merge runtime
+wrappers。新增 `guru-restore-archived-task` 安装 archive-to-active 恢复 runtime、
+`restored_to_phase2|restore_blocked` 两个 exits 与四平台 discovery projection。
+Requirements/Design/Test SSOT package 另提供
 四个 semantic profiles、五个 typed exits 和 isolated contribution boundary。
-Source/installed package closure 为 22 Skills / 93 exits；business global workflow
-marker closure 为 21 invokes / 91 exits / 57 combined targets（35 workflow + 22 stop）。
+Source/installed package closure 为 23 Skills / 96 exits；business global workflow
+marker closure 为 22 invokes / 94 exits / 58 combined targets（35 workflow + 23 stop）。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -1533,7 +1535,7 @@ runtime 留在 native execution 外；四平台 projection 内对应 raw read �
 throwaway project 的 `trellis update --dry-run` -> 仅当输出明确为
 `MIGRATION REQUIRED` 时执行 `trellis update --migrate --skip-all`，否则执行
 `trellis update --skip-all` -> marketplace `--create-new` preview/active switch -> canonical
-preset reapply。之后重新验证 22 Skills/93 package exits、21 invokes/91 workflow
-exits、35 workflow targets、22 stop targets、全部已声明 profile real installed entry、
+preset reapply。之后重新验证 23 Skills/96 package exits、22 invokes/94 workflow
+exits、35 workflow targets、23 stop targets、全部已声明 profile real installed entry、
 ownership、platform parity、dogfood drift 与 recursive zero `.new`/`.bak`。该流程不修改
 开发机 global npm，也不升级真实业务仓。

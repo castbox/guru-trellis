@@ -1,0 +1,31 @@
+{
+  "id": "350-finalizer-publication-payload-recovery",
+  "name": "350-finalizer-publication-payload-recovery",
+  "title": "#350 修复 Finalizer 在 base evolution recovery 中收敛正常 Publication payload 演进",
+  "description": "在合法 base evolution 加单一 provenance metadata tail 的 existing-PR recovery 中，允许 fresh Publication title/body 正常演进，并复用既有 metadata convergence；保持 transaction schema、public I/O、PR #337 与 #333 transaction 不变。",
+  "status": "completed",
+  "dev_type": null,
+  "scope": "#350 Finalizer Publication payload recovery",
+  "package": null,
+  "priority": "P1",
+  "creator": "wumengye",
+  "assignee": "wumengye",
+  "createdAt": "2026-09-03",
+  "completedAt": "2026-09-04",
+  "branch": "codex/350-finalizer-publication-payload-recovery",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "issue": "350",
+    "close_issues": "350",
+    "related_issues": "333,347",
+    "followup_issues": "249"
+  }
+}
