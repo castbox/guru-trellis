@@ -142,19 +142,22 @@ merge or multiple base commits, the single-tail topology is inapplicable. The
 classifier may fall back to the same existing-PR strict-ancestor classifier
 only when the selected base HEAD is an ancestor of the current Publication
 HEAD but not the predecessor Publication HEAD. This fallback retains the exact
-remote/PR, scope, metadata, Draft/Ready, and transaction checks; business or
-identity drift remains fail-closed.
+remote/PR, scope, Publication payload, Draft/Ready, and transaction checks;
+business, metadata, or identity drift remains fail-closed.
 
 One composed topology is also current: the predecessor Publication is followed
 by legal base evolution and then one direct-child provenance metadata tail.
 The classifier validates the complete current tail through
 `provenance_tail_commit_errors()` using its Git-derived direct parent, then
 applies the unchanged base-evolution ancestry and exact binary-delta comparison
-to that parent. Only the existing provenance-shape inapplicability errors may
-enter this composition. An invalid tail, extra business delta, multi-tail chain,
-or any identity/scope/PR/transaction error remains fail-closed. A successful
-composition still delegates to the same strict-ancestor classifier and writes
-the same current-plan recovery transaction before the single Publication push.
+to that parent. Only this composed topology may carry current Publication
+title/body different from the predecessor payload and hand that difference to
+the existing metadata convergence classifier. Pure base evolution and direct
+tail recovery continue to require the predecessor Publication payload exactly.
+An invalid tail, extra business delta, multi-tail chain, or any
+identity/scope/PR/transaction error remains fail-closed. A successful composition
+still delegates to the same strict-ancestor classifier and writes the same
+current-plan recovery transaction before the single Publication push.
 
 Preview reports the exact PR, equal/strict ancestry, push decision, initial
 Draft/Ready state, per-field title/body byte comparison, metadata convergence

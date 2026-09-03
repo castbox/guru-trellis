@@ -1407,9 +1407,12 @@ current tail is accepted only by `provenance_tail_commit_errors()` against its
 Git-derived direct parent; the existing base-evolution ancestry and exact
 binary-delta comparison then treats that validated parent as the current
 endpoint. Pure base evolution still compares through the current Publication
-HEAD, and direct-tail recovery keeps its existing path. No manifest-path diff
-filter, parallel drift authority, arbitrary tail sequence, field, stage, or
-public projection is added.
+HEAD, and direct-tail recovery keeps its existing path. Only the composed
+base-evolution-plus-tail topology may carry current Publication title/body
+different from the predecessor payload and delegate it to existing metadata
+convergence; pure base evolution plus Publication drift remains invalid. No
+manifest-path diff filter, parallel drift authority, arbitrary tail sequence,
+field, stage, or public projection is added.
 
 After the exact recovery transaction binds its PR and advances to `archive`,
 `push_archive`, or `mark_ready`, it is the current stage authority. Preview

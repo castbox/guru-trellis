@@ -2684,7 +2684,16 @@ class FinalizeTaskContractTests(unittest.TestCase):
     def test_base_evolution_provenance_tail_rebind_executes_exactly_once(self) -> None:
         self._assert_existing_pr_recovery_real_topology(
             initial_is_draft=False,
-            metadata_variant="trailing_lf",
+            metadata_variant="different",
+            predecessor_transaction_rebind=True,
+            predecessor_transaction_base_evolution=True,
+        )
+
+    def test_base_evolution_provenance_tail_metadata_equal_draft_executes_exactly_once(self) -> None:
+        self._assert_existing_pr_recovery_real_topology(
+            initial_is_draft=True,
+            metadata_variant="equal",
+            interrupt_archive=False,
             predecessor_transaction_rebind=True,
             predecessor_transaction_base_evolution=True,
         )
@@ -3254,6 +3263,11 @@ class FinalizeTaskContractTests(unittest.TestCase):
                         transaction_plan["git"]["publication_head"] = (
                             recovery_remote_head
                         )
+                        if predecessor_transaction_base_evolution:
+                            transaction_plan["publish"] = {
+                                "title": live_title,
+                                "body": live_body,
+                            }
                     predecessor_transaction = GTT.finalization_transaction_from_plan(
                         transaction_plan,
                         next_transition="push_content",
@@ -3291,6 +3305,18 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     preview["existing_pr_recovery"]["initial_state"],
                     "draft" if initial_is_draft else "ready",
                 )
+                if predecessor_transaction_base_evolution:
+                    recovery = preview["existing_pr_recovery"]
+                    comparison = recovery["metadata_comparison"]
+                    self.assertEqual(comparison["live_title"], live_title)
+                    self.assertEqual(comparison["live_body"], live_body)
+                    metadata_matches = metadata_variant == "equal"
+                    self.assertIs(
+                        recovery["metadata_update_required"],
+                        not metadata_matches,
+                    )
+                    self.assertIs(comparison["title_matches"], metadata_matches)
+                    self.assertIs(comparison["body_matches"], metadata_matches)
                 self.assertEqual(
                     preview["expected_actions"],
                     [
@@ -4546,7 +4572,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 "headRefOid": old_head,
                 "isDraft": False,
                 "title": "current",
-                "body": "Closes #342\n",
+                "body": "Closes #342",
             }
             with (
                 mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=pr),
@@ -4563,7 +4589,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
             self.assertTrue(recovery["push_required"])
             self.assertEqual(recovery["pre_push_remote_head"], old_head)
             self.assertEqual(recovery["publication_head"], current_head)
-            self.assertTrue(recovery["metadata_update_required"])
+            self.assertFalse(recovery["metadata_update_required"])
 
             active_task_dir = root / current_plan["task"]["active_locator"]
             active_task_dir.mkdir(parents=True)
@@ -4587,10 +4613,6 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 ("repo_ref", lambda value: value.update(repo_ref="castbox/other")),
                 ("base_branch", lambda value: value.update(base_branch="dev")),
                 ("branch", lambda value: value.update(branch="fix/other")),
-                (
-                    "publication",
-                    lambda value: value["publication"].update(title="changed"),
-                ),
                 ("close_issues", lambda value: value.update(close_issues=[341])),
             ):
                 with self.subTest(field=field):
@@ -4816,6 +4838,27 @@ class FinalizeTaskContractTests(unittest.TestCase):
             self.assertEqual(recovery["pre_push_remote_head"], old_head)
             self.assertEqual(recovery["publication_head"], current_head)
 
+            publication_drift = copy.deepcopy(plan)
+            publication_drift["publish"] = {
+                "title": "fresh reviewed title",
+                "body": "Closes #344\n\nFresh Publication review evidence.",
+            }
+            with (
+                mock.patch.object(GTT, "resolve_closeout_pull_request") as resolve_pr,
+                self.assertRaises(GTT.WorkflowError) as publication_error,
+            ):
+                GTT.classify_provenance_tail_transaction_rebind(
+                    root, publication_drift, transaction
+                )
+            self.assertEqual(
+                publication_error.exception.payload["reason_code"],
+                "provenance_tail_transaction_rebind_invalid",
+            )
+            self.assertIn(
+                "publication", publication_error.exception.payload["errors"]
+            )
+            resolve_pr.assert_not_called()
+
             (root / "business-after-merge.txt").write_text("drift\n", encoding="utf-8")
             GTT.run_stdout(["git", "add", "business-after-merge.txt"], cwd=root)
             GTT.run_stdout(
@@ -4943,18 +4986,31 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 current_plan = copy.deepcopy(plan)
                 current_plan["git"]["branch_review_commit"] = publication_head
                 current_plan["git"]["publication_head"] = publication_head
-                with (
-                    mock.patch.object(GTT, "resolve_closeout_pull_request") as resolve_pr,
-                    self.assertRaises(GTT.WorkflowError) as raised,
-                ):
-                    GTT.classify_provenance_tail_transaction_rebind(
-                        root, current_plan, transaction
-                    )
-                self.assertEqual(
-                    raised.exception.payload["reason_code"],
-                    "provenance_tail_transaction_rebind_invalid",
-                )
-                resolve_pr.assert_not_called()
+                for payload_drift in (False, True):
+                    with self.subTest(
+                        publication_head=publication_head,
+                        payload_drift=payload_drift,
+                    ):
+                        candidate_plan = copy.deepcopy(current_plan)
+                        if payload_drift:
+                            candidate_plan["publish"] = {
+                                "title": "fresh reviewed title",
+                                "body": "Closes #347\n\nFresh Publication review evidence.",
+                            }
+                        with (
+                            mock.patch.object(
+                                GTT, "resolve_closeout_pull_request"
+                            ) as resolve_pr,
+                            self.assertRaises(GTT.WorkflowError) as raised,
+                        ):
+                            GTT.classify_provenance_tail_transaction_rebind(
+                                root, candidate_plan, transaction
+                            )
+                        self.assertEqual(
+                            raised.exception.payload["reason_code"],
+                            "provenance_tail_transaction_rebind_invalid",
+                        )
+                        resolve_pr.assert_not_called()
 
             reset_to(merge_head)
             assert_blocked(
