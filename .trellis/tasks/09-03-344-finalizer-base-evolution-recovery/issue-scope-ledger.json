@@ -1,0 +1,38 @@
+{
+  "close_issues": [
+    {
+      "number": 344,
+      "reason": "Fully covered by this task.",
+      "title": "Finalizer 无法恢复经过 base evolution 的既有任务 PR transaction",
+      "url": "https://github.com/castbox/guru-trellis/issues/344"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 344,
+    "reason": "Primary independently deliverable change request.",
+    "title": "Finalizer 无法恢复经过 base evolution 的既有任务 PR transaction",
+    "url": "https://github.com/castbox/guru-trellis/issues/344"
+  },
+  "related_issues": [
+    {
+      "number": 333,
+      "reason": "真实复现来源，非本任务重做范围。",
+      "title": "Issue #333",
+      "url": "https://github.com/castbox/guru-trellis/issues/333"
+    },
+    {
+      "number": 342,
+      "reason": "保留既有 provenance-tail 回归路径。",
+      "title": "Issue #342",
+      "url": "https://github.com/castbox/guru-trellis/issues/342"
+    },
+    {
+      "number": 338,
+      "reason": "保留 equal-HEAD recovery 回归路径。",
+      "title": "Issue #338",
+      "url": "https://github.com/castbox/guru-trellis/issues/338"
+    }
+  ],
+  "schema_version": "2.0"
+}

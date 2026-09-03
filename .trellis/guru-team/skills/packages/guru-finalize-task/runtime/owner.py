@@ -116,6 +116,11 @@ PROVENANCE_TAIL_FILE_ACTION_CONTAINERS = (
     "overlays.files",
 )
 
+PROVENANCE_TAIL_INAPPLICABLE_ERRORS = frozenset({
+    "provenance_tail_changed_paths_invalid",
+    "provenance_tail_parent_mismatch",
+})
+
 PROVENANCE_TAIL_OBJECT_PRESENCE = object()
 
 PROVENANCE_APPLY_PLATFORMS = ("claude", "codex", "cursor")
@@ -8076,6 +8081,66 @@ def provenance_tail_transaction_rebind_errors(
     )
     return sorted(set(errors))
 
+def provenance_tail_transaction_rebind_is_base_evolution(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+) -> bool:
+    """Identify a current base descendant without treating business drift as a tail."""
+    git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
+    base_branch = str(git.get("base_branch") or "")
+    current_publication_head = str(
+        git.get("publication_head") or git.get("branch_review_commit") or ""
+    )
+    predecessor_publication_head = str(transaction.get("publication_head") or "")
+    if not base_branch or not re.fullmatch(
+        r"[0-9a-f]{40}", current_publication_head
+    ) or not re.fullmatch(r"[0-9a-f]{40}", predecessor_publication_head):
+        return False
+    base_ref = diff_base_ref(root, base_branch)
+    base_proc = run(
+        ["git", "rev-parse", "--verify", base_ref],
+        cwd=root,
+        check=False,
+    )
+    base_head = base_proc.stdout.strip() if base_proc.returncode == 0 else ""
+    if not (
+        re.fullmatch(r"[0-9a-f]{40}", base_head) is not None
+        and base_head != predecessor_publication_head
+        and is_ancestor(root, base_head, current_publication_head)
+        and not is_ancestor(root, base_head, predecessor_publication_head)
+    ):
+        return False
+    merge_base_proc = run(
+        ["git", "merge-base", predecessor_publication_head, base_head],
+        cwd=root,
+        check=False,
+    )
+    if merge_base_proc.returncode != 0:
+        return False
+    merge_base = merge_base_proc.stdout.strip()
+    current_delta = run(
+        [
+            "git", "diff", "--no-ext-diff", "--binary",
+            f"{predecessor_publication_head}..{current_publication_head}",
+        ],
+        cwd=root,
+        check=False,
+    )
+    base_delta = run(
+        [
+            "git", "diff", "--no-ext-diff", "--binary",
+            f"{merge_base}..{base_head}",
+        ],
+        cwd=root,
+        check=False,
+    )
+    return (
+        current_delta.returncode == 0
+        and base_delta.returncode == 0
+        and current_delta.stdout == base_delta.stdout
+    )
+
 def classify_provenance_tail_transaction_rebind(
     root: Path,
     plan: dict[str, Any],
@@ -8090,7 +8155,12 @@ def classify_provenance_tail_transaction_rebind(
     ):
         return None
     errors = provenance_tail_transaction_rebind_errors(root, plan, transaction)
-    if errors:
+    if errors and not (
+        set(errors) <= PROVENANCE_TAIL_INAPPLICABLE_ERRORS
+        and provenance_tail_transaction_rebind_is_base_evolution(
+            root, plan, transaction
+        )
+    ):
         raise WorkflowError(
             "Task finalization transaction cannot rebind across the current provenance tail.",
             exit_code=2,

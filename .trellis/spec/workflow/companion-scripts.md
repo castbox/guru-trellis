@@ -1668,6 +1668,14 @@ current-plan bound `existing_pr_recovery/push_content` transaction before any
 push, PR edit, archive or Ready mutation. It pushes the new Publication HEAD
 once and never invokes the equal-HEAD conversion or creates a PR.
 
+When the current descendant is a legal base-evolution merge or contains
+multiple new base commits, the provenance-tail topology is inapplicable rather
+than a rebind failure. The validator may fall back to existing-PR
+strict-ancestor classification only when the current selected base HEAD is
+absent from the predecessor Publication HEAD and present in the current
+Publication HEAD. Business-content, identity, scope, PR, remote, metadata, and
+transaction drift continues to fail closed.
+
 Before an ordinary pre-PR metadata-tail reprepare, the executor creates a
 detached target checkout at the business `reviewed_content_head`, reads that
 commit's installed manifest, and resolves a separate clean detached extension
