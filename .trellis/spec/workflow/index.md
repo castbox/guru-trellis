@@ -55,7 +55,7 @@ Before editing workflow behavior:
 - Registry 1.4 accepts integrated, deferred, and standalone-only active rows.
   Integrated packages select Interface 1.4, normal-scenario qualification selects
   Interface 1.6, and the source-only verifier selects Interface 1.5. The registry
-  contains twenty-one active packages and 89 exits; global business workflow markers
+  contains twenty-two active packages and 91 exits; global business workflow markers
   are 21 invokes, 91 exits, 35 workflow targets, and 22 stop targets. Registry,
   discovery, invocation, installation, and validation read only the live
   current package graph. The planning/check/commit/qualification closure is
@@ -162,7 +162,7 @@ The durable contracts for `guru-review-task-publication` are split across
 `companion-scripts.md`, and `quality-guidelines.md`. Together they own the two
 Interface 1.4 profiles, minimal exits, layered private gate, semantic/runtime
 boundary, thin routing, real-wrapper eval, participation in the current
-twenty-one-Skill/89-exit package closure, and install/update checks. The global
+  twenty-two-Skill/91-exit package closure, and install/update checks. The global
 business workflow projection is 21 invokes, 91 exits, 35 workflow targets, and
 22 stop targets.
 
@@ -186,7 +186,7 @@ and `docs/public-docs.md`. Together they own its four profiles, six external
 exits, dialogue-only side-effect confirmation, owner-private minimal transaction,
 six-core archive, real-wrapper eval, and additive distribution.
 
-The current package graph contains twenty-one active Skills and 89 external exits
+The current package graph contains twenty-two active Skills and 93 external exits
 with fourteen target-owned `skill_input_authoring_seed` handoffs. Global workflow
 markers are 21 invokes, 91 exits, 35 workflow targets, and 22 stop targets. Issue #119 combined acceptance
 additionally requires the three Guru-owned daily entries, terminal

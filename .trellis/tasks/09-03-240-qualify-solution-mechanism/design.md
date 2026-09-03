@@ -61,4 +61,23 @@ canonical package 位于 `trellis/skills/guru-team/packages/`，由 registry 和
 - 机制“看起来安全”但实际由 OS identity 承 authority：通过真实 caller/dependency graph 的 semantic reread 识别，不能靠字符串扫描。
 - 一个候选同时包含合格场景和违规机制：场景资格保持独立，机制仅返回 remove/replace。
 - 业务仓库已有违规实现：保留报告边界，不跨仓库改动，避免本 Issue 变成迁移总任务。
-- 现有 21-package/89-exit 图谱和多平台投影规模较大：复用现有 package/runtime/manifest substrate，新增资产必须成套同步，禁止局部激活。
+- 现有 22-package 公共图谱和多平台投影规模较大：复用现有 package/runtime/manifest substrate，新增资产必须成套同步，禁止局部激活。
+
+## 7. Architecture Alignment
+
+- profile：`guru-maintain-architecture-baseline:task_impact_sync`。
+- impact/path：`architecture_impact` / `target_native`。
+- current baseline：`docs/architecture/README.md` / `current-main-0.6.5-guru.43` / `active`。
+- constitution：`docs/architecture/00-foundation/design-constitution.md` /
+  `guru-trellis-design-constitution-v1` / `current`。
+- project contract：`docs/architecture/06-governance/change-contract.md` /
+  `guru-trellis-architecture-change-contract-v1` /
+  `guru-trellis-architecture-change-concerns-v1`。
+- task-owned contribution：`docs/architecture/contributions/240-qualify-solution-mechanism.md`。
+- contribution identity：`architecture-contribution-240-solution-mechanism-v1`。
+- state：`reviewed_candidate` / `required_not_started`；本 task 不修改 shared current。
+
+本任务新增独立公共 semantic owner，改变 workflow semantic owner topology，故 Architecture
+impact 不能按 `no_architecture_impact` 处理。它不改变既有 Architecture owner 的 single-writer、
+project-check、promotion 或 compatibility exit；必要的 ADR 仅以 contribution 内 candidate 形式
+保留，正式 ADR、promotion 与 promotion 后 fresh Phase 2/Commit/Branch Review 由后续 owner 处理。

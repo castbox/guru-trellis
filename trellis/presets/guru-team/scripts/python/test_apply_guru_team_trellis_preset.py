@@ -1435,7 +1435,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         ownership_facts = payload["upstream_ownership_validation"]
         self.assertEqual(ownership_facts["schema_version"], "3.0")
         self.assertEqual(ownership_facts["overlay_count"], 3)
-        self.assertEqual(ownership_facts["active_skill_count"], 21)
+        self.assertEqual(ownership_facts["active_skill_count"], 22)
         self.assertEqual(ownership_facts["managed_claim_count"], 9)
         self.assertEqual(payload["replaced_overlays"], [])
         overlay_root = self.guru_root / "trellis/presets/guru-team/overlays"
@@ -2971,6 +2971,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "guru-maintain-requirements-design-test-ssot",
                 "guru-merge-task-pr",
                 "guru-qualify-normal-scenario",
+                "guru-qualify-solution-mechanism",
                 "guru-reconcile-task-base",
                 "guru-review-branch",
                 "guru-review-change-request",

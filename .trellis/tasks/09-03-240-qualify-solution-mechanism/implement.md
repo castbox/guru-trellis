@@ -33,6 +33,17 @@
 - paired eval 至少覆盖 Issue #240 R4 的八类机制/压力场景；评估必须使用真实安装后的 public wrapper 和目标模型，禁止 keyword classifier/mock semantic result。
 - `python3 ./.trellis/scripts/task.py validate .trellis/tasks/09-03-240-qualify-solution-mechanism`、`git diff --check` 以及针对变更 package 的定向测试通过。
 
-## 5. 下游边界
+## 5. Architecture implementation handoff
+
+- 在 Phase 2 前维护 `docs/architecture/contributions/240-qualify-solution-mechanism.md`，绑定
+  current `.43`、设计宪法、project change-contract、required concerns、target-native path、
+  owner/single-writer、before/after、project check、证据边界、ADR candidate 与 expected current。
+- Phase 2 使用 fresh `guru-maintain-architecture-baseline:task_impact_sync(stage=phase2)`；独立
+  Branch Review 必须重新从 `dbfbeea6f87e8973ca42f0feee3856a5b0a244bb...HEAD` 的完整 committed
+  diff 判断，不复用旧 Branch Review 或旧 Architecture 结果。
+- 当前贡献只允许 task-owned 写入；shared Architecture current、ADR index 与 promotion 仍由
+  Architecture owner 串行维护。
+
+## 6. 下游边界
 
 本计划不授权 commit、push、PR、merge、release、Issue closure、跨仓库迁移或生产操作；这些动作分别由后续门禁和独立授权决定。

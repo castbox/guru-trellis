@@ -687,8 +687,8 @@ Fresh install, update, and reapply require byte- and executable-mode identity
 for the package's Skill, Interface, references, schemas, examples, wrapper,
 tests, and canonical eval corpus.
 
-The activation contributes to the current package closure of twenty-one active
-Skills and 89 external exits.
+The activation contributes to the current package closure of twenty-two active
+Skills and 93 external exits.
 `production-current-v4` remains exactly four Skills and 15 exits; #116 is an
 additional complete active Interface 1.4 row outside that manifest. The current Branch Review
 `passed` DTO feeds the target-owned `publication_review` authoring seed.
@@ -742,7 +742,7 @@ Finalizer plan can satisfy this entry contract.
 
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
-wrapper executable modes, the twenty-one-Skill/89-exit package closure, the
+  wrapper executable modes, the twenty-two-Skill/91-exit package closure, the
 integrated business closure of 21 invokes, 91 exits, 35 workflow targets, and
 22 stop targets, and current
 ownership schema 3.0 with 11 rules, nine managed claims, and three overlays.
@@ -772,8 +772,8 @@ lineage. Self-hosted targets use the same closed binding contract with source
 commit equal to reviewed HEAD. This package-local behavior adds no installed
 managed claim, public profile, exit, transaction state, or verifier route.
 
-The complete source/installed package graph contains twenty-one active Skills and
-89 exits. The global business workflow projection is 21 invokes, 91 exits,
+The complete source/installed package graph contains twenty-two active Skills and
+91 exits. The global business workflow projection is 21 invokes, 91 exits,
 35 workflow targets, and 22 stop targets. The preset additionally installs the three Guru-owned
 `guru-finish-work` entries and combined integration suite; those entries route
 only Publication, Finalizer, and Merge. Upstream `trellis-finish-work` assets

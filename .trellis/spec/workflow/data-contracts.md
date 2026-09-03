@@ -462,7 +462,7 @@ contracts, and package-local corpora. Nineteen integrated rows select Interface
 1.4; normal-scenario qualification selects Interface 1.6; the standalone
 verifier selects Interface 1.5. Exact profile, exit,
 consumer, projection, current-case, and authoring-edge equality is required.
-Twenty-one Skills and 89 exits are the current package cardinality regression, not
+Twenty-two Skills and 91 exits are the current package cardinality regression, not
 a hard-coded future registry allowlist; the business workflow independently
 asserts 21 invokes, 91 exits, 35 workflow targets, and 22 stop targets.
 
