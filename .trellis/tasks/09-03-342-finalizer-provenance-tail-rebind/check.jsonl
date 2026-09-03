@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"验证本 Issue 只执行 targeted source/installed/projection checks，不冒充 Release matrix。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"检查 transaction rebind 保持 current plan、scope、HEAD、PR 与 private-state invariants。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"检查 semantic preview 与 deterministic transaction/mutation 顺序分层。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"确认 public Skill I/O、typed exits、owner 和 workflow routing 未发生未规划变化。"}

@@ -23,6 +23,16 @@ never repeats publication push or PR creation. Both paths then converge the
 current Publication title/body, archive, preserve Ready or mark Draft Ready,
 and hand off to `guru-merge-task-pr`.
 
+One additional current-plan recovery is allowed before generic transaction
+base-evolution handling: an unbound predecessor
+`ordinary_publication/push_content` transaction may advance only across one
+validated direct-child provenance metadata tail while its old Publication HEAD
+still equals the unique PR and remote HEAD. Preview classifies that topology as
+`strict_ancestor` with `push_required=true`. Execute rereads the same facts and
+persists one current-plan `existing_pr_recovery/push_content` transaction before
+pushing the new Publication HEAD exactly once. This path reuses the existing
+recovery engine and does not widen the equal-HEAD no-push conversion.
+
 When ordinary pre-PR reprepare requires a provenance metadata tail, keep the
 business target and Guru Trellis implementation in separate temporary
 checkouts. The detached target checkout at `reviewed_content_head` is the only

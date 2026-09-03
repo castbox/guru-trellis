@@ -1,0 +1,11 @@
+{
+  "id": "09-03-342-finalizer-provenance-tail-rebind",
+  "name": "09-03-342-finalizer-provenance-tail-rebind",
+  "title": "#342 修复 Finalizer provenance-tail transaction rebind",
+  "status": "in_progress",
+  "branch": "fix/342-finalizer-provenance-tail-rebind",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/342"
+}
