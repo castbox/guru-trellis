@@ -8085,12 +8085,17 @@ def provenance_tail_transaction_rebind_is_base_evolution(
     root: Path,
     plan: dict[str, Any],
     transaction: dict[str, Any],
+    *,
+    comparison_head: str | None = None,
 ) -> bool:
     """Identify a current base descendant without treating business drift as a tail."""
     git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
     base_branch = str(git.get("base_branch") or "")
     current_publication_head = str(
-        git.get("publication_head") or git.get("branch_review_commit") or ""
+        comparison_head
+        or git.get("publication_head")
+        or git.get("branch_review_commit")
+        or ""
     )
     predecessor_publication_head = str(transaction.get("publication_head") or "")
     if not base_branch or not re.fullmatch(
@@ -8141,6 +8146,41 @@ def provenance_tail_transaction_rebind_is_base_evolution(
         and current_delta.stdout == base_delta.stdout
     )
 
+def provenance_tail_transaction_rebind_base_evolution_tail_parent(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+) -> str | None:
+    """Return the current tail parent only when the full tail and base delta are legal."""
+    git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
+    current_publication_head = str(
+        git.get("publication_head") or git.get("branch_review_commit") or ""
+    )
+    parent_proc = run(
+        ["git", "show", "-s", "--format=%P", current_publication_head],
+        cwd=root,
+        check=False,
+    )
+    parents = parent_proc.stdout.split() if parent_proc.returncode == 0 else []
+    if len(parents) != 1:
+        return None
+    tail_parent = parents[0]
+    if provenance_tail_commit_errors(
+        root,
+        tail_parent,
+        current_publication_head,
+        target_repo=git.get("repo"),
+    ):
+        return None
+    if not provenance_tail_transaction_rebind_is_base_evolution(
+        root,
+        plan,
+        transaction,
+        comparison_head=tail_parent,
+    ):
+        return None
+    return tail_parent
+
 def classify_provenance_tail_transaction_rebind(
     root: Path,
     plan: dict[str, Any],
@@ -8155,12 +8195,19 @@ def classify_provenance_tail_transaction_rebind(
     ):
         return None
     errors = provenance_tail_transaction_rebind_errors(root, plan, transaction)
-    if errors and not (
-        set(errors) <= PROVENANCE_TAIL_INAPPLICABLE_ERRORS
-        and provenance_tail_transaction_rebind_is_base_evolution(
+    base_evolution = False
+    if errors and set(errors) <= PROVENANCE_TAIL_INAPPLICABLE_ERRORS:
+        base_evolution = provenance_tail_transaction_rebind_is_base_evolution(
             root, plan, transaction
         )
-    ):
+        if not base_evolution:
+            base_evolution = (
+                provenance_tail_transaction_rebind_base_evolution_tail_parent(
+                    root, plan, transaction
+                )
+                is not None
+            )
+    if errors and not base_evolution:
         raise WorkflowError(
             "Task finalization transaction cannot rebind across the current provenance tail.",
             exit_code=2,

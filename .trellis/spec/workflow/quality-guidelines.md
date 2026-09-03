@@ -922,6 +922,18 @@ drift, multiple/terminal/fork PRs, stale plan/gate/Publication, archive state,
 binding conflicts and unknown transaction stages. Existing equal-HEAD tests
 must continue to prove exact equality and `push_required=false` without using
 the rebind path.
+
+Composed base-evolution/provenance-tail coverage uses a real Git topology with
+the predecessor Publication, multiple new base commits or a merge, and one
+final direct-child manifest-only tail. Tests independently prove the tail
+validator accepts the final commit, the pure base-evolution comparison rejects
+the unstripped endpoint, and the composed classifier accepts only the validated
+tail parent. Compatibility cases keep the direct-tail and pure-base-evolution
+routes passing. Negative cases cover an extra changed path, invalid manifest
+transition, merge or chained tail, post-base business delta, and existing
+identity/scope/PR/transaction drift. Execution retains one current Publication
+push, zero PR creation, transaction-before-mutation ordering, and zero duplicate
+mutation on same-plan retry.
 Finish-family integration additionally proves current finish-summary schema 2
 is derived once from the reviewed payload and live facts, historical schema 1
 remains discoverable, and the current runtime/inventories contain no retired
