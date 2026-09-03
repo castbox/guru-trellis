@@ -74,14 +74,20 @@ invalid interface projections stop fail closed.
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"revision_required","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-planning-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"baseline_incomplete","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-bootstrap-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"blocked","consumer":{"kind":"stop","id":"requirements-design-test-ssot-blocked"}} -->
-The installed graph is exactly 21 active Skills and 89 package exits. The
-business-task workflow is exactly 20 mandatory invokes and 87 external exits.
+The installed graph is exactly 22 active Skills and 93 package exits. The
+business-task workflow is exactly 21 mandatory invokes and 91 external exits.
 ### Cross-phase normal-scenario qualification owner
 <!-- guru-skill-invoke: {"skill":"guru-qualify-normal-scenario","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"classified","consumer":{"kind":"workflow","id":"guru-normal-scenario-classified-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"scope_confirmation_required","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"mechanism_revision_required","consumer":{"kind":"workflow","id":"guru-normal-scenario-mechanism-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"blocked","consumer":{"kind":"stop","id":"normal-scenario-qualification-blocked"}} -->
+### Cross-phase solution-mechanism qualification owner
+<!-- guru-skill-invoke: {"skill":"guru-qualify-solution-mechanism","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-solution-mechanism","exit":"classified","consumer":{"kind":"workflow","id":"guru-solution-mechanism-classified-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-solution-mechanism","exit":"scope_confirmation_required","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-solution-mechanism","exit":"mechanism_revision_required","consumer":{"kind":"workflow","id":"guru-solution-mechanism-mechanism-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-solution-mechanism","exit":"blocked","consumer":{"kind":"stop","id":"solution-mechanism-qualification-blocked"}} -->
 ### Phase 0 owners
 <!-- guru-skill-invoke: {"skill":"guru-select-workflow-mode","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-select-workflow-mode","exit":"standard_intake","consumer":{"kind":"workflow","id":"guru-workflow-standard-intake-router"}} -->
@@ -183,11 +189,13 @@ business-task workflow is exactly 20 mandatory invokes and 87 external exits.
 <!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-planning-router"} -->
 <!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-bootstrap-router"} -->
 <!-- guru-stop-target: {"id":"requirements-design-test-ssot-blocked"} -->
-The graph contains exactly 33 workflow targets and 21 stop targets.
+The graph contains exactly 35 workflow targets and 22 stop targets.
 <!-- guru-workflow-target: {"id":"original-request-route"} -->
 <!-- guru-workflow-target: {"id":"guru-workflow-standard-intake-router"} -->
 <!-- guru-workflow-target: {"id":"guru-normal-scenario-classified-router"} -->
 <!-- guru-workflow-target: {"id":"guru-normal-scenario-mechanism-router"} -->
+<!-- guru-workflow-target: {"id":"guru-solution-mechanism-classified-router"} -->
+<!-- guru-workflow-target: {"id":"guru-solution-mechanism-mechanism-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-completed"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-resume-active-task-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-scope-change-router"} -->
@@ -210,6 +218,7 @@ The graph contains exactly 33 workflow targets and 21 stop targets.
 <!-- guru-workflow-target: {"id":"guru-finalization-finish-response"} -->
 <!-- guru-stop-target: {"id":"workflow-mode-selection-blocked"} -->
 <!-- guru-stop-target: {"id":"normal-scenario-qualification-blocked"} -->
+<!-- guru-stop-target: {"id":"solution-mechanism-qualification-blocked"} -->
 <!-- guru-stop-target: {"id":"task-free-change-blocked"} -->
 <!-- guru-stop-target: {"id":"base-sync-blocked"} -->
 <!-- guru-stop-target: {"id":"change-context-blocked"} -->

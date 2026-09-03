@@ -1,0 +1,94 @@
+{
+  "$schema": "../../schemas/skill-interface-1.6.schema.json",
+  "schema_version": "1.6",
+  "id": "guru-qualify-solution-mechanism",
+  "name": "guru-qualify-solution-mechanism",
+  "description": "Qualify one profile-specific candidate set against current solution-mechanism authority before a Guru Team caller may promote it into scope, tests, findings, implementation, or publication blocking.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {"routing":"global_workflow","entry_precondition_ids":["runtime_dependency","profile_binding","live_authority","candidate_set","invocation_freshness"]},
+    "standalone": {"routing":"direct_discovery","entry_precondition_ids":["runtime_dependency","profile_binding","live_authority","candidate_set","invocation_freshness"]}
+  },
+  "entry_preconditions": [
+    {"id":"runtime_dependency","evidence":"installed extension manifest, dispatcher, active package inventory, and declared stdin-only runtime commands","binding":"complete compatible Guru Team preset runtime","freshness":"run-skill-command validates the managed package before every invocation"},
+    {"id":"profile_binding","evidence":"one of ten closed input profiles with its fixed caller, mode, current target identity, and resume mapping","binding":"the exact semantic Owner that is about to promote a candidate into a stage judgment","freshness":"the caller authors a new closed input for every invocation"},
+    {"id":"live_authority","evidence":"current requirement authority, planning, real caller and consumer, relevant code or range, tests, and repository contracts reachable through the declared locators","binding":"the current target and supported normal action path reviewed directly by the qualification AI","freshness":"the AI rereads live sources and the checker validates current structural and Git identities"},
+    {"id":"candidate_set","evidence":"non-empty unique candidate refs with exactly one locator set and one AI-authored decision per candidate","binding":"one invocation-local candidate set, with no worker severity or route authority","freshness":"candidate, locator, decision, and AI gate ref sets must match exactly"},
+    {"id":"invocation_freshness","evidence":"call-local input digest, semantic result digest, current Git identities, typed exit, and unique consumer binding","binding":"one stdin/stdout invocation with no repository result state","freshness":"any authority, planning, candidate, caller graph, diff, range, HEAD, base pair, test, payload, scope, mechanism, or finding change requires complete re-entry"}
+  ],
+  "runtime_dependency": {"extension_id":"guru-team","api_version":"1.0","manifest_path":".trellis/guru-team/extension.json","dispatcher":"run-skill-command","distribution":"guru-team-preset","package_portability":"not-self-contained"},
+  "ordered_stages": ["forward_behavior","ai_review_gate","conditional_human_confirmation","recorder_validator","typed_exit"],
+  "artifacts": [],
+  "schemas": [
+    {"id":"public_input_task_free_pre_write","path":"schemas/public-task-free-pre-write-input.schema.json"},
+    {"id":"public_input_task_free_evolution","path":"schemas/public-task-free-evolution-input.schema.json"},
+    {"id":"public_input_requirements_scope_set","path":"schemas/public-requirements-scope-set-input.schema.json"},
+    {"id":"public_input_change_request_candidate_set","path":"schemas/public-change-request-candidate-set-input.schema.json"},
+    {"id":"public_input_planning_scenario_set","path":"schemas/public-planning-scenario-set-input.schema.json"},
+    {"id":"public_input_implementation_discovery","path":"schemas/public-implementation-discovery-input.schema.json"},
+    {"id":"public_input_base_impact_candidate_set","path":"schemas/public-base-impact-candidate-set-input.schema.json"},
+    {"id":"public_input_phase2_candidate_set","path":"schemas/public-phase2-candidate-set-input.schema.json"},
+    {"id":"public_input_branch_review_candidate_set","path":"schemas/public-branch-review-candidate-set-input.schema.json"},
+    {"id":"public_input_publication_candidate_set","path":"schemas/public-publication-candidate-set-input.schema.json"},
+    {"id":"public_input_aggregate","path":"schemas/public-input.schema.json"},
+    {"id":"semantic_result","path":"schemas/semantic-result.schema.json"},
+    {"id":"public_invocation_error","path":"schemas/public-invocation-error.schema.json"},
+    {"id":"public_output_classified","path":"schemas/public-classified-output.schema.json"},
+    {"id":"public_output_scope_confirmation_required","path":"schemas/public-scope-confirmation-required-output.schema.json"},
+    {"id":"public_output_mechanism_revision_required","path":"schemas/public-mechanism-revision-required-output.schema.json"},
+    {"id":"public_output_blocked","path":"schemas/public-blocked-output.schema.json"}
+  ],
+  "validators": [
+    {"id":"solution_mechanism_qualification_recorder","command":"scripts/record-solution-mechanism-qualification.sh","runtime_command":"record-solution-mechanism-qualification","objective_scope":"stdin-only closed shape, profile and caller identity, exact candidate coverage, enums, AI-authored gate shape, exit and unique consumer binding, and call-local digests; no mechanism judgment or file write"},
+    {"id":"solution_mechanism_qualification_checker","command":"scripts/check-solution-mechanism-qualification.sh","runtime_command":"check-solution-mechanism-qualification","objective_scope":"stdin-only recorded shape, current repository and Git identities, safe locators, exact digests, enums, and consumer binding; no mechanism, architecture, sufficiency, severity, decision, or route judgment"},
+    {"id":"public_invocation","command":"scripts/invoke.sh","runtime_command":"invoke-guru-qualify-solution-mechanism","objective_scope":"validate one call-local semantic envelope in memory and serialize one schema-valid typed exit on stdout without a result locator, checkpoint, temporary file, or repository write"}
+  ],
+  "external_exits": [
+    {"id":"classified","evidence":"the AI completed the fixed scope-first review and selected the non-blocking classification route for the current candidate set","consumer":{"kind":"workflow","id":"guru-solution-mechanism-classified-router"}},
+    {"id":"scope_confirmation_required","evidence":"the AI found a real unresolved scope choice that is not already excluded by current repository authority","consumer":{"kind":"skill","id":"guru-clarify-requirements"}},
+    {"id":"mechanism_revision_required","evidence":"the AI found a task-introduced mechanism that must be removed or replaced before fresh qualification","consumer":{"kind":"workflow","id":"guru-solution-mechanism-mechanism-router"}},
+    {"id":"blocked","evidence":"the AI cannot reliably judge the current target, authority, caller, candidate, or evidence","consumer":{"kind":"stop","id":"solution-mechanism-qualification-blocked"}}
+  ],
+  "reentry": {"identity":"profile, fixed caller, mode, current target, candidate refs and locators, current semantic decisions and witnesses, AI gate, typed exit, and unique consumer","freshness":"all qualification values are invocation-local; any relevant live change or downstream scope, mechanism, or finding revision requires a complete fresh call","stale_behavior":"fail_closed"},
+  "tests": ["tests/test_contract.py","tests/test_runtime.py"],
+  "platform_destinations": ["shared","codex","cursor","claude"],
+  "public_contracts": {
+    "input": {
+      "kind":"structured_json",
+      "aggregate_schema":{"schema_id":"guru-solution-mechanism-input-aggregate-1.0","path":"schemas/public-input.schema.json"},
+      "profiles":[
+        {"id":"task_free_pre_write","schema":{"schema_id":"guru-solution-mechanism-input-task-free-pre-write-1.0","path":"schemas/public-task-free-pre-write-input.schema.json"},"example":{"id":"task_free_pre_write_input","path":"examples/public-task-free-pre-write-input.json"},"discriminator":{"field":"profile","value":"task_free_pre_write"}},
+        {"id":"task_free_evolution","schema":{"schema_id":"guru-solution-mechanism-input-task-free-evolution-1.0","path":"schemas/public-task-free-evolution-input.schema.json"},"example":{"id":"task_free_evolution_input","path":"examples/public-task-free-evolution-input.json"},"discriminator":{"field":"profile","value":"task_free_evolution"}},
+        {"id":"requirements_scope_set","schema":{"schema_id":"guru-solution-mechanism-input-requirements-scope-set-1.0","path":"schemas/public-requirements-scope-set-input.schema.json"},"example":{"id":"requirements_scope_set_input","path":"examples/public-requirements-scope-set-input.json"},"discriminator":{"field":"profile","value":"requirements_scope_set"}},
+        {"id":"change_request_candidate_set","schema":{"schema_id":"guru-solution-mechanism-input-change-request-candidate-set-1.0","path":"schemas/public-change-request-candidate-set-input.schema.json"},"example":{"id":"change_request_candidate_set_input","path":"examples/public-change-request-candidate-set-input.json"},"discriminator":{"field":"profile","value":"change_request_candidate_set"}},
+        {"id":"planning_scenario_set","schema":{"schema_id":"guru-solution-mechanism-input-planning-scenario-set-1.0","path":"schemas/public-planning-scenario-set-input.schema.json"},"example":{"id":"planning_scenario_set_input","path":"examples/public-planning-scenario-set-input.json"},"discriminator":{"field":"profile","value":"planning_scenario_set"}},
+        {"id":"implementation_discovery","schema":{"schema_id":"guru-solution-mechanism-input-implementation-discovery-1.0","path":"schemas/public-implementation-discovery-input.schema.json"},"example":{"id":"implementation_discovery_input","path":"examples/public-implementation-discovery-input.json"},"discriminator":{"field":"profile","value":"implementation_discovery"}},
+        {"id":"base_impact_candidate_set","schema":{"schema_id":"guru-solution-mechanism-input-base-impact-candidate-set-1.0","path":"schemas/public-base-impact-candidate-set-input.schema.json"},"example":{"id":"base_impact_candidate_set_input","path":"examples/public-base-impact-candidate-set-input.json"},"discriminator":{"field":"profile","value":"base_impact_candidate_set"}},
+        {"id":"phase2_candidate_set","schema":{"schema_id":"guru-solution-mechanism-input-phase2-candidate-set-1.0","path":"schemas/public-phase2-candidate-set-input.schema.json"},"example":{"id":"phase2_candidate_set_input","path":"examples/public-phase2-candidate-set-input.json"},"discriminator":{"field":"profile","value":"phase2_candidate_set"}},
+        {"id":"branch_review_candidate_set","schema":{"schema_id":"guru-solution-mechanism-input-branch-review-candidate-set-1.0","path":"schemas/public-branch-review-candidate-set-input.schema.json"},"example":{"id":"branch_review_candidate_set_input","path":"examples/public-branch-review-candidate-set-input.json"},"discriminator":{"field":"profile","value":"branch_review_candidate_set"}},
+        {"id":"publication_candidate_set","schema":{"schema_id":"guru-solution-mechanism-input-publication-candidate-set-1.0","path":"schemas/public-publication-candidate-set-input.schema.json"},"example":{"id":"publication_candidate_set_input","path":"examples/public-publication-candidate-set-input.json"},"discriminator":{"field":"profile","value":"publication_candidate_set"}}
+      ]
+    },
+    "invocation": {"command_id":"run-skill-command","wrapper":"scripts/invoke.sh","input_binding":{"kind":"structured_json","profile_selector":{"source":"aggregate_public_input","field":"profile"}},"stdout_contract":"single_typed_exit","error_schema":{"schema_id":"guru-solution-mechanism-invocation-error-1.0","path":"schemas/public-invocation-error.schema.json"},"error_example":{"id":"invalid_public_input","path":"examples/public-invocation-error.json"},"call_local":{"flag":"--invocation","stdin":"-","envelope":{"schema_id":"guru-solution-mechanism-invocation-1.0","path":"consumers/workflow/production/solution-mechanism-qualification-invocation.schema.json"}},"example_argv":["--invocation","-"]},
+    "outputs": [
+      {"exit_id":"classified","schema":{"schema_id":"guru-solution-mechanism-output-classified-1.0","path":"schemas/public-classified-output.schema.json"},"example":{"id":"classified_output","path":"examples/public-classified-output.json"},"consumer_use_ids":["project_classified"]},
+      {"exit_id":"scope_confirmation_required","schema":{"schema_id":"guru-solution-mechanism-output-scope-confirmation-required-1.0","path":"schemas/public-scope-confirmation-required-output.schema.json"},"example":{"id":"scope_confirmation_required_output","path":"examples/public-scope-confirmation-required-output.json"},"consumer_use_ids":["project_scope_confirmation_required"]},
+      {"exit_id":"mechanism_revision_required","schema":{"schema_id":"guru-solution-mechanism-output-mechanism-revision-required-1.0","path":"schemas/public-mechanism-revision-required-output.schema.json"},"example":{"id":"mechanism_revision_required_output","path":"examples/public-mechanism-revision-required-output.json"},"consumer_use_ids":["project_mechanism_revision_required"]},
+      {"exit_id":"blocked","schema":{"schema_id":"guru-solution-mechanism-output-blocked-1.0","path":"schemas/public-blocked-output.schema.json"},"example":{"id":"blocked_output","path":"examples/public-blocked-output.json"},"consumer_use_ids":["project_blocked"]}
+    ],
+    "consumer_inputs": [
+      {"id":"classified_router_input","consumer":{"kind":"workflow","id":"guru-solution-mechanism-classified-router"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-solution-mechanism-classified-router-input-1.0","path":"consumers/workflow/production/solution-mechanism-classified-router.schema.json"}},
+      {"id":"scope_confirmation_requirements_input","consumer":{"kind":"skill","id":"guru-clarify-requirements"},"payload_kind":"structured_json","contract":{"kind":"skill_input","interface_path":"packages/guru-clarify-requirements/interface.json","input_kind":"structured_json","profile_id":"solution_mechanism_scope_confirmation"}},
+      {"id":"mechanism_router_input","consumer":{"kind":"workflow","id":"guru-solution-mechanism-mechanism-router"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-solution-mechanism-mechanism-router-input-1.0","path":"consumers/workflow/production/solution-mechanism-mechanism-router.schema.json"}},
+      {"id":"blocked_stop_input","consumer":{"kind":"stop","id":"solution-mechanism-qualification-blocked"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-solution-mechanism-qualification-blocked-input-1.0","path":"consumers/stop/production/solution-mechanism-qualification-blocked.schema.json"}}
+    ],
+    "projections": [
+      {"id":"project_classified","exit_id":"classified","consumer_input_id":"classified_router_input","operation":"direct"},
+      {"id":"project_scope_confirmation_required","exit_id":"scope_confirmation_required","consumer_input_id":"scope_confirmation_requirements_input","operation":"rename","mappings":[{"source":"exit_id","target":"source_exit"},{"source":"handoff_profile","target":"profile"},{"source":"mode","target":"mode"},{"source":"target_locator","target":"target_locator"},{"source":"resume_target","target":"resume_target"},{"source":"continuation_id","target":"continuation_id"},{"source":"candidate_refs","target":"candidate_refs"}]},
+      {"id":"project_mechanism_revision_required","exit_id":"mechanism_revision_required","consumer_input_id":"mechanism_router_input","operation":"direct"},
+      {"id":"project_blocked","exit_id":"blocked","consumer_input_id":"blocked_stop_input","operation":"direct"}
+    ],
+    "private_artifacts": []
+  }
+}

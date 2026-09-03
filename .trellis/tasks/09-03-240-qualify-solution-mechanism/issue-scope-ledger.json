@@ -1,0 +1,41 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 240,
+    "url": "https://github.com/castbox/guru-trellis/issues/240",
+    "title": "建立 AI 驱动的解决机制资格合同，禁止业务能力下沉到 OS 原语",
+    "reason": "Issue #240 是当前 task 的唯一 live authority；本 task 实现其 Skill、workflow、preset、I/O 和定向验证合同。"
+  },
+  "close_issues": [
+    {
+      "number": 240,
+      "url": "https://github.com/castbox/guru-trellis/issues/240",
+      "title": "建立 AI 驱动的解决机制资格合同，禁止业务能力下沉到 OS 原语",
+      "reason": "仅在独立 Branch Review、PR readiness、merge 和 live Issue closure 门禁完成后关闭 #240。"
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 237,
+      "url": "https://github.com/castbox/guru-trellis/issues/237",
+      "title": "建立 AI 驱动的正常场景资格合同",
+      "reason": "#237 负责问题场景资格；本 task 只新增独立解决机制资格 owner，不修改或关闭 #237。"
+    },
+    {
+      "number": 239,
+      "url": "https://github.com/castbox/guru-trellis/issues/239",
+      "title": "建立 Python bytecode 产品投影合同",
+      "reason": "#239 是独立产品投影范围；本 task 不修改或扩大其边界。"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 260,
+      "reason": "Issue #260 负责 Trellis upgrade/update 与完整多平台兼容矩阵，本 task 只完成定向安装/reapply/drift 验证。"
+    },
+    {
+      "number": 267,
+      "reason": "Issue #267 负责 exact-candidate 最终矩阵与 release evidence，本 task 不承担该发布门禁。"
+    }
+  ]
+}

@@ -264,6 +264,7 @@
         "guru-maintain-requirements-design-test-ssot",
         "guru-merge-task-pr",
         "guru-qualify-normal-scenario",
+        "guru-qualify-solution-mechanism",
         "guru-reconcile-task-base",
         "guru-review-branch",
         "guru-review-change-request",

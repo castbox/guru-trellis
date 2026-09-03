@@ -74,7 +74,7 @@ Workflow marketplace 只安装 global .trellis/workflow.md；完整 Guru Team ex
 installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed projection，
 不能反向成为语义来源。
 
-当前 registry 激活 21 Skills / 89 package exits；其中业务 global workflow closure
+当前 registry 激活 22 Skills / 93 package exits；其中业务 global workflow closure
 为 20 个 invokes / 87 个 exits / 54 个 total targets。下列 20 个业务 active ids 参与
 global workflow：
 
@@ -189,8 +189,8 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 当前 release-facing source 的 canonical extension version 为 `0.6.15-guru.39`，目标
 release tag 为 `v0.6.15-guru.3`；二者的发布事实仍由 #267 successor Release gates 建立。
 Source/installed package validation 必须同时验证
-registry、20 invokes / 87 exits / 54 combined targets（33 workflow + 21 stop）
-business marker graph、21-package/89-exit closure、consumer
+registry、21 invokes / 91 exits / 57 combined targets（35 workflow + 22 stop）
+business marker graph、22-package/93-exit closure、consumer
 uniqueness、projection、selected-platform
 byte identity 和 executable mode。
 
@@ -198,8 +198,8 @@ byte identity 和 executable mode。
 
 Canonical workflow 是 trellis/workflows/guru-team/workflow.md；dogfood
 .trellis/workflow.md 必须 byte-identical。Global Markdown 只拥有 phase order、
-current-task router、20 mandatory Skill markers、87 exits、33 workflow targets、
-21 stop targets、
+current-task router、21 mandatory Skill markers、91 exits、35 workflow targets、
+22 stop targets、
 workspace/task activation、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 与外部 side-effect boundary。Step-local 合同只存在于对应 active
 package/interface。
@@ -1096,7 +1096,7 @@ label、exit code 与 bounded credential-safe tail；无法解析时显式记录
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的二十一个 packages 已维护 canonical corpora 并覆盖全部 89 package exits/profile；六个 Intake
+中的二十二个 packages 已维护 canonical corpora 并覆盖全部 93 package exits/profile；六个 Intake
 packages 的 23-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台

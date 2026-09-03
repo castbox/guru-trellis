@@ -743,8 +743,8 @@ Finalizer plan can satisfy this entry contract.
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
 wrapper executable modes, the twenty-one-Skill/89-exit package closure, the
-integrated business closure of 20 invokes, 87 exits, 33 workflow targets, and
-21 stop targets, and current
+integrated business closure of 21 invokes, 91 exits, 35 workflow targets, and
+22 stop targets, and current
 ownership schema 3.0 with 11 rules, nine managed claims, and three overlays.
 Unknown edits and sidecars retain the existing managed-hash remediation.
 
@@ -773,8 +773,8 @@ commit equal to reviewed HEAD. This package-local behavior adds no installed
 managed claim, public profile, exit, transaction state, or verifier route.
 
 The complete source/installed package graph contains twenty-one active Skills and
-89 exits. The global business workflow projection is 20 invokes, 87 exits,
-33 workflow targets, and 21 stop targets. The preset additionally installs the three Guru-owned
+89 exits. The global business workflow projection is 21 invokes, 91 exits,
+35 workflow targets, and 22 stop targets. The preset additionally installs the three Guru-owned
 `guru-finish-work` entries and combined integration suite; those entries route
 only Publication, Finalizer, and Merge. Upstream `trellis-finish-work` assets
 remain under official Trellis ownership.

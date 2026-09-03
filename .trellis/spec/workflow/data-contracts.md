@@ -464,7 +464,7 @@ verifier selects Interface 1.5. Exact profile, exit,
 consumer, projection, current-case, and authoring-edge equality is required.
 Twenty-one Skills and 89 exits are the current package cardinality regression, not
 a hard-coded future registry allowlist; the business workflow independently
-asserts 20 invokes, 87 exits, 33 workflow targets, and 21 stop targets.
+asserts 21 invokes, 91 exits, 35 workflow targets, and 22 stop targets.
 
 The production manifest also binds the exact four
 `skill_input_authoring_seed` edges. Each binding names the target Interface and
