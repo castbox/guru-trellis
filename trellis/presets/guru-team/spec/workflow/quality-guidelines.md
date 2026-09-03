@@ -202,8 +202,8 @@ edges, private artifact ids, examples, the 160-case/5-invocation production
 control, and eval case bindings. Versioned v2/v3 files are immutable legacy
 assets and are not alternate current selectors, input projectors, or fixtures.
 Then validate the current package closure
-at twenty-two active Skills and 93 external exits, while the integrated business
-workflow projection is 21 invokes, 91 exits, 35 workflow targets, and 22 stop targets. Negative tests cover missing, extra,
+at twenty-three active Skills and 96 external exits, while the integrated business
+workflow projection is 22 invokes, 94 exits, 35 workflow targets, and 23 stop targets. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or non-current entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Intake/production
@@ -774,9 +774,9 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  twenty-two-Skill/91-exit current package closure while the production activation
+  twenty-three-Skill/96-exit current package closure while the production activation
   unit remains three Skills/11 exits and business markers remain integrated at
-  21 invokes, 91 exits, 35 workflow targets, and 22 stop targets. Update and preset reapply must reproduce
+  22 invokes, 94 exits, 35 workflow targets, and 23 stop targets. Update and preset reapply must reproduce
   that closure with zero unresolved `.new` or `.bak`.
 
 ## Normal Scenario Qualification Quality
@@ -932,10 +932,10 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert twenty-two active Skills and 93
+Source/installed/platform/throwaway checks assert twenty-three active Skills and 96
 package exits, exactly one selected `production-current-v4`
-four-Skill/15-exit current manifest, and business workflow markers of 20
-invokes, 91 exits, 35 workflow targets, and 22 stop targets.
+four-Skill/15-exit current manifest, and business workflow markers of 22
+invokes, 94 exits, 35 workflow targets, and 23 stop targets.
 
 ## Extension Installation Verification Quality
 
@@ -1043,8 +1043,8 @@ verifier hop and scans terminal task/runtime state for verifier residue.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes match after fresh install, update, and preset reapply. Package
-closure is twenty-two active Skills and 91 exits; business global markers remain 21
-invokes, 91 exits, 35 workflow targets, and 22 stop targets. Upstream Finish
+closure is twenty-three active Skills and 96 exits; business global markers remain 22
+invokes, 94 exits, 35 workflow targets, and 23 stop targets. Upstream Finish
 assets remain unchanged.
 
 Installed package tests must execute in a clean business repository that does

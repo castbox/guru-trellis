@@ -97,14 +97,17 @@ workflow/standalone preconditions before a package command can run.
 ### 0. Current Interface And Registry Contract
 
 Issue #180 activated the historical fifteen-package/57-exit graph. The current
-Registry 1.4 graph contains twenty-two active packages and 93 package exits while
+Registry 1.4 graph contains twenty-three active packages and 96 package exits while
 retaining older Interface/Registry assets as immutable legacy contracts.
 `guru-merge-task-pr` is a current semantic package with exactly
-`merged`, `merge_blocked`, and `closure_mismatch`. Current Finalizer exposes
+`merged`, `merge_blocked`, `phase2_reentry_required`, and `closure_mismatch`.
+`guru-restore-archived-task` consumes only `phase2_reentry_required`, restores
+the exact archived task identity, and returns `restored_to_phase2` or
+`restore_blocked`. Current Finalizer exposes
 `ready_for_merge` in place of `published`; the old published schema/example
 remain immutable legacy assets but are not selected by the Interface, registry,
-workflow or extension manifest. The integrated business graph has 21 invoke
-markers, 91 exit markers and 57 unique workflow/stop targets.
+workflow or extension manifest. The integrated business graph has 22 invoke
+markers, 94 exit markers and 58 unique workflow/stop targets.
 
 The Finalizer-to-Merge edge is target-authored. Finalizer returns canonical
 repository/PR identity, `expected_head_sha`, expected base/head branch identity,
@@ -114,9 +117,12 @@ reviewed merge message containing primary Issue, concrete Chinese summary, and
 exact Chinese `chore(merge)` subject/body. These are the minimal facts the
 consumer cannot rederive from live PR state without turning that mutable state
 into authority. No transaction, review narrative, authorization, task runtime or
-local checkout identity crosses the edge. Merge standalone/re-entry accepts the
-same expected authority from its caller and rebuilds live evidence without an
-active task.
+local checkout identity crosses the edge. A task-work Merge finding projects
+the exact PR/task/archive/finding seed to the restore owner; target authoring
+adds only `schema_version/profile/mode`. External blockers remain
+`merge_blocked`. The restore success DTO contains only `task_ref` and
+`resume_target=phase-2`, then the workflow returns to
+`guru-resume-implementation`.
 
 The Merge 1.0 input/aggregate/gate schemas and examples remain immutable legacy
 assets. Interface 1.4 explicitly selects the active 2.0 profiles and gate; no
@@ -141,7 +147,7 @@ The validator selects the interface schema from the registry row. It must not
 guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes one `interface_schema_id`, the registry id,
 and exact public-input, typed-output, and private-artifact schema inventories
-for all twenty-two active packages and their 93 external exits. The
+for all twenty-three active packages and their 96 external exits. The
 `production-current-v4` is the sole current manifest and contains exactly four
 packages and 15 exits, including `guru-qualify-normal-scenario`; additive
 activation of other packages, including `guru-finalize-task`, does not rewrite
@@ -749,9 +755,9 @@ Active closure is derived from the live registry, the production current
 manifest, and every complete active Interface 1.4 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
-The current package cardinality assertion is twenty-two active Skills and 93
-exits. The integrated business workflow projection contains 21 invoke markers,
-91 exit markers, 35 workflow-target markers, and 22 stop-target markers. Missing,
+The current package cardinality assertion is twenty-three active Skills and 96
+exits. The integrated business workflow projection contains 22 invoke markers,
+94 exit markers, 35 workflow-target markers, and 23 stop-target markers. Missing,
 extra, duplicate, renamed, unknown, partially activated, or
 case-mismatched entries fail closed.
 
@@ -1666,8 +1672,8 @@ aggregate input schema `guru-finalize-task-input-aggregate-6.0`. Aggregate
 fresh Publication invocation. No alias, task-local fallback, compatibility
 reader, or migration executor is part of the current contract.
 
-The current additive activation set contributes to the live closure of twenty-two
-active Skills and 91 exits. The production current manifest contains exactly
+The current additive activation set contributes to the live closure of twenty-three
+active Skills and 96 exits. The production current manifest contains exactly
 four Skills and 15 exits.
 
 ## Extension Installation Verification Owner

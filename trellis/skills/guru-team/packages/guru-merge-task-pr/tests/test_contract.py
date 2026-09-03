@@ -144,7 +144,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
 
-    def test_semantic_package_has_exact_three_exits(self) -> None:
+    def test_semantic_package_has_exact_four_exits(self) -> None:
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         self.assertEqual(
             self.interface["ordered_stages"],
@@ -159,12 +159,76 @@ class MergeTaskPrContractTest(unittest.TestCase):
         exits = self.interface["external_exits"]
         self.assertEqual(
             [item["id"] for item in exits],
-            ["merged", "merge_blocked", "closure_mismatch"],
+            ["merged", "merge_blocked", "phase2_reentry_required", "closure_mismatch"],
         )
         self.assertEqual(
             len({(item["consumer"]["kind"], item["consumer"]["id"]) for item in exits}),
-            3,
+            4,
         )
+
+    def test_phase2_reentry_route_is_bound_and_requires_no_merge_mutation(self) -> None:
+        public_input = json.loads(
+            (PACKAGE / "evals/files/phase2-reentry-input.json").read_text(encoding="utf-8")
+        )
+        facts = {
+            "pr": {
+                "number": public_input["pr_number"],
+                "url": public_input["pr_url"],
+                "state": "OPEN",
+                "is_draft": False,
+                "head_sha": public_input["expected_head_sha"],
+                "base_branch": public_input["expected_base_branch"],
+                "head_branch": public_input["expected_head_branch"],
+                "mergeable": "MERGEABLE",
+            },
+            "base_ref": {"name": "main", "head_sha": "3" * 40},
+            "repository_policy": {"allowed_methods": ["merge"]},
+            "close_issues": [348],
+            "issues": [{"number": 348, "state": "OPEN", "closed_at": None}],
+        }
+        facts["facts_sha256"] = GTT.canonical_json_sha256(facts)
+        review_payload = {
+            "semantic_review": {
+                "dimensions": [
+                    {
+                        "id": identifier,
+                        "status": "blocked" if identifier == "checks_and_reviews" else "passed",
+                        "summary": "当前任务内容需要修订" if identifier == "checks_and_reviews" else "当前维度通过",
+                    }
+                    for identifier in GTT.TASK_PR_MERGE_DIMENSIONS
+                ]
+            },
+            "route": {
+                "typed_exit": "phase2_reentry_required",
+                "scope_classification": "task_work",
+                "requires_task_content_change": True,
+                "blocked_dimension": "checks_and_reviews",
+                "repo_ref": public_input["repo_ref"],
+                "pr_number": public_input["pr_number"],
+                "pr_url": public_input["pr_url"],
+                "expected_head_sha": public_input["expected_head_sha"],
+                "expected_base_branch": public_input["expected_base_branch"],
+                "expected_head_branch": public_input["expected_head_branch"],
+                "issue_number": 348,
+                "task_id": "09-03-348-merge-blocked-phase2-reentry",
+                "archive_locator": ".trellis/tasks/archive/2026-09/09-03-348-merge-blocked-phase2-reentry",
+                "active_locator": ".trellis/tasks/09-03-348-merge-blocked-phase2-reentry",
+                "archive_commit": "2" * 40,
+                "finding_refs": ["merge-gate:checks-and-reviews:348"],
+                "resume_target": "phase-2",
+            },
+        }
+
+        gate = GTT.task_pr_merge_gate_from_facts(public_input, facts, review_payload)
+        checked = GTT.check_task_pr_merge_result_with_facts(public_input, gate, facts)
+        with mock.patch.object(GTT, "run") as mutation:
+            result = GTT.task_pr_merge_execute_checked(
+                Path("/repo"), public_input, Path("/repo/gate.json"), gate, checked
+            )
+
+        self.assertEqual("phase2_reentry_required", result["typed_exit"])
+        self.assertEqual(review_payload["route"]["finding_refs"], result["output"]["finding_refs"])
+        mutation.assert_not_called()
 
     def test_workflow_and_standalone_profiles_are_closed_and_minimal(self) -> None:
         profiles = self.interface["public_contracts"]["input"]["profiles"]
@@ -1203,7 +1267,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
     def test_evals_cover_all_exits_and_primary_blockers(self) -> None:
         corpus = json.loads((PACKAGE / "evals/evals.json").read_text(encoding="utf-8"))
         exits = {item["expected_exit"] for item in corpus["evals"]}
-        self.assertEqual(exits, {"merged", "merge_blocked", "closure_mismatch"})
+        self.assertEqual(exits, {"merged", "merge_blocked", "phase2_reentry_required", "closure_mismatch"})
         ids = {item["id"] for item in corpus["evals"]}
         self.assertTrue({
             "standalone-draft-blocked",
@@ -1211,6 +1275,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "workflow-branch-drift-blocked",
             "workflow-close-keyword-mismatch-blocked",
             "workflow-added-close-keyword-blocked",
+            "workflow-task-work-phase2-reentry",
         } <= ids)
 
     def test_semantic_evals_declare_owner_staging_and_public_invocation(self) -> None:

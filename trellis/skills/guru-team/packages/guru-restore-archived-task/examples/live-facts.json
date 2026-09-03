@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "pr": {"state": "OPEN", "number": 348, "url": "https://github.com/castbox/guru-trellis/pull/348", "head_sha": "1111111111111111111111111111111111111111", "base_branch": "main", "head_branch": "codex/348-merge-blocked-phase2-reentry"},
+  "issue": {"number": 348, "state": "OPEN", "close_intent": "unchanged"},
+  "remote_branch": {"name": "codex/348-merge-blocked-phase2-reentry", "head_sha": "1111111111111111111111111111111111111111"},
+  "local_branch": {"name": "codex/348-merge-blocked-phase2-reentry", "head_sha": "1111111111111111111111111111111111111111"},
+  "archive": {"locator": ".trellis/tasks/archive/2026-09/09-03-348-merge-blocked-phase2-reentry", "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "task_json_sha256": "2222222222222222222222222222222222222222222222222222222222222222", "finish_summary_sha256": "3333333333333333333333333333333333333333333333333333333333333333"},
+  "task": {"id": "09-03-348-merge-blocked-phase2-reentry", "status": "completed", "completed_at": "2026-09-03T00:00:00Z", "branch": "codex/348-merge-blocked-phase2-reentry", "base_branch": "main", "repo_ref": "castbox/guru-trellis", "issue_number": 348, "pr_number": 348, "expected_head_sha": "1111111111111111111111111111111111111111"},
+  "runtime_mapping": {"state": "archived", "task_id": "09-03-348-merge-blocked-phase2-reentry", "archive_locator": ".trellis/tasks/archive/2026-09/09-03-348-merge-blocked-phase2-reentry", "active_locator": ".trellis/tasks/09-03-348-merge-blocked-phase2-reentry", "repo_ref": "castbox/guru-trellis", "branch_name": "codex/348-merge-blocked-phase2-reentry", "worktree_path": "/tmp/348-worktree"},
+  "worktree": {"path": "/tmp/348-worktree", "exists": true, "clean": true, "branch": "codex/348-merge-blocked-phase2-reentry", "occupied_by": null},
+  "active_task": {"present": false, "task_id": null, "locator": null},
+  "blockers": {"provider": false, "permission": false, "ruleset": false, "external_service": false, "scope_drift": false, "identity_drift": false, "merged": false, "ambiguous": false}
+}

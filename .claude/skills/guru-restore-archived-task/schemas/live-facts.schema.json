@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-restore-archived-task-live-facts-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "pr", "issue", "remote_branch", "local_branch", "archive", "task", "runtime_mapping", "worktree", "active_task", "blockers"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "pr": {"$ref": "#/$defs/pr"},
+    "issue": {"type": "object", "additionalProperties": false, "required": ["number", "state", "close_intent"], "properties": {"number": {"type": "integer", "minimum": 1}, "state": {"enum": ["OPEN", "CLOSED"]}, "close_intent": {"const": "unchanged"}}},
+    "remote_branch": {"$ref": "#/$defs/branch"},
+    "local_branch": {"$ref": "#/$defs/branch"},
+    "archive": {"type": "object", "additionalProperties": false, "required": ["locator", "commit", "task_json_sha256", "finish_summary_sha256"], "properties": {"locator": {"type": "string", "minLength": 1}, "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "task_json_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "finish_summary_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}},
+    "task": {"type": "object", "additionalProperties": false, "required": ["id", "status", "branch", "base_branch", "repo_ref", "issue_number", "pr_number", "expected_head_sha"], "properties": {"id": {"type": "string", "minLength": 1}, "status": {"enum": ["completed", "in_progress"]}, "completed_at": {"type": ["string", "null"]}, "branch": {"type": "string", "minLength": 1}, "base_branch": {"type": "string", "minLength": 1}, "repo_ref": {"type": "string", "minLength": 1}, "issue_number": {"type": "integer", "minimum": 1}, "pr_number": {"type": "integer", "minimum": 1}, "expected_head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"}}},
+    "runtime_mapping": {"type": "object", "additionalProperties": false, "required": ["state", "task_id", "archive_locator", "active_locator", "repo_ref", "branch_name", "worktree_path"], "properties": {"state": {"enum": ["archived", "active"]}, "task_id": {"type": "string", "minLength": 1}, "archive_locator": {"type": "string", "minLength": 1}, "active_locator": {"type": "string", "minLength": 1}, "repo_ref": {"type": "string", "minLength": 1}, "branch_name": {"type": "string", "minLength": 1}, "worktree_path": {"type": "string", "minLength": 1}}},
+    "worktree": {"type": "object", "additionalProperties": false, "required": ["path", "exists", "clean", "branch", "occupied_by"], "properties": {"path": {"type": "string", "minLength": 1}, "exists": {"const": true}, "clean": {"type": "boolean"}, "branch": {"type": "string", "minLength": 1}, "occupied_by": {"type": ["string", "null"]}}},
+    "active_task": {"type": "object", "additionalProperties": false, "required": ["present", "task_id", "locator"], "properties": {"present": {"type": "boolean"}, "task_id": {"type": ["string", "null"]}, "locator": {"type": ["string", "null"]}}},
+    "blockers": {"type": "object", "additionalProperties": false, "required": ["provider", "permission", "ruleset", "external_service", "scope_drift", "identity_drift", "merged", "ambiguous"], "properties": {"provider": {"type": "boolean"}, "permission": {"type": "boolean"}, "ruleset": {"type": "boolean"}, "external_service": {"type": "boolean"}, "scope_drift": {"type": "boolean"}, "identity_drift": {"type": "boolean"}, "merged": {"type": "boolean"}, "ambiguous": {"type": "boolean"}}}
+  },
+  "$defs": {
+    "pr": {"type": "object", "additionalProperties": false, "required": ["state", "number", "url", "head_sha", "base_branch", "head_branch"], "properties": {"state": {"enum": ["OPEN", "MERGED", "CLOSED"]}, "number": {"type": "integer", "minimum": 1}, "url": {"type": "string", "minLength": 1}, "head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "base_branch": {"type": "string", "minLength": 1}, "head_branch": {"type": "string", "minLength": 1}}},
+    "branch": {"type": "object", "additionalProperties": false, "required": ["name", "head_sha"], "properties": {"name": {"type": "string", "minLength": 1}, "head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"}}}
+  }
+}

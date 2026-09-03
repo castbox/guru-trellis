@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "profile": "restore_archived_task",
+  "mode": "workflow",
+  "exit_id": "phase2_reentry_required",
+  "repo_ref": "castbox/guru-trellis",
+  "pr_number": 348,
+  "pr_url": "https://github.com/castbox/guru-trellis/pull/348",
+  "expected_head_sha": "1111111111111111111111111111111111111111",
+  "expected_base_branch": "main",
+  "expected_head_branch": "codex/348-merge-blocked-phase2-reentry",
+  "issue_number": 348,
+  "task_id": "09-03-348-merge-blocked-phase2-reentry",
+  "archive_locator": ".trellis/tasks/archive/2026-09/09-03-348-merge-blocked-phase2-reentry",
+  "active_locator": ".trellis/tasks/09-03-348-merge-blocked-phase2-reentry",
+  "archive_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "finding_refs": ["merge-finding:348:phase2-reentry"],
+  "resume_target": "phase-2"
+}

@@ -1,0 +1,38 @@
+{
+  "close_issues": [
+    {
+      "number": 348,
+      "reason": "本任务完整覆盖该 bug 的兼容恢复合同。",
+      "title": "[Workflow] 为 merge_blocked 增加已归档任务的受控 Phase 2 re-entry",
+      "url": "https://github.com/castbox/guru-trellis/issues/348"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 348,
+    "reason": "当前 merge_blocked 稳定图缺少归档任务回到 Phase 2 的受控恢复路径。",
+    "title": "[Workflow] 为 merge_blocked 增加已归档任务的受控 Phase 2 re-entry",
+    "url": "https://github.com/castbox/guru-trellis/issues/348"
+  },
+  "related_issues": [
+    {
+      "number": 223,
+      "reason": "保持 required-check blocker 语义，不吸收其目标态重构。",
+      "title": "required checks 与 Merge authority 相关边界",
+      "url": "https://github.com/castbox/guru-trellis/issues/223"
+    },
+    {
+      "number": 248,
+      "reason": "未来目标态相关，不是本次直接前置依赖。",
+      "title": "调整 official Finish 与最终交付顺序",
+      "url": "https://github.com/castbox/guru-trellis/issues/248"
+    },
+    {
+      "number": 261,
+      "reason": "未来目标态相关，不吸收其整体 cutover。",
+      "title": "重构 Publication、Delivery、Ready、Merge owner",
+      "url": "https://github.com/castbox/guru-trellis/issues/261"
+    }
+  ],
+  "schema_version": "2.0"
+}

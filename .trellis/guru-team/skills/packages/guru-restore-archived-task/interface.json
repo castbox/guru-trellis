@@ -1,0 +1,84 @@
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-restore-archived-task",
+  "name": "guru-restore-archived-task",
+  "description": "Restore one archived Trellis task to Phase 2 after a scoped merge blocker through fresh identity checks and an idempotent local transaction.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {"routing": "global_workflow", "entry_precondition_ids": ["runtime_dependency", "reentry_input", "live_pr", "archive_identity", "worktree_state", "active_task_exclusion", "invocation_freshness"]},
+    "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["runtime_dependency", "reentry_input", "live_pr", "archive_identity", "worktree_state", "active_task_exclusion", "invocation_freshness"]}
+  },
+  "entry_preconditions": [
+    {"id": "runtime_dependency", "evidence": "complete Guru Team runtime, dispatcher, package commands and schemas", "binding": "current compatible preset runtime", "freshness": "validated before each invocation"},
+    {"id": "reentry_input", "evidence": "one public archived-task identity and one AI-owned task-work semantic result", "binding": "profile, mode, repository, PR, task and exact finding refs", "freshness": "same invocation and no field drift"},
+    {"id": "live_pr", "evidence": "fresh PR, Issue, base branch, head branch and expected immutable head facts", "binding": "one open unmerged PR and unchanged closure intent", "freshness": "reread immediately before recovery"},
+    {"id": "archive_identity", "evidence": "archive locator, archive commit, task.json and finish-summary identity", "binding": "one canonical archived task", "freshness": "recomputed before every write"},
+    {"id": "worktree_state", "evidence": "existing mapped worktree path, branch and clean status", "binding": "original task worktree", "freshness": "checked from facts and local Git when available"},
+    {"id": "active_task_exclusion", "evidence": "no different active task or conflicting mapping owns the identity", "binding": "single task owner", "freshness": "checked before mutation"},
+    {"id": "invocation_freshness", "evidence": "current public input, semantic result and live-facts snapshot", "binding": "one recovery transaction", "freshness": "all bindings are checked together"}
+  ],
+  "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [
+    {"id": "public_input", "path": "examples/public-restore-input.json"},
+    {"id": "merge_reentry_authoring", "path": "examples/public-restore-authoring.json"},
+    {"id": "semantic_review", "path": "examples/public-semantic-review.json"},
+    {"id": "live_facts", "path": "examples/live-facts.json"},
+    {"id": "restored_output", "path": "examples/public-restored-output.json"},
+    {"id": "blocked_output", "path": "examples/public-blocked-output.json"},
+    {"id": "invocation_error", "path": "examples/public-invocation-error.json"}
+  ],
+  "schemas": [
+    {"id": "public_input", "path": "schemas/public-restore-input.schema.json"},
+    {"id": "aggregate_input", "path": "schemas/public-input.schema.json"},
+    {"id": "semantic_review", "path": "schemas/semantic-review-input.schema.json"},
+    {"id": "live_facts", "path": "schemas/live-facts.schema.json"},
+    {"id": "restored_output", "path": "schemas/public-restored-output.schema.json"},
+    {"id": "blocked_output", "path": "schemas/public-blocked-output.schema.json"},
+    {"id": "invocation_error", "path": "schemas/public-invocation-error.schema.json"},
+    {"id": "workflow_consumer", "path": "consumers/workflow/restored-to-phase2.schema.json"},
+    {"id": "stop_consumer", "path": "consumers/stop/restore-blocked.schema.json"}
+  ],
+  "validators": [
+    {"id": "restore_executor", "command": "scripts/restore-archived-task.sh", "runtime_command": "restore-archived-task", "objective_scope": "Validate fresh identity and execute one local archive-to-active recovery without creating GitHub or Git objects"}
+  ],
+  "external_exits": [
+    {"id": "restored_to_phase2", "evidence": "the exact archived task was restored or already restored, with active status, mapping and stale authority cleanup validated", "consumer": {"kind": "workflow", "id": "guru-resume-implementation"}},
+    {"id": "restore_blocked", "evidence": "one blocker, identity mismatch, dirty worktree, duplicate active task, merged PR, or ambiguous archive state prevented all business writes", "consumer": {"kind": "stop", "id": "task-pr-phase2-reentry-blocked"}}
+  ],
+  "reentry": {"identity": "repository, PR number, expected head, task id, archive/active locators, archive commit and exact finding refs", "freshness": "rebuild PR, Issue, branch, task, archive, finish-summary, mapping, worktree and active-task facts for every call", "stale_behavior": "fail_closed"},
+  "tests": ["tests/test_contract.py", "tests/test_runtime.py"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {"schema_id": "guru-restore-archived-task-input-aggregate-1.0", "path": "schemas/public-input.schema.json"},
+      "profiles": [{"id": "restore_archived_task", "schema": {"schema_id": "guru-restore-archived-task-input-restore-archived-task-1.0", "path": "schemas/public-restore-input.schema.json"}, "example": {"id": "restore_input", "path": "examples/public-restore-input.json"}, "discriminator": {"field": "profile", "value": "restore_archived_task"}}]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/restore-archived-task.sh",
+      "input_binding": {"kind": "structured_json", "profile_id": "restore_archived_task"},
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {"schema_id": "guru-restore-archived-task-invocation-error-1.0", "path": "schemas/public-invocation-error.schema.json"},
+      "error_example": {"id": "invalid_public_input", "path": "examples/public-invocation-error.json"},
+      "example_argv": ["--input", "examples/public-restore-input.json", "--semantic-result", "examples/public-semantic-review.json", "--facts", "examples/live-facts.json"]
+    },
+    "outputs": [
+      {"exit_id": "restored_to_phase2", "schema": {"schema_id": "guru-restore-archived-task-output-restored-to-phase2-1.0", "path": "schemas/public-restored-output.schema.json"}, "example": {"id": "restored_output", "path": "examples/public-restored-output.json"}, "consumer_use_ids": ["project_restored_to_phase2"]},
+      {"exit_id": "restore_blocked", "schema": {"schema_id": "guru-restore-archived-task-output-restore-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["project_restore_blocked"]}
+    ],
+    "consumer_inputs": [
+      {"id": "merge_phase2_reentry_input", "consumer": {"kind": "skill", "id": "guru-restore-archived-task"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-restore-archived-task/interface.json", "input_kind": "structured_json", "profile_id": "restore_archived_task", "seed_fields": ["exit_id", "repo_ref", "pr_number", "pr_url", "expected_head_sha", "expected_base_branch", "expected_head_branch", "issue_number", "task_id", "archive_locator", "active_locator", "archive_commit", "finding_refs", "resume_target"], "authoring_fields": ["schema_version", "profile", "mode"], "authoring_example": {"id": "merge_reentry_authoring", "path": "examples/public-restore-authoring.json"}}},
+      {"id": "phase2_reentry_input", "consumer": {"kind": "workflow", "id": "guru-resume-implementation"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-resume-implementation-input-1.0", "path": "consumers/workflow/restored-to-phase2.schema.json"}},
+      {"id": "restore_blocked_stop_input", "consumer": {"kind": "stop", "id": "task-pr-phase2-reentry-blocked"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "task-pr-phase2-reentry-blocked-input-1.0", "path": "consumers/stop/restore-blocked.schema.json"}}
+    ],
+    "projections": [
+      {"id": "project_restored_to_phase2", "exit_id": "restored_to_phase2", "consumer_input_id": "phase2_reentry_input", "operation": "direct"},
+      {"id": "project_restore_blocked", "exit_id": "restore_blocked", "consumer_input_id": "restore_blocked_stop_input", "operation": "direct"}
+    ],
+    "private_artifacts": []
+  }
+}
