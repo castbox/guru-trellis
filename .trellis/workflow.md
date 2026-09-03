@@ -326,9 +326,12 @@ semantics from their owning packages.
 
 ### Mandatory qualification profiles
 
-The workflow invokes the stable `guru-qualify-normal-scenario` id at these exact
-candidate boundaries. Each caller supplies only its profile-specific candidate
-set and live locators; the workflow consumes only the four declared exits.
+The workflow invokes both stable qualification owners at these exact candidate
+boundaries. `guru-qualify-normal-scenario` qualifies the problem scenario and
+`guru-qualify-solution-mechanism` qualifies the proposed mechanism; neither
+owner replaces the other. Each caller supplies only its profile-specific
+candidate set and live locators; the workflow consumes only the four declared
+exits from each owner.
 
 | Profile | Trigger before | Classified/mechanism return owner |
 | --- | --- | --- |
@@ -343,12 +346,22 @@ set and live locators; the workflow consumes only the four declared exits.
 | `branch_review_candidate_set` | Branch Review severity, finding, scope route, or blocker | `guru-review-branch` |
 | `publication_candidate_set` | Publication finding, task-work return, or blocker | `guru-review-task-publication` |
 
-`scope_confirmation_required` always invokes
-`guru-clarify-requirements:normal_scenario_scope_confirmation`. That target-owned
-profile returns a real authority choice to the closed original owner; a changed
-authority or candidate set starts fresh qualification. Already rejected
-candidates never enter clarification. Unknown, empty, multiple, mismatched, or
-unmapped results stop at `normal-scenario-qualification-blocked`.
+For every row above, the caller invokes `guru-qualify-solution-mechanism` with
+the same profile before promoting a proposed mechanism into that stage's
+acceptance, test, finding, implementation, or publication judgment. A forbidden
+OS/kernel/process/descriptor mechanism returns `mechanism_revision_required`
+and never enters scope confirmation.
+
+`guru-qualify-normal-scenario:scope_confirmation_required` invokes
+`guru-clarify-requirements:normal_scenario_scope_confirmation`, while
+`guru-qualify-solution-mechanism:scope_confirmation_required` invokes
+`guru-clarify-requirements:solution_mechanism_scope_confirmation`. Each
+target-owned profile returns a real authority choice to the closed original
+owner; a changed authority or candidate set starts fresh qualification. Already
+rejected candidates never enter clarification. Unknown, empty, multiple,
+mismatched, or unmapped normal-scenario results stop at
+`normal-scenario-qualification-blocked`; the corresponding solution-mechanism
+results stop at `solution-mechanism-qualification-blocked`.
 For `implementation_discovery`, the semantic owner remains
 `guru-phase2-implementation-coordinator`; its deterministic clarification resume
 target is the existing `guru-resume-implementation` workflow API.
@@ -548,7 +561,9 @@ If implementation discovery produces any candidate not already closed by the
 approved planning, invoke
 `guru-qualify-normal-scenario:implementation_discovery` before adding an edit,
 test, finding, or route for that candidate. Rejected candidates are dropped;
-mechanism revision returns here for remove/replace and a fresh invocation;
+then invoke `guru-qualify-solution-mechanism:implementation_discovery` before
+accepting a proposed implementation mechanism. Mechanism revision returns
+here for remove/replace and a fresh invocation;
 blocked stops. The coordinator consumes the result in-process and writes no
 qualification artifact or checkpoint.
 

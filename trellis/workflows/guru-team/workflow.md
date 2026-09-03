@@ -352,12 +352,16 @@ acceptance, test, finding, implementation, or publication judgment. A forbidden
 OS/kernel/process/descriptor mechanism returns `mechanism_revision_required`
 and never enters scope confirmation.
 
-`scope_confirmation_required` always invokes
-`guru-clarify-requirements:normal_scenario_scope_confirmation`. That target-owned
-profile returns a real authority choice to the closed original owner; a changed
-authority or candidate set starts fresh qualification. Already rejected
-candidates never enter clarification. Unknown, empty, multiple, mismatched, or
-unmapped results stop at `normal-scenario-qualification-blocked`.
+`guru-qualify-normal-scenario:scope_confirmation_required` invokes
+`guru-clarify-requirements:normal_scenario_scope_confirmation`, while
+`guru-qualify-solution-mechanism:scope_confirmation_required` invokes
+`guru-clarify-requirements:solution_mechanism_scope_confirmation`. Each
+target-owned profile returns a real authority choice to the closed original
+owner; a changed authority or candidate set starts fresh qualification. Already
+rejected candidates never enter clarification. Unknown, empty, multiple,
+mismatched, or unmapped normal-scenario results stop at
+`normal-scenario-qualification-blocked`; the corresponding solution-mechanism
+results stop at `solution-mechanism-qualification-blocked`.
 For `implementation_discovery`, the semantic owner remains
 `guru-phase2-implementation-coordinator`; its deterministic clarification resume
 target is the existing `guru-resume-implementation` workflow API.
