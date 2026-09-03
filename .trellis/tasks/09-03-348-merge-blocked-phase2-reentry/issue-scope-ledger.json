@@ -10,7 +10,7 @@
   "followup_issues": [],
   "primary_issue": {
     "number": 348,
-    "reason": "当前 merge_blocked 稳定图缺少归档任务回到 Phase 2 的受控恢复路径。",
+    "reason": "本任务完整覆盖该 bug 的兼容恢复合同。",
     "title": "[Workflow] 为 merge_blocked 增加已归档任务的受控 Phase 2 re-entry",
     "url": "https://github.com/castbox/guru-trellis/issues/348"
   },
