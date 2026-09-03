@@ -1,0 +1,38 @@
+{
+  "close_issues": [
+    {
+      "number": 347,
+      "reason": "Primary independently deliverable Finalizer recovery correctness fix.",
+      "title": "Finalizer 无法恢复 base evolution 后带合法 provenance tail 的既有 PR transaction",
+      "url": "https://github.com/castbox/guru-trellis/issues/347"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 347,
+    "reason": "Primary independently deliverable Finalizer recovery correctness fix.",
+    "title": "Finalizer 无法恢复 base evolution 后带合法 provenance tail 的既有 PR transaction",
+    "url": "https://github.com/castbox/guru-trellis/issues/347"
+  },
+  "related_issues": [
+    {
+      "number": 333,
+      "reason": "Real reproduction source only; its implementation and owner-private transaction are excluded.",
+      "title": "[Bug] Make guru-create-task-workspace Issue creation recoverable and idempotent",
+      "url": "https://github.com/castbox/guru-trellis/issues/333"
+    },
+    {
+      "number": 342,
+      "reason": "Defines the strict legal provenance-tail validation contract to preserve.",
+      "title": "修复 Finalizer provenance metadata tail 演进后未绑定 transaction 无法恢复既有 PR",
+      "url": "https://github.com/castbox/guru-trellis/issues/342"
+    },
+    {
+      "number": 344,
+      "reason": "Defines the exact base-evolution recovery contract to compose and preserve.",
+      "title": "Finalizer 无法恢复经过 base evolution 的既有任务 PR transaction",
+      "url": "https://github.com/castbox/guru-trellis/issues/344"
+    }
+  ],
+  "schema_version": "2.0"
+}

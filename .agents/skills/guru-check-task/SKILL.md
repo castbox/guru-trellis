@@ -13,6 +13,12 @@ Before searching Docs, code, tests, fixtures, consumers, or history, read
 nine-dimension semantic round. A negative coverage conclusion cannot rest on a
 single-language zero result, and the search process is not gate artifact data.
 
+Before a proposed implementation mechanism participates in Phase 2 severity,
+findings, tests, implementation routing, or planning-stale judgment, invoke
+`guru-qualify-solution-mechanism` with `phase2_candidate_set`. A
+`mechanism_revision_required` result removes or replaces only that mechanism
+and returns here for fresh qualification; it never enters scope confirmation.
+
 Read the approved planning, live diff and dirty paths, implementation, tests,
 Docs SSOT, issue scope, and applicable repository validation directly. Classify
 every candidate through `guru-qualify-normal-scenario:phase2_candidate_set`

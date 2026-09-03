@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"验证新 Skill 的 Interface、typed exit、consumer 与 private artifact 合同。"}
+{"file":".trellis/spec/preset/installer.md","reason":"验证 source/installed/reapply/manifest 闭合。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"验证 canonical/dogfood/平台入口和 sidecar/drift。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"验证本 Issue 的 targeted validation scope。"}

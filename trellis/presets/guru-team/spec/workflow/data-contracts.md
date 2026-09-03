@@ -462,9 +462,9 @@ contracts, and package-local corpora. Nineteen integrated rows select Interface
 1.4; normal-scenario qualification selects Interface 1.6; the standalone
 verifier selects Interface 1.5. Exact profile, exit,
 consumer, projection, current-case, and authoring-edge equality is required.
-Twenty-one Skills and 89 exits are the current package cardinality regression, not
+Twenty-two Skills and 91 exits are the current package cardinality regression, not
 a hard-coded future registry allowlist; the business workflow independently
-asserts 20 invokes, 87 exits, 33 workflow targets, and 21 stop targets.
+asserts 21 invokes, 91 exits, 35 workflow targets, and 22 stop targets.
 
 The production manifest also binds the exact four
 `skill_input_authoring_seed` edges. Each binding names the target Interface and
@@ -1400,6 +1400,16 @@ replacement is written once as current-plan
 `pre_push_remote_head` and `adopted_pr`, before the exact new Publication HEAD
 is pushed once. Non-provenance plan drift and the existing equal-HEAD
 `push_required=false` conversion retain their prior contracts.
+
+The same schema and transaction route support one composed descendant: legal
+base evolution followed by one direct-child provenance metadata tail. The
+current tail is accepted only by `provenance_tail_commit_errors()` against its
+Git-derived direct parent; the existing base-evolution ancestry and exact
+binary-delta comparison then treats that validated parent as the current
+endpoint. Pure base evolution still compares through the current Publication
+HEAD, and direct-tail recovery keeps its existing path. No manifest-path diff
+filter, parallel drift authority, arbitrary tail sequence, field, stage, or
+public projection is added.
 
 After the exact recovery transaction binds its PR and advances to `archive`,
 `push_archive`, or `mark_ready`, it is the current stage authority. Preview

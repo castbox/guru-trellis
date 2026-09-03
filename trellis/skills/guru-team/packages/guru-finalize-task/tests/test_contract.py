@@ -2681,6 +2681,14 @@ class FinalizeTaskContractTests(unittest.TestCase):
             predecessor_transaction_rebind=True,
         )
 
+    def test_base_evolution_provenance_tail_rebind_executes_exactly_once(self) -> None:
+        self._assert_existing_pr_recovery_real_topology(
+            initial_is_draft=False,
+            metadata_variant="trailing_lf",
+            predecessor_transaction_rebind=True,
+            predecessor_transaction_base_evolution=True,
+        )
+
     def test_happy_path_adopts_unbound_equal_head_without_republishing(self) -> None:
         for metadata_variant in ("equal", "trailing_lf"):
             with self.subTest(metadata_variant=metadata_variant):
@@ -2701,6 +2709,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
         interrupt_archive: bool = True,
         through_happy_path_facade: bool = False,
         predecessor_transaction_rebind: bool = False,
+        predecessor_transaction_base_evolution: bool = False,
     ) -> None:
         self.assertIn(recovery_ancestry, {"strict_ancestor", "equal"})
         self.assertIn(metadata_variant, {"different", "trailing_lf", "equal"})
@@ -2709,6 +2718,8 @@ class FinalizeTaskContractTests(unittest.TestCase):
             self.assertFalse(interrupt_archive)
         if predecessor_transaction_rebind:
             self.assertEqual(recovery_ancestry, "strict_ancestor")
+        if predecessor_transaction_base_evolution:
+            self.assertTrue(predecessor_transaction_rebind)
         with tempfile.TemporaryDirectory() as temporary:
             temporary_root = Path(temporary)
             root = temporary_root / "repo"
@@ -2853,6 +2864,26 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     ],
                     cwd=root,
                 )
+                if predecessor_transaction_base_evolution:
+                    GTT.run_stdout(["git", "branch", "main", old_head], cwd=root)
+                    GTT.run_stdout(["git", "switch", "-q", "main"], cwd=root)
+                    for index in (1, 2):
+                        base_path = root / f"base-{index}.txt"
+                        base_path.write_text(f"base {index}\n", encoding="utf-8")
+                        GTT.run_stdout(
+                            ["git", "add", base_path.name],
+                            cwd=root,
+                        )
+                        GTT.run_stdout(
+                            ["git", "commit", "-q", "-m", f"base {index}"],
+                            cwd=root,
+                        )
+                    GTT.run_stdout(["git", "switch", "-q", "feat/208"], cwd=root)
+                    GTT.run_stdout(
+                        ["git", "merge", "--no-ff", "-q", "main", "-m", "merge base"],
+                        cwd=root,
+                    )
+                tail_parent = GTT.current_head(root)
                 parent_manifest = json.loads(
                     extension_manifest.read_text(encoding="utf-8")
                 )
@@ -2862,8 +2893,8 @@ class FinalizeTaskContractTests(unittest.TestCase):
                             parent_manifest,
                             {
                                 "source_locator": "https://github.com/castbox/guru-trellis.git",
-                                "source_ref": recovery_remote_head,
-                                "source_commit": recovery_remote_head,
+                                "source_ref": tail_parent,
+                                "source_commit": tail_parent,
                             },
                         ),
                         indent=2,
@@ -2878,6 +2909,16 @@ class FinalizeTaskContractTests(unittest.TestCase):
             publication_head = GTT.current_head(root)
             self.assertTrue(GTT.is_ancestor(root, old_head, publication_head))
             self.assertNotEqual(old_head, publication_head)
+            if predecessor_transaction_base_evolution:
+                self.assertEqual(
+                    GTT.provenance_tail_commit_errors(
+                        root,
+                        tail_parent,
+                        publication_head,
+                        target_repo="castbox/guru-trellis",
+                    ),
+                    [],
+                )
             historical_plan.unlink()
             if recovery_ancestry == "equal":
                 GTT.run_stdout(
@@ -3213,14 +3254,31 @@ class FinalizeTaskContractTests(unittest.TestCase):
                         transaction_plan["git"]["publication_head"] = (
                             recovery_remote_head
                         )
+                    predecessor_transaction = GTT.finalization_transaction_from_plan(
+                        transaction_plan,
+                        next_transition="push_content",
+                        pre_push_remote_head=old_head,
+                    )
+                    if predecessor_transaction_base_evolution:
+                        self.assertFalse(
+                            GTT.provenance_tail_transaction_rebind_is_base_evolution(
+                                root,
+                                plan,
+                                predecessor_transaction,
+                            )
+                        )
+                        self.assertEqual(
+                            GTT.provenance_tail_transaction_rebind_base_evolution_tail_parent(
+                                root,
+                                plan,
+                                predecessor_transaction,
+                            ),
+                            tail_parent,
+                        )
                     GTT.finalization_write_transaction(
                         root,
                         active_task,
-                        GTT.finalization_transaction_from_plan(
-                            transaction_plan,
-                            next_transition="push_content",
-                            pre_push_remote_head=old_head,
-                        ),
+                        predecessor_transaction,
                     )
                 preview = GTT.cmd_preview_finalization(args)
                 self.assertFalse(preview["side_effects"])
@@ -4774,6 +4832,161 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 drift_error.exception.payload["reason_code"],
                 "provenance_tail_transaction_rebind_invalid",
             )
+
+    def test_base_evolution_provenance_tail_rejects_invalid_real_topologies(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for command in (
+                ["git", "init", "-q", "-b", "main"],
+                ["git", "config", "user.name", "Guru Test"],
+                ["git", "config", "user.email", "guru@example.invalid"],
+            ):
+                GTT.run_stdout(command, cwd=root)
+            manifest_path = root / GTT.PROVENANCE_TAIL_MANIFEST_PATH
+            manifest_path.parent.mkdir(parents=True)
+            manifest_path.write_text(
+                json.dumps(
+                    provenance_manifest(
+                        "castbox/guru-trellis",
+                        "c" * 40,
+                        tree_state="dirty",
+                        is_mutable_ref=True,
+                    ),
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (root / "base.txt").write_text("base\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "."], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "base"], cwd=root)
+            GTT.run_stdout(["git", "switch", "-q", "-c", "fix/347"], cwd=root)
+            (root / "publication.txt").write_text("published\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "publication.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "publication"], cwd=root)
+            old_head = GTT.current_head(root)
+            GTT.run_stdout(["git", "switch", "-q", "main"], cwd=root)
+            for index in (1, 2):
+                path = root / f"base-{index}.txt"
+                path.write_text(f"base {index}\n", encoding="utf-8")
+                GTT.run_stdout(["git", "add", path.name], cwd=root)
+                GTT.run_stdout(
+                    ["git", "commit", "-q", "-m", f"base {index}"], cwd=root
+                )
+            GTT.run_stdout(["git", "switch", "-q", "fix/347"], cwd=root)
+            GTT.run_stdout(
+                ["git", "merge", "--no-ff", "-q", "main", "-m", "merge base"],
+                cwd=root,
+            )
+            merge_head = GTT.current_head(root)
+            plan = {
+                "task": {"active_locator": ".trellis/tasks/347"},
+                "git": {
+                    "repo": "castbox/guru-trellis",
+                    "remote": "origin",
+                    "head_branch": "fix/347",
+                    "base_branch": "main",
+                    "branch_review_commit": merge_head,
+                    "publication_head": merge_head,
+                },
+                "review": {"close_issues_reviewed": [347]},
+                "publish": {"title": "current", "body": "Closes #347"},
+            }
+            transaction = {
+                "mode": "ordinary_publication",
+                "next_transition": "push_content",
+                "pr": None,
+                "adopted_pr": None,
+                "task_ref": ".trellis/tasks/347",
+                "repo_ref": "castbox/guru-trellis",
+                "base_branch": "main",
+                "branch": "fix/347",
+                "publication": {"title": "current", "body": "Closes #347"},
+                "close_issues": [347],
+                "branch_review_commit": old_head,
+                "publication_head": old_head,
+            }
+
+            def reset_to(commit: str) -> None:
+                GTT.run_stdout(["git", "reset", "--hard", "-q", commit], cwd=root)
+                GTT.run_stdout(["git", "clean", "-fd", "-q"], cwd=root)
+
+            def commit_tail(
+                parent: str,
+                message: str,
+                *,
+                invalid_field: bool = False,
+                extra_path: bool = False,
+            ) -> str:
+                before = json.loads(manifest_path.read_text(encoding="utf-8"))
+                after = GTT.provenance_tail_manifest_postimage(
+                    before,
+                    {
+                        "source_locator": "https://github.com/castbox/guru-trellis.git",
+                        "source_ref": parent,
+                        "source_commit": parent,
+                    },
+                )
+                if invalid_field:
+                    after["unexpected"] = True
+                manifest_path.write_text(
+                    json.dumps(after, indent=2) + "\n", encoding="utf-8"
+                )
+                GTT.run_stdout(["git", "add", GTT.PROVENANCE_TAIL_MANIFEST_PATH], cwd=root)
+                if extra_path:
+                    (root / "extra.txt").write_text("extra\n", encoding="utf-8")
+                    GTT.run_stdout(["git", "add", "extra.txt"], cwd=root)
+                GTT.run_stdout(["git", "commit", "-q", "-m", message], cwd=root)
+                return GTT.current_head(root)
+
+            def assert_blocked(publication_head: str) -> None:
+                current_plan = copy.deepcopy(plan)
+                current_plan["git"]["branch_review_commit"] = publication_head
+                current_plan["git"]["publication_head"] = publication_head
+                with (
+                    mock.patch.object(GTT, "resolve_closeout_pull_request") as resolve_pr,
+                    self.assertRaises(GTT.WorkflowError) as raised,
+                ):
+                    GTT.classify_provenance_tail_transaction_rebind(
+                        root, current_plan, transaction
+                    )
+                self.assertEqual(
+                    raised.exception.payload["reason_code"],
+                    "provenance_tail_transaction_rebind_invalid",
+                )
+                resolve_pr.assert_not_called()
+
+            reset_to(merge_head)
+            assert_blocked(
+                commit_tail(merge_head, "invalid manifest tail", invalid_field=True)
+            )
+
+            reset_to(merge_head)
+            assert_blocked(
+                commit_tail(merge_head, "tail with extra path", extra_path=True)
+            )
+
+            reset_to(merge_head)
+            first_tail = commit_tail(merge_head, "first legal tail")
+            second_tail = commit_tail(first_tail, "second legal tail")
+            assert_blocked(second_tail)
+
+            reset_to(merge_head)
+            (root / "business-drift.txt").write_text("drift\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "business-drift.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "business drift"], cwd=root)
+            business_head = GTT.current_head(root)
+            assert_blocked(commit_tail(business_head, "tail after business drift"))
+
+            reset_to(merge_head)
+            GTT.run_stdout(["git", "switch", "-q", "-c", "tail-side"], cwd=root)
+            commit_tail(merge_head, "side provenance tail")
+            GTT.run_stdout(["git", "switch", "-q", "fix/347"], cwd=root)
+            GTT.run_stdout(
+                ["git", "merge", "--no-ff", "-q", "tail-side", "-m", "merge tail"],
+                cwd=root,
+            )
+            assert_blocked(GTT.current_head(root))
 
     def test_unbound_equal_head_conversion_preserves_plan_identity(self) -> None:
         head = "b" * 40

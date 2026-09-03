@@ -13,8 +13,8 @@ fallback. Local Git and Git transport remain `git` operations.
 本目录维护 Guru 团队可复用的 Trellis workflow。
 
 这个 workflow 的 marketplace id 固定为通用的 `guru-team`。它只承载 global
-phase/status route、20 个 mandatory Skill invocation、87 个 typed exit、33 个 workflow
-target 与 21 个 stop target，以及 workspace、Docs SSOT、Issue Scope Ledger、human artifact、
+phase/status route、21 个 mandatory Skill invocation、91 个 typed exit、35 个 workflow
+target 与 22 个 stop target，以及 workspace、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 和外部 side-effect boundary。具体 intake、planning、check、review、
 publication 与 finalization 判断由对应 active package 独占。
 
@@ -74,8 +74,8 @@ Workflow marketplace 只安装 global .trellis/workflow.md；完整 Guru Team ex
 installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed projection，
 不能反向成为语义来源。
 
-当前 registry 激活 21 Skills / 89 package exits；其中业务 global workflow closure
-为 20 个 invokes / 87 个 exits / 54 个 total targets。下列 20 个业务 active ids 参与
+当前 registry 激活 22 Skills / 93 package exits；其中业务 global workflow closure
+为 21 个 invokes / 91 个 exits / 57 个 total targets。下列 21 个业务 active ids 参与
 global workflow：
 
 - guru-bootstrap-repository-ssot
@@ -84,6 +84,7 @@ global workflow：
 - guru-select-workflow-mode
 - guru-execute-task-free-change
 - guru-qualify-normal-scenario
+- guru-qualify-solution-mechanism
 - guru-sync-base
 - guru-discover-change-context
 - guru-clarify-requirements
@@ -189,8 +190,8 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 当前 release-facing source 的 canonical extension version 为 `0.6.15-guru.39`，目标
 release tag 为 `v0.6.15-guru.3`；二者的发布事实仍由 #267 successor Release gates 建立。
 Source/installed package validation 必须同时验证
-registry、20 invokes / 87 exits / 54 combined targets（33 workflow + 21 stop）
-business marker graph、21-package/89-exit closure、consumer
+registry、21 invokes / 91 exits / 57 combined targets（35 workflow + 22 stop）
+business marker graph、22-package/93-exit closure、consumer
 uniqueness、projection、selected-platform
 byte identity 和 executable mode。
 
@@ -198,8 +199,8 @@ byte identity 和 executable mode。
 
 Canonical workflow 是 trellis/workflows/guru-team/workflow.md；dogfood
 .trellis/workflow.md 必须 byte-identical。Global Markdown 只拥有 phase order、
-current-task router、20 mandatory Skill markers、87 exits、33 workflow targets、
-21 stop targets、
+current-task router、21 mandatory Skill markers、91 exits、35 workflow targets、
+22 stop targets、
 workspace/task activation、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 与外部 side-effect boundary。Step-local 合同只存在于对应 active
 package/interface。
@@ -277,6 +278,32 @@ README 与 release-facing text 均不得声称 pressure matrix 或模型稳定�
 
 本发布未取得 live GPT-5.6 Sol production semantic evidence；deterministic/no-model/
 fake-production 结果不能证明 pressure matrix、模型稳定性或未来模型行为。
+
+## Solution Mechanism Qualification
+
+Public closed-loop Skill `guru-qualify-solution-mechanism` 是拟议解决机制资格的唯一语义
+Owner，与 `guru-qualify-normal-scenario` 分离：前者只判断机制是否能够承接业务 authority，后者只判断问题场景是否具备资格。Global workflow 在与场景资格相同的十个 profile
+边界 mandatory invoke 该 Skill：
+`task_free_pre_write|task_free_evolution|requirements_scope_set|change_request_candidate_set|planning_scenario_set|implementation_discovery|base_impact_candidate_set|phase2_candidate_set|branch_review_candidate_set|publication_candidate_set`。
+
+该 package 的四个 typed exits 及唯一 consumer 为：
+
+- `classified` -> `guru-solution-mechanism-classified-router` -> 原 profile Owner；
+- `scope_confirmation_required` -> `guru-clarify-requirements:solution_mechanism_scope_confirmation`；
+- `mechanism_revision_required` -> `guru-solution-mechanism-mechanism-router` -> 原 Owner remove/replace 后 fresh rerun；
+- `blocked` -> `solution-mechanism-qualification-blocked`。
+
+调用方只提供当前 profile 的 candidate set、固定 caller/target identity 和 live locators；Skill
+直接读取 requirement、planning、architecture/spec、dependency/caller graph、diff、tests
+与 repository contract，完成 semantic review 后通过 `invoke-guru-qualify-solution-mechanism`
+输出单一 typed exit。`record-solution-mechanism-qualification` 与
+`check-solution-mechanism-qualification` 只校验 shape、identity、freshness、candidate 覆盖和
+consumer binding，不判断机制语义。结果保持 invocation-local，不创建 qualification report、
+ledger、handoff、checkpoint 或其他持久化资格 artifact。
+
+OS/kernel/process/descriptor primitive 不得承接业务 authority；命中此类机制只能返回
+`mechanism_revision_required`，不能降级为 scope confirmation。普通文件和目录仅用于普通
+state、artifact、日志、cache、配置或 durable record 保存与读取时保持允许。
 
 ## Phase 0 Public Transition And Invocation
 
@@ -1091,12 +1118,12 @@ label、exit code 与 bounded credential-safe tail；无法解析时显式记录
 ## Skill 行为评测
 
 安装完整 Guru Team preset 后，可用 `discover-skill-evals` 发现 current Interface
-1.4/1.5 package 的 `evals/evals.json`，并用 `run-skill-evals` 经
+1.4/1.5/1.6 package 的 `evals/evals.json`，并用 `run-skill-evals` 经
 `shared|codex|claude|cursor` adapter 实际执行 public wrapper。Schema id 是
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的二十一个 packages 已维护 canonical corpora 并覆盖全部 89 package exits/profile；六个 Intake
+中的二十二个 packages 已维护 canonical corpora 并覆盖全部 93 package exits/profile；六个 Intake
 packages 的 23-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台

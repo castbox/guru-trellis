@@ -1676,6 +1676,15 @@ absent from the predecessor Publication HEAD and present in the current
 Publication HEAD. Business-content, identity, scope, PR, remote, metadata, and
 transaction drift continues to fail closed.
 
+When one valid provenance metadata tail follows that legal base evolution, the
+runtime first validates the entire current tail against its direct parent with
+`provenance_tail_commit_errors()`. It then runs the same base-evolution
+ancestry and exact binary-delta comparison using that parent as the endpoint.
+Only provenance-shape inapplicability enters this composition; tail, business,
+identity, scope, PR, remote, metadata, or transaction failure remains blocking.
+The resulting preview and execution reuse the existing strict-ancestor recovery
+and transaction-before-push sequence without a new classifier authority.
+
 Before an ordinary pre-PR metadata-tail reprepare, the executor creates a
 detached target checkout at the business `reviewed_content_head`, reads that
 commit's installed manifest, and resolves a separate clean detached extension

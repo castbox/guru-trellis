@@ -202,8 +202,8 @@ edges, private artifact ids, examples, the 160-case/5-invocation production
 control, and eval case bindings. Versioned v2/v3 files are immutable legacy
 assets and are not alternate current selectors, input projectors, or fixtures.
 Then validate the current package closure
-at twenty-one active Skills and 89 external exits, while the integrated business
-workflow projection is 20 invokes, 87 exits, 33 workflow targets, and 21 stop targets. Negative tests cover missing, extra,
+at twenty-two active Skills and 93 external exits, while the integrated business
+workflow projection is 21 invokes, 91 exits, 35 workflow targets, and 22 stop targets. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or non-current entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Intake/production
@@ -774,9 +774,9 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  twenty-one-Skill/89-exit current package closure while the production activation
+  twenty-two-Skill/91-exit current package closure while the production activation
   unit remains three Skills/11 exits and business markers remain integrated at
-  20 invokes, 87 exits, 33 workflow targets, and 21 stop targets. Update and preset reapply must reproduce
+  21 invokes, 91 exits, 35 workflow targets, and 22 stop targets. Update and preset reapply must reproduce
   that closure with zero unresolved `.new` or `.bak`.
 
 ## Normal Scenario Qualification Quality
@@ -922,6 +922,18 @@ drift, multiple/terminal/fork PRs, stale plan/gate/Publication, archive state,
 binding conflicts and unknown transaction stages. Existing equal-HEAD tests
 must continue to prove exact equality and `push_required=false` without using
 the rebind path.
+
+Composed base-evolution/provenance-tail coverage uses a real Git topology with
+the predecessor Publication, multiple new base commits or a merge, and one
+final direct-child manifest-only tail. Tests independently prove the tail
+validator accepts the final commit, the pure base-evolution comparison rejects
+the unstripped endpoint, and the composed classifier accepts only the validated
+tail parent. Compatibility cases keep the direct-tail and pure-base-evolution
+routes passing. Negative cases cover an extra changed path, invalid manifest
+transition, merge or chained tail, post-base business delta, and existing
+identity/scope/PR/transaction drift. Execution retains one current Publication
+push, zero PR creation, transaction-before-mutation ordering, and zero duplicate
+mutation on same-plan retry.
 Finish-family integration additionally proves current finish-summary schema 2
 is derived once from the reviewed payload and live facts, historical schema 1
 remains discoverable, and the current runtime/inventories contain no retired
@@ -932,10 +944,10 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert twenty-one active Skills and 89
+Source/installed/platform/throwaway checks assert twenty-two active Skills and 93
 package exits, exactly one selected `production-current-v4`
 four-Skill/15-exit current manifest, and business workflow markers of 20
-invokes, 87 exits, 33 workflow targets, and 21 stop targets.
+invokes, 91 exits, 35 workflow targets, and 22 stop targets.
 
 ## Extension Installation Verification Quality
 
@@ -1043,8 +1055,8 @@ verifier hop and scans terminal task/runtime state for verifier residue.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes match after fresh install, update, and preset reapply. Package
-closure is twenty-one active Skills and 89 exits; business global markers remain 20
-invokes, 87 exits, 33 workflow targets, and 21 stop targets. Upstream Finish
+closure is twenty-two active Skills and 91 exits; business global markers remain 21
+invokes, 91 exits, 35 workflow targets, and 22 stop targets. Upstream Finish
 assets remain unchanged.
 
 Installed package tests must execute in a clean business repository that does

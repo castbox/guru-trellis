@@ -13,6 +13,9 @@
     },
     {
       "$ref": "public-normal-scenario-scope-confirmation-input.schema.json"
+    },
+    {
+      "$ref": "public-solution-mechanism-scope-confirmation-input.schema.json"
     }
   ]
 }

@@ -24,6 +24,12 @@ authority choice before returning to the declared original owner. It does not
 repeat or reinterpret qualification and accepts no decision, reason, severity,
 authorization, result locator, or qualification artifact.
 
+Before a proposed clarification mechanism can affect scope, questions, or an
+authority action, invoke `guru-qualify-solution-mechanism` with the same
+profile. A `mechanism_revision_required` result removes or replaces only that
+mechanism and returns here for fresh qualification; it is not a scope
+confirmation route.
+
 Before answering repository-searchable questions or evaluating duplicate and
 prior-decision evidence, read `.trellis/spec/workflow/semantic-retrieval.md` and
 apply it in this Skill's semantic gate. Do not infer absence from a
