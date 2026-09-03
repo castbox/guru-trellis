@@ -43,7 +43,12 @@ FINISH_EXITS = {
         "ready_for_merge",
         "blocked",
     },
-    "guru-merge-task-pr": {"merged", "merge_blocked", "closure_mismatch"},
+    "guru-merge-task-pr": {
+        "merged",
+        "phase2_reentry_required",
+        "merge_blocked",
+        "closure_mismatch",
+    },
 }
 EXPECTED_CONSUMERS = {
     ("guru-review-task-publication", "ready"): ("skill", "guru-finalize-task"),
@@ -91,6 +96,10 @@ EXPECTED_CONSUMERS = {
         "workflow",
         "guru-finalization-finish-response",
     ),
+    ("guru-merge-task-pr", "phase2_reentry_required"): (
+        "skill",
+        "guru-restore-archived-task",
+    ),
     ("guru-merge-task-pr", "merge_blocked"): (
         "stop",
         "task-pr-merge-blocked",
@@ -108,6 +117,9 @@ ROUTE_GROUPS = {
     ],
     "return_to_work": [
         ("guru-review-task-publication", "return_to_task_work"),
+    ],
+    "phase2_reentry": [
+        ("guru-merge-task-pr", "phase2_reentry_required"),
     ],
     "publication_refresh": [
         ("guru-finalize-task", "publication_review_stale"),
@@ -180,7 +192,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 expected_exits,
             )
 
-    def test_workflow_keeps_registry_derived_projection_and_six_route_groups(self) -> None:
+    def test_workflow_keeps_registry_derived_projection_and_seven_route_groups(self) -> None:
         invokes = markers("skill-invoke")
         exits = markers("skill-exit")
         registry = read_json(SKILLS_ROOT / "registry.json")

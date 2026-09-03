@@ -22,7 +22,13 @@ merge commit SHA, parents exactly `[pre-merge base head, expected head]`, exact
 reviewed subject/body, remote base at the merge SHA, and every
 close Issue `CLOSED`/`COMPLETED`, and `closed_at >= merged_at`.
 `closure_mismatch` reports exact mismatches without closing anything.
-`merge_blocked` represents a pre-merge gate failure and performs no mutation.
+`phase2_reentry_required` represents one AI-reviewed current-scope task-work
+finding that requires changing the archived task content. It carries only the
+exact PR/task/archive/finding identity required by
+`guru-restore-archived-task`, performs no remote mutation, and does not require
+merge confirmation. Provider, permission, ruleset, required-check,
+mergeability, and other external blockers remain `merge_blocked`, which also
+performs no mutation.
 
 ## Recommended Happy Path Facade
 
@@ -44,8 +50,8 @@ in-memory gate from the live merge commit's two parents, validates the reviewed
 message and terminal facts, and returns without writing private state or
 repeating the mutation. An unmerged state continues only when the same retained
 gate/input/base/head facts remain current. A persisted terminal output is
-similarly revalidated once, projected, and cleaned. After any terminal DTO is
-selected, the facade performs only local terminal cleanup and returns; it does
+similarly revalidated once, projected, and cleaned. After any terminal or
+re-entry DTO is selected, the facade performs only local gate/body cleanup and returns; it does
 not start CI polling or any other Git, GitHub, Trellis, workflow, Issue,
 base-sync, or cleanup operation.
 

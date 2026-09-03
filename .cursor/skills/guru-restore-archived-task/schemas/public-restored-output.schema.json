@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-restore-archived-task-output-restored-to-phase2-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "task_ref", "resume_target"],
+  "properties": {
+    "exit_id": {"const": "restored_to_phase2"},
+    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "resume_target": {"const": "phase-2"}
+  }
+}

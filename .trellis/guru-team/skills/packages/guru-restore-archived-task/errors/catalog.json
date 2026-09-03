@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-restore-archived-task",
+  "errors": [
+    {"code": "invalid_arguments", "trigger": "Declared CLI arguments are missing, repeated, conflicting, or unsupported.", "exit_status": 2, "locator": "field_path", "remediation": "Use the exact command help contract."},
+    {"code": "conflicting_arguments", "trigger": "A non-repeatable flag is repeated or a declared conflict set is present.", "exit_status": 2, "locator": "field_path", "remediation": "Use each scalar flag at most once and remove conflicting flags."},
+    {"code": "schema_mismatch", "trigger": "The input, semantic result, facts, or output violates its closed schema.", "exit_status": 2, "locator": "field_path", "remediation": "Repair the value to match the package contract and rerun from fresh facts."},
+    {"code": "restore_precondition_failed", "trigger": "A required repository, artifact, worktree, or recovery precondition is unavailable.", "exit_status": 2, "locator": "field_path", "remediation": "Resolve the named precondition and rerun from fresh identity facts."},
+    {"code": "unsafe_path", "trigger": "A repository-relative task locator or runtime mapping is unsafe or ambiguous.", "exit_status": 2, "locator": "path", "remediation": "Use a regular canonical locator below the repository task root."},
+    {"code": "internal_error", "trigger": "An unexpected package-local runtime failure occurred.", "exit_status": 70, "locator": "path", "remediation": "Inspect the package-local runtime and retry."}
+  ]
+}

@@ -74,8 +74,8 @@ invalid interface projections stop fail closed.
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"revision_required","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-planning-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"baseline_incomplete","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-bootstrap-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"blocked","consumer":{"kind":"stop","id":"requirements-design-test-ssot-blocked"}} -->
-The installed graph is exactly 22 active Skills and 93 package exits. The
-business-task workflow is exactly 21 mandatory invokes and 91 external exits.
+The installed graph is exactly 23 active Skills and 96 package exits. The
+business-task workflow is exactly 22 mandatory invokes and 94 external exits.
 ### Cross-phase normal-scenario qualification owner
 <!-- guru-skill-invoke: {"skill":"guru-qualify-normal-scenario","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"classified","consumer":{"kind":"workflow","id":"guru-normal-scenario-classified-router"}} -->
@@ -175,7 +175,11 @@ business-task workflow is exactly 21 mandatory invokes and 91 external exits.
 <!-- guru-skill-invoke: {"skill":"guru-merge-task-pr","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"merged","consumer":{"kind":"workflow","id":"guru-finalization-finish-response"}} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"merge_blocked","consumer":{"kind":"stop","id":"task-pr-merge-blocked"}} -->
+<!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"phase2_reentry_required","consumer":{"kind":"skill","id":"guru-restore-archived-task"}} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"closure_mismatch","consumer":{"kind":"stop","id":"task-pr-closure-mismatch"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-restore-archived-task","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-restore-archived-task","exit":"restored_to_phase2","consumer":{"kind":"workflow","id":"guru-resume-implementation"}} -->
+<!-- guru-skill-exit: {"skill":"guru-restore-archived-task","exit":"restore_blocked","consumer":{"kind":"stop","id":"task-pr-phase2-reentry-blocked"}} -->
 ## Workflow And Stop Targets
 <!-- guru-workflow-target: {"id":"guru-bootstrap-repository-ssot-completed-router"} -->
 <!-- guru-workflow-target: {"id":"guru-bootstrap-repository-ssot-baseline-incomplete-router"} -->
@@ -189,7 +193,7 @@ business-task workflow is exactly 21 mandatory invokes and 91 external exits.
 <!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-planning-router"} -->
 <!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-bootstrap-router"} -->
 <!-- guru-stop-target: {"id":"requirements-design-test-ssot-blocked"} -->
-The graph contains exactly 35 workflow targets and 22 stop targets.
+The graph contains exactly 35 workflow targets and 23 stop targets.
 <!-- guru-workflow-target: {"id":"original-request-route"} -->
 <!-- guru-workflow-target: {"id":"guru-workflow-standard-intake-router"} -->
 <!-- guru-workflow-target: {"id":"guru-normal-scenario-classified-router"} -->
@@ -234,6 +238,7 @@ The graph contains exactly 35 workflow targets and 22 stop targets.
 <!-- guru-stop-target: {"id":"task-publication-review-blocked"} -->
 <!-- guru-stop-target: {"id":"task-finalization-blocked"} -->
 <!-- guru-stop-target: {"id":"task-pr-merge-blocked"} -->
+<!-- guru-stop-target: {"id":"task-pr-phase2-reentry-blocked"} -->
 <!-- guru-stop-target: {"id":"task-pr-closure-mismatch"} -->
 ### Workflow target behavior
 | Target | Global behavior |
@@ -270,6 +275,7 @@ The graph contains exactly 35 workflow targets and 22 stop targets.
 | guru-task-publication-work-router | Resume Phase 2 for task-content findings. |
 | guru-finalization-finish-response | Return the canonical merged PR URL and merge commit identity. |
 | task-pr-merge-blocked | Stop before merge and report the exact live readiness remediation. |
+| task-pr-phase2-reentry-blocked | Stop before restoration and report the exact archived-task identity or workspace remediation. |
 | task-pr-closure-mismatch | Stop after merge and report the exact GitHub Issue closure mismatch without hand-closing it. |
 The Finalizer stale projection supplies exactly `task_ref`,
 `branch_review_commit`, and `stale_reason`; the Publication caller authors only
@@ -675,9 +681,13 @@ Merge normally uses one expected-head-bound `watch-task-pr-checks` invocation
 only when required checks are pending, then one confirmed
 `complete-task-pr-merge` invocation. The facade owns one pre-merge snapshot,
 one expected-head mutation, one post-merge snapshot, and mutation-output-loss
-recovery. `merged`, `merge_blocked`, and `closure_mismatch` are terminal for the
-current Merge Skill: after projection it performs no further polling, reads,
-base sync, PR update, Issue mutation, or cleanup.
+recovery. A current-scope task-work finding instead returns
+`phase2_reentry_required` without merge confirmation or remote mutation and
+immediately invokes `guru-restore-archived-task`. Exact restoration returns to
+`guru-resume-implementation`; restoration conflicts stop at
+`task-pr-phase2-reentry-blocked`. External blockers remain `merge_blocked`.
+After projection Merge performs no further polling, base sync, PR update, Issue
+mutation, or task cleanup.
 
 ## Global Integration Boundaries
 

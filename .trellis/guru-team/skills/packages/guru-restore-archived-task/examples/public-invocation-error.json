@@ -1,0 +1,5 @@
+{
+  "code": "schema_mismatch",
+  "field_path": "input.archive_locator",
+  "remediation": "Use the declared archived-task input schema."
+}

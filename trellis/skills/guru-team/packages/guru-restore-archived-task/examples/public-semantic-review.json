@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "profile": "restore_archived_task",
+  "mode": "workflow",
+  "review_intent": "task_work_reentry",
+  "classification": "task_work",
+  "requires_task_content_change": true,
+  "finding_refs": ["merge-finding:348:phase2-reentry"]
+}
