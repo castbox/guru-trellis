@@ -4602,6 +4602,179 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 "provenance_tail_transaction_rebind_invalid",
             )
 
+    def test_provenance_tail_inapplicable_base_evolution_falls_back_to_existing_pr(self) -> None:
+        plan = {
+            "task": {"active_locator": ".trellis/tasks/344"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "remote": "origin",
+                "head_branch": "fix/344",
+                "base_branch": "main",
+                "branch_review_commit": "b" * 40,
+                "publication_head": "b" * 40,
+            },
+            "review": {"close_issues_reviewed": [344]},
+            "publish": {"title": "current", "body": "Closes #344"},
+        }
+        transaction = {
+            "mode": "ordinary_publication",
+            "next_transition": "push_content",
+            "pr": None,
+            "adopted_pr": None,
+            "task_ref": ".trellis/tasks/344",
+            "repo_ref": "castbox/guru-trellis",
+            "base_branch": "main",
+            "branch": "fix/344",
+            "publication": {"title": "current", "body": "Closes #344"},
+            "close_issues": [344],
+            "branch_review_commit": "a" * 40,
+            "publication_head": "a" * 40,
+        }
+        recovery = {
+            "mode": "existing_pr_recovery",
+            "ancestry": "strict_ancestor",
+            "push_required": True,
+            "pre_push_remote_head": "a" * 40,
+            "publication_head": "b" * 40,
+        }
+        with (
+            mock.patch.object(
+                GTT,
+                "provenance_tail_transaction_rebind_errors",
+                return_value=[
+                    "provenance_tail_changed_paths_invalid",
+                    "provenance_tail_parent_mismatch",
+                ],
+            ),
+            mock.patch.object(
+                GTT,
+                "provenance_tail_transaction_rebind_is_base_evolution",
+                return_value=True,
+            ),
+            mock.patch.object(
+                GTT,
+                "resolve_closeout_pull_request",
+                return_value={
+                    "number": 337,
+                    "url": "https://github.com/castbox/guru-trellis/pull/337",
+                    "headRefOid": "a" * 40,
+                    "isDraft": False,
+                    "title": "current",
+                    "body": "Closes #344",
+                },
+            ),
+            mock.patch.object(GTT, "closeout_remote_branch_head", return_value="a" * 40),
+            mock.patch.object(
+                GTT,
+                "classify_existing_pr_recovery",
+                return_value=recovery,
+            ) as classify_existing,
+        ):
+            actual = GTT.classify_provenance_tail_transaction_rebind(
+                Path("/repo"), plan, transaction
+            )
+        self.assertEqual(actual, recovery)
+        classify_existing.assert_called_once()
+
+    def test_base_evolution_fallback_uses_real_merge_topology(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for command in (
+                ["git", "init", "-q", "-b", "main"],
+                ["git", "config", "user.name", "Guru Test"],
+                ["git", "config", "user.email", "guru@example.invalid"],
+            ):
+                GTT.run_stdout(command, cwd=root)
+            (root / "business.txt").write_text("reviewed\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "business.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "base"], cwd=root)
+            base_before = GTT.current_head(root)
+            GTT.run_stdout(["git", "switch", "-q", "-c", "fix/344"], cwd=root)
+            (root / "publication.txt").write_text("published\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "publication.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "publication"], cwd=root)
+            old_head = GTT.current_head(root)
+            GTT.run_stdout(["git", "switch", "-q", "main"], cwd=root)
+            (root / "base-1.txt").write_text("one\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "base-1.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "base one"], cwd=root)
+            (root / "base-2.txt").write_text("two\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "base-2.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "base two"], cwd=root)
+            base_after = GTT.current_head(root)
+            GTT.run_stdout(["git", "switch", "-q", "fix/344"], cwd=root)
+            GTT.run_stdout(
+                ["git", "merge", "--no-ff", "-q", "main", "-m", "merge base"],
+                cwd=root,
+            )
+            current_head = GTT.current_head(root)
+            plan = {
+                "task": {"active_locator": ".trellis/tasks/344"},
+                "git": {
+                    "repo": "castbox/guru-trellis",
+                    "remote": "origin",
+                    "head_branch": "fix/344",
+                    "base_branch": "main",
+                    "branch_review_commit": current_head,
+                    "publication_head": current_head,
+                },
+                "review": {"close_issues_reviewed": [344]},
+                "publish": {"title": "current", "body": "Closes #344"},
+            }
+            transaction = {
+                "mode": "ordinary_publication",
+                "next_transition": "push_content",
+                "pr": None,
+                "adopted_pr": None,
+                "task_ref": ".trellis/tasks/344",
+                "repo_ref": "castbox/guru-trellis",
+                "base_branch": "main",
+                "branch": "fix/344",
+                "publication": {"title": "current", "body": "Closes #344"},
+                "close_issues": [344],
+                "branch_review_commit": old_head,
+                "publication_head": old_head,
+            }
+            self.assertTrue(GTT.is_ancestor(root, base_before, old_head))
+            self.assertTrue(GTT.is_ancestor(root, base_after, current_head))
+            self.assertFalse(GTT.is_ancestor(root, base_after, old_head))
+            pr = {
+                "number": 337,
+                "url": "https://github.com/castbox/guru-trellis/pull/337",
+                "headRefOid": old_head,
+                "isDraft": False,
+                "title": "current",
+                "body": "Closes #344",
+            }
+            with (
+                mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=pr),
+                mock.patch.object(GTT, "closeout_remote_branch_head", return_value=old_head),
+            ):
+                recovery = GTT.classify_provenance_tail_transaction_rebind(
+                    root, plan, transaction
+                )
+            self.assertEqual(recovery["ancestry"], "strict_ancestor")
+            self.assertTrue(recovery["push_required"])
+            self.assertEqual(recovery["pre_push_remote_head"], old_head)
+            self.assertEqual(recovery["publication_head"], current_head)
+
+            (root / "business-after-merge.txt").write_text("drift\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "business-after-merge.txt"], cwd=root)
+            GTT.run_stdout(
+                ["git", "commit", "-q", "-m", "business drift"], cwd=root
+            )
+            drifted_plan = copy.deepcopy(plan)
+            drifted_plan["git"]["branch_review_commit"] = GTT.current_head(root)
+            drifted_plan["git"]["publication_head"] = GTT.current_head(root)
+            with self.assertRaises(GTT.WorkflowError) as drift_error:
+                GTT.classify_provenance_tail_transaction_rebind(
+                    root, drifted_plan, transaction
+                )
+            self.assertEqual(
+                drift_error.exception.payload["reason_code"],
+                "provenance_tail_transaction_rebind_invalid",
+            )
+
     def test_unbound_equal_head_conversion_preserves_plan_identity(self) -> None:
         head = "b" * 40
         plan = {
