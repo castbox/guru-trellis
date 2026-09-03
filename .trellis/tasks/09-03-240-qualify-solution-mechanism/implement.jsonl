@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"公共 Skill 的 semantic/deterministic 边界、最小 public I/O、consumer projection 与 private state 合同。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"workflow、GitHub、side effect 与平台入口的边界。"}
+{"file":".trellis/spec/preset/installer.md","reason":"canonical package、installed manifest、reapply 与平台分发约束。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"三平台 additive overlay、dogfood drift 与 sidecar 合同。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Issue 级最小验证范围和 package/install/eval 验证要求。"}

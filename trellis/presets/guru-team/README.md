@@ -54,6 +54,35 @@ public projections. Its ten profile inputs and four typed exits are additive
 public API. Platform entries load the installed Skill and consume the declared
 workflow route; they do not copy qualification reasoning.
 
+The preset also installs the independent public
+`guru-qualify-solution-mechanism` package and matching Shared/Codex/Claude/Cursor
+public projections. It uses the same ten profile boundaries but owns mechanism
+qualification separately from scenario qualification. Its four typed exits are
+`classified`, `scope_confirmation_required`, `mechanism_revision_required`, and
+`blocked`; the first and third return to the original profile owner through
+`guru-solution-mechanism-classified-router` or
+`guru-solution-mechanism-mechanism-router`, scope confirmation goes only to
+`guru-clarify-requirements:solution_mechanism_scope_confirmation`, and blocked
+stops at `solution-mechanism-qualification-blocked`.
+
+The ten profiles are `task_free_pre_write`, `task_free_evolution`,
+`requirements_scope_set`, `change_request_candidate_set`,
+`planning_scenario_set`, `implementation_discovery`,
+`base_impact_candidate_set`, `phase2_candidate_set`,
+`branch_review_candidate_set`, and `publication_candidate_set`. Each profile
+uses its fixed caller and returns `classified` or
+`mechanism_revision_required` to that caller after the declared route; scope
+confirmation and blocked use the two consumers above.
+
+The package exposes three declared commands: `record-solution-mechanism-qualification`,
+`check-solution-mechanism-qualification`, and
+`invoke-guru-qualify-solution-mechanism`. The first two are deterministic
+recorder/checker commands; the public invocation emits one call-local typed exit.
+The package has no qualification artifact, report, ledger, handoff, checkpoint,
+or cross-process result locator. A forbidden OS/kernel/process/descriptor
+mechanism returns `mechanism_revision_required` and never enters scope
+confirmation.
+
 Qualification decisions and the typed result remain current-process
 memory/stdout only. The installer must not create or claim a tracked, ignored,
 or temporary qualification result/report/checkpoint, candidate/rejection
@@ -497,18 +526,18 @@ Test fixtures 永不安装，未选择的平台 root 不因 skill 分发
 而创建。
 
 Preset 安装 current Interface 1.4/1.5/1.6 schemas 与 registry 1.4。十六个
-integrated active rows 选择 `guru-team-skill-interface-1.4`，normal-scenario
-qualification 选择 `guru-team-skill-interface-1.6`，standalone verifier 选择
+integrated active rows 选择 `guru-team-skill-interface-1.4`，normal-scenario 与
+solution-mechanism qualification 选择 `guru-team-skill-interface-1.6`，standalone verifier 选择
 `guru-team-skill-interface-1.5`。Live Intake 合同为
 六包/23 exits；current registry、discovery DTO、invocation 与安装 provenance 不接受
 历史 manifest、schema、example 或 eval。`production-current-v4` 是唯一 current
 manifest，精确绑定 planning/check/commit 与 normal-scenario qualification 四包、20
 profiles、15 exits、current output schemas、四条 authoring-seed edges、private
 artifact ids、examples、160 x 5 production control 与 eval cases；不存在 alternate
-production projector 或 fixture。当前 active closure 为 18 packages / 65 commands，
+production projector 或 fixture。当前 active closure 为 22 packages / 80 commands，
 live Intake 合同为 6/23。Preset 在一次 staging
 transaction 中安装 current registry、
-Interface 1.4/1.5/1.6、production-current manifest/schema、十八包 public
+Interface 1.4/1.5/1.6、production-current manifest/schema、二十二包 public
 contracts/wrappers/corpora、registry、extension 和 selected-platform copies；mixed graph
 失败关闭。Representative fixture schema ids 和 fixture wrapper 不进入
 production registry、extension inventory、installed files 或 selected-platform copies。
@@ -547,8 +576,8 @@ private gate、七条 production eval cases 与 finalization runtime wrappers。
 保留 immutable 1.0 compatibility assets，并安装三个
 exits 与五个 merge runtime wrappers。Requirements/Design/Test SSOT package 另提供
 四个 semantic profiles、五个 typed exits 和 isolated contribution boundary。
-Source/installed package closure 为 21 Skills / 89 exits；business global workflow
-marker closure 为 20 invokes / 87 exits / 54 combined targets（33 workflow + 21 stop）。
+Source/installed package closure 为 22 Skills / 93 exits；business global workflow
+marker closure 为 21 invokes / 91 exits / 57 combined targets（35 workflow + 22 stop）。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -683,11 +712,11 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 `guru-approve-task-plan`、`guru-check-task`、`guru-create-task-commit`、
 `guru-finalize-task`、`guru-merge-task-pr`、`guru-review-branch`、
 `guru-review-task-publication`、`guru-select-workflow-mode`、
-`guru-execute-task-free-change`、`guru-qualify-normal-scenario`、
+`guru-execute-task-free-change`、`guru-qualify-normal-scenario`、`guru-qualify-solution-mechanism`、
 `guru-reconcile-task-base`、`guru-maintain-architecture-baseline`、
 `guru-maintain-requirements-design-test-ssot`、
-`guru-verify-extension-installation`。二十个 integrated business packages 加一个
-standalone-only verifier 共声明 89 个 external exits。
+`guru-verify-extension-installation`。二十一个 integrated business packages 加一个
+standalone-only verifier 共声明 93 个 external exits。
 `guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
 invoke 与六个 exit marker。当前 release-facing source 的 canonical extension version 为
@@ -1504,7 +1533,7 @@ runtime 留在 native execution 外；四平台 projection 内对应 raw read �
 throwaway project 的 `trellis update --dry-run` -> 仅当输出明确为
 `MIGRATION REQUIRED` 时执行 `trellis update --migrate --skip-all`，否则执行
 `trellis update --skip-all` -> marketplace `--create-new` preview/active switch -> canonical
-preset reapply。之后重新验证 21 Skills/89 package exits、20 invokes/87 workflow
-exits、33 workflow targets、21 stop targets、全部已声明 profile real installed entry、
+preset reapply。之后重新验证 22 Skills/93 package exits、21 invokes/91 workflow
+exits、35 workflow targets、22 stop targets、全部已声明 profile real installed entry、
 ownership、platform parity、dogfood drift 与 recursive zero `.new`/`.bak`。该流程不修改
 开发机 global npm，也不升级真实业务仓。

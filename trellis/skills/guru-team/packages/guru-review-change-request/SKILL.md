@@ -23,6 +23,12 @@ become clarification. Mechanism revision returns here for remove/replace and
 fresh qualification; blocked stops. This package never persists or rereads a
 qualification result.
 
+At the same candidate boundary, invoke `guru-qualify-solution-mechanism` with
+`change_request_candidate_set` before accepting a proposed mechanism as a
+delivery-unit, finding, test, or blocker basis. A mechanism revision removes
+or replaces only that proposal and returns here for fresh qualification; it
+does not enter scope clarification.
+
 The recorder and checker validate only closed JSON shape, hashes, linkage,
 freshness, fixed consumers, and objective exit invariants. They never generate
 findings, select a delivery unit, decide readiness, or choose a route. Pre-task

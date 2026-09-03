@@ -343,10 +343,14 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
             "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py"
         )
         text = path.read_text(encoding="utf-8")
-        marker = "                    sys.executable,\n                    str(apply_script),"
+        marker = 'run([sys.executable, "./.trellis/scripts/task.py", "current"],'
         self.assertIn(marker, text)
         path.write_text(
-            text.replace(marker, "                    str(apply_script),", 1),
+            text.replace(
+                marker,
+                'run(["./.trellis/scripts/task.py", "current"],',
+                1,
+            ),
             encoding="utf-8",
         )
         with self.assertRaisesRegex(ROUTING.RoutingError, "secondary caller inventory drift"):

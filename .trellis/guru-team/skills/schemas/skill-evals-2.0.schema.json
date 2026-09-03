@@ -8,7 +8,7 @@
     "$schema": {"const": "https://json-schema.org/draft/2020-12/schema"},
     "$id": {"const": "guru-team-skill-evals-2.0"},
     "schema_version": {"const": "2.0"},
-    "skill_name": {"const": "guru-qualify-normal-scenario"},
+    "skill_name": {"enum": ["guru-qualify-normal-scenario", "guru-qualify-solution-mechanism"]},
     "production_gate": {
       "type": "object",
       "additionalProperties": false,

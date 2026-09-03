@@ -36,6 +36,12 @@ implementation work. Mechanism revision removes/replaces the task-introduced
 mechanism and reruns qualification; blocked stops. No qualification state is
 written to planning runtime or task files.
 
+Before a proposed mechanism participates in planning acceptance, tests,
+findings, or revision actions, invoke `guru-qualify-solution-mechanism` with
+`planning_scenario_set`. A `mechanism_revision_required` result removes or
+replaces only the task-introduced mechanism and returns here for fresh
+qualification; it never becomes scope clarification.
+
 The checked `approved` exit establishes semantic adequacy only. Its stable
 consumer is the workflow target `phase-1-task-activation`, which separately
 presents the current plan and owns the dialogue-local review pause before task

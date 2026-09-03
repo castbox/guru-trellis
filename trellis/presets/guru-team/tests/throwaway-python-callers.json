@@ -1356,15 +1356,6 @@
       "ordinal": 1
     },
     {
-      "id": "package-runtime-python_subprocess_second_hop-e38ded41d714",
-      "owner": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
-      "kind": "python_subprocess_second_hop",
-      "classification": "installed_managed",
-      "expected_launcher": "sys.executable",
-      "anchor_sha256": "e38ded41d71415ba6ad37adf6bc282c13798ce4b1d7181444ac7abb0d2843ea6",
-      "ordinal": 1
-    },
-    {
       "id": "package-runtime-python_subprocess_second_hop-843b0bb74003",
       "owner": "trellis/skills/guru-team/packages/guru-merge-task-pr/runtime/legacy.py",
       "kind": "python_subprocess_second_hop",

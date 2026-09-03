@@ -74,14 +74,20 @@ invalid interface projections stop fail closed.
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"revision_required","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-planning-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"baseline_incomplete","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-bootstrap-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"blocked","consumer":{"kind":"stop","id":"requirements-design-test-ssot-blocked"}} -->
-The installed graph is exactly 21 active Skills and 89 package exits. The
-business-task workflow is exactly 20 mandatory invokes and 87 external exits.
+The installed graph is exactly 22 active Skills and 93 package exits. The
+business-task workflow is exactly 21 mandatory invokes and 91 external exits.
 ### Cross-phase normal-scenario qualification owner
 <!-- guru-skill-invoke: {"skill":"guru-qualify-normal-scenario","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"classified","consumer":{"kind":"workflow","id":"guru-normal-scenario-classified-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"scope_confirmation_required","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"mechanism_revision_required","consumer":{"kind":"workflow","id":"guru-normal-scenario-mechanism-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"blocked","consumer":{"kind":"stop","id":"normal-scenario-qualification-blocked"}} -->
+### Cross-phase solution-mechanism qualification owner
+<!-- guru-skill-invoke: {"skill":"guru-qualify-solution-mechanism","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-solution-mechanism","exit":"classified","consumer":{"kind":"workflow","id":"guru-solution-mechanism-classified-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-solution-mechanism","exit":"scope_confirmation_required","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-solution-mechanism","exit":"mechanism_revision_required","consumer":{"kind":"workflow","id":"guru-solution-mechanism-mechanism-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-solution-mechanism","exit":"blocked","consumer":{"kind":"stop","id":"solution-mechanism-qualification-blocked"}} -->
 ### Phase 0 owners
 <!-- guru-skill-invoke: {"skill":"guru-select-workflow-mode","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-select-workflow-mode","exit":"standard_intake","consumer":{"kind":"workflow","id":"guru-workflow-standard-intake-router"}} -->
@@ -183,11 +189,13 @@ business-task workflow is exactly 20 mandatory invokes and 87 external exits.
 <!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-planning-router"} -->
 <!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-bootstrap-router"} -->
 <!-- guru-stop-target: {"id":"requirements-design-test-ssot-blocked"} -->
-The graph contains exactly 33 workflow targets and 21 stop targets.
+The graph contains exactly 35 workflow targets and 22 stop targets.
 <!-- guru-workflow-target: {"id":"original-request-route"} -->
 <!-- guru-workflow-target: {"id":"guru-workflow-standard-intake-router"} -->
 <!-- guru-workflow-target: {"id":"guru-normal-scenario-classified-router"} -->
 <!-- guru-workflow-target: {"id":"guru-normal-scenario-mechanism-router"} -->
+<!-- guru-workflow-target: {"id":"guru-solution-mechanism-classified-router"} -->
+<!-- guru-workflow-target: {"id":"guru-solution-mechanism-mechanism-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-completed"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-resume-active-task-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-scope-change-router"} -->
@@ -210,6 +218,7 @@ The graph contains exactly 33 workflow targets and 21 stop targets.
 <!-- guru-workflow-target: {"id":"guru-finalization-finish-response"} -->
 <!-- guru-stop-target: {"id":"workflow-mode-selection-blocked"} -->
 <!-- guru-stop-target: {"id":"normal-scenario-qualification-blocked"} -->
+<!-- guru-stop-target: {"id":"solution-mechanism-qualification-blocked"} -->
 <!-- guru-stop-target: {"id":"task-free-change-blocked"} -->
 <!-- guru-stop-target: {"id":"base-sync-blocked"} -->
 <!-- guru-stop-target: {"id":"change-context-blocked"} -->
@@ -317,9 +326,12 @@ semantics from their owning packages.
 
 ### Mandatory qualification profiles
 
-The workflow invokes the stable `guru-qualify-normal-scenario` id at these exact
-candidate boundaries. Each caller supplies only its profile-specific candidate
-set and live locators; the workflow consumes only the four declared exits.
+The workflow invokes both stable qualification owners at these exact candidate
+boundaries. `guru-qualify-normal-scenario` qualifies the problem scenario and
+`guru-qualify-solution-mechanism` qualifies the proposed mechanism; neither
+owner replaces the other. Each caller supplies only its profile-specific
+candidate set and live locators; the workflow consumes only the four declared
+exits from each owner.
 
 | Profile | Trigger before | Classified/mechanism return owner |
 | --- | --- | --- |
@@ -334,12 +346,22 @@ set and live locators; the workflow consumes only the four declared exits.
 | `branch_review_candidate_set` | Branch Review severity, finding, scope route, or blocker | `guru-review-branch` |
 | `publication_candidate_set` | Publication finding, task-work return, or blocker | `guru-review-task-publication` |
 
-`scope_confirmation_required` always invokes
-`guru-clarify-requirements:normal_scenario_scope_confirmation`. That target-owned
-profile returns a real authority choice to the closed original owner; a changed
-authority or candidate set starts fresh qualification. Already rejected
-candidates never enter clarification. Unknown, empty, multiple, mismatched, or
-unmapped results stop at `normal-scenario-qualification-blocked`.
+For every row above, the caller invokes `guru-qualify-solution-mechanism` with
+the same profile before promoting a proposed mechanism into that stage's
+acceptance, test, finding, implementation, or publication judgment. A forbidden
+OS/kernel/process/descriptor mechanism returns `mechanism_revision_required`
+and never enters scope confirmation.
+
+`guru-qualify-normal-scenario:scope_confirmation_required` invokes
+`guru-clarify-requirements:normal_scenario_scope_confirmation`, while
+`guru-qualify-solution-mechanism:scope_confirmation_required` invokes
+`guru-clarify-requirements:solution_mechanism_scope_confirmation`. Each
+target-owned profile returns a real authority choice to the closed original
+owner; a changed authority or candidate set starts fresh qualification. Already
+rejected candidates never enter clarification. Unknown, empty, multiple,
+mismatched, or unmapped normal-scenario results stop at
+`normal-scenario-qualification-blocked`; the corresponding solution-mechanism
+results stop at `solution-mechanism-qualification-blocked`.
 For `implementation_discovery`, the semantic owner remains
 `guru-phase2-implementation-coordinator`; its deterministic clarification resume
 target is the existing `guru-resume-implementation` workflow API.
@@ -539,7 +561,9 @@ If implementation discovery produces any candidate not already closed by the
 approved planning, invoke
 `guru-qualify-normal-scenario:implementation_discovery` before adding an edit,
 test, finding, or route for that candidate. Rejected candidates are dropped;
-mechanism revision returns here for remove/replace and a fresh invocation;
+then invoke `guru-qualify-solution-mechanism:implementation_discovery` before
+accepting a proposed implementation mechanism. Mechanism revision returns
+here for remove/replace and a fresh invocation;
 blocked stops. The coordinator consumes the result in-process and writes no
 qualification artifact or checkpoint.
 

@@ -1,0 +1,9 @@
+{
+  "profile": "solution_mechanism_scope_confirmation",
+  "source_exit": "scope_confirmation_required",
+  "mode": "workflow",
+  "target_locator": ".trellis/tasks/example",
+  "resume_target": "guru-review-branch",
+  "continuation_id": "solution-mechanism:0123456789abcdef01234567",
+  "candidate_refs": ["candidate-solution-mechanism"]
+}

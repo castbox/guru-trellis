@@ -22,6 +22,12 @@ Rejected candidates do not trigger clarification or task work. Mechanism
 revision returns here for remove/replace and fresh qualification; blocked
 stops. No qualification result is persisted in the base checkpoint.
 
+Before a proposed integration mechanism affects the impact judgment,
+validation obligation, or route, invoke `guru-qualify-solution-mechanism` with
+`base_impact_candidate_set`. A `mechanism_revision_required` result removes or
+replaces only that mechanism and returns here for fresh qualification; it is
+not a scope-confirmation path.
+
 Mapped exits and stale re-entry are automatic. Ask the user only when the
 semantic result is `scope_confirmation_required`; never persist that
 confirmation. Missing, stale, ambiguous, non-ancestor, or unmapped evidence

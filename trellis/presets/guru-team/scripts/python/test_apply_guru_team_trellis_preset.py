@@ -1435,7 +1435,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         ownership_facts = payload["upstream_ownership_validation"]
         self.assertEqual(ownership_facts["schema_version"], "3.0")
         self.assertEqual(ownership_facts["overlay_count"], 3)
-        self.assertEqual(ownership_facts["active_skill_count"], 21)
+        self.assertEqual(ownership_facts["active_skill_count"], 22)
         self.assertEqual(ownership_facts["managed_claim_count"], 9)
         self.assertEqual(payload["replaced_overlays"], [])
         overlay_root = self.guru_root / "trellis/presets/guru-team/overlays"
@@ -2742,8 +2742,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         for field, expected_count in (
-            ("public_input_schema_ids", 62),
-            ("typed_output_schema_ids", 85),
+            ("public_input_schema_ids", 73),
+            ("typed_output_schema_ids", 89),
             ("private_artifact_schema_ids", 18),
         ):
             self.assertEqual(
@@ -2782,6 +2782,27 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn(
             "guru-normal-scenario-input-implementation-discovery-1.0",
             public_input_schema_ids,
+        )
+        solution_mechanism_interface = json.loads(
+            (
+                self.guru_root
+                / "trellis/skills/guru-team/packages/guru-qualify-solution-mechanism/interface.json"
+            ).read_text(encoding="utf-8")
+        )
+        solution_mechanism_input_ids = {
+            solution_mechanism_interface["public_contracts"]["input"]["aggregate_schema"]["schema_id"],
+            *(
+                profile["schema"]["schema_id"]
+                for profile in solution_mechanism_interface["public_contracts"]["input"]["profiles"]
+            ),
+        }
+        self.assertEqual(
+            {
+                schema_id
+                for schema_id in public_input_schema_ids
+                if schema_id.startswith("guru-solution-mechanism-input-")
+            },
+            solution_mechanism_input_ids,
         )
         self.assertIn(
             "guru-stage0-clarify-requirements-input-initial-change-request-2.0",
@@ -2830,6 +2851,18 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn(
             "guru-normal-scenario-output-scope-confirmation-required-1.0",
             typed_output_schema_ids,
+        )
+        solution_mechanism_output_ids = {
+            output["schema"]["schema_id"]
+            for output in solution_mechanism_interface["public_contracts"]["outputs"]
+        }
+        self.assertEqual(
+            {
+                schema_id
+                for schema_id in typed_output_schema_ids
+                if schema_id.startswith("guru-solution-mechanism-output-")
+            },
+            solution_mechanism_output_ids,
         )
         self.assertIn(
             "guru-stage0-discover-change-context-output-context-ready-3.0",
@@ -2946,6 +2979,9 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("check-contract-wording-review", public_api["companion_scripts"])
         self.assertIn("record-change-request-review", public_api["companion_scripts"])
         self.assertIn("check-change-request-review", public_api["companion_scripts"])
+        self.assertIn("record-solution-mechanism-qualification", public_api["companion_scripts"])
+        self.assertIn("check-solution-mechanism-qualification", public_api["companion_scripts"])
+        self.assertIn("invoke-guru-qualify-solution-mechanism", public_api["companion_scripts"])
         self.assertEqual(
             public_api["skill_runtime"],
             {
@@ -2971,6 +3007,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "guru-maintain-requirements-design-test-ssot",
                 "guru-merge-task-pr",
                 "guru-qualify-normal-scenario",
+                "guru-qualify-solution-mechanism",
                 "guru-reconcile-task-base",
                 "guru-review-branch",
                 "guru-review-change-request",
