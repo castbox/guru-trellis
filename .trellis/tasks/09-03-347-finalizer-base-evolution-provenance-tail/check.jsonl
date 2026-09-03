@@ -1,5 +1,0 @@
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"检查三条 recovery 路径仍共享精确 transaction 与 Publication identity。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查真实 topology、负向矩阵、mutation 次数、retry 与 Issue 级验证范围。"}
-{"file":".trellis/spec/preset/installer.md","reason":"检查 source/installed package、preset reapply、ownership 与 sidecar 结果。"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"检查 canonical、dogfood 与声明平台 projection 一致。"}
-{"file":".trellis/spec/architecture/baseline-usage.md","reason":"检查实现未扩大 Architecture owner、public graph、persistence 或 dependency boundary。"}
