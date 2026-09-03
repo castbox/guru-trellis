@@ -137,6 +137,14 @@ with a current-plan `existing_pr_recovery/push_content` transaction before the
 new Publication push. The equal-HEAD `bind_pr` conversion and its no-push
 predicate remain unchanged.
 
+When that predecessor is followed by a legal base evolution that produces a
+merge or multiple base commits, the single-tail topology is inapplicable. The
+classifier may fall back to the same existing-PR strict-ancestor classifier
+only when the selected base HEAD is an ancestor of the current Publication
+HEAD but not the predecessor Publication HEAD. This fallback retains the exact
+remote/PR, scope, metadata, Draft/Ready, and transaction checks; business or
+identity drift remains fail-closed.
+
 Preview reports the exact PR, equal/strict ancestry, push decision, initial
 Draft/Ready state, per-field title/body byte comparison, metadata convergence
 decision and Ready action. Execute rereads those facts before conversion and
