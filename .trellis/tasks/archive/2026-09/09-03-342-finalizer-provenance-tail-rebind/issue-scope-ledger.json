@@ -1,0 +1,38 @@
+{
+  "close_issues": [
+    {
+      "number": 342,
+      "reason": "Fully covered by this task; close only after reviewed implementation, validation, merge, and live closure verification.",
+      "title": "修复 Finalizer provenance metadata tail 演进后未绑定 transaction 无法恢复既有 PR",
+      "url": "https://github.com/castbox/guru-trellis/issues/342"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 342,
+    "reason": "Fully covered by this task; close only after reviewed implementation, validation, merge, and live closure verification.",
+    "title": "修复 Finalizer provenance metadata tail 演进后未绑定 transaction 无法恢复既有 PR",
+    "url": "https://github.com/castbox/guru-trellis/issues/342"
+  },
+  "related_issues": [
+    {
+      "number": 333,
+      "reason": "Real PR #337 reproduction only; business implementation remains out of scope.",
+      "title": "[Bug] Make guru-create-task-workspace Issue creation recoverable and idempotent",
+      "url": "https://github.com/castbox/guru-trellis/issues/333"
+    },
+    {
+      "number": 338,
+      "reason": "Existing equal-HEAD recovery mechanism reused; not reimplemented.",
+      "title": "[Bug] 支持 Finalizer 恢复已推送且未绑定的同计划 PR",
+      "url": "https://github.com/castbox/guru-trellis/issues/338"
+    },
+    {
+      "number": 249,
+      "reason": "Explicit related boundary; not modified or closed.",
+      "title": "解耦业务 repo workspace preparation 与 upstream task creation",
+      "url": "https://github.com/castbox/guru-trellis/issues/249"
+    }
+  ],
+  "schema_version": "2.0"
+}

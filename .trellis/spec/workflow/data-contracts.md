@@ -1389,6 +1389,18 @@ convergence authority. Any identity, scope, payload, original state, ancestry,
 archive, or transaction drift fails closed. Schema 2.0 remains immutable at its
 explicit versioned path and cannot adopt an existing PR.
 
+Schema 3.0 also supports one current-plan rebind without adding fields or
+stages. The predecessor must be unbound
+`ordinary_publication/push_content`; task, repository, base/head branch,
+Publication payload and close scope remain exact; predecessor Publication HEAD
+equals live remote/PR HEAD; and current reviewed/publication HEAD is its single
+direct-child manifest-only provenance tail under the existing validator. The
+replacement is written once as current-plan
+`existing_pr_recovery/push_content`, retaining the predecessor remote HEAD in
+`pre_push_remote_head` and `adopted_pr`, before the exact new Publication HEAD
+is pushed once. Non-provenance plan drift and the existing equal-HEAD
+`push_required=false` conversion retain their prior contracts.
+
 After the exact recovery transaction binds its PR and advances to `archive`,
 `push_archive`, or `mark_ready`, it is the current stage authority. Preview
 validates its complete minimal identity before applying any pre-PR provenance

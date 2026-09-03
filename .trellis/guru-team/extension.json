@@ -405,11 +405,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-03T07:36:56Z",
+  "installed_at": "2026-09-03T05:53:13Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "865555cfb4e873e6591dce5d9b5c73e34f17037f",
-    "commit": "865555cfb4e873e6591dce5d9b5c73e34f17037f",
+    "ref": "69a702bcdb851d18c7b484fc2ef8309647a5833c",
+    "commit": "69a702bcdb851d18c7b484fc2ef8309647a5833c",
     "tree_state": "clean",
     "is_mutable_ref": false
   },
@@ -618,7 +618,7 @@
       {
         "id": "guru-finalize-task",
         "interface_sha256": "1510ae20c3bcfa3f1acbb453a200c599dd6e8677327e5d11f4a1cb4a6292c4e2",
-        "tree_sha256": "eda74d7fdfe23ba575632bf6af662eab62b3ab0e72fcfb38f03a8f2f0f455a84"
+        "tree_sha256": "f42102e7577f5214749e35831f8b14d551ae808f1df3cb4c06538e82cf2bf139"
       },
       {
         "id": "guru-merge-task-pr",
@@ -6745,7 +6745,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
-        "sha256": "c59725d0175635e0a18258f02f7f296a58fafada074c8fc4f4fd77c9b32de8b3",
+        "sha256": "364768a2b0ac50ecb51c0270e32966b8c5bf407c881ca22d9f780c7472a48cd0",
         "executable": false,
         "action": "unchanged"
       },
@@ -7074,7 +7074,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "a6ddde391a38888b630e645f84133123b4601d73906393e90e445ba07f4a1fa9",
+        "sha256": "7297134bee76049c462a9022dbbf4a3686bc03581c37759e415366c6a24c7408",
         "executable": false,
         "action": "unchanged"
       },
@@ -7123,7 +7123,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
-        "sha256": "27e6d95b13bc3532b58b3fc0f51e31cb2f4284003aad7b965c2eee53c057c73b",
+        "sha256": "212ddfa07cdeb917c7177c785f1a2aa241bdf0598b7268e9218dfbefd2eb400a",
         "executable": false,
         "action": "unchanged"
       },
@@ -7445,7 +7445,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
-        "sha256": "d7d133bbaf249a757b12789c1140107fd0836043d461fca97ef0000b1f1a200a",
+        "sha256": "da6f52c3853f62d2bba73de4477ca28d4222f9841efb84e1c4af1fcb418586d8",
         "executable": false,
         "action": "unchanged"
       },
@@ -24749,7 +24749,7 @@
       {
         "path": ".agents/skills/guru-finalize-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
-        "sha256": "c59725d0175635e0a18258f02f7f296a58fafada074c8fc4f4fd77c9b32de8b3",
+        "sha256": "364768a2b0ac50ecb51c0270e32966b8c5bf407c881ca22d9f780c7472a48cd0",
         "executable": false,
         "action": "unchanged"
       },
@@ -24945,7 +24945,7 @@
       {
         "path": ".agents/skills/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "a6ddde391a38888b630e645f84133123b4601d73906393e90e445ba07f4a1fa9",
+        "sha256": "7297134bee76049c462a9022dbbf4a3686bc03581c37759e415366c6a24c7408",
         "executable": false,
         "action": "unchanged"
       },
@@ -25197,7 +25197,7 @@
       {
         "path": ".codex/skills/guru-finalize-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
-        "sha256": "c59725d0175635e0a18258f02f7f296a58fafada074c8fc4f4fd77c9b32de8b3",
+        "sha256": "364768a2b0ac50ecb51c0270e32966b8c5bf407c881ca22d9f780c7472a48cd0",
         "executable": false,
         "action": "unchanged"
       },
@@ -25393,7 +25393,7 @@
       {
         "path": ".codex/skills/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "a6ddde391a38888b630e645f84133123b4601d73906393e90e445ba07f4a1fa9",
+        "sha256": "7297134bee76049c462a9022dbbf4a3686bc03581c37759e415366c6a24c7408",
         "executable": false,
         "action": "unchanged"
       },
@@ -25645,7 +25645,7 @@
       {
         "path": ".claude/skills/guru-finalize-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
-        "sha256": "c59725d0175635e0a18258f02f7f296a58fafada074c8fc4f4fd77c9b32de8b3",
+        "sha256": "364768a2b0ac50ecb51c0270e32966b8c5bf407c881ca22d9f780c7472a48cd0",
         "executable": false,
         "action": "unchanged"
       },
@@ -25841,7 +25841,7 @@
       {
         "path": ".claude/skills/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "a6ddde391a38888b630e645f84133123b4601d73906393e90e445ba07f4a1fa9",
+        "sha256": "7297134bee76049c462a9022dbbf4a3686bc03581c37759e415366c6a24c7408",
         "executable": false,
         "action": "unchanged"
       },
@@ -26093,7 +26093,7 @@
       {
         "path": ".cursor/skills/guru-finalize-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
-        "sha256": "c59725d0175635e0a18258f02f7f296a58fafada074c8fc4f4fd77c9b32de8b3",
+        "sha256": "364768a2b0ac50ecb51c0270e32966b8c5bf407c881ca22d9f780c7472a48cd0",
         "executable": false,
         "action": "unchanged"
       },
@@ -26289,7 +26289,7 @@
       {
         "path": ".cursor/skills/guru-finalize-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
-        "sha256": "a6ddde391a38888b630e645f84133123b4601d73906393e90e445ba07f4a1fa9",
+        "sha256": "7297134bee76049c462a9022dbbf4a3686bc03581c37759e415366c6a24c7408",
         "executable": false,
         "action": "unchanged"
       },

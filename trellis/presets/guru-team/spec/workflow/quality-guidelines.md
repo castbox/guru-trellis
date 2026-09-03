@@ -908,6 +908,20 @@ and already-converged exact Publication metadata both resume, prove the latter
 and metadata-equal paths perform zero edit, preserve Ready and Draft paths plus
 same-plan retry zero duplicate mutation, and fail before mutation on missing/inconsistent decision or
 PR/HEAD/Draft/metadata/scope/plan/stage/binding/archive drift.
+
+Provenance-tail transaction rebind coverage starts from a predecessor unbound
+`ordinary_publication/push_content` transaction whose Publication HEAD equals
+the remote and unique PR, then creates exactly one valid manifest-only
+direct-child tail as the current reviewed/publication HEAD. Ready/Draft and
+metadata-equal/convergence variants prove the current-plan recovery transaction
+is written before the first external mutation, the new Publication HEAD is
+pushed once, PR create remains zero, and terminal retry repeats no completed
+mutation. Negative cases cover business or extra-path tails, invalid manifest
+changes, predecessor/current identity or scope drift, remote/PR/head/ancestry
+drift, multiple/terminal/fork PRs, stale plan/gate/Publication, archive state,
+binding conflicts and unknown transaction stages. Existing equal-HEAD tests
+must continue to prove exact equality and `push_required=false` without using
+the rebind path.
 Finish-family integration additionally proves current finish-summary schema 2
 is derived once from the reviewed payload and live facts, historical schema 1
 remains discoverable, and the current runtime/inventories contain no retired
