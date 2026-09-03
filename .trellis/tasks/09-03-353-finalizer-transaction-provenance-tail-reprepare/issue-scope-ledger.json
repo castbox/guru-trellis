@@ -1,0 +1,50 @@
+{
+  "close_issues": [
+    {
+      "number": 353,
+      "reason": "Fully covered by this task.",
+      "title": "修复 Finalizer 旧 transaction 遇到新 provenance tail 时的受支持 reprepare/rebind",
+      "url": "https://github.com/castbox/guru-trellis/issues/353"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 353,
+    "reason": "Primary independently deliverable change request.",
+    "title": "修复 Finalizer 旧 transaction 遇到新 provenance tail 时的受支持 reprepare/rebind",
+    "url": "https://github.com/castbox/guru-trellis/issues/353"
+  },
+  "related_issues": [
+    {
+      "number": 333,
+      "reason": "Originating blocked task; not implemented or closed by this task.",
+      "title": "Make guru-create-task-workspace Issue creation recoverable and idempotent",
+      "url": "https://github.com/castbox/guru-trellis/issues/333"
+    },
+    {
+      "number": 342,
+      "reason": "Prior implementation boundary; not modified or closed by this task.",
+      "title": "Finalizer provenance tail transaction rebind",
+      "url": "https://github.com/castbox/guru-trellis/issues/342"
+    },
+    {
+      "number": 344,
+      "reason": "Prior implementation boundary; not modified or closed by this task.",
+      "title": "Finalizer base evolution recovery",
+      "url": "https://github.com/castbox/guru-trellis/issues/344"
+    },
+    {
+      "number": 347,
+      "reason": "Prior implementation boundary; not modified or closed by this task.",
+      "title": "Finalizer base evolution provenance tail recovery",
+      "url": "https://github.com/castbox/guru-trellis/issues/347"
+    },
+    {
+      "number": 350,
+      "reason": "Prior implementation boundary; not modified or closed by this task.",
+      "title": "Finalizer publication payload recovery",
+      "url": "https://github.com/castbox/guru-trellis/issues/350"
+    }
+  ],
+  "schema_version": "2.0"
+}

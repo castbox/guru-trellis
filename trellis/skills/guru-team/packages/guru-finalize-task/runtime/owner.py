@@ -4486,6 +4486,71 @@ def finalizer_current_transaction_base_evolution_supersession_preflight(
         "supersession_kind": "current_transaction",
     }
 
+def finalizer_current_transaction_provenance_reprepare_preflight(
+    root: Path,
+    task_dir: Path,
+    transaction: dict[str, Any],
+    current_plan: dict[str, Any],
+) -> dict[str, Any]:
+    """Validate an unbound ordinary transaction before rebuilding its current plan."""
+    current_git = current_plan.get("git") if isinstance(current_plan.get("git"), dict) else {}
+    task_ref = repo_relative(root, task_dir)
+    previous_publication = str(transaction.get("publication_head") or "")
+    current_reviewed = str(
+        current_git.get("reviewed_content_head")
+        or current_git.get("branch_review_commit")
+        or ""
+    )
+    if (
+        transaction.get("mode") != "ordinary_publication"
+        or transaction.get("next_transition") != "push_content"
+        or transaction.get("pr") is not None
+        or transaction.get("adopted_pr") is not None
+        or transaction.get("task_ref") != task_ref
+        or transaction.get("repo_ref") != current_git.get("repo")
+        or transaction.get("base_branch") != current_git.get("base_branch")
+        or transaction.get("branch") != current_git.get("head_branch")
+        or transaction.get("branch_review_commit") != previous_publication
+        or not re.fullmatch(r"[0-9a-f]{40}", previous_publication)
+        or not re.fullmatch(r"[0-9a-f]{40}", current_reviewed)
+        or previous_publication != current_reviewed
+        or not finalizer_pre_pr_provenance_tail_required(root, current_plan)
+        or not provenance_tail_transaction_reprepare_eligible(
+            root,
+            current_plan,
+            transaction,
+        )
+    ):
+        raise WorkflowError(
+            "Ordinary Finalizer transaction is not an eligible provenance reprepare predecessor.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_base_evolution_mismatch"},
+        )
+    remote_head = closeout_remote_branch_head(root, current_plan)
+    if remote_head != previous_publication:
+        raise WorkflowError(
+            "Provenance reprepare requires the remote at the predecessor Publication HEAD.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_reprepare_remote_not_reviewed_head",
+                "reviewed_content_head": current_reviewed,
+                "remote_head": remote_head,
+                "fast_forwardable": bool(
+                    remote_head and is_ancestor(root, remote_head, current_reviewed)
+                ),
+            },
+        )
+    return {
+        "reviewed_content_head": current_reviewed,
+        "local_head": current_head(root),
+        "remote_head": remote_head,
+        "head_branch": current_git.get("head_branch"),
+        "pull_request": None,
+        "parallel_publication_consumers": [],
+        "tracked_task_artifacts": [],
+        "base_evolution": None,
+    }
+
 def finalizer_pre_pr_provenance_reprepare_preflight(
     root: Path,
     task_dir: Path,
@@ -4623,15 +4688,26 @@ def finalizer_pre_pr_provenance_reprepare_preflight(
                 plan,
             )
     elif previous_transaction is not None:
-        base_evolution = (
-            finalizer_current_transaction_base_evolution_supersession_preflight(
+        if (
+            previous_transaction.get("mode") == "ordinary_publication"
+            and previous_transaction.get("next_transition") == "push_content"
+        ):
+            base_evolution = finalizer_current_transaction_provenance_reprepare_preflight(
                 root,
                 task_dir,
                 previous_transaction,
                 plan,
-                allowed_gate=allowed_current_gate,
             )
-        )
+        else:
+            base_evolution = (
+                finalizer_current_transaction_base_evolution_supersession_preflight(
+                    root,
+                    task_dir,
+                    previous_transaction,
+                    plan,
+                    allowed_gate=allowed_current_gate,
+                )
+            )
     else:
         base_evolution = None
     if (
@@ -8181,6 +8257,34 @@ def provenance_tail_transaction_rebind_base_evolution_tail_parent(
         return None
     return tail_parent
 
+def provenance_tail_transaction_reprepare_eligible(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+    errors: list[str] | None = None,
+) -> bool:
+    """Allow only Publication metadata drift to enter the existing reprepare route."""
+    errors = (
+        errors
+        if errors is not None
+        else provenance_tail_transaction_rebind_errors(root, plan, transaction)
+    )
+    error_set = set(errors)
+    if "publication" not in error_set or not (
+        error_set & PROVENANCE_TAIL_INAPPLICABLE_ERRORS
+    ):
+        return False
+    if error_set - (PROVENANCE_TAIL_INAPPLICABLE_ERRORS | {"publication"}):
+        return False
+    return (
+        provenance_tail_transaction_rebind_base_evolution_tail_parent(
+            root,
+            plan,
+            transaction,
+        )
+        is not None
+    )
+
 def classify_provenance_tail_transaction_rebind(
     root: Path,
     plan: dict[str, Any],
@@ -8220,7 +8324,13 @@ def classify_provenance_tail_transaction_rebind(
                 )
                 is not None
             )
-    if errors and not base_evolution:
+    reprepare_eligible = provenance_tail_transaction_reprepare_eligible(
+        root,
+        plan,
+        transaction,
+        errors,
+    )
+    if errors and not base_evolution and not reprepare_eligible:
         raise WorkflowError(
             "Task finalization transaction cannot rebind across the current provenance tail.",
             exit_code=2,
@@ -12798,19 +12908,26 @@ def finalization_preview_context(
                             )
                         )
                         if transaction_rebind_recovery is None:
-                            base_evolution = (
-                                finalizer_current_transaction_base_evolution_supersession_preflight(
-                                    root,
-                                    task_dir,
-                                    current_transaction,
-                                    plan,
-                                    allowed_gate=getattr(
-                                        args,
-                                        "_finalization_checked_gate",
-                                        None,
-                                    ),
+                            if provenance_tail_transaction_reprepare_eligible(
+                                root,
+                                plan,
+                                current_transaction,
+                            ):
+                                base_evolution = None
+                            else:
+                                base_evolution = (
+                                    finalizer_current_transaction_base_evolution_supersession_preflight(
+                                        root,
+                                        task_dir,
+                                        current_transaction,
+                                        plan,
+                                        allowed_gate=getattr(
+                                            args,
+                                            "_finalization_checked_gate",
+                                            None,
+                                        ),
+                                    )
                                 )
-                            )
                             prepared["pre_pr_reprepare"] = {
                                 "previous_transaction": copy.deepcopy(current_transaction),
                                 "prior_state": "content_pushed",

@@ -4756,6 +4756,144 @@ class FinalizeTaskContractTests(unittest.TestCase):
         self.assertEqual(actual, recovery)
         classify_existing.assert_called_once()
 
+    def test_provenance_tail_publication_metadata_drift_keeps_existing_pr_recovery(self) -> None:
+        plan = {
+            "task": {"active_locator": ".trellis/tasks/353"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "remote": "origin",
+                "head_branch": "fix/353",
+                "base_branch": "main",
+                "branch_review_commit": "b" * 40,
+                "publication_head": "b" * 40,
+            },
+            "review": {"close_issues_reviewed": [353]},
+            "publish": {"title": "new title", "body": "Closes #353"},
+        }
+        transaction = {
+            "mode": "ordinary_publication",
+            "next_transition": "push_content",
+            "pr": None,
+            "adopted_pr": None,
+            "task_ref": ".trellis/tasks/353",
+            "repo_ref": "castbox/guru-trellis",
+            "base_branch": "main",
+            "branch": "fix/353",
+            "publication": {"title": "old title", "body": "Closes #353"},
+            "close_issues": [353],
+            "branch_review_commit": "a" * 40,
+            "publication_head": "a" * 40,
+        }
+        recovery = {
+            "mode": "existing_pr_recovery",
+            "ancestry": "strict_ancestor",
+            "push_required": True,
+            "pre_push_remote_head": "a" * 40,
+            "publication_head": "b" * 40,
+        }
+        pr = {
+            "number": 337,
+            "url": "https://github.com/castbox/guru-trellis/pull/337",
+            "headRefOid": "a" * 40,
+            "isDraft": False,
+            "title": "old title",
+            "body": "Closes #353",
+        }
+        with (
+            mock.patch.object(
+                GTT,
+                "provenance_tail_transaction_rebind_errors",
+                return_value=[
+                    "publication",
+                    "provenance_tail_changed_paths_invalid",
+                    "provenance_tail_parent_mismatch",
+                ],
+            ),
+            mock.patch.object(
+                GTT,
+                "provenance_tail_transaction_rebind_base_evolution_tail_parent",
+                return_value="b" * 40,
+            ),
+            mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=pr),
+            mock.patch.object(GTT, "closeout_remote_branch_head", return_value="a" * 40),
+            mock.patch.object(
+                GTT,
+                "classify_existing_pr_recovery",
+                return_value=recovery,
+            ) as classify_existing,
+        ):
+            actual = GTT.classify_provenance_tail_transaction_rebind(
+                Path("/repo"), plan, transaction
+            )
+        self.assertEqual(actual, recovery)
+        classify_existing.assert_called_once()
+
+    def test_ordinary_provenance_tail_reprepare_preflight_requires_old_remote_head(self) -> None:
+        plan = {
+            "task": {"active_locator": ".trellis/tasks/353"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "remote": "origin",
+                "head_branch": "fix/353",
+                "base_branch": "main",
+                "branch_review_commit": "a" * 40,
+                "reviewed_content_head": "a" * 40,
+                "publication_head": "b" * 40,
+            },
+        }
+        transaction = {
+            "mode": "ordinary_publication",
+            "next_transition": "push_content",
+            "pr": None,
+            "adopted_pr": None,
+            "task_ref": ".trellis/tasks/353",
+            "repo_ref": "castbox/guru-trellis",
+            "base_branch": "main",
+            "branch": "fix/353",
+            "branch_review_commit": "a" * 40,
+            "publication_head": "a" * 40,
+        }
+        with (
+            mock.patch.object(GTT, "repo_relative", return_value=".trellis/tasks/353"),
+            mock.patch.object(
+                GTT,
+                "finalizer_pre_pr_provenance_tail_required",
+                return_value=True,
+            ),
+            mock.patch.object(
+                GTT,
+                "provenance_tail_transaction_reprepare_eligible",
+                return_value=True,
+            ),
+            mock.patch.object(GTT, "is_ancestor", return_value=True),
+            mock.patch.object(
+                GTT,
+                "closeout_remote_branch_head",
+                side_effect=["a" * 40, "c" * 40],
+            ),
+            mock.patch.object(GTT, "current_head", return_value="b" * 40),
+        ):
+            facts = GTT.finalizer_current_transaction_provenance_reprepare_preflight(
+                Path("/repo"),
+                Path("/repo/.trellis/tasks/353"),
+                transaction,
+                plan,
+            )
+            self.assertEqual(facts["reviewed_content_head"], "a" * 40)
+            self.assertEqual(facts["remote_head"], "a" * 40)
+            self.assertIsNone(facts["base_evolution"])
+            with self.assertRaises(GTT.WorkflowError) as raised:
+                GTT.finalizer_current_transaction_provenance_reprepare_preflight(
+                    Path("/repo"),
+                    Path("/repo/.trellis/tasks/353"),
+                    transaction,
+                    plan,
+                )
+        self.assertEqual(
+            raised.exception.payload["reason_code"],
+            "provenance_reprepare_remote_not_reviewed_head",
+        )
+
     def test_base_evolution_fallback_uses_real_merge_topology(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

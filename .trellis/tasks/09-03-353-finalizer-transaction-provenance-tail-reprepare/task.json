@@ -1,0 +1,11 @@
+{
+  "id": "353-finalizer-transaction-provenance-tail-reprepare",
+  "name": "353-finalizer-transaction-provenance-tail-reprepare",
+  "title": "修复 Finalizer 旧 transaction 遇到新 provenance tail 时的受支持 reprepare/rebind",
+  "status": "in_progress",
+  "branch": "codex/353-finalizer-transaction-provenance-tail-reprepare",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/353"
+}
