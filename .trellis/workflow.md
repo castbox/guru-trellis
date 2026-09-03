@@ -574,7 +574,12 @@ Reconcile durable specs and the approved Docs SSOT Plan.
 
 #### 3.4 Task commit
 
-Invoke guru-create-task-commit and consume only its declared exit. Committed
+Invoke guru-create-task-commit through its recommended normal path: run
+`prepare-task-commit` once, obtain the exact dialogue-local commit confirmation,
+then run `invoke-guru-create-task-commit-happy-path-v1` once with the returned
+candidate locator. The older message-check, create, and aggregate invoke
+commands remain compatibility/testing/recovery entries and are not the normal
+Agent sequence. Consume only the declared Skill exit. Committed
 enters the active-task pair guard with `resume_target=branch_review` before
 Branch Review.
 
@@ -602,7 +607,10 @@ may invoke guru-review-task-publication. Missing/stale evidence,
 `reviewed_candidate`, conflict, incomplete contract, or fitness regression is
 rejected through the Architecture router before Publication. The Publication
 semantic owner then authors and reviews the exact Chinese PR title/body from
-live authority.
+live authority. After that semantic judgment, use the package's single
+`review-task-publication` facade so record, objective check, projection, and
+checkpoint retirement share one invocation-local current snapshot. The older
+record/check/invoke commands remain compatibility/testing/recovery entries.
 The checked ready DTO carries that payload directly to Finalizer without a task-local publication handoff file.
 `ready` enters the pair guard with `resume_target=task_finalization`; the caller
 must not push the reviewed/publication HEAD or create a PR first. Only the
@@ -620,7 +628,14 @@ repeats Publication and Acceptance/Finish. Only the resulting current route
 invokes guru-finalize-task; this Architecture router does not interpret or
 extend Finalizer business semantics.
 
-Invoke guru-finalize-task and consume its declared exit; `ready_for_merge` immediately invokes `guru-merge-task-pr`, and only `merged` reaches the finish response after a separate expected-head confirmation, without base sync or direct Issue closure.
+Invoke guru-finalize-task through `finalize-task-happy-path`: after one read-only
+preview and the exact dialogue-local Finalizer confirmation, the facade may
+consume only mapped same-plan deterministic reprepare/recovery. Any material
+plan, authority, payload, scope, or side-effect-set change stops and requires a
+fresh preview/confirmation. Consume its declared exit; `ready_for_merge`
+immediately invokes `guru-merge-task-pr`, and only `merged` reaches the finish
+response after a separate expected-head confirmation, without base sync or
+direct Issue closure.
 
 Only publication ready enters finalization. Finalizer alone may display and execute the bounded push, PR, archive, and Ready side-effect set.
 Verification, stale publication, base reconciliation, resume, and reprepare
@@ -631,6 +646,14 @@ publication_review_stale remains limited to Publication content or metadata.
 
 Before its first remote mutation, Finalizer requires no Open PR and only an absent remote branch or strict historical ancestor of the reviewed commit; recovery accepts only transaction-bound remote/PR identity.
 Reprepare keeps title/body in Finalizer owner-private state while its public DTO remains minimal. `close_issues=[]` is refs-only: close keywords stay empty and merge closure is vacuously complete without Issue effects.
+
+Merge normally uses one expected-head-bound `watch-task-pr-checks` invocation
+only when required checks are pending, then one confirmed
+`complete-task-pr-merge` invocation. The facade owns one pre-merge snapshot,
+one expected-head mutation, one post-merge snapshot, and mutation-output-loss
+recovery. `merged`, `merge_blocked`, and `closure_mismatch` are terminal for the
+current Merge Skill: after projection it performs no further polling, reads,
+base sync, PR update, Issue mutation, or cleanup.
 
 ## Global Integration Boundaries
 

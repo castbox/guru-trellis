@@ -7989,6 +7989,12 @@ def classify_existing_pr_recovery(
                 "reviewed_close_issues": reviewed_scope,
             },
         )
+    metadata_comparison = {
+        "live_title": pr.get("title"),
+        "live_body": pr.get("body"),
+        "title_matches": pr.get("title") == plan["publish"]["title"],
+        "body_matches": pr.get("body") == plan["publish"]["body"],
+    }
     return {
         "mode": "existing_pr_recovery",
         "pr": {"number": pr["number"], "url": pr["url"]},
@@ -7998,12 +8004,213 @@ def classify_existing_pr_recovery(
         "publication_head": publication_head,
         "ancestry": ancestry,
         "push_required": ancestry == "strict_ancestor",
-        "metadata_update_required": (
-            pr.get("title") != plan["publish"]["title"]
-            or pr.get("body") != plan["publish"]["body"]
+        "metadata_update_required": not (
+            metadata_comparison["title_matches"]
+            and metadata_comparison["body_matches"]
         ),
+        "metadata_comparison": metadata_comparison,
         "ready_action": "mark_ready" if pr["isDraft"] else "preserve_ready",
     }
+
+def classify_unbound_equal_head_recovery(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Adopt only one exact ordinary transaction whose publication is already pushed."""
+    if (
+        transaction.get("mode") != "ordinary_publication"
+        or transaction.get("next_transition") != "push_content"
+        or transaction.get("pr") is not None
+        or transaction.get("adopted_pr") is not None
+    ):
+        return None
+    finalization_validate_transaction_plan(transaction, plan)
+    git = plan["git"]
+    candidate = resolve_closeout_pull_request(
+        root,
+        git["repo"],
+        git["head_branch"],
+        git["base_branch"],
+        git["remote"],
+    )
+    if candidate is None:
+        terminal_prs = resolve_closeout_terminal_pull_requests(
+            root,
+            git["repo"],
+            git["head_branch"],
+            git["base_branch"],
+            git["remote"],
+        )
+        if terminal_prs:
+            raise WorkflowError(
+                "Unbound equal-HEAD recovery found a Closed or Merged pull request for the immutable head/base.",
+                exit_code=2,
+                payload={
+                    "reason_code": "pre_finalizer_terminal_pr_exists",
+                    "pull_requests": terminal_prs,
+                },
+            )
+        return None
+    remote_head = closeout_remote_branch_head(root, plan)
+    publication_head = str(
+        git.get("publication_head") or git.get("branch_review_commit") or ""
+    )
+    if remote_head != str(candidate.get("headRefOid") or ""):
+        return classify_existing_pr_recovery(
+            root,
+            plan,
+            candidate,
+            remote_head,
+            allow_equal=True,
+        )
+    if remote_head != publication_head:
+        raise WorkflowError(
+            "Unbound ordinary recovery requires identical remote, PR, and Publication HEADs.",
+            exit_code=2,
+            payload={
+                "reason_code": "existing_pr_unbound_equal_head_required",
+                "remote_head": remote_head,
+                "pr_head": candidate.get("headRefOid"),
+                "publication_head": publication_head,
+            },
+        )
+    return classify_existing_pr_recovery(
+        root,
+        plan,
+        candidate,
+        remote_head,
+        allow_equal=True,
+    )
+
+def finalization_validate_recovery_metadata_decision(
+    publication: dict[str, Any],
+    metadata_comparison: Any,
+    metadata_update_required: Any,
+) -> dict[str, Any]:
+    """Validate the persisted original metadata snapshot and convergence decision."""
+    if (
+        not isinstance(metadata_comparison, dict)
+        or set(metadata_comparison)
+        != {"live_title", "live_body", "title_matches", "body_matches"}
+        or not isinstance(metadata_comparison.get("live_title"), str)
+        or not isinstance(metadata_comparison.get("live_body"), str)
+        or not isinstance(metadata_comparison.get("title_matches"), bool)
+        or not isinstance(metadata_comparison.get("body_matches"), bool)
+        or not isinstance(metadata_update_required, bool)
+    ):
+        raise WorkflowError(
+            "Existing PR recovery transaction metadata decision is incomplete.",
+            exit_code=2,
+            payload={"reason_code": "existing_pr_transaction_drift"},
+        )
+    expected_comparison = {
+        "live_title": metadata_comparison["live_title"],
+        "live_body": metadata_comparison["live_body"],
+        "title_matches": (
+            metadata_comparison["live_title"] == publication.get("title")
+        ),
+        "body_matches": (
+            metadata_comparison["live_body"] == publication.get("body")
+        ),
+    }
+    expected_update_required = not (
+        expected_comparison["title_matches"]
+        and expected_comparison["body_matches"]
+    )
+    if (
+        metadata_comparison != expected_comparison
+        or metadata_update_required is not expected_update_required
+    ):
+        raise WorkflowError(
+            "Existing PR recovery transaction metadata decision is inconsistent.",
+            exit_code=2,
+            payload={"reason_code": "existing_pr_transaction_drift"},
+        )
+    return copy.deepcopy(metadata_comparison)
+
+def finalization_convert_unbound_equal_head_transaction(
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+    pr: dict[str, Any],
+    recovery: dict[str, Any],
+) -> dict[str, Any]:
+    """Convert one exact ordinary owner transaction into its bound recovery shape."""
+    finalization_validate_transaction_plan(transaction, plan)
+    publication_head = str(
+        plan["git"].get("publication_head")
+        or plan["git"].get("branch_review_commit")
+        or ""
+    )
+    if (
+        transaction.get("mode") != "ordinary_publication"
+        or transaction.get("next_transition") != "push_content"
+        or transaction.get("pr") is not None
+        or transaction.get("adopted_pr") is not None
+        or recovery.get("mode") != "existing_pr_recovery"
+        or recovery.get("ancestry") != "equal"
+        or recovery.get("push_required") is not False
+        or recovery.get("publication_head") != publication_head
+        or recovery.get("pre_push_remote_head") != publication_head
+        or recovery.get("pr")
+        != {"number": pr.get("number"), "url": pr.get("url")}
+        or not isinstance(recovery.get("initial_is_draft"), bool)
+    ):
+        raise WorkflowError(
+            "Unbound equal-HEAD recovery no longer matches its exact ordinary transaction.",
+            exit_code=2,
+            payload={"reason_code": "existing_pr_recovery_drift"},
+        )
+    metadata_comparison = finalization_validate_recovery_metadata_decision(
+        transaction["publication"],
+        recovery.get("metadata_comparison"),
+        recovery.get("metadata_update_required"),
+    )
+    adopted_pr = {
+        "number": pr["number"],
+        "url": pr["url"],
+        "initial_is_draft": bool(recovery["initial_is_draft"]),
+        "pre_push_remote_head": publication_head,
+        "metadata_update_required": bool(
+            recovery["metadata_update_required"]
+        ),
+        "metadata_comparison": metadata_comparison,
+    }
+    return finalization_transaction_from_plan(
+        plan,
+        next_transition="bind_pr",
+        pr=pr,
+        mode="existing_pr_recovery",
+        adopted_pr=adopted_pr,
+    )
+
+def finalization_adopt_unbound_equal_head_transaction(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+    recovery_preview: dict[str, Any],
+) -> dict[str, Any]:
+    """Reread exact live facts, convert once, and persist before external mutation."""
+    current_recovery = classify_unbound_equal_head_recovery(
+        root,
+        plan,
+        transaction,
+    )
+    if current_recovery is None or current_recovery != recovery_preview:
+        raise WorkflowError(
+            "Unbound equal-HEAD recovery facts changed after semantic preview.",
+            exit_code=2,
+            payload={"reason_code": "existing_pr_recovery_drift"},
+        )
+    converted = finalization_convert_unbound_equal_head_transaction(
+        plan,
+        transaction,
+        current_recovery["pr"],
+        current_recovery,
+    )
+    finalization_write_transaction(root, task_dir, converted)
+    return converted
 
 def finalization_existing_pr_recovery_context(
     root: Path,
@@ -8027,6 +8234,15 @@ def finalization_existing_pr_recovery_context(
         return "existing_pr_recovery", classify_existing_pr_recovery(
             root, plan, candidate
         )
+    if current_transaction.get("mode") == "ordinary_publication":
+        recovery = classify_unbound_equal_head_recovery(
+            root,
+            plan,
+            current_transaction,
+        )
+        if recovery is None:
+            return state, None
+        return "existing_pr_recovery", recovery
     if current_transaction.get("mode") != "existing_pr_recovery":
         return state, None
     candidate, remote_head = finalization_pre_mutation_remote_preflight(
@@ -8038,6 +8254,12 @@ def finalization_existing_pr_recovery_context(
         )
     recovery = current_transaction["adopted_pr"]
     publication_head = str(current_transaction["publication_head"])
+    metadata_comparison = {
+        "live_title": candidate.get("title"),
+        "live_body": candidate.get("body"),
+        "title_matches": candidate.get("title") == plan["publish"]["title"],
+        "body_matches": candidate.get("body") == plan["publish"]["body"],
+    }
     return state, {
         "mode": "existing_pr_recovery",
         "pr": {"number": candidate["number"], "url": candidate["url"]},
@@ -8051,10 +8273,11 @@ def finalization_existing_pr_recovery_context(
             else "strict_ancestor"
         ),
         "push_required": remote_head != publication_head,
-        "metadata_update_required": (
-            candidate.get("title") != plan["publish"]["title"]
-            or candidate.get("body") != plan["publish"]["body"]
+        "metadata_update_required": not (
+            metadata_comparison["title_matches"]
+            and metadata_comparison["body_matches"]
         ),
+        "metadata_comparison": metadata_comparison,
         "ready_action": (
             "mark_ready" if recovery["initial_is_draft"] else "preserve_ready"
         ),
@@ -8339,6 +8562,37 @@ def finalization_pre_mutation_remote_preflight(
                 exit_code=2,
                 payload={"reason_code": "existing_pr_scope_drift"},
             )
+        if (
+            transaction.get("next_transition") == "bind_pr"
+            and recovery.get("pre_push_remote_head")
+            == transaction.get("publication_head")
+        ):
+            metadata_comparison = finalization_validate_recovery_metadata_decision(
+                transaction["publication"],
+                recovery.get("metadata_comparison"),
+                recovery.get("metadata_update_required"),
+            )
+            live_metadata = {
+                "title": existing_pr.get("title"),
+                "body": existing_pr.get("body"),
+            }
+            original_metadata = {
+                "title": metadata_comparison["live_title"],
+                "body": metadata_comparison["live_body"],
+            }
+            converged_metadata = {
+                "title": transaction["publication"]["title"],
+                "body": transaction["publication"]["body"],
+            }
+            if live_metadata != original_metadata and not (
+                recovery["metadata_update_required"]
+                and live_metadata == converged_metadata
+            ):
+                raise WorkflowError(
+                    "Equal-HEAD recovery PR metadata differs from both its original binding and exact Publication convergence.",
+                    exit_code=2,
+                    payload={"reason_code": "existing_pr_recovery_drift"},
+                )
         if transaction.get("next_transition") not in {"push_content", "bind_pr"}:
             validate_closeout_remote_pull_request_identity(
                 plan,
@@ -10333,13 +10587,28 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             == legacy_plan.get("plan_digest")
         )
         recovery_preview = getattr(args, "existing_pr_recovery", None)
+        if (
+            isinstance(transaction, dict)
+            and transaction.get("mode") == "ordinary_publication"
+            and isinstance(recovery_preview, dict)
+        ):
+            transaction = finalization_adopt_unbound_equal_head_transaction(
+                root,
+                task_dir,
+                plan,
+                transaction,
+                recovery_preview,
+            )
+            prior_transaction = transaction
         recovered_legacy_pr, pre_push_remote_head = finalization_pre_mutation_remote_preflight(
             root,
             plan,
             prior_transaction,
             allow_legacy_plan_recovery=legacy_plan_recovery,
             existing_pr_recovery=(
-                recovery_preview if isinstance(recovery_preview, dict) else None
+                recovery_preview
+                if transaction is None and isinstance(recovery_preview, dict)
+                else None
             ),
         )
         if retired_projection_rebound:
@@ -11822,6 +12091,8 @@ def finalization_current_archived_context(
         "publication_branch_review_commit": transaction["branch_review_commit"],
         "reprepare_reason_code": None,
         "verification": None,
+        "publication_mode": str(transaction.get("mode") or "ordinary_publication"),
+        "existing_pr_recovery": copy.deepcopy(transaction.get("adopted_pr")),
     }
 
 def finalization_current_terminal_context(
@@ -11978,6 +12249,8 @@ def finalization_current_terminal_context(
         "publication_branch_review_commit": identity["branch_review_commit"],
         "reprepare_reason_code": None,
         "verification": None,
+        "publication_mode": "ordinary_publication",
+        "existing_pr_recovery": None,
     }
 
 def finalization_preview_context(
@@ -12276,9 +12549,77 @@ def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     public_input, input_locator = finalization_public_input(root, args.input)
     context = finalization_preview_context(root, args, public_input)
+    return finalization_preview_receipt(root, public_input, input_locator, context)
+
+
+def finalization_confirmation_projection(
+    public_input: dict[str, Any],
+    context: dict[str, Any],
+) -> dict[str, Any] | None:
+    plan = context.get("plan")
+    if not isinstance(plan, dict):
+        return None
+    publication_mode = str(
+        context.get("publication_mode")
+        or (
+            "existing_pr_recovery"
+            if isinstance(context.get("existing_pr_recovery"), dict)
+            else "ordinary_publication"
+        )
+    )
+    side_effects = (
+        [
+            "bind_existing_pr_transaction",
+            "push_or_preserve_exact_publication_head",
+            "converge_or_preserve_pr_metadata",
+            "archive",
+            "push_archive",
+            "mark_or_preserve_ready",
+            "verify_three_way_head",
+        ]
+        if publication_mode == "existing_pr_recovery"
+        else [
+            "push_exact_publication_head",
+            "create_draft_pr",
+            "archive",
+            "push_archive",
+            "mark_ready",
+            "verify_three_way_head",
+        ]
+    )
+    return {
+        "schema_version": "1.0",
+        "task_ref": str(public_input.get("task_ref") or plan["task"]["active_locator"]),
+        "repo_ref": plan["git"]["repo"],
+        "base_branch": plan["git"]["base_branch"],
+        "head_branch": plan["git"]["head_branch"],
+        "branch_review_commit": plan["git"]["branch_review_commit"],
+        "pr_title": plan["publish"]["title"],
+        "pr_body": plan["publish"]["body"],
+        "close_issues": list(plan["review"]["close_issues_reviewed"]),
+        "publication_mode": publication_mode,
+        "side_effects": side_effects,
+    }
+
+
+def finalization_confirmation_identity(
+    public_input: dict[str, Any],
+    context: dict[str, Any],
+) -> str | None:
+    projection = finalization_confirmation_projection(public_input, context)
+    return canonical_json_sha256(projection) if projection is not None else None
+
+
+def finalization_preview_receipt(
+    root: Path,
+    public_input: dict[str, Any],
+    input_locator: str,
+    context: dict[str, Any],
+) -> dict[str, Any]:
     plan = context["plan"]
     if plan is None:
-        return {
+        receipt = {
+            "schema_version": "1.0",
             "status": "ok",
             "side_effects": False,
             "input_locator": input_locator,
@@ -12298,42 +12639,72 @@ def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
             "expected_actions": [],
             "publication_mode": "ordinary_publication",
             "existing_pr_recovery": None,
+            "confirmation_identity": None,
         }
-    return {
-        "status": "ok",
-        "side_effects": False,
-        "input_locator": input_locator,
-        "profile": public_input["profile"],
-        "mode": public_input["mode"],
-        "task_ref": public_input["task_ref"],
-        "plan_ref": context["plan_ref"],
-        "closeout_plan": plan,
-        "closeout_plan_bytes_sha256": hashlib.sha256(
-            closeout_json_artifact_bytes(plan)
-        ).hexdigest(),
-        "closeout_plan_digest": plan["plan_digest"],
-        "branch_review_commit": plan["git"]["branch_review_commit"],
-        "transaction_state": context["transaction_state"],
-        "publication_mode": context.get("publication_mode", "ordinary_publication"),
-        "existing_pr_recovery": copy.deepcopy(context.get("existing_pr_recovery")),
-        "expected_actions": (
-            [
-                "bind_existing_pr_transaction",
-                "push_exact_publication_head"
-                if context.get("existing_pr_recovery", {}).get("push_required")
-                else "preserve_existing_remote_head",
-                "converge_pr_metadata"
-                if context.get("existing_pr_recovery", {}).get("metadata_update_required")
-                else "preserve_current_pr_metadata",
-                "archive",
-                "push_archive",
-                context.get("existing_pr_recovery", {}).get("ready_action"),
-                "verify_three_way_head",
-            ]
-            if context.get("existing_pr_recovery") is not None
-            else list(CLOSEOUT_TRANSITIONS[1:])
-        ),
-    }
+    else:
+        receipt = {
+            "schema_version": "1.0",
+            "status": "ok",
+            "side_effects": False,
+            "input_locator": input_locator,
+            "profile": public_input["profile"],
+            "mode": public_input["mode"],
+            "task_ref": public_input["task_ref"],
+            "plan_ref": context["plan_ref"],
+            "closeout_plan": plan,
+            "closeout_plan_bytes_sha256": hashlib.sha256(
+                closeout_json_artifact_bytes(plan)
+            ).hexdigest(),
+            "closeout_plan_digest": plan["plan_digest"],
+            "branch_review_commit": plan["git"]["branch_review_commit"],
+            "transaction_state": context["transaction_state"],
+            "publication_status": context["publication_status"],
+            "publication_stale_reason": context["publication_stale_reason"],
+            "publication_mode": context.get("publication_mode", "ordinary_publication"),
+            "existing_pr_recovery": copy.deepcopy(context.get("existing_pr_recovery")),
+            "expected_actions": (
+                [
+                    "bind_existing_pr_transaction",
+                    "push_exact_publication_head"
+                    if context.get("existing_pr_recovery", {}).get("push_required")
+                    else "preserve_existing_remote_head",
+                    "converge_pr_metadata"
+                    if context.get("existing_pr_recovery", {}).get("metadata_update_required")
+                    else "preserve_current_pr_metadata",
+                    "archive",
+                    "push_archive",
+                    context.get("existing_pr_recovery", {}).get("ready_action"),
+                    "verify_three_way_head",
+                ]
+                if context.get("existing_pr_recovery") is not None
+                else list(CLOSEOUT_TRANSITIONS[1:])
+            ),
+            "confirmation_identity": finalization_confirmation_identity(
+                public_input,
+                context,
+            ),
+        }
+    errors: list[str] = []
+    schema = skill_read_schema(
+        finalization_package_root(root) / "schemas/finalization-preview-1.0.schema.json",
+        "task finalization preview receipt",
+        errors,
+    )
+    if isinstance(schema, dict):
+        errors.extend(
+            skill_json_schema_validation_errors(
+                receipt,
+                schema,
+                "task finalization preview receipt",
+            )
+        )
+    if errors or not isinstance(schema, dict):
+        raise WorkflowError(
+            "Task finalization preview receipt is invalid.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return receipt
 
 def finalization_output_contract(
     root: Path,
@@ -12461,6 +12832,29 @@ def finalization_validate_route(
                 exit_code=2,
                 payload={"errors": errors},
             )
+        if exit_id == "base_reconciliation_required":
+            facts = context.get("base_reconciliation")
+            if not isinstance(facts, dict) or output != {
+                "exit_id": exit_id,
+                **{
+                    key: facts[key]
+                    for key in (
+                        "task_ref",
+                        "task_head",
+                        "publication_head",
+                        "selected_base_ref",
+                        "old_base_head",
+                        "new_base_head",
+                        "branch_review_commit",
+                        "resume_target",
+                    )
+                },
+            }:
+                raise WorkflowError(
+                    "base_reconciliation_required does not match the current base pair.",
+                    exit_code=2,
+                )
+            return
         expected_task_ref = (
             plan["task"]["archive_locator"]
             if exit_id == "ready_for_merge"
@@ -12491,11 +12885,6 @@ def finalization_validate_route(
                     exit_code=2,
                 )
     publication_status = context.get("publication_status", "current")
-    if exit_id == "base_reconciliation_required":
-        facts = context.get("base_reconciliation")
-        if not isinstance(facts, dict) or output != {"exit_id": exit_id, **{key: facts[key] for key in ("task_ref", "task_head", "publication_head", "selected_base_ref", "old_base_head", "new_base_head", "branch_review_commit", "resume_target")}}:
-            raise WorkflowError("base_reconciliation_required does not match the current base pair.", exit_code=2)
-        return
     if context.get("transaction_state") == "base_reconciliation_required" and exit_id != "blocked":
         raise WorkflowError("Current base evolution requires reconciliation or a blocked route.", exit_code=2)
     if exit_id == "publication_review_stale":
@@ -12607,6 +12996,25 @@ def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
     public_input, _ = finalization_public_input(root, args.input)
     reviewed = finalization_semantic_review_input(root, args.review_input)
     context = finalization_preview_context(root, args, public_input)
+    return finalization_record_gate_result(
+        root,
+        public_input,
+        reviewed,
+        context,
+        dry_run=bool(getattr(args, "dry_run", False)),
+        include_private=False,
+    )
+
+
+def finalization_record_gate_result(
+    root: Path,
+    public_input: dict[str, Any],
+    reviewed: dict[str, Any],
+    context: dict[str, Any],
+    *,
+    dry_run: bool,
+    include_private: bool,
+) -> dict[str, Any]:
     finalization_validate_route(
         root,
         public_input,
@@ -12650,16 +13058,20 @@ def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
     committed_recovery = (
         context["transaction_state"] in FINALIZATION_COMMITTED_RECOVERY_STATES
     )
-    if not getattr(args, "dry_run", False) and not committed_recovery:
+    if not dry_run and not committed_recovery:
         write_json(artifact_path, gate)
-    return {
+    result = {
         "status": "ok",
         "artifact_path": str(artifact_path),
         "typed_exit": gate["route"]["typed_exit"],
         "plan_ref": context["plan_ref"],
         "plan_digest": plan["plan_digest"] if plan is not None else None,
-        "dry_run": bool(getattr(args, "dry_run", False)),
+        "dry_run": dry_run,
     }
+    if include_private:
+        result["gate"] = gate
+        result["gate_path"] = artifact_path
+    return result
 
 def finalization_gate_input(
     root: Path,
@@ -12789,14 +13201,33 @@ def check_finalization_gate_result(
     *,
     allow_pending_transition: bool = False,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
+    preview_args = copy.copy(args)
+    preview_args._finalization_checked_gate = gate
+    context = finalization_preview_context(root, preview_args, public_input)
+    return check_finalization_gate_context(
+        root,
+        public_input,
+        gate,
+        gate_path,
+        context,
+        allow_pending_transition=allow_pending_transition,
+    )
+
+
+def check_finalization_gate_context(
+    root: Path,
+    public_input: dict[str, Any],
+    gate: dict[str, Any],
+    gate_path: Path,
+    context: dict[str, Any],
+    *,
+    allow_pending_transition: bool = False,
+) -> tuple[dict[str, Any], dict[str, Any]]:
     errors = skill_json_schema_validation_errors(
         gate,
         finalization_gate_schema(root),
         "task finalization gate",
     )
-    preview_args = copy.copy(args)
-    preview_args._finalization_checked_gate = gate
-    context = finalization_preview_context(root, preview_args, public_input)
     transition_gate = task_finalization_transition_path(root, context["task_dir"])
     if (
         gate_path.resolve() == transition_gate.resolve()
@@ -12976,18 +13407,13 @@ def finalization_gate_with_ready_for_merge_output(
         )
     return updated
 
-def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, Any]:
-    root = repo_root(Path(args.root or os.getcwd()))
-    public_input, _ = finalization_public_input(root, args.input)
-    gate, gate_path = finalization_gate_input(root, public_input, args.gate)
-    gate, context = check_finalization_gate_result(
-        root,
-        args,
-        public_input,
-        gate,
-        gate_path,
-        allow_pending_transition=True,
-    )
+def execute_finalization_transition_result(
+    root: Path,
+    args: argparse.Namespace,
+    public_input: dict[str, Any],
+    gate: dict[str, Any],
+    context: dict[str, Any],
+) -> dict[str, Any]:
     exit_id = gate["route"]["typed_exit"]
     task_dir = context["task_dir"]
     if exit_id == "reprepare_required":
@@ -13247,6 +13673,27 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
         "typed_exit": exit_id,
         "output": copy.deepcopy(gate["route"]["output"]),
     }
+
+
+def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    public_input, _ = finalization_public_input(root, args.input)
+    gate, gate_path = finalization_gate_input(root, public_input, args.gate)
+    gate, context = check_finalization_gate_result(
+        root,
+        args,
+        public_input,
+        gate,
+        gate_path,
+        allow_pending_transition=True,
+    )
+    return execute_finalization_transition_result(
+        root,
+        args,
+        public_input,
+        gate,
+        context,
+    )
 
 def context_sort(values: set[str] | list[str]) -> list[str]:
     return sorted(set(values), key=lambda item: item.encode("utf-8"))

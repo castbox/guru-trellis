@@ -11,6 +11,10 @@
   apply 以 `--repo target_reviewed_checkout` 写 target，postimage 分别验证 target lineage 与 extension
   provenance。不得解析 mutable main、PATH/global package、hidden checkout 或 legacy fallback，也不
   引入 verifier lifecycle edge。
+- `ARCH-INT-009`：仓库私有正式发布入口通过既有 owner 的 declared typed result 串行连接 preparation
+  与 post-merge exact candidate；PR/Release payload 从 live Issue、exact diff、当前验证与 candidate
+  identity 即时生成。owner-private lifecycle metadata、授权和阶段状态不进入 tracked handoff，任何
+  delivery、durable docs、配置、schema、script 或 test 变化仍使对应 owner evidence stale。
 
 ## Capability 与 installation consistency 边界
 

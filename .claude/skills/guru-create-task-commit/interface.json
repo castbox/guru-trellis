@@ -143,6 +143,10 @@
       "path": "schemas/task-commit-candidate.schema.json"
     },
     {
+      "id": "happy_path_result_schema",
+      "path": "schemas/happy-path-result.schema.json"
+    },
+    {
       "id": "public_input_initial_commit",
       "path": "schemas/public-initial-commit-input.schema.json"
     },
@@ -199,10 +203,16 @@
       "objective_scope": "AI-reviewed ordinary/gitlink bindings with deletion inheritance limited to rename sources, isolated validation, standard conditional Git publication, raw commit postconditions, and private runtime cleanup"
     },
     {
+      "id": "recommended_happy_path_v1",
+      "command": "scripts/invoke-happy-path-v1.sh",
+      "runtime_command": "invoke-guru-create-task-commit-happy-path-v1",
+      "objective_scope": "Recommended post-confirmation facade: one mutation-boundary candidate validation, one exact transaction, existing typed-exit projection, and same-commit stdout-loss recovery"
+    },
+    {
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-create-task-commit",
-      "objective_scope": "Minimal public seed validation, prepared private-candidate actual-exit derivation, exact execution, and deterministic single typed-exit serialization"
+      "objective_scope": "Compatibility projection for callers that already orchestrate the executor result; not the recommended Happy Path"
     }
   ],
   "external_exits": [
@@ -237,7 +247,8 @@
     "stale_behavior": "fail_closed"
   },
   "tests": [
-    "tests/test_contract.py"
+    "tests/test_contract.py",
+    "tests/test_happy_path.py"
   ],
   "platform_destinations": [
     "shared",
@@ -497,6 +508,15 @@
         "schema": {
           "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json",
           "path": "schemas/task-commit-candidate.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "task_commit_happy_path_result",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-happy-path-result-1.0.json",
+          "path": "schemas/happy-path-result.schema.json"
         },
         "persistence": "ignored_runtime"
       }

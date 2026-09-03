@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-版本：`current-main-0.6.5-guru.42`；状态：`active`；predecessor：`current-main-0.6.5-guru.41`；provenance：`code_recovered` + #267 reviewed release-authority alignment，绑定 task head `d3dca74b…` + expected `.41` serialized promotion delta。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD。
+版本：`current-main-0.6.5-guru.42`；状态：`superseded`；successor：`current-main-0.6.5-guru.43`；provenance：`code_recovered` + #267 reviewed release-authority alignment 与后续 fact-only corrections。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定。
 
 ## 分层与 ownership
 

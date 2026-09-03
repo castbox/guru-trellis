@@ -58,6 +58,7 @@
     {"id": "blocked_output", "path": "examples/public-blocked-output.json"},
     {"id": "invocation_error", "path": "examples/public-invocation-error.json"},
     {"id": "reviewed_content_identity_output_example", "path": "examples/reviewed-content-identity-output.json"}
+    ,{"id": "finalization_preview_example", "path": "examples/finalization-preview.json"}
   ],
   "schemas": [
     {"id": "current_gate_schema_alias", "path": "schemas/task-finalization-gate.schema.json"},
@@ -90,13 +91,15 @@
     {"id": "blocked_output", "path": "schemas/public-blocked-output.schema.json"},
     {"id": "invocation_error", "path": "schemas/public-invocation-error.schema.json"},
     {"id": "reviewed_content_identity_output", "path": "schemas/reviewed-content-identity-output.schema.json"}
+    ,{"id": "finalization_preview_1_0", "path": "schemas/finalization-preview-1.0.schema.json"}
   ],
   "validators": [
     {"id": "finalization_previewer", "command": "scripts/preview-finalization.sh", "runtime_command": "preview-finalization", "objective_scope": "Build or rediscover the immutable closeout plan with the existing deterministic engine and no side effect"},
     {"id": "finalization_gate_recorder", "command": "scripts/record-finalization-gate.sh", "runtime_command": "record-finalization-gate", "objective_scope": "Record only the completed AI review, objective task/plan/content identity and selected route; user authorization remains conversation-only"},
     {"id": "finalization_gate_checker", "command": "scripts/check-finalization-gate.sh", "runtime_command": "check-finalization-gate", "objective_scope": "Validate the minimal gate against current task, plan, content, route, consumer and transaction facts"},
     {"id": "finalization_transition_executor", "command": "scripts/execute-finalization-transition.sh", "runtime_command": "execute-finalization-transition", "objective_scope": "Execute one checked deterministic transition through the existing closeout engine without choosing the external route"},
-    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-finalize-task", "objective_scope": "Validate current public input, rerun the finalization gate checker, select the actual exit schema and emit one minimal DTO"},
+    {"id": "public_invocation", "command": "scripts/finalize-task-happy-path.sh", "runtime_command": "finalize-task-happy-path", "objective_scope": "After dialogue-local confirmation, bind the current preview identity, record and check the AI review once, continue only mapped same-plan deterministic reprepare or recovery, and emit one minimal DTO"},
+    {"id": "legacy_public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-finalize-task", "objective_scope": "Compatibility and recovery entry that validates a prebuilt owner-private gate and emits one minimal DTO"},
     {"id": "reviewed_content_identity", "command": "scripts/reviewed-content-identity.sh", "runtime_command": "finalize-task-content-identity", "objective_scope": "Compute the canonical metadata-excluded reviewed-content identity for one Git commit"}
   ],
   "external_exits": [
@@ -131,12 +134,12 @@
     },
     "invocation": {
       "command_id": "run-skill-command",
-      "wrapper": "scripts/invoke.sh",
+      "wrapper": "scripts/finalize-task-happy-path.sh",
       "input_binding": {"kind": "structured_json", "profile_id": "publication_ready"},
       "stdout_contract": "single_typed_exit",
       "error_schema": {"schema_id": "guru-finalize-task-invocation-error-1.0", "path": "schemas/public-invocation-error.schema.json"},
       "error_example": {"id": "invalid_public_input", "path": "examples/public-invocation-error.json"},
-      "example_argv": ["--input", "examples/public-publication-ready-input.json", "--owner-result", "examples/task-finalization-gate.json"]
+      "example_argv": ["--input", "examples/public-publication-ready-input.json", "--review-input", "examples/semantic-review-input.json", "--confirmed-preview-sha256", "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"]
     },
     "outputs": [
       {

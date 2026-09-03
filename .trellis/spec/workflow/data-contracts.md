@@ -1368,8 +1368,22 @@ minimal immutable inputs immediately before mutation.
 
 Recovery requires one unique non-fork Open PR on the exact repository/head/base.
 The PR and remote HEAD must agree. Fresh adoption requires a strict Git ancestor
-of `publication_head`; equality is valid only after the exact pre-push HEAD and
-publication HEAD are bound by the same recovery transaction. The current Ledger close scope must equal the PR close
+of `publication_head`; equality is valid after the exact pre-push HEAD and
+publication HEAD are bound by the same recovery transaction, or while one exact
+current `ordinary_publication/push_content` transaction remains unbound and the
+remote, PR and Publication HEADs already equal. In the latter case preview keeps
+the live title/body bytes, field-equality facts and convergence decision;
+execute rereads them, converts the same schema 3.0 transaction to
+`existing_pr_recovery/bind_pr`, and persists the original comparison and
+decision in its additive private `adopted_pr` binding before any PR, archive or
+Ready mutation. Existing strict-ancestor transactions without those additive
+fields remain valid, while an equal-HEAD `bind_pr` resume requires internally
+consistent fields and accepts only the original bound metadata or, when the
+decision required convergence, an exact current Publication payload left by a
+successful edit before the interrupted transaction advance. The converged retry
+performs no second edit; every other metadata state fails closed. No second
+transaction, publication push or PR create is permitted. Fresh equal-HEAD adoption without
+this owner transaction remains invalid. The current Ledger close scope must equal the PR close
 scope before metadata mutation. Current Publication title/body is the only
 convergence authority. Any identity, scope, payload, original state, ancestry,
 archive, or transaction drift fails closed. Schema 2.0 remains immutable at its
@@ -1378,8 +1392,10 @@ explicit versioned path and cannot adopt an existing PR.
 After the exact recovery transaction binds its PR and advances to `archive`,
 `push_archive`, or `mark_ready`, it is the current stage authority. Preview
 validates its complete minimal identity before applying any pre-PR provenance
-inference; a matching transaction resumes its recorded transition, while a
-mismatch fails closed and cannot fall back to fresh adoption or reprepare.
+inference; the persisted original metadata remains decision evidence, while
+current Publication and live reread own convergence. A matching transaction
+resumes its recorded transition, while a mismatch fails closed and cannot fall
+back to fresh adoption or reprepare.
 
 Archive commit/push may complete before a Draft-to-Ready call returns. In that
 normal interruption window the archived task and owner transaction retain
@@ -1978,3 +1994,29 @@ while any legacy Publication stale reason is classified by its current owner:
 base-only mismatch routes to base reconciliation and content/metadata stale
 remains Publication-owned. Migration does not rewrite active task artifacts,
 read another package's private state, or restore the retired shared dispatcher.
+
+## Closeout Facade Invocation State
+
+Closeout facade state is package-local, ignored, and bounded to one direct
+consumer. Publication's current full snapshot is process-local and reused only
+by its record/check/projection sequence. Finalizer's preview identity is a
+dialogue-local confirmation binding, not authorization evidence; any retained
+transaction records only the minimum same-owner recovery state already required
+by the Finalizer contract. Merge binds its pre-merge snapshot to repo, PR,
+expected head, reviewed message, policy/check facts, close scope, and pre-merge
+base head, then discards it after terminal projection.
+
+Commit may retain a minimal success receipt after the live ref has advanced so
+loss of invocation stdout can recover the exact published commit without a
+second commit or ref mutation. The receipt binds candidate locator, task, base,
+branch, pre-commit head, commit/tree, and commit-message identity; it carries no
+review narrative, authorization, timestamp, live repository snapshot, or
+cross-Skill authority. Normal consumption removes it together with the
+candidate and consumed Phase 2 checkpoint.
+
+Operation-count evidence uses normalized categories for complete authority
+reads, record/check/project operations, mutations, recovery inspection,
+watcher polls, and post-terminal operations. It is test evidence rather than a
+public Skill DTO or durable audit artifact. Wall-clock samples are observational
+and must separate Agent orchestration, deterministic command, GitHub API, and
+external CI wait.

@@ -235,6 +235,25 @@ workflow/preset install；在 disposable npm prefix/container 中运行
 workflow、十 profiles、平台投影、ownership、dogfood drift 与递归零 `.new`/`.bak`。
 该门禁不修改开发机 global npm，也不升级真实业务仓。
 
+## 仓库维护者正式发布入口
+
+`release-guru-trellis-version` 是 `castbox/guru-trellis` 仓库私有的正式发布编排
+Skill。维护者提供 target repository、current release Issue、目标 repo tag、目标 extension
+revision、官方 Trellis CLI version 和 predecessor tag；Skill 每次重新读取 live Git/GitHub authority，先
+编排 preparation task/PR，再在合并后从 fresh `origin/main` 冻结 exact candidate。
+
+preparation 继续由 standard intake、Phase 2、Task Commit、一次完整 Branch Review、
+Publication、Finalizer 和 Merge owners 各自负责；post-merge 阶段只组合 release-specific
+检查以及彼此独立的 tag、tag-pinned smoke、GitHub Release、Issue closure 和 cleanup 动作。
+每个外部副作用都必须单独展示并取得仅适用于该动作的确认。
+
+该 Skill 只在本仓库的 Shared、Codex、Claude 和 Cursor project-local discovery roots 中
+发现，不进入 Guru Team marketplace、preset、公共 Skill package 或业务仓库安装投影。
+release task 不创建 `release-notes*.md`，`implement.md` 只保存稳定计划；HEAD、阶段进度、
+Gate 结果、finding closure、tag/smoke/Release 状态和用户授权不得写入 tracked task 或
+durable docs。PR body 与 GitHub Release body 分别在对应动作前根据 live authority 即时生成
+并完成语义审查。
+
 ## 适合哪些仓库
 
 Guru Trellis 适合：

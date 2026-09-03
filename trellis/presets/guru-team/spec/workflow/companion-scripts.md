@@ -1638,8 +1638,19 @@ remote mutation interval. Preview and execute rebuild live Git/GitHub/Trellis
 facts and bind exact Publication input. Ordinary publication still requires no
 Open PR. `existing_pr_recovery` separately binds the unique same-repository PR,
 remote/PR pre-push HEAD, fresh strict-ancestor relation, transaction-bound
-post-push equality, original Draft/Ready
-state, and current close scope before mutation. The executor pushes only the
+post-push equality, or one exact unbound ordinary `push_content` transaction
+whose remote/PR/Publication HEAD already equal. The unbound equal path compares
+the complete rebuilt transaction identity plus live PR metadata bytes, converts
+that same transaction to `existing_pr_recovery/bind_pr` before any remaining
+external mutation, persists the original metadata comparison and convergence
+decision in its owner-private binding, and does not repeat publication push or
+PR creation. An equal-HEAD `bind_pr` resume requires that internally consistent
+binding and accepts only the original live metadata or, when the persisted
+decision required convergence, the exact current Publication payload left by an
+already-successful edit before transaction advance; the latter performs no
+second edit. Any third metadata state remains blocked, as does fresh equal-HEAD
+adoption without that transaction. Recovery retains the original Draft/Ready state
+and current close scope before mutation. The executor pushes only the
 exact publication commit by non-force fast-forward, converges reviewed metadata,
 archives, then preserves Ready or performs Draft-to-Ready. Finalizer never calls extension verification,
 reads verifier owner state, accepts a verification re-entry profile, or retains
@@ -1722,3 +1733,24 @@ the exact pair, reviewed scope, findings, selected route, and one of the six
 closed exits without choosing any of them. They do not receive or persist user
 authorization. Current consumer completion removes the private result; failed
 validation retains it only for same-owner repair.
+
+## Closeout Facade Commands
+
+The recommended Merge facade is `complete-task-pr-merge`. It owns exactly one
+pre-merge full snapshot, one expected-head merge mutation, one post-merge full
+snapshot, and exact-live-state recovery when the mutation succeeded but command
+output was lost. `watch-task-pr-checks` is the only normal pending-check watcher;
+it is bound to repo, PR, expected head, and required-check identity and returns
+only `checks_succeeded`, `checks_failed`, `checks_pending_timeout`, or
+`head_changed` facts. It never chooses semantic readiness or mutates the PR.
+The normal path must not combine it with `gh run watch` or an Agent polling
+loop. Every Merge typed exit performs terminal cleanup and returns immediately.
+
+The recommended Publication facade is `review-task-publication`; it performs
+record, objective check, output projection, and successful checkpoint retirement
+within one invocation-local snapshot. The recommended Finalizer facade is
+`finalize-task-happy-path`; it may loop only over package-declared same-plan
+deterministic recovery/reprepare transitions. The recommended Commit path is
+`prepare-task-commit` followed by `invoke-guru-create-task-commit-happy-path-v1`.
+Older component commands remain package-owned compatibility and diagnostic
+surfaces, not the normal workflow sequence.

@@ -194,13 +194,17 @@ class InstalledPackageClient:
         if len(candidates) != 1:
             raise RuntimeError("installed task commit candidate is ambiguous")
         executed = self._call(
-            "create-task-commit.sh",
+            "invoke-happy-path-v1.sh",
             "--root", str(root),
-            "--task", task.relative_to(root).as_posix(),
             "--candidate-artifact", candidates[0].relative_to(root).as_posix(),
         )
         run(["git", "reset", "--mixed", "HEAD"], root)
-        return executed
+        return {
+            "exit": executed["exit_id"],
+            "commit_sha": executed["branch_review_commit"],
+            "task_ref": executed["task_ref"],
+            "base_ref": executed["base_ref"],
+        }
 
     def cmd_review_branch(self, args: argparse.Namespace) -> dict[str, Any]:
         result = self._call(
@@ -432,6 +436,10 @@ def write_fixture(
         "branch_review_commit": branch_check["review_commit"],
         "review_intent": "initial_review",
     }
+    publication_input_path = (
+        root / ".trellis/.runtime/guru-team/installed-closeout/publication-input.json"
+    )
+    write_json(publication_input_path, publication_input)
     authoring_path = adapter.production_publication_authoring(
         owners["guru-review-task-publication"],
         root,
@@ -446,40 +454,22 @@ def write_fixture(
     }
     write_json(authoring_path, authoring)
     fixture_remote_url = git(root, real_git, "remote", "get-url", "origin")
-    publication_package = (
-        root
-        / ".trellis/guru-team/skills/packages/guru-review-task-publication"
-    )
-    record_publication = publication_package / "scripts/record-task-publication-review.sh"
-    check_publication = publication_package / "scripts/check-task-publication-review.sh"
-    run(
-        [
-            str(record_publication),
-            "--root",
-            str(root),
-            "--task",
-            task_dir.relative_to(root).as_posix(),
-            "--input",
-            authoring_path.relative_to(root).as_posix(),
-            "--branch-review-commit",
-            publication_input["branch_review_commit"],
-        ],
-        root,
-    )
-    checked_publication = json.loads(
+    publication_package = root / ".trellis/guru-team/skills/packages/guru-review-task-publication"
+    publication_facade = publication_package / "scripts/review-task-publication.sh"
+    checked_publication = single_json_stdout(
         run(
             [
-                str(check_publication),
-                "--root",
-                str(root),
-                "--task",
-                task_dir.relative_to(root).as_posix(),
-                "--expected-exit",
-                "ready",
+                str(publication_facade),
+                "--root", str(root),
+                "--input", publication_input_path.relative_to(root).as_posix(),
+                "--semantic-result", authoring_path.relative_to(root).as_posix(),
             ],
             root,
-        ).stdout
+        ),
+        "installed Publication Happy Path facade",
     )
+    if checked_publication.get("exit_id") != "ready":
+        raise RuntimeError("installed Publication facade did not return ready")
     if git(root, real_git, "remote", "get-url", "origin") != fixture_remote_url:
         raise RuntimeError("publication fixture changed the real origin remote")
     return task_dir, branch, str(checked_publication["branch_review_commit"])
@@ -720,10 +710,7 @@ def run_closeout(
         name: package / "scripts" / f"{name}.sh"
         for name in (
             "preview-finalization",
-            "record-finalization-gate",
-            "check-finalization-gate",
-            "execute-finalization-transition",
-            "invoke",
+            "finalize-task-happy-path",
         )
     }
     for name, wrapper in wrappers.items():
@@ -780,12 +767,7 @@ def run_closeout(
     )
     semantic_review = runtime_dir / f"{issue}-semantic-review.json"
 
-    def write_semantic_review(typed_exit: str) -> None:
-        consumer = (
-            "guru-finalize-task"
-            if typed_exit == "reprepare_required"
-            else "guru-merge-task-pr"
-        )
+    def write_semantic_review() -> None:
         semantic_review.write_text(
             json.dumps(
                 {
@@ -793,17 +775,12 @@ def run_closeout(
                     "skill_id": "guru-finalize-task",
                     "review": {
                         "status": "passed",
-                        "summary": (
-                            "The installed Finalizer provenance reprepare is required "
-                            "before the non-extension closeout transaction."
-                            if typed_exit == "reprepare_required"
-                            else "The installed Finalizer plan is sufficient for the "
-                            "complete non-extension closeout transaction."
-                        ),
+                        "summary": "The installed Finalizer plan is sufficient for the "
+                        "complete non-extension closeout transaction.",
                     },
                     "route": {
-                        "typed_exit": typed_exit,
-                        "consumer": {"kind": "skill", "id": consumer},
+                        "typed_exit": "ready_for_merge",
+                        "consumer": {"kind": "skill", "id": "guru-merge-task-pr"},
                         "output": {"materialization": "executor"},
                     },
                 },
@@ -814,33 +791,20 @@ def run_closeout(
             encoding="utf-8",
         )
 
-    write_semantic_review("reprepare_required")
+    write_semantic_review()
     semantic_review_rel = semantic_review.relative_to(root).as_posix()
-
-    def commands_for(input_path: Path) -> tuple[list[str], list[str], list[str], list[str]]:
-        common_options = [
-            "--root", str(root),
-            "--json",
-            "--input", input_path.relative_to(root).as_posix(),
-            "--repo", REPO,
-            "--base-branch", BASE_BRANCH,
-            "--remote", "origin",
-        ]
-        return (
-            [str(wrappers["preview-finalization"]), *common_options],
-            [
-                str(wrappers["record-finalization-gate"]),
-                *common_options,
-                "--review-input",
-                semantic_review_rel,
-            ],
-            [str(wrappers["check-finalization-gate"]), *common_options],
-            [str(wrappers["execute-finalization-transition"]), *common_options],
-        )
-
-    preview_command, record_command, check_command, execute_command = commands_for(
-        finalization_input
-    )
+    common_options = [
+        "--root", str(root),
+        "--input", finalization_input.relative_to(root).as_posix(),
+        "--repo", REPO,
+        "--base-branch", BASE_BRANCH,
+        "--remote", "origin",
+    ]
+    preview_command = [
+        str(wrappers["preview-finalization"]),
+        *common_options,
+        "--json",
+    ]
 
     resolved_gh = subprocess.run(
         ["/bin/sh", "-c", "command -v gh"],
@@ -870,82 +834,22 @@ def run_closeout(
         )
 
     dry_payload = json.loads(run(preview_command, root, env=env).stdout)
+    initial_finalizer_state = dry_payload.get("transaction_state")
     if (
         dry_payload.get("side_effects") is not False
-        or dry_payload.get("transaction_state") != "reprepare_required"
+        or initial_finalizer_state not in {"prepared", "reprepare_required"}
     ):
-        raise RuntimeError("installed Finalizer preview did not require provenance reprepare")
+        raise RuntimeError("installed Finalizer preview was not ready for the Happy Path facade")
     digest = dry_payload["closeout_plan_digest"]
-    recorded_payload = json.loads(run(record_command, root, env=env).stdout)
-    if (
-        recorded_payload.get("typed_exit") != "reprepare_required"
-        or recorded_payload.get("plan_digest") != digest
-    ):
-        raise RuntimeError("installed Finalizer recorder did not bind provenance reprepare")
-    checked_payload = json.loads(run(check_command, root, env=env).stdout)
-    if (
-        checked_payload.get("typed_exit") != "reprepare_required"
-        or checked_payload.get("plan_digest") != digest
-        or checked_payload.get("transaction_state") != "reprepare_required"
-    ):
-        raise RuntimeError("installed Finalizer checker did not preserve provenance reprepare")
-    reprepare_payload = single_json_stdout(
-        run(execute_command, root, env=env),
-        "installed Finalizer provenance reprepare",
-    )
-    reprepare_output = reprepare_payload.get("output")
-    if (
-        reprepare_payload.get("typed_exit") != "reprepare_required"
-        or reprepare_payload.get("replacement_transaction_created") is not True
-        or not isinstance(reprepare_output, dict)
-        or reprepare_output.get("exit_id") != "reprepare_required"
-        or reprepare_output.get("reason_code") != "provenance_tail_required"
-    ):
-        raise RuntimeError("installed Finalizer did not complete provenance reprepare")
-
-    reprepare_input = runtime_dir / f"{issue}-reprepare-preview.json"
-    write_json(
-        reprepare_input,
-        {
-            "profile": "reprepare_preview",
-            "mode": "workflow",
-            **{
-                key: reprepare_output[key]
-                for key in (
-                    "task_ref",
-                    "reason_code",
-                    "branch_review_commit",
-                    "publication_head",
-                )
-            },
-        },
-    )
-    write_semantic_review("ready_for_merge")
-    preview_command, record_command, check_command, execute_command = commands_for(
-        reprepare_input
-    )
-    dry_payload = json.loads(run(preview_command, root, env=env).stdout)
-    if (
-        dry_payload.get("side_effects") is not False
-        or dry_payload.get("transaction_state") != "prepared"
-    ):
-        raise RuntimeError("installed Finalizer reprepared preview was not publication-ready")
-    digest = dry_payload["closeout_plan_digest"]
-    recorded_payload = json.loads(run(record_command, root, env=env).stdout)
-    if (
-        recorded_payload.get("typed_exit") != "ready_for_merge"
-        or recorded_payload.get("plan_digest") != digest
-    ):
-        raise RuntimeError("installed Finalizer recorder did not bind the reprepared plan")
-    gate_path = Path(recorded_payload["artifact_path"])
-    gate_rel = gate_path.relative_to(root).as_posix()
-    checked_payload = json.loads(run(check_command, root, env=env).stdout)
-    if (
-        checked_payload.get("typed_exit") != "ready_for_merge"
-        or checked_payload.get("plan_digest") != digest
-        or checked_payload.get("transaction_state") != "prepared"
-    ):
-        raise RuntimeError("installed Finalizer checker did not preserve the reprepared plan")
+    confirmation_identity = dry_payload.get("confirmation_identity")
+    if not isinstance(confirmation_identity, str):
+        raise RuntimeError("installed Finalizer preview omitted its confirmation identity")
+    facade_command = [
+        str(wrappers["finalize-task-happy-path"]),
+        *common_options,
+        "--review-input", semantic_review_rel,
+        "--confirmed-preview-sha256", confirmation_identity,
+    ]
 
     config_path = root / ".trellis/config.yaml"
     original_config = config_path.read_bytes() if config_path.exists() else None
@@ -966,7 +870,6 @@ def run_closeout(
                 if (task_dir / "pr-readiness.json").is_file()
                 else None
             ),
-            "finalization_gate": gate_path.read_bytes() if gate_path.is_file() else None,
         }
 
     def verify_archive_path_symlink_case(component: str, target_scope: str) -> None:
@@ -995,7 +898,7 @@ def run_closeout(
                 moved_existing = True
             link_path.symlink_to(target, target_is_directory=True)
             before = preflight_state()
-            for command in (preview_command, execute_command):
+            for command in (preview_command, facade_command):
                 blocked = subprocess.run(
                     command,
                     cwd=root,
@@ -1055,7 +958,7 @@ def run_closeout(
             encoding="utf-8",
         )
         before = preflight_state()
-        for command in (preview_command, execute_command):
+        for command in (preview_command, facade_command):
             blocked = subprocess.run(
                 command,
                 cwd=root,
@@ -1108,7 +1011,7 @@ def run_closeout(
     provider_failure_recovered = False
     if provider_failure_once:
         failed_provider = subprocess.run(
-            execute_command,
+            facade_command,
             cwd=root,
             env=env,
             text=True,
@@ -1122,30 +1025,28 @@ def run_closeout(
         provider_failure_recovered = True
         env["INSTALLED_CLOSEOUT_FAIL_PR_CREATE_ONCE"] = ""
 
-    payload = single_json_stdout(run(execute_command, root, env=env), "installed Finalizer fresh executor")
-    if (
-        payload.get("typed_exit") != "ready_for_merge"
-        or payload.get("closeout_plan_digest") != digest
-    ):
-        raise RuntimeError("installed Finalizer executor did not complete the reviewed plan")
-    checked_after_execute = json.loads(run(check_command, root, env=env).stdout)
-    if (
-        checked_after_execute.get("typed_exit") != "ready_for_merge"
-        or checked_after_execute.get("plan_digest") != digest
-        or checked_after_execute.get("transaction_state") != "ready"
-    ):
-        raise RuntimeError("installed Finalizer checker did not validate the terminal ready marker")
+    payload = single_json_stdout(
+        run(facade_command, root, env=env),
+        "installed Finalizer Happy Path facade",
+    )
+    if payload.get("exit_id") != "ready_for_merge":
+        raise RuntimeError("installed Finalizer facade did not complete the reviewed plan")
     mutations_after_finalizer = mutations.read_bytes()
     recovered_finalizer = single_json_stdout(
-        run(execute_command, root, env=env),
+        run(facade_command, root, env=env),
         "installed Finalizer terminal recovery",
     )
-    if recovered_finalizer.get("output") != payload.get("output"):
+    if recovered_finalizer != payload:
         raise RuntimeError("installed Finalizer terminal recovery changed its ready_for_merge DTO")
     if mutations.read_bytes() != mutations_after_finalizer:
         raise RuntimeError("installed Finalizer terminal recovery repeated a GitHub mutation")
 
-    archived = Path(payload["archived_task_dir"])
+    archived = (
+        root
+        / ".trellis/tasks/archive"
+        / datetime.now().strftime("%Y-%m")
+        / task_dir.name
+    )
     if not archived.is_dir() or task_dir.exists():
         raise RuntimeError("installed closeout did not move the active task to archive")
     local_head = git(root, real_git, "rev-parse", "HEAD")
@@ -1164,14 +1065,7 @@ def run_closeout(
         raise RuntimeError("installed closeout summary PR URL is not canonical")
     if summary["index"]["search_terms"]["pr_refs"] != [f"PR #{issue}"]:
         raise RuntimeError("installed closeout summary PR ref is not unique")
-    public_invoke = [
-        str(wrappers["invoke"]),
-        "--input",
-        finalization_input.relative_to(root).as_posix(),
-    ]
-    ready_payload = json.loads(
-        run([*public_invoke, "--owner-result", gate_rel], root, env=env).stdout
-    )
+    ready_payload = payload
     if (
         ready_payload.get("exit_id") != "ready_for_merge"
         or ready_payload.get("repo_ref") != REPO
@@ -1182,21 +1076,12 @@ def run_closeout(
         or ready_payload.get("expected_head_branch") != branch
         or ready_payload.get("expected_close_issues") != [issue]
     ):
-        raise RuntimeError("installed Finalizer public wrapper returned an invalid ready_for_merge DTO")
-    if gate_path.exists():
-        raise RuntimeError("installed Finalizer public wrapper retained its private gate")
+        raise RuntimeError("installed Finalizer facade returned an invalid ready_for_merge DTO")
     merge_package = (
         root / ".trellis/guru-team/skills/packages/guru-merge-task-pr"
     )
     merge_wrappers = {
-        name: merge_package / "scripts" / f"{name}.sh"
-        for name in (
-            "preview-task-pr-merge",
-            "record-task-pr-merge",
-            "check-task-pr-merge",
-            "execute-task-pr-merge",
-            "invoke",
-        )
+        "complete-task-pr-merge": merge_package / "scripts/complete-task-pr-merge.sh",
     }
     for name, wrapper in merge_wrappers.items():
         if not wrapper.is_file() or not os.access(wrapper, os.X_OK):
@@ -1264,75 +1149,43 @@ def run_closeout(
     )
     merge_input_rel = merge_input.relative_to(root).as_posix()
     merge_review_rel = merge_review.relative_to(root).as_posix()
-    merge_common = ["--root", str(root), "--input", merge_input_rel]
-    merge_preview = json.loads(
-        run([str(merge_wrappers["preview-task-pr-merge"]), *merge_common], root, env=env).stdout
-    )
-    if merge_preview.get("objective_blockers") != []:
-        raise RuntimeError("installed Merge preview did not accept Finalizer expected-head authority")
-    merge_record = json.loads(
+    merge_facade_command = [
+        str(merge_wrappers["complete-task-pr-merge"]),
+        "--root", str(root),
+        "--input", merge_input_rel,
+        "--review-input", merge_review_rel,
+    ]
+    expected_merge_exit = "closure_mismatch" if closure_mismatch else "merged"
+    merged_payload = single_json_stdout(
         run(
-            [
-                str(merge_wrappers["record-task-pr-merge"]),
-                *merge_common,
-                "--review-input",
-                merge_review_rel,
-            ],
-            root,
-            env=env,
-        ).stdout
-    )
-    merge_gate_rel = merge_record["gate"]
-    merge_gate = root / merge_gate_rel
-    merge_checked = json.loads(
-        run(
-            [str(merge_wrappers["check-task-pr-merge"]), *merge_common, "--gate", merge_gate_rel],
-            root,
-            env=env,
-        ).stdout
-    )
-    if merge_checked.get("typed_exit") != "ready_to_merge":
-        raise RuntimeError("installed Merge checker did not bind the expected-head merge")
-    merge_executed = single_json_stdout(
-        run(
-            [str(merge_wrappers["execute-task-pr-merge"]), *merge_common, "--gate", merge_gate_rel],
+            merge_facade_command,
             root,
             env=env,
         ),
-        "installed Merge fresh executor",
+        "installed Merge Happy Path facade",
     )
-    expected_merge_exit = "closure_mismatch" if closure_mismatch else "merged"
-    if merge_executed.get("typed_exit") != expected_merge_exit:
-        raise RuntimeError("installed Merge executor did not complete the expected-head merge")
+    if merged_payload.get("exit_id") != expected_merge_exit:
+        raise RuntimeError("installed Merge facade did not complete the expected-head merge")
     mutations_after_merge = mutations.read_bytes()
     recovered_merge = single_json_stdout(
         run(
-            [str(merge_wrappers["execute-task-pr-merge"]), *merge_common, "--gate", merge_gate_rel],
+            merge_facade_command,
             root,
             env=env,
         ),
         "installed Merge terminal recovery",
     )
-    if recovered_merge.get("output") != merge_executed.get("output"):
+    if recovered_merge != merged_payload:
         raise RuntimeError("installed Merge terminal recovery changed its terminal DTO")
     if mutations.read_bytes() != mutations_after_merge:
         raise RuntimeError("installed Merge terminal recovery repeated the merge mutation")
-    merged_payload = json.loads(
-        run(
-            [str(merge_wrappers["invoke"]), "--input", merge_input_rel, "--gate", merge_gate_rel],
-            root,
-            env=env,
-        ).stdout
-    )
     if (
         merged_payload.get("exit_id") != expected_merge_exit
         or merged_payload.get("repo_ref") != REPO
         or merged_payload.get("pr_number") != issue
         or merged_payload.get("merge_commit_sha") != "2" * 40
     ):
-        raise RuntimeError("installed Merge public wrapper returned an invalid merged DTO")
-    if merge_gate.exists():
-        raise RuntimeError("installed Merge public wrapper retained its private gate")
+        raise RuntimeError("installed Merge facade returned an invalid merged DTO")
     recovered_remote_pr = json.loads(store.read_text(encoding="utf-8"))
     forbidden_terminal = [
         archived / "closeout-plan.json",
@@ -1375,6 +1228,7 @@ def run_closeout(
         "after_archive_hook_preflight": not terminal_recovery_only,
         "archive_path_symlink_preflight": not terminal_recovery_only,
         "provider_failure_recovered": provider_failure_recovered,
+        "finalizer_initial_state": initial_finalizer_state,
     }
 
 

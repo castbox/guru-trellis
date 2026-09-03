@@ -893,6 +893,21 @@ multiple/fork/closed identity, repo/head/base mismatch, unknown or non-ancestor
 HEAD, force-push drift, scope/payload/Publication drift, archive conflict and
 unknown transaction state. Ordinary first publication continues to reject any
 Open PR without an explicitly previewed recovery binding.
+
+Unbound equal-HEAD recovery coverage additionally starts from an exact current
+`ordinary_publication/push_content` transaction with no `pr` or `adopted_pr`, an
+already-pushed Publication HEAD, and the unique Open PR at that same remote HEAD.
+Preview must report equal ancestry, no push, original Draft/Ready, exact PR and
+per-field title/body byte comparison; a trailing-LF-only body difference must
+require one metadata edit. Execute must persist exactly one ordinary-to-recovery
+conversion, including the original metadata comparison and convergence decision,
+before external mutation, then reuse existing archive/Ready replay. Tests keep
+fresh equal-HEAD rejection, preserve legacy strict-ancestor transaction validity,
+require the persisted decision for equal-HEAD `bind_pr`, prove original metadata
+and already-converged exact Publication metadata both resume, prove the latter
+and metadata-equal paths perform zero edit, preserve Ready and Draft paths plus
+same-plan retry zero duplicate mutation, and fail before mutation on missing/inconsistent decision or
+PR/HEAD/Draft/metadata/scope/plan/stage/binding/archive drift.
 Finish-family integration additionally proves current finish-summary schema 2
 is derived once from the reviewed payload and live facts, historical schema 1
 remains discoverable, and the current runtime/inventories contain no retired
@@ -1159,3 +1174,21 @@ This focused gate does not replace the complete extension release verification:
 the full capability suite, marketplace matrix, official Trellis update, complete
 platform throwaway matrix, and business-repository upgrade smoke remain separate
 cumulative release evidence.
+
+## Closeout Facade Validation
+
+Run the old and recommended paths against the same sanitized fixture and compare
+typed exit, public DTO, semantic input, objective blocker, mutation count/order,
+recovery behavior, and temporary-state lifecycle. The recommended four-stage
+path must reduce command invocations by at least 50% and repeated complete
+authority reads by at least 70%, with `terminal.post_exit_operation=0`. These
+are hard structural acceptance checks.
+
+The fixture matrix includes Commit hook/drift/active-operation/stdout-loss,
+Publication ready/metadata/content/ledger routes, Finalizer same-plan
+reprepare/recovery and changed-plan reconfirmation, and Merge pending/success/
+failure/head drift/default/non-default/refs-only closure plus mutation-output
+loss. It must also prove one expected-head-bound watcher and reject stacked
+`gh run watch` plus Agent polling. Wall-clock medians are reported by Agent,
+deterministic command, GitHub API, and external CI wait; a slow external sample
+does not independently fail a task whose correctness and operation budgets pass.

@@ -87,7 +87,34 @@ def _project_output(owner_result: dict) -> dict:
     )
 
 
-def run(package_root: Path, command: dict, argv: list[str]) -> dict:
+def _retire_checkpoint(owner, root: Path, task: Path) -> None:
+    checkpoint = owner.task_publication_path(root, task)
+    if not checkpoint.is_file() or checkpoint.is_symlink():
+        raise owner.WorkflowError(
+            "Publication checkpoint disappeared before successful consumption.",
+            exit_code=2,
+        )
+    checkpoint.unlink()
+    try:
+        checkpoint.parent.rmdir()
+    except OSError:
+        pass
+
+
+def _validate_semantic_binding(public: dict, semantic: dict) -> None:
+    fields = {"profile", "mode", "review_intent"}
+    if public["profile"] == "publication_review_stale":
+        fields.add("stale_reason")
+    mismatches = [field for field in sorted(fields) if semantic.get(field) != public.get(field)]
+    if mismatches:
+        raise CommandError(
+            "publication_input_invalid",
+            f"input.{mismatches[0]}",
+            "Use one AI-completed semantic result authored for the exact public invocation.",
+        )
+
+
+def _run_legacy(package_root: Path, argv: list[str]) -> dict:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--root")
     parser.add_argument("--input", required=True)
@@ -141,17 +168,87 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             "stdout",
         )
 
-        checkpoint = owner.task_publication_path(root, task)
-        if not checkpoint.is_file() or checkpoint.is_symlink():
-            raise owner.WorkflowError(
-                "Publication checkpoint disappeared before successful consumption.",
-                exit_code=2,
-            )
-        checkpoint.unlink()
-        try:
-            checkpoint.parent.rmdir()
-        except OSError:
-            pass
+        _retire_checkpoint(owner, root, task)
         return output
 
     return call_owner(owner, invoke_owner)
+
+
+def _run_happy_path(package_root: Path, argv: list[str]) -> dict:
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--root")
+    parser.add_argument("--input", required=True)
+    parser.add_argument("--semantic-result", required=True)
+    args = parse_arguments(parser, argv)
+    owner = _owner(package_root)
+
+    def invoke_owner() -> dict:
+        root = owner.repo_root(Path(args.root or "."))
+        public = _read_public_input(owner, args.input)
+        _validate_public_input(package_root, public)
+        semantic = owner.read_json(Path(args.semantic_result))
+        _validate_semantic_binding(public, semantic)
+        context = owner.TaskPublicationInvocationContext.create(
+            root,
+            public["task_ref"],
+        )
+        owner.cmd_record_task_publication_review(
+            argparse.Namespace(
+                root=str(root),
+                task=public["task_ref"],
+                input=args.semantic_result,
+                branch_review_commit=public["branch_review_commit"],
+                dry_run=False,
+            ),
+            invocation_context=context,
+        )
+        checked = owner.cmd_check_task_publication_review(
+            argparse.Namespace(
+                root=str(root),
+                task=public["task_ref"],
+                expected_exit=None,
+            ),
+            invocation_context=context,
+        )
+        checked_owner_result = checked.get("owner_result")
+        if checked_owner_result != context.checked_owner_result:
+            raise owner.WorkflowError(
+                "Publication facade checker did not return its invocation-local validated result.",
+                exit_code=2,
+                payload={
+                    "error_code": "publication_freshness_failed",
+                    "field_path": "publication.owner_result",
+                    "recovery": "Repeat the Publication facade against current evidence.",
+                },
+            )
+        if (
+            checked_owner_result.get("task_ref") != public["task_ref"]
+            or checked_owner_result.get("branch_review_commit")
+            != public["branch_review_commit"]
+        ):
+            raise owner.WorkflowError(
+                "Publication public input does not match the facade-checked owner result.",
+                exit_code=2,
+                payload={
+                    "error_code": "publication_input_invalid",
+                    "field_path": "input.branch_review_commit",
+                    "recovery": "Use the task and reviewed commit from the current Publication invocation.",
+                },
+            )
+        output = _project_output(checked_owner_result)
+        validate_json(
+            output,
+            package_root / "schemas" / PUBLIC_OUTPUT_SCHEMAS[output["exit_id"]],
+            "stdout",
+        )
+        context.count("public.project")
+        _retire_checkpoint(owner, root, context.task_dir)
+        return output
+
+    return call_owner(owner, invoke_owner)
+
+
+def run(package_root: Path, command: dict, argv: list[str]) -> dict:
+    if command.get("id") == "review-task-publication":
+        return _run_happy_path(package_root, argv)
+    return _run_legacy(package_root, argv)

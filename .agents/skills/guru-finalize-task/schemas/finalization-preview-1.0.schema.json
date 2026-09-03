@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-finalize-task-preview-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "side_effects",
+    "input_locator",
+    "profile",
+    "mode",
+    "task_ref",
+    "plan_ref",
+    "closeout_plan",
+    "closeout_plan_bytes_sha256",
+    "closeout_plan_digest",
+    "branch_review_commit",
+    "transaction_state",
+    "publication_status",
+    "publication_stale_reason",
+    "expected_actions",
+    "publication_mode",
+    "existing_pr_recovery",
+    "confirmation_identity"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "status": {"const": "ok"},
+    "side_effects": {"const": false},
+    "input_locator": {"type": "string", "minLength": 1},
+    "profile": {
+      "enum": [
+        "publication_ready",
+        "same_plan_resume",
+        "reprepare_preview",
+        "standalone_finalization"
+      ]
+    },
+    "mode": {"enum": ["workflow", "standalone"]},
+    "task_ref": {"type": "string", "minLength": 1},
+    "plan_ref": {
+      "type": ["string", "null"],
+      "pattern": "^(?:finalization|closeout-plan):[0-9a-f]{64}$"
+    },
+    "closeout_plan": {"type": ["object", "null"]},
+    "closeout_plan_bytes_sha256": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "closeout_plan_digest": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "branch_review_commit": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "transaction_state": {"type": "string", "minLength": 1},
+    "publication_status": {"enum": ["current", "stale"]},
+    "publication_stale_reason": {"type": ["string", "null"]},
+    "expected_actions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "publication_mode": {
+      "enum": ["ordinary_publication", "existing_pr_recovery"]
+    },
+    "existing_pr_recovery": {"type": ["object", "null"]},
+    "confirmation_identity": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"closeout_plan": {"type": "null"}}},
+      "then": {
+        "properties": {
+          "plan_ref": {"type": "null"},
+          "closeout_plan_bytes_sha256": {"type": "null"},
+          "closeout_plan_digest": {"type": "null"},
+          "confirmation_identity": {"type": "null"},
+          "expected_actions": {"maxItems": 0}
+        }
+      },
+      "else": {
+        "properties": {
+          "plan_ref": {"type": "string"},
+          "closeout_plan_bytes_sha256": {"type": "string"},
+          "closeout_plan_digest": {"type": "string"},
+          "branch_review_commit": {"type": "string"},
+          "confirmation_identity": {"type": "string"}
+        }
+      }
+    }
+  ]
+}

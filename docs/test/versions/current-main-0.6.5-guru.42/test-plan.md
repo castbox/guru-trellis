@@ -1,7 +1,7 @@
 # 当前测试计划与证据
 
-版本：`current-main-0.6.5-guru.42`；状态：`active`；predecessor：`current-main-0.6.5-guru.41`；
-source baseline：reviewed task head `d3dca74b3a94569a095594477c15b032526f2381` + #267 expected `.41` serialized promotion delta。
+版本：`current-main-0.6.5-guru.42`；状态：`superseded`；successor：`current-main-0.6.5-guru.43`；
+历史边界保持 #267 release-authority alignment 与后续 fact-only corrections。
 
 ## Replacement before-state authority
 

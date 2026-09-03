@@ -2620,6 +2620,90 @@ TASK_PUBLICATION_CONSUMERS = {
     "blocked": {"kind": "stop", "id": "task-publication-review-blocked"},
 }
 
+
+class TaskPublicationInvocationContext:
+    """Invocation-local Publication facts and validation receipt.
+
+    This context never crosses a process boundary. It allows the Happy Path
+    facade to reuse one objective snapshot between record and check while the
+    legacy commands continue to rebuild live facts independently.
+    """
+
+    def __init__(
+        self,
+        root: Path,
+        config: dict[str, Any],
+        task_dir: Path,
+        task_context: dict[str, Any],
+    ) -> None:
+        self.root = root
+        self.config = config
+        self.task_dir = task_dir
+        self.task_context = task_context
+        self.entry_cache: dict[
+            str,
+            tuple[
+                dict[str, dict[str, str]],
+                list[str],
+                dict[str, Any],
+                dict[str, Any],
+            ],
+        ] = {}
+        self.checked_owner_result: dict[str, Any] | None = None
+        self.operation_counts: dict[str, int] = {}
+
+    @classmethod
+    def create(cls, root: Path, task_ref: str | None) -> "TaskPublicationInvocationContext":
+        config = load_config(root)
+        task_dir = resolve_task_dir(root, task_ref)
+        task_context = load_task_runtime_identity(task_dir, config)
+        assert_workspace_boundary(root, config, task_context, task_dir)
+        context = cls(
+            root=root,
+            config=config,
+            task_dir=task_dir,
+            task_context=task_context,
+        )
+        context.count("task_workspace.read")
+        return context
+
+    def count(self, operation: str) -> None:
+        self.operation_counts[operation] = self.operation_counts.get(operation, 0) + 1
+
+    def assert_call(self, root_value: str | None, task_ref: str | None) -> None:
+        requested_root = repo_root(Path(root_value or self.root))
+        requested_task = resolve_task_dir(requested_root, task_ref)
+        if requested_root != self.root or requested_task != self.task_dir:
+            raise WorkflowError(
+                "Publication facade invocation context does not match the requested task.",
+                exit_code=2,
+                payload={
+                    "error_code": "publication_input_invalid",
+                    "field_path": "input.task_ref",
+                    "recovery": "Use one facade invocation for the exact current task and repository.",
+                },
+            )
+
+    def entry_bindings(
+        self,
+        invocation: dict[str, Any],
+    ) -> tuple[dict[str, dict[str, str]], list[str], dict[str, Any], dict[str, Any]]:
+        cache_value = {
+            "task_ref": invocation.get("task_ref"),
+            "branch_review_commit": invocation.get("branch_review_commit"),
+            "pr_payload": invocation.get("pr_payload"),
+        }
+        cache_key = context_digest(cache_value)
+        if cache_key not in self.entry_cache:
+            self.entry_cache[cache_key] = task_publication_entry_precondition_bindings(
+                self.root,
+                self.task_dir,
+                self.config,
+                invocation,
+            )
+            self.count("publication.snapshot")
+        return self.entry_cache[cache_key]
+
 def task_publication_schema(root: Path) -> dict[str, Any]:
     candidates = (
         root
@@ -3205,6 +3289,7 @@ def task_publication_check_errors(
     root: Path,
     task_dir: Path,
     payload: dict[str, Any],
+    invocation_context: TaskPublicationInvocationContext | None = None,
 ) -> list[str]:
     errors = skill_json_schema_validation_errors(
         payload,
@@ -3267,12 +3352,15 @@ def task_publication_check_errors(
         "branch_review_commit": branch_review_commit,
         "pr_payload": copy.deepcopy(payload.get("pr_payload")),
     }
-    _, entry_errors, _, _ = task_publication_entry_precondition_bindings(
-        root,
-        task_dir,
-        load_config(root),
-        invocation,
-    )
+    if invocation_context is None:
+        _, entry_errors, _, _ = task_publication_entry_precondition_bindings(
+            root,
+            task_dir,
+            load_config(root),
+            invocation,
+        )
+    else:
+        _, entry_errors, _, _ = invocation_context.entry_bindings(invocation)
     if typed_exit == "ready":
         errors.extend(entry_errors)
         try:
@@ -3297,12 +3385,21 @@ def task_publication_check_errors(
     )
     return sorted(set(errors))
 
-def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, Any]:
-    root = repo_root(Path(args.root or os.getcwd()))
-    config = load_config(root)
-    task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_runtime_identity(task_dir, config)
-    assert_workspace_boundary(root, config, task_context, task_dir)
+def cmd_record_task_publication_review(
+    args: argparse.Namespace,
+    invocation_context: TaskPublicationInvocationContext | None = None,
+) -> dict[str, Any]:
+    if invocation_context is None:
+        root = repo_root(Path(args.root or os.getcwd()))
+        config = load_config(root)
+        task_dir = resolve_task_dir(root, args.task)
+        task_context = load_task_runtime_identity(task_dir, config)
+        assert_workspace_boundary(root, config, task_context, task_dir)
+    else:
+        invocation_context.assert_call(args.root, args.task)
+        root = invocation_context.root
+        config = invocation_context.config
+        task_dir = invocation_context.task_dir
     authored = contract_wording_read_input(
         root,
         args.input,
@@ -3368,14 +3465,19 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
         ),
         "pr_payload": copy.deepcopy(authored.get("pr_payload")),
     }
-    entry_bindings, entry_errors, review_gate, repository = (
-        task_publication_entry_precondition_bindings(
-            root,
-            task_dir,
-            config,
-            invocation,
+    if invocation_context is None:
+        entry_bindings, entry_errors, review_gate, repository = (
+            task_publication_entry_precondition_bindings(
+                root,
+                task_dir,
+                config,
+                invocation,
+            )
         )
-    )
+    else:
+        entry_bindings, entry_errors, review_gate, repository = (
+            invocation_context.entry_bindings(invocation)
+        )
     route = authored.get("route") if isinstance(authored.get("route"), dict) else {}
     typed_exit = route.get("typed_exit")
     if entry_errors and typed_exit == "ready":
@@ -3405,6 +3507,7 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
         root,
         task_dir,
         payload,
+        invocation_context,
     )
     if errors:
         raise WorkflowError(
@@ -3414,18 +3517,30 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
         )
     if not args.dry_run:
         write_json(path, payload)
+    if invocation_context is not None:
+        invocation_context.checked_owner_result = copy.deepcopy(payload)
+        invocation_context.count("semantic.record")
+        invocation_context.count("objective.check")
     return {
         **payload,
         "artifact_path": str(path),
         "dry_run": bool(args.dry_run),
     }
 
-def cmd_check_task_publication_review(args: argparse.Namespace) -> dict[str, Any]:
-    root = repo_root(Path(args.root or os.getcwd()))
-    config = load_config(root)
-    task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_runtime_identity(task_dir, config)
-    assert_workspace_boundary(root, config, task_context, task_dir)
+def cmd_check_task_publication_review(
+    args: argparse.Namespace,
+    invocation_context: TaskPublicationInvocationContext | None = None,
+) -> dict[str, Any]:
+    if invocation_context is None:
+        root = repo_root(Path(args.root or os.getcwd()))
+        config = load_config(root)
+        task_dir = resolve_task_dir(root, args.task)
+        task_context = load_task_runtime_identity(task_dir, config)
+        assert_workspace_boundary(root, config, task_context, task_dir)
+    else:
+        invocation_context.assert_call(args.root, args.task)
+        root = invocation_context.root
+        task_dir = invocation_context.task_dir
     path = task_publication_path(root, task_dir)
     if not path.is_file() or path.is_symlink():
         raise WorkflowError(
@@ -3433,11 +3548,19 @@ def cmd_check_task_publication_review(args: argparse.Namespace) -> dict[str, Any
             exit_code=2,
         )
     payload = read_json(path)
-    errors = task_publication_check_errors(
-        root,
-        task_dir,
-        payload,
-    )
+    if (
+        invocation_context is not None
+        and invocation_context.checked_owner_result == payload
+    ):
+        errors: list[str] = []
+        invocation_context.count("checkpoint.verify")
+    else:
+        errors = task_publication_check_errors(
+            root,
+            task_dir,
+            payload,
+            invocation_context,
+        )
     expected_exit = str(getattr(args, "expected_exit", "") or "")
     typed_exit = (payload.get("route") or {}).get("typed_exit")
     if expected_exit and typed_exit != expected_exit:

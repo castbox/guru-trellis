@@ -17,23 +17,31 @@ platform discovery without that routing; it still requires the complete,
 current Guru Team preset and extension runtime. This Skill directory is not
 a self-contained or portable package.
 
-Use `scripts/prepare-task-commit.sh` to record the AI-owned path classifications,
-seven structured message fields, and final semantic result into the private
-candidate. It deterministically canonicalizes the complete message and runs the
-shared parser before any confirmation. Use
-`scripts/check-task-commit-plan.sh` for objective candidate
-validation and `scripts/create-task-commit.sh` for the exact deterministic side
-effect. These
-thin wrappers dispatch through the shared `run-skill-command` runtime and never
-replace AI scope/message review or required human confirmation. The user may
-answer with any clear affirmative response after the Skill presents one
-current, unique commit action. That conversational authority is never written
-to public input, private runtime, task metadata, or archive. Missing or
-mismatched runtime state fails closed with full-preset install/upgrade
-remediation before a task/Git side effect. A current exact commit request is the
-dialogue-local authority for that displayed action. Branch name, role,
-protection, sharing, task ownership, remote publication, or PR state neither
-grant nor deny commit authority and are not read as commit preconditions.
+The recommended Happy Path is exactly two package calls:
+
+1. Use `scripts/prepare-task-commit.sh` once to record the AI-owned path
+   classifications, seven structured message fields, and completed semantic
+   result. Present its exact repo, branch, HEAD, paths, subject, and body.
+2. After the current conversation confirms that unchanged action, use
+   `scripts/invoke-happy-path-v1.sh --candidate-artifact <prepared-locator>`
+   once. Do not pass confirmation text or state. The facade performs the
+   mutation-boundary validation, exact transaction, typed-exit projection, and
+   same-commit stdout-loss recovery.
+
+The user may answer with any clear affirmative response after the Skill
+presents one current, unique commit action. That conversational authority is
+never written to public input, private runtime, task metadata, archive, or the
+facade invocation. Missing or mismatched runtime state fails closed with
+full-preset install/upgrade remediation before a task/Git side effect. A
+current exact commit request is the dialogue-local authority for that displayed
+action. Branch name, role, protection, sharing, task ownership, remote
+publication, or PR state neither grant nor deny commit authority and are not
+read as commit preconditions.
+
+`scripts/check-task-commit-plan.sh`, `scripts/create-task-commit.sh`, and
+`scripts/invoke.sh` remain compatible diagnostic, testing, recovery, and legacy
+orchestration entries. They are not the recommended normal path and must not be
+added between prepare and the confirmed facade call.
 
 Return exactly one declared exit: `committed`, `revision-required`, or
 `blocked`. Unknown, multiple, stale, or unmapped results fail closed.
@@ -42,6 +50,8 @@ The current candidate lives only under ignored
 `.trellis/.runtime/guru-team/task-commit-plans/**`, is never staged, and is
 removed after success. Candidate 5.0 has no authorization, branch
 classification, publication eligibility, freshness digest, or terminal result
-fields. An unfinished 4.0 candidate is rejected or replaced only by a complete
+fields. The facade may retain one minimal ignored result receipt after success
+so the same locator can recover lost stdout without repeating the commit; a
+fresh prepare for the same task retires that receipt. An unfinished 4.0 candidate is rejected or replaced only by a complete
 reprepare from current Phase 2 and live Git evidence. Git supplies committed
 tree/message/path facts.

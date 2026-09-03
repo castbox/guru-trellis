@@ -63,7 +63,8 @@
   "validators": [
     {"id": "publication_review_recorder", "command": "scripts/record-task-publication-review.sh", "runtime_command": "record-task-publication-review", "objective_scope": "Record only the completed semantic dimensions, findings, conclusions and route after current owner preflight"},
     {"id": "publication_review_checker", "command": "scripts/check-task-publication-review.sh", "runtime_command": "check-task-publication-review", "objective_scope": "Reread live owner facts and the shared Finalizer preflight without persisting derived bindings"},
-    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-review-task-publication", "objective_scope": "Validate public input, rerun the owner checker, select the actual exit schema and emit one minimal DTO"},
+    {"id": "publication_happy_path", "command": "scripts/review-task-publication.sh", "runtime_command": "review-task-publication", "objective_scope": "Consume one AI-completed semantic result and perform Publication record, objective check and typed projection with one invocation-local snapshot"},
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-review-task-publication", "objective_scope": "Compatibility invocation for a separately recorded and checker-passed owner result"},
     {"id": "reviewed_content_identity", "command": "scripts/reviewed-content-identity.sh", "runtime_command": "review-task-publication-content-identity", "objective_scope": "Compute the canonical metadata-excluded reviewed-content identity for one Git commit"}
   ],
   "external_exits": [
@@ -99,12 +100,12 @@
     },
     "invocation": {
       "command_id": "run-skill-command",
-      "wrapper": "scripts/invoke.sh",
+      "wrapper": "scripts/review-task-publication.sh",
       "input_binding": {"kind": "structured_json", "profile_id": "publication_review"},
       "stdout_contract": "single_typed_exit",
       "error_schema": {"schema_id": "guru-production-review-task-publication-invocation-error-1.0", "path": "schemas/public-invocation-error.schema.json"},
       "error_example": {"id": "invalid_public_input", "path": "examples/public-invocation-error.json"},
-      "example_argv": ["--input", "examples/public-publication-review-input.json", "--owner-result", "examples/pr-readiness.json"]
+      "example_argv": ["--input", "examples/public-publication-review-input.json", "--semantic-result", "examples/public-publication-review-authoring.json"]
     },
     "outputs": [
       {"exit_id": "ready", "schema": {"schema_id": "guru-production-review-task-publication-output-ready-4.0", "path": "schemas/public-ready-output-4.0.schema.json"}, "example": {"id": "ready_output", "path": "examples/public-ready-output.json"}, "consumer_use_ids": ["project_ready"]},

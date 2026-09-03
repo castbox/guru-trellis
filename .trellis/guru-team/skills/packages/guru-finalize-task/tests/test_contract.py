@@ -34,6 +34,25 @@ def load_runtime():
     return module
 
 
+def load_facade():
+    sys.path.insert(0, str(shared_runtime_parent()))
+    sys.path.insert(0, str(PACKAGE / "runtime"))
+    previous_common = sys.modules.pop("common", None)
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "finalize_task_happy_path_test",
+            PACKAGE / "runtime/facade.py",
+        )
+        assert spec and spec.loader
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        sys.modules.pop("common", None)
+        if previous_common is not None:
+            sys.modules["common"] = previous_common
+
+
 GTT = load_runtime()
 
 
@@ -2197,6 +2216,291 @@ class FinalizeTaskContractTests(unittest.TestCase):
         for validator in interface["validators"]:
             self.assertIn("runtime/launch.sh", (PACKAGE / validator["command"]).read_text(encoding="utf-8"))
 
+    def test_happy_path_uses_supported_invoke_entrypoint_and_legacy_remains(self) -> None:
+        commands = load("commands.json")["commands"]
+        by_id = {item["id"]: item for item in commands}
+        self.assertEqual(
+            by_id["finalize-task-happy-path"]["entrypoint"],
+            "runtime/invoke.py",
+        )
+        self.assertEqual(
+            by_id["invoke-guru-finalize-task"]["entrypoint"],
+            "runtime/invoke.py",
+        )
+        jsonschema.Draft202012Validator(
+            load("../../schemas/skill-commands.schema.json")
+        ).validate(load("commands.json"))
+
+    def test_happy_path_confirmation_identity_tracks_only_material_plan(self) -> None:
+        public_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": ".trellis/tasks/09-02-330-finalizer",
+        }
+        plan = {
+            "task": {"active_locator": public_input["task_ref"]},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "base_branch": "main",
+                "head_branch": "fix/330-finalizer",
+                "branch_review_commit": "a" * 40,
+            },
+            "publish": {"title": "feat: finalizer", "body": "Closes #330"},
+            "review": {"close_issues_reviewed": [330]},
+        }
+        context = {
+            "plan": plan,
+            "publication_mode": "ordinary_publication",
+            "transaction_state": "prepared",
+            "reprepare_reason_code": None,
+            "published_transition_complete": False,
+        }
+        identity = GTT.finalization_confirmation_identity(public_input, context)
+        same_plan_progress = copy.deepcopy(context)
+        same_plan_progress.update(
+            transaction_state="archived",
+            reprepare_reason_code=GTT.FINALIZATION_REPREPARE_ARCHIVE_MONTH,
+            published_transition_complete=True,
+        )
+        self.assertEqual(
+            GTT.finalization_confirmation_identity(public_input, same_plan_progress),
+            identity,
+        )
+
+        mutations = (
+            ("scope", lambda value: value["plan"]["review"].update(close_issues_reviewed=[330, 331])),
+            ("repo", lambda value: value["plan"]["git"].update(repo="castbox/other")),
+            ("base", lambda value: value["plan"]["git"].update(base_branch="release")),
+            ("head", lambda value: value["plan"]["git"].update(head_branch="fix/other")),
+            ("commit", lambda value: value["plan"]["git"].update(branch_review_commit="b" * 40)),
+            ("title", lambda value: value["plan"]["publish"].update(title="feat: changed")),
+            ("body", lambda value: value["plan"]["publish"].update(body="Closes #330\n\nChanged")),
+            ("side_effect_set", lambda value: value.update(publication_mode="existing_pr_recovery")),
+        )
+        for label, mutate in mutations:
+            changed = copy.deepcopy(context)
+            mutate(changed)
+            with self.subTest(label=label):
+                self.assertNotEqual(
+                    GTT.finalization_confirmation_identity(public_input, changed),
+                    identity,
+                )
+
+    def test_happy_path_stale_confirmation_blocks_before_record_or_execute(self) -> None:
+        facade = load_facade()
+        record = mock.Mock(side_effect=AssertionError("must block before record"))
+        execute = mock.Mock(side_effect=AssertionError("must block before execute"))
+
+        class WorkflowError(RuntimeError):
+            pass
+
+        owner = SimpleNamespace(
+            WorkflowError=WorkflowError,
+            repo_root=lambda path: Path("/repo"),
+            finalization_public_input=lambda *_: (
+                {"profile": "publication_ready", "mode": "workflow", "task_ref": "task"},
+                "input.json",
+            ),
+            finalization_semantic_review_input=lambda *_: {
+                "route": {"typed_exit": "ready_for_merge"}
+            },
+            finalization_preview_context=lambda *_: {
+                "plan": {},
+                "transaction_state": "prepared",
+                "published_transition_complete": False,
+            },
+            finalization_confirmation_identity=lambda *_: "b" * 64,
+            finalization_record_gate_result=record,
+            execute_finalization_transition_result=execute,
+            finalization_output_contract=lambda *_: {},
+            skill_json_schema_validation_errors=lambda *_: [],
+        )
+        counters: dict[str, int] = {}
+        output = facade.execute_happy_path(
+            owner,
+            SimpleNamespace(
+                root="/repo",
+                input="input.json",
+                review_input="review.json",
+                confirmed_preview_sha256="a" * 64,
+            ),
+            counters=counters,
+        )
+        self.assertEqual(output["exit_id"], "blocked")
+        self.assertEqual(output["reason_code"], "invalid_private_state")
+        record.assert_not_called()
+        execute.assert_not_called()
+        self.assertEqual(counters["terminal.post_exit_operation"], 0)
+
+    def test_happy_path_mapped_reprepare_converges_and_cleans_once(self) -> None:
+        facade = load_facade()
+        task_dir = Path("/repo/.trellis/tasks/09-02-330-finalizer")
+        plan = {
+            "git": {
+                "branch_review_commit": "a" * 40,
+                "publication_head": "a" * 40,
+            }
+        }
+        contexts = iter(
+            [
+                {
+                    "plan": plan,
+                    "task_dir": task_dir,
+                    "transaction_state": "reprepare_required",
+                    "published_transition_complete": False,
+                    "reprepare_reason_code": "archive_month_changed",
+                },
+                {
+                    "plan": plan,
+                    "task_dir": task_dir,
+                    "transaction_state": "prepared",
+                    "published_transition_complete": False,
+                    "reprepare_reason_code": None,
+                },
+            ]
+        )
+        reprepare_output = {
+            "exit_id": "reprepare_required",
+            "task_ref": "task",
+            "reason_code": "archive_month_changed",
+            "branch_review_commit": "a" * 40,
+            "publication_head": "a" * 40,
+        }
+        ready_output = {"exit_id": "ready_for_merge"}
+        execute = mock.Mock(
+            side_effect=[
+                {"typed_exit": "reprepare_required", "output": reprepare_output},
+                {"typed_exit": "ready_for_merge", "output": ready_output},
+            ]
+        )
+        cleanup = mock.Mock(return_value=[])
+        owner = SimpleNamespace(
+            WorkflowError=RuntimeError,
+            FINALIZATION_REPREPARE_ARCHIVE_MONTH="archive_month_changed",
+            FINALIZATION_REPREPARE_PROVENANCE_TAIL="provenance_tail_required",
+            FINALIZATION_EXECUTOR_OUTPUT_MARKER={"executor": True},
+            FINALIZATION_CONSUMERS={
+                "reprepare_required": {"kind": "skill", "id": "guru-finalize-task"}
+            },
+            repo_root=lambda path: Path("/repo"),
+            finalization_public_input=lambda *_: (
+                {"profile": "publication_ready", "mode": "workflow", "task_ref": "task"},
+                "input.json",
+            ),
+            finalization_semantic_review_input=lambda *_: {
+                "schema_version": "3.0",
+                "skill_id": "guru-finalize-task",
+                "review": {},
+                "route": {"typed_exit": "ready_for_merge", "output": ready_output},
+            },
+            finalization_preview_context=lambda *_: next(contexts),
+            finalization_confirmation_identity=lambda *_: "c" * 64,
+            finalization_reprepare_public_output=lambda *_args, **_kwargs: reprepare_output,
+            finalization_record_gate_result=lambda _root, _input, reviewed, _context, **_kwargs: {
+                "gate": {"route": reviewed["route"]},
+                "gate_path": Path("/repo/gate.json"),
+            },
+            check_finalization_gate_context=lambda _root, _input, gate, _path, _context, **_kwargs: (gate, {}),
+            execute_finalization_transition_result=execute,
+            finalization_output_contract=lambda *_: {},
+            skill_json_schema_validation_errors=lambda *_: [],
+            finalization_retire_current_state=cleanup,
+        )
+        counters: dict[str, int] = {}
+        output = facade.execute_happy_path(
+            owner,
+            SimpleNamespace(
+                root="/repo",
+                input="input.json",
+                review_input="review.json",
+                confirmed_preview_sha256="c" * 64,
+            ),
+            counters=counters,
+        )
+        self.assertEqual(output, ready_output)
+        self.assertEqual(execute.call_count, 2)
+        cleanup.assert_called_once_with(Path("/repo"), Path(task_dir))
+        self.assertEqual(counters["mapped.reprepare"], 1)
+        self.assertEqual(counters["owner_state.cleanup"], 1)
+        self.assertEqual(counters["terminal.post_exit_operation"], 0)
+
+    def test_happy_path_terminal_stdout_loss_recovery_needs_no_digest_or_cleanup(self) -> None:
+        facade = load_facade()
+        ready_output = {"exit_id": "ready_for_merge"}
+        cleanup = mock.Mock(side_effect=AssertionError("terminal recovery is read-only"))
+        owner = SimpleNamespace(
+            WorkflowError=RuntimeError,
+            repo_root=lambda path: Path("/repo"),
+            finalization_public_input=lambda *_: (
+                {"profile": "same_plan_resume", "mode": "workflow", "task_ref": "task"},
+                "input.json",
+            ),
+            finalization_semantic_review_input=lambda *_: {
+                "route": {"typed_exit": "ready_for_merge", "output": ready_output}
+            },
+            finalization_preview_context=lambda *_: {
+                "plan": {},
+                "task_dir": Path("/repo/archive/task"),
+                "transaction_state": "ready",
+                "published_transition_complete": True,
+            },
+            finalization_confirmation_identity=lambda *_: "d" * 64,
+            finalization_record_gate_result=lambda _root, _input, reviewed, _context, **_kwargs: {
+                "gate": {"route": reviewed["route"]},
+                "gate_path": Path("/repo/gate.json"),
+            },
+            check_finalization_gate_context=lambda _root, _input, gate, _path, _context, **_kwargs: (gate, {}),
+            execute_finalization_transition_result=lambda *_: {
+                "typed_exit": "ready_for_merge",
+                "output": ready_output,
+                "retired_owner_state": True,
+            },
+            finalization_output_contract=lambda *_: {},
+            skill_json_schema_validation_errors=lambda *_: [],
+            finalization_retire_current_state=cleanup,
+        )
+        counters: dict[str, int] = {}
+        output = facade.execute_happy_path(
+            owner,
+            SimpleNamespace(
+                root="/repo",
+                input="input.json",
+                review_input="review.json",
+                confirmed_preview_sha256=None,
+            ),
+            counters=counters,
+        )
+        self.assertEqual(output, ready_output)
+        cleanup.assert_not_called()
+        self.assertNotIn("mapped.reprepare", counters)
+        self.assertNotIn("owner_state.cleanup", counters)
+        self.assertEqual(counters["terminal.post_exit_operation"], 0)
+
+    def test_happy_path_budget_and_recommended_invocation_are_exact(self) -> None:
+        facade = load_facade()
+        self.assertEqual(
+            facade.happy_path_budget(),
+            {
+                "legacy_command_invocations": 5,
+                "happy_path_command_invocations": 1,
+                "command_reduction_percent": 80,
+                "legacy_full_preview_reads": 5,
+                "happy_path_full_preview_reads": 1,
+                "full_preview_read_reduction_percent": 80,
+            },
+        )
+        interface = load("interface.json")
+        public = [
+            item for item in interface["validators"]
+            if item["id"] == "public_invocation"
+        ]
+        legacy = [
+            item for item in interface["validators"]
+            if item["id"] == "legacy_public_invocation"
+        ]
+        self.assertEqual([item["runtime_command"] for item in public], ["finalize-task-happy-path"])
+        self.assertEqual([item["runtime_command"] for item in legacy], ["invoke-guru-finalize-task"])
+
     def test_current_contract_has_no_verifier_edge_or_reentry(self) -> None:
         interface = load("interface.json")
         contracts = interface["public_contracts"]
@@ -2345,6 +2649,48 @@ class FinalizeTaskContractTests(unittest.TestCase):
             )
 
     def test_existing_draft_pr_recovery_runs_real_same_plan_topology_exactly_once(self) -> None:
+        self._assert_existing_pr_recovery_real_topology()
+
+    def test_unbound_equal_head_ready_lf_recovery_executes_exactly_once(self) -> None:
+        self._assert_existing_pr_recovery_real_topology(
+            recovery_ancestry="equal",
+            initial_is_draft=False,
+            metadata_variant="trailing_lf",
+        )
+
+    def test_unbound_equal_head_metadata_equal_draft_executes_exactly_once(self) -> None:
+        self._assert_existing_pr_recovery_real_topology(
+            recovery_ancestry="equal",
+            initial_is_draft=True,
+            metadata_variant="equal",
+            interrupt_archive=False,
+        )
+
+    def test_happy_path_adopts_unbound_equal_head_without_republishing(self) -> None:
+        for metadata_variant in ("equal", "trailing_lf"):
+            with self.subTest(metadata_variant=metadata_variant):
+                self._assert_existing_pr_recovery_real_topology(
+                    recovery_ancestry="equal",
+                    initial_is_draft=False,
+                    metadata_variant=metadata_variant,
+                    interrupt_archive=False,
+                    through_happy_path_facade=True,
+                )
+
+    def _assert_existing_pr_recovery_real_topology(
+        self,
+        *,
+        recovery_ancestry: str = "strict_ancestor",
+        initial_is_draft: bool = True,
+        metadata_variant: str = "different",
+        interrupt_archive: bool = True,
+        through_happy_path_facade: bool = False,
+    ) -> None:
+        self.assertIn(recovery_ancestry, {"strict_ancestor", "equal"})
+        self.assertIn(metadata_variant, {"different", "trailing_lf", "equal"})
+        if through_happy_path_facade:
+            self.assertEqual(recovery_ancestry, "equal")
+            self.assertFalse(interrupt_archive)
         with tempfile.TemporaryDirectory() as temporary:
             temporary_root = Path(temporary)
             root = temporary_root / "repo"
@@ -2454,6 +2800,18 @@ class FinalizeTaskContractTests(unittest.TestCase):
             self.assertTrue(GTT.is_ancestor(root, old_head, publication_head))
             self.assertNotEqual(old_head, publication_head)
             historical_plan.unlink()
+            if recovery_ancestry == "equal":
+                GTT.run_stdout(
+                    [
+                        "git",
+                        "push",
+                        "-q",
+                        "--force",
+                        "origin",
+                        f"{publication_head}:refs/heads/feat/208",
+                    ],
+                    cwd=root,
+                )
 
             pr_body = (
                 "## 变更摘要\n\n"
@@ -2521,31 +2879,45 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 "pr_title": task["title"],
                 "pr_body": pr_body,
             }
+            if metadata_variant == "different":
+                live_title = "旧标题"
+                live_body = "旧正文\n\nCloses #208"
+            elif metadata_variant == "trailing_lf":
+                live_title = task["title"]
+                live_body = pr_body + "\n"
+            else:
+                live_title = task["title"]
+                live_body = pr_body
             pr = {
                 "number": 59,
                 "url": "https://github.com/castbox/guru-trellis/pull/59",
                 "state": "OPEN",
                 "headRefName": "feat/208",
                 "baseRefName": "main",
-                "headRefOid": old_head,
+                "headRefOid": (
+                    publication_head if recovery_ancestry == "equal" else old_head
+                ),
                 "headRepository": {"nameWithOwner": "castbox/guru-trellis"},
                 "headRepositoryOwner": {"login": "castbox"},
                 "isCrossRepository": False,
-                "isDraft": True,
-                "title": "旧标题",
-                "body": "旧正文\n\nCloses #208",
+                "isDraft": initial_is_draft,
+                "title": live_title,
+                "body": live_body,
             }
             mutations = {
                 "content_push": 0,
                 "metadata_edit": 0,
                 "pr_create": 0,
                 "archive": 0,
+                "archive_commit": 0,
                 "archive_push": 0,
                 "ready": 0,
             }
+            mutation_events = []
             archive_attempts = 0
             original_run = GTT.run
             original_run_stdout = GTT.run_stdout
+            original_write_transaction = GTT.finalization_write_transaction
             original_publication_owner_result = GTT.finalization_publication_owner_result
 
             input_locator = ".trellis/.runtime/guru-team/issue-251/public-input.json"
@@ -2573,9 +2945,14 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 result = original_run_stdout(command, **kwargs)
                 if command[:3] == ["git", "push", "-u"]:
                     mutations["content_push"] += 1
+                    mutation_events.append("content_push")
                     pr["headRefOid"] = remote_head()
+                elif command[:2] == ["git", "commit"]:
+                    mutations["archive_commit"] += 1
+                    mutation_events.append("archive_commit")
                 elif command[:3] == ["git", "push", "origin"]:
                     mutations["archive_push"] += 1
+                    mutation_events.append("archive_push")
                     pr["headRefOid"] = remote_head()
                 return result
 
@@ -2583,7 +2960,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 nonlocal archive_attempts
                 if command[:3] == [sys.executable, "./.trellis/scripts/task.py", "archive"]:
                     archive_attempts += 1
-                    if archive_attempts == 1:
+                    if interrupt_archive and archive_attempts == 1:
                         return SimpleNamespace(
                             returncode=1,
                             stdout="",
@@ -2592,11 +2969,13 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 result = original_run(command, **kwargs)
                 if command[:3] == [sys.executable, "./.trellis/scripts/task.py", "archive"]:
                     mutations["archive"] += 1
+                    mutation_events.append("archive")
                 return result
 
             def edit_pr(_root, _repo, number, title, body):
                 self.assertEqual(number, pr["number"])
                 mutations["metadata_edit"] += 1
+                mutation_events.append("metadata_edit")
                 pr["title"] = title
                 pr["body"] = body
 
@@ -2606,8 +2985,22 @@ class FinalizeTaskContractTests(unittest.TestCase):
 
             def ready_pr(*_args, **_kwargs):
                 mutations["ready"] += 1
+                mutation_events.append("ready")
                 self.assertTrue(pr["isDraft"])
                 pr["isDraft"] = False
+
+            def recording_write_transaction(current_root, current_task_dir, transaction):
+                if (
+                    recovery_ancestry == "equal"
+                    and transaction.get("mode") == "existing_pr_recovery"
+                    and transaction.get("next_transition") == "bind_pr"
+                ):
+                    mutation_events.append("convert_transaction")
+                return original_write_transaction(
+                    current_root,
+                    current_task_dir,
+                    transaction,
+                )
 
             def publication_owner(current_root, current_task_dir, current_input, verification=None):
                 if current_input.get("profile") == "publication_ready":
@@ -2640,8 +3033,39 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     "output": copy.deepcopy(GTT.FINALIZATION_EXECUTOR_OUTPUT_MARKER),
                 }
             }
-            args = SimpleNamespace(root=str(root), input=input_locator, gate="gate.json")
+            review_locator = ".trellis/.runtime/guru-team/issue-251/review.json"
+            review_path = root / review_locator
+            review_path.write_text(
+                json.dumps(load("examples/semantic-review-input.json")) + "\n",
+                encoding="utf-8",
+            )
+            args = SimpleNamespace(
+                root=str(root),
+                input=input_locator,
+                review_input=review_locator,
+                confirmed_preview_sha256=None,
+                gate="gate.json",
+            )
             no_op = mock.Mock()
+            facade = load_facade() if through_happy_path_facade else None
+            facade_counters: dict[str, int] = {}
+            executed_results: list[dict[str, Any]] = []
+            terminal_transactions: list[dict[str, Any]] = []
+            original_execute_transition = GTT.execute_finalization_transition_result
+
+            def recording_execute_transition(*execute_args, **execute_kwargs):
+                result = original_execute_transition(*execute_args, **execute_kwargs)
+                executed_results.append(result)
+                archived_task_dir = result.get("archived_task_dir")
+                if isinstance(archived_task_dir, str):
+                    transaction = GTT.finalization_read_transaction(
+                        root,
+                        Path(archived_task_dir),
+                    )
+                    if isinstance(transaction, dict):
+                        terminal_transactions.append(copy.deepcopy(transaction))
+                return result
+
             patches = (
                 mock.patch.object(GTT, "finalization_gate_input", return_value=(gate, root / "gate.json")),
                 mock.patch.object(
@@ -2676,120 +3100,210 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 mock.patch.object(GTT, "closeout_remote_branch_head", side_effect=remote_head),
                 mock.patch.object(GTT, "run", side_effect=interrupt_first_archive),
                 mock.patch.object(GTT, "run_stdout", side_effect=recording_run_stdout),
+                mock.patch.object(
+                    GTT,
+                    "finalization_write_transaction",
+                    side_effect=recording_write_transaction,
+                ),
                 mock.patch.object(GTT, "update_pull_request_metadata", side_effect=edit_pr),
                 mock.patch.object(GTT, "create_pull_request", side_effect=create_pr),
                 mock.patch.object(GTT, "run_gh_command", side_effect=ready_pr),
                 mock.patch.object(GTT, "validate_publish_identity_and_remote_head", no_op),
                 mock.patch.object(GTT, "finalization_live_open_close_issues", return_value=[]),
                 mock.patch.object(GTT, "finalization_package_root", return_value=PACKAGE),
+                mock.patch.object(
+                    GTT,
+                    "execute_finalization_transition_result",
+                    side_effect=recording_execute_transition,
+                ),
             )
             with ExitStack() as stack:
                 for patcher in patches:
                     stack.enter_context(patcher)
+                if recovery_ancestry == "equal":
+                    GTT.finalization_write_transaction(
+                        root,
+                        active_task,
+                        GTT.finalization_transaction_from_plan(
+                            plan,
+                            next_transition="push_content",
+                            pre_push_remote_head=old_head,
+                        ),
+                    )
                 preview = GTT.cmd_preview_finalization(args)
                 self.assertFalse(preview["side_effects"])
                 self.assertEqual(preview["publication_mode"], "existing_pr_recovery")
-                self.assertEqual(preview["existing_pr_recovery"]["ancestry"], "strict_ancestor")
-                self.assertEqual(preview["existing_pr_recovery"]["initial_state"], "draft")
+                self.assertEqual(
+                    preview["existing_pr_recovery"]["ancestry"],
+                    recovery_ancestry,
+                )
+                self.assertEqual(
+                    preview["existing_pr_recovery"]["initial_state"],
+                    "draft" if initial_is_draft else "ready",
+                )
                 self.assertEqual(
                     preview["expected_actions"],
                     [
                         "bind_existing_pr_transaction",
-                        "push_exact_publication_head",
-                        "converge_pr_metadata",
+                        (
+                            "preserve_existing_remote_head"
+                            if recovery_ancestry == "equal"
+                            else "push_exact_publication_head"
+                        ),
+                        (
+                            "preserve_current_pr_metadata"
+                            if metadata_variant == "equal"
+                            else "converge_pr_metadata"
+                        ),
                         "archive",
                         "push_archive",
-                        "mark_ready",
+                        "mark_ready" if initial_is_draft else "preserve_ready",
                         "verify_three_way_head",
                     ],
                 )
                 self.assertEqual(set(mutations.values()), {0})
+                if through_happy_path_facade:
+                    args.confirmed_preview_sha256 = preview["confirmation_identity"]
+                    output = facade.execute_happy_path(
+                        GTT,
+                        args,
+                        counters=facade_counters,
+                    )
+                    completed = executed_results[-1]
+                    self.assertEqual(output, completed["output"])
+                elif interrupt_archive:
+                    with self.assertRaisesRegex(
+                        GTT.WorkflowError, "task.py archive move failed"
+                    ):
+                        GTT.cmd_execute_finalization_transition(args)
+                    transaction = GTT.finalization_read_transaction(root, active_task)
+                    self.assertEqual(transaction["mode"], "existing_pr_recovery")
+                    self.assertEqual(transaction["next_transition"], "archive")
+                    self.assertEqual(
+                        transaction["adopted_pr"]["pre_push_remote_head"],
+                        (
+                            publication_head
+                            if recovery_ancestry == "equal"
+                            else old_head
+                        ),
+                    )
+                    predecessor_transaction = copy.deepcopy(transaction)
+                    predecessor_transaction["plan_digest"] = (
+                        GTT.finalization_retired_projection_predecessor_digest(plan)
+                    )
+                    GTT.finalization_write_transaction(
+                        root,
+                        active_task,
+                        predecessor_transaction,
+                    )
+                    write_public_input(
+                        {
+                            "profile": "same_plan_resume",
+                            "mode": "workflow",
+                            "task_ref": active_locator,
+                            "plan_ref": f"finalization:{plan['plan_digest']}",
+                        }
+                    )
+                    self.assertEqual(
+                        mutations,
+                        {
+                            "content_push": (
+                                0 if recovery_ancestry == "equal" else 1
+                            ),
+                            "metadata_edit": (
+                                0 if metadata_variant == "equal" else 1
+                            ),
+                            "pr_create": 0,
+                            "archive": 0,
+                            "archive_commit": 0,
+                            "archive_push": 0,
+                            "ready": 0,
+                        },
+                    )
 
-                with self.assertRaisesRegex(
-                    GTT.WorkflowError, "task.py archive move failed"
-                ):
-                    GTT.cmd_execute_finalization_transition(args)
-                transaction = GTT.finalization_read_transaction(root, active_task)
-                self.assertEqual(transaction["mode"], "existing_pr_recovery")
-                self.assertEqual(transaction["next_transition"], "archive")
-                self.assertEqual(transaction["adopted_pr"]["pre_push_remote_head"], old_head)
-                predecessor_transaction = copy.deepcopy(transaction)
-                predecessor_transaction["plan_digest"] = (
-                    GTT.finalization_retired_projection_predecessor_digest(plan)
-                )
-                GTT.finalization_write_transaction(
-                    root,
-                    active_task,
-                    predecessor_transaction,
-                )
-                write_public_input(
-                    {
-                        "profile": "same_plan_resume",
-                        "mode": "workflow",
-                        "task_ref": active_locator,
-                        "plan_ref": f"finalization:{plan['plan_digest']}",
-                    }
-                )
-                self.assertEqual(
-                    mutations,
-                    {
-                        "content_push": 1,
-                        "metadata_edit": 1,
-                        "pr_create": 0,
-                        "archive": 0,
-                        "archive_push": 0,
-                        "ready": 0,
-                    },
-                )
+                    mutation_snapshot = copy.deepcopy(mutations)
+                    tree = original_run_stdout(
+                        ["git", "rev-parse", f"{old_head}^{{tree}}"], cwd=root
+                    )
+                    sibling = original_run_stdout(
+                        [
+                            "git",
+                            "commit-tree",
+                            tree,
+                            "-p",
+                            old_head,
+                            "-m",
+                            "force-push sibling",
+                        ],
+                        cwd=root,
+                    )
+                    original_run_stdout(
+                        [
+                            "git",
+                            "push",
+                            "-q",
+                            "--force",
+                            "origin",
+                            f"{sibling}:refs/heads/feat/208",
+                        ],
+                        cwd=root,
+                    )
+                    pr["headRefOid"] = sibling
+                    with self.assertRaises(GTT.WorkflowError) as force_push_error:
+                        GTT.cmd_preview_finalization(args)
+                    self.assertEqual(
+                        force_push_error.exception.payload["reason_code"],
+                        "finalizer_remote_head_drift",
+                    )
+                    self.assertEqual(mutations, mutation_snapshot)
+                    original_run_stdout(
+                        [
+                            "git",
+                            "push",
+                            "-q",
+                            "--force",
+                            "origin",
+                            f"{publication_head}:refs/heads/feat/208",
+                        ],
+                        cwd=root,
+                    )
+                    pr["headRefOid"] = publication_head
 
-                mutation_snapshot = copy.deepcopy(mutations)
-                tree = original_run_stdout(["git", "rev-parse", f"{old_head}^{{tree}}"], cwd=root)
-                sibling = original_run_stdout(
-                    ["git", "commit-tree", tree, "-p", old_head, "-m", "force-push sibling"],
-                    cwd=root,
-                )
-                original_run_stdout(
-                    ["git", "push", "-q", "--force", "origin", f"{sibling}:refs/heads/feat/208"],
-                    cwd=root,
-                )
-                pr["headRefOid"] = sibling
-                with self.assertRaises(GTT.WorkflowError) as force_push_error:
-                    GTT.cmd_preview_finalization(args)
-                self.assertEqual(
-                    force_push_error.exception.payload["reason_code"],
-                    "finalizer_remote_head_drift",
-                )
-                self.assertEqual(mutations, mutation_snapshot)
-                original_run_stdout(
-                    ["git", "push", "-q", "--force", "origin", f"{publication_head}:refs/heads/feat/208"],
-                    cwd=root,
-                )
-                pr["headRefOid"] = publication_head
+                    current_body = pr["body"]
+                    pr["body"] = "drifted scope\n\nCloses #207"
+                    with self.assertRaises(GTT.WorkflowError) as scope_error:
+                        GTT.cmd_preview_finalization(args)
+                    self.assertEqual(
+                        scope_error.exception.payload["reason_code"],
+                        "existing_pr_scope_drift",
+                    )
+                    self.assertEqual(mutations, mutation_snapshot)
+                    pr["body"] = current_body
 
-                current_body = pr["body"]
-                pr["body"] = "drifted scope\n\nCloses #207"
-                with self.assertRaises(GTT.WorkflowError) as scope_error:
-                    GTT.cmd_preview_finalization(args)
-                self.assertEqual(
-                    scope_error.exception.payload["reason_code"],
-                    "existing_pr_scope_drift",
-                )
-                self.assertEqual(mutations, mutation_snapshot)
-                pr["body"] = current_body
-
-                reentry_preview = GTT.cmd_preview_finalization(args)
-                self.assertFalse(reentry_preview["existing_pr_recovery"]["push_required"])
-                self.assertFalse(
-                    reentry_preview["existing_pr_recovery"]["metadata_update_required"]
-                )
-                completed = GTT.cmd_execute_finalization_transition(args)
+                    reentry_preview = GTT.cmd_preview_finalization(args)
+                    self.assertFalse(
+                        reentry_preview["existing_pr_recovery"]["push_required"]
+                    )
+                    self.assertFalse(
+                        reentry_preview["existing_pr_recovery"][
+                            "metadata_update_required"
+                        ]
+                    )
+                    completed = GTT.cmd_execute_finalization_transition(args)
+                else:
+                    completed = GTT.cmd_execute_finalization_transition(args)
                 self.assertEqual(completed["stage"], "ready")
                 self.assertEqual(completed["typed_exit"], "ready_for_merge")
-                transaction = GTT.finalization_read_transaction(
-                    root, root / archive_locator
+                transaction = (
+                    terminal_transactions[-1]
+                    if through_happy_path_facade
+                    else GTT.finalization_read_transaction(root, root / archive_locator)
                 )
                 self.assertEqual(transaction["mode"], "existing_pr_recovery")
-                self.assertEqual(transaction["adopted_pr"]["pre_push_remote_head"], old_head)
+                self.assertEqual(
+                    transaction["adopted_pr"]["pre_push_remote_head"],
+                    publication_head if recovery_ancestry == "equal" else old_head,
+                )
                 self.assertEqual(transaction["next_transition"], "mark_ready")
                 archive_head = GTT.current_head(root)
                 self.assertEqual(remote_head(), archive_head)
@@ -2817,18 +3331,41 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 self.assertFalse(
                     (root / archive_locator / GTT.CLOSEOUT_PLAN_ARTIFACT).exists()
                 )
-                self.assertEqual(archive_attempts, 2)
+                self.assertEqual(archive_attempts, 2 if interrupt_archive else 1)
                 self.assertEqual(
                     mutations,
                     {
-                        "content_push": 1,
-                        "metadata_edit": 1,
+                        "content_push": 0 if recovery_ancestry == "equal" else 1,
+                        "metadata_edit": 0 if metadata_variant == "equal" else 1,
                         "pr_create": 0,
                         "archive": 1,
+                        "archive_commit": 1,
                         "archive_push": 1,
-                        "ready": 1,
+                        "ready": 1 if initial_is_draft else 0,
                     },
                 )
+                if recovery_ancestry == "equal":
+                    self.assertEqual(mutation_events.count("convert_transaction"), 1)
+                    conversion_index = mutation_events.index("convert_transaction")
+                    for event in (
+                        "metadata_edit",
+                        "archive",
+                        "archive_commit",
+                        "archive_push",
+                        "ready",
+                    ):
+                        if event in mutation_events:
+                            self.assertLess(conversion_index, mutation_events.index(event))
+
+                if through_happy_path_facade:
+                    self.assertEqual(facade_counters["terminal.post_exit_operation"], 0)
+                    self.assertIsNone(
+                        GTT.finalization_find_transaction_by_task_ref(
+                            root,
+                            active_locator,
+                        )
+                    )
+                    return
 
                 terminal_snapshot = copy.deepcopy(mutations)
                 terminal = GTT.cmd_execute_finalization_transition(args)
@@ -3185,6 +3722,189 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 self.assertFalse((task_dir / GTT.CLOSEOUT_PLAN_ARTIFACT).exists())
                 self.assertIsNone(GTT.finalization_read_transaction(root, task_dir))
 
+    def test_planless_base_reconciliation_runs_preview_record_check_and_public_invoke(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            GTT.run_stdout(["git", "init", "-q", "-b", "main"], cwd=root)
+            GTT.run_stdout(["git", "config", "user.name", "Guru Test"], cwd=root)
+            GTT.run_stdout(
+                ["git", "config", "user.email", "guru@example.invalid"], cwd=root
+            )
+            marker = root / "reviewed.txt"
+            marker.write_text("base\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "reviewed.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "base"], cwd=root)
+            old_base_head = GTT.current_head(root)
+            GTT.run_stdout(
+                ["git", "switch", "-q", "-c", "fix/335-planless-base"],
+                cwd=root,
+            )
+            task_ref = ".trellis/tasks/09-02-335-planless-base"
+            task_dir = root / task_ref
+            task_dir.mkdir(parents=True)
+            (task_dir / "task.json").write_text(
+                json.dumps(
+                    {
+                        "id": "335-planless-base",
+                        "name": "335-planless-base",
+                        "status": "in_progress",
+                        "branch": "fix/335-planless-base",
+                        "base_branch": "main",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            marker.write_text("reviewed\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "."], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "reviewed"], cwd=root)
+            reviewed_commit = GTT.current_head(root)
+
+            GTT.run_stdout(["git", "switch", "-q", "main"], cwd=root)
+            base_marker = root / "base-advance.txt"
+            base_marker.write_text("advanced\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "base-advance.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "advance base"], cwd=root)
+            new_base_head = GTT.current_head(root)
+            GTT.run_stdout(
+                ["git", "update-ref", "refs/remotes/origin/main", new_base_head],
+                cwd=root,
+            )
+            GTT.run_stdout(
+                ["git", "switch", "-q", "fix/335-planless-base"], cwd=root
+            )
+
+            fixture_dir = root / ".trellis/.runtime/guru-team/issue-335"
+            fixture_dir.mkdir(parents=True)
+            public_input = {
+                "profile": "publication_ready",
+                "mode": "workflow",
+                "task_ref": task_ref,
+                "branch_review_commit": reviewed_commit,
+                "pr_title": "修复 planless base reconciliation route",
+                "pr_body": "## 变更摘要\n\n- 测试。",
+            }
+            public_path = fixture_dir / "public-input.json"
+            public_path.write_text(
+                json.dumps(public_input, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+            reconciliation_output = {
+                "exit_id": "base_reconciliation_required",
+                "task_ref": task_ref,
+                "task_head": reviewed_commit,
+                "publication_head": reviewed_commit,
+                "selected_base_ref": "origin/main",
+                "old_base_head": old_base_head,
+                "new_base_head": new_base_head,
+                "branch_review_commit": reviewed_commit,
+                "resume_target": "finalization_resume",
+            }
+            review_path = fixture_dir / "semantic-review.json"
+            review_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "3.0",
+                        "skill_id": "guru-finalize-task",
+                        "review": {
+                            "status": "reroute",
+                            "summary": "The exact current base pair requires reconciliation.",
+                        },
+                        "route": {
+                            "typed_exit": "base_reconciliation_required",
+                            "consumer": {
+                                "kind": "skill",
+                                "id": "guru-reconcile-task-base",
+                            },
+                            "output": reconciliation_output,
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            input_locator = public_path.relative_to(root).as_posix()
+            review_locator = review_path.relative_to(root).as_posix()
+            preview_args = SimpleNamespace(root=str(root), input=input_locator)
+            record_args = SimpleNamespace(
+                root=str(root),
+                input=input_locator,
+                review_input=review_locator,
+                dry_run=False,
+            )
+            task_context = {
+                "base_head_sha": old_base_head,
+                "base_branch": "main",
+            }
+            with (
+                mock.patch.object(GTT, "finalization_package_root", return_value=PACKAGE),
+                mock.patch.object(GTT, "load_config", return_value={}),
+                mock.patch.object(
+                    GTT, "load_task_runtime_identity", return_value=task_context
+                ),
+            ):
+                preview = GTT.cmd_preview_finalization(preview_args)
+                self.assertFalse(preview["side_effects"])
+                self.assertEqual(preview["closeout_plan"], None)
+                self.assertEqual(preview["expected_actions"], [])
+                self.assertEqual(
+                    preview["transaction_state"], "base_reconciliation_required"
+                )
+                self.assertEqual(preview["branch_review_commit"], reviewed_commit)
+
+                recorded = GTT.cmd_record_finalization_gate(record_args)
+                gate_path = Path(recorded["artifact_path"])
+                gate_locator = gate_path.resolve().relative_to(root.resolve()).as_posix()
+                checked = GTT.cmd_check_finalization_gate(
+                    SimpleNamespace(
+                        root=str(root), input=input_locator, gate=gate_locator
+                    )
+                )
+                self.assertEqual(
+                    checked["typed_exit"], "base_reconciliation_required"
+                )
+                self.assertEqual(
+                    checked["transaction_state"], "base_reconciliation_required"
+                )
+
+                sys.path.insert(0, str(shared_runtime_parent()))
+                sys.path.insert(0, str(PACKAGE / "runtime"))
+                previous_common = sys.modules.pop("common", None)
+                try:
+                    spec = importlib.util.spec_from_file_location(
+                        "finalize_planless_base_invoke_test",
+                        PACKAGE / "runtime/invoke.py",
+                    )
+                    assert spec and spec.loader
+                    invoke = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(invoke)
+                finally:
+                    sys.modules.pop("common", None)
+                    if previous_common is not None:
+                        sys.modules["common"] = previous_common
+                with mock.patch.object(invoke, "_o", return_value=GTT):
+                    public_output = invoke.run(
+                        PACKAGE,
+                        {"id": "invoke-guru-finalize-task"},
+                        [
+                            "--root",
+                            str(root),
+                            "--input",
+                            input_locator,
+                            "--owner-result",
+                            gate_locator,
+                        ],
+                    )
+                self.assertEqual(public_output, reconciliation_output)
+                self.assertTrue(gate_path.is_file())
+                self.assertFalse((task_dir / GTT.CLOSEOUT_PLAN_ARTIFACT).exists())
+                self.assertIsNone(GTT.finalization_read_transaction(root, task_dir))
+                self.assertEqual(GTT.current_head(root), reviewed_commit)
+                self.assertEqual(
+                    GTT.run_stdout(["git", "rev-parse", "origin/main"], cwd=root),
+                    new_base_head,
+                )
+
     def test_publication_stale_route_rejects_mismatched_owner_facts_and_current_status(self) -> None:
         task_ref = ".trellis/tasks/08-17-253-planless-stale"
         owner_commit = "a" * 40
@@ -3399,6 +4119,484 @@ class FinalizeTaskContractTests(unittest.TestCase):
             "existing_pr_unbound_equal_head",
         )
 
+    def test_exact_ordinary_transaction_adopts_unbound_equal_head(self) -> None:
+        head = "b" * 40
+        plan = {
+            "plan_digest": "d" * 64,
+            "task": {"active_locator": ".trellis/tasks/338"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "remote": "origin",
+                "head_branch": "fix/338",
+                "base_branch": "main",
+                "branch_review_commit": head,
+                "publication_head": head,
+            },
+            "review": {"close_issues_reviewed": [338]},
+            "publish": {
+                "title": "修复 Finalizer equal-HEAD 恢复",
+                "body": "## 变更摘要\n\nCloses #338",
+            },
+        }
+        transaction = GTT.finalization_transaction_from_plan(
+            plan,
+            next_transition="push_content",
+            pre_push_remote_head="a" * 40,
+        )
+        pr = {
+            "number": 337,
+            "url": "https://github.com/castbox/guru-trellis/pull/337",
+            "headRefOid": head,
+            "isDraft": False,
+            "title": plan["publish"]["title"],
+            "body": plan["publish"]["body"] + "\n",
+        }
+        with (
+            mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=pr),
+            mock.patch.object(GTT, "closeout_remote_branch_head", return_value=head),
+        ):
+            state, recovery = GTT.finalization_existing_pr_recovery_context(
+                Path("/repo"), plan, transaction, "content_pushed"
+            )
+        self.assertEqual(state, "existing_pr_recovery")
+        self.assertEqual(recovery["pr"], {"number": 337, "url": pr["url"]})
+        self.assertEqual(recovery["ancestry"], "equal")
+        self.assertFalse(recovery["push_required"])
+        self.assertTrue(recovery["metadata_update_required"])
+        self.assertEqual(recovery["ready_action"], "preserve_ready")
+        self.assertEqual(
+            recovery["metadata_comparison"],
+            {
+                "live_title": plan["publish"]["title"],
+                "live_body": plan["publish"]["body"] + "\n",
+                "title_matches": True,
+                "body_matches": False,
+            },
+        )
+
+    def test_unbound_equal_head_recovery_requires_exact_ordinary_stage(self) -> None:
+        head = "b" * 40
+        plan = {
+            "plan_digest": "d" * 64,
+            "task": {"active_locator": ".trellis/tasks/338"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "remote": "origin",
+                "head_branch": "fix/338",
+                "base_branch": "main",
+                "branch_review_commit": head,
+                "publication_head": head,
+            },
+            "review": {"close_issues_reviewed": [338]},
+            "publish": {"title": "current", "body": "Closes #338"},
+        }
+        ordinary = GTT.finalization_transaction_from_plan(
+            plan,
+            next_transition="push_content",
+            pre_push_remote_head="a" * 40,
+        )
+        wrong_stage = copy.deepcopy(ordinary)
+        wrong_stage["next_transition"] = "bind_pr"
+        wrong_stage.pop("pre_push_remote_head")
+        with mock.patch.object(GTT, "resolve_closeout_pull_request") as resolve_pr:
+            state, recovery = GTT.finalization_existing_pr_recovery_context(
+                Path("/repo"), plan, wrong_stage, "content_pushed"
+            )
+        self.assertEqual(state, "content_pushed")
+        self.assertIsNone(recovery)
+        resolve_pr.assert_not_called()
+
+        identity_drift = copy.deepcopy(ordinary)
+        identity_drift["plan_digest"] = "e" * 64
+        with (
+            mock.patch.object(GTT, "resolve_closeout_pull_request") as drift_resolve,
+            self.assertRaisesRegex(
+                GTT.WorkflowError,
+                "transaction no longer matches",
+            ),
+        ):
+            GTT.finalization_existing_pr_recovery_context(
+                Path("/repo"), plan, identity_drift, "content_pushed"
+            )
+        drift_resolve.assert_not_called()
+
+    def test_unbound_ordinary_recovery_rejects_non_equal_open_pr_without_fallback(self) -> None:
+        publication_head = "b" * 40
+        remote_head = "a" * 40
+        plan = {
+            "plan_digest": "d" * 64,
+            "task": {"active_locator": ".trellis/tasks/338"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "remote": "origin",
+                "head_branch": "fix/338",
+                "base_branch": "main",
+                "branch_review_commit": publication_head,
+                "publication_head": publication_head,
+            },
+            "review": {"close_issues_reviewed": [338]},
+            "publish": {"title": "current", "body": "Closes #338"},
+        }
+        transaction = GTT.finalization_transaction_from_plan(
+            plan,
+            next_transition="push_content",
+            pre_push_remote_head=remote_head,
+        )
+        pr = {
+            "number": 337,
+            "url": "https://github.com/castbox/guru-trellis/pull/337",
+            "headRefOid": remote_head,
+            "isDraft": False,
+            "title": "current",
+            "body": "Closes #338",
+        }
+        with (
+            mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=pr),
+            mock.patch.object(
+                GTT, "closeout_remote_branch_head", return_value=remote_head
+            ),
+            mock.patch.object(GTT, "finalization_write_transaction") as write,
+            self.assertRaises(GTT.WorkflowError) as raised,
+        ):
+            GTT.classify_unbound_equal_head_recovery(
+                Path("/repo"), plan, transaction
+            )
+        self.assertEqual(
+            raised.exception.payload["reason_code"],
+            "existing_pr_unbound_equal_head_required",
+        )
+        write.assert_not_called()
+
+    def test_unbound_ordinary_recovery_rejects_terminal_pr_without_fallback(self) -> None:
+        head = "b" * 40
+        plan = {
+            "plan_digest": "d" * 64,
+            "task": {"active_locator": ".trellis/tasks/338"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "remote": "origin",
+                "head_branch": "fix/338",
+                "base_branch": "main",
+                "branch_review_commit": head,
+                "publication_head": head,
+            },
+            "review": {"close_issues_reviewed": [338]},
+            "publish": {"title": "current", "body": "Closes #338"},
+        }
+        transaction = GTT.finalization_transaction_from_plan(
+            plan,
+            next_transition="push_content",
+            pre_push_remote_head="a" * 40,
+        )
+        terminal_prs = [
+            {
+                "number": 337,
+                "url": "https://github.com/castbox/guru-trellis/pull/337",
+                "state": "CLOSED",
+            }
+        ]
+        with (
+            mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=None),
+            mock.patch.object(
+                GTT,
+                "resolve_closeout_terminal_pull_requests",
+                return_value=terminal_prs,
+            ),
+            mock.patch.object(GTT, "finalization_write_transaction") as write,
+            self.assertRaises(GTT.WorkflowError) as raised,
+        ):
+            GTT.classify_unbound_equal_head_recovery(
+                Path("/repo"), plan, transaction
+            )
+        self.assertEqual(
+            raised.exception.payload,
+            {
+                "reason_code": "pre_finalizer_terminal_pr_exists",
+                "pull_requests": terminal_prs,
+            },
+        )
+        write.assert_not_called()
+
+    def test_unbound_equal_head_conversion_preserves_plan_identity(self) -> None:
+        head = "b" * 40
+        plan = {
+            "plan_digest": "d" * 64,
+            "task": {"active_locator": ".trellis/tasks/338"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "base_branch": "main",
+                "head_branch": "fix/338",
+                "branch_review_commit": head,
+                "publication_head": head,
+            },
+            "review": {"close_issues_reviewed": [338]},
+            "publish": {"title": "current", "body": "Closes #338"},
+        }
+        ordinary = GTT.finalization_transaction_from_plan(
+            plan,
+            next_transition="push_content",
+            pre_push_remote_head="a" * 40,
+        )
+        pr = {
+            "number": 337,
+            "url": "https://github.com/castbox/guru-trellis/pull/337",
+        }
+        recovery = {
+            "mode": "existing_pr_recovery",
+            "pr": copy.deepcopy(pr),
+            "initial_state": "ready",
+            "initial_is_draft": False,
+            "pre_push_remote_head": head,
+            "publication_head": head,
+            "ancestry": "equal",
+            "push_required": False,
+            "metadata_update_required": True,
+            "metadata_comparison": {
+                "live_title": "current",
+                "live_body": "Closes #338\n",
+                "title_matches": True,
+                "body_matches": False,
+            },
+            "ready_action": "preserve_ready",
+        }
+        converted = GTT.finalization_convert_unbound_equal_head_transaction(
+            plan, ordinary, pr, recovery
+        )
+        self.assertEqual(converted["mode"], "existing_pr_recovery")
+        self.assertEqual(converted["next_transition"], "bind_pr")
+        self.assertEqual(converted["pr"], pr)
+        self.assertEqual(
+            converted["adopted_pr"],
+            {
+                **pr,
+                "initial_is_draft": False,
+                "pre_push_remote_head": head,
+                "metadata_update_required": True,
+                "metadata_comparison": recovery["metadata_comparison"],
+            },
+        )
+        for field in (
+            "task_ref",
+            "repo_ref",
+            "base_branch",
+            "branch",
+            "branch_review_commit",
+            "publication_head",
+            "plan_digest",
+            "publication",
+            "close_issues",
+        ):
+            self.assertEqual(converted[field], ordinary[field])
+        self.assertNotIn("pre_push_remote_head", converted)
+
+    def test_equal_head_bind_resume_requires_original_metadata_decision(self) -> None:
+        head = "b" * 40
+        plan = {
+            "plan_digest": "d" * 64,
+            "task": {"active_locator": ".trellis/tasks/338"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "remote": "origin",
+                "base_branch": "main",
+                "head_branch": "fix/338",
+                "branch_review_commit": head,
+                "publication_head": head,
+            },
+            "review": {"close_issues_reviewed": [338]},
+            "publish": {"title": "current", "body": "Closes #338"},
+        }
+        pr_identity = {
+            "number": 337,
+            "url": "https://github.com/castbox/guru-trellis/pull/337",
+        }
+        comparison = {
+            "live_title": "current",
+            "live_body": "Closes #338\n",
+            "title_matches": True,
+            "body_matches": False,
+        }
+        adopted_pr = {
+            **pr_identity,
+            "initial_is_draft": False,
+            "pre_push_remote_head": head,
+            "metadata_update_required": True,
+            "metadata_comparison": comparison,
+        }
+        transaction = GTT.finalization_transaction_from_plan(
+            plan,
+            next_transition="bind_pr",
+            pr=pr_identity,
+            mode="existing_pr_recovery",
+            adopted_pr=adopted_pr,
+        )
+        live_pr = {
+            **pr_identity,
+            "headRefName": "fix/338",
+            "baseRefName": "main",
+            "headRefOid": head,
+            "headRepository": {"nameWithOwner": "castbox/guru-trellis"},
+            "headRepositoryOwner": {"login": "castbox"},
+            "isCrossRepository": False,
+            "isDraft": False,
+            "title": comparison["live_title"],
+            "body": comparison["live_body"],
+        }
+
+        def preflight(current_transaction: dict[str, Any]) -> tuple[dict[str, Any] | None, str]:
+            with (
+                mock.patch.object(
+                    GTT, "resolve_closeout_pull_request", return_value=live_pr
+                ),
+                mock.patch.object(
+                    GTT, "closeout_remote_branch_head", return_value=head
+                ),
+            ):
+                return GTT.finalization_pre_mutation_remote_preflight(
+                    Path("/repo"), plan, current_transaction
+                )
+
+        self.assertEqual(preflight(transaction), (live_pr, head))
+
+        for missing_field in (
+            "metadata_comparison",
+            "metadata_update_required",
+        ):
+            with self.subTest(missing_field=missing_field):
+                missing = copy.deepcopy(transaction)
+                missing["adopted_pr"].pop(missing_field)
+                with self.assertRaises(GTT.WorkflowError) as missing_error:
+                    preflight(missing)
+                self.assertEqual(
+                    missing_error.exception.payload["reason_code"],
+                    "existing_pr_transaction_drift",
+                )
+
+        inconsistent = copy.deepcopy(transaction)
+        inconsistent["adopted_pr"]["metadata_update_required"] = False
+        with self.assertRaises(GTT.WorkflowError) as inconsistent_error:
+            preflight(inconsistent)
+        self.assertEqual(
+            inconsistent_error.exception.payload["reason_code"],
+            "existing_pr_transaction_drift",
+        )
+
+        live_pr["body"] = plan["publish"]["body"]
+        self.assertEqual(preflight(transaction), (live_pr, head))
+        with (
+            mock.patch.object(
+                GTT, "resolve_closeout_pull_request", return_value=live_pr
+            ),
+            mock.patch.object(GTT, "current_head", return_value=head),
+            mock.patch.object(
+                GTT, "closeout_task_dir_from_plan", return_value=Path("/repo/task")
+            ),
+            mock.patch.object(
+                GTT, "validate_closeout_pull_request_identity"
+            ) as validate_identity,
+            mock.patch.object(GTT, "update_pull_request_metadata") as update,
+        ):
+            rebound = GTT.ensure_closeout_bound_pr(
+                Path("/repo"), plan, plan["publish"]["body"], transaction
+            )
+        self.assertEqual(rebound, live_pr)
+        update.assert_not_called()
+        validate_identity.assert_called_once()
+
+        live_pr["body"] = "changed before bind\n\nCloses #338"
+        with self.assertRaises(GTT.WorkflowError) as drift_error:
+            preflight(transaction)
+        self.assertEqual(
+            drift_error.exception.payload["reason_code"],
+            "existing_pr_recovery_drift",
+        )
+
+    def test_unbound_equal_head_adoption_writes_once_and_blocks_preview_drift(self) -> None:
+        head = "b" * 40
+        plan = {
+            "plan_digest": "d" * 64,
+            "task": {"active_locator": ".trellis/tasks/338"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "base_branch": "main",
+                "head_branch": "fix/338",
+                "branch_review_commit": head,
+                "publication_head": head,
+            },
+            "review": {"close_issues_reviewed": [338]},
+            "publish": {"title": "current", "body": "Closes #338"},
+        }
+        ordinary = GTT.finalization_transaction_from_plan(
+            plan,
+            next_transition="push_content",
+            pre_push_remote_head="a" * 40,
+        )
+        recovery = {
+            "mode": "existing_pr_recovery",
+            "pr": {
+                "number": 337,
+                "url": "https://github.com/castbox/guru-trellis/pull/337",
+            },
+            "initial_state": "ready",
+            "initial_is_draft": False,
+            "pre_push_remote_head": head,
+            "publication_head": head,
+            "ancestry": "equal",
+            "push_required": False,
+            "metadata_update_required": True,
+            "metadata_comparison": {
+                "live_title": "current",
+                "live_body": "Closes #338\n",
+                "title_matches": True,
+                "body_matches": False,
+            },
+            "ready_action": "preserve_ready",
+        }
+        with (
+            mock.patch.object(
+                GTT,
+                "classify_unbound_equal_head_recovery",
+                return_value=copy.deepcopy(recovery),
+            ),
+            mock.patch.object(GTT, "finalization_write_transaction") as write,
+        ):
+            converted = GTT.finalization_adopt_unbound_equal_head_transaction(
+                Path("/repo"),
+                Path("/repo/.trellis/tasks/338"),
+                plan,
+                ordinary,
+                recovery,
+            )
+        self.assertEqual(converted["next_transition"], "bind_pr")
+        write.assert_called_once_with(
+            Path("/repo"),
+            Path("/repo/.trellis/tasks/338"),
+            converted,
+        )
+
+        drifted = copy.deepcopy(recovery)
+        drifted["metadata_comparison"]["live_body"] = "different\nCloses #338"
+        with (
+            mock.patch.object(
+                GTT,
+                "classify_unbound_equal_head_recovery",
+                return_value=drifted,
+            ),
+            mock.patch.object(GTT, "finalization_write_transaction") as drift_write,
+            self.assertRaises(GTT.WorkflowError) as raised,
+        ):
+            GTT.finalization_adopt_unbound_equal_head_transaction(
+                Path("/repo"),
+                Path("/repo/.trellis/tasks/338"),
+                plan,
+                ordinary,
+                recovery,
+            )
+        self.assertEqual(
+            raised.exception.payload["reason_code"],
+            "existing_pr_recovery_drift",
+        )
+        drift_write.assert_not_called()
+
     def test_reprepare_state_precedes_existing_pr_recovery(self) -> None:
         plan = {
             "git": {
@@ -3459,6 +4657,33 @@ class FinalizeTaskContractTests(unittest.TestCase):
         self.assertEqual(advanced["adopted_pr"], adopted)
         self.assertEqual(advanced["pr"], pr)
         self.assertNotIn("pre_push_remote_head", advanced)
+
+        equal_adopted = {
+            **pr,
+            "initial_is_draft": False,
+            "pre_push_remote_head": "b" * 40,
+            "metadata_update_required": True,
+            "metadata_comparison": {
+                "live_title": "当前标题",
+                "live_body": "Closes #208\n",
+                "title_matches": True,
+                "body_matches": False,
+            },
+        }
+        equal_transaction = GTT.finalization_transaction_from_plan(
+            plan,
+            next_transition="bind_pr",
+            pr=pr,
+            mode="existing_pr_recovery",
+            adopted_pr=equal_adopted,
+        )
+        jsonschema.Draft202012Validator(
+            load("schemas/finalization-transaction.schema.json")
+        ).validate(equal_transaction)
+        equal_advanced = GTT.finalization_advance_transaction(
+            plan, equal_transaction, next_transition="archive"
+        )
+        self.assertEqual(equal_advanced["adopted_pr"], equal_adopted)
 
     def test_transaction_schema_keeps_publication_modes_mutually_exclusive(self) -> None:
         schema = jsonschema.Draft202012Validator(

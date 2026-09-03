@@ -1,0 +1,12 @@
+{
+  "id": "330-closeout-happy-path-consolidation",
+  "name": "330-closeout-happy-path-consolidation",
+  "title": "#330 收敛 Commit、Publication、Finalizer、Merge 正常路径",
+  "status": "completed",
+  "branch": "codex/330-closeout-happy-path-consolidation",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/330",
+  "completedAt": "2026-09-03"
+}
