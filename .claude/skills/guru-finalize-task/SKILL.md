@@ -33,6 +33,14 @@ persists one current-plan `existing_pr_recovery/push_content` transaction before
 pushing the new Publication HEAD exactly once. This path reuses the existing
 recovery engine and does not widen the equal-HEAD no-push conversion.
 
+That same recovery also accepts one legal composition where base evolution
+precedes the current provenance tail. The current Publication HEAD must first
+pass `provenance_tail_commit_errors()` against its direct parent; the existing
+exact base-evolution binary-delta comparison then uses that validated parent as
+its endpoint. The direct-tail and pure-base-evolution paths remain unchanged,
+and no path filtering, permissive business-drift classification, or multi-tail
+sequence is introduced.
+
 When ordinary pre-PR reprepare requires a provenance metadata tail, keep the
 business target and Guru Trellis implementation in separate temporary
 checkouts. The detached target checkout at `reviewed_content_head` is the only

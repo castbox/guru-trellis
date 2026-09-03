@@ -1,0 +1,6 @@
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"定义 Finalizer transaction、Publication identity、existing-PR recovery 与 retry 数据合同。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"定义 Finalizer semantic owner 与 deterministic runtime 的职责边界及 recovery transaction 顺序。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"定义真实 Git topology、side-effect 计数、targeted validation 与 projection 验证范围。"}
+{"file":".trellis/spec/preset/installer.md","reason":"定义 canonical source、preset reapply、installed copy 与 sidecar 收敛合同。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"定义 dogfood、Shared、Codex、Claude、Cursor 投影与 drift 约束。"}
+{"file":".trellis/spec/architecture/baseline-usage.md","reason":"绑定 current Architecture Baseline、constitution 与 change contract identity。"}

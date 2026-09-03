@@ -1401,6 +1401,16 @@ replacement is written once as current-plan
 is pushed once. Non-provenance plan drift and the existing equal-HEAD
 `push_required=false` conversion retain their prior contracts.
 
+The same schema and transaction route support one composed descendant: legal
+base evolution followed by one direct-child provenance metadata tail. The
+current tail is accepted only by `provenance_tail_commit_errors()` against its
+Git-derived direct parent; the existing base-evolution ancestry and exact
+binary-delta comparison then treats that validated parent as the current
+endpoint. Pure base evolution still compares through the current Publication
+HEAD, and direct-tail recovery keeps its existing path. No manifest-path diff
+filter, parallel drift authority, arbitrary tail sequence, field, stage, or
+public projection is added.
+
 After the exact recovery transaction binds its PR and advances to `archive`,
 `push_archive`, or `mark_ready`, it is the current stage authority. Preview
 validates its complete minimal identity before applying any pre-PR provenance

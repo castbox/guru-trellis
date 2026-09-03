@@ -1,0 +1,11 @@
+{
+  "id": "347-finalizer-base-evolution-provenance-tail",
+  "name": "347-finalizer-base-evolution-provenance-tail",
+  "title": "#347 修复 Finalizer base evolution 后合法 provenance tail 恢复",
+  "status": "in_progress",
+  "branch": "fix/347-finalizer-base-evolution-provenance-tail",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/347"
+}
