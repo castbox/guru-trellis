@@ -26,6 +26,12 @@ to task work for remove/replace and fresh qualification; blocked stops. The
 review gate records only this owner's final classifications and direct-consumer
 witness, never a qualification artifact.
 
+Before a proposed review mechanism participates in severity, findings, scope,
+or blocker judgment, invoke `guru-qualify-solution-mechanism` with
+`branch_review_candidate_set`. A `mechanism_revision_required` result removes
+or replaces only that mechanism and returns to task work for fresh
+qualification; it never enters scope confirmation.
+
 Before this review can pass, consume a fresh
 `guru-maintain-architecture-baseline:task_impact_sync(stage=branch_review)`
 result. The Architecture owner independently recomputes project checks and

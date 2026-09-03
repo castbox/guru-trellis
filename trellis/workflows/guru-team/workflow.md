@@ -326,9 +326,12 @@ semantics from their owning packages.
 
 ### Mandatory qualification profiles
 
-The workflow invokes the stable `guru-qualify-normal-scenario` id at these exact
-candidate boundaries. Each caller supplies only its profile-specific candidate
-set and live locators; the workflow consumes only the four declared exits.
+The workflow invokes both stable qualification owners at these exact candidate
+boundaries. `guru-qualify-normal-scenario` qualifies the problem scenario and
+`guru-qualify-solution-mechanism` qualifies the proposed mechanism; neither
+owner replaces the other. Each caller supplies only its profile-specific
+candidate set and live locators; the workflow consumes only the four declared
+exits from each owner.
 
 | Profile | Trigger before | Classified/mechanism return owner |
 | --- | --- | --- |
@@ -342,6 +345,12 @@ set and live locators; the workflow consumes only the four declared exits.
 | `phase2_candidate_set` | Phase 2 severity, finding, planning-stale, or implementation route | `guru-check-task` |
 | `branch_review_candidate_set` | Branch Review severity, finding, scope route, or blocker | `guru-review-branch` |
 | `publication_candidate_set` | Publication finding, task-work return, or blocker | `guru-review-task-publication` |
+
+For every row above, the caller invokes `guru-qualify-solution-mechanism` with
+the same profile before promoting a proposed mechanism into that stage's
+acceptance, test, finding, implementation, or publication judgment. A forbidden
+OS/kernel/process/descriptor mechanism returns `mechanism_revision_required`
+and never enters scope confirmation.
 
 `scope_confirmation_required` always invokes
 `guru-clarify-requirements:normal_scenario_scope_confirmation`. That target-owned
@@ -548,7 +557,9 @@ If implementation discovery produces any candidate not already closed by the
 approved planning, invoke
 `guru-qualify-normal-scenario:implementation_discovery` before adding an edit,
 test, finding, or route for that candidate. Rejected candidates are dropped;
-mechanism revision returns here for remove/replace and a fresh invocation;
+then invoke `guru-qualify-solution-mechanism:implementation_discovery` before
+accepting a proposed implementation mechanism. Mechanism revision returns
+here for remove/replace and a fresh invocation;
 blocked stops. The coordinator consumes the result in-process and writes no
 qualification artifact or checkpoint.
 

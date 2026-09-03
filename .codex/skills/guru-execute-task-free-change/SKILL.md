@@ -26,6 +26,13 @@ revision returns here for remove/replace and fresh qualification, and blocked
 stops. Rejected candidates never become a user question, test, implementation,
 or risk-expansion route. Qualification decisions remain invocation-local.
 
+At each of those candidate boundaries, invoke
+`guru-qualify-solution-mechanism` with the same profile before accepting a
+proposed mechanism as part of the task-free edit or evolution decision. Its
+`mechanism_revision_required` exit removes or replaces only the proposed
+mechanism and returns here for fresh qualification; it never enters scope
+confirmation.
+
 `completed` requires current evidence for both the pre-write suitability review
 and the post-write scope/risk review, plus the actual edited paths and targeted
 checks. Its workflow output reports edited paths, concise validation results,

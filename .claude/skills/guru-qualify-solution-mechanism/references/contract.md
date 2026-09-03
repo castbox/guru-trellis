@@ -5,7 +5,7 @@
 `guru-qualify-solution-mechanism` is the only semantic owner for deciding
 whether a proposed solution mechanism can carry business correctness, identity,
 concurrency, cancellation, recovery, inspection, monitoring, publication
-gates, or business evidence. `guru-qualify-solution-mechanism` remains the separate
+gates, or business evidence. `guru-qualify-normal-scenario` remains the separate
 owner of whether a scenario itself is in scope. Neither owner substitutes for
 the caller's planning, implementation, test, review, or publication judgment.
 

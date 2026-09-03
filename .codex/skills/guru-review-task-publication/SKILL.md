@@ -47,6 +47,12 @@ publication review; blocked stops. The Publication gate records only this
 owner's final direct-consumer classification/witness and never references
 qualification stdout, a result/report, locator, or checkpoint.
 
+Before a proposed publication mechanism participates in a finding, task-work
+return, blocker, or readiness judgment, invoke `guru-qualify-solution-mechanism`
+with `publication_candidate_set`. A `mechanism_revision_required` result
+removes or replaces only that mechanism and returns to task work for fresh
+qualification; it never enters scope confirmation.
+
 Emit exactly one declared typed exit. Missing, stale, ambiguous, multiple,
 unmapped, or checker-failed evidence fails closed.
 

@@ -13,8 +13,8 @@ fallback. Local Git and Git transport remain `git` operations.
 本目录维护 Guru 团队可复用的 Trellis workflow。
 
 这个 workflow 的 marketplace id 固定为通用的 `guru-team`。它只承载 global
-phase/status route、20 个 mandatory Skill invocation、87 个 typed exit、33 个 workflow
-target 与 21 个 stop target，以及 workspace、Docs SSOT、Issue Scope Ledger、human artifact、
+phase/status route、21 个 mandatory Skill invocation、91 个 typed exit、35 个 workflow
+target 与 22 个 stop target，以及 workspace、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 和外部 side-effect boundary。具体 intake、planning、check、review、
 publication 与 finalization 判断由对应 active package 独占。
 
@@ -75,7 +75,7 @@ installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed project
 不能反向成为语义来源。
 
 当前 registry 激活 22 Skills / 93 package exits；其中业务 global workflow closure
-为 20 个 invokes / 87 个 exits / 54 个 total targets。下列 20 个业务 active ids 参与
+为 21 个 invokes / 91 个 exits / 57 个 total targets。下列 21 个业务 active ids 参与
 global workflow：
 
 - guru-bootstrap-repository-ssot
@@ -84,6 +84,7 @@ global workflow：
 - guru-select-workflow-mode
 - guru-execute-task-free-change
 - guru-qualify-normal-scenario
+- guru-qualify-solution-mechanism
 - guru-sync-base
 - guru-discover-change-context
 - guru-clarify-requirements
