@@ -1,20 +1,19 @@
 {
-  "close_issues": [
-    {
-      "number": 332,
-      "reason": "当前唯一 primary independently deliverable release change request。",
-      "title": "发布 v0.6.15-guru.5：提升 Guru Team 内部版本并完成 exact-candidate 正式发布",
-      "url": "https://github.com/castbox/guru-trellis/issues/332"
-    }
-  ],
+  "close_issues": [],
   "followup_issues": [],
   "primary_issue": {
     "number": 332,
-    "reason": "当前唯一 primary independently deliverable release change request。",
+    "reason": "当前唯一 primary release change request；preparation PR 仅 Refs #332，Issue 在 post-merge Release Gate、tag-pinned smoke 与 GitHub Release 完成后独立关闭。",
     "title": "发布 v0.6.15-guru.5：提升 Guru Team 内部版本并完成 exact-candidate 正式发布",
     "url": "https://github.com/castbox/guru-trellis/issues/332"
   },
   "related_issues": [
+    {
+      "number": 332,
+      "reason": "preparation PR 仅 Refs #332；#332 继续持有 post-merge exact-candidate Release Gate、tag、smoke、GitHub Release 与最终 closeout。",
+      "title": "发布 v0.6.15-guru.5：提升 Guru Team 内部版本并完成 exact-candidate 正式发布",
+      "url": "https://github.com/castbox/guru-trellis/issues/332"
+    },
     {
       "number": 240,
       "reason": "已合入并独立审查的 solution-mechanism owner/ADR contribution，本 task 将其提升到 .44 current authority并在 Release Gate fresh 验收。",

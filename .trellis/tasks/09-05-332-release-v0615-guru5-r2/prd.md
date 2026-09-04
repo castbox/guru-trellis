@@ -54,7 +54,9 @@
   Publication/Finalizer 代表性全链和 tag-pinned post-publish smoke。
 - AC6：annotated tag 的 peeled commit/tree 与 candidate 完全一致，GitHub Release
   非 draft、非 prerelease，标题、正文、target、版本映射和验证边界准确。
-- AC7：只关闭 `close_issues` 中的 #332；#240、#267、#311、#348 和其他相关 Issue 不被修改或关闭。
+- AC7：preparation PR 使用 `Refs #332` 且 `close_issues=[]`，合并时不自动关闭任何 Issue；
+  #332 在 Release Gate、annotated tag、tag-pinned smoke 与 GitHub Release 完成后独立 closeout，
+  #240、#267、#311、#348 和其他相关 Issue 不被修改或关闭。
 
 ## 明确边界
 

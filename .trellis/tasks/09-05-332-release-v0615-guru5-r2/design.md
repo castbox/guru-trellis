@@ -27,6 +27,10 @@ clean candidate commit/tree，并绑定：
 任意 release-facing 内容、版本、目标 branch、工作区或 required evidence 变化都会使
 旧 candidate/review 失效，必须重新从当前 authority 开始。
 
+preparation PR 只使用 `Refs #332`，对应 Issue Scope Ledger 保持 `close_issues=[]`，不得通过
+merge close keyword 提前关闭 #332。#332 继续作为 primary release authority，并在 Release Gate、
+annotated tag、tag-pinned smoke 与 GitHub Release 全部完成后独立 closeout。
+
 ## Release Gate 分层
 
 1. preparation branch：只证明实现、定向测试和 projection 结果。
