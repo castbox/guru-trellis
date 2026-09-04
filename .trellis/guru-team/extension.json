@@ -430,11 +430,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-04T04:48:41Z",
+  "installed_at": "2026-09-04T05:15:01Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "0b11f42f1424d82459c63f59ddae522d75fc7b1c",
-    "commit": "0b11f42f1424d82459c63f59ddae522d75fc7b1c",
+    "ref": "50a8e53682d31af91107b9afb6c0a1fbe1972ae5",
+    "commit": "50a8e53682d31af91107b9afb6c0a1fbe1972ae5",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -589,7 +589,7 @@
       {
         "id": "guru-create-task-workspace",
         "interface_sha256": "09fad7d1ddfa801c5a8b0de674fcb35dfbee949eeadbf953a39d2424481d7b5b",
-        "tree_sha256": "97b1d3a8172b5b407076c5704a2b69d89ef7e8b689ebb9c343a78d162c133663"
+        "tree_sha256": "9c0b289d2486397ec6d72b7216b70e04a1caffd2b4d035d586d6f979976bc4c1"
       },
       {
         "id": "guru-create-task-commit",
@@ -3066,7 +3066,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py",
-        "sha256": "9a6d3536c7dc7f78862f3b6feef53ba9a1da6cebbe54546fd260f36c16d694ff",
+        "sha256": "86e4cb9341521dd2d873b36a8724e288beb1383039f8ca008f836513828935f9",
         "executable": false,
         "action": "unchanged"
       },
