@@ -1,0 +1,139 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-04T08:22:16Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-04-355-finalizer-multi-evolution-pr-recovery",
+    "title": "#355 Finalizer 多段合法演进后的既有 PR 恢复",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/355-finalizer-multi-evolution-pr-recovery",
+    "commits": [
+      "01ab044660a2f7b30a2144eb9aea11e5c8abc360"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/design.md",
+      ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/implement.md",
+      ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/issue-scope-ledger.json",
+      ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/prd.md",
+      ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/task.json",
+      ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/design.md",
+      ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/implement.md",
+      ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/prd.md",
+      ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/task.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      355
+    ],
+    "close_issues": [
+      355
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/357"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#355 Finalizer 多段合法演进后的既有 PR 恢复",
+    "outcome": "修复旧 `ordinary_publication/push_content` transaction 在合法 base evolution、task reviewed-content commit 和单一 provenance metadata tail 之后无法恢复既有 PR 的问题。",
+    "changed_behavior": [
+      "修复旧 `ordinary_publication/push_content` transaction 在合法 base evolution、task reviewed-content commit 和单一 provenance metadata tail 之后无法恢复既有 PR 的问题。",
+      "保留 direct-parent、manifest allowlist、changed paths、source binding、business delta、PR/remote 和 scope 校验。",
+      "同步 canonical 与 installed Finalizer runtime/test projection，并增加真实 Git topology 回归测试。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/design.md",
+          ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/implement.md",
+          ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/prd.md",
+          ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/design.md",
+          ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/implement.md",
+          ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/prd.md"
+        ],
+        "change": "修复旧 `ordinary_publication/push_content` transaction 在合法 base evolution、task reviewed-content commit 和单一 provenance metadata tail 之后无法恢复既有 PR 的问题。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "change": "修复旧 `ordinary_publication/push_content` transaction 在合法 base evolution、task reviewed-content commit 和单一 provenance metadata tail 之后无法恢复既有 PR 的问题。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/issue-scope-ledger.json",
+          ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/task.json",
+          ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/task.json"
+        ],
+        "change": "修复旧 `ordinary_publication/push_content` transaction 在合法 base evolution、task reviewed-content commit 和单一 provenance metadata tail 之后无法恢复既有 PR 的问题。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#355"
+      ],
+      "pr_refs": [
+        "PR #357"
+      ],
+      "branches": [
+        "fix/355-finalizer-multi-evolution-pr-recovery"
+      ],
+      "paths": [
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/design.md",
+        ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/implement.md",
+        ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/issue-scope-ledger.json",
+        ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/prd.md",
+        ".trellis/tasks/09-04-355-finalizer-multi-evolution-pr-recovery/task.json",
+        ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/design.md",
+        ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/implement.md",
+        ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/prd.md",
+        ".trellis/tasks/archive/2026-09/09-04-355-finalizer-multi-evolution-pr-recovery/task.json",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#355 Finalizer 多段合法演进后的既有 PR 恢复",
+        "修复旧 `ordinary_publication/push_content` transaction 在合法 base",
+        "完成 owner.py 相关变更"
+      ]
+    },
+    "retrieval_text": "#355 Finalizer 多段合法演进后的既有 PR 恢复\n修复旧 `ordinary_publication/push_content` transaction 在合法 base evolution、task reviewed-content commit 和单一 provenance metadata tail 之后无法恢复既有 PR 的问题。\n保留 direct-parent、manifest allowlist、changed paths、source binding、business delta、PR/remote 和 scope 校验。\n同步 canonical 与 installed Finalizer runtime/test projection，并增加真实 Git topology 回归测试。\n修复旧 `ordinary_publication/push_content` transaction 在合法 base\n完成 owner.py 相关变更"
+  }
+}

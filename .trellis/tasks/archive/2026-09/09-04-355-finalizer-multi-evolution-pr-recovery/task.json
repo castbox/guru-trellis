@@ -1,0 +1,12 @@
+{
+  "id": "355-finalizer-multi-evolution-pr-recovery",
+  "name": "355-finalizer-multi-evolution-pr-recovery",
+  "title": "#355 Finalizer 多段合法演进后的既有 PR 恢复",
+  "status": "completed",
+  "branch": "fix/355-finalizer-multi-evolution-pr-recovery",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/355",
+  "completedAt": "2026-09-04"
+}

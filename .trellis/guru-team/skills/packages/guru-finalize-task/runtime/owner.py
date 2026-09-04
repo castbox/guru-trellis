@@ -8226,7 +8226,7 @@ def provenance_tail_transaction_rebind_base_evolution_tail_parent(
     plan: dict[str, Any],
     transaction: dict[str, Any],
 ) -> str | None:
-    """Return the current tail parent only when the full tail and base delta are legal."""
+    """Return the current tail parent only when the full tail and evolution are legal."""
     git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
     current_publication_head = str(
         git.get("publication_head") or git.get("branch_review_commit") or ""
@@ -8247,7 +8247,17 @@ def provenance_tail_transaction_rebind_base_evolution_tail_parent(
         target_repo=git.get("repo"),
     ):
         return None
-    if not provenance_tail_transaction_rebind_is_base_evolution(
+    if provenance_tail_transaction_rebind_is_base_evolution(
+        root,
+        plan,
+        transaction,
+        comparison_head=tail_parent,
+    ):
+        return tail_parent
+    reviewed_content_head = str(git.get("branch_review_commit") or "")
+    if tail_parent != reviewed_content_head:
+        return None
+    if not provenance_tail_transaction_rebind_is_reviewed_base_descendant(
         root,
         plan,
         transaction,
@@ -8255,6 +8265,46 @@ def provenance_tail_transaction_rebind_base_evolution_tail_parent(
     ):
         return None
     return tail_parent
+
+
+def provenance_tail_transaction_rebind_is_reviewed_base_descendant(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+    *,
+    comparison_head: str,
+) -> bool:
+    """Allow reviewed task commits after base evolution before one valid tail."""
+    git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
+    base_branch = str(git.get("base_branch") or "")
+    predecessor_publication_head = str(transaction.get("publication_head") or "")
+    current_publication_head = str(
+        git.get("publication_head") or git.get("branch_review_commit") or ""
+    )
+    if not base_branch or not all(
+        re.fullmatch(r"[0-9a-f]{40}", value)
+        for value in (
+            predecessor_publication_head,
+            comparison_head,
+            current_publication_head,
+        )
+    ):
+        return False
+    base_ref = diff_base_ref(root, base_branch)
+    base_proc = run(
+        ["git", "rev-parse", "--verify", base_ref],
+        cwd=root,
+        check=False,
+    )
+    base_head = base_proc.stdout.strip() if base_proc.returncode == 0 else ""
+    return bool(
+        re.fullmatch(r"[0-9a-f]{40}", base_head)
+        and base_head != predecessor_publication_head
+        and is_ancestor(root, predecessor_publication_head, comparison_head)
+        and is_ancestor(root, base_head, comparison_head)
+        and not is_ancestor(root, base_head, predecessor_publication_head)
+        and is_ancestor(root, comparison_head, current_publication_head)
+    )
 
 def provenance_tail_transaction_reprepare_eligible(
     root: Path,
@@ -8304,7 +8354,9 @@ def classify_provenance_tail_transaction_rebind(
     base_evolution = False
     if errors:
         error_set = set(errors)
-        if error_set <= PROVENANCE_TAIL_INAPPLICABLE_ERRORS:
+        if error_set <= PROVENANCE_TAIL_INAPPLICABLE_ERRORS | {
+            "current_reviewed_publication_head"
+        }:
             base_evolution = provenance_tail_transaction_rebind_is_base_evolution(
                 root, plan, transaction
             )
