@@ -688,7 +688,7 @@ for the package's Skill, Interface, references, schemas, examples, wrapper,
 tests, and canonical eval corpus.
 
 The activation contributes to the current package closure of twenty-three active
-Skills and 96 external exits.
+Skills and 97 external exits.
 `production-current-v4` remains exactly four Skills and 15 exits; #116 is an
 additional complete active Interface 1.4 row outside that manifest. The current Branch Review
 `passed` DTO feeds the target-owned `publication_review` authoring seed.
@@ -742,9 +742,9 @@ Finalizer plan can satisfy this entry contract.
 
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
-  wrapper executable modes, the twenty-three-Skill/96-exit package closure, the
-integrated business closure of 22 invokes, 94 exits, 35 workflow targets, and
-23 stop targets, and current
+  wrapper executable modes, the twenty-three-Skill/97-exit package closure, the
+integrated business closure of 22 invokes, 95 exits, 35 workflow targets, and
+24 stop targets, and current
 ownership schema 3.0 with 11 rules, nine managed claims, and three overlays.
 Unknown edits and sidecars retain the existing managed-hash remediation.
 
@@ -773,8 +773,8 @@ commit equal to reviewed HEAD. This package-local behavior adds no installed
 managed claim, public profile, exit, transaction state, or verifier route.
 
 The complete source/installed package graph contains twenty-three active Skills and
-94 exits. The global business workflow projection is 22 invokes, 94 exits,
-35 workflow targets, and 23 stop targets. The preset additionally installs the three Guru-owned
+97 exits. The global business workflow projection is 22 invokes, 95 exits,
+35 workflow targets, and 24 stop targets. The preset additionally installs the three Guru-owned
 `guru-finish-work` entries and combined integration suite; those entries route
 only Publication, Finalizer, and Merge. Upstream `trellis-finish-work` assets
 remain under official Trellis ownership.

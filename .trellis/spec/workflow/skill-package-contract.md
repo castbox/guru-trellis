@@ -147,7 +147,7 @@ The validator selects the interface schema from the registry row. It must not
 guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes one `interface_schema_id`, the registry id,
 and exact public-input, typed-output, and private-artifact schema inventories
-for all twenty-three active packages and their 96 external exits. The
+for all twenty-three active packages and their 97 external exits. The
 `production-current-v4` is the sole current manifest and contains exactly four
 packages and 15 exits, including `guru-qualify-normal-scenario`; additive
 activation of other packages, including `guru-finalize-task`, does not rewrite

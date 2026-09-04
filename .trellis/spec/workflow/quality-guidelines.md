@@ -774,7 +774,7 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  twenty-three-Skill/96-exit current package closure while the production activation
+  twenty-three-Skill/97-exit current package closure while the production activation
   unit remains three Skills/11 exits and business markers remain integrated at
   22 invokes, 95 exits, 35 workflow targets, and 24 stop targets. Update and preset reapply must reproduce
   that closure with zero unresolved `.new` or `.bak`.
@@ -961,7 +961,7 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert twenty-three active Skills and 96
+Source/installed/platform/throwaway checks assert twenty-three active Skills and 97
 package exits, exactly one selected `production-current-v4`
 four-Skill/15-exit current manifest, and business workflow markers of 22
 invokes, 95 exits, 35 workflow targets, and 24 stop targets.
