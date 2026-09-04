@@ -674,6 +674,7 @@ class TaskPublicationContractTest(unittest.TestCase):
         owner_result: dict,
         *,
         semantic_overrides: dict | None = None,
+        review_intent: str = "initial_review",
     ) -> tuple[dict, "TaskPublicationContractTest.FacadeOwner"]:
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
@@ -683,7 +684,7 @@ class TaskPublicationContractTest(unittest.TestCase):
             "mode": "workflow",
             "task_ref": owner_result["task_ref"],
             "branch_review_commit": owner_result["branch_review_commit"],
-            "review_intent": "initial_review",
+            "review_intent": review_intent,
         }
         semantic = {
             "profile": public["profile"],
@@ -756,6 +757,69 @@ class TaskPublicationContractTest(unittest.TestCase):
                 semantic_overrides={"review_intent": "metadata_revision_review"},
             )
         self.assertEqual(raised.exception.code, "publication_input_invalid")
+
+    def test_publication_reentry_contract_has_one_route_per_change_scope(self) -> None:
+        skill = (PACKAGE / "SKILL.md").read_text(encoding="utf-8")
+        contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
+        combined = " ".join((skill, contract))
+        normalized = " ".join(combined.split())
+
+        route_expectations = (
+            (
+                "task-content",
+                "tracked task artifacts, code, tests, durable docs, or the Issue Scope Ledger return through Phase 2, Task Commit, Branch Review, and Publication",
+            ),
+            (
+                "publication-only",
+                "PR title/body or other publication payload changes retry only Publication",
+            ),
+            (
+                "identity-only",
+                "identity-only expiry refreshes the affected identity",
+            ),
+            (
+                "scope-change",
+                "scope, reviewed-content, or close-scope changes invalidate the prior ready result",
+            ),
+        )
+        for name, expected in route_expectations:
+            with self.subTest(route=name):
+                self.assertIn(" ".join(expected.split()), normalized)
+
+        self.assertIn(
+            " ".join(
+                "Publication-only retry must not recreate commits, PRs, archives, Ready"
+                " mutations, or unrelated Branch Review evidence.".split()
+            ),
+            " ".join(skill.split()),
+        )
+
+    def test_publication_only_retry_keeps_facade_mutation_free(self) -> None:
+        owner_result = copy.deepcopy(self.readiness_example)
+        output, fake_owner = self.run_happy_path_facade(
+            owner_result,
+            review_intent="metadata_revision_review",
+            semantic_overrides={
+                "review_intent": "metadata_revision_review",
+                "pr_payload": {
+                    "title": "修订后的中文 PR 标题",
+                    "body": owner_result["pr_payload"]["body"],
+                },
+            },
+        )
+        self.assertEqual(output["exit_id"], "ready")
+        self.assertEqual(fake_owner.record_calls, 1)
+        self.assertEqual(fake_owner.check_calls, 1)
+        self.assertEqual(
+            fake_owner.context.operation_counts,
+            {
+                "semantic.record": 1,
+                "objective.check": 1,
+                "checkpoint.verify": 1,
+                "public.project": 1,
+            },
+        )
+        self.assertFalse(fake_owner.checkpoint.exists())
 
     def test_invocation_context_reuses_one_objective_snapshot(self) -> None:
         context = GTT.TaskPublicationInvocationContext(

@@ -1,1 +1,5 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"验证 Issue #361 的 Publication re-entry、mutation-free retry、错误分类和 targeted validation 覆盖。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"验证 interface、schema、typed exits、public projection 与 private checkpoint 边界。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"验证精确 downstream 路由、unknown/mixed fail-closed 与不改变既有 authority。"}
+{"file":".trellis/spec/preset/installer.md","reason":"验证 preset reapply、installed parity、extension provenance 与 sidecar 结果。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"验证三平台及 Shared 投影、drift 检查和平台入口一致性。"}
