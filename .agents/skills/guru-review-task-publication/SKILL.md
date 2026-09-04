@@ -37,6 +37,14 @@ dimension may be carried forward only when its evidence references remain
 current and byte-identical; source, test, durable-doc, spec, workflow, schema,
 config, or deployment drift returns to task work.
 
+Re-entry is scope-precise: tracked task artifacts, code, tests, durable docs,
+or the Issue Scope Ledger return through Phase 2, Task Commit, Branch Review,
+and Publication; PR title/body or other publication payload changes retry only
+Publication; identity-only expiry refreshes the affected identity; and scope,
+reviewed-content, or close-scope changes invalidate the prior ready result.
+Publication-only retry must not recreate commits, PRs, archives, Ready
+mutations, or unrelated Branch Review evidence.
+
 Before a publication observation can become a finding, task-work return, or
 publication blocker, form only candidate refs and live publication/diff/test
 locators and invoke `guru-qualify-normal-scenario` with

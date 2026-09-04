@@ -679,6 +679,14 @@ calls closeout executors directly. A Finalizer base-only mismatch returns
 `base_reconciliation_required` with `resume_target=finalization_resume`;
 publication_review_stale remains limited to Publication content or metadata.
 
+Publication diagnostics preserve the owner error code and expose only a bounded
+`recovery_scope`: `task_content`, `publication_content`, `stale_identity`, or
+`runtime_dependency`. Tracked task/code/test/durable-doc/ledger changes route
+back through Phase 2, Task Commit, Branch Review, and Publication; PR
+title/body/publication-payload changes retry only Publication; identity expiry
+refreshes the affected identity; and scope or reviewed-content changes reject
+the old ready result. Unknown or unmapped classifications stop fail closed.
+
 Before its first remote mutation, Finalizer requires no Open PR and only an absent remote branch or strict historical ancestor of the reviewed commit; recovery accepts only transaction-bound remote/PR identity.
 Reprepare keeps title/body in Finalizer owner-private state while its public DTO remains minimal. `close_issues=[]` is refs-only: close keywords stay empty and merge closure is vacuously complete without Issue effects.
 
