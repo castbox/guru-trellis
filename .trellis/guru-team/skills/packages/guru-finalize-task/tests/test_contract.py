@@ -4756,6 +4756,496 @@ class FinalizeTaskContractTests(unittest.TestCase):
         self.assertEqual(actual, recovery)
         classify_existing.assert_called_once()
 
+    def test_provenance_tail_publication_metadata_drift_keeps_existing_pr_recovery(self) -> None:
+        plan = {
+            "task": {"active_locator": ".trellis/tasks/353"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "remote": "origin",
+                "head_branch": "fix/353",
+                "base_branch": "main",
+                "branch_review_commit": "b" * 40,
+                "publication_head": "b" * 40,
+            },
+            "review": {"close_issues_reviewed": [353]},
+            "publish": {"title": "new title", "body": "Closes #353"},
+        }
+        transaction = {
+            "mode": "ordinary_publication",
+            "next_transition": "push_content",
+            "pr": None,
+            "adopted_pr": None,
+            "task_ref": ".trellis/tasks/353",
+            "repo_ref": "castbox/guru-trellis",
+            "base_branch": "main",
+            "branch": "fix/353",
+            "publication": {"title": "old title", "body": "Closes #353"},
+            "close_issues": [353],
+            "branch_review_commit": "a" * 40,
+            "publication_head": "a" * 40,
+        }
+        recovery = {
+            "mode": "existing_pr_recovery",
+            "ancestry": "strict_ancestor",
+            "push_required": True,
+            "pre_push_remote_head": "a" * 40,
+            "publication_head": "b" * 40,
+        }
+        pr = {
+            "number": 337,
+            "url": "https://github.com/castbox/guru-trellis/pull/337",
+            "headRefOid": "a" * 40,
+            "isDraft": False,
+            "title": "old title",
+            "body": "Closes #353",
+        }
+        with (
+            mock.patch.object(
+                GTT,
+                "provenance_tail_transaction_rebind_errors",
+                return_value=[
+                    "publication",
+                    "provenance_tail_changed_paths_invalid",
+                    "provenance_tail_parent_mismatch",
+                ],
+            ),
+            mock.patch.object(
+                GTT,
+                "provenance_tail_transaction_rebind_base_evolution_tail_parent",
+                return_value="b" * 40,
+            ),
+            mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=pr),
+            mock.patch.object(GTT, "closeout_remote_branch_head", return_value="a" * 40),
+            mock.patch.object(
+                GTT,
+                "classify_existing_pr_recovery",
+                return_value=recovery,
+            ) as classify_existing,
+        ):
+            actual = GTT.classify_provenance_tail_transaction_rebind(
+                Path("/repo"), plan, transaction
+            )
+        self.assertEqual(actual, recovery)
+        classify_existing.assert_called_once()
+
+    def test_ordinary_provenance_tail_reprepare_preflight_requires_old_remote_head(self) -> None:
+        plan = {
+            "task": {"active_locator": ".trellis/tasks/353"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "remote": "origin",
+                "head_branch": "fix/353",
+                "base_branch": "main",
+                "branch_review_commit": "a" * 40,
+                "reviewed_content_head": "a" * 40,
+                "publication_head": "b" * 40,
+            },
+        }
+        transaction = {
+            "mode": "ordinary_publication",
+            "next_transition": "push_content",
+            "pr": None,
+            "adopted_pr": None,
+            "task_ref": ".trellis/tasks/353",
+            "repo_ref": "castbox/guru-trellis",
+            "base_branch": "main",
+            "branch": "fix/353",
+            "branch_review_commit": "a" * 40,
+            "publication_head": "a" * 40,
+        }
+        with (
+            mock.patch.object(GTT, "repo_relative", return_value=".trellis/tasks/353"),
+            mock.patch.object(
+                GTT,
+                "finalizer_pre_pr_provenance_tail_required",
+                return_value=True,
+            ),
+            mock.patch.object(
+                GTT,
+                "provenance_tail_transaction_reprepare_eligible",
+                return_value=True,
+            ),
+            mock.patch.object(GTT, "is_ancestor", return_value=True),
+            mock.patch.object(
+                GTT,
+                "closeout_remote_branch_head",
+                side_effect=["a" * 40, "c" * 40],
+            ),
+            mock.patch.object(GTT, "current_head", return_value="b" * 40),
+        ):
+            facts = GTT.finalizer_current_transaction_provenance_reprepare_preflight(
+                Path("/repo"),
+                Path("/repo/.trellis/tasks/353"),
+                transaction,
+                plan,
+            )
+            self.assertEqual(facts["reviewed_content_head"], "a" * 40)
+            self.assertEqual(facts["remote_head"], "a" * 40)
+            self.assertIsNone(facts["base_evolution"])
+            with self.assertRaises(GTT.WorkflowError) as raised:
+                GTT.finalizer_current_transaction_provenance_reprepare_preflight(
+                    Path("/repo"),
+                    Path("/repo/.trellis/tasks/353"),
+                    transaction,
+                    plan,
+                )
+        self.assertEqual(
+            raised.exception.payload["reason_code"],
+            "provenance_reprepare_remote_not_reviewed_head",
+        )
+
+    def test_unbound_provenance_tail_reprepare_real_topology_public_wrapper(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            temporary_root = Path(temporary)
+            root = temporary_root / "repo"
+            remote = temporary_root / "remote.git"
+            root.mkdir()
+            package_root_patch = mock.patch.object(
+                GTT, "finalization_package_root", return_value=PACKAGE
+            )
+            package_root_patch.start()
+            self.addCleanup(package_root_patch.stop)
+            GTT.run_stdout(["git", "init", "-q", "-b", "main"], cwd=root)
+            GTT.run_stdout(["git", "init", "-q", "--bare", str(remote)], cwd=root)
+            GTT.run_stdout(["git", "config", "user.name", "Guru Test"], cwd=root)
+            GTT.run_stdout(
+                ["git", "config", "user.email", "guru@example.invalid"], cwd=root
+            )
+            GTT.run_stdout(["git", "remote", "add", "origin", str(remote)], cwd=root)
+
+            task_ref = ".trellis/tasks/353-finalizer-reprepare"
+            task_dir = root / task_ref
+            task_dir.mkdir(parents=True)
+            task = {
+                "id": "353-finalizer-reprepare",
+                "name": "353-finalizer-reprepare",
+                "title": "Finalizer provenance tail reprepare",
+                "status": "in_progress",
+                "branch": "fix/353",
+                "base_branch": "main",
+            }
+            issue = {
+                "number": 353,
+                "url": "https://github.com/castbox/guru-trellis/issues/353",
+                "title": "Finalizer provenance tail reprepare",
+                "reason": "The real topology covers Issue #353.",
+            }
+            ledger = {
+                "schema_version": "2.0",
+                "primary_issue": issue,
+                "close_issues": [copy.deepcopy(issue)],
+                "related_issues": [],
+                "followup_issues": [],
+            }
+            (task_dir / "task.json").write_text(
+                json.dumps(task, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+            )
+            (task_dir / "issue-scope-ledger.json").write_text(
+                json.dumps(ledger, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+            )
+            for name, content in (
+                ("prd.md", "# 需求\n\n补齐旧 Finalizer transaction 的 reprepare。\n"),
+                ("design.md", "# 设计\n\n保留 provenance tail 严格校验。\n"),
+                ("implement.md", "# 实施\n\n验证真实 topology 与 retry。\n"),
+            ):
+                (task_dir / name).write_text(content, encoding="utf-8")
+            manifest_path = root / ".trellis/guru-team/extension.json"
+            manifest_path.parent.mkdir(parents=True, exist_ok=True)
+
+            initial_marker = root / "reviewed.txt"
+            initial_marker.write_text("base\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "reviewed.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-qm", "base"], cwd=root)
+            base_before = GTT.current_head(root)
+            GTT.run_stdout(["git", "switch", "-q", "-c", "fix/353"], cwd=root)
+
+            manifest_path.write_text(
+                json.dumps(
+                    provenance_manifest(
+                        "castbox/guru-trellis",
+                        "c" * 40,
+                        tree_state="dirty",
+                        is_mutable_ref=True,
+                    ),
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            GTT.run_stdout(["git", "add", "."], cwd=root)
+            GTT.run_stdout(["git", "commit", "-qm", "reviewed publication"], cwd=root)
+            predecessor_head = GTT.current_head(root)
+            GTT.run_stdout(
+                ["git", "push", "-q", "-u", "origin", "HEAD:refs/heads/fix/353"],
+                cwd=root,
+            )
+
+            GTT.run_stdout(["git", "switch", "-q", "main"], cwd=root)
+            for index in (1, 2):
+                base_path = root / f"base-{index}.txt"
+                base_path.write_text(f"base {index}\n", encoding="utf-8")
+                GTT.run_stdout(["git", "add", base_path.name], cwd=root)
+                GTT.run_stdout(["git", "commit", "-qm", f"advance base {index}"], cwd=root)
+            base_after = GTT.current_head(root)
+            GTT.run_stdout(["git", "switch", "-q", "fix/353"], cwd=root)
+            GTT.run_stdout(
+                ["git", "merge", "--no-ff", "-q", "main", "-m", "merge base"], cwd=root
+            )
+            reviewed_head = GTT.current_head(root)
+            parent_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest_path.write_text(
+                json.dumps(
+                    GTT.provenance_tail_manifest_postimage(
+                        parent_manifest,
+                        {
+                            "source_locator": "https://github.com/castbox/guru-trellis.git",
+                            "source_ref": reviewed_head,
+                            "source_commit": reviewed_head,
+                        },
+                    ),
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            GTT.run_stdout(["git", "add", ".trellis/guru-team/extension.json"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-qm", "provenance tail"], cwd=root)
+            publication_head = GTT.current_head(root)
+
+            self.assertEqual(
+                GTT.provenance_tail_commit_errors(
+                    root,
+                    reviewed_head,
+                    publication_head,
+                    target_repo="castbox/guru-trellis",
+                ),
+                [],
+            )
+            self.assertTrue(GTT.is_ancestor(root, predecessor_head, publication_head))
+            self.assertTrue(GTT.is_ancestor(root, base_after, reviewed_head))
+            self.assertFalse(GTT.is_ancestor(root, base_after, predecessor_head))
+
+            old_plan = {
+                "plan_digest": "a" * 64,
+                "task": {"active_locator": task_ref, "archive_locator": ""},
+                "git": {
+                    "repo": "castbox/guru-trellis",
+                    "remote": "origin",
+                    "base_branch": "main",
+                    "head_branch": "fix/353",
+                    "branch_review_commit": predecessor_head,
+                    "reviewed_content_head": predecessor_head,
+                    "publication_head": predecessor_head,
+                },
+                "publish": {"title": "old title", "body": "Closes #353"},
+                "review": {"close_issues_reviewed": [353]},
+                "marketplace": {"required": False},
+                "projection": {},
+            }
+            old_transaction = GTT.finalization_transaction_from_plan(
+                old_plan,
+                next_transition="push_content",
+                pre_push_remote_head=predecessor_head,
+            )
+            GTT.finalization_write_transaction(root, task_dir, old_transaction)
+
+            task_context = {
+                "slug": task["name"],
+                "title": task["title"],
+                "base_branch": "main",
+                "base_ref": base_before,
+                "base_head_sha": base_after,
+                "branch_name": "fix/353",
+                "task_artifact_dir": task_ref,
+            }
+            current_plan = GTT.build_closeout_plan(
+                root,
+                task_dir,
+                task_context,
+                task,
+                ledger,
+                repo="castbox/guru-trellis",
+                remote="origin",
+                base_branch="main",
+                head_branch="fix/353",
+                branch_review_commit=reviewed_head,
+                title="new title",
+                body=(
+                    "## 变更摘要\n\n"
+                    "- 从当前 Publication authority 重建旧 Finalizer transaction。\n\n"
+                    "## 影响范围\n\n"
+                    "- 仅影响 Finalizer provenance-tail recovery。\n\n"
+                    "## 验证结果\n\n"
+                    "- 覆盖真实 Git topology、transaction-before-mutation 与 retry。\n\n"
+                    "## Review Gate\n\n"
+                    "- 当前 task 已完成独立 review。\n\n"
+                    "## Issue 关闭范围\n\n"
+                    "- Closes #353\n\n"
+                    "## 安全说明\n\n"
+                    "- 不新增权限、凭据或外部副作用边界。\n\n"
+                    "## Docs SSOT\n\n"
+                    "- strategy: no_docs_update_needed; durable docs: no-update; merged delta: task-only; task history: #353 task-local; follow-up: no follow-up。\n"
+                ),
+                review_facts={"changed_paths": ["reviewed.txt"]},
+                include_closeout_plan=False,
+                allow_existing_summary=True,
+            )
+            prepared = {
+                "plan": current_plan,
+                "plan_digest": current_plan["plan_digest"],
+                "task": task,
+                "task_context": task_context,
+                "ledger": ledger,
+                "body": current_plan["publish"]["body"],
+                "month_supersession": None,
+                "pre_pr_reprepare": None,
+                "migration_normalization": None,
+                "reviewed_content_head": reviewed_head,
+                "publication_head": publication_head,
+                "metadata_tail": {
+                    "commit": publication_head,
+                    "parent": reviewed_head,
+                    "path": GTT.PROVENANCE_TAIL_MANIFEST_PATH,
+                },
+            }
+            public_input = {
+                "profile": "publication_ready",
+                "mode": "workflow",
+                "task_ref": task_ref,
+                "branch_review_commit": reviewed_head,
+                "pr_title": current_plan["publish"]["title"],
+                "pr_body": current_plan["publish"]["body"],
+            }
+            input_path = root / ".trellis/.runtime/guru-team/issue-353/input.json"
+            input_path.parent.mkdir(parents=True)
+            input_path.write_text(json.dumps(public_input) + "\n", encoding="utf-8")
+            input_locator = input_path.relative_to(root).as_posix()
+
+            with (
+                mock.patch.object(GTT, "official_after_archive_hook_state"),
+                mock.patch.object(GTT, "load_config", return_value={}),
+                mock.patch.object(GTT, "load_task_runtime_identity", return_value=task_context),
+                mock.patch.object(GTT, "assert_workspace_boundary"),
+                mock.patch.object(GTT, "finalization_publication_owner_result", return_value={
+                    "status": "ok",
+                    "owner_status": "current",
+                    "typed_exit": "ready",
+                    "task_ref": task_ref,
+                    "branch_review_commit": reviewed_head,
+                }),
+                mock.patch.object(GTT, "prepare_closeout", return_value=prepared),
+                mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=None),
+                mock.patch.object(GTT, "resolve_closeout_terminal_pull_requests", return_value=[]),
+            ):
+                preview = GTT.cmd_preview_finalization(
+                    SimpleNamespace(root=str(root), input=input_locator)
+                )
+                preview_context = GTT.finalization_preview_context(
+                    root,
+                    SimpleNamespace(root=str(root), input=input_locator),
+                    public_input,
+                )
+
+            self.assertFalse(preview["side_effects"])
+            self.assertEqual(preview["transaction_state"], "reprepare_required")
+            self.assertEqual(
+                preview["closeout_plan"]["git"]["publication_head"], publication_head
+            )
+            self.assertIsNone(preview["existing_pr_recovery"])
+
+            reviewed_input = {
+                "schema_version": "3.0",
+                "skill_id": "guru-finalize-task",
+                "review": {"status": "passed", "summary": "Current plan is approved."},
+                "route": {
+                    "typed_exit": "reprepare_required",
+                    "consumer": copy.deepcopy(GTT.FINALIZATION_CONSUMERS["reprepare_required"]),
+                    "output": copy.deepcopy(GTT.FINALIZATION_EXECUTOR_OUTPUT_MARKER),
+                },
+            }
+            gate = GTT.finalization_record_gate_result(
+                root,
+                public_input,
+                reviewed_input,
+                preview_context,
+                dry_run=False,
+                include_private=True,
+            )["gate"]
+            gate_path = root / ".trellis/.runtime/guru-team/issue-353/gate.json"
+            gate_path.write_text(json.dumps(gate) + "\n", encoding="utf-8")
+
+            events: list[str] = []
+            original_write = GTT.finalization_write_transaction
+
+            def record_transaction(current_root, current_task_dir, transaction):
+                events.append("transaction")
+                return original_write(current_root, current_task_dir, transaction)
+
+            external_mutations = {
+                "push": 0,
+                "pr_create": 0,
+                "pr_edit": 0,
+                "archive": 0,
+                "ready": 0,
+            }
+            with (
+                mock.patch.object(GTT, "finalization_public_input", return_value=(public_input, input_path)),
+                mock.patch.object(GTT, "finalization_gate_input", return_value=(gate, gate_path)),
+                mock.patch.object(
+                    GTT,
+                    "check_finalization_gate_result",
+                    return_value=(gate, preview_context),
+                ),
+                mock.patch.object(
+                    GTT,
+                    "validate_github_remote_repository",
+                    return_value="castbox/guru-trellis",
+                ),
+                mock.patch.object(GTT, "finalization_write_transaction", side_effect=record_transaction),
+                mock.patch.object(GTT, "push_closeout_branch_if_needed", side_effect=lambda *a, **k: external_mutations.__setitem__("push", external_mutations["push"] + 1)),
+                mock.patch.object(GTT, "create_pull_request", side_effect=lambda *a, **k: external_mutations.__setitem__("pr_create", external_mutations["pr_create"] + 1)),
+                mock.patch.object(GTT, "update_pull_request_metadata", side_effect=lambda *a, **k: external_mutations.__setitem__("pr_edit", external_mutations["pr_edit"] + 1)),
+                mock.patch.object(GTT, "execute_archive_metadata_transaction", side_effect=lambda *a, **k: external_mutations.__setitem__("archive", external_mutations["archive"] + 1)),
+                mock.patch.object(GTT, "ensure_closeout_pr_ready", side_effect=lambda *a, **k: external_mutations.__setitem__("ready", external_mutations["ready"] + 1)),
+                mock.patch.object(GTT, "finalizer_publication_identity", return_value={
+                    "reviewed_content_head": reviewed_head,
+                    "publication_head": publication_head,
+                    "metadata_tail": {"commit": publication_head, "parent": reviewed_head, "path": GTT.PROVENANCE_TAIL_MANIFEST_PATH},
+                }),
+            ):
+                first = GTT.cmd_execute_finalization_transition(
+                    SimpleNamespace(root=str(root), input=input_locator, gate=str(gate_path.relative_to(root)))
+                )
+
+            self.assertEqual(first["typed_exit"], "reprepare_required")
+            self.assertEqual(first["replacement_transaction_created"], True)
+            self.assertEqual(events, ["transaction"])
+            self.assertEqual(external_mutations, {key: 0 for key in external_mutations})
+            replacement = GTT.finalization_read_transaction(root, task_dir)
+            self.assertIsNotNone(replacement)
+            self.assertEqual(replacement["next_transition"], "push_content")
+            self.assertEqual(replacement["publication_head"], publication_head)
+
+            with mock.patch.object(
+                GTT,
+                "validate_github_remote_repository",
+                return_value="castbox/guru-trellis",
+            ), mock.patch.object(GTT, "load_config", return_value={}), mock.patch.object(
+                GTT, "load_task_runtime_identity", return_value=task_context
+            ), mock.patch.object(GTT, "assert_workspace_boundary"):
+                retry_preview = GTT.cmd_preview_finalization(
+                    SimpleNamespace(
+                        root=str(root),
+                        input=input_locator,
+                        repo="castbox/guru-trellis",
+                        remote="origin",
+                        base_branch="main",
+                        title="new title",
+                    )
+                )
+            self.assertFalse(retry_preview["side_effects"])
+            self.assertEqual(retry_preview["transaction_state"], "prepared")
+
     def test_base_evolution_fallback_uses_real_merge_topology(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

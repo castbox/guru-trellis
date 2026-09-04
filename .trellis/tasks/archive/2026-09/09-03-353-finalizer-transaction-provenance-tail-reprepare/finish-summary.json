@@ -1,0 +1,162 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-04T03:37:17Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-03-353-finalizer-transaction-provenance-tail-reprepare",
+    "title": "修复 Finalizer 旧 transaction 遇到新 provenance tail 时的受支持 reprepare/rebind",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/353-finalizer-transaction-provenance-tail-reprepare",
+    "commits": [
+      "1569c5ca2abff9476a0d8d525363fb4d731a9d62",
+      "825d9d2e2e797aa42846e4538a9bf7012fd7c4f5",
+      "c17f1c63cd0c4e224a84d664f54125d8969114f4"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/design.md",
+      ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/implement.md",
+      ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/issue-scope-ledger.json",
+      ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/prd.md",
+      ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/task.json",
+      ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/design.md",
+      ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/implement.md",
+      ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/prd.md",
+      ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/task.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      353
+    ],
+    "close_issues": [
+      353
+    ],
+    "related_issues": [
+      333,
+      342,
+      344,
+      347,
+      350
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/354"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "修复 Finalizer 旧 transaction 遇到新 provenance tail 时的受支持 reprepare/rebind",
+    "outcome": "为旧的、未绑定 PR 的 `ordinary_publication/push_content` transaction 增加受支持的 current-plan reprepare/rebind 路径。",
+    "changed_behavior": [
+      "为旧的、未绑定 PR 的 `ordinary_publication/push_content` transaction 增加受支持的 current-plan reprepare/rebind 路径。",
+      "继续复用严格的 provenance-tail changed-path、manifest、direct-parent、business-drift、multi-tail、base-evolution、PR/remote identity 和 scope 校验。",
+      "reprepare preview 保持无副作用，执行阶段在首个外部 mutation 前写入 current-plan recovery transaction，并保证同一 plan 重试不重复 mutation。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/design.md",
+          ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/implement.md",
+          ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/prd.md",
+          ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/design.md",
+          ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/implement.md",
+          ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/prd.md"
+        ],
+        "change": "为旧的、未绑定 PR 的 `ordinary_publication/push_content` transaction 增加受支持的 current-plan reprepare/rebind 路径。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "为旧的、未绑定 PR 的 `ordinary_publication/push_content` transaction 增加受支持的 current-plan reprepare/rebind 路径。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "change": "为旧的、未绑定 PR 的 `ordinary_publication/push_content` transaction 增加受支持的 current-plan reprepare/rebind 路径。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/issue-scope-ledger.json",
+          ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/task.json",
+          ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/task.json"
+        ],
+        "change": "为旧的、未绑定 PR 的 `ordinary_publication/push_content` transaction 增加受支持的 current-plan reprepare/rebind 路径。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#333",
+        "#342",
+        "#344",
+        "#347",
+        "#350",
+        "#353"
+      ],
+      "pr_refs": [
+        "PR #354"
+      ],
+      "branches": [
+        "codex/353-finalizer-transaction-provenance-tail-reprepare"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/design.md",
+        ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/implement.md",
+        ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/issue-scope-ledger.json",
+        ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/prd.md",
+        ".trellis/tasks/09-03-353-finalizer-transaction-provenance-tail-reprepare/task.json",
+        ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/design.md",
+        ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/implement.md",
+        ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/prd.md",
+        ".trellis/tasks/archive/2026-09/09-03-353-finalizer-transaction-provenance-tail-reprepare/task.json",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "修复 Finalizer 旧 transaction 遇到新 provenance tail 时的受支持 reprepa",
+        "为旧的、未绑定 PR 的 `ordinary_publication/push_content` transaction",
+        "完成 extension.json 相关变更"
+      ]
+    },
+    "retrieval_text": "修复 Finalizer 旧 transaction 遇到新 provenance tail 时的受支持 reprepare/rebind\n为旧的、未绑定 PR 的 `ordinary_publication/push_content` transaction 增加受支持的 current-plan reprepare/rebind 路径。\n继续复用严格的 provenance-tail changed-path、manifest、direct-parent、business-drift、multi-tail、base-evolution、PR/remote identity 和 scope 校验。\nreprepare preview 保持无副作用，执行阶段在首个外部 mutation 前写入 current-plan recovery transaction，并保证同一 plan 重试不重复 mutation。\n修复 Finalizer 旧 transaction 遇到新 provenance tail 时的受支持 reprepa\n为旧的、未绑定 PR 的 `ordinary_publication/push_content` transaction\n完成 extension.json 相关变更"
+  }
+}
