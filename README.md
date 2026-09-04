@@ -17,13 +17,13 @@ Guru Trellis 是 Guru Team 面向业务研发仓库提供的 Trellis 团队扩�
 
 | 组件 | 固定版本 |
 | --- | --- |
-| Guru Trellis repo tag | `v0.6.15-guru.3` |
-| Guru Team extension revision | `0.6.15-guru.39` |
+| Guru Trellis repo tag | `v0.6.15-guru.5` |
+| Guru Team extension revision | `0.6.15-guru.40` |
 | 官方 `@mindfoldhq/trellis` CLI | `0.6.15` |
 
 repo tag 与 extension revision 是两个独立版本轴。本次发布的 workflow 与 preset
-固定使用同一个目标 annotated tag `v0.6.15-guru.3`。该 tag object、peeled commit、
-GitHub Release、tag-pinned install 与 post-publish smoke 尚未创建或验证；#267 必须在
+固定使用同一个目标 annotated tag `v0.6.15-guru.5`。该 tag object、peeled commit、
+GitHub Release、tag-pinned install 与 post-publish smoke 尚未创建或验证；#332 必须在
 preparation PR 合并后重新冻结 exact candidate，并从头执行 Release gates。
 
 新仓库的非交互安装入口：
@@ -32,9 +32,9 @@ preparation PR 合并后重新冻结 exact candidate，并从头执行 Release g
 npm install --global @mindfoldhq/trellis@0.6.15
 trellis init -y --claude --codex --cursor \
   --workflow guru-team \
-  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.15-guru.3
+  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.15-guru.5
 guru_trellis_source="$(mktemp -d)"
-git clone --depth 1 --branch v0.6.15-guru.3 \
+git clone --depth 1 --branch v0.6.15-guru.5 \
   https://github.com/castbox/guru-trellis.git "$guru_trellis_source"
 "$guru_trellis_source/trellis/presets/guru-team/scripts/bash/apply.sh" \
   --repo . --all-platforms
@@ -65,13 +65,13 @@ trellis update --skip-all
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.3 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.5 \
   --template guru-team --create-new
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.3 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.5 \
   --template guru-team --force
 guru_trellis_source="$(mktemp -d)"
-git clone --depth 1 --branch v0.6.15-guru.3 \
+git clone --depth 1 --branch v0.6.15-guru.5 \
   https://github.com/castbox/guru-trellis.git "$guru_trellis_source"
 "$guru_trellis_source/trellis/presets/guru-team/scripts/bash/apply.sh" \
   --repo . --all-platforms

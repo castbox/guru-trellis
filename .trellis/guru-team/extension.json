@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.15-guru.39",
+    "version": "0.6.15-guru.40",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.15",
@@ -430,12 +430,12 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-04T16:54:51Z",
+  "installed_at": "2026-09-04T18:00:12Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "a88039261ae005be55bae5360d4ad2d3cf0b4d5a",
-    "commit": "a88039261ae005be55bae5360d4ad2d3cf0b4d5a",
-    "tree_state": "clean",
+    "ref": "3f888c1ad2d0bad5f257794b1f09da24af73f397",
+    "commit": "3f888c1ad2d0bad5f257794b1f09da24af73f397",
+    "tree_state": "dirty",
     "is_mutable_ref": false
   },
   "install": {
@@ -639,7 +639,7 @@
       {
         "id": "guru-verify-extension-installation",
         "interface_sha256": "87925b8157721ce8f0142f3a46fccea145b0e0f5d6782a4b6bad85e76978d0f5",
-        "tree_sha256": "91ce154ab7291af6a876f7f344eb87cb63b7974d90e77d56e02dfd5a899e1265"
+        "tree_sha256": "53cfcb29fd5a95139eabdfad3cdd34d7acb809bf76a7632db87c2dcea05cec71"
       },
       {
         "id": "guru-finalize-task",
@@ -6790,7 +6790,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "0dbf1501a4354b0e68564b045719c2e42ae9061e38a17bcbe65f15331ea39d49",
+        "sha256": "a6be25d96b0b47700933c96e4a345caa96888342a9d098c5e85ca1373e751faa",
         "executable": false,
         "action": "unchanged"
       },
