@@ -10,7 +10,7 @@
   "related_issues": [
     {
       "number": 332,
-      "reason": "preparation PR 仅 Refs #332；#332 继续持有 post-merge exact-candidate Release Gate、tag、smoke、GitHub Release 与最终 closeout。",
+      "reason": "当前唯一 primary release change request；preparation PR 仅 Refs #332，Issue 在 post-merge Release Gate、tag-pinned smoke 与 GitHub Release 完成后独立关闭。",
       "title": "发布 v0.6.15-guru.5：提升 Guru Team 内部版本并完成 exact-candidate 正式发布",
       "url": "https://github.com/castbox/guru-trellis/issues/332"
     },
