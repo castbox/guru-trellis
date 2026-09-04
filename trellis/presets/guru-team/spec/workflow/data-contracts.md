@@ -1419,6 +1419,19 @@ convergence; pure base evolution plus Publication drift remains invalid. No
 manifest-path diff filter, parallel drift authority, arbitrary tail sequence,
 field, stage, or public projection is added.
 
+Schema 3.0 also accepts one direct fresh-reviewed descendant after those legacy
+classifications fail on provenance shape. The current Branch Review comparison
+commit is the current Publication HEAD, descends from both predecessor
+Publication and the evolved selected base, and does not already contain that
+selected base in the predecessor lineage. Fresh Branch Review and Publication
+identity provide the reviewed Task Commit authority without a changed-path
+heuristic. The unique Open PR and remote must agree on a commit descended from
+predecessor Publication and strictly ancestral to current Publication; only
+this classification permits that exact pre-push HEAD to differ from predecessor
+Publication. The same `existing_pr_recovery/push_content` transaction records
+the classifier's pre-push remote HEAD before mutation. No DTO, mode, stage or
+schema field changes.
+
 After the exact recovery transaction binds its PR and advances to `archive`,
 `push_archive`, or `mark_ready`, it is the current stage authority. Preview
 validates its complete minimal identity before applying any pre-PR provenance

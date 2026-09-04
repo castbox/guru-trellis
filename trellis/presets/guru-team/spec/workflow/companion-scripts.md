@@ -1685,6 +1685,17 @@ identity, scope, PR, remote, metadata, or transaction failure remains blocking.
 The resulting preview and execution reuse the existing strict-ancestor recovery
 and transaction-before-push sequence without a new classifier authority.
 
+One tail-free recovery also exists for a fresh reviewed Task Commit after base
+evolution. After the existing topology routes retain priority, the Finalizer
+may classify current Branch Review and Publication at the same commit only when
+their fresh identity is current and the commit satisfies predecessor/base
+ancestry. It then resolves the unique Open PR and exact remote HEAD, requires
+that HEAD to remain in the predecessor-to-current lineage, and delegates strict
+ancestry, metadata, scope and Draft/Ready decisions to
+`classify_existing_pr_recovery()`. The remote may differ from predecessor
+Publication only on this path, and transaction conversion persists the returned
+pre-push remote HEAD before any push or PR/archive/Ready mutation.
+
 Before an ordinary pre-PR metadata-tail reprepare, the executor creates a
 detached target checkout at the business `reviewed_content_head`, reads that
 commit's installed manifest, and resolves a separate clean detached extension

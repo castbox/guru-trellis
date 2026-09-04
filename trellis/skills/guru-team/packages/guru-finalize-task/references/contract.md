@@ -159,6 +159,19 @@ identity/scope/PR/transaction error remains fail-closed. A successful compositio
 still delegates to the same strict-ancestor classifier and writes the same
 current-plan recovery transaction before the single Publication push.
 
+A second current descendant shape needs no final metadata tail. After the
+existing direct-tail, pure-base and base-plus-tail classifications are tried,
+one current Branch Review commit may also be the Publication HEAD itself. This
+direct path requires selected-base evolution, predecessor and selected-base
+ancestry into that reviewed commit, while current Branch Review and Publication
+identity provide the fresh Task Commit authority without a changed-path
+heuristic. The unique Open PR and remote may be newer than the predecessor
+Publication only for this classification; they must agree on a commit in the
+predecessor-to-current lineage and remain a strict ancestor of the current
+Publication. The existing strict-ancestor
+classifier still owns metadata, close scope and Draft/Ready facts, and its exact
+remote HEAD is copied into the unchanged recovery transaction before mutation.
+
 Preview reports the exact PR, equal/strict ancestry, push decision, initial
 Draft/Ready state, per-field title/body byte comparison, metadata convergence
 decision and Ready action. Execute rereads those facts before conversion and

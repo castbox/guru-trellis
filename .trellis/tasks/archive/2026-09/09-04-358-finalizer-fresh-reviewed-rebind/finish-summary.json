@@ -1,0 +1,227 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-04T13:31:52Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-04-358-finalizer-fresh-reviewed-rebind",
+    "title": "#358 修复 Finalizer fresh reviewed transaction rebind",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/358-finalizer-fresh-reviewed-rebind",
+    "commits": [
+      "f11f79c368d0ede06c9c3b0930aa8e41c40c73c8",
+      "a6a409d4e1382b8bf09a86e96f41dce947acc877"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-finalize-task/references/contract.md",
+      ".claude/skills/guru-finalize-task/references/contract.md",
+      ".codex/skills/guru-finalize-task/references/contract.md",
+      ".cursor/skills/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/design.md",
+      ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/implement.md",
+      ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/issue-scope-ledger.json",
+      ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/prd.md",
+      ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/task.json",
+      ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/design.md",
+      ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/implement.md",
+      ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/prd.md",
+      ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/task.json",
+      "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/design.md",
+      "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/manifest.yaml",
+      "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/requirements.md",
+      "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/test.md",
+      "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/traceability.md",
+      "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+      "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+      "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      358
+    ],
+    "close_issues": [
+      358
+    ],
+    "related_issues": [
+      333,
+      355
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/360"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#358 修复 Finalizer fresh reviewed transaction rebind",
+    "outcome": "修复 fresh reviewed task-content HEAD 在没有额外 provenance tail 时进入 existing-PR strict-ancestor recovery。",
+    "changed_behavior": [
+      "修复 fresh reviewed task-content HEAD 在没有额外 provenance tail 时进入 existing-PR strict-ancestor recovery。",
+      "复用既有 transaction、PR metadata、archive/Ready 和 mutation ordering，不新增 public DTO、typed exit、transaction mode/stage 或 schema version。",
+      "同步 canonical Finalizer、dogfood installed、Shared/Codex/Claude/Cursor projections，以及 Issue #358 的 Requirements/Design/Test traceability delta。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "config",
+        "name": "config",
+        "paths": [
+          "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/manifest.yaml"
+        ],
+        "change": "修复 fresh reviewed task-content HEAD 在没有额外 provenance tail 时进入 existing-PR strict-ancestor recovery。"
+      },
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/design.md",
+          ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/implement.md",
+          ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/prd.md",
+          ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/design.md",
+          ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/implement.md",
+          ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/prd.md",
+          "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/design.md",
+          "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/requirements.md",
+          "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/test.md",
+          "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/traceability.md"
+        ],
+        "change": "修复 fresh reviewed task-content HEAD 在没有额外 provenance tail 时进入 existing-PR strict-ancestor recovery。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "修复 fresh reviewed task-content HEAD 在没有额外 provenance tail 时进入 existing-PR strict-ancestor recovery。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+          "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md"
+        ],
+        "change": "修复 fresh reviewed task-content HEAD 在没有额外 provenance tail 时进入 existing-PR strict-ancestor recovery。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "change": "修复 fresh reviewed task-content HEAD 在没有额外 provenance tail 时进入 existing-PR strict-ancestor recovery。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-finalize-task/references/contract.md",
+          ".claude/skills/guru-finalize-task/references/contract.md",
+          ".codex/skills/guru-finalize-task/references/contract.md",
+          ".cursor/skills/guru-finalize-task/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md"
+        ],
+        "change": "修复 fresh reviewed task-content HEAD 在没有额外 provenance tail 时进入 existing-PR strict-ancestor recovery。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/issue-scope-ledger.json",
+          ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/task.json",
+          ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/task.json"
+        ],
+        "change": "修复 fresh reviewed task-content HEAD 在没有额外 provenance tail 时进入 existing-PR strict-ancestor recovery。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#333",
+        "#355",
+        "#358"
+      ],
+      "pr_refs": [
+        "PR #360"
+      ],
+      "branches": [
+        "fix/358-finalizer-fresh-reviewed-rebind"
+      ],
+      "paths": [
+        ".agents/skills/guru-finalize-task/references/contract.md",
+        ".claude/skills/guru-finalize-task/references/contract.md",
+        ".codex/skills/guru-finalize-task/references/contract.md",
+        ".cursor/skills/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/design.md",
+        ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/implement.md",
+        ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/issue-scope-ledger.json",
+        ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/prd.md",
+        ".trellis/tasks/09-04-358-finalizer-fresh-reviewed-rebind/task.json",
+        ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/design.md",
+        ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/implement.md",
+        ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/prd.md",
+        ".trellis/tasks/archive/2026-09/09-04-358-finalizer-fresh-reviewed-rebind/task.json",
+        "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/design.md",
+        "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/manifest.yaml",
+        "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/requirements.md",
+        "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/test.md",
+        "docs/requirements-design-test-contributions/358-finalizer-fresh-reviewed-rebind/traceability.md",
+        "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+        "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+        "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#358 修复 Finalizer fresh reviewed transaction rebind",
+        "修复 fresh reviewed task-content HEAD 在没有额外 provenance tail 时进",
+        "完成 contract.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#358 修复 Finalizer fresh reviewed transaction rebind\n修复 fresh reviewed task-content HEAD 在没有额外 provenance tail 时进入 existing-PR strict-ancestor recovery。\n复用既有 transaction、PR metadata、archive/Ready 和 mutation ordering，不新增 public DTO、typed exit、transaction mode/stage 或 schema version。\n同步 canonical Finalizer、dogfood installed、Shared/Codex/Claude/Cursor projections，以及 Issue #358 的 Requirements/Design/Test traceability delta。\n修复 fresh reviewed task-content HEAD 在没有额外 provenance tail 时进\n完成 contract.md 相关变更"
+  }
+}
