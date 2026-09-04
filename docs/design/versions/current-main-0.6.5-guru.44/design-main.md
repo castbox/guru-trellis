@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-版本：`current-main-0.6.5-guru.43`；状态：`superseded`；successor：`current-main-0.6.5-guru.44`；provenance：`code_recovered` + contribution identity `architecture-contribution-335-repository-private-release-orchestration-v1` + inherited `.42` authority。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
+版本：`current-main-0.6.5-guru.44`；状态：`active`；predecessor：`current-main-0.6.5-guru.43`；provenance：`code_recovered` + contribution identity `architecture-contribution-332-release-v0615-guru5-v1` + reviewed #240/#348 contributions + inherited `.43` authority。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
 
 ## 分层与 ownership
 
@@ -53,7 +53,7 @@
 
 ## Public I/O 与 private state
 
-- `CON-001`：21 个 active Skill 以 registry/interface 为 public graph，typed exit 必须有唯一 consumer 或 fail-closed stop。
+- `CON-001`：23 个 active Skill 以 registry/interface 为 public graph，typed exit 必须有唯一 consumer 或 fail-closed stop。
 - `CON-002`：public output 是最小 handoff DTO；不携带完整审查、Git 可推导事实、用户授权或 private digest。
 - `CON-003`：producer output 到 consumer input 是显式、薄、可确定性验证的 projection；consumer 不理解 producer private artifact。
 - `CON-004`：terminal projection 不把 durable archive 当作 live provider；archive 只提供已提交 identity，Git/GitHub current facts仍必须精确匹配，缺失 locator 或任何 drift 均 fail closed。
@@ -128,10 +128,46 @@
   closure 与 cleanup 各自拥有精确 preview、当前对话确认与 mutation；Skill 只路由下一 owner，不保存
   授权、阶段或动作结果，unsupported exit 无 fallback。
 
+## #332 exact-candidate Release Gate design
+
+- `DES-060` Release identity projection：RDT/Architecture、manifest、README、workflow、preset、fixture、
+  canonical、dogfood 与 installed release-facing surfaces 共享 `.5/.40/CLI 0.6.15` target mapping；
+  latest stable `.4/.39/CLI 0.6.15` 只作为 predecessor，历史 versioned authority/evidence 原文不回写。
+- `DES-061` Preparation and candidate reset：#332 preparation 复用 standard Intake 到 expected-head merge
+  的既有 owner，并 fresh 消费 #311/#333/#339/#358/#361 merged behavior。merge 后丢弃 preparation SHA 与
+  gates，从 live `origin/main` 建立 lineage 可证明的 candidate SHA/tree，再执行 predecessor full-diff review。
+- `DES-062` Serialized authority promotion：Architecture owner 已先绑定 expected `.43` 激活统一 `.44`
+  baseline；RDT owner随后以同一 contribution、expected `.43` 和 Architecture `.44/current` 建立完整 `.44`
+  Requirements/Design/Test authority。promotion-created diff 重新进入 Phase 2、task commit 与完整 Branch Review。
+- `DES-063` Exact-candidate evidence graph：同一 candidate 依序绑定 full diff、版本面、source/installed
+  validator、registry/interface/schema/ownership、managed parity、四平台 actual-load、clean/existing
+  install/update/reapply、installed business-repository Publication/Finalizer、secret scan 与 recursive
+  sidecar/residue-zero；failed/SKIP/stale/cross-SHA/unknown route 在 tag mutation 前 fail closed。
+- `DES-064` Immutable release transactions：tag preview/confirmation 后创建 annotated tag；live 回读 tag
+  object/peeled commit 后从 immutable tag 执行 post-publish smoke；随后 GitHub Release、#332 closure 与
+  cleanup 分别 fresh preview、确认、执行和回读。任何失败不得移动、删除或重建已创建 tag。
+
+## #240/#348 reviewed owner promotion design
+
+- `DES-065` Qualification owner separation：`guru-qualify-normal-scenario` 只判断问题场景，
+  `guru-qualify-solution-mechanism` 只判断拟采用机制；caller 依次提供同一 profile 的 current candidate
+  set/live locators，两个 owner 的结果互不替代，机制 revision 只返回原 caller remove/replace 后 fresh 重跑。
+- `DES-066` Application-level mechanism boundary：机制 owner 沿真实 dependency/caller graph 判断业务
+  authority 的承载位置；OS lock/process/descriptor primitive 不合格，普通文件/目录作为普通 state 或
+  artifact 合格。AI 独占语义，runtime 只验证 shape/identity/freshness/consumer binding，结果 invocation-local。
+- `DES-067` Merge/recovery owner split：`guru-merge-task-pr` 保留 task-work 与 external blocker 分类，
+  `phase2_reentry_required` 只投影最小 identity 到唯一 `guru-restore-archived-task`；外部 blocker 继续
+  terminal，恢复成功只进入 `guru-resume-implementation` 的 Phase 2 route。
+- `DES-068` Idempotent original-identity restoration：恢复 command 在 fresh live facts 与 semantic result
+  闭合后，只执行 archive-to-active、`in_progress`、mapping/current-task 修复和 stale downstream authority
+  清理；exact already-restored 为只读成功，dirty/duplicate/stale/merged/ambiguous 状态零业务写入。
+
 - `CON-005`：repo-private Skill 不声明 public interface/schema/runtime/typed exit，也不进入 registry、
   extension inventory 或业务仓 installed projection。
 - `CON-006`：orchestrator 只消费既有 owner 的 public minimal outputs；不得读取其 private artifact、
   复制 transaction implementation 或把 action-local confirmation 扩张到其它动作。
+- `CON-007`：Merge-to-recovery DTO 只含 repository、PR/head/branch、Issue、task/archive、finding 与
+  `resume_target=phase-2` identity；不得携带用户授权、machine-local path、完整 provider payload 或旧 gate。
 
 ## Capability owner map
 
@@ -142,11 +178,12 @@
 | clarification/wording/readiness | `guru-clarify-requirements`, `guru-review-contract-wording`, `guru-review-change-request` | interface-defined closed exits |
 | workspace/planning | `guru-create-task-workspace`, `guru-approve-task-plan` | `created/refresh_review/blocked`; `approved/revision_required/clarify_scope/blocked` |
 | normal-path qualification | `guru-qualify-normal-scenario` | `classified/scope_confirmation_required/mechanism_revision_required/blocked` |
+| solution-mechanism qualification | `guru-qualify-solution-mechanism` | `classified/scope_confirmation_required/mechanism_revision_required/blocked` |
 | task-free | `guru-execute-task-free-change` | 7 closed exits incl. `completed`/`blocked` |
 | execute/check/commit | `guru-check-task`, `guru-create-task-commit` | check 4 exits；commit 3 exits |
 | base evolution | `guru-reconcile-task-base` | 6 exits incl. continuity/implementation/planning routes |
 | review/publication | `guru-review-branch`, `guru-review-task-publication` | review 5 exits；publication 3 exits |
-| finish/merge | `guru-finalize-task`, `guru-merge-task-pr` | finalizer 6 exits；merge 3 exits |
+| finish/merge/recovery | `guru-finalize-task`, `guru-merge-task-pr`, `guru-restore-archived-task` | finalizer 6 exits；merge 4 exits；restore 2 exits |
 | installation verification | `guru-verify-extension-installation` | `verified`, `blocked`；standalone only |
 | RDT authority | `guru-maintain-requirements-design-test-ssot` | `ssot_current/sync_required/revision_required/baseline_incomplete/blocked` |
 | Architecture authority | `guru-maintain-architecture-baseline` | 7 baseline/conflict/fitness exits |

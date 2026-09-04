@@ -2,8 +2,9 @@
 
 ## 设计边界
 
-本任务是 release-owned preparation 与正式发布编排，不重新实现 #311、#333、#339、
-#358、#361 的已合入 payload。源代码、测试和文档修改必须遵循当前 `.43` authority，
+本任务是 release-owned preparation 与正式发布编排，不重新实现 #240、#311、#333、#339、
+#348、#358、#361 的已合入 payload。selected-base authority 为 `.43`；本 preparation 通过 serialized
+RDT/Architecture owner 建立 `.44` successor，消费 #240/#348 reviewed owner/RDT/ADR contributions，
 并由 canonical `trellis/` 源生成 dogfood 与平台 projection。
 
 ## Source of Truth 与 projection
@@ -39,10 +40,14 @@ clean candidate commit/tree，并绑定：
 
 ## 已合入变更的承接
 
+- #240：把独立 solution-mechanism qualification owner 与禁止 OS primitive 承载业务 authority 的
+  `ADR-008` 纳入 `.44` current authority，并在 exact candidate 上验证 package/route/projection closure。
 - #311：验证 source/target checkout identity、installed Finalizer provenance 与业务仓
   release-scoped replay。
 - #333：验证 Issue 创建部分成功后的 exact recovery、唯一匹配和无重复创建。
 - #339：验证仓库私有两阶段 release orchestration，不替代 semantic gate 或独立副作用确认。
+- #348：把 Merge `phase2_reentry_required` 与原 task identity restoration owner/RDT contract 纳入
+  `.44` current authority，并在 exact candidate 上验证恢复与 fresh Phase 2 route。
 - #358：验证 fresh reviewed task evolution 下 Finalizer transaction rebind。
 - #361：验证 Publication Review owner 错误分类、content preflight 与精确 re-entry。
 
@@ -53,9 +58,9 @@ clean candidate commit/tree，并绑定：
 - 版本、tag、extension revision 与 CLI 映射的 durable owner：extension manifest 与
   canonical public README；workflow/preset README 承接安装、preview/switch、update
   和 reapply 合同。
-- Requirements、Design、Test、Architecture 共享 authority 保持
-  `current-main-0.6.5-guru.43`；本 task 不直接改写共享 current authority，除非
-  `task_impact_sync` 判定存在被批准的 contribution。
+- Requirements、Design、Test、Architecture 从 selected-base `.43` 经 reviewed contribution 与
+  serialized owner 提升为 `.44`；Architecture 先行，RDT 随后继承 `.44/current`，promotion-created
+  diff 必须重进 fresh Phase 2、task commit 与独立 Branch Review。
 - Release notes、candidate freeze、验证摘要和 PR body 属于本 task 的历史记录；不把
   动态 gate 状态写回 current RDT/Architecture 正文。
 - verifier、ownership、drift 和安装结果只保留直接 consumer 所需的 candidate identity

@@ -1,8 +1,9 @@
 # #348 Requirements Contribution
 
 Candidate identity: `rdt-contribution-348-merge-blocked-phase2-reentry-v1`.
-This task-owned contribution does not modify or claim the shared
-`current-main-0.6.5-guru.43` Requirements authority.
+Source baseline `current-main-0.6.5-guru.43` is superseded. PR #351's reviewed
+contract was serialized into shared `current-main-0.6.5-guru.44`; this file
+remains the historical task-owned source and authorizes no further shared write.
 
 - `R348-01`: When Merge identifies an in-scope task-content finding for an
   archived task and an open same-head PR, the workflow must expose one typed

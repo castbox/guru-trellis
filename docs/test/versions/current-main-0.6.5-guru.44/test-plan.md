@@ -1,7 +1,7 @@
 # 当前测试计划与证据
 
-版本：`current-main-0.6.5-guru.43`；状态：`superseded`；successor：`current-main-0.6.5-guru.44`；
-source baseline：contribution identity `architecture-contribution-335-repository-private-release-orchestration-v1` + inherited `.42` authority + containing Git object/tree identity。
+版本：`current-main-0.6.5-guru.44`；状态：`active`；predecessor：`current-main-0.6.5-guru.43`；
+source baseline：contribution identity `architecture-contribution-332-release-v0615-guru5-v1` + reviewed #240/#348 contributions + inherited `.43` authority + containing Git object/tree identity。
 
 ## Replacement before-state authority
 
@@ -96,9 +96,13 @@ It does not publish extension `0.6.5-guru.37`.
 
 ## Current boundaries
 
-- `v0.6.15-guru.3` / extension `0.6.15-guru.39` / Trellis `0.6.15` 是 #267 current target；stable tag、GitHub Release、tag-pinned clean install 与 release smoke 仍为 `unverified`。
-- `.43` 只表示 current RDT/Architecture knowledge identity；promotion 不等于 exact-candidate Release pass，也不授权 tag、Release 或 Issue closure。
-- #311 正式 `.3` business-repository Finalizer 原失败路径与错误文件重试仍为 `unverified`，Issue 保持 OPEN。
+- latest stable 是 `v0.6.15-guru.4` / extension `0.6.15-guru.39` / Trellis `0.6.15`；#332
+  current target 是 `.5/.40/CLI 0.6.15`，tag、GitHub Release、tag-pinned clean install 与 release smoke
+  仍为 `unverified`。
+- `.44` 只表示 current RDT/Architecture knowledge identity；promotion 不等于 exact-candidate Release pass，
+  也不授权 tag、Release 或 Issue closure。
+- #311 已于 2026-09-04 以 `completed` 关闭；其 source/target provenance 合同是 #332 的已完成前置，
+  正式 `.5` installed business-repository Publication/Finalizer 仍须在 #332 exact candidate 上 fresh 验收。
 - full matrix logs、临时 repository/runtime、用户授权与完整 hash bundle不进入 current SSOT。
 
 ## #295 promoted verification scope
@@ -123,7 +127,7 @@ promotion-created diff 的 Phase 2 `guru-check-task`、新 task commit、独立 
 | source / installed validation | 21 packages / 72 commands；installed 4263 managed files；reapply/drift/platform parity/sidecar zero passed | current candidate distribution only |
 | local complete Finish integration | 第 3 次且最后一次运行通过；禁止第 4 次 | fake GitHub harness，不替代真实 fixture |
 | representative real fixture | `unverified`：旧 candidate 已完成到 Branch Review并暴露 source findings；current `651defee` 尚未 fresh reinstall/Publication/Finalizer | 下一阶段必须复用现有 fixture，不创建新真实 repo |
-| production and error retry | `unverified` | Issue #311 保持 OPEN；完成 merge/生产发布/错误文件重试后另行判断最大根因 |
+| production and error retry | historical `unverified` | #311 当时保持 OPEN；现已 completed，其正式 release 安装态验收由 #332 fresh 承接 |
 
 本 promotion 绑定 contribution digest
 `a6e2835e2303c081c28296f9d635dabbb7bad2dffbe99466f2bd6d4e834058aa`、expected `.40` 与
@@ -139,7 +143,7 @@ GitHub Release，也不把旧 candidate 的被阻断 closeout表述为当前通�
 | Architecture promotion | expected `.41` -> `.42`；仅更新 README、CURRENT、evidence 与 contribution state；ADR `required=false` | 不改变 decision/owner/GAP/compatibility |
 | version mapping | `v0.6.15-guru.3 -> 0.6.15-guru.39 -> Trellis CLI 0.6.15` | tag、Release、latest stable 与 smoke 仍 `unverified` |
 | post-promotion lifecycle | r19 fresh Phase 2、task commit `490b302a`、independent complete-range Branch Review、PR readiness 与 Finalizer 已完成；PR #315 已 merge 为 `a41b8a34` | post-merge predecessor-to-candidate full-diff review 发现 P2 `BR-267-FULL-CAND-001`；修复 merge 与 fresh review 前 tag 保持阻断 |
-| #311 business proof | `unverified` | 正式 `.3` 发布后独立安装与错误路径重试；Issue 保持 OPEN |
+| #311 business proof | historical `unverified` | `.3` 阶段未完成该 proof；#311 现已 completed，`.5` installed business proof 由 #332 承接 |
 
 ## #335 repository-private release orchestration verification authority
 
@@ -155,3 +159,19 @@ GitHub Release，也不把旧 candidate 的被阻断 closeout表述为当前通�
 该表定义 #335 的可重复验证责任，不记录本次 task 的 HEAD、Gate 结果、finding closure、tag/smoke/
 Release 状态或时间。实际结果由对应 Phase 2、Branch Review、Publication、Finalizer 与 post-merge
 owner 在其候选上即时生成。
+
+## #332 v0.6.15-guru.5 Release Gate authority
+
+| Gate | Required proof | Current state |
+| --- | --- | --- |
+| authority promotion | Architecture `.44/current`、RDT expected `.43 -> .44`、#240/#348 reviewed contribution 与 ADR-008、23 Skills / 97 exits / 81 commands、唯一 active、完整 navigation/traceability | promotion-created diff；须 fresh Phase 2/commit/Branch Review |
+| release identity | latest stable `.4/.39` 与 target `.5/.40/CLI 0.6.15` 在所有 current release-facing surfaces 一致 | authority mapping 已定义；exact candidate 尚未冻结 |
+| merged prerequisites | #311/#333/#339/#358/#361 在 installed candidate 上重新消费 | `unverified`；历史 evidence 只作定位 |
+| predecessor review | `v0.6.15-guru.4..candidate` complete committed diff，P0-P3 open findings zero | `unverified`；等待 post-merge fresh main |
+| distribution/install | source/installed validators、registry/interface/schema/ownership、managed parity、四平台 actual-load、clean/existing install/update/reapply | `unverified` |
+| installed business chain | Publication/Finalizer initial reprepare、fresh rebind、push/PR/archive/Ready/terminal 与 Issue recovery | `unverified`；不得用 package test 替代 |
+| pre-tag hygiene | secret scan、recursive `.new/.bak`、sidecar、owner-private residue、tracked gate report zero | `unverified` |
+| release transactions | annotated tag、tag object/peeled commit reread、immutable-tag smoke、GitHub Release/latest stable、#332 closure、cleanup | 全部 `unverified` 且分别需要 fresh confirmation |
+
+本表是稳定 Test authority，不记录 candidate SHA、运行时间、动态 gate pass 或用户授权。任一 FAIL、SKIP、
+stale、cross-SHA、unknown/multiple/unmapped exit 都阻断后续 release mutation。

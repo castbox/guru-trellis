@@ -1,12 +1,12 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.43`；状态：`superseded`；successor：`current-main-0.6.5-guru.44`；基线：contribution identity `architecture-contribution-335-repository-private-release-orchestration-v1`，继承 `.42` authority；#305 已确认的 `EVO-001..007` 保持独立 target authority。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
+版本：`current-main-0.6.5-guru.44`；状态：`active`；predecessor：`current-main-0.6.5-guru.43`；基线：contribution identity `architecture-contribution-332-release-v0615-guru5-v1` + reviewed #240/#348 contributions，继承 `.43` authority；#305 已确认的 `EVO-001..007` 保持独立 target authority。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
 
 ## 目标、角色与适用范围
 
 - `REQ-001`：为采用 Trellis 的仓库提供 AI-first、Issue/task 可追踪、可审查且可恢复的完整开发生命周期。维护者、任务执行 Agent、reviewer 和发布操作者是主要角色。`source_confirmed`：Issue #266；`code_recovered`：workflow/registry。
 - `REQ-002`：官方 Trellis workflow/spec marketplace 是上游扩展面；Guru Team 通过 Markdown workflow、step-local Skill、preset/overlay 与 companion runtime 扩展，不修改上游源码、全局 npm 或 `node_modules`。`source_confirmed`：仓库 AGENTS.md；`code_recovered`：canonical layout。
-- `REQ-003`：全局 workflow 只拥有 phase 顺序、mandatory invocation、typed exit consumer 和 fail-closed stop；每个 Skill 独占内部 closed loop。`code_recovered`：`trellis/workflows/guru-team/workflow.md` 与 21 个 active interfaces。
+- `REQ-003`：全局 workflow 只拥有 phase 顺序、mandatory invocation、typed exit consumer 和 fail-closed stop；每个 Skill 独占内部 closed loop。`code_recovered`：`trellis/workflows/guru-team/workflow.md` 与 23 个 active interfaces。
 - `REQ-004`：AI 负责 scope、充分性、finding、route 与发布判断；Python/shell 仅执行或校验确定性事实。只有真实选择或副作用才交互，授权不持久化。`source_confirmed`：仓库合同。
 - `REQ-005`：Task、workspace、branch、history、archive、semantic naming 与 base/provider recovery 必须保持明确 ownership，且普通 mapped exit/recovery 不制造人类 handoff 文书。`code_recovered`：相关 active Skills。
 - `REQ-006`：canonical、installed dogfood、Shared/Codex/Claude/Cursor 投影和 preset managed assets 必须保持同一 versioned contract；未知修改遵守 `.new/.bak` 语义。`code_recovered`：manifest、overlay、installer。
@@ -68,10 +68,16 @@
 | `BEH-009` Distribution | marketplace install、official update/upgrade、workflow selection、preset reapply、sidecar/drift validation 按序执行 | marketplace/preset/verification owners |
 | `BEH-010` Terminal projection | Finalizer terminal cleanup 后从 archive/live ready authority 投影 `ready_for_merge`，真实 stale 继续拒绝 | `guru-finalize-task` |
 | `BEH-011` Compatibility matrix | live-derived platform × clean/existing matrix、capability equality、installed contracts、A/B Finish 与真实 provider proof | #260 compatibility verifier；不是新的 public owner |
+| `BEH-014` Mechanism qualification | 已资格化场景采用的机制必须由独立 semantic owner 判断，禁止 OS primitive 承接业务 authority | `guru-qualify-solution-mechanism` |
+| `BEH-015` Archived-task Phase 2 recovery | Merge 只对 current-scope task-work finding 投影恢复 DTO，原 task 身份恢复后强制重跑 Phase 2 至 Merge | `guru-merge-task-pr` + `guru-restore-archived-task` |
 
 ## 当前发布范围
 
-`source_confirmed`：最新已发布 stable release 是 annotated tag `v0.6.15-guru.2`，tag object `641ed35e91c4a58cc7083ab2e4811d30e392fbed`，peeled commit `d907fcc5e17f23b6499648e5e9a208457f2d6f8b`，extension revision `0.6.15-guru.38`，目标 Trellis CLI `0.6.15`。当前 source candidate 为 extension `0.6.15-guru.39` / Trellis `0.6.15`；#267 successor target 固定为 `v0.6.15-guru.3`。该 tag、GitHub Release、tag-pinned smoke 与 latest-stable identity 在 exact candidate 发布前仍为 `unverified`。
+`source_confirmed`：最新已发布 stable release 是 annotated tag `v0.6.15-guru.4`，peeled commit
+`40f8aa8312bfd9650f47e1fa9d6d21b4ff18d5b6`，extension revision `0.6.15-guru.39`，目标 Trellis CLI
+`0.6.15`。当前 #332 source candidate 为 extension `0.6.15-guru.40` / Trellis `0.6.15`，successor
+Release target 固定为 `v0.6.15-guru.5`。`.5` annotated tag、GitHub Release、tag-pinned smoke、latest-stable
+identity 与 Issue closeout 在同一 post-merge exact candidate 上完成前均为 `unverified`。
 
 ## 非目标
 
@@ -157,3 +163,51 @@
 - `BEH-012` Repository Release Orchestration：从 preparation owner composition，经唯一完整 Branch
   Review、Publication、Finalizer 与 merge，到 post-merge exact candidate、scoped validation 和独立
   release actions；任一 stale/mismatch/failure 返回当前 owning boundary。
+
+## #332 v0.6.15-guru.5 exact-candidate Release Gate
+
+- `REQ-063`：#332 是 `v0.6.15-guru.5` 正式发布的唯一 current contract 与 semantic owner。三个独立
+  版本轴固定为 repo tag `v0.6.15-guru.5`、extension revision `0.6.15-guru.40`、target/required/tested
+  Trellis CLI `0.6.15`；predecessor 固定为 `v0.6.15-guru.4` / peeled commit
+  `40f8aa8312bfd9650f47e1fa9d6d21b4ff18d5b6`。
+- `REQ-064`：preparation 必须以 fresh `origin/main` 为标准 Intake 基线，完整承接 #311、#333、#339、
+  #358、#361 已合入变更。#311 已完成前置不等于本次 Release Gate 通过；其正式 release 安装态业务仓
+  Publication/Finalizer 验收由 #332 在 exact candidate 上 fresh 执行。
+- `REQ-065`：preparation candidate 必须将所有 current release-facing manifest、README、workflow、preset、
+  fixture、canonical、dogfood、installed 与 RDT/Architecture projection 收敛到 `.5/.40/CLI 0.6.15`，同时
+  保留历史 tag、Release、versioned authority 与 evidence 的原始事实。
+- `REQ-066`：preparation PR 合并后必须从 fresh `origin/main` 重新冻结 candidate SHA/tree，并对
+  `v0.6.15-guru.4..candidate` 完整 committed diff 执行 open P0/P1/P2/P3 为零的独立 review；旧 task、
+  preparation gate、历史 focused evidence、SKIP、stale 或 cross-SHA 结果不得复用。
+- `REQ-067`：pre-tag Release Gate 必须在同一 exact candidate 上完成 source/installed package、registry/
+  interface/schema/ownership、managed byte/mode parity、四平台 actual-load/projection equality、clean/existing
+  install/update/reapply、installed business-repository Publication/Finalizer、secret scan 与 recursive
+  sidecar/residue-zero 验证；任一 failed、SKIP、stale、unknown/multiple/unmapped exit 阻断 tag。
+- `REQ-068`：annotated tag、tag-pinned post-publish smoke、GitHub Release、#332 closure 与 cleanup 是独立
+  transaction；每项 mutation 前必须 fresh 展示精确 target/payload 并取得不可复用的当前对话确认。
+  本 authority 不修改或关闭 #267、#311、#333、#339、#358、#361，也不升级或部署业务仓库。
+
+- `BEH-013` Exact-candidate Release Gate：preparation merge 后从 fresh main 冻结唯一 candidate，完成
+  predecessor full-diff、版本映射、分发/安装/业务仓全链与 residue gate，再按独立确认顺序执行 tag、
+  immutable tag smoke、GitHub Release、Issue closeout 与 cleanup。
+
+## #240/#348 reviewed authority promotion
+
+- `REQ-069`：问题场景资格与解决机制资格必须由两个独立 semantic owners 承接；
+  `guru-qualify-solution-mechanism` 直接读取 current requirement、planning、Architecture/spec、
+  dependency/caller graph、diff 与 tests，caller 和 deterministic runtime 不复制其判断。
+- `REQ-070`：OS lock、`flock`/`fcntl`、lock file/inode authority、`/proc`、PID/PGID/SID、process
+  tree、FD identity/inheritance、signal/kill/process-group control 及同类 primitive 不得承接业务正确性、
+  身份、fencing、monitor、inspection、cancel、recovery、publication 或 evidence authority；普通文件和
+  目录仅作为 state/artifact/log/cache/config/durable record 时保持允许。
+- `REQ-071`：Merge 发现已归档 task 的 current-scope content finding 时，必须使用
+  `phase2_reentry_required` 将最小 repository/PR/head/branch/Issue/task/archive/finding identity 投影给
+  `guru-restore-archived-task`；外部 provider、permission、ruleset、CI、scope 或 identity blocker 继续
+  `merge_blocked` 且零恢复写入。
+- `REQ-072`：恢复 owner 必须复用原 Issue、task、branch、worktree、remote branch 与 PR，恢复
+  `in_progress`、修复 owner-private mapping/current-task pointer、清理旧 Phase 2/Review/Publication/
+  Finalizer authority，并强制 fresh 重跑 Phase 2、Task Commit、Branch Review、Publication、Finalizer
+  与 expected-head Merge；精确已恢复重试只读成功，歧义或 drift fail closed。
+- `REQ-073`：current public graph 必须由 registry/interface 派生并保持 23 active Skills、97 external
+  exits、81 commands，22 个 workflow-integrated 与一个 standalone verifier；canonical、dogfood、
+  installed、Shared/Codex/Claude/Cursor、workflow markers 与 preset inventory 必须一致。

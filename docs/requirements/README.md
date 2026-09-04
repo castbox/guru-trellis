@@ -6,7 +6,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.5-guru.43` | [requirement-main.md](./versions/current-main-0.6.5-guru.43/requirement-main.md) | contribution identity `architecture-contribution-335-repository-private-release-orchestration-v1`，继承 `.42` authority；只建立本仓库 Skill 的稳定合同，不执行 tag/Release 或记录 lifecycle 状态；#305 已确认的 `EVO-001..007` 是独立 target authority |
+| `active` | `current-main-0.6.5-guru.44` | [requirement-main.md](./versions/current-main-0.6.5-guru.44/requirement-main.md) | #332 reviewed release-current alignment；`.5/.40/CLI 0.6.15` target，继承 `.43` authority，不执行 tag/Release 或记录 lifecycle 状态；#305 已确认的 `EVO-001..007` 是独立 target authority |
+| `superseded` | `current-main-0.6.5-guru.43` | [requirement-main.md](./versions/current-main-0.6.5-guru.43/requirement-main.md) | #335 repository-private release orchestration authority |
 | `superseded` | `current-main-0.6.5-guru.42` | [requirement-main.md](./versions/current-main-0.6.5-guru.42/requirement-main.md) | #267 reviewed release-authority alignment 与后续 fact-only corrections |
 | `superseded` | `current-main-0.6.5-guru.41` | [requirement-main.md](./versions/current-main-0.6.5-guru.41/requirement-main.md) | #311 reviewed Architecture/RDT promotion |
 | `superseded` | `current-main-0.6.5-guru.40` | [requirement-main.md](./versions/current-main-0.6.5-guru.40/requirement-main.md) | #295 reviewed Architecture/RDT promotion + #305 target delta |
@@ -17,12 +18,12 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [requirement-main.md](./versions/current-main-0.6.5-guru.35/requirement-main.md) | #266 激活的历史 current snapshot |
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
-当前 main 已验证 official Trellis `0.6.15` compatibility。latest stable current 为
-annotated tag `v0.6.15-guru.2` / extension `0.6.15-guru.38` / CLI `0.6.15`；current source candidate 为
-extension `0.6.15-guru.39`，#267 successor Release target 固定为 tag `v0.6.15-guru.3`。该 successor 的
-tag、GitHub Release、tag-pinned install、latest-stable identity 与 post-publish smoke 仍为 `unverified`，
-只能由 #267 exact-candidate Release lifecycle 晋升。#311 的正式 `.3`
-业务仓安装与原错误路径重试保持独立 post-release proof。
+当前 main 已验证 official Trellis `0.6.15` compatibility。latest stable current 为 annotated tag
+`v0.6.15-guru.4` / extension `0.6.15-guru.39` / CLI `0.6.15`；current source candidate 为 extension
+`0.6.15-guru.40`，#332 successor Release target 固定为 tag `v0.6.15-guru.5`。该 successor 的 tag、
+GitHub Release、tag-pinned install、latest-stable identity 与 post-publish smoke 仍为 `unverified`，只能由
+#332 exact-candidate Release lifecycle 晋升。#311 已完成 source/target provenance 前置；正式 `.5`
+installed business-repository Publication/Finalizer 验收由 #332 fresh 承接。
 
 Guru Trellis 下一阶段产品进化 Requirements 的唯一文档集位于
 [`evolution/`](./evolution/README.md)，主定义为
@@ -43,7 +44,11 @@ provenance 与 archive/merge facts；`9f560ec1...736ef333` 是 material platform
 `.43` 在这些 current facts 上新增 `REQ-056..062`、`BEH-012`、`NFR-006`，仅定义
 `release-guru-trellis-version` 的仓库私有两阶段编排、freshness 与独立 mutation confirmation；不新增
 Evolution target delta 或 fixture；current capability 增加为 `CUR-CAP-024`，由既有 target deltas 承接，
-也不表示任何版本已发布。
+也不表示任何版本已发布。`.44` 新增 `REQ-063..073`、`BEH-013..015`，把 #332 `.5/.40/CLI 0.6.15`
+exact-candidate Release Gate、merged prerequisite consumption 与独立 release transaction authority 投影为
+current facts，并把 #240/#348 已审查的 solution-mechanism 与 archived-task recovery owner/RDT/ADR
+authority 提升为 current；public graph 现为 23 Skills / 97 exits / 81 commands，但不新增 Evolution target
+delta、capability 或 fixture。
 Requirements 阶段状态为 `requirements_ready_for_design`，trace 状态为
 `requirements_trace_ready_for_design`；Design/Test/Architecture 的 73 个 Design
 responsibilities 与 50 个 fixture mappings 已同步为 planning projection；pre-`REQ-REV-142` Design pass 仍为

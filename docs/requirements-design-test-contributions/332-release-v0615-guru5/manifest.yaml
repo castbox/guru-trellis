@@ -5,13 +5,15 @@ issue_ref: "https://github.com/castbox/guru-trellis/issues/332"
 source_version: "current-main-0.6.5-guru.43"
 expected_current_version: "current-main-0.6.5-guru.43"
 candidate_successor_version: "current-main-0.6.5-guru.44"
-status: "contribution_candidate"
+status: "reviewed_promoted"
+implementation_status: "serialized_rdt_architecture_promotion_revised_for_240_348"
+verification_status: "revised_promotion_requires_fresh_phase2_commit_branch_review"
 authority_scope: "isolated_contribution"
 architecture_impact: "architecture_impact"
 change_path: "target_native"
 architecture_baseline:
   locator: "docs/architecture/README.md"
-  version: "current-main-0.6.5-guru.43"
+  version: "current-main-0.6.5-guru.44"
   status: "active"
 design_constitution:
   authority_owner: "docs/architecture"
@@ -21,11 +23,13 @@ design_constitution:
   identity_status: "current"
 architecture_candidate:
   contribution_locator: "docs/architecture/contributions/332-release-v0615-guru5.md"
-  adr_required: false
+  adr_required: true
+  promotion_state: "reviewed_promoted"
 public_contracts:
   rdt_owner: "guru-maintain-requirements-design-test-ssot:task_impact_sync"
   architecture_candidate: "guru-maintain-architecture-baseline:2.0"
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
-promotion_decision: "not_authorized_by_contribution"
-shared_current_write: false
+promotion_decision: "reviewed_promoted"
+shared_current_write: true
+next_route: "fresh_phase2"

@@ -9,7 +9,7 @@ requirements_locator: docs/requirements/evolution/requirement-main.md
 requirements_nfr_locator: docs/requirements/evolution/requirement-non-functional.md
 capability_source_locator: docs/requirements/evolution/current-capability-inventory.md
 current_design_source_binding: containing-git-object
-current_design_locator: docs/design/versions/current-main-0.6.5-guru.43/design-main.md
+current_design_locator: docs/design/versions/current-main-0.6.5-guru.44/design-main.md
 test_locator: docs/test/evolution/test-strategy.md
 architecture_locator: docs/architecture/README.md
 architecture_contribution_locator: docs/architecture/contributions/305-evolution-workflow-convergence.md
@@ -20,11 +20,12 @@ provenance: >-
   evidence-before-cleanup verifier failure preservation and unrelated-dirty isolation, split Requirements
   readiness from refactor eligibility, and invalidated the prior REQ-REV-011..132 / DES-REV-001..014 review
   binding; selected base 5650df47 contains both prerequisite merges and the fact-only .42 authority promotion;
-  current .43 adds CUR-CAP-024 for the repo-private release orchestration knowledge contract without a new
-  target delta or fixture,
+  current .43 adds CUR-CAP-024 for the repo-private release orchestration knowledge contract and .44 adds
+  #332 .5/.40/CLI 0.6.15 Release Gate facts plus the reviewed #240/#348 owner/RDT/ADR promotion without a new
+  Evolution target delta or fixture,
   the fact-only #267 lifecycle-evidence/provenance/archive update through PR #316, PR #317 exact installed
-  platform-selection preservation and PR #318 fact-only caller-inventory/provenance correction, with #311 OPEN
-  only for follow-up-only work and #312 CLOSED; .42 authority rebind, 84 requirements / 34 NFR / 13 target deltas /
+  platform-selection preservation and PR #318 fact-only caller-inventory/provenance correction, with #311 and
+  #312 CLOSED and the formal installed release validation owned by #332; .42 authority rebind, 84 requirements / 34 NFR / 13 target deltas /
   50 fixtures Requirements-stage successor zero-loss is current and fresh Requirements gates have passed;
   candidate EVO-DES-001..073 allocates all 50 fixtures through Reconcile, Publish/Finish/Merge and Projection
   ownership without adding a responsibility; pre-REQ-REV-142 DES-REV-001..052 review remains stale historical

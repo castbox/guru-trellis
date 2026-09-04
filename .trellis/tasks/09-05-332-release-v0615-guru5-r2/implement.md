@@ -30,10 +30,12 @@ PR merge 与 fresh main convergence。任一 scope、authority、content 或 bas
 ## Post-merge Release Gate
 
 合并后从 fresh exact candidate 执行 #332 要求的完整 pre-tag Release Gate，覆盖已合入
-#311/#333/#339/#358/#361 的承接、clean throwaway、existing install/update/reapply、声明平台
-入口、installed business-repository Publication/Finalizer 代表性链、secret scan、zero-residue
-与 tag-pinned smoke。所有 mutation 分别经过其 owner 的 fresh gate 和独立当前对话确认，最终再
-按顺序处理 annotated tag、GitHub Release 与 Issue #332 closeout。
+#240/#311/#333/#339/#348/#358/#361 的 current-authority 与安装态承接、clean throwaway、
+existing install/update/reapply、声明平台入口、installed business-repository
+Publication/Finalizer 代表性链、secret scan 与 zero-residue。pre-tag gate 不包含任何
+tag-pinned 验证：只有 pre-tag gate 全部通过并单独确认 annotated tag mutation 后，才创建并
+回读 tag object/peeled commit；随后从该 immutable tag 执行 tag-pinned install/update/reapply/
+smoke。tag identity 与 smoke 通过后再分别处理 GitHub Release 与 Issue #332 closeout。
 
 ## 停止条件
 

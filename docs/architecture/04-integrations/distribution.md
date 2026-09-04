@@ -15,6 +15,12 @@
   与 post-merge exact candidate；PR/Release payload 从 live Issue、exact diff、当前验证与 candidate
   identity 即时生成。owner-private lifecycle metadata、授权和阶段状态不进入 tracked handoff，任何
   delivery、durable docs、配置、schema、script 或 test 变化仍使对应 owner evidence stale。
+- `ARCH-INT-010`：normal-scenario 与 solution-mechanism qualification 在同一 caller candidate boundary
+  分别执行；机制 owner 的 `mechanism_revision_required` 只返回原 owner remove/replace，不能变成 scope
+  confirmation。canonical/installed/platform projections 保持同一 package identity。
+- `ARCH-INT-011`：Merge 的 `phase2_reentry_required` 只投影最小 PR/task/archive/finding identity 到
+  `guru-restore-archived-task`；恢复 owner 不创建替代对象，不复用旧 check/review/publication/finalization
+  authority，并只把 `restored_to_phase2` 交给 Phase 2 consumer。
 
 ## Capability 与 installation consistency 边界
 

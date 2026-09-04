@@ -11,10 +11,12 @@
 ## 当前 authority
 
 - 唯一 primary Issue：[#332](https://github.com/castbox/guru-trellis/issues/332)，保持 open，正文是本任务的发布合同。
-- 当前 Requirements / Design / Test / Architecture authority：`current-main-0.6.5-guru.43`。
+- selected-base Requirements / Design / Test / Architecture authority：`current-main-0.6.5-guru.43`；
+  本 preparation 的 reviewed successor 为 `.44`，并消费 #240/#348 已合入、已独立审查但尚未进入
+  shared current 的 owner/RDT/ADR contribution。
 - 最新正式 Release：`v0.6.15-guru.4`；其 predecessor peeled commit 为
   `40f8aa8312bfd9650f47e1fa9d6d21b4ff18d5b6`。
-- #311、#333、#339、#358、#361 已合入 `main`，其影响必须在本次 exact-candidate
+- #240、#311、#333、#339、#348、#358、#361 已合入 `main`，其影响必须在本次 exact-candidate
   Release Gate 中重新验证，历史 PR 或 Issue 描述不能替代 fresh evidence。
 
 ## 需求范围
@@ -24,13 +26,16 @@
    `v0.6.15-guru.5` / `0.6.15-guru.40` / CLI `0.6.15`。
 2. 在 preparation PR 合并后，从 fresh `origin/main` 冻结 exact candidate，审查
    `v0.6.15-guru.4..candidate` 的完整 committed diff。
-3. 承接 #311、#333、#339、#358、#361 的 Release Gate 验收，包括 installed
-   Finalizer、Issue recovery、Finalizer rebind、Publication Review re-entry 与两阶段
-   release orchestration。
-4. 运行 source/package/runtime、registry/interface/schema、ownership、managed
+3. 通过 serialized RDT/Architecture promotion 将 #240 solution-mechanism owner、`ADR-008` 与
+   #348 archived-task recovery owner/RDT contract 纳入 `.44` current authority；promotion-created diff
+   必须重新进入 Phase 2、task commit 与独立 Branch Review。
+4. 承接 #240、#311、#333、#339、#348、#358、#361 的 Release Gate 验收，包括 mechanism
+   qualification、archived-task recovery、installed Finalizer、Issue recovery、Finalizer rebind、
+   Publication Review re-entry 与两阶段 release orchestration。
+5. 运行 source/package/runtime、registry/interface/schema、ownership、managed
    parity、dogfood drift、preset installer、upgrade/update/reapply、平台入口和
    tag-pinned smoke 验证。
-5. 在所有 required gate 通过后，分别完成 tag、tag-pinned smoke、GitHub Release 和
+6. 在所有 required gate 通过后，分别完成 tag、tag-pinned smoke、GitHub Release 和
    Issue #332 closeout；每个远程或不可逆副作用独立确认。
 
 ## 验收标准
@@ -39,14 +44,17 @@
   tag、Release 和 authority 原始事实不被改写。
 - AC2：preparation PR 合并后 candidate 是 fresh、clean、可复现的 `origin/main`
   commit/tree，完整 diff review 无 P0-P3 open finding。
-- AC3：Release Gate 对 #311、#333、#339、#358、#361 的承接链有 exact-candidate
+- AC3：`.44` 是唯一 active RDT/Architecture authority，包含 #240/#348 reviewed contracts、accepted
+  `ADR-008` 与 live-derived 23 Skills / 97 exits / 81 commands；promotion-created diff 已完成 fresh
+  Phase 2、task commit 与独立 Branch Review。
+- AC4：Release Gate 对 #240、#311、#333、#339、#348、#358、#361 的承接链有 exact-candidate
   fresh evidence；FAIL、SKIP、stale、cross-SHA、unknown 或 unmapped exit 均阻断。
-- AC4：clean throwaway 与 installed business-repository 验收覆盖 marketplace
+- AC5：clean throwaway 与 installed business-repository 验收覆盖 marketplace
   install、workflow preview/switch、preset apply/reapply、official update、
   Publication/Finalizer 代表性全链和 tag-pinned post-publish smoke。
-- AC5：annotated tag 的 peeled commit/tree 与 candidate 完全一致，GitHub Release
+- AC6：annotated tag 的 peeled commit/tree 与 candidate 完全一致，GitHub Release
   非 draft、非 prerelease，标题、正文、target、版本映射和验证边界准确。
-- AC6：只关闭 `close_issues` 中的 #332；#267、#311 和其他相关 Issue 不被修改或关闭。
+- AC7：只关闭 `close_issues` 中的 #332；#240、#267、#311、#348 和其他相关 Issue 不被修改或关闭。
 
 ## 明确边界
 

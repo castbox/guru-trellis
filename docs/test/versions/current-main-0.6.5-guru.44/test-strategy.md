@@ -1,6 +1,6 @@
 # 当前测试策略
 
-版本：`current-main-0.6.5-guru.43`；状态：`superseded`；successor：`current-main-0.6.5-guru.44`。
+版本：`current-main-0.6.5-guru.44`；状态：`active`；predecessor：`current-main-0.6.5-guru.43`。
 
 ## Evidence 分层
 
@@ -51,6 +51,16 @@
 | `TST-043` | reviewed-content freshness | lifecycle checkpoint 创建/替换/退休不改 identity；Skill/docs/config/schema/script/test delivery drift 使 gate stale | malicious tamper model |
 | `TST-044` | live payload and action boundary | PR/Release payload 即时 authoring、forbidden tracked artifacts、每项外部动作独立 confirmation | payload 或 mutation 已发布 |
 | `TST-045` | scoped post-merge contract | exact candidate、minimum gates、sidecar/residue、FAIL/SKIP/stale/cross-SHA stop 与零真实 release mutation | 累计 Release Gate matrix |
+| `TST-046` | release identity and authority | `.44` unique current、latest stable `.4/.39`、target `.5/.40/CLI 0.6.15` 与历史 facts 保留 | tag/Release 已创建 |
+| `TST-047` | merged prerequisite consumption | fresh candidate 重新消费 #311/#333/#339/#358/#361 与 installed business-repository contract | 历史 Issue/PR 自述替代 fresh proof |
+| `TST-048` | serialized RDT promotion | Architecture `.44/current` inheritance、expected `.43`、完整 RDT version/navigation/traceability 与 post-promotion re-entry | promotion runtime 代替 Phase 2/Review |
+| `TST-049` | exact-candidate pre-tag gate | predecessor full diff、版本面、package/registry/ownership、四平台与 install/update/reapply 绑定同一 candidate | cross-SHA、SKIP 或 focused package result |
+| `TST-050` | immutable release lifecycle | installed business-repository chain、secret/residue、annotated tag、tag-pinned smoke、Release/closure/cleanup 独立 transaction | 任一 mutation 的预授权或推定成功 |
+| `TST-051` | current graph closure | registry/interface/workflow/preset exact 派生 23 Skills / 97 exits / 81 commands，22 integrated + 1 standalone | 历史固定计数替代 current inventory |
+| `TST-052` | solution mechanism qualification | paired semantic cases 覆盖 OS primitive replace、普通 file/state qualified、DB/application state qualified 与 pressure framing 不改变结论 | keyword/import/path scanner 替代 AI judgment |
+| `TST-053` | merge Phase 2 re-entry routing | current-scope task-work finding 唯一进入 `phase2_reentry_required`，external blocker 保持 `merge_blocked` 且无 GitHub mutation | 把 CI/provider blocker 伪装为 task work |
+| `TST-054` | archived-task restore transaction | 原 identity 恢复、status/mapping/pointer/stale authority cleanup、idempotent retry 与 dirty/duplicate/stale/merged zero-write negatives | 创建替代 task/branch/worktree/PR |
+| `TST-055` | reviewed contribution promotion | PR #346/#351 independent review、merge/Issue closure、ADR-008 与 `.44` RDT/Architecture traceability 闭合 | 旧 pending 文案或 PR 自述单独冒充 post-promotion gate |
 
 ## 核心场景
 
@@ -120,6 +130,19 @@
   受影响的 Phase 2/Review/Publication/Finalizer/exact-candidate gate stale。
 - `SCN-053 private inventory isolation`：四个 project-local projection 存在且一致，但公共 registry、
   marketplace、preset、overlay、extension manifest 与 installed inventories 均不存在该 Skill ID。
+- `SCN-054 v0.6.15-guru.5 exact candidate`：`.44` authority 只投影 `.5/.40/CLI 0.6.15` current
+  target；preparation merge 后从 fresh main 冻结同一 candidate，完成 `v0.6.15-guru.4..candidate`
+  full diff、四平台/install/update/reapply、installed business-repository Publication/Finalizer、secret 与
+  residue gate。tag、immutable-tag smoke、GitHub Release、#332 closure 与 cleanup 分别 fresh 确认并回读。
+- `SCN-055 forbidden mechanism`：已资格化正常问题拟使用 OS lock、`/proc`、PID/FD/signals 等承接
+  业务 authority 时返回 `mechanism_revision_required`，已实现、已测试、P0/P1、race/TOCTOU 或
+  fail-closed framing 不改变结论。
+- `SCN-056 ordinary state exception`：普通文件/目录保存 state/artifact/log/cache/config，或数据库
+  事务/durable state machine 承接业务身份与并发时 qualified；文件存在/inode/FD/lock-file 互斥不 qualified。
+- `SCN-057 archived task work recovery`：Open same-head PR 的 current-scope finding 经 Merge 最小 DTO
+  恢复原 task 到 Phase 2，清理旧下游 authority，并强制重跑 Phase 2 到 Merge。
+- `SCN-058 archived recovery blocked`：external blocker、scope/head/branch/PR/archive drift、dirty worktree、
+  duplicate active task、merged PR 或不安全路径均 fail closed 且零业务写入。
 - `CASE-001`：每个 active interface 的 external exit 恰有唯一 consumer 或 stop，registry/interface/workflow 闭包。
 - `CASE-002`：semantic gate 发生在 recorder/validator 前，脚本不接收或持久化授权。
 - `CASE-003`：missing/multiple input、live mismatch、cross-candidate、lineage gap、FAIL、SKIP、stale
@@ -131,6 +154,7 @@
 
 先读取 `.trellis/spec/workflow/quality-guidelines.md` 的 `Validation Scope Ownership`。普通 feature/docs/spec Issue 运行与 accepted scope 相关的最小可靠集合；完整多平台 Throwaway 只属于专项兼容/upgrade/release Issue。任何 SKIP、未配置 live 环境或历史 PR 声明都明确写成 `unverified`。
 
-完整矩阵只证明其绑定 candidate 的 compatibility；`.43` 是 knowledge identity，extension
-`0.6.15-guru.39` 与 target `v0.6.15-guru.3` 在 #267 exact-candidate matrix、tag、GitHub Release
-与 tag-pinned smoke 完成前必须继续标记为 `unverified`。
+完整矩阵只证明其绑定 candidate 的 compatibility；`.44` 是 knowledge identity。latest stable
+`v0.6.15-guru.4` / extension `0.6.15-guru.39` 与 current target `v0.6.15-guru.5` /
+extension `0.6.15-guru.40` 是独立 release axes；`.5` 在 #332 exact-candidate matrix、tag、GitHub
+Release 与 tag-pinned smoke 完成前必须继续标记为 `unverified`。

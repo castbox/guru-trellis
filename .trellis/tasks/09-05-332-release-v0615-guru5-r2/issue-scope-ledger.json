@@ -16,6 +16,12 @@
   },
   "related_issues": [
     {
+      "number": 240,
+      "reason": "已合入并独立审查的 solution-mechanism owner/ADR contribution，本 task 将其提升到 .44 current authority并在 Release Gate fresh 验收。",
+      "title": "#240",
+      "url": "https://github.com/castbox/guru-trellis/issues/240"
+    },
+    {
       "number": 311,
       "reason": "已合入的 installed Finalizer provenance 前置，Release Gate 需在本 task 中 fresh 验收。",
       "title": "#311",
@@ -32,6 +38,12 @@
       "reason": "已合入的仓库私有 release orchestration 前置，Release Gate 需在本 task 中 fresh 验收。",
       "title": "#339",
       "url": "https://github.com/castbox/guru-trellis/issues/339"
+    },
+    {
+      "number": 348,
+      "reason": "已合入并独立审查的 archived-task Phase 2 recovery owner/RDT contribution，本 task 将其提升到 .44 current authority并在 Release Gate fresh 验收。",
+      "title": "#348",
+      "url": "https://github.com/castbox/guru-trellis/issues/348"
     },
     {
       "number": 358,

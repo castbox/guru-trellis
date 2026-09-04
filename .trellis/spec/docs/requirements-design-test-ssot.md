@@ -2,13 +2,13 @@
 
 ## Current identity
 
-- version：`current-main-0.6.5-guru.43`
+- version：`current-main-0.6.5-guru.44`
 - status：`active`
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
 - Architecture inheritance：`docs/architecture/README.md`，同版本、`active`
-- source binding：contribution identity `architecture-contribution-335-repository-private-release-orchestration-v1`，继承 `current-main-0.6.5-guru.42` authority；#305 已确认的 `EVO-001..007` target delta 保持独立 target authority（精确 revision 由包含本 authority 的 Git object/tree identity 绑定；本 projection 不记录可变 HEAD 或 lifecycle 状态）
+- source binding：contribution identity `architecture-contribution-332-release-v0615-guru5-v1` + reviewed #240/#348 contributions，继承 `current-main-0.6.5-guru.43` authority；#305 已确认的 `EVO-001..007` target delta 保持独立 target authority（精确 revision 由包含本 authority 的 Git object/tree identity 绑定；本 projection 不记录可变 HEAD 或 lifecycle 状态）
 
 ## 读取与更新
 
@@ -18,4 +18,4 @@
 
 ## Freshness
 
-每次 gate 必须重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 和 source binding。locator 不存在、版本不一致、traceability 断裂或 projection 落后时，不得沿用本页，进入 owner `repair`。Released `v0.6.5-guru.10` 与 target `v0.6.15-guru.3` / extension `0.6.15-guru.39` publication identity 不得覆盖 current knowledge identity。
+每次 gate 必须重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 和 source binding。locator 不存在、版本不一致、traceability 断裂或 projection 落后时，不得沿用本页，进入 owner `repair`。Latest stable `v0.6.15-guru.4` / extension `0.6.15-guru.39` 与 target `v0.6.15-guru.5` / extension `0.6.15-guru.40` publication identity 不得覆盖 current knowledge identity。
