@@ -1,13 +1,86 @@
 from __future__ import annotations
-import argparse,hashlib,json,os,subprocess
+import argparse,hashlib,json,os,re,subprocess
+from datetime import datetime,timedelta,timezone
 from pathlib import Path
+from urllib.parse import urlsplit
 from common import CONSUMERS,digest,finalize,git,load,now,parse,require_directory_ancestors,resolve_workspace,root,snapshot,stage,validate_plan,worktrees
 from runtime.io import CommandError
-def github(repo,*args):
+def run_gh(repo,*args):
  p=subprocess.run(["gh",*args,"--repo",repo],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
  if p.returncode:raise CommandError("stale_identity","target",p.stderr.strip() or "Repair GitHub access and refresh the reviewed target.",3)
- try:return json.loads(p.stdout)
- except Exception as exc:raise CommandError("invalid_json","target","GitHub returned invalid JSON.") from exc
+ return p.stdout
+def decode_github_json(stdout,field="target"):
+ def reject_constant(value):raise ValueError(f"non-finite JSON number: {value}")
+ try:value=json.loads(stdout,parse_constant=reject_constant)
+ except Exception as exc:raise CommandError("invalid_json",field,"GitHub returned invalid JSON.") from exc
+ if not isinstance(value,(dict,list)):raise CommandError("invalid_json",field,"GitHub returned invalid JSON.")
+ return value
+def github(repo,*args):return decode_github_json(run_gh(repo,*args))
+def canonical_issue_url(repo,url,number=None,field="target"):
+ try:parsed=urlsplit(url) if isinstance(url,str) else None
+ except ValueError as exc:raise CommandError("stale_identity",field,"GitHub did not return a canonical issue URL for the reviewed repository.",3) from exc
+ parts=parsed.path.split("/") if parsed is not None else []
+ if parsed is None or url!=parsed.geturl() or parsed.scheme!="https" or parsed.netloc!="github.com" or parsed.query or parsed.fragment or len(parts)!=5 or parts[0]!="" or parts[3]!="issues" or not re.fullmatch(r"[1-9][0-9]*",parts[4]) or f"{parts[1]}/{parts[2]}".casefold()!=repo.casefold():raise CommandError("stale_identity",field,"GitHub did not return a canonical issue URL for the reviewed repository.",3)
+ parsed_number=int(parts[4])
+ if number is not None and (isinstance(number,bool) or not isinstance(number,int) or number!=parsed_number):raise CommandError("stale_identity",field,"GitHub issue number and canonical URL do not match.",3)
+ return url,parsed_number
+def decode_created_issue_url(repo,stdout):
+ value=stdout
+ if value.endswith("\n"):
+  value=value[:-1]
+  if value.endswith("\r"):value=value[:-1]
+ if not value or "\n" in value or "\r" in value:raise CommandError("stale_identity","target","GitHub did not return one canonical created issue URL.",3)
+ return canonical_issue_url(repo,value)
+def parse_utc_timestamp(value,field):
+ if not isinstance(value,str):raise CommandError("stale_identity",field,"GitHub returned an invalid UTC timestamp.",3)
+ normalized=value[:-1]+"+00:00" if value.endswith("Z") else value
+ try:parsed=datetime.fromisoformat(normalized)
+ except ValueError as exc:raise CommandError("stale_identity",field,"GitHub returned an invalid UTC timestamp.",3) from exc
+ if parsed.tzinfo is None or parsed.utcoffset()!=timedelta(0):raise CommandError("stale_identity",field,"GitHub returned an invalid UTC timestamp.",3)
+ return parsed.astimezone(timezone.utc)
+def issue_labels(value,field):
+ if not isinstance(value,list):raise CommandError("stale_identity",field,"GitHub returned invalid issue labels.",3)
+ names=[]
+ for row in value:
+  if not isinstance(row,dict) or not isinstance(row.get("name"),str) or not row["name"]:raise CommandError("stale_identity",field,"GitHub returned invalid issue labels.",3)
+  names.append(row["name"])
+ return sorted(set(names))
+def label_identity(names):return sorted({name.casefold() for name in names})
+def issue_record(repo,value,field,include_created_at=False):
+ required={"number","url","state","title","body","updatedAt","labels"}
+ if include_created_at:required.add("createdAt")
+ if not isinstance(value,dict) or not required.issubset(value):raise CommandError("stale_identity",field,"GitHub returned incomplete issue fields.",3)
+ number=value["number"]
+ if isinstance(number,bool) or not isinstance(number,int) or number<=0:raise CommandError("stale_identity",field,"GitHub returned an invalid issue number.",3)
+ url,_=canonical_issue_url(repo,value["url"],number,field)
+ if not isinstance(value["state"],str) or not isinstance(value["title"],str) or not isinstance(value["body"],str):raise CommandError("stale_identity",field,"GitHub returned invalid issue fields.",3)
+ record={"number":number,"url":url,"state":value["state"].lower(),"title":value["title"],"body":value["body"],"updated_at":parse_utc_timestamp(value["updatedAt"],field),"labels":issue_labels(value["labels"],field)}
+ if include_created_at:record["created_at"]=parse_utc_timestamp(value["createdAt"],field)
+ return record
+def find_reviewed_draft_issues(plan):
+ t=plan["target"];d=t["draft"];captured=parse_utc_timestamp(plan["freshness"]["captured_at"],"freshness.captured_at")
+ fields="number,url,state,title,body,createdAt,updatedAt,labels"
+ rows=github(t["repo"],"issue","list","--state","open","--search",f"created:>={captured.date().isoformat()}","--limit","1000","--json",fields)
+ if not isinstance(rows,list):raise CommandError("invalid_json","target","GitHub issue lookup did not return a JSON array.")
+ if len(rows)>=1000:raise CommandError("stale_identity","target","GitHub issue lookup did not prove complete candidate exhaustion.",3)
+ expected_labels=label_identity(d["labels"]);matches=[]
+ for index,value in enumerate(rows):
+  row=issue_record(t["repo"],value,f"target.candidates[{index}]",include_created_at=True)
+  if row["state"]=="open" and row["title"]==d["title"] and row["body"]==d["body"] and label_identity(row["labels"])==expected_labels and row["created_at"]>=captured:matches.append(row)
+ return sorted(matches,key=lambda row:row["number"])
+def bind_reviewed_issue(plan,locator):
+ t=plan["target"];d=t["draft"]
+ expected_url=None
+ if isinstance(locator,str):expected_url,_=canonical_issue_url(t["repo"],locator)
+ elif isinstance(locator,bool) or not isinstance(locator,int) or locator<=0:raise CommandError("stale_identity","target","GitHub issue locator is invalid.",3)
+ live=github(t["repo"],"issue","view",str(locator),"--json","number,url,state,title,body,updatedAt,labels")
+ if not isinstance(live,dict):raise CommandError("invalid_json","target","GitHub issue view did not return a JSON object.")
+ row=issue_record(t["repo"],live,"target")
+ if (expected_url is not None and row["url"]!=expected_url) or (isinstance(locator,int) and row["number"]!=locator):raise CommandError("stale_identity","target","GitHub live issue does not match the reviewed locator.",3)
+ title_sha256=hashlib.sha256(row["title"].encode()).hexdigest();body_sha256=hashlib.sha256(row["body"].encode()).hexdigest()
+ if row["state"]!="open" or row["title"]!=d["title"] or row["body"]!=d["body"] or title_sha256!=t["title_sha256"] or body_sha256!=t["body_sha256"] or label_identity(row["labels"])!=label_identity(d["labels"]):raise CommandError("stale_identity","target","Created or recovered issue does not match the exact reviewed draft.",3)
+ binding={"repo":t["repo"],"number":row["number"],"canonical_url":row["url"],"state":row["state"],"title_sha256":title_sha256,"body_sha256":body_sha256,"updated_at":live["updatedAt"],"reviewed_draft_id":d["draft_id"],"reviewed_draft_sha256":d["reviewed_draft_sha256"]}
+ binding["facts_sha256"]=digest(binding);return binding
 def count_operation(operation):
  path=os.environ.get("GURU_PHASE0_OPERATION_LOG")
  if path:
@@ -21,18 +94,17 @@ def mutation_boundary_current(repo,plan):
  t=plan["target"]
  if t["kind"]=="existing_issue":
   live=github(t["repo"],"issue","view",str(t["issue_number"]),"--json","number,url,state,title,body,updatedAt")
+  if not isinstance(live,dict):raise CommandError("invalid_json","target","GitHub issue view did not return a JSON object.")
   if live.get("number")!=t["issue_number"] or live.get("url")!=t["url"] or str(live.get("state") or "").lower()!=t["state"] or live.get("updatedAt")!=t["updated_at"] or hashlib.sha256(str(live.get("title") or "").encode()).hexdigest()!=t["title_sha256"] or hashlib.sha256(str(live.get("body") or "").encode()).hexdigest()!=t["body_sha256"]:return False
  return True
 def create_issue(plan):
  t=plan["target"];d=t["draft"];args=["issue","create","--title",d["title"],"--body",d["body"]]
+ matches=find_reviewed_draft_issues(plan)
+ if len(matches)>1:raise CommandError("stale_identity","target","Multiple exact reviewed-draft issues exist; refresh Intake before mutation.",3)
+ if matches:return bind_reviewed_issue(plan,matches[0]["number"])
  for label in d["labels"]:args.extend(["--label",label])
- created=github(t["repo"],*args);url=created.get("url") if isinstance(created,dict) else None
- if not url:raise CommandError("stale_identity","target","GitHub did not return the created issue URL.",3)
- live=github(t["repo"],"issue","view",str(url),"--json","number,url,state,title,body,updatedAt,labels")
- labels=sorted(x.get("name") for x in live.get("labels",[]) if isinstance(x,dict) and x.get("name"))
- binding={"repo":t["repo"],"number":live.get("number"),"canonical_url":live.get("url"),"state":str(live.get("state") or "").lower(),"title_sha256":hashlib.sha256(str(live.get("title") or "").encode()).hexdigest(),"body_sha256":hashlib.sha256(str(live.get("body") or "").encode()).hexdigest(),"updated_at":live.get("updatedAt"),"reviewed_draft_id":d["draft_id"],"reviewed_draft_sha256":d["reviewed_draft_sha256"]}
- if binding["state"]!="open" or binding["title_sha256"]!=t["title_sha256"] or binding["body_sha256"]!=t["body_sha256"] or labels!=sorted(d["labels"]) or not isinstance(binding["number"],int):raise CommandError("stale_identity","target","Created issue does not match the exact reviewed draft.",3)
- binding["facts_sha256"]=digest(binding);return binding
+ url,_=decode_created_issue_url(t["repo"],run_gh(t["repo"],*args))
+ return bind_reviewed_issue(plan,url)
 def workspace_payloads(plan,artifact_rel):
  n=plan["naming"]
  task={"id":n["task_slug"],"name":n["task_slug"],"title":n["task_title"],"status":"planning","branch":n["branch_name"],"base_branch":plan["base"]["selected_base"],"creator":plan["assignee"]["login"],"assignee":plan["assignee"]["login"],"scope":f"GitHub issue: {plan['target']['url']}"}

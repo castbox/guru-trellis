@@ -1,0 +1,26 @@
+{
+  "close_issues": [
+    {
+      "number": 333,
+      "reason": "Fully covered by this task; close only after reviewed implementation and validation.",
+      "title": "[Bug] Make guru-create-task-workspace Issue creation recoverable and idempotent",
+      "url": "https://github.com/castbox/guru-trellis/issues/333"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 333,
+    "reason": "Fully covered by this task; close only after reviewed implementation and validation.",
+    "title": "[Bug] Make guru-create-task-workspace Issue creation recoverable and idempotent",
+    "url": "https://github.com/castbox/guru-trellis/issues/333"
+  },
+  "related_issues": [
+    {
+      "number": 249,
+      "reason": "Future workspace-preparation replacement and cutover boundary; not implemented or closed by this task.",
+      "title": "解耦业务 repo workspace preparation 与 upstream task creation",
+      "url": "https://github.com/castbox/guru-trellis/issues/249"
+    }
+  ],
+  "schema_version": "2.0"
+}
