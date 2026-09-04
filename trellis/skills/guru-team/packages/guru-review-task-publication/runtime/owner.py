@@ -2939,7 +2939,14 @@ def task_publication_entry_precondition_bindings(
     try:
         ledger = load_issue_scope_ledger(task_dir, task_context)
     except WorkflowError as exc:
-        ledger_errors.append(str(exc))
+        payload = exc.payload if isinstance(exc.payload, dict) else {}
+        payload_codes = payload.get("error_codes")
+        if isinstance(payload_codes, list):
+            ledger_errors.extend(
+                item for item in payload_codes if isinstance(item, str) and item.strip()
+            )
+        else:
+            ledger_errors.append(str(exc))
     if (
         not isinstance(ledger.get("primary_issue"), dict)
         or not isinstance(ledger.get("close_issues"), list)

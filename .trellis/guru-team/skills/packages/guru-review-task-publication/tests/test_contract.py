@@ -1026,19 +1026,92 @@ class TaskPublicationContractTest(unittest.TestCase):
                 raise self.WorkflowError(payload)
 
         cases = [
-            ({"error_code": "publication_freshness_failed", "field_path": "publication.freshness", "recovery": "Repeat review."}, "publication_stale", "publication.freshness"),
-            ({"error_code": "github_auth_failed", "field_path": "github.auth", "recovery": "https://user:secret@example.invalid/token"}, "github_auth_failed", "github.auth"),
-            ({"error_codes": ["reviewed_content_continuity_invalid"]}, "reviewed_content_continuity_failed", "publication"),
-            ({"error_codes": ["invalid_input_shape"]}, "publication_input_invalid", "publication"),
+            ({"error_code": "publication_freshness_failed", "field_path": "publication.freshness", "recovery": "Repeat review."}, "publication_stale", "publication.freshness", "stale_identity"),
+            ({"error_code": "github_auth_failed", "field_path": "github.auth", "recovery": "https://user:secret@example.invalid/token"}, "github_auth_failed", "github.auth", None),
+            ({"error_codes": ["reviewed_content_continuity_invalid"]}, "reviewed_content_continuity_failed", "publication", "stale_identity"),
+            ({"error_codes": ["invalid_input_shape"]}, "publication_input_invalid", "publication", None),
+            (
+                {"error_codes": ["issue_scope_ledger:issue_scope_ledger_primary_disposition_invalid"]},
+                "issue_scope_ledger_primary_disposition_invalid",
+                "publication.issue_scope_ledger.primary_issue",
+                "task_content",
+            ),
+            (
+                {"error_codes": ["publication_content:PR body 缺少 `Docs SSOT` section。"]},
+                "publication_content_contract_failed",
+                "publication.pr_payload.body",
+                "publication_content",
+            ),
+            (
+                {"error_codes": ["publication_content:PR title is empty"]},
+                "publication_content_contract_failed",
+                "publication.pr_payload.title",
+                "publication_content",
+            ),
+            (
+                {
+                    "error_codes": [
+                        "publication_content:PR title is empty",
+                        "publication_content:PR body is empty",
+                    ]
+                },
+                "publication_content_contract_failed",
+                "publication.pr_payload",
+                "publication_content",
+            ),
+            (
+                {"error_codes": ["branch_review_handoff:branch_review_commit_invalid"]},
+                "branch_review_commit_invalid",
+                "input.branch_review_commit",
+                "stale_identity",
+            ),
+            (
+                {"error_codes": ["runtime_dependency:missing_runtime"]},
+                "missing_runtime",
+                "runtime",
+                "runtime_dependency",
+            ),
+            (
+                {"errors": ["publication_content:PR body 缺少 `影响范围` section。"]},
+                "publication_content_contract_failed",
+                "publication.pr_payload.body",
+                "publication_content",
+            ),
         ]
-        for payload, code, locator in cases:
+        for payload, code, locator, recovery_scope in cases:
             with self.subTest(payload=payload):
                 with self.assertRaises(CommandError) as raised:
                     common.call_owner(FakeOwner, FakeOwner().fail, payload)
                 self.assertEqual(raised.exception.code, code)
                 self.assertEqual(raised.exception.field_path, locator)
+                self.assertEqual(
+                    (raised.exception.response or {}).get("recovery_scope"),
+                    recovery_scope,
+                )
                 self.assertNotIn("secret", raised.exception.remediation)
                 self.assertNotIn("https://", raised.exception.remediation)
+
+        for payload in (
+            {"error_codes": ["unknown_owner:unmapped_failure"]},
+            {
+                "error_codes": [
+                    "publication_content:missing_section",
+                    "unclassified_failure",
+                ]
+            },
+            {
+                "error_codes": [
+                    "publication_content:missing_section",
+                    "issue_scope_ledger:issue_scope_ledger_primary_disposition_invalid",
+                ]
+            },
+        ):
+            with self.subTest(payload=payload):
+                with self.assertRaises(CommandError) as raised:
+                    common.call_owner(FakeOwner, FakeOwner().fail, payload)
+                self.assertEqual(raised.exception.code, "internal_error")
+                self.assertEqual(raised.exception.field_path, "owner")
+                self.assertNotIn("recovery_scope", raised.exception.response or {})
 
         parser = __import__("argparse").ArgumentParser(add_help=False)
         parser.add_argument("--required", required=True)
@@ -1046,6 +1119,32 @@ class TaskPublicationContractTest(unittest.TestCase):
             with self.assertRaises(CommandError) as invalid:
                 common.parse_arguments(parser, [])
         self.assertEqual(invalid.exception.code, "invalid_arguments")
+
+    def test_each_missing_required_pr_body_section_is_publication_content(self) -> None:
+        ledger = {
+            "schema_version": "2.0",
+            "primary_issue": {"number": 361},
+            "close_issues": [{"number": 361}],
+            "related_issues": [],
+            "followup_issues": [],
+        }
+        section_content = {
+            "变更摘要": "- 保留 Publication owner 错误分类。",
+            "影响范围": "仅影响 Publication Review facade 与恢复路由。",
+            "验证结果": "Canonical 与 installed package tests 通过。",
+            "Review Gate": "Branch Review 无未关闭 finding。",
+            "Issue 关闭范围": "Closes #361。",
+            "安全说明": "不涉及 secret、部署或数据迁移。",
+            "Docs SSOT": "- strategy: no_docs_update_needed\n- durable docs: no-update\n- merged delta: none\n- task history: task-history-only\n- follow-up: none",
+        }
+        for missing in GTT.PR_BODY_REQUIRED_SECTIONS:
+            body = "\n\n".join(
+                f"## {section}\n\n{content}"
+                for section, content in section_content.items()
+                if section != missing
+            )
+            errors = GTT.validate_pr_body_quality(body, ledger, False)
+            self.assertIn(f"PR body 缺少 `{missing}` section。", errors)
 
     @classmethod
     def setUpClass(cls) -> None:

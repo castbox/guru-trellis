@@ -7,6 +7,7 @@
   "properties": {
     "code": {"type": "string", "minLength": 1},
     "field_path": {"type": "string", "minLength": 1},
-    "remediation": {"type": "string", "minLength": 1}
+    "remediation": {"type": "string", "minLength": 1},
+    "recovery_scope": {"enum": ["task_content", "publication_content", "stale_identity", "runtime_dependency"]}
   }
 }

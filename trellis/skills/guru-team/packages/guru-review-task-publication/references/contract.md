@@ -198,13 +198,19 @@ remove candidate items as needed, but keep the declared object shapes exact.
 
 Recorder, checker, invocation, and dry-run use one sanitized owner-error
 projection. A classified owner failure may supply a stable `error_code`, a
-bounded locator, and a short recovery instruction. The public error contains
-only `code`, `field_path`, and `remediation`; stderr, exception text, URLs,
-credentials, tokens, absolute paths, and external payloads are discarded.
-Freshness failures alone map to `publication_stale`. Input-contract,
-reviewed-content continuity, Git/GitHub, and other classified owner failures
-retain their stable codes. Missing or invalid classification maps to
-`internal_error` with the generic owner locator and remediation.
+bounded locator, and a short recovery instruction. Namespaced owner errors are
+projected by their stable namespace. A safe namespaced detail code remains the
+public code; a non-code detail falls back to
+`<namespace>_contract_failed`. When the owner omits a locator, the projection
+selects the narrow stable field owned by that namespace: the ledger or its
+`primary_issue`, the PR payload `title`/`body`, `input.branch_review_commit`,
+or `runtime`. The public error
+contains only `code`, `field_path`, `remediation`, and the optional bounded
+`recovery_scope`; stderr, exception text, URLs, credentials, tokens, absolute
+paths, and external payloads are discarded.
+Freshness failures alone map to `publication_stale`. Missing or invalid
+classification maps to `internal_error` with the generic owner locator and
+remediation.
 
 ## Entry
 
