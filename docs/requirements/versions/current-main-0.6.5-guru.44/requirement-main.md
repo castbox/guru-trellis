@@ -81,7 +81,7 @@ identity 与 Issue closeout 在同一 post-merge exact candidate 上完成前均
 
 ## 非目标
 
-历史 #267 authority 中的 `.42` 是 knowledge identity，不是 extension/release revision。当前 `.43` authority 继承该 release identity separation，不把 extension `.39` 或目标 tag `.3` 称为已发布 stable release，不替代 #267 exact-candidate gates 或 #311 post-release business proof，也不把业务仓库私有 PRD、完整日志、临时 hash bundle或用户授权写入 current intent。
+历史 #267 authority 中的 `.42` 是 knowledge identity，不是 extension/release revision。当前 `.44` authority 经 `.43` predecessor 继承该 release identity separation，不把 extension `.39` 或目标 tag `.3` 称为已发布 stable release，不替代 #267 exact-candidate gates 或 #311 post-release business proof，也不把业务仓库私有 PRD、完整日志、临时 hash bundle或用户授权写入 current intent。
 
 ## #295 current promotion additions
 
@@ -121,8 +121,8 @@ identity 与 Issue closeout 在同一 post-merge exact candidate 上完成前均
 - `REQ-052`：#267 的 `.41 -> .42` authority alignment 合同要求
   `current-main-0.6.5-guru.42` 成为当时唯一 active Requirements/Design/Test 与 Architecture
   knowledge authority，`.41` 成为 superseded predecessor；该历史合同固定 source candidate 为
-  extension `0.6.15-guru.39`、Trellis CLI `0.6.15`，Release target 为 `v0.6.15-guru.3`。当前 active
-  authority 已由 successor `.43` 承接。
+  extension `0.6.15-guru.39`、Trellis CLI `0.6.15`，Release target 为 `v0.6.15-guru.3`。该历史
+  authority 后由 `.43` successor 承接；当前唯一 active authority 为 `.44`。
 - `REQ-053`：#267 历史合同要求 full-diff review、exact-candidate matrix、annotated tag、GitHub Release
   与 tag-pinned smoke 分别由 live evidence 晋升；promotion 或 package PASS 不得冒充已发布结果。
 - `REQ-054`：#267 的历史 `.41 -> .42` delta 只更新 release/current facts、navigation、

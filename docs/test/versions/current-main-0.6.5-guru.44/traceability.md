@@ -37,7 +37,7 @@
 | `TST-033`, `SCN-045` | `REQ-049..050` | `DES-047` | verifier-zero dependency + source/installed/platform/reapply/drift checks |
 | `TST-034`, `SCN-047` | `REQ-050` | `DES-047` | current real fixture `unverified`; local fake-GitHub integration only |
 | `TST-035`, `SCN-046` | `REQ-051` | `DES-048` | verifier 17/17、routing 44/44、closed failure schema/postcheck evidence |
-| `TST-036`, `SCN-048` | `REQ-052`, `REQ-055` | `DES-049..050`, `DES-052` | historical #267 unique active `.42` / superseded `.41` / expected-current checks；current successor `.43` |
+| `TST-036`, `SCN-048` | `REQ-052`, `REQ-055` | `DES-049..050`, `DES-052` | historical #267 unique active `.42` / superseded `.41` / expected-current checks；`.43` successor history 与 current `.44` identity 分离 |
 | `TST-037` | `REQ-052..053` | `DES-051` | historical `.3/.39/CLI 0.6.15` mapping and release-boundary review |
 | `TST-038` | `REQ-054` | `DES-049..051` | historical #267 `.41...42` semantic diff and no-ADR/no-runtime-change review |
 | `TST-039`, `SCN-048` | `REQ-053`, `REQ-055` | `DES-049`, `DES-052` | historical #267 contribution review + serialized owners + post-promotion fresh lifecycle |

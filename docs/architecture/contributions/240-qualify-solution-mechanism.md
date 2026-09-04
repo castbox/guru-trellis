@@ -68,10 +68,12 @@ migration is introduced.
 - before: callers could qualify a problem scenario, but no independent public
   owner judged whether the proposed implementation mechanism was allowed to
   carry business authority。
-- after: mechanism qualification is a separate semantic boundary with explicit
-  `qualified_application_mechanism`, `mechanism_revision_required`, and
-  `blocked` routes; ordinary files remain usable as state/artifacts but cannot
-  become business authority through OS identity or process primitives。
+- after: mechanism qualification is a separate semantic boundary。Candidate
+  decisions use `qualified_current` as the wire name for
+  `qualified_application_mechanism`; public typed exits are `classified`,
+  `scope_confirmation_required`, `mechanism_revision_required`, and `blocked`。
+  Ordinary files remain usable as state/artifacts but cannot become business
+  authority through OS identity or process primitives。
 - preserved: normal-scenario semantics, AI-first judgment, deterministic
   recorder/validator limits, one owner per typed exit, Architecture promotion
   lifecycle, public package distribution rules, and #260/#267 matrix ownership。

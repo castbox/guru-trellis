@@ -87,12 +87,12 @@
 - `DES-049` Historical serialized authority promotion：#267 的 Architecture owner 从 reviewed
   contribution 激活 `.42` baseline/current/evidence，RDT owner 随后建立完整 `.42`
   Requirements/Design/Test version、navigation 与 predecessor history；两步均绑定当时 live current
-  `.41`，不得并行或覆盖 advance。该 `.42` authority 现由 successor `.43` 继承。
+  `.41`，不得并行或覆盖 advance。该 `.42` authority 后由 `.43` successor 继承，当前由 `.44` 承接。
 - `DES-050` Historical fact-only projection：#267 的 `.42` 从 `.41` 继承全部 runtime behavior、
   public contracts、Architecture decision、owner、GAP 与 compatibility exit，只更新 release/current
   mapping、traceability、evidence 和 predecessor/successor identity，不创建 ADR 或第二 authority。
 - `DES-051` Release identity separation：历史 #267 knowledge `.42`、extension `0.6.15-guru.39`、
-  Trellis CLI `0.6.15` 与 target tag `v0.6.15-guru.3` 是独立 identity axes；当前 `.43` 继承该
+  Trellis CLI `0.6.15` 与 target tag `v0.6.15-guru.3` 是独立 identity axes；当前 `.44` 经 `.43` predecessor 继承该
   separation，tag、Release、latest-stable 与 tag-pinned smoke 仍只由 #267 exact candidate 的 live proof 晋升。
 - `DES-052` Historical promotion re-entry：#267 owner promotion 只产生 shared-current working-tree
   diff；该 diff 按历史合同重新通过 Phase 2、task commit 和独立 complete-range Branch Review 后才恢复

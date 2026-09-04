@@ -41,8 +41,8 @@
 | `TST-033` | Installed distribution isolation | canonical/installed package、verifier-zero dependency、preset projection、mode/drift/sidecar | release-wide matrix |
 | `TST-034` | Representative installed closeout | release-installed business repo 从 ready 到 Ready PR/terminal projection | 未 fresh 重试时保持 `unverified` |
 | `TST-035` | Structured verifier failure | stage/cell/command/exit/bounded safe tail、outer parse 与 postcheck classification | Finalizer lifecycle authority |
-| `TST-036` | historical #267 authority uniqueness | #267 `.41 -> .42` promotion 后 RDT/Architecture 只存在一个 active `.42`，`.41` 为 superseded，predecessor/successor 一致；当前 active 已由 `.43` 承接 | runtime behavior |
-| `TST-037` | release identity mapping | active surfaces 只声明 `.3/.39/CLI 0.6.15` current target，历史 `.37` 仅存在于明确 superseded/released evidence | tag、Release 或 smoke 已完成 |
+| `TST-036` | historical #267 authority uniqueness | #267 `.41 -> .42` promotion 后 RDT/Architecture 只存在一个 active `.42`，`.41` 为 superseded，predecessor/successor 一致；`.43` 是后续 successor history，当前唯一 active 为 `.44` | runtime behavior |
+| `TST-037` | historical release identity mapping | #267 历史 authority 只声明 `.3/.39/CLI 0.6.15` target，历史 `.37` 仅存在于明确 superseded/released evidence；当前 `.44` 的 `.5/.40/CLI 0.6.15` target 由 `TST-046` 独立覆盖 | tag、Release 或 smoke 已完成 |
 | `TST-038` | historical fact-only semantic diff | #267 `.41...42` 不新增 behavior、public API、Architecture decision、owner、GAP、compatibility exit 或 ADR | downstream Phase 2/Branch Review |
 | `TST-039` | historical promotion lifecycle freshness | #267 contribution review、RDT/Architecture serialized promotion、fresh Phase 2/commit/Branch Review 与 closure boundary | 任一旧 gate 或 package PASS |
 | `TST-040` | repo-private projection boundary | Shared/Codex/Claude/Cursor private definitions parity，public package/marketplace/preset/installed inventory zero inclusion | 公共 Skill installation |
