@@ -1,57 +1,42 @@
-# #332 v0.6.15-guru.5 执行计划
+# #332 v0.6.15-guru.5 稳定实施计划
 
 ## Phase 1：规划与激活
 
-- [x] 以当前 `origin/main@3f888c1ad2d0bad5f257794b1f09da24af73f397`、Issue #332 和
-  `current-main-0.6.5-guru.43` 完成规划 wording review。
-- [x] 执行 `guru-maintain-architecture-baseline:task_impact_sync(stage=planning)`，
-  只消费当前 `baseline_current` 或明确的无影响出口。
-- [x] 执行 `guru-approve-task-plan`，通过后展示三份规划文档与未验证边界；取得当前
-  Phase 1 plan acceptance 后运行官方 `task.py start`。
+以 fresh `origin/main`、live Issue #332、active knowledge baseline 和 task-local
+Requirements/Design/Test/Architecture contract 完成 standard intake、规划审查、
+Architecture/RDT impact 判断，并按官方 Trellis 入口激活 task。
 
-## Phase 2：preparation 实现与检查
+## Phase 2：Preparation
 
-- [x] 进入新 task worktree，按 `trellis-before-dev` 重读 relevant workflow/preset/docs
-  specs，并确认当前 task/worktree boundary。
-- [x] 搜索所有 `.3/.39` release-facing 引用，按 owner 分类后将适用面更新为
-  `.5/.40/CLI 0.6.15`；历史 authority、历史 tag/Release 和 #267 历史边界保持不变。
-- [x] 运行 preset apply/reapply，校验 canonical/dogfood/installed/platform projection、
-  manifest、README、fixtures、registry/interface/schema、ownership、mode、overlay
-  drift 与 recursive zero-sidecar。
-- [x] 运行 package/runtime/integration/eval、Issue recovery、Finalizer/Publication、
-  preset installer、upgrade/update/reapply 和声明平台定向验证；不把 focused test
-  冒充完整 Release Gate。
-- [ ] 准备中文 release notes 草案，明确版本映射、升级路径、安全/部署影响、assets
-  与所有未验证边界。
-- [ ] 执行 `guru-check-task` 完整 semantic check；finding 修复后按影响范围重跑。
+1. 在已确认的 task worktree 内重读 relevant workflow、preset、spec 与当前 authority，
+   保持 workspace boundary 和既有用户改动不变。
+2. 按 #332 accepted scope 更新 canonical release identity、manifest、README、workflow/preset
+   文档、fixture、verifier 与 canonical/dogfood/installed projection，使 `.5/.40/CLI 0.6.15`
+   一致；保留历史 facts。
+3. 运行与本 task 相关的 preset apply/reapply、package/runtime/integration/eval、安装投影、
+   upgrade/update/reapply、平台 projection、Issue recovery、Publication/Finalizer 与 release
+   identity 定向验证；不把 focused tests 当作完整 Release Gate。
+4. 维护 task-isolated RDT 与 Architecture contribution；shared current 只通过 serialized
+   promotion owner 更新，promotion-created diff 重新进入 Phase 2、task commit 与 Branch Review。
+5. 完成 `guru-check-task` 的完整 semantic check，按实际 finding 重新进入相应 owner。
 
-## Phase 3：提交、独立审查与合并
+## Phase 3：提交、审查与合并
 
-- [ ] 展示精确 staged paths、commit message 与预期结果，取得独立 task commit 确认，
-  执行 `guru-create-task-commit`。
-- [ ] 对完整 `origin/main...HEAD` 执行 fresh Branch Review；确认 PR 中文标题/正文、
-  `Refs #332` 语义、验证结果、安全说明、部署影响、Docs SSOT 与 Issue close scope。
-- [ ] 通过 Publication Review 与 Finalizer；push、PR、merge 分别按当前 gate 取得确认。
-- [ ] merge 后 fresh fetch/freeze candidate commit/tree，任何 stale 或内容变化都重新
-  执行受影响 gate。
+完成独立 task commit 前，对精确 staged paths、commit message 和预期结果进行当前对话确认；
+提交后对完整 `origin/main...HEAD` 执行 fresh Branch Review，并依次经过 Publication、Finalizer、
+PR merge 与 fresh main convergence。任一 scope、authority、content 或 base identity 变化都使
+受影响 gate 重新入场。
 
 ## Post-merge Release Gate
 
-- [ ] 从 exact candidate 重新运行完整 Release Gate，覆盖 #311/#333/#339/#358/#361、
-  clean throwaway、existing install/update/reapply、installed business repository
-  Publication/Finalizer 代表性链路、平台入口、secret scan 和 zero-residue。
-- [ ] 展示 candidate SHA/tree、annotated tag message 与精确 push refspec；取得独立确认
-  后创建并 push `v0.6.15-guru.5`，live 回读 tag object 与 peeled candidate。
-- [ ] 展示 immutable tag-pinned 临时验证范围；取得独立确认后执行 install/update/reapply
-  与 smoke。失败时停止，不移动或删除 tag。
-- [ ] 展示中文 GitHub Release title/body/target/draft/prerelease/assets；取得独立确认后
-  创建正式 Release 并 live 回读。
-- [ ] 展示 `gh issue close 332` 的精确副作用；取得独立确认后关闭，并最终回读 Issue、
-  tag、peeled commit、Release、latest stable 与相关 Issue 边界。
+合并后从 fresh exact candidate 执行 #332 要求的完整 pre-tag Release Gate，覆盖已合入
+#311/#333/#339/#358/#361 的承接、clean throwaway、existing install/update/reapply、声明平台
+入口、installed business-repository Publication/Finalizer 代表性链、secret scan、zero-residue
+与 tag-pinned smoke。所有 mutation 分别经过其 owner 的 fresh gate 和独立当前对话确认，最终再
+按顺序处理 annotated tag、GitHub Release 与 Issue #332 closeout。
 
-## 风险与停止条件
+## 停止条件
 
-- required gate 的 FAIL、SKIP、stale、cross-SHA、unknown/multiple/unmapped exit 均停止。
-- 发现版本轴混淆、历史事实被改写、scope 超出 #332、共享 authority 需要未批准变更，
-  或 projection 不能从 canonical source 重建时停止并回到对应 owner。
-- 不执行 cleanup；任何旧 branch、旧 task、其他 worktree 和非本任务 dirty 文件均保留。
+required gate 的 FAIL、SKIP、stale、cross-SHA、unknown 或 unmapped exit，以及历史 authority
+被改写、shared-current writer 不唯一、scope 超出 #332 或 projection 无法从 canonical source
+重建时，停止在对应 owner，不以动态 task metadata 或旧 evidence 代替 fresh judgment。
