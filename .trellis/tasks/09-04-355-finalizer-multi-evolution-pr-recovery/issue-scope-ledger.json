@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 355,
+      "reason": "#355 是本次独立可交付的 Finalizer 多段合法演进恢复修复。",
+      "title": "[Bug] Finalizer 无法恢复旧 transaction 在多段合法演进后的既有 PR",
+      "url": "https://github.com/castbox/guru-trellis/issues/355"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 355,
+    "reason": "#355 是本次独立可交付的 Finalizer 多段合法演进恢复修复。",
+    "title": "[Bug] Finalizer 无法恢复旧 transaction 在多段合法演进后的既有 PR",
+    "url": "https://github.com/castbox/guru-trellis/issues/355"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}
