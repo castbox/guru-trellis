@@ -199,7 +199,10 @@ class SkillContractTest(unittest.TestCase):
             any(re.fullmatch(r"release-notes.*\.md", path.name) for path in owned_files)
         )
         self.assertNotRegex(contract, r"(?m)^\s*- \[[ xX]\]")
-        task = REPO / ".trellis/tasks/09-02-335-release-guru-trellis-version"
+        task = (
+            REPO
+            / ".trellis/tasks/archive/2026-09/09-02-335-release-guru-trellis-version"
+        )
         self.assertFalse(any(task.glob("release-notes*.md")))
         forbidden_task_patterns = (
             "release-status*",
