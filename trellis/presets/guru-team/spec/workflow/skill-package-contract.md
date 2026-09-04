@@ -755,9 +755,9 @@ Active closure is derived from the live registry, the production current
 manifest, and every complete active Interface 1.4 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
-The current package cardinality assertion is twenty-three active Skills and 96
+The current package cardinality assertion is twenty-three active Skills and 97
 exits. The integrated business workflow projection contains 22 invoke markers,
-94 exit markers, 35 workflow-target markers, and 23 stop-target markers. Missing,
+95 exit markers, 35 workflow-target markers, and 24 stop-target markers. Missing,
 extra, duplicate, renamed, unknown, partially activated, or
 case-mismatched entries fail closed.
 
