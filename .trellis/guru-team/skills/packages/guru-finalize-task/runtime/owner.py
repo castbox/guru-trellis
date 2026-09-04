@@ -4513,8 +4513,7 @@ def finalizer_current_transaction_provenance_reprepare_preflight(
         or transaction.get("branch_review_commit") != previous_publication
         or not re.fullmatch(r"[0-9a-f]{40}", previous_publication)
         or not re.fullmatch(r"[0-9a-f]{40}", current_reviewed)
-        or previous_publication != current_reviewed
-        or not finalizer_pre_pr_provenance_tail_required(root, current_plan)
+        or not is_ancestor(root, previous_publication, current_reviewed)
         or not provenance_tail_transaction_reprepare_eligible(
             root,
             current_plan,
@@ -8274,7 +8273,10 @@ def provenance_tail_transaction_reprepare_eligible(
         error_set & PROVENANCE_TAIL_INAPPLICABLE_ERRORS
     ):
         return False
-    if error_set - (PROVENANCE_TAIL_INAPPLICABLE_ERRORS | {"publication"}):
+    if error_set - (
+        PROVENANCE_TAIL_INAPPLICABLE_ERRORS
+        | {"publication", "current_reviewed_publication_head"}
+    ):
         return False
     return (
         provenance_tail_transaction_rebind_base_evolution_tail_parent(
