@@ -10,7 +10,7 @@
   "followup_issues": [],
   "primary_issue": {
     "number": 353,
-    "reason": "Primary independently deliverable change request.",
+    "reason": "Fully covered by this task.",
     "title": "修复 Finalizer 旧 transaction 遇到新 provenance tail 时的受支持 reprepare/rebind",
     "url": "https://github.com/castbox/guru-trellis/issues/353"
   },
