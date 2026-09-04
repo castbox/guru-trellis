@@ -1,0 +1,32 @@
+{
+  "close_issues": [
+    {
+      "number": 358,
+      "reason": "本任务完整覆盖并仅关闭 Issue #358。",
+      "title": "[Bug] Finalizer 无法用 fresh reviewed task commit 取代旧的未绑定 transaction",
+      "url": "https://github.com/castbox/guru-trellis/issues/358"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 358,
+    "reason": "本任务唯一 primary Issue，负责 Finalizer fresh reviewed task evolution 的 transaction supersession/rebind。",
+    "title": "[Bug] Finalizer 无法用 fresh reviewed task commit 取代旧的未绑定 transaction",
+    "url": "https://github.com/castbox/guru-trellis/issues/358"
+  },
+  "related_issues": [
+    {
+      "number": 333,
+      "reason": "提供现有 PR strict-ancestor recovery 的真实复现边界，不吸收其业务实现。",
+      "title": "[Bug] Make guru-create-task-workspace Issue creation recoverable and idempotent",
+      "url": "https://github.com/castbox/guru-trellis/issues/333"
+    },
+    {
+      "number": 355,
+      "reason": "提供多段合法演进后的 existing-PR recovery 前序能力，保持兼容。",
+      "title": "[Bug] Finalizer 无法恢复旧 transaction 在多段合法演进后的既有 PR",
+      "url": "https://github.com/castbox/guru-trellis/issues/355"
+    }
+  ],
+  "schema_version": "2.0"
+}

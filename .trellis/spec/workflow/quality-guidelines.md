@@ -938,6 +938,19 @@ tail, post-base business delta, and existing identity/scope/PR/transaction
 drift. Execution retains one current Publication push, zero PR creation,
 transaction-before-mutation ordering, and zero duplicate mutation on same-plan
 retry.
+
+Fresh-reviewed descendant coverage adds a tail-free real Git topology:
+predecessor Publication, a newer existing PR/remote head, selected-base
+evolution, and a current active-task commit bound identically by Branch Review
+and Publication. Tests prove strict-ancestor recovery uses the exact newer
+pre-push remote HEAD, writes the unchanged schema 3.0 transaction before
+mutation, pushes once, creates no PR, converges metadata at most once, preserves
+Ready or transitions Draft once, and repeats no completed mutation. Negative
+coverage must reject reviewed/Publication mismatch, missing base evolution,
+invalid predecessor/base/remote ancestry, unreviewed drift, malformed or chained
+tails, and PR/remote/identity/scope/transaction drift while the direct-tail,
+pure-base, base-plus-tail, reprepare and equal-HEAD suites remain passing.
+
 Finish-family integration additionally proves current finish-summary schema 2
 is derived once from the reviewed payload and live facts, historical schema 1
 remains discoverable, and the current runtime/inventories contain no retired
