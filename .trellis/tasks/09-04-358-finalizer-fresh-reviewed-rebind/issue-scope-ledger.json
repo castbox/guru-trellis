@@ -2,7 +2,7 @@
   "close_issues": [
     {
       "number": 358,
-      "reason": "本任务完整覆盖并仅关闭 Issue #358。",
+      "reason": "本任务唯一 primary Issue，负责 Finalizer fresh reviewed task evolution 的 transaction supersession/rebind。",
       "title": "[Bug] Finalizer 无法用 fresh reviewed task commit 取代旧的未绑定 transaction",
       "url": "https://github.com/castbox/guru-trellis/issues/358"
     }
