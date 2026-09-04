@@ -3,7 +3,7 @@ import copy,hashlib,importlib.util,json,os,shutil,subprocess,sys,tempfile,unitte
 from unittest import mock
 from datetime import datetime,timezone
 from pathlib import Path
-PACKAGE=Path(__file__).resolve().parents[1];SKILLS=PACKAGE.parents[1];LOCAL=PACKAGE/"runtime"
+PACKAGE=Path(__file__).resolve().parents[1];SKILLS=next(parent for parent in PACKAGE.parents if (parent/"runtime").is_dir());LOCAL=PACKAGE/"runtime"
 for p in (SKILLS,LOCAL):
  if str(p) not in sys.path:sys.path.insert(0,str(p))
 from runtime.io import CommandError
