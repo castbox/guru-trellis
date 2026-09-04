@@ -92,13 +92,39 @@ resolver/sync core once. A changed fresh post-sync identity returns
 `refresh_review` before business mutation; an unchanged identity continues.
 
 A draft transaction creates the exact reviewed title/body/labels, rereads the
-issue, builds a created-issue binding, and stops. The GitHub adapter preserves
-the reviewed title and body bytes; it does not trim them or append a newline.
-Before create, it searches live open issues for exact title/body/labels with
-`createdAt` not earlier than the reviewed plan capture. Zero matches creates
-once, one match is recovered and reread, and multiple matches block. This
-recovery emits the same `created_issue` result and prevents a second remote
-create after an immediate reread failure.
+issue, builds a created-issue binding, and stops. GitHub read/list operations
+declare JSON output and accept only a JSON object or array. `gh issue create`
+has a separate output contract: exactly one canonical plain-text
+`https://github.com/<owner>/<repo>/issues/<positive-number>` line for the
+reviewed repository, with at most its terminal line ending. The adapter never
+tries to decode that mutation response as JSON and preserves the reviewed title
+and body bytes without trimming, newline injection, or content rewriting.
+
+Before create, runtime executes the exact repo-bound lookup:
+
+```text
+gh issue list --state open --search created:>=YYYY-MM-DD --limit 1000 \
+  --json number,url,state,title,body,createdAt,updatedAt,labels
+```
+
+The date is the reviewed capture instant's UTC calendar date. Every returned
+row must carry complete typed fields, a canonical URL for the reviewed
+repository, valid UTC timestamps, and a valid label-name set. A response with
+1000 rows cannot prove query exhaustion and blocks before create. For fewer
+rows, runtime exact-filters `state=open`, title/body bytes, label-name set, and
+`createdAt >= captured_at`. Zero matches creates once, one match is recovered,
+and multiple matches block before create. Create and recovery both enter the
+same immediate live reread/binding helper and emit the same `created_issue`
+result. A retry after remote create but before successful response, reread, or
+result delivery therefore recovers the unique live Issue and performs no
+second create.
+
+GitHub resolves label names case-insensitively and returns repository-canonical
+casing. Runtime therefore preserves every reviewed label string unchanged for
+the draft digest and `gh issue create`, but compares the plan and live label
+sets through one case-folded, deduplicated identity in lookup, immediate
+binding, and checker reread. A genuinely different label set still fails
+closed.
 
 After complete Intake re-entry, an existing issue produced by this path embeds
 the complete prior checker-passed created-issue result. Runtime recomputes the

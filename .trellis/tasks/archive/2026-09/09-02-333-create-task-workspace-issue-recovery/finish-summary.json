@@ -1,0 +1,209 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-04T14:27:52Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-02-333-create-task-workspace-issue-recovery",
+    "title": "#333 Make guru-create-task-workspace Issue creation recoverable and idempotent",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/333-create-task-workspace-issue-recovery",
+    "commits": [
+      "0e314575a7275ed6a852671a64314f88a1b56fae",
+      "6832a5274641079163066be5e89124b6297181b9",
+      "7e1713744ebf7767e8ec6570551176ca970b13ac",
+      "db49b964e72b4f59f9ef8285dce2b54d8917db10",
+      "39c82587913f90617be2d9c327199758d1c0bf49",
+      "e7943ea94aaf090a184767fb32a226d70fec32f2",
+      "a4a9a399d594aa7a12fa3171cb2b12a1e3576508",
+      "00f1b76d402d51cdfa38f7398f5b4aa4482a02a9",
+      "e25b51d5fbd23b29f56a44a7cfb6f095f63453e7",
+      "193ae9d6a4e6d0d29762cd335e03846d85f58953",
+      "3a761824fa0b23ace544fad96e9a299c582afb51",
+      "035046a551769fcac16a768c9fb44415d41e992f",
+      "d8a595f6f5a8b98ececb081d9438347a770328c1",
+      "a8453eaaf6103bb73c6d1fa76f64b47c238e4dd2",
+      "a3416b1acd8014756088455585dd2ce4d0b078b2",
+      "0b11f42f1424d82459c63f59ddae522d75fc7b1c",
+      "50a8e53682d31af91107b9afb6c0a1fbe1972ae5",
+      "3c82e6fe9bd5327874cea61ec02f064c87e54622",
+      "6c8bc347c0f756f62e1ddbfc007d1379fefdf578",
+      "753c6b8ce226a7589e5d2a439aa4c48db44a1d9d",
+      "bb92589ea6e4eef2aa7e35b36b5c349f27448c28",
+      "c9b31b324145466e873645177a5bf3daf4a9fdf4",
+      "46657865430bc19b8fa6c0bf6612a05d8ba42c30",
+      "d09e433aa5cf580dff9d1da81a8b014438fca148",
+      "6cb25de603d797d42c963b70e6b0c7d8d0447efd",
+      "e4369d06ceee694dcd3e9fd4428b9e082e0e2f57"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-create-task-workspace/references/contract.md",
+      ".claude/skills/guru-create-task-workspace/references/contract.md",
+      ".codex/skills/guru-create-task-workspace/references/contract.md",
+      ".cursor/skills/guru-create-task-workspace/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/check.py",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/execute.py",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
+      ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/design.md",
+      ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/implement.md",
+      ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/issue-scope-ledger.json",
+      ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/prd.md",
+      ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/task.json",
+      ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/design.md",
+      ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/implement.md",
+      ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/prd.md",
+      ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/task.json",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/check.py",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/execute.py",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      333
+    ],
+    "close_issues": [
+      333
+    ],
+    "related_issues": [
+      249
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/337"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#333 Make guru-create-task-workspace Issue creation recoverable and idempotent",
+    "outcome": "修复 reviewed-draft Issue transaction 对真实 `gh issue create` 单行 canonical URL 输出的解析。",
+    "changed_behavior": [
+      "修复 reviewed-draft Issue transaction 对真实 `gh issue create` 单行 canonical URL 输出的解析。",
+      "增加创建前精确 live recovery，保证 0/1/>1 候选分别走创建、恢复或 fail-closed 路径。",
+      "同一 reviewed plan 在 remote create 后发生普通失败时，retry 收养唯一 exact Issue，不执行第二次 create。",
+      "将 GitHub label live identity 对齐为大小写无关比较，同时保留 reviewed label 原字符串用于 draft digest 与 create 参数。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/design.md",
+          ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/implement.md",
+          ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/prd.md",
+          ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/design.md",
+          ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/implement.md",
+          ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/prd.md"
+        ],
+        "change": "修复 reviewed-draft Issue transaction 对真实 `gh issue create` 单行 canonical URL 输出的解析。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "修复 reviewed-draft Issue transaction 对真实 `gh issue create` 单行 canonical URL 输出的解析。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/check.py",
+          ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/execute.py",
+          ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/check.py",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/execute.py",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py"
+        ],
+        "change": "修复 reviewed-draft Issue transaction 对真实 `gh issue create` 单行 canonical URL 输出的解析。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-create-task-workspace/references/contract.md",
+          ".claude/skills/guru-create-task-workspace/references/contract.md",
+          ".codex/skills/guru-create-task-workspace/references/contract.md",
+          ".cursor/skills/guru-create-task-workspace/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-create-task-workspace/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/references/contract.md"
+        ],
+        "change": "修复 reviewed-draft Issue transaction 对真实 `gh issue create` 单行 canonical URL 输出的解析。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/issue-scope-ledger.json",
+          ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/task.json",
+          ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/task.json"
+        ],
+        "change": "修复 reviewed-draft Issue transaction 对真实 `gh issue create` 单行 canonical URL 输出的解析。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#249",
+        "#333"
+      ],
+      "pr_refs": [
+        "PR #337"
+      ],
+      "branches": [
+        "fix/333-create-task-workspace-issue-recovery"
+      ],
+      "paths": [
+        ".agents/skills/guru-create-task-workspace/references/contract.md",
+        ".claude/skills/guru-create-task-workspace/references/contract.md",
+        ".codex/skills/guru-create-task-workspace/references/contract.md",
+        ".cursor/skills/guru-create-task-workspace/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/check.py",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/execute.py",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
+        ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/design.md",
+        ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/implement.md",
+        ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/issue-scope-ledger.json",
+        ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/prd.md",
+        ".trellis/tasks/09-02-333-create-task-workspace-issue-recovery/task.json",
+        ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/design.md",
+        ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/implement.md",
+        ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/prd.md",
+        ".trellis/tasks/archive/2026-09/09-02-333-create-task-workspace-issue-recovery/task.json",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/check.py",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/execute.py",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#333 Make guru-create-task-workspace Issue creation recovera",
+        "修复 reviewed-draft Issue transaction 对真实 `gh issue create` 单行",
+        "完成 contract.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#333 Make guru-create-task-workspace Issue creation recoverable and idempotent\n修复 reviewed-draft Issue transaction 对真实 `gh issue create` 单行 canonical URL 输出的解析。\n增加创建前精确 live recovery，保证 0/1/>1 候选分别走创建、恢复或 fail-closed 路径。\n同一 reviewed plan 在 remote create 后发生普通失败时，retry 收养唯一 exact Issue，不执行第二次 create。\n将 GitHub label live identity 对齐为大小写无关比较，同时保留 reviewed label 原字符串用于 draft digest 与 create 参数。\n#333 Make guru-create-task-workspace Issue creation recovera\n修复 reviewed-draft Issue transaction 对真实 `gh issue create` 单行\n完成 contract.md 相关变更"
+  }
+}
