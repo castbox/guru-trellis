@@ -11,4 +11,5 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  if result.get("checker",{}).get("status")!="passed":raise CommandError("stale_identity","result.checker","Check the executor result before projection.",3)
  exit_id=result["typed_exit"];out={"exit_id":exit_id}
  if exit_id=="refresh_review":out.update({"mode":result["mode"],"base_branch":e.get("base_branch") or "main"})
- schema={"created":"public-created-output.schema.json","refresh_review":"public-refresh-review-output.schema.json","blocked":"public-blocked-output.schema.json"}[exit_id];validate_json(out,package_root/"schemas"/schema,"stdout");return out
+ if exit_id=="invalid_task_state":out.update({"reason_code":"invalid_task_state"})
+ schema={"created":"public-created-output.schema.json","refresh_review":"public-refresh-review-output.schema.json","blocked":"public-blocked-output.schema.json","invalid_task_state":"public-invalid-task-state-output.schema.json"}[exit_id];validate_json(out,package_root/"schemas"/schema,"stdout");return out

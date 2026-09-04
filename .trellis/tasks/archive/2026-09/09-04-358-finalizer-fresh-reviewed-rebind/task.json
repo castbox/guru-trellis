@@ -1,0 +1,12 @@
+{
+  "id": "358-finalizer-fresh-reviewed-rebind",
+  "name": "358-finalizer-fresh-reviewed-rebind",
+  "title": "#358 修复 Finalizer fresh reviewed transaction rebind",
+  "status": "completed",
+  "branch": "fix/358-finalizer-fresh-reviewed-rebind",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/358",
+  "completedAt": "2026-09-04"
+}

@@ -7,7 +7,7 @@ SHARED_ROOT=next((p for p in Path(__file__).resolve().parents if (p/"runtime/io.
 if SHARED_ROOT is not None and str(SHARED_ROOT) not in sys.path:sys.path.insert(0,str(SHARED_ROOT))
 from runtime.io import CommandError
 from runtime.schema import validate_json
-CONSUMERS={"created":{"kind":"workflow","id":"guru-task-workspace-created"},"refresh_review":{"kind":"skill","id":"guru-sync-base"},"blocked":{"kind":"stop","id":"task-workspace-blocked"}}
+CONSUMERS={"created":{"kind":"workflow","id":"guru-task-workspace-created"},"refresh_review":{"kind":"skill","id":"guru-sync-base"},"blocked":{"kind":"stop","id":"task-workspace-blocked"},"invalid_task_state":{"kind":"stop","id":"invalid-task-state"}}
 class WorkspaceConfig(NamedTuple):
  mode:str
  root:Path

@@ -74,8 +74,8 @@ invalid interface projections stop fail closed.
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"revision_required","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-planning-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"baseline_incomplete","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-bootstrap-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"blocked","consumer":{"kind":"stop","id":"requirements-design-test-ssot-blocked"}} -->
-The installed graph is exactly 23 active Skills and 96 package exits. The
-business-task workflow is exactly 22 mandatory invokes and 94 external exits.
+The installed graph is exactly 23 active Skills and 97 package exits. The
+business-task workflow is exactly 22 mandatory invokes and 95 external exits.
 ### Cross-phase normal-scenario qualification owner
 <!-- guru-skill-invoke: {"skill":"guru-qualify-normal-scenario","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"classified","consumer":{"kind":"workflow","id":"guru-normal-scenario-classified-router"}} -->
@@ -130,6 +130,7 @@ business-task workflow is exactly 22 mandatory invokes and 94 external exits.
 <!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"created","consumer":{"kind":"workflow","id":"guru-task-workspace-created"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"refresh_review","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"blocked","consumer":{"kind":"stop","id":"task-workspace-blocked"}} -->
+<!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"invalid_task_state","consumer":{"kind":"stop","id":"invalid-task-state"}} -->
 ### Phase 1 owner
 <!-- guru-skill-invoke: {"skill":"guru-approve-task-plan","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"approved","consumer":{"kind":"workflow","id":"phase-1-task-activation"}} -->
@@ -193,7 +194,7 @@ business-task workflow is exactly 22 mandatory invokes and 94 external exits.
 <!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-planning-router"} -->
 <!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-bootstrap-router"} -->
 <!-- guru-stop-target: {"id":"requirements-design-test-ssot-blocked"} -->
-The graph contains exactly 35 workflow targets and 23 stop targets.
+The graph contains exactly 35 workflow targets and 24 stop targets.
 <!-- guru-workflow-target: {"id":"original-request-route"} -->
 <!-- guru-workflow-target: {"id":"guru-workflow-standard-intake-router"} -->
 <!-- guru-workflow-target: {"id":"guru-normal-scenario-classified-router"} -->
@@ -230,6 +231,7 @@ The graph contains exactly 35 workflow targets and 23 stop targets.
 <!-- guru-stop-target: {"id":"contract-wording-blocked"} -->
 <!-- guru-stop-target: {"id":"change-request-review-blocked"} -->
 <!-- guru-stop-target: {"id":"task-workspace-blocked"} -->
+<!-- guru-stop-target: {"id":"invalid-task-state"} -->
 <!-- guru-stop-target: {"id":"task-plan-approval-blocked"} -->
 <!-- guru-stop-target: {"id":"task-base-reconciliation-blocked"} -->
 <!-- guru-stop-target: {"id":"task-check-blocked"} -->
@@ -387,9 +389,12 @@ Phase 3: Finish  -> docs reconciliation, commit, Architecture full-diff review, 
 | planning | Produce the three planning documents and Docs SSOT Plan, run wording review, obtain current Planning Architecture impact, then invoke guru-approve-task-plan. |
 | in_progress | Validate the task worktree, re-enter Architecture on qualifying expansion, implement the approved scope, then run the Phase 2 Architecture/check route. |
 | completed | Enter Phase 3 through the canonical guru-finish-work route. |
+| invalid task state | Stop at `invalid-task-state`; do not enter Intake, restore, migration, mapping rebuild, cleanup, or confirmation retry. |
 
 [workflow-state:no_task]
-Every file-changing request first invokes `guru-select-workflow-mode`, including
+Every file-changing request first resolves and validates the active-task identity.
+An incomplete or conflicting identity stops at `invalid-task-state`. Only when
+no active task exists does the request invoke `guru-select-workflow-mode`, including
 requests without an Issue or task-free wording. `这次走 task-free` is direct.
 Otherwise: high-confidence bounded low-risk -> `task_free`; insufficient
 evidence -> one question; complex/high-risk -> `standard_intake`. Mapped exits

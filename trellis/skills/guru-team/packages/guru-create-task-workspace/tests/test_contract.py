@@ -130,8 +130,26 @@ class WorkspaceTest(unittest.TestCase):
   workspace=self.parent/"repo-worktrees/027-workspace";calls=[];path=self.write("authority-changed.json",self.plan);before=self.mutation_state(workspace)
   live={"number":27,"url":"https://github.com/example/repo/issues/27","state":"OPEN","title":"Changed","body":"","updatedAt":"2026-01-01T00:00:00Z"}
   with mock.patch.object(execute,"count_operation",side_effect=calls.append),mock.patch.object(execute,"github",return_value=live):
-   result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(path)])
+    result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(path)])
   self.assertEqual(["workspace.mutation_boundary_recheck"],calls);self.assertEqual(("no_side_effect","refresh_review",True),(result["variant"],result["typed_exit"],result["no_side_effect"]["zero_writes"]));self.assertEqual(before,self.mutation_state(workspace))
+ def test_final_boundary_failure_rolls_back_only_new_workspace_objects(self):
+  workspace=self.parent/"repo-worktrees/027-workspace";pp=self.write("boundary-failure.json",self.plan);before=self.mutation_state(workspace)
+  with mock.patch.object(execute,"verify_created_boundary",side_effect=CommandError("stale_identity","created_workspace","boundary drift",3)):
+   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  self.assertEqual(before,self.mutation_state(workspace));self.assertFalse(workspace.exists())
+
+ def test_current_mode_final_boundary_failure_restores_original_branch_and_removes_new_objects(self):
+  self.configure(mode="current");plan=copy.deepcopy(self.plan);plan["naming"]["workspace_disposition"]="reuse_exact";plan["side_effects"]["operations"].remove("create_worktree");self.refresh(plan);pp=self.write("current-boundary-failure.json",plan);before=self.mutation_state(self.repo)
+  with mock.patch.object(execute,"verify_created_boundary",side_effect=CommandError("stale_identity","created_workspace","boundary drift",3)):
+   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  self.assertEqual("main",self.git("branch","--show-current"));self.assertNotEqual(0,subprocess.run(["git","show-ref","--verify","--quiet","refs/heads/feat/027-workspace"],cwd=self.repo).returncode)
+  self.assertEqual(before,self.mutation_state(self.repo));self.assertFalse((self.repo/plan["side_effects"]["task_artifacts"][0]).exists());self.assertFalse((self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json").exists())
+
+ def test_existing_objects_are_not_removed_when_later_boundary_fails(self):
+  result,_=self.execute_and_check();workspace=self.parent/"repo-worktrees/027-workspace";plan=copy.deepcopy(self.plan);plan["naming"].update({"branch_disposition":"reuse_exact","workspace_disposition":"reuse_exact","task_disposition":"reuse_exact"});self.refresh(plan);pp=self.write("reuse-boundary-failure.json",plan);before=self.mutation_state(workspace)
+  with mock.patch.object(execute,"verify_created_boundary",side_effect=CommandError("stale_identity","created_workspace","boundary drift",3)):
+   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  self.assertEqual(before,self.mutation_state(workspace))
  def test_github_json_and_created_issue_url_decoders_are_strict(self):
   self.assertEqual({"number":112},execute.decode_github_json('{"number":112}\n'));self.assertEqual([],execute.decode_github_json("[]\n"))
   for raw in ('"text"','112','null','not-json','{"value":NaN}','[Infinity]'):

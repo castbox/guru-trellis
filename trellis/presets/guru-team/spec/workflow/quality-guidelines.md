@@ -202,8 +202,8 @@ edges, private artifact ids, examples, the 160-case/5-invocation production
 control, and eval case bindings. Versioned v2/v3 files are immutable legacy
 assets and are not alternate current selectors, input projectors, or fixtures.
 Then validate the current package closure
-at twenty-three active Skills and 96 external exits, while the integrated business
-workflow projection is 22 invokes, 94 exits, 35 workflow targets, and 23 stop targets. Negative tests cover missing, extra,
+at twenty-three active Skills and 97 external exits, while the integrated business
+workflow projection is 22 invokes, 95 exits, 35 workflow targets, and 24 stop targets. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or non-current entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Intake/production
@@ -776,7 +776,7 @@ Python or shell.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
   twenty-three-Skill/96-exit current package closure while the production activation
   unit remains three Skills/11 exits and business markers remain integrated at
-  22 invokes, 94 exits, 35 workflow targets, and 23 stop targets. Update and preset reapply must reproduce
+  22 invokes, 95 exits, 35 workflow targets, and 24 stop targets. Update and preset reapply must reproduce
   that closure with zero unresolved `.new` or `.bak`.
 
 ## Normal Scenario Qualification Quality
@@ -938,6 +938,19 @@ tail, post-base business delta, and existing identity/scope/PR/transaction
 drift. Execution retains one current Publication push, zero PR creation,
 transaction-before-mutation ordering, and zero duplicate mutation on same-plan
 retry.
+
+Fresh-reviewed descendant coverage adds a tail-free real Git topology:
+predecessor Publication, a newer existing PR/remote head, selected-base
+evolution, and a current active-task commit bound identically by Branch Review
+and Publication. Tests prove strict-ancestor recovery uses the exact newer
+pre-push remote HEAD, writes the unchanged schema 3.0 transaction before
+mutation, pushes once, creates no PR, converges metadata at most once, preserves
+Ready or transitions Draft once, and repeats no completed mutation. Negative
+coverage must reject reviewed/Publication mismatch, missing base evolution,
+invalid predecessor/base/remote ancestry, unreviewed drift, malformed or chained
+tails, and PR/remote/identity/scope/transaction drift while the direct-tail,
+pure-base, base-plus-tail, reprepare and equal-HEAD suites remain passing.
+
 Finish-family integration additionally proves current finish-summary schema 2
 is derived once from the reviewed payload and live facts, historical schema 1
 remains discoverable, and the current runtime/inventories contain no retired
@@ -951,7 +964,7 @@ and actual exit selects the schema before grader comparison.
 Source/installed/platform/throwaway checks assert twenty-three active Skills and 96
 package exits, exactly one selected `production-current-v4`
 four-Skill/15-exit current manifest, and business workflow markers of 22
-invokes, 94 exits, 35 workflow targets, and 23 stop targets.
+invokes, 95 exits, 35 workflow targets, and 24 stop targets.
 
 ## Extension Installation Verification Quality
 
@@ -1059,8 +1072,8 @@ verifier hop and scans terminal task/runtime state for verifier residue.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes match after fresh install, update, and preset reapply. Package
-closure is twenty-three active Skills and 96 exits; business global markers remain 22
-invokes, 94 exits, 35 workflow targets, and 23 stop targets. Upstream Finish
+closure is twenty-three active Skills and 97 exits; business global markers remain 22
+invokes, 95 exits, 35 workflow targets, and 24 stop targets. Upstream Finish
 assets remain unchanged.
 
 Installed package tests must execute in a clean business repository that does

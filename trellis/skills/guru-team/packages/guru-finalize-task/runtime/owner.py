@@ -8274,10 +8274,11 @@ def provenance_tail_transaction_rebind_is_reviewed_base_descendant(
     *,
     comparison_head: str,
 ) -> bool:
-    """Allow reviewed task commits after base evolution before one valid tail."""
+    """Allow reviewed task commits after base evolution, with or without a tail."""
     git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
     base_branch = str(git.get("base_branch") or "")
     predecessor_publication_head = str(transaction.get("publication_head") or "")
+    reviewed_content_head = str(git.get("branch_review_commit") or "")
     current_publication_head = str(
         git.get("publication_head") or git.get("branch_review_commit") or ""
     )
@@ -8286,6 +8287,7 @@ def provenance_tail_transaction_rebind_is_reviewed_base_descendant(
         for value in (
             predecessor_publication_head,
             comparison_head,
+            reviewed_content_head,
             current_publication_head,
         )
     ):
@@ -8300,6 +8302,7 @@ def provenance_tail_transaction_rebind_is_reviewed_base_descendant(
     return bool(
         re.fullmatch(r"[0-9a-f]{40}", base_head)
         and base_head != predecessor_publication_head
+        and comparison_head == reviewed_content_head
         and is_ancestor(root, predecessor_publication_head, comparison_head)
         and is_ancestor(root, base_head, comparison_head)
         and not is_ancestor(root, base_head, predecessor_publication_head)
@@ -8352,11 +8355,13 @@ def classify_provenance_tail_transaction_rebind(
         return None
     errors = provenance_tail_transaction_rebind_errors(root, plan, transaction)
     base_evolution = False
+    reviewed_base_descendant = False
     if errors:
         error_set = set(errors)
-        if error_set <= PROVENANCE_TAIL_INAPPLICABLE_ERRORS | {
+        allowed_topology_errors = PROVENANCE_TAIL_INAPPLICABLE_ERRORS | {
             "current_reviewed_publication_head"
-        }:
+        }
+        if error_set <= allowed_topology_errors:
             base_evolution = provenance_tail_transaction_rebind_is_base_evolution(
                 root, plan, transaction
             )
@@ -8367,10 +8372,23 @@ def classify_provenance_tail_transaction_rebind(
                     )
                     is not None
                 )
+            if not base_evolution:
+                current_publication_head = str(
+                    plan.get("git", {}).get("publication_head")
+                    or plan.get("git", {}).get("branch_review_commit")
+                    or ""
+                )
+                reviewed_base_descendant = (
+                    provenance_tail_transaction_rebind_is_reviewed_base_descendant(
+                        root,
+                        plan,
+                        transaction,
+                        comparison_head=current_publication_head,
+                    )
+                )
         elif (
             "publication" in error_set
-            and error_set - {"publication"}
-            <= PROVENANCE_TAIL_INAPPLICABLE_ERRORS
+            and error_set - {"publication"} <= allowed_topology_errors
         ):
             base_evolution = (
                 provenance_tail_transaction_rebind_base_evolution_tail_parent(
@@ -8378,13 +8396,39 @@ def classify_provenance_tail_transaction_rebind(
                 )
                 is not None
             )
+            pure_base_evolution = False
+            if not base_evolution:
+                pure_base_evolution = (
+                    provenance_tail_transaction_rebind_is_base_evolution(
+                        root, plan, transaction
+                    )
+                )
+            if not pure_base_evolution and not base_evolution:
+                current_publication_head = str(
+                    plan.get("git", {}).get("publication_head")
+                    or plan.get("git", {}).get("branch_review_commit")
+                    or ""
+                )
+                reviewed_base_descendant = (
+                    provenance_tail_transaction_rebind_is_reviewed_base_descendant(
+                        root,
+                        plan,
+                        transaction,
+                        comparison_head=current_publication_head,
+                    )
+                )
     reprepare_eligible = provenance_tail_transaction_reprepare_eligible(
         root,
         plan,
         transaction,
         errors,
     )
-    if errors and not base_evolution and not reprepare_eligible:
+    if (
+        errors
+        and not base_evolution
+        and not reviewed_base_descendant
+        and not reprepare_eligible
+    ):
         raise WorkflowError(
             "Task finalization transaction cannot rebind across the current provenance tail.",
             exit_code=2,
@@ -8421,7 +8465,10 @@ def classify_provenance_tail_transaction_rebind(
         return None
     remote_head = closeout_remote_branch_head(root, plan)
     predecessor_publication_head = str(transaction["publication_head"])
-    if remote_head != predecessor_publication_head:
+    if remote_head != predecessor_publication_head and (
+        not reviewed_base_descendant
+        or not is_ancestor(root, predecessor_publication_head, remote_head)
+    ):
         raise WorkflowError(
             "Provenance-tail transaction rebind requires the remote and PR at the predecessor Publication HEAD.",
             exit_code=2,
@@ -8440,7 +8487,7 @@ def classify_provenance_tail_transaction_rebind(
     if (
         recovery.get("ancestry") != "strict_ancestor"
         or recovery.get("push_required") is not True
-        or recovery.get("pre_push_remote_head") != predecessor_publication_head
+        or recovery.get("pre_push_remote_head") != remote_head
     ):
         raise WorkflowError(
             "Provenance-tail transaction rebind no longer matches strict-ancestor recovery.",
@@ -8661,7 +8708,7 @@ def finalization_convert_provenance_tail_transaction(
         or plan["git"].get("branch_review_commit")
         or ""
     )
-    predecessor_publication_head = str(transaction.get("publication_head") or "")
+    pre_push_remote_head = str(recovery.get("pre_push_remote_head") or "")
     if (
         transaction.get("mode") != "ordinary_publication"
         or transaction.get("next_transition") != "push_content"
@@ -8671,7 +8718,7 @@ def finalization_convert_provenance_tail_transaction(
         or recovery.get("ancestry") != "strict_ancestor"
         or recovery.get("push_required") is not True
         or recovery.get("publication_head") != publication_head
-        or recovery.get("pre_push_remote_head") != predecessor_publication_head
+        or re.fullmatch(r"[0-9a-f]{40}", pre_push_remote_head) is None
         or recovery.get("pr")
         != {"number": pr.get("number"), "url": pr.get("url")}
         or not isinstance(recovery.get("initial_is_draft"), bool)
@@ -8693,7 +8740,7 @@ def finalization_convert_provenance_tail_transaction(
         "number": pr["number"],
         "url": pr["url"],
         "initial_is_draft": bool(recovery["initial_is_draft"]),
-        "pre_push_remote_head": predecessor_publication_head,
+        "pre_push_remote_head": pre_push_remote_head,
         "metadata_update_required": bool(recovery["metadata_update_required"]),
         "metadata_comparison": metadata_comparison,
     }
@@ -8701,7 +8748,7 @@ def finalization_convert_provenance_tail_transaction(
         plan,
         next_transition="push_content",
         pr=pr,
-        pre_push_remote_head=predecessor_publication_head,
+        pre_push_remote_head=pre_push_remote_head,
         mode="existing_pr_recovery",
         adopted_pr=adopted_pr,
     )

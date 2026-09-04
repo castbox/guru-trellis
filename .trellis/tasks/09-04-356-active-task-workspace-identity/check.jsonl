@@ -1,0 +1,2 @@
+{"id":"creation-failure-matrix","type":"test","title":"验证创建失败点无 active 半成品","file":"trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py","reason":"用真实临时 Git worktree 比较既有资源与本次新建资源，覆盖 mapping、ledger、boundary 和回滚失败路径。"}
+{"id":"active-task-route-regression","type":"test","title":"验证 active task 优先与 invalid-state 唯一消费","file":"trellis/workflows/guru-team/workflow.md","reason":"检查完整 active task 不重入 Intake，identity 缺失只进入唯一 stop consumer；interface、README 与 projection 由静态 workflow/ownership checks 同步验证。"}

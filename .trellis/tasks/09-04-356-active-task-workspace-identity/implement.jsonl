@@ -1,0 +1,2 @@
+{"id":"identity-contract-research","type":"research","title":"复核 active-task 与 create-workspace 身份合同","file":"trellis/skills/guru-team/packages/guru-create-task-workspace/references/contract.md","reason":"确定当前 task/workspace/runtime/session 身份事实、现有 typed exits 与不允许的自动恢复边界。"}
+{"id":"creation-transaction-implementation","type":"implementation","title":"实现创建事务闭合与回滚","file":"trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/execute.py","reason":"按批准设计补齐 session/runtime 定位、最终 boundary 和本次新建对象的 fail-closed rollback；相关 checker 与 schema 由实现者按 interface 同步。"}

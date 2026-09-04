@@ -56,6 +56,11 @@ cleanup state.
 
 ### Phase 0 Current Transition Family
 
+Active-task routing consumes only a closed identity across `task.json`, the
+task branch/worktree, the Issue Scope Ledger, and Guru runtime mappings. A
+missing, conflicting, or stale relation is represented as `invalid_task_state`;
+session pointers remain locators and are not task authority.
+
 The workflow-owned `guru-stage0-transition-1.0` family consists of five
 independent closed schemas. They are lifecycle stages, not one nullable mega
 object:
@@ -462,9 +467,9 @@ contracts, and package-local corpora. Nineteen integrated rows select Interface
 1.4; normal-scenario qualification selects Interface 1.6; the standalone
 verifier selects Interface 1.5. Exact profile, exit,
 consumer, projection, current-case, and authoring-edge equality is required.
-Twenty-three Skills and 94 exits are the current package cardinality regression, not
+Twenty-three Skills and 97 exits are the current package cardinality regression, not
 a hard-coded future registry allowlist; the business workflow independently
-asserts 22 invokes, 94 exits, 35 workflow targets, and 23 stop targets.
+asserts 22 invokes, 95 exits, 35 workflow targets, and 24 stop targets.
 
 The production manifest also binds the exact four
 `skill_input_authoring_seed` edges. Each binding names the target Interface and
@@ -1413,6 +1418,19 @@ different from the predecessor payload and delegate it to existing metadata
 convergence; pure base evolution plus Publication drift remains invalid. No
 manifest-path diff filter, parallel drift authority, arbitrary tail sequence,
 field, stage, or public projection is added.
+
+Schema 3.0 also accepts one direct fresh-reviewed descendant after those legacy
+classifications fail on provenance shape. The current Branch Review comparison
+commit is the current Publication HEAD, descends from both predecessor
+Publication and the evolved selected base, and does not already contain that
+selected base in the predecessor lineage. Fresh Branch Review and Publication
+identity provide the reviewed Task Commit authority without a changed-path
+heuristic. The unique Open PR and remote must agree on a commit descended from
+predecessor Publication and strictly ancestral to current Publication; only
+this classification permits that exact pre-push HEAD to differ from predecessor
+Publication. The same `existing_pr_recovery/push_content` transaction records
+the classifier's pre-push remote HEAD before mutation. No DTO, mode, stage or
+schema field changes.
 
 After the exact recovery transaction binds its PR and advances to `archive`,
 `push_archive`, or `mark_ready`, it is the current stage authority. Preview
