@@ -1,0 +1,251 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-04T16:19:40Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-04-361-publication-review-reentry",
+    "title": "[Bug] Publication Review 保留 owner 错误分类并按变更范围执行精确重试",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-04-361-publication-review-reentry",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/361-publication-review-reentry",
+    "commits": [
+      "90de9177bdcd2019e1efe813b006b7c3d4962514",
+      "69d8761c1694cd9574c995f4eff3141764a4a044",
+      "0c872d0c3d5411746ffd5d2c00e96e6a1d026c49"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-review-task-publication/SKILL.md",
+      ".agents/skills/guru-review-task-publication/references/contract.md",
+      ".agents/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+      ".claude/skills/guru-review-task-publication/SKILL.md",
+      ".claude/skills/guru-review-task-publication/references/contract.md",
+      ".claude/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+      ".codex/skills/guru-review-task-publication/SKILL.md",
+      ".codex/skills/guru-review-task-publication/references/contract.md",
+      ".codex/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+      ".cursor/skills/guru-review-task-publication/SKILL.md",
+      ".cursor/skills/guru-review-task-publication/references/contract.md",
+      ".cursor/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/common.py",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+      ".trellis/tasks/09-04-361-publication-review-reentry/check.jsonl",
+      ".trellis/tasks/09-04-361-publication-review-reentry/design.md",
+      ".trellis/tasks/09-04-361-publication-review-reentry/implement.jsonl",
+      ".trellis/tasks/09-04-361-publication-review-reentry/implement.md",
+      ".trellis/tasks/09-04-361-publication-review-reentry/issue-scope-ledger.json",
+      ".trellis/tasks/09-04-361-publication-review-reentry/prd.md",
+      ".trellis/tasks/09-04-361-publication-review-reentry/task.json",
+      ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/design.md",
+      ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/implement.md",
+      ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/prd.md",
+      ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/task.json",
+      ".trellis/workflow.md",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/common.py",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      361
+    ],
+    "close_issues": [
+      361
+    ],
+    "related_issues": [
+      223,
+      247,
+      332
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/362"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "[Bug] Publication Review 保留 owner 错误分类并按变更范围执行精确重试",
+    "outcome": "保留 Publication Review owner 的稳定 error_code 与 field_path，并按 task content、publication content、stale identity、runtime dependency 分类精确路由。",
+    "changed_behavior": [
+      "保留 Publication Review owner 的稳定 error_code 与 field_path，并按 task content、publication content、stale identity、runtime dependency 分类精确路由。",
+      "增加 Publication content preflight，覆盖 PR body 必需章节和当前错误恢复合同。",
+      "增加 task-content、publication-only、identity-only 与 scope/reviewed-content invalidation 的 re-entry 回归覆盖。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-04-361-publication-review-reentry/design.md",
+          ".trellis/tasks/09-04-361-publication-review-reentry/implement.md",
+          ".trellis/tasks/09-04-361-publication-review-reentry/prd.md",
+          ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/design.md",
+          ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/implement.md",
+          ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/prd.md"
+        ],
+        "change": "保留 Publication Review owner 的稳定 error_code 与 field_path，并按 task content、publication content、stale identity、runtime dependency 分类精确路由。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "保留 Publication Review owner 的稳定 error_code 与 field_path，并按 task content、publication content、stale identity、runtime dependency 分类精确路由。"
+      },
+      {
+        "kind": "schema",
+        "name": "schema",
+        "paths": [
+          ".agents/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+          ".claude/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+          ".codex/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+          ".cursor/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+          ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-invocation-error.schema.json"
+        ],
+        "change": "保留 Publication Review owner 的稳定 error_code 与 field_path，并按 task content、publication content、stale identity、runtime dependency 分类精确路由。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/common.py",
+          ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/common.py",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py"
+        ],
+        "change": "保留 Publication Review owner 的稳定 error_code 与 field_path，并按 task content、publication content、stale identity、runtime dependency 分类精确路由。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-review-task-publication/SKILL.md",
+          ".agents/skills/guru-review-task-publication/references/contract.md",
+          ".claude/skills/guru-review-task-publication/SKILL.md",
+          ".claude/skills/guru-review-task-publication/references/contract.md",
+          ".codex/skills/guru-review-task-publication/SKILL.md",
+          ".codex/skills/guru-review-task-publication/references/contract.md",
+          ".cursor/skills/guru-review-task-publication/SKILL.md",
+          ".cursor/skills/guru-review-task-publication/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-review-task-publication/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md"
+        ],
+        "change": "保留 Publication Review owner 的稳定 error_code 与 field_path，并按 task content、publication content、stale identity、runtime dependency 分类精确路由。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-04-361-publication-review-reentry/check.jsonl",
+          ".trellis/tasks/09-04-361-publication-review-reentry/implement.jsonl",
+          ".trellis/tasks/09-04-361-publication-review-reentry/issue-scope-ledger.json",
+          ".trellis/tasks/09-04-361-publication-review-reentry/task.json",
+          ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/task.json"
+        ],
+        "change": "保留 Publication Review owner 的稳定 error_code 与 field_path，并按 task content、publication content、stale identity、runtime dependency 分类精确路由。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          ".trellis/workflow.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "保留 Publication Review owner 的稳定 error_code 与 field_path，并按 task content、publication content、stale identity、runtime dependency 分类精确路由。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#223",
+        "#247",
+        "#332",
+        "#361"
+      ],
+      "pr_refs": [
+        "PR #362"
+      ],
+      "branches": [
+        "fix/361-publication-review-reentry"
+      ],
+      "paths": [
+        ".agents/skills/guru-review-task-publication/SKILL.md",
+        ".agents/skills/guru-review-task-publication/references/contract.md",
+        ".agents/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+        ".claude/skills/guru-review-task-publication/SKILL.md",
+        ".claude/skills/guru-review-task-publication/references/contract.md",
+        ".claude/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+        ".codex/skills/guru-review-task-publication/SKILL.md",
+        ".codex/skills/guru-review-task-publication/references/contract.md",
+        ".codex/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+        ".cursor/skills/guru-review-task-publication/SKILL.md",
+        ".cursor/skills/guru-review-task-publication/references/contract.md",
+        ".cursor/skills/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/SKILL.md",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/common.py",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+        ".trellis/tasks/09-04-361-publication-review-reentry/check.jsonl",
+        ".trellis/tasks/09-04-361-publication-review-reentry/design.md",
+        ".trellis/tasks/09-04-361-publication-review-reentry/implement.jsonl",
+        ".trellis/tasks/09-04-361-publication-review-reentry/implement.md",
+        ".trellis/tasks/09-04-361-publication-review-reentry/issue-scope-ledger.json",
+        ".trellis/tasks/09-04-361-publication-review-reentry/prd.md",
+        ".trellis/tasks/09-04-361-publication-review-reentry/task.json",
+        ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/design.md",
+        ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/implement.md",
+        ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/prd.md",
+        ".trellis/tasks/archive/2026-09/09-04-361-publication-review-reentry/task.json",
+        ".trellis/workflow.md",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/SKILL.md",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/common.py",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/schemas/public-invocation-error.schema.json",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "[Bug] Publication Review 保留 owner 错误分类并按变更范围执行精确重试",
+        "保留 Publication Review owner 的稳定 error_code 与 field_path，并按 t",
+        "完成 SKILL.md 相关变更"
+      ]
+    },
+    "retrieval_text": "[Bug] Publication Review 保留 owner 错误分类并按变更范围执行精确重试\n保留 Publication Review owner 的稳定 error_code 与 field_path，并按 task content、publication content、stale identity、runtime dependency 分类精确路由。\n增加 Publication content preflight，覆盖 PR body 必需章节和当前错误恢复合同。\n增加 task-content、publication-only、identity-only 与 scope/reviewed-content invalidation 的 re-entry 回归覆盖。\n保留 Publication Review owner 的稳定 error_code 与 field_path，并按 t\n完成 SKILL.md 相关变更"
+  }
+}

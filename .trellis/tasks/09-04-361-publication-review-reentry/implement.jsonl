@@ -1,5 +1,0 @@
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"承接 Publication semantic gate、最小 public I/O、typed exit、唯一 consumer 与 re-entry 合同。"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"承接 task-content 与 publication-only re-entry 的 workflow 路由及 fail-closed 边界。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"承接 Publication/Finalizer identity、freshness、scope 与 mutation boundary 数据合同。"}
-{"file":".trellis/spec/preset/installer.md","reason":"确保 canonical package、installed projection、manifest provenance 与 reapply/update 行为一致。"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"确保 Codex、Claude、Cursor 和 Shared 平台投影同步且无 overlay drift。"}
