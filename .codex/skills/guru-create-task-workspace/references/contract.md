@@ -153,11 +153,18 @@ artifact mismatch returns `blocked` without overwrite. No transaction log,
 lock, concurrency protocol, cross-OS mechanism, or hostile-input boundary is
 part of this contract.
 
+If the task, branch/worktree, ledger, or Guru runtime mappings cannot be closed
+into one identity, the state is invalid. The package makes no repair,
+migration, restore, cleanup, or Intake decision and returns
+`invalid_task_state` to the single `invalid-task-state` stop consumer.
+
 ## Typed exits
 
 - `created` enters `guru-task-workspace-created` and then Phase 1.
 - `refresh_review` re-enters `guru-sync-base` and the complete Intake chain.
 - `blocked` stops at `task-workspace-blocked`.
+- `invalid_task_state` stops at `invalid-task-state`; it cannot be projected to
+  Intake or restore.
 
 Unknown, multiple, unmapped, or consumer-mismatched exits fail closed.
 `prepare-task` is query-only and exposes no mutation path; direct callers must

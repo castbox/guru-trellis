@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 356,
+      "reason": "本次独立可交付的缺陷修复范围。",
+      "title": "[Bug] 根治 active task workspace 身份断裂与错误重入 Intake",
+      "url": "https://github.com/castbox/guru-trellis/issues/356"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 356,
+    "reason": "本次独立可交付的缺陷修复范围。",
+    "title": "[Bug] 根治 active task workspace 身份断裂与错误重入 Intake",
+    "url": "https://github.com/castbox/guru-trellis/issues/356"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}

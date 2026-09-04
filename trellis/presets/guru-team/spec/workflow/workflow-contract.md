@@ -61,10 +61,10 @@ dialogue-local and is never persisted.
 
 ## Integrated Public Graph
 
-The current package registry contains exactly 23 active Skill ids and 96
+The current package registry contains exactly 23 active Skill ids and 97
 external exits. Twenty-one Skills participate in the business-task workflow,
 whose global graph contains 22 mandatory invokes, 94 mapped exits, 35 workflow
-targets, and 23 stop targets. `guru-verify-extension-installation` is the remaining
+targets, and 24 stop targets. `guru-verify-extension-installation` is the remaining
 standalone-only source-repository Skill; its two exits return directly to its
 caller-owned stop targets and never appear in the business workflow.
 
@@ -79,7 +79,7 @@ caller-owned stop targets and never appear in the business workflow.
 | `guru-clarify-requirements` | `clear -> guru-requirements-clear-router`; `needs_context -> guru-discover-change-context`; `refresh_context -> guru-sync-base`; `retarget_context -> guru-sync-base`; `new_task -> guru-full-task-intake-chain`; `blocked -> requirements-clarification-blocked` |
 | `guru-review-contract-wording` | `pass -> guru-contract-wording-pass-router`; `content_changed -> guru-contract-wording-change-router`; `blocked -> contract-wording-blocked` |
 | `guru-review-change-request` | `ready -> guru-create-task-workspace`; `clarify_requirements -> guru-clarify-requirements`; `review_wording -> guru-review-contract-wording`; `refresh_context -> guru-sync-base`; `blocked -> change-request-review-blocked` |
-| `guru-create-task-workspace` | `created -> guru-task-workspace-created`; `refresh_review -> guru-sync-base`; `blocked -> task-workspace-blocked` |
+| `guru-create-task-workspace` | `created -> guru-task-workspace-created`; `refresh_review -> guru-sync-base`; `blocked -> task-workspace-blocked`; `invalid_task_state -> invalid-task-state` |
 | `guru-approve-task-plan` | `approved -> phase-1-task-activation`; `revision_required -> guru-approve-task-plan`; `clarify_scope -> guru-task-plan-clarify-scope-router`; `blocked -> task-plan-approval-blocked` |
 | `guru-check-task` | `passed -> guru-create-task-commit`; `implementation_required -> guru-resume-implementation`; `planning_stale -> guru-task-check-planning-router`; `blocked -> task-check-blocked` |
 | `guru-create-task-commit` | `committed -> guru-review-branch`; `revision-required -> guru-create-task-commit`; `blocked -> task-commit-blocked` |
@@ -232,7 +232,9 @@ stops fail closed. `prepare-task` is never a Phase 0 hop; its explicit legacy
 use is a compatibility-only local diagnostic governed by the source-preserving
 provenance contract.
 
-Only `guru-create-task-workspace:created` enters planning. The workflow does not
+Only `guru-create-task-workspace:created` enters planning. An incomplete or
+conflicting active-task identity is terminal at the unique `invalid-task-state`
+consumer and never re-enters Intake or automatic recovery. The workflow does not
 create an issue, branch, worktree, or task directly and does not copy the
 workspace owner's target selection, recovery, confirmation, executor, or
 checker behavior.

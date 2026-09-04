@@ -110,6 +110,11 @@ class WorkspaceTest(unittest.TestCase):
   self.execute_and_check();workspace=self.parent/"repo-worktrees/027-workspace";ledger=workspace/self.plan["side_effects"]["task_artifacts"][0];ledger.unlink();plan=copy.deepcopy(self.plan);plan["naming"].update({"branch_disposition":"reuse_exact","workspace_disposition":"reuse_exact","task_disposition":"reuse_exact"});self.refresh(plan);pp=self.write("reuse-missing-ledger.json",plan);before=self.workspace_state(workspace)
   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
   self.assertFalse(ledger.exists());self.assertEqual(before,self.workspace_state(workspace))
+ def test_in_progress_identity_conflict_returns_invalid_task_state_without_writes(self):
+  self.execute_and_check();workspace=self.parent/"repo-worktrees/027-workspace";task_path=workspace/".trellis/tasks/08-12-027-workspace/task.json";task=json.loads(task_path.read_text());task["status"]="in_progress";task_path.write_text(json.dumps(task,indent=2)+"\n");mapping=workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json";mapping.write_text(json.dumps({"schema_version":"1.0","task_slug":"027-workspace","workspace_slug":"027-workspace","workspace_path":"/stale","task_artifact_dir":".trellis/tasks/08-12-027-workspace"})+"\n");plan=copy.deepcopy(self.plan);plan["naming"].update({"branch_disposition":"reuse_exact","workspace_disposition":"reuse_exact","task_disposition":"reuse_exact"});self.refresh(plan);pp=self.write("invalid-active-task.json",plan)
+  result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  self.assertEqual(("no_side_effect","invalid_task_state",True),(result["variant"],result["typed_exit"],result["no_side_effect"]["zero_writes"]))
+  self.assertEqual("in_progress",json.loads(task_path.read_text())["status"])
  def test_checker_rejects_every_task_payload_field_drift(self):
   result,_=self.execute_and_check();workspace=self.parent/"repo-worktrees/027-workspace";task_path=workspace/".trellis/tasks/08-12-027-workspace/task.json";expected=json.loads(task_path.read_text());pp=self.write("checker-task-drift-plan.json",self.plan);rp=self.write("checker-task-drift-result.json",result)
   for field in ("name","title","status","creator","scope"):
@@ -127,6 +132,25 @@ class WorkspaceTest(unittest.TestCase):
   with mock.patch.object(execute,"count_operation",side_effect=calls.append),mock.patch.object(execute,"github",return_value=live):
    result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(path)])
   self.assertEqual(["workspace.mutation_boundary_recheck"],calls);self.assertEqual(("no_side_effect","refresh_review",True),(result["variant"],result["typed_exit"],result["no_side_effect"]["zero_writes"]));self.assertEqual(before,self.mutation_state(workspace))
+
+ def test_final_boundary_failure_rolls_back_only_new_workspace_objects(self):
+  workspace=self.parent/"repo-worktrees/027-workspace";pp=self.write("boundary-failure.json",self.plan);before=self.mutation_state(workspace)
+  with mock.patch.object(execute,"verify_created_boundary",side_effect=CommandError("stale_identity","created_workspace","boundary drift",3)):
+   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  self.assertEqual(before,self.mutation_state(workspace));self.assertFalse(workspace.exists())
+
+ def test_current_mode_final_boundary_failure_restores_original_branch_and_removes_new_objects(self):
+  self.configure(mode="current");plan=copy.deepcopy(self.plan);plan["naming"]["workspace_disposition"]="reuse_exact";plan["side_effects"]["operations"].remove("create_worktree");self.refresh(plan);pp=self.write("current-boundary-failure.json",plan);before=self.mutation_state(self.repo)
+  with mock.patch.object(execute,"verify_created_boundary",side_effect=CommandError("stale_identity","created_workspace","boundary drift",3)):
+   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  self.assertEqual("main",self.git("branch","--show-current"));self.assertNotEqual(0,subprocess.run(["git","show-ref","--verify","--quiet","refs/heads/feat/027-workspace"],cwd=self.repo).returncode)
+  self.assertEqual(before,self.mutation_state(self.repo));self.assertFalse((self.repo/plan["side_effects"]["task_artifacts"][0]).exists());self.assertFalse((self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json").exists())
+
+ def test_existing_objects_are_not_removed_when_later_boundary_fails(self):
+  result,_=self.execute_and_check();workspace=self.parent/"repo-worktrees/027-workspace";plan=copy.deepcopy(self.plan);plan["naming"].update({"branch_disposition":"reuse_exact","workspace_disposition":"reuse_exact","task_disposition":"reuse_exact"});self.refresh(plan);pp=self.write("reuse-boundary-failure.json",plan);before=self.mutation_state(workspace)
+  with mock.patch.object(execute,"verify_created_boundary",side_effect=CommandError("stale_identity","created_workspace","boundary drift",3)):
+   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  self.assertEqual(before,self.mutation_state(workspace))
  def test_reviewed_draft_creates_and_rereads_issue_before_refresh(self):
   plan=copy.deepcopy(self.plan);title="Reviewed issue";body="Reviewed body";reviewed=common.digest({"title":title,"body":body,"labels":["runtime"]})
   plan["invocation"].update({"target_kind":"reviewed_draft","action_scope":"github_issue_mutation"});plan["target"].update({"kind":"reviewed_draft","issue_number":None,"url":None,"state":None,"updated_at":None,"title_sha256":__import__('hashlib').sha256(title.encode()).hexdigest(),"body_sha256":__import__('hashlib').sha256(body.encode()).hexdigest(),"draft":{"draft_id":"draft-112","source_request_sha256":"1"*64,"title":title,"body":body,"labels":["runtime"],"reviewed_draft_sha256":reviewed}});plan["scope"].update({"primary":None,"close":[],"scope_sha256":common.digest({"primary":None,"close":[],"related":[],"followup":[]})});plan["side_effects"].update({"operations":["create_issue"],"task_artifacts":[],"runtime_mappings":[],"command_argv":["create-task-workspace","--input","draft.json"],"stop_after":"created_issue_refresh"});r=common.digest(common.reviewable(plan));plan["freshness"]["reviewable_plan_sha256"]=r;plan["ai_review_gate"]["reviewed_plan_sha256"]=r;plan["freshness"]["plan_sha256"]=common.plan_digest(plan);pp=self.write("draft.json",plan)

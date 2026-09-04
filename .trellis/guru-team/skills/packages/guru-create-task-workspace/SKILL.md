@@ -1,6 +1,6 @@
 ---
 name: guru-create-task-workspace
-description: Create or exactly reuse a reviewed issue workspace and Trellis task through an AI-owned semantic gate, ephemeral scoped confirmation, deterministic execution, and three typed exits.
+description: Create or exactly reuse a reviewed issue workspace and Trellis task through an AI-owned semantic gate, ephemeral scoped confirmation, deterministic execution, and four typed exits.
 ---
 
 # Guru Create Task Workspace

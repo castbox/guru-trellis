@@ -3,7 +3,7 @@
   "schema_version": "1.4",
   "id": "guru-create-task-workspace",
   "name": "guru-create-task-workspace",
-  "description": "Create or exactly reuse a reviewed issue workspace and Trellis task through an AI-owned semantic gate, ephemeral scoped confirmation, deterministic execution, and three typed exits.",
+  "description": "Create or exactly reuse a reviewed issue workspace and Trellis task through an AI-owned semantic gate, ephemeral scoped confirmation, deterministic execution, and four typed exits.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -177,6 +177,10 @@
     {
       "id": "public_output_blocked",
       "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "public_output_invalid_task_state",
+      "path": "schemas/public-invalid-task-state-output.schema.json"
     }
   ],
   "validators": [
@@ -229,6 +233,11 @@
         "kind": "stop",
         "id": "task-workspace-blocked"
       }
+    },
+    {
+      "id": "invalid_task_state",
+      "evidence": "task identity cannot be closed across task, branch/worktree, ledger, and Guru runtime mappings",
+      "consumer": {"kind": "stop", "id": "invalid-task-state"}
     }
   ],
   "reentry": {
@@ -341,6 +350,12 @@
         "consumer_use_ids": [
           "project_blocked"
         ]
+      },
+      {
+        "exit_id": "invalid_task_state",
+        "schema": {"schema_id": "guru-stage0-create-task-workspace-output-invalid-task-state-2.0", "path": "schemas/public-invalid-task-state-output.schema.json"},
+        "example": {"id": "invalid_task_state_output", "path": "examples/public-invalid-task-state-output.json"},
+        "consumer_use_ids": ["project_invalid_task_state"]
       }
     ],
     "consumer_inputs": [
@@ -377,6 +392,12 @@
           "id": "task-workspace-blocked"
         },
         "payload_kind": "zero_payload"
+      },
+      {
+        "id": "invalid_task_state_stop_input",
+        "consumer": {"kind": "stop", "id": "invalid-task-state"},
+        "payload_kind": "structured_json",
+        "contract": {"kind": "json_schema", "schema_id": "guru-stage0-create-task-workspace-invalid-task-state-stop-2.0", "path": "consumers/stop/invalid-task-state.schema.json"}
       }
     ],
     "projections": [
@@ -412,6 +433,12 @@
         "consumer_input_id": "blocked_stop_input",
         "operation": "select",
         "mappings": []
+      },
+      {
+        "id": "project_invalid_task_state",
+        "exit_id": "invalid_task_state",
+        "consumer_input_id": "invalid_task_state_stop_input",
+        "operation": "direct"
       }
     ],
     "private_artifacts": [
