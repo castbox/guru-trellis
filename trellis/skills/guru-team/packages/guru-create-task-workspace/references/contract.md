@@ -119,6 +119,13 @@ result. A retry after remote create but before successful response, reread, or
 result delivery therefore recovers the unique live Issue and performs no
 second create.
 
+GitHub resolves label names case-insensitively and returns repository-canonical
+casing. Runtime therefore preserves every reviewed label string unchanged for
+the draft digest and `gh issue create`, but compares the plan and live label
+sets through one case-folded, deduplicated identity in lookup, immediate
+binding, and checker reread. A genuinely different label set still fails
+closed.
+
 After complete Intake re-entry, an existing issue produced by this path embeds
 the complete prior checker-passed created-issue result. Runtime recomputes the
 result and binding facts digests and matches the current issue and reviewed

@@ -152,6 +152,14 @@ class WorkspaceTest(unittest.TestCase):
   with mock.patch.object(execute,"github",side_effect=[[live],live]),mock.patch.object(execute,"run_gh") as created:
    result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
   created.assert_not_called();self.assertEqual((112,live["url"],"refresh_review"),(result["created_issue"]["number"],result["created_issue"]["canonical_url"],result["typed_exit"]))
+ def test_reviewed_draft_label_identity_uses_canonical_case_for_live_comparison(self):
+  plan=self.draft_plan(labels=["BUG"]);pp=self.write("recover-label-case.json",plan);live=self.issue_row(labels=["bug"])
+  with mock.patch.object(execute,"github",side_effect=[[live],live]),mock.patch.object(execute,"run_gh") as created:
+   result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  created.assert_not_called();self.assertEqual(112,result["created_issue"]["number"])
+  rp=self.write("recover-label-case-result.json",result)
+  with mock.patch.object(check,"github",return_value=live):checked=check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
+  self.assertEqual("passed",checked["checker"]["status"])
  def test_reviewed_draft_multiple_matches_block_before_create(self):
   plan=self.draft_plan();pp=self.write("ambiguous.json",plan);rows=[self.issue_row(112),self.issue_row(113)]
   with mock.patch.object(execute,"github",return_value=rows),mock.patch.object(execute,"run_gh") as created,self.assertRaises(CommandError) as raised:execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
@@ -184,7 +192,7 @@ class WorkspaceTest(unittest.TestCase):
   result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":"2026-01-01T00:00:01Z","mode":plan["mode"],"variant":"created_issue","plan_sha256":plan["freshness"]["plan_sha256"],"executor":common.stage("passed",["bound"]),"checker":common.stage("not_run",[]),"created_issue":binding,"created_workspace":None,"no_side_effect":None,"typed_exit":"refresh_review","reason":"bound","consumer":common.CONSUMERS["refresh_review"],"facts_sha256":""};result=common.finalize(PACKAGE,result);pp=self.write("drift-plan.json",plan);rp=self.write("drift-result.json",result);drift=copy.deepcopy(live);drift["labels"]=[{"name":"other"}]
   with mock.patch.object(check,"github",return_value=drift),self.assertRaises(CommandError):check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
  def test_stateful_fake_gh_recovers_partial_success_without_second_create(self):
-  plan=self.draft_plan();pp=self.write("stateful-plan.json",plan);state_path=self.write("gh-state.json",{"create_count":0,"issue":None,"fail_next_view":True});fake_bin=self.parent/"fake-bin";fake_bin.mkdir();fake_gh=fake_bin/"gh"
+  plan=self.draft_plan(labels=["BUG"]);pp=self.write("stateful-plan.json",plan);state_path=self.write("gh-state.json",{"create_count":0,"issue":None,"fail_next_view":True});fake_bin=self.parent/"fake-bin";fake_bin.mkdir();fake_gh=fake_bin/"gh"
   fake_gh.write_text(f'''#!{sys.executable}
 import json,sys
 from pathlib import Path
@@ -198,7 +206,7 @@ if args[:2]==['issue','create']:
  title=args[args.index('--title')+1];body=args[args.index('--body')+1]
  labels=[args[index+1] for index,value in enumerate(args[:-1]) if value=='--label']
  state['create_count']+=1
- state['issue']={{'number':112,'url':'https://github.com/example/repo/issues/112','state':'OPEN','title':title,'body':body,'createdAt':'2026-01-01T00:00:01Z','updatedAt':'2026-01-01T00:00:01Z','labels':[{{'name':label}} for label in labels]}}
+ state['issue']={{'number':112,'url':'https://github.com/example/repo/issues/112','state':'OPEN','title':title,'body':body,'createdAt':'2026-01-01T00:00:01Z','updatedAt':'2026-01-01T00:00:01Z','labels':[{{'name':label.lower()}} for label in labels]}}
  state_path.write_text(json.dumps(state));print(state['issue']['url']);raise SystemExit(0)
 if args[:2]==['issue','view'] and state['issue'] is not None:
  if state['fail_next_view']:
@@ -209,7 +217,7 @@ print('unsupported fake gh command: '+' '.join(args),file=sys.stderr);raise Syst
   with mock.patch.dict(os.environ,{"PATH":path}):
    with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
    result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]);rp=self.write("stateful-result.json",result);checked=check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
-  state=json.loads(state_path.read_text());self.assertEqual(1,state["create_count"]);self.assertEqual((112,state["issue"]["url"],"refresh_review","passed"),(result["created_issue"]["number"],result["created_issue"]["canonical_url"],result["typed_exit"],checked["checker"]["status"]));self.assertFalse((self.parent/"repo-worktrees/027-workspace").exists());self.assertEqual("main",self.git("branch","--show-current"))
+  state=json.loads(state_path.read_text());self.assertEqual((1,[{"name":"bug"}]),(state["create_count"],state["issue"]["labels"]));self.assertEqual((112,state["issue"]["url"],"refresh_review","passed"),(result["created_issue"]["number"],result["created_issue"]["canonical_url"],result["typed_exit"],checked["checker"]["status"]));self.assertFalse((self.parent/"repo-worktrees/027-workspace").exists());self.assertEqual("main",self.git("branch","--show-current"))
  def test_runtime_has_no_placeholder_or_monolith(self):
   for p in LOCAL.glob("*.py"):
    t=p.read_text();self.assertNotIn("mutation is unavailable",t);self.assertNotIn("guru_team_trellis.py",t);self.assertNotIn("typed_output(package_root",t)

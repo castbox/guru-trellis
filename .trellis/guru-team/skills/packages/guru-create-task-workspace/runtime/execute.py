@@ -45,6 +45,7 @@ def issue_labels(value,field):
   if not isinstance(row,dict) or not isinstance(row.get("name"),str) or not row["name"]:raise CommandError("stale_identity",field,"GitHub returned invalid issue labels.",3)
   names.append(row["name"])
  return sorted(set(names))
+def label_identity(names):return sorted({name.casefold() for name in names})
 def issue_record(repo,value,field,include_created_at=False):
  required={"number","url","state","title","body","updatedAt","labels"}
  if include_created_at:required.add("createdAt")
@@ -62,10 +63,10 @@ def find_reviewed_draft_issues(plan):
  rows=github(t["repo"],"issue","list","--state","open","--search",f"created:>={captured.date().isoformat()}","--limit","1000","--json",fields)
  if not isinstance(rows,list):raise CommandError("invalid_json","target","GitHub issue lookup did not return a JSON array.")
  if len(rows)>=1000:raise CommandError("stale_identity","target","GitHub issue lookup did not prove complete candidate exhaustion.",3)
- expected_labels=sorted(d["labels"]);matches=[]
+ expected_labels=label_identity(d["labels"]);matches=[]
  for index,value in enumerate(rows):
   row=issue_record(t["repo"],value,f"target.candidates[{index}]",include_created_at=True)
-  if row["state"]=="open" and row["title"]==d["title"] and row["body"]==d["body"] and row["labels"]==expected_labels and row["created_at"]>=captured:matches.append(row)
+  if row["state"]=="open" and row["title"]==d["title"] and row["body"]==d["body"] and label_identity(row["labels"])==expected_labels and row["created_at"]>=captured:matches.append(row)
  return sorted(matches,key=lambda row:row["number"])
 def bind_reviewed_issue(plan,locator):
  t=plan["target"];d=t["draft"]
@@ -77,7 +78,7 @@ def bind_reviewed_issue(plan,locator):
  row=issue_record(t["repo"],live,"target")
  if (expected_url is not None and row["url"]!=expected_url) or (isinstance(locator,int) and row["number"]!=locator):raise CommandError("stale_identity","target","GitHub live issue does not match the reviewed locator.",3)
  title_sha256=hashlib.sha256(row["title"].encode()).hexdigest();body_sha256=hashlib.sha256(row["body"].encode()).hexdigest()
- if row["state"]!="open" or row["title"]!=d["title"] or row["body"]!=d["body"] or title_sha256!=t["title_sha256"] or body_sha256!=t["body_sha256"] or row["labels"]!=sorted(d["labels"]):raise CommandError("stale_identity","target","Created or recovered issue does not match the exact reviewed draft.",3)
+ if row["state"]!="open" or row["title"]!=d["title"] or row["body"]!=d["body"] or title_sha256!=t["title_sha256"] or body_sha256!=t["body_sha256"] or label_identity(row["labels"])!=label_identity(d["labels"]):raise CommandError("stale_identity","target","Created or recovered issue does not match the exact reviewed draft.",3)
  binding={"repo":t["repo"],"number":row["number"],"canonical_url":row["url"],"state":row["state"],"title_sha256":title_sha256,"body_sha256":body_sha256,"updated_at":live["updatedAt"],"reviewed_draft_id":d["draft_id"],"reviewed_draft_sha256":d["reviewed_draft_sha256"]}
  binding["facts_sha256"]=digest(binding);return binding
 def count_operation(operation):

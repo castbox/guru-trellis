@@ -39,7 +39,7 @@ workspace/task transaction 和发布边界不变。
 
 1. 每次 reviewed-draft transaction 在 create 前读取 current open Issue candidate set。
 2. Candidate 必须同时满足：repository 相同、state=open、title bytes 相同、body bytes 相同、
-   label name set 相同、`createdAt >= plan.freshness.captured_at`。
+   label name set 按 GitHub 大小写无关语义相同、`createdAt >= plan.freshness.captured_at`。
 3. Lookup 使用 `created:>=<UTC capture date>`、`--state open`、`--limit 1000` 和声明的 JSON fields。
    Returned row count=1000 时 completeness 未被证明，transaction 必须在 create 前阻断。
 4. Runtime 仅从当前 plan 取得 title/body/labels/capture identity，不读取旧 result、Discovery private state
@@ -57,8 +57,8 @@ workspace/task transaction 和发布边界不变。
 ### R4. Immediate live binding
 
 1. Runtime 使用 candidate number 或 parsed canonical URL 立即执行 strict JSON `gh issue view`。
-2. Live binding 必须验证 number、canonical URL、state=open、title SHA-256、body SHA-256、label set、
-   reviewed draft id 和 reviewed draft SHA-256。
+2. Live binding 必须验证 number、canonical URL、state=open、title SHA-256、body SHA-256、按 GitHub
+   大小写无关语义归一化的 label set、reviewed draft id 和 reviewed draft SHA-256。
 3. Binding mismatch 或 live read failure 阻断当前 invocation。
 4. Checker 保持第二次 current live read，确认 executor result 与 live Issue 未漂移。
 
@@ -93,7 +93,8 @@ workspace/task transaction 和发布边界不变。
 - `AC-04`：2 exact matches 阻断，create operation count=0。
 - `AC-05`：fake-`gh` stateful scenario 首次 create 后故意让 response/reread 失败；第二次调用收养首次 Issue，
   cumulative create operation count=1。
-- `AC-06`：title、body、labels、state、capture time 或 canonical URL 任一 mismatch 不得形成 valid binding。
+- `AC-06`：title、body、labels、state、capture time 或 canonical URL 任一真实 mismatch 不得形成 valid
+  binding；仅 label canonical casing 不同必须形成同一 identity。
 - `AC-07`：malformed JSON read 继续返回 `invalid_json`；plain-text create 不触发 JSON parse。
 - `AC-08`：recovery lookup 返回 1000 rows 时阻断且 create operation count=0。
 - `AC-09`：existing issue-only 和 workspace/task-only focused regressions通过。

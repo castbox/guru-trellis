@@ -73,7 +73,9 @@ Parsed URL 不是 final authority。Runtime 立即执行 `gh issue view <url> --
 3. JSON root 必须是 array；每个 examined row 必须含完整字段。
 4. Returned row count=1000 时 runtime 必须以 `stale_identity` 阻断，因为 query exhaustion 未被证明。
 5. Returned row count<1000 时，解析 capture timestamp 与 candidate `createdAt` 为 UTC instant。
-6. 逐项 exact compare：title string、body string、sorted unique label names、state 和 capture threshold。
+6. 逐项 compare：title string 与 body string 保持 byte-exact；label names 通过 Unicode `casefold()` 后
+   deduplicate/sort，以匹配 GitHub 大小写无关解析并接受 live canonical casing；state 和 capture threshold
+   继续 exact compare。
 7. 以 Issue number排序，返回 0、1 或 >1 rows。
 8. 字段缺失、timestamp invalid 或 repository binding 不可证明时 fail closed。
 
@@ -104,7 +106,7 @@ validate plan + mutation boundary
 - number 与 canonical URL验证；
 - `state=open`；
 - title/body SHA-256；
-- sorted label set；
+- case-folded、deduplicated、sorted label identity；
 - reviewed draft id/digest projection；
 - `facts_sha256` derivation。
 
@@ -164,7 +166,8 @@ latest、lowest number 或 first row，也不要求用户在本 Skill 内重新�
 - 1 exact row -> create call count=0 -> live view -> same result variant。
 - 2 exact rows -> create call count=0 -> blocked/error route。
 - 1000 lookup rows -> completeness blocked -> create call count=0。
-- Non-matching title/body/labels/state/capture timestamp rows不进入 exact count。
+- Non-matching title/body/labels/state/capture timestamp rows不进入 exact count；仅 label canonical casing
+  不同仍视为 exact candidate。
 
 ### 6.3 Stateful fake-`gh` recovery
 
@@ -177,6 +180,8 @@ latest、lowest number 或 first row，也不要求用户在本 Skill 内重新�
 5. 第二次 run 跳过 create，`issue view` 返回完整 JSON。
 6. Final assertions：Issue number=112、canonical URL一致、cumulative create counter=1、typed exit=
    `refresh_review`、workspace/task writes=0。
+7. Fake provider 将 reviewed `BUG` canonicalize 为 live `bug`，证明 retry lookup、binding 和 checker 使用
+   同一大小写无关 label identity，同时 create argv 仍保留 reviewed label 原字符串。
 
 该 test 使用真实 subprocess/PATH dispatch，不再通过 `mock.patch(execute.github, ...)` 伪造 JSON create。
 

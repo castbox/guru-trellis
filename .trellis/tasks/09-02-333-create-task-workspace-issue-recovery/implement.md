@@ -17,6 +17,8 @@
 - [ ] 新增 strict JSON read/list decoder；保留 `invalid_json` behavior。
 - [ ] 新增 strict canonical Issue URL text decoder；只消费 `gh issue create` stdout。
 - [ ] 新增 exact reviewed-draft open-Issue lookup，绑定 capture time、title、body、labels 和 state。
+- [ ] Label live identity 使用 shared case-folded/deduplicated set；create argv 与 reviewed draft digest保留
+  原始 label 字符串。
 - [ ] 实现 0=create once、1=recover、>1=fail closed。
 - [ ] 抽取 shared live reread/binding helper，让 create 与 recover产生同一 binding/result shape。
 - [ ] 保持 existing Issue mutation boundary 与 workspace/task code path不变。
@@ -32,6 +34,7 @@
 - [ ] 增加 title/body/labels/state/capture mismatch matrix。
 - [ ] 增加 stateful fake-`gh` partial-success retry scenario，断言 cumulative create count=1。
 - [ ] 增加 live binding 和 checker drift regressions。
+- [ ] 增加 label canonical casing lookup/binding/checker 与 partial-success retry regression。
 - [ ] 保留 issue-only、current workspace、worktree workspace、reuse 和 zero-write regressions。
 
 ## 4. Docs SSOT Execution
