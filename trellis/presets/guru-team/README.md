@@ -534,10 +534,10 @@ solution-mechanism qualification 选择 `guru-team-skill-interface-1.6`，standa
 manifest，精确绑定 planning/check/commit 与 normal-scenario qualification 四包、20
 profiles、15 exits、current output schemas、四条 authoring-seed edges、private
 artifact ids、examples、160 x 5 production control 与 eval cases；不存在 alternate
-production projector 或 fixture。当前 active closure 为 22 packages / 80 commands，
+production projector 或 fixture。当前 active closure 为 23 packages / 81 commands，
 live Intake 合同为 6/23。Preset 在一次 staging
 transaction 中安装 current registry、
-Interface 1.4/1.5/1.6、production-current manifest/schema、二十二包 public
+Interface 1.4/1.5/1.6、production-current manifest/schema、二十三包 public
 contracts/wrappers/corpora、registry、extension 和 selected-platform copies；mixed graph
 失败关闭。Representative fixture schema ids 和 fixture wrapper 不进入
 production registry、extension inventory、installed files 或 selected-platform copies。
@@ -578,8 +578,8 @@ wrappers。新增 `guru-restore-archived-task` 安装 archive-to-active 恢复 r
 `restored_to_phase2|restore_blocked` 两个 exits 与四平台 discovery projection。
 Requirements/Design/Test SSOT package 另提供
 四个 semantic profiles、五个 typed exits 和 isolated contribution boundary。
-Source/installed package closure 为 23 Skills / 96 exits；business global workflow
-marker closure 为 22 invokes / 94 exits / 58 combined targets（35 workflow + 23 stop）。
+Source/installed package closure 为 23 Skills / 97 exits；business global workflow
+marker closure 为 22 invokes / 95 exits / 59 combined targets（35 workflow + 24 stop）。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -1535,7 +1535,7 @@ runtime 留在 native execution 外；四平台 projection 内对应 raw read �
 throwaway project 的 `trellis update --dry-run` -> 仅当输出明确为
 `MIGRATION REQUIRED` 时执行 `trellis update --migrate --skip-all`，否则执行
 `trellis update --skip-all` -> marketplace `--create-new` preview/active switch -> canonical
-preset reapply。之后重新验证 23 Skills/96 package exits、22 invokes/94 workflow
-exits、35 workflow targets、23 stop targets、全部已声明 profile real installed entry、
+preset reapply。之后重新验证 23 Skills/97 package exits、22 invokes/95 workflow
+exits、35 workflow targets、24 stop targets、全部已声明 profile real installed entry、
 ownership、platform parity、dogfood drift 与 recursive zero `.new`/`.bak`。该流程不修改
 开发机 global npm，也不升级真实业务仓。

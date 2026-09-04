@@ -74,7 +74,7 @@ Workflow marketplace 只安装 global .trellis/workflow.md；完整 Guru Team ex
 installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed projection，
 不能反向成为语义来源。
 
-当前 registry 激活 23 Skills / 96 package exits；其中业务 global workflow closure
+当前 registry 激活 23 Skills / 97 package exits；其中业务 global workflow closure
 为 22 个 invokes / 94 个 exits / 58 个 total targets。下列 22 个业务 active ids 参与
 global workflow：
 
@@ -191,7 +191,7 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 当前 release-facing source 的 canonical extension version 为 `0.6.15-guru.39`，目标
 release tag 为 `v0.6.15-guru.3`；二者的发布事实仍由 #267 successor Release gates 建立。
 Source/installed package validation 必须同时验证
-registry、22 invokes / 94 exits / 58 combined targets（35 workflow + 23 stop）
+registry、22 invokes / 95 exits / 59 combined targets（35 workflow + 24 stop）
 business marker graph、23-package/96-exit closure、consumer
 uniqueness、projection、selected-platform
 byte identity 和 executable mode。
@@ -200,8 +200,8 @@ byte identity 和 executable mode。
 
 Canonical workflow 是 trellis/workflows/guru-team/workflow.md；dogfood
 .trellis/workflow.md 必须 byte-identical。Global Markdown 只拥有 phase order、
-current-task router、22 mandatory Skill markers、94 exits、35 workflow targets、
-23 stop targets、
+current-task router、22 mandatory Skill markers、95 exits、35 workflow targets、
+24 stop targets、
 workspace/task activation、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 与外部 side-effect boundary。Step-local 合同只存在于对应 active
 package/interface。
@@ -308,7 +308,7 @@ state、artifact、日志、cache、配置或 durable record 保存与读取时�
 
 ## Phase 0 Public Transition And Invocation
 
-Phase 0 由六个 mandatory Skills 和 23 个既有 typed exits 构成。正常 forward path 使用
+Phase 0 由六个 mandatory Skills 和 24 个 typed exits 构成。正常 forward path 使用
 workflow-owned 的五个独立 closed stages：
 
 ```text
@@ -916,7 +916,9 @@ recorder/checker 和四出口；checked `approved` 进入 workflow-owned
 `task.py start`。现有 Open Issue happy path 为四次确认，新建 Issue path 为五次。Phase 0 route DTO、非 3.0 planning input、缺失/过期/non-pass wording、
 真实 planning/authority 语义漂移或 exit/Gate/consumer 不一致均 fail closed；owner 只接受
 重新检查过的 current invocation。`task.py start` 只是状态写入，
-不代表规划已审查。
+不代表规划已审查。若 active-task identity 无法在 task、branch/worktree、ledger
+与 Guru runtime mapping 间闭合，必须停止到唯一 `invalid-task-state` consumer，
+不得重入 Intake、restore、迁移、mapping rebuild 或 cleanup。
 阶段停止点和阶段完成回复先运行
 `resolve-human-artifacts.sh --json --task <task-path>`，只展示实际存在的 `prd.md`、
 `design.md` 与 `implement.md` 链接；不要求固定表格，JSON gate/evidence、private
@@ -1124,7 +1126,7 @@ label、exit code 与 bounded credential-safe tail；无法解析时显式记录
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的二十三个 packages 已维护 canonical corpora 并覆盖全部 96 package exits/profile；六个 Intake
+中的二十三个 packages 已维护 canonical corpora 并覆盖全部 97 package exits/profile；六个 Intake
 packages 的 23-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台

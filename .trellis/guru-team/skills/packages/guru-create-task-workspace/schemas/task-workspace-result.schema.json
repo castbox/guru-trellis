@@ -17,7 +17,7 @@
     "created_issue": {"anyOf": [{"$ref": "#/$defs/createdIssue"}, {"type": "null"}]},
     "created_workspace": {"anyOf": [{"$ref": "#/$defs/createdWorkspace"}, {"type": "null"}]},
     "no_side_effect": {"anyOf": [{"$ref": "#/$defs/noSideEffect"}, {"type": "null"}]},
-    "typed_exit": {"enum": ["created", "refresh_review", "blocked"]},
+    "typed_exit": {"enum": ["created", "refresh_review", "blocked", "invalid_task_state"]},
     "reason": {"type": "string", "minLength": 1},
     "consumer": {"$ref": "#/$defs/consumer"},
     "facts_sha256": {"$ref": "#/$defs/sha256"}
@@ -49,13 +49,21 @@
         "created_issue": {"type": "null"},
         "created_workspace": {"type": "null"},
         "no_side_effect": {"$ref": "#/$defs/noSideEffect"},
-        "typed_exit": {"enum": ["refresh_review", "blocked"]}
+        "typed_exit": {"enum": ["refresh_review", "blocked", "invalid_task_state"]}
       }}
     },
     {
       "if": {"properties": {"typed_exit": {"const": "blocked"}}},
       "then": {"properties": {
         "consumer": {"const": {"kind": "stop", "id": "task-workspace-blocked"}}
+      }}
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "invalid_task_state"}}},
+      "then": {"properties": {
+        "variant": {"const": "no_side_effect"},
+        "consumer": {"const": {"kind": "stop", "id": "invalid-task-state"}},
+        "no_side_effect": {"properties": {"reason_code": {"const": "invalid_task_state"}}}
       }}
     },
     {
@@ -155,7 +163,7 @@
       "type": "object", "additionalProperties": false,
       "required": ["reason_code", "before", "after", "zero_writes"],
       "properties": {
-        "reason_code": {"enum": ["target_changed", "disposition_changed", "prerequisite_refresh", "object_conflict", "assignee_unresolved", "execution_blocked"]},
+        "reason_code": {"enum": ["target_changed", "disposition_changed", "prerequisite_refresh", "object_conflict", "assignee_unresolved", "execution_blocked", "invalid_task_state"]},
         "before": {"$ref": "#/$defs/snapshot"},
         "after": {"$ref": "#/$defs/snapshot"},
         "zero_writes": {"const": true}

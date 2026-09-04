@@ -97,7 +97,7 @@ workflow/standalone preconditions before a package command can run.
 ### 0. Current Interface And Registry Contract
 
 Issue #180 activated the historical fifteen-package/57-exit graph. The current
-Registry 1.4 graph contains twenty-three active packages and 96 package exits while
+Registry 1.4 graph contains twenty-three active packages and 97 package exits while
 retaining older Interface/Registry assets as immutable legacy contracts.
 `guru-merge-task-pr` is a current semantic package with exactly
 `merged`, `merge_blocked`, `phase2_reentry_required`, and `closure_mismatch`.
@@ -107,7 +107,7 @@ the exact archived task identity, and returns `restored_to_phase2` or
 `ready_for_merge` in place of `published`; the old published schema/example
 remain immutable legacy assets but are not selected by the Interface, registry,
 workflow or extension manifest. The integrated business graph has 22 invoke
-markers, 94 exit markers and 58 unique workflow/stop targets.
+markers, 95 exit markers and 59 unique workflow/stop targets.
 
 The Finalizer-to-Merge edge is target-authored. Finalizer returns canonical
 repository/PR identity, `expected_head_sha`, expected base/head branch identity,
@@ -1673,7 +1673,7 @@ fresh Publication invocation. No alias, task-local fallback, compatibility
 reader, or migration executor is part of the current contract.
 
 The current additive activation set contributes to the live closure of twenty-three
-active Skills and 96 exits. The production current manifest contains exactly
+active Skills and 97 exits. The production current manifest contains exactly
 four Skills and 15 exits.
 
 ## Extension Installation Verification Owner
@@ -1687,7 +1687,7 @@ intent from a clean `castbox/guru-trellis` source checkout.
 
 `guru-execute-task-free-change` remains an active package and integrated
 business-workflow owner. Together with `guru-qualify-normal-scenario`, the
-current graph closes at 73 package exits and 71 workflow exits without changing
+current graph closes at 97 package exits and 95 workflow exits without changing
 the four-package production-current manifest. Its two post-write expansion exits
 require owner-private evidence for a real partial edit, the discovered
 scope/risk expansion, immediate stop, remaining target writes not performed,

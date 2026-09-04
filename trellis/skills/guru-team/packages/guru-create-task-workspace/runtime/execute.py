@@ -84,6 +84,49 @@ def preflight(repo,plan,workspace):
     except Exception as exc:raise CommandError("stale_identity","runtime_mapping","Existing runtime mapping is invalid.",3) from exc
     if any(m.get(key)!=value for key,value in expected_mapping_value.items() if key!="updated_at"):raise CommandError("stale_identity","runtime_mapping","Existing runtime mapping conflicts with the reviewed workspace.",3)
  return artifact_rel,task_dir,expected_task,expected_ledger
+
+def verify_created_boundary(repo,plan,workspace,workspace_mode,artifact_rel,task_dir):
+ n=plan["naming"];branch=n["branch_name"];listed=worktrees(repo);row=listed.get(workspace)
+ if not workspace.is_dir() or git(workspace,"branch","--show-current").stdout.strip()!=branch:
+  raise CommandError("stale_identity","created_workspace","Created workspace branch is not current.",3)
+ if workspace_mode=="worktree" and (not row or row.get("branch")!=f"refs/heads/{branch}"):
+  raise CommandError("stale_identity","created_workspace","Created workspace is not registered for the reviewed branch.",3)
+ task_path=task_dir/"task.json";ledger_path=workspace/artifact_rel
+ if not task_path.is_file() or not ledger_path.is_file():
+  raise CommandError("stale_identity","created_workspace","Created task artifacts are incomplete.",3)
+ try:task=json.loads(task_path.read_text(encoding="utf-8"))
+ except Exception as exc:raise CommandError("stale_identity","created_workspace.task","Created task identity is invalid.",3) from exc
+ expected_task,_=workspace_payloads(plan,artifact_rel)
+ if task!=expected_task:raise CommandError("stale_identity","created_workspace.task","Created task identity does not match the reviewed plan.",3)
+ workspace_mapping,task_mapping=mapping_payloads(repo,plan,workspace,artifact_rel)
+ for rel in plan["side_effects"]["runtime_mappings"]:
+  expected=expected_mapping(rel,workspace_mapping,task_mapping)
+  for mapping_root in {repo.resolve(),workspace.resolve()}:
+   path=mapping_root/rel
+   if not path.is_file():raise CommandError("stale_identity","created_workspace.runtime_mappings","Created runtime mapping is missing.",3)
+   try:value=json.loads(path.read_text(encoding="utf-8"))
+   except Exception as exc:raise CommandError("stale_identity","created_workspace.runtime_mappings","Created runtime mapping is invalid.",3) from exc
+   if any(value.get(key)!=expected_value for key,expected_value in expected.items() if key!="updated_at"):
+    raise CommandError("stale_identity","created_workspace.runtime_mappings","Created runtime mapping identity drifted.",3)
+
+def rollback_created(repo,workspace,branch,original_branch,created_worktree,created_branch,created_files,created_dirs):
+ errors=[]
+ for path in reversed(created_files):
+  try:path.unlink(missing_ok=True)
+  except OSError as exc:errors.append(str(exc))
+ for path in reversed(created_dirs):
+  try:path.rmdir()
+  except OSError:pass
+ if created_worktree:
+  p=git(repo,"worktree","remove","--force",str(workspace),check=False)
+  if p.returncode:errors.append(p.stderr.strip() or "worktree removal failed")
+ if created_branch:
+  if not created_worktree and git(repo,"branch","--show-current").stdout.strip()==branch:
+   p=git(repo,"switch",original_branch,check=False)
+   if p.returncode:errors.append(p.stderr.strip() or "original branch restoration failed")
+  p=git(repo,"branch","-D",branch,check=False)
+  if p.returncode:errors.append(p.stderr.strip() or "branch removal failed")
+ if errors:raise CommandError("stale_identity","rollback","Creation rollback did not complete; stop before retry.",3)
 def run(package_root:Path,command:dict,argv:list[str])->dict:
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--input");p.add_argument("--invocation");a=parse(p,argv);repo=root(package_root,a.root);e=load(repo,package_root,a.invocation,"invocation") if a.invocation else None;plan=e.get("plan") if isinstance(e,dict) else load(repo,package_root,a.input,"input");validate_plan(package_root,repo,plan);gate=plan["ai_review_gate"]["status"]
  if gate!="passed":
@@ -93,29 +136,52 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   if not mutation_boundary_current(repo,plan):
    result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The authoritative base or target changed at the mutation boundary."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"prerequisite_refresh","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":"refresh_review","reason":"Current authority changed before the first business write.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
   created=create_issue(plan);result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"created_issue","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("passed",["Created and immediately reread the exact reviewed GitHub issue."]),"checker":stage("not_run",[]),"created_issue":created,"created_workspace":None,"no_side_effect":None,"typed_exit":"refresh_review","reason":"The reviewed issue was created and now requires a complete Intake refresh.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
- n=plan["naming"];workspace_config=resolve_workspace(repo,n["workspace_slug"]);workspace=workspace_config.path;branch=n["branch_name"];artifact_rel,task_dir,task,ledger_bytes=preflight(repo,plan,workspace_config)
+ n=plan["naming"];workspace_config=resolve_workspace(repo,n["workspace_slug"]);workspace=workspace_config.path;branch=n["branch_name"];artifact_rel=Path(plan["side_effects"]["task_artifacts"][0]);task_dir=workspace/artifact_rel.parent
  before=snapshot(repo,plan)
+ try:
+  artifact_rel,task_dir,task,ledger_bytes=preflight(repo,plan,workspace_config)
+ except CommandError as exc:
+  existing_task=task_dir/"task.json"
+  active_task=False
+  try:
+   active_task=json.loads(existing_task.read_text(encoding="utf-8")).get("status")=="in_progress"
+  except (OSError, json.JSONDecodeError, AttributeError):
+   pass
+  if exc.code=="stale_identity" and active_task:
+   result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The reviewed task identity is incomplete or conflicting; no repair was attempted."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"invalid_task_state","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":"invalid_task_state","reason":"The reviewed task identity cannot be consumed safely.","consumer":CONSUMERS["invalid_task_state"],"facts_sha256":""}
+   return finalize(package_root,result)
+  raise
  if not mutation_boundary_current(repo,plan):
   result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The authoritative base or target changed at the mutation boundary."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"prerequisite_refresh","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":"refresh_review","reason":"Current authority changed before the first business write.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
- if n["branch_disposition"]=="create_new":
-  if workspace_config.mode=="current":git(repo,"switch","-c",branch,plan["base"]["base_ref"])
-  else:git(repo,"worktree","add","-b",branch,str(workspace),plan["base"]["base_ref"])
- if workspace_config.mode=="current" and n["branch_disposition"]=="reuse_exact" and git(repo,"branch","--show-current").stdout.strip()!=branch:git(repo,"switch",branch)
- if n["workspace_disposition"]=="create_new" and workspace_config.mode=="worktree" and n["branch_disposition"]!="create_new":git(repo,"worktree","add",str(workspace),branch)
- task_dir.mkdir(parents=True,exist_ok=True)
- task_path=task_dir/"task.json"
- if n["task_disposition"]=="reuse_exact":
-  try:existing_task=json.loads(task_path.read_text())
-  except Exception as exc:raise CommandError("stale_identity","naming.task_disposition","Reusable task is invalid.",3) from exc
-  if existing_task!=task:raise CommandError("stale_identity","naming.task_disposition","Reusable task does not match the reviewed task.",3)
- else:task_path.write_text(json.dumps(task,ensure_ascii=False,indent=2)+"\n")
- ledger_path=workspace/artifact_rel
- ledger_path.write_text(ledger_bytes);os.chmod(ledger_path,0o644)
- mappings=[];workspace_mapping,task_mapping=mapping_payloads(repo,plan,workspace,artifact_rel)
- for rel in plan["side_effects"]["runtime_mappings"]:
-  payload=expected_mapping(rel,workspace_mapping,task_mapping)
-  for mapping_root in {repo.resolve(),workspace.resolve()}:
-   q=mapping_root/rel;q.parent.mkdir(parents=True,exist_ok=True);q.write_text(json.dumps(payload)+"\n")
-  mappings.append({"path":rel,"ignored":True})
- data=ledger_path.read_bytes();artifact={"path":artifact_rel.as_posix(),"sha256":__import__('hashlib').sha256(data).hexdigest(),"size":len(data),"mode":"100644","tracked":True};created={"repo":plan["target"]["repo"],"issue_number":plan["target"]["issue_number"],"branch_name":branch,"base_ref":plan["base"]["base_ref"],"base_head":plan["base"]["decision_head"],"workspace_slug":n["workspace_slug"],"task_slug":n["task_slug"],"task_artifact_dir":artifact_rel.parent.as_posix(),"assignee":plan["assignee"]["login"],"task_status":"planning","artifacts":[artifact],"runtime_mappings":mappings,"workspace_boundary_match":True,"source_developer_identity_created":False,"target_developer_identity_created":False,"workspace_journal_created":False}
+ created_files=[];created_dirs=[];created_worktree=False;created_branch=False;original_branch=git(repo,"branch","--show-current").stdout.strip()
+ try:
+  if n["branch_disposition"]=="create_new":
+   if workspace_config.mode=="current":git(repo,"switch","-c",branch,plan["base"]["base_ref"])
+   else:git(repo,"worktree","add","-b",branch,str(workspace),plan["base"]["base_ref"])
+   created_branch=True;created_worktree=workspace_config.mode=="worktree"
+  if workspace_config.mode=="current" and n["branch_disposition"]=="reuse_exact" and git(repo,"branch","--show-current").stdout.strip()!=branch:git(repo,"switch",branch)
+  if n["workspace_disposition"]=="create_new" and workspace_config.mode=="worktree" and n["branch_disposition"]!="create_new":git(repo,"worktree","add",str(workspace),branch);created_worktree=True
+  if not task_dir.exists():created_dirs.append(task_dir)
+  task_dir.mkdir(parents=True,exist_ok=True)
+  task_path=task_dir/"task.json"
+  if n["task_disposition"]=="reuse_exact":
+   try:existing_task=json.loads(task_path.read_text())
+   except Exception as exc:raise CommandError("stale_identity","naming.task_disposition","Reusable task is invalid.",3) from exc
+   if existing_task!=task:raise CommandError("stale_identity","naming.task_disposition","Reusable task does not match the reviewed task.",3)
+  else:task_path.write_text(json.dumps(task,ensure_ascii=False,indent=2)+"\n");created_files.append(task_path)
+  ledger_path=workspace/artifact_rel
+  ledger_path.write_text(ledger_bytes);os.chmod(ledger_path,0o644);created_files.append(ledger_path)
+  mappings=[];workspace_mapping,task_mapping=mapping_payloads(repo,plan,workspace,artifact_rel)
+  for rel in plan["side_effects"]["runtime_mappings"]:
+   payload=expected_mapping(rel,workspace_mapping,task_mapping)
+   for mapping_root in {repo.resolve(),workspace.resolve()}:
+    q=mapping_root/rel;q.parent.mkdir(parents=True,exist_ok=True)
+    if not q.exists():created_files.append(q)
+    q.write_text(json.dumps(payload)+"\n")
+   mappings.append({"path":rel,"ignored":True})
+  verify_created_boundary(repo,plan,workspace,workspace_config.mode,artifact_rel,task_dir)
+  data=ledger_path.read_bytes();artifact={"path":artifact_rel.as_posix(),"sha256":__import__('hashlib').sha256(data).hexdigest(),"size":len(data),"mode":"100644","tracked":True};created={"repo":plan["target"]["repo"],"issue_number":plan["target"]["issue_number"],"branch_name":branch,"base_ref":plan["base"]["base_ref"],"base_head":plan["base"]["decision_head"],"workspace_slug":n["workspace_slug"],"task_slug":n["task_slug"],"task_artifact_dir":artifact_rel.parent.as_posix(),"assignee":plan["assignee"]["login"],"task_status":"planning","artifacts":[artifact],"runtime_mappings":mappings,"workspace_boundary_match":True,"source_developer_identity_created":False,"target_developer_identity_created":False,"workspace_journal_created":False}
+ except Exception:
+  rollback_created(repo,workspace,branch,original_branch,created_worktree,created_branch,created_files,created_dirs)
+  raise
  result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"created_workspace","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("passed",["Created the exact reviewed branch, worktree, task, ledger, and runtime mappings."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":created,"no_side_effect":None,"typed_exit":"created","reason":"The reviewed task workspace was created.","consumer":CONSUMERS["created"],"facts_sha256":""};return finalize(package_root,result)

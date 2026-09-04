@@ -56,6 +56,11 @@ cleanup state.
 
 ### Phase 0 Current Transition Family
 
+Active-task routing consumes only a closed identity across `task.json`, the
+task branch/worktree, the Issue Scope Ledger, and Guru runtime mappings. A
+missing, conflicting, or stale relation is represented as `invalid_task_state`;
+session pointers remain locators and are not task authority.
+
 The workflow-owned `guru-stage0-transition-1.0` family consists of five
 independent closed schemas. They are lifecycle stages, not one nullable mega
 object:
@@ -462,9 +467,9 @@ contracts, and package-local corpora. Nineteen integrated rows select Interface
 1.4; normal-scenario qualification selects Interface 1.6; the standalone
 verifier selects Interface 1.5. Exact profile, exit,
 consumer, projection, current-case, and authoring-edge equality is required.
-Twenty-three Skills and 94 exits are the current package cardinality regression, not
+Twenty-three Skills and 97 exits are the current package cardinality regression, not
 a hard-coded future registry allowlist; the business workflow independently
-asserts 22 invokes, 94 exits, 35 workflow targets, and 23 stop targets.
+asserts 22 invokes, 95 exits, 35 workflow targets, and 24 stop targets.
 
 The production manifest also binds the exact four
 `skill_input_authoring_seed` edges. Each binding names the target Interface and
