@@ -717,8 +717,8 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 `guru-execute-task-free-change`、`guru-qualify-normal-scenario`、`guru-qualify-solution-mechanism`、
 `guru-reconcile-task-base`、`guru-maintain-architecture-baseline`、
 `guru-maintain-requirements-design-test-ssot`、
-`guru-verify-extension-installation`。二十一个 integrated business packages 加一个
-standalone-only verifier 共声明 93 个 external exits。
+`guru-verify-extension-installation`。二十二个 integrated business packages 加一个
+standalone-only verifier 共声明 97 个 external exits。
 `guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
 invoke 与六个 exit marker。当前 release-facing source 的 canonical extension version 为

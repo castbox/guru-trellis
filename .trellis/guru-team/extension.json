@@ -430,11 +430,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-05T00:01:47Z",
+  "installed_at": "2026-09-05T00:55:40Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "1162177215af48fce411049b5f57bbb127eb3437",
-    "commit": "1162177215af48fce411049b5f57bbb127eb3437",
+    "ref": "e3347d9b25b7d6cf636786247b391fcc9c34febe",
+    "commit": "e3347d9b25b7d6cf636786247b391fcc9c34febe",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -526,9 +526,7 @@
       ".trellis/spec/workflow/quality-guidelines.md": "18297f9458367593ce858334f1f21ed271c231b1785730f98d43fb495d7a6f50"
     },
     "new_copies": [],
-    "managed_backups": [
-      ".trellis/spec/workflow/workflow-contract.md.bak"
-    ],
+    "managed_backups": [],
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "workflow_template": "guru-team"
   },
