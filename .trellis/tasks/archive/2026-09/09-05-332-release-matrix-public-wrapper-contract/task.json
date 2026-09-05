@@ -2,10 +2,11 @@
   "id": "332-release-matrix-public-wrapper-contract",
   "name": "332-release-matrix-public-wrapper-contract",
   "title": "#332 收敛原 public invoke 入口并修复 Release Gate wrapper 合同",
-  "status": "in_progress",
+  "status": "completed",
   "branch": "fix/332-release-matrix-public-wrapper-contract",
   "base_branch": "main",
   "creator": "wumengye",
   "assignee": "wumengye",
-  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/332"
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/332",
+  "completedAt": "2026-09-05"
 }
