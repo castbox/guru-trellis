@@ -141,7 +141,7 @@
       "runtime_role": "execute"
     },
     {
-      "id": "invoke-guru-create-task-commit-happy-path-v1",
+      "id": "invoke-guru-create-task-commit",
       "owner": "guru-create-task-commit",
       "entrypoint": "runtime/invoke.py",
       "arguments": [
@@ -155,43 +155,23 @@
         },
         {
           "flag": "--candidate-artifact",
-          "required": true,
+          "required": false,
           "kind": "string",
           "description": "Prepared candidate locator shown in the confirmed commit action.",
           "repeatable": false,
-          "conflicts": []
-        }
-      ],
-      "stdin": "none",
-      "stdout": "single_json_object",
-      "errors": [
-        "invalid_arguments",
-        "conflicting_arguments",
-        "invalid_json",
-        "schema_mismatch",
-        "unsafe_path",
-        "stale_identity",
-        "internal_error"
-      ],
-      "side_effect": "git_write",
-      "schema_bindings": [
-        "schemas/happy-path-result.schema.json"
-      ],
-      "validator_id": "recommended_happy_path_v1",
-      "runtime_role": "invoke"
-    },
-    {
-      "id": "invoke-guru-create-task-commit",
-      "owner": "guru-create-task-commit",
-      "entrypoint": "runtime/invoke.py",
-      "arguments": [
+          "conflicts": [
+            "--invocation"
+          ]
+        },
         {
           "flag": "--invocation",
           "required": false,
           "kind": "json",
-          "description": "Call-local invocation envelope or dash for stdin.",
+          "description": "Compatibility-only call-local invocation envelope or dash for stdin.",
           "repeatable": false,
-          "conflicts": []
+          "conflicts": [
+            "--candidate-artifact"
+          ]
         }
       ],
       "stdin": "optional_json",
@@ -206,7 +186,9 @@
         "internal_error"
       ],
       "side_effect": "git_write",
-      "schema_bindings": [],
+      "schema_bindings": [
+        "schemas/happy-path-result.schema.json"
+      ],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"
     }

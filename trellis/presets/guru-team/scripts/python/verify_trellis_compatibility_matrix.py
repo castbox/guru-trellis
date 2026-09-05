@@ -1652,31 +1652,51 @@ def _assert_platform_projection(target: Path, platform: str) -> None:
         )
     for root in (shared_root, selected_root):
         for skill_id in sorted(shared_ids):
-            scripts = root / skill_id / "scripts"
-            invoke = scripts / "invoke.sh"
-            package_invoke = (
-                target
-                / ".trellis/guru-team/skills/packages"
-                / skill_id
-                / "scripts/invoke.sh"
+            package = target / ".trellis/guru-team/skills/packages" / skill_id
+            interface = _require_dict(
+                _load_json(package / "interface.json"),
+                f"{skill_id}.interface",
             )
-            if not invoke.is_file() or not os.access(invoke, os.X_OK):
+            public_contracts = _require_dict(
+                interface.get("public_contracts"),
+                f"{skill_id}.public_contracts",
+            )
+            invocation = _require_dict(
+                public_contracts.get("invocation"),
+                f"{skill_id}.public_contracts.invocation",
+            )
+            wrapper_value = invocation.get("wrapper")
+            if not isinstance(wrapper_value, str):
+                raise MatrixError(f"{skill_id} public wrapper is missing")
+            wrapper_relative = Path(wrapper_value)
+            if (
+                wrapper_relative.is_absolute()
+                or not wrapper_relative.parts
+                or ".." in wrapper_relative.parts
+            ):
+                raise MatrixError(f"{skill_id} public wrapper is unsafe")
+            scripts = root / skill_id / "scripts"
+            public_wrapper = root / skill_id / wrapper_relative
+            package_wrapper = package / wrapper_relative
+            if not public_wrapper.is_file() or not os.access(public_wrapper, os.X_OK):
                 raise MatrixError(
-                    f"public projection has no executable invoke.sh: "
-                    f"{invoke.relative_to(target).as_posix()}"
+                    f"public projection has no executable declared wrapper: "
+                    f"{public_wrapper.relative_to(target).as_posix()}"
                 )
             if (
-                not package_invoke.is_file()
-                or invoke.read_bytes() != package_invoke.read_bytes()
+                not package_wrapper.is_file()
+                or public_wrapper.read_bytes() != package_wrapper.read_bytes()
+                or bool(public_wrapper.stat().st_mode & stat.S_IXUSR)
+                != bool(package_wrapper.stat().st_mode & stat.S_IXUSR)
             ):
                 raise MatrixError(
-                    f"public projection invoke.sh byte drift: "
-                    f"{invoke.relative_to(target).as_posix()}"
+                    f"public projection declared-wrapper drift: "
+                    f"{public_wrapper.relative_to(target).as_posix()}"
                 )
             leaked = [
                 path.relative_to(target).as_posix()
                 for path in scripts.iterdir()
-                if path.is_file() and path.name != "invoke.sh"
+                if path.is_file() and path != public_wrapper
             ]
             if leaked:
                 raise MatrixError(

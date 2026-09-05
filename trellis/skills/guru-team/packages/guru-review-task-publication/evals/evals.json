@@ -6,7 +6,7 @@
   "evals": [
     {
       "id": "workflow-initial-ready",
-      "prompt": "Complete the workflow-mode initial publication review and invoke the public wrapper from the checker-passed owner gate.",
+      "prompt": "Complete the workflow-mode initial publication review and pass the semantic result to the stable public wrapper.",
       "expected_exit": "ready",
       "expected_output": "The DTO contains task identity, branch_review_commit, and the exact reviewed PR title/body.",
       "input_profile_id": "publication_review",

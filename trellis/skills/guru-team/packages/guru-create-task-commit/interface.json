@@ -203,16 +203,10 @@
       "objective_scope": "AI-reviewed ordinary/gitlink bindings with deletion inheritance limited to rename sources, isolated validation, standard conditional Git publication, raw commit postconditions, and private runtime cleanup"
     },
     {
-      "id": "recommended_happy_path_v1",
-      "command": "scripts/invoke-happy-path-v1.sh",
-      "runtime_command": "invoke-guru-create-task-commit-happy-path-v1",
-      "objective_scope": "Recommended post-confirmation facade: one mutation-boundary candidate validation, one exact transaction, existing typed-exit projection, and same-commit stdout-loss recovery"
-    },
-    {
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-create-task-commit",
-      "objective_scope": "Compatibility projection for callers that already orchestrate the executor result; not the recommended Happy Path"
+      "objective_scope": "Sole public entry: prepared-candidate Happy Path with one mutation-boundary validation, exact transaction, typed-exit projection and same-commit stdout-loss recovery; old --invocation envelopes select compatibility projection only"
     }
   ],
   "external_exits": [
@@ -343,8 +337,8 @@
         "path": "examples/public-invocation-error.json"
       },
       "example_argv": [
-        "--input",
-        "examples/public-initial-commit-input.json"
+        "--candidate-artifact",
+        ".trellis/.runtime/guru-team/task-commit-plans/current/001.json"
       ]
     },
     "outputs": [

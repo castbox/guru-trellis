@@ -1877,7 +1877,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         ):
             self.assertIn(f'    "{skill_id}",', verifier)
         self.assertIn('private_dirs = [projection / name for name in ("runtime", "tests", "errors")]', verifier)
-        self.assertIn('if path.name != "invoke.sh"', verifier)
+        self.assertIn(
+            'public_wrapper = interface["public_contracts"]["invocation"]["wrapper"]',
+            verifier,
+        )
+        self.assertIn("private_wrappers = wrappers - {public_wrapper}", verifier)
         self.assertIn(
             'for artifact in interface["public_contracts"]["private_artifacts"]',
             verifier,
@@ -2108,13 +2112,17 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn("rules/" + "branches/", installed_closeout)
         for wrapper_name in (
             "preview-finalization",
+            "invoke",
+        ):
+            self.assertIn(f'"{wrapper_name}"', installed_closeout)
+        self.assertIn('merge_wrappers = {"invoke":', installed_closeout)
+        for retired_wrapper in (
             "finalize-task-happy-path",
-        ):
-            self.assertIn(f'"{wrapper_name}"', installed_closeout)
-        for wrapper_name in (
             "complete-task-pr-merge",
+            "invoke-happy-path-v1.sh",
+            "review-task-publication.sh",
         ):
-            self.assertIn(f'"{wrapper_name}"', installed_closeout)
+            self.assertNotIn(retired_wrapper, installed_closeout)
         self.assertNotIn(
             '.trellis/guru-team/scripts/bash/finish-work.sh', installed_closeout
         )
@@ -2131,12 +2139,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             "record-phase2-check.sh",
             "check-phase2-check.sh",
             "prepare-task-commit.sh",
-            "invoke-happy-path-v1.sh",
+            "invoke.sh",
             "review-branch.sh",
             "check-review-gate.sh",
         ):
             self.assertIn(f'"{wrapper_name}"', installed_closeout)
-        self.assertIn("review-task-publication.sh", installed_closeout)
+        self.assertIn('publication_package / "scripts/invoke.sh"', installed_closeout)
         self.assertIn('owners["guru-approve-task-plan"]', installed_closeout)
         self.assertIn('owners["guru-check-task"]', installed_closeout)
         self.assertIn('owners["guru-create-task-commit"]', installed_closeout)

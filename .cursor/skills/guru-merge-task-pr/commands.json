@@ -176,60 +176,6 @@
       "runtime_role": "execute"
     },
     {
-      "id": "complete-task-pr-merge",
-      "owner": "guru-merge-task-pr",
-      "entrypoint": "runtime/invoke.py",
-      "arguments": [
-        {
-          "flag": "--root",
-          "required": false,
-          "kind": "string",
-          "description": "Repository root.",
-          "repeatable": false,
-          "conflicts": []
-        },
-        {
-          "flag": "--input",
-          "required": true,
-          "kind": "json",
-          "description": "Ready-for-merge input.",
-          "repeatable": false,
-          "conflicts": []
-        },
-        {
-          "flag": "--review-input",
-          "required": false,
-          "kind": "json",
-          "description": "Completed semantic review for a new confirmed transaction; omit only for exact recovery.",
-          "repeatable": false,
-          "conflicts": []
-        },
-        {
-          "flag": "--gate",
-          "required": false,
-          "kind": "string",
-          "description": "Exact private gate locator for recovery.",
-          "repeatable": false,
-          "conflicts": []
-        }
-      ],
-      "stdin": "optional_json",
-      "stdout": "single_json_object",
-      "errors": [
-        "invalid_arguments",
-        "conflicting_arguments",
-        "merge_precondition_failed",
-        "internal_error"
-      ],
-      "side_effect": "github_write",
-      "schema_bindings": [
-        "schemas/public-ready-for-merge-input-2.0.schema.json",
-        "schemas/task-pr-merge-gate-2.0.schema.json"
-      ],
-      "validator_id": "merge_happy_path",
-      "runtime_role": "invoke"
-    },
-    {
       "id": "watch-task-pr-checks",
       "owner": "guru-merge-task-pr",
       "entrypoint": "runtime/check.py",
@@ -320,12 +266,24 @@
           "conflicts": []
         },
         {
+          "flag": "--review-input",
+          "required": false,
+          "kind": "json",
+          "description": "Completed semantic review for the normal confirmed transaction or exact stdout-loss recovery.",
+          "repeatable": false,
+          "conflicts": [
+            "--gate"
+          ]
+        },
+        {
           "flag": "--gate",
           "required": false,
           "kind": "string",
-          "description": "Private gate path.",
+          "description": "Existing private gate path for the compatibility-only gate projection shape.",
           "repeatable": false,
-          "conflicts": []
+          "conflicts": [
+            "--review-input"
+          ]
         }
       ],
       "stdin": "optional_json",
@@ -336,9 +294,10 @@
         "merge_precondition_failed",
         "internal_error"
       ],
-      "side_effect": "runtime_write",
+      "side_effect": "github_write",
       "schema_bindings": [
-        "schemas/public-invocation-error.schema.json"
+        "schemas/public-ready-for-merge-input-2.0.schema.json",
+        "schemas/task-pr-merge-gate-2.0.schema.json"
       ],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"

@@ -1772,23 +1772,26 @@ closed exits without choosing any of them. They do not receive or persist user
 authorization. Current consumer completion removes the private result; failed
 validation retains it only for same-owner repair.
 
-## Closeout Facade Commands
+## Closeout Original Public Commands
 
-The recommended Merge facade is `complete-task-pr-merge`. It owns exactly one
-pre-merge full snapshot, one expected-head merge mutation, one post-merge full
-snapshot, and exact-live-state recovery when the mutation succeeded but command
-output was lost. `watch-task-pr-checks` is the only normal pending-check watcher;
-it is bound to repo, PR, expected head, and required-check identity and returns
-only `checks_succeeded`, `checks_failed`, `checks_pending_timeout`, or
-`head_changed` facts. It never chooses semantic readiness or mutates the PR.
-The normal path must not combine it with `gh run watch` or an Agent polling
-loop. Every Merge typed exit performs terminal cleanup and returns immediately.
+The Merge public command remains `invoke-task-pr-merge` through its existing
+`scripts/invoke.sh`. Its Happy Path owns exactly one pre-merge full snapshot,
+one expected-head merge mutation, one post-merge full snapshot, and
+exact-live-state recovery when the mutation succeeded but command output was
+lost. `watch-task-pr-checks` is the only normal pending-check watcher; it is
+bound to repo, PR, expected head, and required-check identity and returns only
+`checks_succeeded`, `checks_failed`, `checks_pending_timeout`, or `head_changed`
+facts. It never chooses semantic readiness or mutates the PR. The normal path
+must not combine it with `gh run watch` or an Agent polling loop. Every Merge
+typed exit performs terminal cleanup and returns immediately.
 
-The recommended Publication facade is `review-task-publication`; it performs
-record, objective check, output projection, and successful checkpoint retirement
-within one invocation-local snapshot. The recommended Finalizer facade is
-`finalize-task-happy-path`; it may loop only over package-declared same-plan
-deterministic recovery/reprepare transitions. The recommended Commit path is
-`prepare-task-commit` followed by `invoke-guru-create-task-commit-happy-path-v1`.
-Older component commands remain package-owned compatibility and diagnostic
-surfaces, not the normal workflow sequence.
+Publication remains `invoke-guru-review-task-publication` through
+`scripts/invoke.sh`; its Happy Path performs record, objective check, output
+projection, and successful checkpoint retirement within one invocation-local
+snapshot. Finalizer remains `invoke-guru-finalize-task` through
+`scripts/invoke.sh`; its Happy Path may loop only over package-declared
+same-plan deterministic recovery/reprepare transitions. Commit remains
+`prepare-task-commit` followed by confirmed `invoke-guru-create-task-commit`
+through `scripts/invoke.sh`. Older argument shapes select compatibility branches
+inside those same commands. Component commands remain package-owned diagnostic,
+testing, and bounded-recovery surfaces, not the normal workflow sequence.

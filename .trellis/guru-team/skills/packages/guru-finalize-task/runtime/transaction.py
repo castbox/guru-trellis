@@ -2,38 +2,23 @@ from __future__ import annotations
 
 import argparse
 import copy
-import importlib.util
 import re
 from pathlib import Path
 from typing import Any
 
-from common import call_owner, parse_arguments
+COMPONENT_PATH_COMMAND_INVOCATIONS = 5
+PUBLIC_INVOKE_COMMAND_INVOCATIONS = 1
+COMPONENT_PATH_FULL_PREVIEW_READS = 5
+PUBLIC_INVOKE_FULL_PREVIEW_READS = 1
 
 
-LEGACY_NORMAL_COMMAND_INVOCATIONS = 5
-HAPPY_PATH_COMMAND_INVOCATIONS = 1
-LEGACY_FULL_PREVIEW_READS = 5
-HAPPY_PATH_FULL_PREVIEW_READS = 1
-
-
-def _owner(package_root: Path):
-    spec = importlib.util.spec_from_file_location(
-        "finalize_owner",
-        package_root / "runtime/owner.py",
-    )
-    module = importlib.util.module_from_spec(spec)
-    assert spec and spec.loader
-    spec.loader.exec_module(module)
-    return module
-
-
-def happy_path_budget() -> dict[str, int]:
+def invoke_budget() -> dict[str, int]:
     return {
-        "legacy_command_invocations": LEGACY_NORMAL_COMMAND_INVOCATIONS,
-        "happy_path_command_invocations": HAPPY_PATH_COMMAND_INVOCATIONS,
+        "component_path_command_invocations": COMPONENT_PATH_COMMAND_INVOCATIONS,
+        "public_invoke_command_invocations": PUBLIC_INVOKE_COMMAND_INVOCATIONS,
         "command_reduction_percent": 80,
-        "legacy_full_preview_reads": LEGACY_FULL_PREVIEW_READS,
-        "happy_path_full_preview_reads": HAPPY_PATH_FULL_PREVIEW_READS,
+        "component_path_full_preview_reads": COMPONENT_PATH_FULL_PREVIEW_READS,
+        "public_invoke_full_preview_reads": PUBLIC_INVOKE_FULL_PREVIEW_READS,
         "full_preview_read_reduction_percent": 80,
     }
 
@@ -51,11 +36,11 @@ def _blocked_output(owner: Any, root: Path, remediation: str) -> dict[str, Any]:
     errors = owner.skill_json_schema_validation_errors(
         output,
         owner.finalization_output_contract(root, "blocked"),
-        "task finalization Happy Path blocked output",
+        "task finalization public invocation blocked output",
     )
     if errors:
         raise owner.WorkflowError(
-            "Task finalization Happy Path blocked output is invalid.",
+            "Task finalization public invocation blocked output is invalid.",
             exit_code=2,
             payload={"errors": errors},
         )
@@ -67,17 +52,17 @@ def _project_output(owner: Any, root: Path, result: dict[str, Any]) -> dict[str,
     exit_id = str(result.get("typed_exit") or "")
     if not isinstance(output, dict) or output.get("exit_id") != exit_id:
         raise owner.WorkflowError(
-            "Task finalization Happy Path did not produce one materialized typed exit.",
+            "Task finalization public invocation did not produce one materialized typed exit.",
             exit_code=2,
         )
     errors = owner.skill_json_schema_validation_errors(
         output,
         owner.finalization_output_contract(root, exit_id),
-        f"task finalization Happy Path output {exit_id}",
+        f"task finalization public invocation output {exit_id}",
     )
     if errors:
         raise owner.WorkflowError(
-            "Task finalization Happy Path typed output is invalid.",
+            "Task finalization public invocation typed output is invalid.",
             exit_code=2,
             payload={"errors": errors},
         )
@@ -105,7 +90,7 @@ def _record_checked_gate(
     gate_path = recorded.get("gate_path")
     if not isinstance(gate, dict) or not isinstance(gate_path, Path):
         raise owner.WorkflowError(
-            "Task finalization Happy Path recorder did not retain its private gate.",
+            "Task finalization public invocation recorder did not retain its private gate.",
             exit_code=2,
         )
     checked, _ = owner.check_finalization_gate_context(
@@ -134,7 +119,7 @@ def _mapped_reprepare_review(
         owner.FINALIZATION_REPREPARE_PROVENANCE_TAIL,
     }:
         raise owner.WorkflowError(
-            "Task finalization Happy Path encountered an unmapped reprepare state.",
+            "Task finalization public invocation encountered an unmapped reprepare state.",
             exit_code=2,
         )
     output = (
@@ -165,7 +150,7 @@ def _mapped_reprepare_review(
     }
 
 
-def execute_happy_path(
+def execute_confirmed_transaction(
     owner: Any,
     args: argparse.Namespace,
     *,
@@ -174,7 +159,7 @@ def execute_happy_path(
     operation_counts = counters if counters is not None else {}
     operation_counts.setdefault("terminal.post_exit_operation", 0)
     root = owner.repo_root(Path(args.root or "."))
-    public_input, input_locator = owner.finalization_public_input(root, args.input)
+    public_input, _ = owner.finalization_public_input(root, args.input)
     reviewed = owner.finalization_semantic_review_input(root, args.review_input)
     context = owner.finalization_preview_context(root, args, public_input)
     _count(operation_counts, "preview.read")
@@ -271,21 +256,3 @@ def execute_happy_path(
         owner.finalization_retire_current_state(root, task_dir)
         _count(operation_counts, "owner_state.cleanup")
     return output
-
-
-def run(package_root: Path, command: dict[str, Any], argv: list[str]) -> dict[str, Any]:
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--root")
-    parser.add_argument("--input", required=True)
-    parser.add_argument("--review-input", required=True)
-    parser.add_argument("--confirmed-preview-sha256")
-    for name in ("repo", "base_branch", "remote", "title", "task_name"):
-        parser.add_argument("--" + name.replace("_", "-"))
-    parser.add_argument("--validation", action="append")
-    args = parse_arguments(parser, argv)
-    owner = _owner(package_root)
-    return call_owner(
-        owner,
-        lambda: execute_happy_path(owner, args),
-        public=True,
-    )

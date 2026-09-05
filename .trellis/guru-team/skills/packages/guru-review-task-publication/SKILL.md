@@ -7,19 +7,22 @@ description: Review task publication readiness through ten semantic dimensions, 
 
 Use after `guru-review-branch:passed`, or for a checker-declared stale
 finalization handback. Read `references/contract.md`, author the selected public
-input profile, and complete the semantic review. The single recommended Happy
-Path is `review-task-publication`: pass the public input and the AI-completed
-semantic result, and let that facade record, objectively check, project, and
-retire the private checkpoint in one invocation.
+input profile, and complete the semantic review. The sole public Happy Path is
+`scripts/invoke.sh`, bound to stable command
+`invoke-guru-review-task-publication`: pass the public input and the
+AI-completed semantic result, and let that invocation record, objectively
+check, project, and retire the private checkpoint in one process.
 
 Use the exact authoring fields, enums, route rules, and valid JSON template in
-`references/contract.md`. The facade derives task, reviewed-commit, and content
+`references/contract.md`. The invocation derives task, reviewed-commit, and content
 identity fields; do not guess or repeat them in the semantic result.
 
 Do not read package runtime, schemas, examples, evals, or tests for the normal
-path. `record-task-publication-review`, `check-task-publication-review`, and
-`invoke-guru-review-task-publication` remain compatibility, testing, and bounded
-recovery commands only.
+path. `record-task-publication-review` and `check-task-publication-review`
+remain package-private diagnostic, testing, and bounded recovery commands.
+The old `--owner-result` argument shape remains compatibility-only on the same
+public invoke command; it is selected only when that argument is supplied and
+never precedes or runs alongside the semantic-result Happy Path.
 
 The stale profile requires the Finalizer-projected `branch_review_commit`.
 Bind the checked owner result to that same commit. Normal content continuity drift

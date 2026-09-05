@@ -1,0 +1,26 @@
+{
+  "close_issues": [
+    {
+      "number": 332,
+      "reason": "Issue #332 remains the release authority; this task corrects the public-entry split introduced after #330 and repairs the exact-candidate Release Gate consumers blocked by that drift.",
+      "title": "发布 v0.6.15-guru.5：提升 Guru Team 内部版本并完成 exact-candidate 正式发布",
+      "url": "https://github.com/castbox/guru-trellis/issues/332"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 332,
+    "reason": "Issue #332 remains the release authority; this task corrects the public-entry split introduced after #330 and repairs the exact-candidate Release Gate consumers blocked by that drift.",
+    "title": "发布 v0.6.15-guru.5：提升 Guru Team 内部版本并完成 exact-candidate 正式发布",
+    "url": "https://github.com/castbox/guru-trellis/issues/332"
+  },
+  "related_issues": [
+    {
+      "number": 330,
+      "reason": "Defines the closeout latency goal and compatibility boundary; the current task corrects its implementation direction without reopening or closing #330.",
+      "title": "收敛 Commit、Publication、Finalizer、Merge 正常路径并消除重复检查开销",
+      "url": "https://github.com/castbox/guru-trellis/issues/330"
+    }
+  ],
+  "schema_version": "2.0"
+}

@@ -111,6 +111,10 @@ class RestoreArchivedTaskContractTest(unittest.TestCase):
 
     def test_eval_corpus_has_required_normal_and_blocked_cases(self) -> None:
         corpus = load_json(PACKAGE / "evals/evals.json")
+        schema = load_json(SKILLS_ROOT / "schemas/skill-evals.schema.json")
+        self.assertEqual(
+            [], list(jsonschema.Draft202012Validator(schema).iter_errors(corpus))
+        )
         cases = {item["id"]: item for item in corpus["evals"]}
         self.assertEqual({"success", "idempotent", "external-blocker", "head-drift", "scope-drift", "dirty-worktree", "active-task-conflict", "merged-pr"}, set(cases))
         self.assertEqual({"restored_to_phase2", "restore_blocked"}, {item["expected_exit"] for item in cases.values()})

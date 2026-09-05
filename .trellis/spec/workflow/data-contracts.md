@@ -2038,16 +2038,18 @@ base-only mismatch routes to base reconciliation and content/metadata stale
 remains Publication-owned. Migration does not rewrite active task artifacts,
 read another package's private state, or restore the retired shared dispatcher.
 
-## Closeout Facade Invocation State
+## Closeout Invocation State
 
-Closeout facade state is package-local, ignored, and bounded to one direct
-consumer. Publication's current full snapshot is process-local and reused only
-by its record/check/projection sequence. Finalizer's preview identity is a
-dialogue-local confirmation binding, not authorization evidence; any retained
-transaction records only the minimum same-owner recovery state already required
-by the Finalizer contract. Merge binds its pre-merge snapshot to repo, PR,
-expected head, reviewed message, policy/check facts, close scope, and pre-merge
-base head, then discards it after terminal projection.
+Closeout invocation state is package-local, ignored, and bounded to one direct
+consumer behind the existing public command. Publication's current full
+snapshot is process-local and reused only by its record/check/projection
+sequence. Finalizer's preview identity is a dialogue-local confirmation binding,
+not authorization evidence; any retained transaction records only the minimum
+same-owner recovery state already required by the Finalizer contract. Merge
+binds its pre-merge snapshot to repo, PR, expected head, reviewed message,
+policy/check facts, close scope, and pre-merge base head, then discards it after
+terminal projection. No invocation state or compatibility branch creates a
+second public wrapper, command authority, or cross-Skill handoff.
 
 Commit may retain a minimal success receipt after the live ref has advanced so
 loss of invocation stdout can recover the exact published commit without a

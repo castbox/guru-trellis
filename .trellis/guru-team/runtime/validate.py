@@ -229,6 +229,11 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
         interface = read_json_file(package / "interface.json", f"{package_id}.interface")
         validate_interface_contract(skills, package, row, interface)
         declared = {item["id"]: item["command"] for item in interface["validators"]}
+        public_wrapper = str(
+            interface.get("public_contracts", {})
+            .get("invocation", {})
+            .get("wrapper", "")
+        )
         actual = {item["validator_id"] for item in metadata["commands"]}
         if set(declared) != actual:
             raise CommandError("owner_mismatch", f"{package_id}.commands", "Cover every interface validator runtime_command exactly once.")
@@ -270,7 +275,7 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
                     "Resolve the shared launcher in both canonical and installed package layouts.",
                 )
             if (
-                declared[command["validator_id"]] == "scripts/invoke.sh"
+                declared[command["validator_id"]] == public_wrapper
                 and "../../../../.trellis/guru-team/runtime/launch.sh" not in wrapper_source
             ):
                 raise CommandError(

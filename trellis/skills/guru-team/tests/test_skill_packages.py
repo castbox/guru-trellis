@@ -122,6 +122,46 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 for path in projection.rglob("*"):
                     self.assertNotIn(path.name, {"runtime", "tests", "errors"})
 
+    def test_interface_declared_non_invoke_wrapper_is_projected_and_invocable(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            target = Path(temporary) / "repo"
+            (target / ".trellis").mkdir(parents=True)
+            (target / ".trellis/workflow.md").write_bytes(
+                (REPO / "trellis/workflows/guru-team/workflow.md").read_bytes()
+            )
+            preset.install_assets(
+                REPO / "trellis/workflows/guru-team",
+                target / ".trellis/guru-team",
+                target,
+                {"codex", "cursor", "claude"},
+            )
+
+            skill_id = "guru-restore-archived-task"
+            package = target / ".trellis/guru-team/skills/packages" / skill_id
+            interface = json.loads(
+                (package / "interface.json").read_text(encoding="utf-8")
+            )
+            public_wrapper = interface["public_contracts"]["invocation"]["wrapper"]
+            self.assertEqual("scripts/restore-archived-task.sh", public_wrapper)
+            self.assertTrue((package / public_wrapper).is_file())
+
+            for platform in (".agents", ".codex", ".claude", ".cursor"):
+                projection = target / platform / "skills" / skill_id
+                wrapper = projection / public_wrapper
+                self.assertTrue(wrapper.is_file(), wrapper)
+                self.assertTrue(wrapper.stat().st_mode & 0o111, wrapper)
+                self.assertFalse((projection / "scripts/invoke.sh").exists())
+                process = subprocess.run(
+                    [str(wrapper), "--help"],
+                    cwd=target,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+                self.assertEqual(0, process.returncode, process.stderr)
+                self.assertIn("usage: restore-archived-task", process.stdout)
+
     def test_production_eval_contract_registration_survives_installation(self) -> None:
         canonical_manifest = json.loads(
             (REPO / "trellis/guru-team-extension.json").read_text(encoding="utf-8")

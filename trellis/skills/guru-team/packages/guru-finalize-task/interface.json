@@ -98,8 +98,7 @@
     {"id": "finalization_gate_recorder", "command": "scripts/record-finalization-gate.sh", "runtime_command": "record-finalization-gate", "objective_scope": "Record only the completed AI review, objective task/plan/content identity and selected route; user authorization remains conversation-only"},
     {"id": "finalization_gate_checker", "command": "scripts/check-finalization-gate.sh", "runtime_command": "check-finalization-gate", "objective_scope": "Validate the minimal gate against current task, plan, content, route, consumer and transaction facts"},
     {"id": "finalization_transition_executor", "command": "scripts/execute-finalization-transition.sh", "runtime_command": "execute-finalization-transition", "objective_scope": "Execute one checked deterministic transition through the existing closeout engine without choosing the external route"},
-    {"id": "public_invocation", "command": "scripts/finalize-task-happy-path.sh", "runtime_command": "finalize-task-happy-path", "objective_scope": "After dialogue-local confirmation, bind the current preview identity, record and check the AI review once, continue only mapped same-plan deterministic reprepare or recovery, and emit one minimal DTO"},
-    {"id": "legacy_public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-finalize-task", "objective_scope": "Compatibility and recovery entry that validates a prebuilt owner-private gate and emits one minimal DTO"},
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-finalize-task", "objective_scope": "Select the confirmed-preview transaction path from --review-input, or the compatibility checker path only from --owner-result, then emit one minimal DTO"},
     {"id": "reviewed_content_identity", "command": "scripts/reviewed-content-identity.sh", "runtime_command": "finalize-task-content-identity", "objective_scope": "Compute the canonical metadata-excluded reviewed-content identity for one Git commit"}
   ],
   "external_exits": [
@@ -134,7 +133,7 @@
     },
     "invocation": {
       "command_id": "run-skill-command",
-      "wrapper": "scripts/finalize-task-happy-path.sh",
+      "wrapper": "scripts/invoke.sh",
       "input_binding": {"kind": "structured_json", "profile_id": "publication_ready"},
       "stdout_contract": "single_typed_exit",
       "error_schema": {"schema_id": "guru-finalize-task-invocation-error-1.0", "path": "schemas/public-invocation-error.schema.json"},

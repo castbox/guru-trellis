@@ -135,12 +135,6 @@
       "objective_scope": "Execute one repo-bound expected-head merge and post-merge read-only closure verification"
     },
     {
-      "id": "merge_happy_path",
-      "command": "scripts/complete-task-pr-merge.sh",
-      "runtime_command": "complete-task-pr-merge",
-      "objective_scope": "After exact confirmation, record the completed semantic result, reuse one pre snapshot, execute one expected-head merge, capture one post snapshot, recover output loss, project one terminal exit and retire private state"
-    },
-    {
       "id": "required_checks_watcher",
       "command": "scripts/watch-task-pr-checks.sh",
       "runtime_command": "watch-task-pr-checks",
@@ -150,7 +144,7 @@
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-task-pr-merge",
-      "objective_scope": "Check and serialize exactly one terminal merge output, then retire the private gate"
+      "objective_scope": "After exact confirmation, run the single public Happy Path with one pre snapshot, one expected-head merge, one post snapshot, exact recovery and terminal projection; accept the old gate-only shape only as compatibility"
     }
   ],
   "public_contracts": {
@@ -183,7 +177,7 @@
     },
     "invocation": {
       "command_id": "run-skill-command",
-      "wrapper": "scripts/complete-task-pr-merge.sh",
+      "wrapper": "scripts/invoke.sh",
       "input_binding": {"kind": "structured_json", "profile_id": "ready_for_merge"},
       "stdout_contract": "single_typed_exit",
       "error_schema": {

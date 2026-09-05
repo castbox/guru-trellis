@@ -16,10 +16,10 @@ Read [references/contract.md](references/contract.md), run the preview, and
 perform the semantic gate. A current task-work content finding returns
 `phase2_reentry_required` without merge confirmation or remote mutation. Only a
 fully passed merge route asks once for the exact merge action. After that
-confirmation, call the single recommended facade:
+confirmation, call the original and sole public Happy Path entry:
 
 ```bash
-scripts/complete-task-pr-merge.sh --input <public-input.json> \
+scripts/invoke.sh --input <public-input.json> \
   --review-input <semantic-review.json> --json
 ```
 
@@ -27,14 +27,16 @@ It records the already-completed review, reuses one pre-merge snapshot, performs
 one expected-head merge, captures one post-merge snapshot, projects exactly one
 of `merged`, `merge_blocked`, `phase2_reentry_required`, or
 `closure_mismatch`, and retires the private gate/body state before returning.
-On exact recovery, rerun the same facade with
-the same `--input`; it resolves the package-owned current gate, or accepts that
-exact locator through `--gate`. `--review-input` is not required when the
-current gate already exists.
+On exact recovery, rerun the same `scripts/invoke.sh` call with the same input
+and semantic review. It resolves the package-owned current gate, or reconstructs
+an exact already-merged terminal result from live facts without repeating the
+mutation.
 
 `record-task-pr-merge`, `check-task-pr-merge`, `execute-task-pr-merge`, and
-`invoke-task-pr-merge` remain compatibility/testing/recovery commands. They are
-not the recommended normal path.
+their wrappers remain package-private diagnostic and bounded recovery commands.
+The old `scripts/invoke.sh --input <public-input.json> [--gate <gate>]` shape is
+compatibility-only: it checks and projects an existing gate and never runs
+before, alongside, or after the normal `--review-input` transaction branch.
 An already persisted terminal output is recovered only after read-only live
 revalidation of the exact merge SHA, two parents, reviewed subject/body, remote
 base ref and closure facts; recovery never repeats the merge mutation.

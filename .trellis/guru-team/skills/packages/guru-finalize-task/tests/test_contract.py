@@ -34,23 +34,15 @@ def load_runtime():
     return module
 
 
-def load_facade():
-    sys.path.insert(0, str(shared_runtime_parent()))
-    sys.path.insert(0, str(PACKAGE / "runtime"))
-    previous_common = sys.modules.pop("common", None)
-    try:
-        spec = importlib.util.spec_from_file_location(
-            "finalize_task_happy_path_test",
-            PACKAGE / "runtime/facade.py",
-        )
-        assert spec and spec.loader
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return module
-    finally:
-        sys.modules.pop("common", None)
-        if previous_common is not None:
-            sys.modules["common"] = previous_common
+def load_transaction():
+    spec = importlib.util.spec_from_file_location(
+        "finalize_task_transaction_test",
+        PACKAGE / "runtime/transaction.py",
+    )
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 GTT = load_runtime()
@@ -2115,7 +2107,15 @@ class FinalizeTaskContractTests(unittest.TestCase):
             owner = {
                 "route": {"typed_exit": "blocked", "output": output}
             }
+
+            class WorkflowError(RuntimeError):
+                def __init__(self, message: str, *, exit_code: int) -> None:
+                    super().__init__(message)
+                    self.exit_code = exit_code
+                    self.payload = {}
+
             runtime = SimpleNamespace(
+                WorkflowError=WorkflowError,
                 repo_root=lambda path: root,
                 finalization_public_input=lambda *_: (public, root / "input.json"),
                 finalization_gate_input=mock.Mock(return_value=(owner, root / "gate.json")),
@@ -2127,7 +2127,16 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 stage0_output_contract=lambda *_: ({}, {}),
                 skill_json_schema_validation_errors=lambda *_: [],
             )
-            with mock.patch.object(invoke, "_o", return_value=runtime):
+            with (
+                mock.patch.object(invoke, "_o", return_value=runtime),
+                mock.patch.object(
+                    invoke,
+                    "_transaction",
+                    side_effect=AssertionError(
+                        "compatibility mode must not load the transaction path"
+                    ),
+                ),
+            ):
                 self.assertEqual(
                     invoke.run(
                         PACKAGE,
@@ -2152,6 +2161,66 @@ class FinalizeTaskContractTests(unittest.TestCase):
             self.assertEqual(checked_args.title, "Release")
             self.assertEqual(checked_args.task_name, "08-31-322")
             self.assertEqual(checked_args.validation, ["go-test", "contract-tests"])
+
+            runtime.finalization_gate_input.reset_mock()
+            runtime.check_finalization_gate_result.reset_mock()
+            execute_confirmed = mock.Mock(return_value=output)
+            with (
+                mock.patch.object(invoke, "_o", return_value=runtime),
+                mock.patch.object(
+                    invoke,
+                    "_transaction",
+                    return_value=SimpleNamespace(
+                        execute_confirmed_transaction=execute_confirmed
+                    ),
+                ),
+            ):
+                self.assertEqual(
+                    invoke.run(
+                        PACKAGE,
+                        {"id": "invoke-guru-finalize-task"},
+                        [
+                            "--input",
+                            "input.json",
+                            "--review-input",
+                            "review.json",
+                            "--confirmed-preview-sha256",
+                            "a" * 64,
+                        ],
+                    ),
+                    output,
+                )
+            runtime.finalization_gate_input.assert_not_called()
+            runtime.check_finalization_gate_result.assert_not_called()
+            normal_args = execute_confirmed.call_args.args[1]
+            self.assertEqual(normal_args.review_input, "review.json")
+            self.assertIsNone(normal_args.owner_result)
+
+            for arguments in (
+                ["--input", "input.json"],
+                [
+                    "--input",
+                    "input.json",
+                    "--review-input",
+                    "review.json",
+                    "--owner-result",
+                    "gate.json",
+                ],
+            ):
+                with self.subTest(arguments=arguments):
+                    with (
+                        mock.patch.object(invoke, "_o", return_value=runtime),
+                        self.assertRaises(Exception) as raised,
+                    ):
+                        invoke.run(
+                            PACKAGE,
+                            {"id": "invoke-guru-finalize-task"},
+                            arguments,
+                        )
+                    self.assertEqual(
+                        getattr(raised.exception, "code", None),
+                        "finalization_stale",
+                    )
 
             with self.assertRaises(Exception) as raised:
                 invoke.run(
@@ -2216,22 +2285,30 @@ class FinalizeTaskContractTests(unittest.TestCase):
         for validator in interface["validators"]:
             self.assertIn("runtime/launch.sh", (PACKAGE / validator["command"]).read_text(encoding="utf-8"))
 
-    def test_happy_path_uses_supported_invoke_entrypoint_and_legacy_remains(self) -> None:
+    def test_public_invoke_is_the_only_public_command_and_wrapper(self) -> None:
         commands = load("commands.json")["commands"]
         by_id = {item["id"]: item for item in commands}
-        self.assertEqual(
-            by_id["finalize-task-happy-path"]["entrypoint"],
-            "runtime/invoke.py",
-        )
+        self.assertNotIn("finalize-task-happy-path", by_id)
         self.assertEqual(
             by_id["invoke-guru-finalize-task"]["entrypoint"],
             "runtime/invoke.py",
         )
+        invocation = load("interface.json")["public_contracts"]["invocation"]
+        self.assertEqual(invocation["wrapper"], "scripts/invoke.sh")
+        self.assertEqual(
+            [
+                item["runtime_command"]
+                for item in load("interface.json")["validators"]
+                if item["id"] == "public_invocation"
+            ],
+            ["invoke-guru-finalize-task"],
+        )
+        self.assertFalse((PACKAGE / "scripts/finalize-task-happy-path.sh").exists())
         jsonschema.Draft202012Validator(
             load("../../schemas/skill-commands.schema.json")
         ).validate(load("commands.json"))
 
-    def test_happy_path_confirmation_identity_tracks_only_material_plan(self) -> None:
+    def test_public_invoke_confirmation_identity_tracks_only_material_plan(self) -> None:
         public_input = {
             "profile": "publication_ready",
             "mode": "workflow",
@@ -2286,8 +2363,8 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     identity,
                 )
 
-    def test_happy_path_stale_confirmation_blocks_before_record_or_execute(self) -> None:
-        facade = load_facade()
+    def test_public_invoke_stale_confirmation_blocks_before_record_or_execute(self) -> None:
+        transaction = load_transaction()
         record = mock.Mock(side_effect=AssertionError("must block before record"))
         execute = mock.Mock(side_effect=AssertionError("must block before execute"))
 
@@ -2316,7 +2393,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
             skill_json_schema_validation_errors=lambda *_: [],
         )
         counters: dict[str, int] = {}
-        output = facade.execute_happy_path(
+        output = transaction.execute_confirmed_transaction(
             owner,
             SimpleNamespace(
                 root="/repo",
@@ -2332,8 +2409,8 @@ class FinalizeTaskContractTests(unittest.TestCase):
         execute.assert_not_called()
         self.assertEqual(counters["terminal.post_exit_operation"], 0)
 
-    def test_happy_path_mapped_reprepare_converges_and_cleans_once(self) -> None:
-        facade = load_facade()
+    def test_public_invoke_mapped_reprepare_converges_and_cleans_once(self) -> None:
+        transaction = load_transaction()
         task_dir = Path("/repo/.trellis/tasks/09-02-330-finalizer")
         plan = {
             "git": {
@@ -2407,7 +2484,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
             finalization_retire_current_state=cleanup,
         )
         counters: dict[str, int] = {}
-        output = facade.execute_happy_path(
+        output = transaction.execute_confirmed_transaction(
             owner,
             SimpleNamespace(
                 root="/repo",
@@ -2424,8 +2501,8 @@ class FinalizeTaskContractTests(unittest.TestCase):
         self.assertEqual(counters["owner_state.cleanup"], 1)
         self.assertEqual(counters["terminal.post_exit_operation"], 0)
 
-    def test_happy_path_terminal_stdout_loss_recovery_needs_no_digest_or_cleanup(self) -> None:
-        facade = load_facade()
+    def test_public_invoke_terminal_stdout_loss_recovery_needs_no_digest_or_cleanup(self) -> None:
+        transaction = load_transaction()
         ready_output = {"exit_id": "ready_for_merge"}
         cleanup = mock.Mock(side_effect=AssertionError("terminal recovery is read-only"))
         owner = SimpleNamespace(
@@ -2460,7 +2537,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
             finalization_retire_current_state=cleanup,
         )
         counters: dict[str, int] = {}
-        output = facade.execute_happy_path(
+        output = transaction.execute_confirmed_transaction(
             owner,
             SimpleNamespace(
                 root="/repo",
@@ -2476,16 +2553,16 @@ class FinalizeTaskContractTests(unittest.TestCase):
         self.assertNotIn("owner_state.cleanup", counters)
         self.assertEqual(counters["terminal.post_exit_operation"], 0)
 
-    def test_happy_path_budget_and_recommended_invocation_are_exact(self) -> None:
-        facade = load_facade()
+    def test_public_invoke_budget_and_recommended_invocation_are_exact(self) -> None:
+        transaction = load_transaction()
         self.assertEqual(
-            facade.happy_path_budget(),
+            transaction.invoke_budget(),
             {
-                "legacy_command_invocations": 5,
-                "happy_path_command_invocations": 1,
+                "component_path_command_invocations": 5,
+                "public_invoke_command_invocations": 1,
                 "command_reduction_percent": 80,
-                "legacy_full_preview_reads": 5,
-                "happy_path_full_preview_reads": 1,
+                "component_path_full_preview_reads": 5,
+                "public_invoke_full_preview_reads": 1,
                 "full_preview_read_reduction_percent": 80,
             },
         )
@@ -2494,12 +2571,17 @@ class FinalizeTaskContractTests(unittest.TestCase):
             item for item in interface["validators"]
             if item["id"] == "public_invocation"
         ]
-        legacy = [
-            item for item in interface["validators"]
-            if item["id"] == "legacy_public_invocation"
-        ]
-        self.assertEqual([item["runtime_command"] for item in public], ["finalize-task-happy-path"])
-        self.assertEqual([item["runtime_command"] for item in legacy], ["invoke-guru-finalize-task"])
+        self.assertEqual([item["runtime_command"] for item in public], ["invoke-guru-finalize-task"])
+        self.assertNotIn(
+            "legacy_public_invocation",
+            {item["id"] for item in interface["validators"]},
+        )
+        for facts_path in sorted((PACKAGE / "evals/files").glob("*facts.json")):
+            arguments = load(facts_path.relative_to(PACKAGE).as_posix())[
+                "public_invocation"
+            ]["arguments"]
+            self.assertIn("--review-input", arguments)
+            self.assertNotIn("--owner-result", arguments)
 
     def test_current_contract_has_no_verifier_edge_or_reentry(self) -> None:
         interface = load("interface.json")
@@ -2717,7 +2799,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
             predecessor_transaction_fresh_reviewed_descendant=True,
         )
 
-    def test_happy_path_adopts_unbound_equal_head_without_republishing(self) -> None:
+    def test_public_invoke_adopts_unbound_equal_head_without_republishing(self) -> None:
         for metadata_variant in ("equal", "trailing_lf"):
             with self.subTest(metadata_variant=metadata_variant):
                 self._assert_existing_pr_recovery_real_topology(
@@ -2725,7 +2807,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     initial_is_draft=False,
                     metadata_variant=metadata_variant,
                     interrupt_archive=False,
-                    through_happy_path_facade=True,
+                    through_public_invoke=True,
                 )
 
     def _assert_existing_pr_recovery_real_topology(
@@ -2735,14 +2817,14 @@ class FinalizeTaskContractTests(unittest.TestCase):
         initial_is_draft: bool = True,
         metadata_variant: str = "different",
         interrupt_archive: bool = True,
-        through_happy_path_facade: bool = False,
+        through_public_invoke: bool = False,
         predecessor_transaction_rebind: bool = False,
         predecessor_transaction_base_evolution: bool = False,
         predecessor_transaction_fresh_reviewed_descendant: bool = False,
     ) -> None:
         self.assertIn(recovery_ancestry, {"strict_ancestor", "equal"})
         self.assertIn(metadata_variant, {"different", "trailing_lf", "equal"})
-        if through_happy_path_facade:
+        if through_public_invoke:
             self.assertEqual(recovery_ancestry, "equal")
             self.assertFalse(interrupt_archive)
         if predecessor_transaction_rebind:
@@ -3240,8 +3322,8 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 gate="gate.json",
             )
             no_op = mock.Mock()
-            facade = load_facade() if through_happy_path_facade else None
-            facade_counters: dict[str, int] = {}
+            transaction = load_transaction() if through_public_invoke else None
+            invoke_counters: dict[str, int] = {}
             executed_results: list[dict[str, Any]] = []
             terminal_transactions: list[dict[str, Any]] = []
             original_execute_transition = GTT.execute_finalization_transition_result
@@ -3416,12 +3498,12 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     ],
                 )
                 self.assertEqual(set(mutations.values()), {0})
-                if through_happy_path_facade:
+                if through_public_invoke:
                     args.confirmed_preview_sha256 = preview["confirmation_identity"]
-                    output = facade.execute_happy_path(
+                    output = transaction.execute_confirmed_transaction(
                         GTT,
                         args,
-                        counters=facade_counters,
+                        counters=invoke_counters,
                     )
                     completed = executed_results[-1]
                     self.assertEqual(output, completed["output"])
@@ -3550,7 +3632,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 self.assertEqual(completed["typed_exit"], "ready_for_merge")
                 transaction = (
                     terminal_transactions[-1]
-                    if through_happy_path_facade
+                    if through_public_invoke
                     else GTT.finalization_read_transaction(root, root / archive_locator)
                 )
                 self.assertEqual(transaction["mode"], "existing_pr_recovery")
@@ -3616,8 +3698,8 @@ class FinalizeTaskContractTests(unittest.TestCase):
                         if event in mutation_events:
                             self.assertLess(conversion_index, mutation_events.index(event))
 
-                if through_happy_path_facade:
-                    self.assertEqual(facade_counters["terminal.post_exit_operation"], 0)
+                if through_public_invoke:
+                    self.assertEqual(invoke_counters["terminal.post_exit_operation"], 0)
                     self.assertIsNone(
                         GTT.finalization_find_transaction_by_task_ref(
                             root,

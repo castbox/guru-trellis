@@ -493,26 +493,34 @@ payload, issue scope, validation statement, deployment, and security metadata.
 Finalizer exposes `base_reconciliation_required` separately and never
 relabels a base-only mismatch as Publication stale.
 
-## Closeout Happy Path Routing
+## Closeout Original-Entry Routing
 
 Commit, Publication, Finalizer, and Merge remain four independent semantic
-Skills. Each package declares exactly one recommended normal-path facade while
-retaining older record/check/execute/invoke commands as compatibility, testing,
-or bounded recovery entries. The normal sequence is:
+Skills. Each package keeps its existing Interface-declared public wrapper and
+stable command id as the only normal entry. Happy Path consolidation happens
+inside that command; an older argument shape selects a mutually exclusive
+compatibility branch, while record/check/execute helpers remain package-private
+testing, diagnosis, or bounded-recovery entries. The normal sequence is:
 
 - Commit: one `prepare-task-commit`, one dialogue-local action confirmation,
-  then one `invoke-guru-create-task-commit-happy-path-v1`.
-- Publication: after the AI semantic review, one `review-task-publication`.
+  then one `invoke-guru-create-task-commit` through `scripts/invoke.sh` with the
+  prepared candidate locator.
+- Publication: after the AI semantic review, one
+  `invoke-guru-review-task-publication` through `scripts/invoke.sh` with the
+  public input and semantic result.
 - Finalizer: one read-only preview, one dialogue-local Finalizer confirmation,
-  then one `finalize-task-happy-path`.
+  then one `invoke-guru-finalize-task` through `scripts/invoke.sh` with the
+  confirmed preview identity.
 - Merge: at most one expected-head-bound `watch-task-pr-checks` while checks are
   pending, then one dialogue-local merge confirmation and one
-  `complete-task-pr-merge`.
+  `invoke-task-pr-merge` through `scripts/invoke.sh`.
 
-A facade may reuse facts only within one invocation, for one exact authority
-identity, and only until a mutation boundary. It may automatically consume a
-mapped deterministic recovery/reprepare only when the package proves the
-semantic plan and side-effect set are unchanged. Material scope, authority,
+The original command may reuse facts only within one invocation, for one exact
+authority identity, and only until a mutation boundary. It may automatically
+consume a mapped deterministic recovery/reprepare only when the package proves
+the semantic plan and side-effect set are unchanged. Material scope, authority,
 payload, head, plan, or action changes return to the owning semantic step and
-invalidate the previous confirmation. Every Merge exit is terminal for that
-Skill; its consumer or stop target runs next, with no post-exit polling or work.
+invalidate the previous confirmation. The Happy Path must not execute the
+compatibility branch first or publish a second wrapper/command authority. Every
+Merge exit is terminal for that Skill; its consumer or stop target runs next,
+with no post-exit polling or work.

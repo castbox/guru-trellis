@@ -72,17 +72,17 @@ ambiguous.
 
 ## Validation And Execution
 
-### Recommended Happy Path Facade 1.0
+### Public Happy Path
 
 The unique recommended normal path is one
 `scripts/prepare-task-commit.sh` call followed, after the unchanged action is
 confirmed in the current conversation, by one
-`scripts/invoke-happy-path-v1.sh` call. Its stable command id is
-`invoke-guru-create-task-commit-happy-path-v1`. The facade accepts only the
-prepared package-owned candidate locator; it never accepts confirmation,
+`scripts/invoke.sh --candidate-artifact <prepared-locator>` call. Its stable
+command id is `invoke-guru-create-task-commit`. The normal branch accepts only
+the prepared package-owned candidate locator; it never accepts confirmation,
 authorization, a selected exit, message authoring, or replacement Git facts.
 
-The facade reuses the existing exact executor directly. It does not call the
+The public invocation reuses the existing exact executor directly. It does not call the
 compatibility checker first because the executor already performs the same
 authoritative candidate validation at the mutation boundary. It then projects
 the executor's actual result through the existing public output schemas. Thus
@@ -95,21 +95,23 @@ pre-publication conditions still hold, the exact executor writes one minimal
 ignored `task_commit_happy_path_result` receipt before `git update-ref`. The
 receipt binds the exact candidate locator, task/base/ref identity, parent,
 commit tree and raw message digest. It is not a committed result by itself: the
-facade projects `committed` only when the live symbolic ref points to the bound
+public invocation projects `committed` only when the live symbolic ref points to the bound
 commit and all receipt identities verify. If ref mutation did not occur, the
 candidate remains authoritative for a normal retry and the executor may
 replace the prewritten receipt. If interruption occurs after ref mutation, the
-facade uses the candidate plus receipt to finish the exact-path live-index
+public invocation uses the candidate plus receipt to finish the exact-path live-index
 postconditions and cleanup without rerunning hooks, creating another commit or
 updating the ref again. A changed ref, parent, tree or message fails closed.
 The next complete prepare for the same task retires the previous receipt before
 creating its new candidate. Compatibility executor calls do not request or
-write this facade-owned receipt.
+write this public-invocation receipt.
 
-`check-task-commit-plan.sh`, `create-task-commit.sh`, and `invoke.sh` remain
-stable compatibility/testing/diagnostic entries. Legacy callers may keep their
-existing orchestration during migration; the facade does not alter their ids,
-arguments, or output semantics.
+The old `scripts/invoke.sh --invocation <envelope>` shape remains a
+compatibility-only branch for callers that already orchestrate the executor
+result. It is mutually exclusive with `--candidate-artifact`, does not run
+before the normal branch, and does not write the recovery receipt.
+`check-task-commit-plan.sh` and `create-task-commit.sh` remain stable
+package-private testing, diagnostic, and bounded recovery entries.
 
 `scripts/prepare-task-commit.sh` canonicalizes and validates candidate 5.0
 before any required confirmation. `scripts/check-task-commit-plan.sh` repeats

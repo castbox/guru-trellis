@@ -114,12 +114,17 @@ def _validate_semantic_binding(public: dict, semantic: dict) -> None:
         )
 
 
-def _run_legacy(package_root: Path, argv: list[str]) -> dict:
+def _parse_invocation(argv: list[str]):
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--root")
     parser.add_argument("--input", required=True)
-    parser.add_argument("--owner-result", required=True)
-    args = parse_arguments(parser, argv)
+    result = parser.add_mutually_exclusive_group(required=True)
+    result.add_argument("--semantic-result")
+    result.add_argument("--owner-result")
+    return parse_arguments(parser, argv)
+
+
+def _run_compatibility(package_root: Path, args) -> dict:
     owner = _owner(package_root)
 
     def invoke_owner() -> dict:
@@ -174,12 +179,7 @@ def _run_legacy(package_root: Path, argv: list[str]) -> dict:
     return call_owner(owner, invoke_owner)
 
 
-def _run_happy_path(package_root: Path, argv: list[str]) -> dict:
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--root")
-    parser.add_argument("--input", required=True)
-    parser.add_argument("--semantic-result", required=True)
-    args = parse_arguments(parser, argv)
+def _run_happy_path(package_root: Path, args) -> dict:
     owner = _owner(package_root)
 
     def invoke_owner() -> dict:
@@ -213,12 +213,12 @@ def _run_happy_path(package_root: Path, argv: list[str]) -> dict:
         checked_owner_result = checked.get("owner_result")
         if checked_owner_result != context.checked_owner_result:
             raise owner.WorkflowError(
-                "Publication facade checker did not return its invocation-local validated result.",
+                "Publication invocation checker did not return its invocation-local validated result.",
                 exit_code=2,
                 payload={
                     "error_code": "publication_freshness_failed",
                     "field_path": "publication.owner_result",
-                    "recovery": "Repeat the Publication facade against current evidence.",
+                    "recovery": "Repeat the Publication invocation against current evidence.",
                 },
             )
         if (
@@ -227,7 +227,7 @@ def _run_happy_path(package_root: Path, argv: list[str]) -> dict:
             != public["branch_review_commit"]
         ):
             raise owner.WorkflowError(
-                "Publication public input does not match the facade-checked owner result.",
+                "Publication public input does not match the invocation-checked owner result.",
                 exit_code=2,
                 payload={
                     "error_code": "publication_input_invalid",
@@ -249,6 +249,7 @@ def _run_happy_path(package_root: Path, argv: list[str]) -> dict:
 
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
-    if command.get("id") == "review-task-publication":
-        return _run_happy_path(package_root, argv)
-    return _run_legacy(package_root, argv)
+    args = _parse_invocation(argv)
+    if args.semantic_result is not None:
+        return _run_happy_path(package_root, args)
+    return _run_compatibility(package_root, args)

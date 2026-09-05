@@ -993,9 +993,25 @@ class MergeTaskPrContractTest(unittest.TestCase):
         path.write_text(json.dumps(self.semantic_merge_review()), encoding="utf-8")
         return path
 
-    def test_happy_path_facade_uses_one_pre_one_post_and_retires_terminal_state(self) -> None:
+    def test_public_invoke_uses_one_pre_one_post_and_stops_after_terminal_retirement(self) -> None:
         public_input, post, gate_seed, expected = self.terminal_fixture()
         pre = self.pre_merge_facts(public_input, gate_seed["pre_merge_base_head"])
+        events: list[str] = []
+        snapshots_iter = iter([pre, post])
+        retire_terminal_state = GTT.task_pr_merge_retire_terminal_state
+
+        def snapshot(*_args):
+            events.append("snapshot")
+            return next(snapshots_iter)
+
+        def mutation_result(*_args, **_kwargs):
+            events.append("mutation")
+            return Namespace(returncode=0, stderr="", stdout="")
+
+        def retire(*args):
+            events.append("retire")
+            return retire_terminal_state(*args)
+
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             review = self.write_review(root)
@@ -1009,25 +1025,33 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 mock.patch.object(GTT, "repo_root", return_value=root),
                 mock.patch.object(GTT, "task_pr_merge_json_input", return_value=public_input),
                 mock.patch.object(
-                    GTT, "task_pr_merge_live_facts", side_effect=[pre, post]
+                    GTT, "task_pr_merge_live_facts", side_effect=snapshot
                 ) as snapshots,
                 mock.patch.object(GTT, "require_gh_auth"),
                 mock.patch.object(
                     GTT,
                     "run",
-                    return_value=Namespace(returncode=0, stderr="", stdout=""),
+                    side_effect=mutation_result,
                 ) as mutation,
+                mock.patch.object(
+                    GTT, "task_pr_merge_retire_terminal_state", side_effect=retire
+                ),
+                mock.patch.object(
+                    GTT, "_cmd_invoke_task_pr_merge_compatibility"
+                ) as compatibility,
             ):
-                result = GTT.cmd_complete_task_pr_merge(args)
+                result = GTT.cmd_invoke_task_pr_merge(args)
 
             self.assertEqual(result, expected)
+            self.assertEqual(events, ["snapshot", "mutation", "snapshot", "retire"])
             self.assertEqual(snapshots.call_count, 2)
             self.assertEqual(mutation.call_count, 1)
+            compatibility.assert_not_called()
             self.assertIn("--match-head-commit", mutation.call_args.args[0])
             self.assertFalse(GTT.task_pr_merge_gate_path(root, public_input).exists())
             self.assertFalse(GTT.task_pr_merge_body_path(root, public_input).exists())
 
-    def test_happy_path_facade_non_default_branch_returns_terminal_closure_mismatch(self) -> None:
+    def test_public_invoke_non_default_branch_returns_terminal_closure_mismatch(self) -> None:
         public_input, post, gate_seed, _ = self.terminal_fixture(closed=False)
         public_input["expected_base_branch"] = "dev"
         public_input["reviewed_merge_message"] = self.reviewed_message(base="dev")
@@ -1056,13 +1080,13 @@ class MergeTaskPrContractTest(unittest.TestCase):
                     GTT, "run", return_value=Namespace(returncode=0, stderr="", stdout="")
                 ) as mutation,
             ):
-                result = GTT.cmd_complete_task_pr_merge(args)
+                result = GTT.cmd_invoke_task_pr_merge(args)
 
         self.assertEqual(result, expected)
         self.assertEqual(snapshots.call_count, 2)
         self.assertEqual(mutation.call_count, 1)
 
-    def test_happy_path_facade_refs_only_reads_no_issue_terminal_scope(self) -> None:
+    def test_public_invoke_refs_only_reads_no_issue_terminal_scope(self) -> None:
         public_input, post, gate_seed, _ = self.terminal_fixture()
         public_input["expected_close_issues"] = []
         public_input["reviewed_merge_message"] = self.reviewed_message(issue=330)
@@ -1090,14 +1114,14 @@ class MergeTaskPrContractTest(unittest.TestCase):
                     GTT, "run", return_value=Namespace(returncode=0, stderr="", stdout="")
                 ) as mutation,
             ):
-                result = GTT.cmd_complete_task_pr_merge(args)
+                result = GTT.cmd_invoke_task_pr_merge(args)
 
         self.assertEqual(result, expected)
         self.assertEqual(result["exit_id"], "merged")
         self.assertEqual(snapshots.call_count, 2)
         self.assertEqual(mutation.call_count, 1)
 
-    def test_happy_path_facade_recovers_lost_mutation_output_with_one_snapshot(self) -> None:
+    def test_public_invoke_recovers_lost_mutation_output_with_one_snapshot(self) -> None:
         public_input, post, gate_seed, expected = self.terminal_fixture()
         pre = self.pre_merge_facts(public_input, gate_seed["pre_merge_base_head"])
         gate = GTT.task_pr_merge_gate_from_facts(
@@ -1110,7 +1134,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
             args = Namespace(
                 root=temp_dir,
                 input="input.json",
-                review_input=None,
+                review_input=str(self.write_review(root)),
                 gate=None,
             )
             with (
@@ -1120,7 +1144,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 mock.patch.object(GTT, "run") as mutation,
                 mock.patch.object(GTT, "require_gh_auth") as auth,
             ):
-                result = GTT.cmd_complete_task_pr_merge(args)
+                result = GTT.cmd_invoke_task_pr_merge(args)
 
             self.assertEqual(result, expected)
             self.assertEqual(snapshots.call_count, 1)
@@ -1128,7 +1152,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
             auth.assert_not_called()
             self.assertFalse(gate_path.exists())
 
-    def test_happy_path_facade_recovers_merged_facts_without_private_gate(self) -> None:
+    def test_public_invoke_recovers_merged_facts_without_private_gate(self) -> None:
         public_input, post, _, expected = self.terminal_fixture()
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -1146,7 +1170,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 mock.patch.object(GTT, "run") as mutation,
                 mock.patch.object(GTT, "require_gh_auth") as auth,
             ):
-                result = GTT.cmd_complete_task_pr_merge(args)
+                result = GTT.cmd_invoke_task_pr_merge(args)
 
             self.assertEqual(result, expected)
             self.assertEqual(snapshots.call_count, 1)
@@ -1156,7 +1180,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
             self.assertFalse(GTT.task_pr_merge_gate_path(root, public_input).exists())
             self.assertFalse(GTT.task_pr_merge_body_path(root, public_input).exists())
 
-    def test_happy_path_facade_merged_recovery_fails_closed_on_identity_drift(self) -> None:
+    def test_public_invoke_merged_recovery_fails_closed_on_identity_drift(self) -> None:
         public_input, post, _, _ = self.terminal_fixture()
         cases = []
         invalid_parents = json.loads(json.dumps(post))
@@ -1189,9 +1213,55 @@ class MergeTaskPrContractTest(unittest.TestCase):
                     mock.patch.object(GTT, "run") as mutation,
                 ):
                     with self.assertRaises(GTT.WorkflowError):
-                        GTT.cmd_complete_task_pr_merge(args)
+                        GTT.cmd_invoke_task_pr_merge(args)
                 gate_write.assert_not_called()
                 mutation.assert_not_called()
+
+    def test_public_invoke_gate_only_shape_remains_compatibility_projection(self) -> None:
+        public_input, post, gate, expected = self.terminal_fixture()
+        gate["terminal_output"] = expected
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            gate_path = root / "gate.json"
+            args = Namespace(
+                root=temp_dir,
+                input="input.json",
+                review_input=None,
+                gate="gate.json",
+            )
+            with (
+                mock.patch.object(GTT, "repo_root", return_value=root),
+                mock.patch.object(GTT, "task_pr_merge_json_input", return_value=public_input),
+                mock.patch.object(
+                    GTT, "task_pr_merge_gate", return_value=(gate_path, gate)
+                ),
+                mock.patch.object(
+                    GTT, "task_pr_merge_live_facts", return_value=post
+                ) as snapshots,
+                mock.patch.object(GTT, "run") as mutation,
+                mock.patch.object(GTT, "require_gh_auth") as auth,
+                mock.patch.object(
+                    GTT, "_cmd_invoke_task_pr_merge_happy_path"
+                ) as happy_path,
+            ):
+                result = GTT.cmd_invoke_task_pr_merge(args)
+
+            self.assertEqual(result, expected)
+            self.assertEqual(snapshots.call_count, 1)
+            mutation.assert_not_called()
+            auth.assert_not_called()
+            happy_path.assert_not_called()
+
+    def test_public_invoke_rejects_combined_happy_and_compatibility_arguments(self) -> None:
+        with self.assertRaisesRegex(GTT.WorkflowError, "cannot combine"):
+            GTT.cmd_invoke_task_pr_merge(
+                Namespace(
+                    root="/repo",
+                    input="input.json",
+                    review_input="review.json",
+                    gate="gate.json",
+                )
+            )
 
     def test_required_check_watcher_returns_all_stable_fact_states(self) -> None:
         base_args = {
@@ -1231,21 +1301,36 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 else:
                     check_read.assert_called_once()
 
-    def test_happy_path_and_watcher_contracts_preserve_legacy_commands(self) -> None:
+    def test_public_invoke_and_single_watcher_contract(self) -> None:
         commands = json.loads((PACKAGE / "commands.json").read_text(encoding="utf-8"))
         ids = {item["id"] for item in commands["commands"]}
-        self.assertTrue({
+        self.assertEqual(ids, {
             "preview-task-pr-merge",
             "record-task-pr-merge",
             "check-task-pr-merge",
             "execute-task-pr-merge",
             "invoke-task-pr-merge",
-            "complete-task-pr-merge",
             "watch-task-pr-checks",
-        } <= ids)
+        })
         self.assertEqual(
             self.interface["public_contracts"]["invocation"]["wrapper"],
-            "scripts/complete-task-pr-merge.sh",
+            "scripts/invoke.sh",
+        )
+        self.assertFalse((PACKAGE / "scripts/complete-task-pr-merge.sh").exists())
+        self.assertNotIn(
+            "merge_happy_path",
+            {item["id"] for item in self.interface["validators"]},
+        )
+        invocation = next(
+            item for item in commands["commands"] if item["id"] == "invoke-task-pr-merge"
+        )
+        arguments = {item["flag"]: item for item in invocation["arguments"]}
+        self.assertEqual(arguments["--review-input"]["conflicts"], ["--gate"])
+        self.assertEqual(arguments["--gate"]["conflicts"], ["--review-input"])
+        self.assertEqual(invocation["side_effect"], "github_write")
+        self.assertEqual(
+            sum(item["id"] == "watch-task-pr-checks" for item in commands["commands"]),
+            1,
         )
         watcher_schema = json.loads(
             (PACKAGE / "schemas/check-watcher-result.schema.json").read_text(encoding="utf-8")
@@ -1286,7 +1371,10 @@ class MergeTaskPrContractTest(unittest.TestCase):
             self.assertTrue(facts["owner_staging"]["recipe"].startswith("merge-"))
             arguments = facts["public_invocation"]["arguments"]
             self.assertEqual(arguments[:2], ["--input", ".trellis/.runtime/guru-team/evals/public-input.json"])
-            self.assertIn("--gate", arguments)
+            self.assertEqual(
+                arguments[2:],
+                ["--review-input", ".trellis/.runtime/guru-team/evals/merge-review.json"],
+            )
 
 
 if __name__ == "__main__":

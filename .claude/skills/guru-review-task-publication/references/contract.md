@@ -2,18 +2,18 @@
 
 ## Recommended Happy Path
 
-The only recommended normal invocation is the versioned package command
-`review-task-publication` through `scripts/review-task-publication.sh`:
+The only normal public invocation is the stable package command
+`invoke-guru-review-task-publication` through `scripts/invoke.sh`:
 
 ```bash
-scripts/review-task-publication.sh \
+scripts/invoke.sh \
   --root <repository> \
   --input <public-input.json> \
   --semantic-result <ai-completed-publication-result.json>
 ```
 
 The AI completes the ten-dimension semantic review before this call. The
-facade validates that the semantic result belongs to the exact public profile,
+invocation validates that the semantic result belongs to the exact public profile,
 task, reviewed commit, intent, and stale reason; then it performs the existing
 record, objective check, public projection, and checkpoint retirement in one
 process. Its `TaskPublicationInvocationContext` is invocation-local only: it
@@ -21,16 +21,20 @@ reuses one objective Publication snapshot and one checked owner result between
 record and check, is never persisted or exposed in the public DTO, and is not
 semantic authority.
 
-The facade preserves the existing `ready`, `return_to_task_work`, and `blocked`
+The invocation preserves the existing `ready`, `return_to_task_work`, and `blocked`
 outputs. Metadata-only revision remains inside the AI owner loop. Reviewed
 content, durable docs, task, ledger, or publication metadata drift still fails
 the existing bindings or returns through the AI-authored current route; the
-facade never selects or changes that route. The legacy record/check/invoke
-commands remain supported for compatibility, tests, and bounded diagnosis.
+invocation never selects or changes that route. Package-private record and check
+commands remain supported for tests and bounded diagnosis. The same public
+command accepts `--owner-result` only for compatibility with callers that
+already recorded and checked the owner result; `--semantic-result` and
+`--owner-result` are mutually exclusive, and the compatibility branch is not
+executed during the normal path.
 
 ## Semantic result authoring contract
 
-The semantic-result file is the AI-owned judgment submitted to the facade. For
+The semantic-result file is the AI-owned judgment submitted to the invocation. For
 `publication_review`, it contains exactly these nine top-level members:
 `profile`, `mode`, `review_intent`, `pr_payload`,
 `candidate_classifications`, `dimensions`, `findings`, `conclusions`, and
@@ -38,7 +42,7 @@ The semantic-result file is the AI-owned judgment submitted to the facade. For
 use `review_intent=stale_reentry_review`.
 
 Do not add `task_ref`, `branch_review_commit`, `reviewed_content_sha256`,
-schema identity, timestamps, digests, or live repository facts. The facade
+schema identity, timestamps, digests, or live repository facts. The invocation
 derives those private and objective bindings from the public input and current
 repository state.
 
