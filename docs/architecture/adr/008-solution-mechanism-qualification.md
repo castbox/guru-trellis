@@ -1,7 +1,7 @@
-# ADR-008 Candidate: Solution Mechanism Qualification
+# ADR-008: Solution Mechanism Qualification
 
-状态：`candidate_pending_independent_review`；本文件在 Architecture
-promotion 前不是 accepted ADR，也不是 CURRENT authority。
+状态：`accepted`；来源为 #240 reviewed Architecture contribution，PR #346 的独立
+committed full-diff Branch Review，以及 #332 expected `.43 -> .44` serialized promotion。
 
 ## Context
 
@@ -10,7 +10,7 @@ Guru Team 已有 `guru-qualify-normal-scenario`，但它只判断问题场景是
 semantic owner，用于判断拟采用的机制是否把业务 authority 下沉到 OS、
 kernel、process 或 descriptor 原语。
 
-## Decision Candidate
+## Decision
 
 采用两个独立的 qualification owner：normal-scenario owner 判断问题场景，
 solution-mechanism owner 判断解决机制。机制 owner 直接读取 requirement、
@@ -46,9 +46,9 @@ compatibility adapter 或业务仓迁移。Architecture shared current 仍由
 现有 promotion owner 单写，task-owned contribution 在独立 committed
 full-diff Branch Review 前保持隔离。
 
-## Acceptance Condition
+## Acceptance Evidence
 
-本 candidate 只有在独立 Branch Review、serialized Architecture promotion
-以及 promotion 后 fresh Phase 2、Task Commit 和 Branch Review 均通过后，
-才能成为 accepted/current architecture decision。#260/#267 的完整
-throwaway、upgrade 和 release matrix 不由本 ADR candidate 声称覆盖。
+PR #346 的独立 Branch Review 已通过且 P0-P3 open findings 为 0；#332 serialized
+Architecture promotion 将本决策纳入 `current-main-0.6.5-guru.44`。该 promotion-created
+diff 仍须 fresh Phase 2、Task Commit 和 Branch Review 后才能进入 Publication。#260/#267
+的历史完整 throwaway、upgrade 和 release matrix 不由本 ADR 声称覆盖。

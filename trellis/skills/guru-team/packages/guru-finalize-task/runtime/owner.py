@@ -12452,6 +12452,10 @@ def finalization_eval_preview_context(
             "reviewed_content_head": payload["branch_review_commit"],
             "publication_head": payload["publication_head"],
         },
+        "publish": {
+            "title": public_input["pr_title"],
+            "body": public_input["pr_body"],
+        },
         "review": {"close_issues_reviewed": [174]},
         "task": {
             "active_locator": payload["task_ref"],

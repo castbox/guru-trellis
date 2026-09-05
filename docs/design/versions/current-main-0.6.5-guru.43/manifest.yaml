@@ -1,7 +1,8 @@
 schema_version: "1.0"
 authority: design
 version: current-main-0.6.5-guru.43
-status: active
+status: superseded
+successor: current-main-0.6.5-guru.44
 source_binding: "architecture-contribution-335-repository-private-release-orchestration-v1 + inherited current-main-0.6.5-guru.42 authority + containing Git object/tree identity"
 extension_manifest_version: 0.6.15-guru.39
 target_trellis_cli: 0.6.15

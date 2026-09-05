@@ -1,6 +1,6 @@
 # 当前测试计划与证据
 
-版本：`current-main-0.6.5-guru.43`；状态：`active`；predecessor：`current-main-0.6.5-guru.42`；
+版本：`current-main-0.6.5-guru.43`；状态：`superseded`；successor：`current-main-0.6.5-guru.44`；
 source baseline：contribution identity `architecture-contribution-335-repository-private-release-orchestration-v1` + inherited `.42` authority + containing Git object/tree identity。
 
 ## Replacement before-state authority

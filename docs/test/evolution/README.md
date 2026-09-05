@@ -18,9 +18,12 @@ Read in this order:
 3. [`traceability.md`](./traceability.md): Requirements/Design/capability closure;
 4. [`manifest.yaml`](./manifest.yaml): candidate identity and authority locators.
 
-Current as-built Test is [`current-main-0.6.5-guru.43`](../versions/current-main-0.6.5-guru.43/test-strategy.md).
-Its `TST-040..045` / `SCN-049..053` / `CASE-003..004` additions only define repo-private release orchestration
-verification ownership and do not add an Evolution fixture; `.42` 的 `TST-036..039` / `SCN-048` 保持历史 fact-only release-authority checks；
+Current as-built Test is [`current-main-0.6.5-guru.44`](../versions/current-main-0.6.5-guru.44/test-strategy.md).
+Its `TST-046..055` / `SCN-054..058` additions define #332 exact-candidate Release Gate verification ownership and
+the reviewed #240/#348 solution-mechanism and archived-task recovery contracts;
+`.43` 的 `TST-040..045` / `SCN-049..053` / `CASE-003..004` repo-private orchestration 与 `.42` 的
+`TST-036..039` / `SCN-048` 保持历史/current fact-only checks；`.44` current graph 为 23 Skills / 97 exits /
+81 commands，但这些新增 current owners 映射到既有 Evolution fixtures，不增加 fixture row；
 the prior `.41` / `.40` snapshots are comparison evidence only; `a41b8a34...9f560ec1` only corrects #267 lifecycle
 evidence, dogfood provenance and archive/merge facts；`9f560ec1...736ef333` is a material platform-selection
 runtime advance whose focused matrix is projected into the existing fixture rather than a new row；

@@ -5,17 +5,18 @@
 - candidate identity: `architecture-contribution-240-solution-mechanism-v1`。
 - requirement authority: live Issue #240 与 task `prd.md`。
 - behavior authority: task `design.md`、`implement.md` 与 canonical `guru-qualify-solution-mechanism` package。
-- current baseline: `docs/architecture/README.md` / `current-main-0.6.5-guru.43` / `active`。
+- source baseline: `docs/architecture/README.md` / `current-main-0.6.5-guru.43` / `superseded`。
 - design constitution: `docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`。
 - project change contract: `docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1` / `guru-trellis-architecture-change-concerns-v1`。
 - change path: `target_native`。
 - expected current identity: `current-main-0.6.5-guru.43`。
-- review state: `pending independent committed full-diff review`。
-- promotion state: `required_not_started`。
+- review state: `passed`；PR #346 的完整 committed diff 独立 Branch Review 为 `passed`，P0-P3 open findings 为 0。
+- promotion state: `reviewed_promoted`；successor `current-main-0.6.5-guru.44`。
 
-This is a task-owned candidate only. It does not claim CURRENT, accepted ADR,
-promotion, release, or Issue closure, and it does not write the shared
-Architecture Baseline.
+This contribution remains the historical task-owned source. Its reviewed contract and
+ADR-008 were serialized into current `current-main-0.6.5-guru.44`; PR #346 merged as
+`2bafec114f2c6d499edf744b3ce3f5082a3212ef` and Issue #240 is closed. It does not claim
+release proof or authorize any later mutation.
 
 ## Boundary And Decision
 
@@ -67,10 +68,12 @@ migration is introduced.
 - before: callers could qualify a problem scenario, but no independent public
   owner judged whether the proposed implementation mechanism was allowed to
   carry business authority。
-- after: mechanism qualification is a separate semantic boundary with explicit
-  `qualified_application_mechanism`, `mechanism_revision_required`, and
-  `blocked` routes; ordinary files remain usable as state/artifacts but cannot
-  become business authority through OS identity or process primitives。
+- after: mechanism qualification is a separate semantic boundary。Candidate
+  decisions use `qualified_current` as the wire name for
+  `qualified_application_mechanism`; public typed exits are `classified`,
+  `scope_confirmation_required`, `mechanism_revision_required`, and `blocked`。
+  Ordinary files remain usable as state/artifacts but cannot become business
+  authority through OS identity or process primitives。
 - preserved: normal-scenario semantics, AI-first judgment, deterministic
   recorder/validator limits, one owner per typed exit, Architecture promotion
   lifecycle, public package distribution rules, and #260/#267 matrix ownership。
@@ -113,7 +116,7 @@ than frozen into this contribution.
 ## ADR Candidate
 
 - candidate: `ADR-008-CANDIDATE`。
-- status: `candidate_pending_independent_review`。
+- status: `accepted_as_ADR-008_in_current-main-0.6.5-guru.44`。
 - reason: the task adds a public semantic owner and therefore changes the
   architecture owner topology and its boundary with the existing scenario
   owner; this is an architecture decision, not merely a schema addition。
@@ -123,13 +126,14 @@ than frozen into this contribution.
 - rejected direction: merge both judgments into normal-scenario qualification,
   let scripts classify mechanism semantics, or let a lock/process primitive
   become a business authority through an adapter。
-- acceptance condition: independent full-diff review, serialized Architecture
-  promotion, and fresh post-promotion Phase 2/Commit/Branch Review all pass。
+- acceptance evidence: PR #346 independent full-diff review passed; serialized Architecture
+  promotion accepted ADR-008 into `.44`. The promotion-created #332 diff still requires fresh
+  Phase 2/Commit/Branch Review before Publication。
 
 ## Explicit Boundaries
 
-- no shared Architecture current edit, formal ADR promotion, push, PR, merge,
-  release, Issue closure, or worktree cleanup。
+- this historical contribution authorizes no further shared-current write, release mutation,
+  Issue closure, or worktree cleanup。
 - no business repository migration and no production cancellation, recovery,
   deployment, or data operation。
 - no complete multi-platform upgrade/release matrix claim。

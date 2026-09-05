@@ -28,9 +28,11 @@ current-to-target trace 的历史 selected-base authority snapshot 为
 `9f560ec191851f82768d5e7aa031e6d852c34f14`、修复 installed Finalizer 平台选择保真的 PR #317 merge
 `736ef3335f1b1b0dcbf92f1e8e53343f922aa32a` 与 caller-inventory consistency PR #318 merge
 `5650df47fe17fe89b7cb616be6c9551608164832`。active RDT/Design/Test/Architecture authority 现为
-`current-main-0.6.5-guru.43`，由包含 current locators 的 Git commit/tree identity 绑定；`.43` 只增加
-#335 repo-private release orchestration current contract，并由既有 Evolution route/execution continuity
-与 distribution constraints 承接，不增加 target requirement、capability、delta 或 fixture。后续
+`current-main-0.6.5-guru.44`，由包含 current locators 的 Git commit/tree identity 绑定；`.43` 增加
+#335 repo-private release orchestration current contract，`.44` 再增加 #332 `.5/.40/CLI 0.6.15`
+Release Gate facts，并消费 #240/#348 已审查的 solution-mechanism 与 archived-task recovery owner/RDT/ADR
+authority；这些 current additions 均由既有 Evolution route/execution continuity、Architecture-aware
+Planning 与 distribution constraints 承接，不增加 target requirement、capability、delta 或 fixture。后续
 `origin/main` 漂移不得被本候选隐式吸收，task worktree 也不能与历史 ref 拼接成虚构 authority。
 
 上一 selected base `736ef3335f1b1b0dcbf92f1e8e53343f922aa32a`、更早 selected base

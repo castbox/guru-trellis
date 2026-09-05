@@ -10,5 +10,6 @@
 | `R348-06` | `D348-01..06` | `T348-05..06` | `ARCH-INT-001..002`, `ARCH-GOV-007` | AC 7, 8 |
 
 Requirement authority is live Issue #348 and the task PRD. Architecture
-candidate authority is
-`docs/architecture/contributions/348-merge-blocked-phase2-reentry.md`.
+source is `docs/architecture/contributions/348-merge-blocked-phase2-reentry.md`.
+PR #351 independent review passed and the reviewed RDT/Architecture contract is
+promoted in `current-main-0.6.5-guru.44`.

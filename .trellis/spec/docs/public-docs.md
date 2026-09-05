@@ -36,8 +36,8 @@ opt-in user choice, not as the team default or automated validation path.
 
 Stable install and upgrade docs must list the complete release-facing mapping:
 repo release tag, extension revision, and target official Trellis CLI. The
-current target mapping is annotated tag `v0.6.15-guru.3`, extension revision
-`0.6.15-guru.39`, and target CLI `0.6.15`. Issue #267 creates the tag only after
+current target mapping is annotated tag `v0.6.15-guru.5`, extension revision
+`0.6.15-guru.40`, and target CLI `0.6.15`. Issue #332 creates the tag only after
 the preparation PR merges and the exact remote candidate passes the pre-tag gate.
 Until then, docs must state that its tag object, peeled commit, GitHub Release,
 tag-pinned install, and post-publish smoke are unverified; they must not guess
@@ -458,7 +458,7 @@ serialization and terminal paths consume the owner material and remove empty
 owner directories. No Discovery artifact locator or supersession history is a
 public or durable contract.
 
-Public READMEs describe twenty-three active Skills and 96 external exits, identify
+Public READMEs describe twenty-three active Skills and 97 external exits, identify
 `guru-review-branch` as the Phase 3.5 semantic owner and
 `guru-review-task-publication` as the Phase 3.6 semantic owner, and show contract
 discovery, public wrapper, eval, fresh install, update and reapply commands.
@@ -501,9 +501,9 @@ owner-private transaction, derives current finish-summary schema 2 once, keeps
 schema 1 history readable, and rejects legacy Publication/Finalizer 3.0 shapes
 without fallback.
 
-README package closure numbers are twenty-three active Skills and 96 external exits;
-business workflow markers remain 22 invokes, 94 exits, 35 workflow targets, and
-23 stop targets.
+README package closure numbers are twenty-three active Skills and 97 external exits;
+business workflow markers remain 22 invokes, 95 exits, 35 workflow targets, and
+24 stop targets.
 `production-current-v4` owns the current planning/check/commit/qualification
 contract; the live Intake contract remains six Skills/23 exits.
 
@@ -548,9 +548,9 @@ side-effect confirmation, and deterministic executor. Scripts execute, validate,
 and record facts after semantic review; they do not choose plan, scope,
 readiness, recovery route, or semantic pass.
 
-The READMEs describe the current package graph as twenty-three active Skills and 96
+The READMEs describe the current package graph as twenty-three active Skills and 97
 external exits with fourteen target-owned authoring handoffs. The integrated business
-workflow is 22 invokes, 94 exits, 35 workflow targets, and 23 stop targets. The three `guru-finish-work`
+workflow is 22 invokes, 95 exits, 35 workflow targets, and 24 stop targets. The three `guru-finish-work`
 entries route Publication -> Finalizer -> Merge only. Publication
 `return_to_task_work` remains available for real content drift.
 

@@ -5,17 +5,19 @@
 - candidate identity: `architecture-contribution-348-merge-blocked-phase2-reentry-v1`.
 - requirement authority: live Issue #348 and task `prd.md`.
 - behavior authority: task `design.md`, `implement.md`, and the canonical Merge/recovery packages.
-- current baseline: `docs/architecture/README.md` / `current-main-0.6.5-guru.43` / `active`.
+- source baseline: `docs/architecture/README.md` / `current-main-0.6.5-guru.43` / `superseded`.
 - design constitution: `docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`.
 - project change contract: `docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1` / `guru-trellis-architecture-change-concerns-v1`.
 - change path: `target_native`.
 - expected current identity: `current-main-0.6.5-guru.43`.
-- review state: `pending independent committed full-diff review`.
-- promotion state: `required_not_started`.
+- review state: `passed`; PR #351 records complete-range Branch Review `passed` and fresh Architecture Branch Review `baseline_current`.
+- promotion state: `reviewed_promoted`; successor `current-main-0.6.5-guru.44`.
 - ADR required: `false`.
 
-This is a task-owned candidate. It does not claim CURRENT, promotion, release,
-merge, Issue closure, or permission to write the shared Architecture Baseline.
+This contribution remains the historical task-owned source. Its reviewed Architecture and
+RDT contracts were serialized into current `current-main-0.6.5-guru.44`; PR #351 merged as
+`5c6837b862df851c9872511b18d7a5efe9ea3fde` and Issue #348 is closed. It does not claim
+release proof or authorize any later mutation.
 
 ## Boundary And Decision
 
@@ -103,8 +105,8 @@ after independent committed full-diff review.
 
 ## Explicit Boundaries
 
-- no shared current edit, commit, push, PR, merge, release, Issue closure, or
-  worktree cleanup.
+- this historical contribution authorizes no further shared-current write, release mutation,
+  Issue closure, or worktree cleanup.
 - no automatic check override or external-provider remediation.
 - no complete multi-platform throwaway, upgrade/update, or Release Gate matrix
   claim.

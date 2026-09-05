@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.15-guru.39",
+    "version": "0.6.15-guru.40",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.15",
@@ -430,11 +430,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-04T16:54:51Z",
+  "installed_at": "2026-09-05T00:55:40Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "a88039261ae005be55bae5360d4ad2d3cf0b4d5a",
-    "commit": "a88039261ae005be55bae5360d4ad2d3cf0b4d5a",
+    "ref": "6538da506c40d1fec55fc0b793124fdc0ecd3966",
+    "commit": "6538da506c40d1fec55fc0b793124fdc0ecd3966",
     "tree_state": "clean",
     "is_mutable_ref": false
   },
@@ -519,11 +519,11 @@
     "managed_asset_hashes": {
       ".trellis/spec/workflow/requirements-design-test-ssot.md": "5c92ecd811bbaba26ff443a1d3d0944ebdebbd993d7f9d2f02352f1fd3429829",
       ".trellis/spec/workflow/semantic-retrieval.md": "2c9a3097949979e84d42e15811278df1b047ec4c2101f3019e887e7799aef483",
-      ".trellis/spec/workflow/workflow-contract.md": "27cf620454efd5bb7a66e5fdf7416da3662d634aae2701519520dada45a2bca2",
-      ".trellis/spec/workflow/skill-package-contract.md": "7a222b6b9d612e9320fb6cf94fe6b6f8d470f40014441ea792c90799d984b306",
+      ".trellis/spec/workflow/workflow-contract.md": "1fdc4703cc486ec271fcfd489923b3b21ee8647da037a035738cc14a26e2e87f",
+      ".trellis/spec/workflow/skill-package-contract.md": "3ef57c03cb6b4083b0eae55032f3f9644482fc31460c0599092d22f3b3bab40e",
       ".trellis/spec/workflow/data-contracts.md": "4f186cdd6a4fceee7e464024f54e8fe1112356bd1090ea3f99914961ec1ef4db",
       ".trellis/spec/workflow/companion-scripts.md": "fd2f5e2160d25535d4a4aa59a7bafae8fe0af10b4851c7caba8dc5cc15cc785f",
-      ".trellis/spec/workflow/quality-guidelines.md": "1831dd3ebcbb1cf591b5248fa5df4263f869d65a2ad5e07a001686e74fe416ac"
+      ".trellis/spec/workflow/quality-guidelines.md": "18297f9458367593ce858334f1f21ed271c231b1785730f98d43fb495d7a6f50"
     },
     "new_copies": [],
     "managed_backups": [],
@@ -639,12 +639,12 @@
       {
         "id": "guru-verify-extension-installation",
         "interface_sha256": "87925b8157721ce8f0142f3a46fccea145b0e0f5d6782a4b6bad85e76978d0f5",
-        "tree_sha256": "91ce154ab7291af6a876f7f344eb87cb63b7974d90e77d56e02dfd5a899e1265"
+        "tree_sha256": "53cfcb29fd5a95139eabdfad3cdd34d7acb809bf76a7632db87c2dcea05cec71"
       },
       {
         "id": "guru-finalize-task",
         "interface_sha256": "1510ae20c3bcfa3f1acbb453a200c599dd6e8677327e5d11f4a1cb4a6292c4e2",
-        "tree_sha256": "177dcbb8ca6d79f07e6469f03abe6285a4e4b9c7b9bf465b7879f3221b63b461"
+        "tree_sha256": "3cbe5994d2630c11257c181e8dfe45a9534bcca9e9930a39a586d0560b39a2b4"
       },
       {
         "id": "guru-merge-task-pr",
@@ -6790,7 +6790,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "0dbf1501a4354b0e68564b045719c2e42ae9061e38a17bcbe65f15331ea39d49",
+        "sha256": "a6be25d96b0b47700933c96e4a345caa96888342a9d098c5e85ca1373e751faa",
         "executable": false,
         "action": "unchanged"
       },
@@ -7175,7 +7175,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
-        "sha256": "9ab8d027d6b58f8008c2851abe703aa40524f048bcb23c6c115781bfafa1c183",
+        "sha256": "6df0204640d101684c3b84aa3d05df3a1c46f5a3be6821d7f3ecf3edca79dc30",
         "executable": false,
         "action": "unchanged"
       },

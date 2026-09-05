@@ -1,0 +1,12 @@
+{
+  "id": "332-release-v0615-guru5-r2",
+  "name": "332-release-v0615-guru5-r2",
+  "title": "#332 发布 v0.6.15-guru.5 并提升内部版本至 0.6.15-guru.40（wumengye）",
+  "status": "completed",
+  "branch": "chore/332-release-v0615-guru5-r2",
+  "base_branch": "main",
+  "creator": "wumengye",
+  "assignee": "wumengye",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/332",
+  "completedAt": "2026-09-05"
+}

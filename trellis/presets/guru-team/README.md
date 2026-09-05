@@ -173,18 +173,18 @@ Chinese documentation contract.
 
 Stable workflow marketplace installs should pin the repo release tag that
 combines the target official Trellis CLI version and Guru Team revision, for
-example `gh:castbox/guru-trellis/trellis#v0.6.15-guru.3`. The release-facing
-target is annotated tag `v0.6.15-guru.3`, extension revision `0.6.15-guru.39`,
+example `gh:castbox/guru-trellis/trellis#v0.6.15-guru.5`. The release-facing
+target is annotated tag `v0.6.15-guru.5`, extension revision `0.6.15-guru.40`,
 and official `@mindfoldhq/trellis` `0.6.15`. Its tag object, peeled commit,
 GitHub Release, tag-pinned install, and post-publish smoke are not created or
-verified yet; #267 establishes those facts only after a fresh exact candidate
+verified yet; #332 establishes those facts only after a fresh exact candidate
 passes every Release gate. Workflow marketplace and preset sources must use
 that same immutable tag. Unpinned
 `gh:castbox/guru-trellis/trellis` is a latest/canary source and should be
 reported as mutable provenance.
 
-Current `main` carries extension candidate `0.6.15-guru.39` targeting official
-Trellis `0.6.15`. The successor Release Issue (#267) must re-freeze the
+Current `main` carries extension candidate `0.6.15-guru.40` targeting official
+Trellis `0.6.15`. The successor Release Issue (#332) must re-freeze the
 candidate after the preparation PR merges and rerun the complete matrix;
 prior partial evidence does not establish the target tag or Release.
 
@@ -261,7 +261,7 @@ command.
 ## Apply
 
 ```bash
-git clone --depth 1 --branch v0.6.15-guru.3 \
+git clone --depth 1 --branch v0.6.15-guru.5 \
   https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project \
@@ -717,12 +717,12 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 `guru-execute-task-free-change`、`guru-qualify-normal-scenario`、`guru-qualify-solution-mechanism`、
 `guru-reconcile-task-base`、`guru-maintain-architecture-baseline`、
 `guru-maintain-requirements-design-test-ssot`、
-`guru-verify-extension-installation`。二十一个 integrated business packages 加一个
-standalone-only verifier 共声明 93 个 external exits。
+`guru-verify-extension-installation`。二十二个 integrated business packages 加一个
+standalone-only verifier 共声明 97 个 external exits。
 `guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
 invoke 与六个 exit marker。当前 release-facing source 的 canonical extension version 为
-`0.6.15-guru.39`，目标 stable source 为 `v0.6.15-guru.3`，并以官方 Trellis CLI
+`0.6.15-guru.40`，目标 stable source 为 `v0.6.15-guru.5`，并以官方 Trellis CLI
 `0.6.15` 为目标。该 annotated tag 只在重新冻结的 exact candidate 通过 pre-tag gate
 后创建；当前不声明 tag object、peeled commit、GitHub Release 或 post-publish smoke。Repo release
 tag 与 extension revision 是独立版本轴；workflow 与 preset 必须 pin 同一 immutable tag。
@@ -962,7 +962,7 @@ Trellis workflow marketplace:
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.3 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.5 \
   --template guru-team --create-new
 ```
 
@@ -971,7 +971,7 @@ identity；确认预览可安全应用后，再使用同一 provider 显式替�
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.3 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.5 \
   --template guru-team --force
 ```
 

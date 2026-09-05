@@ -1,0 +1,61 @@
+{
+  "close_issues": [],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 332,
+    "reason": "当前唯一 primary release change request；preparation PR 仅 Refs #332，Issue 在 post-merge Release Gate、tag-pinned smoke 与 GitHub Release 完成后独立关闭。",
+    "title": "发布 v0.6.15-guru.5：提升 Guru Team 内部版本并完成 exact-candidate 正式发布",
+    "url": "https://github.com/castbox/guru-trellis/issues/332"
+  },
+  "related_issues": [
+    {
+      "number": 332,
+      "reason": "当前唯一 primary release change request；preparation PR 仅 Refs #332，Issue 在 post-merge Release Gate、tag-pinned smoke 与 GitHub Release 完成后独立关闭。",
+      "title": "发布 v0.6.15-guru.5：提升 Guru Team 内部版本并完成 exact-candidate 正式发布",
+      "url": "https://github.com/castbox/guru-trellis/issues/332"
+    },
+    {
+      "number": 240,
+      "reason": "已合入并独立审查的 solution-mechanism owner/ADR contribution，本 task 将其提升到 .44 current authority并在 Release Gate fresh 验收。",
+      "title": "#240",
+      "url": "https://github.com/castbox/guru-trellis/issues/240"
+    },
+    {
+      "number": 311,
+      "reason": "已合入的 installed Finalizer provenance 前置，Release Gate 需在本 task 中 fresh 验收。",
+      "title": "#311",
+      "url": "https://github.com/castbox/guru-trellis/issues/311"
+    },
+    {
+      "number": 333,
+      "reason": "已合入的 Issue recovery 前置，Release Gate 需在本 task 中 fresh 验收。",
+      "title": "#333",
+      "url": "https://github.com/castbox/guru-trellis/issues/333"
+    },
+    {
+      "number": 339,
+      "reason": "已合入的仓库私有 release orchestration 前置，Release Gate 需在本 task 中 fresh 验收。",
+      "title": "#339",
+      "url": "https://github.com/castbox/guru-trellis/issues/339"
+    },
+    {
+      "number": 348,
+      "reason": "已合入并独立审查的 archived-task Phase 2 recovery owner/RDT contribution，本 task 将其提升到 .44 current authority并在 Release Gate fresh 验收。",
+      "title": "#348",
+      "url": "https://github.com/castbox/guru-trellis/issues/348"
+    },
+    {
+      "number": 358,
+      "reason": "已合入的 Finalizer transaction rebind 前置，Release Gate 需在本 task 中 fresh 验收。",
+      "title": "#358",
+      "url": "https://github.com/castbox/guru-trellis/issues/358"
+    },
+    {
+      "number": 361,
+      "reason": "已合入的 Publication Review re-entry 前置，Release Gate 需在本 task 中 fresh 验收。",
+      "title": "#361",
+      "url": "https://github.com/castbox/guru-trellis/issues/361"
+    }
+  ],
+  "schema_version": "2.0"
+}

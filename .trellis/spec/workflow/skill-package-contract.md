@@ -147,7 +147,7 @@ The validator selects the interface schema from the registry row. It must not
 guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes one `interface_schema_id`, the registry id,
 and exact public-input, typed-output, and private-artifact schema inventories
-for all twenty-three active packages and their 96 external exits. The
+for all twenty-three active packages and their 97 external exits. The
 `production-current-v4` is the sole current manifest and contains exactly four
 packages and 15 exits, including `guru-qualify-normal-scenario`; additive
 activation of other packages, including `guru-finalize-task`, does not rewrite
@@ -755,9 +755,9 @@ Active closure is derived from the live registry, the production current
 manifest, and every complete active Interface 1.4 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
-The current package cardinality assertion is twenty-three active Skills and 96
+The current package cardinality assertion is twenty-three active Skills and 97
 exits. The integrated business workflow projection contains 22 invoke markers,
-94 exit markers, 35 workflow-target markers, and 23 stop-target markers. Missing,
+95 exit markers, 35 workflow-target markers, and 24 stop-target markers. Missing,
 extra, duplicate, renamed, unknown, partially activated, or
 case-mismatched entries fail closed.
 

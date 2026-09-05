@@ -62,8 +62,8 @@ dialogue-local and is never persisted.
 ## Integrated Public Graph
 
 The current package registry contains exactly 23 active Skill ids and 97
-external exits. Twenty-one Skills participate in the business-task workflow,
-whose global graph contains 22 mandatory invokes, 94 mapped exits, 35 workflow
+external exits. Twenty-two Skills participate in the business-task workflow,
+whose global graph contains 22 mandatory invokes, 95 mapped exits, 35 workflow
 targets, and 24 stop targets. `guru-verify-extension-installation` is the remaining
 standalone-only source-repository Skill; its two exits return directly to its
 caller-owned stop targets and never appear in the business workflow.

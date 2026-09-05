@@ -14,18 +14,19 @@ design_contract_locator: docs/design/evolution/contracts.md
 fixture_plan_locator: docs/test/evolution/fixture-plan.md
 traceability_locator: docs/test/evolution/traceability.md
 current_test_source_binding: containing-git-object
-current_test_locator: docs/test/versions/current-main-0.6.5-guru.43/test-strategy.md
+current_test_locator: docs/test/versions/current-main-0.6.5-guru.44/test-strategy.md
 execution_status: planned_not_executed
 provenance: >-
   REQ-REV-133..142 added #311/#312 prerequisite, full installed publication terminal,
   evidence-before-cleanup standalone verifier failure preservation and unrelated-dirty isolation, and a two-stage
   Requirements-ready then Design/refactor-ready 50-row fixture projection; selected base 5650df47 includes PR
   #313/#314 merges and the fact-only .42 authority promotion; current .43 adds only the repo-private release
-  orchestration verification contract, while the fact-only #267 lifecycle-evidence/provenance/archive
+  orchestration verification contract and .44 adds #332 .5/.40/CLI 0.6.15 Release Gate facts plus the reviewed
+  #240/#348 owner/RDT/ADR promotion,
+  while the fact-only #267 lifecycle-evidence/provenance/archive
   update through PR #316, PR #317 exact installed platform-selection preservation and PR #318 fact-only
-  caller-inventory/provenance correction, with #311 OPEN only for
-  follow-up-only work and #312
-  CLOSED; .42 authority rebind,
+  caller-inventory/provenance correction, with #311 and #312 CLOSED and formal installed release validation
+  owned by #332; .42 authority rebind,
   merged-behavior reconciliation and Requirements-stage successor zero-loss are current for 84 requirements /
   34 NFR, and fresh Requirements semantic, Strict technical and deterministic closure gates have passed; prior REQ-REV-011..132, DES-REV-001..014 and
   pre-REQ-REV-142 DES-REV-001..052 review bindings are stale. All 50 fixtures retain EVO-DES-001..073 planning
