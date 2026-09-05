@@ -1200,12 +1200,14 @@ through its current `sys.executable`, and prove source staging invokes the
 canonical Python preset installer through the same managed interpreter rather
 than executing `apply.sh`. It must also inspect every verifier-executed
 workflow, preset, package, and platform shell wrapper. For package and platform
-callers it must prove the actual invocation path maps to the canonical
-wrapper's fixed `commands.json` command and reaches the installed
+callers it must prove the actual invocation path maps from
+`interface.json.public_contracts.invocation.wrapper` to the canonical wrapper's
+fixed `commands.json` command and reaches the installed
 `runtime/launch.sh -> resolve-python.sh` chain. Python-entering wrappers,
 including installed `finish-work.sh`, compatibility `prepare-task.sh`, package
-validators, and platform `invoke.sh`, must reach their package runtime only
-through the checkout-local resolver.
+validators, and any Interface-declared platform public wrapper, must reach their
+package runtime only through the checkout-local resolver. The review must not
+infer `scripts/invoke.sh` when a package declares another safe relative wrapper.
 It must additionally inspect the package-runtime closure and confirm every
 registered Python second hop in the real `run`, `run_stdout`, `subprocess.run`,
 and `owner.run` call shapes, plus the current dynamic validation helper, remains
@@ -1218,14 +1220,16 @@ the full capability suite, marketplace matrix, official Trellis update, complete
 platform throwaway matrix, and business-repository upgrade smoke remain separate
 cumulative release evidence.
 
-## Closeout Facade Validation
+## Closeout Original-Entry Validation
 
-Run the old and recommended paths against the same sanitized fixture and compare
-typed exit, public DTO, semantic input, objective blocker, mutation count/order,
-recovery behavior, and temporary-state lifecycle. The recommended four-stage
-path must reduce command invocations by at least 50% and repeated complete
-authority reads by at least 70%, with `terminal.post_exit_operation=0`. These
-are hard structural acceptance checks.
+Run each original public command's Happy Path and compatibility argument branch
+against the same sanitized fixture and compare typed exit, public DTO, semantic
+input, objective blocker, mutation count/order, recovery behavior, and
+temporary-state lifecycle. The Happy Path must not invoke the compatibility
+branch or a second wrapper/command. Across the four stages it must reduce
+command invocations by at least 50% and repeated complete authority reads by at
+least 70%, with `terminal.post_exit_operation=0`. These are hard structural
+acceptance checks.
 
 The fixture matrix includes Commit hook/drift/active-operation/stdout-loss,
 Publication ready/metadata/content/ledger routes, Finalizer same-plan

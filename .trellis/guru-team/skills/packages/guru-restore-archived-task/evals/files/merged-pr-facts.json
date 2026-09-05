@@ -1,1 +1,1 @@
-{"scenario":"merged-pr","source":"examples/live-facts.json","expected_zero_write":true}
+{"scenario":"merged-pr","owner_staging":{"recipe":"restore-merged-pr"},"public_invocation":{"arguments":["--root",".","--input","placeholder","--semantic-result","placeholder","--facts","placeholder"]}}

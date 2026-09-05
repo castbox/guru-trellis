@@ -17,22 +17,23 @@ transaction progress, archive month, plan digest, publication metadata-tail
 commit, and the user's reply so mapped same-plan deterministic continuation and
 output-loss recovery do not persist or reinterpret authorization.
 
-`finalize-task-happy-path` is the only recommended post-confirmation facade.
-It accepts current public input, the AI-authored semantic review, and the
-confirmed preview identity. The facade performs one invocation-local preview,
-records/checks the semantic gate against that checked context, and invokes the
-existing transaction engine. The legacy public invoke and the separate
-record/check/execute commands remain compatible but are not the normal Agent
-path.
+`scripts/invoke.sh` and its stable `invoke-guru-finalize-task` command are the
+only public post-confirmation entry. With `--review-input`, the command accepts
+current public input, the AI-authored semantic review, and the confirmed preview
+identity. It performs one invocation-local preview, records/checks the semantic
+gate against that checked context, and invokes the existing transaction engine.
+The old `--owner-result` argument shape remains a compatibility-only branch;
+the separate record/check/execute commands remain package-private diagnostic
+and recovery primitives rather than the normal Agent path.
 
 When the checked state is provenance-tail or archive-month
-`reprepare_required` and the AI-reviewed target is `ready_for_merge`, the facade
+`reprepare_required` and the AI-reviewed target is `ready_for_merge`, the public invocation
 may execute that declared deterministic transition, rebuild the target-owned
 `reprepare_preview` input in memory, and continue only when the confirmation
 identity remains equal. Existing-PR adoption and resumable/archive/Ready
 recovery continue through their existing bound transactions. Any changed
 scope, authority, PR payload, publication mode, side-effect set, unknown route,
-or unmatched identity stops with an existing typed exit; no facade code chooses
+or unmatched identity stops with an existing typed exit; no invocation code chooses
 a new semantic destination.
 
 Extension installation verification is unreachable from this package. Changed

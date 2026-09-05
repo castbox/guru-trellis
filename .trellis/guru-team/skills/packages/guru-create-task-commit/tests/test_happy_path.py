@@ -23,7 +23,7 @@ import invoke
 import record
 
 
-class HappyPathFacadeTest(unittest.TestCase):
+class PublicInvocationTest(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
@@ -95,7 +95,7 @@ class HappyPathFacadeTest(unittest.TestCase):
         subject = "fix(commit): #330 收敛提交正常路径"
         body = (
             "背景：\n减少正常提交的编排调用。\n\n"
-            "变更：\n增加确认后事务 facade。\n\n"
+            "变更：\n在原 public invoke 中执行确认后事务。\n\n"
             "边界：\n保留无关工作区状态。\n\n"
             "验证：\n运行 package-local 回归。\n\nRefs #330"
         )
@@ -137,7 +137,7 @@ class HappyPathFacadeTest(unittest.TestCase):
                 "scope": "commit",
                 "summary": "收敛提交正常路径",
                 "background": "减少正常提交的编排调用。",
-                "changes": "增加确认后事务 facade。",
+                "changes": "在原 public invoke 中执行确认后事务。",
                 "boundaries": "保留无关工作区状态。",
                 "validations": "运行 package-local 回归。",
                 "subject": subject,
@@ -151,10 +151,10 @@ class HappyPathFacadeTest(unittest.TestCase):
             },
         }
 
-    def invoke_facade(self) -> dict:
+    def invoke_public(self) -> dict:
         return invoke.run(
             PACKAGE,
-            {"id": "invoke-guru-create-task-commit-happy-path-v1"},
+            {"id": "invoke-guru-create-task-commit"},
             [
                 "--root",
                 str(self.repo),
@@ -174,9 +174,9 @@ class HappyPathFacadeTest(unittest.TestCase):
 
         invoke.execute_commit = counted
         self.addCleanup(setattr, invoke, "execute_commit", original)
-        first = self.invoke_facade()
+        first = self.invoke_public()
         commit = self.git("rev-parse", "HEAD")
-        second = self.invoke_facade()
+        second = self.invoke_public()
 
         self.assertEqual(first, second)
         self.assertEqual("committed", first["exit_id"])
@@ -213,7 +213,7 @@ class HappyPathFacadeTest(unittest.TestCase):
         commits_before = int(self.git("rev-list", "--count", "HEAD"))
 
         with self.assertRaisesRegex(RuntimeError, "after update-ref"):
-            self.invoke_facade()
+            self.invoke_public()
 
         commit = self.git("rev-parse", "HEAD")
         receipt = commit_result_path(self.repo, "09-02-happy-path", "001")
@@ -226,8 +226,8 @@ class HappyPathFacadeTest(unittest.TestCase):
         self.assertEqual(len(reflog_before) + 1, len(reflog_after_interruption))
 
         execute.git = original_git
-        recovered = self.invoke_facade()
-        recovered_again = self.invoke_facade()
+        recovered = self.invoke_public()
+        recovered_again = self.invoke_public()
 
         self.assertEqual(recovered, recovered_again)
         self.assertEqual("committed", recovered["exit_id"])
@@ -243,7 +243,7 @@ class HappyPathFacadeTest(unittest.TestCase):
         self.assertEqual(commits_before + 1, int(self.git("rev-list", "--count", "HEAD")))
 
     def test_recovery_rejects_changed_head_without_reexecuting(self) -> None:
-        self.invoke_facade()
+        self.invoke_public()
         (self.repo / "after.txt").write_text("after\n")
         self.git("add", "after.txt")
         self.git("commit", "-q", "-m", "later")
@@ -255,8 +255,66 @@ class HappyPathFacadeTest(unittest.TestCase):
         invoke.execute_commit = unexpected
         self.addCleanup(setattr, invoke, "execute_commit", original)
         with self.assertRaises(CommandError) as raised:
-            self.invoke_facade()
+            self.invoke_public()
         self.assertEqual("happy_path_result", raised.exception.field_path)
+
+    def test_compatibility_invocation_projects_without_running_transaction(self) -> None:
+        invocation_path = self.repo / "compatibility-invocation.json"
+        invocation_path.write_text(
+            json.dumps(
+                {
+                    "task_ref": ".trellis/tasks/09-02-happy-path",
+                    "base_ref": "origin/main",
+                    "result": {"exit": "committed", "commit_sha": self.parent},
+                }
+            )
+        )
+        original = invoke.execute_commit
+
+        def unexpected(*_args, **_kwargs):
+            self.fail("compatibility projection must not execute the candidate transaction")
+
+        invoke.execute_commit = unexpected
+        self.addCleanup(setattr, invoke, "execute_commit", original)
+        result = invoke.run(
+            PACKAGE,
+            {"id": "invoke-guru-create-task-commit"},
+            ["--root", str(self.repo), "--invocation", str(invocation_path)],
+        )
+
+        self.assertEqual(
+            {
+                "exit_id": "committed",
+                "task_ref": ".trellis/tasks/09-02-happy-path",
+                "base_ref": "origin/main",
+                "branch_review_commit": self.parent,
+            },
+            result,
+        )
+
+    def test_public_arguments_are_mutually_exclusive_and_one_is_required(self) -> None:
+        with self.assertRaises(CommandError) as conflicting:
+            invoke.run(
+                PACKAGE,
+                {"id": "invoke-guru-create-task-commit"},
+                [
+                    "--root",
+                    str(self.repo),
+                    "--candidate-artifact",
+                    str(self.candidate_path),
+                    "--invocation",
+                    "-",
+                ],
+            )
+        self.assertEqual("conflicting_arguments", conflicting.exception.code)
+
+        with self.assertRaises(CommandError) as missing:
+            invoke.run(
+                PACKAGE,
+                {"id": "invoke-guru-create-task-commit"},
+                ["--root", str(self.repo)],
+            )
+        self.assertEqual("invalid_arguments", missing.exception.code)
 
     def test_new_prepare_retires_previous_recovery_receipt(self) -> None:
         receipt = commit_result_path(self.repo, "09-02-happy-path", "001")
@@ -302,42 +360,49 @@ class HappyPathFacadeTest(unittest.TestCase):
     def test_recommended_route_meets_package_operation_budget(self) -> None:
         commands = json.loads((PACKAGE / "commands.json").read_text())["commands"]
         command_by_id = {row["id"]: row for row in commands}
-        legacy = [
+        compatibility_route = [
             "prepare-task-commit",
             "check-commit-messages",
             "create-task-commit",
             "invoke-guru-create-task-commit",
         ]
-        recommended = [
+        happy_route = [
             "prepare-task-commit",
-            "invoke-guru-create-task-commit-happy-path-v1",
+            "invoke-guru-create-task-commit",
         ]
-        self.assertTrue(set(legacy + recommended).issubset(command_by_id))
-        self.assertLessEqual(len(recommended), len(legacy) * 0.5)
-        legacy_validations = [
+        self.assertTrue(set(compatibility_route + happy_route).issubset(command_by_id))
+        self.assertNotIn("invoke-guru-create-task-commit-happy-path-v1", command_by_id)
+        self.assertLessEqual(len(happy_route), len(compatibility_route) * 0.5)
+        compatibility_validations = [
             command_by_id["check-commit-messages"]["validator_id"],
             command_by_id["create-task-commit"]["validator_id"],
         ]
-        recommended_validations = [
+        happy_validations = [
             command_by_id["create-task-commit"]["validator_id"]
         ]
-        self.assertEqual(["candidate_validator", "exact_executor"], legacy_validations)
-        self.assertEqual(["exact_executor"], recommended_validations)
-        legacy_redundant_full_reads = len(legacy_validations) - 1
-        recommended_redundant_full_reads = len(recommended_validations) - 1
+        self.assertEqual(["candidate_validator", "exact_executor"], compatibility_validations)
+        self.assertEqual(["exact_executor"], happy_validations)
+        compatibility_redundant_full_reads = len(compatibility_validations) - 1
+        happy_redundant_full_reads = len(happy_validations) - 1
         reduction = 1 - (
-            recommended_redundant_full_reads / legacy_redundant_full_reads
+            happy_redundant_full_reads / compatibility_redundant_full_reads
         )
         self.assertGreaterEqual(reduction, 0.70)
 
         interface = json.loads((PACKAGE / "interface.json").read_text())
-        recommended_validators = [
+        public_validators = [
             row
             for row in interface["validators"]
-            if row["id"].startswith("recommended_happy_path")
+            if row["id"] == "public_invocation"
         ]
-        self.assertEqual(1, len(recommended_validators))
-        self.assertEqual(recommended[1], recommended_validators[0]["runtime_command"])
+        self.assertEqual(1, len(public_validators))
+        self.assertEqual("scripts/invoke.sh", public_validators[0]["command"])
+        self.assertEqual(happy_route[1], public_validators[0]["runtime_command"])
+        self.assertEqual(
+            "scripts/invoke.sh",
+            interface["public_contracts"]["invocation"]["wrapper"],
+        )
+        self.assertFalse((PACKAGE / "scripts/invoke-happy-path-v1.sh").exists())
 
 
 if __name__ == "__main__":

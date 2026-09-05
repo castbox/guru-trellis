@@ -669,7 +669,6 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/record-agent-recovery.sh`
 - `.trellis/guru-team/scripts/bash/check-agent-recovery.sh`
 - `.trellis/guru-team/scripts/bash/prepare-task-commit.sh`
-- `.trellis/guru-team/scripts/bash/invoke-happy-path-v1.sh`
 - `.trellis/guru-team/scripts/bash/check-commit-messages.sh`
 - `.trellis/guru-team/scripts/bash/create-task-commit.sh`
 - `.trellis/guru-team/scripts/bash/format-merge-commit.sh`
@@ -677,7 +676,6 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/check-review-gate.sh`
 - `.trellis/guru-team/scripts/bash/record-task-publication-review.sh`
 - `.trellis/guru-team/scripts/bash/check-task-publication-review.sh`
-- `.trellis/guru-team/scripts/bash/review-task-publication.sh`
 - `.trellis/guru-team/scripts/bash/execute-extension-verification.sh`
 - `.trellis/guru-team/scripts/bash/record-extension-verification.sh`
 - `.trellis/guru-team/scripts/bash/check-extension-verification.sh`
@@ -686,13 +684,11 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/record-finalization-gate.sh`
 - `.trellis/guru-team/scripts/bash/check-finalization-gate.sh`
 - `.trellis/guru-team/scripts/bash/execute-finalization-transition.sh`
-- `.trellis/guru-team/scripts/bash/finalize-task-happy-path.sh`
 - `.trellis/guru-team/scripts/bash/preview-task-pr-merge.sh`
 - `.trellis/guru-team/scripts/bash/record-task-pr-merge.sh`
 - `.trellis/guru-team/scripts/bash/check-task-pr-merge.sh`
 - `.trellis/guru-team/scripts/bash/execute-task-pr-merge.sh`
 - `.trellis/guru-team/scripts/bash/watch-task-pr-checks.sh`
-- `.trellis/guru-team/scripts/bash/complete-task-pr-merge.sh`
 - `.trellis/guru-team/scripts/bash/invoke-task-pr-merge.sh`
 - `.trellis/guru-team/scripts/bash/finish-work.sh`
 - `.trellis/guru-team/runtime/` (minimal shared kernel)
@@ -1085,9 +1081,9 @@ Its `passed` exit proceeds through the same entries to active
 `guru-review-task-publication`: the owner authors and reviews the exact Chinese
 PR title/body inside its semantic loop and returns the five-field Publication
 ready 4.0 DTO (`exit_id`, `task_ref`, `branch_review_commit`, `pr_title`,
-`pr_body`). The normal deterministic entry is the single
-`review-task-publication` facade; the caller does not decide publication
-sufficiency or readiness.
+`pr_body`). The normal deterministic entry remains the original
+`invoke-guru-review-task-publication` command through the wrapper declared by
+its Interface; the caller does not decide publication sufficiency or readiness.
 The later `guru-finalize-task` consumer accepts that exact payload directly;
 machine recovery routes are auto-consumed.
 Branch Review and Publication each delete their own checkpoint after validating
@@ -1109,14 +1105,17 @@ after its semantic review and exact plan confirmation. It automatically routes
 verification, stale publication evidence, same-plan recovery, and reprepare;
 every interruption resumes through the same semantic owner loop.
 
-The recommended closeout command surface is package-local: Commit uses
-`prepare-task-commit` followed by confirmed
-`invoke-guru-create-task-commit-happy-path-v1`; Publication uses
-`review-task-publication`; Finalizer uses one preview followed by confirmed
-`finalize-task-happy-path`; Merge uses at most one expected-head-bound
-`watch-task-pr-checks` and then confirmed `complete-task-pr-merge`. Legacy
-component commands remain installed for compatibility, tests, and bounded
-diagnosis. Every Merge exit is terminal for the current Skill.
+The closeout command surface keeps the original package public entries: Commit
+uses `prepare-task-commit` followed by confirmed
+`invoke-guru-create-task-commit`; Publication uses
+`invoke-guru-review-task-publication`; Finalizer uses one preview followed by
+confirmed `invoke-guru-finalize-task`; Merge uses at most one
+expected-head-bound `watch-task-pr-checks` and then confirmed
+`invoke-task-pr-merge`. Each command runs through the package's
+Interface-declared public wrapper. Older argument shapes select compatibility
+branches inside those same commands; component helpers remain package-private
+tests, diagnosis, and bounded-recovery surfaces. Every Merge exit is terminal
+for the current Skill.
 Finalizer never invokes or consumes extension verification. Business task,
 Publication, Finalizer, finish-work, re-entry, and recovery do not read a
 verifier DTO, owner checkpoint, verification ref, or task-local verification

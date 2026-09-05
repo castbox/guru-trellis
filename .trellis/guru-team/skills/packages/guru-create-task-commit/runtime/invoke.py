@@ -25,8 +25,8 @@ def _recover_receipt(package_root:Path,repo:Path,candidate_locator:str)->dict:
  if candidate_path.is_file():
   candidate=load(repo,package_root,candidate_path,"candidate_artifact");recover_published_happy_path_commit(package_root,repo,candidate_locator,candidate,receipt)
  return _project(package_root,receipt,{"exit":"committed","commit_sha":receipt["commit_sha"]})
-def _run_happy_path(package_root:Path,argv:list[str])->dict:
- p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--candidate-artifact",required=True);a=parse(p,argv);repo=root(package_root,a.root);path,relative,_task_key,_sequence=canonical_candidate_locator(repo,a.candidate_artifact);locator=f".trellis/.runtime/guru-team/task-commit-plans/{relative}"
+def _run_happy_path(package_root:Path,root_value:str|None,candidate_artifact:str)->dict:
+ repo=root(package_root,root_value);path,relative,_task_key,_sequence=canonical_candidate_locator(repo,candidate_artifact);locator=f".trellis/.runtime/guru-team/task-commit-plans/{relative}"
  if not path.is_file():return _recover_receipt(package_root,repo,locator)
  candidate=load(repo,package_root,path,"candidate_artifact");_unused,_relative,task_key,sequence=canonical_candidate_locator(repo,locator);receipt_path=commit_result_path(repo,task_key,sequence)
  if receipt_path.is_file() and not receipt_path.is_symlink():
@@ -39,8 +39,13 @@ def _run_happy_path(package_root:Path,argv:list[str])->dict:
  result=execute_commit(package_root,{"_happy_path_candidate_locator":locator},["--root",str(repo),"--candidate-artifact",str(path)])
  if result.get("exit")!="committed":return _project(package_root,{"task_ref":candidate["task"]["path"],"base_ref":candidate["git"]["base_ref"]},result)
  return _recover_receipt(package_root,repo,locator)
-def run(package_root:Path,command:dict,argv:list[str])->dict:
- if command.get("id")=="invoke-guru-create-task-commit-happy-path-v1":return _run_happy_path(package_root,argv)
- p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);a=parse(p,argv);repo=root(package_root,a.root);e=load(repo,package_root,a.invocation,"invocation");result=e.get("result")
+def _run_compatibility_projection(package_root:Path,root_value:str|None,invocation:str)->dict:
+ repo=root(package_root,root_value);e=load(repo,package_root,invocation,"invocation");result=e.get("result")
  if not isinstance(result,dict):raise CommandError("invalid_arguments","invocation.result","Provide executor result.")
  return _project(package_root,e,result)
+def run(package_root:Path,command:dict,argv:list[str])->dict:
+ p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--candidate-artifact");p.add_argument("--invocation");a=parse(p,argv)
+ if a.candidate_artifact and a.invocation:raise CommandError("conflicting_arguments","arguments","Use --candidate-artifact for the Happy Path or --invocation for compatibility, not both.")
+ if a.candidate_artifact:return _run_happy_path(package_root,a.root,a.candidate_artifact)
+ if a.invocation:return _run_compatibility_projection(package_root,a.root,a.invocation)
+ raise CommandError("invalid_arguments","arguments","Provide --candidate-artifact for the Happy Path or --invocation for compatibility.")

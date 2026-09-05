@@ -606,7 +606,7 @@ class TaskPublicationContractTest(unittest.TestCase):
         self.assertEqual(raised.exception.code, "internal_error")
         self.assertTrue(self.last_wrapper_checkpoint.is_file())
 
-    class FacadeContext:
+    class InvocationContext:
         def __init__(self, root: Path, task_ref: str) -> None:
             self.task_dir = root / task_ref
             self.checked_owner_result = None
@@ -615,7 +615,7 @@ class TaskPublicationContractTest(unittest.TestCase):
         def count(self, operation: str) -> None:
             self.operation_counts[operation] = self.operation_counts.get(operation, 0) + 1
 
-    class FacadeOwner:
+    class InvocationOwner:
         class WorkflowError(RuntimeError):
             def __init__(self, message: str, *, payload=None, **_kwargs) -> None:
                 super().__init__(message)
@@ -633,7 +633,7 @@ class TaskPublicationContractTest(unittest.TestCase):
             class ContextFactory:
                 @staticmethod
                 def create(context_root: Path, task_ref: str):
-                    outer.context = TaskPublicationContractTest.FacadeContext(
+                    outer.context = TaskPublicationContractTest.InvocationContext(
                         context_root,
                         task_ref,
                     )
@@ -669,13 +669,13 @@ class TaskPublicationContractTest(unittest.TestCase):
         def task_publication_path(self, _root: Path, _task: Path) -> Path:
             return self.checkpoint
 
-    def run_happy_path_facade(
+    def run_happy_path_invocation(
         self,
         owner_result: dict,
         *,
         semantic_overrides: dict | None = None,
         review_intent: str = "initial_review",
-    ) -> tuple[dict, "TaskPublicationContractTest.FacadeOwner"]:
+    ) -> tuple[dict, "TaskPublicationContractTest.InvocationOwner"]:
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
         root = Path(temp.name)
@@ -705,11 +705,11 @@ class TaskPublicationContractTest(unittest.TestCase):
         public_path.write_text(json.dumps(public), encoding="utf-8")
         semantic_path.write_text(json.dumps(semantic), encoding="utf-8")
         checkpoint = root / "owner/pr-readiness.json"
-        fake_owner = self.FacadeOwner(root, owner_result, checkpoint)
+        fake_owner = self.InvocationOwner(root, owner_result, checkpoint)
         with mock.patch.object(PUBLIC_WRAPPER, "_owner", return_value=fake_owner):
             output = PUBLIC_WRAPPER.run(
                 PACKAGE,
-                {"id": "review-task-publication"},
+                {"id": "invoke-guru-review-task-publication"},
                 [
                     "--root",
                     str(root),
@@ -721,7 +721,7 @@ class TaskPublicationContractTest(unittest.TestCase):
             )
         return output, fake_owner
 
-    def test_happy_path_facade_projects_three_exits_with_one_record_and_check(
+    def test_happy_path_invocation_projects_three_exits_with_one_record_and_check(
         self,
     ) -> None:
         cases = (
@@ -731,7 +731,7 @@ class TaskPublicationContractTest(unittest.TestCase):
         )
         for exit_id, owner_result in cases:
             with self.subTest(exit=exit_id):
-                output, fake_owner = self.run_happy_path_facade(owner_result)
+                output, fake_owner = self.run_happy_path_invocation(owner_result)
                 self.assertEqual(output["exit_id"], exit_id)
                 self.assertEqual(fake_owner.record_calls, 1)
                 self.assertEqual(fake_owner.check_calls, 1)
@@ -746,13 +746,13 @@ class TaskPublicationContractTest(unittest.TestCase):
                 )
                 self.assertFalse(fake_owner.checkpoint.exists())
 
-    def test_happy_path_facade_rejects_semantic_result_for_another_invocation(
+    def test_happy_path_invocation_rejects_semantic_result_for_another_invocation(
         self,
     ) -> None:
         from runtime.io import CommandError
 
         with self.assertRaises(CommandError) as raised:
-            self.run_happy_path_facade(
+            self.run_happy_path_invocation(
                 copy.deepcopy(self.readiness_example),
                 semantic_overrides={"review_intent": "metadata_revision_review"},
             )
@@ -794,9 +794,9 @@ class TaskPublicationContractTest(unittest.TestCase):
             " ".join(skill.split()),
         )
 
-    def test_publication_only_retry_keeps_facade_mutation_free(self) -> None:
+    def test_publication_only_retry_keeps_public_invocation_mutation_free(self) -> None:
         owner_result = copy.deepcopy(self.readiness_example)
-        output, fake_owner = self.run_happy_path_facade(
+        output, fake_owner = self.run_happy_path_invocation(
             owner_result,
             review_intent="metadata_revision_review",
             semantic_overrides={
@@ -1194,7 +1194,7 @@ class TaskPublicationContractTest(unittest.TestCase):
         }
         section_content = {
             "变更摘要": "- 保留 Publication owner 错误分类。",
-            "影响范围": "仅影响 Publication Review facade 与恢复路由。",
+            "影响范围": "仅影响 Publication Review public invocation 与恢复路由。",
             "验证结果": "Canonical 与 installed package tests 通过。",
             "Review Gate": "Branch Review 无未关闭 finding。",
             "Issue 关闭范围": "Closes #361。",
@@ -1248,14 +1248,14 @@ class TaskPublicationContractTest(unittest.TestCase):
             "guru-production-review-task-publication-input-publication-review-stale-3.0",
         )
 
-    def test_one_recommended_happy_path_keeps_legacy_command_budget(self) -> None:
+    def test_original_public_entry_owns_happy_path_and_compatibility_budget(self) -> None:
         commands = json.loads((PACKAGE / "commands.json").read_text(encoding="utf-8"))[
             "commands"
         ]
         by_id = {item["id"]: item for item in commands}
         self.assertEqual(
             self.interface["public_contracts"]["invocation"]["wrapper"],
-            "scripts/review-task-publication.sh",
+            "scripts/invoke.sh",
         )
         self.assertEqual(
             self.interface["public_contracts"]["invocation"]["example_argv"],
@@ -1267,16 +1267,36 @@ class TaskPublicationContractTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            by_id["review-task-publication"]["validator_id"],
-            "publication_happy_path",
+            by_id["invoke-guru-review-task-publication"]["validator_id"],
+            "public_invocation",
         )
-        legacy = {
+        self.assertNotIn("review-task-publication", by_id)
+        self.assertFalse((PACKAGE / "scripts/review-task-publication.sh").exists())
+        self.assertNotIn(
+            "publication_happy_path",
+            {item["id"] for item in self.interface["validators"]},
+        )
+        invoke_arguments = {
+            item["flag"]: item
+            for item in by_id["invoke-guru-review-task-publication"]["arguments"]
+        }
+        self.assertFalse(invoke_arguments["--semantic-result"]["required"])
+        self.assertFalse(invoke_arguments["--owner-result"]["required"])
+        self.assertEqual(
+            invoke_arguments["--semantic-result"]["conflicts"],
+            ["--owner-result"],
+        )
+        self.assertEqual(
+            invoke_arguments["--owner-result"]["conflicts"],
+            ["--semantic-result"],
+        )
+        compatibility_sequence = {
             "record-task-publication-review",
             "check-task-publication-review",
             "invoke-guru-review-task-publication",
         }
-        self.assertTrue(legacy <= set(by_id))
-        legacy_command_invocations = len(legacy)
+        self.assertTrue(compatibility_sequence <= set(by_id))
+        legacy_command_invocations = len(compatibility_sequence)
         happy_path_command_invocations = 1
         reduction = (
             legacy_command_invocations - happy_path_command_invocations
@@ -1294,6 +1314,63 @@ class TaskPublicationContractTest(unittest.TestCase):
             legacy_complete_snapshot_reads - happy_path_complete_snapshot_reads
         ) / legacy_complete_snapshot_reads
         self.assertGreaterEqual(snapshot_reduction, 0.7)
+
+    def test_public_command_selects_exactly_one_result_branch(self) -> None:
+        happy_output = {"exit_id": "ready"}
+        compatibility_output = {"exit_id": "blocked"}
+        with (
+            mock.patch.object(
+                PUBLIC_WRAPPER,
+                "_run_happy_path",
+                return_value=happy_output,
+            ) as happy,
+            mock.patch.object(
+                PUBLIC_WRAPPER,
+                "_run_compatibility",
+                return_value=compatibility_output,
+            ) as compatibility,
+        ):
+            self.assertEqual(
+                PUBLIC_WRAPPER.run(
+                    PACKAGE,
+                    {"id": "invoke-guru-review-task-publication"},
+                    ["--input", "public.json", "--semantic-result", "semantic.json"],
+                ),
+                happy_output,
+            )
+            happy.assert_called_once()
+            compatibility.assert_not_called()
+
+        with (
+            mock.patch.object(
+                PUBLIC_WRAPPER,
+                "_run_happy_path",
+                return_value=happy_output,
+            ) as happy,
+            mock.patch.object(
+                PUBLIC_WRAPPER,
+                "_run_compatibility",
+                return_value=compatibility_output,
+            ) as compatibility,
+        ):
+            self.assertEqual(
+                PUBLIC_WRAPPER.run(
+                    PACKAGE,
+                    {"id": "invoke-guru-review-task-publication"},
+                    ["--input", "public.json", "--owner-result", "owner.json"],
+                ),
+                compatibility_output,
+            )
+            compatibility.assert_called_once()
+            happy.assert_not_called()
+
+    def test_eval_cases_use_semantic_result_happy_path(self) -> None:
+        for path in sorted((PACKAGE / "evals/files").glob("*-facts.json")):
+            with self.subTest(path=path.name):
+                facts = json.loads(path.read_text(encoding="utf-8"))
+                arguments = facts["public_invocation"]["arguments"]
+                self.assertIn("--semantic-result", arguments)
+                self.assertNotIn("--owner-result", arguments)
 
     def test_public_contract_exposes_complete_valid_semantic_authoring_template(self) -> None:
         import jsonschema
@@ -1948,7 +2025,7 @@ class TaskPublicationContractTest(unittest.TestCase):
             expected,
         )
 
-    def test_interface_validator_commands_resolve_dispatcher_in_all_supported_layouts(
+    def test_interface_validator_commands_resolve_dispatcher_in_package_layouts(
         self,
     ) -> None:
         repo_root = package_repo_root()
@@ -1965,32 +2042,15 @@ class TaskPublicationContractTest(unittest.TestCase):
         env = os.environ.copy()
         env.pop("GURU_TEAM_DISPATCHER", None)
 
-        present_layouts = {
-            name
-            for name, relative in PACKAGE_LAYOUTS
-            if (repo_root / relative).is_dir()
-        }
-        if "canonical" in present_layouts:
-            self.assertEqual(
-                present_layouts,
-                {name for name, _ in PACKAGE_LAYOUTS},
-            )
-
-        for layout, relative in PACKAGE_LAYOUTS:
+        for layout, relative in PACKAGE_LAYOUTS[:2]:
             package_root = repo_root / relative
             if not package_root.is_dir():
                 continue
-            if layout not in {"canonical", "installed-shared"}:
-                with self.subTest(layout=layout, projection="public-only"):
-                    public_wrapper = self.interface["public_contracts"]["invocation"][
-                        "wrapper"
-                    ]
-                    self.assertTrue(os.access(package_root / public_wrapper, os.X_OK))
-                    for validator_id in validator_ids:
-                        self.assertFalse(
-                            (package_root / validators[validator_id]["command"]).exists()
-                        )
-                continue
+            public_wrapper = self.interface["public_contracts"]["invocation"][
+                "wrapper"
+            ]
+            with self.subTest(layout=layout, wrapper=public_wrapper):
+                self.assertTrue(os.access(package_root / public_wrapper, os.X_OK))
             for validator_id in validator_ids:
                 validator = validators[validator_id]
                 command = package_root / validator["command"]

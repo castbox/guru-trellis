@@ -70,7 +70,7 @@ def load_installed_eval_adapter(root: Path) -> Any:
 
 
 class InstalledPackageClient:
-    """Test authoring facade whose production operations use installed wrappers."""
+    """Test authoring adapter whose production operations use installed wrappers."""
 
     INDEPENDENT_REVIEW_SOURCE = "independent-agent"
     TASK_PUBLICATION_DIMENSIONS = (
@@ -194,7 +194,7 @@ class InstalledPackageClient:
         if len(candidates) != 1:
             raise RuntimeError("installed task commit candidate is ambiguous")
         executed = self._call(
-            "invoke-happy-path-v1.sh",
+            "invoke.sh",
             "--root", str(root),
             "--candidate-artifact", candidates[0].relative_to(root).as_posix(),
         )
@@ -455,21 +455,21 @@ def write_fixture(
     write_json(authoring_path, authoring)
     fixture_remote_url = git(root, real_git, "remote", "get-url", "origin")
     publication_package = root / ".trellis/guru-team/skills/packages/guru-review-task-publication"
-    publication_facade = publication_package / "scripts/review-task-publication.sh"
+    publication_invoke = publication_package / "scripts/invoke.sh"
     checked_publication = single_json_stdout(
         run(
             [
-                str(publication_facade),
+                str(publication_invoke),
                 "--root", str(root),
                 "--input", publication_input_path.relative_to(root).as_posix(),
                 "--semantic-result", authoring_path.relative_to(root).as_posix(),
             ],
             root,
         ),
-        "installed Publication Happy Path facade",
+        "installed Publication original public invocation",
     )
     if checked_publication.get("exit_id") != "ready":
-        raise RuntimeError("installed Publication facade did not return ready")
+        raise RuntimeError("installed Publication invocation did not return ready")
     if git(root, real_git, "remote", "get-url", "origin") != fixture_remote_url:
         raise RuntimeError("publication fixture changed the real origin remote")
     return task_dir, branch, str(checked_publication["branch_review_commit"])
@@ -710,7 +710,7 @@ def run_closeout(
         name: package / "scripts" / f"{name}.sh"
         for name in (
             "preview-finalization",
-            "finalize-task-happy-path",
+            "invoke",
         )
     }
     for name, wrapper in wrappers.items():
@@ -839,13 +839,13 @@ def run_closeout(
         dry_payload.get("side_effects") is not False
         or initial_finalizer_state not in {"prepared", "reprepare_required"}
     ):
-        raise RuntimeError("installed Finalizer preview was not ready for the Happy Path facade")
+        raise RuntimeError("installed Finalizer preview was not ready for the original public invocation")
     digest = dry_payload["closeout_plan_digest"]
     confirmation_identity = dry_payload.get("confirmation_identity")
     if not isinstance(confirmation_identity, str):
         raise RuntimeError("installed Finalizer preview omitted its confirmation identity")
-    facade_command = [
-        str(wrappers["finalize-task-happy-path"]),
+    finalizer_command = [
+        str(wrappers["invoke"]),
         *common_options,
         "--review-input", semantic_review_rel,
         "--confirmed-preview-sha256", confirmation_identity,
@@ -898,7 +898,7 @@ def run_closeout(
                 moved_existing = True
             link_path.symlink_to(target, target_is_directory=True)
             before = preflight_state()
-            for command in (preview_command, facade_command):
+            for command in (preview_command, finalizer_command):
                 blocked = subprocess.run(
                     command,
                     cwd=root,
@@ -958,7 +958,7 @@ def run_closeout(
             encoding="utf-8",
         )
         before = preflight_state()
-        for command in (preview_command, facade_command):
+        for command in (preview_command, finalizer_command):
             blocked = subprocess.run(
                 command,
                 cwd=root,
@@ -1011,7 +1011,7 @@ def run_closeout(
     provider_failure_recovered = False
     if provider_failure_once:
         failed_provider = subprocess.run(
-            facade_command,
+            finalizer_command,
             cwd=root,
             env=env,
             text=True,
@@ -1026,14 +1026,14 @@ def run_closeout(
         env["INSTALLED_CLOSEOUT_FAIL_PR_CREATE_ONCE"] = ""
 
     payload = single_json_stdout(
-        run(facade_command, root, env=env),
-        "installed Finalizer Happy Path facade",
+        run(finalizer_command, root, env=env),
+        "installed Finalizer original public invocation",
     )
     if payload.get("exit_id") != "ready_for_merge":
-        raise RuntimeError("installed Finalizer facade did not complete the reviewed plan")
+        raise RuntimeError("installed Finalizer invocation did not complete the reviewed plan")
     mutations_after_finalizer = mutations.read_bytes()
     recovered_finalizer = single_json_stdout(
-        run(facade_command, root, env=env),
+        run(finalizer_command, root, env=env),
         "installed Finalizer terminal recovery",
     )
     if recovered_finalizer != payload:
@@ -1076,13 +1076,11 @@ def run_closeout(
         or ready_payload.get("expected_head_branch") != branch
         or ready_payload.get("expected_close_issues") != [issue]
     ):
-        raise RuntimeError("installed Finalizer facade returned an invalid ready_for_merge DTO")
+        raise RuntimeError("installed Finalizer invocation returned an invalid ready_for_merge DTO")
     merge_package = (
         root / ".trellis/guru-team/skills/packages/guru-merge-task-pr"
     )
-    merge_wrappers = {
-        "complete-task-pr-merge": merge_package / "scripts/complete-task-pr-merge.sh",
-    }
+    merge_wrappers = {"invoke": merge_package / "scripts/invoke.sh"}
     for name, wrapper in merge_wrappers.items():
         if not wrapper.is_file() or not os.access(wrapper, os.X_OK):
             raise RuntimeError(
@@ -1149,8 +1147,8 @@ def run_closeout(
     )
     merge_input_rel = merge_input.relative_to(root).as_posix()
     merge_review_rel = merge_review.relative_to(root).as_posix()
-    merge_facade_command = [
-        str(merge_wrappers["complete-task-pr-merge"]),
+    merge_command = [
+        str(merge_wrappers["invoke"]),
         "--root", str(root),
         "--input", merge_input_rel,
         "--review-input", merge_review_rel,
@@ -1158,18 +1156,18 @@ def run_closeout(
     expected_merge_exit = "closure_mismatch" if closure_mismatch else "merged"
     merged_payload = single_json_stdout(
         run(
-            merge_facade_command,
+            merge_command,
             root,
             env=env,
         ),
-        "installed Merge Happy Path facade",
+        "installed Merge original public invocation",
     )
     if merged_payload.get("exit_id") != expected_merge_exit:
-        raise RuntimeError("installed Merge facade did not complete the expected-head merge")
+        raise RuntimeError("installed Merge invocation did not complete the expected-head merge")
     mutations_after_merge = mutations.read_bytes()
     recovered_merge = single_json_stdout(
         run(
-            merge_facade_command,
+            merge_command,
             root,
             env=env,
         ),
@@ -1185,7 +1183,7 @@ def run_closeout(
         or merged_payload.get("pr_number") != issue
         or merged_payload.get("merge_commit_sha") != "2" * 40
     ):
-        raise RuntimeError("installed Merge facade returned an invalid merged DTO")
+        raise RuntimeError("installed Merge invocation returned an invalid merged DTO")
     recovered_remote_pr = json.loads(store.read_text(encoding="utf-8"))
     forbidden_terminal = [
         archived / "closeout-plan.json",

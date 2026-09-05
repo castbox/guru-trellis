@@ -36,6 +36,7 @@ PRODUCTION_SKILLS = {
     "guru-reconcile-task-base",
     "guru-review-branch",
     "guru-review-task-publication",
+    "guru-restore-archived-task",
     "guru-verify-extension-installation",
 }
 QUALIFICATION_SKILL = "guru-qualify-normal-scenario"
@@ -1463,7 +1464,8 @@ def run_git(root: Path, *arguments: str) -> str:
         stderr=subprocess.PIPE, check=False,
     )
     if process.returncode != 0:
-        raise ValueError(f"owner staging git command failed: {' '.join(arguments)}")
+        detail = process.stderr.strip()
+        raise ValueError(f"owner staging git command failed: {' '.join(arguments)}: {detail}")
     return process.stdout.strip()
 
 
@@ -4909,9 +4911,25 @@ def stage_production_owner_execution(
         raise ValueError("fixture public invocation runtime is unavailable")
     runtime = (
         None
-        if skill_id == "guru-maintain-architecture-baseline"
+        if skill_id in {"guru-maintain-architecture-baseline", "guru-restore-archived-task"}
         else load_package_owner_runtime(fixture_runtime_target, skill_id)
     )
+    if runtime is not None and not hasattr(runtime, "read_json"):
+        runtime.read_json = lambda path: json.loads(Path(path).read_text(encoding="utf-8"))
+    if runtime is not None and not hasattr(runtime, "diff_base_ref"):
+        runtime.diff_base_ref = lambda root, branch: branch
+    if runtime is not None and not hasattr(runtime, "changed_files"):
+        runtime.changed_files = lambda root, revision: subprocess.run(
+            ["git", "diff", "--name-only", revision, "--"], cwd=root,
+            text=True, stdout=subprocess.PIPE, check=False,
+        ).stdout.splitlines()
+    if runtime is not None and not hasattr(runtime, "git_status_paths"):
+        runtime.git_status_paths = lambda root: [
+            line[3:] for line in subprocess.run(
+                ["git", "status", "--short"], cwd=root,
+                text=True, stdout=subprocess.PIPE, check=False,
+            ).stdout.splitlines() if len(line) >= 4
+        ]
     if skill_id == "guru-reconcile-task-base":
         return stage_base_reconciliation_owner_execution(
             request,
@@ -4943,6 +4961,15 @@ def stage_production_owner_execution(
     if skill_id == "guru-merge-task-pr":
         return stage_task_pr_merge_owner_execution(
             runtime,
+            request,
+            fixture,
+            fixture_runtime_target,
+            request_package,
+            recipe,
+            public_input_path,
+        )
+    if skill_id == "guru-restore-archived-task":
+        return stage_restore_archived_task_owner_execution(
             request,
             fixture,
             fixture_runtime_target,
@@ -5157,6 +5184,133 @@ def stage_production_owner_execution(
     if skill_id != "guru-review-branch":
         bind_owner_result_argument(request, fixture, owner_result_path)
     return package, fixture_runtime_target, production_environment
+
+
+def stage_restore_archived_task_owner_execution(
+    request: dict[str, Any],
+    fixture: Path,
+    fixture_runtime_target: Path,
+    request_package: Path,
+    recipe: str,
+    public_input_path: Path,
+) -> tuple[Path, Path, dict[str, str]]:
+    """Build a real archive/worktree owner fixture and invoke the public restore script."""
+    package = fixture / ".trellis/guru-team/skills/packages/guru-restore-archived-task"
+    if (
+        hashlib.sha256((package / "interface.json").read_bytes()).hexdigest()
+        != hashlib.sha256((request_package / "interface.json").read_bytes()).hexdigest()
+        or hashlib.sha256((package / "evals/evals.json").read_bytes()).hexdigest()
+        != hashlib.sha256((request_package / "evals/evals.json").read_bytes()).hexdigest()
+    ):
+        raise ValueError("restore owner staging package does not match the evaluated contract")
+    if not recipe.startswith("restore-"):
+        raise ValueError("restore owner staging recipe is invalid")
+
+    case = recipe.removeprefix("restore-")
+    task_id = "09-03-348-merge-blocked-phase2-reentry"
+    branch = "codex/348-merge-blocked-phase2-reentry"
+    repo_ref = "castbox/guru-trellis"
+    pr_number = 348
+    archive_locator = f".trellis/tasks/archive/2026-09/{task_id}"
+    active_locator = f".trellis/tasks/{task_id}"
+    worktree = fixture / "owner-worktrees" / task_id
+    worktree.parent.mkdir(parents=True, exist_ok=True)
+    run_git(fixture, "branch", "-M", "main")
+    run_git(fixture, "add", ".")
+    run_git(fixture, "commit", "-q", "-m", "stage restore owner base")
+    run_git(fixture, "worktree", "add", "-q", "-b", branch, str(worktree), "HEAD")
+    expected_head = run_git(worktree, "rev-parse", "HEAD")
+    archive_commit = expected_head
+
+    archive = fixture / archive_locator
+    active = fixture / active_locator
+    archive.mkdir(parents=True, exist_ok=True)
+    task_payload = {
+        "id": task_id, "name": task_id, "title": "Restore eval",
+        "status": "completed", "completedAt": "2026-09-03T00:00:00Z",
+        "branch": branch, "base_branch": "main", "repo_ref": repo_ref,
+        "issue_number": pr_number, "pr_number": pr_number,
+        "expected_head_sha": expected_head,
+    }
+    (archive / "task.json").write_text(json.dumps(task_payload) + "\n", encoding="utf-8")
+    finish_summary = {
+        "task_id": task_id, "repository": repo_ref, "pr_number": pr_number,
+        "expected_head_sha": expected_head, "archive_commit": archive_commit,
+    }
+    (archive / "finish-summary.json").write_text(json.dumps(finish_summary) + "\n", encoding="utf-8")
+    mapping_path = fixture / ".trellis/.runtime/guru-team/tasks" / f"{task_id}.json"
+    mapping_path.parent.mkdir(parents=True, exist_ok=True)
+    mapping_path.write_text(json.dumps({
+        "state": "archived", "task_id": task_id,
+        "archive_locator": archive_locator, "active_locator": active_locator,
+        "task_locator": archive_locator, "repository": repo_ref,
+        "branch_name": branch, "worktree_path": str(worktree),
+    }) + "\n", encoding="utf-8")
+
+    public = json.loads(public_input_path.read_text(encoding="utf-8"))
+    public.update({
+        "exit_id": "phase2_reentry_required", "repo_ref": repo_ref,
+        "pr_number": pr_number, "pr_url": f"https://github.com/{repo_ref}/pull/{pr_number}",
+        "expected_head_sha": expected_head, "expected_base_branch": "main",
+        "expected_head_branch": branch, "issue_number": pr_number, "task_id": task_id,
+        "archive_locator": archive_locator, "active_locator": active_locator,
+        "archive_commit": archive_commit, "finding_refs": ["merge-finding:348:phase2-reentry"],
+        "resume_target": "phase-2",
+    })
+    semantic = {
+        "schema_version": "1.0", "profile": "restore_archived_task", "mode": "workflow",
+        "review_intent": "task_work_reentry", "classification": "task_work",
+        "requires_task_content_change": True, "finding_refs": public["finding_refs"],
+    }
+    facts = json.loads((package / "examples/live-facts.json").read_text(encoding="utf-8"))
+    facts["pr"].update({"state": "OPEN", "number": pr_number, "url": public["pr_url"], "head_sha": expected_head, "base_branch": "main", "head_branch": branch})
+    facts["issue"].update({"number": pr_number, "state": "OPEN", "close_intent": "unchanged"})
+    facts["remote_branch"].update({"name": branch, "head_sha": expected_head})
+    facts["local_branch"].update({"name": branch, "head_sha": expected_head})
+    facts["archive"].update({"locator": archive_locator, "commit": archive_commit, "task_json_sha256": hashlib.sha256((archive / "task.json").read_bytes()).hexdigest(), "finish_summary_sha256": hashlib.sha256((archive / "finish-summary.json").read_bytes()).hexdigest()})
+    facts["task"].update({"id": task_id, "status": "completed", "completed_at": task_payload["completedAt"], "branch": branch, "base_branch": "main", "repo_ref": repo_ref, "issue_number": pr_number, "pr_number": pr_number, "expected_head_sha": expected_head})
+    facts["runtime_mapping"].update({"state": "archived", "task_id": task_id, "archive_locator": archive_locator, "active_locator": active_locator, "repo_ref": repo_ref, "branch_name": branch, "worktree_path": str(worktree)})
+    facts["worktree"].update({"path": str(worktree), "exists": True, "clean": True, "branch": branch, "occupied_by": None})
+    facts["active_task"] = {"present": False, "task_id": None, "locator": None}
+    if case == "idempotent":
+        shutil.move(str(archive), str(active))
+        task_payload["status"] = "in_progress"
+        task_payload.pop("completedAt", None)
+        (active / "task.json").write_text(json.dumps(task_payload) + "\n", encoding="utf-8")
+        (active / "finish-summary.json").unlink()
+        mapping_path.write_text(json.dumps({**json.loads(mapping_path.read_text()), "state": "active", "task_locator": active_locator}) + "\n", encoding="utf-8")
+        current = fixture / ".trellis/.runtime/current-task"
+        current.parent.mkdir(parents=True, exist_ok=True)
+        current.write_text(active_locator + "\n", encoding="utf-8")
+        facts["runtime_mapping"]["state"] = "active"
+        facts["task"]["status"] = "in_progress"
+        facts["active_task"] = {"present": True, "task_id": task_id, "locator": active_locator}
+    blockers = facts["blockers"]
+    if case == "external-blocker": blockers["provider"] = True
+    elif case == "head-drift": facts["pr"]["head_sha"] = "2" * 40
+    elif case == "scope-drift": blockers["scope_drift"] = True
+    elif case == "dirty-worktree": facts["worktree"]["clean"] = False
+    elif case == "active-task-conflict": facts["active_task"] = {"present": True, "task_id": "other-task", "locator": ".trellis/tasks/other-task"}
+    elif case == "merged-pr": facts["pr"]["state"] = "MERGED"
+    elif case not in {"success", "idempotent"}:
+        raise ValueError(f"unsupported restore owner staging case: {case}")
+    runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    input_path = runtime_dir / "restore-input.json"
+    semantic_path = runtime_dir / "restore-semantic.json"
+    facts_path = runtime_dir / "restore-facts.json"
+    input_path.write_text(json.dumps(public) + "\n", encoding="utf-8")
+    semantic_path.write_text(json.dumps(semantic) + "\n", encoding="utf-8")
+    facts_path.write_text(json.dumps(facts) + "\n", encoding="utf-8")
+    for relative in request.get("files", []):
+        path = Path(request["workdir"]) / str(relative)
+        try: payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError): continue
+        invocation = payload.get("public_invocation") if isinstance(payload, dict) else None
+        if isinstance(invocation, dict):
+            invocation["arguments"] = ["--root", ".", "--input", str(input_path.relative_to(fixture)), "--semantic-result", str(semantic_path.relative_to(fixture)), "--facts", str(facts_path.relative_to(fixture))]
+            path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
+    return package, fixture_runtime_target, {"GURU_TEAM_EVAL_STAGING": "1"}
 
 
 def qualification_runtime_environment(owner_repository: Path) -> dict[str, str]:
@@ -5727,6 +5881,7 @@ def start_public_runtime_boundary(
     target: Path,
     package_root: Path,
     projection_root: Path,
+    wrapper_path: Path,
     runtime_environment: dict[str, str],
 ) -> tuple[Path, threading.Thread, threading.Event]:
     request_path = execution_root / "public-invocation-request.json"
@@ -5821,7 +5976,7 @@ def start_public_runtime_boundary(
         "import json,sys,time\n"
         "from pathlib import Path\n"
         f"request_path=Path({str(request_path)!r}); response_path=Path({str(response_path)!r})\n"
-        f"request_path.write_text(json.dumps({{'arguments':sys.argv[1:],'wrapper_path':{str(projection_root / 'scripts/invoke.sh')!r}}},separators=(',',':')),encoding='utf-8')\n"
+        f"request_path.write_text(json.dumps({{'arguments':sys.argv[1:],'wrapper_path':{str(wrapper_path)!r}}},separators=(',',':')),encoding='utf-8')\n"
         "for _ in range(3000):\n"
         " if response_path.is_file(): break\n"
         " time.sleep(0.01)\n"
@@ -5961,6 +6116,7 @@ def build_context(
             execution_runtime_target,
             runtime_package_root,
             projection_root,
+            wrapper_path,
             runtime_environment,
         )
     if qualification_codex:

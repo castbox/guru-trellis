@@ -1428,24 +1428,17 @@ def cmd_execute_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
     return task_pr_merge_execute_checked(root, public_input, gate_path, gate, checked)
 
 
-def cmd_complete_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
-    """Post-confirmation facade: one pre snapshot, one mutation, one post snapshot."""
+def _cmd_invoke_task_pr_merge_happy_path(args: argparse.Namespace) -> dict[str, Any]:
+    """Run the original public entry's one-snapshot-pair merge transaction."""
     root = repo_root(Path(args.root or "."))
     public_input = task_pr_merge_json_input(root, args.input)
     gate_path = task_pr_merge_gate_path(root, public_input)
     task_pr_merge_cleanup_body_file(root, public_input)
 
     if gate_path.exists():
-        gate_path, gate = task_pr_merge_gate(root, public_input, args.gate)
+        gate_path, gate = task_pr_merge_gate(root, public_input, None)
         pre = task_pr_merge_live_facts(root, public_input)
     else:
-        if args.gate:
-            raise WorkflowError("Task PR merge gate locator is stale or unsafe.", exit_code=2)
-        if not args.review_input:
-            raise WorkflowError(
-                "Task PR merge facade requires --review-input for a new confirmed transaction.",
-                exit_code=2,
-            )
         pre = task_pr_merge_live_facts(root, public_input)
         review_payload = read_json(Path(args.review_input))
         if pre["pr"]["state"] == "MERGED":
@@ -1475,11 +1468,11 @@ def cmd_complete_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
     if not isinstance(output, dict) or output.get("exit_id") not in {
         "merged", "closure_mismatch"
     }:
-        raise WorkflowError("Task PR merge facade terminal output is unavailable.", exit_code=2)
+        raise WorkflowError("Task PR merge public invocation terminal output is unavailable.", exit_code=2)
     task_pr_merge_retire_terminal_state(root, public_input, gate_path)
     return output
 
-def cmd_invoke_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
+def _cmd_invoke_task_pr_merge_compatibility(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or "."))
     public_input = task_pr_merge_json_input(root, args.input)
     gate_path, gate = task_pr_merge_gate(root, public_input, args.gate)
@@ -1492,6 +1485,17 @@ def cmd_invoke_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
         raise WorkflowError("Task PR merge typed output is unavailable.", exit_code=2)
     task_pr_merge_retire_terminal_state(root, public_input, gate_path)
     return output
+
+
+def cmd_invoke_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
+    if args.review_input and args.gate:
+        raise WorkflowError(
+            "Task PR merge public invocation cannot combine --review-input with --gate.",
+            exit_code=2,
+        )
+    if args.review_input:
+        return _cmd_invoke_task_pr_merge_happy_path(args)
+    return _cmd_invoke_task_pr_merge_compatibility(args)
 
 
 def task_pr_merge_required_checks(

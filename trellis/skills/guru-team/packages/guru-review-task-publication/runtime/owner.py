@@ -2625,8 +2625,8 @@ class TaskPublicationInvocationContext:
     """Invocation-local Publication facts and validation receipt.
 
     This context never crosses a process boundary. It allows the Happy Path
-    facade to reuse one objective snapshot between record and check while the
-    legacy commands continue to rebuild live facts independently.
+    invocation to reuse one objective snapshot between record and check while
+    the package-private commands continue to rebuild live facts independently.
     """
 
     def __init__(
@@ -2675,12 +2675,12 @@ class TaskPublicationInvocationContext:
         requested_task = resolve_task_dir(requested_root, task_ref)
         if requested_root != self.root or requested_task != self.task_dir:
             raise WorkflowError(
-                "Publication facade invocation context does not match the requested task.",
+                "Publication invocation context does not match the requested task.",
                 exit_code=2,
                 payload={
                     "error_code": "publication_input_invalid",
                     "field_path": "input.task_ref",
-                    "recovery": "Use one facade invocation for the exact current task and repository.",
+                    "recovery": "Use one public invocation for the exact current task and repository.",
                 },
             )
 

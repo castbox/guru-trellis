@@ -25,49 +25,45 @@ HAPPY_PATHS = {
     "guru-create-task-commit": {
         "commands": [
             "prepare-task-commit",
-            "invoke-guru-create-task-commit-happy-path-v1",
+            "invoke-guru-create-task-commit",
         ],
-        "legacy": [
+        "compatibility": [
             "prepare-task-commit",
             "check-commit-messages",
             "create-task-commit",
             "invoke-guru-create-task-commit",
         ],
-        "wrapper": "scripts/invoke-happy-path-v1.sh",
-        "public_invocation_switch": False,
+        "wrapper": "scripts/invoke.sh",
     },
     "guru-review-task-publication": {
-        "commands": ["review-task-publication"],
-        "legacy": [
+        "commands": ["invoke-guru-review-task-publication"],
+        "compatibility": [
             "record-task-publication-review",
             "check-task-publication-review",
             "invoke-guru-review-task-publication",
         ],
-        "wrapper": "scripts/review-task-publication.sh",
-        "public_invocation_switch": True,
+        "wrapper": "scripts/invoke.sh",
     },
     "guru-finalize-task": {
-        "commands": ["finalize-task-happy-path"],
-        "legacy": [
+        "commands": ["preview-finalization", "invoke-guru-finalize-task"],
+        "compatibility": [
             "preview-finalization",
             "record-finalization-gate",
             "check-finalization-gate",
             "execute-finalization-transition",
             "invoke-guru-finalize-task",
         ],
-        "wrapper": "scripts/finalize-task-happy-path.sh",
-        "public_invocation_switch": True,
+        "wrapper": "scripts/invoke.sh",
     },
     "guru-merge-task-pr": {
-        "commands": ["complete-task-pr-merge"],
-        "legacy": [
+        "commands": ["invoke-task-pr-merge"],
+        "compatibility": [
             "record-task-pr-merge",
             "check-task-pr-merge",
             "execute-task-pr-merge",
             "invoke-task-pr-merge",
         ],
-        "wrapper": "scripts/complete-task-pr-merge.sh",
-        "public_invocation_switch": True,
+        "wrapper": "scripts/invoke.sh",
     },
 }
 
@@ -426,7 +422,9 @@ class MergeOwnerAdapter:
         output = self.terminal_output()
         return {"status": "executed", "typed_exit": output["exit_id"], "output": output}
 
-    def cmd_invoke_task_pr_merge(self, _args):
+    def cmd_invoke_task_pr_merge(self, args):
+        if getattr(args, "review_input", None):
+            return self.cmd_complete_task_pr_merge(args)
         self._read()
         self._retire()
         return self.terminal_output()
@@ -550,7 +548,7 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
             subject = "fix(commit): #330 收敛提交正常路径"
             body = (
                 "背景：\n减少正常提交的编排调用。\n\n"
-                "变更：\n增加确认后事务 facade。\n\n"
+                "变更：\n将确认后事务并入原公开入口。\n\n"
                 "边界：\n保留无关工作区状态。\n\n"
                 "验证：\n运行 package-local 回归。\n\nRefs #330"
             )
@@ -574,7 +572,7 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                     "scope": "commit",
                     "summary": "收敛提交正常路径",
                     "background": "减少正常提交的编排调用。",
-                    "changes": "增加确认后事务 facade。",
+                    "changes": "将确认后事务并入原公开入口。",
                     "boundaries": "保留无关工作区状态。",
                     "validations": "运行 package-local 回归。",
                     "subject": subject,
@@ -642,7 +640,7 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                     validation_reads = 0
                     before = git("rev-parse", "HEAD")
                     if recommended:
-                        commands.append("invoke-guru-create-task-commit-happy-path-v1")
+                        commands.append("invoke-guru-create-task-commit")
                         output = invoke.run(package, {"id": commands[-1]}, ["--root", str(root), "--candidate-artifact", prepared["candidate_artifact"]])
                         boundary.extend(("deterministic.validate", "mutation", "public.project"))
                         mutation_count = git("rev-list", "--count", f"{before}..HEAD")
@@ -723,7 +721,7 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                     mock.patch.object(invoke, "_owner", return_value=owner),
                 ):
                     if recommended:
-                        commands.append("review-task-publication")
+                        commands.append("invoke-guru-review-task-publication")
                         output = invoke.run(
                             package,
                             {"id": commands[-1]},
@@ -763,18 +761,18 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                 check = command_module(package, "check.py", "finalizer")
                 execute = command_module(package, "execute.py", "finalizer")
                 invoke = command_module(package, "invoke.py", "finalizer")
-                facade = command_module(package, "facade.py", "finalizer")
+                transaction = command_module(package, "transaction.py", "finalizer")
                 with (
                     mock.patch.object(record, "_o", return_value=owner),
                     mock.patch.object(check, "_o", return_value=owner),
                     mock.patch.object(execute, "_o", return_value=owner),
                     mock.patch.object(invoke, "_o", return_value=owner),
-                    mock.patch.object(invoke, "_facade", return_value=facade),
-                    mock.patch.object(facade, "_owner", return_value=owner),
+                    mock.patch.object(invoke, "_transaction", return_value=transaction),
                 ):
                     common = ["--root", str(root), "--input", str(public_path)]
                     if recommended:
-                        commands.append("finalize-task-happy-path")
+                        commands.append("preview-finalization")
+                        commands.append("invoke-guru-finalize-task")
                         output = invoke.run(package, {"id": commands[-1]}, common + ["--review-input", str(review_path), "--confirmed-preview-sha256", "a" * 64])
                         boundary = ("semantic.review", *owner.boundary, "public.project")
                         lifecycle = list(owner.lifecycle)
@@ -822,7 +820,7 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                 ):
                     common = ["--root", str(root), "--input", str(public_path)]
                     if recommended:
-                        commands.append("complete-task-pr-merge")
+                        commands.append("invoke-task-pr-merge")
                         output = invoke.run(package, {"id": commands[-1]}, common + ["--review-input", str(review_path)])
                         boundary = ("semantic.review", *owner.boundary, "public.project")
                         lifecycle = list(owner.lifecycle)
@@ -845,7 +843,7 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                         self.assertEqual(mutation_count, len(owner.mutations))
             return ExecutedRoute(output, commands, owner.full_reads - (1 if recommended else 0), list(owner.mutations), lifecycle, boundary, recovery)
 
-    def test_each_stage_has_one_recommended_public_wrapper(self) -> None:
+    def test_each_stage_keeps_one_original_public_wrapper(self) -> None:
         for skill_id, expected in HAPPY_PATHS.items():
             with self.subTest(skill=skill_id):
                 package = PACKAGES / skill_id
@@ -854,7 +852,10 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                     for item in read_json(package / "commands.json")["commands"]
                 }
                 interface = read_json(package / "interface.json")
-                self.assertTrue(set(expected["commands"] + expected["legacy"]) <= commands.keys())
+                self.assertTrue(
+                    set(expected["commands"] + expected["compatibility"])
+                    <= commands.keys()
+                )
                 recommended = [
                     item
                     for item in interface["validators"]
@@ -862,11 +863,10 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                 ]
                 self.assertEqual(1, len(recommended))
                 self.assertEqual(expected["commands"][-1], recommended[0]["runtime_command"])
-                if expected["public_invocation_switch"]:
-                    self.assertEqual(
-                        expected["wrapper"],
-                        interface["public_contracts"]["invocation"]["wrapper"],
-                    )
+                self.assertEqual(
+                    expected["wrapper"],
+                    interface["public_contracts"]["invocation"]["wrapper"],
+                )
 
     def test_old_and_new_routes_execute_equivalent_public_contracts(self) -> None:
         for stage, runner, required_reads in (

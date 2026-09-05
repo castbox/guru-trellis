@@ -18,8 +18,6 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     parser.add_argument("--gate")
     parser.add_argument("--review-input")
     values = parser.parse_args(argv)
-    handler = {
-        "invoke-task-pr-merge": _owner(package_root).cmd_invoke_task_pr_merge,
-        "complete-task-pr-merge": _owner(package_root).cmd_complete_task_pr_merge,
-    }[command["id"]]
-    return handler(values)
+    if command["id"] != "invoke-task-pr-merge":
+        raise KeyError(command["id"])
+    return _owner(package_root).cmd_invoke_task_pr_merge(values)

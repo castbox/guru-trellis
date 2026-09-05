@@ -1,1 +1,1 @@
-{"scenario":"head-drift","source":"examples/live-facts.json","expected_zero_write":true}
+{"scenario":"head-drift","owner_staging":{"recipe":"restore-head-drift"},"public_invocation":{"arguments":["--root",".","--input","placeholder","--semantic-result","placeholder","--facts","placeholder"]}}

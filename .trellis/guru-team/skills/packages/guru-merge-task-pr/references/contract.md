@@ -30,19 +30,21 @@ merge confirmation. Provider, permission, ruleset, required-check,
 mergeability, and other external blockers remain `merge_blocked`, which also
 performs no mutation.
 
-## Recommended Happy Path Facade
+## Original Public Invoke Contract
 
-`complete-task-pr-merge` is the one recommended post-confirmation facade. A new
-transaction requires the current public input and AI-authored semantic review;
+`invoke-task-pr-merge` through `scripts/invoke.sh` is the sole public
+post-confirmation Happy Path. A new transaction requires the current public
+input and AI-authored semantic review;
 it performs exactly one complete pre-merge snapshot, records the gate from that
 same checked object, runs the unique expected-head mutation, performs exactly
 one complete post-merge snapshot, persists the terminal result, projects the
 existing public DTO, and removes the gate/body state. It does not call the
-legacy recorder/checker/executor/invoker commands and therefore does not repeat
-their full reads.
+package-private recorder/checker/executor commands and therefore does not
+repeat their full reads.
 
 If the mutation completed but stdout, the post-read, or terminal persistence
-was lost, the next facade invocation performs one read-only snapshot. A
+was lost, the next invocation with the same `--review-input` performs one
+read-only snapshot. A
 retained non-terminal gate remains the primary recovery receipt. If successful
 terminal cleanup already removed that gate, the caller must resupply the same
 AI-authored semantic review; an exact already-merged PR reconstructs an
@@ -51,13 +53,16 @@ message and terminal facts, and returns without writing private state or
 repeating the mutation. An unmerged state continues only when the same retained
 gate/input/base/head facts remain current. A persisted terminal output is
 similarly revalidated once, projected, and cleaned. After any terminal or
-re-entry DTO is selected, the facade performs only local gate/body cleanup and returns; it does
+re-entry DTO is selected, the public invocation performs only local gate/body
+cleanup and returns; it does
 not start CI polling or any other Git, GitHub, Trellis, workflow, Issue,
 base-sync, or cleanup operation.
 
-The legacy `record`, `check`, `execute`, and `invoke` commands and their stable
-typed exits remain supported for compatibility, focused tests, and bounded
-diagnosis.
+The `record`, `check`, and `execute` commands remain package-private diagnostics
+and bounded recovery surfaces. The old gate-only `invoke-task-pr-merge`
+argument shape remains compatibility-only and projects an existing checked
+gate; the normal `--review-input` branch does not call it or duplicate its live
+reads.
 
 ## Required Check Watcher
 

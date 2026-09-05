@@ -1,1 +1,1 @@
-{"scenario":"success","source":"examples/live-facts.json","expected_zero_write":true}
+{"scenario":"success","owner_staging":{"recipe":"restore-success"},"public_invocation":{"arguments":["--root",".","--input","placeholder","--semantic-result","placeholder","--facts","placeholder"]}}

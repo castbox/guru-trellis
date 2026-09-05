@@ -8,6 +8,9 @@ if [[ ! -f "$LAUNCHER" ]]; then
   LAUNCHER="$SCRIPT_DIR/../../../../runtime/launch.sh"
 fi
 if [[ ! -f "$LAUNCHER" ]]; then
+  LAUNCHER="$SCRIPT_DIR/../../../../.trellis/guru-team/runtime/launch.sh"
+fi
+if [[ ! -f "$LAUNCHER" ]]; then
   echo 'unsupported Skill package root for guru-restore-archived-task. Install the complete Guru Team runtime.' >&2
   exit 2
 fi

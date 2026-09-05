@@ -21,4 +21,4 @@ if [[ ! -f "$LAUNCHER" ]]; then
   LAUNCHER="$PACKAGE_SCRIPT_DIR/../../../../.trellis/guru-team/runtime/launch.sh"
 fi
 if [[ ! -f "$LAUNCHER" ]]; then echo 'unsupported Skill package root for guru-finalize-task. Guru Team Skill packages are not self-contained or portable. Install or upgrade the complete Guru Team preset.' >&2; exit 2; fi
-source "$LAUNCHER" finalize-task-happy-path "$@"
+source "$LAUNCHER" invoke-guru-finalize-task "$@"

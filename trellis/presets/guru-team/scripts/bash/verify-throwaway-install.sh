@@ -313,18 +313,22 @@ for skill_id in skill_ids:
     installed = root / ".trellis/guru-team/skills/packages" / skill_id
     interface = json.loads((installed / "interface.json").read_text(encoding="utf-8"))
     wrappers = {item["command"] for item in interface["validators"]}
-    if "scripts/invoke.sh" not in wrappers:
-        raise SystemExit(f"{label}: {skill_id} does not declare its public invoke wrapper")
+    public_wrapper = interface["public_contracts"]["invocation"]["wrapper"]
+    if public_wrapper not in wrappers:
+        raise SystemExit(f"{label}: {skill_id} does not declare its public wrapper")
     for relative in sorted(wrappers):
         wrapper = installed / relative
         if not wrapper.is_file() or not os.access(wrapper, os.X_OK):
             raise SystemExit(f"{label}: installed wrapper is missing: {wrapper}")
-    private_wrappers = wrappers - {"scripts/invoke.sh"}
+    private_wrappers = wrappers - {public_wrapper}
     for platform_root in platform_roots:
         projection = root / platform_root / "skills" / skill_id
-        public_invoke = projection / "scripts/invoke.sh"
+        public_invoke = projection / public_wrapper
+        installed_invoke = installed / public_wrapper
         if not public_invoke.is_file() or not os.access(public_invoke, os.X_OK):
-            raise SystemExit(f"{label}: public invoke is missing: {public_invoke}")
+            raise SystemExit(f"{label}: public wrapper is missing: {public_invoke}")
+        if public_invoke.read_bytes() != installed_invoke.read_bytes():
+            raise SystemExit(f"{label}: public wrapper bytes drifted: {public_invoke}")
         help_result = subprocess.run(
             [str(public_invoke), "--help"], cwd=root, text=True,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
@@ -473,7 +477,8 @@ for validator_id in sorted(validator_ids):
             f"(rc={result.returncode}, stderr={result.stderr!r})"
         )
 for layout, package_root in platforms.items():
-    invoke = package_root / "scripts/invoke.sh"
+    public_wrapper = interface["public_contracts"]["invocation"]["wrapper"]
+    invoke = package_root / public_wrapper
     if not invoke.is_file() or not os.access(invoke, os.X_OK):
         raise SystemExit(f"{label}: {layout} public invoke is missing")
     private = [
@@ -514,13 +519,14 @@ for skill_id in skill_ids:
             raise SystemExit(f"{label}: {skill_id} installed wrapper is missing: {wrapper}")
     for platform_root in platform_roots:
         projection = root / platform_root / "skills" / skill_id
-        invoke = projection / "scripts/invoke.sh"
+        public_wrapper = interface["public_contracts"]["invocation"]["wrapper"]
+        invoke = projection / public_wrapper
         if not invoke.is_file() or not os.access(invoke, os.X_OK):
             raise SystemExit(f"{label}: {platform_root}/{skill_id} public invoke is missing")
         private_dirs = [projection / name for name in ("runtime", "tests", "errors")]
         private_scripts = [
             path for path in (projection / "scripts").glob("*")
-            if path.name != "invoke.sh"
+            if path != invoke
         ]
         private_schemas = [
             projection / artifact["schema"]["path"]

@@ -609,12 +609,13 @@ Reconcile durable specs and the approved Docs SSOT Plan.
 
 #### 3.4 Task commit
 
-Invoke guru-create-task-commit through its recommended normal path: run
+Invoke guru-create-task-commit through its original public entry: run
 `prepare-task-commit` once, obtain the exact dialogue-local commit confirmation,
-then run `invoke-guru-create-task-commit-happy-path-v1` once with the returned
-candidate locator. The older message-check, create, and aggregate invoke
-commands remain compatibility/testing/recovery entries and are not the normal
-Agent sequence. Consume only the declared Skill exit. Committed
+then run `invoke-guru-create-task-commit` once through `scripts/invoke.sh` with
+the returned candidate locator. Older argument shapes select the command's
+compatibility branch; message-check, create, and other component commands remain
+package-private testing/diagnosis/recovery entries and are not the normal Agent
+sequence. Consume only the declared Skill exit. Committed
 enters the active-task pair guard with `resume_target=branch_review` before
 Branch Review.
 
@@ -642,10 +643,12 @@ may invoke guru-review-task-publication. Missing/stale evidence,
 `reviewed_candidate`, conflict, incomplete contract, or fitness regression is
 rejected through the Architecture router before Publication. The Publication
 semantic owner then authors and reviews the exact Chinese PR title/body from
-live authority. After that semantic judgment, use the package's single
-`review-task-publication` facade so record, objective check, projection, and
-checkpoint retirement share one invocation-local current snapshot. The older
-record/check/invoke commands remain compatibility/testing/recovery entries.
+live authority. After that semantic judgment, invoke the package's original
+`invoke-guru-review-task-publication` command through `scripts/invoke.sh` so
+record, objective check, projection, and checkpoint retirement share one
+invocation-local current snapshot. Older argument shapes select its
+compatibility branch; record/check helpers remain package-private
+testing/diagnosis/recovery entries.
 The checked ready DTO carries that payload directly to Finalizer without a task-local publication handoff file.
 `ready` enters the pair guard with `resume_target=task_finalization`; the caller
 must not push the reviewed/publication HEAD or create a PR first. Only the
@@ -663,9 +666,10 @@ repeats Publication and Acceptance/Finish. Only the resulting current route
 invokes guru-finalize-task; this Architecture router does not interpret or
 extend Finalizer business semantics.
 
-Invoke guru-finalize-task through `finalize-task-happy-path`: after one read-only
-preview and the exact dialogue-local Finalizer confirmation, the facade may
-consume only mapped same-plan deterministic reprepare/recovery. Any material
+Invoke guru-finalize-task through its original `invoke-guru-finalize-task`
+command and `scripts/invoke.sh`: after one read-only preview and the exact
+dialogue-local Finalizer confirmation, the command may consume only mapped
+same-plan deterministic reprepare/recovery. Any material
 plan, authority, payload, scope, or side-effect-set change stops and requires a
 fresh preview/confirmation. Consume its declared exit; `ready_for_merge`
 immediately invokes `guru-merge-task-pr`, and only `merged` reaches the finish
@@ -691,8 +695,8 @@ Before its first remote mutation, Finalizer requires no Open PR and only an abse
 Reprepare keeps title/body in Finalizer owner-private state while its public DTO remains minimal. `close_issues=[]` is refs-only: close keywords stay empty and merge closure is vacuously complete without Issue effects.
 
 Merge normally uses one expected-head-bound `watch-task-pr-checks` invocation
-only when required checks are pending, then one confirmed
-`complete-task-pr-merge` invocation. The facade owns one pre-merge snapshot,
+only when required checks are pending, then one confirmed `invoke-task-pr-merge`
+invocation through `scripts/invoke.sh`. The command owns one pre-merge snapshot,
 one expected-head mutation, one post-merge snapshot, and mutation-output-loss
 recovery. A current-scope task-work finding instead returns
 `phase2_reentry_required` without merge confirmation or remote mutation and

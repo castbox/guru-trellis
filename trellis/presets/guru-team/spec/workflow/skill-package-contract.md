@@ -1830,26 +1830,31 @@ continuity pass establishes integration readiness for that exact pair; it does
 not rewrite the prior reviewed HEAD. Required task bytes return to
 implementation, while planning or authority changes route to their real owner.
 
-## Recommended Stage Facades
+## Original Public Entry Consolidation
 
-A semantic package may declare one recommended Happy Path facade when several
-deterministic package commands previously forced the Agent to re-read the same
-authority and manually relay intermediate locators. The facade does not change
-`judgment_mode`: the AI still completes scope, sufficiency, finding, revision,
-route, and confirmation decisions before the deterministic invocation that
-consumes them.
+When several deterministic package commands force the Agent to re-read the same
+authority or manually relay intermediate locators, a semantic package may
+consolidate that work inside its existing Interface-declared public wrapper and
+stable command id. It must not retire the original entry or add a second Happy
+Path wrapper/command merely to host the optimized transaction. Consolidation
+does not change `judgment_mode`: the AI still completes scope, sufficiency,
+finding, revision, route, and confirmation decisions before the deterministic
+invocation that consumes them.
 
-The facade may build one process-local checked context containing current
-authority identity, normalized live facts, the already completed semantic
-result, objective validation, operation counters, and a minimal mutation or
-recovery receipt. It must not persist authorization, select a semantic exit,
-read another Skill's private checkpoint, or use a pre-mutation snapshot as
-post-mutation proof. A successful terminal projection retires facade-owned
-temporary state before returning.
+The original command may build one process-local checked context containing
+current authority identity, normalized live facts, the already completed
+semantic result, objective validation, operation counters, and a minimal
+mutation or recovery receipt. It must not persist authorization, select a
+semantic exit, read another Skill's private checkpoint, or use a pre-mutation
+snapshot as post-mutation proof. A successful terminal projection retires its
+temporary state before returning. Compatibility behavior is an argument-selected
+branch inside that same command and must not run before the Happy Path.
 
-Existing public command IDs and schema IDs remain callable until a separate
-migration removes them. `commands.json`, `interface.json`, `SKILL.md`, wrapper,
-contract, tests, installed manifest, and all declared projections must agree on
-which entry is recommended and which entries are compatibility-only. Source
-validation rejects multiple recommended facades or a facade entrypoint outside
-the supported package runtime command surface.
+`commands.json`, `interface.json`, `SKILL.md`, wrapper, contract, tests,
+installed manifest, and all declared projections must agree on the single
+public entry. Generic consumers select the exact safe relative wrapper path from
+`interface.json.public_contracts.invocation.wrapper`; they must not infer
+`scripts/invoke.sh` from a filename convention. Source validation rejects a
+second public entry, multiple recommended command authorities, a public wrapper
+outside the supported package runtime command surface, or any platform
+projection of package-private helpers.
