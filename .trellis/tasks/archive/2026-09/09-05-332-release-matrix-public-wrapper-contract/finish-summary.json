@@ -1223,5 +1223,10 @@
       ]
     },
     "retrieval_text": "#332 收敛原 public invoke 入口并修复 Release Gate wrapper 合同\n收敛 Issue #332 的原 public invoke.sh 入口并修复 restore shared eval。\n完成 SKILL.md 相关变更"
-  }
+  },
+  "task_id": "332-release-matrix-public-wrapper-contract",
+  "repository": "castbox/guru-trellis",
+  "pr_number": 367,
+  "expected_head_sha": "cb1dc979dcacbb6467bc7b384939e2f4721656af",
+  "archive_commit": "cb1dc979dcacbb6467bc7b384939e2f4721656af"
 }
