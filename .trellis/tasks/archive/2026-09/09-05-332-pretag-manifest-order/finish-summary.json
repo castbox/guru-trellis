@@ -1,0 +1,144 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-05T05:27:55Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-05-332-pretag-manifest-order",
+    "title": "#332 修复 pre-tag manifest Skill 顺序",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-05-332-pretag-manifest-order",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/332-pretag-manifest-order",
+    "commits": [
+      "c5937b952c896015e28514846721abfa66102e75",
+      "90403e7cc9b841159acc2f5155d01651c85a9071"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/tasks/09-05-332-pretag-manifest-order/design.md",
+      ".trellis/tasks/09-05-332-pretag-manifest-order/implement.md",
+      ".trellis/tasks/09-05-332-pretag-manifest-order/issue-scope-ledger.json",
+      ".trellis/tasks/09-05-332-pretag-manifest-order/prd.md",
+      ".trellis/tasks/09-05-332-pretag-manifest-order/task.json",
+      ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/design.md",
+      ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/implement.md",
+      ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/prd.md",
+      ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/task.json",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      332
+    ],
+    "close_issues": [],
+    "related_issues": [
+      332
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/365"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#332 修复 pre-tag manifest Skill 顺序",
+    "outcome": "修正 Guru Team extension manifest 的 active Skill 排序，使其与 registry 派生的升序列表一致。",
+    "changed_behavior": [
+      "修正 Guru Team extension manifest 的 active Skill 排序，使其与 registry 派生的升序列表一致。",
+      "将 focused preset test 的期望改为从 installed registry 派生，移除第二份手写 23-Skill 顺序。",
+      "通过 preset apply 同步 dogfood installed projection。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-05-332-pretag-manifest-order/design.md",
+          ".trellis/tasks/09-05-332-pretag-manifest-order/implement.md",
+          ".trellis/tasks/09-05-332-pretag-manifest-order/prd.md",
+          ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/design.md",
+          ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/implement.md",
+          ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/prd.md"
+        ],
+        "change": "修正 Guru Team extension manifest 的 active Skill 排序，使其与 registry 派生的升序列表一致。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "修正 Guru Team extension manifest 的 active Skill 排序，使其与 registry 派生的升序列表一致。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "change": "修正 Guru Team extension manifest 的 active Skill 排序，使其与 registry 派生的升序列表一致。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-05-332-pretag-manifest-order/issue-scope-ledger.json",
+          ".trellis/tasks/09-05-332-pretag-manifest-order/task.json",
+          ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/task.json"
+        ],
+        "change": "修正 Guru Team extension manifest 的 active Skill 排序，使其与 registry 派生的升序列表一致。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#332"
+      ],
+      "pr_refs": [
+        "PR #365"
+      ],
+      "branches": [
+        "fix/332-pretag-manifest-order"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/tasks/09-05-332-pretag-manifest-order/design.md",
+        ".trellis/tasks/09-05-332-pretag-manifest-order/implement.md",
+        ".trellis/tasks/09-05-332-pretag-manifest-order/issue-scope-ledger.json",
+        ".trellis/tasks/09-05-332-pretag-manifest-order/prd.md",
+        ".trellis/tasks/09-05-332-pretag-manifest-order/task.json",
+        ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/design.md",
+        ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/implement.md",
+        ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/prd.md",
+        ".trellis/tasks/archive/2026-09/09-05-332-pretag-manifest-order/task.json",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#332 修复 pre-tag manifest Skill 顺序",
+        "修正 Guru Team extension manifest 的 active Skill 排序，使其与 regist",
+        "完成 extension.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#332 修复 pre-tag manifest Skill 顺序\n修正 Guru Team extension manifest 的 active Skill 排序，使其与 registry 派生的升序列表一致。\n将 focused preset test 的期望改为从 installed registry 派生，移除第二份手写 23-Skill 顺序。\n通过 preset apply 同步 dogfood installed projection。\n修正 Guru Team extension manifest 的 active Skill 排序，使其与 regist\n完成 extension.json 相关变更"
+  }
+}

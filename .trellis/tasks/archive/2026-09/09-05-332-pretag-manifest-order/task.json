@@ -2,10 +2,11 @@
   "id": "332-pretag-manifest-order",
   "name": "332-pretag-manifest-order",
   "title": "#332 修复 pre-tag manifest Skill 顺序",
-  "status": "in_progress",
+  "status": "completed",
   "branch": "fix/332-pretag-manifest-order",
   "base_branch": "main",
   "creator": "wumengye",
   "assignee": "wumengye",
-  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/332"
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/332",
+  "completedAt": "2026-09-05"
 }
