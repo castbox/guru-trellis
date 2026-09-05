@@ -1,0 +1,19 @@
+{
+  "close_issues": [],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 332,
+    "reason": "Issue #332 remains the sole release authority; this corrective task restores its pre-tag gate without completing tag, Release, or closeout.",
+    "title": "发布 v0.6.15-guru.5：提升 Guru Team 内部版本并完成 exact-candidate 正式发布",
+    "url": "https://github.com/castbox/guru-trellis/issues/332"
+  },
+  "related_issues": [
+    {
+      "number": 332,
+      "reason": "The corrective PR must reference #332 without closing it before tag, tag-pinned smoke, GitHub Release, and release closeout complete.",
+      "title": "发布 v0.6.15-guru.5：提升 Guru Team 内部版本并完成 exact-candidate 正式发布",
+      "url": "https://github.com/castbox/guru-trellis/issues/332"
+    }
+  ],
+  "schema_version": "2.0"
+}

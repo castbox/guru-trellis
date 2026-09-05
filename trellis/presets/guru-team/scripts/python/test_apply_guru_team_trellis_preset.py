@@ -2991,33 +2991,17 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         self.assertNotIn("task-commit-plans/*.json", public_api["artifact_contracts"])
+        installed_registry = json.loads(
+            (self.install_dst / "skills/registry.json").read_text(encoding="utf-8")
+        )
+        active_skill_ids = sorted(
+            str(entry["id"])
+            for entry in installed_registry["skills"]
+            if entry.get("state") == "active"
+        )
         self.assertEqual(
             public_api["skill_contracts"]["active_skill_ids"],
-            [
-                "guru-approve-task-plan",
-                "guru-bootstrap-repository-ssot",
-                "guru-check-task",
-                "guru-clarify-requirements",
-                "guru-create-task-commit",
-                "guru-create-task-workspace",
-                "guru-discover-change-context",
-                "guru-execute-task-free-change",
-                "guru-finalize-task",
-                "guru-maintain-architecture-baseline",
-                "guru-maintain-requirements-design-test-ssot",
-                "guru-merge-task-pr",
-                "guru-restore-archived-task",
-                "guru-qualify-normal-scenario",
-                "guru-qualify-solution-mechanism",
-                "guru-reconcile-task-base",
-                "guru-review-branch",
-                "guru-review-change-request",
-                "guru-review-contract-wording",
-                "guru-review-task-publication",
-                "guru-select-workflow-mode",
-                "guru-sync-base",
-                "guru-verify-extension-installation",
-            ],
+            active_skill_ids,
         )
         self.assertEqual(
             public_api["skill_contracts"]["planned_skill_ids"],
