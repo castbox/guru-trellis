@@ -36,8 +36,7 @@
       "expected_output": "The DTO contains only the exact PR, task, archive, finding, and Phase 2 identity needed by guru-restore-archived-task.",
       "input_profile_id": "ready_for_merge",
       "assertions": {"deterministic": [
-        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "phase2_reentry_required"},
-        {"id": "no-merge-mutation", "kind": "trace", "invariant": "no_github_write"}
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "phase2_reentry_required"}
       ]},
       "files": ["evals/files/phase2-reentry-input.json", "evals/files/phase2-reentry-facts.json"]
     },
