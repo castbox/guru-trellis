@@ -1,0 +1,159 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-05T06:57:28Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-05-332-merge-eval-trace-contract",
+    "title": "#332 修复 Merge eval trace 合同并恢复发布门禁",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-05-332-merge-eval-trace-contract",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/332-merge-eval-trace-contract",
+    "commits": [
+      "25988b6e16b403e289b311ae2263effeb845d20c"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-merge-task-pr/evals/evals.json",
+      ".claude/skills/guru-merge-task-pr/evals/evals.json",
+      ".codex/skills/guru-merge-task-pr/evals/evals.json",
+      ".cursor/skills/guru-merge-task-pr/evals/evals.json",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-merge-task-pr/evals/evals.json",
+      ".trellis/tasks/09-05-332-merge-eval-trace-contract/design.md",
+      ".trellis/tasks/09-05-332-merge-eval-trace-contract/docs-ssot-plan.md",
+      ".trellis/tasks/09-05-332-merge-eval-trace-contract/implement.md",
+      ".trellis/tasks/09-05-332-merge-eval-trace-contract/issue-scope-ledger.json",
+      ".trellis/tasks/09-05-332-merge-eval-trace-contract/prd.md",
+      ".trellis/tasks/09-05-332-merge-eval-trace-contract/task.json",
+      ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/design.md",
+      ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/implement.md",
+      ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/prd.md",
+      ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/task.json",
+      "trellis/skills/guru-team/packages/guru-merge-task-pr/evals/evals.json"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      332
+    ],
+    "close_issues": [],
+    "related_issues": [
+      332
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/366"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#332 修复 Merge eval trace 合同并恢复发布门禁",
+    "outcome": "删除 `guru-merge-task-pr` Phase 2 re-entry eval 中 schema 与 runner 均未声明的 `no_github_write` trace assertion。",
+    "changed_behavior": [
+      "删除 `guru-merge-task-pr` Phase 2 re-entry eval 中 schema 与 runner 均未声明的 `no_github_write` trace assertion。",
+      "保留 `phase2_reentry_required` public route assertion，并继续由 Merge runtime 单测验证 mutation runner 未被调用。",
+      "通过 Guru Team preset 同步 canonical、dogfood installed、Shared、Codex、Claude、Cursor 投影及 extension manifest provenance。",
+      "纳入本次标准 Intake 的 task planning、Docs SSOT 结论与 refs-only Issue scope ledger。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-05-332-merge-eval-trace-contract/design.md",
+          ".trellis/tasks/09-05-332-merge-eval-trace-contract/docs-ssot-plan.md",
+          ".trellis/tasks/09-05-332-merge-eval-trace-contract/implement.md",
+          ".trellis/tasks/09-05-332-merge-eval-trace-contract/prd.md",
+          ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/design.md",
+          ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/implement.md",
+          ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/prd.md"
+        ],
+        "change": "删除 `guru-merge-task-pr` Phase 2 re-entry eval 中 schema 与 runner 均未声明的 `no_github_write` trace assertion。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "删除 `guru-merge-task-pr` Phase 2 re-entry eval 中 schema 与 runner 均未声明的 `no_github_write` trace assertion。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-merge-task-pr/evals/evals.json",
+          ".claude/skills/guru-merge-task-pr/evals/evals.json",
+          ".codex/skills/guru-merge-task-pr/evals/evals.json",
+          ".cursor/skills/guru-merge-task-pr/evals/evals.json",
+          ".trellis/guru-team/skills/packages/guru-merge-task-pr/evals/evals.json",
+          "trellis/skills/guru-team/packages/guru-merge-task-pr/evals/evals.json"
+        ],
+        "change": "删除 `guru-merge-task-pr` Phase 2 re-entry eval 中 schema 与 runner 均未声明的 `no_github_write` trace assertion。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-05-332-merge-eval-trace-contract/issue-scope-ledger.json",
+          ".trellis/tasks/09-05-332-merge-eval-trace-contract/task.json",
+          ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/task.json"
+        ],
+        "change": "删除 `guru-merge-task-pr` Phase 2 re-entry eval 中 schema 与 runner 均未声明的 `no_github_write` trace assertion。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#332"
+      ],
+      "pr_refs": [
+        "PR #366"
+      ],
+      "branches": [
+        "fix/332-merge-eval-trace-contract"
+      ],
+      "paths": [
+        ".agents/skills/guru-merge-task-pr/evals/evals.json",
+        ".claude/skills/guru-merge-task-pr/evals/evals.json",
+        ".codex/skills/guru-merge-task-pr/evals/evals.json",
+        ".cursor/skills/guru-merge-task-pr/evals/evals.json",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-merge-task-pr/evals/evals.json",
+        ".trellis/tasks/09-05-332-merge-eval-trace-contract/design.md",
+        ".trellis/tasks/09-05-332-merge-eval-trace-contract/docs-ssot-plan.md",
+        ".trellis/tasks/09-05-332-merge-eval-trace-contract/implement.md",
+        ".trellis/tasks/09-05-332-merge-eval-trace-contract/issue-scope-ledger.json",
+        ".trellis/tasks/09-05-332-merge-eval-trace-contract/prd.md",
+        ".trellis/tasks/09-05-332-merge-eval-trace-contract/task.json",
+        ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/design.md",
+        ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/implement.md",
+        ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/prd.md",
+        ".trellis/tasks/archive/2026-09/09-05-332-merge-eval-trace-contract/task.json",
+        "trellis/skills/guru-team/packages/guru-merge-task-pr/evals/evals.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#332 修复 Merge eval trace 合同并恢复发布门禁",
+        "删除 `guru-merge-task-pr` Phase 2 re-entry eval 中 schema 与 run",
+        "完成 evals.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#332 修复 Merge eval trace 合同并恢复发布门禁\n删除 `guru-merge-task-pr` Phase 2 re-entry eval 中 schema 与 runner 均未声明的 `no_github_write` trace assertion。\n保留 `phase2_reentry_required` public route assertion，并继续由 Merge runtime 单测验证 mutation runner 未被调用。\n通过 Guru Team preset 同步 canonical、dogfood installed、Shared、Codex、Claude、Cursor 投影及 extension manifest provenance。\n纳入本次标准 Intake 的 task planning、Docs SSOT 结论与 refs-only Issue scope ledger。\n删除 `guru-merge-task-pr` Phase 2 re-entry eval 中 schema 与 run\n完成 evals.json 相关变更"
+  }
+}
