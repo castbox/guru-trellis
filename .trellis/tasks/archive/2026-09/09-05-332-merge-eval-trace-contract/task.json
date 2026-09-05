@@ -1,0 +1,12 @@
+{
+  "id": "332-merge-eval-trace-contract",
+  "name": "332-merge-eval-trace-contract",
+  "title": "#332 修复 Merge eval trace 合同并恢复发布门禁",
+  "status": "completed",
+  "branch": "fix/332-merge-eval-trace-contract",
+  "base_branch": "main",
+  "creator": "wumengye",
+  "assignee": "wumengye",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/332",
+  "completedAt": "2026-09-05"
+}
