@@ -1,5 +1,12 @@
 {
-  "close_issues": [],
+  "close_issues": [
+    {
+      "number": 332,
+      "reason": "Issue #332 remains the release authority; this task corrects the public-entry split introduced after #330 and repairs the exact-candidate Release Gate consumers blocked by that drift.",
+      "title": "发布 v0.6.15-guru.5：提升 Guru Team 内部版本并完成 exact-candidate 正式发布",
+      "url": "https://github.com/castbox/guru-trellis/issues/332"
+    }
+  ],
   "followup_issues": [],
   "primary_issue": {
     "number": 332,
