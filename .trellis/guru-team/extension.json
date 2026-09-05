@@ -286,10 +286,10 @@
           "guru-maintain-architecture-baseline",
           "guru-maintain-requirements-design-test-ssot",
           "guru-merge-task-pr",
-          "guru-restore-archived-task",
           "guru-qualify-normal-scenario",
           "guru-qualify-solution-mechanism",
           "guru-reconcile-task-base",
+          "guru-restore-archived-task",
           "guru-review-branch",
           "guru-review-change-request",
           "guru-review-contract-wording",
@@ -430,11 +430,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-05T00:55:40Z",
+  "installed_at": "2026-09-05T04:46:48Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "6538da506c40d1fec55fc0b793124fdc0ecd3966",
-    "commit": "6538da506c40d1fec55fc0b793124fdc0ecd3966",
+    "ref": "90403e7cc9b841159acc2f5155d01651c85a9071",
+    "commit": "90403e7cc9b841159acc2f5155d01651c85a9071",
     "tree_state": "clean",
     "is_mutable_ref": false
   },
