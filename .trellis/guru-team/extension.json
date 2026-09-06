@@ -430,11 +430,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-06T04:34:31Z",
+  "installed_at": "2026-09-06T05:31:28Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "014c71aca65e6fec6fbefb61b83283e7e7823521",
-    "commit": "014c71aca65e6fec6fbefb61b83283e7e7823521",
+    "ref": "9c3a635540d111ef53fef8b462d078921160d6c0",
+    "commit": "9c3a635540d111ef53fef8b462d078921160d6c0",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -644,7 +644,7 @@
       {
         "id": "guru-finalize-task",
         "interface_sha256": "8f3d122f9d216212cfbfe3b891168c9f0963f5d84cf38dcc2f51e08224b9a564",
-        "tree_sha256": "54f68a10a7fe5a84da38d88ba285f9e786ae8ad1280544eac1c2ed7af631d164"
+        "tree_sha256": "e04e9f83e77681e5ea38bbb09355fa29f5b81513ddd8dd37b12e4c31a5c5bc89"
       },
       {
         "id": "guru-merge-task-pr",
@@ -693,7 +693,7 @@
       {
         "path": ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
         "source": "trellis/skills/guru-team/tests/test_finish_family_integration.py",
-        "sha256": "320b3959dfbea0d88cb0d6e93a75ec88ddff6fea622a3bd52a6627919a141d34",
+        "sha256": "7f8d8e04804e6e2fac90a03e43c24337f23a3f9e000cdb3be1dd3a4e1bed0207",
         "executable": false,
         "action": "unchanged"
       },
@@ -952,7 +952,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "5e44d3b5b0fe35c4b151218058ed3a7ecdd7b2bf8ca46625efc1ab571dc9572b",
+        "sha256": "a457504cc084091930a8031c3fbdca82ec6f594899a657066aab9ff32c86fd2b",
         "executable": false,
         "action": "unchanged"
       },
@@ -7154,7 +7154,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
-        "sha256": "46005084fe2bc08d030a2e74dedcd008bcd6b77ccc4794dbdbf03463c1a8df22",
+        "sha256": "31460a1f89f0b4e3e91d5e2b527503fe265b9e40828602e836c3e7717de9b3a8",
         "executable": false,
         "action": "unchanged"
       },

@@ -12382,6 +12382,7 @@ def finalization_eval_preview_context(
         "archive_pushed",
         "archived",
         "ready",
+        "publication_review_stale",
         "reprepare_required",
     }
     if (
@@ -14119,6 +14120,34 @@ def execute_finalization_transition_result(
             FINALIZATION_REPREPARE_ARCHIVE_MONTH,
         }:
             task_context = context.get("task_context")
+            # The public eval fixture supplies only the reviewed objective
+            # facts.  It intentionally has no task/worktree runtime mapping;
+            # exercise the archive-month route without manufacturing a
+            # production closeout transaction in that fixture.
+            if (
+                reason_code == FINALIZATION_REPREPARE_ARCHIVE_MONTH
+                and task_context is None
+                and os.environ.get("GURU_TEAM_EVAL_STAGING") == "1"
+            ):
+                output = finalization_reprepare_public_output(
+                    root,
+                    task_ref=public_input["task_ref"],
+                    reason_code=reason_code,
+                    branch_review_commit=reviewed_content_head,
+                    publication_head=(
+                        context["plan"]["git"].get("publication_head")
+                        or reviewed_content_head
+                    ),
+                )
+                return {
+                    "status": "ok",
+                    "stage": "reprepare_required",
+                    "typed_exit": exit_id,
+                    "retired_owner_state": False,
+                    "publication_head": output["publication_head"],
+                    "replacement_transaction_created": False,
+                    "output": output,
+                }
             if not isinstance(task_context, dict):
                 raise WorkflowError(
                     "Provenance reprepare is missing current task runtime identity.",

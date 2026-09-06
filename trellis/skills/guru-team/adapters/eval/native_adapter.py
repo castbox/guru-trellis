@@ -4579,7 +4579,7 @@ def stage_finalization_owner_execution(
     routes = {
         "finalization-publication-stale": (
             "publication_review_stale",
-            "prepared",
+            "publication_review_stale",
         ),
         "finalization-same-plan-resume": (
             "resume_finalization",
@@ -4647,6 +4647,8 @@ def stage_finalization_owner_execution(
         public_input["plan_ref"] = plan_ref
     if "branch_review_commit" in public_input:
         public_input["branch_review_commit"] = head
+    if "publication_head" in public_input:
+        public_input["publication_head"] = head
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
 
@@ -4691,6 +4693,19 @@ def stage_finalization_owner_execution(
         )
         if context is None:
             raise ValueError("finalization eval context was not accepted")
+        if exit_id == "reprepare_required":
+            # Reprepare consumes the prior content-pushed transaction and
+            # creates a replacement transaction without external mutation.
+            prior = runtime.finalization_transaction_from_plan(
+                context["plan"],
+                next_transition="push_content",
+                pre_push_remote_head=head,
+            )
+            runtime.finalization_write_transaction(
+                fixture,
+                fixture / public_input["task_ref"],
+                prior,
+            )
         outputs = {
             "publication_review_stale": {
                 "exit_id": "publication_review_stale",
