@@ -2023,7 +2023,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
         self.assertIn("installed-phase0-transcript-initial", verifier)
         self.assertIn("installed-phase0-transcript-after-update", verifier)
-        self.assertIn('payload["exit_family_count"] == 23', verifier)
+        self.assertIn('payload["exit_family_count"] == 24', verifier)
+        self.assertNotIn('payload["exit_family_count"] == 23', verifier)
         self.assertIn('len(payload["six_step_transcript"]) == 6', verifier)
         self.assertIn('row["edge_id"] for row in payload["reentry_transcripts"]', verifier)
         self.assertIn(
