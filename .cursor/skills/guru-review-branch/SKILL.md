@@ -17,6 +17,12 @@ Validate all eight entry preconditions in workflow or standalone mode. Perform o
 independent semantic review of the complete current range. Form only candidate
 refs and live locators, then invoke `guru-qualify-normal-scenario` with
 `branch_review_candidate_set` before assigning severity.
+Immediately before dispatch, tell the user in the current dialogue the
+independent reviewer identity, the exact committed `origin/<base>...HEAD`
+range, and the review target. Immediately after return, show the final finding
+summary and the semantic owner's conclusion. Keep the reviewer transcript and
+these lifecycle notices dialogue-local; do not persist them in a gate, DTO,
+checkpoint, or tracked report.
 Scripts never decide scope, scenario class, qualification, severity,
 review sufficiency, pass, or route.
 Rejected candidates remain `rejected_candidate` without severity or
@@ -79,6 +85,10 @@ after `check-review-gate` resolves and validates that exact checkpoint
 may the public wrapper emit exactly one of `passed`,
 `continuity_passed`, `implementation_required`,
 `scope_confirmation_required`, or `blocked`.
+The semantic owner's passing conclusion is provisional. Do not tell the user
+that Branch Review has formally passed until both `check-review-gate` and the
+public wrapper return `passed` for the same current task, range, commit, and
+reviewed-content identity.
 `passed` targets the active `guru-review-task-publication` Skill through its
 target-owned authoring seed. The workflow caller performs the publication
 content authoring preparation required by the global Phase 3.6 order before

@@ -6,7 +6,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.5-guru.44` | [requirement-main.md](./versions/current-main-0.6.5-guru.44/requirement-main.md) | #332 reviewed release-current alignment；`.5/.40/CLI 0.6.15` target，继承 `.43` authority，不执行 tag/Release 或记录 lifecycle 状态；#305 已确认的 `EVO-001..007` 是独立 target authority |
+| `active` | `current-main-0.6.5-guru.45` | [requirement-main.md](./versions/current-main-0.6.5-guru.45/requirement-main.md) | #332 reviewed original-entry convergence；继承 `.44` release authority，current graph 23 Skills / 97 exits / 77 commands，不执行 tag/Release 或记录 lifecycle 状态 |
+| `superseded` | `current-main-0.6.5-guru.44` | [requirement-main.md](./versions/current-main-0.6.5-guru.44/requirement-main.md) | #332 release-current alignment、#240/#348 reviewed authority 与 23/97/81 before-state |
 | `superseded` | `current-main-0.6.5-guru.43` | [requirement-main.md](./versions/current-main-0.6.5-guru.43/requirement-main.md) | #335 repository-private release orchestration authority |
 | `superseded` | `current-main-0.6.5-guru.42` | [requirement-main.md](./versions/current-main-0.6.5-guru.42/requirement-main.md) | #267 reviewed release-authority alignment 与后续 fact-only corrections |
 | `superseded` | `current-main-0.6.5-guru.41` | [requirement-main.md](./versions/current-main-0.6.5-guru.41/requirement-main.md) | #311 reviewed Architecture/RDT promotion |
@@ -48,7 +49,9 @@ Evolution target delta 或 fixture；current capability 增加为 `CUR-CAP-024`�
 exact-candidate Release Gate、merged prerequisite consumption 与独立 release transaction authority 投影为
 current facts，并把 #240/#348 已审查的 solution-mechanism 与 archived-task recovery owner/RDT/ADR
 authority 提升为 current；public graph 现为 23 Skills / 97 exits / 81 commands，但不新增 Evolution target
-delta、capability 或 fixture。
+delta、capability 或 fixture。`.45` 新增 `REQ-074..083`，把四阶段原 public entry、Interface-driven
+wrapper selection、23/97/77 graph、promotion freshness 与 fresh candidate reset 提升为 current；这些
+变化仍由既有 Evolution capability/delta/fixture 承接。
 Requirements 阶段状态为 `requirements_ready_for_design`，trace 状态为
 `requirements_trace_ready_for_design`；Design/Test/Architecture 的 73 个 Design
 responsibilities 与 50 个 fixture mappings 已同步为 planning projection；pre-`REQ-REV-142` Design pass 仍为

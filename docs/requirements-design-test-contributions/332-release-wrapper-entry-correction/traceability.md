@@ -12,8 +12,11 @@
 | `R332-ENTRY-08` | `D332-ENTRY-07` | `T332-ENTRY-05` | shared asset ownership; AC9 |
 | `R332-ENTRY-09` | `D332-ENTRY-03`, `D332-ENTRY-11` | `T332-ENTRY-03` | preserved semantic/mutation boundaries; AC10 |
 | `R332-ENTRY-10` | `D332-ENTRY-09..10` | `T332-ENTRY-07..08` | `.44 -> .45`, fresh candidate; AC11-12 |
+| `R332-ENTRY-11` | `D332-ENTRY-13` | `T332-ENTRY-09` | exclusive Guru finish and incomplete-closeout fail closed; AC13 |
+| `R332-ENTRY-12` | `D332-ENTRY-14` | `T332-ENTRY-10` | review visibility and pass announcement timing; AC14 |
+| `R332-ENTRY-13` | `D332-ENTRY-15` | `T332-ENTRY-11` | displayed-action confirmation continuity; AC15 |
 
 Current authority locators are `docs/{requirements,design,test}/README.md` and
-`docs/architecture/README.md` at `current-main-0.6.5-guru.44`. The Architecture delta is owned by
-`docs/architecture/contributions/332-release-wrapper-entry-correction.md`. Neither contribution authorizes
-shared-current writes or records dynamic implementation, review, publication, release, time, or user authorization.
+`docs/architecture/README.md` at `current-main-0.6.5-guru.45`; `.44` remains the immutable predecessor. The
+Architecture delta is owned by `docs/architecture/contributions/332-release-wrapper-entry-correction.md`.
+The reviewed promotion records no dynamic publication, release, time, Gate checkpoint, or user authorization.

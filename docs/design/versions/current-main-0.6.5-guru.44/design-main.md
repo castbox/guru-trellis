@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-版本：`current-main-0.6.5-guru.44`；状态：`active`；predecessor：`current-main-0.6.5-guru.43`；provenance：`code_recovered` + contribution identity `architecture-contribution-332-release-v0615-guru5-v1` + reviewed #240/#348 contributions + inherited `.43` authority。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
+版本：`current-main-0.6.5-guru.44`；状态：`superseded`；predecessor：`current-main-0.6.5-guru.43`；successor：`current-main-0.6.5-guru.45`；provenance：`code_recovered` + contribution identity `architecture-contribution-332-release-v0615-guru5-v1` + reviewed #240/#348 contributions + inherited `.43` authority。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
 
 ## 分层与 ownership
 

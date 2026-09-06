@@ -55,19 +55,110 @@ def tearDownModule() -> None:
 
 
 class InstalledCloseoutFixtureTest(unittest.TestCase):
-    def test_generated_fake_gh_is_valid_python(self) -> None:
+    def setUp(self) -> None:
         module_path = Path(__file__).with_name("verify_installed_closeout.py")
         spec = importlib.util.spec_from_file_location(
             "verify_installed_closeout_fixture", module_path
         )
         assert spec is not None and spec.loader is not None
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
+        self.closeout = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.closeout)
+
+    def test_generated_fake_gh_is_valid_python(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             fake_bin = Path(tmp) / "bin"
-            module.install_fake_commands(fake_bin)
+            self.closeout.install_fake_commands(fake_bin)
             fake_gh = fake_bin / "gh"
             compile(fake_gh.read_text(encoding="utf-8"), str(fake_gh), "exec")
+
+    def test_preflight_uses_each_entrypoints_error_contract(self) -> None:
+        public_payload = {
+            "code": "finalization_stale",
+            "field_path": "finalization",
+            "remediation": "Reprepare from current publication authority.",
+        }
+        for stage in ("archive-path-preflight", "after-archive-hook-preflight"):
+            with self.subTest(stage=stage):
+                private_payload = {"status": "error", "stage": stage}
+                preview = subprocess.CompletedProcess(
+                    ["preview"], 2, "", json.dumps(private_payload) + "\n"
+                )
+                invoked = subprocess.CompletedProcess(
+                    ["invoke"], 2, json.dumps(public_payload) + "\n", ""
+                )
+                self.assertEqual(
+                    self.closeout.preflight_error(preview, stage, public=False),
+                    private_payload,
+                )
+                self.assertEqual(
+                    self.closeout.preflight_error(invoked, stage, public=True),
+                    public_payload,
+                )
+
+    def test_preflight_does_not_accept_unrelated_invocation_failure(self) -> None:
+        payload = {
+            "code": "internal_error",
+            "field_path": "runtime",
+            "remediation": "Inspect the package runtime and retry.",
+        }
+        result = subprocess.CompletedProcess(["invoke"], 2, json.dumps(payload) + "\n", "")
+        with self.assertRaisesRegex(RuntimeError, "declared public preflight error"):
+            self.closeout.preflight_error(result, "archive preflight", public=True)
+
+    def test_client_failure_keeps_payload_for_native_adapter(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            client = self.closeout.InstalledPackageClient(root, "guru-create-task-commit")
+            wrapper = client.package / "scripts/invoke.sh"
+            wrapper.parent.mkdir(parents=True)
+            payload = {"code": "commit_stale", "field_path": "candidate", "remediation": "Reprepare."}
+            self.closeout.write_executable(
+                wrapper, "#!/bin/sh\nprintf '%s\\n' '" + json.dumps(payload) + "'\nexit 2\n"
+            )
+            with self.assertRaises(client.WorkflowError) as raised:
+                client._call("invoke.sh")
+            self.assertEqual(raised.exception.payload, payload)
+            self.assertEqual(raised.exception.exit_code, 2)
+
+            adapter_path = Path(__file__).resolve().parents[5] / "trellis/skills/guru-team/adapters/eval/native_adapter.py"
+            spec = importlib.util.spec_from_file_location("closeout_native_adapter_test", adapter_path)
+            assert spec is not None and spec.loader is not None
+            adapter = importlib.util.module_from_spec(spec)
+            sys.modules[spec.name] = adapter
+            self.addCleanup(sys.modules.pop, spec.name, None)
+            spec.loader.exec_module(adapter)
+            with mock.patch.object(adapter, "production_task_commit_authoring", return_value={}):
+                with mock.patch.object(client, "build_task_commit_candidate", side_effect=raised.exception):
+                    with self.assertRaisesRegex(ValueError, "commit_stale"):
+                        adapter.production_commit_for_review(
+                            client, root, root / "task", {"phase2_capture_commit": "a" * 40}
+                        )
+
+    def test_linked_target_is_rejected_before_shared_config_or_ref_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            repo = root / "source"
+            repo.mkdir()
+            real_git = shutil.which("git")
+            assert real_git is not None
+            git = self.closeout.git
+            git(repo, real_git, "init", "-q", "-b", "main")
+            git(repo, real_git, "config", "user.name", "Fixture")
+            git(repo, real_git, "config", "user.email", "fixture@example.com")
+            git(repo, real_git, "commit", "--allow-empty", "-qm", "fixture")
+            candidate = root / "candidate"
+            git(repo, real_git, "worktree", "add", "--detach", str(candidate))
+            config_before = (repo / ".git/config").read_bytes()
+            refs_before = git(repo, real_git, "show-ref")
+            candidate_head = git(candidate, real_git, "rev-parse", "HEAD")
+            remote = root / "unexpected-remote.git"
+            with self.assertRaisesRegex(RuntimeError, "standalone throwaway"):
+                self.closeout.ensure_baseline(candidate, real_git, remote, False)
+            self.assertEqual((repo / ".git/config").read_bytes(), config_before)
+            self.assertEqual(git(repo, real_git, "show-ref"), refs_before)
+            self.assertEqual(git(candidate, real_git, "rev-parse", "HEAD"), candidate_head)
+            self.assertEqual(git(candidate, real_git, "status", "--porcelain"), "")
+            self.assertFalse(remote.exists())
 
 
 class ManagedPythonBootstrapBoundaryTest(unittest.TestCase):
@@ -148,6 +239,11 @@ def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> No
         testcase.assertIn(exit_id, text, path)
     testcase.assertIn("not user choices", text, path)
     testcase.assertIn("Do not add a routine confirmation", text, path)
+    testcase.assertIn("exclusive finish entry", text, path)
+    testcase.assertIn("`trellis-finish-work` Skill is not applicable", text, path)
+    testcase.assertIn("Before Finalizer, do not call `task.py archive`", text, path)
+    testcase.assertIn("clear affirmative such as `确认继续`", text, path)
+    testcase.assertIn("Continue mapped internal exits automatically", text, path)
     for forbidden in (
         "guru-verify-extension-installation",
         "verification_required",

@@ -424,6 +424,8 @@ def eval_after_archive_hook_fixture(
                 "repo_ref": "example/guru-extension",
                 "remote": "origin",
                 "head_branch": "main",
+                "pr_title": public_input["pr_title"],
+                "pr_body": public_input["pr_body"],
                 "publication_status": "current",
                 "publication_stale_reason": None,
                 "transaction_state": "prepared",

@@ -1,9 +1,9 @@
 # #332 Original-entry correction Requirements contribution
 
 本 contribution 承接 live Issue #332、用户对 #330 产品意图的当前澄清，以及 task
-`332-release-matrix-public-wrapper-contract` 的 planning。它继承唯一 active
-`current-main-0.6.5-guru.44` Requirements/Design/Test 与 Architecture authority，只形成
-task-isolated candidate，不修改 shared current。
+`332-release-matrix-public-wrapper-contract` 的 reviewed implementation。它以 immutable
+`current-main-0.6.5-guru.44` 为 expected predecessor，经独立 committed Branch Review 后由 serialized
+owner promotion 为唯一 active `current-main-0.6.5-guru.45` Requirements/Design/Test 与 Architecture authority。
 
 - `R332-ENTRY-01`：Commit、Publication、Finalizer、Merge 必须继续使用既有
   `scripts/invoke.sh` public wrapper 和稳定 command id；#330 的性能优化不得要求 caller 切换到
@@ -36,6 +36,17 @@ task-isolated candidate，不修改 shared current。
   `current-main-0.6.5-guru.45`，其 live graph 从 `.44` 的 23 Skills / 97 exits / 81 commands 收敛为
   23 Skills / 97 exits / 77 commands。旧 exact-candidate evidence 因 delivery bytes 和 authority
   变化而失效，preparation 合并后必须从 fresh `origin/main` 重新建立 candidate 并从零运行 Release Gate。
+- `R332-ENTRY-11`：存在 Guru task 或 archived incomplete closeout 时，收尾必须排他进入
+  `guru-finish-work`，不得由 upstream `trellis-finish-work` 抢占，也不得在 Finalizer 前直接 archive 或写
+  journal。archived incomplete closeout 必须返回 `incomplete_closeout` / `invalid-task-state` 并零写入，
+  不得降级为普通 `no_task` 后重入 Intake。
+- `R332-ENTRY-12`：Branch Review dispatch 前必须展示 reviewer identity、完整 base/head range 与目标；
+  reviewer return 后必须展示 finding summary 与 owner 结论。只有同一 reviewed identity 的 checker 和
+  public wrapper 都返回 `passed`，caller 才能正式宣告 Branch Review 通过并进入 Publication。
+- `R332-ENTRY-13`：当前对话已经展示一个精确待执行动作后，普通“确认继续”必须直接消费该动作；
+  mapped exit、re-entry 与 recovery route 必须自动承接，不得重复索取同一确认。canonical、dogfood、
+  installed 与三平台入口必须在连续 actual-load 场景中保持这一合同，且确认不得外溢到未展示动作。
 
-本 contribution 不发布版本、不执行实现、不授权 shared-current promotion，也不记录动态 Gate、
-Git/GitHub mutation、时间或用户授权。
+本 contribution 只记录已审查并 promotion 的 durable requirement delta；不发布版本，也不记录动态
+Git/GitHub mutation、Gate checkpoint、时间或用户授权。promotion-created diff 必须 fresh 重跑 Phase 2、
+Task Commit 与完整 Branch Review。

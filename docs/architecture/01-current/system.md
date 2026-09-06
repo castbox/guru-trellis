@@ -2,7 +2,7 @@
 
 以下事实只绑定 current source/release evidence，不推断未来能力。
 
-- `ARCH-CUR-001`（`code_recovered`）：#332 contribution + reviewed #240/#348 contributions + inherited `.43` authority 包含 23 个 active Skill packages、97 个 external exits 与 81 个 commands；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD；registry 统一指向 interface/route/platform，22 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
+- `ARCH-CUR-001`（`code_recovered`）：reviewed #332 original-entry correction contribution + inherited `.44` authority 包含 23 个 active Skill packages、97 个 external exits 与 77 个 commands；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD；registry 统一指向 interface/route/platform，22 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
 - `ARCH-CUR-002`（`code_recovered`）：global workflow 实现四 Phase，canonical package 位于 `trellis/**`，dogfood/installed 位于 `.trellis/**`，平台投影覆盖 Shared/Codex/Claude/Cursor。
 - `ARCH-CUR-003`（`code_recovered`）：RDT、Architecture Baseline、Repository Bootstrap 三个 semantic package 已 active，分别源自 #263/#264/#265。
 - `ARCH-CUR-004`（`source_confirmed` + `verified`）：current extension candidate 为 `0.6.15-guru.40`，target/required/tested Trellis CLI 为 `0.6.15`；#332 successor Release target 为 `v0.6.15-guru.5`，尚未发布。
@@ -50,11 +50,17 @@
 - `ARCH-CUR-020`（`source_confirmed` + `reviewed`）：#348 / PR #351 为 Merge 增加
   `phase2_reentry_required`，并由唯一 `guru-restore-archived-task` owner 在 fresh identity 校验后恢复
   原 task/branch/worktree/PR 到 Phase 2、清理 stale downstream authority；外部 blocker 继续 terminal。
+- `ARCH-CUR-021`（`code_recovered` + `reviewed`）：Commit、Publication、Finalizer 与 Merge 的原
+  `scripts/invoke.sh`/稳定 command 是唯一 public entry；PR #341 transaction/recovery 能力由原 command
+  直接消费，compatibility 只由旧参数触发，四个 facade command/wrapper 已从 current distribution 删除。
+- `ARCH-CUR-022`（`source_confirmed` + `reviewed`）：#332 original-entry RDT/Architecture contributions
+  已由 serialized owners 绑定 expected `.44` promotion 为唯一 active `.45`；该 promotion 使旧 Phase 2、
+  Branch Review 与 exact candidate evidence stale，后续必须从相应 owner fresh 重跑。
 
-当前 Architecture knowledge identity 为 `.44`，extension candidate 为 `0.6.15-guru.40`，Trellis
+当前 Architecture knowledge identity 为 `.45`，extension candidate 为 `0.6.15-guru.40`，Trellis
 CLI 为 `0.6.15`；latest stable 为 `v0.6.15-guru.4` / extension `.39`。#332 target
 `v0.6.15-guru.5` 的 post-merge exact-candidate matrix、tag、GitHub Release、latest-stable 晋升与
 tag-pinned smoke 仍为 `unverified`；knowledge promotion 不替代这些门禁。#267 保持 OPEN，#311
 已按其独立 scope 完成；本 promotion 不修改它们。Requirements/Design/Test 与 Architecture 均已完成
-serialized promotion 并使用唯一 active `.44` current authority，但该 knowledge promotion 不证明任何
+serialized promotion 并使用唯一 active `.45` current authority，但该 knowledge promotion 不证明任何
 release mutation 已完成。

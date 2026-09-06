@@ -385,7 +385,7 @@ Phase 3: Finish  -> docs reconciliation, commit, Architecture full-diff review, 
 
 | State | Route |
 | --- | --- |
-| no active task | Tool-free classification, then Phase 0 for repo-changing work. |
+| no active task and no incomplete closeout | Tool-free classification, then Phase 0 for repo-changing work. |
 | planning | Produce the three planning documents and Docs SSOT Plan, run wording review, obtain current Planning Architecture impact, then invoke guru-approve-task-plan. |
 | in_progress | Validate the task worktree, re-enter Architecture on qualifying expansion, implement the approved scope, then run the Phase 2 Architecture/check route. |
 | completed | Enter Phase 3 through the canonical guru-finish-work route. |
@@ -394,8 +394,14 @@ Phase 3: Finish  -> docs reconciliation, commit, Architecture full-diff review, 
 [workflow-state:no_task]
 Every file-changing request first resolves and validates the active-task identity.
 An incomplete or conflicting identity stops at `invalid-task-state`. Only when
-no active task exists does the request invoke `guru-select-workflow-mode`, including
-requests without an Issue or task-free wording. `这次走 task-free` is direct.
+no active task or archived incomplete-closeout identity exists does the request
+invoke `guru-select-workflow-mode`, including requests without an Issue or
+task-free wording. Before treating an archived task as complete, read the live
+branch, workspace mapping, archived task, PR, and Finalizer facts. If they bind
+the current workspace to a task whose Finalizer has not completed, return the
+zero-write `incomplete_closeout` form of `invalid-task-state`: do not enter
+Intake, move the task, edit task metadata, archive again, reconstruct a recovery
+route, or claim that no workflow step remains. `这次走 task-free` is direct.
 Otherwise: high-confidence bounded low-risk -> `task_free`; insufficient
 evidence -> one question; complex/high-risk -> `standard_intake`. Mapped exits
 and same-scope retries do not ask again. Task-free still requires checkout
@@ -427,8 +433,10 @@ guru-check-task route.
 [/workflow-state:in_progress-inline]
 
 [workflow-state:completed]
-Use canonical guru-finish-work and automatically consume the declared
-publication, verification, resume, and reprepare exits.
+Use canonical guru-finish-work as the exclusive Guru task finish entry. The
+upstream-owned trellis-finish-work Skill is not an applicable consumer for a
+Guru task. Automatically consume the declared publication, verification,
+resume, and reprepare exits.
 [/workflow-state:completed]
 
 #### 0.0 Base synchronization
@@ -603,6 +611,11 @@ declared workflow targets.
 
 ## Phase 3: Finish
 
+For a Guru task, `guru-finish-work` is the exclusive finish entry. Never invoke
+the upstream-owned `trellis-finish-work` Skill: it is not a consumer in this
+workflow graph. Before Finalizer starts, no caller may invoke `task.py archive`,
+`add_session.py`, or another archive/journal executor.
+
 #### 3.3 Docs SSOT reconciliation
 
 Reconcile durable specs and the approved Docs SSOT Plan.
@@ -628,7 +641,15 @@ before/after satisfaction over the complete committed base-to-HEAD diff; it
 cannot reuse Phase 2. Only its fresh current route invokes guru-review-branch,
 which performs its own independent complete-range semantic review and likewise
 cannot use Phase 2 as Branch Review proof.
-Normal passed enters the pair guard with `resume_target=publication_review`.
+Before dispatch, the current dialogue names the independent reviewer identity,
+the exact committed `origin/<base>...HEAD` range, and the review target. On
+return, it immediately reports the finding summary and semantic owner
+conclusion. That conclusion remains provisional: only after the official
+checker and the public wrapper both return `passed` for the same current
+identity may the caller declare that Branch Review passed. Normal `passed` has
+exactly one next consumer: it enters the pair guard with
+`resume_target=publication_review`; no finish, archive, or journal route may
+intervene.
 The `base_continuity` profile reviews only the reconciliation-selected delta,
 candidate, and affected validation; its distinct continuity_passed exit resumes
 the original closed target without replacing the task-content review.
@@ -677,6 +698,8 @@ response after a separate expected-head confirmation, without base sync or
 direct Issue closure.
 
 Only publication ready enters finalization. Finalizer alone may display and execute the bounded push, PR, archive, and Ready side-effect set.
+No generic finish entry or direct `task.py archive` / `add_session.py` call may
+perform any part of that side-effect set.
 Verification, stale publication, base reconciliation, resume, and reprepare
 exits are automatically consumed by their declared Skills; the workflow never
 calls closeout executors directly. A Finalizer base-only mismatch returns

@@ -12367,6 +12367,8 @@ def finalization_eval_preview_context(
         "repo_ref",
         "remote",
         "head_branch",
+        "pr_title",
+        "pr_body",
         "publication_status",
         "publication_stale_reason",
         "transaction_state",
@@ -12380,6 +12382,7 @@ def finalization_eval_preview_context(
         "archive_pushed",
         "archived",
         "ready",
+        "publication_review_stale",
         "reprepare_required",
     }
     if (
@@ -12396,6 +12399,10 @@ def finalization_eval_preview_context(
             r"[0-9a-f]{40}", str(payload.get("publication_head") or "")
         )
         or normalize_github_repository(payload.get("repo_ref")) != payload.get("repo_ref")
+        or not isinstance(payload.get("pr_title"), str)
+        or not payload.get("pr_title")
+        or not isinstance(payload.get("pr_body"), str)
+        or not payload.get("pr_body")
         or payload.get("publication_status") not in {"current", "stale"}
         or (
             payload.get("publication_status") == "current"
@@ -12453,8 +12460,8 @@ def finalization_eval_preview_context(
             "publication_head": payload["publication_head"],
         },
         "publish": {
-            "title": public_input["pr_title"],
-            "body": public_input["pr_body"],
+            "title": payload["pr_title"],
+            "body": payload["pr_body"],
         },
         "review": {"close_issues_reviewed": [174]},
         "task": {
@@ -14113,6 +14120,34 @@ def execute_finalization_transition_result(
             FINALIZATION_REPREPARE_ARCHIVE_MONTH,
         }:
             task_context = context.get("task_context")
+            # The public eval fixture supplies only the reviewed objective
+            # facts.  It intentionally has no task/worktree runtime mapping;
+            # exercise the archive-month route without manufacturing a
+            # production closeout transaction in that fixture.
+            if (
+                reason_code == FINALIZATION_REPREPARE_ARCHIVE_MONTH
+                and task_context is None
+                and os.environ.get("GURU_TEAM_EVAL_STAGING") == "1"
+            ):
+                output = finalization_reprepare_public_output(
+                    root,
+                    task_ref=public_input["task_ref"],
+                    reason_code=reason_code,
+                    branch_review_commit=reviewed_content_head,
+                    publication_head=(
+                        context["plan"]["git"].get("publication_head")
+                        or reviewed_content_head
+                    ),
+                )
+                return {
+                    "status": "ok",
+                    "stage": "reprepare_required",
+                    "typed_exit": exit_id,
+                    "retired_owner_state": False,
+                    "publication_head": output["publication_head"],
+                    "replacement_transaction_created": False,
+                    "output": output,
+                }
             if not isinstance(task_context, dict):
                 raise WorkflowError(
                     "Provenance reprepare is missing current task runtime identity.",

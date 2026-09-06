@@ -175,7 +175,7 @@ def _matches_identity(public: dict[str, Any], semantic: dict[str, Any], facts: d
         return "scope_drift"
     if facts["task"]["status"] not in {"completed", "in_progress"}:
         return "archive_conflict"
-    if not facts["worktree"]["exists"] or not facts["worktree"]["clean"] or facts["worktree"]["occupied_by"] is not None:
+    if not facts["worktree"]["exists"] or facts["worktree"]["occupied_by"] is not None:
         return "dirty_worktree"
     active = facts["active_task"]
     if active["present"] and active["task_id"] != public["task_id"]:
@@ -183,7 +183,59 @@ def _matches_identity(public: dict[str, Any], semantic: dict[str, Any], facts: d
     return None
 
 
-def _check_actual_worktree(facts: dict[str, Any], public: dict[str, Any]) -> str | None:
+def _archive_blob(root: Path, public: dict[str, Any], relative: str) -> bytes | None:
+    result = subprocess.run(
+        ["git", "-C", str(root), "show", f"{public['archive_commit']}:{public['archive_locator']}/{relative}"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    return result.stdout if result.returncode == 0 else None
+
+
+def _pending_restore_matches(root: Path, public: dict[str, Any]) -> bool:
+    archive = root / public["archive_locator"]
+    active = root / public["active_locator"]
+    if archive.exists() or not active.is_dir() or active.is_symlink():
+        return False
+    tracked = subprocess.run(
+        ["git", "-C", str(root), "ls-tree", "-r", "--name-only", "-z", public["archive_commit"], "--", public["archive_locator"]],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    if tracked.returncode:
+        return False
+    prefix = public["archive_locator"] + "/"
+    original_paths = {value.decode()[len(prefix):] for value in tracked.stdout.split(b"\0") if value}
+    actual_paths = {path.relative_to(active).as_posix() for path in active.rglob("*") if path.is_file() or path.is_symlink()}
+    removable = set(AUTHORITY_FILES) | {FINISH_SUMMARY}
+    if not original_paths or actual_paths - original_paths or original_paths - actual_paths - removable:
+        return False
+    for relative in actual_paths:
+        path = active / relative
+        original = _archive_blob(root, public, relative)
+        if path.is_symlink() or original is None:
+            return False
+        if relative == "task.json":
+            try:
+                archived_task = json.loads(original)
+                restored_task = dict(archived_task, status="in_progress")
+                restored_task.pop("completedAt", None)
+                if json.loads(path.read_bytes()) not in (archived_task, restored_task):
+                    return False
+            except (ValueError, TypeError):
+                return False
+        elif path.read_bytes() != original:
+            return False
+    # A lost result may leave exactly the owned move dirty, never unrelated edits.
+    for args in (["diff", "--name-only", "-z"], ["diff", "--cached", "--name-only", "-z"], ["ls-files", "--others", "--exclude-standard", "-z"]):
+        result = subprocess.run(["git", "-C", str(root), *args], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if result.returncode or any(
+            value and not value.decode().startswith((prefix, public["active_locator"] + "/"))
+            for value in result.stdout.split(b"\0")
+        ):
+            return False
+    return True
+
+
+def _check_actual_worktree(root: Path, facts: dict[str, Any], public: dict[str, Any]) -> str | None:
     worktree = facts["worktree"]
     path = Path(worktree["path"])
     if not path.exists() or not path.is_dir():
@@ -204,14 +256,12 @@ def _check_actual_worktree(facts: dict[str, Any], public: dict[str, Any]) -> str
         actual_root = Path(results["root"].stdout.strip()).resolve()
     except (OSError, RuntimeError):
         return "dirty_worktree"
-    if actual_root != path.resolve():
+    if actual_root != path.resolve() or actual_root != root:
         return "dirty_worktree"
     if results["branch"].stdout.strip() != public["expected_head_branch"]:
         return "head_drift"
     if results["head"].stdout.strip() != public["expected_head_sha"]:
         return "head_drift"
-    if results["status"].stdout:
-        return "dirty_worktree"
     archive_commit = subprocess.run(
         ["git", "-C", str(path), "cat-file", "-e", f"{public['archive_commit']}^{{commit}}"],
         text=True,
@@ -226,6 +276,14 @@ def _check_actual_worktree(facts: dict[str, Any], public: dict[str, Any]) -> str
     )
     if archive_commit.returncode or archive_ancestor.returncode:
         return "head_drift"
+    archive_identity = subprocess.run(
+        ["git", "-C", str(path), "log", "-1", "--format=%H", public["expected_head_sha"], "--", f"{public['archive_locator']}/{FINISH_SUMMARY}"],
+        text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    if archive_identity.returncode or archive_identity.stdout.strip() != public["archive_commit"]:
+        return "identity_drift"
+    if (results["status"].stdout or not worktree["clean"]) and not _pending_restore_matches(root, public):
+        return "dirty_worktree"
     return None
 
 
@@ -280,16 +338,6 @@ def _restore(root: Path, public: dict[str, Any], facts: dict[str, Any]) -> dict[
     mapping_path = root / ".trellis" / ".runtime" / "guru-team" / "tasks" / f"{public['task_id']}.json"
     _reject_symlink_components(root, mapping_path, "runtime_mapping")
     mapping = _read_regular_json(mapping_path, "runtime_mapping")
-    mapping_identity = {
-        "task_id": public["task_id"],
-        "archive_locator": public["archive_locator"],
-        "active_locator": public["active_locator"],
-        "repository": public["repo_ref"],
-        "branch_name": public["expected_head_branch"],
-    }
-    if any(mapping.get(key) != value for key, value in mapping_identity.items()):
-        return _blocked("identity_drift", "Repair the existing owner-private mapping from current task identity.")
-
     archive_exists = archive.exists()
     active_exists = active.exists()
     if archive_exists and not archive.is_dir():
@@ -302,6 +350,23 @@ def _restore(root: Path, public: dict[str, Any], facts: dict[str, Any]) -> dict[
         return _blocked("archive_missing", "Restore requires either the exact archive or an exact already-restored task.")
 
     task_dir = archive if archive_exists else active
+    workspace_slug = mapping.get("workspace_slug")
+    if not isinstance(workspace_slug, str) or not workspace_slug or Path(workspace_slug).name != workspace_slug:
+        return _blocked("identity_drift", "The existing task mapping lacks its workspace identity.")
+    workspace_mapping_path = mapping_path.parent.parent / "workspaces" / f"{workspace_slug}.json"
+    _reject_symlink_components(root, workspace_mapping_path, "runtime_mapping")
+    workspace_mapping = _read_regular_json(workspace_mapping_path, "runtime_mapping")
+    mapping_identity = {"schema_version": "1.0", "task_slug": public["task_id"], "workspace_path": str(root)}
+    workspace_identity = {"schema_version": "1.0", "workspace_slug": workspace_slug, "workspace_path": str(root), "branch_name": public["expected_head_branch"]}
+    # Finalizer keeps the original active locator in its disposable task mapping.
+    allowed_locators = {public["active_locator"], public["archive_locator"]}
+    if (
+        any(mapping.get(key) != value for key, value in mapping_identity.items())
+        or any(workspace_mapping.get(key) != value for key, value in workspace_identity.items())
+        or mapping.get("task_artifact_dir") not in allowed_locators
+        or facts["runtime_mapping"]["worktree_path"] != str(root)
+    ):
+        return _blocked("identity_drift", "The task and workspace mappings do not match the current checkout identity.")
     task_path = task_dir / "task.json"
     finish_summary_path = task_dir / "finish-summary.json"
     task = _read_regular_json(task_path, "task.json")
@@ -311,18 +376,41 @@ def _restore(root: Path, public: dict[str, Any], facts: dict[str, Any]) -> dict[
         return _blocked("archive_conflict", "The task is neither a valid archived task nor a recoverable interrupted restore.")
     if archive_exists or task.get("status") == "completed" or finish_summary_path.exists():
         finish_summary = _read_regular_json(finish_summary_path, "finish-summary.json")
-        if any(finish_summary.get(key) != value for key, value in {"task_id": public["task_id"], "repository": public["repo_ref"], "pr_number": public["pr_number"], "expected_head_sha": public["expected_head_sha"], "archive_commit": public["archive_commit"]}.items()):
+        summary_task = finish_summary.get("task", {})
+        summary_git = finish_summary.get("git", {})
+        summary_github = finish_summary.get("github", {})
+        if not all(isinstance(value, dict) for value in (summary_task, summary_git, summary_github)):
+            return _blocked("identity_drift", "The finish summary lacks the Finalizer identity projection.")
+        if (
+            summary_task.get("slug") != archive.name
+            or summary_task.get("artifact_dir") != public["active_locator"]
+            or summary_task.get("archive_dir") != public["archive_locator"]
+            or summary_task.get("status") != "completed"
+            or summary_git.get("branch") != public["expected_head_branch"]
+            or summary_git.get("base_branch") != public["expected_base_branch"]
+            or summary_github.get("pr_url") != public["pr_url"]
+            or public["issue_number"] not in [number for key in ("source_issues", "close_issues", "related_issues", "followup_issues") for number in summary_github.get(key, [])]
+        ):
             return _blocked("identity_drift", "The finish summary does not match the immutable recovery identity.")
+        committed_summary = _archive_blob(root, public, FINISH_SUMMARY)
+        if committed_summary is None:
+            return _blocked("head_drift", "The archive commit is unavailable from the current task worktree.")
+        if committed_summary != finish_summary_path.read_bytes():
+            return _blocked("identity_drift", "The finish summary differs from the committed archive.")
         if archive_exists and (facts["archive"]["task_json_sha256"] != _sha256(task_path) or facts["archive"]["finish_summary_sha256"] != _sha256(finish_summary_path)):
             return _blocked("identity_drift", "Archive artifact content changed from the fresh fact snapshot.")
+        if archive_exists:
+            committed_task = _archive_blob(root, public, "task.json")
+            if committed_task is None:
+                return _blocked("head_drift", "The archive commit is unavailable from the current task worktree.")
+            if committed_task != task_path.read_bytes():
+                return _blocked("identity_drift", "The task differs from the committed archive.")
 
     if archive_exists and task.get("status") != "completed":
         return _blocked("archive_conflict", "An archived task must still have completed status before the move.")
     if not archive_exists and task.get("status") == "completed" and facts["runtime_mapping"]["state"] == "active":
         return _blocked("identity_drift", "The active task status and mapping disagree during recovery.")
 
-    if mapping.get("state") != facts["runtime_mapping"]["state"] or mapping.get("worktree_path") != facts["runtime_mapping"]["worktree_path"]:
-        return _blocked("identity_drift", "The runtime mapping changed after the fresh fact snapshot.")
     if facts["runtime_mapping"]["state"] == "active" and archive_exists:
         return _blocked("archive_conflict", "The runtime mapping is active while the archive still exists.")
     if facts["runtime_mapping"]["state"] not in {"archived", "active"}:
@@ -339,6 +427,9 @@ def _restore(root: Path, public: dict[str, Any], facts: dict[str, Any]) -> dict[
     if current_task_value not in {"", public["active_locator"]}:
         return _blocked("active_task_conflict", "The current task pointer belongs to a different task.")
 
+    if reason := _check_actual_worktree(root, facts, public):
+        return _blocked(reason, "Restore the original clean task worktree or refresh the recovery facts.")
+
     if not archive_exists and task.get("status") == "in_progress" and facts["runtime_mapping"]["state"] == "active":
         old_authority_absent = not any(path.exists() or path.is_symlink() for path in _authority_paths(root, active, public["task_id"]))
         if current_task_value == public["active_locator"] and old_authority_absent and not finish_summary_path.exists():
@@ -354,7 +445,7 @@ def _restore(root: Path, public: dict[str, Any], facts: dict[str, Any]) -> dict[
     _write_json(task_path, task)
 
     repaired_mapping = dict(mapping)
-    repaired_mapping.update({"state": "active", "task_locator": public["active_locator"]})
+    repaired_mapping["task_artifact_dir"] = public["active_locator"]
     _write_json(mapping_path, repaired_mapping)
 
     current_task.parent.mkdir(parents=True, exist_ok=True)
@@ -386,8 +477,6 @@ def run(package_root: Path, command: dict[str, Any], argv: list[str]) -> dict[st
     reason = _matches_identity(public, semantic, facts)
     if reason:
         output = _blocked(reason, "Resolve the current blocker and rerun the recovery from fresh identity facts.")
-    elif (reason := _check_actual_worktree(facts, public)):
-        output = _blocked(reason, "Restore the original clean task worktree or refresh the recovery facts.")
     else:
         output = _restore(root, public, facts)
     schema = RESTORED_SCHEMA if output["exit_id"] == "restored_to_phase2" else BLOCKED_SCHEMA

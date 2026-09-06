@@ -2,7 +2,7 @@
 
 | Evidence ID | Class | Locator / identity | Supports |
 | --- | --- | --- | --- |
-| `EVD-001` | current source baseline | #332 contribution `architecture-contribution-332-release-v0615-guru5-v1` + reviewed #240/#348 contributions + inherited `.43` authority；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD | `ARCH-CUR-001..004,006..009,013..020` |
+| `EVD-001` | current source baseline | reviewed #332 contribution `architecture-contribution-332-release-wrapper-entry-correction-v1` + inherited `.44` authority；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD | `ARCH-CUR-001..004,006..009,013..022` |
 | `EVD-002` | stable release | annotated tag `v0.6.15-guru.4`；tag object `6e71362d9fdce5377431ba6b2923334299c7e08f`；peeled commit `40f8aa8312bfd9650f47e1fa9d6d21b4ff18d5b6`；extension `0.6.15-guru.39`；target/required/tested Trellis CLI `0.6.15`；non-draft/non-prerelease/zero-asset Release | `ARCH-CUR-005` only |
 | `EVD-003` | RDT package | Issue #263 CLOSED；reviewed `d53335a7…`；archive `eaf955e0…`；PR #279 merge `891c2147…` | `ARCH-CUR-003` |
 | `EVD-004` | Architecture package | Issue #264 CLOSED；reviewed `1cb2506b…`；PR #268 merge `37fdfe63…`；metadata head/merge `991080b6…` / `3b0f78c1…`；无 `finish-summary.json` | `ARCH-CUR-003` |
@@ -22,6 +22,7 @@
 | `EVD-018` | #332 release-current authority contribution and promotion | live Issue #332、`docs/architecture/contributions/332-release-v0615-guru5.md` 与 `docs/requirements-design-test-contributions/332-release-v0615-guru5/`；Architecture/RDT serialized owners 已分别完成 expected `.43` -> successor `.44` promotion，target `.5`、extension `.40`、CLI `0.6.15` | `ARCH-CUR-004,005,008,018`；只支撑 current-fact alignment 与 knowledge promotion，fresh Phase 2/commit/Branch Review、post-merge exact-candidate Release Gate、tag、Release 与 smoke 均未由本 evidence 证明 |
 | `EVD-019` | #240 reviewed mechanism owner | Issue #240 CLOSED；PR #346 merged `2bafec11…`；PR body 记录独立 Branch Review `passed`、P0-P3 open findings 0；Architecture contribution 与 accepted ADR-008 已由 #332 promotion 纳入 `.44` current | `ARCH-CUR-019`, `ARCH-DOM-011`, `ARCH-INT-010`, `ADR-008`；不替代 #332 exact-candidate Release Gate |
 | `EVD-020` | #348 reviewed archived-task recovery | Issue #348 CLOSED；PR #351 merged `5c6837b8…`；完整 `1fd63dab…0dd42063` Branch Review `passed`，fresh Architecture Branch Review `baseline_current` | `ARCH-CUR-020`, `ARCH-DOM-012`, `ARCH-INT-011`；不替代 #332 exact-candidate Release Gate |
+| `EVD-021` | #332 original-entry correction and promotion | exact committed range `8a6e04eb…014c71ac`；initial Phase 2 与 independent Branch Review passed，open P0-P3 zero；affected package 9/9、restore 23/23、installed closeout 5/5、restore shared eval 8 scenarios、preset 85/85、source/installed/all-platform/reapply/drift/sidecar checks passed；reviewed RDT/Architecture contributions bound expected `.44` and promoted `.45` | `ARCH-CUR-001,021..022`, `ARCH-DOM-013`, `ARCH-INT-012`；promotion-created diff 必须 fresh Phase 2/commit/Branch Review，且不替代 post-merge exact-candidate Release Gate |
 
 `EVD-008` 的 matrix object 保留 `external_boundaries` 与
 `real_github_verified:false`；它只证明六-cell与 local A/B。最终精确
@@ -30,7 +31,7 @@ evidence，避免 tracked evidence 对 candidate tree 形成自引用。
 `EVD-009` 是独立完成的真实 provider evidence。当前 authority 组合消费两类证据，
 不声称任何 matrix JSON 已被改写，也不构造伪造的 combined artifact。
 
-当前 Architecture/RDT evidence 已由各自 serialized owner 建立唯一 active `.44` successor；promotion-created
+当前 Architecture/RDT evidence 已由各自 serialized owner 建立唯一 active `.45` successor；promotion-created
 combined diff 仍须 fresh Phase 2、task commit 与 Branch Review。`v0.6.15-guru.5` / extension
 `0.6.15-guru.40` stable tag、GitHub Release、tag-pinned install、latest-stable 晋升与 release smoke 仍保持
 `unverified`，owner 为 Issue #332 post-merge exact-candidate Release lifecycle；#267 不由本 promotion 修改。

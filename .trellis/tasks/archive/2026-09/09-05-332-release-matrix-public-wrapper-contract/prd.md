@@ -50,6 +50,13 @@
   `debt-one-way-convergence` 禁止无 consumer 的 wrapper、第二 authority 和无退出双写。
   因此本修复具有真实 Architecture/RDT impact，不能再沿用 #330 的
   `no_architecture_impact` 结论。
+- 2026-09-06 的 installed actual-load 复盘确认，当前最新候选仍同时暴露 upstream-owned
+  `trellis-finish-work` 与 Guru-owned `guru-finish-work`。前者会在 Publication/Finalizer 前直接
+  archive/journal；错误归档随后使 per-turn context 降级为 `no_task`，丢失未完成的 Publication
+  continuation。Issue #332 live body 已将该正常路径 blocker 纳入当前 Release Gate scope。
+- 同一复盘还确认，Branch Review runtime 能拒绝错误 gate，但当前 Agent 合同没有充分约束用户可见的
+  dispatch/return 说明和 `passed` 宣告时点；installed actual-load 也未覆盖用户对已展示动作回复普通
+  “确认继续”后自动消费无副作用 mapped exits 的完整链路。
 
 ## Requirements
 
@@ -138,6 +145,35 @@
   23 / 97 / 77 graph 与旧 candidate evidence 作废事实；GitHub 正文修改必须先展示 exact diff，
   再取得独立确认。
 
+### R8. Guru finish 入口排他与 continuation 保护
+
+- 在安装 Guru Team workflow 的项目中，任务收尾只允许进入 canonical `guru-finish-work`；不得修改
+  upstream-owned `trellis-finish-work`，但 Guru workflow、workflow-state 与三平台入口必须明确将其排除
+  为 Guru task 的收尾 consumer。
+- Branch Review `passed` 只能进入 Publication。Finalizer 尚未完成前，不得直接调用 `task.py archive`、
+  `add_session.py` 或其它 archive/journal executor。
+- 若当前 branch/workspace/runtime facts 仍绑定一个尚未完成 Finalizer 的 archived task，不得把该状态
+  解释为普通 `no_task` 或宣告流程完成；必须返回明确的 `incomplete_closeout`/`invalid-task-state`
+  fail-closed 结果及恢复边界。
+
+### R9. Branch Review 用户可见状态
+
+- 独立 review dispatch 时，当前对话必须展示 reviewer identity、完整 committed range 和审查目标；return
+  时必须展示最终 finding 摘要与 owner 结论。
+- AI semantic owner 的 provisional 结论不得表述为正式 Branch Review pass。只有 official checker 和
+  public wrapper 均对同一 current identity 返回 `passed` 后，才可向用户声明通过。
+- 用户可见说明不持久化 reviewer transcript、授权信息或 owner-private checkpoint，也不新增 tracked
+  review report。
+
+### R10. 普通“确认继续”的 installed Happy Path
+
+- 对已经展示的精确 commit、Finalizer 或 Merge 动作，用户回复普通“确认继续”必须被该动作消费；不得
+  再要求用户重复已知 SHA、digest、PR 或 plan identity。
+- Publication/Finalizer 内部 mapped exit、same-scope retry、resume 与 reprepare 在没有实质 scope、authority
+  或 side-effect-set 变化时自动推进，不增加例行确认。
+- installed actual-load 必须覆盖 Task Commit、独立 Branch Review、Publication 与 Finalizer 的连续场景，
+  并证明 Finalizer 前不存在 archive/journal mutation。
+
 ## Hard Acceptance Criteria
 
 - [ ] AC1: 四阶段 Interface public wrapper 均为原 `scripts/invoke.sh`，四个稳定 public command id
@@ -167,10 +203,20 @@
   `fitness_regression`，promotion-created diff 完成 fresh Phase 2、commit 和完整 Branch Review。
 - [ ] AC12: preparation PR 合并后只从 fresh `origin/main` 创建新的 detached clean exact candidate；
   旧 candidate 不改写、不作为新 gate 证据，完整 Release Gate 重新从零执行。
+- [ ] AC13: Guru workflow、workflow-state 与 Codex/Claude/Cursor finish entry 明确排除
+  upstream-owned `trellis-finish-work` 作为 Guru task consumer；Finalizer 前无直接 archive/journal 路径。
+- [ ] AC14: current branch/workspace 绑定未完成 Finalizer 的 archived task 时，installed context 不返回普通
+  `no_task` 或“没有后续步骤”，而是稳定 fail closed 为 incomplete closeout/invalid task state。
+- [ ] AC15: Branch Review dispatch/return 对用户可见，且正式 `passed` 宣告严格晚于同 identity 的 checker
+  与 public wrapper `passed`。
+- [ ] AC16: installed actual-load 连续场景证明普通“确认继续”消费已展示动作，mapped internal exits 自动推进，
+  且 Task Commit 到 Finalizer 之间不会由 generic finish 路径提前归档。
 
 ## Out Of Scope
 
 - 不重新设计 #348 `guru-restore-archived-task` 的公共命名、typed exits 或恢复语义。
+- 不新增“任意提前归档自动恢复”的 public profile、typed exit 或通用恢复 executor；本任务只负责阻止
+  正常路径提前归档，并对遗留异常状态给出确定、可见、零写入的 fail-closed 分类。
 - 不强制所有 Skill 的 public wrapper 都命名为 `invoke.sh`；文件名由 Interface 声明，既有公共入口
   在各自兼容合同内保持稳定。
 - 不删除必要 semantic gate、mutation-boundary freshness、post-mutation verification 或恢复能力。

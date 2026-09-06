@@ -140,15 +140,108 @@ ROUTE_GROUPS = {
         ("guru-verify-extension-installation", "blocked"),
     ],
 }
-GURU_ENTRIES = (
+GURU_ENTRY_RELATIVES = (
     ".codex/prompts/guru-finish-work.md",
     ".claude/commands/guru/finish-work.md",
     ".cursor/commands/guru-finish-work.md",
+)
+GURU_ENTRIES = (
+    GURU_ENTRY_RELATIVES
+    if EXECUTION_MODE == "installed"
+    else tuple(
+        str(Path("trellis/presets/guru-team/overlays") / relative)
+        for relative in GURU_ENTRY_RELATIVES
+    )
 )
 TERMINAL_CASES = {
     "publication-ready-ready-for-merge": "ready_for_merge",
     "same-plan-ready-for-merge": "ready_for_merge",
 }
+
+
+class DialogueContinuationHarness:
+    def __init__(self, testcase: unittest.TestCase) -> None:
+        self.testcase = testcase
+        self.transcript: list[dict[str, Any]] = []
+        self.pending_action: dict[str, str] | None = None
+        self.confirmation_consumers: list[str] = []
+        self.archive_mutations = 0
+        self.journal_mutations = 0
+
+    def actual_load(self, skill_id: str) -> dict[str, Any]:
+        skill_package = package(skill_id)
+        interface = read_json(skill_package / "interface.json")
+        wrapper = skill_package / interface["public_contracts"]["invocation"]["wrapper"]
+        process = subprocess.run(
+            [str(wrapper), "--help"],
+            cwd=REPO,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+        )
+        self.testcase.assertEqual(process.returncode, 0, process.stderr)
+        self.transcript.append({
+            "event": "actual_load",
+            "skill": skill_id,
+            "wrapper": wrapper.relative_to(REPO).as_posix(),
+        })
+        return interface
+
+    def display_action(self, skill_id: str, identity: str) -> None:
+        self.testcase.assertIsNone(self.pending_action)
+        self.pending_action = {"skill": skill_id, "identity": identity}
+        self.transcript.append({
+            "event": "display_action",
+            "skill": skill_id,
+            "identity": identity,
+        })
+
+    def consume(self, message: str) -> str:
+        self.testcase.assertEqual(message, "确认继续")
+        if self.pending_action is None:
+            raise AssertionError("confirmation has no displayed action to consume")
+        action = self.pending_action
+        self.pending_action = None
+        self.confirmation_consumers.append(action["identity"])
+        self.transcript.append({
+            "event": "consume_confirmation",
+            "skill": action["skill"],
+            "identity": action["identity"],
+        })
+        return action["skill"]
+
+    def mapped_exit(self, skill_id: str, exit_id: str) -> tuple[str, str]:
+        interface = self.actual_load(skill_id)
+        matches = [
+            item for item in interface["external_exits"] if item["id"] == exit_id
+        ]
+        self.testcase.assertEqual(len(matches), 1)
+        consumer = matches[0]["consumer"]
+        self.transcript.append({
+            "event": "mapped_exit",
+            "skill": skill_id,
+            "exit": exit_id,
+            "consumer": consumer,
+            "confirmation_requested": False,
+        })
+        return consumer["kind"], consumer["id"]
+
+    def classify_archived_task(self, *, finalizer_complete: bool) -> str:
+        state = WORKFLOW.read_text(encoding="utf-8").split(
+            "[workflow-state:no_task]", 1
+        )[1].split("[/workflow-state:no_task]", 1)[0]
+        self.testcase.assertIn("archived incomplete-closeout identity", state)
+        self.testcase.assertIn("`incomplete_closeout` form of `invalid-task-state`", state)
+        result = "no_task" if finalizer_complete else "invalid-task-state:incomplete_closeout"
+        self.transcript.append({
+            "event": "classify_archived_task",
+            "finalizer_complete": finalizer_complete,
+            "result": result,
+            "mutations": [],
+        })
+        return result
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -266,7 +359,128 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
         content = contents[0]
         self.assertIn("guru-finalize-task", content)
         self.assertIn("guru-merge-task-pr", content)
+        self.assertIn("exclusive finish entry", content)
+        self.assertIn("`trellis-finish-work` Skill is not applicable", content)
+        self.assertIn("Before Finalizer, do not call `task.py archive`", content)
+        self.assertIn("clear affirmative such as `确认继续`", content)
+        self.assertIn("Continue mapped internal exits automatically", content)
         self.assertNotIn("implementation-handoff", content)
+
+    def test_workflow_excludes_generic_finish_and_preserves_continuation(self) -> None:
+        text = WORKFLOW.read_text(encoding="utf-8")
+        state = text.split("[workflow-state:no_task]", 1)[1].split(
+            "[/workflow-state:no_task]", 1
+        )[0]
+        branch_review = text.split("#### 3.5 Branch review", 1)[1].split(
+            "#### 3.6 Publication review", 1
+        )[0]
+        finalization = text.split("#### 3.7 Finalization", 1)[1].split(
+            "## Global Integration Boundaries", 1
+        )[0]
+        normalized_branch_review = " ".join(branch_review.split())
+
+        self.assertIn("archived incomplete-closeout identity", state)
+        self.assertIn("`incomplete_closeout` form of `invalid-task-state`", state)
+        self.assertIn("zero-write", state)
+        self.assertIn("upstream-owned `trellis-finish-work` Skill", text)
+        self.assertIn("exactly one next consumer", normalized_branch_review)
+        self.assertIn("`resume_target=publication_review`", normalized_branch_review)
+        self.assertIn(
+            "official checker and the public wrapper both return `passed`",
+            normalized_branch_review,
+        )
+        self.assertIn("Finalizer alone", finalization)
+        self.assertIn("No generic finish entry", finalization)
+
+    def test_confirm_continue_drives_actual_loaded_closeout_once(self) -> None:
+        harness = DialogueContinuationHarness(self)
+
+        harness.actual_load("guru-create-task-commit")
+        harness.display_action(
+            "guru-create-task-commit",
+            "commit:fixture-head:reviewed-paths",
+        )
+        self.assertEqual(harness.consume("确认继续"), "guru-create-task-commit")
+        with self.assertRaisesRegex(AssertionError, "no displayed action"):
+            harness.consume("确认继续")
+
+        self.assertEqual(
+            harness.mapped_exit("guru-create-task-commit", "committed"),
+            ("skill", "guru-review-branch"),
+        )
+        review_interface = harness.actual_load("guru-review-branch")
+        review_identity = "origin/main@base...HEAD@fixture-head"
+        checker_result = {"identity": review_identity, "status": "passed"}
+        wrapper_result = {"identity": review_identity, "exit_id": "passed"}
+        self.assertEqual(checker_result["identity"], wrapper_result["identity"])
+        self.assertEqual(checker_result["status"], "passed")
+        self.assertEqual(wrapper_result["exit_id"], "passed")
+        self.assertEqual(
+            [
+                item["consumer"]
+                for item in review_interface["external_exits"]
+                if item["id"] == wrapper_result["exit_id"]
+            ],
+            [{"kind": "skill", "id": "guru-review-task-publication"}],
+        )
+        harness.transcript.append({
+            "event": "branch_review_return",
+            "identity": review_identity,
+            "checker": "passed",
+            "wrapper": "passed",
+        })
+
+        self.assertEqual(
+            harness.mapped_exit("guru-review-branch", "passed"),
+            ("skill", "guru-review-task-publication"),
+        )
+        self.assertEqual(
+            harness.mapped_exit("guru-review-task-publication", "ready"),
+            ("skill", "guru-finalize-task"),
+        )
+        self.assertIsNone(harness.pending_action)
+        self.assertEqual(harness.confirmation_consumers, ["commit:fixture-head:reviewed-paths"])
+        self.assertEqual(harness.archive_mutations, 0)
+        self.assertEqual(harness.journal_mutations, 0)
+
+        harness.actual_load("guru-finalize-task")
+        harness.display_action(
+            "guru-finalize-task",
+            "finalize:fixture-plan:publication-head",
+        )
+        self.assertEqual(len(harness.confirmation_consumers), 1)
+        self.assertEqual(harness.consume("确认继续"), "guru-finalize-task")
+        harness.archive_mutations += 1
+        harness.journal_mutations += 1
+
+        self.assertEqual(
+            harness.confirmation_consumers,
+            [
+                "commit:fixture-head:reviewed-paths",
+                "finalize:fixture-plan:publication-head",
+            ],
+        )
+        mapped = [
+            event for event in harness.transcript if event["event"] == "mapped_exit"
+        ]
+        self.assertEqual(
+            [(event["skill"], event["exit"]) for event in mapped],
+            [
+                ("guru-create-task-commit", "committed"),
+                ("guru-review-branch", "passed"),
+                ("guru-review-task-publication", "ready"),
+            ],
+        )
+        self.assertTrue(all(not event["confirmation_requested"] for event in mapped))
+
+    def test_archived_incomplete_closeout_fails_closed_without_mutation(self) -> None:
+        harness = DialogueContinuationHarness(self)
+        classification = harness.classify_archived_task(finalizer_complete=False)
+        self.assertEqual(classification, "invalid-task-state:incomplete_closeout")
+        self.assertNotEqual(classification, "no_task")
+        self.assertEqual(harness.archive_mutations, 0)
+        self.assertEqual(harness.journal_mutations, 0)
+        self.assertEqual(harness.transcript[-1]["mutations"], [])
 
     def test_terminal_corpus_matches_public_discovery(self) -> None:
         corpus = read_json(package("guru-finalize-task") / "evals/evals.json")

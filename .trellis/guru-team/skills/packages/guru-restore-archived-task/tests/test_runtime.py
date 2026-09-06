@@ -26,28 +26,25 @@ import invoke
 class RestoreArchivedTaskRuntimeTest(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
-        self.root = Path(self.temp.name) / "repo"
+        self.source = Path(self.temp.name) / "repo"
         self.worktree = Path(self.temp.name) / "task-worktree"
-        subprocess.run(["git", "init", "-q", "-b", "main", str(self.root)], check=True)
-        subprocess.run(["git", "-C", str(self.root), "config", "user.name", "Restore Test"], check=True)
-        subprocess.run(["git", "-C", str(self.root), "config", "user.email", "restore@example.invalid"], check=True)
-        (self.root / "README.md").write_text("base\n", encoding="utf-8")
-        subprocess.run(["git", "-C", str(self.root), "add", "README.md"], check=True)
-        subprocess.run(["git", "-C", str(self.root), "commit", "-q", "-m", "test: base"], check=True)
+        subprocess.run(["git", "init", "-q", "-b", "main", str(self.source)], check=True)
+        subprocess.run(["git", "-C", str(self.source), "config", "user.name", "Restore Test"], check=True)
+        subprocess.run(["git", "-C", str(self.source), "config", "user.email", "restore@example.invalid"], check=True)
+        (self.source / "README.md").write_text("base\n", encoding="utf-8")
+        (self.source / ".gitignore").write_text(".trellis/.runtime/\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(self.source), "add", "README.md", ".gitignore"], check=True)
+        subprocess.run(["git", "-C", str(self.source), "commit", "-q", "-m", "test: base"], check=True)
         self.branch = "codex/348-restore"
-        subprocess.run(["git", "-C", str(self.root), "worktree", "add", "-q", "-b", self.branch, str(self.worktree), "HEAD"], check=True)
+        subprocess.run(["git", "-C", str(self.source), "worktree", "add", "-q", "-b", self.branch, str(self.worktree), "HEAD"], check=True)
+        self.root = self.worktree.resolve()
 
         self.task_id = "09-03-348-merge-blocked-phase2-reentry"
         self.archive_locator = f".trellis/tasks/archive/2026-09/{self.task_id}"
         self.active_locator = f".trellis/tasks/{self.task_id}"
-        self.expected_head = subprocess.run(
-            ["git", "-C", str(self.worktree), "rev-parse", "HEAD"],
-            check=True,
-            text=True,
-            stdout=subprocess.PIPE,
-        ).stdout.strip()
-        self.archive_commit = self.expected_head
         self.mapping_path = self.root / ".trellis/.runtime/guru-team/tasks" / f"{self.task_id}.json"
+        self.workspace_slug = "348-restore"
+        self.workspace_mapping_path = self.root / ".trellis/.runtime/guru-team/workspaces" / f"{self.workspace_slug}.json"
         archive = self.root / self.archive_locator
         archive.mkdir(parents=True)
         task = {
@@ -61,7 +58,11 @@ class RestoreArchivedTaskRuntimeTest(unittest.TestCase):
             "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/348",
         }
         self._write_json(archive / "task.json", task)
-        self._write_json(archive / "finish-summary.json", {"task_id": self.task_id, "repository": "castbox/guru-trellis", "pr_number": 348, "expected_head_sha": self.expected_head, "archive_commit": self.archive_commit})
+        self._write_json(archive / "finish-summary.json", {
+            "task": {"slug": self.task_id, "artifact_dir": self.active_locator, "archive_dir": self.archive_locator, "status": "completed"},
+            "git": {"branch": self.branch, "base_branch": "main"},
+            "github": {"pr_url": "https://github.com/castbox/guru-trellis/pull/348", "source_issues": [348], "close_issues": [], "related_issues": [], "followup_issues": []},
+        })
         for name in ("phase2-check.json", "review-gate.json", "pr-readiness.json", "task-finalization-gate.json"):
             (archive / name).write_text("stale\n", encoding="utf-8")
         self.named_checkpoint = self.root / ".trellis/.runtime/guru-team/owner-checkpoints" / self.task_id
@@ -69,8 +70,15 @@ class RestoreArchivedTaskRuntimeTest(unittest.TestCase):
         for checkpoint, name in ((self.named_checkpoint, "phase2-check.json"), (self.hashed_checkpoint, "pr-readiness.json")):
             checkpoint.mkdir(parents=True, exist_ok=True)
             (checkpoint / name).write_text("stale\n", encoding="utf-8")
-        self.mapping = {"state": "archived", "task_id": self.task_id, "archive_locator": self.archive_locator, "active_locator": self.active_locator, "repository": "castbox/guru-trellis", "branch_name": self.branch, "worktree_path": str(self.worktree)}
+        subprocess.run(["git", "-C", str(self.root), "add", self.archive_locator], check=True)
+        subprocess.run(["git", "-C", str(self.root), "commit", "-q", "-m", "test: archive task"], check=True)
+        self.expected_head = subprocess.run(
+            ["git", "-C", str(self.root), "rev-parse", "HEAD"], check=True, text=True, stdout=subprocess.PIPE,
+        ).stdout.strip()
+        self.archive_commit = self.expected_head
+        self.mapping = {"schema_version": "1.0", "task_slug": self.task_id, "workspace_slug": self.workspace_slug, "workspace_path": str(self.root), "task_artifact_dir": self.archive_locator}
         self._write_json(self.mapping_path, self.mapping)
+        self._write_json(self.workspace_mapping_path, {"schema_version": "1.0", "workspace_slug": self.workspace_slug, "workspace_path": str(self.root), "source_checkout": str(self.source), "branch_name": self.branch})
         self.public = {"schema_version": "1.0", "profile": "restore_archived_task", "mode": "workflow", "exit_id": "phase2_reentry_required", "repo_ref": "castbox/guru-trellis", "pr_number": 348, "pr_url": "https://github.com/castbox/guru-trellis/pull/348", "expected_head_sha": self.expected_head, "expected_base_branch": "main", "expected_head_branch": self.branch, "issue_number": 348, "task_id": self.task_id, "archive_locator": self.archive_locator, "active_locator": self.active_locator, "archive_commit": self.archive_commit, "finding_refs": ["merge-finding:348:phase2-reentry"], "resume_target": "phase-2"}
         self.semantic = {"schema_version": "1.0", "profile": "restore_archived_task", "mode": "workflow", "review_intent": "task_work_reentry", "classification": "task_work", "requires_task_content_change": True, "finding_refs": list(self.public["finding_refs"])}
         self.facts = self._facts("archived", "completed", None, False)
@@ -79,7 +87,7 @@ class RestoreArchivedTaskRuntimeTest(unittest.TestCase):
         self.facts_path = self._write_json(Path(self.temp.name) / "facts.json", self.facts)
 
     def tearDown(self) -> None:
-        subprocess.run(["git", "-C", str(self.root), "worktree", "remove", "-f", str(self.worktree)], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["git", "-C", str(self.source), "worktree", "remove", "-f", str(self.worktree)], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         self.temp.cleanup()
 
     def _write_json(self, path: Path, value: dict) -> Path:
@@ -101,8 +109,8 @@ class RestoreArchivedTaskRuntimeTest(unittest.TestCase):
             "local_branch": {"name": self.branch, "head_sha": self.expected_head},
             "archive": {"locator": self.archive_locator, "commit": self.archive_commit, "task_json_sha256": __import__("hashlib").sha256(task_path.read_bytes()).hexdigest(), "finish_summary_sha256": __import__("hashlib").sha256(finish_path.read_bytes()).hexdigest() if finish_path.is_file() else "0" * 64},
             "task": {"id": self.task_id, "status": task_status, "completed_at": "2026-09-03T00:00:00Z" if task_status == "completed" else None, "branch": self.branch, "base_branch": "main", "repo_ref": "castbox/guru-trellis", "issue_number": 348, "pr_number": 348, "expected_head_sha": self.expected_head},
-            "runtime_mapping": {"state": mapping_state, "task_id": self.task_id, "archive_locator": self.archive_locator, "active_locator": self.active_locator, "repo_ref": "castbox/guru-trellis", "branch_name": self.branch, "worktree_path": str(self.worktree)},
-            "worktree": {"path": str(self.worktree), "exists": True, "clean": True, "branch": self.branch, "occupied_by": None},
+            "runtime_mapping": {"state": mapping_state, "task_id": self.task_id, "archive_locator": self.archive_locator, "active_locator": self.active_locator, "repo_ref": "castbox/guru-trellis", "branch_name": self.branch, "worktree_path": str(self.root)},
+            "worktree": {"path": str(self.root), "exists": True, "clean": True, "branch": self.branch, "occupied_by": None},
             "active_task": {"present": active_task is not None, "task_id": active_task, "locator": self.active_locator if active_task else None},
             "blockers": blockers,
         }
@@ -120,7 +128,7 @@ class RestoreArchivedTaskRuntimeTest(unittest.TestCase):
         task = json.loads((active / "task.json").read_text(encoding="utf-8"))
         self.assertEqual("in_progress", task["status"])
         self.assertNotIn("completedAt", task)
-        self.assertEqual("active", json.loads(self.mapping_path.read_text(encoding="utf-8"))["state"])
+        self.assertEqual(self.active_locator, json.loads(self.mapping_path.read_text(encoding="utf-8"))["task_artifact_dir"])
         self.assertEqual(self.active_locator, (self.root / ".trellis/.runtime/current-task").read_text(encoding="utf-8").strip())
         self.assertFalse(any((active / name).exists() for name in ("phase2-check.json", "review-gate.json", "pr-readiness.json", "task-finalization-gate.json")))
         self.assertFalse((active / "finish-summary.json").exists())
@@ -215,10 +223,6 @@ class RestoreArchivedTaskRuntimeTest(unittest.TestCase):
         non_git.mkdir()
         facts = self._facts("archived", "completed", None, False)
         facts["worktree"]["path"] = str(non_git)
-        facts["runtime_mapping"]["worktree_path"] = str(non_git)
-        mapping = json.loads(self.mapping_path.read_text(encoding="utf-8"))
-        mapping["worktree_path"] = str(non_git)
-        self._write_json(self.mapping_path, mapping)
         result = self._call(facts)
         self.assertEqual("dirty_worktree", result["reason_code"])
         self.assertTrue(result["zero_writes"])

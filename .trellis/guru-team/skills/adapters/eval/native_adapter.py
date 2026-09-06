@@ -1571,6 +1571,44 @@ def bind_owner_result_argument(
     return result_relative
 
 
+def bind_review_input_argument(
+    request: dict[str, Any],
+    fixture: Path,
+    review_input: Path | str,
+) -> str:
+    review_path = Path(review_input).resolve()
+    try:
+        review_relative = review_path.relative_to(fixture.resolve()).as_posix()
+    except ValueError as exc:
+        raise ValueError("review input must stay inside the installed eval fixture") from exc
+    if review_path.is_symlink() or not review_path.is_file():
+        raise ValueError("review input is unavailable or unsafe")
+
+    workdir = Path(request["workdir"]).resolve()
+    rewritten = 0
+    for relative in request.get("files", []):
+        path = workdir / str(relative)
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        invocation = payload.get("public_invocation")
+        arguments = invocation.get("arguments") if isinstance(invocation, dict) else None
+        if not isinstance(arguments, list) or "--review-input" not in arguments:
+            continue
+        index = arguments.index("--review-input")
+        if index + 1 >= len(arguments) or not isinstance(arguments[index + 1], str):
+            raise ValueError("case review-input invocation argument is invalid")
+        arguments[index + 1] = review_relative
+        path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
+        rewritten += 1
+    if rewritten != 1:
+        raise ValueError("semantic case must declare one review-input invocation argument")
+    return review_relative
+
+
 def stage0_eval_hash(label: str, *values: Any) -> str:
     payload = json.dumps(
         [label, *values], sort_keys=True, separators=(",", ":"), default=str
@@ -4541,7 +4579,7 @@ def stage_finalization_owner_execution(
     routes = {
         "finalization-publication-stale": (
             "publication_review_stale",
-            "prepared",
+            "publication_review_stale",
         ),
         "finalization-same-plan-resume": (
             "resume_finalization",
@@ -4609,6 +4647,8 @@ def stage_finalization_owner_execution(
         public_input["plan_ref"] = plan_ref
     if "branch_review_commit" in public_input:
         public_input["branch_review_commit"] = head
+    if "publication_head" in public_input:
+        public_input["publication_head"] = head
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
 
@@ -4629,6 +4669,8 @@ def stage_finalization_owner_execution(
         "repo_ref": "example/guru-extension",
         "remote": "origin",
         "head_branch": "main",
+        "pr_title": public_input.get("pr_title") or "Finalize the staged eval task",
+        "pr_body": public_input.get("pr_body") or "## Eval\n\n- Finalize the staged task.\n",
         "publication_status": (
             "stale"
             if exit_id == "publication_review_stale"
@@ -4651,6 +4693,19 @@ def stage_finalization_owner_execution(
         )
         if context is None:
             raise ValueError("finalization eval context was not accepted")
+        if exit_id == "reprepare_required":
+            # Reprepare consumes the prior content-pushed transaction and
+            # creates a replacement transaction without external mutation.
+            prior = runtime.finalization_transaction_from_plan(
+                context["plan"],
+                next_transition="push_content",
+                pre_push_remote_head=head,
+            )
+            runtime.finalization_write_transaction(
+                fixture,
+                fixture / public_input["task_ref"],
+                prior,
+            )
         outputs = {
             "publication_review_stale": {
                 "exit_id": "publication_review_stale",
@@ -4679,15 +4734,9 @@ def stage_finalization_owner_execution(
                 "remediation": "Repair the staged objective state and rerun finalization.",
             },
         }
-        gate = {
-            "schema_version": "5.0",
+        reviewed = {
+            "schema_version": "3.0",
             "skill_id": "guru-finalize-task",
-            "identity": {
-                "task_ref": public_input["task_ref"],
-                "plan_ref": plan_ref,
-                "plan_digest": plan_digest,
-                "branch_review_commit": head,
-            },
             "review": {
                 "status": (
                     "blocked"
@@ -4708,19 +4757,13 @@ def stage_finalization_owner_execution(
                 "output": outputs[exit_id],
             },
         }
-        gate_path = runtime.task_finalization_path(
+        review_path = runtime_dir / "semantic-review.json"
+        runtime.write_json(review_path, reviewed)
+        runtime.finalization_semantic_review_input(
             fixture,
-            task,
+            review_path.relative_to(fixture).as_posix(),
         )
-        runtime.write_json(gate_path, gate)
-        runtime.check_finalization_gate_result(
-            fixture,
-            argparse.Namespace(),
-            public_input,
-            gate,
-            gate_path,
-        )
-        bind_owner_result_argument(request, fixture, gate_path)
+        bind_review_input_argument(request, fixture, review_path)
     finally:
         if previous_eval is None:
             os.environ.pop("GURU_TEAM_EVAL_STAGING", None)
@@ -5195,11 +5238,11 @@ def stage_restore_archived_task_owner_execution(
     public_input_path: Path,
 ) -> tuple[Path, Path, dict[str, str]]:
     """Build a real archive/worktree owner fixture and invoke the public restore script."""
-    package = fixture / ".trellis/guru-team/skills/packages/guru-restore-archived-task"
+    source_package = fixture / ".trellis/guru-team/skills/packages/guru-restore-archived-task"
     if (
-        hashlib.sha256((package / "interface.json").read_bytes()).hexdigest()
+        hashlib.sha256((source_package / "interface.json").read_bytes()).hexdigest()
         != hashlib.sha256((request_package / "interface.json").read_bytes()).hexdigest()
-        or hashlib.sha256((package / "evals/evals.json").read_bytes()).hexdigest()
+        or hashlib.sha256((source_package / "evals/evals.json").read_bytes()).hexdigest()
         != hashlib.sha256((request_package / "evals/evals.json").read_bytes()).hexdigest()
     ):
         raise ValueError("restore owner staging package does not match the evaluated contract")
@@ -5219,32 +5262,42 @@ def stage_restore_archived_task_owner_execution(
     run_git(fixture, "add", ".")
     run_git(fixture, "commit", "-q", "-m", "stage restore owner base")
     run_git(fixture, "worktree", "add", "-q", "-b", branch, str(worktree), "HEAD")
-    expected_head = run_git(worktree, "rev-parse", "HEAD")
-    archive_commit = expected_head
+    package = worktree / ".trellis/guru-team/skills/packages/guru-restore-archived-task"
 
-    archive = fixture / archive_locator
-    active = fixture / active_locator
+    archive = worktree / archive_locator
+    active = worktree / active_locator
     archive.mkdir(parents=True, exist_ok=True)
     task_payload = {
         "id": task_id, "name": task_id, "title": "Restore eval",
         "status": "completed", "completedAt": "2026-09-03T00:00:00Z",
-        "branch": branch, "base_branch": "main", "repo_ref": repo_ref,
-        "issue_number": pr_number, "pr_number": pr_number,
-        "expected_head_sha": expected_head,
+        "branch": branch, "base_branch": "main",
     }
     (archive / "task.json").write_text(json.dumps(task_payload) + "\n", encoding="utf-8")
     finish_summary = {
-        "task_id": task_id, "repository": repo_ref, "pr_number": pr_number,
-        "expected_head_sha": expected_head, "archive_commit": archive_commit,
+        "task": {"slug": task_id, "artifact_dir": active_locator, "archive_dir": archive_locator, "status": "completed"},
+        "git": {"branch": branch, "base_branch": "main"},
+        "github": {"pr_url": f"https://github.com/{repo_ref}/pull/{pr_number}", "source_issues": [pr_number], "close_issues": [], "related_issues": [], "followup_issues": []},
     }
     (archive / "finish-summary.json").write_text(json.dumps(finish_summary) + "\n", encoding="utf-8")
-    mapping_path = fixture / ".trellis/.runtime/guru-team/tasks" / f"{task_id}.json"
+    run_git(worktree, "add", archive_locator)
+    run_git(worktree, "commit", "-q", "-m", "stage archived task")
+    expected_head = run_git(worktree, "rev-parse", "HEAD")
+    archive_commit = expected_head
+
+    workspace_slug = "348-restore"
+    mapping_path = worktree / ".trellis/.runtime/guru-team/tasks" / f"{task_id}.json"
     mapping_path.parent.mkdir(parents=True, exist_ok=True)
     mapping_path.write_text(json.dumps({
-        "state": "archived", "task_id": task_id,
-        "archive_locator": archive_locator, "active_locator": active_locator,
-        "task_locator": archive_locator, "repository": repo_ref,
-        "branch_name": branch, "worktree_path": str(worktree),
+        "schema_version": "1.0", "task_slug": task_id,
+        "workspace_slug": workspace_slug, "workspace_path": str(worktree),
+        "task_artifact_dir": archive_locator,
+    }) + "\n", encoding="utf-8")
+    workspace_mapping = worktree / ".trellis/.runtime/guru-team/workspaces" / f"{workspace_slug}.json"
+    workspace_mapping.parent.mkdir(parents=True, exist_ok=True)
+    workspace_mapping.write_text(json.dumps({
+        "schema_version": "1.0", "workspace_slug": workspace_slug,
+        "workspace_path": str(worktree), "source_checkout": str(fixture),
+        "branch_name": branch,
     }) + "\n", encoding="utf-8")
 
     public = json.loads(public_input_path.read_text(encoding="utf-8"))
@@ -5278,8 +5331,8 @@ def stage_restore_archived_task_owner_execution(
         task_payload.pop("completedAt", None)
         (active / "task.json").write_text(json.dumps(task_payload) + "\n", encoding="utf-8")
         (active / "finish-summary.json").unlink()
-        mapping_path.write_text(json.dumps({**json.loads(mapping_path.read_text()), "state": "active", "task_locator": active_locator}) + "\n", encoding="utf-8")
-        current = fixture / ".trellis/.runtime/current-task"
+        mapping_path.write_text(json.dumps({**json.loads(mapping_path.read_text()), "task_artifact_dir": active_locator}) + "\n", encoding="utf-8")
+        current = worktree / ".trellis/.runtime/current-task"
         current.parent.mkdir(parents=True, exist_ok=True)
         current.write_text(active_locator + "\n", encoding="utf-8")
         facts["runtime_mapping"]["state"] = "active"
@@ -5294,7 +5347,7 @@ def stage_restore_archived_task_owner_execution(
     elif case == "merged-pr": facts["pr"]["state"] = "MERGED"
     elif case not in {"success", "idempotent"}:
         raise ValueError(f"unsupported restore owner staging case: {case}")
-    runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
+    runtime_dir = worktree / ".trellis/.runtime/guru-team/evals"
     runtime_dir.mkdir(parents=True, exist_ok=True)
     input_path = runtime_dir / "restore-input.json"
     semantic_path = runtime_dir / "restore-semantic.json"
@@ -5308,7 +5361,7 @@ def stage_restore_archived_task_owner_execution(
         except (OSError, json.JSONDecodeError): continue
         invocation = payload.get("public_invocation") if isinstance(payload, dict) else None
         if isinstance(invocation, dict):
-            invocation["arguments"] = ["--root", ".", "--input", str(input_path.relative_to(fixture)), "--semantic-result", str(semantic_path.relative_to(fixture)), "--facts", str(facts_path.relative_to(fixture))]
+            invocation["arguments"] = ["--root", str(worktree), "--input", str(input_path), "--semantic-result", str(semantic_path), "--facts", str(facts_path)]
             path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
     return package, fixture_runtime_target, {"GURU_TEAM_EVAL_STAGING": "1"}
 
