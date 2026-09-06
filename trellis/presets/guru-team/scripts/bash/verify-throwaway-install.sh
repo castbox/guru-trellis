@@ -1523,7 +1523,7 @@ guru-check-task|["passed-initial","implementation-required","planning-stale","bl
 guru-create-task-commit|["committed-initial","revision-required","committed-finding-fix","blocked-recovery"]
 guru-execute-task-free-change|["completed","non-default-completed","resume-active-task","scope-change","unrelated-worktree","dirty-overlap","position-insufficient","automatic-risk-expansion","explicit-risk-expansion","blocked"]
 guru-finalize-task|["publication-review-stale","same-plan-resume","cross-month-reprepare","ready-for-merge-recovery","publication-ready-ready-for-merge","same-plan-ready-for-merge","blocked-private-state"]
-guru-merge-task-pr|["workflow-expected-head-merged","standalone-draft-blocked","workflow-head-drift-blocked","workflow-branch-drift-blocked","workflow-close-keyword-mismatch-blocked","workflow-added-close-keyword-blocked","workflow-post-merge-closure-mismatch"]
+guru-merge-task-pr|["workflow-expected-head-merged","standalone-draft-blocked","workflow-task-work-phase2-reentry","workflow-head-drift-blocked","workflow-branch-drift-blocked","workflow-close-keyword-mismatch-blocked","workflow-added-close-keyword-blocked","workflow-post-merge-closure-mismatch"]
 guru-reconcile-task-base|["post-plan-reconciled","post-branch-review-continuity","implementation-required","planning-stale","scope-confirmation-required","blocked-insufficient-evidence"]
 guru-review-branch|["workflow-passed","standalone-passed","implementation-required","scope-confirmation-required","blocked-stale","finding-fix-passed","fresh-final-passed"]
 guru-review-task-publication|["workflow-initial-ready","standalone-initial-ready","return-to-task-work","blocked-external","stale-reentry-ready","metadata-fix-fresh-ready","metadata-fix-durable-drift-return"]
