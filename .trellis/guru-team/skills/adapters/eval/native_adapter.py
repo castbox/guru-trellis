@@ -4324,6 +4324,7 @@ def extension_verification_execution(
         },
         "status": status,
         "commands": commands,
+        "failure": None,
         "capabilities": runtime.extension_verification_capability_facts(
             selected,
             "passed" if status == "passed" else "blocked",
