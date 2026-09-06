@@ -14,15 +14,16 @@ design_contract_locator: docs/design/evolution/contracts.md
 fixture_plan_locator: docs/test/evolution/fixture-plan.md
 traceability_locator: docs/test/evolution/traceability.md
 current_test_source_binding: containing-git-object
-current_test_locator: docs/test/versions/current-main-0.6.5-guru.44/test-strategy.md
+current_test_locator: docs/test/versions/current-main-0.6.5-guru.45/test-strategy.md
 execution_status: planned_not_executed
 provenance: >-
   REQ-REV-133..142 added #311/#312 prerequisite, full installed publication terminal,
   evidence-before-cleanup standalone verifier failure preservation and unrelated-dirty isolation, and a two-stage
   Requirements-ready then Design/refactor-ready 50-row fixture projection; selected base 5650df47 includes PR
   #313/#314 merges and the fact-only .42 authority promotion; current .43 adds only the repo-private release
-  orchestration verification contract and .44 adds #332 .5/.40/CLI 0.6.15 Release Gate facts plus the reviewed
-  #240/#348 owner/RDT/ADR promotion,
+  orchestration verification contract, .44 adds #332 .5/.40/CLI 0.6.15 Release Gate facts plus the reviewed
+  #240/#348 owner/RDT/ADR promotion, and .45 adds original-entry/Interface-wrapper verification while
+  preserving the same 50-row target fixture set,
   while the fact-only #267 lifecycle-evidence/provenance/archive
   update through PR #316, PR #317 exact installed platform-selection preservation and PR #318 fact-only
   caller-inventory/provenance correction, with #311 and #312 CLOSED and formal installed release validation

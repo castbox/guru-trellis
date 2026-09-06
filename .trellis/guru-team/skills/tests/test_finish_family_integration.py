@@ -140,10 +140,18 @@ ROUTE_GROUPS = {
         ("guru-verify-extension-installation", "blocked"),
     ],
 }
-GURU_ENTRIES = (
+GURU_ENTRY_RELATIVES = (
     ".codex/prompts/guru-finish-work.md",
     ".claude/commands/guru/finish-work.md",
     ".cursor/commands/guru-finish-work.md",
+)
+GURU_ENTRIES = (
+    GURU_ENTRY_RELATIVES
+    if EXECUTION_MODE == "installed"
+    else tuple(
+        str(Path("trellis/presets/guru-team/overlays") / relative)
+        for relative in GURU_ENTRY_RELATIVES
+    )
 )
 TERMINAL_CASES = {
     "publication-ready-ready-for-merge": "ready_for_merge",
@@ -266,7 +274,38 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
         content = contents[0]
         self.assertIn("guru-finalize-task", content)
         self.assertIn("guru-merge-task-pr", content)
+        self.assertIn("exclusive finish entry", content)
+        self.assertIn("`trellis-finish-work` Skill is not applicable", content)
+        self.assertIn("Before Finalizer, do not call `task.py archive`", content)
+        self.assertIn("clear affirmative such as `确认继续`", content)
+        self.assertIn("Continue mapped internal exits automatically", content)
         self.assertNotIn("implementation-handoff", content)
+
+    def test_workflow_excludes_generic_finish_and_preserves_continuation(self) -> None:
+        text = WORKFLOW.read_text(encoding="utf-8")
+        state = text.split("[workflow-state:no_task]", 1)[1].split(
+            "[/workflow-state:no_task]", 1
+        )[0]
+        branch_review = text.split("#### 3.5 Branch review", 1)[1].split(
+            "#### 3.6 Publication review", 1
+        )[0]
+        finalization = text.split("#### 3.7 Finalization", 1)[1].split(
+            "## Global Integration Boundaries", 1
+        )[0]
+        normalized_branch_review = " ".join(branch_review.split())
+
+        self.assertIn("archived incomplete-closeout identity", state)
+        self.assertIn("`incomplete_closeout` form of `invalid-task-state`", state)
+        self.assertIn("zero-write", state)
+        self.assertIn("upstream-owned `trellis-finish-work` Skill", text)
+        self.assertIn("exactly one next consumer", normalized_branch_review)
+        self.assertIn("`resume_target=publication_review`", normalized_branch_review)
+        self.assertIn(
+            "official checker and the public wrapper both return `passed`",
+            normalized_branch_review,
+        )
+        self.assertIn("Finalizer alone", finalization)
+        self.assertIn("No generic finish entry", finalization)
 
     def test_terminal_corpus_matches_public_discovery(self) -> None:
         corpus = read_json(package("guru-finalize-task") / "evals/evals.json")

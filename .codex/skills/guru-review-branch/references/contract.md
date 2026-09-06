@@ -71,6 +71,14 @@ Perform one independent semantic review of the complete current
 severity. Candidate input carries no decision, scenario class, severity,
 expected route, or caller assertion of a normal path. Only candidates returned
 eligible through `classified` may become a P0-P3 finding.
+
+The review lifecycle is visible in the current dialogue. Immediately before
+dispatch, the caller presents the independent reviewer identity, exact
+committed `origin/<base>...HEAD` range, and review target. Immediately after
+return, it presents the final finding summary and the semantic owner's
+conclusion. These notices and the reviewer transcript are transient dialogue
+context only; they do not enter the gate, public DTO, private checkpoint, or a
+tracked review report.
 `scope_confirmation_required` enters requirements clarification;
 `mechanism_revision_required` returns to task work for remove/replace and a
 fresh complete review; `blocked` stops. Rejected or disproved candidates remain
@@ -138,7 +146,13 @@ fresh complete Branch Review.
 
 The Branch Review public wrapper accepts current public input only, internally
 reruns `check-review-gate`, validates the selected output schema and never
-accepts caller-authored gate or checker output. Successful `passed`,
+accepts caller-authored gate or checker output. The semantic owner's passing
+conclusion is provisional. The caller may use the formal wording "Branch
+Review passed" only after both the official checker and the public wrapper
+return `passed` for the same current task, committed range, review commit, and
+reviewed-content identity. A recorder receipt, provisional owner conclusion,
+or checker result without the wrapper result cannot support that announcement.
+Successful `passed`,
 `continuity_passed`, and zero-payload stop `blocked` projection deletes the
 checkpoint and empty owner directory. `implementation_required` and
 `scope_confirmation_required` retain the same checkpoint for their mapped

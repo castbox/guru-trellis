@@ -40,6 +40,15 @@
   旧 caller 全部迁移；在退出前也不得形成第二 public wrapper。
 - `D332-ENTRY-12`：不创建 ADR。本次恢复 design constitution 已有的最小必要复杂度、变化隔离和技术债务
   单向收敛，不引入新的长期 architecture decision 或原则例外。
+- `D332-ENTRY-13`：global workflow 与三平台 `guru-finish-work` launcher 共同建立 Guru finish 排他路由：
+  active Guru task 只能进入 `guru-finish-work`；任何 archive/journal 必须由 Finalizer transaction 按序拥有；
+  task discovery 在接受 `no_task` 前先检查 archived incomplete closeout，并对不完整状态 fail closed。
+- `D332-ENTRY-14`：`guru-review-branch` semantic owner 在 dispatch/return 两侧拥有对话可见性；workflow
+  仅消费其唯一 `passed` 出口进入 Publication。checker pass 与 public wrapper pass 绑定同一 identity，
+  任一缺失、stale 或不一致都不得生成正式 pass 宣告。
+- `D332-ENTRY-15`：平台 launcher 保存“最近已展示且尚未消费的精确动作”作为当前对话控制状态；普通
+  “确认继续”消费一次该动作，mapped exits 由 workflow 自动路由。source 与 installed finish-family
+  actual-load 使用同一连续 transcript 验证该状态不因入口投影、进程边界或恢复路径而丢失。
 
 ## Preserved Boundaries
 

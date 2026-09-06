@@ -2,13 +2,13 @@
 
 ## Current identity
 
-- version：`current-main-0.6.5-guru.44`
+- version：`current-main-0.6.5-guru.45`
 - status：`active`
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
 - Architecture inheritance：`docs/architecture/README.md`，同版本、`active`
-- source binding：contribution identity `architecture-contribution-332-release-v0615-guru5-v1` + reviewed #240/#348 contributions，继承 `current-main-0.6.5-guru.43` authority；#305 已确认的 `EVO-001..007` target delta 保持独立 target authority（精确 revision 由包含本 authority 的 Git object/tree identity 绑定；本 projection 不记录可变 HEAD 或 lifecycle 状态）
+- source binding：reviewed `architecture-contribution-332-release-wrapper-entry-correction-v1` + inherited `current-main-0.6.5-guru.44` authority；current graph 23 Skills / 97 exits / 77 commands；#305 已确认的 `EVO-001..007` target delta 保持独立 target authority（精确 revision 由包含本 authority 的 Git object/tree identity 绑定；本 projection 不记录可变 HEAD 或 lifecycle 状态）
 
 ## 读取与更新
 

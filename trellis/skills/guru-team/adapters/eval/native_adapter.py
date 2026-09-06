@@ -1571,6 +1571,44 @@ def bind_owner_result_argument(
     return result_relative
 
 
+def bind_review_input_argument(
+    request: dict[str, Any],
+    fixture: Path,
+    review_input: Path | str,
+) -> str:
+    review_path = Path(review_input).resolve()
+    try:
+        review_relative = review_path.relative_to(fixture.resolve()).as_posix()
+    except ValueError as exc:
+        raise ValueError("review input must stay inside the installed eval fixture") from exc
+    if review_path.is_symlink() or not review_path.is_file():
+        raise ValueError("review input is unavailable or unsafe")
+
+    workdir = Path(request["workdir"]).resolve()
+    rewritten = 0
+    for relative in request.get("files", []):
+        path = workdir / str(relative)
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        invocation = payload.get("public_invocation")
+        arguments = invocation.get("arguments") if isinstance(invocation, dict) else None
+        if not isinstance(arguments, list) or "--review-input" not in arguments:
+            continue
+        index = arguments.index("--review-input")
+        if index + 1 >= len(arguments) or not isinstance(arguments[index + 1], str):
+            raise ValueError("case review-input invocation argument is invalid")
+        arguments[index + 1] = review_relative
+        path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
+        rewritten += 1
+    if rewritten != 1:
+        raise ValueError("semantic case must declare one review-input invocation argument")
+    return review_relative
+
+
 def stage0_eval_hash(label: str, *values: Any) -> str:
     payload = json.dumps(
         [label, *values], sort_keys=True, separators=(",", ":"), default=str
@@ -4629,6 +4667,8 @@ def stage_finalization_owner_execution(
         "repo_ref": "example/guru-extension",
         "remote": "origin",
         "head_branch": "main",
+        "pr_title": public_input.get("pr_title") or "Finalize the staged eval task",
+        "pr_body": public_input.get("pr_body") or "## Eval\n\n- Finalize the staged task.\n",
         "publication_status": (
             "stale"
             if exit_id == "publication_review_stale"
@@ -4679,15 +4719,9 @@ def stage_finalization_owner_execution(
                 "remediation": "Repair the staged objective state and rerun finalization.",
             },
         }
-        gate = {
-            "schema_version": "5.0",
+        reviewed = {
+            "schema_version": "3.0",
             "skill_id": "guru-finalize-task",
-            "identity": {
-                "task_ref": public_input["task_ref"],
-                "plan_ref": plan_ref,
-                "plan_digest": plan_digest,
-                "branch_review_commit": head,
-            },
             "review": {
                 "status": (
                     "blocked"
@@ -4708,19 +4742,13 @@ def stage_finalization_owner_execution(
                 "output": outputs[exit_id],
             },
         }
-        gate_path = runtime.task_finalization_path(
+        review_path = runtime_dir / "semantic-review.json"
+        runtime.write_json(review_path, reviewed)
+        runtime.finalization_semantic_review_input(
             fixture,
-            task,
+            review_path.relative_to(fixture).as_posix(),
         )
-        runtime.write_json(gate_path, gate)
-        runtime.check_finalization_gate_result(
-            fixture,
-            argparse.Namespace(),
-            public_input,
-            gate,
-            gate_path,
-        )
-        bind_owner_result_argument(request, fixture, gate_path)
+        bind_review_input_argument(request, fixture, review_path)
     finally:
         if previous_eval is None:
             os.environ.pop("GURU_TEAM_EVAL_STAGING", None)

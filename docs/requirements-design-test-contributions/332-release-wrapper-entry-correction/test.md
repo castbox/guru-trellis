@@ -21,6 +21,16 @@
   commit 与完整 Branch Review。
 - `T332-ENTRY-08`（R332-ENTRY-10）：preparation merge 后旧 candidate evidence 不被复用；新的 detached clean
   candidate 精确绑定 fresh `origin/main`，完整 #332 Release Gate 从零执行。
+- `T332-ENTRY-09`（R332-ENTRY-11）：source 与 installed finish-family fixture 证明 Guru task 只加载
+  `guru-finish-work`，Finalizer 前 archive/journal operation 为零；archived incomplete closeout 返回稳定
+  invalid-state typed exit，且不进入 `no_task` Intake。
+- `T332-ENTRY-10`（R332-ENTRY-12）：Branch Review contract/runtime fixture 断言 dispatch 前 reviewer/range/
+  target 可见、return 后 findings/owner 可见；checker-only、wrapper-only、identity mismatch 与非 `passed`
+  exit 均不得产生正式 pass 或 Publication route。
+- `T332-ENTRY-11`（R332-ENTRY-13）：Codex/Claude/Cursor canonical overlay、installed projection 与连续
+  actual-load transcript 证明普通“确认继续”只消费已展示动作一次，mapped exits 无重复确认，后续未展示
+  commit/push/PR/merge/tag/Release/cleanup 不被该确认授权。
 
-Planning 只审查范围、路径、owner、before/after 与可验证性，不把上述 implementation/release 结果标记为
-已通过。
+Implementation candidate 的 focused validation、initial Phase 2 与独立 committed Branch Review 已通过；
+serialized promotion 已生成 `.45`。这些结果不覆盖 promotion-created diff 的 fresh Phase 2/commit/Branch
+Review，也不把 post-merge exact-candidate Release Gate 标记为通过。

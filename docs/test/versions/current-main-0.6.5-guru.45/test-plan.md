@@ -1,7 +1,7 @@
 # 当前测试计划与证据
 
-版本：`current-main-0.6.5-guru.44`；状态：`superseded`；predecessor：`current-main-0.6.5-guru.43`；successor：`current-main-0.6.5-guru.45`；
-source baseline：contribution identity `architecture-contribution-332-release-v0615-guru5-v1` + reviewed #240/#348 contributions + inherited `.43` authority + containing Git object/tree identity。
+版本：`current-main-0.6.5-guru.45`；状态：`active`；predecessor：`current-main-0.6.5-guru.44`；
+source baseline：reviewed #332 original-entry correction contribution + inherited `.44` authority + containing Git object/tree identity。
 
 ## Replacement before-state authority
 
@@ -164,7 +164,7 @@ owner 在其候选上即时生成。
 
 | Gate | Required proof | Current state |
 | --- | --- | --- |
-| authority promotion | Architecture `.44/current`、RDT expected `.43 -> .44`、#240/#348 reviewed contribution 与 ADR-008、23 Skills / 97 exits / 81 commands、唯一 active、完整 navigation/traceability | promotion-created diff；须 fresh Phase 2/commit/Branch Review |
+| authority promotion | Architecture/RDT expected `.44 -> .45`、reviewed #332 original-entry contribution、23 Skills / 97 exits / 77 commands、唯一 active、完整 navigation/traceability | promotion-created diff；须 fresh Phase 2/commit/Branch Review |
 | release identity | latest stable `.4/.39` 与 target `.5/.40/CLI 0.6.15` 在所有 current release-facing surfaces 一致 | authority mapping 已定义；exact candidate 尚未冻结 |
 | merged prerequisites | #311/#333/#339/#358/#361 在 installed candidate 上重新消费 | `unverified`；历史 evidence 只作定位 |
 | predecessor review | `v0.6.15-guru.4..candidate` complete committed diff，P0-P3 open findings zero | `unverified`；等待 post-merge fresh main |

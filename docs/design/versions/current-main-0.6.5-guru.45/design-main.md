@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-版本：`current-main-0.6.5-guru.44`；状态：`superseded`；predecessor：`current-main-0.6.5-guru.43`；successor：`current-main-0.6.5-guru.45`；provenance：`code_recovered` + contribution identity `architecture-contribution-332-release-v0615-guru5-v1` + reviewed #240/#348 contributions + inherited `.43` authority。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
+版本：`current-main-0.6.5-guru.45`；状态：`active`；predecessor：`current-main-0.6.5-guru.44`；provenance：`code_recovered` + reviewed #332 original-entry correction contribution + inherited `.44` authority。该 successor 保留 `.5/.40/CLI 0.6.15` release target 与 reviewed #240/#348 authority。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
 
 ## 分层与 ownership
 
@@ -32,7 +32,9 @@
   但其变化本身不构成 capability loss。
 - `DES-017` Official migration order：existing cell 先运行 official upgrade/update dry-run 与条件式 migrate，再 workflow preview/switch，最后 preset reapply、backup reconciliation、recursive sidecar 与 ownership/drift gate。
 - `DES-018` A/B compatibility：A=`worktree/github_pr`，B=`current/none`，使用隔离 clone；验证两种 merge order、零 metadata intersection、同 owner Finish/provider/cleanup recovery 与 retained-ref reachability；A archive 后 installed history preview 必须返回唯一 non-empty PR candidate并绑定其 `finish-summary.json`。真实 GitHub A proof与 deterministic local fixture 分开绑定。
-- `DES-019` Platform script boundary：`preview-change-context-history.sh` 是 package-private validator wrapper；platform public projection只发布 `scripts/invoke.sh`，matrix显式证明 private wrapper 未泄漏。
+- `DES-019` Platform script boundary：每个 package 的 Interface 是 public wrapper path 唯一 authority；
+  platform projection 只发布该 exact wrapper，文件名不参与 public/private 判定，matrix 显式证明
+  其它 record/check/execute/preview/helper wrapper 未泄漏。
 - `DES-026` Architecture 双维合同：Guru Team 方法论维度拥有 mandatory stage invocation、semantic route 与 freshness；项目维度拥有 baseline、constitution、required concerns、project checks 与具体正确答案；两者只在 task-local Architecture change contract 相交且不复制对方正文。
 - `DES-027` Architecture lifecycle：current baseline/constitution -> Planning impact/path -> qualified implementation discovery re-entry -> Phase 2 project checks + before/after -> task contribution/necessary ADR -> committed full-diff Branch Review -> serialized promotion -> fresh Phase 2/commit/Branch Review -> successor identity consumed by downstream stages/tasks。
 - `DES-028` Design constitution authority：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current` 唯一拥有原则正文；公共 projection 只含 `mature-practice-applicability`、`concept-semantic-completeness`、`cohesion-change-isolation`、`minimum-necessary-complexity`、`debt-one-way-convergence` 五个 identity/short name。
@@ -161,6 +163,41 @@
 - `DES-068` Idempotent original-identity restoration：恢复 command 在 fresh live facts 与 semantic result
   闭合后，只执行 archive-to-active、`in_progress`、mapping/current-task 修复和 stale downstream authority
   清理；exact already-restored 为只读成功，dirty/duplicate/stale/merged/ambiguous 状态零业务写入。
+
+## #332 original-entry convergence design
+
+- `DES-069` Original public entries：Commit、Publication、Finalizer、Merge 的既有
+  `scripts/invoke.sh` 分别绑定原稳定 command id，并继续作为唯一平台 public wrapper。
+- `DES-070` Closed invocation modes：原 command 的 arguments 是 Happy Path 与旧参数 compatibility
+  的 closed union；package runtime 在入口处选择单一模式，wrapper 只定位 managed dispatcher 并透传 argv。
+- `DES-071` Invocation-local transaction：Happy Path 复用 invocation-local facts，只在 mutation
+  boundary 与 post-mutation proof 做必要 fresh read；compatibility 不成为正常路径的前置链。
+- `DES-072` Facade removal：只服务 PR #341 第二 public command 的 facade adapter、schema、example、
+  fixture 和 projection 在确认无 consumer 后删除，transaction/recovery primitive 留在原 command 内部。
+- `DES-073` Interface-driven projection：通用消费者读取 Interface 声明的 exact wrapper，并验证
+  canonical/installed/platform bytes、executable mode 与 private-script leak。
+- `DES-074` Managed-launcher validation：`runtime/validate.py` 对 Interface-declared public wrapper
+  执行 platform launcher fallback 校验；qualification-only 固定路径不扩散到 generic runtime/eval。
+- `DES-075` Managed removal：preset apply 删除旧 facade projection并同步 canonical、dogfood、installed
+  与 Shared/Codex/Claude/Cursor；共享 scripts 目录不建立转发层。
+- `DES-076` Non-invoke fixture：`guru-restore-archived-task` 的 `restore-archived-task.sh` 覆盖 generic
+  source、installed、platform、actual-load 与 eval，证明 wrapper selection 不依赖文件名。
+- `DES-077` Preserved gates：各 semantic owner、typed exit、consumer、confirmation、freshness、
+  expected-head、recovery 与 fail-closed route 保持不变；低层命令仍为 package-private。
+- `DES-078` Architecture path：本次使用 `dedicated_refactor_slice`，外部行为与 public identity 不变，
+  只把双入口收敛为一个 owner/entry；无新 ADR、长期例外或第二 authority。
+- `DES-079` Serialized promotion：reviewed contribution 绑定 expected `.44`，RDT 与 Architecture owner
+  生成唯一 active `.45`；promotion-created diff 必须 fresh 重跑 Phase 2、commit 和完整 Branch Review。
+- `DES-080` Candidate reset：`.45` 只建立 current knowledge authority，不证明 release；preparation merge
+  后旧 candidate 全部失效，必须从 fresh `origin/main` 重建 exact candidate 并从零执行 #332 Release Gate。
+- `DES-081` Exclusive Guru finish：global workflow 与平台 `guru-finish-work` launcher 排除 upstream
+  `trellis-finish-work`；task discovery 先识别 archived incomplete closeout，Finalizer transaction 独占
+  archive/journal ordering，非法状态返回 fail-closed typed exit。
+- `DES-082` Review visibility and announcement：`guru-review-branch` 在 dispatch/return 两侧输出最小可见
+  identity 与 finding summary；workflow 只把同一 identity 的 checker + public wrapper 双 `passed` 投影为
+  正式 pass，并以该唯一出口进入 Publication。
+- `DES-083` Confirmation continuity：平台 launcher 维护当前对话已展示动作的单次消费语义；普通“确认继续”
+  消费该动作，mapped exits 自动路由。canonical/installed/三平台 actual-load 共同验证投影切换不丢失流程状态。
 
 - `CON-005`：repo-private Skill 不声明 public interface/schema/runtime/typed exit，也不进入 registry、
   extension inventory 或业务仓 installed projection。

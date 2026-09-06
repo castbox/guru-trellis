@@ -5,6 +5,11 @@ Load current task, repository, and phase facts with the live context helpers,
 then read `.trellis/workflow.md`. Use its Phase 3.6/3.7 route and mandatory load
 these active owners by stable Skill id:
 
+This is the exclusive finish entry for a Guru task. The upstream-owned
+`trellis-finish-work` Skill is not applicable to Guru tasks and must not be
+loaded or invoked. Before Finalizer, do not call `task.py archive`,
+`add_session.py`, or any archive/journal executor.
+
 All GitHub platform operations use authenticated, explicitly repo-bound
 `gh`/`gh api` only. Do not use or fall back to App, MCP, connector, or browser
 UI; keep Git transport on `git`.
@@ -27,6 +32,9 @@ Consume only their current public typed exits and mapped workflow consumers:
 Missing, stale, unknown, multiple, or unmapped exits fail closed. Mapped
 stale, resume, and reprepare transitions are internal workflow
 routes, not user choices. Do not add a routine confirmation between them.
+When the user gives a clear affirmative such as `确认继续` for the exact action
+just displayed, consume it for that action without asking them to repeat its
+SHA, digest, PR, or plan identity. Continue mapped internal exits automatically.
 Finalizer side effects and expected-head merge each keep their own exact
 dialogue-local confirmation; new external authority or a material scope decision
 may also pause the route.

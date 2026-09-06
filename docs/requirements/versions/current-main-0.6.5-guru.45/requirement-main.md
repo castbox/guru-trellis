@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.44`；状态：`superseded`；predecessor：`current-main-0.6.5-guru.43`；successor：`current-main-0.6.5-guru.45`；基线：contribution identity `architecture-contribution-332-release-v0615-guru5-v1` + reviewed #240/#348 contributions，继承 `.43` authority；#305 已确认的 `EVO-001..007` 保持独立 target authority。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
+版本：`current-main-0.6.5-guru.45`；状态：`active`；predecessor：`current-main-0.6.5-guru.44`；基线：#332 original-entry correction contribution + `.44` authority。该 successor 保留 `.5/.40/CLI 0.6.15` release target、reviewed #240/#348 authority 与 #305 独立 `EVO-001..007` target，并把 current public graph 收敛为 23 Skills / 97 exits / 77 commands。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
 
 ## 目标、角色与适用范围
 
@@ -209,5 +209,36 @@ identity 与 Issue closeout 在同一 post-merge exact candidate 上完成前均
   Finalizer authority，并强制 fresh 重跑 Phase 2、Task Commit、Branch Review、Publication、Finalizer
   与 expected-head Merge；精确已恢复重试只读成功，歧义或 drift fail closed。
 - `REQ-073`：current public graph 必须由 registry/interface 派生并保持 23 active Skills、97 external
-  exits、81 commands，22 个 workflow-integrated 与一个 standalone verifier；canonical、dogfood、
+  exits、77 commands，22 个 workflow-integrated 与一个 standalone verifier；canonical、dogfood、
   installed、Shared/Codex/Claude/Cursor、workflow markers 与 preset inventory 必须一致。
+
+## #332 original public-entry convergence
+
+- `REQ-074`：Commit、Publication、Finalizer 与 Merge 必须继续使用既有 `scripts/invoke.sh` public
+  wrapper 和稳定 command id；性能优化不得要求 caller 切换到第二套 Happy Path wrapper 或 command。
+- `REQ-075`：#330 的 invocation-local snapshot、事务执行、mapped/stdout-loss recovery、watcher 与
+  terminal stop 必须直接由原 command 消费，不得回退为多命令正常路径。
+- `REQ-076`：同一 public wrapper 只按互斥参数形态选择一次 Happy Path 或旧参数 compatibility branch；
+  正常路径不得先运行兼容检查、双写状态或重复读取同一完整 live facts。
+- `REQ-077`：PR #341 新增的四个 facade command/wrapper 不再属于 current public API、canonical、
+  installed、manifest 或平台 projection；record/check/execute/preview/helper 保持 package-private。
+- `REQ-078`：installer、source/installed validator、compatibility matrix、throwaway verifier、generic
+  eval/runtime 与 platform projection 必须从 `interface.json.public_contracts.invocation.wrapper` 读取
+  唯一 wrapper path，不得全局假定文件名为 `scripts/invoke.sh`。
+- `REQ-079`：`guru-restore-archived-task/scripts/restore-archived-task.sh` 保持既有 public identity，
+  并作为非 `invoke.sh` 的 source/installed/platform/actual-load/eval 正向回归样本。
+- `REQ-080`：`.trellis/guru-team/scripts/bash/**` 只包含真实跨 package shared asset，不补建
+  Finalizer 或其它 Skill 私有 facade；README、manifest、ownership inventory 与 installed disk 必须一致。
+- `REQ-081`：四阶段 semantic gate、freshness、expected-head、独立副作用确认、Issue disposition、
+  recovery 与 fail-closed route 保持不变；收敛只删除无 consumer 的第二入口和正常路径重复工作。
+- `REQ-082`：`.44` 是 immutable predecessor，`.45` 是唯一 active successor。promotion 使此前
+  Phase 2 与 Branch Review evidence stale，必须对 promotion-created diff 重跑 Phase 2、Task Commit
+  与完整 Branch Review。
+- `REQ-083`：preparation 合并后必须从 fresh `origin/main` 重新冻结 exact candidate；旧 candidate
+  因 delivery bytes 与 authority 变化失效，完整 #332 Release Gate 必须从零执行。
+- `REQ-084`：Guru task 收尾排他使用 `guru-finish-work`；Finalizer 前不得直接 archive 或写 journal。
+  archived incomplete closeout 必须 fail closed 且零写入，不得伪装成 `no_task` 重入 Intake。
+- `REQ-085`：Branch Review dispatch/return 必须分别展示 reviewer/range/target 与 findings/owner；只有同一
+  identity 的 checker 与 public wrapper 都 `passed` 后才能正式宣告通过并进入 Publication。
+- `REQ-086`：普通“确认继续”只消费当前对话最近已展示且尚未消费的精确动作；mapped exits 自动推进且
+  不重复确认，确认不授权任何未展示的 commit、push、PR、merge、tag、Release 或 cleanup 动作。

@@ -52,6 +52,18 @@
   managed wrapper 进入 removals，不产生 `.new`/`.bak`。
 - [ ] 重生成 extension manifest/managed inventories，并确认旧 candidate checkout 未被修改。
 
+## Checkpoint D2. Finish Routing And Review Visibility
+
+- [ ] 修改 canonical Guru workflow 的 finish applicability 与 workflow-state：Guru task 只进入
+  `guru-finish-work`，Finalizer 前禁止 generic finish/archive/journal；archived incomplete closeout 不得降级为
+  普通 `no_task`，只返回零写入 fail-closed 诊断。
+- [ ] 修改 preset-owned Codex/Claude/Cursor `guru-finish-work` overlays，明确 generic
+  `trellis-finish-work` 不适用于 Guru task，并保持 mapped internal exits 自动消费。
+- [ ] 修改 canonical `guru-review-branch` 合同，要求 dialogue-visible dispatch/range/return，且只有 checker
+  与 public wrapper 同 identity `passed` 后才能宣告正式通过；同步所有 managed projections。
+- [ ] 不修改 upstream-owned `trellis-finish-work`，不扩展 `guru-restore-archived-task` public API 或自动恢复
+  任意提前归档状态。
+
 ## Checkpoint E. Focused Tests And Operation Budgets
 
 - [ ] 四个 package contract/runtime tests 覆盖 Happy mode、compatibility mode、参数冲突、stale/mismatch、
@@ -62,6 +74,10 @@
   覆盖 ready/metadata/content/external/ledger；Finalizer 覆盖 reprepare/adoption/stale/recovery；Merge 覆盖
   watcher、head/base/policy/closure/Phase 2 re-entry/output loss。
 - [ ] Installer/matrix/throwaway/runtime/eval tests 覆盖任意 Interface wrapper path 与 private leak rejection。
+- [ ] Finish routing tests 覆盖 generic finish 排除、Branch Review 唯一 Publication consumer、Finalizer archive
+  ownership、incomplete-closeout 非 `no_task`、reviewer 可见 lifecycle 与 pass 宣告时点。
+- [ ] Installed actual-load 覆盖普通“确认继续”后的 Task Commit -> Branch Review -> Publication -> Finalizer，
+  断言 mapped internal exits 无重复确认且 Finalizer 前无 archive/journal mutation。
 
 ## Checkpoint F. Canonical, Installed And Release Preparation Validation
 
@@ -92,6 +108,9 @@
 - Preset/verifier：`trellis/presets/guru-team/scripts/{python,bash}/**`、preset README、installer tests。
 - Workflow/spec/docs：`trellis/workflows/guru-team/**`、`.trellis/spec/workflow/**`、preset spec copies、
   task-owned RDT/Architecture correction contributions；`.44` 只作为 source authority。
+- Finish/platform/review：`trellis/presets/guru-team/overlays/{.codex,.claude,.cursor}/**`、
+  `trellis/skills/guru-team/packages/guru-review-branch/**`、finish-family/installer/installed-closeout tests；
+  upstream-owned `trellis-finish-work` 文件保持不变。
 - Serialized promotion output：`docs/{requirements,design,test}/versions/current-main-0.6.5-guru.45/**`、
   三个 README、Architecture current authority/evidence/history 与 `.trellis/spec/{docs,architecture}` projection；
   仅在初始 committed review 通过后由 owner 生成。
@@ -110,6 +129,7 @@ python3 -m unittest discover -s trellis/skills/guru-team/packages/guru-finalize-
 python3 -m unittest discover -s trellis/skills/guru-team/packages/guru-merge-task-pr/tests -p 'test_*.py'
 python3 -m unittest discover -s trellis/skills/guru-team/packages/guru-restore-archived-task/tests -p 'test_*.py'
 python3 -m unittest trellis.skills.guru-team.tests.test_closeout_happy_path_integration
+python3 -m unittest trellis.skills.guru-team.tests.test_finish_family_integration
 python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py
 ./trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh --root . --mode source --json
 ./.trellis/guru-team/scripts/bash/check-skill-packages.sh --root . --mode installed --json

@@ -1,6 +1,6 @@
 # 当前测试策略
 
-版本：`current-main-0.6.5-guru.44`；状态：`superseded`；predecessor：`current-main-0.6.5-guru.43`；successor：`current-main-0.6.5-guru.45`。
+版本：`current-main-0.6.5-guru.45`；状态：`active`；predecessor：`current-main-0.6.5-guru.44`。
 
 ## Evidence 分层
 
@@ -56,11 +56,22 @@
 | `TST-048` | serialized RDT promotion | Architecture `.44/current` inheritance、expected `.43`、完整 RDT version/navigation/traceability 与 post-promotion re-entry | promotion runtime 代替 Phase 2/Review |
 | `TST-049` | exact-candidate pre-tag gate | predecessor full diff、版本面、package/registry/ownership、四平台与 install/update/reapply 绑定同一 candidate | cross-SHA、SKIP 或 focused package result |
 | `TST-050` | immutable release lifecycle | installed business-repository chain、secret/residue、annotated tag、tag-pinned smoke、Release/closure/cleanup 独立 transaction | 任一 mutation 的预授权或推定成功 |
-| `TST-051` | current graph closure | registry/interface/workflow/preset exact 派生 23 Skills / 97 exits / 81 commands，22 integrated + 1 standalone | 历史固定计数替代 current inventory |
+| `TST-051` | current graph closure | registry/interface/workflow/preset exact 派生 23 Skills / 97 exits / 77 commands，22 integrated + 1 standalone | 历史固定计数替代 current inventory |
 | `TST-052` | solution mechanism qualification | paired semantic cases 覆盖 OS primitive replace、普通 file/state qualified、DB/application state qualified 与 pressure framing 不改变结论 | keyword/import/path scanner 替代 AI judgment |
 | `TST-053` | merge Phase 2 re-entry routing | current-scope task-work finding 唯一进入 `phase2_reentry_required`，external blocker 保持 `merge_blocked` 且无 GitHub mutation | 把 CI/provider blocker 伪装为 task work |
 | `TST-054` | archived-task restore transaction | 原 identity 恢复、status/mapping/pointer/stale authority cleanup、idempotent retry 与 dirty/duplicate/stale/merged zero-write negatives | 创建替代 task/branch/worktree/PR |
 | `TST-055` | reviewed contribution promotion | PR #346/#351 independent review、merge/Issue closure、ADR-008 与 `.44` RDT/Architecture traceability 闭合 | 旧 pending 文案或 PR 自述单独冒充 post-promotion gate |
+| `TST-056` | original-entry identity | 四阶段原 wrapper/command 是唯一 public invocation，四个 facade 在 canonical/installed/manifest/platform 为零 | 把新增 facade 当成稳定 API |
+| `TST-057` | Happy/compatibility equivalence | 同一 fixture 比较两种参数模式的 exit、DTO、mutation、blocker、recovery 与 lifecycle | 正常路径先执行 compatibility primitive |
+| `TST-058` | closeout boundary preservation | Commit/Publication/Finalizer/Merge 的 stale、recovery、watcher、expected-head、Issue disposition 与 output-loss cases | 性能指标替代语义测试 |
+| `TST-059` | Interface wrapper variation | `restore-archived-task.sh` 通过 source/installed/matrix/throwaway/runtime/eval/platform actual-load | generic consumer 硬编码 `invoke.sh` |
+| `TST-060` | shared asset closure | README、manifest、ownership、installed disk 一致且 private facade 与 recursive sidecar 为零 | 在 shared scripts 补建私有 wrapper |
+| `TST-061` | operation budget | Happy mode command invocation 降低至少 50%，重复完整事实读取降低至少 70%，terminal 后 operation 为零 | 减少检查但削弱 mutation gate |
+| `TST-062` | `.45` serialized promotion | expected `.44`、reviewed contribution、唯一 active `.45`、23/97/77 与完整 RDT/Architecture traceability | promotion 前 review 复用到 promotion 后 |
+| `TST-063` | fresh release candidate | preparation merge 后从 fresh main 重建 exact candidate并从零执行完整 #332 Release Gate | 复用旧 candidate evidence |
+| `TST-064` | exclusive Guru finish | source/installed finish-family 只加载 `guru-finish-work`，Finalizer 前 archive/journal 为零，incomplete closeout 不进入 `no_task` | upstream finish 抢占或直接归档 |
+| `TST-065` | review visibility and pass timing | dispatch/return 可见性、checker + wrapper 同 identity 双 pass、唯一 Publication route | checker-only 或隐藏 reviewer 结论 |
+| `TST-066` | displayed-action confirmation continuity | 三平台 canonical/installed 连续 actual-load 中普通确认单次消费已展示动作、mapped exit 自动推进 | 重复确认或授权未展示动作 |
 
 ## 核心场景
 
@@ -143,6 +154,28 @@
   恢复原 task 到 Phase 2，清理旧下游 authority，并强制重跑 Phase 2 到 Merge。
 - `SCN-058 archived recovery blocked`：external blocker、scope/head/branch/PR/archive drift、dirty worktree、
   duplicate active task、merged PR 或不安全路径均 fail closed 且零业务写入。
+- `SCN-059 original wrapper Happy Path`：四个既有 `invoke.sh` 直接完成各自 transaction，返回稳定
+  typed DTO，且不调用 facade 或 compatibility preflight。
+- `SCN-060 old-argument compatibility`：同一原 wrapper 检测旧参数后进入唯一 compatibility branch，
+  保持行为和恢复合同，不创建第二 public identity。
+- `SCN-061 non-invoke wrapper projection`：Interface 声明 `restore-archived-task.sh` 时，generic
+  installer/validator/matrix/eval 正确发布和加载它，并拒绝其它 private scripts。
+- `SCN-062 linked-worktree closeout rejection`：installed closeout 在任何 shared Git config/ref mutation
+  前拒绝 linked worktree；支持的 standalone fixture保持通过。
+- `SCN-063 restore current identity`：restore 使用 current task/workspace mapping 与 committed archive，
+  精确 interrupted-move recovery 可恢复，歧义或 stale fail closed。
+- `SCN-064 promotion freshness`：`.44` 与 reviewed contribution 精确匹配时生成唯一 `.45`；任一 current
+  identity 漂移返回 `sync_required`，不覆盖 shared current。
+- `SCN-065 post-promotion re-entry`：promotion-created diff 使旧 Phase 2/Branch Review 失效，并依序重跑
+  check、commit 与 full-diff review。
+- `SCN-066 candidate reset`：merge 后 candidate 绑定 fresh `origin/main`；旧 candidate path、SHA、tree、
+  matrix 和 review evidence 均不参与新 Release Gate。
+- `SCN-067 exclusive finish routing`：active Guru task 仅由 `guru-finish-work` 推进；archived incomplete
+  closeout 在任何 Intake/archive/journal 写入前返回 invalid state，且不能由 upstream finish 接管。
+- `SCN-068 visible Branch Review`：dispatch 前展示 reviewer/range/target，return 后展示 findings/owner；
+  checker 或 wrapper 任一非 `passed`、缺失或 identity 不同都阻止正式 pass 与 Publication。
+- `SCN-069 confirmation continuation`：一个精确动作已展示后，普通“确认继续”立即消费该动作一次；
+  mapped exit 自动到唯一 consumer，后续新的副作用动作仍需先展示并取得独立确认。
 - `CASE-001`：每个 active interface 的 external exit 恰有唯一 consumer 或 stop，registry/interface/workflow 闭包。
 - `CASE-002`：semantic gate 发生在 recorder/validator 前，脚本不接收或持久化授权。
 - `CASE-003`：missing/multiple input、live mismatch、cross-candidate、lineage gap、FAIL、SKIP、stale

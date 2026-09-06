@@ -12367,6 +12367,8 @@ def finalization_eval_preview_context(
         "repo_ref",
         "remote",
         "head_branch",
+        "pr_title",
+        "pr_body",
         "publication_status",
         "publication_stale_reason",
         "transaction_state",
@@ -12396,6 +12398,10 @@ def finalization_eval_preview_context(
             r"[0-9a-f]{40}", str(payload.get("publication_head") or "")
         )
         or normalize_github_repository(payload.get("repo_ref")) != payload.get("repo_ref")
+        or not isinstance(payload.get("pr_title"), str)
+        or not payload.get("pr_title")
+        or not isinstance(payload.get("pr_body"), str)
+        or not payload.get("pr_body")
         or payload.get("publication_status") not in {"current", "stale"}
         or (
             payload.get("publication_status") == "current"
@@ -12453,8 +12459,8 @@ def finalization_eval_preview_context(
             "publication_head": payload["publication_head"],
         },
         "publish": {
-            "title": public_input["pr_title"],
-            "body": public_input["pr_body"],
+            "title": payload["pr_title"],
+            "body": payload["pr_body"],
         },
         "review": {"close_issues_reviewed": [174]},
         "task": {

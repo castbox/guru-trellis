@@ -1,6 +1,6 @@
 # Guru Trellis Current Capability Inventory
 
-版本：`current-main-0.6.5-guru.44-to-evolution-revision-2026-08-30`；状态：
+版本：`current-main-0.6.5-guru.45-to-evolution-revision-2026-09-06`；状态：
 `requirements_trace_ready_for_design`。
 
 本文件是 Evolution Requirements 的 current-to-target 能力保留与差集台账。它回答“当前
@@ -9,7 +9,7 @@
 
 ## 1. Authority 与一致性关系
 
-本 inventory 的 current authority 是 `current-main-0.6.5-guru.44`，由包含本文件与三个 current
+本 inventory 的 current authority 是 `current-main-0.6.5-guru.45`，由包含本文件与三个 current
 version locators 的 Git commit/tree identity 绑定；不在 durable 文档中记录可变 HEAD。历史
 `source_ref=5650df47fe17fe89b7cb616be6c9551608164832` 是 `2026-08-30` reconciliation 时核实的 selected
 `origin/main` snapshot，包含 #311 PR #313 的 merge commit
@@ -19,7 +19,8 @@ evidence-fix PR #316 merge `9f560ec1…`、installed platform-selection preserva
 `736ef333…` 与 caller-inventory consistency PR #318 merge `5650df47…`。`.43` 在该历史 comparison
 基础上增加 #335 repo-private release orchestration current facts；`.44` 再增加 #332 `.5/.40/CLI 0.6.15`
 Release Gate facts，并消费 #240/#348 已审查的 solution-mechanism 与 archived-task recovery owner/RDT/ADR
-authority。Architecture/RDT current locators 统一指向 `.44`。后续 `origin/main`
+authority；`.45` 再消费 #332 original-entry correction contribution，把原 public entry、Interface-driven
+wrapper selection 与 23/97/77 graph 提升为 current。Architecture/RDT current locators 统一指向 `.45`。后续 `origin/main`
 漂移不得隐式改变本 inventory，task worktree 相对路径也不得
 替代下表 locator 或与历史 source snapshot 拼接成虚构 authority。
 
@@ -34,16 +35,16 @@ authority。Architecture/RDT current locators 统一指向 `.44`。后续 `origi
 
 | Authority slice | `source_ref` | `path` | 本 inventory 的使用边界 |
 | --- | --- | --- | --- |
-| `.44` Requirements 功能与行为 | containing Git object | `docs/requirements/versions/current-main-0.6.5-guru.44/requirement-main.md` | current `REQ-*`、`BEH-*` 与产品结果来源；`REQ-063..073` / `BEH-013..015` 增加 #332 Release Gate facts并提升 #240/#348 reviewed owner contracts，不改变 Evolution target |
-| `.44` Requirements 非功能 | containing Git object | `docs/requirements/versions/current-main-0.6.5-guru.44/requirement-non-functional.md` | current `NFR-*` 边界来源；`.44` 保留既有 NFR 集合 |
-| `.44` Requirements decisions | containing Git object | `docs/requirements/versions/current-main-0.6.5-guru.44/decisions.md` | current 产品取舍、release fact 边界与明确排除项来源 |
-| `.44` Design capability inventory | containing Git object | `docs/design/versions/current-main-0.6.5-guru.44/capability-inventory.md` | public 23-Skill/97-exit/81-command current graph；新增 owner 映射到既有 Evolution capabilities |
-| `.44` Design main | containing Git object | `docs/design/versions/current-main-0.6.5-guru.44/design-main.md` | current 实现责任、设计宪法、repo-private orchestration 与 Release Gate ownership 来源 |
-| `.44` Design traceability | containing Git object | `docs/design/versions/current-main-0.6.5-guru.44/traceability.md` | Requirements-to-Design 与 #332 Release Gate responsibility 追踪来源 |
-| `.44` Test strategy | containing Git object | `docs/test/versions/current-main-0.6.5-guru.44/test-strategy.md` | current `TST-*`、`SCN-*`、`CASE-*` 与 #332 exact-candidate verification ownership 来源 |
-| `.44` Test plan / evidence | containing Git object | `docs/test/versions/current-main-0.6.5-guru.44/test-plan.md` | current Test 责任与 evidence boundary；不记录动态 candidate/Gate/release 状态 |
-| `.44` Test traceability | containing Git object | `docs/test/versions/current-main-0.6.5-guru.44/traceability.md` | current Test capability 到 requirement/design 的追踪来源 |
-| Architecture Baseline | containing Git object | `docs/architecture/README.md` | current Architecture authority `.44` 的入口与适用 baseline locator |
+| `.45` Requirements 功能与行为 | containing Git object | `docs/requirements/versions/current-main-0.6.5-guru.45/requirement-main.md` | current `REQ-*`、`BEH-*` 与产品结果来源；`REQ-074..083` 增加 original-entry convergence、promotion freshness 与 candidate reset，不改变 Evolution target |
+| `.45` Requirements 非功能 | containing Git object | `docs/requirements/versions/current-main-0.6.5-guru.45/requirement-non-functional.md` | current `NFR-*` 边界来源；`.45` 保留既有 NFR 集合 |
+| `.45` Requirements decisions | containing Git object | `docs/requirements/versions/current-main-0.6.5-guru.45/decisions.md` | current 产品取舍、release fact 边界与明确排除项来源 |
+| `.45` Design capability inventory | containing Git object | `docs/design/versions/current-main-0.6.5-guru.45/capability-inventory.md` | public 23-Skill/97-exit/77-command current graph；入口收敛映射到既有 Evolution capabilities |
+| `.45` Design main | containing Git object | `docs/design/versions/current-main-0.6.5-guru.45/design-main.md` | current 实现责任、original-entry/Interface wrapper authority 与 Release Gate ownership 来源 |
+| `.45` Design traceability | containing Git object | `docs/design/versions/current-main-0.6.5-guru.45/traceability.md` | Requirements-to-Design 与 #332 wrapper/release responsibility 追踪来源 |
+| `.45` Test strategy | containing Git object | `docs/test/versions/current-main-0.6.5-guru.45/test-strategy.md` | current `TST-*`、`SCN-*`、`CASE-*` 与 wrapper/release verification ownership 来源 |
+| `.45` Test plan / evidence | containing Git object | `docs/test/versions/current-main-0.6.5-guru.45/test-plan.md` | current Test 责任与 evidence boundary；不记录动态 candidate/Gate/release 状态 |
+| `.45` Test traceability | containing Git object | `docs/test/versions/current-main-0.6.5-guru.45/traceability.md` | current Test capability 到 requirement/design 的追踪来源 |
+| Architecture Baseline | containing Git object | `docs/architecture/README.md` | current Architecture authority `.45` 的入口与适用 baseline locator |
 
 target 行为的唯一主定义仍是 [`requirement-main.md`](./requirement-main.md) 中对应的
 `EVO-REQ-*` 和 [`requirement-non-functional.md`](./requirement-non-functional.md) 中对应的
@@ -55,7 +56,7 @@ facts 都不得成为平行产品主定义。canonical registry/interfaces 只�
 `EVO-CAP-004` execution continuity 与 distribution constraints 承接，不新增 Evolution UC、target
 requirement、NFR、capability、target delta、Design responsibility 或 fixture；其 public Skill inventory
 仍为 21/89。`.44` 的 #332 Release Gate facts与 #240/#348 reviewed owner promotion同样由既有能力承接；
-current public graph 增加到 23 Skills / 97 exits / 81 commands，但不新增 Evolution 集合成员。
+current public graph 在 `.45` 收敛为 23 Skills / 97 exits / 77 commands，但不新增 Evolution 集合成员。
 
 本轮只读 reconciliation 表明该 source ref 是 `2026-08-30` 重新绑定的 immutable selected-base
 snapshot；本次 rebind 未执行新增 rebase/merge。该 `.42` authority 已同步 `REQ-013/018`、
@@ -579,7 +580,7 @@ shape 已由 [`docs/test/evolution/`](../../test/evolution/README.md) 建立为 
 
 | Removed shape/process | Current relation | 不保留理由 | 仍须证明的 successor |
 | --- | --- | --- | --- |
-| 23 active Skill、97 exits、81 commands 及其具体 Skill/exit/schema id | current `.44` public inventory source identity | 固化数量会把 target 耦合 current graph | `CUR-CAP-001..024` 的 observable result 全量承接 |
+| 23 active Skill、97 exits、77 commands 及其具体 Skill/exit/schema id | current `.45` public inventory source identity | 固化数量会把 target 耦合 current graph | `CUR-CAP-001..024` 的 observable result 全量承接 |
 | upstream `trellis-brainstorm` 作为 planning author | current workflow authoring mechanism | 用户已决定 Guru Team 完全替代 | `TARGET-DELTA-001..002` |
 | raw upstream `trellis-spec-bootstrap` 作为 spec-boundary author | current bootstrap implementation path | 会自行选择 `.trellis/spec` 边界并写 authority，和 Guru bootstrap/RDT owner 冲突 | `TARGET-DELTA-011..012` 与 `EVO-FIX-SSOT-BOOTSTRAP` |
 | raw upstream `trellis-before-dev` 的 auto-match/provider identity 与独立 spec 全文读取链 | current pre-implementation helper shape | 与 invocation-scoped authority reuse、task-free/标准 Phase 2 唯一 implementation owner 重叠 | `EVO-REQ-026` 的 Guru-owned `implementation_context`，并由两种 implementation profile 各自消费 |

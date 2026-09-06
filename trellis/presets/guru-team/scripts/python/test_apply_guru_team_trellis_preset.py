@@ -239,6 +239,11 @@ def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> No
         testcase.assertIn(exit_id, text, path)
     testcase.assertIn("not user choices", text, path)
     testcase.assertIn("Do not add a routine confirmation", text, path)
+    testcase.assertIn("exclusive finish entry", text, path)
+    testcase.assertIn("`trellis-finish-work` Skill is not applicable", text, path)
+    testcase.assertIn("Before Finalizer, do not call `task.py archive`", text, path)
+    testcase.assertIn("clear affirmative such as `确认继续`", text, path)
+    testcase.assertIn("Continue mapped internal exits automatically", text, path)
     for forbidden in (
         "guru-verify-extension-installation",
         "verification_required",

@@ -21,6 +21,9 @@
 - `ARCH-INT-011`：Merge 的 `phase2_reentry_required` 只投影最小 PR/task/archive/finding identity 到
   `guru-restore-archived-task`；恢复 owner 不创建替代对象，不复用旧 check/review/publication/finalization
   authority，并只把 `restored_to_phase2` 交给 Phase 2 consumer。
+- `ARCH-INT-012`：installer、source/installed validator、compatibility matrix、throwaway、runtime/eval 与
+  platform projection 从每个 package Interface 读取唯一 public wrapper path，验证 exact bytes/mode/launcher
+  与 private-script leak；`restore-archived-task.sh` 证明该合同不依赖 `invoke.sh` 文件名。
 
 ## Capability 与 installation consistency 边界
 

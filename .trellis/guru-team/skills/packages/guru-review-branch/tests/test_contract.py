@@ -64,6 +64,22 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             self.assertIn("spaces", text)
             self.assertIn("indentation", text)
 
+    def test_contract_requires_dialogue_visible_review_lifecycle_and_final_pass(self):
+        skill = (PACKAGE / "SKILL.md").read_text()
+        contract = (PACKAGE / "references/contract.md").read_text()
+        for text in (skill, contract):
+            normalized = " ".join(text.split())
+            self.assertIn("independent reviewer identity", normalized)
+            self.assertIn("exact committed `origin/<base>...HEAD` range", normalized)
+            self.assertIn("final finding summary", normalized)
+            self.assertIn("dialogue", normalized)
+            self.assertIn("public wrapper return `passed`", normalized)
+            self.assertIn("provisional", normalized)
+            self.assertRegex(
+                normalized,
+                r"(?:do not persist|do not enter).*(?:gate|DTO|checkpoint|tracked)",
+            )
+
     def test_eof_blank_line_reproduces_blocking_route_when_qualified(self):
         """Pre-change behavior: a qualified EOF-only candidate blocks review."""
         auth = self.auth("implementation_required")

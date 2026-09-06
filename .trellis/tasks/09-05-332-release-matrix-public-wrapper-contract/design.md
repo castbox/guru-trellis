@@ -227,3 +227,36 @@ manifest。删除旧 managed wrapper 时必须进入 installer removal inventory
 - 第三风险是把 qualification-only `invoke.sh` 假设错误泛化。通过 generic/non-generic 分层测试控制。
 - 任一 package transaction behavior、public DTO、mutation count、installed compatibility 或 Architecture
   project check 失败时，不进入 Publication/Release；保留当前 branch 供修订，不修改历史 tag/Release。
+
+## 11. Finish Entry Exclusivity And Continuation Safety
+
+### 11.1 Ownership Boundary
+
+- Official Trellis 继续拥有 `trellis-finish-work`，本任务不 patch、fork 或 managed-upgrade 该 Skill。
+- Guru marketplace workflow 与 preset-owned Codex/Claude/Cursor `guru-finish-work` entry 共同拥有 Guru task
+  的适用性路由：只要当前项目安装 Guru Team workflow，Branch Review 后必须沿 Publication、Finalizer、
+  Merge 图继续，generic finish 不得成为候选 consumer。
+- Canonical workflow 是规则 SSOT；平台 entry 只引用并强化适用性，不复制阶段内部实现。
+
+### 11.2 Archived Incomplete Closeout Classification
+
+- `no_task` 只能表示当前工作树不存在可归属的 active 或 incomplete-closeout task identity。
+- 若 live branch、workspace mapping、task archive、PR/Finalizer facts 能确定同一任务尚未完成 Finalizer，
+  workflow-state 必须将其分类为 incomplete closeout 并 fail closed，不能启动新任务 intake，也不能声称完成。
+- 本任务不自动移动 archive、不改 `task.json`、不创建新恢复 profile；异常状态只返回零写入诊断和当前
+  支持边界。既有 Merge `phase2_reentry_required` 仍由 `guru-restore-archived-task` 独占。
+
+### 11.3 Branch Review Visibility
+
+- `guru-review-branch` semantic contract 增加 dialogue-visible lifecycle：dispatch 前展示 reviewer/range，
+  return 后展示 finding summary；这些信息保留在当前对话，不进入 gate、DTO 或 tracked artifact。
+- `semantic_review.status=passed` 只是 owner provisional result。只有 recorder/checker/public wrapper 全部绑定
+  current identity 并最终返回 `passed` 后，caller 才能使用“Branch Review 已通过”的终态措辞。
+
+### 11.4 Verification
+
+- 静态 ownership/wording tests 验证 workflow 与三个 Guru finish entry 均排除 generic finish。
+- finish-family integration 验证 Branch Review 唯一进入 Publication、Finalizer 独占 archive/Ready，以及
+  incomplete-closeout 不会降级为 `no_task`。
+- installed actual-load 以正常“确认继续”作为已展示动作的 dialogue response，验证无副作用 mapped exits
+  自动消费，并观察 Finalizer 前 Git/task/archive/journal 均无 mutation。

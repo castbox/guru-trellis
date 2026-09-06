@@ -14,10 +14,11 @@
 - project change contract: `docs/architecture/06-governance/change-contract.md` /
   `guru-trellis-architecture-change-contract-v1` / `guru-trellis-architecture-change-concerns-v1`.
 - change path: `dedicated_refactor_slice`; ADR required: `false`.
-- planning state: `reviewed_candidate`; independent committed review and promotion remain pending.
+- lifecycle state: `reviewed_promoted`; independent committed review passed and serialized promotion created `.45`.
 
-This contribution records the architecture correction needed before #332 can resume release preparation. It does not
-rewrite `.44`, execute implementation, claim Phase 2 or Branch Review success, or record dynamic release state.
+This contribution records the reviewed architecture correction promoted after implementation and independent committed
+review. It preserves `.44` as immutable predecessor, binds `.45` as the only active successor, and records no dynamic
+release state. The promotion-created diff still requires fresh Phase 2, commit, and Branch Review.
 
 ## Boundary And Decision
 
@@ -32,19 +33,27 @@ compatibility branch only when old argument forms are present. The four facade e
 installed into a shared directory, and every generic distributor/verifier selects the exact wrapper declared by the
 package Interface. This preserves behavior while removing dual entry authority and normal-path duplicate work.
 
+The same entry-ownership defect also appeared one level above the package wrappers: a generic upstream finish entry
+could claim a Guru task, bypass the Guru Finalizer ordering, or treat an archived incomplete closeout as ordinary
+`no_task`. In addition, platform continuation prose did not bind an ordinary confirmation to the exact displayed
+action, and Branch Review did not require the dispatch/return identity and result to remain visible before the caller
+announced a pass. The target therefore makes `guru-finish-work` exclusive for Guru tasks, fails closed on incomplete
+closeout, preserves displayed-action continuation across platform projections, and allows Publication only after the
+same Branch Review identity has both checker and public-wrapper `passed` results.
+
 ## Required Concerns
 
 | Concern | Applicability | Candidate contract |
 | --- | --- | --- |
 | `authority-binding` | `applicable` | Bind Architecture 2.0, active/expected `.44`, live #332/#330 clarification, and project change contract v1. |
 | `constitution-binding` | `applicable` | Hit `concept-semantic-completeness`, `cohesion-change-isolation`, `minimum-necessary-complexity`, and `debt-one-way-convergence`; create no duplicate principle prose. |
-| `boundary-and-decision` | `applicable` | Use `dedicated_refactor_slice`: preserve public behavior/identity and converge the erroneous facade layer into original entries. |
-| `owner-and-single-writer` | `applicable` | Each Skill's original command owns invocation mode; Interface owns public wrapper identity; task writes contributions; serialized owners alone write shared `.45`. |
+| `boundary-and-decision` | `applicable` | Use `dedicated_refactor_slice`: preserve public behavior/identity, converge the erroneous facade layer into original entries, and make Guru finish/review continuation ownership explicit. |
+| `owner-and-single-writer` | `applicable` | Each Skill's original command owns invocation mode; `guru-finish-work` exclusively owns Guru closeout routing; Branch Review owns visible dispatch/return and pass timing; Interface owns public wrapper identity; task writes contributions; serialized owners alone write shared `.45`. |
 | `compatibility-and-exit` | `applicable` | Old argument shapes remain package-local compatibility branches. Exit when declared old callers are migrated; no second public wrapper exists during migration. |
-| `gap-and-deviation` | `applicable` | Close dual-entry, hard-coded-wrapper, and nonexistent-shared-asset deviations; retain no new deviation and do not reopen closed `ARCH-GAP-006`. |
+| `gap-and-deviation` | `applicable` | Close dual-entry, hard-coded-wrapper, nonexistent-shared-asset, generic-finish takeover, incomplete-closeout fallthrough, hidden-review, and confirmation-continuity deviations; retain no new deviation and do not reopen closed `ARCH-GAP-006`. |
 | `parallel-scope` | `applicable` | Task may write its branch packages/specs/tests/contributions; it may not modify `.44`, other task contributions, old candidate worktrees, tags, Releases, or unrelated worktrees. |
-| `evidence-and-freshness` | `applicable` | Planning evidence binds live #330/#332/PR #341, `.44`, Interface/package graph, task docs, and this contribution; implementation and release evidence must be regenerated at their owning stages. |
-| `review-and-promotion` | `applicable` | Planning review may establish `reviewed_candidate`; independent committed full-diff review precedes expected-`.44` serialized `.45` promotion, whose diff re-enters Phase 2/commit/Branch Review. |
+| `evidence-and-freshness` | `applicable` | Planning evidence binds live #330/#332/PR #341, `.44`, Interface/package graph, task docs, and this contribution; finish-family continuous actual-load plus Branch Review contract/runtime evidence bind the new routing semantics; implementation and release evidence must be regenerated at their owning stages. |
+| `review-and-promotion` | `applicable` | Planning review may establish `reviewed_candidate`; independent committed full-diff review preceded expected-`.44` serialized `.45` promotion, while the promotion-created and continuation-fix diff remains unpassed until fresh Phase 2/commit/Branch Review completes. |
 
 ## Owners, Compatibility, And Deletion
 
@@ -54,6 +63,14 @@ package Interface. This preserves behavior while removing dual entry authority a
 - task writer: `332-release-matrix-public-wrapper-contract` worktree.
 - shared-current writer: serialized Architecture and RDT promotion owners only.
 - compatibility owner: the original command's package-local runtime.
+- closeout routing owner: global workflow plus each platform's `guru-finish-work` launcher; upstream
+  `trellis-finish-work` is not a Guru-task owner.
+- incomplete-closeout owner: Guru task discovery/Finalizer state routing, before any `no_task`, archive, or journal
+  projection.
+- review visibility owner: `guru-review-branch`; caller may only project its same-identity checker + public-wrapper
+  double pass to Publication.
+- continuation owner: the current platform conversation entry, which consumes one already displayed action and then
+  follows mapped exits without inventing or re-requesting confirmation.
 - compatibility exit: remove the old-argument branch only after live callers and fixtures prove it has no remaining
   consumer under a separately reviewed migration; this task does not pre-empt that later decision.
 - facade deletion conditions: original wrapper directly reaches transaction behavior; old argument fixtures pass;
@@ -68,7 +85,9 @@ write to the old detached candidate checkout.
 - before: 23 active Skills / 97 exits / 81 commands; four closeout stages expose a second facade command/wrapper;
   generic consumers also guess `scripts/invoke.sh`; preset README names nonexistent shared facade assets.
 - after candidate: 23 active Skills / 97 exits / 77 commands; each closeout stage has one original public wrapper and
-  command; compatibility is an argument branch; generic consumers follow Interface; shared assets match disk.
+  command; compatibility is an argument branch; generic consumers follow Interface; shared assets match disk; Guru
+  finish is exclusive, incomplete closeout fails closed, review dispatch/return stays visible, and an ordinary
+  confirmation consumes the already displayed action exactly once.
 - preserved: semantic owners, public Skill ids, typed exits, public DTO meanings, confirmation boundaries, mutation
   ordering, expected-head/freshness, mapped recovery, watcher, stdout-loss recovery, terminal stop, historical `.44`,
   historical PR #341, tags, Releases, and Issue closure ownership.
@@ -78,13 +97,15 @@ write to the old detached candidate checkout.
 - descriptor identity: `guru-trellis-architecture-convergence:repository:1`.
 - check identity/version: `guru-trellis-architecture-convergence@1`.
 - entrypoint: `docs/architecture/06-governance/change-contract.md`.
-- applicable scope: authority/path uniqueness, required concerns, owner/single-writer, compatibility exit, before/after
-  regression, contribution review, expected-current promotion, and release freshness.
+- applicable scope: authority/path uniqueness, required concerns, owner/single-writer, compatibility exit, exclusive
+  finish routing, incomplete-closeout fail closed, review visibility/pass timing, displayed-action continuation,
+  before/after regression, contribution review, expected-current promotion, and release freshness.
 - refs: `ARCH-GOV-006..008`, `ADR-005`, `ARCH-GAP-006`.
 - result contract: `guru-project-architecture-check-result-2.0`.
 - planning before: public-entry ownership and generic wrapper authority are contradictory.
-- planning after: one original entry per closeout Skill, Interface-driven consumers, bounded compatibility branch, and
-  expected-`.44` successor plan are complete and mutually consistent.
+- planning after: one original entry per closeout Skill, Interface-driven consumers, bounded compatibility branch,
+  exclusive Guru finish, visible same-identity Branch Review, displayed-action continuation, and expected-`.44`
+  successor plan are complete and mutually consistent.
 - planning status: `pass`, `blocking=true`; evidence is this contribution plus the task planning docs and live
   #330/#332/PR #341 reads. This pass covers planning adequacy only. Implementation, Phase 2, committed review,
   promotion, and exact-candidate Release Gate remain unverified and must be rerun from their own fresh identities.
@@ -95,9 +116,11 @@ write to the old detached candidate checkout.
 - planning runtime refs: current Interface/command/package/projection inventories at base `593872c4...`.
 - external refs: live #330, live #332, merged PR #341, and remote `main@593872c4...`.
 - external status: verified for planning authority only.
-- review: Planning semantic review complete; independent committed full-diff review pending.
+- review: initial Phase 2 and independent committed full-diff review passed for `8a6e04eb…014c71ac` with open P0-P3 zero.
 - expected current identity: `current-main-0.6.5-guru.44`.
-- promotion: required; promoted identity empty until serialized owner creates `.45`.
+- promotion: `reviewed_promoted`; promoted identity `current-main-0.6.5-guru.45`.
+- current Phase 2 status: unverified for the promotion-created and continuation-fix diff until the required project
+  checks, task check, commit, and independent full-diff Branch Review run against its final identity.
 - ADR: not required because this contribution restores conformance to existing constitution and `ADR-005`; it adds no
   new architecture decision, owner, exception, or compatibility authority.
 
