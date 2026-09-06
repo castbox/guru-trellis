@@ -3,7 +3,7 @@
   "name": "332-release-matrix-public-wrapper-contract",
   "title": "#332 收敛原 public invoke 入口并修复 Release Gate wrapper 合同",
   "status": "in_progress",
-  "branch": "fix/332-release-matrix-public-wrapper-contract",
+  "branch": "fix/332-release-matrix-public-wrapper-contract-r2",
   "base_branch": "main",
   "creator": "wumengye",
   "assignee": "wumengye",
