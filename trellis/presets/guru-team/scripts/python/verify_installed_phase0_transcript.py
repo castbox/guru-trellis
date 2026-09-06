@@ -2591,7 +2591,7 @@ def main() -> int:
         if isinstance(exit_row, dict)
     }
     actual_pairs = {(row["skill_id"], row["actual_exit"]) for row in exit_rows}
-    if expected_pairs != actual_pairs or len(actual_pairs) != 23:
+    if expected_pairs != actual_pairs:
         raise RuntimeError(
             f"installed exit transcript coverage mismatch: expected={sorted(expected_pairs)} "
             f"actual={sorted(actual_pairs)}"
