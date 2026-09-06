@@ -32,4 +32,3 @@ trace 语义、adapter 采集和跨平台验证，会把一个局部 corpus 缺�
 
 该变更只删除一个 invalid assertion。若验证发现现有测试不足，应回到 Planning 重新设计可执行
 的通用 trace 合同，而不是恢复未实现的枚举值。
-

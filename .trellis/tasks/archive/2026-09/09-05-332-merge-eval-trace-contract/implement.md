@@ -25,4 +25,3 @@ git diff --check
 ```
 
 具体 validator argv 以当前脚本 `--help` 和 Release Skill 合同为准，不凭历史命令猜测。
-
