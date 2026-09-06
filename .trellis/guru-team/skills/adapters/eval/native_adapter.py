@@ -3183,6 +3183,7 @@ def workspace_plan(
         "workspace-created": "passed",
         "workspace-refresh-review": "reroute",
         "workspace-blocked": "blocked",
+        "workspace-invalid-task-state": "passed",
     }.get(recipe)
     if gate_status is None:
         raise ValueError(f"unsupported task workspace owner staging recipe: {recipe}")
@@ -3298,6 +3299,19 @@ def build_workspace_owner(
     plan = workspace_plan(
         runtime, fixture, recipe, mode, prerequisites, issue
     )
+    if recipe == "workspace-invalid-task-state":
+        workspace_path = fixture.parent / "owner-worktrees" / plan["naming"]["workspace_slug"]
+        task_dir = workspace_path / Path(plan["side_effects"]["task_artifacts"][0]).parent
+        task_dir.mkdir(parents=True, exist_ok=True)
+        (task_dir / "task.json").write_text(
+            json.dumps({
+                "id": plan["naming"]["task_slug"],
+                "name": plan["naming"]["task_slug"],
+                "status": "in_progress",
+                "branch": plan["naming"]["branch_name"],
+            }) + "\n",
+            encoding="utf-8",
+        )
     transition = stage0_eval_transition(
         "guru-create-task-workspace",
         fixture,

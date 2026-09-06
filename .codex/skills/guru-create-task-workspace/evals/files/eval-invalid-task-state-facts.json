@@ -1,0 +1,18 @@
+{
+  "scenario": "The reviewed task identity already exists with active in-progress state, so workspace creation must stop without writes.",
+  "owner_evidence": {
+    "semantic_gate": "passed",
+    "executor": "blocked",
+    "checker": "not_run",
+    "zero_writes": true
+  },
+  "owner_staging": {
+    "recipe": "workspace-invalid-task-state"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--invocation",
+      "-"
+    ]
+  }
+}

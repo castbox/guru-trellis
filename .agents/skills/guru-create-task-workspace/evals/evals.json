@@ -75,6 +75,25 @@
       },
       "files": ["evals/files/eval-blocked-input.json", "evals/files/eval-blocked-facts.json"],
       "input_profile_id": "execute_reviewed_plan"
+    },
+    {
+      "id": "invalid-task-state-route",
+      "prompt": "Review the staged workspace plan whose task identity is already active with conflicting state, complete its call-local no-side-effect executor/checker result, then invoke guru-create-task-workspace with the closed stdin envelope. Return the checker-derived route.",
+      "expected_exit": "invalid_task_state",
+      "expected_output": "The public DTO is the declared invalid_task_state route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "invalid_task_state"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-invalid-task-state-input.json", "evals/files/eval-invalid-task-state-facts.json"],
+      "input_profile_id": "execute_reviewed_plan"
     }
   ]
 }
