@@ -1048,12 +1048,12 @@
       "ordinal": 1
     },
     {
-      "id": "verifier-installed_managed-0ae0c7b508d2",
+      "id": "verifier-installed_managed-79068e62b288",
       "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
       "kind": "inline_c",
       "classification": "installed_managed",
       "expected_launcher": "installed_python",
-      "anchor_sha256": "0ae0c7b508d221b908005ca6f1d22877565e530ec2b19f79da0d2ba14c42fb88",
+      "anchor_sha256": "79068e62b288cf2cb365392e596463703fa1f2ce391f9240df9ca4bf6aaeebed",
       "ordinal": 1
     },
     {
@@ -1147,12 +1147,12 @@
       "ordinal": 1
     },
     {
-      "id": "verifier-installed_managed-cd80cb9f2c86",
+      "id": "verifier-installed_managed-b1de765f6a45",
       "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
       "kind": "inline_c",
       "classification": "installed_managed",
       "expected_launcher": "installed_python",
-      "anchor_sha256": "cd80cb9f2c86dc5438c0d59887ca80c34d9f874f6025ab392b11b6e58187cde1",
+      "anchor_sha256": "b1de765f6a45e00e3807f3c4cd4aeaf01bee438f56999f0c448c5f926fca4e45",
       "ordinal": 1
     },
     {
