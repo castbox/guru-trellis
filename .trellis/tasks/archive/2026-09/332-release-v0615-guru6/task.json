@@ -1,0 +1,12 @@
+{
+  "id": "332-release-v0615-guru6",
+  "name": "332-release-v0615-guru6",
+  "title": "Issue #332 release v0.6.15-guru.6 mapping",
+  "status": "completed",
+  "branch": "codex/332-release-v0615-guru6",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/332",
+  "completedAt": "2026-09-06"
+}

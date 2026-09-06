@@ -1,0 +1,164 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-06T08:09:50Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "332-release-v0615-guru6",
+    "title": "Issue #332 release v0.6.15-guru.6 mapping",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/332-release-v0615-guru6",
+    "archive_dir": ".trellis/tasks/archive/2026-09/332-release-v0615-guru6"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/332-release-v0615-guru6",
+    "commits": [
+      "fe12f1765381fd72ea59621a4ceb96a64341957d",
+      "7f006fec5b3dcff7bb8a5462407cd6cef8a52a58",
+      "af3f3f688bccde97b30b6d5f5186bb7e3cdb9386",
+      "1b214c302f997661e366b2ca6b3ed5adee2066b6"
+    ],
+    "changed_paths": [
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/docs/requirements-design-test-ssot.md",
+      ".trellis/tasks/332-release-v0615-guru6/design.md",
+      ".trellis/tasks/332-release-v0615-guru6/implement.md",
+      ".trellis/tasks/332-release-v0615-guru6/issue-scope-ledger.json",
+      ".trellis/tasks/332-release-v0615-guru6/prd.md",
+      ".trellis/tasks/332-release-v0615-guru6/task.json",
+      ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/design.md",
+      ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/implement.md",
+      ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/prd.md",
+      ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/task.json",
+      "README.md",
+      "docs/architecture/01-current/system.md",
+      "docs/architecture/07-plans/roadmap.md",
+      "docs/architecture/README.md",
+      "docs/architecture/evidence/current-evidence.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/workflows/guru-team/README.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      332
+    ],
+    "close_issues": [],
+    "related_issues": [
+      332
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/369"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "Issue #332 release v0.6.15-guru.6 mapping",
+    "outcome": "将 Issue #332 的正式发布目标切换为 v0.6.15-guru.6。",
+    "changed_behavior": [
+      "将 Issue #332 的正式发布目标切换为 v0.6.15-guru.6。",
+      "同步仓库 README、preset/workflow 文档和 Architecture current authority，扩展版本为 0.6.15-guru.40，Trellis CLI 为 0.6.15。",
+      "保留 v0.6.15-guru.5 及其失败 smoke 作为不可变历史，不移动、不删除、不重建。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/docs/public-docs.md",
+          ".trellis/spec/docs/requirements-design-test-ssot.md",
+          ".trellis/tasks/332-release-v0615-guru6/design.md",
+          ".trellis/tasks/332-release-v0615-guru6/implement.md",
+          ".trellis/tasks/332-release-v0615-guru6/prd.md",
+          ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/design.md",
+          ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/implement.md",
+          ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/prd.md",
+          "README.md",
+          "docs/architecture/01-current/system.md",
+          "docs/architecture/07-plans/roadmap.md",
+          "docs/architecture/README.md",
+          "docs/architecture/evidence/current-evidence.md"
+        ],
+        "change": "将 Issue #332 的正式发布目标切换为 v0.6.15-guru.6。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md"
+        ],
+        "change": "将 Issue #332 的正式发布目标切换为 v0.6.15-guru.6。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/332-release-v0615-guru6/issue-scope-ledger.json",
+          ".trellis/tasks/332-release-v0615-guru6/task.json",
+          ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/task.json"
+        ],
+        "change": "将 Issue #332 的正式发布目标切换为 v0.6.15-guru.6。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "change": "将 Issue #332 的正式发布目标切换为 v0.6.15-guru.6。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#332"
+      ],
+      "pr_refs": [
+        "PR #369"
+      ],
+      "branches": [
+        "codex/332-release-v0615-guru6"
+      ],
+      "paths": [
+        ".trellis/spec/docs/public-docs.md",
+        ".trellis/spec/docs/requirements-design-test-ssot.md",
+        ".trellis/tasks/332-release-v0615-guru6/design.md",
+        ".trellis/tasks/332-release-v0615-guru6/implement.md",
+        ".trellis/tasks/332-release-v0615-guru6/issue-scope-ledger.json",
+        ".trellis/tasks/332-release-v0615-guru6/prd.md",
+        ".trellis/tasks/332-release-v0615-guru6/task.json",
+        ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/design.md",
+        ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/implement.md",
+        ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/prd.md",
+        ".trellis/tasks/archive/2026-09/332-release-v0615-guru6/task.json",
+        "README.md",
+        "docs/architecture/01-current/system.md",
+        "docs/architecture/07-plans/roadmap.md",
+        "docs/architecture/README.md",
+        "docs/architecture/evidence/current-evidence.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/workflows/guru-team/README.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "Issue #332 release v0.6.15-guru.6 mapping",
+        "将 Issue #332 的正式发布目标切换为 v0.6.15-guru.6。",
+        "完成 public-docs.md 相关变更"
+      ]
+    },
+    "retrieval_text": "Issue #332 release v0.6.15-guru.6 mapping\n将 Issue #332 的正式发布目标切换为 v0.6.15-guru.6。\n同步仓库 README、preset/workflow 文档和 Architecture current authority，扩展版本为 0.6.15-guru.40，Trellis CLI 为 0.6.15。\n保留 v0.6.15-guru.5 及其失败 smoke 作为不可变历史，不移动、不删除、不重建。\n完成 public-docs.md 相关变更"
+  }
+}

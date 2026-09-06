@@ -18,4 +18,4 @@
 
 ## Freshness
 
-每次 gate 必须重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 和 source binding。locator 不存在、版本不一致、traceability 断裂或 projection 落后时，不得沿用本页，进入 owner `repair`。Latest stable `v0.6.15-guru.4` / extension `0.6.15-guru.39` 与 target `v0.6.15-guru.5` / extension `0.6.15-guru.40` publication identity 不得覆盖 current knowledge identity。
+每次 gate 必须重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 和 source binding。locator 不存在、版本不一致、traceability 断裂或 projection 落后时，不得沿用本页，进入 owner `repair`。Latest stable `v0.6.15-guru.4` / extension `0.6.15-guru.39` 与 target `v0.6.15-guru.6` / extension `0.6.15-guru.40` publication identity 不得覆盖 current knowledge identity。

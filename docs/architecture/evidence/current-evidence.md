@@ -32,6 +32,6 @@ evidence，避免 tracked evidence 对 candidate tree 形成自引用。
 不声称任何 matrix JSON 已被改写，也不构造伪造的 combined artifact。
 
 当前 Architecture/RDT evidence 已由各自 serialized owner 建立唯一 active `.45` successor；promotion-created
-combined diff 仍须 fresh Phase 2、task commit 与 Branch Review。`v0.6.15-guru.5` / extension
+combined diff 仍须 fresh Phase 2、task commit 与 Branch Review。`v0.6.15-guru.6` / extension
 `0.6.15-guru.40` stable tag、GitHub Release、tag-pinned install、latest-stable 晋升与 release smoke 仍保持
 `unverified`，owner 为 Issue #332 post-merge exact-candidate Release lifecycle；#267 不由本 promotion 修改。
