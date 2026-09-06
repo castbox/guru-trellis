@@ -21,11 +21,11 @@ REMOTE_REPO = "microsoft/PowerToys"
 BASE_BRANCH = "main"
 
 
-def run(command: list[str], cwd: Path, *, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+def run(command: list[str], cwd: Path, *, env: dict[str, str] | None = None, check: bool = True) -> subprocess.CompletedProcess[str]:
     process_env = dict(os.environ if env is None else env)
     process_env["PYTHONDONTWRITEBYTECODE"] = "1"
     result = subprocess.run(command, cwd=cwd, env=process_env, text=True, capture_output=True, check=False)
-    if result.returncode != 0:
+    if check and result.returncode != 0:
         raise RuntimeError(
             f"command failed ({result.returncode}): {' '.join(command)}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
         )
@@ -41,6 +41,29 @@ def single_json_stdout(result: subprocess.CompletedProcess[str], label: str) -> 
         raise RuntimeError(f"{label} stdout is not one complete JSON object") from exc
     if not isinstance(payload, dict):
         raise RuntimeError(f"{label} stdout is not a JSON object")
+    return payload
+
+
+def preflight_error(result: subprocess.CompletedProcess[str], label: str, *, public: bool) -> dict[str, Any]:
+    if result.returncode == 0:
+        raise RuntimeError(f"{label} accepted the blocked preflight")
+    if public:
+        payload = single_json_stdout(result, label)
+        if (
+            set(payload) != {"code", "field_path", "remediation"}
+            or payload.get("code") != "finalization_stale"
+            or payload.get("field_path") != "finalization"
+            or not isinstance(payload.get("remediation"), str)
+            or not payload["remediation"].strip()
+        ):
+            raise RuntimeError(f"{label} did not return the declared public preflight error")
+        return payload
+    try:
+        payload = json.loads(result.stderr)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"{label} did not return component JSON failure evidence") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"{label} failure evidence is not a JSON object")
     return payload
 
 
@@ -69,10 +92,29 @@ def load_installed_eval_adapter(root: Path) -> Any:
     return module
 
 
+class InstalledWrapperError(RuntimeError):
+    def __init__(self, result: subprocess.CompletedProcess[str]) -> None:
+        self.exit_code = result.returncode
+        self.payload: dict[str, Any] = {"code": "installed_wrapper_failed"}
+        for output in (result.stdout, result.stderr):
+            try:
+                payload = json.loads(output)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(payload, dict):
+                self.payload = payload
+                break
+        super().__init__(
+            f"installed wrapper failed ({result.returncode}): {result.args}\n"
+            f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+        )
+
+
 class InstalledPackageClient:
     """Test authoring adapter whose production operations use installed wrappers."""
 
     INDEPENDENT_REVIEW_SOURCE = "independent-agent"
+    WorkflowError = InstalledWrapperError
     TASK_PUBLICATION_DIMENSIONS = (
         "diff_outcome_consistency",
         "issue_scope_closure",
@@ -137,7 +179,10 @@ class InstalledPackageClient:
         wrapper = self.package / "scripts" / script
         if not wrapper.is_file() or not os.access(wrapper, os.X_OK):
             raise RuntimeError(f"installed package wrapper is unavailable: {wrapper}")
-        return json.loads(run([str(wrapper), *arguments], self.root).stdout)
+        result = run([str(wrapper), *arguments], self.root, check=False)
+        if result.returncode != 0:
+            raise self.WorkflowError(result)
+        return json.loads(result.stdout)
 
     def cmd_record_planning_approval(self, args: argparse.Namespace) -> dict[str, Any]:
         values = ["--root", args.root, "--task", args.task, "--input", args.input]
@@ -233,6 +278,10 @@ class InstalledPackageClient:
 
 
 def ensure_baseline(root: Path, real_git: str, remote: Path, after_update: bool) -> str:
+    git_dir = Path(git(root, real_git, "rev-parse", "--absolute-git-dir")).resolve()
+    common_dir = (root / git(root, real_git, "rev-parse", "--git-common-dir")).resolve()
+    if git_dir != common_dir:
+        raise RuntimeError("installed closeout requires a standalone throwaway repository, not a linked worktree")
     git(root, real_git, "config", "user.name", "Installed Closeout Smoke")
     git(root, real_git, "config", "user.email", "installed-closeout@example.com")
     if not remote.exists():
@@ -909,10 +958,10 @@ def run_closeout(
                 )
                 if blocked.returncode == 0:
                     raise RuntimeError("installed closeout accepted an archive ancestor symlink")
-                try:
-                    blocked_payload = json.loads(blocked.stderr)
-                except json.JSONDecodeError as exc:
-                    raise RuntimeError("installed archive symlink preflight did not return JSON") from exc
+                public = command == finalizer_command
+                blocked_payload = preflight_error(
+                    blocked, "installed archive symlink preflight", public=public
+                )
                 link_rel = link_path.relative_to(root).as_posix()
                 dirty_paths = blocked_payload.get("unexpected_dirty_paths")
                 blocked_by_publication_owner = isinstance(dirty_paths, list) and any(
@@ -924,7 +973,7 @@ def run_closeout(
                     blocked_payload.get("stage") == "archive-path-preflight"
                     and blocked_payload.get("component") == component
                 )
-                if not (blocked_by_publication_owner or blocked_by_archive_preflight):
+                if not public and not (blocked_by_publication_owner or blocked_by_archive_preflight):
                     raise RuntimeError("installed archive symlink preflight evidence is incomplete")
                 if preflight_state() != before:
                     raise RuntimeError("installed archive symlink preflight changed closeout state")
@@ -971,12 +1020,10 @@ def run_closeout(
                 raise RuntimeError(
                     "installed closeout accepted a non-empty official after_archive hook"
                 )
-            try:
-                blocked_payload = json.loads(blocked.stderr)
-            except json.JSONDecodeError as exc:
-                raise RuntimeError(
-                    "installed hook preflight did not return JSON failure evidence"
-                ) from exc
+            public = command == finalizer_command
+            blocked_payload = preflight_error(
+                blocked, "installed hook preflight", public=public
+            )
             dirty_paths = blocked_payload.get("unexpected_dirty_paths")
             blocked_by_publication_owner = (
                 isinstance(dirty_paths, list)
@@ -986,7 +1033,7 @@ def run_closeout(
                 blocked_payload.get("stage") == "after-archive-hook-preflight"
                 and blocked_payload.get("hook_executed") is False
             )
-            if not (blocked_by_publication_owner or blocked_by_hook_preflight):
+            if not public and not (blocked_by_publication_owner or blocked_by_hook_preflight):
                 raise RuntimeError("installed hook preflight failure evidence is incomplete")
             if preflight_state() != before:
                 raise RuntimeError("installed hook preflight changed closeout state")

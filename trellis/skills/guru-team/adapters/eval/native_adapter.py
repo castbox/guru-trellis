@@ -5195,11 +5195,11 @@ def stage_restore_archived_task_owner_execution(
     public_input_path: Path,
 ) -> tuple[Path, Path, dict[str, str]]:
     """Build a real archive/worktree owner fixture and invoke the public restore script."""
-    package = fixture / ".trellis/guru-team/skills/packages/guru-restore-archived-task"
+    source_package = fixture / ".trellis/guru-team/skills/packages/guru-restore-archived-task"
     if (
-        hashlib.sha256((package / "interface.json").read_bytes()).hexdigest()
+        hashlib.sha256((source_package / "interface.json").read_bytes()).hexdigest()
         != hashlib.sha256((request_package / "interface.json").read_bytes()).hexdigest()
-        or hashlib.sha256((package / "evals/evals.json").read_bytes()).hexdigest()
+        or hashlib.sha256((source_package / "evals/evals.json").read_bytes()).hexdigest()
         != hashlib.sha256((request_package / "evals/evals.json").read_bytes()).hexdigest()
     ):
         raise ValueError("restore owner staging package does not match the evaluated contract")
@@ -5219,32 +5219,42 @@ def stage_restore_archived_task_owner_execution(
     run_git(fixture, "add", ".")
     run_git(fixture, "commit", "-q", "-m", "stage restore owner base")
     run_git(fixture, "worktree", "add", "-q", "-b", branch, str(worktree), "HEAD")
-    expected_head = run_git(worktree, "rev-parse", "HEAD")
-    archive_commit = expected_head
+    package = worktree / ".trellis/guru-team/skills/packages/guru-restore-archived-task"
 
-    archive = fixture / archive_locator
-    active = fixture / active_locator
+    archive = worktree / archive_locator
+    active = worktree / active_locator
     archive.mkdir(parents=True, exist_ok=True)
     task_payload = {
         "id": task_id, "name": task_id, "title": "Restore eval",
         "status": "completed", "completedAt": "2026-09-03T00:00:00Z",
-        "branch": branch, "base_branch": "main", "repo_ref": repo_ref,
-        "issue_number": pr_number, "pr_number": pr_number,
-        "expected_head_sha": expected_head,
+        "branch": branch, "base_branch": "main",
     }
     (archive / "task.json").write_text(json.dumps(task_payload) + "\n", encoding="utf-8")
     finish_summary = {
-        "task_id": task_id, "repository": repo_ref, "pr_number": pr_number,
-        "expected_head_sha": expected_head, "archive_commit": archive_commit,
+        "task": {"slug": task_id, "artifact_dir": active_locator, "archive_dir": archive_locator, "status": "completed"},
+        "git": {"branch": branch, "base_branch": "main"},
+        "github": {"pr_url": f"https://github.com/{repo_ref}/pull/{pr_number}", "source_issues": [pr_number], "close_issues": [], "related_issues": [], "followup_issues": []},
     }
     (archive / "finish-summary.json").write_text(json.dumps(finish_summary) + "\n", encoding="utf-8")
-    mapping_path = fixture / ".trellis/.runtime/guru-team/tasks" / f"{task_id}.json"
+    run_git(worktree, "add", archive_locator)
+    run_git(worktree, "commit", "-q", "-m", "stage archived task")
+    expected_head = run_git(worktree, "rev-parse", "HEAD")
+    archive_commit = expected_head
+
+    workspace_slug = "348-restore"
+    mapping_path = worktree / ".trellis/.runtime/guru-team/tasks" / f"{task_id}.json"
     mapping_path.parent.mkdir(parents=True, exist_ok=True)
     mapping_path.write_text(json.dumps({
-        "state": "archived", "task_id": task_id,
-        "archive_locator": archive_locator, "active_locator": active_locator,
-        "task_locator": archive_locator, "repository": repo_ref,
-        "branch_name": branch, "worktree_path": str(worktree),
+        "schema_version": "1.0", "task_slug": task_id,
+        "workspace_slug": workspace_slug, "workspace_path": str(worktree),
+        "task_artifact_dir": archive_locator,
+    }) + "\n", encoding="utf-8")
+    workspace_mapping = worktree / ".trellis/.runtime/guru-team/workspaces" / f"{workspace_slug}.json"
+    workspace_mapping.parent.mkdir(parents=True, exist_ok=True)
+    workspace_mapping.write_text(json.dumps({
+        "schema_version": "1.0", "workspace_slug": workspace_slug,
+        "workspace_path": str(worktree), "source_checkout": str(fixture),
+        "branch_name": branch,
     }) + "\n", encoding="utf-8")
 
     public = json.loads(public_input_path.read_text(encoding="utf-8"))
@@ -5278,8 +5288,8 @@ def stage_restore_archived_task_owner_execution(
         task_payload.pop("completedAt", None)
         (active / "task.json").write_text(json.dumps(task_payload) + "\n", encoding="utf-8")
         (active / "finish-summary.json").unlink()
-        mapping_path.write_text(json.dumps({**json.loads(mapping_path.read_text()), "state": "active", "task_locator": active_locator}) + "\n", encoding="utf-8")
-        current = fixture / ".trellis/.runtime/current-task"
+        mapping_path.write_text(json.dumps({**json.loads(mapping_path.read_text()), "task_artifact_dir": active_locator}) + "\n", encoding="utf-8")
+        current = worktree / ".trellis/.runtime/current-task"
         current.parent.mkdir(parents=True, exist_ok=True)
         current.write_text(active_locator + "\n", encoding="utf-8")
         facts["runtime_mapping"]["state"] = "active"
@@ -5294,7 +5304,7 @@ def stage_restore_archived_task_owner_execution(
     elif case == "merged-pr": facts["pr"]["state"] = "MERGED"
     elif case not in {"success", "idempotent"}:
         raise ValueError(f"unsupported restore owner staging case: {case}")
-    runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
+    runtime_dir = worktree / ".trellis/.runtime/guru-team/evals"
     runtime_dir.mkdir(parents=True, exist_ok=True)
     input_path = runtime_dir / "restore-input.json"
     semantic_path = runtime_dir / "restore-semantic.json"
@@ -5308,7 +5318,7 @@ def stage_restore_archived_task_owner_execution(
         except (OSError, json.JSONDecodeError): continue
         invocation = payload.get("public_invocation") if isinstance(payload, dict) else None
         if isinstance(invocation, dict):
-            invocation["arguments"] = ["--root", ".", "--input", str(input_path.relative_to(fixture)), "--semantic-result", str(semantic_path.relative_to(fixture)), "--facts", str(facts_path.relative_to(fixture))]
+            invocation["arguments"] = ["--root", str(worktree), "--input", str(input_path), "--semantic-result", str(semantic_path), "--facts", str(facts_path)]
             path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
     return package, fixture_runtime_target, {"GURU_TEAM_EVAL_STAGING": "1"}
 

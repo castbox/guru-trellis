@@ -430,11 +430,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-05T10:05:28Z",
+  "installed_at": "2026-09-06T01:51:55Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "593872c4c086524303ed075039986fc4ac31d415",
-    "commit": "593872c4c086524303ed075039986fc4ac31d415",
+    "ref": "8a6e04eb685774867bf618bb7eb704eeb4e0448c",
+    "commit": "8a6e04eb685774867bf618bb7eb704eeb4e0448c",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -654,7 +654,7 @@
       {
         "id": "guru-restore-archived-task",
         "interface_sha256": "c5decdc3b866cd7cab3c6dd048ad2afadefbfbc826f32ca6a6f6380beab05cbd",
-        "tree_sha256": "dc75bc851801f8ee1603a8355eb6112aa4efd3c49f811ef201211d3116dbe325"
+        "tree_sha256": "5992b2dfd85b7a89728e852189588c23313176ee3f27836c55d35a303ef1e782"
       },
       {
         "id": "guru-sync-base",
@@ -952,7 +952,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "eb139391b629b99e4f8f7cc4366073e06f54e96989fc05c6f29ad19bad70920e",
+        "sha256": "91d6397551ae3025c47cc04f6437f4b583bcb58617afd0cf83de38d7c7b5425c",
         "executable": false,
         "action": "unchanged"
       },
@@ -7982,112 +7982,112 @@
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/active-task-conflict-facts.json",
         "sha256": "72fdeca925069241a5f97a46a07ca55176d75de76196c823978b475406212777",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/active-task-conflict-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/active-task-conflict-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/dirty-worktree-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/dirty-worktree-facts.json",
         "sha256": "d9717342fd4115461316ad8b32b4f615d732bc2593342023b9ce0004bf141a23",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/dirty-worktree-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/dirty-worktree-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/external-blocker-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/external-blocker-facts.json",
         "sha256": "3cc79fce8f26c86141828e6bb5bf221b068654c50fa130d2690271ae358490a8",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/external-blocker-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/external-blocker-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/head-drift-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/head-drift-facts.json",
         "sha256": "6b6cbe33802dd39527f5ff7ef51f16c700d9f9b985b5adeb138d5676cf693df6",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/head-drift-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/head-drift-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/idempotent-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/idempotent-facts.json",
         "sha256": "6bfda22fc4342a9d8d41bc6e0b7f9adc8adbd14ec696f60510a5ef1da7800ed9",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/idempotent-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/idempotent-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/merged-pr-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/merged-pr-facts.json",
         "sha256": "d8e7e12d881db5aa7f055fcc21ffa55a6e933b3e96c1e01d61cc2f6335036938",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/merged-pr-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/merged-pr-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/scope-drift-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/scope-drift-facts.json",
         "sha256": "c5b3593217474be80f8bfabd72359884888019a51f0f0e245048e444e31bb1d3",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/scope-drift-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/scope-drift-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/success-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/success-facts.json",
         "sha256": "470032b0312555fce48d707aa15bc369f53706e6ee7640f1d722a537c6f926f8",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/evals/files/success-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/success-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/examples/live-facts.json",
@@ -8155,7 +8155,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/runtime/invoke.py",
-        "sha256": "40548d1139bc999d43011a299bd93a05106120185e8e0bb2f803ea6bebf0de52",
+        "sha256": "cc4d3677d58808b950c3d0c920637d52a9ad9597cc974b7d2212b28f1b84a57b",
         "executable": false,
         "action": "unchanged"
       },
@@ -8232,7 +8232,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/tests/test_runtime.py",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/tests/test_runtime.py",
-        "sha256": "bd9f37675dd7f479664d11d0472e0bfd7dfc01e36ef1b431d1c23a9d7ddf6fcb",
+        "sha256": "8857e225851a3bad4b10749c323e640bc814ce31a95a39cf6c18d9db5864576e",
         "executable": false,
         "action": "unchanged"
       },
@@ -28317,112 +28317,112 @@
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/active-task-conflict-facts.json",
         "sha256": "72fdeca925069241a5f97a46a07ca55176d75de76196c823978b475406212777",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/active-task-conflict-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/active-task-conflict-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/dirty-worktree-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/dirty-worktree-facts.json",
         "sha256": "d9717342fd4115461316ad8b32b4f615d732bc2593342023b9ce0004bf141a23",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/dirty-worktree-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/dirty-worktree-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/external-blocker-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/external-blocker-facts.json",
         "sha256": "3cc79fce8f26c86141828e6bb5bf221b068654c50fa130d2690271ae358490a8",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/external-blocker-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/external-blocker-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/head-drift-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/head-drift-facts.json",
         "sha256": "6b6cbe33802dd39527f5ff7ef51f16c700d9f9b985b5adeb138d5676cf693df6",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/head-drift-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/head-drift-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/idempotent-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/idempotent-facts.json",
         "sha256": "6bfda22fc4342a9d8d41bc6e0b7f9adc8adbd14ec696f60510a5ef1da7800ed9",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/idempotent-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/idempotent-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/merged-pr-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/merged-pr-facts.json",
         "sha256": "d8e7e12d881db5aa7f055fcc21ffa55a6e933b3e96c1e01d61cc2f6335036938",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/merged-pr-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/merged-pr-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/scope-drift-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/scope-drift-facts.json",
         "sha256": "c5b3593217474be80f8bfabd72359884888019a51f0f0e245048e444e31bb1d3",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/scope-drift-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/scope-drift-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/success-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/success-facts.json",
         "sha256": "470032b0312555fce48d707aa15bc369f53706e6ee7640f1d722a537c6f926f8",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/evals/files/success-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/success-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-restore-archived-task/examples/public-blocked-output.json",
@@ -28548,112 +28548,112 @@
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/active-task-conflict-facts.json",
         "sha256": "72fdeca925069241a5f97a46a07ca55176d75de76196c823978b475406212777",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/active-task-conflict-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/active-task-conflict-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/dirty-worktree-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/dirty-worktree-facts.json",
         "sha256": "d9717342fd4115461316ad8b32b4f615d732bc2593342023b9ce0004bf141a23",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/dirty-worktree-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/dirty-worktree-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/external-blocker-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/external-blocker-facts.json",
         "sha256": "3cc79fce8f26c86141828e6bb5bf221b068654c50fa130d2690271ae358490a8",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/external-blocker-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/external-blocker-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/head-drift-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/head-drift-facts.json",
         "sha256": "6b6cbe33802dd39527f5ff7ef51f16c700d9f9b985b5adeb138d5676cf693df6",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/head-drift-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/head-drift-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/idempotent-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/idempotent-facts.json",
         "sha256": "6bfda22fc4342a9d8d41bc6e0b7f9adc8adbd14ec696f60510a5ef1da7800ed9",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/idempotent-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/idempotent-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/merged-pr-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/merged-pr-facts.json",
         "sha256": "d8e7e12d881db5aa7f055fcc21ffa55a6e933b3e96c1e01d61cc2f6335036938",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/merged-pr-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/merged-pr-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/scope-drift-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/scope-drift-facts.json",
         "sha256": "c5b3593217474be80f8bfabd72359884888019a51f0f0e245048e444e31bb1d3",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/scope-drift-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/scope-drift-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/success-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/success-facts.json",
         "sha256": "470032b0312555fce48d707aa15bc369f53706e6ee7640f1d722a537c6f926f8",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/evals/files/success-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/success-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-restore-archived-task/examples/public-blocked-output.json",
@@ -28779,112 +28779,112 @@
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/active-task-conflict-facts.json",
         "sha256": "72fdeca925069241a5f97a46a07ca55176d75de76196c823978b475406212777",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/active-task-conflict-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/active-task-conflict-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/dirty-worktree-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/dirty-worktree-facts.json",
         "sha256": "d9717342fd4115461316ad8b32b4f615d732bc2593342023b9ce0004bf141a23",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/dirty-worktree-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/dirty-worktree-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/external-blocker-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/external-blocker-facts.json",
         "sha256": "3cc79fce8f26c86141828e6bb5bf221b068654c50fa130d2690271ae358490a8",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/external-blocker-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/external-blocker-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/head-drift-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/head-drift-facts.json",
         "sha256": "6b6cbe33802dd39527f5ff7ef51f16c700d9f9b985b5adeb138d5676cf693df6",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/head-drift-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/head-drift-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/idempotent-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/idempotent-facts.json",
         "sha256": "6bfda22fc4342a9d8d41bc6e0b7f9adc8adbd14ec696f60510a5ef1da7800ed9",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/idempotent-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/idempotent-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/merged-pr-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/merged-pr-facts.json",
         "sha256": "d8e7e12d881db5aa7f055fcc21ffa55a6e933b3e96c1e01d61cc2f6335036938",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/merged-pr-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/merged-pr-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/scope-drift-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/scope-drift-facts.json",
         "sha256": "c5b3593217474be80f8bfabd72359884888019a51f0f0e245048e444e31bb1d3",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/scope-drift-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/scope-drift-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/success-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/success-facts.json",
         "sha256": "470032b0312555fce48d707aa15bc369f53706e6ee7640f1d722a537c6f926f8",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/evals/files/success-input.json",
         "source": "trellis/skills/guru-team/packages/guru-restore-archived-task/evals/files/success-input.json",
         "sha256": "219d6a510ab0901973adace7f7169f35324418db40f91369e03132a678328667",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-restore-archived-task/examples/public-blocked-output.json",
