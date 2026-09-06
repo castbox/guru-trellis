@@ -1266,12 +1266,12 @@
       "ordinal": 1
     },
     {
-      "id": "helper-generated_shebang-5fe8e4950c41",
+      "id": "helper-generated_shebang-2d9630a5d5ea",
       "owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
       "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "5fe8e4950c41ba59b582e17bff16f2d0032faa55e7721f9e5ab43a31d51465ff",
+      "anchor_sha256": "2d9630a5d5ea83749102ed564d96e9aa89d6665e220c7b432f9620d9e8000ec6",
       "ordinal": 1
     },
     {
