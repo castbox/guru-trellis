@@ -135,74 +135,6 @@ def finalize_clarification_owner(payload: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
-def clarification_typed_output(
-    owner: dict[str, Any],
-    public_input: dict[str, Any],
-    transition: dict[str, Any],
-) -> dict[str, Any]:
-    exit_id = owner["typed_exit"]
-    if exit_id == "clear":
-        identity = owner["content_identity"]
-        disposition = owner["target_disposition"]
-        clarity_transition = {
-            **copy.deepcopy(transition),
-            "transition_id": f"clarity_current:{identity['result_sha256'][:24]}",
-            "stage": "clarity_current",
-            "clarity_result_sha256": identity["result_sha256"],
-            "target_content_sha256": identity["content_sha256"],
-            "clarity": {
-                "facts_sha256": identity["result_sha256"],
-                "target_sha256": identity["target_sha256"],
-                "disposition_sha256": identity["disposition_sha256"],
-                "content_sha256": identity["content_sha256"],
-                "scope_sha256": identity["scope_sha256"],
-            },
-            "target_disposition": {
-                "disposition_sha256": disposition["disposition_digest"],
-                "duplicate_facts_sha256": disposition["duplicate_facts_sha256"],
-            },
-        }
-        clarity_transition.pop("authority_content_sha256", None)
-        return {
-            "exit_id": "clear",
-            "resume_target": owner["invocation_context"]["resume_target"],
-            "target_disposition": "retained",
-            "continuation_id": public_input["continuation_id"],
-            "transition": clarity_transition,
-        }
-    if exit_id == "needs_context":
-        base = copy.deepcopy(transition["base"])
-        return {
-            "exit_id": "needs_context",
-            "handoff_profile": "pre_task",
-            "handoff_mode": public_input["mode"],
-            "handoff_repo_locator": transition["repo_locator"],
-            "handoff_base_branch": base["selected_base"],
-            "handoff_continuation_id": public_input["continuation_id"],
-            "transition": {
-                "schema_version": "1.0",
-                "transition_id": (
-                    "base_current:" + base["post_sync_resolution_sha256"][:24]
-                ),
-                "stage": "base_current",
-                "mode": public_input["mode"],
-                "repo_locator": transition["repo_locator"],
-                "base": base,
-            },
-        }
-    if exit_id == "refresh_context":
-        output = {
-            "exit_id": "refresh_context",
-            "handoff_mode": public_input["mode"],
-            "handoff_repo_root": transition["repo_locator"],
-            "handoff_route": "repo_change",
-        }
-        if transition["base"].get("source") == "explicit":
-            output["handoff_base_branch"] = transition["base"]["selected_base"]
-        return output
-    raise RuntimeError(f"unsupported transcript clarification output: {exit_id}")
-
-
 def wording_change_request_source(issue: dict[str, Any]) -> dict[str, Any]:
     return {
         "source_kind": "issue",
@@ -1943,9 +1875,6 @@ def reentry_transcripts(
         "owner_context": {},
         "owner_result": needs_owner,
     }
-    needs_envelope["typed_output"] = clarification_typed_output(
-        needs_owner, needs_envelope["public_input"], context_transition
-    )
     needs, needs_row = invoke_public(
         root, env, "guru-clarify-requirements", needs_envelope, "needs_context"
     )
@@ -2042,10 +1971,6 @@ def reentry_transcripts(
         }
         if target_skill == "guru-review-contract-wording":
             target_envelope["validation_receipt"] = target_checked["validation_receipt"]
-        if target_skill == "guru-clarify-requirements":
-            target_envelope["typed_output"] = clarification_typed_output(
-                target_owner, target_input, producer["transition"]
-            )
         assert_owner_binding(target_skill, target_input, target_owner)
         target, target_row = invoke_public(
             root, env, target_skill, target_envelope, target_exit
@@ -2142,9 +2067,6 @@ def six_step_transcript(
         "owner_context": {},
         "owner_result": clarity_owner,
     }
-    clarity_envelope["typed_output"] = clarification_typed_output(
-        clarity_owner, clarity_envelope["public_input"], context["transition"]
-    )
     assert_owner_binding(
         "guru-clarify-requirements",
         clarity_envelope["public_input"],
@@ -2484,9 +2406,6 @@ def refresh_provenance_transcripts(
             "owner_context": {},
             "owner_result": refresh_owner,
         }
-        refresh_envelope["typed_output"] = clarification_typed_output(
-            refresh_owner, clarification_input, context["transition"]
-        )
         refresh, refresh_row = invoke_public(
             root,
             env,
