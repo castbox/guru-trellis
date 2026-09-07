@@ -430,11 +430,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-07T12:04:20Z",
+  "installed_at": "2026-09-07T12:55:41Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "f5af5effee932f9605e0b3a9867276ef5a204a92",
-    "commit": "f5af5effee932f9605e0b3a9867276ef5a204a92",
+    "ref": "531697f09a568a2bd36fd08d0e9b3145057f78a8",
+    "commit": "531697f09a568a2bd36fd08d0e9b3145057f78a8",
     "tree_state": "clean",
     "is_mutable_ref": false
   },
@@ -532,7 +532,7 @@
   },
   "skill_packages": {
     "schema_version": "1.0",
-    "status": "conflict",
+    "status": "ok",
     "canonical_registry_sha256": "79964f64f26cc5f5119399c6c845474b0cef4324cd8040216cadadacc3891e4d",
     "registry_schema_version": "1.4",
     "active_ids": [
@@ -4034,7 +4034,7 @@
         "source": "trellis/skills/guru-team/packages/guru-clarify-requirements/runtime/invoke.py",
         "sha256": "73a03e34501f8ea24578881a05f91193ac0296837e5688e4b2a3a57f8f072bd2",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/runtime/record.py",
@@ -33719,9 +33719,7 @@
     ],
     "removals": [],
     "conflicts": [],
-    "sidecars": [
-      ".trellis/guru-team/skills/packages/guru-clarify-requirements/runtime/invoke.py.bak"
-    ]
+    "sidecars": []
   },
   "overlays": {
     "schema_version": "1.0",
