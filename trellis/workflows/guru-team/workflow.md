@@ -475,6 +475,11 @@ uses guru-clarify-requirements and returns only through its mapped router.
 
 #### 1.1 Planning artifacts
 
+For delete, replace, merge, and compatibility-impacting work, invoke the
+planning owner Skill with `.trellis/spec/workflow/subtraction-first-compatibility.md`.
+The Skill owns direct-evolution, deprecated-asset, compatibility, and
+maintainability judgments; this workflow only routes its declared exit.
+
 Planning produces non-empty `prd.md`, `design.md`, and `implement.md`, plus
 one explicit Docs SSOT Plan. Before presentation, invoke the planning profile
 of guru-review-contract-wording.
@@ -544,6 +549,12 @@ return only to their declared consumers.
 
 #### 2.1 Implementation
 
+Implementation callers inherit the subtraction-first contract from the approved
+plan. Workers may execute approved-plan work only. If implementation discovers
+an out-of-plan deprecated asset, compatibility need, or owner/authority change,
+it stops before editing or adding tests and returns the existing invocation-local
+candidate shape for qualification and owner routing.
+
 Before the first edit, and again immediately before every subsequent source,
 test, or task-artifact write, validate the live boundary:
 
@@ -596,6 +607,11 @@ Only its fresh current route resumes this coordinator; stale authority returns
 
 #### 2.2 Task check
 
+`guru-check-task` owns the complete semantic review for the current worktree,
+including the subtraction-first policy and maintainability contract. The
+workflow only supplies its mandatory Architecture result and consumes the
+declared typed exit; it does not duplicate owner-level adequacy checks.
+
 Mandatory invoke
 `guru-maintain-architecture-baseline:task_impact_sync(stage=phase2)` over the
 complete worktree candidate. Execute every applicable project Architecture
@@ -633,6 +649,11 @@ enters the active-task pair guard with `resume_target=branch_review` before
 Branch Review.
 
 #### 3.5 Branch review
+
+`guru-review-branch` owns the independent complete-range semantic review for
+delete, replace, merge, and compatibility-impacting ranges, including both
+subtraction dimensions. It does not read Phase 2 evidence; the workflow only
+routes its declared result.
 
 After the task-commit pair guard resolves, mandatory invoke
 `guru-maintain-architecture-baseline:task_impact_sync(stage=branch_review)`.

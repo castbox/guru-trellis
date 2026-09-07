@@ -18,6 +18,17 @@ target 与 24 个 stop target，以及 workspace、Docs SSOT、Issue Scope Ledge
 interaction 和外部 side-effect boundary。具体 intake、planning、check、review、
 publication 与 finalization 判断由对应 active package 独占。
 
+删除、替换、合并或涉及兼容的任务还必须读取
+`.trellis/spec/workflow/subtraction-first-compatibility.md`。Planning、Phase 2
+和 Branch Review 由各自 owner 先判断直接删改/复用，再检查受影响废弃资产退出、真实
+consumer、现行支持合同和按 production/test/generated-managed/docs 分类的增长原因。
+非服务端兼容的新增、扩大或延长必须在编码、兼容测试或自修复前，于当前对话说明具体
+consumer、范围、维护责任、退出/清理与验证并获得该例外的明确批准；授权不写入 artifact、
+checkpoint、gate、schema 或 DTO。
+任务还必须控制长期复杂度：无直接 consumer 的字段、状态、重试、锁、fallback、持久化或
+仅为攻击/并行/形式幂等而增加的路径不得默认引入。任何被 task 触及且达到 3000 行的非生成
+代码文件都必须进行 AI 审查的机械式切分或小幅解耦；历史未触及的大文件不因该规则自动纳入。
+
 Guru Team extension 版本不等于官方 Trellis CLI 版本，也不等于 `trellis/index.json`
 里的 marketplace index schema version。canonical extension version 和目标官方
 Trellis CLI 版本位于 `trellis/guru-team-extension.json`；preset installer 会把当前安装版本和 source

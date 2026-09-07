@@ -1,0 +1,50 @@
+{
+  "close_issues": [
+    {
+      "number": 108,
+      "reason": "实现、Phase 2、独立 Branch Review 与 Docs SSOT promotion 完整覆盖后关闭。",
+      "title": "Guru Team：建立减法优先、废弃代码退出与兼容例外显式确认合同",
+      "url": "https://github.com/castbox/guru-trellis/issues/108"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 108,
+    "reason": "实现、Phase 2、独立 Branch Review 与 Docs SSOT promotion 完整覆盖后关闭。",
+    "title": "Guru Team：建立减法优先、废弃代码退出与兼容例外显式确认合同",
+    "url": "https://github.com/castbox/guru-trellis/issues/108"
+  },
+  "related_issues": [
+    {
+      "number": 132,
+      "reason": "复用既有 semantic owners，不改其上游所有权。",
+      "title": "现有 Phase 2 check 与 Branch Review owner 基础",
+      "url": "https://github.com/castbox/guru-trellis/issues/132"
+    },
+    {
+      "number": 263,
+      "reason": "RDT authority、traceability、历史边界和 promotion 由既有 owner 承接。",
+      "title": "RDT authority 与 subtraction/promotion 基础",
+      "url": "https://github.com/castbox/guru-trellis/issues/263"
+    },
+    {
+      "number": 264,
+      "reason": "Architecture current/change-contract 与 owner 路由由既有 owner 承接。",
+      "title": "Architecture Baseline 基础",
+      "url": "https://github.com/castbox/guru-trellis/issues/264"
+    },
+    {
+      "number": 283,
+      "reason": "before/after、compatibility exit、single-writer 与 promotion 合同来源。",
+      "title": "Architecture convergence governance",
+      "url": "https://github.com/castbox/guru-trellis/issues/283"
+    },
+    {
+      "number": 265,
+      "reason": "canonical/spec projection 与安装同步继续使用既有合同。",
+      "title": "Bootstrap/spec projection",
+      "url": "https://github.com/castbox/guru-trellis/issues/265"
+    }
+  ],
+  "schema_version": "2.0"
+}

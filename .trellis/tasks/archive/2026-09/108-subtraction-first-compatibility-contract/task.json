@@ -1,0 +1,12 @@
+{
+  "id": "108-subtraction-first-compatibility-contract",
+  "name": "108-subtraction-first-compatibility-contract",
+  "title": "Guru Team：建立减法优先、废弃代码退出与兼容例外显式确认合同",
+  "status": "completed",
+  "branch": "feat/108-subtraction-first-compatibility-contract",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/108",
+  "completedAt": "2026-09-07"
+}

@@ -32,6 +32,11 @@ Before editing workflow behavior:
 8. Read [semantic-retrieval.md](./semantic-retrieval.md) before an owner searches
    Docs, code, tests, history, duplicate candidates, or consumers and may form a
    negative existence conclusion.
+9. Read [subtraction-first-compatibility.md](./subtraction-first-compatibility.md)
+   when planning, implementing, checking, or reviewing delete/replace/merge
+   work or a proposed compatibility exception.
+   This also governs complexity restraint, long-term decoupling, and the
+   3000-line review trigger for touched non-generated code files.
 
 ## Local Architecture
 
