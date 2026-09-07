@@ -475,6 +475,15 @@ uses guru-clarify-requirements and returns only through its mapped router.
 
 #### 1.1 Planning artifacts
 
+For delete, replace, merge, and compatibility-impacting work, the planning
+owner must apply `.trellis/spec/workflow/subtraction-first-compatibility.md`.
+Choose direct deletion, modification, replacement, reuse, or synchronized
+consumer migration before adding a second path. Identify affected deprecated
+assets and their real consumers. Any non-server compatibility added, widened,
+or extended requires a concrete current-dialogue proposal and explicit approval
+before coding, compatibility tests, or self-fixing; a generic continuation or
+plan confirmation does not authorize it.
+
 Planning produces non-empty `prd.md`, `design.md`, and `implement.md`, plus
 one explicit Docs SSOT Plan. Before presentation, invoke the planning profile
 of guru-review-contract-wording.
@@ -544,6 +553,12 @@ return only to their declared consumers.
 
 #### 2.1 Implementation
 
+Implementation callers inherit the subtraction-first contract from the approved
+plan. Workers may execute approved-plan work only. If implementation discovers
+an out-of-plan deprecated asset, compatibility need, or owner/authority change,
+it stops before editing or adding tests and returns the existing invocation-local
+candidate shape for qualification and owner routing.
+
 Before the first edit, and again immediately before every subsequent source,
 test, or task-artifact write, validate the live boundary:
 
@@ -596,6 +611,20 @@ Only its fresh current route resumes this coordinator; stale authority returns
 
 #### 2.2 Task check
 
+For applicable delete, replace, or merge work, `guru-check-task` independently
+reviews `code_subtraction` and `docs_ssot_subtraction`, affected deprecated
+asset exit, compatibility support contracts, and category-specific growth
+reasons. These are semantic judgments and are not replaced by script counts or
+net-line thresholds.
+For every non-generated code file touched by the task, it also checks the
+3000-line maintainability trigger. A file at or above that threshold requires
+an AI-reviewed mechanical split or small decoupling refactor in the current
+scope; historical untouched large files are not pulled into this task. The
+owner also rejects task-local fields, state, retries, locks, persistence, or
+compatibility mechanisms that lack a named direct consumer or are justified
+only by hostile-input, concurrency-stress, unusual crash, or formal-idempotency
+concerns outside the accepted contract.
+
 Mandatory invoke
 `guru-maintain-architecture-baseline:task_impact_sync(stage=phase2)` over the
 complete worktree candidate. Execute every applicable project Architecture
@@ -633,6 +662,11 @@ enters the active-task pair guard with `resume_target=branch_review` before
 Branch Review.
 
 #### 3.5 Branch review
+
+For applicable delete, replace, merge, or compatibility-impacting ranges,
+`guru-review-branch` independently recomputes both subtraction dimensions over
+the complete committed range. It does not read Phase 2 evidence, and unsupported
+compatibility or redundant growth remains reviewable even when tests pass.
 
 After the task-commit pair guard resolves, mandatory invoke
 `guru-maintain-architecture-baseline:task_impact_sync(stage=branch_review)`.

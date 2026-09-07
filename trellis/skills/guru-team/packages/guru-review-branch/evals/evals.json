@@ -27,6 +27,21 @@
             "id": "query-count-not-gate",
             "criterion": "Review sufficiency is based on applicable concept and evidence coverage, not counts of rg, GitHub search, or trellis mem calls.",
             "evidence_selector": "transcript"
+          },
+          {
+            "id": "independent-subtraction-dimensions",
+            "criterion": "The complete committed range independently recomputes code_subtraction and docs_ssot_subtraction and does not use Phase 2 checkpoint evidence.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "deprecated-exit-and-direct-evolution",
+            "criterion": "The review verifies affected deprecated assets exit when no supported consumer remains and checks direct evolution before accepting a second path.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "growth-needs-reason",
+            "criterion": "The review explains necessary production, test, generated/managed, or documentation growth and does not accept unsupported compatibility growth through a generic safety statement.",
+            "evidence_selector": "transcript"
           }
         ]
       },

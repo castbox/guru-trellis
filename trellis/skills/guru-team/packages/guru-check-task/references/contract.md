@@ -96,6 +96,12 @@ private result or public DTO.
 4. Review requirements, design, implementation, tests, Docs SSOT, cross-layer
    behavior, Architecture before/after satisfaction, compatibility,
    deployment/operations, and verification completeness.
+   For delete, replace, and merge work, independently review the
+   `code_subtraction` and `docs_ssot_subtraction` dimensions. Apply the
+   subtraction-first policy: direct evolution first, affected deprecated assets
+   exit unless a real supported consumer remains, and non-server compatibility
+   added, widened, or extended without concrete current-dialogue approval is a
+   finding. Explain growth by asset category instead of a numeric ratio.
 5. After a finding fix, perform one current complete semantic round. Do not
    persist each worker round or require historical HEAD equality.
 

@@ -14,6 +14,23 @@ The preset installs companion assets, Guru Skill packages, and three additive
 Guru finish entries for the `guru-team` Trellis workflow into an existing
 Trellis project.
 
+The installed workflow follows the canonical subtraction-first compatibility
+contract in `.trellis/spec/workflow/subtraction-first-compatibility.md`.
+Existing semantic owners review direct deletion/modification/reuse first,
+retire affected assets without supported consumers, and independently check
+`code_subtraction` and `docs_ssot_subtraction` in Phase 2 and Branch Review.
+Non-server compatibility added, widened, or extended requires a concrete
+current-dialogue approval before coding, compatibility tests, or self-fixing;
+the approval is never persisted in package artifacts, checkpoints, gates,
+schemas, or public DTOs.
+Task execution also rejects complexity without a named direct consumer,
+including incidental fields, persistence, retries, locks, fallbacks, and
+parallel or formal-idempotency paths outside the accepted contract. Long-term
+decoupling and Architecture convergence are reviewed alongside the immediate
+task target. For future changes, a touched non-generated code file at or above
+3000 lines requires an AI-reviewed mechanical split or small decoupling refactor;
+untouched historical large files remain outside the task.
+
 It does not run `trellis init` and does not modify Trellis upstream files.
 It is idempotent: identical files are skipped, missing files are installed,
 Guru-managed companion assets are upgraded in place with `.bak` backups,
@@ -92,11 +109,12 @@ zero qualification residue. The only persistent related data is the terminal
 classification/witness directly authored into the existing schema 5.0 Phase 2,
 Branch Review, or Publication owner gate for that gate's own consumer.
 
-The preset manages the six canonical workflow specifications from
+The preset manages the canonical workflow specifications from
 `trellis/presets/guru-team/spec/workflow/` into `.trellis/spec/workflow/`:
 `workflow-contract.md`, `skill-package-contract.md`, `data-contracts.md`,
 `companion-scripts.md`, `quality-guidelines.md`,
-`requirements-design-test-ssot.md`, and `semantic-retrieval.md`. The canonical preset files are the distribution
+`requirements-design-test-ssot.md`, `semantic-retrieval.md`, and
+`subtraction-first-compatibility.md`. The canonical preset files are the distribution
 source; installed/dogfood copies are projections. Exact previously managed
 bytes upgrade with an adjacent `.bak`, unknown local edits are preserved with
 an adjacent `.new`, and either unresolved sidecar blocks activation.
