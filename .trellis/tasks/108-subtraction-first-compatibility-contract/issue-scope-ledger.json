@@ -10,7 +10,7 @@
   "followup_issues": [],
   "primary_issue": {
     "number": 108,
-    "reason": "本任务规划并实现 Issue #108 的既有 owner 合同扩展。",
+    "reason": "实现、Phase 2、独立 Branch Review 与 Docs SSOT promotion 完整覆盖后关闭。",
     "title": "Guru Team：建立减法优先、废弃代码退出与兼容例外显式确认合同",
     "url": "https://github.com/castbox/guru-trellis/issues/108"
   },
