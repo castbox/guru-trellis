@@ -53,10 +53,13 @@
 - [ ] 执行一个 clean throwaway：安装 workflow/preset，加载 planning/check/review 入口，运行一个代表性语义场景并验证新合同（当前因 installed provenance conflict 未完成）。
 - [ ] 不把一个 throwaway 结果扩张为完整多平台、workflow switch、Trellis update/upgrade 或 Release Gate；未验证边界在最终说明中列出。
 
+本轮仍未完成 clean throwaway。既有 installed provenance conflict 使安全的 preset apply 无法执行；该边界已记录为未验证，不作为通过证据。
+
 ## 8. Phase 2 收敛
 
 - [x] 运行 fresh `guru-check-task`，覆盖修复后的完整 task scope、live docs、RDT/Architecture 当前结果、过度设计/解耦/3000 行门禁和所有 applicable checks。
-- [x] 对 Branch Review 发现的 current-scope findings 完成修复，并重新运行 Architecture owner、定向验证和 Phase 2；未发生 scope/authority/architecture 扩张。
+- [x] 对 Branch Review 发现的 current-scope findings 完成修复，并重新运行 Architecture owner、定向验证和 Phase 2；未发生 scope/authority/architecture 扩张。第二轮唯一 P1 是两个被触及且超过 3000 行的非生成文件，已通过机械式切分修复：shell 运行时断言移入 `verify-throwaway-runtime-helpers.sh`，事务安装器测试移入 `test_preset_transaction_installer.py`；新旧文件均低于 3000 行。
+- [x] 因实现内容变化，前一份 Phase 2 结果已视为失效；本轮将从当前 worktree 重新形成 Architecture impact 与 Phase 2 结果。
 
 ## 9. Commit/Review 后续门禁
 
