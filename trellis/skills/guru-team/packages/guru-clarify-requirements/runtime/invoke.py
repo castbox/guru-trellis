@@ -1,5 +1,5 @@
 from __future__ import annotations
-import argparse,copy
+import argparse,copy,re
 from runtime.io import CommandError,read_json
 from runtime.schema import validate_json
 from common import digest,validate_owner
@@ -65,6 +65,32 @@ def typed_output(package_root, public, transition, owner):
         base = transition.get("base")
         if not isinstance(base, dict):
             raise CommandError("stale_identity", "transition.base", "Provide the current base transition.", 3)
+        required_base_fields = (
+            "source", "selected_base", "remote", "ordered_candidates",
+            "decision_head", "local_base_head", "remote_base_head",
+            "post_sync_resolution_sha256",
+        )
+        if any(field not in base for field in required_base_fields):
+            raise CommandError("stale_identity", "transition.base", "Provide the current base transition.", 3)
+        if (
+            base["source"] not in {"explicit", "config", "config-candidate", "remote-default"}
+            or not isinstance(base["selected_base"], str) or not base["selected_base"]
+            or not isinstance(base["remote"], str) or not base["remote"]
+            or not isinstance(base["ordered_candidates"], list)
+            or not base["ordered_candidates"]
+            or any(not isinstance(candidate, str) or not candidate for candidate in base["ordered_candidates"])
+            or len(set(base["ordered_candidates"])) != len(base["ordered_candidates"])
+            or any(
+                not isinstance(base[field], str)
+                or not re.fullmatch(r"[0-9a-f]{40}", base[field])
+                for field in ("decision_head", "local_base_head", "remote_base_head")
+            )
+            or not isinstance(base["post_sync_resolution_sha256"], str)
+            or not re.fullmatch(r"[0-9a-f]{64}", base["post_sync_resolution_sha256"])
+        ):
+            raise CommandError("stale_identity", "transition.base", "Provide the current base transition.", 3)
+        if not isinstance(transition.get("repo_locator"), str) or not transition["repo_locator"]:
+            raise CommandError("stale_identity", "transition.repo_locator", "Provide the current repository transition.", 3)
         base_transition = {
             "schema_version": "1.0",
             "transition_id": f"base_current:{base['post_sync_resolution_sha256'][:24]}",

@@ -393,6 +393,61 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertNotEqual(rejected.returncode, 0)
         self.assertIn("schema_mismatch", rejected.stdout)
 
+    def test_needs_context_rejects_missing_or_malformed_base_as_json_command_error(self) -> None:
+        owner = json.loads((self.package / "examples/requirements-clarification.json").read_text())
+        owner["typed_exit"] = "needs_context"
+        owner["consumer"] = {"kind": "skill", "id": "guru-discover-change-context"}
+        owner["context_evidence"] = {"status": "missing", "evidence_refs": ["current-session:missing"], "missing_reason": "Base context is unavailable."}
+        owner["target_disposition"] = None
+        public_input = {
+            "profile": "standalone_review",
+            "source_exit": "start",
+            "mode": "standalone",
+            "target_locator": "#145",
+            "continuation_id": "stage0-current",
+        }
+        base = {
+            "source": "explicit",
+            "selected_base": "main",
+            "remote": "origin",
+            "ordered_candidates": ["main"],
+            "decision_head": "1" * 40,
+            "local_base_head": "1" * 40,
+            "remote_base_head": "1" * 40,
+            "post_sync_resolution_sha256": "1" * 64,
+        }
+
+        def invoke(value: dict) -> subprocess.CompletedProcess[str]:
+            return subprocess.run(
+                [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+                input=json.dumps(value), text=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+
+        for label, malformed_base in (
+            ("missing_required_field", {key: value for key, value in base.items() if key != "selected_base"}),
+            ("wrong_required_field_type", {**base, "post_sync_resolution_sha256": 7}),
+        ):
+            with self.subTest(label=label):
+                invocation = {
+                    "schema_version": "1.0",
+                    "public_input": public_input,
+                    "transition": {
+                        "stage": "context_current",
+                        "mode": "standalone",
+                        "repo_locator": ".",
+                        "base": malformed_base,
+                    },
+                    "owner_context": {},
+                    "owner_result": owner,
+                }
+                rejected = invoke(invocation)
+                self.assertNotEqual(rejected.returncode, 0)
+                error = json.loads(rejected.stdout)
+                self.assertEqual(error["code"], "stale_identity")
+                self.assertEqual(error["field_path"], "transition.base")
+                self.assertNotIn("Traceback", rejected.stdout + rejected.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
