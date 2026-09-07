@@ -159,6 +159,10 @@ MANAGED_SPEC_PATHS = (
         Path(".trellis/spec/workflow/semantic-retrieval.md"),
     ),
     (
+        Path("trellis/presets/guru-team/spec/workflow/subtraction-first-compatibility.md"),
+        Path(".trellis/spec/workflow/subtraction-first-compatibility.md"),
+    ),
+    (
         Path("trellis/presets/guru-team/spec/workflow/workflow-contract.md"),
         Path(".trellis/spec/workflow/workflow-contract.md"),
     ),

@@ -1582,6 +1582,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 ".trellis/spec/workflow/quality-guidelines.md",
                 ".trellis/spec/workflow/requirements-design-test-ssot.md",
                 ".trellis/spec/workflow/semantic-retrieval.md",
+                ".trellis/spec/workflow/subtraction-first-compatibility.md",
                 ".trellis/spec/workflow/skill-package-contract.md",
                 ".trellis/spec/workflow/workflow-contract.md",
             },
@@ -2324,6 +2325,14 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         semantic.parent.mkdir(parents=True)
         semantic.write_bytes(semantic_source.read_bytes())
 
+        subtraction_source = (
+            fixture
+            / "trellis/presets/guru-team/spec/workflow/subtraction-first-compatibility.md"
+        )
+        subtraction_source.write_text("subtraction first\n", encoding="utf-8")
+        subtraction = fixture / ".trellis/spec/workflow/subtraction-first-compatibility.md"
+        subtraction.write_bytes(subtraction_source.read_bytes())
+
         matched = subprocess.run(
             [str(checker_path), "--repo", str(fixture)],
             check=False,
@@ -2362,6 +2371,20 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("Guru preset-owned overlay/spec copies", preset_drifted.stderr)
         self.assertIn("scripts/bash/apply.sh", preset_drifted.stderr)
         self.assertNotIn("official Trellis workflow marketplace", preset_drifted.stderr)
+
+        semantic.write_bytes(semantic_source.read_bytes())
+        subtraction.write_text("stale subtraction first\n", encoding="utf-8")
+        second_preset_drifted = subprocess.run(
+            [str(checker_path), "--repo", str(fixture)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(second_preset_drifted.returncode, 1)
+        self.assertIn(
+            "CHANGED .trellis/spec/workflow/subtraction-first-compatibility.md",
+            second_preset_drifted.stdout,
+        )
 
     def test_main_reports_explicit_all_platforms_only_for_all_platforms_flag(self) -> None:
         with mock.patch(

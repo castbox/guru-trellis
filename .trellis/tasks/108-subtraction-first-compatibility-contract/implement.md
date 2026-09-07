@@ -31,7 +31,7 @@
 
 - [x] 在 `guru-check-task` 中加入九维检查所需的 direct evolution、deprecated exit、compatibility support contract、deletion-growth review。
 - [x] 独立形成 `code_subtraction` 与 `docs_ssot_subtraction` 结论；按 production/test/generated-managed/docs 分类解释增长，不设机械比例门槛。
-- [ ] 在 `guru-review-branch` 中从完整 committed range 独立重算同一合同；不读取、恢复或复用 Phase 2 checkpoint。
+- [ ] 在 `guru-review-branch` 中从完整 committed range 独立重算同一合同；不读取、恢复或复用 Phase 2 checkpoint（前一轮发现 preset 投影与 workflow SSOT 问题，已修复，待修复提交后重审）。
 - [ ] 保持 RDT subtraction/promotion、Architecture before/after、GAP、ADR、single-writer 与 existing typed routes 归原 owner；适用失败或 blocking unverified 不得 aggregate pass。
 
 ## 5. 测试与评估
@@ -44,7 +44,7 @@
 ## 6. Canonical、安装与投影
 
 - [x] 对 canonical package、preset、workflow、README、schema、commands、overlay 做 source checks。
-- [x] 运行并核对 source/package、managed hash、接口/exit identity 与 equality/drift；preset apply 因现有 installed provenance conflict 未能安全同步，受影响副作用已恢复，不能据此声称 installed projection 通过。
+- [x] 运行并核对 source/package、managed hash、接口/exit identity 与 equality/drift；新 workflow spec 已补入 preset managed inventory、throwaway inventory 和通用 drift checker。preset apply 因现有 installed provenance conflict 未能安全同步，受影响副作用已恢复，不能据此声称 installed projection 通过。
 - [x] overlay 未变化；已运行 `check-dogfood-overlay-drift.sh` 并通过，无 `.new/.bak` 遗留。
 
 ## 7. 代表性环境验证
@@ -55,8 +55,8 @@
 
 ## 8. Phase 2 收敛
 
-- [x] 运行 fresh `guru-check-task`，覆盖完整 task scope、live docs、RDT/Architecture 当前结果、过度设计/解耦/3000 行门禁和所有 applicable checks。
-- [ ] 若发现 current-scope finding，按既有 implementation_required 修复并完整重跑；若发现 scope/authority/architecture 变化，回到对应 owner，不把未知改写成兼容或 future cleanup。
+- [x] 运行 fresh `guru-check-task`，覆盖修复后的完整 task scope、live docs、RDT/Architecture 当前结果、过度设计/解耦/3000 行门禁和所有 applicable checks。
+- [x] 对 Branch Review 发现的 current-scope findings 完成修复，并重新运行 Architecture owner、定向验证和 Phase 2；未发生 scope/authority/architecture 扩张。
 
 ## 9. Commit/Review 后续门禁
 

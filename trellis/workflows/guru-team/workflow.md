@@ -475,14 +475,10 @@ uses guru-clarify-requirements and returns only through its mapped router.
 
 #### 1.1 Planning artifacts
 
-For delete, replace, merge, and compatibility-impacting work, the planning
-owner must apply `.trellis/spec/workflow/subtraction-first-compatibility.md`.
-Choose direct deletion, modification, replacement, reuse, or synchronized
-consumer migration before adding a second path. Identify affected deprecated
-assets and their real consumers. Any non-server compatibility added, widened,
-or extended requires a concrete current-dialogue proposal and explicit approval
-before coding, compatibility tests, or self-fixing; a generic continuation or
-plan confirmation does not authorize it.
+For delete, replace, merge, and compatibility-impacting work, invoke the
+planning owner Skill with `.trellis/spec/workflow/subtraction-first-compatibility.md`.
+The Skill owns direct-evolution, deprecated-asset, compatibility, and
+maintainability judgments; this workflow only routes its declared exit.
 
 Planning produces non-empty `prd.md`, `design.md`, and `implement.md`, plus
 one explicit Docs SSOT Plan. Before presentation, invoke the planning profile
@@ -611,19 +607,10 @@ Only its fresh current route resumes this coordinator; stale authority returns
 
 #### 2.2 Task check
 
-For applicable delete, replace, or merge work, `guru-check-task` independently
-reviews `code_subtraction` and `docs_ssot_subtraction`, affected deprecated
-asset exit, compatibility support contracts, and category-specific growth
-reasons. These are semantic judgments and are not replaced by script counts or
-net-line thresholds.
-For every non-generated code file touched by the task, it also checks the
-3000-line maintainability trigger. A file at or above that threshold requires
-an AI-reviewed mechanical split or small decoupling refactor in the current
-scope; historical untouched large files are not pulled into this task. The
-owner also rejects task-local fields, state, retries, locks, persistence, or
-compatibility mechanisms that lack a named direct consumer or are justified
-only by hostile-input, concurrency-stress, unusual crash, or formal-idempotency
-concerns outside the accepted contract.
+`guru-check-task` owns the complete semantic review for the current worktree,
+including the subtraction-first policy and maintainability contract. The
+workflow only supplies its mandatory Architecture result and consumes the
+declared typed exit; it does not duplicate owner-level adequacy checks.
 
 Mandatory invoke
 `guru-maintain-architecture-baseline:task_impact_sync(stage=phase2)` over the
@@ -663,10 +650,10 @@ Branch Review.
 
 #### 3.5 Branch review
 
-For applicable delete, replace, merge, or compatibility-impacting ranges,
-`guru-review-branch` independently recomputes both subtraction dimensions over
-the complete committed range. It does not read Phase 2 evidence, and unsupported
-compatibility or redundant growth remains reviewable even when tests pass.
+`guru-review-branch` owns the independent complete-range semantic review for
+delete, replace, merge, and compatibility-impacting ranges, including both
+subtraction dimensions. It does not read Phase 2 evidence; the workflow only
+routes its declared result.
 
 After the task-commit pair guard resolves, mandatory invoke
 `guru-maintain-architecture-baseline:task_impact_sync(stage=branch_review)`.

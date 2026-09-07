@@ -1324,13 +1324,14 @@ assert extension["extension_id"] == "guru-team"
 assert extension["version"] == "0.6.15-guru.40"
 assert extension["target_trellis_cli"] == "0.6.15"
 assert assets == sorted(set(assets))
-assert len(assets) == 69
+assert len(assets) == 70
 managed_specs = {
     ".trellis/spec/workflow/companion-scripts.md",
     ".trellis/spec/workflow/data-contracts.md",
     ".trellis/spec/workflow/quality-guidelines.md",
     ".trellis/spec/workflow/requirements-design-test-ssot.md",
     ".trellis/spec/workflow/semantic-retrieval.md",
+    ".trellis/spec/workflow/subtraction-first-compatibility.md",
     ".trellis/spec/workflow/skill-package-contract.md",
     ".trellis/spec/workflow/workflow-contract.md",
 }

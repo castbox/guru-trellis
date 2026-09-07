@@ -11,8 +11,8 @@ Usage: check-dogfood-overlay-drift.sh [--repo <path>]
 
 Validate the current Guru-owned claims and managed asset/package closure, then
 compare the canonical Guru Team workflow and finish overlays with installed
-dogfood copies in this repository, and verify the managed semantic retrieval
-spec exists. These checks provide normal version/drift binding, not an
+dogfood copies in this repository, and verify managed workflow specs exist and
+match. These checks provide normal version/drift binding, not an
 authenticity boundary. The command is read-only and exits non-zero on ownership
 failure or when any managed copy is missing or different.
 USAGE
@@ -89,17 +89,20 @@ while IFS= read -r source; do
   fi
 done < <(find "$OVERLAY_ROOT" -type f ! -path '*/__pycache__/*' ! -name '*.pyc' | sort)
 
-semantic_spec_source="$REPO_ROOT/trellis/presets/guru-team/spec/workflow/semantic-retrieval.md"
-semantic_spec="$REPO_ROOT/.trellis/spec/workflow/semantic-retrieval.md"
-if [[ ! -f "$semantic_spec_source" || ! -f "$semantic_spec" ]]; then
-  printf 'MISSING %s\n' ".trellis/spec/workflow/semantic-retrieval.md"
-  missing=$((missing + 1))
-  preset_drift=1
-elif ! cmp -s "$semantic_spec_source" "$semantic_spec"; then
-  printf 'CHANGED %s\n' ".trellis/spec/workflow/semantic-retrieval.md"
-  changed=$((changed + 1))
-  preset_drift=1
-fi
+while IFS= read -r semantic_spec_source; do
+  relative="${semantic_spec_source#$REPO_ROOT/trellis/presets/guru-team/}"
+  display_relative=".trellis/$relative"
+  semantic_spec="$REPO_ROOT/.trellis/$relative"
+  if [[ ! -f "$semantic_spec_source" || ! -f "$semantic_spec" ]]; then
+    printf 'MISSING %s\n' "$display_relative"
+    missing=$((missing + 1))
+    preset_drift=1
+  elif ! cmp -s "$semantic_spec_source" "$semantic_spec"; then
+    printf 'CHANGED %s\n' "$display_relative"
+    changed=$((changed + 1))
+    preset_drift=1
+  fi
+done < <(find "$REPO_ROOT/trellis/presets/guru-team/spec/workflow" -maxdepth 1 -type f -name '*.md' | sort)
 
 if [[ "$missing" -gt 0 || "$changed" -gt 0 ]]; then
   printf 'Dogfood workflow/overlay drift detected: %s missing, %s changed\n' "$missing" "$changed" >&2
