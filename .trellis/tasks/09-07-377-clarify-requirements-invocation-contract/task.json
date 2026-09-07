@@ -1,0 +1,11 @@
+{
+  "id": "09-07-377-clarify-requirements-invocation-contract",
+  "name": "09-07-377-clarify-requirements-invocation-contract",
+  "title": "#377 对齐 guru-clarify-requirements 公开 invocation schema 与 typed_output 合同",
+  "status": "in_progress",
+  "branch": "fix/377-clarify-requirements-invocation-contract",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/377"
+}

@@ -90,11 +90,7 @@ def typed_output(package_root, public, transition, owner):
             "handoff_route": "repo_change",
         }
         base = (transition or {}).get("base")
-        if (
-            isinstance(base, dict)
-            and base.get("selected_base")
-            and base.get("source") == "explicit"
-        ):
+        if isinstance(base, dict) and base.get("selected_base"):
             output["handoff_base_branch"] = base["selected_base"]
     elif exit_id == "new_task":
         output = {

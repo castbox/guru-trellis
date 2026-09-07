@@ -67,6 +67,8 @@ or missing current runtime. This package is not self-contained or portable.
 After the semantic gate and owner recorder/checker complete, invoke
 `scripts/invoke.sh --invocation -` with the closed call-local public input,
 `context_current` transition, and checked owner result on stdin to serialize
-the minimal handoff. The runtime reruns the existing checker and
-derives the route from its checked `typed_exit`; callers cannot select the
-route. Private clarification evidence is not a public input or output template.
+the minimal handoff. The runtime validates the envelope's mode, target, and
+transition bindings, reruns the existing checker, and derives the route and
+output from the checked `typed_exit` and declared transition. Callers cannot
+select the route or provide a separate `typed_output` field. Private
+clarification evidence is not a public input or output template.

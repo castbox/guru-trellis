@@ -264,7 +264,9 @@ The public profiles are `initial_change_request`, `active_task_scope_change`,
 `standalone_review`, and `normal_scenario_scope_confirmation`. After the owner loop,
 `scripts/invoke.sh --invocation -` validates the closed call-local public input,
 `context_current` transition, and current owner result, reruns the existing
-checker, derives the Agent-owned typed route from its checked result, and
-serializes only the declared continuation; clarification evidence remains
-private and is never imported by the next Skill. Locator arguments remain only
-for explicitly documented compatibility consumers and are not the normal route.
+checker, validates mode/target/continuation freshness, derives the Agent-owned
+typed route and minimal output from the checked result, and serializes only the
+declared continuation; clarification evidence remains private and is never
+imported by the next Skill. The envelope has no top-level `typed_output` input:
+callers cannot provide or select the route. Locator arguments remain only for
+explicitly documented compatibility consumers and are not the normal route.

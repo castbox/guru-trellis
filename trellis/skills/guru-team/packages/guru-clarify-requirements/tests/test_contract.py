@@ -323,16 +323,75 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertNotIn("Traceback", invalid.stdout + invalid.stderr)
 
     def test_public_invoke_validates_checked_semantic_owner_output(self) -> None:
+        from jsonschema import Draft202012Validator
+
         owner = json.loads((self.package / "examples/requirements-clarification.json").read_text())
         typed = json.loads((self.package / "examples/public-clear-output-2.0.json").read_text())
-        invocation = {"owner_result": owner, "typed_output": typed}
+        transition = copy.deepcopy(typed["transition"])
+        transition["stage"] = "context_current"
+        transition["transition_id"] = "context_current:222222222222222222222222"
+        transition["mode"] = "standalone"
+        transition["target_locator"] = "#145"
+        for field in ("clarity_result_sha256", "target_content_sha256", "clarity", "target_disposition"):
+            transition.pop(field, None)
+        public_input = {
+            "profile": "standalone_review",
+            "source_exit": "start",
+            "mode": "standalone",
+            "target_locator": "#145",
+            "continuation_id": "stage0-current",
+        }
+        invocation = {
+            "schema_version": "1.0",
+            "public_input": public_input,
+            "transition": transition,
+            "owner_context": {},
+            "owner_result": owner,
+        }
+        schema = json.loads(
+            (self.package.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner.schema.json").read_text()
+        )
+        self.assertEqual(list(Draft202012Validator(schema).iter_errors(invocation)), [])
         result = subprocess.run(
             [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
             input=json.dumps(invocation), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
         )
         self.assertEqual(result.returncode, 0, result)
-        self.assertEqual(json.loads(result.stdout), typed)
+        output = json.loads(result.stdout)
+        self.assertEqual(output["exit_id"], "clear")
+        self.assertEqual(output["resume_target"], owner["invocation_context"]["resume_target"])
+        self.assertEqual(output["continuation_id"], public_input["continuation_id"])
+        self.assertEqual(output["transition"]["stage"], "clarity_current")
+        self.assertEqual(output["transition"]["clarity_result_sha256"], owner["content_identity"]["result_sha256"])
+        self.assertNotIn("typed_output", output)
         self.assertNotIn("Traceback", result.stdout + result.stderr)
+
+        extra = copy.deepcopy(invocation)
+        extra["typed_output"] = typed
+        rejected = subprocess.run(
+            [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+            input=json.dumps(extra), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertNotEqual(rejected.returncode, 0)
+        self.assertIn("schema_mismatch", rejected.stdout)
+
+        stale = copy.deepcopy(invocation)
+        stale["public_input"]["target_locator"] = "#999"
+        rejected = subprocess.run(
+            [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+            input=json.dumps(stale), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertNotEqual(rejected.returncode, 0)
+        self.assertIn("stale_identity", rejected.stdout)
+
+        missing = copy.deepcopy(invocation)
+        del missing["owner_context"]
+        rejected = subprocess.run(
+            [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+            input=json.dumps(missing), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertNotEqual(rejected.returncode, 0)
+        self.assertIn("schema_mismatch", rejected.stdout)
 
 
 if __name__ == "__main__":

@@ -3,11 +3,130 @@ import argparse,copy
 from runtime.io import CommandError,read_json
 from runtime.schema import validate_json
 from common import digest,validate_owner
+
+OUTPUT_SCHEMAS = {
+    "clear": "public-clear-output-2.0.schema.json",
+    "needs_context": "public-needs-context-output.schema.json",
+    "refresh_context": "public-refresh-context-output.schema.json",
+    "retarget_context": "public-retarget-context-output.schema.json",
+    "new_task": "public-new-task-output.schema.json",
+    "blocked": "public-blocked-output.schema.json",
+}
+
+
+def typed_output(package_root, public, transition, owner):
+    exit_id = owner["typed_exit"]
+    if exit_id == "blocked":
+        output = {"exit_id": "blocked"}
+    elif exit_id == "clear":
+        identity = owner["content_identity"]
+        disposition = owner["target_disposition"]
+        disposition_names = {
+            "keep_current_open_issue": "retained",
+            "keep_current_draft": "retained",
+            "retarget_existing_issue": "selected",
+            "reopen_closed_issue": "reopened",
+            "create_followup_draft": "retained",
+            "block_target_complete": "complete",
+        }
+        if not isinstance(transition, dict) or transition.get("stage") != "context_current":
+            raise CommandError("stale_identity", "transition", "Provide the current context transition.", 3)
+        if not isinstance(disposition, dict) or disposition.get("disposition") not in disposition_names:
+            raise CommandError("semantic_result_invalid", "owner_result.target_disposition", "Use the checked target disposition.", 3)
+        current = dict(transition)
+        current.pop("authority_content_sha256", None)
+        current.update({
+            "stage": "clarity_current",
+            "transition_id": f"clarity_current:{identity['result_sha256'][:24]}",
+            "clarity_result_sha256": identity["result_sha256"],
+            "target_content_sha256": identity["content_sha256"],
+            "clarity": {
+                "facts_sha256": identity["result_sha256"],
+                "target_sha256": identity["target_sha256"],
+                "disposition_sha256": identity["disposition_sha256"],
+                "content_sha256": identity["content_sha256"],
+                "scope_sha256": identity["scope_sha256"],
+            },
+            "target_disposition": {
+                "disposition_sha256": disposition.get("disposition_digest"),
+                "duplicate_facts_sha256": disposition.get("duplicate_facts_sha256"),
+            },
+        })
+        output = {
+            "exit_id": "clear",
+            "resume_target": owner["invocation_context"]["resume_target"],
+            "target_disposition": disposition_names[disposition["disposition"]],
+            "continuation_id": public["continuation_id"],
+            "transition": current,
+        }
+    elif exit_id == "needs_context":
+        if not isinstance(transition, dict) or transition.get("stage") != "context_current":
+            raise CommandError("stale_identity", "transition", "Provide the current context transition.", 3)
+        base = transition.get("base")
+        if not isinstance(base, dict):
+            raise CommandError("stale_identity", "transition.base", "Provide the current base transition.", 3)
+        base_transition = {
+            "schema_version": "1.0",
+            "transition_id": f"base_current:{base['post_sync_resolution_sha256'][:24]}",
+            "stage": "base_current",
+            "mode": transition["mode"],
+            "repo_locator": transition["repo_locator"],
+            "base": base,
+        }
+        output = {
+            "exit_id": "needs_context",
+            "handoff_profile": "pre_task",
+            "handoff_mode": public["mode"],
+            "handoff_repo_locator": transition.get("repo_locator") or ".",
+            "handoff_base_branch": base["selected_base"],
+            "handoff_continuation_id": public["continuation_id"],
+            "transition": base_transition,
+        }
+    elif exit_id in {"refresh_context", "retarget_context"}:
+        output = {
+            "exit_id": exit_id,
+            "handoff_mode": public["mode"],
+            "handoff_repo_root": (transition or {}).get("repo_locator") or ".",
+            "handoff_route": "repo_change",
+        }
+        base = (transition or {}).get("base")
+        if (
+            isinstance(base, dict)
+            and base.get("selected_base")
+            and base.get("source") == "explicit"
+        ):
+            output["handoff_base_branch"] = base["selected_base"]
+    elif exit_id == "new_task":
+        output = {
+            "exit_id": "new_task",
+            "target_locator": public["target_locator"],
+            "continuation_id": public["continuation_id"],
+        }
+    else:
+        raise CommandError("schema_mismatch", "typed_exit", "Return one declared typed exit.", 3)
+    validate_json(output, package_root / "schemas" / OUTPUT_SCHEMAS[exit_id], "stdout")
+    return output
+
+
 def run(package_root,command,argv):
     p=argparse.ArgumentParser(add_help=False);p.add_argument("--json",action="store_true");p.add_argument("--invocation",required=True)
     try:a=p.parse_args(argv)
     except SystemExit as exc: raise CommandError("invalid_arguments","arguments","Use --invocation with one JSON object.") from exc
-    envelope=read_json(a.invocation,"invocation"); public=envelope.get("public_input",{}); owner=validate_owner(package_root,envelope.get("owner_result",{})); exit_id=owner["typed_exit"]
+    envelope=read_json(a.invocation,"invocation")
+    validate_json(envelope, package_root.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner.schema.json", "invocation")
+    public=envelope["public_input"]
+    owner=validate_owner(package_root,envelope["owner_result"])
+    transition=envelope.get("transition")
+    exit_id=owner["typed_exit"]
+    if public.get("mode") != owner.get("mode"):
+        raise CommandError("stale_identity", "mode", "Match the public input to the checked owner result.", 3)
+    if isinstance(transition, dict):
+        if transition.get("mode") != public.get("mode"):
+            raise CommandError("stale_identity", "transition.mode", "Match the transition to the public input.", 3)
+        if transition.get("continuation_id") and transition.get("continuation_id") != public.get("continuation_id"):
+            raise CommandError("stale_identity", "continuation_id", "Refresh the current transition before invoking the Skill.", 3)
+        if transition.get("target_locator") and public.get("target_locator") and transition["target_locator"] != public["target_locator"]:
+            raise CommandError("stale_identity", "target_locator", "Refresh the current target transition before invoking the Skill.", 3)
     if public.get("profile")=="initial_change_request" and public.get("source_exit")=="context_ready":
         snapshot=public.get("duplicate_snapshot"); disposition=owner.get("target_disposition")
         if not isinstance(snapshot,dict) or not isinstance(disposition,dict): raise CommandError("stale_identity","public_input.duplicate_snapshot","Refresh context and reuse its checked duplicate snapshot.",3)
@@ -15,7 +134,4 @@ def run(package_root,command,argv):
         expected=[{**item,"identity":f"#{item['number']}","state":"open","decision":next((row.get("decision") for row in disposition.get("duplicate_candidates",[]) if row.get("repo")==item["repo"] and row.get("number")==item["number"]),None),"reason":next((row.get("reason") for row in disposition.get("duplicate_candidates",[]) if row.get("repo")==item["repo"] and row.get("number")==item["number"]),None)} for item in snapshot["candidates"]]
         if snapshot.get("facts_sha256")!=digest(unsigned) or snapshot.get("target_locator")!=public.get("target_locator") or snapshot.get("authority_content_sha256")!=envelope.get("transition",{}).get("authority_content_sha256") or disposition.get("duplicate_query")!=snapshot.get("query") or disposition.get("duplicate_checked_at")!=snapshot.get("checked_at") or disposition.get("duplicate_candidates")!=expected or disposition.get("duplicate_facts_sha256")!=snapshot.get("facts_sha256"):
             raise CommandError("stale_identity","public_input.duplicate_snapshot","Refresh context before deciding duplicate disposition.",3)
-    output=copy.deepcopy(envelope.get("typed_output"))
-    if not isinstance(output,dict) or output.get("exit_id")!=exit_id: raise CommandError("semantic_result_invalid","invocation.typed_output","Provide the AI-reviewed typed output for the checked owner result.",3)
-    validate_json(output,next(package_root.glob(f"schemas/public-{exit_id.replace('_','-')}-output*.schema.json")),"typed_output")
-    return output
+    return typed_output(package_root, public, transition, owner)
