@@ -45,6 +45,31 @@
             "id": "exact-symbol-preserved",
             "criterion": "Exact symbol reviewed_content_sha256 is searched unchanged and is not translated or paraphrased for exact lookup.",
             "evidence_selector": "transcript"
+          },
+          {
+            "id": "independent-subtraction-dimensions",
+            "criterion": "The Phase 2 review independently concludes code_subtraction and docs_ssot_subtraction applicability, scope, and result instead of deriving one from the other.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "deprecated-assets-and-growth",
+            "criterion": "The review checks affected deprecated assets and explains production, test, generated/managed, and documentation growth without using a fixed net-line threshold.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "unsupported-compatibility-finding",
+            "criterion": "The review treats unsupported compatibility or redundant state as a current finding rather than future cleanup when no concrete support contract exists.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "complexity-restraint",
+            "criterion": "The review rejects fields, persistence, retries, locks, fallbacks, or formal-idempotency mechanisms without a named direct consumer, while preserving the existing normal stale, mismatch, permission, and side-effect contracts.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "touched-file-size-trigger",
+            "criterion": "The review applies the 3000-line trigger to touched non-generated code files and requires mechanical splitting or small decoupling, without importing untouched historical large files into scope.",
+            "evidence_selector": "transcript"
           }
         ]
       },

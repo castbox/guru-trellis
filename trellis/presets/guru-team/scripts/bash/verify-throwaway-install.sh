@@ -2086,22 +2086,18 @@ write_discovery_inputs \
 
 DISCOVERY_STATUS_BEFORE="$(git -C "$TARGET" status --porcelain=v1)"
 DISCOVERY_PRETASK_JSON="$(
+  build_discovery_invocation "$DISCOVERY_STANDALONE_PUBLIC" "$DISCOVERY_STANDALONE_TRANSITION" "$(<"$DISCOVERY_INPUT")" | \
   DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_RECORD" \
     --root "$TARGET" \
     --json \
-    --mode standalone \
-    --input "$DISCOVERY_INPUT" \
-    --public-input "$DISCOVERY_STANDALONE_PUBLIC" \
-    --transition "$DISCOVERY_STANDALONE_TRANSITION"
+    --invocation -
 )"
 DISCOVERY_ZERO_PRETASK_JSON="$(
+  build_discovery_invocation "$DISCOVERY_ZERO_PUBLIC" "$DISCOVERY_ZERO_TRANSITION" "$(<"$DISCOVERY_ZERO_INPUT")" | \
   DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_RECORD" \
     --root "$TARGET" \
     --json \
-    --mode standalone \
-    --input "$DISCOVERY_ZERO_INPUT" \
-    --public-input "$DISCOVERY_ZERO_PUBLIC" \
-    --transition "$DISCOVERY_ZERO_TRANSITION"
+    --invocation -
 )"
 DISCOVERY_STATUS_AFTER="$(git -C "$TARGET" status --porcelain=v1)"
 if [[ "$DISCOVERY_STATUS_AFTER" != "$DISCOVERY_STATUS_BEFORE" ]]; then
@@ -2117,25 +2113,21 @@ DISCOVERY_ZERO_RESULT_SHA256="$(
     <<<"$DISCOVERY_ZERO_PRETASK_JSON"
 )"
 DISCOVERY_CHECK_JSON="$(
-  printf '%s' "$DISCOVERY_PRETASK_JSON" | \
+  build_discovery_invocation "$DISCOVERY_STANDALONE_PUBLIC" "$DISCOVERY_STANDALONE_TRANSITION" "$DISCOVERY_PRETASK_JSON" | \
     DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
     "$DISCOVERY_CHECK" \
       --root "$TARGET" \
       --json \
-      --input - \
-      --public-input "$DISCOVERY_STANDALONE_PUBLIC" \
-      --transition "$DISCOVERY_STANDALONE_TRANSITION" \
+      --invocation - \
       --expected-result-sha256 "$DISCOVERY_RESULT_SHA256"
 )"
 DISCOVERY_ZERO_CHECK_JSON="$(
-  printf '%s' "$DISCOVERY_ZERO_PRETASK_JSON" | \
+  build_discovery_invocation "$DISCOVERY_ZERO_PUBLIC" "$DISCOVERY_ZERO_TRANSITION" "$DISCOVERY_ZERO_PRETASK_JSON" | \
     DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
     "$DISCOVERY_CHECK" \
       --root "$TARGET" \
       --json \
-      --input - \
-      --public-input "$DISCOVERY_ZERO_PUBLIC" \
-      --transition "$DISCOVERY_ZERO_TRANSITION" \
+      --invocation - \
       --expected-result-sha256 "$DISCOVERY_ZERO_RESULT_SHA256"
 )"
 installed_python "$TARGET" -c 'import json, sys; checked=json.loads(sys.argv[1]); zero=json.load(sys.stdin); assert checked["status"] == zero["status"] == "passed"; assert checked["typed_exit"] == zero["typed_exit"] == "context_ready"; assert checked["result_sha256"] == sys.argv[2]; assert zero["result_sha256"] == sys.argv[3]' \
@@ -2174,27 +2166,23 @@ git -C "$DISCOVERY_TASK_ROOT" add "$DISCOVERY_RECOVERY_TASK_REL/task.json"
 git -C "$DISCOVERY_TASK_ROOT" commit -q -m "chore: add throwaway active recovery task"
 DISCOVERY_RECOVERY_CONTINUATION="throwaway-active-recovery"
 DISCOVERY_ACTIVE_JSON="$(
+  build_discovery_invocation "$DISCOVERY_WORKFLOW_PUBLIC" "$DISCOVERY_WORKFLOW_TRANSITION" "$(<"$DISCOVERY_RECOVERY_INPUT")" | \
   DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_RECORD" \
     --root "$DISCOVERY_TASK_ROOT" \
     --json \
-    --mode workflow \
-    --input "$DISCOVERY_RECOVERY_INPUT" \
-    --public-input "$DISCOVERY_WORKFLOW_PUBLIC" \
-    --transition "$DISCOVERY_WORKFLOW_TRANSITION" \
+    --invocation - \
     --active-task "$DISCOVERY_RECOVERY_TASK_REL"
 )"
 DISCOVERY_ACTIVE_SHA256="$(
   installed_python "$TARGET" -c 'import json, sys; print(json.load(sys.stdin)["result_identity"]["result_sha256"])' \
     <<<"$DISCOVERY_ACTIVE_JSON"
 )"
-printf '%s' "$DISCOVERY_ACTIVE_JSON" | \
+build_discovery_invocation "$DISCOVERY_WORKFLOW_PUBLIC" "$DISCOVERY_WORKFLOW_TRANSITION" "$DISCOVERY_ACTIVE_JSON" | \
   DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
   "$DISCOVERY_CHECK" \
     --root "$DISCOVERY_TASK_ROOT" \
     --json \
-    --input - \
-    --public-input "$DISCOVERY_WORKFLOW_PUBLIC" \
-    --transition "$DISCOVERY_WORKFLOW_TRANSITION" \
+    --invocation - \
     --expected-result-sha256 "$DISCOVERY_ACTIVE_SHA256" \
     --active-task "$DISCOVERY_RECOVERY_TASK_REL" >/dev/null
 DISCOVERY_ACTIVE_PUBLIC_JSON="$(
@@ -2219,13 +2207,11 @@ fi
 DISCOVERY_ACTIVE_EDIT="$DISCOVERY_TASK_ROOT/active-task-context-edit.txt"
 printf '%s\n' 'ordinary active task worktree edit' >"$DISCOVERY_ACTIVE_EDIT"
 DISCOVERY_RECOVERY_JSON="$(
+  build_discovery_invocation "$DISCOVERY_WORKFLOW_PUBLIC" "$DISCOVERY_WORKFLOW_TRANSITION" "$(<"$DISCOVERY_RECOVERY_INPUT")" | \
   DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_RECORD" \
     --root "$DISCOVERY_TASK_ROOT" \
     --json \
-    --mode workflow \
-    --input "$DISCOVERY_RECOVERY_INPUT" \
-    --public-input "$DISCOVERY_WORKFLOW_PUBLIC" \
-    --transition "$DISCOVERY_WORKFLOW_TRANSITION" \
+    --invocation - \
     --active-task "$DISCOVERY_RECOVERY_TASK_REL" \
     --recovery-continuation-id "$DISCOVERY_RECOVERY_CONTINUATION"
 )"
@@ -2233,14 +2219,12 @@ DISCOVERY_RECOVERY_SHA256="$(
   installed_python "$TARGET" -c 'import json, sys; print(json.load(sys.stdin)["result_identity"]["result_sha256"])' \
     <<<"$DISCOVERY_RECOVERY_JSON"
 )"
-printf '%s' "$DISCOVERY_RECOVERY_JSON" | \
+build_discovery_invocation "$DISCOVERY_WORKFLOW_PUBLIC" "$DISCOVERY_WORKFLOW_TRANSITION" "$DISCOVERY_RECOVERY_JSON" | \
   DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
   "$DISCOVERY_CHECK" \
     --root "$DISCOVERY_TASK_ROOT" \
     --json \
-    --input - \
-    --public-input "$DISCOVERY_WORKFLOW_PUBLIC" \
-    --transition "$DISCOVERY_WORKFLOW_TRANSITION" \
+    --invocation - \
     --expected-result-sha256 "$DISCOVERY_RECOVERY_SHA256" \
     --active-task "$DISCOVERY_RECOVERY_TASK_REL" \
     --recovery-continuation-id "$DISCOVERY_RECOVERY_CONTINUATION" >/dev/null

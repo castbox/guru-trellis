@@ -17,6 +17,18 @@ Validate all eight entry preconditions in workflow or standalone mode. Perform o
 independent semantic review of the complete current range. Form only candidate
 refs and live locators, then invoke `guru-qualify-normal-scenario` with
 `branch_review_candidate_set` before assigning severity.
+For delete, replace, merge, or compatibility-impacting ranges, apply
+`.trellis/spec/workflow/subtraction-first-compatibility.md`: independently
+recompute `code_subtraction` and `docs_ssot_subtraction`, verify deprecated-asset
+exit and direct evolution, and treat unsupported compatibility or redundant
+growth as a finding. Do not use Phase 2 evidence or a generic continuation as
+compatibility approval.
+Independently review long-term maintainability as well: task-local fields,
+persistence, retries, locks, or extra paths need named direct consumers and
+must not be justified only by excluded threat, concurrency, crash, or formal
+idempotency concerns. Every touched non-generated code file at or above 3000
+lines requires a mechanical-split or small-decoupling conclusion; untouched
+historical large files are not imported into scope.
 Immediately before dispatch, tell the user in the current dialogue the
 independent reviewer identity, the exact committed `origin/<base>...HEAD`
 range, and the review target. Immediately after return, show the final finding

@@ -825,7 +825,11 @@ owner-result 2.0 bytes、public schemas/examples、contract、
 tests 与三个 executable thin wrappers。Direct discovery 与 workflow route 使用相同
 fresh-base/change-input/evidence freshness preconditions。Runtime 只读取 archived
 `finish-summary.json:index.*`，使用 `guru-context-history-score-1.0`，不读取 workspace/runtime
-或 repo-level archive index/cache。Record/check/public invoke 通过 stdin/stdout 串联；正常
+或 repo-level archive index/cache。Record/check/public invoke 均以 `--invocation -`
+接收一次完整 envelope，经 stdin/stdout 串联；public input、独立 `base_current` 与
+owner result 不需要预写输入文件。Record/check 的旧 `--input`、`--public-input`、
+`--transition` 和 recorder `--mode` 参数直接退出，调用方随完整 preset 一起迁移；
+精确 envelope/schema 与迁移规则以 Discovery package interface/contract 为准。正常
 pre-task/standalone 不写 task、workspace 或 runtime artifact。Zero candidate 固定 empty
 selection/deep reads 与 `mem_review=not_needed`，不触发
 其它历史源。Installed/throwaway gates 覆盖 zero/candidate preview、真实 feature-worktree

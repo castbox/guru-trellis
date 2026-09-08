@@ -1,12 +1,11 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
-from common import active_task,check_owner_binding,check_recovery,consume_recovery,load,observe_base_current,parse,root,validate
+from common import active_task,check_owner_binding,check_recovery,consume_recovery,load_invocation,observe_base_current,parse,root,validate
 from runtime.io import CommandError
 from runtime.schema import validate_json
 def run(package_root:Path,command:dict,argv:list[str])->dict:
- p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);p.add_argument("--active-task");p.add_argument("--recovery-continuation-id");a=parse(p,argv);repo=root(package_root,a.root);e=load(repo,package_root,a.invocation,"invocation");public=e.get("public_input");up=e.get("transition");owner=e.get("owner_result")
- if not all(isinstance(x,dict) for x in (public,up,owner)):raise CommandError("invalid_arguments","invocation","Provide public input, transition, and owner result.")
+ p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);p.add_argument("--active-task");p.add_argument("--recovery-continuation-id");a=parse(p,argv);repo=root(package_root,a.root);e=load_invocation(repo,package_root,a.invocation);public=e["public_input"];up=e["transition"];owner=e["owner_result"]
  repository=owner.get("repository") if isinstance(owner.get("repository"),dict) else {}
  try:observation=observe_base_current(package_root,public,up,repository.get("repo"))
  except CommandError as exc:observation={"classification":"blocked","reason":exc.code}

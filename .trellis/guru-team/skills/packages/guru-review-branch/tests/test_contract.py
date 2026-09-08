@@ -681,6 +681,28 @@ class BranchReviewContractTest(unittest.TestCase):
             self.assertRegex(text, r"legacy\s+stale")
             self.assertIn("continuity_passed", text)
 
+    def test_subtraction_review_is_independent_and_not_phase2_checkpoint_reuse(self):
+        repo = PACKAGE.parents[4]
+        spec = repo / ".trellis/spec/workflow/subtraction-first-compatibility.md"
+        text = spec.read_text(encoding="utf-8")
+        for phrase in (
+            "independently judge both dimensions",
+            "`code-only`, `docs-only`, and `mixed`",
+            "does not read Phase 2 evidence",
+            "Approval is dialogue-local",
+            "3000",
+            "named direct consumers",
+            "long-term maintainability",
+        ):
+            self.assertIn(phrase, text)
+        package_text = " ".join(
+            path.read_text(encoding="utf-8")
+            for path in (PACKAGE / "SKILL.md", PACKAGE / "references/contract.md")
+        )
+        self.assertIn("subtraction-first-compatibility.md", package_text)
+        gate = json.loads((PACKAGE / "schemas/review-gate-6.0.schema.json").read_text())
+        self.assertNotIn("user_confirmation", json.dumps(gate))
+
     def test_wrappers_are_executable(self):
         for name in ("review-branch.sh", "check-review-gate.sh", "invoke.sh"):
             self.assertTrue(os.access(PACKAGE / "scripts" / name, os.X_OK))

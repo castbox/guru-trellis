@@ -600,6 +600,10 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
                 "open-finding-blocks-activatable-presentation",
                 "explicit-autonomous-omits-only-routine-pause",
                 "autonomous-scope-change-still-pauses",
+                "direct-evolution-first",
+                "compatibility-exception-is-specific",
+                "public-name-is-not-exemption",
+                "maintainability-boundary",
             },
         )
         self.assertTrue(all(row["evidence_selector"] == "transcript" for row in semantic))
@@ -723,6 +727,28 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             )
             self.assertNotEqual(mismatch.returncode, 0, mismatch)
             self.assertTrue(checkpoint.is_file())
+
+    def test_subtraction_first_contract_is_loaded_without_public_authorization(self) -> None:
+        repo = self.package.parents[4]
+        spec = repo / ".trellis/spec/workflow/subtraction-first-compatibility.md"
+        self.assertTrue(spec.is_file())
+        text = " ".join(spec.read_text(encoding="utf-8").split())
+        for phrase in (
+            "direct modification, deletion",
+            "affected deprecated asset",
+            "current conversation",
+            "Before coding, adding compatibility tests, or self-fixing",
+            "Approval is dialogue-local",
+            "direct consumer",
+            "3000-line",
+        ):
+            self.assertIn(phrase, text)
+        package_text = " ".join(
+            path.read_text(encoding="utf-8")
+            for path in (self.package / "SKILL.md", self.package / "references/contract.md")
+        )
+        self.assertIn("subtraction-first-compatibility.md", package_text)
+        self.assertNotIn("human_authorization", json.dumps(self.interface))
 
     def test_wrappers_are_dispatcher_only_and_package_is_not_portable(self) -> None:
         for name, validator in (

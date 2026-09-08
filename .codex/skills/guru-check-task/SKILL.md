@@ -26,6 +26,18 @@ before assigning P0-P3 severity, then
 review the nine Phase 2 adequacy dimensions. Worker output is ephemeral input to
 the owner; it is not a handoff, assignment, raw report, or persisted review
 transcript.
+For delete, replace, or merge work, apply
+`.trellis/spec/workflow/subtraction-first-compatibility.md` and independently
+judge `code_subtraction` and `docs_ssot_subtraction`. Check affected deprecated
+assets, direct-evolution rationale, current support contracts, and the reason
+for production, test, generated/managed, or documentation growth. Unsupported
+compatibility or redundant state is a current finding, not future cleanup.
+Apply the same maintainability boundary: do not add complexity for excluded
+hostile-input, concurrency-stress, unusual-crash, or formal-idempotency cases;
+require a named direct consumer for new task-local fields or persistence; and
+review every touched non-generated code file at or above 3000 lines for a
+mechanical split or small decoupling refactor. Untouched historical large files
+are outside this task's scope.
 
 Before this semantic round can pass, consume a fresh
 `guru-maintain-architecture-baseline:task_impact_sync(stage=phase2)` result.
