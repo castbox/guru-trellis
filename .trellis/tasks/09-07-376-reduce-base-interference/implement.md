@@ -155,3 +155,13 @@ git diff --check
    `command_count: 81` 校正为真实历史值 `77`。
 5. promotion-created diff 必须重新通过 fresh Phase 2、Task Commit、独立完整 Branch Review、official recorder、
    checker 与 public wrapper，之后才能恢复 Publication/Finalizer。
+
+## 2026-09-09 Finalizer Continuity Projection Finding
+
+1. 独立 reviewer 发现 Finalizer `base_reconciliation_required` output 虽要求
+   `branch_review_commit`，但其 `base_reconciliation_input` seed 与 projection 未传递该字段，导致正常
+   Finalizer -> Reconcile handoff 无法满足 `finalizer_base_mismatch` input schema。
+2. 修复仅补齐同名最小 identity 字段，不改变 typed exit、profile、owner、runtime mutation 或既有 schema。
+3. 跨 Skill integration 不再手工构造 Reconcile public input，而是加载 Finalizer interface，从真实
+   `base_reconciliation_required` output 依照声明 projection 生成 consumer DTO，再交给 Reconcile recorder
+   与 wrapper 验证。

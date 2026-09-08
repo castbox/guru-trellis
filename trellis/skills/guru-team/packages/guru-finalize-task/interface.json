@@ -163,7 +163,7 @@
           "interface_path": "packages/guru-reconcile-task-base/interface.json",
           "input_kind": "structured_json",
           "profile_id": "finalizer_base_mismatch",
-          "seed_fields": ["task_ref", "task_head", "selected_base_ref", "old_base_head", "new_base_head", "resume_target"],
+          "seed_fields": ["task_ref", "task_head", "selected_base_ref", "old_base_head", "new_base_head", "branch_review_commit", "resume_target"],
           "authoring_fields": ["profile", "mode"],
           "authoring_example": {"id": "finalizer_base_mismatch_authoring", "path": "examples/public-finalizer-base-mismatch-authoring.json"}
         }
@@ -186,6 +186,7 @@
           {"source": "selected_base_ref", "target": "selected_base_ref"},
           {"source": "old_base_head", "target": "old_base_head"},
           {"source": "new_base_head", "target": "new_base_head"},
+          {"source": "branch_review_commit", "target": "branch_review_commit"},
           {"source": "resume_target", "target": "resume_target"}
         ]
       },

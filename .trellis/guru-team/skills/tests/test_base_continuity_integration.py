@@ -12,6 +12,7 @@ from pathlib import Path
 
 SKILLS = Path(__file__).resolve().parents[1]
 REPO = SKILLS.parents[2]
+FINALIZER = SKILLS / "packages/guru-finalize-task"
 RECONCILE = SKILLS / "packages/guru-reconcile-task-base"
 REVIEW = SKILLS / "packages/guru-review-branch"
 PUBLICATION = SKILLS / "packages/guru-review-task-publication"
@@ -172,18 +173,52 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def reconcile_input(self) -> dict:
-        return {
-            "profile": "finalizer_base_mismatch",
-            "mode": "workflow",
-            "task_ref": TASK_REF,
-            "task_head": self.review_head,
-            "selected_base_ref": self.new_base,
-            "old_base_head": self.old_base,
-            "new_base_head": self.new_base,
-            "branch_review_commit": self.review_head,
-            "resume_target": "finalization_resume",
+    def finalizer_reconciliation_input(self) -> dict:
+        interface = json.loads(
+            (FINALIZER / "interface.json").read_text(encoding="utf-8")
+        )
+        output = json.loads(
+            (FINALIZER / "examples/public-base-reconciliation-required-output.json")
+            .read_text(encoding="utf-8")
+        )
+        output.update(
+            {
+                "task_ref": TASK_REF,
+                "task_head": self.review_head,
+                "publication_head": self.review_head,
+                "selected_base_ref": self.new_base,
+                "old_base_head": self.old_base,
+                "new_base_head": self.new_base,
+                "branch_review_commit": self.review_head,
+            }
+        )
+        self.assertEqual("base_reconciliation_required", output["exit_id"])
+        projection = next(
+            item
+            for item in interface["public_contracts"]["projections"]
+            if item["id"] == "project_base_reconciliation_required"
+        )
+        consumer = next(
+            item
+            for item in interface["public_contracts"]["consumer_inputs"]
+            if item["id"] == projection["consumer_input_id"]
+        )
+        mappings = projection["mappings"]
+        self.assertEqual(
+            set(consumer["contract"]["seed_fields"]),
+            {mapping["source"] for mapping in mappings},
+        )
+        projected = {
+            mapping["target"]: output[mapping["source"]]
+            for mapping in mappings
         }
+        projected.update(
+            {
+                "profile": consumer["contract"]["profile_id"],
+                "mode": "workflow",
+            }
+        )
+        return projected
 
     def continuity_review(self) -> dict:
         return {
@@ -266,6 +301,7 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
         )
 
     def test_finalizer_mismatch_reconciles_reviews_and_publishes_current_head(self) -> None:
+        reconcile_input = self.finalizer_reconciliation_input()
         candidate = self.run_wrapper(
             RECONCILE,
             "execute-base-candidate.sh",
@@ -327,7 +363,7 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
             "--root",
             self.repo,
             "--skill-input",
-            self.write_json("reconcile-public.json", self.reconcile_input()),
+            self.write_json("reconcile-public.json", reconcile_input),
             "--semantic-review-file",
             self.write_json("reconcile-gate.json", gate),
             "--typed-exit",
@@ -343,7 +379,7 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
             "--invocation",
             self.write_json(
                 "reconcile-envelope.json",
-                {"public_input": self.reconcile_input(), "owner_result": recorded},
+                {"public_input": reconcile_input, "owner_result": recorded},
             ),
         )
         self.assertEqual(reconciled_head, continuity_seed["task_head"])

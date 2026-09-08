@@ -9,6 +9,9 @@
 | `R376-CONT-05` | `D376-CONT-03..06` | `T376-CONT-01..06` | current-only schema and preserved owner boundaries; A4-A9 |
 | `R376-CONT-06` | `D376-CONT-06` | `T376-CONT-05` | 23 Skills / 97 exits / 78 commands; `ARCH-CUR-023` candidate |
 
+`T376-CONT-03` additionally verifies that the Finalizer output projection carries
+`branch_review_commit` into the Reconcile `finalizer_base_mismatch` input instead of bypassing that public edge.
+
 `D376-CONT-06` / `T376-CONT-07` additionally bind the predecessor lifecycle-only update and the `.45`
 Design manifest historical command-count correction required by serialized promotion.
 

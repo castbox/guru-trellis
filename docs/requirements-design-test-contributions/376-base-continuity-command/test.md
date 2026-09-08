@@ -4,8 +4,9 @@
   task-content drift、expected-head executor、commit recovery 与零写入 negative cases。
 - `T376-CONT-02`：Review Branch canonical/installed contract覆盖 current schema、prior/current identity 分离、
   ancestry/pair/tree freshness、bounded scope 与最小 public output。
-- `T376-CONT-03`：source/installed integration 使用真实 Git repository 和真实 Publication recorder/checker/
-  wrapper，覆盖 Finalizer mismatch -> reconciliation commit -> bounded continuity -> `ready`。
+- `T376-CONT-03`：source/installed integration 使用真实 Git repository，先从 Finalizer 声明的
+  `base_reconciliation_required` output 经 interface projection 生成 Reconcile consumer DTO，再覆盖
+  reconciliation commit -> bounded continuity -> 真实 Publication recorder/checker/wrapper -> `ready`。
 - `T376-CONT-04`：Publication package regression 保持当前 reviewed-content strictness；未审查 base merge、
   content/authority/scope drift 和 stale checkpoint 均不能进入 ready。
 - `T376-CONT-05`：source package closure 从 registry/interface 派生 23 packages / 78 commands，并验证

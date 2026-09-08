@@ -645,8 +645,8 @@
       },
       {
         "id": "guru-finalize-task",
-        "interface_sha256": "8f3d122f9d216212cfbfe3b891168c9f0963f5d84cf38dcc2f51e08224b9a564",
-        "tree_sha256": "e04e9f83e77681e5ea38bbb09355fa29f5b81513ddd8dd37b12e4c31a5c5bc89"
+        "interface_sha256": "c7ae672cc8fb0c33eac67490c3f742e1efa9e2c3b05e141150544aa3234c6ec9",
+        "tree_sha256": "e416b38d25ef27456a5661a3ab5048c54c4b8ae3832b6ffabf9cc181f096e1ce"
       },
       {
         "id": "guru-merge-task-pr",
@@ -702,7 +702,7 @@
       {
         "path": ".trellis/guru-team/skills/tests/test_base_continuity_integration.py",
         "source": "trellis/skills/guru-team/tests/test_base_continuity_integration.py",
-        "sha256": "e29edc86fb5be7a0fbbc2743e999702e465d0e313ed3ae1f82f79d1cc10c7da6",
+        "sha256": "0bf0b4168c2447745887ac749986d96ffd48835ebf9f294df918b28b52fd1721",
         "executable": false,
         "action": "installed"
       },
@@ -7310,7 +7310,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
-        "sha256": "8f3d122f9d216212cfbfe3b891168c9f0963f5d84cf38dcc2f51e08224b9a564",
+        "sha256": "c7ae672cc8fb0c33eac67490c3f742e1efa9e2c3b05e141150544aa3234c6ec9",
         "executable": false,
         "action": "installed"
       },
@@ -26063,7 +26063,7 @@
       {
         "path": ".agents/skills/guru-finalize-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
-        "sha256": "8f3d122f9d216212cfbfe3b891168c9f0963f5d84cf38dcc2f51e08224b9a564",
+        "sha256": "c7ae672cc8fb0c33eac67490c3f742e1efa9e2c3b05e141150544aa3234c6ec9",
         "executable": false,
         "action": "installed"
       },
@@ -26511,7 +26511,7 @@
       {
         "path": ".codex/skills/guru-finalize-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
-        "sha256": "8f3d122f9d216212cfbfe3b891168c9f0963f5d84cf38dcc2f51e08224b9a564",
+        "sha256": "c7ae672cc8fb0c33eac67490c3f742e1efa9e2c3b05e141150544aa3234c6ec9",
         "executable": false,
         "action": "installed"
       },
@@ -26959,7 +26959,7 @@
       {
         "path": ".claude/skills/guru-finalize-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
-        "sha256": "8f3d122f9d216212cfbfe3b891168c9f0963f5d84cf38dcc2f51e08224b9a564",
+        "sha256": "c7ae672cc8fb0c33eac67490c3f742e1efa9e2c3b05e141150544aa3234c6ec9",
         "executable": false,
         "action": "installed"
       },
@@ -27407,7 +27407,7 @@
       {
         "path": ".cursor/skills/guru-finalize-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
-        "sha256": "8f3d122f9d216212cfbfe3b891168c9f0963f5d84cf38dcc2f51e08224b9a564",
+        "sha256": "c7ae672cc8fb0c33eac67490c3f742e1efa9e2c3b05e141150544aa3234c6ec9",
         "executable": false,
         "action": "installed"
       },
