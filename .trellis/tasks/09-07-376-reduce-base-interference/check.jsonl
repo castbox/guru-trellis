@@ -1,3 +1,0 @@
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查 package/runtime、canonical/dogfood/installed、projection drift 与 task validation 的验收边界。"}
-{"file":".trellis/spec/workflow/subtraction-first-compatibility.md","reason":"检查变更是否保持 direct evolution、最小范围与无冗余兼容状态。"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"检查 workflow state、Git/GitHub 边界和 typed route 的确定性校验要求。"}

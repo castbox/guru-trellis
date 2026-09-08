@@ -2,10 +2,11 @@
   "id": "376-reduce-base-interference",
   "name": "376-reduce-base-interference",
   "title": "#376 降低基线分支更新对并行任务的干扰",
-  "status": "in_progress",
+  "status": "completed",
   "branch": "feat/376-reduce-base-interference",
   "base_branch": "main",
   "creator": "wesleywu",
   "assignee": "wesleywu",
-  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/376"
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/376",
+  "completedAt": "2026-09-08"
 }

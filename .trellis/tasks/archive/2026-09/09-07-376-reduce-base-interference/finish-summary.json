@@ -1,0 +1,290 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-08T06:10:43Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-07-376-reduce-base-interference",
+    "title": "#376 降低基线分支更新对并行任务的干扰",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-07-376-reduce-base-interference",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "feat/376-reduce-base-interference",
+    "commits": [
+      "6c5bea660db01354bcc710004d87492db777eeee",
+      "d8987ae17fdbe39144fd431c5e036e830127cd72",
+      "6ad959a88323f6e6cc5e1fdb7f6029963d043cd8",
+      "f28825c0c2e9b40e379e2e1ce3c7a2c25e435470",
+      "c05210c824589ad900c1b19c6853cfd77e7b742f"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-reconcile-task-base/SKILL.md",
+      ".agents/skills/guru-reconcile-task-base/evals/evals.json",
+      ".agents/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+      ".agents/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+      ".agents/skills/guru-reconcile-task-base/references/contract.md",
+      ".claude/skills/guru-reconcile-task-base/SKILL.md",
+      ".claude/skills/guru-reconcile-task-base/evals/evals.json",
+      ".claude/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+      ".claude/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+      ".claude/skills/guru-reconcile-task-base/references/contract.md",
+      ".codex/skills/guru-reconcile-task-base/SKILL.md",
+      ".codex/skills/guru-reconcile-task-base/evals/evals.json",
+      ".codex/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+      ".codex/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+      ".codex/skills/guru-reconcile-task-base/references/contract.md",
+      ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+      ".cursor/skills/guru-reconcile-task-base/evals/evals.json",
+      ".cursor/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+      ".cursor/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+      ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-reconcile-task-base/evals/evals.json",
+      ".trellis/guru-team/skills/packages/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+      ".trellis/guru-team/skills/packages/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+      ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-reconcile-task-base/tests/test_contract.py",
+      ".trellis/guru-team/skills/packages/guru-reconcile-task-base/tests/test_runtime.py",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/tasks/09-07-376-reduce-base-interference/check.jsonl",
+      ".trellis/tasks/09-07-376-reduce-base-interference/design.md",
+      ".trellis/tasks/09-07-376-reduce-base-interference/implement.jsonl",
+      ".trellis/tasks/09-07-376-reduce-base-interference/implement.md",
+      ".trellis/tasks/09-07-376-reduce-base-interference/issue-scope-ledger.json",
+      ".trellis/tasks/09-07-376-reduce-base-interference/prd.md",
+      ".trellis/tasks/09-07-376-reduce-base-interference/task.json",
+      ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/design.md",
+      ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/implement.md",
+      ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/prd.md",
+      ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/task.json",
+      ".trellis/workflow.md",
+      "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-reconcile-task-base/evals/evals.json",
+      "trellis/skills/guru-team/packages/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+      "trellis/skills/guru-team/packages/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+      "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_contract.py",
+      "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_runtime.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      376
+    ],
+    "close_issues": [
+      376
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/381"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#376 降低基线分支更新对并行任务的干扰",
+    "outcome": "将 old/new base pair 明确建模为独立的 integration clock，不再把基线前进本身视为规划过期。",
+    "changed_behavior": [
+      "将 old/new base pair 明确建模为独立的 integration clock，不再把基线前进本身视为规划过期。",
+      "当 live Issue、accepted scope、approved planning assumptions 与 task content 未变化且增量兼容时，保持 `reconciled` 并保留原 `resume_target`，包括 Planning 后的 `task_activation`。",
+      "保留真实 authority 或 planning assumption 变化进入 `planning_stale` 的现有路径，不新增 public exit、兼容状态或持久化授权信息。",
+      "增加无关 base delta 的正向 fixture/runtime/eval 覆盖，并补齐 native Codex eval adapter 的 `base-unrelated-reconciled` recipe 映射。",
+      "同步 canonical、preset、dogfood、Agents/Codex/Claude/Cursor 投影与 installed manifest。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/tasks/09-07-376-reduce-base-interference/design.md",
+          ".trellis/tasks/09-07-376-reduce-base-interference/implement.md",
+          ".trellis/tasks/09-07-376-reduce-base-interference/prd.md",
+          ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/design.md",
+          ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/implement.md",
+          ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/prd.md"
+        ],
+        "change": "将 old/new base pair 明确建模为独立的 integration clock，不再把基线前进本身视为规划过期。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "将 old/new base pair 明确建模为独立的 integration clock，不再把基线前进本身视为规划过期。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md"
+        ],
+        "change": "将 old/new base pair 明确建模为独立的 integration clock，不再把基线前进本身视为规划过期。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/tests/test_contract.py",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/tests/test_runtime.py",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_runtime.py"
+        ],
+        "change": "将 old/new base pair 明确建模为独立的 integration clock，不再把基线前进本身视为规划过期。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-reconcile-task-base/SKILL.md",
+          ".agents/skills/guru-reconcile-task-base/evals/evals.json",
+          ".agents/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+          ".agents/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+          ".agents/skills/guru-reconcile-task-base/references/contract.md",
+          ".claude/skills/guru-reconcile-task-base/SKILL.md",
+          ".claude/skills/guru-reconcile-task-base/evals/evals.json",
+          ".claude/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+          ".claude/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+          ".claude/skills/guru-reconcile-task-base/references/contract.md",
+          ".codex/skills/guru-reconcile-task-base/SKILL.md",
+          ".codex/skills/guru-reconcile-task-base/evals/evals.json",
+          ".codex/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+          ".codex/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+          ".codex/skills/guru-reconcile-task-base/references/contract.md",
+          ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+          ".cursor/skills/guru-reconcile-task-base/evals/evals.json",
+          ".cursor/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+          ".cursor/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+          ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/evals/evals.json",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/evals/evals.json",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md"
+        ],
+        "change": "将 old/new base pair 明确建模为独立的 integration clock，不再把基线前进本身视为规划过期。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-07-376-reduce-base-interference/check.jsonl",
+          ".trellis/tasks/09-07-376-reduce-base-interference/implement.jsonl",
+          ".trellis/tasks/09-07-376-reduce-base-interference/issue-scope-ledger.json",
+          ".trellis/tasks/09-07-376-reduce-base-interference/task.json",
+          ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/task.json"
+        ],
+        "change": "将 old/new base pair 明确建模为独立的 integration clock，不再把基线前进本身视为规划过期。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          ".trellis/workflow.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "将 old/new base pair 明确建模为独立的 integration clock，不再把基线前进本身视为规划过期。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#376"
+      ],
+      "pr_refs": [
+        "PR #381"
+      ],
+      "branches": [
+        "feat/376-reduce-base-interference"
+      ],
+      "paths": [
+        ".agents/skills/guru-reconcile-task-base/SKILL.md",
+        ".agents/skills/guru-reconcile-task-base/evals/evals.json",
+        ".agents/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+        ".agents/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+        ".agents/skills/guru-reconcile-task-base/references/contract.md",
+        ".claude/skills/guru-reconcile-task-base/SKILL.md",
+        ".claude/skills/guru-reconcile-task-base/evals/evals.json",
+        ".claude/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+        ".claude/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+        ".claude/skills/guru-reconcile-task-base/references/contract.md",
+        ".codex/skills/guru-reconcile-task-base/SKILL.md",
+        ".codex/skills/guru-reconcile-task-base/evals/evals.json",
+        ".codex/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+        ".codex/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+        ".codex/skills/guru-reconcile-task-base/references/contract.md",
+        ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+        ".cursor/skills/guru-reconcile-task-base/evals/evals.json",
+        ".cursor/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+        ".cursor/skills/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+        ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+        ".trellis/guru-team/skills/packages/guru-reconcile-task-base/evals/evals.json",
+        ".trellis/guru-team/skills/packages/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+        ".trellis/guru-team/skills/packages/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+        ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-reconcile-task-base/tests/test_contract.py",
+        ".trellis/guru-team/skills/packages/guru-reconcile-task-base/tests/test_runtime.py",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/tasks/09-07-376-reduce-base-interference/check.jsonl",
+        ".trellis/tasks/09-07-376-reduce-base-interference/design.md",
+        ".trellis/tasks/09-07-376-reduce-base-interference/implement.jsonl",
+        ".trellis/tasks/09-07-376-reduce-base-interference/implement.md",
+        ".trellis/tasks/09-07-376-reduce-base-interference/issue-scope-ledger.json",
+        ".trellis/tasks/09-07-376-reduce-base-interference/prd.md",
+        ".trellis/tasks/09-07-376-reduce-base-interference/task.json",
+        ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/design.md",
+        ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/implement.md",
+        ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/prd.md",
+        ".trellis/tasks/archive/2026-09/09-07-376-reduce-base-interference/task.json",
+        ".trellis/workflow.md",
+        "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+        "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+        "trellis/skills/guru-team/packages/guru-reconcile-task-base/evals/evals.json",
+        "trellis/skills/guru-team/packages/guru-reconcile-task-base/evals/files/unrelated-base-delta-facts.json",
+        "trellis/skills/guru-team/packages/guru-reconcile-task-base/evals/files/unrelated-base-delta-input.json",
+        "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_contract.py",
+        "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_runtime.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#376 降低基线分支更新对并行任务的干扰",
+        "将 old/new base pair 明确建模为独立的 integration clock，不再把基线前进本身视为规划",
+        "完成 SKILL.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#376 降低基线分支更新对并行任务的干扰\n将 old/new base pair 明确建模为独立的 integration clock，不再把基线前进本身视为规划过期。\n当 live Issue、accepted scope、approved planning assumptions 与 task content 未变化且增量兼容时，保持 `reconciled` 并保留原 `resume_target`，包括 Planning 后的 `task_activation`。\n保留真实 authority 或 planning assumption 变化进入 `planning_stale` 的现有路径，不新增 public exit、兼容状态或持久化授权信息。\n增加无关 base delta 的正向 fixture/runtime/eval 覆盖，并补齐 native Codex eval adapter 的 `base-unrelated-reconciled` recipe 映射。\n同步 canonical、preset、dogfood、Agents/Codex/Claude/Cursor 投影与 installed manifest。\n将 old/new base pair 明确建模为独立的 integration clock，不再把基线前进本身视为规划\n完成 SKILL.md 相关变更"
+  }
+}
