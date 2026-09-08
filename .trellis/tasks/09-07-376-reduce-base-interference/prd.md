@@ -65,7 +65,12 @@ live authority、accepted scope、approved planning assumptions、task content �
 - 技术边界、状态与迁移：`design.md`。
 - 实施顺序、验证命令和风险：`implement.md`。
 - durable workflow contract：`trellis/presets/guru-team/spec/workflow/{workflow-contract.md,skill-package-contract.md,data-contracts.md,quality-guidelines.md}` 及其 dogfood projection；`subtraction-first-compatibility.md` 继续作为直接演进约束，不复制正文。
-- Architecture：当前 baseline 已定义 semantic owner、deterministic executor、确认边界与 versioned typed projection；本修复不新增 owner、domain、GAP、shared-current decision 或 ADR，按 `no_architecture_impact` 处理。
+- Architecture：Branch Review 发现当前 `.45` authority 仍声明 77 commands，而实现新增了
+  `guru-reconcile-task-base` package-private expected-head executor。该变化不新增 domain、长期 owner、
+  GAP、compatibility exit 或 ADR，但会改变 current command graph 与 deterministic execution boundary，
+  因此按 `architecture_impact / target_native` 处理：先写 task-owned Architecture/RDT contribution，
+  经独立 committed review 后由 serialized owners promotion 到 `.46`，再 fresh 重跑 Phase 2、commit 与
+  完整 Branch Review。
 
 ## Open Questions
 

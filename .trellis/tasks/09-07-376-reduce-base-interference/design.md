@@ -8,7 +8,10 @@
 
 - Canonical：`trellis/workflows/guru-team/workflow.md`、`trellis/skills/guru-team/packages/guru-reconcile-task-base/`。
 - Durable spec：`trellis/presets/guru-team/spec/workflow/{workflow-contract.md,skill-package-contract.md,data-contracts.md,quality-guidelines.md}`。
-- Architecture：复用 current baseline 已有 semantic owner、deterministic executor、确认边界与 typed projection 结构；不新增 owner/domain/GAP/shared-current decision，故不创建 contribution 或 ADR。
+- Architecture：继续复用 current semantic owner、确认边界与 typed projection，不新增 domain、长期 owner、
+  GAP 或 ADR；但新增 package-private deterministic executor 使 current command graph 从 77 变为 78，属于
+  `target_native` architecture impact。task 先维护隔离 contribution，独立 committed review 后再由
+  serialized Architecture/RDT owners 将 `.45` promotion 为 `.46`。
 - Projection：`.trellis/workflow.md`、`.trellis/spec/workflow/quality-guidelines.md`、preset/Agents/Codex/Claude/Cursor 对应同步文件。
 - Tests：reconcile package 的 contract/eval/runtime fixtures。
 
@@ -91,3 +94,18 @@
 - worktree 非 clean、HEAD/base 漂移、candidate tree 与拟提交结果不同、merge 无法按已审查结果完成时，executor 不创建可继续消费的 reconciliation result；不得复用旧确认或自动改写解决方案。
 - task-content、scope、authority 或实现变化继续走 `implementation_required`、`planning_stale`、scope clarification 或完整 Branch Review，不得降级为 bounded continuity。
 - Publication 继续严格校验当前 continuity-reviewed HEAD；不放宽 `guru-reviewed-content-1.0`，也不接受 caller 自报的 review identity。
+
+## 10. Architecture/RDT Authority Promotion
+
+- finding：`candidate:architecture-command-graph-stale`。实现后的 live package graph 为 23 Skills / 97 exits /
+  78 commands，`.45` current authority 的 77-command 声明已 stale。
+- path：`target_native`；新增 command 是 Reconcile package-private deterministic executor，既有 semantic
+  owner、public Skill/exit、single-writer、confirmation 与 Publication authority 均保持不变。
+- contribution：`architecture-contribution-376-base-continuity-command-v1` 与
+  `docs/requirements-design-test-contributions/376-base-continuity-command/`。
+- promotion：贡献先经 Phase 2、Task Commit 与 independent committed review；随后 serialized owner 以
+  expected `.45` 创建唯一 active `.46`，并对 promotion-created diff 再执行 fresh Phase 2、Task Commit 与
+  完整 Branch Review。
+- history：`.45` 的需求、设计、测试正文与 release facts 保持 immutable；promotion 只允许写 predecessor
+  lifecycle locator（`superseded` / `successor=.46`），并把 `.45` Design manifest 的历史错误
+  `command_count: 81` 校正为该版本真实的 `77`。不创建 ADR，不处理 Issue #108 sidecars 或完整矩阵。

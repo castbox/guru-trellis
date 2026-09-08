@@ -139,3 +139,19 @@ git diff --check
 - PASS：canonical/installed 字节一致、manifest 受影响 hash/package tree、ownership、dogfood workflow/overlay drift、task、JSON、Python、shell 与 `git diff --check`。
 - BOUNDARY：installed full validator 仍仅被 Issue #108 的 Claude projection、package digest 与 39 个 `.bak` sidecar provenance drift 阻断；本 finding fix 未修改、删除或登记这些 sidecar。
 - BOUNDARY：未执行完整多平台 upgrade/update/reapply/release-candidate 矩阵；该矩阵仍由专门兼容性或 Release Issue 负责。
+
+## 2026-09-09 Architecture/RDT Promotion Finding
+
+1. 最终 reviewer 从固定范围 `e339d994...4181fea8` 重新派生 live graph，确认实现为 23 Skills / 97 exits /
+   78 commands，而 current `.45` Architecture/RDT authority 仍声明 77 commands。
+2. `guru-qualify-solution-mechanism:branch_review_candidate_set` 与
+   `guru-qualify-normal-scenario:branch_review_candidate_set` 均已返回 `qualified_current`：executor 机制正确，
+   finding 属于 stale shared authority，不是实现回退理由。
+3. 旧 `no_architecture_impact` 结果失效。新 route 为 `architecture_impact / target_native`，无 ADR；先提交并
+   独立审查 task-owned Architecture/RDT contribution，再 serialized promotion `.45 -> .46`。
+4. `.46` 只增加 #376 bounded continuity / expected-head executor 的 durable current fact、23/97/78 graph、
+   requirement/design/test/traceability 与最小 usage projection；`.45` 正文及无关 release/Evolution 历史
+   不改，只写 `superseded` / `successor=.46` lifecycle locator，并把 `.45` Design manifest 的错误
+   `command_count: 81` 校正为真实历史值 `77`。
+5. promotion-created diff 必须重新通过 fresh Phase 2、Task Commit、独立完整 Branch Review、official recorder、
+   checker 与 public wrapper，之后才能恢复 Publication/Finalizer。
