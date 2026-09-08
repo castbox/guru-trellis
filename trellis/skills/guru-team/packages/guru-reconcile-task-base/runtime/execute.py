@@ -15,7 +15,8 @@ def guard(package_root: Path, argv: list[str]) -> dict:
     args=parse(parser,argv); repo=repo_root(args.root); public=read_json(repo,package_root,args.input,"input"); validate_public(package_root,public); allow_planning=public["profile"]=="post_plan"; task_identity(repo,public["task_ref"],allow_planning=allow_planning)
     task=resolve_commit(repo,public["task_head"],"task_head"); old=resolve_commit(repo,public["old_base_head"],"old_base_head"); new=resolve_commit(repo,public["selected_base_ref"],"selected_base_ref")
     status="unchanged" if new==old else "new_pair"
-    if task != public["task_head"] or new != public["new_base_head"] or resolve_commit(repo,"HEAD","HEAD") != task or not is_ancestor(repo,old,new): status="blocked"
+    current_head=resolve_commit(repo,"HEAD","HEAD")
+    if task != public["task_head"] or new != public["new_base_head"] or not is_ancestor(repo,old,new): status="blocked"
     cp=checkpoint_path(repo,public["task_ref"],allow_planning=allow_planning)
     typed_output=None
     if status=="new_pair" and cp.is_file():
@@ -25,6 +26,8 @@ def guard(package_root: Path, argv: list[str]) -> dict:
             try: cp.parent.rmdir()
             except OSError: pass
         except Exception: status="blocked"
+    elif status != "blocked" and current_head != task:
+        status="blocked"
     result={"status":status,"task_ref":public["task_ref"],"task_head":public["task_head"],"old_base_head":public["old_base_head"],"new_base_head":new,"resume_target":public["resume_target"],"typed_output":typed_output}; validate_json(result,package_root/"schemas/pair-guard-result.schema.json","result"); return result
 
 def candidate(package_root: Path, argv: list[str]) -> dict:

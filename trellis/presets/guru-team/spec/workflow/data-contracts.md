@@ -1300,7 +1300,7 @@ source binding requires no tail and remains published at the reviewed head.
 
 ## Review Gate Artifact
 
-`review-branch.sh` writes compact schema 6.0 `review-gate.json` at the exact
+`review-branch.sh` writes compact schema 7.0 `review-gate.json` at the exact
 task-owned ignored-runtime checkpoint after the independent semantic judgment
 exists. The gate
 contains only schema/skill identity, task/mode/review intent, typed exit,
@@ -2052,10 +2052,10 @@ binds the prior complete review commit, expected task HEAD, new base HEAD, and
 candidate tree. After current-dialogue confirmation, the deterministic executor
 creates one local reconciliation commit. The bounded continuity input then
 requires `task_head == HEAD`, prior review and new base ancestry, and exact tree
-equality. Its output preserves `prior_branch_review_commit` for continuity
-traceability but sets `branch_review_commit` to the current reconciled HEAD for
-Publication. No authorization, complete review body, or private checkpoint
-crosses either public boundary.
+equality. The prior review remains owner-private gate evidence; its output sets
+`branch_review_commit` to the current reconciled HEAD for Publication and omits
+the prior commit because no downstream consumer requires it. No authorization,
+complete review body, or private checkpoint crosses either public boundary.
 
 Legacy active-task state is adapted once from current package contracts. An
 existing same-task-content Branch Review may retain its task review validity,

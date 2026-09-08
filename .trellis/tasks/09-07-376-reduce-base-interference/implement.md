@@ -120,3 +120,22 @@ git diff --check
 - Route：`no_architecture_impact`。
 - 本实现继续复用既有 semantic owner、deterministic executor、当前对话确认边界和 typed projection；未新增 shared-current writer、dual-read、长期 compatibility、SDK、外部集成、GAP 或 ADR。
 - `guru-trellis-architecture-convergence@1` before/after 无 regression；不创建 Architecture contribution 或 ADR。
+
+## 2026-09-08 最终 Branch Review Findings 修复
+
+### Qualified findings
+
+1. `BR-376-RECOVERY-STALE-HEAD`：reconciliation commit 已创建且 recorder 已写入精确 current-pair checkpoint 时，pair guard 必须先验证该 checkpoint，再应用普通 prior-HEAD stale 拒绝；否则正常 commit → record → recovery 序列会被提前阻断。
+2. `BR-376-CONTINUITY-DTO-CONTRACT`：`prior_branch_review_commit` 仅由 bounded continuity gate 用于 private ancestry/freshness 校验，Publication 与 continuity router 均不消费该字段；因此从 durable public output wording 删除，不扩大 DTO。
+3. `BR-376-STALE-CURRENT-VERSIONS`：Review Branch durable companion/data SSOT 的 current authority 同步为 aggregate input 4.0、base-continuity 2.0、gate 7.0，并保留旧版本仅作为 legacy stale inventory。
+4. `BR-376-REAL-PUBLICATION-INTEGRATION`：跨 Skill integration 不再 mock Publication owner/checker，改为构造真实 task、ledger、package/schema 与 Git identity，调用实际 Publication recorder、checker 和 public wrapper。
+
+### Validation result
+
+- PASS：canonical 与 installed reconcile runtime 各 `18/18`；新增 post-reconciliation current-pair 恢复回归。
+- PASS：canonical 与 installed Review Branch contract 各 `22/22`；断言 continuity public output 不包含无消费者的 prior review 字段，并锁定 current schema wording。
+- PASS：source 与 installed cross-Skill continuity integration 各 `2/2`；真实链路覆盖 reconciliation → bounded continuity → Publication recorder/checker/wrapper → `ready`，负向链路拒绝未审查 base merge。
+- PASS：Publication package `48/48`、skill package integration `9/9`、installer targeted `3/3`、source package closure `23 packages / 78 commands`。
+- PASS：canonical/installed 字节一致、manifest 受影响 hash/package tree、ownership、dogfood workflow/overlay drift、task、JSON、Python、shell 与 `git diff --check`。
+- BOUNDARY：installed full validator 仍仅被 Issue #108 的 Claude projection、package digest 与 39 个 `.bak` sidecar provenance drift 阻断；本 finding fix 未修改、删除或登记这些 sidecar。
+- BOUNDARY：未执行完整多平台 upgrade/update/reapply/release-candidate 矩阵；该矩阵仍由专门兼容性或 Release Issue 负责。

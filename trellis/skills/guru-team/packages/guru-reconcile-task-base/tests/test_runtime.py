@@ -96,6 +96,15 @@ class RuntimeTest(unittest.TestCase):
                 output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(self.write(profile+'-envelope.json',{'public_input':public,'owner_result':owner}))])
                 self.assertEqual('review_continuity_required',output['exit_id']); self.assertEqual(reconciled,output['task_head']); self.assertEqual(self.head,output['branch_review_commit']); self.assertEqual(candidate_tree,output['candidate_tree_sha256'])
                 self.git('reset','--hard',self.head)
+    def test_post_review_current_pair_recovers_after_reconciliation_commit(self):
+        public,candidate_tree,receipt=self.execute_reconciliation('finalizer_base_mismatch')
+        gate=self.continuity_gate(candidate_tree)
+        owner=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(self.write('recovery-public.json',public)),'--semantic-review-file',str(self.write('recovery-gate.json',gate)),'--typed-exit','review_continuity_required','--reconciliation-result',str(self.write('recovery-receipt.json',receipt))])
+        guarded=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('recovery-guard.json',public))])
+        self.assertEqual('current_pair',guarded['status'])
+        self.assertEqual(owner['typed_output'],guarded['typed_output'])
+        self.assertEqual(receipt['reconciled_task_head'],guarded['typed_output']['task_head'])
+        self.assertEqual('blocked',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('recovery-second-guard.json',public))])['status'])
     def test_reconciliation_stale_dirty_and_candidate_mismatch_fail_without_commit(self):
         candidate_tree=self.candidate_tree(); base={'task_ref':self.task_ref,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'branch_review_commit':self.head,'candidate_tree_sha256':candidate_tree,'commit_message':'chore(base): reconcile reviewed task'}
         cases=[('stale-head',{**base,'prior_task_head':self.old},None),('candidate',{**base,'candidate_tree_sha256':'f'*64},None),('dirty',base,lambda:(self.repo/'dirty.txt').write_text('dirty\n'))]

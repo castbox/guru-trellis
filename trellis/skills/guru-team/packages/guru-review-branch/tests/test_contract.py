@@ -585,6 +585,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         self.assertEqual(public["new_base_head"], output["new_base_head"])
         self.assertEqual(public["task_head"], output["branch_review_commit"])
         self.assertNotEqual(public["branch_review_commit"], output["branch_review_commit"])
+        self.assertNotIn("prior_branch_review_commit", output)
         self.assertNotIn("relevant_paths", output)
         self.assertFalse(self.checkpoint().exists())
         self.assertEqual(head_before, self.git("rev-parse", "HEAD"))
@@ -783,6 +784,16 @@ class BranchReviewContractTest(unittest.TestCase):
             self.assertIn("continuity_passed", text)
             self.assertIn("bounded", normalized)
             self.assertIn("full Branch Review", normalized)
+        for path in (
+            REPO / ".trellis/spec/workflow/companion-scripts.md",
+            REPO / "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+        ):
+            text = path.read_text()
+            self.assertIn("records only current gate schema 7.0", text)
+            self.assertIn("Aggregate public input schema 4.0 dispatches", text)
+            self.assertIn("`base_continuity`\nschema 2.0 profile", text)
+            self.assertIn("Only schema 7.0 is accepted", text)
+            self.assertNotIn("records only current gate schema 6.0", text)
 
     def test_subtraction_review_is_independent_and_not_phase2_checkpoint_reuse(self):
         repo = PACKAGE.parents[4]

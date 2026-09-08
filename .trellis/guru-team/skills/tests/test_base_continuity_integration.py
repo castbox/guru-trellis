@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import copy
 import importlib.util
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest import mock
 
 
 SKILLS = Path(__file__).resolve().parents[1]
@@ -37,34 +36,6 @@ def load_publication_wrapper():
 PUBLICATION_WRAPPER = load_publication_wrapper()
 
 
-class PublicationOwner:
-    class WorkflowError(RuntimeError):
-        def __init__(self, message: str, *, payload=None, **_kwargs) -> None:
-            super().__init__(message)
-            self.payload = payload or {}
-
-    def __init__(self, root: Path, result: dict, checkpoint: Path) -> None:
-        self.root = root
-        self.result = result
-        self.checkpoint = checkpoint
-
-    def repo_root(self, _path: Path) -> Path:
-        return self.root
-
-    @staticmethod
-    def read_json(path: Path) -> dict:
-        return json.loads(path.read_text(encoding="utf-8"))
-
-    def resolve_task_dir(self, root: Path, task_ref: str) -> Path:
-        return root / task_ref
-
-    def cmd_check_task_publication_review(self, _args) -> dict:
-        return {"owner_result": copy.deepcopy(self.result)}
-
-    def task_publication_path(self, _root: Path, _task: Path) -> Path:
-        return self.checkpoint
-
-
 class BaseContinuityIntegrationTest(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
@@ -77,7 +48,22 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
         )
         self.git("config", "user.name", "Base Continuity Integration")
         self.git("config", "user.email", "base-continuity@example.invalid")
-        (self.repo / ".gitignore").write_text(".trellis/\n", encoding="utf-8")
+        self.git("remote", "add", "origin", "https://github.com/castbox/guru-trellis.git")
+        (self.repo / ".gitignore").write_text(
+            ".trellis/.runtime/\n", encoding="utf-8"
+        )
+        target_package = self.repo / PUBLICATION.relative_to(REPO)
+        target_package.parent.mkdir(parents=True)
+        shutil.copytree(PUBLICATION, target_package)
+        target_schemas = self.repo / "trellis/workflows/guru-team/schemas"
+        target_schemas.parent.mkdir(parents=True)
+        shutil.copytree(REPO / "trellis/workflows/guru-team/schemas", target_schemas)
+        config = self.repo / ".trellis/guru-team/config.yml"
+        config.parent.mkdir(parents=True, exist_ok=True)
+        config.write_text(
+            "github_repo: castbox/guru-trellis\nworkspace_mode: worktree\n",
+            encoding="utf-8",
+        )
         (self.repo / "base.txt").write_text("old base\n", encoding="utf-8")
         self.git("add", ".")
         self.git("commit", "-qm", "old base")
@@ -87,10 +73,10 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
         self.new_base = self.git("rev-parse", "HEAD")
         self.git("switch", "-qc", "feat/continuity", self.old_base)
         (self.repo / "task.txt").write_text("task content\n", encoding="utf-8")
-        self.git("add", "task.txt")
+        self._write_task_identity()
+        self.git("add", "task.txt", TASK_REF)
         self.git("commit", "-qm", "reviewed task")
         self.review_head = self.git("rev-parse", "HEAD")
-        self._write_task_identity()
 
     def tearDown(self) -> None:
         self.temp.cleanup()
@@ -134,6 +120,26 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
                     "status": "in_progress",
                     "branch": "feat/continuity",
                     "base_branch": "main",
+                }
+            ),
+            encoding="utf-8",
+        )
+        for name in ("prd.md", "design.md", "implement.md"):
+            (task / name).write_text(f"# {name}\n\nCurrent #376 authority.\n", encoding="utf-8")
+        issue = {
+            "number": 376,
+            "url": "https://github.com/castbox/guru-trellis/issues/376",
+            "title": "降低基线分支已更新对并行进行中的任务的干扰",
+            "reason": "The continuity path is fully covered by this regression.",
+        }
+        (task / "issue-scope-ledger.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "2.0",
+                    "primary_issue": issue,
+                    "close_issues": [issue],
+                    "related_issues": [],
+                    "followup_issues": [],
                 }
             ),
             encoding="utf-8",
@@ -216,37 +222,48 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
             },
         }
 
-    def publication_ready(self, branch_review_commit: str) -> dict:
+    def publication_review(self) -> dict:
         value = json.loads(
             (PUBLICATION / "examples/pr-readiness.json").read_text(encoding="utf-8")
         )
-        value["task_ref"] = TASK_REF
-        value["branch_review_commit"] = branch_review_commit
+        for key in (
+            "schema_version",
+            "skill_id",
+            "task_ref",
+            "branch_review_commit",
+            "reviewed_content_sha256",
+        ):
+            value.pop(key)
+        value.update(
+            {
+                "profile": "publication_review",
+                "mode": "workflow",
+                "review_intent": "initial_review",
+            }
+        )
+        value["pr_payload"]["title"] = "修复：#376 保持跨 Skill 审查连续性"
+        value["pr_payload"]["body"] = value["pr_payload"]["body"].replace(
+            "#179", "#376"
+        )
+        value["pr_payload"]["body"] = value["pr_payload"]["body"].replace(
+            "- durable specs 与 public README 已同步。",
+            "- strategy: update_existing\n- durable docs: workflow contracts synchronized\n- merged delta: continuity contract fixes\n- task history: task planning updated\n- follow-up: none",
+        )
         return value
 
-    def invoke_publication(self, public: dict, owner_result: dict) -> dict:
-        checkpoint = (
-            self.repo
-            / ".trellis/.runtime/guru-team/owner-checkpoints"
-            / Path(TASK_REF).name
-            / "pr-readiness.json"
+    def invoke_publication(self, public: dict, semantic_result: dict) -> dict:
+        return PUBLICATION_WRAPPER.run(
+            PUBLICATION,
+            {},
+            [
+                "--root",
+                str(self.repo),
+                "--input",
+                str(self.write_json("publication-input.json", public)),
+                "--semantic-result",
+                str(self.write_json("publication-semantic.json", semantic_result)),
+            ],
         )
-        checkpoint.parent.mkdir(parents=True, exist_ok=True)
-        checkpoint.write_text(json.dumps(owner_result), encoding="utf-8")
-        owner = PublicationOwner(self.repo, owner_result, checkpoint)
-        with mock.patch.object(PUBLICATION_WRAPPER, "_owner", return_value=owner):
-            return PUBLICATION_WRAPPER.run(
-                PUBLICATION,
-                {},
-                [
-                    "--root",
-                    str(self.repo),
-                    "--input",
-                    str(self.write_json("publication-input.json", public)),
-                    "--owner-result",
-                    str(self.write_json("publication-owner.json", owner_result)),
-                ],
-            )
 
     def test_finalizer_mismatch_reconciles_reviews_and_publishes_current_head(self) -> None:
         candidate = self.run_wrapper(
@@ -374,7 +391,7 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
         }
         ready = self.invoke_publication(
             publication_input,
-            self.publication_ready(reconciled_head),
+            self.publication_review(),
         )
         self.assertEqual("ready", ready["exit_id"])
         self.assertEqual(reconciled_head, ready["branch_review_commit"])
@@ -392,8 +409,8 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
         from runtime.io import CommandError
 
         with self.assertRaises(CommandError) as raised:
-            self.invoke_publication(public, self.publication_ready(unreviewed_head))
-        self.assertEqual("publication_input_invalid", raised.exception.code)
+            self.invoke_publication(public, self.publication_review())
+        self.assertEqual("branch_review_handoff_contract_failed", raised.exception.code)
         self.assertEqual("input.branch_review_commit", raised.exception.field_path)
 
 

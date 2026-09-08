@@ -1553,7 +1553,7 @@ The five outputs are independent minimal DTOs:
 
 - `passed`: `exit_id`, `task_ref`, `branch_review_commit`;
 - `continuity_passed`: `exit_id`, `task_ref`, `branch_review_commit`,
-  `prior_branch_review_commit`, `task_head`, `old_base_head`, `new_base_head`,
+  `task_head`, `old_base_head`, `new_base_head`,
   `candidate_tree_sha256`, and `resume_target`; the public
   `branch_review_commit` is the current continuity-reviewed reconciliation
   commit, not a claim that a second complete Branch Review occurred;
