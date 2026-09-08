@@ -38,7 +38,12 @@ retarget_context/new_task/blocked` 路径。完整 `claude-existing` 累计兼�
 
 ## 4. 后续门禁
 
-- [x] 运行 fresh Phase 2 `guru-check-task`，覆盖完整 task scope；当前已完成
-      AI 语义复核和相关 deterministic checks，但未伪造 Phase 2 owner artifact。
-- [ ] 仅在 Phase 2 passed 后进入 commit/review；本 task 当前不执行 commit、
-      push、PR、merge 或 release。
+- [x] 原始实现已完成 fresh Phase 2、commit、Branch Review、Publication 和
+      Finalizer，并创建 PR #380。
+- [x] PR review 发现 P2：`needs_context` 对不完整 `transition.base` 直接索引，
+      可能输出 traceback。提交 `e292c3f6` 增加结构、字段、SHA 与 repo locator
+      校验，malformed 输入统一返回 `stale_identity` JSON error。
+- [x] finding-fix 定向验证：canonical 与 installed Clarify contract tests 各
+      10/10，source skill-package validator 和 Python compileall 通过。
+- [ ] finding-fix 必须重新完成 Phase 2、Task Commit、fresh Branch Review、
+      Publication 和 Finalizer 后才能合并 PR #380。
