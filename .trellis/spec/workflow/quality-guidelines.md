@@ -433,7 +433,14 @@ stdout-only zero-write behavior; source/installed/schema/runtime/platform
 distribution; and clean throwaway update/workflow/preset reapply with zero
 cache/sidecar residue. Tests must prove scripts preserve the AI-authored route
 and contain no readiness, finding, delivery-unit, history, duplicate, or
-workspace-creation generator.
+workspace-creation generator. The #386 full-chain regression uses actual
+Discovery/Clarification/Wording public outputs through Readiness record/check/
+invoke, without test-side prerequisite reduction. Preserve distinct semantic
+content, title/body content, and disposition hashes. Exercise original earlier
+stage reroutes, live title-only/body-only drift, wrong target/stage, missing
+inputs and retired private-result shapes; distinguish shape diagnostics from
+live drift. Verify zero repository residue and no workspace creation on a
+representative clean install and reapply, without implying Release-matrix proof.
 When changing workspace boundary behavior, also run
 `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task
 <task-dir>` from the selected task worktree and add regression tests for wrong

@@ -19,7 +19,7 @@ SKILLS = Path(__file__).resolve().parents[2]
 REPO = SKILLS.parents[2]
 sys.path.insert(0, str(SKILLS))
 
-from adapters.eval import native_adapter  # noqa: E402
+from adapters.eval import eval_constants, native_adapter  # noqa: E402
 from runtime import eval_runner  # noqa: E402
 
 
@@ -1354,7 +1354,7 @@ print(json.dumps({"type": "turn.completed"}, separators=(",", ":")))
             )
             authoring_facts = (
                 model_repository
-                / native_adapter.QUALIFICATION_PUBLIC_AUTHORING_FACTS
+                / eval_constants.QUALIFICATION_PUBLIC_AUTHORING_FACTS
             )
             self.assertTrue(authoring_facts.is_file())
             self.assertEqual(

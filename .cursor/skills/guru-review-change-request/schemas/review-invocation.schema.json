@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-change-request-review-invocation-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "public_input", "transition", "owner_context", "owner_result"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "public_input": {"type": "object"},
+    "transition": {"type": "object"},
+    "owner_result": {"type": "object"},
+    "owner_context": {
+      "type": "object", "additionalProperties": false,
+      "required": ["change_request"],
+      "properties": {"change_request": {"type": "object"}}
+    }
+  }
+}

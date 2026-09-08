@@ -45,9 +45,9 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
                 "guru_approve_task_plan_common_composition_test",
                 self.package / "runtime/common.py",
             )
-            native_adapter = self.load_python_module(
-                "guru_team_native_adapter_composition_test",
-                adapter_root / "adapters/eval/native_adapter.py",
+            owner_runtime = self.load_python_module(
+                "guru_team_owner_runtime_composition_test",
+                adapter_root / "adapters/eval/owner_runtime.py",
             )
             publication = self.load_python_module(
                 "guru_review_task_publication_owner_composition_test",
@@ -56,24 +56,25 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             )
         finally:
             sys.path.pop(0)
-        return common, native_adapter, publication
+        from adapters.eval import production_fixtures
+        return common, owner_runtime, production_fixtures, publication
 
     def test_production_fixture_composition_reuses_publication_owner(self) -> None:
-        _, native_adapter, publication = self.load_eval_modules()
+        _, owner_runtime, production_fixtures, publication = self.load_eval_modules()
         runtime = SimpleNamespace()
         runtime_target = Path("/tmp/guru-team/run-skill-command.sh")
         with mock.patch.object(
-            native_adapter,
+            owner_runtime,
             "load_package_owner_runtime",
             return_value=publication,
         ) as loader:
-            native_adapter.compose_production_fixture_runtime(runtime_target, runtime)
+            owner_runtime.compose_production_fixture_runtime(runtime_target, runtime)
         loader.assert_called_once_with(runtime_target, "guru-review-task-publication")
         for name in ("load_config", "write_json", "write_runtime_mappings"):
             self.assertIs(getattr(runtime, name), getattr(publication, name))
 
     def test_production_fixture_composition_preserves_existing_capabilities(self) -> None:
-        _, native_adapter, publication = self.load_eval_modules()
+        _, owner_runtime, production_fixtures, publication = self.load_eval_modules()
         existing = {
             "load_config": object(),
             "write_json": object(),
@@ -81,35 +82,35 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         }
         runtime = SimpleNamespace(**existing)
         with mock.patch.object(
-            native_adapter,
+            owner_runtime,
             "load_package_owner_runtime",
             return_value=publication,
         ) as loader:
-            native_adapter.compose_production_fixture_runtime(Path("/unused"), runtime)
+            owner_runtime.compose_production_fixture_runtime(Path("/unused"), runtime)
         loader.assert_not_called()
         for name, value in existing.items():
             self.assertIs(getattr(runtime, name), value)
 
     def test_review_branch_reuses_production_owner_command_composition(self) -> None:
-        _, native_adapter, publication = self.load_eval_modules()
+        _, owner_runtime, production_fixtures, publication = self.load_eval_modules()
         runtime = SimpleNamespace()
         runtime_target = Path("/tmp/guru-team/run-skill-command.sh")
         with (
             mock.patch.object(
-                native_adapter,
+                owner_runtime,
                 "load_package_owner_runtime",
                 return_value=publication,
             ),
             mock.patch.object(
-                native_adapter,
+                owner_runtime,
                 "compose_production_owner_command_runtime",
             ) as composition,
         ):
-            native_adapter.compose_review_branch_eval_runtime(runtime_target, runtime)
+            owner_runtime.compose_review_branch_eval_runtime(runtime_target, runtime)
         composition.assert_called_once_with(runtime_target, runtime)
 
     def test_production_owner_command_composition_preserves_existing_bindings(self) -> None:
-        _, native_adapter, _ = self.load_eval_modules()
+        _, owner_runtime, production_fixtures, _ = self.load_eval_modules()
         names = (
             "cmd_record_planning_approval",
             "cmd_check_planning_approval",
@@ -120,22 +121,22 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         )
         existing = {name: object() for name in names}
         runtime = SimpleNamespace(**existing)
-        native_adapter.compose_production_owner_command_runtime(
+        owner_runtime.compose_production_owner_command_runtime(
             Path("/tmp/guru-team/run-skill-command.sh"), runtime,
         )
         for name, value in existing.items():
             self.assertIs(getattr(runtime, name), value)
 
     def test_approve_planning_staging_uses_composed_fixture_runtime(self) -> None:
-        common, native_adapter, publication = self.load_eval_modules()
+        common, owner_runtime, production_fixtures, publication = self.load_eval_modules()
         for name in ("load_config", "write_json", "write_runtime_mappings"):
             self.assertFalse(hasattr(common, name))
         with mock.patch.object(
-            native_adapter,
+            owner_runtime,
             "load_package_owner_runtime",
             return_value=publication,
         ):
-            native_adapter.compose_production_fixture_runtime(Path("/unused"), common)
+            owner_runtime.compose_production_fixture_runtime(Path("/unused"), common)
 
         with tempfile.TemporaryDirectory() as temp:
             fixture = Path(temp)
@@ -151,8 +152,8 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
                 cwd=fixture,
                 check=True,
             )
-            task, _ = native_adapter.production_task_fixture(common, fixture)
-            staged = native_adapter.production_planning_input(
+            task, _ = production_fixtures.production_task_fixture(common, fixture)
+            staged = production_fixtures.production_planning_input(
                 common, fixture, task, "approved",
             )
             payload = json.loads(staged.read_text(encoding="utf-8"))
@@ -164,19 +165,19 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             self.assertTrue(staged.read_bytes().endswith(b"\n"))
 
     def test_approve_planning_staging_uses_real_record_and_check_wrappers(self) -> None:
-        common, native_adapter, publication = self.load_eval_modules()
+        common, owner_runtime, production_fixtures, publication = self.load_eval_modules()
         repo = next(
             parent for parent in self.package.parents
             if (parent / ".trellis/guru-team/scripts/bash/run-skill-command.sh").is_file()
         )
         runtime_target = repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
         with mock.patch.object(
-            native_adapter,
+            owner_runtime,
             "load_package_owner_runtime",
             return_value=publication,
         ):
-            native_adapter.compose_production_fixture_runtime(runtime_target, common)
-        native_adapter.compose_production_owner_command_runtime(runtime_target, common)
+            owner_runtime.compose_production_fixture_runtime(runtime_target, common)
+        owner_runtime.compose_production_owner_command_runtime(runtime_target, common)
 
         with tempfile.TemporaryDirectory() as temp:
             fixture = Path(temp)
@@ -192,8 +193,8 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
                 cwd=fixture,
                 check=True,
             )
-            task, _ = native_adapter.production_task_fixture(common, fixture)
-            checked = native_adapter.production_record_planning(
+            task, _ = production_fixtures.production_task_fixture(common, fixture)
+            checked = production_fixtures.production_record_planning(
                 common, fixture, task, "approved",
             )
             self.assertEqual(checked["typed_exit"], "approved")
@@ -203,13 +204,13 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             )
 
     def test_clarify_scope_uses_real_record_check_and_invoke_wrappers(self) -> None:
-        common, native_adapter, publication = self.load_eval_modules()
+        common, owner_runtime, production_fixtures, publication = self.load_eval_modules()
         with mock.patch.object(
-            native_adapter,
+            owner_runtime,
             "load_package_owner_runtime",
             return_value=publication,
         ):
-            native_adapter.compose_production_fixture_runtime(Path("/unused"), common)
+            owner_runtime.compose_production_fixture_runtime(Path("/unused"), common)
 
         with tempfile.TemporaryDirectory() as temp:
             fixture = Path(temp)
@@ -225,9 +226,9 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
                 cwd=fixture,
                 check=True,
             )
-            task, _ = native_adapter.production_task_fixture(common, fixture)
+            task, _ = production_fixtures.production_task_fixture(common, fixture)
             task_ref = task.relative_to(fixture).as_posix()
-            owner_input = native_adapter.production_planning_input(
+            owner_input = production_fixtures.production_planning_input(
                 common, fixture, task, "clarify_scope",
             )
 

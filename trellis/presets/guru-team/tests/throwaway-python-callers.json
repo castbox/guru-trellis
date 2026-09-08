@@ -1212,12 +1212,12 @@
       "ordinal": 1
     },
     {
-      "id": "helper-generated_shebang-6f7a9b16545b",
+      "id": "helper-generated_shebang-53294f9ffcaa",
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
       "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "6f7a9b16545b069012716a0689531ec6927fed2dce95a1b815e9ce9caa07213a",
+      "anchor_sha256": "53294f9ffcaa2a1834eafcd6759ac5314dad13a9baae7e53f6bbd9c96020d56f",
       "ordinal": 1
     },
     {
@@ -1236,33 +1236,6 @@
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
       "anchor_sha256": "a05c38f70722454cc0418dc2d100741baa1c7cbf12242bc7d4a240cade360193",
-      "ordinal": 1
-    },
-    {
-      "id": "helper-generated_shebang-a9bda1e179d1",
-      "owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-      "kind": "generated_shebang",
-      "classification": "installed_managed",
-      "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "a9bda1e179d16a526dc38760d047bccb5f8f11cc540d3ea2251df2b0bd57715f",
-      "ordinal": 1
-    },
-    {
-      "id": "helper-generated_shebang-9b8bcb82bee7",
-      "owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-      "kind": "generated_shebang",
-      "classification": "installed_managed",
-      "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "9b8bcb82bee7546db3351624c9c2f47470724ef2b6c21f4889715e8709ba3dd3",
-      "ordinal": 1
-    },
-    {
-      "id": "helper-generated_shebang-d72f0686b746",
-      "owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-      "kind": "generated_shebang",
-      "classification": "installed_managed",
-      "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "d72f0686b7461f5aa1353015f511511c0af7219c8959e906985d932d25509736",
       "ordinal": 1
     },
     {
@@ -1293,8 +1266,35 @@
       "ordinal": 1
     },
     {
+      "id": "helper-generated_shebang-a9bda1e179d1",
+      "owner": "trellis/skills/guru-team/adapters/eval/fixture_io.py",
+      "kind": "generated_shebang",
+      "classification": "installed_managed",
+      "expected_launcher": "raw sys.executable shebang",
+      "anchor_sha256": "a9bda1e179d16a526dc38760d047bccb5f8f11cc540d3ea2251df2b0bd57715f",
+      "ordinal": 1
+    },
+    {
+      "id": "helper-generated_shebang-9b8bcb82bee7",
+      "owner": "trellis/skills/guru-team/adapters/eval/fixture_io.py",
+      "kind": "generated_shebang",
+      "classification": "installed_managed",
+      "expected_launcher": "raw sys.executable shebang",
+      "anchor_sha256": "9b8bcb82bee7546db3351624c9c2f47470724ef2b6c21f4889715e8709ba3dd3",
+      "ordinal": 1
+    },
+    {
+      "id": "helper-generated_shebang-d72f0686b746",
+      "owner": "trellis/skills/guru-team/adapters/eval/fixture_io.py",
+      "kind": "generated_shebang",
+      "classification": "installed_managed",
+      "expected_launcher": "raw sys.executable shebang",
+      "anchor_sha256": "d72f0686b7461f5aa1353015f511511c0af7219c8959e906985d932d25509736",
+      "ordinal": 1
+    },
+    {
       "id": "helper-python_subprocess_second_hop-dc8ffaff9013",
-      "owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "owner": "trellis/skills/guru-team/adapters/eval/fixture_io.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
@@ -1303,7 +1303,7 @@
     },
     {
       "id": "helper-python_subprocess_second_hop-2fe6929c5d2e",
-      "owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "owner": "trellis/skills/guru-team/adapters/eval/fixture_io.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
@@ -1409,8 +1409,78 @@
       "expected_launcher": "shared.sh -> installed resolve-python.sh",
       "launch_owner": "trellis/skills/guru-team/adapters/eval/shared.sh",
       "launch_token": "exec \"$RUNTIME_ASSETS/resolve-python.sh\" \"$REPO_ROOT\" \"$RUNTIME_ASSETS\" \"$SCRIPT_DIR/native_adapter.py\" --adapter shared \"$@\"",
-      "sys_executable_subprocesses": 2,
+      "sys_executable_subprocesses": 0,
       "managed_shebang_bindings": 3
+    },
+    {
+      "id": "managed-shared-eval-constants",
+      "path": "trellis/skills/guru-team/adapters/eval/eval_constants.py",
+      "classification": "installed_managed",
+      "expected_launcher": "native_adapter.py explicit module import under installed managed Python",
+      "launch_owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "launch_token": "from adapters.eval.eval_constants import (",
+      "sys_executable_subprocesses": 0,
+      "managed_shebang_bindings": 2
+    },
+    {
+      "id": "managed-shared-eval-support",
+      "path": "trellis/skills/guru-team/adapters/eval/eval_support.py",
+      "classification": "installed_managed",
+      "expected_launcher": "native_adapter.py explicit module import under installed managed Python",
+      "launch_owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "launch_token": "from adapters.eval.eval_support import (",
+      "sys_executable_subprocesses": 0,
+      "managed_shebang_bindings": 0
+    },
+    {
+      "id": "managed-shared-fixture-io",
+      "path": "trellis/skills/guru-team/adapters/eval/fixture_io.py",
+      "classification": "installed_managed",
+      "expected_launcher": "eval_support.py explicit module import under installed managed Python",
+      "launch_owner": "trellis/skills/guru-team/adapters/eval/eval_support.py",
+      "launch_token": "from adapters.eval.fixture_io import (",
+      "sys_executable_subprocesses": 2,
+      "managed_shebang_bindings": 1
+    },
+    {
+      "id": "managed-shared-owner-runtime",
+      "path": "trellis/skills/guru-team/adapters/eval/owner_runtime.py",
+      "classification": "installed_managed",
+      "expected_launcher": "owner_staging.py explicit module import under installed managed Python",
+      "launch_owner": "trellis/skills/guru-team/adapters/eval/owner_staging.py",
+      "launch_token": "from adapters.eval.owner_runtime import (",
+      "sys_executable_subprocesses": 0,
+      "managed_shebang_bindings": 0
+    },
+    {
+      "id": "managed-shared-owner-staging",
+      "path": "trellis/skills/guru-team/adapters/eval/owner_staging.py",
+      "classification": "installed_managed",
+      "expected_launcher": "native_adapter.py explicit module import under installed managed Python",
+      "launch_owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "launch_token": "from adapters.eval.owner_staging import (",
+      "sys_executable_subprocesses": 0,
+      "managed_shebang_bindings": 0
+    },
+    {
+      "id": "managed-shared-production-fixtures",
+      "path": "trellis/skills/guru-team/adapters/eval/production_fixtures.py",
+      "classification": "installed_managed",
+      "expected_launcher": "owner_staging.py explicit module import under installed managed Python",
+      "launch_owner": "trellis/skills/guru-team/adapters/eval/owner_staging.py",
+      "launch_token": "from adapters.eval.production_fixtures import (",
+      "sys_executable_subprocesses": 0,
+      "managed_shebang_bindings": 0
+    },
+    {
+      "id": "managed-shared-stage0-fixtures",
+      "path": "trellis/skills/guru-team/adapters/eval/stage0_fixtures.py",
+      "classification": "installed_managed",
+      "expected_launcher": "owner_staging.py explicit module import under installed managed Python",
+      "launch_owner": "trellis/skills/guru-team/adapters/eval/owner_staging.py",
+      "launch_token": "from adapters.eval.stage0_fixtures import (",
+      "sys_executable_subprocesses": 0,
+      "managed_shebang_bindings": 0
     },
     {
       "id": "managed-shared-eval-native",

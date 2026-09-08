@@ -671,8 +671,10 @@ def expression_uses_name(node: ast.AST, name: str) -> bool:
     return any(isinstance(child, ast.Name) and child.id == name for child in ast.walk(node))
 
 
-def managed_shebang_names(tree: ast.AST) -> set[str]:
-    names: set[str] = set()
+def managed_shebang_names(
+    tree: ast.AST, imported_names: set[str] | None = None,
+) -> set[str]:
+    names: set[str] = set(imported_names or ())
     assignments: list[tuple[list[ast.expr], ast.AST]] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -696,6 +698,54 @@ def managed_shebang_names(tree: ast.AST) -> set[str]:
                     names.add(target.id)
                     changed = True
     return names
+
+
+def registered_helper_shebang_bindings(
+    repo_root: Path, helpers: list[dict[str, Any]],
+) -> dict[str, set[str]]:
+    """Resolve explicit imports only within the registered helper AST graph."""
+    trees = {}
+    for row in helpers:
+        path = row.get("path") if isinstance(row, dict) else None
+        if not isinstance(path, str) or path in trees:
+            raise RoutingError("python helper inventory contains a missing or duplicate path")
+        source = (repo_root / path).read_text(encoding="utf-8")
+        if source.startswith("#!") or "#!/usr/bin/env python3" in source:
+            raise RoutingError(f"PATH Python shebang is forbidden: {path}")
+        trees[path] = ast.parse(source, filename=path)
+    edges: dict[str, list[tuple[str, str, str]]] = {path: [] for path in trees}
+    for path, tree in trees.items():
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.ImportFrom):
+                continue
+            module_path = Path(*(node.module or "").split("."))
+            if node.level:
+                parent = Path(path).parent
+                for _ in range(node.level - 1):
+                    parent = parent.parent
+                candidates = [(parent / module_path).as_posix() + ".py"]
+            else:
+                suffix = module_path.as_posix() + ".py"
+                candidates = [name for name in trees if name == suffix or name.endswith("/" + suffix)]
+            candidates = [name for name in candidates if name in trees]
+            if len(candidates) > 1:
+                raise RoutingError(f"ambiguous registered helper import in {path}: {node.module}")
+            if candidates:
+                edges[path].extend(
+                    (candidates[0], alias.name, alias.asname or alias.name)
+                    for alias in node.names
+                )
+    bindings = {path: managed_shebang_names(tree) for path, tree in trees.items()}
+    changed = True
+    while changed:
+        changed = False
+        for path, tree in trees.items():
+            imported = {local for source, name, local in edges[path] if name in bindings[source]}
+            current = managed_shebang_names(tree, imported)
+            if current != bindings[path]:
+                bindings[path] = current
+                changed = True
+    return bindings
 
 
 def expression_contains_shebang_marker(node: ast.AST) -> bool:
@@ -751,9 +801,10 @@ def discover_secondary_callers(
     classification: str = "installed_managed",
     id_namespace: str = "helper",
     anchor_prefix: str = "",
+    imported_shebang_names: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     tree = ast.parse(source, filename=owner)
-    shebang_names = managed_shebang_names(tree)
+    shebang_names = managed_shebang_names(tree, imported_shebang_names)
     managed_dynamic_names = {
         target.id
         for assignment in ast.walk(tree)
@@ -1226,6 +1277,7 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
     expected_helper_paths = set()
     helper_facts = []
     discovered_secondary = discover_inline_secondary_callers(text, verifier_relative)
+    helper_bindings = registered_helper_shebang_bindings(repo_root, [*helpers, *transitive_helpers])
     for row in [*helpers, *transitive_helpers]:
         if not isinstance(row, dict):
             raise RoutingError("python helper inventory row must be an object")
@@ -1235,8 +1287,6 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
         expected_helper_paths.add(path_text)
         path = repo_root / path_text
         source = path.read_text(encoding="utf-8")
-        if source.startswith("#!") or "#!/usr/bin/env python3" in source:
-            raise RoutingError(f"PATH Python shebang is forbidden: {path_text}")
         if row in helpers:
             direct_token = f'installed_python "$TARGET" "$REPO_ROOT/{path_text}"'
             if direct_token not in text:
@@ -1249,8 +1299,10 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
             launch_source = (repo_root / launch_owner).read_text(encoding="utf-8")
             if launch_token not in launch_source:
                 raise RoutingError(f"transitive helper managed launcher drift: {path_text}")
-        tree = ast.parse(source, filename=path_text)
-        helper_secondary = discover_secondary_callers(source, path_text)
+        bindings = helper_bindings[path_text]
+        helper_secondary = discover_secondary_callers(
+            source, path_text, imported_shebang_names=bindings,
+        )
         sys_executable_calls = sum(
             row["kind"] == "python_subprocess_second_hop"
             for row in helper_secondary
@@ -1262,7 +1314,7 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
                 f"{sys_executable_calls} != {expected_sys_calls}"
             )
         expected_bindings = row.get("managed_shebang_bindings")
-        actual_bindings = len(managed_shebang_names(tree))
+        actual_bindings = len(bindings)
         if actual_bindings != expected_bindings:
             raise RoutingError(
                 f"managed shebang inventory drift in {path_text}: "

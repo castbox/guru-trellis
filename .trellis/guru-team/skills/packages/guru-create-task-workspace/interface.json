@@ -63,7 +63,7 @@
     },
     {
       "id": "readiness_evidence",
-      "evidence": "current guru-change-request-review-1.0 ready result",
+      "evidence": "current Readiness public readiness_current transition from the checked guru-change-request-review-2.0 result",
       "binding": "same live-normalized target/content, clarification/wording linkage and close/related/followup conclusion",
       "freshness": "facts digest, target authority and two-prerequisite linkage remain current"
     },

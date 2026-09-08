@@ -145,21 +145,6 @@ def wording_change_request_source(issue: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def readiness_reentry_transition(
-    wording_transition: dict[str, Any], exit_id: str
-) -> dict[str, Any]:
-    transition = copy.deepcopy(wording_transition)
-    transition.pop("wording_facts_sha256", None)
-    transition.pop("wording", None)
-    if exit_id == "review_wording":
-        transition["stage"] = "clarity_current"
-        transition["transition_id"] = (
-            "clarity_current:" + transition["clarity_result_sha256"][:24]
-        )
-        return transition
-    raise RuntimeError(f"unsupported readiness re-entry transition: {exit_id}")
-
-
 def run(
     argv: list[str | Path],
     *,
@@ -363,6 +348,8 @@ def stage_transcript_owner_repo(
     managed_shebang = f"#!{sys.executable}\n"
     operation_log = chain_root / "operation-counts.jsonl"
     issue_body = chain_root / "issue-body.txt"
+    issue_title = chain_root / "issue-title.txt"
+    issue_title.write_text("Phase 0 public transition transcript", encoding="utf-8")
     issue_body.write_text(
         "The current Intake workflow must preserve one public transition chain.",
         encoding="utf-8",
@@ -374,6 +361,7 @@ def stage_transcript_owner_repo(
         "import json,sys\n"
         "from pathlib import Path\n"
         f"issue_body_path={str(issue_body)!r}\n"
+        f"issue_title_path={str(issue_title)!r}\n"
         f"operation_log_path={str(operation_log)!r}\n"
         "args=sys.argv[1:]\n"
         "def count(operation):\n"
@@ -390,7 +378,7 @@ def stage_transcript_owner_repo(
         " body=Path(issue_body_path).read_text(encoding='utf-8')\n"
         " print(json.dumps({'number':145,'url':'https://github.com/example/guru-extension/issues/145',"
         "'state':'OPEN','updatedAt':'2026-01-01T00:00:00Z',"
-        "'title':'Phase 0 public transition transcript',"
+        "'title':Path(issue_title_path).read_text(encoding='utf-8'),"
         "'body':body,"
         "'comments':[],'assignees':[{'login':'stage0-transcript'}],'labels':[]}))\n"
         " raise SystemExit(0)\n"
@@ -1190,14 +1178,14 @@ def readiness_owner_for_issue(
         "title_sha256": title_sha256,
         "body_sha256": body_sha256,
     })
-    clarity = transition["clarity"]
-    wording = transition["wording"]
+    clarity = transition.get("clarity", {})
+    wording = transition.get("wording", {})
     linkage = {
         "target_identity_sha256": target_identity_sha256,
         "target_content_sha256": target_content_sha256,
-        "clarity_facts_sha256": clarity["facts_sha256"],
-        "clarity_disposition_sha256": clarity["disposition_sha256"],
-        "wording_facts_sha256": wording["facts_sha256"],
+        "clarity_facts_sha256": clarity.get("facts_sha256"),
+        "clarity_disposition_sha256": clarity.get("disposition_sha256"),
+        "wording_facts_sha256": wording.get("facts_sha256"),
     }
     linkage["linkage_sha256"] = digest(linkage)
     dimension_ids = (
@@ -1322,95 +1310,50 @@ def checked_readiness_owner_for_issue(
     env: dict[str, str],
     transition: dict[str, Any],
     source_path: Path,
-    clarity_result: dict[str, Any],
-    wording_result: dict[str, Any],
     typed_exit: str = "ready",
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     transition = copy.deepcopy(transition)
     transition["readiness_source"] = load_json(source_path)
     authored = readiness_owner_for_issue(root, env, transition, typed_exit)
 
-    prerequisites = readiness_prerequisites(
-        transition, clarity_result, wording_result
-    )
-    authored["prerequisite_payloads"] = prerequisites
+    transition.pop("readiness_source")
+    envelope = readiness_invocation(transition, load_json(source_path), authored)
     recorded = record_semantic(
         root,
         env,
         "guru-review-change-request",
         "record-change-request-review.sh",
-        [
-            "--mode", "workflow", "--input", "-",
-            "--change-request-input", source_path,
-        ],
-        authored,
-    )
-    prerequisites_path = source_path.with_name(
-        f"readiness-prerequisites-{typed_exit}.json"
-    )
-    prerequisites_path.write_text(
-        json.dumps(prerequisites, ensure_ascii=False, sort_keys=True) + "\n",
-        encoding="utf-8",
+        ["--invocation", "-"],
+        envelope,
     )
     checked = record_semantic(
         root,
         env,
         "guru-review-change-request",
         "check-change-request-review.sh",
-        [
-            "--input", "-", "--prerequisites-input", prerequisites_path,
-            "--change-request-input", source_path,
-            "--expected-facts-sha256", recorded["facts_sha256"],
-        ],
-        recorded,
+        ["--invocation", "-"],
+        {**envelope, "owner_result": recorded},
     )
     if checked.get("status") != "passed" or checked.get("typed_exit") != typed_exit:
         raise RuntimeError("current readiness owner did not pass its production checker")
     return recorded, checked
 
 
-def readiness_prerequisites(
+def readiness_invocation(
     transition: dict[str, Any],
-    clarity_result: dict[str, Any],
-    wording_result: dict[str, Any],
+    source: dict[str, Any],
+    owner: dict[str, Any],
 ) -> dict[str, Any]:
-    clarity_identity = clarity_result["content_identity"]
-    target_content_sha256 = transition.get("target_content_sha256")
-    wording_projection = transition.get("wording")
-    if (
-        not isinstance(target_content_sha256, str)
-        or not isinstance(wording_projection, dict)
-        or wording_projection.get("target_content_sha256")
-        != target_content_sha256
-    ):
-        raise RuntimeError(
-            "wording public transition did not expose one target content identity"
-        )
     return {
-        "clarity": {
-            "status": "current",
-            "schema_id": "guru-requirements-clarification-2.0",
-            "typed_exit": "clear",
-            "payload_sha256": digest(clarity_result),
-            "facts_sha256": clarity_identity["result_sha256"],
-            "target_sha256": clarity_identity["target_sha256"],
-            "disposition_sha256": clarity_identity["disposition_sha256"],
-            "content_sha256": target_content_sha256,
-            "scope_sha256": clarity_identity["scope_sha256"],
-            "error_codes": [],
+        "schema_version": "1.0",
+        "public_input": {
+            "profile": "current_issue", "source_exit": "pass", "mode": "workflow",
+            "target_locator": transition["target_locator"],
+            "continuation_id": transition["continuation_id"],
         },
-        "wording": {
-            "status": "current",
-            "schema_id": "guru-contract-wording-review-1.0",
-            "profile": "change_request",
-            "typed_exit": "pass",
-            "payload_sha256": digest(wording_result),
-            "facts_sha256": wording_result["facts_sha256"],
-            "scope_sha256": wording_result["scope"]["scope_sha256"],
-            "scan_sha256": wording_result["scan"]["scan_sha256"],
-            "target_content_sha256": target_content_sha256,
-            "error_codes": [],
-        },
+        "transition": transition,
+        "owner_context": {"change_request": source},
+        "owner_result": owner,
     }
 
 
@@ -1419,12 +1362,7 @@ def assert_readiness_content_drift_rejected(
     env: dict[str, str],
     transition: dict[str, Any],
     source_path: Path,
-    clarity_result: dict[str, Any],
-    wording_result: dict[str, Any],
 ) -> list[dict[str, str]]:
-    prerequisites = readiness_prerequisites(
-        transition, clarity_result, wording_result
-    )
     original = load_json(source_path)
     package = (
         root
@@ -1434,31 +1372,23 @@ def assert_readiness_content_drift_rejected(
     for field in ("title", "body"):
         drifted = copy.deepcopy(original)
         drifted[field] = str(drifted.get(field) or "") + " drift"
-        drift_path = source_path.with_name(f"readiness-{field}-drift.json")
-        drift_path.write_text(
-            json.dumps(drifted, ensure_ascii=False, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
         current = copy.deepcopy(transition)
         current["readiness_source"] = drifted
         authored = readiness_owner_for_issue(root, env, current)
-        authored["prerequisite_payloads"] = prerequisites
         process = run(
             [
                 package / "record-change-request-review.sh",
-                "--mode", "workflow", "--input", "-",
-                "--change-request-input", drift_path,
+                "--invocation", "-",
             ],
             cwd=root,
             env=env,
-            stdin=authored,
+            stdin=readiness_invocation(transition, drifted, authored),
             check=False,
         )
         error = json_stdout(process, f"readiness {field}-only drift")
         if (
             process.returncode == 0
             or error.get("code") != "stale_identity"
-            or error.get("field_path") != "prerequisite_payloads"
         ):
             raise RuntimeError(
                 f"readiness accepted {field}-only drift: {error}"
@@ -1663,7 +1593,7 @@ def workspace_prerequisite(
         ),
         "readiness": (
             "guru-review-change-request",
-            "guru-change-request-review-1.0",
+            "guru-change-request-review-2.0",
             "ready",
         ),
     }
@@ -1841,10 +1771,9 @@ def reentry_transcripts(
     source: dict[str, Any],
     readiness_source_path: Path,
     wording_source_path: Path,
-    clarity_result: dict[str, Any],
-    wording_result: dict[str, Any],
     context_transition: dict[str, Any],
     context_duplicate_snapshot: dict[str, Any],
+    clarity_transition: dict[str, Any],
     wording_transition: dict[str, Any],
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
@@ -1910,14 +1839,13 @@ def reentry_transcripts(
         ("clarify_requirements", "guru-clarify-requirements", "clear"),
         ("review_wording", "guru-review-contract-wording", "pass"),
     ):
-        readiness_owner, readiness_checked = checked_readiness_owner_for_issue(
-            root, env, wording_transition, readiness_source_path,
-            clarity_result, wording_result, producer_exit
-        )
         producer_transition = (
             context_transition
             if producer_exit == "clarify_requirements"
-            else readiness_reentry_transition(wording_transition, producer_exit)
+            else clarity_transition
+        )
+        readiness_owner, readiness_checked = checked_readiness_owner_for_issue(
+            root, env, producer_transition, readiness_source_path, producer_exit
         )
         readiness_envelope = {
             "schema_version": "1.0",
@@ -2130,10 +2058,9 @@ def six_step_transcript(
         source,
         readiness_source_path,
         wording_source_path,
-        clarity_owner,
-        wording_owner,
         context["transition"],
         context["duplicate_snapshot"],
+        clarity["transition"],
         wording["transition"],
     )
 
@@ -2145,7 +2072,6 @@ def six_step_transcript(
     )
     readiness_owner, readiness_checked = checked_readiness_owner_for_issue(
         root, env, wording["transition"], readiness_source_path,
-        clarity_owner, wording_owner,
     )
     readiness_envelope = {
         "schema_version": "1.0",
@@ -2183,8 +2109,6 @@ def six_step_transcript(
         env,
         wording["transition"],
         readiness_source_path,
-        clarity_owner,
-        wording_owner,
     )
 
     if (

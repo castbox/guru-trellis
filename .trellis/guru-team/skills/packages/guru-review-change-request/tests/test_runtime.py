@@ -5,8 +5,8 @@ from jsonschema import Draft202012Validator
 
 PACKAGE=Path(__file__).resolve().parents[1]
 SKILLS=PACKAGE.parents[1]
-RUNTIME=SKILLS/"runtime"
-if str(SKILLS) not in sys.path: sys.path.insert(0,str(SKILLS))
+RUNTIME=next(path for path in (SKILLS/"runtime",SKILLS.parent/"runtime") if path.is_dir())
+if str(RUNTIME.parent) not in sys.path: sys.path.insert(0,str(RUNTIME.parent))
 from runtime.command import main
 
 class PackageLocalRuntimeTest(unittest.TestCase):
