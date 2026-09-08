@@ -27,7 +27,7 @@
           "flag": "--skill-input",
           "required": true,
           "kind": "string",
-          "description": "Public branch review input.",
+          "description": "Current public Branch Review or base-continuity input.",
           "repeatable": false,
           "conflicts": []
         },

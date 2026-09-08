@@ -9,6 +9,7 @@
     {"code":"unsafe_path","trigger":"A locator is missing, unsafe or symlink-backed.","exit_status":2,"locator":"path","remediation":"Use a regular file below the repository or package."},
     {"code":"stale_identity","trigger":"Task, base, candidate or checkpoint identity is no longer current.","exit_status":3,"locator":"field_path","remediation":"Rebuild the pair from current live Git facts."},
     {"code":"candidate_failed","trigger":"The controlled candidate cannot be created or validated.","exit_status":3,"locator":"field_path","remediation":"Review objective candidate evidence and select a semantic route."},
+    {"code":"reconciliation_failed","trigger":"The confirmed local reconciliation commit cannot be created or verified.","exit_status":3,"locator":"field_path","remediation":"Restore the clean prior task HEAD, rebuild the candidate, and obtain a new confirmation."},
     {"code":"runtime_dependency_missing","trigger":"A required package runtime dependency is unavailable.","exit_status":2,"locator":"path","remediation":"Install the complete Guru Team preset dependencies."},
     {"code":"internal_error","trigger":"An unexpected package-local runtime failure occurred.","exit_status":70,"locator":"path","remediation":"Inspect the package-local runtime and retry."}
   ]

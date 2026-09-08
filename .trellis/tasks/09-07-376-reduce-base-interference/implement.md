@@ -75,3 +75,48 @@ git diff --check
 - PASS：reconcile 与 Discovery package tree digest 和当前 manifest 精确一致；source package validation 23 packages / 77 commands；ownership、overlay drift、task artifact、JSON、Python compilation 与 `git diff --check` 通过。
 - BOUNDARY：installed full validation 仍仅被 Issue #108 既存 approve/check/review Claude projection 与 digest provenance drift 阻断；39 个 `.bak` 未修改、未删除、未提交。
 - ROUTE：不重新规划或重新实施 #376 业务行为；对本次 tracked manifest composition 运行 fresh Phase 2、Task Commit、完整 Branch Review 与 Publication 后恢复 Finalizer。
+
+## 2026-09-08 Accepted Scope 扩展实施计划
+
+1. 更新 canonical `guru-reconcile-task-base` contract/runtime/evals/tests，使已有完整 review 的 compatible base evolution 在需要刷新 reviewed-content identity 时返回 `review_continuity_required`，保留原 `resume_target`。
+2. 在 reconcile package 内增加 expected-head 绑定的确定性 reconciliation executor：仅在 AI 已完成 exact candidate 判断并展示精确 Git 副作用、用户当次确认后执行；创建一个本地 merge/commit，不 push、不改 PR，并验证 prior review/new base ancestry 与 candidate tree。
+3. 直接演进 canonical `guru-review-branch:base_continuity`：输入分别绑定 prior full-review commit 与 current reconciled task HEAD；owner-private gate freshness 同时绑定二者，输出 current HEAD 给 Publication。
+4. 为语义变化的 review-continuity output、base-continuity input、continuity-passed output、aggregate input、review gate 及需要新增执行 receipt 的 reconcile private schema 使用新的 current-only version；同步 interface/commands/examples/consumers，删除旧版本 current authority，不增加双读或兼容 wrapper。
+5. 保持 `guru-review-task-publication` 的当前 reviewed-content 严格门禁，不增加 bypass；仅更新合同与回归，证明 continuity 输出的 current HEAD 可按现有 Publication schema/identity 进入 `ready`。
+6. 同步 workflow、quality guidelines、skill/data/workflow contract、canonical package、preset、dogfood 与 Agents/Codex/Claude/Cursor 声明投影；更新 installed manifest 的精确 inventory/digest。
+7. 增加真实跨 Skill integration regression：Finalizer base mismatch → reconciliation semantic result → confirmed local reconciliation commit → bounded continuity → Publication ready；断言无 implementation route、无完整 Branch Review replay、prior/current review identity 不混淆且无 remote mutation。
+8. 增加负向回归：未确认不写 Git、dirty/stale expected HEAD、prior review 或 new base 非祖先、task HEAD/pair/candidate tree 漂移、task content 或 authority 真实变化时不得 continuity pass。
+9. 执行相关 package/runtime 测试、跨 Skill integration、Architecture no-impact check、source/installed validation、ownership、overlay drift、task validation、JSON/Python 与 `git diff --check`；#108 已知 installed projection drift 保持独立边界。
+10. 完成 fresh Phase 2、Task Commit 和一次完整最终 Branch Review；该最终 review 审查本次真实合同修复 diff，不是仅因 base 前进而重复旧 review。
+
+### Scope authority
+
+- Live Issue comment: `https://github.com/castbox/guru-trellis/issues/376#issuecomment-5585538277`。
+- 本扩展不新增 public exit 或长期兼容路径；语义变化的 public/private schema 直接升级为 current-only，旧 continuity checkpoint 不迁移。
+
+## 2026-09-08 Cross-Skill Continuity 最终实施结果
+
+### 实施中发现与修复
+
+1. **Tree identity 算法不一致**：reconciliation executor 与 checker 曾使用不同的 candidate tree 计算边界，导致合法本地 reconciliation commit 无法稳定承接 prior full-review identity。现已统一为相同的 Git tree identity，并分别绑定 prior full-review commit、new base 与 current reconciled task HEAD。
+2. **Installer/validator integration inventory 缺口**：preset installer 与 installed validator 未分发或验证 continuity integration。现已安装并校验 `test_finish_family_integration.py` 与 `test_base_continuity_integration.py`，throwaway initial 和 update-reapply 路径均执行 continuity integration。
+3. **Review gate 7.0 producer/consumer allowlist 漂移**：installer、installed validator 与四个平台投影仍引用旧 gate 6.0。现已将 current authority 更新为 `review-gate-7.0.schema.json`，保留 6.0 仅作 legacy inventory，不再参与 runtime current path。
+4. **Source/installed runtime import 路径不一致**：continuity integration 只覆盖 source 布局，installed 布局无法解析 package runtime。现已同时加入 `SKILLS` 与 `SKILLS.parent`，覆盖 `trellis/skills/guru-team/runtime` 和 `.trellis/guru-team/runtime` 两种受支持布局。
+
+### 最终验证结果
+
+- PASS：canonical reconcile package `23/23`、Review Branch package `26/26`、Publication package `48/48`。
+- PASS：source 与 installed continuity integration 各 `2/2`，skill package integration `9/9`。
+- PASS：source package validator 覆盖 23 个 package、78 个 command。
+- PASS：installer 定向验证覆盖 gate 7.0 canonical/installed/四平台投影、explicit Claude install 与 all-platform install，共 `3/3`。
+- PASS：临时 clean install `/private/tmp/guru-376-dogfood-final.mb1Yw9` 返回 `status=ok`、skill package `status=ok`、installed validation `passed`，且 `new_copies=[]`、`managed_backups=[]`。
+- PASS：canonical/installed/platform checksum、ownership、dogfood workflow/overlay drift、task artifact、JSON、Python compilation、shell syntax 与 `git diff --check`。
+- PASS：`native_adapter.py` 相对 `origin/main...HEAD` 无 #376 diff；Issue #108 的 39 个 `.bak` 数量和内容保持不变。
+- BOUNDARY：installed full validator 仍仅因 Issue #108 的 Claude projection、package digest 与 sidecar inventory drift 失败；本任务不修复、不登记、不删除这些 `.bak`。
+- BOUNDARY：完整 installer suite 的剩余失败来自当前 `main` 上与 #376 无关的旧 adapter/discovery 文案断言；不为追求全绿扩张 accepted scope。
+
+### Architecture Phase 2
+
+- Route：`no_architecture_impact`。
+- 本实现继续复用既有 semantic owner、deterministic executor、当前对话确认边界和 typed projection；未新增 shared-current writer、dual-read、长期 compatibility、SDK、外部集成、GAP 或 ADR。
+- `guru-trellis-architecture-convergence@1` before/after 无 regression；不创建 Architecture contribution 或 ADR。

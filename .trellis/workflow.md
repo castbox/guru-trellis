@@ -267,7 +267,7 @@ The graph contains exactly 35 workflow targets and 24 stop targets.
 | guru-task-plan-clarify-scope-router | Enter the Scope Change Gate through guru-clarify-requirements. |
 | phase-1-task-activation | Present the current approved plan, wait at the dialogue-local review boundary when required, then validate the approved DTO and run the official task start transition. |
 | guru-base-reconciliation-router | Consume the checked current pair and resume its closed `resume_target`. |
-| guru-base-continuity-passed-router | Consume bounded continuity for the exact pair and resume its closed `resume_target`. |
+| guru-base-continuity-passed-router | Consume bounded continuity for the exact pair, project the current continuity-reviewed reconciliation commit as the downstream review anchor, and resume its closed `resume_target`. |
 | guru-resume-implementation | Resume Phase 2 implementation. |
 | guru-task-base-planning-router | Return the exact planning impact to the Planning owner. |
 | guru-task-base-scope-router | Enter the Scope Change Gate for the exact authority choice. |
@@ -284,7 +284,10 @@ The Finalizer stale projection supplies exactly `task_ref`,
 its declared profile, mode, and review intent. Inputs outside the current stale
 profile stop fail closed. When live reviewed content advances beyond that
 commit, Publication may return a checked task-work finding to the existing Phase
-2 router, while `ready` remains continuity-strict.
+2 router, while `ready` remains continuity-strict. This stale route never
+consumes a base-only mismatch: Finalizer projects that condition only as
+`base_reconciliation_required`, and the reconciliation/continuity chain must
+produce a current reviewed-content anchor before Publication can run again.
 
 Every stop target returns the owning Skill result and safe remediation, then
 waits for changed authority or external state. A stop never guesses another
@@ -671,9 +674,14 @@ identity may the caller declare that Branch Review passed. Normal `passed` has
 exactly one next consumer: it enters the pair guard with
 `resume_target=publication_review`; no finish, archive, or journal route may
 intervene.
-The `base_continuity` profile reviews only the reconciliation-selected delta,
-candidate, and affected validation; its distinct continuity_passed exit resumes
-the original closed target without replacing the task-content review.
+The `base_continuity` profile binds the prior complete Branch Review commit
+separately from the current committed reconciliation HEAD. It reviews only the
+reconciliation-selected base delta, conflict resolution, resulting tree, and
+affected validation; it never represents itself as a new complete Branch
+Review. Its distinct `continuity_passed` exit projects the current
+continuity-reviewed reconciliation commit as `branch_review_commit` for the
+downstream Publication input, preserves the prior task-content review as private
+evidence, and resumes the original closed target.
 
 #### 3.6 Publication review
 
@@ -725,7 +733,12 @@ Verification, stale publication, base reconciliation, resume, and reprepare
 exits are automatically consumed by their declared Skills; the workflow never
 calls closeout executors directly. A Finalizer base-only mismatch returns
 `base_reconciliation_required` with `resume_target=finalization_resume`;
-publication_review_stale remains limited to Publication content or metadata.
+`publication_review_stale` remains limited to Publication content or metadata
+and must not consume, relabel, or bypass that mismatch. When the resulting
+candidate changes the reviewed-content identity without changing task content,
+the reconcile owner obtains confirmation for one exact local Git mutation,
+creates the expected-head-bound reconciliation commit, and routes that committed
+HEAD through bounded continuity before Publication resumes.
 
 Publication diagnostics preserve the owner error code and expose only a bounded
 `recovery_scope`: `task_content`, `publication_content`, `stale_identity`, or
@@ -784,12 +797,22 @@ The semantic owner reads live authority and current task/base facts, follows
 the installed semantic-retrieval SSOT, and returns exactly one declared exit.
 The base pair is an integration clock independent from the live authority and
 task-content clock. A base advance alone does not invalidate planning or reset
-the current phase. When authority and approved task assumptions remain valid
-and the exact candidate is compatible, the owner returns `reconciled` and the
-router preserves the caller's closed `resume_target`, including
-`resume_target=task_activation` after Planning. `planning_stale` requires an
-actual live authority or approved-planning-assumption change with exact reason
-refs.
+the current phase. Before complete Branch Review, when authority and approved
+task assumptions remain valid and the exact candidate is compatible, the owner
+returns `reconciled` and the router preserves the caller's closed
+`resume_target`, including `resume_target=task_activation` after Planning.
+After complete Branch Review, Publication, or a Finalizer base mismatch, the
+same compatible result may return `reconciled` only when the candidate preserves
+the current reviewed-content identity. If task content remains unchanged but
+the candidate needs a new reviewed-content identity, the owner returns
+`review_continuity_required`; after the AI judgment it displays the exact task
+branch, expected task/base HEADs, candidate tree, commit scope, and zero remote
+effects, obtains confirmation for that mutation, and invokes its deterministic
+expected-head executor to create exactly one persistent local reconciliation
+commit. The executor must prove clean branch-bound state, expected ancestry, and
+candidate-tree equality before the result can enter `base_continuity`.
+`planning_stale` requires an actual live authority or approved-planning-
+assumption change with exact reason refs.
 The workflow routers validate only the minimal pair/route DTO and never repeat
 impact classification, candidate construction, validation selection, or review.
 Mapped implementation, planning, scope, bounded-continuity, resume, and blocked

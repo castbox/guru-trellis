@@ -9,4 +9,4 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if args.expected_exit and result["typed_output"]["exit_id"] != args.expected_exit:
         from runtime.io import CommandError
         raise CommandError("stale_identity","typed_exit","Use the current selected exit.",3)
-    return {"status":"ok","task_ref":result["task_ref"],"task_head":result["task_head"],"new_base_head":result["new_base_head"],"typed_exit":result["typed_output"]["exit_id"],"facts_sha256":result["facts_sha256"]}
+    return {"status":"ok","task_ref":result["task_ref"],"prior_task_head":result["prior_task_head"],"task_head":result["task_head"],"new_base_head":result["new_base_head"],"typed_exit":result["typed_output"]["exit_id"],"facts_sha256":result["facts_sha256"]}

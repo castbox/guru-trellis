@@ -6,7 +6,7 @@ remain evidence for, not substitutes for, this Skill's semantic judgment.
 
 ## Entry
 
-Aggregate public input schema 3.0 dispatches two independent profiles. The
+Aggregate public input schema 4.0 dispatches two independent profiles. The
 public `branch_review` schema 2.0 input contains only profile, mode, task/base
 refs, `branch_review_commit` and one of `initial_review|fresh_final_review`.
 `guru-create-task-commit:committed` supplies the task and commit identity;
@@ -50,12 +50,16 @@ authority and completes fresh `branch_review_candidate_set` qualification
 before continuing or redispatching work for that candidate. Official
 `trellis-*` agent files remain unchanged and upstream-owned.
 
-The independent `base_continuity` schema 1.0 profile is entered only from
-`guru-reconcile-task-base:review_continuity_required`. It binds the unchanged
-task HEAD and prior passing `branch_review_commit` to one exact
-`old_base_head...new_base_head` delta, temporary candidate tree, relevant paths,
-and original resume target. It reviews only that bounded integration surface;
-it does not rewrite or replay the task-content review.
+The independent current-only `base_continuity` schema 2.0 profile is entered
+only from `guru-reconcile-task-base:review_continuity_required`. Its
+`branch_review_commit` is the prior full Branch Review commit and its
+`task_head` is the current committed reconciled HEAD. The recorder requires
+`task_head == HEAD`, requires the prior review commit and `new_base_head` to be
+ancestors of that HEAD, and recomputes the committed tree identity to match the
+exact `candidate_tree_sha256`. The profile also binds one exact
+`old_base_head...new_base_head` pair, relevant paths, and original resume target.
+It reviews only that bounded integration surface; it does not rewrite or replay
+the task-content review and its success is not a full Branch Review.
 
 ## Semantic Review
 
@@ -173,20 +177,26 @@ or invalid projection retains the checkpoint for same-owner repair. Missing
 after retirement, wrong-task/base/HEAD/content, unsafe components, and symlink
 ancestors or gate files fail closed.
 
-The current gate uses only schema 6.0 with profile-specific identity,
+The current gate uses only schema 7.0 with profile-specific identity,
 `review_commit`, `reviewed_content_algorithm`, `reviewed_content_sha256`, and
 the final terminal candidate-classification witness required by its direct
-consumer. Aggregate input schema 2.0 and gate schema 5.0 or older remain legacy
-stale inventory, not current runtime authority. Any non-6.0 gate fails closed
-before owner evaluation; it is never dual-read, rewritten, or migrated.
+consumer. For `base_continuity`, `review_commit` equals the current committed
+`task_head`; the integration pair separately retains
+`prior_branch_review_commit`, current task HEAD, exact old/new base pair,
+candidate tree, relevant paths, and resume target. Aggregate input schema 3.0,
+base-continuity input/output schema 1.0, and gate schema 6.0 or older remain
+legacy stale inventory, not current runtime authority. Runtime never dual-reads,
+rewrites, or migrates them.
 
 Return exactly one of:
 
 - `passed`: minimal `task_ref`, `branch_review_commit` seed for
   `guru-review-task-publication`, only after the current Branch Review-stage
   Architecture result passes independently;
-- `continuity_passed`: exact pair and candidate identity to the workflow-owned
-  `guru-base-continuity-passed-router`, which resumes the original target;
+- `continuity_passed`: current-only schema 2.0 projects the exact pair and
+  candidate identity to the workflow-owned `guru-base-continuity-passed-router`,
+  sets `branch_review_commit` to the current continuity-reviewed `task_head`,
+  and resumes the original target without claiming a full Branch Review;
 - `implementation_required`: `branch_review_commit` and current finding refs;
 - `scope_confirmation_required`: exact proposal refs;
 - `blocked`: stable reason/remediation only.

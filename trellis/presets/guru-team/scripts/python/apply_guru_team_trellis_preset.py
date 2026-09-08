@@ -57,8 +57,12 @@ GURU_OVERLAY_REMOVAL_SIDECAR = (
     "sidecar and reapply the preset.\n"
 ).encode("utf-8")
 SKILL_DESTINATION_PLATFORM_ORDER = ("shared", "codex", "claude", "cursor")
+SKILL_INTEGRATION_TEST_PATHS = (
+    Path("tests/test_finish_family_integration.py"),
+    Path("tests/test_base_continuity_integration.py"),
+)
 PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS = {
-    "guru-review-branch": frozenset({Path("schemas/review-gate-6.0.schema.json")}),
+    "guru-review-branch": frozenset({Path("schemas/review-gate-7.0.schema.json")}),
 }
 PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS = {
     "guru-maintain-requirements-design-test-ssot": frozenset({
@@ -1155,15 +1159,13 @@ def install_skill_packages(
     source_files: list[tuple[Path, Path]] = [
         (canonical_root / "registry.json", Path("registry.json")),
     ]
-    finish_integration_test = canonical_root / "tests/test_finish_family_integration.py"
-    if not finish_integration_test.is_file() or finish_integration_test.is_symlink():
-        raise SystemExit("Canonical Finish family integration test is missing or unsafe.")
-    source_files.append(
-        (
-            finish_integration_test,
-            finish_integration_test.relative_to(canonical_root),
-        )
-    )
+    for relative in SKILL_INTEGRATION_TEST_PATHS:
+        integration_test = canonical_root / relative
+        if not integration_test.is_file() or integration_test.is_symlink():
+            raise SystemExit(
+                f"Canonical Skill integration test is missing or unsafe: {relative}"
+            )
+        source_files.append((integration_test, relative))
     for shared_root_name in ("schemas", "adapters", "contracts"):
         shared_root = canonical_root / shared_root_name
         if shared_root.is_dir():
@@ -1843,9 +1845,8 @@ def managed_source_projections(
 
     canonical_root = source_root / "trellis/skills/guru-team"
     _, entries = skill_registry_entries(canonical_root)
-    installed_sources = [
-        canonical_root / "registry.json",
-        canonical_root / "tests/test_finish_family_integration.py",
+    installed_sources = [canonical_root / "registry.json"] + [
+        canonical_root / relative for relative in SKILL_INTEGRATION_TEST_PATHS
     ]
     for shared_root_name in ("schemas", "adapters", "contracts", "consumers"):
         shared_root = canonical_root / shared_root_name

@@ -479,7 +479,8 @@ The workflow owns one closed `resume_target` table, mandatory invocation of the
 semantic owner for a new pair, and one `guru-base-reconciliation-router`.
 An unchanged pair resumes the original target without semantic invocation.
 The six semantic exits route uniquely: `reconciled` resumes the guarded target,
-`review_continuity_required` invokes the bounded Branch Review profile,
+`review_continuity_required` first completes its confirmed expected-head local
+reconciliation commit and then invokes the bounded Branch Review profile,
 `implementation_required` returns to implementation and a fresh Phase 2
 check, `planning_stale` returns to Planning,
 `scope_confirmation_required` invokes requirement clarification, and
@@ -488,10 +489,18 @@ confirmation boundary.
 
 Base identity is integration evidence, not authority or task-content
 freshness. A base-only change cannot by itself invalidate Planning, Phase 2,
-Branch Review, or Publication. Publication stale remains limited to its own PR
-payload, issue scope, validation statement, deployment, and security metadata.
-Finalizer exposes `base_reconciliation_required` separately and never
-relabels a base-only mismatch as Publication stale.
+Branch Review, or Publication. For post-Branch Review, post-Publication, and
+Finalizer mismatch profiles, a compatible candidate that changes the shared
+reviewed-content identity uses `review_continuity_required`: after semantic
+judgment and an exact current-dialogue Git confirmation, the reconcile owner
+creates one persistent local reconciliation commit bound to expected task/base
+HEADs and the reviewed candidate tree. Bounded continuity separately binds the
+prior complete review commit and that current commit, then projects the current
+commit as Publication's reviewed-content anchor. Publication stale remains
+limited to its own PR payload, issue scope, validation statement, deployment,
+security metadata, or genuine task-content drift. Finalizer exposes
+`base_reconciliation_required` separately and never relabels a base-only
+mismatch as Publication stale.
 
 ## Closeout Original-Entry Routing
 

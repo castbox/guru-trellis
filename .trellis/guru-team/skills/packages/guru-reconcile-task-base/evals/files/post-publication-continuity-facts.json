@@ -1,0 +1,1 @@
+{"scenario":"Publication remains semantically valid, but the compatible candidate needs a current reviewed-content identity.","owner_staging":{"recipe":"base-review-continuity"},"public_invocation":{"arguments":["--invocation","-"]}}

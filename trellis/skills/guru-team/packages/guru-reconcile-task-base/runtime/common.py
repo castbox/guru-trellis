@@ -15,6 +15,10 @@ EXITS = {
     "planning_stale", "scope_confirmation_required", "blocked",
 }
 
+POST_REVIEW_PROFILES = {
+    "post_branch_review", "post_publication", "finalizer_base_mismatch",
+}
+
 def validate_json(instance: Any, schema_path: Path, field_path: str) -> None:
     try:
         from jsonschema import Draft202012Validator
@@ -159,6 +163,60 @@ def is_ancestor(repo: Path, older: str, newer: str) -> bool:
     return subprocess.run(["git", "merge-base", "--is-ancestor", older, newer], cwd=repo, stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode == 0
 
 
+def index_tree_digest(repo: Path) -> str:
+    process = subprocess.run(
+        ["git", "ls-files", "--stage", "-z"],
+        cwd=repo,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if process.returncode:
+        raise CommandError("stale_identity", "repository.index", "Refresh the exact candidate index.", 3)
+    rows: list[bytes] = []
+    for entry in process.stdout.split(b"\0"):
+        if not entry:
+            continue
+        metadata, separator, path = entry.partition(b"\t")
+        parts = metadata.split()
+        if not separator or len(parts) != 3 or parts[2] != b"0":
+            raise CommandError(
+                "candidate_failed",
+                "repository.index",
+                "Resolve the candidate before computing its identity.",
+                3,
+            )
+        blob = subprocess.run(
+            ["git", "cat-file", "blob", parts[1].decode("ascii")],
+            cwd=repo,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        if blob.returncode:
+            raise CommandError(
+                "candidate_failed",
+                "repository.index",
+                blob.stderr.decode("utf-8", "replace").strip()
+                or "Read the exact candidate blob identity.",
+                3,
+            )
+        rows.append(
+            path + b"\0" + hashlib.sha256(blob.stdout).hexdigest().encode() + b"\0"
+        )
+    return hashlib.sha256(b"".join(rows)).hexdigest()
+
+
+def require_clean_worktree(repo: Path) -> None:
+    status = subprocess.run(
+        ["git", "status", "--porcelain=v1", "--untracked-files=normal"],
+        cwd=repo,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if status.returncode or status.stdout:
+        raise CommandError("stale_identity", "worktree", "Use a clean branch-bound task worktree.", 3)
+
+
 def digest(value: Any) -> str:
     raw = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(raw.encode()).hexdigest()
@@ -168,7 +226,7 @@ def validate_public(package: Path, value: dict[str, Any]) -> None:
     validate_json(value, package / "schemas/public-input.schema.json", "public_input")
 
 
-def objective_identity(repo: Path, public: dict[str, Any]) -> None:
+def objective_identity(repo: Path, public: dict[str, Any], *, expected_head: str | None = None) -> None:
     task_identity(repo, public["task_ref"], allow_planning=public["profile"] == "post_plan")
     task_head = resolve_commit(repo, public["task_head"], "task_head")
     old_base = resolve_commit(repo, public["old_base_head"], "old_base_head")
@@ -180,7 +238,7 @@ def objective_identity(repo: Path, public: dict[str, Any]) -> None:
         raise CommandError("stale_identity", "new_base_head", "Refresh the selected base exactly once.", 3)
     if not is_ancestor(repo, old_base, new_base):
         raise CommandError("stale_identity", "base_pair", "History rewrites require explicit recovery.", 3)
-    if resolve_commit(repo, "HEAD", "HEAD") != task_head:
+    if resolve_commit(repo, "HEAD", "HEAD") != (expected_head or task_head):
         raise CommandError("stale_identity", "task_head", "Rebuild the pair for current task content.", 3)
     branch_commit = public.get("branch_review_commit")
     if branch_commit and resolve_commit(repo, branch_commit, "branch_review_commit") != branch_commit:
@@ -201,27 +259,56 @@ def validate_result(package: Path, repo: Path, result: dict[str, Any], public: d
     if result["semantic_gate"]["typed_exit"] != result["typed_output"]["exit_id"]:
         raise CommandError("schema_mismatch", "typed_output.exit_id", "Match the AI-selected typed exit.")
     expected = public or {
-        key: result[key] for key in ("profile", "mode", "task_ref", "task_head", "selected_base_ref", "old_base_head", "new_base_head", "resume_target")
+        key: result[key] for key in ("profile", "mode", "task_ref", "selected_base_ref", "old_base_head", "new_base_head", "resume_target")
     }
+    expected["task_head"] = result["prior_task_head"]
     if "branch_review_commit" in result:
         expected["branch_review_commit"] = result["branch_review_commit"]
     validate_public(package, expected)
-    objective_identity(repo, expected)
-    for key in ("profile", "mode", "task_ref", "task_head", "selected_base_ref", "old_base_head", "new_base_head", "resume_target"):
+    objective_identity(repo, expected, expected_head=result["task_head"])
+    for key in ("profile", "mode", "task_ref", "selected_base_ref", "old_base_head", "new_base_head", "resume_target"):
         if result[key] != expected[key]:
             raise CommandError("stale_identity", key, "Use the result for this exact invocation pair.", 3)
+    if result["prior_task_head"] != expected["task_head"]:
+        raise CommandError("stale_identity", "prior_task_head", "Use the result for the exact pre-reconciliation task HEAD.", 3)
     if result.get("branch_review_commit") != expected.get("branch_review_commit"):
         raise CommandError("stale_identity", "branch_review_commit", "Use the result for the exact caller review identity.", 3)
+    exit_id = result["typed_output"]["exit_id"]
+    receipt = result.get("reconciliation_result")
+    if exit_id == "review_continuity_required":
+        if result["profile"] not in POST_REVIEW_PROFILES or not receipt:
+            raise CommandError("schema_mismatch", "reconciliation_result", "Continuity requires one current post-review reconciliation result.")
+        for key, expected_value in {
+            "prior_task_head": result["prior_task_head"],
+            "new_base_head": result["new_base_head"],
+            "branch_review_commit": result["branch_review_commit"],
+            "reconciled_task_head": result["task_head"],
+            "candidate_tree_sha256": result["semantic_gate"]["route_payload"]["candidate_tree_sha256"],
+        }.items():
+            if receipt[key] != expected_value:
+                raise CommandError("stale_identity", f"reconciliation_result.{key}", "Use the exact checked reconciliation result.", 3)
+        if not is_ancestor(repo, result["prior_task_head"], result["task_head"]):
+            raise CommandError("stale_identity", "prior_task_head", "The prior task HEAD must remain an ancestor.", 3)
+        if not is_ancestor(repo, result["new_base_head"], result["task_head"]):
+            raise CommandError("stale_identity", "new_base_head", "The reviewed new base must remain an ancestor.", 3)
+        if not is_ancestor(repo, result["branch_review_commit"], result["task_head"]):
+            raise CommandError("stale_identity", "branch_review_commit", "The prior full-review commit must remain an ancestor.", 3)
+        require_clean_worktree(repo)
+        if index_tree_digest(repo) != receipt["candidate_tree_sha256"]:
+            raise CommandError("stale_identity", "candidate_tree_sha256", "The committed tree must match the reviewed candidate.", 3)
+    elif receipt is not None or result["task_head"] != result["prior_task_head"]:
+        raise CommandError("schema_mismatch", "reconciliation_result", "Only bounded post-review continuity may consume a reconciliation result.")
 
 
-def output_for(public: dict[str, Any], gate: dict[str, Any], exit_id: str) -> dict[str, Any]:
+def output_for(public: dict[str, Any], gate: dict[str, Any], exit_id: str, *, task_head: str | None = None) -> dict[str, Any]:
+    current_task_head = task_head or public["task_head"]
     if exit_id == "reconciled":
-        return {"exit_id": exit_id, "task_ref": public["task_ref"], "task_head": public["task_head"], "new_base_head": public["new_base_head"], "resume_target": public["resume_target"]}
+        return {"exit_id": exit_id, "task_ref": public["task_ref"], "task_head": current_task_head, "new_base_head": public["new_base_head"], "resume_target": public["resume_target"]}
     if exit_id == "review_continuity_required":
         details = gate["route_payload"]
         if "branch_review_commit" not in public:
             raise CommandError("schema_mismatch", "branch_review_commit", "Continuity requires an existing branch review identity.")
-        return {"exit_id": exit_id, "task_ref": public["task_ref"], "task_head": public["task_head"], "old_base_head": public["old_base_head"], "new_base_head": public["new_base_head"], "branch_review_commit": public["branch_review_commit"], "candidate_tree_sha256": details.get("candidate_tree_sha256"), "relevant_paths": details.get("relevant_paths"), "resume_target": public["resume_target"]}
+        return {"exit_id": exit_id, "task_ref": public["task_ref"], "task_head": current_task_head, "old_base_head": public["old_base_head"], "new_base_head": public["new_base_head"], "branch_review_commit": public["branch_review_commit"], "candidate_tree_sha256": details.get("candidate_tree_sha256"), "relevant_paths": details.get("relevant_paths"), "resume_target": public["resume_target"]}
     if exit_id == "implementation_required":
         return {"exit_id": exit_id, "task_ref": public["task_ref"], "task_head": public["task_head"], "finding_refs": gate["route_payload"].get("finding_refs"), "resume_target": public["resume_target"]}
     if exit_id == "planning_stale":

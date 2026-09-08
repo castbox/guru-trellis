@@ -17,6 +17,7 @@ from common import (
     root,
     store_checkpoint,
     task,
+    tree_identity,
     validate_gate,
 )
 from runtime.io import CommandError
@@ -50,7 +51,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     profile = public.get("profile")
     schema = {
         "branch_review": "public-branch-review-input.schema.json",
-        "base_continuity": "public-base-continuity-input.schema.json",
+        "base_continuity": "public-base-continuity-input-2.0.schema.json",
     }.get(profile)
     if schema is None:
         raise CommandError(
@@ -62,30 +63,44 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         raise CommandError(
             "stale_identity", "task", "Record the review for the exact task owner.", 3
         )
-    if public.get("branch_review_commit") != head:
+    if profile == "branch_review" and public.get("branch_review_commit") != head:
         raise CommandError(
             "stale_identity", "branch_review_commit", "Review current HEAD.", 3
         )
     base_ref = public["new_base_head"] if profile == "base_continuity" else public["base_ref"]
-    base_head = git(
-        repo,
-        "rev-parse",
-        public["old_base_head"] if profile == "base_continuity" else base_ref,
-    )
-    if not ancestor(repo, base_head, head):
+    base_head = git(repo, "rev-parse", base_ref)
+    if profile == "branch_review" and not ancestor(repo, base_head, head):
         raise CommandError(
             "stale_identity", "base_ref", "Review base must precede current task content.", 3
         )
-    if profile == "base_continuity" and (
-        public["task_head"] != head
-        or not ancestor(repo, public["old_base_head"], public["new_base_head"])
-    ):
-        raise CommandError(
-            "stale_identity",
-            "integration_pair",
-            "Review one exact ancestor base delta for current task content.",
-            3,
+    if profile == "base_continuity":
+        checks = (
+            (public["task_head"] == head, "task_head", "Review current reconciled HEAD."),
+            (
+                ancestor(repo, public["old_base_head"], public["new_base_head"]),
+                "old_base_head",
+                "Review one exact ancestor base pair.",
+            ),
+            (
+                public["branch_review_commit"] != head
+                and ancestor(repo, public["branch_review_commit"], head),
+                "branch_review_commit",
+                "Use one prior full-review commit in current history.",
+            ),
+            (
+                ancestor(repo, public["new_base_head"], head),
+                "new_base_head",
+                "Current reconciled HEAD must contain the reviewed base.",
+            ),
+            (
+                tree_identity(repo, head) == public["candidate_tree_sha256"],
+                "candidate_tree_sha256",
+                "Current committed tree must match the integration candidate.",
+            ),
         )
+        for valid, field, remediation in checks:
+            if not valid:
+                raise CommandError("stale_identity", field, remediation, 3)
     if dirty_paths(repo, public["task_ref"]):
         raise CommandError(
             "stale_identity",
@@ -143,19 +158,22 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         None
         if profile == "branch_review"
         else {
-            key: public[key]
-            for key in (
+            **{
+                key: public[key]
+                for key in (
                 "task_head",
                 "old_base_head",
                 "new_base_head",
                 "candidate_tree_sha256",
                 "relevant_paths",
                 "resume_target",
-            )
+                )
+            },
+            "prior_branch_review_commit": public["branch_review_commit"],
         }
     )
     value = {
-        "schema_version": "6.0",
+        "schema_version": "7.0",
         "skill_id": "guru-review-branch",
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "task_dir": task_ref,

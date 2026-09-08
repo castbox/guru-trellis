@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import subprocess
@@ -198,6 +199,54 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             / ".trellis/.runtime/guru-team/owner-checkpoints/08-12-test/review-gate.json"
         )
 
+    def tree_identity(self, commit):
+        raw = subprocess.run(
+            ["git", "ls-tree", "-r", "-z", "--full-tree", commit],
+            cwd=self.repo,
+            stdout=subprocess.PIPE,
+            check=True,
+        ).stdout
+        rows = []
+        for entry in raw.split(b"\0"):
+            if not entry:
+                continue
+            metadata, _, path = entry.partition(b"\t")
+            mode, kind, oid = metadata.split()
+            if kind != b"blob":
+                continue
+            blob = subprocess.run(
+                ["git", "cat-file", "blob", oid.decode("ascii")],
+                cwd=self.repo,
+                stdout=subprocess.PIPE,
+                check=True,
+            ).stdout
+            rows.append(path + b"\0" + hashlib.sha256(blob).hexdigest().encode() + b"\0")
+        return hashlib.sha256(b"".join(rows)).hexdigest()
+
+    def continuity_public(self):
+        prior_review = self.head
+        self.git("switch", "main")
+        (self.repo / "base.txt").write_text("advance\n")
+        self.git("add", "base.txt")
+        self.git("commit", "-qm", "advance base")
+        new_base = self.git("rev-parse", "HEAD")
+        self.git("switch", "feat/test")
+        self.git("merge", "--no-ff", "-m", "reconcile base", new_base)
+        task_head = self.git("rev-parse", "HEAD")
+        return {
+            "profile": "base_continuity",
+            "mode": "workflow",
+            "task_ref": TASK_REF,
+            "task_head": task_head,
+            "branch_review_commit": prior_review,
+            "old_base_head": self.base,
+            "new_base_head": new_base,
+            "candidate_tree_sha256": self.tree_identity(task_head),
+            "relevant_paths": ["base.txt"],
+            "resume_target": "publication_review",
+            "review_intent": "base_continuity",
+        }
+
     def public(self, intent="fresh_final_review"):
         return {
             "profile": "branch_review",
@@ -270,7 +319,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         )
         gate = self.checkpoint()
         self.assertTrue(gate.is_file())
-        self.assertEqual("6.0", json.loads(gate.read_text())["schema_version"])
+        self.assertEqual("7.0", json.loads(gate.read_text())["schema_version"])
         checked = self.run_wrapper(
             "check-review-gate.sh",
             "--task",
@@ -506,26 +555,25 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         self.assertFalse(self.checkpoint().exists())
 
     def test_base_continuity_projects_pair_and_retires(self):
-        self.git("switch", "main")
-        (self.repo / "base.txt").write_text("advance\n")
-        self.git("add", "base.txt")
-        self.git("commit", "-qm", "advance base")
-        new_base = self.git("rev-parse", "HEAD")
-        self.git("switch", "feat/test")
-        public = {
-            "profile": "base_continuity",
-            "mode": "workflow",
-            "task_ref": TASK_REF,
-            "task_head": self.head,
-            "branch_review_commit": self.head,
-            "old_base_head": self.base,
-            "new_base_head": new_base,
-            "candidate_tree_sha256": "d" * 64,
-            "relevant_paths": ["base.txt"],
-            "resume_target": "publication_review",
-            "review_intent": "base_continuity",
-        }
+        public = self.continuity_public()
+        head_before = self.git("rev-parse", "HEAD")
+        count_before = self.git("rev-list", "--count", "HEAD")
         self.record(public, self.auth("continuity_passed"), "continuity_passed")
+        gate = json.loads(self.checkpoint().read_text())
+        self.assertEqual("7.0", gate["schema_version"])
+        self.assertEqual(public["task_head"], gate["review_commit"])
+        self.assertEqual(
+            public["branch_review_commit"],
+            gate["integration_pair"]["prior_branch_review_commit"],
+        )
+        checked = self.run_wrapper(
+            "check-review-gate.sh",
+            "--task",
+            TASK_REF,
+            "--expected-exit",
+            "continuity_passed",
+        )
+        self.assertEqual(public["task_head"], checked["review_commit"])
         output = self.run_wrapper(
             "invoke.sh",
             "--task",
@@ -534,9 +582,60 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             self.inputs / "public.json",
         )
         self.assertEqual("continuity_passed", output["exit_id"])
-        self.assertEqual(new_base, output["new_base_head"])
+        self.assertEqual(public["new_base_head"], output["new_base_head"])
+        self.assertEqual(public["task_head"], output["branch_review_commit"])
+        self.assertNotEqual(public["branch_review_commit"], output["branch_review_commit"])
         self.assertNotIn("relevant_paths", output)
         self.assertFalse(self.checkpoint().exists())
+        self.assertEqual(head_before, self.git("rev-parse", "HEAD"))
+        self.assertEqual(count_before, self.git("rev-list", "--count", "HEAD"))
+
+    def test_base_continuity_rejects_stale_head_prior_review_base_and_tree(self):
+        public = self.continuity_public()
+        unrelated_tree = self.git("rev-parse", f"{self.base}^{{tree}}")
+        unrelated = self.git("commit-tree", unrelated_tree, "-m", "unrelated")
+        future_base = self.git(
+            "commit-tree",
+            self.git("rev-parse", f"{public['new_base_head']}^{{tree}}"),
+            "-p",
+            public["new_base_head"],
+            "-m",
+            "future base",
+        )
+        cases = (
+            ("task_head", public["branch_review_commit"], "task_head"),
+            ("branch_review_commit", public["task_head"], "branch_review_commit"),
+            ("branch_review_commit", unrelated, "branch_review_commit"),
+            ("new_base_head", future_base, "new_base_head"),
+            ("candidate_tree_sha256", "f" * 64, "candidate_tree_sha256"),
+        )
+        for field, value, expected_field in cases:
+            with self.subTest(field=field, value=value):
+                stale = dict(public)
+                stale[field] = value
+                result = self.record(
+                    stale,
+                    self.auth("continuity_passed"),
+                    "continuity_passed",
+                    ok=False,
+                )
+                self.assertEqual("stale_identity", result["code"])
+                self.assertEqual(expected_field, result["field_path"])
+                self.assertFalse(self.checkpoint().exists())
+
+    def test_base_continuity_gate_rejects_head_advance_after_record(self):
+        public = self.continuity_public()
+        self.record(public, self.auth("continuity_passed"), "continuity_passed")
+        metadata = self.repo / TASK_REF / "review.md"
+        metadata.write_text("metadata tail\n")
+        self.git("add", str(metadata.relative_to(self.repo)))
+        self.git("commit", "-qm", "metadata tail")
+        result = self.run_wrapper(
+            "check-review-gate.sh", "--task", TASK_REF, ok=False
+        )
+        self.assertEqual("stale_identity", result["code"])
+        self.assertEqual("integration_pair.task_head", result["field_path"])
+        self.assertTrue(self.checkpoint().exists())
 
 
 class BranchReviewContractTest(unittest.TestCase):
@@ -643,7 +742,7 @@ class BranchReviewContractTest(unittest.TestCase):
         interface = json.loads((PACKAGE / "interface.json").read_text())
         public = interface["public_contracts"]
         self.assertEqual(
-            "guru-production-review-branch-input-aggregate-3.0",
+            "guru-production-review-branch-input-aggregate-4.0",
             public["input"]["aggregate_schema"]["schema_id"],
         )
         self.assertEqual(
@@ -651,7 +750,7 @@ class BranchReviewContractTest(unittest.TestCase):
             [profile["id"] for profile in public["input"]["profiles"]],
         )
         self.assertEqual(
-            "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-6.0.json",
+            "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-7.0.json",
             public["private_artifacts"][0]["schema"]["schema_id"],
         )
         self.assertEqual(
@@ -674,12 +773,16 @@ class BranchReviewContractTest(unittest.TestCase):
             PACKAGE / "references/contract.md",
         ):
             text = path.read_text()
+            normalized = " ".join(text.split())
             self.assertIn("base_continuity", text)
+            self.assertIn("schema 4.0", text)
             self.assertIn("schema 3.0", text)
+            self.assertIn("schema 7.0", text)
             self.assertIn("schema 6.0", text)
-            self.assertIn("schema 5.0", text)
             self.assertRegex(text, r"legacy\s+stale")
             self.assertIn("continuity_passed", text)
+            self.assertIn("bounded", normalized)
+            self.assertIn("full Branch Review", normalized)
 
     def test_subtraction_review_is_independent_and_not_phase2_checkpoint_reuse(self):
         repo = PACKAGE.parents[4]
@@ -700,7 +803,7 @@ class BranchReviewContractTest(unittest.TestCase):
             for path in (PACKAGE / "SKILL.md", PACKAGE / "references/contract.md")
         )
         self.assertIn("subtraction-first-compatibility.md", package_text)
-        gate = json.loads((PACKAGE / "schemas/review-gate-6.0.schema.json").read_text())
+        gate = json.loads((PACKAGE / "schemas/review-gate-7.0.schema.json").read_text())
         self.assertNotIn("user_confirmation", json.dumps(gate))
 
     def test_wrappers_are_executable(self):

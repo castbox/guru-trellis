@@ -7,7 +7,8 @@
 ## 2. 影响边界
 
 - Canonical：`trellis/workflows/guru-team/workflow.md`、`trellis/skills/guru-team/packages/guru-reconcile-task-base/`。
-- Durable spec：`trellis/presets/guru-team/spec/workflow/quality-guidelines.md`。
+- Durable spec：`trellis/presets/guru-team/spec/workflow/{workflow-contract.md,skill-package-contract.md,data-contracts.md,quality-guidelines.md}`。
+- Architecture：复用 current baseline 已有 semantic owner、deterministic executor、确认边界与 typed projection 结构；不新增 owner/domain/GAP/shared-current decision，故不创建 contribution 或 ADR。
 - Projection：`.trellis/workflow.md`、`.trellis/spec/workflow/quality-guidelines.md`、preset/Agents/Codex/Claude/Cursor 对应同步文件。
 - Tests：reconcile package 的 contract/eval/runtime fixtures。
 
@@ -52,3 +53,41 @@
 - 101 个 base delta 路径中，仅 `.trellis/guru-team/extension.json` 与 #376 路径相交；冲突限定为两侧 `installed_at` 与 `source.ref/commit` provenance preimage，package/file inventory 由 Git 三方合并保留。
 - 组合结果保留 #376 当前 provenance preimage `0001af5875543c25b9119be5e4c48b4c93286493` 与 `tree_state=dirty`，并同时保留 #376 reconcile 和 #384 Discovery 的 package/file digest；publication provenance tail 仍由 Finalizer 独占。
 - 该 reconciliation 不重新解释 #376 需求或实现，不新增 public exit、owner、持久化状态或兼容机制；tracked manifest 冲突解决按当前 workflow 重新执行 Phase 2、Task Commit、完整 Branch Review 与 Publication。
+
+## 9. Post-Review Cross-Skill Continuity
+
+### 9.1 已确认缺口
+
+- `guru-reconcile-task-base:finalizer_base_mismatch` 可在 authority/task content 未变时返回 `reconciled/finalization_resume`。
+- Publication 的 `guru-reviewed-content-1.0` 对完整非 metadata tree 绑定 identity；只要新 base 修改普通 source/spec，即使 task-relative delta 未变，旧 Branch Review commit 与当前 reconciled HEAD 的 identity 也必然不同。
+- 现有 `guru-review-branch:base_continuity` public input 已同时携带 `task_head` 与 `branch_review_commit`，但 runtime 错误要求二者都等于当前 HEAD，无法表达“prior full review + current reconciled candidate”。
+- 因此当前链路只能在 Publication fail closed 后回完整任务流程，或伪造 current HEAD 已完成完整 Branch Review；两者都不满足扩展后的 Issue authority。
+
+### 9.2 直接演进方案
+
+1. `guru-reconcile-task-base` 对 `post_branch_review`、`post_publication`、`finalizer_base_mismatch` 使用两个结果：
+   - candidate reviewed-content identity 与 prior review identity 相同：`reconciled` 并恢复原 target；
+   - task content 未变、integration compatible，但 current candidate 需要新的 reviewed-content identity：`review_continuity_required`。
+2. 对第二种结果，reconcile owner 在完成语义判断后展示精确 task branch、expected task/base HEAD、candidate tree、merge/commit 范围和零 remote 副作用，取得当次确认后调用 package-private deterministic executor。executor 仅允许 clean branch-bound worktree，以 expected-head 合入精确 `new_base_head` 并创建一个 reconciliation commit；结果必须同时满足 prior review ancestor、new base ancestor 和 candidate tree identity，任一 stale/mismatch 在写入前失败，执行后不匹配则阻塞而不是猜测恢复。
+3. `base_continuity` 输入语义固定为：
+   - `branch_review_commit`：先前完整 Branch Review commit；
+   - `task_head`：当前已提交的 reconciled HEAD；
+   - old/new base、candidate tree、relevant paths 与 resume target：来自同一 reconciliation judgment。
+4. recorder 要求 `task_head == HEAD`，并验证 prior `branch_review_commit` 是 current HEAD 祖先、新 base 是 current HEAD 祖先、current tree 与已审查 candidate tree 一致；bounded review 的 gate `review_commit` 绑定 current HEAD。
+5. owner-private integration pair 增加 prior full-review identity 并纳入 freshness；旧 checkpoint 不迁移，按 stale 重新生成。
+6. `continuity_passed` 输出中的 `branch_review_commit` 是 current reconciled HEAD，表示该 HEAD 已通过 bounded continuity review，供 Publication 计算当前 reviewed-content identity；它不是一次完整 Branch Review。
+7. workflow 保持现有 public exit id 和 owner：continuity router 只恢复原 `resume_target`，不增加兼容 wrapper、双读或第二状态机。
+
+### 9.3 Current-only schema evolution
+
+- `guru-reconcile-task-base:review_continuity_required`、`guru-review-branch:base_continuity`、`continuity_passed` 升级为新的 current-only public schema version；字段保持最小，但明确区分 prior full-review commit 与 current reconciled HEAD。
+- Branch Review aggregate input 与 owner-private review gate 升级到新的 current-only version，使 continuity gate 同时绑定 prior review、current review commit、exact pair 与 candidate tree。旧 public input 或旧 gate 直接 stale/fail closed，不做兼容分支或原地语义替换。
+- Publication public input、readiness gate 与 `guru-reviewed-content-1.0` 不升级；它只消费 continuity 输出投影出的 current `branch_review_commit`，并按现有算法严格校验 current HEAD/content。
+- Reconcile private checkpoint 若承载新增 executor/result identity，则同步升级 current-only schema；Git 执行 receipt 只保留 recorder/checker 的直接消费字段，不保存用户授权。
+
+### 9.4 失败与回退
+
+- prior review 不是 current HEAD 祖先、candidate tree/pair 不匹配、相关 base delta 未完整审查、验证不足或出现 task-content/authority 变化时 fail closed。
+- worktree 非 clean、HEAD/base 漂移、candidate tree 与拟提交结果不同、merge 无法按已审查结果完成时，executor 不创建可继续消费的 reconciliation result；不得复用旧确认或自动改写解决方案。
+- task-content、scope、authority 或实现变化继续走 `implementation_required`、`planning_stale`、scope clarification 或完整 Branch Review，不得降级为 bounded continuity。
+- Publication 继续严格校验当前 continuity-reviewed HEAD；不放宽 `guru-reviewed-content-1.0`，也不接受 caller 自报的 review identity。

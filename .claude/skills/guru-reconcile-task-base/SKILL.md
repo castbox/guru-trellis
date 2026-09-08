@@ -14,9 +14,21 @@ pair as an integration clock only: its advance does not by itself invalidate
 approved planning or an already selected workflow stage. Build only a
 temporary candidate through the declared deterministic command. After the AI
 has separately judged authority, task-content, and integration impact, record
-and check that result, then return exactly one declared typed exit. An
-authority- and task-content-unchanged compatible delta returns `reconciled`
-with the original `resume_target`, including for `post_plan`.
+and check that result, then return exactly one declared typed exit. Pre-review
+profiles with unchanged authority/task content and a compatible candidate
+return `reconciled` with the original `resume_target`, including `post_plan`.
+
+For `post_branch_review`, `post_publication`, and
+`finalizer_base_mismatch`, return `review_continuity_required` when the prior
+full review remains valid but the compatible candidate needs a new
+reviewed-content identity. After the semantic gate, display the exact task
+branch, prior task HEAD, selected new base, candidate tree, local merge commit
+message, and zero remote effects. Invoke `execute-base-reconciliation` only
+after the user confirms that exact action in the current dialogue. The
+executor creates one expected-head-bound local merge commit and never pushes;
+the confirmation is never passed to or persisted by a script. Record the
+checked executor result, then hand Branch Review the prior full-review commit
+separately from the current reconciled task HEAD.
 
 Before a base-delta observation can become an impact, finding, validation
 obligation, scope question, implementation route, or stale-plan route, form its

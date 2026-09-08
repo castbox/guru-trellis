@@ -39,10 +39,14 @@ the integration clock. Live Issue authority, accepted scope, approved planning
 assumptions, and task content form the authority/task-content clock. Advancing
 the integration clock alone never makes planning stale and never changes the
 caller's closed `resume_target`. If authority and task content remain unchanged
-and the exact candidate is compatible, every profile, including `post_plan`,
-returns `reconciled` with the original `resume_target`. `planning_stale` is
-valid only when current live authority or an approved planning assumption has
-actually changed; it carries exact reason refs for that change.
+and the exact candidate is compatible, `post_plan`, `post_check`, and
+`post_commit` return `reconciled` with the original `resume_target`. The three
+post-review profiles also return `reconciled` when the candidate preserves the
+reviewed-content identity. When that identity must advance, they return
+`review_continuity_required`; they do not route through implementation or a
+new full Branch Review. `planning_stale` is valid only when current live
+authority or an approved planning assumption has actually changed; it carries
+exact reason refs for that change.
 
 Base identity or path overlap alone is not a finding, stale result, pass, or
 block. Insufficient applicable evidence fails closed. A semantic conclusion is
@@ -69,6 +73,21 @@ candidate tree identity, and removes the worktree. It never selects commands,
 interprets failures, resolves conflicts, or chooses a route. Arbitrary shell
 strings are rejected.
 
+For a post-review continuity result, the AI completes the semantic gate before
+any persistent Git write. It then displays the exact branch, prior task HEAD,
+old/new base pair, prior full-review commit, candidate tree, commit message,
+and the fact that no push or remote mutation will occur. Current-dialogue confirmation
+authorizes only that displayed invocation and is not included in
+any request, result, checkpoint, or DTO.
+
+`execute-base-reconciliation` is package-private. It requires a clean,
+uniquely branch-bound task worktree at the exact prior task HEAD, binds the
+selected ref to the exact new base, validates old-base and prior-review
+ancestry, creates one local `--no-ff` merge commit, and verifies exact parent
+order, result ancestry, candidate tree identity, and final cleanliness. Stale
+or mismatched preconditions fail before commit. A failed merge or candidate
+mismatch is aborted back to the prior task HEAD. The executor never pushes or records user authorization.
+
 The recorder and checker validate the AI-authored result and live Git facts.
 They do not generate semantic retrieval terms or infer impact/route. The
 ignored `base-reconciliation.json` checkpoint contains only the exact pair,
@@ -81,8 +100,8 @@ review rather than chained.
 - `reconciled`: the workflow router receives task/current-base identity and the
   original `resume_target`.
 - `review_continuity_required`: Branch Review receives the exact old/new pair,
-  prior branch-review identity, candidate tree token, semantically relevant
-  paths, and original route for bounded continuity.
+  prior full-review commit, current reconciled task HEAD, candidate tree token,
+  semantically relevant paths, and original route for bounded continuity.
 - `implementation_required`: implementation receives exact finding refs and
   resumes the affected downstream graph.
 - `planning_stale`: Planning receives exact reason refs for changed live
@@ -97,8 +116,10 @@ fail closed.
 
 ## Compatibility
 
-This additive 1.0 package replaces no published Skill id. Legacy active-task
+The continuity output and private result are direct current-only 2.0 contracts.
+Older continuity output/private checkpoints are stale and are not dual-read,
+migrated, or wrapped. Legacy active-task
 base anchors may form one initial pair; absent anchors require a complete
 bounded reconciliation. The package never reads another Skill's private
 checkpoint, restores the retired shared compatibility dispatcher, rewrites
-tracked task artifacts, or creates a persistent branch/ref/commit.
+tracked task artifacts, or creates a remote ref or commit.

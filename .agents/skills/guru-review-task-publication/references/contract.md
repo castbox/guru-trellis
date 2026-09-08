@@ -230,6 +230,16 @@ supplied reviewed commit and never expands a public output. Inputs outside the
 current profile schema fail closed. Publication never reads or projects another
 Skill's checkpoint.
 
+`publication_review_stale` is not a base-reconciliation entry. A base-only
+mismatch is projected by Finalizer only as `base_reconciliation_required` and
+must be resolved by the reconcile owner. If that path creates a persistent local
+reconciliation commit, `guru-review-branch:base_continuity` reviews the bounded
+delta and projects the current continuity-reviewed commit into the ordinary
+`publication_review` seed. Publication consumes that current commit exactly as
+it consumes a complete Branch Review `passed` anchor; it does not receive the
+prior complete review identity and does not bypass the shared reviewed-content
+check.
+
 ## Semantic loop
 
 Review these dimensions against current private evidence:
@@ -312,6 +322,9 @@ continuity and the complete Finalizer preflight. The exception requires a valid
 reviewed commit that is proven to be an ancestor of current HEAD plus a successful
 descendant diff inspection. Invalid or non-ancestor identities and failed diff
 inspection remain fail-closed continuity errors on every exit.
+This exception applies only to genuine Publication/task-content drift. A
+base-only mismatch never reaches this profile and cannot use
+`return_to_task_work` or the stale checker exception as a continuity substitute.
 `blocked` requires at least one `blocked` dimension, one blocked
 scope/Docs/safety conclusion, and an open `external_blocker` finding whose
 dimension references blocked evidence. Open metadata-revision findings remain

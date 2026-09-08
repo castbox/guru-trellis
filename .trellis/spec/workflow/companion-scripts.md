@@ -1778,8 +1778,16 @@ The candidate executor accepts a closed structured request, creates an
 ephemeral integration candidate in a controlled temporary directory or
 detached worktree, runs only the declared Git/build/test operations, and
 cleans it after owner completion. It must reject arbitrary shell text as route
-authority and must not merge/rebase the task branch or create a persistent
-branch, ref, or commit.
+authority. For pre-review profiles it never mutates the task branch. For a
+post-review `review_continuity_required` result, a separate package-private
+reconciliation executor may run only after the semantic owner has displayed
+the exact task branch, expected task/base HEADs, candidate tree, merge/commit
+scope, and zero remote effects and received current-dialogue confirmation. That
+executor performs one expected-head-bound local merge/commit, rejects dirty or
+detached state and stale identities before mutation, verifies prior-review and
+new-base ancestry plus exact candidate-tree equality after mutation, and emits
+only the minimal receipt needed by the recorder/checker. It never records
+authorization, pushes, changes a PR, or invents conflict resolution.
 
 The recorder/checker run only after the AI has reviewed authority,
 task-content, and integration impact plus validation sufficiency. They validate
