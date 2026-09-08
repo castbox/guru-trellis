@@ -782,6 +782,14 @@ Only a new pair invokes guru-reconcile-task-base.
 
 The semantic owner reads live authority and current task/base facts, follows
 the installed semantic-retrieval SSOT, and returns exactly one declared exit.
+The base pair is an integration clock independent from the live authority and
+task-content clock. A base advance alone does not invalidate planning or reset
+the current phase. When authority and approved task assumptions remain valid
+and the exact candidate is compatible, the owner returns `reconciled` and the
+router preserves the caller's closed `resume_target`, including
+`resume_target=task_activation` after Planning. `planning_stale` requires an
+actual live authority or approved-planning-assumption change with exact reason
+refs.
 The workflow routers validate only the minimal pair/route DTO and never repeat
 impact classification, candidate construction, validation selection, or review.
 Mapped implementation, planning, scope, bounded-continuity, resume, and blocked

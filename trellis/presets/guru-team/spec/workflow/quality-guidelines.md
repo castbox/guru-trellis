@@ -1095,6 +1095,14 @@ semantic conflict, authority change, upstream supersession, PR-ready base
 advance, and non-ancestor history. A base SHA or path hit alone must never
 synthesize stale, finding, pass, reset, or block.
 
+The exact old/new base pair is an integration clock independent from the live
+authority and task-content clock. A base-only unrelated or semantically
+compatible advance with unchanged Issue authority and approved planning
+assumptions must return `reconciled` and preserve the original
+`resume_target`, including `task_activation` after Planning. A
+`planning_stale` result must identify an actual live authority or approved
+planning-assumption change; observing a newer base is not sufficient evidence.
+
 One shared stateful integration fixture passes actual producer stdout through
 the pair guard, semantic owner, router, and target consumer at every eligible
 boundary. It proves an unchanged pair causes zero semantic invocation,

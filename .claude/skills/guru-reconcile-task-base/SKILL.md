@@ -9,10 +9,14 @@ Invoke this Skill only after its package-local pair guard returns `new_pair` at
 an eligible stable workflow boundary. Read `references/contract.md`, including
 the referenced semantic-retrieval SSOT, before forming the AI judgment.
 
-Use the exact caller profile and pair supplied by the boundary. Build only a
+Use the exact caller profile and pair supplied by the boundary. Treat the base
+pair as an integration clock only: its advance does not by itself invalidate
+approved planning or an already selected workflow stage. Build only a
 temporary candidate through the declared deterministic command. After the AI
 has separately judged authority, task-content, and integration impact, record
-and check that result, then return exactly one declared typed exit.
+and check that result, then return exactly one declared typed exit. An
+authority- and task-content-unchanged compatible delta returns `reconciled`
+with the original `resume_target`, including for `post_plan`.
 
 Before a base-delta observation can become an impact, finding, validation
 obligation, scope question, implementation route, or stale-plan route, form its

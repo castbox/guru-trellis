@@ -34,6 +34,16 @@ The AI reviews three independent dimensions:
 3. integration impact for the exact candidate pair, conflicts and affected
    validations.
 
+These dimensions carry two independent clocks. The exact old/new base pair is
+the integration clock. Live Issue authority, accepted scope, approved planning
+assumptions, and task content form the authority/task-content clock. Advancing
+the integration clock alone never makes planning stale and never changes the
+caller's closed `resume_target`. If authority and task content remain unchanged
+and the exact candidate is compatible, every profile, including `post_plan`,
+returns `reconciled` with the original `resume_target`. `planning_stale` is
+valid only when current live authority or an approved planning assumption has
+actually changed; it carries exact reason refs for that change.
+
 Base identity or path overlap alone is not a finding, stale result, pass, or
 block. Insufficient applicable evidence fails closed. A semantic conclusion is
 recorded only after the AI has bound the pair, reviewed scope, key delta,
@@ -75,7 +85,9 @@ review rather than chained.
   paths, and original route for bounded continuity.
 - `implementation_required`: implementation receives exact finding refs and
   resumes the affected downstream graph.
-- `planning_stale`: Planning receives exact reason refs.
+- `planning_stale`: Planning receives exact reason refs for changed live
+  authority or an invalidated approved planning assumption; a base advance by
+  itself is not sufficient.
 - `scope_confirmation_required`: Requirements Clarification receives exact
   proposal refs; any user confirmation remains dialogue-local.
 - `blocked`: stop with zero public payload.

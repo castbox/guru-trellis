@@ -51,6 +51,23 @@ class RuntimeTest(unittest.TestCase):
         with self.assertRaises(CommandError) as raised:
             execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('planning-post-check.json',post_check))])
         self.assertEqual('stale_identity',raised.exception.code)
+    def test_unrelated_post_plan_base_delta_preserves_task_activation(self):
+        self.write_identity(status='planning')
+        public=self.public('post_plan'); public_path=self.write('unrelated-post-plan.json',public)
+        gate=self.gate(); gate.update({'key_delta_refs':['unrelated-base-only.txt'],'validation_evidence':['base-only delta is unrelated and candidate validations passed'],'summary':'Only the integration clock advanced; authority and approved planning assumptions remain current.'})
+        gate_path=self.write('unrelated-post-plan-gate.json',gate)
+        owner=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(public_path),'--semantic-review-file',str(gate_path),'--typed-exit','reconciled'])
+        output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(self.write('unrelated-post-plan-envelope.json',{'public_input':public,'owner_result':owner}))])
+        self.assertEqual('reconciled',output['exit_id'])
+        self.assertEqual('task_activation',output['resume_target'])
+    def test_real_planning_authority_change_remains_planning_stale(self):
+        self.write_identity(status='planning')
+        public=self.public('post_plan'); public_path=self.write('authority-change-post-plan.json',public)
+        gate=self.gate(); gate.update({'authority_impact':'changed','task_content_impact':'planning_stale','integration_impact':'compatible','summary':'Live Issue authority invalidated an approved planning assumption.','typed_exit':'planning_stale','route_payload':{'reason_refs':['live-issue-authority-changed']}})
+        gate_path=self.write('authority-change-post-plan-gate.json',gate)
+        owner=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(public_path),'--semantic-review-file',str(gate_path),'--typed-exit','planning_stale'])
+        output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(self.write('authority-change-post-plan-envelope.json',{'public_input':public,'owner_result':owner}))])
+        self.assertEqual({'exit_id':'planning_stale','task_ref':self.task_ref,'reason_refs':['live-issue-authority-changed']},output)
     def test_multiple_base_commits_form_one_cumulative_pair(self):
         self.git('switch','main'); (self.repo/'second.txt').write_text('second\n'); self.git('add','second.txt'); self.git('commit','-qm','second base advance'); newest=self.git('rev-parse','HEAD'); self.git('switch','feature')
         public=self.public(); public['selected_base_ref']=newest; public['new_base_head']=newest

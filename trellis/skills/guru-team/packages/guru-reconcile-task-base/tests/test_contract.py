@@ -22,6 +22,8 @@ class ContractTest(unittest.TestCase):
         self.assertEqual([],validate(SKILLS/'schemas/skill-interface-1.4.schema.json',interface)); self.assertEqual([],validate(SKILLS/'schemas/skill-commands.schema.json',commands)); self.assertEqual([],validate(SKILLS/'schemas/skill-error-catalog.schema.json',catalog))
         self.assertEqual([],validate(SKILLS/'schemas/skill-evals.schema.json',json.loads((PACKAGE/'evals/evals.json').read_text())))
         self.assertEqual(6,len(interface['external_exits'])); self.assertEqual(5,len(commands['commands']))
+        eval_ids={item['id'] for item in json.loads((PACKAGE/'evals/evals.json').read_text())['evals']}
+        self.assertIn('unrelated-base-delta-reconciled',eval_ids)
         for profile in interface['public_contracts']['input']['profiles']:
             self.assertEqual([],validate(PACKAGE/profile['schema']['path'],json.loads((PACKAGE/profile['example']['path']).read_text())))
         for output in interface['public_contracts']['outputs']:

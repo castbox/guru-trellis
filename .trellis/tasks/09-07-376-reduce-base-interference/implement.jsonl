@@ -1,0 +1,3 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"实现与验证范围、canonical/dogfood/installed 投影和最小可靠验证集。"}
+{"file":".trellis/spec/workflow/subtraction-first-compatibility.md","reason":"确认 integration 变化与 authority/task-content 变化的独立判断，以及不新增未经批准兼容机制。"}
+{"file":"trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md","reason":"承接 reconciled、planning_stale、resume_target 及 typed exit 的 package 合同。"}
