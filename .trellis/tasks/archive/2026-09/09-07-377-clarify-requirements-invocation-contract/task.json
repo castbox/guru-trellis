@@ -6,6 +6,7 @@
   "id": "09-07-377-clarify-requirements-invocation-contract",
   "name": "09-07-377-clarify-requirements-invocation-contract",
   "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/377",
-  "status": "in_progress",
-  "title": "#377 对齐 guru-clarify-requirements 公开 invocation schema 与 typed_output 合同"
+  "status": "completed",
+  "title": "#377 对齐 guru-clarify-requirements 公开 invocation schema 与 typed_output 合同",
+  "completedAt": "2026-09-08"
 }
