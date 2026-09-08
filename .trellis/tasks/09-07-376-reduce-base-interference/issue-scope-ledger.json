@@ -10,7 +10,7 @@
   "followup_issues": [],
   "primary_issue": {
     "number": 376,
-    "reason": "Primary independently deliverable change request.",
+    "reason": "Fully covered by this task.",
     "title": "降低基线分支已更新对并行进行中的任务的干扰",
     "url": "https://github.com/castbox/guru-trellis/issues/376"
   },
