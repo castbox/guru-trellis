@@ -32,3 +32,20 @@ git diff --check
 - 规划文档完成且无阻塞 open question。
 - `implement.jsonl` 与 `check.jsonl` 各有真实研究/验证条目。
 - 用户明确批准本规划摘要后，才允许 `task.py start` 和实现。
+
+## 2026-09-08 Base Reconciliation
+
+1. 已将精确新基线 `d95f875cc4751c4487444b942901bf5023e44acc` 以 no-commit merge 方式集成，未创建 commit、未 push、未更新 PR。
+2. 已保留新基线删除的 clarify-requirements 旧 eval typed-output 注入逻辑，同时保留 #376 的 `base-unrelated-reconciled` recipe 映射。
+3. 已从 Git 三阶段 manifest 重建组合结果，并将 native adapter 哈希更新为当前 canonical/installed 一致字节。
+4. 验证范围增加：reconcile package contract/runtime/eval、clarify package 回归、source/installed manifest 与 adapter identity、overlay drift、task/JSON/Python/diff/sidecar 检查。
+5. 既存 #108 `.bak` sidecar 与 projection 漂移不属于 #376；不清理、不提交，也不把其全量 reapply 结果纳入本任务。
+
+### Validation Result
+
+- PASS：canonical 与 installed `guru-reconcile-task-base` 各 20 项单测。
+- PASS：canonical 与 installed `guru-clarify-requirements` 各 11 项回归测试。
+- PASS：reconcile source eval discovery 与 shared adapter 全 7 case；新增 `unrelated-base-delta-reconciled` 保留原 `resume_target`。
+- PASS：source package closure（23 packages / 77 commands）、4,729 个 installed manifest 声明文件哈希、reconcile installed/四平台投影字节、workflow/spec/adapter identity、overlay drift、JSON/Python/task/scoped diff 检查。
+- BLOCKED BOUNDARY：installed eval discovery 被 #376 范围外的既存 #108 installed projection/`.bak` sidecar 漂移阻断；未清理或吸收该状态。
+- BLOCKED BOUNDARY：全候选 `git diff --check` 命中新基线 #377 两个 archive Markdown 的 EOF 空行；#376 自身 scoped diff check 通过，未修改新基线归档内容。

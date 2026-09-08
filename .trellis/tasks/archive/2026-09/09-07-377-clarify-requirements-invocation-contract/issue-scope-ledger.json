@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 377,
+      "reason": "修复公开 invocation schema 与 runtime 要求冲突，恢复标准 Intake 正常路径。",
+      "title": "fix(guru-clarify-requirements): 对齐公开 invocation schema 与 typed_output 要求",
+      "url": "https://github.com/castbox/guru-trellis/issues/377"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 377,
+    "reason": "修复公开 invocation schema 与 runtime 要求冲突，恢复标准 Intake 正常路径。",
+    "title": "fix(guru-clarify-requirements): 对齐公开 invocation schema 与 typed_output 要求",
+    "url": "https://github.com/castbox/guru-trellis/issues/377"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}

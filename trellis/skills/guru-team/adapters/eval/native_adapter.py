@@ -1945,62 +1945,6 @@ def bind_stage0_call_local_invocation(
     )
     if transition is not None:
         envelope["transition"] = transition
-    exit_id = str(owner_result.get("typed_exit") or "")
-    if skill_id == "guru-clarify-requirements":
-        example = next(
-            (fixture / ".trellis/guru-team/skills/packages" / skill_id / "examples").glob(
-                f"public-{exit_id.replace('_', '-')}-output*.json"
-            )
-        )
-        typed_output = json.loads(example.read_text(encoding="utf-8"))
-        if exit_id == "clear":
-            typed_output["resume_target"] = str(
-                (owner_result.get("invocation_context") or {}).get("resume_target")
-                or typed_output["resume_target"]
-            )
-            typed_output["continuation_id"] = public_input["continuation_id"]
-            identity = owner_result["content_identity"]
-            disposition = owner_result.get("target_disposition") or {}
-            typed_output["transition"] = {
-                **transition,
-                "stage": "clarity_current",
-                "clarity_result_sha256": identity["result_sha256"],
-                "target_content_sha256": identity["content_sha256"],
-                "clarity": {
-                    "facts_sha256": identity["result_sha256"],
-                    "target_sha256": identity["target_sha256"],
-                    "disposition_sha256": identity["disposition_sha256"],
-                    "content_sha256": identity["content_sha256"],
-                    "scope_sha256": identity["scope_sha256"],
-                },
-                "target_disposition": {
-                    "disposition_sha256": disposition.get("disposition_digest"),
-                    "duplicate_facts_sha256": disposition.get("duplicate_facts_sha256"),
-                },
-            }
-            typed_output["transition"]["transition_id"] = (
-                f"clarity_current:{identity['result_sha256'][:24]}"
-            )
-            typed_output["transition"].pop("authority_content_sha256", None)
-        elif exit_id == "needs_context":
-            typed_output["handoff_mode"] = public_input["mode"]
-            typed_output["handoff_repo_locator"] = "."
-            typed_output["handoff_continuation_id"] = public_input["continuation_id"]
-            typed_output["transition"] = {
-                "schema_version": "1.0",
-                "transition_id": f"base_current:{transition['base']['post_sync_resolution_sha256'][:24]}",
-                "stage": "base_current",
-                "mode": public_input["mode"],
-                "repo_locator": ".",
-                "base": transition["base"],
-            }
-        elif exit_id in {"refresh_context", "retarget_context"}:
-            typed_output["handoff_mode"] = public_input["mode"]
-            typed_output["handoff_repo_root"] = "."
-        elif exit_id == "new_task":
-            typed_output["target_locator"] = public_input["target_locator"]
-            typed_output["continuation_id"] = public_input["continuation_id"]
-        envelope["typed_output"] = typed_output
     invocation_path = fixture / OWNER_INVOCATION
     invocation_path.write_text(json.dumps(envelope) + "\n", encoding="utf-8")
 

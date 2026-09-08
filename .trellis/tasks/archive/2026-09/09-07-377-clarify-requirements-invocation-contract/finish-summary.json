@@ -1,0 +1,215 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-08T03:55:59Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-07-377-clarify-requirements-invocation-contract",
+    "title": "#377 对齐 guru-clarify-requirements 公开 invocation schema 与 typed_output 合同",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/377-clarify-requirements-invocation-contract",
+    "commits": [
+      "531697f09a568a2bd36fd08d0e9b3145057f78a8",
+      "babd3fcd775ba1e7f712ddbf6391d7ac4db405e9",
+      "1208d9c6b3b706f0063d469d1e9b3e1c76a9e8ce",
+      "aef5f5b13a39787d078a2ec4a43975a0866d0e37",
+      "e292c3f63bb104f3cc67748c581832e45cbcbe97",
+      "3d8bf72f69695f7af61bd53d1d7f81bc731f7fd0",
+      "c7baad85de13d9aab0f5e5bfb5ae124857e54801",
+      "5303b63adfe1ad8b58fa656c73fc4127798ebf41",
+      "f432be746b2baae03e7aa704efc8ac155cea8406"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-clarify-requirements/SKILL.md",
+      ".agents/skills/guru-clarify-requirements/references/contract.md",
+      ".claude/skills/guru-clarify-requirements/SKILL.md",
+      ".claude/skills/guru-clarify-requirements/references/contract.md",
+      ".codex/skills/guru-clarify-requirements/SKILL.md",
+      ".codex/skills/guru-clarify-requirements/references/contract.md",
+      ".cursor/skills/guru-clarify-requirements/SKILL.md",
+      ".cursor/skills/guru-clarify-requirements/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/runtime/invoke.py",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/tests/test_contract.py",
+      ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/design.md",
+      ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/implement.md",
+      ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/issue-scope-ledger.json",
+      ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/prd.md",
+      ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/task.json",
+      ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/design.md",
+      ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/implement.md",
+      ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/prd.md",
+      ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/task.json",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/runtime/invoke.py",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      377
+    ],
+    "close_issues": [
+      377
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/380"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#377 对齐 guru-clarify-requirements 公开 invocation schema 与 typed_output 合同",
+    "outcome": "修复 `guru-clarify-requirements` 公开 invocation schema 与 runtime 行为不一致的问题。",
+    "changed_behavior": [
+      "修复 `guru-clarify-requirements` 公开 invocation schema 与 runtime 行为不一致的问题。",
+      "runtime 现在先校验声明的 invocation envelope，再从 checked owner result、public input 和当前 transition 派生最小 typed output。",
+      "移除调用方顶层未声明的 `typed_output` 依赖，并同步 native eval、Phase 0 verifier、canonical package 与 Codex/Claude/Cursor/Agents 安装投影。",
+      "修复 `needs_context` malformed base transition 的字段与 source 类型路径，统一返回 fail-closed JSON error。",
+      "修复合法 `active_task_scope_change + clear` 的 null disposition 投影，公开输出为 `retained`；initial/standalone null 继续拒绝。",
+      "刷新 Clarify 安装 manifest 的 package tree、runtime 与 test provenance。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/design.md",
+          ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/implement.md",
+          ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/prd.md",
+          ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/design.md",
+          ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/implement.md",
+          ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/prd.md"
+        ],
+        "change": "修复 `guru-clarify-requirements` 公开 invocation schema 与 runtime 行为不一致的问题。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "修复 `guru-clarify-requirements` 公开 invocation schema 与 runtime 行为不一致的问题。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/runtime/invoke.py",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/tests/test_contract.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/runtime/invoke.py",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py"
+        ],
+        "change": "修复 `guru-clarify-requirements` 公开 invocation schema 与 runtime 行为不一致的问题。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-clarify-requirements/SKILL.md",
+          ".agents/skills/guru-clarify-requirements/references/contract.md",
+          ".claude/skills/guru-clarify-requirements/SKILL.md",
+          ".claude/skills/guru-clarify-requirements/references/contract.md",
+          ".codex/skills/guru-clarify-requirements/SKILL.md",
+          ".codex/skills/guru-clarify-requirements/references/contract.md",
+          ".cursor/skills/guru-clarify-requirements/SKILL.md",
+          ".cursor/skills/guru-clarify-requirements/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md"
+        ],
+        "change": "修复 `guru-clarify-requirements` 公开 invocation schema 与 runtime 行为不一致的问题。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/issue-scope-ledger.json",
+          ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/task.json",
+          ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/task.json"
+        ],
+        "change": "修复 `guru-clarify-requirements` 公开 invocation schema 与 runtime 行为不一致的问题。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#377"
+      ],
+      "pr_refs": [
+        "PR #380"
+      ],
+      "branches": [
+        "fix/377-clarify-requirements-invocation-contract"
+      ],
+      "paths": [
+        ".agents/skills/guru-clarify-requirements/SKILL.md",
+        ".agents/skills/guru-clarify-requirements/references/contract.md",
+        ".claude/skills/guru-clarify-requirements/SKILL.md",
+        ".claude/skills/guru-clarify-requirements/references/contract.md",
+        ".codex/skills/guru-clarify-requirements/SKILL.md",
+        ".codex/skills/guru-clarify-requirements/references/contract.md",
+        ".cursor/skills/guru-clarify-requirements/SKILL.md",
+        ".cursor/skills/guru-clarify-requirements/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+        ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-clarify-requirements/runtime/invoke.py",
+        ".trellis/guru-team/skills/packages/guru-clarify-requirements/tests/test_contract.py",
+        ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/design.md",
+        ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/implement.md",
+        ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/issue-scope-ledger.json",
+        ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/prd.md",
+        ".trellis/tasks/09-07-377-clarify-requirements-invocation-contract/task.json",
+        ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/design.md",
+        ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/implement.md",
+        ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/prd.md",
+        ".trellis/tasks/archive/2026-09/09-07-377-clarify-requirements-invocation-contract/task.json",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+        "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+        "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-clarify-requirements/runtime/invoke.py",
+        "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#377 对齐 guru-clarify-requirements 公开 invocation schema 与 typ",
+        "修复 `guru-clarify-requirements` 公开 invocation schema 与 runtim",
+        "完成 SKILL.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#377 对齐 guru-clarify-requirements 公开 invocation schema 与 typed_output 合同\n修复 `guru-clarify-requirements` 公开 invocation schema 与 runtime 行为不一致的问题。\nruntime 现在先校验声明的 invocation envelope，再从 checked owner result、public input 和当前 transition 派生最小 typed output。\n移除调用方顶层未声明的 `typed_output` 依赖，并同步 native eval、Phase 0 verifier、canonical package 与 Codex/Claude/Cursor/Agents 安装投影。\n修复 `needs_context` malformed base transition 的字段与 source 类型路径，统一返回 fail-closed JSON error。\n修复合法 `active_task_scope_change + clear` 的 null disposition 投影，公开输出为 `retained`；initial/standalone null 继续拒绝。\n刷新 Clarify 安装 manifest 的 package tree、runtime 与 test provenance。\n#377 对齐 guru-clarify-requirements 公开 invocation schema 与 typ\n修复 `guru-clarify-requirements` 公开 invocation schema 与 runtim\n完成 SKILL.md 相关变更"
+  }
+}

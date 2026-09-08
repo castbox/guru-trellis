@@ -31,3 +31,10 @@
 - 主要风险是把真实 Issue/assumption 变化误判为无关 base delta，导致 stale 被吞掉；通过正反 fixture 同时断言避免。
 - 若 projection 或 runtime contract 不一致，停止在 check/branch review，不通过局部绕过。
 - 回滚边界为本任务新增/修改的 canonical contract、projection 和测试文件；不触碰其他 dirty 改动。
+
+## 6. 基线演进兼容设计
+
+- 2026-09-08 将 `origin/main@d95f875cc4751c4487444b942901bf5023e44acc` 集成到任务分支。新基线保留 #377 对 `guru-clarify-requirements` 调用与 eval staging 的收敛，不恢复被删除的旧 typed-output 注入路径。
+- `stage_base_reconciliation_owner_execution` 仍是 reconcile production eval 的受支持 staging 入口，因此保留 #376 新增的 `base-unrelated-reconciled -> reconciled` recipe 映射；该映射复用现有 exit，不构成第二执行路径或兼容例外。
+- `.trellis/guru-team/extension.json` 通过 canonical/installed 组合字节重建：同时承接 #376 reconcile 资产与 #377 clarify 资产，并绑定组合后的 native adapter 哈希。
+- 新基线已存在但与 #376 无关的 #108 projection/sidecar 状态不纳入本任务，不通过 reapply 扩张为额外变更；完整 upgrade/reapply/Release 矩阵仍由专门 Issue 负责。
