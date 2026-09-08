@@ -427,6 +427,8 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         for label, malformed_base in (
             ("missing_required_field", {key: value for key, value in base.items() if key != "selected_base"}),
             ("wrong_required_field_type", {**base, "post_sync_resolution_sha256": 7}),
+            ("source_array", {**base, "source": ["explicit"]}),
+            ("source_object", {**base, "source": {"kind": "explicit"}}),
         ):
             with self.subTest(label=label):
                 invocation = {

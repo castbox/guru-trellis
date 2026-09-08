@@ -45,5 +45,9 @@ retarget_context/new_task/blocked` 路径。完整 `claude-existing` 累计兼�
       校验，malformed 输入统一返回 `stale_identity` JSON error。
 - [x] finding-fix 定向验证：canonical 与 installed Clarify contract tests 各
       10/10，source skill-package validator 和 Python compileall 通过。
+- [x] fresh-final review 继续发现同一 P2 的残余类型路径：`transition.base.source`
+      为数组或对象时，集合成员判断会抛出 `TypeError`。当前实现先校验字符串
+      类型，并在 canonical/installed 测试中覆盖数组和对象，统一返回
+      `stale_identity` 且无 traceback。
 - [ ] finding-fix 必须重新完成 Phase 2、Task Commit、fresh Branch Review、
       Publication 和 Finalizer 后才能合并 PR #380。

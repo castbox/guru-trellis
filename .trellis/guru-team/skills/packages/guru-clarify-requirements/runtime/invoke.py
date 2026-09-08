@@ -73,7 +73,8 @@ def typed_output(package_root, public, transition, owner):
         if any(field not in base for field in required_base_fields):
             raise CommandError("stale_identity", "transition.base", "Provide the current base transition.", 3)
         if (
-            base["source"] not in {"explicit", "config", "config-candidate", "remote-default"}
+            not isinstance(base["source"], str)
+            or base["source"] not in {"explicit", "config", "config-candidate", "remote-default"}
             or not isinstance(base["selected_base"], str) or not base["selected_base"]
             or not isinstance(base["remote"], str) or not base["remote"]
             or not isinstance(base["ordered_candidates"], list)
