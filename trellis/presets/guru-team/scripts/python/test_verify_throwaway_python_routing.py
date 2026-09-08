@@ -19,6 +19,55 @@ ROUTING = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(ROUTING)
 
 
+class RegisteredHelperImportTests(unittest.TestCase):
+    def test_moved_constant_keeps_generated_caller_anchor(self) -> None:
+        definition = 'import sys\nSHEBANG = f"#!{sys.executable}\\n"\n'
+        write = 'def build(path):\n    path.write_text(SHEBANG + "print(1)\\n")\n'
+        before = ROUTING.discover_secondary_callers(definition + write, "lib/fixture/entry.py")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "lib/fixture").mkdir(parents=True)
+            (root / "lib/fixture/constants.py").write_text(definition)
+            consumer = "from fixture.constants import SHEBANG\n" + write
+            (root / "lib/fixture/entry.py").write_text(consumer)
+            bindings = ROUTING.registered_helper_shebang_bindings(root, [
+                {"path": "lib/fixture/constants.py"}, {"path": "lib/fixture/entry.py"},
+            ])
+            self.assertEqual({"SHEBANG"}, bindings["lib/fixture/entry.py"])
+            after = ROUTING.discover_secondary_callers(
+                consumer, "lib/fixture/entry.py",
+                imported_shebang_names=bindings["lib/fixture/entry.py"],
+            )
+            self.assertEqual(before, after)
+            self.assertEqual("generated_shebang", after[0]["kind"])
+            self.assertEqual([], ROUTING.discover_secondary_callers(consumer, "lib/fixture/entry.py"))
+
+    def test_relative_import_and_alias_follow_registered_graph_only(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "lib/fixture").mkdir(parents=True)
+            sources = {
+                "constants": 'import sys\nSHEBANG = f"#!{sys.executable}\\n"\n',
+                "bridge": "from .constants import SHEBANG as HEADER\n",
+                "entry": ('from fixture.bridge import HEADER as PYTHON_HEADER\n'
+                          'payload = PYTHON_HEADER + "print(1)\\n"\n'
+                          'def build(path):\n    path.write_text(payload)\n'),
+            }
+            for name, source in sources.items():
+                (root / f"lib/fixture/{name}.py").write_text(source)
+            rows = [{"path": f"lib/fixture/{name}.py"} for name in ("entry", "bridge", "constants")]
+            bindings = ROUTING.registered_helper_shebang_bindings(root, rows)
+            self.assertEqual({"PYTHON_HEADER", "payload"}, bindings["lib/fixture/entry.py"])
+            calls = ROUTING.discover_secondary_callers(
+                sources["entry"], "lib/fixture/entry.py",
+                imported_shebang_names=bindings["lib/fixture/entry.py"],
+            )
+            self.assertEqual(1, len(calls))
+            self.assertEqual("generated_shebang", calls[0]["kind"])
+            unregistered = ROUTING.registered_helper_shebang_bindings(root, rows[:2])
+            self.assertEqual(set(), unregistered["lib/fixture/entry.py"])
+
+
 class ThrowawayPythonRoutingTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
@@ -112,17 +161,18 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
             *inventory["python_helpers"],
             *inventory["transitive_python_helpers"],
         ]
+        helper_bindings = ROUTING.registered_helper_shebang_bindings(self.root, helper_rows)
         for row in helper_rows:
             path = Path(row["path"])
             source = (self.root / path).read_text(encoding="utf-8")
-            discovered = ROUTING.discover_secondary_callers(source, str(path))
+            discovered = ROUTING.discover_secondary_callers(
+                source, str(path), imported_shebang_names=helper_bindings[str(path)],
+            )
             row["sys_executable_subprocesses"] = sum(
                 item["kind"] == "python_subprocess_second_hop"
                 for item in discovered
             )
-            row["managed_shebang_bindings"] = len(
-                ROUTING.managed_shebang_names(ROUTING.ast.parse(source))
-            )
+            row["managed_shebang_bindings"] = len(helper_bindings[str(path)])
             secondary.extend(discovered)
         runtime_spec = inventory["package_runtime_closure"]
         for path in sorted(
@@ -515,7 +565,7 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
             self.check()
 
     def test_transitive_generated_path_shebang_fails(self) -> None:
-        path = self.root / self.transitive_paths[0]
+        path = self.root / "trellis/skills/guru-team/adapters/eval/eval_constants.py"
         path.write_text(
             path.read_text().replace(
                 'MANAGED_PYTHON_SHEBANG = f"#!{sys.executable}\\n"',
@@ -527,7 +577,7 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
             self.check()
 
     def test_transitive_resolved_sys_executable_shebang_fails(self) -> None:
-        path = self.root / self.transitive_paths[0]
+        path = self.root / "trellis/skills/guru-team/adapters/eval/eval_constants.py"
         path.write_text(
             path.read_text().replace(
                 'MANAGED_PYTHON_SHEBANG = f"#!{sys.executable}\\n"',

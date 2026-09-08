@@ -139,18 +139,74 @@ def live_issue_source(source):
     return source
 
 
-def normalize_prerequisites(value, target):
-    if not isinstance(value, dict) or set(value) != {"clarity", "wording"}:
-        raise CommandError("schema_mismatch", "prerequisite_payloads", "Provide clarity and wording projections.")
-    result = copy.deepcopy(value)
-    clarity, wording = result["clarity"], result["wording"]
-    if not isinstance(clarity, dict) or not isinstance(wording, dict):
-        raise CommandError("schema_mismatch", "prerequisite_payloads", "Provide objective prerequisite projections.")
-    for projection in result.values():
-        projection.setdefault("error_codes", [])
-    if clarity.get("content_sha256") != target["content_sha256"] or wording.get("target_content_sha256") != target["content_sha256"]:
-        raise CommandError("stale_identity", "prerequisite_payloads", "Refresh prerequisites for current target content.", 3)
+def normalize_prerequisites(transition, target, source, package_root):
+    stage = transition.get("stage") if isinstance(transition, dict) else None
+    if stage not in {"context_current", "clarity_current", "wording_current"}:
+        raise CommandError("schema_mismatch", "transition", "Provide a declared public prerequisite stage transition.")
+    schema = package_root.parents[1] / "consumers/workflow/stage0/transitions" / (stage.replace("_", "-") + ".schema.json")
+    validate_json(transition, schema, "transition")
+    if stage == "context_current" and transition["authority_content_sha256"] != target["body_sha256"]:
+        raise CommandError("stale_identity", "transition.authority_content_sha256", "Refresh context for the current body.", 3)
+    result = {}
+    fields = {"clarity": ("facts_sha256", "target_sha256", "disposition_sha256", "content_sha256", "scope_sha256"),
+              "wording": ("facts_sha256", "scope_sha256", "scan_sha256", "target_content_sha256")}
+    for name, keys in fields.items():
+        present = name in transition
+        result[name] = {"status": "current" if present else "missing",
+                        **{key: transition[name][key] if present else None for key in keys}}
+    if "clarity" in transition:
+        clarity = transition["clarity"]
+        if (transition["clarity_result_sha256"] != clarity["facts_sha256"]
+                or (stage == "clarity_current" and transition["target_content_sha256"] != clarity["content_sha256"])):
+            raise CommandError("schema_mismatch", "transition.clarity", "Use consistent public clarity facts and disposition identities.")
+    if "wording" in transition:
+        wording = transition["wording"]
+        if transition["wording_facts_sha256"] != wording["facts_sha256"] or transition["target_content_sha256"] != wording["target_content_sha256"]:
+            raise CommandError("schema_mismatch", "transition.wording", "Use consistent public wording facts and content identities.")
+        if wording["target_content_sha256"] != target["content_sha256"]:
+            raise CommandError("stale_identity", "transition.wording.target_content_sha256", "Refresh wording for the current title and body.", 3)
     return result
+
+
+def invocation(package_root, argv, *, final=False):
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--root")
+    parser.add_argument("--invocation", required=True)
+    args = parse(parser, argv)
+    envelope = load(root(package_root, args.root), package_root, args.invocation, "invocation")
+    schema = (package_root.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner.schema.json"
+              if final else package_root / "schemas/review-invocation.schema.json")
+    validate_json(envelope, schema, "invocation")
+    public, context, owner = envelope["public_input"], envelope["owner_context"], envelope["owner_result"]
+    profile = public.get("profile")
+    schemas = {"current_issue": "public-current-issue-input.schema.json", "proposed_draft": "public-proposed-draft-input.schema.json", "standalone_request": "public-standalone-request-input.schema.json"}
+    if profile not in schemas:
+        raise CommandError("schema_mismatch", "public_input.profile", "Use one declared source profile.")
+    validate_json(public, package_root / "schemas" / schemas[profile], "public_input")
+    if set(context) != {"change_request"} or not isinstance(context["change_request"], dict):
+        raise CommandError("schema_mismatch", "owner_context", "Provide only the current change_request source.")
+    source = context["change_request"]
+    if source.get("kind") != ("issue" if profile == "current_issue" else "draft") or not isinstance(owner.get("target"), dict) or owner["target"].get("kind") != ("existing_issue" if profile == "current_issue" else profile):
+        raise CommandError("schema_mismatch", "public_input.profile", "Match the public profile, source kind and reviewed target kind.")
+    if not isinstance(source.get("title"), str) or not isinstance(source.get("body"), str):
+        raise CommandError("schema_mismatch", "owner_context.change_request", "Provide the current title and body strings.")
+    if "prerequisite_payloads" in owner:
+        raise CommandError("schema_mismatch", "owner_result.prerequisite_payloads", "Consume the public transition, not authored prerequisite payloads.")
+    target = normalize_target(source, owner["target"])
+    transition = envelope.get("transition")
+    prerequisites = normalize_prerequisites(transition, target, source, package_root)
+    if owner.get("mode") != public["mode"]:
+        raise CommandError("schema_mismatch", "owner_result.mode", "Match the reviewed invocation mode.")
+    for key in ("mode", "target_locator", "continuation_id"):
+        if transition[key] != public[key]:
+            raise CommandError("stale_identity", "transition." + key, "Use the same current public handoff.", 3)
+    expected_locator = target["url"] if profile == "current_issue" else source["draft_id"]
+    if public["target_locator"] != expected_locator:
+        raise CommandError("stale_identity", "public_input.target_locator", "Use the current source target locator.", 3)
+    required_stage = {"ready": "wording_current", "clarify_requirements": "context_current", "review_wording": "clarity_current"}.get(owner.get("typed_exit"))
+    if required_stage and transition["stage"] != required_stage:
+        raise CommandError("schema_mismatch", "transition.stage", "Provide the original " + required_stage + " transition for the AI-selected exit.")
+    return envelope, target, prerequisites
 
 
 def linkage(target, prerequisites):
@@ -177,7 +233,7 @@ def validate_semantics(authored, target, prerequisites, linked):
     if exit_id not in CONSUMERS or authored.get("consumer") != CONSUMERS[exit_id] or gate.get("status") != GATES[exit_id] or gate.get("reviewed_linkage_sha256") != linked["linkage_sha256"] or gate.get("findings_count") != len(findings) or gate.get("scope_conclusion_sha256") != digest(scope):
         raise CommandError("schema_mismatch", "semantic_review.ai_review_gate", "Bind gate, exit, consumer, findings, and scope to current linkage.")
     if exit_id == "ready":
-        if any(row.get("status") != "passed" for row in dimensions) or any(row.get("blocking") for row in findings) or any(row.get("status") != "current" or row.get("error_codes") for row in prerequisites.values()):
+        if any(row.get("status") != "passed" for row in dimensions) or any(row.get("blocking") for row in findings) or any(row.get("status") != "current" for row in prerequisites.values()):
             raise CommandError("schema_mismatch", "typed_exit", "Ready requires current prerequisites and a passed finding-free gate.")
     elif not findings or not any(row.get("blocking") for row in findings) or not any(row.get("status") == "failed" for row in dimensions):
         raise CommandError("schema_mismatch", "typed_exit", "Non-ready exits require a blocking finding and failed dimension.")
@@ -186,7 +242,7 @@ def validate_semantics(authored, target, prerequisites, linked):
 def build_result(authored, target, prerequisites):
     linked = linkage(target, prerequisites)
     validate_semantics(authored, target, prerequisites, linked)
-    result = {"schema_version": "1.0", "skill_id": "guru-review-change-request", "generated_at": authored.get("generated_at"), "mode": authored.get("mode"), "target": target, "prerequisites": prerequisites, "evidence_linkage": linked, "semantic_review": authored.get("semantic_review"), "typed_exit": authored.get("typed_exit"), "reason": authored.get("reason"), "affected_evidence": authored.get("affected_evidence"), "consumer": authored.get("consumer")}
+    result = {"schema_version": "2.0", "skill_id": "guru-review-change-request", "generated_at": authored.get("generated_at"), "mode": authored.get("mode"), "target": target, "prerequisites": prerequisites, "evidence_linkage": linked, "semantic_review": authored.get("semantic_review"), "typed_exit": authored.get("typed_exit"), "reason": authored.get("reason"), "affected_evidence": authored.get("affected_evidence"), "consumer": authored.get("consumer")}
     result["facts_sha256"] = digest(result)
     return result
 
@@ -199,12 +255,12 @@ def check_result(package_root, payload, target, prerequisites):
     return payload
 
 
-def validation_receipt(payload):
-    value = {"schema_version": "1.0", "skill_id": "guru-review-change-request", "operation": "check-change-request-review", "result_sha256": payload["facts_sha256"], "prerequisite_sha256": digest(payload["prerequisites"]), "snapshot_sha256": digest(payload["target"])}
+def validation_receipt(payload, transition):
+    value = {"schema_version": "1.0", "skill_id": "guru-review-change-request", "operation": "check-change-request-review", "result_sha256": payload["facts_sha256"], "prerequisite_sha256": digest({"prerequisites": payload["prerequisites"], "transition": transition}), "snapshot_sha256": digest(payload["target"])}
     value["receipt_sha256"] = digest(value)
     return value
 
 
-def check_receipt(payload, receipt):
-    if receipt != validation_receipt(payload):
+def check_receipt(payload, receipt, transition):
+    if receipt != validation_receipt(payload, transition):
         raise CommandError("stale_identity", "validation_receipt", "Run the readiness checker for this exact result and prerequisites.", 3)

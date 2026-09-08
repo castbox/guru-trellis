@@ -43,15 +43,15 @@
     },
     {
       "id": "clarity_evidence",
-      "evidence": "current guru-requirements-clarification-2.0 clear result or explicit missing/stale facts",
+      "evidence": "clarity_current or wording_current public transition, or original context_current for missing clarity",
       "binding": "the same retained open issue/draft target, checker-passed disposition, content and scope decision",
-      "freshness": "existing objective clarification structural and live checks are rerun before ready"
+      "freshness": "closed public transition, matching locator and same-domain facts cross-fields; opaque clarity identities bound by the complete transition receipt"
     },
     {
       "id": "wording_evidence",
-      "evidence": "current guru-contract-wording-review-1.0 change_request pass result or explicit missing/stale facts",
+      "evidence": "wording_current public transition, or original clarity_current for missing wording",
       "binding": "the same title/body bytes and fixed change-request scope",
-      "freshness": "the fixed scope is rebuilt and rescanned before ready"
+      "freshness": "wording top-level and nested title/body combination identity match current source"
     },
     {
       "id": "invocation_freshness",
@@ -169,6 +169,10 @@
     {
       "id": "public_output_blocked",
       "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "review_invocation",
+      "path": "schemas/review-invocation.schema.json"
     }
   ],
   "validators": [
@@ -600,7 +604,7 @@
         "id": "change_request_review",
         "kind": "gate_evidence",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-1.0.json",
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-2.0.json",
           "path": "schemas/change-request-review.schema.json"
         },
         "persistence": "stdout_only_owner_private"

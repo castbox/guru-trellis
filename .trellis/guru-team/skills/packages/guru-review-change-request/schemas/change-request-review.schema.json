@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-1.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-2.0.json",
   "title": "Guru Team Change Request Readiness Review",
   "type": "object",
   "additionalProperties": false,
@@ -20,7 +20,7 @@
     "facts_sha256"
   ],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "2.0"},
     "skill_id": {"const": "guru-review-change-request"},
     "generated_at": {"type": "string", "format": "date-time"},
     "mode": {"enum": ["workflow", "standalone"]},
@@ -135,44 +135,30 @@
         "content_sha256": {"$ref": "#/$defs/sha256"}
       }
     },
-    "projectionStatus": {"enum": ["current", "missing", "invalid"]},
-    "errorCodes": {
-      "type": "array",
-      "items": {"type": "string", "minLength": 1},
-      "uniqueItems": true
-    },
+    "projectionStatus": {"enum": ["current", "missing"]},
     "clarityProjection": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "schema_id", "typed_exit", "payload_sha256", "facts_sha256", "target_sha256", "disposition_sha256", "content_sha256", "scope_sha256", "error_codes"],
+      "required": ["status", "facts_sha256", "target_sha256", "disposition_sha256", "content_sha256", "scope_sha256"],
       "properties": {
         "status": {"$ref": "#/$defs/projectionStatus"},
-        "schema_id": {"type": ["string", "null"]},
-        "typed_exit": {"type": ["string", "null"]},
-        "payload_sha256": {"$ref": "#/$defs/nullableSha256"},
         "facts_sha256": {"$ref": "#/$defs/nullableSha256"},
         "target_sha256": {"$ref": "#/$defs/nullableSha256"},
         "disposition_sha256": {"$ref": "#/$defs/nullableSha256"},
         "content_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "scope_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "error_codes": {"$ref": "#/$defs/errorCodes"}
+        "scope_sha256": {"$ref": "#/$defs/nullableSha256"}
       }
     },
     "wordingProjection": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "schema_id", "profile", "typed_exit", "payload_sha256", "facts_sha256", "scope_sha256", "scan_sha256", "target_content_sha256", "error_codes"],
+      "required": ["status", "facts_sha256", "scope_sha256", "scan_sha256", "target_content_sha256"],
       "properties": {
         "status": {"$ref": "#/$defs/projectionStatus"},
-        "schema_id": {"type": ["string", "null"]},
-        "profile": {"type": ["string", "null"]},
-        "typed_exit": {"type": ["string", "null"]},
-        "payload_sha256": {"$ref": "#/$defs/nullableSha256"},
         "facts_sha256": {"$ref": "#/$defs/nullableSha256"},
         "scope_sha256": {"$ref": "#/$defs/nullableSha256"},
         "scan_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "target_content_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "error_codes": {"$ref": "#/$defs/errorCodes"}
+        "target_content_sha256": {"$ref": "#/$defs/nullableSha256"}
       }
     },
     "prerequisites": {

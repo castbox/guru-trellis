@@ -906,7 +906,7 @@ Fresh install、dogfood、四平台
 discovery copies 与 update/reapply 必须同时包含 package、commands、schema 和 route markers。
 
 `guru-review-change-request` package additive 安装
-`guru-change-request-review-1.0` schema、deidentified `issue-review.json` example、contract、
+`guru-change-request-review-2.0` schema、deidentified `issue-review.json` example、contract、
 tests 和两个 executable dispatcher wrappers。Runtime assets 是
 `.trellis/guru-team/scripts/bash/record-change-request-review.sh` 与
 `check-change-request-review.sh`。Workflow/standalone preconditions 相同；三类 target、current
@@ -914,7 +914,10 @@ context/clarity/wording linkage、十项 dimensions、findings、scope conclusio
 由 canonical semantic package 拥有。Runtime 只重建 portable projection/linkage/facts 并校验
 schema/hash/ref/freshness/consumer/ready invariant，不生成 readiness、finding、delivery unit 或
 route。Pre-task/standalone stdout-only；#112 直接消费 checked exit，只持久化
-`issue-scope-ledger.json`，不复制 `issue-review.json`。
+`issue-scope-ledger.json`，不复制 `issue-review.json`。Record/check/invoke 统一以
+`--invocation -` 传入原始 public transition；#386 直接退出旧分离参数与完整 producer-private
+result/flat projection 输入，调用方和完整 preset 同步迁移。正常路径使用 `wording_current`；
+缺失前序重入使用真实保存的较早 transition，精确合同由 Readiness package 拥有。
 
 五出口固定为 `ready` -> active `guru-create-task-workspace`、
 `clarify_requirements` -> `guru-clarify-requirements`、`review_wording` ->

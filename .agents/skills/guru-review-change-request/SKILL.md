@@ -38,10 +38,21 @@ task workspace. Fail closed when evidence is missing, stale, mismatched, or the
 compatible Guru Team preset runtime is unavailable. This package is not
 self-contained or portable.
 
-After the semantic gate and owner recorder/checker complete, invoke
-`scripts/invoke.sh --invocation -` with the closed call-local public input,
-`wording_current` transition, and checked owner result on stdin to serialize the
-readiness handoff. The transition carries the checker-bound clarity, wording,
-and target projections; the runtime reruns the existing readiness checker and
-derives the Agent-owned route from its checked result. It does not decide
+All three commands use `--invocation -` and one JSON envelope containing
+`schema_version=1.0`, `public_input`, the independent public `transition`,
+`owner_context.change_request` (current source snapshot), and `owner_result`.
+For record, `owner_result` is this Skill's completed AI review. Replace it with
+record stdout for check; add the checker's `validation_receipt` only for invoke.
+Record/check use `schemas/review-invocation.schema.json`; invoke uses the shared
+semantic-owner invocation schema. No separate input locators or authored
+`prerequisite_payloads` remain supported.
+
+Use the actual `wording_current` producer transition for ready, original
+`clarity_current` for a missing-wording reroute, or original `context_current`
+for a missing-clarity reroute. Do not reconstruct upstream private results or
+downgrade a later transition. Preserve the original public context needed for
+re-entry in the call-local conversation; never fabricate missing hashes.
+The runtime derives minimal prerequisites, validates the AI-selected route,
+and emits the public handoff. Checker alone rereads the issue; invoke checks
+the exact receipt and current envelope without live calls. It does not decide
 readiness or expose the private review artifact.
