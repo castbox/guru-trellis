@@ -323,16 +323,234 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertNotIn("Traceback", invalid.stdout + invalid.stderr)
 
     def test_public_invoke_validates_checked_semantic_owner_output(self) -> None:
+        from jsonschema import Draft202012Validator
+
         owner = json.loads((self.package / "examples/requirements-clarification.json").read_text())
         typed = json.loads((self.package / "examples/public-clear-output-2.0.json").read_text())
-        invocation = {"owner_result": owner, "typed_output": typed}
+        transition = copy.deepcopy(typed["transition"])
+        transition["stage"] = "context_current"
+        transition["transition_id"] = "context_current:222222222222222222222222"
+        transition["mode"] = "standalone"
+        transition["target_locator"] = "#145"
+        for field in ("clarity_result_sha256", "target_content_sha256", "clarity", "target_disposition"):
+            transition.pop(field, None)
+        public_input = {
+            "profile": "standalone_review",
+            "source_exit": "start",
+            "mode": "standalone",
+            "target_locator": "#145",
+            "continuation_id": "stage0-current",
+        }
+        invocation = {
+            "schema_version": "1.0",
+            "public_input": public_input,
+            "transition": transition,
+            "owner_context": {},
+            "owner_result": owner,
+        }
+        schema = json.loads(
+            (self.package.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner.schema.json").read_text()
+        )
+        self.assertEqual(list(Draft202012Validator(schema).iter_errors(invocation)), [])
         result = subprocess.run(
             [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
             input=json.dumps(invocation), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
         )
         self.assertEqual(result.returncode, 0, result)
-        self.assertEqual(json.loads(result.stdout), typed)
+        output = json.loads(result.stdout)
+        self.assertEqual(output["exit_id"], "clear")
+        self.assertEqual(output["resume_target"], owner["invocation_context"]["resume_target"])
+        self.assertEqual(output["continuation_id"], public_input["continuation_id"])
+        self.assertEqual(output["transition"]["stage"], "clarity_current")
+        self.assertEqual(output["transition"]["clarity_result_sha256"], owner["content_identity"]["result_sha256"])
+        self.assertNotIn("typed_output", output)
         self.assertNotIn("Traceback", result.stdout + result.stderr)
+
+        extra = copy.deepcopy(invocation)
+        extra["typed_output"] = typed
+        rejected = subprocess.run(
+            [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+            input=json.dumps(extra), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertNotEqual(rejected.returncode, 0)
+        self.assertIn("schema_mismatch", rejected.stdout)
+
+        stale = copy.deepcopy(invocation)
+        stale["public_input"]["target_locator"] = "#999"
+        rejected = subprocess.run(
+            [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+            input=json.dumps(stale), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertNotEqual(rejected.returncode, 0)
+        self.assertIn("stale_identity", rejected.stdout)
+
+        missing = copy.deepcopy(invocation)
+        del missing["owner_context"]
+        rejected = subprocess.run(
+            [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+            input=json.dumps(missing), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertNotEqual(rejected.returncode, 0)
+        self.assertIn("schema_mismatch", rejected.stdout)
+
+    def test_public_invoke_projects_active_task_clear_null_disposition_as_retained(self) -> None:
+        from jsonschema import Draft202012Validator
+
+        owner = json.loads((self.package / "examples/requirements-clarification.json").read_text())
+        owner["mode"] = "workflow"
+        owner["invocation_context"] = {
+            "kind": "active_task_scope_change",
+            "caller": "active task scope clarification",
+            "task_locator": ".trellis/tasks/current",
+            "resume_target": "guru-resume-branch-review",
+        }
+        owner["target_disposition"] = None
+        owner["scope_proposals"] = [{
+            "proposal_id": "active_scope_update",
+            "scenario": "Keep the current task and accept the clarified scope.",
+            "trigger_evidence": ["active-task:current"],
+            "proposed_contracts": ["task scope"],
+            "cost": "Narrow task-local planning refresh.",
+            "alternatives": ["Return to the prior task scope."],
+            "consequence_if_omitted": "The accepted clarification is not reflected in the active task.",
+            "origin_requirement_status": "necessary_correctness",
+            "optional_mechanism_origin": False,
+            "decision": "accepted_current",
+            "proposal_digest": "9" * 64,
+        }]
+        owner["active_task_evidence"] = {
+            "task_locator": ".trellis/tasks/current",
+            "github_authority_facts_sha256": "8" * 64,
+            "ledger": {"path": ".trellis/tasks/current/issue-scope-ledger.json", "content_sha256": "7" * 64},
+            "planning_documents": [
+                {"path": ".trellis/tasks/current/prd.md", "content_sha256": "6" * 64},
+                {"path": ".trellis/tasks/current/design.md", "content_sha256": "5" * 64},
+                {"path": ".trellis/tasks/current/implement.md", "content_sha256": "4" * 64},
+            ],
+            "decision_trail": None,
+            "reentry_owners": ["guru-approve-task-plan", "guru-check-task", "guru-review-branch"],
+        }
+        typed = json.loads((self.package / "examples/public-clear-output-2.0.json").read_text())
+        transition = copy.deepcopy(typed["transition"])
+        transition["stage"] = "context_current"
+        transition["transition_id"] = "context_current:222222222222222222222222"
+        transition["mode"] = "workflow"
+        transition["target_locator"] = "#145"
+        for field in ("clarity_result_sha256", "target_content_sha256", "clarity", "target_disposition"):
+            transition.pop(field, None)
+        public_input = json.loads((self.package / "examples/public-active-task-scope-change-input.json").read_text())
+        invocation = {
+            "schema_version": "1.0",
+            "public_input": public_input,
+            "transition": transition,
+            "owner_context": {},
+            "owner_result": owner,
+        }
+        schema = json.loads(
+            (self.package.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner.schema.json").read_text()
+        )
+        self.assertEqual(list(Draft202012Validator(schema).iter_errors(invocation)), [])
+        result = subprocess.run(
+            [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+            input=json.dumps(invocation), text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertEqual(result.returncode, 0, result)
+        output = json.loads(result.stdout)
+        self.assertEqual(output["exit_id"], "clear")
+        self.assertEqual(output["target_disposition"], "retained")
+        self.assertEqual(
+            output["transition"]["target_disposition"],
+            {
+                "disposition_sha256": owner["content_identity"]["disposition_sha256"],
+                "duplicate_facts_sha256": owner["content_identity"]["disposition_sha256"],
+            },
+        )
+        self.assertNotIn("Traceback", result.stdout + result.stderr)
+
+        standalone = copy.deepcopy(invocation)
+        standalone["public_input"] = {
+            "profile": "standalone_review",
+            "source_exit": "start",
+            "mode": "standalone",
+            "target_locator": "#145",
+            "continuation_id": "stage0-current",
+        }
+        standalone["transition"]["mode"] = "standalone"
+        standalone["owner_result"]["mode"] = "standalone"
+        standalone["owner_result"]["invocation_context"] = {
+            "kind": "standalone_review",
+            "caller": "standalone requirements review",
+            "task_locator": None,
+            "resume_target": "guru-standalone-caller",
+        }
+        standalone["owner_result"]["scope_proposals"] = []
+        standalone["owner_result"]["active_task_evidence"] = None
+        rejected = subprocess.run(
+            [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+            input=json.dumps(standalone), text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertNotEqual(rejected.returncode, 0)
+        self.assertEqual(json.loads(rejected.stdout)["field_path"], "input.target_disposition")
+        self.assertNotIn("Traceback", rejected.stdout + rejected.stderr)
+
+    def test_needs_context_rejects_missing_or_malformed_base_as_json_command_error(self) -> None:
+        owner = json.loads((self.package / "examples/requirements-clarification.json").read_text())
+        owner["typed_exit"] = "needs_context"
+        owner["consumer"] = {"kind": "skill", "id": "guru-discover-change-context"}
+        owner["context_evidence"] = {"status": "missing", "evidence_refs": ["current-session:missing"], "missing_reason": "Base context is unavailable."}
+        owner["target_disposition"] = None
+        public_input = {
+            "profile": "standalone_review",
+            "source_exit": "start",
+            "mode": "standalone",
+            "target_locator": "#145",
+            "continuation_id": "stage0-current",
+        }
+        base = {
+            "source": "explicit",
+            "selected_base": "main",
+            "remote": "origin",
+            "ordered_candidates": ["main"],
+            "decision_head": "1" * 40,
+            "local_base_head": "1" * 40,
+            "remote_base_head": "1" * 40,
+            "post_sync_resolution_sha256": "1" * 64,
+        }
+
+        def invoke(value: dict) -> subprocess.CompletedProcess[str]:
+            return subprocess.run(
+                [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+                input=json.dumps(value), text=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+
+        for label, malformed_base in (
+            ("missing_required_field", {key: value for key, value in base.items() if key != "selected_base"}),
+            ("wrong_required_field_type", {**base, "post_sync_resolution_sha256": 7}),
+            ("source_array", {**base, "source": ["explicit"]}),
+            ("source_object", {**base, "source": {"kind": "explicit"}}),
+        ):
+            with self.subTest(label=label):
+                invocation = {
+                    "schema_version": "1.0",
+                    "public_input": public_input,
+                    "transition": {
+                        "stage": "context_current",
+                        "mode": "standalone",
+                        "repo_locator": ".",
+                        "base": malformed_base,
+                    },
+                    "owner_context": {},
+                    "owner_result": owner,
+                }
+                rejected = invoke(invocation)
+                self.assertNotEqual(rejected.returncode, 0)
+                error = json.loads(rejected.stdout)
+                self.assertEqual(error["code"], "stale_identity")
+                self.assertEqual(error["field_path"], "transition.base")
+                self.assertNotIn("Traceback", rejected.stdout + rejected.stderr)
 
 
 if __name__ == "__main__":

@@ -519,64 +519,13 @@ class Phase0TranscriptOwnerBindingTest(unittest.TestCase):
             self.verifier.digest(unsigned),
         )
 
-    def test_projects_clarification_semantic_typed_outputs(self) -> None:
-        identity = {
-            key: value * 64
-            for key, value in (
-                ("result_sha256", "1"),
-                ("target_sha256", "2"),
-                ("disposition_sha256", "3"),
-                ("content_sha256", "4"),
-                ("scope_sha256", "5"),
-            )
-        }
-        owner = {
-            "typed_exit": "clear",
-            "invocation_context": {"resume_target": "guru-review-contract-wording"},
-            "content_identity": identity,
-            "target_disposition": {
-                "disposition_digest": "6" * 64,
-                "duplicate_facts_sha256": "7" * 64,
-            },
-        }
-        public_input = {"mode": "workflow", "continuation_id": "stage0-current"}
-        transition = {
-            "schema_version": "1.0",
-            "transition_id": "context_current:old",
-            "stage": "context_current",
-            "mode": "workflow",
-            "repo_locator": ".",
-            "base": {
-                "selected_base": "main",
-                "post_sync_resolution_sha256": "8" * 64,
-            },
-            "target_locator": "https://github.com/example/repo/issues/145",
-            "continuation_id": "stage0-current",
-            "context_result_sha256": "9" * 64,
-            "authority_content_sha256": "a" * 64,
-        }
-
-        clear = self.verifier.clarification_typed_output(
-            owner, public_input, transition
-        )
-        needs = self.verifier.clarification_typed_output(
-            {**owner, "typed_exit": "needs_context"}, public_input, transition
-        )
-
-        self.assertEqual(clear["exit_id"], "clear")
-        self.assertEqual(clear["transition"]["stage"], "clarity_current")
-        self.assertNotIn("authority_content_sha256", clear["transition"])
-        self.assertEqual(needs["exit_id"], "needs_context")
-        self.assertEqual(needs["transition"]["stage"], "base_current")
-        refresh = self.verifier.clarification_typed_output(
-            {**owner, "typed_exit": "refresh_context"}, public_input, transition
-        )
-        self.assertNotIn("handoff_base_branch", refresh)
-        transition["base"]["source"] = "explicit"
-        explicit_refresh = self.verifier.clarification_typed_output(
-            {**owner, "typed_exit": "refresh_context"}, public_input, transition
-        )
-        self.assertEqual(explicit_refresh["handoff_base_branch"], "main")
+    def test_phase0_transcript_does_not_inject_private_typed_output(self) -> None:
+        transcript = (
+            preset.guru_root_from_script()
+            / "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn('envelope["typed_output"]', transcript)
+        self.assertNotIn('envelope[\'typed_output\']', transcript)
 
     def test_projects_live_issue_for_wording_recorder(self) -> None:
         source = self.verifier.wording_change_request_source({
