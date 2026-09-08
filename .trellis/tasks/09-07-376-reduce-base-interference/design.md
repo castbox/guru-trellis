@@ -35,6 +35,13 @@
 ## 6. 基线演进兼容设计
 
 - 2026-09-08 将 `origin/main@d95f875cc4751c4487444b942901bf5023e44acc` 集成到任务分支。新基线保留 #377 对 `guru-clarify-requirements` 调用与 eval staging 的收敛，不恢复被删除的旧 typed-output 注入路径。
-- `stage_base_reconciliation_owner_execution` 仍是 reconcile production eval 的受支持 staging 入口，因此保留 #376 新增的 `base-unrelated-reconciled -> reconciled` recipe 映射；该映射复用现有 exit，不构成第二执行路径或兼容例外。
+- Branch Review finding `BR-376-NATIVE-ADAPTER-3000` 识别出 `base-unrelated-reconciled` 只是 task-local fixture 别名，没有独立生产消费者，却让 #376 修改 6798 行共享 adapter。按 subtraction-first 合同，`unrelated-base-delta-facts.json` 直接复用已有 `base-reconciled` recipe，并删除 canonical/installed adapter 中 #376 新增的 alias 行。
 - `.trellis/guru-team/extension.json` 通过 canonical/installed 组合字节重建：同时承接 #376 reconcile 资产与 #377 clarify 资产，并绑定组合后的 native adapter 哈希。
 - 新基线已存在但与 #376 无关的 #108 projection/sidecar 状态不纳入本任务，不通过 reapply 扩张为额外变更；完整 upgrade/reapply/Release 矩阵仍由专门 Issue 负责。
+
+## 7. Branch Review Finding 修复
+
+- Finding：`BR-376-NATIVE-ADAPTER-3000`。
+- Replacement：保留无关 base delta 的独立 fixture 场景与 `reconciled` 断言，但 staging 复用现有 `base-reconciled`，不再扩展共享 native adapter recipe 表。
+- Diff boundary：当前未提交 worktree candidate 相对 `origin/main` 已不再包含 `trellis/skills/guru-team/adapters/eval/native_adapter.py`；finding-fix commit 后的完整 `origin/main...HEAD` 也必须保持该结果。installed adapter 与 canonical 保持字节一致。
+- Provenance：仅按当前 canonical/installed 字节更新 `.trellis/guru-team/extension.json` 的相关 managed file hash、package tree 和 source provenance，保留 #377 与其他基线记录。

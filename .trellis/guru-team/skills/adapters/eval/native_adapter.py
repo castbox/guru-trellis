@@ -4748,7 +4748,6 @@ def stage_base_reconciliation_owner_execution(
 ) -> tuple[Path, Path, dict[str, str]]:
     exits = {
         "base-reconciled": "reconciled",
-        "base-unrelated-reconciled": "reconciled",
         "base-review-continuity": "review_continuity_required",
         "base-implementation-required": "implementation_required",
         "base-planning-stale": "planning_stale",

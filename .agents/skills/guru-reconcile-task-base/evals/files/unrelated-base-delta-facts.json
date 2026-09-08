@@ -1,1 +1,1 @@
-{"scenario":"The cumulative base delta is base-only and unrelated to the task; live authority and approved planning assumptions remain unchanged.","owner_staging":{"recipe":"base-unrelated-reconciled"},"public_invocation":{"arguments":["--invocation","-"]}}
+{"scenario":"The cumulative base delta is base-only and unrelated to the task; live authority and approved planning assumptions remain unchanged.","owner_staging":{"recipe":"base-reconciled"},"public_invocation":{"arguments":["--invocation","-"]}}

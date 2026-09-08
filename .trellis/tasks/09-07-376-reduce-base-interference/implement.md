@@ -36,7 +36,7 @@ git diff --check
 ## 2026-09-08 Base Reconciliation
 
 1. 已将精确新基线 `d95f875cc4751c4487444b942901bf5023e44acc` 以 no-commit merge 方式集成，未创建 commit、未 push、未更新 PR。
-2. 已保留新基线删除的 clarify-requirements 旧 eval typed-output 注入逻辑，同时保留 #376 的 `base-unrelated-reconciled` recipe 映射。
+2. 已保留新基线删除的 clarify-requirements 旧 eval typed-output 注入逻辑；Branch Review finding `BR-376-NATIVE-ADAPTER-3000` 要求移除 #376 的 task-local recipe alias，改由 fixture 复用已有 `base-reconciled`。
 3. 已从 Git 三阶段 manifest 重建组合结果，并将 native adapter 哈希更新为当前 canonical/installed 一致字节。
 4. 验证范围增加：reconcile package contract/runtime/eval、clarify package 回归、source/installed manifest 与 adapter identity、overlay drift、task/JSON/Python/diff/sidecar 检查。
 5. 既存 #108 `.bak` sidecar 与 projection 漂移不属于 #376；不清理、不提交，也不把其全量 reapply 结果纳入本任务。
@@ -48,4 +48,21 @@ git diff --check
 - PASS：reconcile source eval discovery 与 shared adapter 全 7 case；新增 `unrelated-base-delta-reconciled` 保留原 `resume_target`。
 - PASS：source package closure（23 packages / 77 commands）、4,729 个 installed manifest 声明文件哈希、reconcile installed/四平台投影字节、workflow/spec/adapter identity、overlay drift、JSON/Python/task/scoped diff 检查。
 - BLOCKED BOUNDARY：installed eval discovery 被 #376 范围外的既存 #108 installed projection/`.bak` sidecar 漂移阻断；未清理或吸收该状态。
-- BLOCKED BOUNDARY：全候选 `git diff --check` 命中新基线 #377 两个 archive Markdown 的 EOF 空行；#376 自身 scoped diff check 通过，未修改新基线归档内容。
+- SUPERSEDED EVIDENCE：基线集成后的早期全候选 `git diff --check` 曾命中 #377 archive Markdown 的 EOF 空行；当前 finding-fix worktree 已重新执行全量 `git diff --check` 并通过，未修改 #377 归档内容。
+
+## 2026-09-08 Branch Review Finding 修复计划
+
+1. 将 canonical、installed 与 Agents/Codex/Claude/Cursor 的 `unrelated-base-delta-facts.json` staging recipe 从 `base-unrelated-reconciled` 改为已有 `base-reconciled`。
+2. 从 canonical/installed `native_adapter.py` 删除 #376 新增的 alias 行，使完整 `origin/main...HEAD` 不再触碰该 6798 行共享文件。
+3. 使用仓库现有确定性 manifest 计算/校验规则，更新 `.trellis/guru-team/extension.json` 中受影响文件哈希、`guru-reconcile-task-base` package tree、managed tree/provenance；保留 #377 与其他基线字段。
+4. 定向验证 fixture JSON、六份 fixture 字节一致、canonical/installed adapter 字节一致、reconcile eval/contract、installed manifest、task artifact、scoped `git diff --check`，并确认 39 个 `.bak` 数量和内容未被修改。
+5. 以 `git diff --name-only origin/main...HEAD` 和 adapter scoped diff 验证 subtraction-first 结果；不执行会吸收范围外 sidecar 的全量 reapply，不执行 commit、push、PR 或 cleanup。
+
+### Branch Review Finding 修复结果
+
+- PASS：六份 `unrelated-base-delta-facts.json` 已统一复用 `base-reconciled`；canonical/installed adapter 已删除 task-local alias，当前 worktree candidate 相对 `origin/main` 的 adapter diff 为空。
+- PASS：canonical 与 installed `guru-reconcile-task-base` 各 20 项单测；canonical 与 installed `guru-clarify-requirements` 各 11 项回归测试。
+- PASS：source contract discovery、7-case eval discovery 与 shared 7-case production eval；`unrelated-base-delta-reconciled` 仍返回 `reconciled` 并保留 `resume_target=task_activation`。
+- PASS：source package closure（23 packages / 77 commands）、4,729 个 installed manifest 声明文件哈希、六份 fixture 与 canonical/installed adapter 字节一致、overlay drift、JSON/Python/task 与全候选 `git diff --check`。
+- BOUNDARY：installed 全量 package validation 仍仅被既存 #108 Claude projection 与 39 个 `.bak` provenance drift 阻断；本任务未修改、删除或吸收这些 sidecar。
+- BOUNDARY：未执行完整多平台 throwaway、upgrade/update、reapply 或 release-candidate 矩阵；其 owner 仍是专门兼容性或 Release Issue。
