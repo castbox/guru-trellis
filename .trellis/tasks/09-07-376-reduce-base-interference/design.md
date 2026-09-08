@@ -45,3 +45,10 @@
 - Replacement：保留无关 base delta 的独立 fixture 场景与 `reconciled` 断言，但 staging 复用现有 `base-reconciled`，不再扩展共享 native adapter recipe 表。
 - Diff boundary：当前未提交 worktree candidate 相对 `origin/main` 已不再包含 `trellis/skills/guru-team/adapters/eval/native_adapter.py`；finding-fix commit 后的完整 `origin/main...HEAD` 也必须保持该结果。installed adapter 与 canonical 保持字节一致。
 - Provenance：仅按当前 canonical/installed 字节更新 `.trellis/guru-team/extension.json` 的相关 managed file hash、package tree 和 source provenance，保留 #377 与其他基线记录。
+
+## 8. Finalizer Base Reconciliation
+
+- 2026-09-08 Finalizer 观察到 `origin/main` 从 `d95f875cc4751c4487444b942901bf5023e44acc` 前进到 `81657210f5508186ed0f09098fdc63c927fdc307`；新增 #384/#385 Discovery 修复不改变 Issue #376、approved planning assumptions、accepted scope 或 task behavior authority。
+- 101 个 base delta 路径中，仅 `.trellis/guru-team/extension.json` 与 #376 路径相交；冲突限定为两侧 `installed_at` 与 `source.ref/commit` provenance preimage，package/file inventory 由 Git 三方合并保留。
+- 组合结果保留 #376 当前 provenance preimage `0001af5875543c25b9119be5e4c48b4c93286493` 与 `tree_state=dirty`，并同时保留 #376 reconcile 和 #384 Discovery 的 package/file digest；publication provenance tail 仍由 Finalizer 独占。
+- 该 reconciliation 不重新解释 #376 需求或实现，不新增 public exit、owner、持久化状态或兼容机制；tracked manifest 冲突解决按当前 workflow 重新执行 Phase 2、Task Commit、完整 Branch Review 与 Publication。

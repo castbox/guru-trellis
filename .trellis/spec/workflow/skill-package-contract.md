@@ -1016,9 +1016,12 @@ immutable legacy inventory outside the active Interface. Current runtime,
 examples, evals, and installation select input 2.0 plus owner-result 3.0 as one
 activation unit.
 
-Recorder/checker accept the current AI-authored result through stdin or one
-explicit file, compare it with current live facts, and return canonical/checked
-JSON on stdout. They do not resolve, write, replace, or supersede a task
+Recorder/checker accept one package-declared `--invocation -` envelope carrying
+public input, the independent Sync transition, and current AI-authored owner
+result. They compare it with current live facts and return canonical/checked
+JSON on stdout. Separate input-locator arguments are retired; controlled
+callers migrate together rather than keeping a parallel legacy parser.
+They do not resolve, write, replace, or supersede a task
 artifact. Normal active-task record/check/invoke accepts one ephemeral direct
 task identity, binds its live task branch, and permits ordinary current-worktree
 edits without creating a checkpoint. Only an explicit recovery continuation

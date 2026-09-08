@@ -21,9 +21,14 @@ that a mechanism, duplicate, or historical decision is absent.
 Use the dispatcher-only wrappers for history preview, owner-result recording,
 and owner-result checking. Normal recording/checking is stdin/stdout-only and
 does not create a repository artifact. Pass the active Discovery 2.0 input and
-independent `base_current` transition to both owner commands with
-`--public-input <input> --transition <transition>`; no caller supplies or
-reconstructs a Sync private result. A caller-authored `refresh_base` result
+independent `base_current` transition to record, check, and invoke in one closed
+semantic-owner 1.0 envelope via `--invocation -`. Include `schema_version`,
+`public_input`, `transition`, `owner_context={}`, and `owner_result`; mode comes
+from `public_input.mode`. Replace only `owner_result` with recorder stdout in
+memory before check and invoke. No caller supplies or reconstructs a Sync
+private result. See the exact Issue #384 migration in the contract: the former
+three input locators and recorder `--mode` are removed, not alternate paths.
+A caller-authored `refresh_base` result
 records only the observed current stale codes, then reruns the complete Skill
 through `guru-sync-base` and live authority.
 

@@ -1,17 +1,18 @@
 from __future__ import annotations
-import json, os, shutil, subprocess, sys, tempfile, unittest
+import copy, io, json, os, shutil, subprocess, sys, tempfile, unittest
+from unittest.mock import patch
 from pathlib import Path
 from jsonschema import Draft202012Validator
 
 PACKAGE=Path(__file__).resolve().parents[1]
 SKILLS=PACKAGE.parents[1]
-RUNTIME=SKILLS/"runtime"
+RUNTIME=next(path for path in (SKILLS/"runtime",SKILLS.parent/"runtime") if (path/"command.py").is_file())
 LOCAL=PACKAGE/"runtime"
 FINISH_SCHEMA=next(path for path in (
  SKILLS.parent/"schemas/finish-summary.schema.json",
  SKILLS.parents[1]/"workflows/guru-team/schemas/finish-summary.schema.json",
 ) if path.is_file())
-for path in (SKILLS,LOCAL):
+for path in (RUNTIME.parent,LOCAL):
  if str(path) not in sys.path:sys.path.insert(0,str(path))
 from runtime.command import main
 from common import check_recovery,consume_recovery,observe_base_current,preview,record_recovery
@@ -56,14 +57,15 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    self.assertIn("source \"$LAUNCHER\" "+validator["runtime_command"],wrapper.read_text())
   self.assertIn("export PYTHONDONTWRITEBYTECODE=1",(RUNTIME/"launch.sh").read_text())
 
- def test_real_installed_public_wrapper_is_current_without_python_cache_residue(self):
+ def test_real_installed_record_check_invoke_without_input_files_or_residue(self):
   with tempfile.TemporaryDirectory() as name:
-   case=Path(name);repo=case/"repo";inputs=case/"inputs";inputs.mkdir();repo.mkdir()
+   case=Path(name);repo=case/"repo";repo.mkdir()
    guru=repo/".trellis/guru-team";installed_package=guru/"skills/packages"/PACKAGE.name
    ignore=shutil.ignore_patterns("__pycache__","*.pyc","*.pyo")
    shutil.copytree(PACKAGE,installed_package,ignore=ignore)
    shutil.copytree(SKILLS/"consumers",guru/"skills/consumers",ignore=ignore)
    shutil.copytree(SKILLS/"schemas",guru/"skills/schemas",ignore=ignore)
+   shutil.copytree(SKILLS/"packages/guru-clarify-requirements/schemas",guru/"skills/packages/guru-clarify-requirements/schemas",ignore=ignore)
    shutil.copytree(RUNTIME,guru/"runtime",ignore=ignore)
    (guru/"schemas").mkdir();shutil.copy2(FINISH_SCHEMA,guru/"schemas/finish-summary.schema.json")
    public_wrapper=repo/".agents/skills"/PACKAGE.name/"scripts/invoke.sh";public_wrapper.parent.mkdir(parents=True);shutil.copy2(PACKAGE/"scripts/invoke.sh",public_wrapper);public_wrapper.chmod(0o755)
@@ -73,25 +75,74 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    head=subprocess.run(["git","rev-parse","HEAD"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip();subprocess.run(["git","update-ref","refs/remotes/origin/main",head],cwd=repo,check=True)
    public={"profile":"pre_task","source_exit":"synced","mode":"workflow","change_input":{"issue_refs":["#300"],"pr_refs":[],"branches":[],"paths":["trellis/skills/guru-team/packages/guru-discover-change-context"],"commands":["invoke-guru-discover-change-context"],"config_keys":[],"schema_fields":["base_current"],"symbols":["check_owner_binding"],"terms":["public wrapper"],"queries":["Discovery public wrapper context ready"]},"continuation_id":"issue-300-installed-wrapper"}
    transition={"schema_version":"1.0","transition_id":"base_current:issue300","stage":"base_current","mode":"workflow","repo_locator":str(repo.resolve()),"base":{"source":"explicit","selected_base":"main","remote":"origin","ordered_candidates":["main"],"decision_head":head,"local_base_head":head,"remote_base_head":head,"post_sync_resolution_sha256":"a"*64}}
-   public_path=inputs/"public.json";transition_path=inputs/"transition.json";public_path.write_text(json.dumps(public));transition_path.write_text(json.dumps(transition))
-   recorder=installed_package/"scripts/record-context-discovery.sh";owner_path=inputs/"owner.json"
-   recorded=subprocess.run([str(recorder),"--root",str(repo),"--mode","workflow","--input",str(installed_package/"examples/change-context-owner-result-3.0.json"),"--public-input",str(public_path),"--transition",str(transition_path)],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True);owner=json.loads(recorded.stdout);owner_path.write_text(recorded.stdout)
-   checked=subprocess.run([str(installed_package/"scripts/check-context-discovery.sh"),"--root",str(repo),"--input",str(owner_path),"--public-input",str(public_path),"--transition",str(transition_path)],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True)
-   self.assertEqual(json.loads(checked.stdout)["typed_exit"],"context_ready")
-   envelope={"schema_version":"1.0","public_input":public,"transition":transition,"owner_context":{},"owner_result":owner}
-   invoked=subprocess.run([str(public_wrapper),"--invocation","-"],cwd=repo,input=json.dumps(envelope),text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True,env={key:value for key,value in os.environ.items() if key!="PYTHONDONTWRITEBYTECODE"})
-   self.assertEqual(json.loads(invoked.stdout)["exit_id"],"context_ready")
-   self.assertEqual(subprocess.run(["git","status","--porcelain=v1"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout,"")
-   self.assertEqual(list(repo.rglob("__pycache__")),[])
+   recorder=installed_package/"scripts/record-context-discovery.sh"
+   checker=installed_package/"scripts/check-context-discovery.sh"
+   def snapshot():
+    return {str(p.relative_to(repo)):p.read_bytes() for p in repo.rglob("*") if p.is_file() and ".git" not in p.relative_to(repo).parts}
+   def call(wrapper,envelope,code=0,extra=()):
+    before=snapshot()
+    result=subprocess.run([str(wrapper),"--root",str(repo),"--invocation","-",*extra],cwd=repo,input=envelope if isinstance(envelope,str) else json.dumps(envelope),text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env={key:value for key,value in os.environ.items() if key!="PYTHONDONTWRITEBYTECODE"})
+    self.assertEqual(result.returncode,code,(result.stdout,result.stderr))
+    self.assertEqual(snapshot(),before)
+    self.assertEqual(list(repo.rglob("__pycache__")),[])
+    return json.loads(result.stdout)
+   initial=snapshot()
+   envelope={"schema_version":"1.0","public_input":public,"transition":transition,"owner_context":{},"owner_result":json.loads((PACKAGE/"examples/change-context-owner-result-3.0.json").read_text())}
+   for mode in ("workflow","standalone"):
+    envelope["public_input"]["mode"]=mode;envelope["transition"]["mode"]=mode
+    envelope["owner_result"]=call(recorder,envelope)
+    checked=call(checker,envelope,extra=("--expected-result-sha256",envelope["owner_result"]["result_identity"]["result_sha256"]))
+    self.assertEqual(checked["typed_exit"],"context_ready")
+    output=call(public_wrapper,envelope)
+    self.assertEqual(output["exit_id"],"context_ready")
+    interface=json.loads((PACKAGE/"interface.json").read_text())
+    projection=next(p for p in interface["public_contracts"]["projections"] if p["exit_id"]=="context_ready")
+    handoff={p["target"]:output[p["source"]] for p in projection["mappings"]}
+    consumer_schema=json.loads((guru/"skills/packages/guru-clarify-requirements/schemas/public-initial-change-request-input-2.0.schema.json").read_text())
+    self.assertEqual([],list(Draft202012Validator(consumer_schema).iter_errors(handoff)))
+    transition_schema=json.loads((guru/"skills/consumers/workflow/stage0/transitions/context-current.schema.json").read_text())
+    self.assertEqual([],list(Draft202012Validator(transition_schema).iter_errors(output["transition"])))
+    self.assertEqual(set(output),{"exit_id","handoff_profile","handoff_mode","handoff_target_locator","handoff_continuation_id","duplicate_snapshot","transition"})
+   self.assertEqual(snapshot(),initial)
+   for wrapper in (recorder,checker,public_wrapper):
+    with self.subTest(wrapper=wrapper.name):
+     for raw in ("", "{", "{}{}", "[]"):
+      self.assertEqual(call(wrapper,raw,2)["code"],"invalid_json")
+     for key in envelope:
+      missing=copy.deepcopy(envelope);missing.pop(key)
+      self.assertEqual(call(wrapper,missing,2)["code"],"schema_mismatch")
+     malformed=copy.deepcopy(envelope);malformed["owner_result"]=[]
+     self.assertEqual(call(wrapper,malformed,2)["code"],"schema_mismatch")
+     unknown=copy.deepcopy(envelope);unknown["unexpected"]=True
+     self.assertEqual(call(wrapper,unknown,2)["code"],"schema_mismatch")
+   for wrapper in (recorder,checker):
+    legacy=subprocess.run([str(wrapper),"--root",str(repo),"--public-input","-","--transition","-","--input","-"],input=json.dumps(public),text=True,capture_output=True)
+    self.assertEqual(legacy.returncode,2)
+    self.assertEqual(json.loads(legacy.stdout)["code"],"invalid_arguments")
    invalid=json.loads(json.dumps(envelope));invalid["public_input"].pop("continuation_id")
-   invalid_result=subprocess.run([str(public_wrapper),"--invocation","-"],cwd=repo,input=json.dumps(invalid),text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True)
-   self.assertEqual(json.loads(invalid_result.stdout),{"exit_id":"blocked"})
+   self.assertEqual(call(public_wrapper,invalid),{"exit_id":"blocked"})
+   self.assertEqual(call(checker,invalid)["typed_exit"],"blocked")
+   self.assertEqual(call(recorder,invalid,2)["code"],"schema_mismatch")
    mismatch=json.loads(json.dumps(envelope));mismatch["owner_result"]["repository"]["repo"]="other/repository"
-   mismatch_result=subprocess.run([str(public_wrapper),"--invocation","-"],cwd=repo,input=json.dumps(mismatch),text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True)
-   self.assertEqual(json.loads(mismatch_result.stdout),{"exit_id":"blocked"})
+   self.assertEqual(call(public_wrapper,mismatch),{"exit_id":"blocked"})
+   self.assertEqual(call(checker,mismatch)["reason"],"repository_mismatch")
+   self.assertEqual(call(recorder,mismatch,3)["code"],"stale_identity")
+   dirty=repo/"ordinary-edit.txt";dirty.write_text("in-progress work\n")
+   self.assertEqual(call(checker,envelope)["reason"],"dirty_authority")
+   self.assertEqual(call(public_wrapper,envelope),{"exit_id":"blocked"})
+   self.assertEqual(call(recorder,envelope,3)["code"],"stale_identity")
+   dirty.unlink()
+   subprocess.run(["git","switch","-q","-c","other"],cwd=repo,check=True)
+   self.assertEqual(call(checker,envelope)["reason"],"wrong_authority_branch")
+   self.assertEqual(call(public_wrapper,envelope),{"exit_id":"blocked"})
+   self.assertEqual(call(recorder,envelope,3)["code"],"stale_identity")
+   subprocess.run(["git","switch","-q","main"],cwd=repo,check=True)
    subprocess.run(["git","commit","--allow-empty","-q","-m","advance"],cwd=repo,check=True);advanced=subprocess.run(["git","rev-parse","HEAD"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip();subprocess.run(["git","update-ref","refs/remotes/origin/main",advanced],cwd=repo,check=True)
-   stale_result=subprocess.run([str(public_wrapper),"--invocation","-"],cwd=repo,input=json.dumps(envelope),text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True)
-   self.assertEqual(json.loads(stale_result.stdout)["exit_id"],"refresh_base")
+   self.assertEqual(call(public_wrapper,envelope)["exit_id"],"refresh_base")
+   self.assertEqual(call(checker,envelope)["typed_exit"],"refresh_base")
+   self.assertEqual(call(recorder,envelope,3)["code"],"stale_identity")
+   self.assertEqual(snapshot(),initial)
+   self.assertEqual(subprocess.run(["git","status","--porcelain=v1","--ignored"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout,"")
 
  def test_recovery_checkpoint_is_package_owned_and_short_lived(self):
   with tempfile.TemporaryDirectory() as name:
@@ -109,15 +160,15 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    before=subprocess.run(["git","status","--porcelain=v1"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout
    current=observe_base_current(PACKAGE,public,transition);self.assertEqual(current["classification"],"current");self.assertEqual(current["observation"]["repo"],"example/guru-extension")
    self.assertEqual(before,subprocess.run(["git","status","--porcelain=v1"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout)
-   with tempfile.TemporaryDirectory() as inputs_name:
-    inputs=Path(inputs_name);owner=json.loads((PACKAGE/"examples/change-context-owner-result-3.0.json").read_text());owner["repository"]["repo"]="other/repository"
-    public_path=inputs/"public.json";transition_path=inputs/"transition.json";owner_path=inputs/"owner.json";invocation_path=inputs/"invocation.json"
-    public_path.write_text(json.dumps(public));transition_path.write_text(json.dumps(transition));owner_path.write_text(json.dumps(owner));invocation_path.write_text(json.dumps({"schema_version":"1.0","public_input":public,"transition":transition,"owner_context":{},"owner_result":owner}))
-    invoked=invoke_run(PACKAGE,{},["--root",str(repo),"--invocation",str(invocation_path)]);self.assertEqual(invoked,{"exit_id":"blocked"})
-    checked=check_run(PACKAGE,{"id":"check-context-discovery"},["--root",str(repo),"--input",str(owner_path),"--public-input",str(public_path),"--transition",str(transition_path)]);self.assertEqual(checked["typed_exit"],"blocked");self.assertEqual(checked["reason"],"repository_mismatch")
-    malformed=dict(owner);malformed.pop("repository");owner_path.write_text(json.dumps(malformed));invocation_path.write_text(json.dumps({"schema_version":"1.0","public_input":public,"transition":transition,"owner_context":{},"owner_result":malformed}))
-    self.assertEqual(invoke_run(PACKAGE,{},["--root",str(repo),"--invocation",str(invocation_path)]),{"exit_id":"blocked"})
-    malformed_checked=check_run(PACKAGE,{"id":"check-context-discovery"},["--root",str(repo),"--input",str(owner_path),"--public-input",str(public_path),"--transition",str(transition_path)]);self.assertEqual(malformed_checked["typed_exit"],"blocked");self.assertEqual(malformed_checked["reason"],"schema_mismatch")
+   owner=json.loads((PACKAGE/"examples/change-context-owner-result-3.0.json").read_text());owner["repository"]["repo"]="other/repository"
+   envelope={"schema_version":"1.0","public_input":public,"transition":transition,"owner_context":{},"owner_result":owner}
+   def run_envelope(run,command):
+    with patch("sys.stdin",io.StringIO(json.dumps(envelope))):return run(PACKAGE,command,["--root",str(repo),"--invocation","-"])
+   self.assertEqual(run_envelope(invoke_run,{}),{"exit_id":"blocked"})
+   checked=run_envelope(check_run,{"id":"check-context-discovery"});self.assertEqual(checked["typed_exit"],"blocked");self.assertEqual(checked["reason"],"repository_mismatch")
+   envelope["owner_result"].pop("repository")
+   self.assertEqual(run_envelope(invoke_run,{}),{"exit_id":"blocked"})
+   malformed_checked=run_envelope(check_run,{"id":"check-context-discovery"});self.assertEqual(malformed_checked["typed_exit"],"blocked");self.assertEqual(malformed_checked["reason"],"schema_mismatch")
    subprocess.run(["git","commit","--allow-empty","-q","-m","advance"],cwd=repo,check=True);advanced=subprocess.run(["git","rev-parse","HEAD"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip();subprocess.run(["git","update-ref","refs/remotes/origin/main",advanced],cwd=repo,check=True)
    self.assertEqual(observe_base_current(PACKAGE,public,transition)["classification"],"refresh_base")
    transition["base"].update({"decision_head":advanced,"local_base_head":advanced,"remote_base_head":advanced})

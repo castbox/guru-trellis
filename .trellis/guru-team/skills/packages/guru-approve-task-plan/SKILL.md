@@ -14,6 +14,16 @@ Docs SSOT plan, and the issue scope ledger directly. Review requirement
 authority, scope, design, implementation planning, acceptance verifiability,
 Docs SSOT, provenance, and supported unusual scenarios. The AI owns findings,
 revision actions, scope proposals, the final route, and delta classification.
+For delete, replace, merge, or compatibility-impacting work, also apply
+`.trellis/spec/workflow/subtraction-first-compatibility.md`: review direct
+deletion/modification/reuse first, identify affected deprecated assets and
+consumers, and require the concrete compatibility dialogue before coding,
+compatibility tests, or self-fixing. Do not treat `public` or `stable` naming as
+an exemption, and do not persist authorization.
+Reject incidental task-local fields, persistence, retries, locks, fallbacks, or
+other complexity without a named direct consumer. Treat the 3000-line limit for
+every touched non-generated code file as a mandatory mechanical-split or small-
+decoupling review trigger.
 
 Before that review may return `approved`, consume a fresh
 `guru-maintain-architecture-baseline:task_impact_sync(stage=planning)`

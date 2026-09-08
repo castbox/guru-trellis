@@ -49,6 +49,26 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             {"kind": "skill", "id": "guru-clarify-requirements"},
         )
 
+    def test_invocation_commands_share_declared_envelope_and_migration(self) -> None:
+        commands = json.loads((self.package / "commands.json").read_text())["commands"]
+        for command in commands:
+            if command["runtime_role"] == "preview":
+                continue
+            flags = {item["flag"]: item for item in command["arguments"]}
+            self.assertTrue(flags["--invocation"]["required"])
+            self.assertEqual(command["stdin"], "optional_json")
+            self.assertFalse({"--input", "--public-input", "--transition", "--mode"} & flags.keys())
+        binding = self.interface["public_contracts"]["invocation"]["call_local"]
+        schema = json.loads((self.package.parents[1] / binding["envelope"]["path"]).read_text())
+        self.assertEqual(schema["$id"], "guru-stage0-invocation-semantic-owner-1.0")
+        self.assertFalse(schema["additionalProperties"])
+        self.assertEqual(binding["flag"], "--invocation")
+        self.assertEqual(binding["stdin"], "-")
+        contract = (self.package / "references/contract.md").read_text()
+        self.assertIn("Issue #384 Invocation Migration", contract)
+        self.assertIn("direct command-input replacement", contract)
+        self.assertIn("public_input.mode", contract)
+
     def test_contract_keeps_semantic_and_history_boundaries(self) -> None:
         skill = (self.package / "SKILL.md").read_text(encoding="utf-8")
         contract = (self.package / "references/contract.md").read_text(encoding="utf-8")

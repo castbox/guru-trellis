@@ -21,6 +21,11 @@ def load(repo,package_root,value,field):
  except Exception as exc:raise CommandError("invalid_json",field,"Provide one JSON object.") from exc
  if not isinstance(v,dict):raise CommandError("invalid_json",field,"Provide one JSON object.")
  return v
+def load_invocation(repo,package_root,value):
+ envelope=load(repo,package_root,value,"invocation")
+ validate_json(envelope,package_root.parents[1]/"consumers/workflow/stage0/invocations/semantic-owner.schema.json","invocation")
+ if not isinstance(envelope.get("transition"),dict):raise CommandError("schema_mismatch","invocation.transition","Provide the independent base_current transition.")
+ return envelope
 def digest(v):return hashlib.sha256(json.dumps(v,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).hexdigest()
 
 def _git(repo,*args):

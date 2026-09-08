@@ -24,6 +24,14 @@ mode apply the same semantic review and objective checks; standalone invocation
 returns the same minimal exit to its caller without pretending to satisfy the
 workflow-owned plan pause.
 
+For delete, replace, merge, or compatibility-impacting plans, apply the
+repository policy in `.trellis/spec/workflow/subtraction-first-compatibility.md`.
+The planning judgment must select direct deletion, modification, replacement,
+reuse, or synchronized consumer migration before proposing a second path. It
+must identify affected deprecated assets and real consumers, and it must reject
+unsupported compatibility that has not been specifically approved in the
+current conversation before coding, compatibility tests, or self-fixing.
+
 ## Public Entry
 
 Public input schema 2.0 is a route DTO. Each profile carries only the owner

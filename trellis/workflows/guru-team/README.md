@@ -454,7 +454,10 @@ Owner-result schema 是 `guru-change-context-owner-result-3.0`；managed command
 workflow/stop target markers。`context_ready` 的 actual stdout 投影为 closed
 `context_current`，再与 Clarification 当前 semantic authoring fields 组成 call-local invocation。
 代表性 installed transcript 必须调用真实 Sync public wrapper，经 Interface 声明 projection
-构造 input 2.0 与独立 actual `base_current`，再调用真实 Discovery wrapper并把 actual
+构造 input 2.0 与独立 actual `base_current`，通过原 recorder/checker 的
+`--invocation -` 完整 envelope 执行 `record -> check -> invoke`，不预写
+public/transition/owner 输入文件。旧分离输入参数退出，调用方按 Discovery package
+contract 随 preset 同步迁移，不保留长期双路径；再把 actual
 `context_ready` 投影到 Clarify schema。产品 Python tests 经 managed resolver/public wrapper；
 low-level Sync executor、private import、手写 private digest 或 PATH Python import 都不算通过。
 

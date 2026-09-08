@@ -72,6 +72,15 @@ severity. Candidate input carries no decision, scenario class, severity,
 expected route, or caller assertion of a normal path. Only candidates returned
 eligible through `classified` may become a P0-P3 finding.
 
+For delete, replace, merge, or compatibility-impacting ranges, independently
+recompute `code_subtraction` and `docs_ssot_subtraction` using the durable
+subtraction-first policy. Check direct evolution, affected deprecated-asset
+exit, real supported consumers, current compatibility contracts, and
+category-specific reasons for growth. A non-server compatibility mechanism not
+specifically approved in the current conversation before coding, compatibility
+tests, or self-fixing remains unsupported; it cannot be justified by a generic
+safety or compatibility statement.
+
 The review lifecycle is visible in the current dialogue. Immediately before
 dispatch, the caller presents the independent reviewer identity, exact
 committed `origin/<base>...HEAD` range, and review target. Immediately after

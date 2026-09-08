@@ -903,27 +903,20 @@ def checked_context_owner_for_issue(
     authored = context_owner_for_issue(root, env)
     public_input = copy.deepcopy(public_input)
     public_input["change_input"] = copy.deepcopy(authored["change_input"])
-    public_path = root.parent / f"discovery-public-{digest(public_input)[:16]}.json"
-    transition_path = root.parent / f"base-current-{digest(transition)[:16]}.json"
-    public_path.write_text(
-        json.dumps(public_input, ensure_ascii=False, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-    transition_path.write_text(
-        json.dumps(transition, ensure_ascii=False, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    envelope = {
+        "schema_version": "1.0",
+        "public_input": public_input,
+        "transition": transition,
+        "owner_context": {},
+        "owner_result": authored,
+    }
     recorded = record_semantic(
         root,
         env,
         "guru-discover-change-context",
         "record-context-discovery.sh",
-        [
-            "--mode", "workflow", "--input", "-",
-            "--public-input", public_path,
-            "--transition", transition_path,
-        ],
-        authored,
+        ["--invocation", "-"],
+        envelope,
     )
     checked = record_semantic(
         root,
@@ -931,13 +924,11 @@ def checked_context_owner_for_issue(
         "guru-discover-change-context",
         "check-context-discovery.sh",
         [
-            "--input", "-",
-            "--public-input", public_path,
-            "--transition", transition_path,
+            "--invocation", "-",
             "--expected-result-sha256",
             recorded["result_identity"]["result_sha256"],
         ],
-        recorded,
+        {**envelope, "owner_result": recorded},
     )
     if checked.get("status") != "passed" or checked.get("typed_exit") != "context_ready":
         raise RuntimeError("current context owner did not pass its production checker")

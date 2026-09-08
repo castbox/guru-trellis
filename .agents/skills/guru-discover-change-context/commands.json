@@ -62,38 +62,10 @@
           "conflicts": []
         },
         {
-          "flag": "--mode",
-          "required": true,
-          "kind": "enum",
-          "values": [
-            "workflow",
-            "standalone"
-          ],
-          "description": "Invocation mode.",
-          "repeatable": false,
-          "conflicts": []
-        },
-        {
-          "flag": "--input",
+          "flag": "--invocation",
           "required": true,
           "kind": "string",
-          "description": "Owner result JSON locator.",
-          "repeatable": false,
-          "conflicts": []
-        },
-        {
-          "flag": "--public-input",
-          "required": true,
-          "kind": "string",
-          "description": "Discovery public input JSON locator.",
-          "repeatable": false,
-          "conflicts": []
-        },
-        {
-          "flag": "--transition",
-          "required": true,
-          "kind": "string",
-          "description": "Sync base_current transition JSON locator.",
+          "description": "Closed semantic-owner 1.0 envelope JSON file or dash for one stdin read; mode comes from public_input.",
           "repeatable": false,
           "conflicts": []
         },
@@ -122,7 +94,7 @@
           "conflicts": []
         }
       ],
-      "stdin": "none",
+      "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
@@ -152,26 +124,10 @@
           "conflicts": []
         },
         {
-          "flag": "--input",
+          "flag": "--invocation",
           "required": true,
           "kind": "string",
-          "description": "Owner result JSON locator.",
-          "repeatable": false,
-          "conflicts": []
-        },
-        {
-          "flag": "--public-input",
-          "required": true,
-          "kind": "string",
-          "description": "Discovery public input JSON locator.",
-          "repeatable": false,
-          "conflicts": []
-        },
-        {
-          "flag": "--transition",
-          "required": true,
-          "kind": "string",
-          "description": "Sync base_current transition JSON locator.",
+          "description": "Closed semantic-owner 1.0 envelope JSON file or dash for one stdin read; owner_result is recorder stdout.",
           "repeatable": false,
           "conflicts": []
         },
@@ -200,7 +156,7 @@
           "conflicts": []
         }
       ],
-      "stdin": "none",
+      "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
@@ -222,10 +178,18 @@
       "entrypoint": "runtime/invoke.py",
       "arguments": [
         {
-          "flag": "--invocation",
+          "flag": "--root",
           "required": false,
-          "kind": "json",
-          "description": "Call-local invocation envelope or dash for stdin.",
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--invocation",
+          "required": true,
+          "kind": "string",
+          "description": "Closed semantic-owner 1.0 envelope JSON file or dash for one stdin read.",
           "repeatable": false,
           "conflicts": []
         },

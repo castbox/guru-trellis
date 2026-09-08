@@ -66,3 +66,12 @@ git diff --check
 - PASS：source package closure（23 packages / 77 commands）、4,729 个 installed manifest 声明文件哈希、六份 fixture 与 canonical/installed adapter 字节一致、overlay drift、JSON/Python/task 与全候选 `git diff --check`。
 - BOUNDARY：installed 全量 package validation 仍仅被既存 #108 Claude projection 与 39 个 `.bak` provenance drift 阻断；本任务未修改、删除或吸收这些 sidecar。
 - BOUNDARY：未执行完整多平台 throwaway、upgrade/update、reapply 或 release-candidate 矩阵；其 owner 仍是专门兼容性或 Release Issue。
+
+## 2026-09-08 Finalizer Base Reconciliation 结果
+
+- Finalizer preview 对 `29ef6d482bb7c13bf65d23b1ffdb806c4afdc531` 返回 `base_reconciliation_required`，新 base 为 `81657210f5508186ed0f09098fdc63c927fdc307`；preview 无副作用。
+- 已以 no-commit merge 集成新 base，唯一冲突 `.trellis/guru-team/extension.json` 按 JSON 结构解决：保留两侧 package/file inventory，保留 #376 当前 dirty provenance preimage，不运行全量 preset reapply。
+- PASS：canonical reconcile 20/20、installed reconcile 20/20；canonical Discovery 16/16、installed Discovery contract/runtime 7/7 + 9/9。
+- PASS：reconcile 与 Discovery package tree digest 和当前 manifest 精确一致；source package validation 23 packages / 77 commands；ownership、overlay drift、task artifact、JSON、Python compilation 与 `git diff --check` 通过。
+- BOUNDARY：installed full validation 仍仅被 Issue #108 既存 approve/check/review Claude projection 与 digest provenance drift 阻断；39 个 `.bak` 未修改、未删除、未提交。
+- ROUTE：不重新规划或重新实施 #376 业务行为；对本次 tracked manifest composition 运行 fresh Phase 2、Task Commit、完整 Branch Review 与 Publication 后恢复 Finalizer。
