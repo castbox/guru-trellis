@@ -49,5 +49,8 @@ retarget_context/new_task/blocked` 路径。完整 `claude-existing` 累计兼�
       为数组或对象时，集合成员判断会抛出 `TypeError`。当前实现先校验字符串
       类型，并在 canonical/installed 测试中覆盖数组和对象，统一返回
       `stale_identity` 且无 traceback。
+- [x] 后续 review 发现 installed manifest 仍绑定 finding-fix 前的 runtime/test
+      digest。已刷新 Clarify package tree digest 与两条 file digest，并独立核对
+      canonical tree、installed bytes 和 manifest provenance 一致。
 - [ ] finding-fix 必须重新完成 Phase 2、Task Commit、fresh Branch Review、
       Publication 和 Finalizer 后才能合并 PR #380。

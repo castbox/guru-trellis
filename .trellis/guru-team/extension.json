@@ -604,7 +604,7 @@
       {
         "id": "guru-clarify-requirements",
         "interface_sha256": "6dbc7f798861e09b711afd2b6989f86d051af9d4bdbf2e79c337d925f6a7e412",
-        "tree_sha256": "58743723c2fb253efa60fdf57a4799a1df5f9ef517f4d206de0d42ba949e9fab"
+        "tree_sha256": "17a25cf20a10ca96c93ca4b975831ae2fb7685d2eb385ca54967bd49eeb835f8"
       },
       {
         "id": "guru-reconcile-task-base",
@@ -4032,7 +4032,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-clarify-requirements/runtime/invoke.py",
-        "sha256": "73a03e34501f8ea24578881a05f91193ac0296837e5688e4b2a3a57f8f072bd2",
+        "sha256": "686c0fb54d4fc577c0cb9c27129be567cec3c47f91696ba2d2c1154ef6746d32",
         "executable": false,
         "action": "unchanged"
       },
@@ -4172,7 +4172,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py",
-        "sha256": "b731b08e8793f35ce6691c9d9683cc54df4e58a91bee92f0129a8d1aaa58a6ee",
+        "sha256": "a82d15890b6cadc64998168af54788fb71aede0a583457409926089ee250eff2",
         "executable": false,
         "action": "unchanged"
       },
