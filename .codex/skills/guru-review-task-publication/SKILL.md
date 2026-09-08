@@ -32,6 +32,14 @@ reviewed commit is an ancestor of current HEAD and successfully inspects the
 descendant diff; an invalid or non-ancestor commit, or an uninspectable diff,
 fails closed.
 
+Do not use `publication_review_stale` for a base-only mismatch. Finalizer owns a
+separate `base_reconciliation_required` exit for that condition. When post-review
+base reconciliation creates a new committed HEAD, bounded continuity must first
+review the exact base delta and project that current continuity-reviewed commit
+as `branch_review_commit`; only then may ordinary `publication_review` run.
+Publication does not inspect the prior complete review commit or relax its
+current reviewed-content identity check.
+
 Never treat scanner success, empty findings, changed-file classification, a
 deterministic readiness flag, or script success as semantic pass. Metadata-only
 revision remains inside this Skill. Reread every objective precondition, then

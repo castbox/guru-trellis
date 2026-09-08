@@ -441,6 +441,13 @@ verify_finish_family_integration() {
     installed_python "$TARGET" "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py" -q
 }
 
+verify_base_continuity_integration() {
+  local label="$1"
+  printf 'Installed base-continuity integration: %s\n' "$label"
+  installed_python "$TARGET" \
+    "$TARGET/.trellis/guru-team/skills/tests/test_base_continuity_integration.py" -q
+}
+
 fail_if_python_cache() {
   local label="$1"
   local root="$2"
@@ -1530,6 +1537,7 @@ test ! -e "$TARGET/.claude/skills/guru-example-action"
 (cd "$REPO_ROOT" && source_python -m unittest \
   trellis.skills.guru-team.tests.test_skill_packages.SkillPackageIntegrationTests)
 verify_finish_family_integration "initial"
+verify_base_continuity_integration "initial"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 installed_python "$TARGET" - "$TARGET" <<'PY'
 import json
@@ -2768,6 +2776,7 @@ test ! -e "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-
 verify_package_projections "after-update-reapply"
 verify_base_reconciliation_distribution "after-update-reapply"
 verify_finish_family_integration "after-update-reapply"
+verify_base_continuity_integration "after-update-reapply"
 "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json >/dev/null
 EXTENSION_CONTRACT_AFTER_UPDATE_JSON="$(
   "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" \

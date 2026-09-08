@@ -1102,6 +1102,19 @@ semantic conflict, authority change, upstream supersession, PR-ready base
 advance, and non-ancestor history. A base SHA or path hit alone must never
 synthesize stale, finding, pass, reset, or block.
 
+The exact old/new base pair is an integration clock independent from the live
+authority and task-content clock. A base-only unrelated or semantically
+compatible advance with unchanged Issue authority and approved planning
+assumptions must preserve the original `resume_target`, including
+`task_activation` after Planning. Pre-review profiles return `reconciled`.
+Post-review profiles return `reconciled` only when the reviewed-content identity
+is unchanged; otherwise they return `review_continuity_required` and may create
+one persistent local reconciliation commit only after the semantic owner has
+displayed the exact expected task/base HEADs, candidate tree and mutation scope
+and received current-dialogue confirmation. A
+`planning_stale` result must identify an actual live authority or approved
+planning-assumption change; observing a newer base is not sufficient evidence.
+
 One shared stateful integration fixture passes actual producer stdout through
 the pair guard, semantic owner, router, and target consumer at every eligible
 boundary. It proves an unchanged pair causes zero semantic invocation,
@@ -1112,10 +1125,19 @@ derive counts from the event log and live workflow markers rather than case
 labels or duplicated literal tables.
 
 Bounded continuity tests prove the existing task semantic review is not replayed
-when task content is unchanged, while a required task change still performs
-fresh implementation, Phase 2, commit, and Branch Review. Finalizer tests keep
-`base_reconciliation_required` distinct from Publication content/metadata
-stale. Current-runtime replays for the historical #132 and #161 scenarios must
+when task content is unchanged. They bind the prior complete review commit and
+current committed reconciliation HEAD independently, verify the reconciliation
+commit has both required ancestors and the reviewed candidate tree, and prove
+that `continuity_passed` supplies the current HEAD to Publication without
+claiming a second complete Branch Review. A required task or authority change
+still performs fresh implementation, Phase 2, commit, and Branch Review.
+One real cross-Skill Git regression must cover Finalizer base-mismatch seed,
+reconcile continuity route, confirmed persistent local reconciliation commit,
+bounded continuity, and Publication `ready`; its negative path must prove that
+an unreviewed base merge remains stale. Finalizer and Publication tests keep
+`base_reconciliation_required` distinct from `publication_review_stale`, and
+Publication runtime/schema remain strict rather than accepting a base-only
+bypass. Current-runtime replays for the historical #132 and #161 scenarios must
 reconstruct valid live facts without treating old HEADs, digests, or fabricated
 state as authority.
 

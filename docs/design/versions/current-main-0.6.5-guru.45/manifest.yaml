@@ -1,7 +1,8 @@
 schema_version: "1.0"
 authority: design
 version: current-main-0.6.5-guru.45
-status: active
+status: superseded
+successor: current-main-0.6.5-guru.46
 source_binding: "reviewed architecture-contribution-332-release-wrapper-entry-correction-v1 + inherited current-main-0.6.5-guru.44 authority + containing Git object/tree identity"
 extension_manifest_version: 0.6.15-guru.40
 target_trellis_cli: 0.6.15
@@ -12,5 +13,5 @@ architecture_locator: docs/architecture/README.md
 registry_locator: trellis/skills/guru-team/registry.json
 active_skill_count: 23
 external_exit_count: 97
-command_count: 81
+command_count: 77
 provenance: "code_recovered + reviewed architecture-contribution-332-release-wrapper-entry-correction-v1 + inherited current-main-0.6.5-guru.44 authority"

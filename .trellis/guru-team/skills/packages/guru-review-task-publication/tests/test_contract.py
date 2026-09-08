@@ -821,6 +821,55 @@ class TaskPublicationContractTest(unittest.TestCase):
         )
         self.assertFalse(fake_owner.checkpoint.exists())
 
+    def test_base_only_mismatch_requires_reconciliation_continuity_before_publication(
+        self,
+    ) -> None:
+        skill = " ".join((PACKAGE / "SKILL.md").read_text(encoding="utf-8").split())
+        contract = " ".join(
+            (PACKAGE / "references/contract.md").read_text(encoding="utf-8").split()
+        )
+        finalizer_stale_schema = json.loads(
+            (
+                PACKAGE.parent
+                / "guru-finalize-task/schemas/public-publication-review-stale-output.schema.json"
+            ).read_text(encoding="utf-8")
+        )
+
+        self.assertIn(
+            "Do not use `publication_review_stale` for a base-only mismatch.",
+            skill,
+        )
+        self.assertIn(
+            "bounded continuity must first review the exact base delta and project that current continuity-reviewed commit as `branch_review_commit`",
+            skill,
+        )
+        self.assertIn(
+            "`publication_review_stale` is not a base-reconciliation entry.",
+            contract,
+        )
+        self.assertIn(
+            "Publication consumes that current commit exactly as it consumes a complete Branch Review `passed` anchor",
+            contract,
+        )
+        self.assertNotIn(
+            "base_reconciliation_required",
+            finalizer_stale_schema["properties"]["stale_reason"]["enum"],
+        )
+
+    def test_publication_current_runtime_and_schema_remain_strict(self) -> None:
+        self.assertEqual(
+            self.interface["public_contracts"]["input"]["aggregate_schema"]["schema_id"],
+            "guru-production-review-task-publication-input-aggregate-4.0",
+        )
+        self.assertEqual(
+            self.interface["public_contracts"]["outputs"][0]["schema"]["schema_id"],
+            "guru-production-review-task-publication-output-ready-4.0",
+        )
+        self.assertEqual(
+            self.readiness_schema["$id"],
+            "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-5.0.json",
+        )
+
     def test_invocation_context_reuses_one_objective_snapshot(self) -> None:
         context = GTT.TaskPublicationInvocationContext(
             root=Path("/repo"),

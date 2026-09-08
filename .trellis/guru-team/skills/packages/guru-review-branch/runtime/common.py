@@ -339,9 +339,50 @@ def content_identity(repo, commit):
         ) from exc
 
 
+def tree_identity(repo, commit):
+    raw = subprocess.run(
+        ["git", "ls-tree", "-r", "-z", "--full-tree", commit],
+        cwd=repo,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if raw.returncode:
+        raise CommandError(
+            "stale_identity",
+            "candidate_tree_sha256",
+            raw.stderr.decode("utf-8", "replace").strip()
+            or "Rebuild the current integration candidate.",
+            3,
+        )
+    rows = []
+    for entry in raw.stdout.split(b"\0"):
+        if not entry:
+            continue
+        metadata, separator, path = entry.partition(b"\t")
+        parts = metadata.split()
+        if not separator or len(parts) != 3 or parts[1] != b"blob":
+            continue
+        blob = subprocess.run(
+            ["git", "cat-file", "blob", parts[2].decode("ascii")],
+            cwd=repo,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        if blob.returncode:
+            raise CommandError(
+                "stale_identity",
+                "candidate_tree_sha256",
+                blob.stderr.decode("utf-8", "replace").strip()
+                or "Rebuild the current integration candidate.",
+                3,
+            )
+        rows.append(path + b"\0" + hashlib.sha256(blob.stdout).hexdigest().encode() + b"\0")
+    return hashlib.sha256(b"".join(rows)).hexdigest()
+
+
 def validate_gate(package_root, repo, value, expected_exit=None):
     if (
-        value.get("schema_version") != "6.0"
+        value.get("schema_version") != "7.0"
         or value.get("reviewed_content_algorithm") != REVIEWED_CONTENT_ALGORITHM
     ):
         raise CommandError(
@@ -350,7 +391,7 @@ def validate_gate(package_root, repo, value, expected_exit=None):
             "Run a fresh Branch Review for the current reviewed-content contract.",
             3,
         )
-    validate_json(value, package_root / "schemas/review-gate-6.0.schema.json", "gate")
+    validate_json(value, package_root / "schemas/review-gate-7.0.schema.json", "gate")
     classifications = value.get("candidate_classifications")
     refs = [
         item.get("candidate_ref")
@@ -403,7 +444,9 @@ def validate_gate(package_root, repo, value, expected_exit=None):
         raise CommandError(
             "stale_identity", "base_ref", "Run a fresh review for the current base.", 3
         )
-    if not ancestor(repo, value["base_head"], value["review_commit"]):
+    if value["profile"] == "branch_review" and not ancestor(
+        repo, value["base_head"], value["review_commit"]
+    ):
         raise CommandError(
             "stale_identity",
             "base_head",
@@ -419,11 +462,34 @@ def validate_gate(package_root, repo, value, expected_exit=None):
                 "Base continuity requires an ancestor delta.",
                 3,
             )
-        if pair["task_head"] != value["review_commit"]:
+        if pair["task_head"] != value["review_commit"] or current != pair["task_head"]:
             raise CommandError(
                 "stale_identity",
                 "integration_pair.task_head",
-                "Bind continuity to reviewed task content.",
+                "Bind continuity to the exact current reconciled HEAD.",
+                3,
+            )
+        if pair["prior_branch_review_commit"] == pair["task_head"] or not ancestor(
+            repo, pair["prior_branch_review_commit"], pair["task_head"]
+        ):
+            raise CommandError(
+                "stale_identity",
+                "integration_pair.prior_branch_review_commit",
+                "Bind continuity to one prior full-review commit in current history.",
+                3,
+            )
+        if not ancestor(repo, pair["new_base_head"], pair["task_head"]):
+            raise CommandError(
+                "stale_identity",
+                "integration_pair.new_base_head",
+                "Bind continuity to the reconciled base contained by current HEAD.",
+                3,
+            )
+        if tree_identity(repo, pair["task_head"]) != pair["candidate_tree_sha256"]:
+            raise CommandError(
+                "stale_identity",
+                "integration_pair.candidate_tree_sha256",
+                "Current committed tree must match the reviewed integration candidate.",
                 3,
             )
     if dirty_paths(repo, value["task_dir"]):
@@ -474,7 +540,7 @@ def validate_public_binding(package_root, repo, public, gate):
     profile = public.get("profile")
     schema = {
         "branch_review": "public-branch-review-input.schema.json",
-        "base_continuity": "public-base-continuity-input.schema.json",
+        "base_continuity": "public-base-continuity-input-2.0.schema.json",
     }.get(profile)
     if schema is None:
         raise CommandError(
@@ -486,7 +552,11 @@ def validate_public_binding(package_root, repo, public, gate):
         "mode": public["mode"],
         "profile": profile,
         "review_intent": public["review_intent"],
-        "review_commit": public["branch_review_commit"],
+        "review_commit": (
+            public["task_head"]
+            if profile == "base_continuity"
+            else public["branch_review_commit"]
+        ),
     }
     for field, value in expected.items():
         if gate.get(field) != value:
@@ -494,11 +564,7 @@ def validate_public_binding(package_root, repo, public, gate):
                 "stale_identity", field, "Use the exact public input for this checkpoint.", 3
             )
     base_ref = public["new_base_head"] if profile == "base_continuity" else public["base_ref"]
-    base_head = git(
-        repo,
-        "rev-parse",
-        public["old_base_head"] if profile == "base_continuity" else base_ref,
-    )
+    base_head = git(repo, "rev-parse", base_ref)
     if gate.get("base_ref") != base_ref or gate.get("base_head") != base_head:
         raise CommandError(
             "stale_identity", "base_ref", "Use the exact reviewed base identity.", 3
@@ -515,6 +581,7 @@ def validate_public_binding(package_root, repo, public, gate):
                 "resume_target",
             )
         }
+        expected_pair["prior_branch_review_commit"] = public["branch_review_commit"]
         if gate.get("integration_pair") != expected_pair:
             raise CommandError(
                 "stale_identity",

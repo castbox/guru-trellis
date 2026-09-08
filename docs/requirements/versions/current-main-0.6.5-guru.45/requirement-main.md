@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.45`；状态：`active`；predecessor：`current-main-0.6.5-guru.44`；基线：#332 original-entry correction contribution + `.44` authority。该 successor 保留 `.5/.40/CLI 0.6.15` release target、reviewed #240/#348 authority 与 #305 独立 `EVO-001..007` target，并把 current public graph 收敛为 23 Skills / 97 exits / 77 commands。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
+版本：`current-main-0.6.5-guru.45`；状态：`superseded`；predecessor：`current-main-0.6.5-guru.44`；successor：`current-main-0.6.5-guru.46`；基线：#332 original-entry correction contribution + `.44` authority。该 successor 保留 `.5/.40/CLI 0.6.15` release target、reviewed #240/#348 authority 与 #305 独立 `EVO-001..007` target，并把 current public graph 收敛为 23 Skills / 97 exits / 77 commands。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
 
 ## 目标、角色与适用范围
 

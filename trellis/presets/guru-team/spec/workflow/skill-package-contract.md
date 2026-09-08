@@ -700,9 +700,10 @@ Check emits `passed(exit_id, task_ref, phase2_commit_anchor)`,
 branch_review_commit)`, `revision-required(exit_id, task_ref)`, or blocked
 `exit_id` only. Active `guru-review-branch` consumes exactly `task_ref`,
 `base_ref`, and `branch_review_commit`; the caller authors only `profile`, `mode`, and
-`review_intent` for the selected aggregate schema 3.0 profile. Branch Review
+`review_intent` for the selected aggregate schema 4.0 profile. Branch Review
 emits `passed(exit_id, task_ref, branch_review_commit)`,
-`continuity_passed(exit_id, task_ref, branch_review_commit, task_head,
+`continuity_passed(exit_id, task_ref, branch_review_commit,
+prior_branch_review_commit, task_head,
 old_base_head, new_base_head, candidate_tree_sha256, resume_target)`,
 `implementation_required(exit_id, task_ref, branch_review_commit, finding_refs)`,
 `scope_confirmation_required(exit_id, task_ref, proposal_refs)`, or blocked
@@ -1530,27 +1531,32 @@ complete current activation unit.
 ## Branch Review Owner And Active Publication Bridge
 
 `guru-review-branch` is the semantic owner of the post-commit full-range review
-and bounded base-continuity review. Aggregate public input schema 3.0 dispatches
+and bounded base-continuity review. Aggregate public input schema 4.0 dispatches
 two profiles. The `branch_review` schema 2.0 profile requires exactly `profile`,
 `mode`, `task_ref`, `base_ref`, `branch_review_commit`, and `review_intent`; the
 committed producer supplies the three identity fields and the caller AI freshly
-authors `profile`, `mode`, and `review_intent`. The `base_continuity` schema 1.0
-profile consumes the exact old/new base candidate and unchanged task review
-from `guru-reconcile-task-base:review_continuity_required`. Neither profile
+authors `profile`, `mode`, and `review_intent`. The current-only
+`base_continuity` schema 2.0 profile separately binds the prior complete
+`branch_review_commit` and current committed reconciled `task_head`, plus the
+exact old/new base candidate, from
+`guru-reconcile-task-base:review_continuity_required`. Neither profile
 reopens the Phase 2 private checkpoint. Current issue scope, findings, range,
 candidate identity, and freshness remain owner-private evidence. The
-current-only compact gate schema 6.0 is ignored runtime state and stores
-profile-specific identity plus `review_commit`, `reviewed_content_algorithm`,
-and `reviewed_content_sha256`. Aggregate input schema 2.0 and gate schema 5.0
-or older remain legacy stale inventory, not current runtime authority; any
-non-6.0 gate fails closed.
+current-only compact gate schema 7.0 is ignored runtime state and stores
+profile-specific identity plus `review_commit`, the prior complete review
+commit for continuity, `reviewed_content_algorithm`, and
+`reviewed_content_sha256`. Aggregate input schema 3.0 and gate schema 6.0 or
+older remain legacy stale inventory, not current runtime authority; any
+non-7.0 gate fails closed.
 
 The five outputs are independent minimal DTOs:
 
 - `passed`: `exit_id`, `task_ref`, `branch_review_commit`;
 - `continuity_passed`: `exit_id`, `task_ref`, `branch_review_commit`,
-  `task_head`, `old_base_head`, `new_base_head`, `candidate_tree_sha256`, and
-  `resume_target`;
+  `task_head`, `old_base_head`, `new_base_head`,
+  `candidate_tree_sha256`, and `resume_target`; the public
+  `branch_review_commit` is the current continuity-reviewed reconciliation
+  commit, not a claim that a second complete Branch Review occurred;
 - `implementation_required`: `exit_id`, `task_ref`, `branch_review_commit`,
   `finding_refs`;
 - `scope_confirmation_required`: `exit_id`, `task_ref`, `proposal_refs`;
@@ -1569,6 +1575,12 @@ Branch Review owner-private checkpoint is current-only. A schema 5.0 or older
 checkpoint from the former package-local identity implementation is stale and
 routes to a fresh Branch Review without compatibility reads, migration, or
 rewriting.
+
+The bounded continuity edge supplies the same Publication seed shape after its
+router restores `resume_target=publication_review`, `task_finalization`, or
+`finalization_resume`: it selects the current `branch_review_commit` produced by
+`continuity_passed`. The prior complete review commit remains a separate
+continuity identity and is not projected as Publication's current anchor.
 
 For every structured projection, an `exit_id` field whose schema is the exact
 matching const may be omitted only as the already selected route discriminator.
@@ -1595,6 +1607,11 @@ Finalizer producer supplies only
 cover the complete target required set, and merge without overwrite. Inputs
 outside the current profile schemas fail closed; Publication never reads or
 projects another Skill's checkpoint.
+`publication_review_stale` does not consume a base-only mismatch. Finalizer
+projects that mismatch only through `base_reconciliation_required`; Publication
+can resume only after reconcile plus bounded continuity has produced a current
+reviewed-content anchor, or after a full Branch Review for real task-content
+change.
 
 In workflow and standalone mode, the Publication AI authors the exact Chinese
 PR title and Markdown body directly from live authority and reviews that payload
@@ -1659,7 +1676,7 @@ or `ready`.
 
 The publication repository binding uses the shared reviewed-content boundary,
 scope-only `issue-scope-ledger.json`, and the exact owner-private PR payload.
-Branch Review continuity comes from the public Git
+Branch Review continuity comes from the public current Git
 anchor, shared content identity, and live Git, not from reopening its private checkpoint. The recorder-owned
 ignored `pr-readiness.json` is excluded from its own snapshot. Runtime input is
 allowed only when the current command explicitly names that regular file under
@@ -1822,18 +1839,27 @@ contracts.
 
 The semantic review independently classifies authority impact, task-content
 impact, and integration-only impact, checks one temporary integration
-candidate, selects affected validation, and returns exactly one exit. It never
-merges or rebases the task branch, creates a durable ref or commit, imports
-another package's private runtime, or persists authorization. A current result
+candidate, selects affected validation, and returns exactly one exit. Pre-review
+profiles never merge or rebase the task branch. For post-Branch Review,
+post-Publication, or Finalizer mismatch profiles, a compatible candidate that
+changes the reviewed-content identity returns the current-only
+`review_continuity_required` 2.0 DTO only after the owner displays the exact Git
+mutation and obtains current-dialogue confirmation. Its package-private
+expected-head executor then creates exactly one persistent local reconciliation
+commit and validates prior-review/new-base ancestry and candidate-tree equality.
+The package never imports another package's private runtime, persists
+authorization, pushes, or changes a PR. A current result
 may be retained only in ignored task-local owner runtime for its next declared
 consumer and is deleted after successful consumption.
 
 `guru-review-branch` additionally owns a bounded base-continuity input
 profile. It reuses the existing semantic task review only when the task-content
-HEAD is unchanged, then independently reviews the semantically selected base
-delta, temporary candidate, conflict resolution, and affected validation. A
-continuity pass establishes integration readiness for that exact pair; it does
-not rewrite the prior reviewed HEAD. Required task bytes return to
+scope is unchanged, binds the prior complete review commit as an ancestor of the
+current committed reconciliation HEAD, then independently reviews the
+semantically selected base delta, committed candidate tree, conflict resolution,
+and affected validation. A continuity pass establishes integration readiness
+for that exact pair and returns the current HEAD as the downstream review anchor;
+it does not claim that the prior complete review was rerun. Required task bytes return to
 implementation, while planning or authority changes route to their real owner.
 
 ## Original Public Entry Consolidation

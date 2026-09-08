@@ -101,6 +101,9 @@ The semantic owner's passing conclusion is provisional. Do not tell the user
 that Branch Review has formally passed until both `check-review-gate` and the
 public wrapper return `passed` for the same current task, range, commit, and
 reviewed-content identity.
+`continuity_passed` is only a bounded continuity judgment over a previously
+reviewed task plus one committed reconciliation pair. It must never be
+described as a full Branch Review.
 `passed` targets the active `guru-review-task-publication` Skill through its
 target-owned authoring seed. The workflow caller performs the publication
 content authoring preparation required by the global Phase 3.6 order before
@@ -122,13 +125,20 @@ fresh Phase 2 Architecture/check round, a new task commit, and this independent
 complete-range Branch Review. Publication cannot consume the pre-promotion
 review or a Phase 2 result in place of that fresh review.
 
-Aggregate public input schema 3.0 dispatches two profiles: `branch_review`
+Aggregate public input schema 4.0 dispatches two profiles: `branch_review`
 schema 2.0 accepts only `initial_review` and `fresh_final_review`, while
-`base_continuity` schema 1.0 accepts only `base_continuity`. The owner-private
-gate is current-only schema 6.0 and records profile-specific identity plus
-`review_commit`, `reviewed_content_algorithm`, and `reviewed_content_sha256`.
-Aggregate input schema 2.0 and gate schema 5.0 or older remain legacy stale
-inventory, not current runtime authority. Any non-6.0 gate fails closed through
-the stable stale-identity path. Any other current input shape fails closed
-through the normal invalid-input path. The commit is used for range and finding
-ancestry; the reviewed-content identity alone owns content freshness.
+current-only `base_continuity` schema 2.0 accepts only `base_continuity` and
+separates the prior full-review `branch_review_commit` from the current
+committed reconciled `task_head`. The continuity recorder requires
+`task_head == HEAD`, the prior review and `new_base_head` to be ancestors of
+that HEAD, and the current committed tree to match `candidate_tree_sha256`.
+The owner-private gate is current-only schema 7.0. Its `review_commit` binds the
+current `task_head`; its integration pair separately binds the prior full-review
+commit, current HEAD, exact old/new base pair, candidate tree, relevant paths,
+and resume target. `continuity_passed` output schema 2.0 projects
+`branch_review_commit` as that current continuity-reviewed HEAD for the next
+owner. Aggregate input schema 3.0, base-continuity input/output schema 1.0, and
+gate schema 6.0 or older remain legacy stale inventory, not current runtime
+authority. Runtime does not dual-read them. Any non-7.0 gate fails closed
+through the stable stale-identity path. Any other current input shape fails
+closed through the normal invalid-input path.

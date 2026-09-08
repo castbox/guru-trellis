@@ -1300,7 +1300,7 @@ source binding requires no tail and remains published at the reviewed head.
 
 ## Review Gate Artifact
 
-`review-branch.sh` writes compact schema 6.0 `review-gate.json` at the exact
+`review-branch.sh` writes compact schema 7.0 `review-gate.json` at the exact
 task-owned ignored-runtime checkpoint after the independent semantic judgment
 exists. The gate
 contains only schema/skill identity, task/mode/review intent, typed exit,
@@ -1917,12 +1917,13 @@ expected-versus-actual assertion.
 
 ## Branch Review Data Boundary
 
-Branch Review aggregate public input schema 3.0 dispatches two independent
+Branch Review aggregate public input schema 4.0 dispatches two independent
 profiles. The `branch_review` schema 2.0 profile contains workflow/standalone
 mode, task/base/`branch_review_commit` identity, and one of
-`initial_review|fresh_final_review`. The `base_continuity` schema 1.0 profile
-binds the unchanged task review to one bounded old-base/new-base candidate and
-the `base_continuity` intent. Its public outputs are the five minimal DTOs
+`initial_review|fresh_final_review`. The current-only `base_continuity` schema
+2.0 profile separately binds the prior complete `branch_review_commit` and the
+current committed reconciled `task_head` to one bounded old-base/new-base
+candidate and the `base_continuity` intent. Its public outputs are the five minimal DTOs
 defined by the Skill package contract. `review_ref`, finding refs, proposal
 refs, and continuity identity are opaque consumer identities, not embedded
 artifact bodies.
@@ -1930,9 +1931,11 @@ artifact bodies.
 After a fix commit, finding closure is an internal transient AI judgment by the
 finding owner or a real unfinished-agent replacement. It has no public exit or
 artifact and automatically dispatches a distinct fresh reviewer. Current gate
-schema 6.0 accepts the intent allowed by the selected current profile.
-Aggregate input schema 2.0 and gate schema 5.0 or older remain legacy stale
-inventory, not current runtime authority; any non-6.0 gate fails closed.
+schema 7.0 accepts the intent allowed by the selected current profile and, for
+continuity, records the prior complete review commit separately from the current
+`review_commit`. Aggregate input schema 3.0 and gate schema 6.0 or older remain
+legacy stale inventory, not current runtime authority; any non-7.0 gate fails
+closed.
 
 Only `review-gate.json` is written for a new review. It contains a non-empty
 terminal-only `candidate_classifications` set. Each row binds `candidate_ref`,
@@ -1988,6 +1991,10 @@ non-ancestor identities and inspection failure remain fail closed on every
 exit; `ready` remains continuity-strict. The public
 wrapper reruns the current owner checker; no re-entry narrative or supersession
 identity enters the public input, private checkpoint, or exit.
+This stale profile never consumes a base-only mismatch. Such a mismatch belongs
+to Finalizer's `base_reconciliation_required` output and must pass through the
+confirmed local reconciliation commit plus bounded continuity before the
+current commit can be supplied to Publication.
 Publication `ready` already runs the same side-effect-free Finalizer preflight
 that the first preview uses. Finalizer consumes only the checked ready DTO and
 never augments or interprets the Publication checkpoint.
@@ -2000,8 +2007,9 @@ The Publication AI authors and reviews the exact PR payload in memory, and the
 recorder stores it only in the owner-private readiness checkpoint. The wrapper
 projects it without byte-changing normalization and deletes the checkpoint only
 after output validation. The `ready` output is exactly `exit_id`, `task_ref`,
-`branch_review_commit`, `pr_title`, and `pr_body`; Publication consumes
-Branch Review continuity from its current `passed` DTO plus live Git and never
+`branch_review_commit`, `pr_title`, and `pr_body`; Publication consumes either
+the complete review's current `passed` DTO or the bounded continuity router's
+current continuity-reviewed `branch_review_commit` plus live Git and never
 opens the Branch Review private checkpoint. Full review bodies, paths, findings,
 histories, and derived bindings stay owner-private or transient.
 
@@ -2037,6 +2045,17 @@ same-owner recovery or replacement is the only reason to retain it. Git and
 GitHub facts, semantic scans, candidate directories, full findings, validation
 logs, authorization, and cross-chain hash bundles never enter public output or
 tracked task artifacts.
+
+For a post-review candidate whose shared reviewed-content identity changes while
+task content and authority remain unchanged, the current-only reconcile result
+binds the prior complete review commit, expected task HEAD, new base HEAD, and
+candidate tree. After current-dialogue confirmation, the deterministic executor
+creates one local reconciliation commit. The bounded continuity input then
+requires `task_head == HEAD`, prior review and new base ancestry, and exact tree
+equality. The prior review remains owner-private gate evidence; its output sets
+`branch_review_commit` to the current reconciled HEAD for Publication and omits
+the prior commit because no downstream consumer requires it. No authorization,
+complete review body, or private checkpoint crosses either public boundary.
 
 Legacy active-task state is adapted once from current package contracts. An
 existing same-task-content Branch Review may retain its task review validity,

@@ -1,0 +1,6 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-reconcile-task-base-reconciliation-result-1.0",
+  "type":"object","additionalProperties":false,
+  "required":["schema_version","status","task_ref","branch","prior_task_head","old_base_head","new_base_head","branch_review_commit","reconciled_task_head","candidate_tree_sha256"],
+  "properties":{"schema_version":{"const":"1.0"},"status":{"const":"committed"},"task_ref":{"type":"string","pattern":"^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},"branch":{"type":"string","minLength":1},"prior_task_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"old_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"new_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"branch_review_commit":{"type":"string","pattern":"^[0-9a-f]{40}$"},"reconciled_task_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"candidate_tree_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

@@ -1,6 +1,6 @@
 # 当前测试策略
 
-版本：`current-main-0.6.5-guru.45`；状态：`active`；predecessor：`current-main-0.6.5-guru.44`。
+版本：`current-main-0.6.5-guru.45`；状态：`superseded`；predecessor：`current-main-0.6.5-guru.44`；successor：`current-main-0.6.5-guru.46`。
 
 ## Evidence 分层
 

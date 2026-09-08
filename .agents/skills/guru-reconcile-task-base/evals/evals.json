@@ -14,6 +14,15 @@
       "files": ["evals/files/post-plan-reconciled-input.json", "evals/files/post-plan-reconciled-facts.json"]
     },
     {
+      "id": "unrelated-base-delta-reconciled",
+      "prompt": "Complete a workflow post-plan reconciliation for a base-only unrelated delta while live authority and approved planning assumptions remain unchanged, then invoke the public wrapper without returning to Planning.",
+      "expected_exit": "reconciled",
+      "expected_output": "The minimal DTO preserves task activation because only the integration clock advanced.",
+      "input_profile_id": "post_plan",
+      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "reconciled"}, {"id": "preserved-resume-target", "kind": "json_path", "pointer": "/resume_target", "operation": "equals", "expected": "task_activation"}]},
+      "files": ["evals/files/unrelated-base-delta-input.json", "evals/files/unrelated-base-delta-facts.json"]
+    },
+    {
       "id": "post-branch-review-continuity",
       "prompt": "Complete a workflow reconciliation for a compatible relevant base advance after Branch Review and preserve the exact review continuity identity.",
       "expected_exit": "review_continuity_required",
@@ -21,6 +30,24 @@
       "input_profile_id": "post_branch_review",
       "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "review_continuity_required"}]},
       "files": ["evals/files/post-branch-review-continuity-input.json", "evals/files/post-branch-review-continuity-facts.json"]
+    },
+    {
+      "id": "post-publication-continuity",
+      "prompt": "Complete a post-publication reconciliation whose compatible candidate needs a current reviewed-content identity, execute the confirmed local reconciliation commit, and invoke the public wrapper.",
+      "expected_exit": "review_continuity_required",
+      "expected_output": "The DTO preserves the prior full-review commit and carries the current reconciled task HEAD to bounded continuity review.",
+      "input_profile_id": "post_publication",
+      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "review_continuity_required"}, {"id": "resume-publication", "kind": "json_path", "pointer": "/resume_target", "operation": "equals", "expected": "task_finalization"}]},
+      "files": ["evals/files/post-publication-continuity-input.json", "evals/files/post-publication-continuity-facts.json"]
+    },
+    {
+      "id": "finalizer-continuity",
+      "prompt": "Complete a finalizer base-mismatch reconciliation whose compatible candidate needs a current reviewed-content identity, execute the confirmed local reconciliation commit, and invoke the public wrapper.",
+      "expected_exit": "review_continuity_required",
+      "expected_output": "The DTO preserves the prior full-review commit and resumes finalization after bounded continuity review.",
+      "input_profile_id": "finalizer_base_mismatch",
+      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "review_continuity_required"}, {"id": "resume-finalizer", "kind": "json_path", "pointer": "/resume_target", "operation": "equals", "expected": "finalization_resume"}]},
+      "files": ["evals/files/finalizer-continuity-input.json", "evals/files/finalizer-continuity-facts.json"]
     },
     {
       "id": "implementation-required",

@@ -77,7 +77,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
                 )
             },
         }
-        schema = "public-continuity-passed-output.schema.json"
+        schema = "public-continuity-passed-output-2.0.schema.json"
     elif exit_id == "implementation_required":
         output = {
             "exit_id": exit_id,

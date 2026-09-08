@@ -1328,10 +1328,10 @@ facts for only `prd.md`, `design.md`, and `implement.md`. It must
 not read planning/check/review gate JSON artifacts, must
 not decide phase sufficiency, and must not create links for missing files.
 
-`review-branch.sh` records only current gate schema 6.0 after an independent AI
-semantic review exists. Aggregate public input schema 3.0 dispatches the
+`review-branch.sh` records only current gate schema 7.0 after an independent AI
+semantic review exists. Aggregate public input schema 4.0 dispatches the
 six-field `branch_review` schema 2.0 profile or the bounded `base_continuity`
-schema 1.0 profile. The recorder requires one selected public profile, one
+schema 2.0 profile. The recorder requires one selected public profile, one
 semantic review payload, the selected typed exit, reviewer identity/source,
 and concise evidence.
 It writes one compact owner-private `review-gate.json` checkpoint under ignored
@@ -1352,7 +1352,7 @@ undeclared current non-metadata dirty path blocks the gate; allowed downstream
 workflow metadata is validated by its owning gate rather than projected back
 into Phase 2.
 
-For finding closure, current gate schema 6.0 retains the original
+For finding closure, current gate schema 7.0 retains the original
 `introduced_head`, binds the fixing commit as `fix_head`, binds the later
 transient judgment as `closure_head`, and uses `review_commit` for the distinct
 fresh-final range.
@@ -1539,7 +1539,7 @@ input, and missing Cursor authentication returns deterministic `unsupported`.
 `review-branch` records only an already completed AI semantic review. It may
 rebuild task/worktree/base/HEAD/range, planning, Phase 2, issue-ledger,
 commit-evidence, Docs SSOT, working-tree, hash, schema and freshness facts, then
-write compact schema 6.0 `review-gate.json` at the exact task-owned
+write compact schema 7.0 `review-gate.json` at the exact task-owned
 owner-private ignored-runtime checkpoint and return only a minimal receipt.
 It must not decide
 scope, scenario class, qualification, severity, reviewer sufficiency, route, or
@@ -1547,7 +1547,7 @@ pass.
 
 `check-review-gate` revalidates the same objective facts, finding lifecycle,
 `introduced_head`/`fix_head`/`closure_head`, final-review freshness and the selected
-typed exit. Only schema 6.0 is accepted; schema 5.0 or older fails closed as
+typed exit. Only schema 7.0 is accepted; schema 6.0 or older fails closed as
 stale without projection, dual-read, rewrite, or migration. The checker
 resolves the exact checkpoint from task identity. The
 public package wrapper accepts only closed public input, reruns the checker,
@@ -1778,8 +1778,16 @@ The candidate executor accepts a closed structured request, creates an
 ephemeral integration candidate in a controlled temporary directory or
 detached worktree, runs only the declared Git/build/test operations, and
 cleans it after owner completion. It must reject arbitrary shell text as route
-authority and must not merge/rebase the task branch or create a persistent
-branch, ref, or commit.
+authority. For pre-review profiles it never mutates the task branch. For a
+post-review `review_continuity_required` result, a separate package-private
+reconciliation executor may run only after the semantic owner has displayed
+the exact task branch, expected task/base HEADs, candidate tree, merge/commit
+scope, and zero remote effects and received current-dialogue confirmation. That
+executor performs one expected-head-bound local merge/commit, rejects dirty or
+detached state and stale identities before mutation, verifies prior-review and
+new-base ancestry plus exact candidate-tree equality after mutation, and emits
+only the minimal receipt needed by the recorder/checker. It never records
+authorization, pushes, changes a PR, or invents conflict resolution.
 
 The recorder/checker run only after the AI has reviewed authority,
 task-content, and integration impact plus validation sufficiency. They validate

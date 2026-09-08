@@ -1442,6 +1442,18 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 / "trellis/skills/guru-team/tests/test_finish_family_integration.py"
             ).read_bytes(),
         )
+        installed_continuity_integration = (
+            self.repo
+            / ".trellis/guru-team/skills/tests/test_base_continuity_integration.py"
+        )
+        self.assertTrue(installed_continuity_integration.is_file())
+        self.assertEqual(
+            installed_continuity_integration.read_bytes(),
+            (
+                self.guru_root
+                / "trellis/skills/guru-team/tests/test_base_continuity_integration.py"
+            ).read_bytes(),
+        )
         self.assertTrue((self.repo / ".claude/commands/guru/finish-work.md").is_file())
         assert_thin_guru_finish_entry(self, self.repo / ".claude/commands/guru/finish-work.md")
         self.assertFalse((self.repo / ".claude/commands/trellis/continue.md").exists())
@@ -1483,6 +1495,9 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         installed_integration_path = (
             ".trellis/guru-team/skills/tests/test_finish_family_integration.py"
         )
+        installed_continuity_path = (
+            ".trellis/guru-team/skills/tests/test_base_continuity_integration.py"
+        )
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
         self.assertEqual(
@@ -1494,6 +1509,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertNotIn(installed_integration_path, managed_assets)
+        self.assertNotIn(installed_continuity_path, managed_assets)
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
             [],
@@ -1540,6 +1556,16 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 ).read_bytes()
             ).hexdigest(),
         )
+        continuity_records = [
+            record
+            for record in installed_manifest["skill_packages"]["files"]
+            if record["path"] == installed_continuity_path
+        ]
+        self.assertEqual(len(continuity_records), 1)
+        self.assertEqual(
+            continuity_records[0]["source"],
+            "trellis/skills/guru-team/tests/test_base_continuity_integration.py",
+        )
 
     def test_review_branch_current_gate_schema_closes_every_platform_interface_reference(self) -> None:
         platforms, all_platforms = preset.selected_platforms(None, True)
@@ -1550,7 +1576,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             self.guru_root
             / "trellis/skills/guru-team/packages/guru-review-branch"
         )
-        schema_relative = Path("schemas/review-gate-6.0.schema.json")
+        schema_relative = Path("schemas/review-gate-7.0.schema.json")
         canonical_bytes = (canonical_root / schema_relative).read_bytes()
         package_roots = (
             self.repo / ".trellis/guru-team/skills/packages/guru-review-branch",
@@ -1563,6 +1589,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             Path("schemas/review-gate.schema.json"),
             Path("schemas/review-gate-4.0.schema.json"),
             Path("schemas/review-gate-5.0.schema.json"),
+            Path("schemas/review-gate-6.0.schema.json"),
         )
         for package_root in package_roots:
             with self.subTest(package_root=package_root):
@@ -2009,9 +2036,17 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             'installed_python "$TARGET" "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py" -q',
             verifier,
         )
+        self.assertIn(
+            '"$TARGET/.trellis/guru-team/skills/tests/test_base_continuity_integration.py" -q',
+            verifier,
+        )
         self.assertIn('verify_finish_family_integration "initial"', verifier)
+        self.assertIn('verify_base_continuity_integration "initial"', verifier)
         self.assertIn(
             'verify_finish_family_integration "after-update-reapply"', verifier
+        )
+        self.assertIn(
+            'verify_base_continuity_integration "after-update-reapply"', verifier
         )
         self.assertIn(
             '"$REPO_ROOT/trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh"',

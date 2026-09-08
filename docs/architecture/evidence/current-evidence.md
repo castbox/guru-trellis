@@ -23,6 +23,7 @@
 | `EVD-019` | #240 reviewed mechanism owner | Issue #240 CLOSED；PR #346 merged `2bafec11…`；PR body 记录独立 Branch Review `passed`、P0-P3 open findings 0；Architecture contribution 与 accepted ADR-008 已由 #332 promotion 纳入 `.44` current | `ARCH-CUR-019`, `ARCH-DOM-011`, `ARCH-INT-010`, `ADR-008`；不替代 #332 exact-candidate Release Gate |
 | `EVD-020` | #348 reviewed archived-task recovery | Issue #348 CLOSED；PR #351 merged `5c6837b8…`；完整 `1fd63dab…0dd42063` Branch Review `passed`，fresh Architecture Branch Review `baseline_current` | `ARCH-CUR-020`, `ARCH-DOM-012`, `ARCH-INT-011`；不替代 #332 exact-candidate Release Gate |
 | `EVD-021` | #332 original-entry correction and promotion | exact committed range `8a6e04eb…014c71ac`；initial Phase 2 与 independent Branch Review passed，open P0-P3 zero；affected package 9/9、restore 23/23、installed closeout 5/5、restore shared eval 8 scenarios、preset 85/85、source/installed/all-platform/reapply/drift/sidecar checks passed；reviewed RDT/Architecture contributions bound expected `.44` and promoted `.45` | `ARCH-CUR-001,021..022`, `ARCH-DOM-013`, `ARCH-INT-012`；promotion-created diff 必须 fresh Phase 2/commit/Branch Review，且不替代 post-merge exact-candidate Release Gate |
+| `EVD-022` | #376 base-continuity contribution and promotion | exact committed range `e339d994…29ffa01b`；fresh Architecture Branch Review 与 official independent Branch Review passed，open P0-P3 zero；Reconcile、Review Branch、Finalizer、Publication、real cross-Skill integration、clean install、source/installed/platform parity 与 23/97/78 graph checks passed；reviewed RDT/Architecture contributions bound expected `.45` and promoted `.46` | `ARCH-CUR-023`, `ARCH-DOM-014`, `ARCH-INT-013`；promotion-created diff 必须 fresh Phase 2/commit/Branch Review；Issue #108 installed drift、full release/upgrade matrix 与 remote publication 均不由本 evidence 证明 |
 
 `EVD-008` 的 matrix object 保留 `external_boundaries` 与
 `real_github_verified:false`；它只证明六-cell与 local A/B。最终精确
@@ -31,7 +32,7 @@ evidence，避免 tracked evidence 对 candidate tree 形成自引用。
 `EVD-009` 是独立完成的真实 provider evidence。当前 authority 组合消费两类证据，
 不声称任何 matrix JSON 已被改写，也不构造伪造的 combined artifact。
 
-当前 Architecture/RDT evidence 已由各自 serialized owner 建立唯一 active `.45` successor；promotion-created
+当前 Architecture/RDT evidence 已由各自 serialized owner 建立唯一 active `.46` successor；promotion-created
 combined diff 仍须 fresh Phase 2、task commit 与 Branch Review。`v0.6.15-guru.6` / extension
 `0.6.15-guru.40` stable tag、GitHub Release、tag-pinned install、latest-stable 晋升与 release smoke 仍保持
 `unverified`，owner 为 Issue #332 post-merge exact-candidate Release lifecycle；#267 不由本 promotion 修改。

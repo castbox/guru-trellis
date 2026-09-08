@@ -21,7 +21,7 @@ OVERLAY_PATHS = {
 }
 PRIVATE_PROJECTION_ROOTS = {"runtime", "tests", "errors"}
 PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS = {
-    "guru-review-branch": frozenset({Path("schemas/review-gate-6.0.schema.json")}),
+    "guru-review-branch": frozenset({Path("schemas/review-gate-7.0.schema.json")}),
 }
 PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS = {
     "guru-maintain-requirements-design-test-ssot": frozenset({
@@ -288,8 +288,21 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
         if rel is None: errors.append("derived installed skill path escapes the repository")
         else: expected[rel.as_posix()] = ((Path("trellis/skills/guru-team") / source_relative).as_posix(), source)
     expect(registry_path, Path("registry.json"), registry_path)
-    finish = skills_root / "tests/test_finish_family_integration.py"
-    if lstat_path(root, finish, "installed Finish family integration test", errors, kind="file", required=False): expect(finish, Path("tests/test_finish_family_integration.py"), finish)
+    integration_tests = (
+        ("test_finish_family_integration.py", "Finish family"),
+        ("test_base_continuity_integration.py", "base continuity"),
+    )
+    for filename, label in integration_tests:
+        integration_test = skills_root / "tests" / filename
+        if lstat_path(
+            root,
+            integration_test,
+            f"installed {label} integration test",
+            errors,
+            kind="file",
+            required=False,
+        ):
+            expect(integration_test, Path("tests") / filename, integration_test)
     for name in ("schemas","adapters","contracts","consumers"):
         tree = skills_root / name
         if os.path.lexists(tree):

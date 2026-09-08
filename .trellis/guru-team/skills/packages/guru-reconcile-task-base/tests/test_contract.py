@@ -21,11 +21,18 @@ class ContractTest(unittest.TestCase):
         interface=json.loads((PACKAGE/'interface.json').read_text()); commands=json.loads((PACKAGE/'commands.json').read_text()); catalog=json.loads((PACKAGE/'errors/catalog.json').read_text())
         self.assertEqual([],validate(SKILLS/'schemas/skill-interface-1.4.schema.json',interface)); self.assertEqual([],validate(SKILLS/'schemas/skill-commands.schema.json',commands)); self.assertEqual([],validate(SKILLS/'schemas/skill-error-catalog.schema.json',catalog))
         self.assertEqual([],validate(SKILLS/'schemas/skill-evals.schema.json',json.loads((PACKAGE/'evals/evals.json').read_text())))
-        self.assertEqual(6,len(interface['external_exits'])); self.assertEqual(5,len(commands['commands']))
+        self.assertEqual(6,len(interface['external_exits'])); self.assertEqual(6,len(commands['commands']))
+        eval_ids={item['id'] for item in json.loads((PACKAGE/'evals/evals.json').read_text())['evals']}
+        self.assertIn('unrelated-base-delta-reconciled',eval_ids)
         for profile in interface['public_contracts']['input']['profiles']:
             self.assertEqual([],validate(PACKAGE/profile['schema']['path'],json.loads((PACKAGE/profile['example']['path']).read_text())))
         for output in interface['public_contracts']['outputs']:
             self.assertEqual([],validate(PACKAGE/output['schema']['path'],json.loads((PACKAGE/output['example']['path']).read_text())))
+        self.assertEqual([],validate(PACKAGE/'schemas/reconciliation-request.schema.json',json.loads((PACKAGE/'examples/reconciliation-request.json').read_text())))
+        self.assertEqual([],validate(PACKAGE/'schemas/reconciliation-result.schema.json',json.loads((PACKAGE/'examples/reconciliation-result.json').read_text())))
+        self.assertEqual([],validate(PACKAGE/'schemas/base-reconciliation.schema.json',json.loads((PACKAGE/'examples/base-reconciliation.json').read_text())))
+        self.assertEqual('guru-reconcile-task-base-output-review-continuity-required-2.0',next(item for item in interface['public_contracts']['outputs'] if item['exit_id']=='review_continuity_required')['schema']['schema_id'])
+        self.assertEqual('guru-reconcile-task-base-private-result-2.0',interface['public_contracts']['private_artifacts'][0]['schema']['schema_id'])
     def test_profiles_are_closed_and_not_interchangeable(self):
         post=json.loads((PACKAGE/'examples/public-post-plan-input.json').read_text())
         self.assertTrue(validate(PACKAGE/'schemas/public-post-check-input.schema.json',post))
@@ -56,6 +63,19 @@ class ContractTest(unittest.TestCase):
             path=PACKAGE/validator['command']; self.assertTrue(os.access(path,os.X_OK),path); self.assertIn('source "$LAUNCHER" '+validator['runtime_command'],path.read_text())
         for path in list((PACKAGE/'runtime').glob('*.py'))+list((PACKAGE/'scripts').glob('*')):
             self.assertNotIn('guru_team_trellis.py',path.read_text())
+    def test_post_review_continuity_contract_is_current_only_and_executor_bound(self):
+        schema=json.loads((PACKAGE/'schemas/base-reconciliation.schema.json').read_text())
+        self.assertEqual('guru-reconcile-task-base-private-result-2.0',schema['$id'])
+        output=json.loads((PACKAGE/'examples/public-review-continuity-required-output.json').read_text())
+        self.assertNotEqual(output['task_head'],output['branch_review_commit'])
+        commands=json.loads((PACKAGE/'commands.json').read_text())['commands']
+        executor=next(item for item in commands if item['id']=='execute-base-reconciliation')
+        self.assertEqual('git_write',executor['side_effect'])
+        recorder=next(item for item in commands if item['id']=='record-base-reconciliation')
+        self.assertIn('--reconciliation-result',[item['flag'] for item in recorder['arguments']])
+        contract=(PACKAGE/'references/contract.md').read_text()
+        self.assertIn('Current-dialogue confirmation',contract)
+        self.assertIn('never pushes or records user authorization',contract)
     def test_help_is_side_effect_free(self):
         for command in json.loads((PACKAGE/'commands.json').read_text())['commands']:
             with self.subTest(command=command['id']): self.assertEqual(0,main(PACKAGE,[command['id'],'--help']))

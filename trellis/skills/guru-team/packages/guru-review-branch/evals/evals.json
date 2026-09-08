@@ -61,6 +61,20 @@
       "files": ["evals/files/standalone-passed-input.json", "evals/files/standalone-passed-facts.json"]
     },
     {
+      "id": "base-continuity-passed",
+      "prompt": "Complete a bounded continuity review that distinguishes the prior full-review commit from the current committed reconciled HEAD, then invoke the public wrapper.",
+      "expected_exit": "continuity_passed",
+      "expected_output": "The current-only DTO binds the exact base pair and candidate tree while projecting branch_review_commit as the current continuity-reviewed HEAD without claiming a full Branch Review.",
+      "input_profile_id": "base_continuity",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "continuity_passed"},
+          {"id": "current-review-anchor", "kind": "json_path", "pointer": "/branch_review_commit", "operation": "equals", "expected": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"}
+        ]
+      },
+      "files": ["evals/files/base-continuity-passed-input.json", "evals/files/base-continuity-passed-facts.json"]
+    },
+    {
       "id": "implementation-required",
       "prompt": "Complete a qualification-first Branch Review round with one current-scope defect and invoke the public wrapper.",
       "expected_exit": "implementation_required",

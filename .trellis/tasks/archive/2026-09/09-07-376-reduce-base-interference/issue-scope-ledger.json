@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 376,
+      "reason": "Fully covered by the original planning-clock fix and the accepted post-review cross-Skill bounded-continuity expansion.",
+      "title": "降低基线分支已更新对并行进行中的任务的干扰",
+      "url": "https://github.com/castbox/guru-trellis/issues/376"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 376,
+    "reason": "Fully covered by the original planning-clock fix and the accepted post-review cross-Skill bounded-continuity expansion.",
+    "title": "降低基线分支已更新对并行进行中的任务的干扰",
+    "url": "https://github.com/castbox/guru-trellis/issues/376"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}

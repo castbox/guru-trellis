@@ -1,0 +1,12 @@
+{
+  "assignee": "wesleywu",
+  "base_branch": "main",
+  "branch": "feat/376-reduce-base-interference",
+  "creator": "wesleywu",
+  "id": "376-reduce-base-interference",
+  "name": "376-reduce-base-interference",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/376",
+  "status": "completed",
+  "title": "#376 降低基线分支更新对并行任务的干扰",
+  "completedAt": "2026-09-09"
+}

@@ -6,7 +6,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.5-guru.45` | [requirement-main.md](./versions/current-main-0.6.5-guru.45/requirement-main.md) | #332 reviewed original-entry convergence；继承 `.44` release authority，current graph 23 Skills / 97 exits / 77 commands，不执行 tag/Release 或记录 lifecycle 状态 |
+| `active` | `current-main-0.6.5-guru.46` | [requirement-main.md](./versions/current-main-0.6.5-guru.46/requirement-main.md) | #376 reviewed post-review base continuity；继承 `.45` authority，current graph 23 Skills / 97 exits / 78 commands，不执行 push/tag/Release 或记录 lifecycle 状态 |
+| `superseded` | `current-main-0.6.5-guru.45` | [requirement-main.md](./versions/current-main-0.6.5-guru.45/requirement-main.md) | #332 original-entry convergence 与 23/97/77 before-state |
 | `superseded` | `current-main-0.6.5-guru.44` | [requirement-main.md](./versions/current-main-0.6.5-guru.44/requirement-main.md) | #332 release-current alignment、#240/#348 reviewed authority 与 23/97/81 before-state |
 | `superseded` | `current-main-0.6.5-guru.43` | [requirement-main.md](./versions/current-main-0.6.5-guru.43/requirement-main.md) | #335 repository-private release orchestration authority |
 | `superseded` | `current-main-0.6.5-guru.42` | [requirement-main.md](./versions/current-main-0.6.5-guru.42/requirement-main.md) | #267 reviewed release-authority alignment 与后续 fact-only corrections |
@@ -51,7 +52,9 @@ current facts，并把 #240/#348 已审查的 solution-mechanism 与 archived-ta
 authority 提升为 current；public graph 现为 23 Skills / 97 exits / 81 commands，但不新增 Evolution target
 delta、capability 或 fixture。`.45` 新增 `REQ-074..083`，把四阶段原 public entry、Interface-driven
 wrapper selection、23/97/77 graph、promotion freshness 与 fresh candidate reset 提升为 current；这些
-变化仍由既有 Evolution capability/delta/fixture 承接。
+变化仍由既有 Evolution capability/delta/fixture 承接。`.46` 新增 `REQ-087..092` 与 `BEH-016`，把
+integration/authority clock 分离、expected-head local reconciliation、bounded continuity、Finalizer-to-Reconcile
+projection 与 23/97/78 graph 提升为 current；不新增 Evolution target delta、capability 或 fixture。
 Requirements 阶段状态为 `requirements_ready_for_design`，trace 状态为
 `requirements_trace_ready_for_design`；Design/Test/Architecture 的 73 个 Design
 responsibilities 与 50 个 fixture mappings 已同步为 planning projection；pre-`REQ-REV-142` Design pass 仍为
