@@ -1,6 +1,6 @@
 # Guru Trellis Current Capability Inventory
 
-版本：`current-main-0.6.5-guru.45-to-evolution-revision-2026-09-06`；状态：
+版本：`current-main-0.6.5-guru.46-to-evolution-revision-2026-09-09`；状态：
 `requirements_trace_ready_for_design`。
 
 本文件是 Evolution Requirements 的 current-to-target 能力保留与差集台账。它回答“当前
@@ -9,7 +9,7 @@
 
 ## 1. Authority 与一致性关系
 
-本 inventory 的 current authority 是 `current-main-0.6.5-guru.45`，由包含本文件与三个 current
+本 inventory 的 current authority 是 `current-main-0.6.5-guru.46`，由包含本文件与三个 current
 version locators 的 Git commit/tree identity 绑定；不在 durable 文档中记录可变 HEAD。历史
 `source_ref=5650df47fe17fe89b7cb616be6c9551608164832` 是 `2026-08-30` reconciliation 时核实的 selected
 `origin/main` snapshot，包含 #311 PR #313 的 merge commit
@@ -20,7 +20,9 @@ evidence-fix PR #316 merge `9f560ec1…`、installed platform-selection preserva
 基础上增加 #335 repo-private release orchestration current facts；`.44` 再增加 #332 `.5/.40/CLI 0.6.15`
 Release Gate facts，并消费 #240/#348 已审查的 solution-mechanism 与 archived-task recovery owner/RDT/ADR
 authority；`.45` 再消费 #332 original-entry correction contribution，把原 public entry、Interface-driven
-wrapper selection 与 23/97/77 graph 提升为 current。Architecture/RDT current locators 统一指向 `.45`。后续 `origin/main`
+wrapper selection 与 23/97/77 graph 提升为 current；`.46` 再消费 #376 reviewed contribution，把
+expected-head local reconciliation、bounded review continuity、Finalizer-to-Reconcile prior-review projection
+与 23/97/78 graph 提升为 current。Architecture/RDT current locators 统一指向 `.46`。后续 `origin/main`
 漂移不得隐式改变本 inventory，task worktree 相对路径也不得
 替代下表 locator 或与历史 source snapshot 拼接成虚构 authority。
 
@@ -35,16 +37,16 @@ wrapper selection 与 23/97/77 graph 提升为 current。Architecture/RDT curren
 
 | Authority slice | `source_ref` | `path` | 本 inventory 的使用边界 |
 | --- | --- | --- | --- |
-| `.45` Requirements 功能与行为 | containing Git object | `docs/requirements/versions/current-main-0.6.5-guru.45/requirement-main.md` | current `REQ-*`、`BEH-*` 与产品结果来源；`REQ-074..083` 增加 original-entry convergence、promotion freshness 与 candidate reset，不改变 Evolution target |
-| `.45` Requirements 非功能 | containing Git object | `docs/requirements/versions/current-main-0.6.5-guru.45/requirement-non-functional.md` | current `NFR-*` 边界来源；`.45` 保留既有 NFR 集合 |
-| `.45` Requirements decisions | containing Git object | `docs/requirements/versions/current-main-0.6.5-guru.45/decisions.md` | current 产品取舍、release fact 边界与明确排除项来源 |
-| `.45` Design capability inventory | containing Git object | `docs/design/versions/current-main-0.6.5-guru.45/capability-inventory.md` | public 23-Skill/97-exit/77-command current graph；入口收敛映射到既有 Evolution capabilities |
-| `.45` Design main | containing Git object | `docs/design/versions/current-main-0.6.5-guru.45/design-main.md` | current 实现责任、original-entry/Interface wrapper authority 与 Release Gate ownership 来源 |
-| `.45` Design traceability | containing Git object | `docs/design/versions/current-main-0.6.5-guru.45/traceability.md` | Requirements-to-Design 与 #332 wrapper/release responsibility 追踪来源 |
-| `.45` Test strategy | containing Git object | `docs/test/versions/current-main-0.6.5-guru.45/test-strategy.md` | current `TST-*`、`SCN-*`、`CASE-*` 与 wrapper/release verification ownership 来源 |
-| `.45` Test plan / evidence | containing Git object | `docs/test/versions/current-main-0.6.5-guru.45/test-plan.md` | current Test 责任与 evidence boundary；不记录动态 candidate/Gate/release 状态 |
-| `.45` Test traceability | containing Git object | `docs/test/versions/current-main-0.6.5-guru.45/traceability.md` | current Test capability 到 requirement/design 的追踪来源 |
-| Architecture Baseline | containing Git object | `docs/architecture/README.md` | current Architecture authority `.45` 的入口与适用 baseline locator |
+| `.46` Requirements 功能与行为 | containing Git object | `docs/requirements/versions/current-main-0.6.5-guru.46/requirement-main.md` | current `REQ-*`、`BEH-*` 与产品结果来源；`REQ-087..092` / `BEH-016` 增加 #376 continuity ownership，不改变 Evolution target |
+| `.46` Requirements 非功能 | containing Git object | `docs/requirements/versions/current-main-0.6.5-guru.46/requirement-non-functional.md` | current `NFR-*` 边界来源；`.46` 保留既有 NFR 集合 |
+| `.46` Requirements decisions | containing Git object | `docs/requirements/versions/current-main-0.6.5-guru.46/decisions.md` | current 产品取舍、release fact、#376 direct-evolution 与明确排除项来源 |
+| `.46` Design capability inventory | containing Git object | `docs/design/versions/current-main-0.6.5-guru.46/capability-inventory.md` | public 23-Skill/97-exit/78-command current graph；#376 映射到既有 Evolution capabilities |
+| `.46` Design main | containing Git object | `docs/design/versions/current-main-0.6.5-guru.46/design-main.md` | current 实现责任、base-continuity owner、Interface wrapper authority 与 Release Gate ownership 来源 |
+| `.46` Design traceability | containing Git object | `docs/design/versions/current-main-0.6.5-guru.46/traceability.md` | Requirements-to-Design 与 #332/#376 responsibility 追踪来源 |
+| `.46` Test strategy | containing Git object | `docs/test/versions/current-main-0.6.5-guru.46/test-strategy.md` | current `TST-*`、`SCN-*`、`CASE-*` 与 continuity/wrapper/release verification ownership 来源 |
+| `.46` Test plan / evidence | containing Git object | `docs/test/versions/current-main-0.6.5-guru.46/test-plan.md` | current Test 责任与 evidence boundary；不记录动态 candidate/Gate/release 状态 |
+| `.46` Test traceability | containing Git object | `docs/test/versions/current-main-0.6.5-guru.46/traceability.md` | current Test capability 到 requirement/design 的追踪来源 |
+| Architecture Baseline | containing Git object | `docs/architecture/README.md` | current Architecture authority `.46` 的入口与适用 baseline locator |
 
 target 行为的唯一主定义仍是 [`requirement-main.md`](./requirement-main.md) 中对应的
 `EVO-REQ-*` 和 [`requirement-non-functional.md`](./requirement-non-functional.md) 中对应的
@@ -56,7 +58,9 @@ facts 都不得成为平行产品主定义。canonical registry/interfaces 只�
 `EVO-CAP-004` execution continuity 与 distribution constraints 承接，不新增 Evolution UC、target
 requirement、NFR、capability、target delta、Design responsibility 或 fixture；其 public Skill inventory
 仍为 21/89。`.44` 的 #332 Release Gate facts与 #240/#348 reviewed owner promotion同样由既有能力承接；
-current public graph 在 `.45` 收敛为 23 Skills / 97 exits / 77 commands，但不新增 Evolution 集合成员。
+current public graph 在 `.45` 收敛为 23 Skills / 97 exits / 77 commands；`.46` 增加一个 package-private
+command 并形成 23 Skills / 97 exits / 78 commands，#376 continuity 仍由 `CUR-CAP-012` 承接，不新增
+Evolution 集合成员。
 
 本轮只读 reconciliation 表明该 source ref 是 `2026-08-30` 重新绑定的 immutable selected-base
 snapshot；本次 rebind 未执行新增 rebase/merge。该 `.42` authority 已同步 `REQ-013/018`、
@@ -408,6 +412,7 @@ reconciliation 与全部 capability requirement/normal-path fixture 零差集。
 | --- | --- | --- | --- | --- | --- |
 | #311 installed publication provenance source/target separation and verifier failure evidence | `accepted_implementation_scope=current`; `exact_merge_identity=PR-313/21c7da1…`; `merge_reachability=current` from selected base; `accepted_scope_findings=none reported`; `issue_lifecycle=CLOSED/COMPLETED`; `open_followup_only=N/A`（正式 release 安装态验收由 #332 Release Gate fresh 承接） | `selected_base_current_capability` | installed runtime 从 installation manifest/managed-byte/source-commit identity 解析 immutable extension source，和 target reviewed checkout 分开验证；只允许 provenance 字段变化，reviewed-content identity 保持并继续到唯一 publication/Draft PR/archive+push/Ready/`ready_for_merge`，completed mutation 不重放，self-hosted path 保持；standalone verifier 在 cleanup 前形成 non-null structured failure evidence | `CUR-CAP-013,014,017,018,019`; `EVO-REQ-037,053,082..083`; no separate target delta | `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION`, `EVO-FIX-VERIFIER-FAILURE-EVIDENCE`, `EVO-FIX-EVOLUTION-PREREQUISITE` |
 | #312 active-task workspace continuity after base merge | `accepted_implementation_scope=current`; `exact_merge_identity=PR-314/3efcce7…`; `merge_reachability=current` from selected base; `accepted_scope_findings=none reported`; `issue_lifecycle=CLOSED`; `open_followup_only=N/A` | `selected_base_current_capability` | current-base-tracked 且逐路径 clean 的同 task 文件不阻断原 active task/worktree；source/task worktree unrelated dirty 保持隔离且不被误分类/修改；dirty/untracked same-task、review/check metadata 与 cwd/runtime/worktree/task/branch mismatch 仍阻断 | `CUR-CAP-012`; existing base/continuity successor `EVO-REQ-032,082`; no fifth core capability or separate delta | `EVO-FIX-BASE-EVOLUTION`, `EVO-FIX-EVOLUTION-PREREQUISITE` |
+| #376 post-review compatible base continuity | `accepted_implementation_scope=current`; reviewed contribution and expected `.45 -> .46` promotion; fixed pre-promotion review range `e339d994…29ffa01b`; promotion-created gates pending | `selected_current_capability_continuation` | compatible base-only advance 可由 Reconcile expected-head local commit 与 Review Branch bounded continuity 刷新 current reviewed-content；Finalizer projection 传递 prior review identity；task content/scope/authority drift 仍回到 Phase 2/full review | `CUR-CAP-012`; existing base/continuity successor `EVO-REQ-032,082`; no new capability, target delta, fixture or responsibility | `EVO-FIX-BASE-EVOLUTION`, `EVO-FIX-EVOLUTION-PREREQUISITE`, `EVO-FIX-FULL-NORMAL` |
 
 PR #317 不是第三个 prerequisite，也不新增 target delta。它把 selected-base installed publication 的
 platform-selection observable behavior 补入 `CUR-CAP-013/014/017`：parent manifest 三处 exact selection
@@ -456,7 +461,7 @@ capability loss。
 | `CUR-CAP-009` | 标准 task 在全生命周期消费 Architecture Baseline/constitution/change contract，区分 no-impact、change path、conflict、contribution/ADR、fitness、freshness 与 serialized promotion | `preserved_current + replaced_contract_shape` | `REQ-027..035`; `BEH-007`; `TST-018..026`; Architecture 2.0 authority | `guru-maintain-architecture-baseline` | `EVO-REQ-013..020,026..031,033,035,040,061,063`; `EVO-NFR-011,015` | `EVO-FIX-ARCH-NO-IMPACT`, `EVO-FIX-ARCH-ALIGNED`, `EVO-FIX-ARCH-CONFLICT`, `EVO-FIX-ARCH-INCOMPLETE`, `EVO-FIX-ARCH-NEW-DECISION`, `EVO-FIX-ARCH-REVISION`, `EVO-FIX-ARCH-NO-ADR`, `EVO-FIX-FRESH-EQUIVALENT`, `EVO-FIX-FRESH-SCOPE`, `EVO-FIX-ARCH-DOWNSTREAM-FRESHNESS`, `EVO-FIX-ARCH-PROMOTION`, `EVO-FIX-PARALLEL` | 保留 Architecture 方法论、从 Planning 到 Publication/Acceptance/Finish 的 current binding、task-local contribution 与 shared-current promotion；不保留 2.0 profile/schema/exit shape |
 | `CUR-CAP-010` | 有界 task-free change 可按明确产品边界在 current checkout 执行、检查、finding 修订/recheck、位置或 active-task 恢复、blocked，或在 scope/risk 演进后带 exact partial-work identity 升级为标准 route | `preserved_current + replaced_contract_shape` | canonical mode/task-free contract；current mode/ownership requirements | `guru-select-workflow-mode`, `guru-execute-task-free-change` | `EVO-REQ-010..011,034,047,050..051`; `EVO-NFR-007..010` | `EVO-FIX-TASK-FREE`, `EVO-FIX-LATEST-INTENT` | 保留显式/自动选择、一次 choice、有界执行、适用 check、scope/risk evolution、恢复/blocked 与 concise terminal result；target 新增同 scope reconciliation、异 scope isolation 和唯一 resume owner，不生成 standard planning/archive 只是 target 收窄，不声称 current 已完全满足 |
 | `CUR-CAP-011` | Implementation 消费 approved scope，Phase 2 对 task scope/实现/测试/文档/Architecture 完成 semantic finding loop，并执行 scope-relevant 最小可靠验证 | `preserved_current + replaced_contract_shape` | `REQ-003..004,032`; `BEH-003`; `NFR-004`; `TST-003..004,018` | `guru-check-task` | `EVO-REQ-027..029,065`; `EVO-NFR-014..015` | `EVO-FIX-FULL-NORMAL`, `EVO-FIX-BRANCH-FINDING`, `EVO-FIX-RDT-DOWNSTREAM-FRESHNESS` | 保留完整 semantic check 与 targeted validation ownership；新增 current RDT binding/contribution 的下游消费和中间回写，不保留 aggregate/handoff/private checkpoint |
-| `CUR-CAP-012` | 精确 staging/commit，base movement impact reconciliation，exact committed full-diff independent Branch Review 与 finding closure | `preserved_current + replaced_contract_shape` | `REQ-005,012,032`; `BEH-004,006`; `SCN-002,004` | `guru-create-task-commit`, `guru-reconcile-task-base`, `guru-review-branch` | `EVO-REQ-029..034,082` | `EVO-FIX-BRANCH-FINDING`, `EVO-FIX-BASE-EVOLUTION`, `EVO-FIX-EVOLUTION-PREREQUISITE`, `EVO-FIX-FULL-NORMAL` | 保留 commit identity、fresh review 与最早受影响点 re-entry；#312 合入后还必须把 current-base-tracked clean same-task 文件放行、source/task worktree unrelated dirty 保持原归属且不被误分类或修改、真实 dirty/untracked same-task/review-metadata/identity blocker 保留，且从 fresh selected-base snapshot 证明后才能计为 current；不保留 current wrapper/transition shape |
+| `CUR-CAP-012` | 精确 staging/commit，base movement impact reconciliation，exact committed full-diff independent Branch Review、finding closure 与 compatible post-review base continuity | `preserved_current + replaced_contract_shape` | `REQ-005,012,032,087..092`; `BEH-004,006,016`; `SCN-002,004,070..076` | `guru-create-task-commit`, `guru-reconcile-task-base`, `guru-review-branch` | `EVO-REQ-029..034,082` | `EVO-FIX-BRANCH-FINDING`, `EVO-FIX-BASE-EVOLUTION`, `EVO-FIX-EVOLUTION-PREREQUISITE`, `EVO-FIX-FULL-NORMAL` | 保留 commit identity、fresh review 与最早受影响点 re-entry；#312 的 current-base-tracked clean same-task 放行、unrelated dirty 隔离与 real blocker 保留；#376 再要求 compatible base-only advance 使用 expected-head local reconciliation、prior/current anchor 分离的 bounded continuity 和 strict Publication projection，而 task content/scope/authority drift 仍回完整 Phase 2/commit/review；不保留 current wrapper/schema/transition shape |
 | `CUR-CAP-013` | 从 current plan、committed diff、验证与 live authority 选择 `github_pr`/`none`，形成 route-specific readiness，并支持 provider recovery；installed publication 使用与 target reviewed checkout 分离的 immutable extension source，并保持 parent installed platform selection | `preserved_current + replaced_contract_shape` | `REQ-009,012,020,047..049`; `BEH-005..006`; `TST-008,011,017,031..032`; `SCN-041..044`; PR #317 platform matrix | `guru-review-task-publication`, `guru-finalize-task` 的 provider route | `EVO-REQ-035..041,053,082,084`; `EVO-NFR-010,033..034` | `EVO-FIX-FULL-NORMAL`, `EVO-FIX-NONE`, `EVO-FIX-PROVIDER-RECOVERY`, `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION`, `EVO-FIX-EVOLUTION-PREREQUISITE` | 保留 PR truthfulness、expected-head、两种 provider、forward recovery、source/target checkout 分离、provenance-only metadata tail、exact platform-set preservation 与远端副作用前 fail-closed；单平台/subset 不得扩张，invalid selection 必须在 source checkout/preset apply/commit 前阻断；target 补齐 route selection authority/freshness，且 `none` 不作为 provider failure fallback；不保留 Issue Scope Ledger aggregate 或 current Finalizer shape |
 | `CUR-CAP-014` | Acceptance、Finalize、Merge、Issue closure-current/not-applicable 与 terminal projection 使用 exact task/head/archive/live provider facts，stale/mismatch fail closed；installed provenance reprepare 保持 reviewed-content、parent platform selection 与 terminal publication continuity | `preserved_current + replaced_contract_shape` | `REQ-011,014,020,047..049`; `BEH-005,008,010`; `TST-010,012,017,031..032`; `SCN-041..044`; PR #317 platform matrix | `guru-finalize-task`, `guru-merge-task-pr` | `EVO-REQ-036..043,053,082,084`; `EVO-NFR-009..010,033..034` | `EVO-FIX-FULL-NORMAL`, `EVO-FIX-NONE`, `EVO-FIX-PROVIDER-RECOVERY`, `EVO-FIX-FINISH-RECOVERY`, `EVO-FIX-HISTORY-RESUME`, `EVO-FIX-INSTALLED-PROVENANCE-PUBLICATION`, `EVO-FIX-EVOLUTION-PREREQUISITE` | 保留 terminal correctness、merge/closure verification、forward recovery，以及从 exact platform-preserving reprepare 到唯一 Draft PR/summary/archive+push/Ready/`ready_for_merge` 的 continuity 与 completed mutation 零重放；target 仍为 invalid platform identity、Archive/Finish/Cleanup partial failure保留 exact owner、live reread 与只补未完成动作的 re-entry；不保留 placeholder/retired-locator/current owner 切法 |
 | `CUR-CAP-015` | task index/archive/finish-summary 可查询；Finish/cleanup 只处理 exact owned resource 并保护 retained ref/history | `preserved_current + replaced_contract_shape` | `REQ-005,011..012,014,020`; `BEH-006,008,010`; `TST-009..012` | `guru-finalize-task`, `guru-merge-task-pr` 及 task history runtime | `EVO-REQ-039..043,046..047,054,067`; `EVO-NFR-009..011,013` | `EVO-FIX-HISTORY-RESUME`, `EVO-FIX-ACTIVE-DISPOSITION`, `EVO-FIX-LATEST-INTENT`, `EVO-FIX-FULL-NORMAL`, `EVO-FIX-NONE`, `EVO-FIX-FINISH-RECOVERY`, `EVO-FIX-MIGRATION` | 保留可发现历史、partial recovery、owned cleanup、latest-intent continuation 与 reachability；target 区分 archive/finish/disposition durable history query 的独立 completed/blocked terminal 与 active-work resume，补齐 unique/equivalent-stale recovery、not-found/multiple/unresolved-material-stale block、suspended work 的唯一 resume owner、active lifecycle retain/suspend、零资源 no-op abandonment、有资源 confirmed abandonment、cleanup 拒绝唯一 choice、remote-boundary disposition，以及资源前 exact plan，并要求 disposition result 在 cleanup 后仍由唯一 history owner 可查询；为 Finish/Cleanup/disposition cleanup 分别定义 blocked、exact-boundary re-entry、已完成/待执行动作与 partial-resource live facts；existing migration 在 cutover 前盘点 active/resumable work 与 archive/finish/history，成功后全部经新合同保持可恢复/可查询/可达且无 legacy runtime consumer；不保留 workspace journal、完整 stdout、授权或长摘要 |
@@ -580,7 +585,7 @@ shape 已由 [`docs/test/evolution/`](../../test/evolution/README.md) 建立为 
 
 | Removed shape/process | Current relation | 不保留理由 | 仍须证明的 successor |
 | --- | --- | --- | --- |
-| 23 active Skill、97 exits、77 commands 及其具体 Skill/exit/schema id | current `.45` public inventory source identity | 固化数量会把 target 耦合 current graph | `CUR-CAP-001..024` 的 observable result 全量承接 |
+| 23 active Skill、97 exits、78 commands 及其具体 Skill/exit/schema id | current `.46` public inventory source identity | 固化数量会把 target 耦合 current graph | `CUR-CAP-001..024` 的 observable result 全量承接 |
 | upstream `trellis-brainstorm` 作为 planning author | current workflow authoring mechanism | 用户已决定 Guru Team 完全替代 | `TARGET-DELTA-001..002` |
 | raw upstream `trellis-spec-bootstrap` 作为 spec-boundary author | current bootstrap implementation path | 会自行选择 `.trellis/spec` 边界并写 authority，和 Guru bootstrap/RDT owner 冲突 | `TARGET-DELTA-011..012` 与 `EVO-FIX-SSOT-BOOTSTRAP` |
 | raw upstream `trellis-before-dev` 的 auto-match/provider identity 与独立 spec 全文读取链 | current pre-implementation helper shape | 与 invocation-scoped authority reuse、task-free/标准 Phase 2 唯一 implementation owner 重叠 | `EVO-REQ-026` 的 Guru-owned `implementation_context`，并由两种 implementation profile 各自消费 |

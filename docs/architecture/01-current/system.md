@@ -56,11 +56,17 @@
 - `ARCH-CUR-022`（`source_confirmed` + `reviewed`）：#332 original-entry RDT/Architecture contributions
   已由 serialized owners 绑定 expected `.44` promotion 为唯一 active `.45`；该 promotion 使旧 Phase 2、
   Branch Review 与 exact candidate evidence stale，后续必须从相应 owner fresh 重跑。
+- `ARCH-CUR-023`（`source_confirmed` + `reviewed`）：#376 在既有 Reconcile semantic owner 内增加
+  expected-head、local-only、package-private reconciliation executor，并由 Review Branch bounded continuity
+  分离绑定 prior full-review commit 与 current reconciled HEAD；Finalizer 的声明 output/seed/projection 把
+  `branch_review_commit` 传给 Reconcile required input，Publication 继续严格消费 current reviewed-content
+  identity。public graph 为 23 Skills / 97 exits / 78 commands，未增加 public Skill/exit、remote mutation、
+  dual-read、第二 writer、GAP 或 ADR。
 
-当前 Architecture knowledge identity 为 `.45`，extension candidate 为 `0.6.15-guru.40`，Trellis
+当前 Architecture knowledge identity 为 `.46`，extension candidate 为 `0.6.15-guru.40`，Trellis
 CLI 为 `0.6.15`；latest stable 为 `v0.6.15-guru.4` / extension `.39`。#332 target
 `v0.6.15-guru.6` 的 post-merge exact-candidate matrix、tag、GitHub Release、latest-stable 晋升与
 tag-pinned smoke 仍为 `unverified`；knowledge promotion 不替代这些门禁。#267 保持 OPEN，#311
 已按其独立 scope 完成；本 promotion 不修改它们。Requirements/Design/Test 与 Architecture 均已完成
-serialized promotion 并使用唯一 active `.45` current authority，但该 knowledge promotion 不证明任何
+serialized promotion 并使用唯一 active `.46` current authority，但该 knowledge promotion 不证明任何
 release mutation 已完成。

@@ -10,17 +10,18 @@
 - behavior authority:
   `docs/requirements-design-test-contributions/376-base-continuity-command/design.md`.
 - task locator: `.trellis/tasks/09-07-376-reduce-base-interference`.
-- current/expected baseline: `docs/architecture/README.md` /
-  `current-main-0.6.5-guru.45` / `active`.
-- candidate successor: `current-main-0.6.5-guru.46`.
+- source/expected baseline: `docs/architecture/README.md` /
+  `current-main-0.6.5-guru.45`.
+- promoted successor: `current-main-0.6.5-guru.46` / `active`.
 - design constitution: `docs/architecture/00-foundation/design-constitution.md` /
   `guru-trellis-design-constitution-v1` / `current`.
 - project change contract: `docs/architecture/06-governance/change-contract.md` /
   `guru-trellis-architecture-change-contract-v1` /
   `guru-trellis-architecture-change-concerns-v1`.
 - change path: `target_native`; ADR required: `false`.
-- lifecycle state: `candidate`; shared current remains unchanged until an
-  independent committed review and serialized promotion.
+- lifecycle state: `reviewed_promoted`; independent committed review passed for
+  `e339d994...29ffa01b`, and serialized promotion established `.46`. The
+  promotion-created diff must now re-enter fresh Phase 2, commit and full review.
 
 ## Boundary And Decision
 
@@ -81,8 +82,8 @@ continues to use Phase 2, Task Commit and full Branch Review.
   shared `.45` command graph is nevertheless stale and must not be used as
   current proof.
 - expected current identity: `current-main-0.6.5-guru.45`.
-- promotion target: `current-main-0.6.5-guru.46` after independent committed
-  review of this contribution.
+- promotion result: `current-main-0.6.5-guru.46` after independent committed
+  review of this contribution; downstream freshness remains pending.
 - predecessor handling: preserve `.45` Requirements/Design/Test body and release
   facts, add only `superseded` / `successor=.46` lifecycle locators, and correct
   the `.45` Design manifest's inconsistent historical `command_count` from 81

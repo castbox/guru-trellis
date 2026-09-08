@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-版本：`current-main-0.6.5-guru.45`；状态：`superseded`；predecessor：`current-main-0.6.5-guru.44`；successor：`current-main-0.6.5-guru.46`；provenance：`code_recovered` + reviewed #332 original-entry correction contribution + inherited `.44` authority。该 successor 保留 `.5/.40/CLI 0.6.15` release target 与 reviewed #240/#348 authority。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
+版本：`current-main-0.6.5-guru.46`；状态：`active`；predecessor：`current-main-0.6.5-guru.45`；provenance：`code_recovered` + reviewed #376 base-continuity contribution + inherited `.45` authority。该 successor 保留 `.5/.40/CLI 0.6.15` release target 与 reviewed #240/#348/#332 authority，并把 current graph 更新为 23 Skills / 97 exits / 78 commands。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
 
 ## 分层与 ownership
 
@@ -199,12 +199,34 @@
 - `DES-083` Confirmation continuity：平台 launcher 维护当前对话已展示动作的单次消费语义；普通“确认继续”
   消费该动作，mapped exits 自动路由。canonical/installed/三平台 actual-load 共同验证投影切换不丢失流程状态。
 
+## #376 post-review base continuity design
+
+- `DES-084` Independent clocks：Reconcile 独立比较 integration base、Issue/scope/approved assumptions 与 task
+  content identity；base-only advance 保留原 resume target，真实 authority/content drift 继续进入
+  Planning、Implementation 或 full Branch Review owner。
+- `DES-085` Expected-head local executor：`execute-base-reconciliation` 是 Reconcile package-private command，
+  只接受 branch-bound clean worktree、expected task/base heads、prior review、candidate tree 与 commit message；
+  前后验证 ancestry/tree 后创建唯一 local commit，不执行 push 或 provider mutation。
+- `DES-086` Minimal private recovery：reconciliation receipt 与 integration-pair checkpoint 只保留 checker
+  直接消费的 identity，不记录授权；已创建 commit 的 recovery 先验证 current pair，再执行普通 stale guard。
+- `DES-087` Bounded continuity review：Review Branch `base_continuity` 分别绑定 prior full-review commit 与
+  current reconciled HEAD，gate review commit 绑定 current HEAD，只审查 exact pair、conflict resolution、
+  candidate tree 与受影响验证；成功投影 current HEAD，不宣称第二次 full Branch Review。
+- `DES-088` Strict Publication edge：Publication schema 与 `guru-reviewed-content-1.0` 保持严格；Finalizer
+  `base_reconciliation_required` output 经 Interface seed/projection 把 `branch_review_commit` 传给 Reconcile，
+  source/installed integration 从该声明 edge 构造 DTO 并进入真实 Publication recorder/checker/wrapper。
+- `DES-089` Direct evolution and ownership：public Skill/exit identity 不变，current-only schema 替换 stale
+  meanings，不 dual-read；current graph 是 23 Skills / 97 exits / 78 commands，新增 command 仅属于 Reconcile
+  package，Architecture/RDT promotion 后强制 fresh Phase 2、Task Commit 与完整 Branch Review。
+
 - `CON-005`：repo-private Skill 不声明 public interface/schema/runtime/typed exit，也不进入 registry、
   extension inventory 或业务仓 installed projection。
 - `CON-006`：orchestrator 只消费既有 owner 的 public minimal outputs；不得读取其 private artifact、
   复制 transaction implementation 或把 action-local confirmation 扩张到其它动作。
 - `CON-007`：Merge-to-recovery DTO 只含 repository、PR/head/branch、Issue、task/archive、finding 与
   `resume_target=phase-2` identity；不得携带用户授权、machine-local path、完整 provider payload 或旧 gate。
+- `CON-008`：base-continuity handoff 只携带 exact task/base pair、prior/current review anchors、candidate tree、
+  relevant paths 与原 resume target；producer-to-consumer projection 必须显式，任何旧 schema/checkpoint 直接 stale。
 
 ## Capability owner map
 

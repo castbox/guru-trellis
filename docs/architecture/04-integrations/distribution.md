@@ -24,6 +24,11 @@
 - `ARCH-INT-012`：installer、source/installed validator、compatibility matrix、throwaway、runtime/eval 与
   platform projection 从每个 package Interface 读取唯一 public wrapper path，验证 exact bytes/mode/launcher
   与 private-script leak；`restore-archived-task.sh` 证明该合同不依赖 `invoke.sh` 文件名。
+- `ARCH-INT-013`：Finalizer `base_reconciliation_required` output 通过声明的 consumer seed/projection 把
+  prior `branch_review_commit` 与 exact task/base identity 投影到 Reconcile；确认后的 package-private executor
+  只创建 expected-head local reconciliation commit。Review Branch bounded continuity 分离验证 prior/current
+  anchors、base ancestry、candidate tree 与 affected paths，再把 current HEAD 投影给未放宽的 Publication
+  reviewed-content gate；task content、scope 或 authority 变化仍回到 Phase 2 与完整 Branch Review。
 
 ## Capability 与 installation consistency 边界
 

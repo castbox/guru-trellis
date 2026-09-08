@@ -5,15 +5,15 @@ issue_ref: "https://github.com/castbox/guru-trellis/issues/376"
 source_version: "current-main-0.6.5-guru.45"
 expected_current_version: "current-main-0.6.5-guru.45"
 candidate_successor_version: "current-main-0.6.5-guru.46"
-status: "candidate"
+status: "reviewed_promoted"
 implementation_status: "completed"
-verification_status: "focused_validation_passed_independent_contribution_review_required"
+verification_status: "initial_phase2_and_branch_review_passed_promotion_reentry_required"
 authority_scope: "isolated_contribution"
 architecture_impact: "architecture_impact"
 change_path: "target_native"
 architecture_baseline:
   locator: "docs/architecture/README.md"
-  version: "current-main-0.6.5-guru.45"
+  version: "current-main-0.6.5-guru.46"
   status: "active"
 design_constitution:
   authority_owner: "docs/architecture"
@@ -24,12 +24,12 @@ design_constitution:
 architecture_candidate:
   contribution_locator: "docs/architecture/contributions/376-base-continuity-command.md"
   adr_required: false
-  promotion_state: "required"
+  promotion_state: "reviewed_promoted"
 public_contracts:
   rdt_owner: "guru-maintain-requirements-design-test-ssot:task_impact_sync"
   architecture_candidate: "guru-maintain-architecture-baseline:2.0"
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
-promotion_decision: "pending_independent_committed_review"
-shared_current_write: false
-next_route: "phase2_then_task_commit_and_independent_review"
+promotion_decision: "promoted_to_current-main-0.6.5-guru.46"
+shared_current_write: true
+next_route: "fresh_phase2"

@@ -1,6 +1,6 @@
 # 当前测试计划与证据
 
-版本：`current-main-0.6.5-guru.45`；状态：`superseded`；predecessor：`current-main-0.6.5-guru.44`；successor：`current-main-0.6.5-guru.46`；
+版本：`current-main-0.6.5-guru.46`；状态：`active`；predecessor：`current-main-0.6.5-guru.45`；
 source baseline：reviewed #332 original-entry correction contribution + inherited `.44` authority + containing Git object/tree identity。
 
 ## Replacement before-state authority
@@ -175,3 +175,18 @@ owner 在其候选上即时生成。
 
 本表是稳定 Test authority，不记录 candidate SHA、运行时间、动态 gate pass 或用户授权。任一 FAIL、SKIP、
 stale、cross-SHA、unknown/multiple/unmapped exit 都阻断后续 release mutation。
+
+## #376 base-continuity verification authority
+
+| Check | Current result | Boundary |
+| --- | --- | --- |
+| committed contribution review | fixed range `e339d994…29ffa01b`；fresh Architecture Branch Review 与 official independent Branch Review passed，open P0-P3 zero | promotion-created delta 尚须 fresh Phase 2/commit/Branch Review |
+| Reconcile package | source/installed 各 `24/24` | semantic route、expected-head executor、commit recovery 与 zero-write negatives |
+| Review Branch package | source/installed 各 `26/26` | current schema、pair/tree ancestry、bounded scope 与 minimal output |
+| Finalizer / Publication | Finalizer source/installed 各 `102/102`；Publication `48/48` | producer projection 与 strict downstream identity；不证明远端发布 |
+| cross-Skill continuity | source/installed 各 `2/2`；Skill package integration `9/9` | Finalizer projection -> Reconcile commit -> continuity -> Publication ready |
+| graph and authority | source validator 23 packages / 78 commands；independent graph 23 Skills / 97 exits / 78 commands；Architecture `22/22`、RDT `9/9` | installed full validator 的 #108 `.bak`/Claude drift 保持独立 blocker |
+| distribution boundary | task validation、canonical/installed/platform parity、ownership、overlay drift、manifest、JSON/Python/diff checks passed | 未运行 full preset reapply 或完整多平台 Release/upgrade matrix |
+
+`.46` 只提升上述稳定合同和已审查的 focused evidence，不把 39 个 Issue #108 `.bak`、未完成的 installed
+full validator 或未运行的 Release/upgrade matrix表述为通过，也不记录用户授权或动态 gate artifact。

@@ -165,3 +165,18 @@ git diff --check
 3. 跨 Skill integration 不再手工构造 Reconcile public input，而是加载 Finalizer interface，从真实
    `base_reconciliation_required` output 依照声明 projection 生成 consumer DTO，再交给 Reconcile recorder
    与 wrapper 验证。
+
+## 2026-09-09 Architecture/RDT Serialized Promotion Result
+
+1. Architecture owner 已绑定 fixed reviewed range `e339d994...29ffa01b`、expected `.45`、reviewed
+   `architecture-contribution-376-base-continuity-command-v1` 与 current project-check descriptor，返回
+   `baseline_current` / source profile `promotion` / unique active `.46`。
+2. RDT owner 已审核 `.46` Requirements、Design、Test、navigation、traceability、Architecture inheritance、
+   predecessor history 与 Evolution current projection，返回 `ssot_current` / active `.46`。
+3. `.46` current graph 为 23 Skills / 97 exits / 78 commands；#376 在 Evolution 中继续由既有
+   `CUR-CAP-012`、base-evolution/prerequisite/full-normal fixtures 承接，不新增 capability、target delta、
+   fixture 或 Design responsibility。
+4. `.45` 只增加 superseded/successor lifecycle locator，并把 Design manifest 的历史 command count 从错误
+   81 校正为 77；Issue #108 的 39 个 `.bak` 未修改、未删除、未登记，也未运行 full preset reapply。
+5. Promotion-created diff 使旧 Phase 2、Task Commit 与 Branch Review authority stale；下一步必须执行 fresh
+   Architecture/RDT Phase 2、`guru-check-task`，再展示精确 staging/commit 计划并取得新的 commit 授权。

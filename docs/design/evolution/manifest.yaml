@@ -9,7 +9,7 @@ requirements_locator: docs/requirements/evolution/requirement-main.md
 requirements_nfr_locator: docs/requirements/evolution/requirement-non-functional.md
 capability_source_locator: docs/requirements/evolution/current-capability-inventory.md
 current_design_source_binding: containing-git-object
-current_design_locator: docs/design/versions/current-main-0.6.5-guru.45/design-main.md
+current_design_locator: docs/design/versions/current-main-0.6.5-guru.46/design-main.md
 test_locator: docs/test/evolution/test-strategy.md
 architecture_locator: docs/architecture/README.md
 architecture_contribution_locator: docs/architecture/contributions/305-evolution-workflow-convergence.md
@@ -22,8 +22,9 @@ provenance: >-
   binding; selected base 5650df47 contains both prerequisite merges and the fact-only .42 authority promotion;
   current .43 adds CUR-CAP-024 for the repo-private release orchestration knowledge contract, .44 adds
   #332 .5/.40/CLI 0.6.15 Release Gate facts plus the reviewed #240/#348 owner/RDT/ADR promotion, and .45
-  converges original public entries plus Interface-driven wrapper selection to a 23/97/77 graph without a new
-  Evolution target delta or fixture,
+  converges original public entries plus Interface-driven wrapper selection to a 23/97/77 graph, and .46 adds
+  #376 expected-head local reconciliation, bounded review continuity and Finalizer projection for a 23/97/78
+  graph without a new Evolution target delta, fixture or Design responsibility,
   the fact-only #267 lifecycle-evidence/provenance/archive update through PR #316, PR #317 exact installed
   platform-selection preservation and PR #318 fact-only caller-inventory/provenance correction, with #311 and
   #312 CLOSED and the formal installed release validation owned by #332; .42 authority rebind, 84 requirements / 34 NFR / 13 target deltas /

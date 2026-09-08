@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.45`；状态：`superseded`；predecessor：`current-main-0.6.5-guru.44`；successor：`current-main-0.6.5-guru.46`；基线：#332 original-entry correction contribution + `.44` authority。该 successor 保留 `.5/.40/CLI 0.6.15` release target、reviewed #240/#348 authority 与 #305 独立 `EVO-001..007` target，并把 current public graph 收敛为 23 Skills / 97 exits / 77 commands。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
+版本：`current-main-0.6.5-guru.46`；状态：`active`；predecessor：`current-main-0.6.5-guru.45`；基线：reviewed #376 base-continuity contribution + `.45` authority。该 successor 保留 `.5/.40/CLI 0.6.15` release target、reviewed #240/#348/#332 authority 与 #305 独立 `EVO-001..007` target，并把 current graph 更新为 23 Skills / 97 exits / 78 commands。精确 revision 由包含本 authority 的 Git object/tree identity 绑定，正文不记录可变 HEAD 或 lifecycle 状态。
 
 ## 目标、角色与适用范围
 
@@ -208,7 +208,7 @@ identity 与 Issue closeout 在同一 post-merge exact candidate 上完成前均
   `in_progress`、修复 owner-private mapping/current-task pointer、清理旧 Phase 2/Review/Publication/
   Finalizer authority，并强制 fresh 重跑 Phase 2、Task Commit、Branch Review、Publication、Finalizer
   与 expected-head Merge；精确已恢复重试只读成功，歧义或 drift fail closed。
-- `REQ-073`：current public graph 必须由 registry/interface 派生并保持 23 active Skills、97 external
+- `REQ-073`：`.45` public graph 由 registry/interface 派生为 23 active Skills、97 external
   exits、77 commands，22 个 workflow-integrated 与一个 standalone verifier；canonical、dogfood、
   installed、Shared/Codex/Claude/Cursor、workflow markers 与 preset inventory 必须一致。
 
@@ -242,3 +242,26 @@ identity 与 Issue closeout 在同一 post-merge exact candidate 上完成前均
   identity 的 checker 与 public wrapper 都 `passed` 后才能正式宣告通过并进入 Publication。
 - `REQ-086`：普通“确认继续”只消费当前对话最近已展示且尚未消费的精确动作；mapped exits 自动推进且
   不重复确认，确认不授权任何未展示的 commit、push、PR、merge、tag、Release 或 cleanup 动作。
+
+## #376 post-review base continuity
+
+- `REQ-087`：integration clock 与 authority/task-content clock 必须独立；base 前进本身不得使
+  Planning stale，真实 Issue、scope、approved assumptions 或 task content 变化继续进入原 owner route。
+- `REQ-088`：完整 Branch Review 后的 compatible base advance若只需要刷新 current reviewed-content
+  identity，Reconcile 必须返回 `review_continuity_required`，不得伪造 full-review identity或强制重新实施。
+- `REQ-089`：Reconcile semantic owner 在展示并取得当次确认后，只能通过 package-private
+  expected-head executor 创建唯一 local reconciliation commit；dirty/stale/head/tree/ancestry mismatch
+  必须零写入失败，且不得执行 push 或 provider mutation。
+- `REQ-090`：bounded continuity 必须分别绑定 prior full-review commit 与 current reconciled HEAD，只审查
+  exact base delta、冲突解决、candidate tree 与受影响验证，并把 current HEAD 交给严格 Publication gate。
+- `REQ-091`：Finalizer 的 `base_reconciliation_required` output、consumer seed 与 projection 必须把
+  `branch_review_commit` 传给 Reconcile `finalizer_base_mismatch`；integration 必须从声明的 public edge
+  生成 DTO，不得通过手工构造输入绕过 producer contract。
+- `REQ-092`：public Skill/exit identity 保持不变；current-only schema 直接演进且旧 checkpoint stale，
+  不新增 legacy dual-read、兼容 wrapper、第二状态机、remote mutation 或授权持久化。current graph 从
+  live registry/interface 派生为 23 Skills / 97 exits / 78 commands，其中新增 command 仅为 Reconcile
+  package-private executor。
+
+- `BEH-016` Post-review Base Continuity：compatible base-only advance 经 expected-head local reconciliation
+  commit 与 bounded continuity review 刷新当前 Publication identity；任何 authority、scope、task-content、
+  candidate-tree 或 lineage drift 返回原 Planning、Implementation 或 full Branch Review owner。

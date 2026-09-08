@@ -6,6 +6,7 @@
 | completed current baseline | #283 -> #290 -> #295 | Architecture 单向收敛、detached base authority、Sync/Discovery public handoff 与 reviewed promotion | implementation/review/promotion 已进入 current `.40` authority；不替代重构前 Release gate |
 | #311 completed prerequisite | #311 | installed Finalizer source/target separation 与 verifier failure evidence 已进入 current authority | Issue 已按独立 scope 完成；正式 release 安装态业务仓验收由 #332 exact-candidate Release Gate fresh 承接 |
 | current release | #332 | 发布 `v0.6.15-guru.6` / extension `.40` / Trellis `0.6.15`，在 preparation PR 合并后冻结 fresh `origin/main` exact candidate，完成 Issue 要求的 Release Gate、tag-pinned install 与 post-publish smoke | Issue OPEN；Architecture/RDT `.45` 已从 reviewed original-entry contribution serialized promotion；promotion-created diff 的 fresh Phase 2/commit/Branch Review 尚未完成；tag/Release/smoke 均为 `unverified` |
+| current continuity correction | #376 | compatible post-review base evolution 使用 expected-head local reconciliation 与 bounded review continuity，并修复 Finalizer -> Reconcile prior-review projection | reviewed contribution 已从 expected `.45` serialized promotion 为唯一 active `.46`；promotion-created diff 的 fresh Phase 2/commit/Branch Review 尚未完成，Issue #108 installed drift 与完整 Release/upgrade matrix 保持独立边界 |
 | post-stable refactor | #247 -> #249 -> #250 -> #292 -> #293 -> #261 -> #248 -> #252 -> #267 | Phase/owner 解耦、Intake、Planning、Publication、Acceptance/Finish、cleanup 与最终重构版 Release | TARGET/PLAN 候选参考；不作为重构前 Release 的前置、owner 或验收范围 |
 
 PLAN 记录依赖与 owner，不证明 outcome，也不改变各 Issue 的 live authority。
