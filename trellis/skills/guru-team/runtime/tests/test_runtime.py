@@ -750,20 +750,18 @@ class SharedRuntimeTests(unittest.TestCase):
                     "remote_base_head": head,
                 },
             }
-            public_input_path = outside / "public-input.json"
-            transition_path = outside / "transition.json"
-            owner_path = outside / "owner.json"
-            public_input_path.write_text(json.dumps(public_input))
-            transition_path.write_text(json.dumps(transition))
-            owner_path.write_text(json.dumps(owner))
+            envelope = {
+                "schema_version": "1.0", "public_input": public_input,
+                "transition": transition, "owner_context": {}, "owner_result": owner,
+            }
             recorded = subprocess.run(
                 [
                     str(installed_root / "skills/packages" / skill_id / "scripts/record-context-discovery.sh"),
-                    "--root", str(repo), "--mode", "workflow", "--input", str(owner_path),
-                    "--public-input", str(public_input_path), "--transition", str(transition_path),
+                    "--root", str(repo), "--invocation", "-",
                     "--active-task", ".trellis/tasks/08-12-context",
                 ],
-                cwd=outside, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+                cwd=outside, input=json.dumps(envelope), text=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
             )
             self.assertEqual(recorded.returncode, 0, recorded)
             invocation = outside / "invocation.json"

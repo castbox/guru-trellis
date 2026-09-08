@@ -99,10 +99,11 @@ and writes no authorization field to owner state.
 ## Owner Result, Freshness, And Exits
 
 Workflow and standalone recording are stdout-only. The recorder and checker
-accept one current AI-authored result from stdin or an explicit file, validate
-it, and never create a task, workspace, or ignored runtime file. The public
-wrapper accepts stdin owner transport and emits one typed DTO only after the
-same bytes pass the objective checker.
+accept one closed invocation envelope from stdin or an explicit envelope file,
+validate it, and never create a task, workspace, or ignored runtime file. Each
+command reads the envelope exactly once. The public wrapper accepts the same
+envelope and emits one typed DTO only after the recorded owner result passes
+the objective checker. The input transport is not a semantic approval.
 
 An active-task workflow owner passes the direct task identity independently as
 `--active-task`. Record, check, and public invoke then bind the live checkout to
@@ -157,9 +158,8 @@ self-contained or portable.
 `scripts/invoke.sh --invocation -` validates the closed call-local public input,
 `base_current` transition, current live base observation, and checker-passed
 owner result, then derives the matching per-exit DTO without another duplicate
-search. Recorder and checker receive the same public input and transition via
-`--public-input <input> --transition <transition>`; they do not accept a private
-Sync artifact.
+search. Recorder and checker receive that same envelope via `--invocation -`;
+they do not accept a private Sync artifact.
 `context_ready` contains route/profile/mode/target/continuation identity plus the
 minimal checker-bound `duplicate_snapshot`. Clarification validates and consumes
 that snapshot on the normal current path without repeating duplicate search or
@@ -168,3 +168,59 @@ ephemeral `--active-task` invocation argument rather than a public DTO field. A
 genuinely interrupted owner additionally supplies one recovery continuation and
 may lazily use one minimal ignored checkpoint, which the same owner deletes on
 stale restart or successful consumption.
+
+## Issue #384 Invocation Migration
+
+This is a direct command-input replacement. The recorder/checker flags
+`--input`, `--public-input`, and `--transition`, and recorder `--mode`, are
+removed. Existing scripts must migrate together with this package; old argv
+returns `invalid_arguments`, not an implicit compatibility path. Public input
+2.0, owner result 3.0, typed exits, handoff projections, and recovery remain
+unchanged. Previously incomplete invoke envelopes must also add the declared
+`schema_version` and `owner_context` fields.
+
+All three commands use the existing shared closed schema
+`consumers/workflow/stage0/invocations/semantic-owner.schema.json`:
+
+```json
+{
+  "schema_version": "1.0",
+  "public_input": {},
+  "transition": {},
+  "owner_context": {},
+  "owner_result": {}
+}
+```
+
+The empty public/transition/owner objects above illustrate only the envelope
+shape, not a runnable valid call. Populate them with the current Discovery 2.0
+public input, the independent Sync `base_current` transition, and complete
+AI-reviewed owner result 3.0. Discovery has no additional owner-context fields,
+so supply `{}` for `owner_context`. `public_input.mode` is the sole mode input.
+The shared envelope schema closes the outer shape; the existing Discovery
+validators still own the nested semantic evidence and freshness contracts.
+
+Use these dispatcher entrypoints, supplying one complete JSON object on stdin
+to each command:
+
+```bash
+scripts/record-context-discovery.sh --root . --invocation -
+scripts/check-context-discovery.sh --root . --invocation -
+scripts/invoke.sh --root . --invocation -
+```
+
+The caller retains the envelope in memory, captures record stdout and replaces
+only its `owner_result`, then sends that envelope independently to check and
+invoke. Check stdout is a validation result, not a replacement owner result.
+Do not concatenate JSON documents or pipe record stdout directly into check.
+No public/transition/owner input files, shell descriptor tricks, input caches,
+or repository checkpoints are needed. `--invocation <file>` remains an
+explicit file transport for that same envelope and loader, not the former
+three-file interface; literal inline JSON argv is not supported.
+
+`--expected-result-sha256` remains available to record/check. `--active-task`
+and `--recovery-continuation-id` retain their existing contracts on all three
+commands; this migration does not enable recovery for normal pre-task calls.
+Malformed JSON returns `invalid_json`; missing or malformed envelope fields
+return `schema_mismatch`. Existing nested validation, dirty/wrong authority,
+stale-base classification, and interrupted-owner recovery behavior are retained.

@@ -170,13 +170,13 @@
       "id": "owner_result_recorder",
       "command": "scripts/record-context-discovery.sh",
       "runtime_command": "record-context-discovery",
-      "objective_scope": "canonical owner-result identity, stdin/file input, stdout-only normalization, optional ephemeral active-task binding and checkpoint creation only with an explicit recovery continuation"
+      "objective_scope": "one closed semantic-owner 1.0 invocation stdin/file read, canonical owner-result identity, stdout-only normalization, optional ephemeral active-task binding and checkpoint creation only with an explicit recovery continuation"
     },
     {
       "id": "owner_result_validator",
       "command": "scripts/check-context-discovery.sh",
       "runtime_command": "check-context-discovery",
-      "objective_scope": "closed result shape, AI-authored gate evidence, digest bindings, active-task or pre-task live freshness, optional recovery checkpoint binding, candidate/mem rules and typed-exit identity"
+      "objective_scope": "one closed semantic-owner 1.0 invocation stdin/file read, closed result shape, AI-authored gate evidence, digest bindings, active-task or pre-task live freshness, optional recovery checkpoint binding, candidate/mem rules and typed-exit identity"
     },
     {
       "id": "public_invocation",
@@ -217,7 +217,8 @@
     "stale_behavior": "fail_closed"
   },
   "tests": [
-    "tests/test_contract.py"
+    "tests/test_contract.py",
+    "tests/test_runtime.py"
   ],
   "platform_destinations": [
     "shared",

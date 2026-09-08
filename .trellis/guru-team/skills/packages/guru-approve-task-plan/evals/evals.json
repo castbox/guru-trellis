@@ -45,6 +45,10 @@
           {"id": "open-finding-blocks-activatable-presentation", "criterion": "For open-ai-finding, the decision does not offer an activatable presentation while the planning semantic finding remains open.", "evidence_selector": "transcript"},
           {"id": "explicit-autonomous-omits-only-routine-pause", "criterion": "For explicit-autonomous-execution, the decision omits only the ordinary unchanged-plan pause because autonomous execution was explicitly selected in the current request.", "evidence_selector": "transcript"},
           {"id": "autonomous-scope-change-still-pauses", "criterion": "For autonomous-scope-change, the decision pauses and enters the existing scope or authority change route despite autonomous execution.", "evidence_selector": "transcript"}
+          ,{"id": "direct-evolution-first", "criterion": "For a delete, replace, or merge candidate, the transcript selects direct deletion, modification, replacement, reuse, or synchronized consumer migration before proposing a second execution path.", "evidence_selector": "transcript"}
+          ,{"id": "compatibility-exception-is-specific", "criterion": "For an unapproved compatibility proposal, the transcript names the real consumer, exact scope, maintenance owner, exit or cleanup condition, and verification before refusing to authorize coding, tests, or self-fixing.", "evidence_selector": "transcript"}
+          ,{"id": "public-name-is-not-exemption", "criterion": "The decision does not infer compatibility responsibility from an internal public or stable name without an explicit supported contract.", "evidence_selector": "transcript"}
+          ,{"id": "maintainability-boundary", "criterion": "The planning owner rejects incidental fields or persistence without a direct consumer and treats a touched non-generated file at or above 3000 lines as a split or decoupling review trigger.", "evidence_selector": "transcript"}
         ]
       },
       "files": ["evals/files/approved-initial-input.json", "evals/files/approved-initial-facts.json"]

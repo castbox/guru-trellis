@@ -259,6 +259,28 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         for path in sorted(self.package.rglob("*.json")):
             self.assertTrue(forbidden.isdisjoint(keys(json.loads(path.read_text(encoding="utf-8")))), path)
 
+    def test_subtraction_dimensions_are_owner_contract_not_public_schema_fields(self) -> None:
+        repo = self.package.parents[4]
+        spec = repo / ".trellis/spec/workflow/subtraction-first-compatibility.md"
+        text = spec.read_text(encoding="utf-8")
+        for phrase in (
+            "`code_subtraction`",
+            "`docs_ssot_subtraction`",
+            "net growth is an AI review signal",
+            "unsupported compatibility or redundant state",
+            "3000-line",
+            "formal idempotency",
+            "Untouched historical large files remain",
+        ):
+            self.assertIn(phrase, text)
+        package_text = " ".join(
+            path.read_text(encoding="utf-8")
+            for path in (self.package / "SKILL.md", self.package / "references/contract.md")
+        )
+        self.assertIn("subtraction-first-compatibility.md", package_text)
+        self.assertNotIn("code_subtraction", self.schema["properties"])
+        self.assertNotIn("docs_ssot_subtraction", self.schema["properties"])
+
     def test_wrappers_are_dispatcher_only_and_package_is_not_portable(self) -> None:
         for name, validator in (
             ("record-phase2-check.sh", "phase2_check_recorder"),

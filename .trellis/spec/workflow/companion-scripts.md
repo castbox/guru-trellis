@@ -532,10 +532,14 @@ archive-manifest and preview digests. It performs no AI selection,
 relevance/sufficiency judgment, duplicate decision, deep-read, mem lookup, or
 write.
 
-Record accepts one AI-authored reviewed result from stdin or an explicit input
-file, normalizes and validates it, and writes canonical JSON only to stdout.
-Check accepts that same stdin/file transport and returns the objective checked
-exit. On normal pre-task/standalone calls neither command accepts a task
+Record and check accept `--invocation -`: one closed envelope containing the
+public input, independent `base_current` transition, and AI-authored owner
+result. The package interface/schema owns its exact fields. Record normalizes
+and validates the result and writes canonical JSON only to stdout; check takes
+the same envelope with the recorded owner result and returns the objective
+checked exit. The former separate `--input`, `--public-input`, `--transition`
+and recorder `--mode` arguments are retired by direct caller migration, not
+retained as a second parser. On normal pre-task/standalone calls neither command accepts a task
 locator, resolves a task artifact, checks Git trackability, replaces prior
 bytes, records supersession state, or writes a repository/runtime file. A
 normal active-task workflow call supplies `--active-task` independently to
@@ -544,8 +548,8 @@ task worktree while remaining checkpoint-free and permitting ordinary task
 edits. Only a real interruption additionally supplies matching
 `--recovery-continuation-id` on all three calls, which binds one minimal current
 checkpoint below the exact task owner namespace and never copies live facts or
-the complete owner result into it. The public wrapper accepts `--owner-result
--`, checks the same bytes, builds one schema-validated typed exit, and only then
+the complete owner result into it. The public wrapper accepts `--invocation -`,
+checks the same owner bytes, builds one schema-validated typed exit, and only then
 consumes a recovery checkpoint and empty owner directory. Stale or invalid
 recovery is deleted and rerun from live authority.
 Record/check first execute only pure schema, digest, entry
@@ -599,6 +603,14 @@ Expected failures use stable error codes and do not include raw JSON content,
 exception strings containing local paths, or secrets.
 The schema and runtime additionally enforce the exact semantic state pair
 `typed_exit=blocked` <-> `ai_review_gate.status=blocked` in both directions.
+
+The transport regression must run actual dispatcher `record -> check -> invoke`
+with fresh input and validate the resulting Clarify handoff. Missing/malformed
+envelopes fail closed; normal base advance keeps the refresh route, while dirty
+or wrong authority stays blocked. Compare filesystem and Git state before and
+after every normal call, including ignored paths and Python bytecode. Supplying
+three `-` locators or prewriting public/transition/owner files cannot prove this
+contract; a complete envelope passed once on stdin can.
 
 ### Requirements Clarification Record And Check
 
