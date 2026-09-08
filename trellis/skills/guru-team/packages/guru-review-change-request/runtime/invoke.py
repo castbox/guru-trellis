@@ -1,7 +1,7 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
-from common import check_receipt,digest,load,parse,root,validate_owner
+from common import check_receipt,check_result,digest,invocation
 from runtime.io import CommandError
 from runtime.schema import validate_json
 def public_target(target):
@@ -9,9 +9,8 @@ def public_target(target):
  keys|={"issue_number","url","updated_at"} if target["kind"]=="existing_issue" else ({"draft_id","source_request_sha256"} if target["kind"]=="proposed_draft" else {"caller_locator","request_id","source_request_sha256"})
  return {key:target[key] for key in keys}
 def run(package_root:Path,command:dict,argv:list[str])->dict:
- p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);a=parse(p,argv);repo=root(package_root,a.root);e=load(repo,package_root,a.invocation,"invocation");public=e.get("public_input");owner=e.get("owner_result");up=e.get("transition")
- if not isinstance(public,dict) or not isinstance(owner,dict):raise CommandError("invalid_arguments","invocation","Provide public input and owner result.")
- validate_owner(package_root,owner,"owner_result");check_receipt(owner,e.get("validation_receipt"));exit_id=owner["typed_exit"]
+ e,target,prerequisites=invocation(package_root,argv,final=True);public=e["public_input"];owner=e["owner_result"];up=e["transition"]
+ check_result(package_root,owner,target,prerequisites);check_receipt(owner,e.get("validation_receipt"),up);exit_id=owner["typed_exit"]
  if exit_id=="blocked":out={"exit_id":"blocked"};schema="public-blocked-output.schema.json"
  elif exit_id=="refresh_context":
   base=(up or {}).get("base",{});out={"exit_id":exit_id,"handoff_mode":owner["mode"],"handoff_repo_root":(up or {}).get("repo_locator","."),"handoff_route":"repo_change"};

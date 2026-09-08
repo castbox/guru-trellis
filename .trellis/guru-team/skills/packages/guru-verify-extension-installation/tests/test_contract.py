@@ -511,7 +511,7 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             [],
         )
         adapter_text = (
-            PACKAGE.parents[1] / "adapters/eval/native_adapter.py"
+            PACKAGE.parents[1] / "adapters/eval/production_fixtures.py"
         ).read_text(encoding="utf-8")
         self.assertIn(
             '"schema_version": runtime.EXTENSION_VERIFICATION_SCHEMA_VERSION',

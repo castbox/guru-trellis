@@ -1172,7 +1172,7 @@ may be consumed.
 
 Active semantic Skill `guru-review-change-request` is the sole pre-task
 readiness owner after `guru-review-contract-wording:change_request:pass`. It
-consumes current context, clarification, and wording results; normalizes one
+consumes the current public prerequisite transition; normalizes one
 `existing_issue`, `proposed_draft`, or `standalone_request`; reviews the fixed
 ten dimensions; records findings, scope conclusion, AI Review Gate, and exactly
 one exit. Any real choice or side-effect authorization remains dialogue-local
@@ -1182,8 +1182,8 @@ and is never part of this result. Its exits are `ready` -> active
 `guru-review-contract-wording`, `refresh_context` -> `guru-sync-base`, and
 `blocked` -> stop `change-request-review-blocked`.
 
-The record/check commands are stdout-only before task creation. They reuse the
-existing objective context, clarification, and wording validators; project
+The record/check commands are stdout-only before task creation. Their single
+`--invocation -` envelope validates the original public transition; projects
 portable hashes and error codes; rebuild target/linkage/facts digests; and
 validate closed schema, fixed dimensions/findings references, Gate/exit
 invariants, consumer identity, and freshness. They never search history or
@@ -1195,9 +1195,12 @@ null issue/URL/update authority, `state=draft`, and current reviewed-body
 SHA-256. Title hash and draft/request/caller identity stay separately bound.
 An arbitrary 64-hex value, including a normal producer's stale prior digest,
 fails closed before prerequisite linkage is accepted.
-Only the active `guru-create-task-workspace` package may persist the exact
-checker-passed bytes as task-local `issue-review.json` while creating the
-workspace. `ready` invokes only `guru-create-task-workspace`.
+Readiness owner result 2.0 is private to its record/check/invoke loop. Upstream
+private results and caller-authored flat prerequisites are not accepted; the
+#386 migration removes their CLI path. Target title/body identity remains
+distinct from clarification semantic-content identity and disposition identity.
+Only the active `guru-create-task-workspace` consumes the public `ready`
+transition; it does not read or persist the private `issue-review.json` result.
 
 ## Task Workspace Package
 

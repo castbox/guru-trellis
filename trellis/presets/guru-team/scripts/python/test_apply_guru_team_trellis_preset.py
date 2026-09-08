@@ -545,27 +545,6 @@ class Phase0TranscriptOwnerBindingTest(unittest.TestCase):
             "updated_at": "2026-08-12T00:00:00Z",
         })
 
-    def test_projects_readiness_reentry_to_required_owner_stage(self) -> None:
-        wording = {
-            "transition_id": "wording_current:old",
-            "stage": "wording_current",
-            "context_result_sha256": "1" * 64,
-            "clarity_result_sha256": "2" * 64,
-            "target_content_sha256": "3" * 64,
-            "clarity": {"facts_sha256": "2" * 64},
-            "target_disposition": {"disposition_sha256": "4" * 64},
-            "wording_facts_sha256": "5" * 64,
-            "wording": {"facts_sha256": "5" * 64},
-        }
-
-        clarity = self.verifier.readiness_reentry_transition(
-            wording, "review_wording"
-        )
-
-        self.assertEqual(clarity["stage"], "clarity_current")
-        self.assertIn("clarity", clarity)
-        self.assertNotIn("wording", clarity)
-
     def test_failed_transcript_command_reports_json_stdout(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             script = Path(raw) / "fail.py"
@@ -2787,7 +2766,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn(
-            "guru-change-request-review-1.0",
+            "guru-change-request-review-2.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn(

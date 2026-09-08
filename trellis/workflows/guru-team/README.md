@@ -584,13 +584,15 @@ Target 固定为 `existing_issue`、side-effect-free `proposed_draft` 或
 unit、scope conclusion、AI Review Gate、conditional confirmation 与 route judgment；global
 workflow 和平台入口不得复制这些 step-local semantics。
 
-Schema 是 `guru-change-request-review-1.0`，稳定 artifact basename 是
-`issue-review.json`。`record-change-request-review` / `check-change-request-review` 复用现有
-context/clarity/wording objective validators，重建 target projection、linkage 与 facts digest，
+Schema 是 `guru-change-request-review-2.0`，`issue-review.json` 仅表示 owner-private 结果。
+`record-change-request-review` / `check-change-request-review` 统一通过 `--invocation -`
+消费 public input、原始 public transition、`owner_context.change_request` 与本 owner result，
+重建 target projection、linkage 与 facts digest，
 只校验 schema/hash/ref/freshness/Gate/consumer/ready invariant，并原样返回 AI-authored exit；
 它们不搜索 duplicate/history、不读取 Docs/code/tests 作语义判断，也不生成 finding、delivery
 unit、Gate 或 route。Pre-task/standalone 固定 stdout-only，#101 不创建 task、workspace、cache、
-sidecar 或 tracked artifact。
+sidecar 或 tracked artifact。#386 直接退出完整 upstream 私有结果、flat prerequisites 和旧分离参数；
+目标 title/body 摘要、澄清内容摘要与 disposition 身份分别承接，不能按字段名称互相替代。
 
 五个 stable exits 与唯一 consumers 是：
 

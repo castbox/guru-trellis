@@ -751,15 +751,21 @@ evidence.
 
 ### Change request readiness result
 
-Schema `guru-change-request-review-1.0` defines the portable
+Schema `guru-change-request-review-2.0` defines the portable
 `issue-review.json` result owned by `guru-review-change-request`. Before task
 creation the recorder and checker return JSON on stdout only. The normalized
 target is exactly one existing issue, side-effect-free proposed draft, or
 side-effect-free standalone request, with title/body, identity, content, and
-source authority hashes. `prerequisites` contains portable projections of the
-full current context, clarification, and wording payloads; `evidence_linkage`
-binds target identity/content, base/current/history/duplicate facts, clarity
-facts, wording facts, and one canonical digest.
+source authority hashes. `prerequisites` is derived only from the public
+`wording_current` transition, or the original `clarity_current` / `context_current`
+transition for a missing-prerequisite reroute. It never accepts complete
+producer-private results, caller-authored flat projections, or invented pass
+fields. Unconsumed upstream payload hashes are absent from result 2.0.
+`evidence_linkage` keeps target identity/content, clarity facts/disposition, and
+wording facts distinct. Clarification `content_sha256` hashes its semantic
+content, not the target title/body; the wording target-content digest alone
+binds the canonical title/body pair. The two disposition digest domains retain
+their producer definitions rather than being equated by field name.
 
 For both draft variants, `source_request_sha256` is the canonical digest of the
 same current authority projection owned by #113 `review_target`: `kind=draft`,
@@ -772,25 +778,26 @@ digests.
 
 The semantic portion contains the ten ordered readiness dimensions, a closed
 finding category set, affected evidence/hashes, scope conclusion, AI Review
-Gate, conditional human confirmation, reason, scalar exit, and exact consumer.
+Gate, reason, scalar exit, and exact consumer. User interaction is dialogue-only.
 `ready` requires all prerequisites current, all dimensions passed, no blocking
 finding, complete linkage, passed Gate, and no required confirmation. Every
 non-ready result requires at least one AI-authored failed dimension, blocking
 finding, and affected evidence. Deterministic commands validate these facts but
 never infer or rewrite the exit.
 
-The public package carries only a deidentified example. Planned #112 Skill
-`guru-create-task-workspace` may later persist only the exact checker-passed
-bytes at the direct active task's tracked `{TASK_DIR}/issue-review.json`; #101
-does not create a task, workspace journal, cache, index, sidecar, or tracked
-artifact.
+The public package carries only a deidentified example. The active
+`guru-create-task-workspace` consumes the public `ready` transition, not the
+private review result, and may persist only its own minimal issue scope ledger.
+Readiness creates no task, workspace journal, cache, index, sidecar, or tracked
+artifact. Owner result 1.0 and the old prerequisite-payload CLI are retired by
+the explicit #386 direct migration; no legacy reduction path remains active.
 
-The production regression suite must first pass real current context,
-clarification, and wording payloads through their record/check commands and
-then consume those full results in change-request record/check. It covers wrong
-exits, consumer and target/content mismatch, base/current/history/duplicate
-drift, and proposed-draft/standalone source-authority mismatch; handwritten
-portable projections alone are not sufficient evidence.
+The production regression suite must pass actual Discovery, Clarification and
+Wording public outputs into the next input and consume the resulting transition
+in Readiness record/check/invoke. It covers wrong stages, missing prerequisites,
+target mismatch, real title/body drift and draft source-authority mismatch.
+Handwritten flat projections cannot prove this chain. Shape errors fail with
+`schema_mismatch`; actual target/content drift remains `stale_identity`.
 
 ## Task Workspace Plan And Result
 

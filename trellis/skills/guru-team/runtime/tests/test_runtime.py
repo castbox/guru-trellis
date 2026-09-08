@@ -860,7 +860,7 @@ class SharedRuntimeTests(unittest.TestCase):
 
 class QualificationNativeIsolationTests(unittest.TestCase):
     def test_production_phase2_inputs_close_schema_5_for_every_exit(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
         from jsonschema import Draft202012Validator
 
         class FixtureRuntime:
@@ -909,7 +909,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             package = SKILLS / "packages/guru-check-task"
             for exit_id, (candidate_ref, decision) in expected.items():
                 with self.subTest(exit_id=exit_id):
-                    path = native_adapter.production_phase2_input(
+                    path = production_fixtures.production_phase2_input(
                         FixtureRuntime(), fixture, task, package, exit_id
                     )
                     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -938,7 +938,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     self.assertLessEqual(linked_refs, {candidate_ref})
 
     def test_production_branch_review_inputs_close_schema_6_for_every_exit(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
         from jsonschema import Draft202012Validator
 
         schema = json.loads(
@@ -955,16 +955,16 @@ class QualificationNativeIsolationTests(unittest.TestCase):
         }
         for exit_id, decisions in expected.items():
             with self.subTest(exit_id=exit_id):
-                candidates = native_adapter.production_review_candidate(
+                candidates = production_fixtures.production_review_candidate(
                     exit_id,
                     "1" * 40,
                 )
                 classifications = [
-                    native_adapter.production_review_classification(item)
+                    production_fixtures.production_review_classification(item)
                     for item in candidates
                 ]
                 semantic_candidates = [
-                    native_adapter.production_review_semantic_candidate(item)
+                    production_fixtures.production_review_semantic_candidate(item)
                     for item in candidates
                 ]
                 semantic = {
@@ -1029,7 +1029,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 self.assertEqual(classified_refs, semantic_refs)
 
     def test_production_publication_inputs_close_schema_5_for_every_exit(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
         from jsonschema import Draft202012Validator
 
         class FixtureRuntime:
@@ -1089,7 +1089,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             task = fixture / ".trellis/tasks/publication-eval"
             for recipe, (candidate_ref, decision) in expected.items():
                 with self.subTest(recipe=recipe):
-                    path = native_adapter.production_publication_authoring(
+                    path = production_fixtures.production_publication_authoring(
                         FixtureRuntime(), fixture, task, public_input, recipe
                     )
                     authored = json.loads(path.read_text(encoding="utf-8"))
@@ -1123,14 +1123,14 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     )
 
     def test_qualification_public_projection_contains_declared_contracts(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         package = SKILLS / "packages/guru-qualify-normal-scenario"
         interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
         with tempfile.TemporaryDirectory() as tmp:
-            projection, _, _, _, _ = native_adapter.stage_public_projection(
+            projection, _, _, _, _ = eval_support.stage_public_projection(
                 {
-                    "skill_id": native_adapter.QUALIFICATION_SKILL,
+                    "skill_id": eval_constants.QUALIFICATION_SKILL,
                     "package_root": str(package),
                     "interface": {
                         "public_invocation": interface["public_contracts"]["invocation"],
@@ -1158,7 +1158,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             self.assertFalse((projection / "runtime").exists())
 
     def test_qualification_boundary_uses_owner_managed_runtime(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         package = SKILLS / "packages/guru-qualify-normal-scenario"
         repository = Path(__file__).resolve().parents[5]
@@ -1170,11 +1170,11 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 os.environ,
                 {"GURU_TEAM_PYTHON_CACHE_ROOT": str(cache_root)},
             ):
-                installed_package, installed_target, environment = native_adapter.stage_owner_execution(
+                installed_package, installed_target, environment = owner_staging.stage_owner_execution(
                     {
-                        "skill_id": native_adapter.QUALIFICATION_SKILL,
+                        "skill_id": eval_constants.QUALIFICATION_SKILL,
                         "package_root": str(package),
-                        "package_sha256": native_adapter.package_tree_sha256(package),
+                        "package_sha256": eval_support.package_tree_sha256(package),
                     },
                     execution_root,
                     runtime_target,
@@ -1220,10 +1220,10 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             self.assertIn('"code":"schema_mismatch"', combined_output)
 
     def test_model_request_uses_protocol_2_and_hides_control_identity(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         request = {
-            "skill_id": native_adapter.QUALIFICATION_SKILL,
+            "skill_id": eval_constants.QUALIFICATION_SKILL,
             "case_id": "case-secret-identity",
             "invocation_id": "1" * 64,
             "invocation_index": 4,
@@ -1262,7 +1262,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     "repo_locator": ".",
                     "current_head": "3" * 40,
                 }
-                payload = native_adapter.qualification_model_request(
+                payload = eval_support.qualification_model_request(
                     request,
                     model_root=model_root,
                     projection_root=projection,
@@ -1303,7 +1303,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 ):
                     self.assertNotIn(forbidden, encoded)
                 hashes.add(
-                    native_adapter.qualification_prompt_sha256(
+                    eval_support.qualification_prompt_sha256(
                         payload,
                         "2" * 64,
                         "gpt-5.6-sol",
@@ -1312,7 +1312,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
         self.assertEqual(len(hashes), 1)
 
     def test_qualification_public_repository_identity_uses_fresh_owner_head(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         with tempfile.TemporaryDirectory() as tmp:
             owner = Path(tmp) / "owner"
@@ -1340,12 +1340,12 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             ).stdout.strip()
 
             self.assertEqual(
-                native_adapter.qualification_public_repository_identity(owner),
+                eval_support.qualification_public_repository_identity(owner),
                 {"repo_locator": ".", "current_head": head},
             )
 
     def test_qualification_public_authoring_fixture_closes_all_profile_targets(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
         from jsonschema import Draft202012Validator
 
         callers = {
@@ -1374,7 +1374,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 cwd=owner,
                 check=True,
             )
-            facts_path = native_adapter.stage_qualification_public_authoring_fixture(owner)
+            facts_path = eval_support.stage_qualification_public_authoring_fixture(owner)
             subprocess.run(["git", "add", "."], cwd=owner, check=True)
             subprocess.run(["git", "commit", "-q", "-m", "owner fixture"], cwd=owner, check=True)
             head = subprocess.run(
@@ -1468,14 +1468,14 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                         self.assertEqual(len(value), 64, (profile, field, value))
 
     def test_codex_argv_uses_one_neutral_root_without_add_dir(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         with tempfile.TemporaryDirectory() as tmp:
             model_root = Path(tmp) / "model-root"
             model_root.mkdir()
             request = {
                 "schema_version": "3.0",
-                "skill_id": native_adapter.QUALIFICATION_SKILL,
+                "skill_id": eval_constants.QUALIFICATION_SKILL,
                 "model_id": "gpt-5.6-sol",
                 "workdir": str(Path(tmp) / "private-workdir"),
                 "_model_root": str(model_root),
@@ -1515,14 +1515,14 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             )
 
     def test_native_environment_is_explicit_and_secret_free(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             model_root = root / "model"
             temporary_root = model_root / "output"
             temporary_root.mkdir(parents=True)
-            environment = native_adapter.minimal_native_environment(
+            environment = eval_support.minimal_native_environment(
                 {
                     "PATH": "/usr/bin:/bin",
                     "HOME": "/example/home",
@@ -1557,12 +1557,12 @@ class QualificationNativeIsolationTests(unittest.TestCase):
         )
         self.assertNotIn("must-not-leak", json.dumps(environment))
         self.assertEqual(
-            native_adapter.recorded_native_environment(environment),
+            eval_support.recorded_native_environment(environment),
             dict(sorted(environment.items())),
         )
 
     def test_native_environment_rejects_temporary_root_outside_cwd(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -1571,14 +1571,14 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             outside = root / "outside"
             outside.mkdir()
             with self.assertRaisesRegex(ValueError, "temporary root must be inside cwd"):
-                native_adapter.minimal_native_environment(
+                eval_support.minimal_native_environment(
                     {},
                     cwd=model_root,
                     temporary_root=outside,
                 )
 
     def test_external_codex_home_is_owner_private_and_outside_run_root(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -1589,12 +1589,12 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             auth = codex_home / "auth.json"
             auth.write_text("{}", encoding="utf-8")
             auth.chmod(0o600)
-            selected = native_adapter.external_codex_home(
+            selected = eval_support.external_codex_home(
                 {"CODEX_HOME": str(codex_home)},
                 run_root,
             )
             self.assertEqual(selected, codex_home.resolve())
-            native_adapter.write_codex_permission_profile(
+            eval_support.write_codex_permission_profile(
                 selected,
                 run_root / "model-root",
                 [selected, run_root],
@@ -1607,13 +1607,13 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             )
             self.assertEqual(list(run_root.rglob("auth.json")), [])
             with self.assertRaisesRegex(ValueError, "outside"):
-                native_adapter.external_codex_home(
+                eval_support.external_codex_home(
                     {"CODEX_HOME": str(run_root / "nested-home")},
                     run_root,
                 )
 
     def test_permission_profile_allows_model_root_and_denies_private_roots(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         codex = shutil.which("codex")
         if codex is None:
@@ -1640,31 +1640,31 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 Path("/tmp"),
                 Path("/private/tmp"),
             ]
-            native_adapter.write_codex_permission_profile(
+            eval_support.write_codex_permission_profile(
                 codex_home,
                 model_root,
                 denied,
             )
-            environment = native_adapter.minimal_native_environment(
+            environment = eval_support.minimal_native_environment(
                 dict(os.environ),
                 cwd=model_root,
                 codex_home=codex_home,
             )
-            result = native_adapter.run_codex_permission_probe(
+            result = eval_support.run_codex_permission_probe(
                 codex,
                 environment,
                 model_root,
-                native_adapter.canonical_permission_paths(denied),
+                eval_support.canonical_permission_paths(denied),
             )
         self.assertEqual(result["returncode"], 0, result)
         self.assertTrue(result["result"]["positive"])
         self.assertEqual(
             set(result["result"]["denied"]),
-            {str(path) for path in native_adapter.canonical_permission_paths(denied)},
+            {str(path) for path in eval_support.canonical_permission_paths(denied)},
         )
 
     def test_permission_profile_allows_zsh_quoted_heredoc_in_model_tmp(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         codex = shutil.which("codex")
         if codex is None:
@@ -1679,12 +1679,12 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             (private_root / "control.json").write_text("{}", encoding="utf-8")
             codex_home = private_root / "codex-home"
             denied = [private_root, Path("/tmp"), Path("/private/tmp")]
-            native_adapter.write_codex_permission_profile(
+            eval_support.write_codex_permission_profile(
                 codex_home,
                 model_root,
                 denied,
             )
-            environment = native_adapter.minimal_native_environment(
+            environment = eval_support.minimal_native_environment(
                 dict(os.environ),
                 cwd=model_root,
                 codex_home=codex_home,
@@ -1696,7 +1696,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     codex,
                     "sandbox",
                     "-P",
-                    native_adapter.QUALIFICATION_PERMISSION_PROFILE,
+                    eval_constants.QUALIFICATION_PERMISSION_PROFILE,
                     "-C",
                     str(model_root),
                     "/bin/zsh",
@@ -1723,7 +1723,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             self.assertEqual(list(output_root.glob("zsh*")), [])
 
     def test_permission_probe_uses_resolved_base_interpreter(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -1734,7 +1734,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 mock.patch.object(native_adapter.sys, "_base_executable", str(base_interpreter)),
                 mock.patch.object(native_adapter.sys, "executable", str(managed_python)),
             ):
-                argv = native_adapter.permission_probe_argv(
+                argv = eval_support.permission_probe_argv(
                     "/usr/bin/codex",
                     root / "model-root",
                     root / "model-root/permission-probe.py",
@@ -1744,7 +1744,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
         self.assertNotEqual(argv[6], str(managed_python))
 
     def test_qualification_trace_helper_uses_resolved_base_interpreter(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         base_interpreter = Path(str(sys._base_executable)).resolve()
         managed_python = Path("/tmp/guru-managed/venv/bin/python")
@@ -1752,12 +1752,12 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             mock.patch.object(native_adapter.sys, "_base_executable", str(base_interpreter)),
             mock.patch.object(native_adapter.sys, "executable", str(managed_python)),
         ):
-            helper_source = native_adapter.qualification_trace_helper_source()
+            helper_source = eval_support.qualification_trace_helper_source()
         self.assertEqual(helper_source.splitlines()[0], f"#!{base_interpreter}")
         self.assertNotIn(str(managed_python), helper_source.splitlines()[0])
 
     def test_qualification_trace_helper_rejects_invalid_base_interpreter(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         with tempfile.TemporaryDirectory() as tmp:
             missing = Path(tmp) / "missing-python"
@@ -1766,10 +1766,10 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     ValueError,
                     "^qualification trace helper base interpreter is unavailable$",
                 ):
-                    native_adapter.qualification_trace_helper_source()
+                    eval_support.qualification_trace_helper_source()
 
     def test_permission_probe_rejects_invalid_base_interpreter(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -1778,7 +1778,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 mock.patch.object(native_adapter.sys, "executable", str(root / "managed/venv/bin/python")),
             ):
                 with self.assertRaisesRegex(ValueError, "base interpreter is unavailable"):
-                    native_adapter.permission_probe_argv(
+                    eval_support.permission_probe_argv(
                         "/usr/bin/codex",
                         root / "model-root",
                         root / "model-root/permission-probe.py",
@@ -1786,7 +1786,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     )
 
     def test_permission_probe_rejects_base_interpreter_inside_denied_path(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         base_interpreter = Path(str(sys._base_executable)).resolve()
         self.assertTrue(base_interpreter.is_file())
@@ -1809,7 +1809,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     ValueError,
                     "^permission probe base interpreter is inside a denied path$",
                 ):
-                    native_adapter.permission_probe_argv(
+                    eval_support.permission_probe_argv(
                         "/usr/bin/codex",
                         root / "model-root",
                         root / "model-root/permission-probe.py",
@@ -1840,6 +1840,7 @@ adapter_path,codex,root_value=sys.argv[1:]
 root=Path(root_value)
 spec=importlib.util.spec_from_file_location("managed_venv_native_adapter",adapter_path)
 module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+from adapters.eval import eval_support, eval_constants
 model_root=root/"model-root";private_root=root/"private-control";worktree=root/"source-worktree"
 corpus=root/"corpus.json";auth=root/"auth.json";codex_home=private_root/"codex-home"
 for directory in (model_root,private_root,worktree): directory.mkdir(parents=True)
@@ -1847,18 +1848,18 @@ for directory in (model_root,private_root,worktree): directory.mkdir(parents=Tru
 (worktree/"README.md").write_text("private",encoding="utf-8")
 corpus.write_text("{}",encoding="utf-8");auth.write_text("{}",encoding="utf-8")
 denied=[private_root,worktree,corpus,auth,Path("/tmp"),Path("/private/tmp")]
-module.write_codex_permission_profile(codex_home,model_root,denied)
-environment=module.minimal_native_environment(dict(os.environ),cwd=model_root,codex_home=codex_home)
-canonical=module.canonical_permission_paths(denied)
-result=module.run_codex_permission_probe(codex,environment,model_root,canonical)
+eval_support.write_codex_permission_profile(codex_home,model_root,denied)
+environment=eval_support.minimal_native_environment(dict(os.environ),cwd=model_root,codex_home=codex_home)
+canonical=eval_support.canonical_permission_paths(denied)
+result=eval_support.run_codex_permission_probe(codex,environment,model_root,canonical)
 projection=model_root/"public-package";repository=model_root/"evidence/repository"
 projection.mkdir(parents=True);repository.mkdir(parents=True)
 skill=projection/"SKILL.md";skill.write_text("contract\\n",encoding="utf-8")
 helper=model_root/"bin/native-trace-helper.py";helper.parent.mkdir()
-helper.write_text(module.qualification_trace_helper_source(),encoding="utf-8");helper.chmod(0o755)
+helper.write_text(eval_support.qualification_trace_helper_source(),encoding="utf-8");helper.chmod(0o755)
 trace=model_root/"native-trace.json";request_fifo=model_root/".invoke-request";response_fifo=model_root/".invoke-response"
 helper_process=subprocess.run([
-    codex,"sandbox","-P",module.QUALIFICATION_PERMISSION_PROFILE,"-C",str(model_root),str(helper),
+    codex,"sandbox","-P",eval_constants.QUALIFICATION_PERMISSION_PROFILE,"-C",str(model_root),str(helper),
     "--trace",str(trace),"--request-sha256","a"*64,"--projection-root",str(projection),
     "--repository-root",str(repository),"--sandbox-root",str(model_root),
     "--request-fifo",str(request_fifo),"--response-fifo",str(response_fifo),
@@ -1905,7 +1906,7 @@ print(json.dumps(payload,sort_keys=True));raise SystemExit(0 if result["returnco
         self.assertTrue(payload["trace_exists"])
 
     def test_repository_projection_omits_control_auth_corpus_and_runtime(self) -> None:
-        from adapters.eval import native_adapter
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -1927,7 +1928,7 @@ print(json.dumps(payload,sort_keys=True));raise SystemExit(0 if result["returnco
             (source / "package/tests/test_contract.py").write_text("pass\n", encoding="utf-8")
             (source / "auth.json").write_text("{}", encoding="utf-8")
             (source / ".env").write_text("SECRET=value", encoding="utf-8")
-            native_adapter.stage_repository_projection(source, destination)
+            eval_support.stage_repository_projection(source, destination)
             files = {
                 path.relative_to(destination).as_posix()
                 for path in destination.rglob("*")

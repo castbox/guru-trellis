@@ -1243,9 +1243,11 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
 - `record-change-request-review.sh` and
   `check-change-request-review.sh` are the stdout-only recorder/checker for
   `guru-review-change-request`. The recorder accepts a complete AI-authored
-  review and one exact change-request input; the checker accepts the recorded
-  result plus the current full prerequisite payload set and same target input.
-  Both reuse existing context/clarification/wording objective helpers, rebuild
+  review in one `--invocation -` envelope with public input, the original public
+  transition, and `owner_context.change_request`; the checker takes that same
+  envelope with the recorded owner result. The old separate input locators and
+  `prerequisite_payloads` are retired, not retained as compatibility readers.
+  Both validate the declared public stage and its target/disposition bindings, rebuild
   portable projections and linkage, validate schema/hash/ref/Gate/consumer/
   ready invariants, and return the AI-authored exit unchanged. They do not
   accept an output/task locator, create `issue-review.json`, generate findings
@@ -1254,10 +1256,12 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   AI's next complete Skill round. For draft and standalone targets they reuse
   #113's exact draft `review_target` projection and canonical digest to derive
   the only valid `source_request_sha256`; 64-hex shape alone is insufficient.
-  Production tests must invoke the actual context, clarification, wording, and
-  change-request record/check commands before asserting `ready` or linkage
-  drift, rather than supplying only handwritten projections to a structural
-  helper.
+  Production tests must invoke actual context, clarification and wording public
+  wrappers before Readiness record/check/invoke and consume their unchanged
+  transition outputs. The checker performs the authoritative live target read;
+  the public serializer binds its receipt and the same transition without
+  repeating live calls. Earlier-stage missing-prerequisite reroutes reuse the
+  actual earlier output, not a transition reconstructed from private payloads.
 - `record-planning-approval.sh` consumes one completed AI-reviewed
   `guru-approve-task-plan` result and writes only the compact ignored-runtime
   schema 3.0 checkpoint. It validates the authored field set, current task and
