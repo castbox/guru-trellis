@@ -21,6 +21,10 @@ def typed_output(package_root, public, transition, owner):
     elif exit_id == "clear":
         identity = owner["content_identity"]
         disposition = owner["target_disposition"]
+        active_task_clear = (
+            public.get("profile") == "active_task_scope_change"
+            and owner.get("invocation_context", {}).get("kind") == "active_task_scope_change"
+        )
         disposition_names = {
             "keep_current_open_issue": "retained",
             "keep_current_draft": "retained",
@@ -31,7 +35,19 @@ def typed_output(package_root, public, transition, owner):
         }
         if not isinstance(transition, dict) or transition.get("stage") != "context_current":
             raise CommandError("stale_identity", "transition", "Provide the current context transition.", 3)
-        if not isinstance(disposition, dict) or disposition.get("disposition") not in disposition_names:
+        if disposition is None and active_task_clear:
+            public_disposition = "retained"
+            transition_disposition = {
+                "disposition_sha256": identity["disposition_sha256"],
+                "duplicate_facts_sha256": identity["disposition_sha256"],
+            }
+        elif isinstance(disposition, dict) and disposition.get("disposition") in disposition_names:
+            public_disposition = disposition_names[disposition["disposition"]]
+            transition_disposition = {
+                "disposition_sha256": disposition.get("disposition_digest"),
+                "duplicate_facts_sha256": disposition.get("duplicate_facts_sha256"),
+            }
+        else:
             raise CommandError("semantic_result_invalid", "owner_result.target_disposition", "Use the checked target disposition.", 3)
         current = dict(transition)
         current.pop("authority_content_sha256", None)
@@ -47,15 +63,12 @@ def typed_output(package_root, public, transition, owner):
                 "content_sha256": identity["content_sha256"],
                 "scope_sha256": identity["scope_sha256"],
             },
-            "target_disposition": {
-                "disposition_sha256": disposition.get("disposition_digest"),
-                "duplicate_facts_sha256": disposition.get("duplicate_facts_sha256"),
-            },
+            "target_disposition": transition_disposition,
         })
         output = {
             "exit_id": "clear",
             "resume_target": owner["invocation_context"]["resume_target"],
-            "target_disposition": disposition_names[disposition["disposition"]],
+            "target_disposition": public_disposition,
             "continuation_id": public["continuation_id"],
             "transition": current,
         }

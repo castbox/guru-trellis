@@ -52,5 +52,12 @@ retarget_context/new_task/blocked` 路径。完整 `claude-existing` 累计兼�
 - [x] 后续 review 发现 installed manifest 仍绑定 finding-fix 前的 runtime/test
       digest。已刷新 Clarify package tree digest 与两条 file digest，并独立核对
       canonical tree、installed bytes 和 manifest provenance 一致。
+- [x] distinct fresh-final review 发现 P1：合法的 `active_task_scope_change + clear`
+      owner result 按合同允许 `target_disposition=null`，但 runtime 无条件要求对象，
+      导致正常 active-task re-entry fail closed。当前实现仅在 public profile 与
+      checked owner context 同为 `active_task_scope_change` 时将 null 投影为
+      `retained`，initial/standalone null 继续拒绝；canonical/installed contract
+      tests 各 11/11，source package validator 与 compileall 通过，并刷新当前
+      Clarify 61-file tree、runtime 和 test manifest digest。
 - [ ] finding-fix 必须重新完成 Phase 2、Task Commit、fresh Branch Review、
       Publication 和 Finalizer 后才能合并 PR #380。
