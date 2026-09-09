@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-task-workspace-record-authoring-input-1.0",
+  "title": "Ordinary existing-issue workspace authoring",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "transition", "authoring"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "transition": {"type": "object", "description": "Validated separately against the installed readiness-current consumer schema."},
+    "authoring": {
+      "type": "object", "additionalProperties": false,
+      "required": ["scope", "naming", "assignee", "side_effects", "ai_review_gate"],
+      "properties": {
+        "scope": {"$ref": "#/$defs/scope"},
+        "naming": {"$ref": "#/$defs/naming"},
+        "assignee": {"$ref": "#/$defs/assignee"},
+        "side_effects": {"$ref": "#/$defs/sideEffects"},
+        "ai_review_gate": {"$ref": "#/$defs/gate"}
+      }
+    }
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1},
+    "slug": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "login": {"type": "string", "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38}[A-Za-z0-9])?$"},
+    "disposition": {"enum": ["create_new", "reuse_exact", "conflict_blocked"]},
+    "issue": {
+      "type": "object", "additionalProperties": false,
+      "required": ["number", "url", "title", "reason"],
+      "properties": {
+        "number": {"type": "integer", "minimum": 1},
+        "url": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/[1-9][0-9]*$"},
+        "title": {"$ref": "#/$defs/text"}, "reason": {"$ref": "#/$defs/text"}
+      }
+    },
+    "issues": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/issue"}},
+    "scope": {
+      "type": "object", "additionalProperties": false,
+      "required": ["primary", "close", "related", "followup"],
+      "properties": {
+        "primary": {"$ref": "#/$defs/issue"}, "close": {"$ref": "#/$defs/issues"},
+        "related": {"$ref": "#/$defs/issues"}, "followup": {"$ref": "#/$defs/issues"}
+      }
+    },
+    "naming": {
+      "type": "object", "additionalProperties": false,
+      "required": ["branch_name", "workspace_slug", "task_slug", "task_title", "reason", "branch_disposition", "workspace_disposition", "task_disposition"],
+      "properties": {
+        "branch_name": {"type": "string", "pattern": "^[a-z]+/[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "workspace_slug": {"$ref": "#/$defs/slug"}, "task_slug": {"$ref": "#/$defs/slug"},
+        "task_title": {"$ref": "#/$defs/text"}, "reason": {"$ref": "#/$defs/text"},
+        "branch_disposition": {"$ref": "#/$defs/disposition"},
+        "workspace_disposition": {"$ref": "#/$defs/disposition"}, "task_disposition": {"$ref": "#/$defs/disposition"}
+      }
+    },
+    "assignee": {
+      "type": "object", "additionalProperties": false,
+      "required": ["login", "source", "candidates", "resolution_evidence"],
+      "properties": {
+        "login": {"$ref": "#/$defs/login"},
+        "source": {"enum": ["explicit_input", "single_issue_assignee", "current_github_login", "user_selected_from_candidates", "user_supplied_after_unresolved"]},
+        "candidates": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/login"}},
+        "resolution_evidence": {"$ref": "#/$defs/text"}
+      }
+    },
+    "sideEffects": {
+      "type": "object", "additionalProperties": false,
+      "required": ["operations", "task_artifacts", "runtime_mappings", "command_argv", "stop_after"],
+      "properties": {
+        "operations": {"type": "array", "uniqueItems": true, "items": {"enum": ["create_branch", "create_worktree", "create_task", "write_task_artifacts", "write_runtime_mappings"]}},
+        "task_artifacts": {"type": "array", "minItems": 1, "maxItems": 1, "items": {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+/issue-scope-ledger\\.json$"}},
+        "runtime_mappings": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^\\.trellis/\\.runtime/guru-team/(workspaces|tasks)/[^/]+\\.json$"}},
+        "command_argv": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^(?!/)(?![A-Za-z]:/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\r\\n\\\\]*$"}},
+        "stop_after": {"const": "created_workspace"}
+      }
+    },
+    "gate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "reviewer", "summary", "evidence"],
+      "properties": {
+        "status": {"enum": ["passed", "blocked", "reroute"]},
+        "reviewer": {"$ref": "#/$defs/text"}, "summary": {"$ref": "#/$defs/text"},
+        "evidence": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/text"}}
+      }
+    }
+  }
+}

@@ -31,6 +31,14 @@ After the semantic gate and owner recorder/checker complete, invoke
 `scripts/invoke.sh --invocation -` with the closed call-local public input,
 `clarity_current` transition, and checked owner result on stdin.
 The minimal DTO preserves the fixed profile for the workflow router; the
-runtime reruns the existing checker, derives the route from its checked result,
+runtime validates the actual checker receipt, derives the route from its checked result,
 and never reclassifies wording or reads private evidence on behalf of a
 consumer.
+
+For change-request scan, record, and check, use the existing wrappers with
+`--invocation -` and the closed four-field envelope in
+`schemas/review-invocation.schema.json`: `profile`, `mode`, `change_request`,
+`owner_result`. Scan adds `--scan-only` and uses `owner_result={}`; record uses
+the flat AI authoring object; check uses the exact record output. Each reads
+stdin once. Pass the checker's actual `validation_receipt` to public invoke.
+The migration and remaining unmixed legacy callers are defined in the contract.

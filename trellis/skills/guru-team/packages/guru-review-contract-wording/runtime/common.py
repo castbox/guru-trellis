@@ -31,6 +31,17 @@ def load(repo,package_root,value,field):
  except Exception as exc:raise CommandError("invalid_json",field,"Provide one JSON object.") from exc
  if not isinstance(v,dict):raise CommandError("invalid_json",field,"Provide one JSON object.")
  return v
+def load_review_invocation(repo,package_root,args,operation):
+ if any(getattr(args,name,None) for name in ("mode","profile","input","task","path","change_request_input")):
+  raise CommandError("conflicting_arguments","invocation","Do not mix --invocation with legacy scope or input arguments.")
+ envelope=load(repo,package_root,args.invocation,"invocation")
+ validate_json(envelope,package_root/"schemas/review-invocation.schema.json","invocation")
+ if operation=="scan" and envelope["owner_result"]!={}:
+  raise CommandError("schema_mismatch","invocation.owner_result","Scan requires an empty owner_result object.")
+ return envelope
+def check_legacy_inputs(args):
+ if args.input=="-" and args.change_request_input=="-":
+  raise CommandError("conflicting_arguments","input","Use --invocation - to carry source and owner in one JSON object.")
 def file_item(repo,path):
  q=(repo/path).resolve()
  if not q.is_relative_to(repo.resolve()) or not q.is_file() or q.is_symlink() or q.suffix!=".md":raise CommandError("unsafe_path","path","Use regular Markdown paths inside the repository.")

@@ -46,13 +46,99 @@ scope, author names, choose an assignee, grant confirmation, or choose an exit.
 9. After confirmation, run `record-task-workspace-plan --invocation -`,
    `create-task-workspace --invocation -`, and
    `check-task-workspace-result --invocation -` in order. Their closed stdin
-   envelopes carry the current `readiness_current` transition, owner plan, and,
-   when applicable, the checked executor result. Runtime deterministically
-   reconstructs the minimal checker projections from the transition; complete
-   predecessor owner payloads stay private to their owning Skills. No
+   recorder envelope carries `readiness_current` plus the authoring described
+   below, or a compatible complete plan. Executor/checker envelopes carry that
+   returned plan and, for check, the executor result. The recorder prepares
+   consumer-local projections; complete predecessor payloads stay private. No
    prerequisite payload or locator crosses the Skill boundary, and the calls
    create no repository evidence files.
 10. Return exactly one declared typed exit.
+
+## Recorder Input Preparation
+
+The additive `record-task-workspace-plan --invocation -` input is:
+
+```json
+{
+  "schema_version": "1.0",
+  "transition": "the actual ready output's transition object, not this string",
+  "authoring": {
+    "scope": {"primary": {}, "close": [], "related": [], "followup": []},
+    "naming": {},
+    "assignee": {},
+    "side_effects": {},
+    "ai_review_gate": {}
+  }
+}
+```
+
+This diagram is not executable input. Use
+`schemas/record-authoring-input.schema.json` and the complete authoring example
+`examples/workspace-authoring.json`, combined with the actual checked public
+Readiness `ready.transition`. A recorder's `typed_exit=ready` is not that public
+handoff. Never use example transition digests as live evidence.
+
+- `scope` contains the existing plan's primary/close/related/followup issue rows
+  (`number`, `url`, `title`, `reason`), without `scope_sha256`. The primary must
+  match the transition target; each other issue set must match Readiness.
+- `naming`, `assignee`, and `side_effects` retain their existing complete plan
+  shapes. The caller supplies exact paths, object dispositions and operations;
+  runtime does not generate names, choose an assignee, or decide side effects.
+- `ai_review_gate` contains `status`, `reviewer`, `summary`, `evidence`, without
+  `reviewed_plan_sha256`. The AI supplies the actual semantic conclusion, even
+  when blocked/reroute; no runtime default or inferred pass exists.
+- No timestamps or hashes are caller-authored. Authorization is dialogue-only,
+  never a field. The AI reviews the transition and authoring and obtains any
+  required current confirmation before invoking the recorder.
+
+The new form supports only ordinary `existing_issue` targets without prior
+created-issue provenance. A reviewed draft or an issue created by this owner
+must use the existing complete-plan compatibility path, including its required
+draft/provenance fields. The compact transition cannot establish that history;
+the caller selects the applicable documented input, not a runtime inference.
+
+Preparation validates the transition against the consumer schema distributed
+beside the installed packages at
+`consumers/workflow/stage0/transitions/readiness-current.schema.json`, then checks
+the repeated same-source content/facts/linkage identities for consistency.
+Clarity's content-identity disposition hash and the target disposition digest
+are distinct producer fields and are preserved independently, not compared.
+It projects target fields by name, so `target.content_sha256` is not copied into
+the differently shaped plan target. Base and continuation come from transition.
+
+For this additive form, prerequisite `payload_sha256` binds the consumer-local
+compact projection: `clarity`, `wording`, or `readiness` exactly as provided by
+the transition. The base projection is `{schema_version:"1.0", transition_id:
+"base_current:" + base.post_sync_resolution_sha256[:24], stage:"base_current",
+mode, repo_locator, base}`. These are not reconstructed predecessor payloads.
+Facts/content/linkage fields copy their corresponding transition values; base
+facts and `base.sync_facts_sha256` hash that base projection. Clarity linkage
+retains the content-identity projection; wording content/linkage use scope/scan.
+All derived hashes use canonical UTF-8 JSON with sorted keys, compact separators,
+and unescaped Unicode. Scope excludes its own digest; reviewable fields are
+exactly `common.reviewable`; final plan hashing excludes only
+`freshness.plan_sha256`. The recorder supplies capture/generation time and both
+reviewable bindings, then validates and returns the existing plan schema.
+Hash construction records no approval and does not replace the AI gate.
+
+Use the exact returned object for the remaining calls:
+
+```text
+record  {schema_version:"1.0", transition, authoring} -> plan
+execute {schema_version:"1.0", transition, plan} -> result
+check   {schema_version:"1.0", transition, plan, result} -> checked_result
+invoke  {schema_version:"1.0", public_input:{profile:"execute_reviewed_plan",mode},
+         transition, owner_plan:plan, owner_result:checked_result} -> typed exit
+```
+
+`authoring` is accepted only by record. Supplying both `plan` and `authoring`
+is an error. Full-plan record envelopes and existing `--input`/`--plan-input`
+locator calls remain compatible; no existing plan schema or digest meaning is
+rewritten. Package-local diagnostics identify missing envelope objects and
+missing/extra/incorrect fields before executor mutation. Readiness schema and
+projection checks apply to the new form; the compatibility form retains its
+existing checks. Neither preparation nor recording fetches, creates resources,
+or persists evidence.
 
 ## AI Review Gate
 
@@ -156,10 +242,15 @@ It writes exactly one tracked task-local Intake artifact:
 
 - `issue-scope-ledger.json`
 
-All other prerequisite evidence stays call-local and owner-private. Normal
-record/execution/check transport validates `call-local:<stage>` plan tokens
-against the exact in-memory payloads; it does not create or reread prerequisite
-files. Compatibility-only locator calls remain available until the next
+All other prerequisite evidence stays call-local and owner-private. The new
+recorder input validates the readiness consumer schema and prepares
+`call-local:<stage>` tokens from compact projections. Execution/check validate
+the complete plan schema, reviewable/final digest and decision HEAD; they do not
+reconstruct predecessor payloads or independently revalidate the transition.
+Execution additionally checks live base/target at its mutation boundary, and
+check validates the result binding and the applicable live created objects.
+These calls do not create or reread prerequisite files.
+Compatibility-only locator calls remain available until the next
 breaking Interface migration and are excluded from workflow, production eval,
 and installed transcript paths. Local path mappings are
 written only under ignored `.trellis/.runtime/guru-team/workspaces/` and
@@ -202,8 +293,11 @@ The single `execute_reviewed_plan` public profile carries only `profile` and
 `mode`; target, naming, and recovery remain owner-private, while authorization
 exists only in the current dialogue. Any input outside that current profile is
 rejected by the declared schema. After the owner mutation/check loop,
-`scripts/invoke.sh --invocation -` reruns the existing result checker from the
-closed call-local envelope and serializes one minimal result derived from its
-checked executor outcome. Normal plan, result, and prerequisite transport is
+`scripts/invoke.sh --invocation -` validates the result schema and embedded
+checker status and serializes the result's typed exit. It does not rerun the
+checker, validate the entire envelope, or revalidate transition/plan identity;
+the preceding explicit checker call remains required. Its current refresh route
+uses a top-level `base_branch` when supplied and otherwise `main`; this change
+does not alter that pre-existing behavior. Normal plan/result transport is
 in-memory; only compatibility locators and genuine interrupted same-owner
 recovery may use ignored owner-private artifacts.

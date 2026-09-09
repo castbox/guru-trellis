@@ -702,6 +702,15 @@ current prerequisite projections, derives canonical digests, and emits the
 plan on stdout. It does not choose the final target, duplicate disposition,
 naming, assignee route, confirmation requirement, AI Gate, or typed exit.
 
+For an ordinary existing-issue #389 invocation, the recorder accepts the actual
+public `readiness_current` transition and an `authoring` object containing the
+AI-reviewed scope, naming, assignee, side effects, and Gate. The package derives
+the existing plan's prerequisite projections and digests; callers do not import
+transcript test helpers or invent prerequisite identities. A Readiness recorder
+result is not the public transition. Full-plan compatibility remains explicit;
+bare plans passed as invocation envelopes are rejected before mutation with a
+field-specific diagnostic.
+
 The executor consumes the exact plan digest. Before each mutation it rechecks
 base, target, prerequisite bytes, objective action scope, plan digest, and
 current Git/worktree/task facts. The AI alone checks current-dialogue authority
@@ -1240,6 +1249,12 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   bytes, current reread bytes, and source update time with the rebuilt live
   scope. Authorization remains in the current dialogue and is never passed to,
   derived by, or validated by the script.
+  For #388 change-request stdin composition, scan/record/check consume one
+  closed `--invocation -` object containing `profile`, `mode`,
+  `change_request`, and `owner_result`. Scan uses an empty owner object;
+  record receives the AI review and check receives the recorded result.
+  The actual checker receipt is passed to public invoke in memory. This
+  transport does not write source/review files or replace semantic judgment.
 - `record-change-request-review.sh` and
   `check-change-request-review.sh` are the stdout-only recorder/checker for
   `guru-review-change-request`. The recorder accepts a complete AI-authored

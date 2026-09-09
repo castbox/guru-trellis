@@ -8,6 +8,14 @@
       "entrypoint": "runtime/record.py",
       "arguments": [
         {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Single-read change_request envelope; dash reads stdin. Scan requires owner_result={}, record requires flat AI authoring.",
+          "repeatable": false,
+          "conflicts": ["--mode", "--profile", "--input", "--task", "--path", "--change-request-input"]
+        },
+        {
           "flag": "--root",
           "required": false,
           "kind": "string",
@@ -17,36 +25,36 @@
         },
         {
           "flag": "--mode",
-          "required": true,
+          "required": false,
           "kind": "enum",
           "values": [
             "workflow",
             "standalone"
           ],
-          "description": "Invocation mode.",
+          "description": "Required for legacy invocation without --invocation.",
           "repeatable": false,
-          "conflicts": []
+          "conflicts": ["--invocation"]
         },
         {
           "flag": "--profile",
-          "required": true,
+          "required": false,
           "kind": "enum",
           "values": [
             "change_request",
             "planning_artifacts",
             "explicit_paths"
           ],
-          "description": "Fixed review profile.",
+          "description": "Required fixed profile for legacy invocation without --invocation.",
           "repeatable": false,
-          "conflicts": []
+          "conflicts": ["--invocation"]
         },
         {
           "flag": "--input",
-          "required": true,
+          "required": false,
           "kind": "string",
-          "description": "AI owner result JSON locator.",
+          "description": "Legacy flat AI authoring locator; required unless --scan-only or --invocation. Cannot share stdin with source.",
           "repeatable": false,
-          "conflicts": []
+          "conflicts": ["--invocation"]
         },
         {
           "flag": "--task",
@@ -54,7 +62,7 @@
           "kind": "string",
           "description": "Task directory for the planning-artifacts profile.",
           "repeatable": false,
-          "conflicts": []
+          "conflicts": ["--invocation"]
         },
         {
           "flag": "--path",
@@ -62,7 +70,7 @@
           "kind": "string",
           "description": "Repository-relative Markdown path for the explicit-paths profile.",
           "repeatable": true,
-          "conflicts": []
+          "conflicts": ["--invocation"]
         },
         {
           "flag": "--change-request-input",
@@ -70,7 +78,7 @@
           "kind": "string",
           "description": "Current change-request JSON locator.",
           "repeatable": false,
-          "conflicts": []
+          "conflicts": ["--invocation"]
         },
         {
           "flag": "--scan-only",
@@ -81,7 +89,7 @@
           "conflicts": []
         }
       ],
-      "stdin": "none",
+      "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
@@ -92,7 +100,7 @@
         "stale_identity",
         "internal_error"
       ],
-      "side_effect": "runtime_write",
+      "side_effect": "none",
       "schema_bindings": [],
       "validator_id": "contract_wording_recorder",
       "runtime_role": "record"
@@ -103,6 +111,14 @@
       "entrypoint": "runtime/check.py",
       "arguments": [
         {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Single-read change_request envelope carrying the exact recorded owner_result; dash reads stdin.",
+          "repeatable": false,
+          "conflicts": ["--input", "--task", "--path", "--change-request-input"]
+        },
+        {
           "flag": "--root",
           "required": false,
           "kind": "string",
@@ -112,11 +128,11 @@
         },
         {
           "flag": "--input",
-          "required": true,
+          "required": false,
           "kind": "string",
-          "description": "Review result JSON locator.",
+          "description": "Legacy review result locator; required without --invocation. Cannot share stdin with source.",
           "repeatable": false,
-          "conflicts": []
+          "conflicts": ["--invocation"]
         },
         {
           "flag": "--task",
@@ -124,7 +140,7 @@
           "kind": "string",
           "description": "Task directory for the planning-artifacts profile.",
           "repeatable": false,
-          "conflicts": []
+          "conflicts": ["--invocation"]
         },
         {
           "flag": "--path",
@@ -132,7 +148,7 @@
           "kind": "string",
           "description": "Repository-relative Markdown path for the explicit-paths profile.",
           "repeatable": true,
-          "conflicts": []
+          "conflicts": ["--invocation"]
         },
         {
           "flag": "--change-request-input",
@@ -140,7 +156,7 @@
           "kind": "string",
           "description": "Current change-request JSON locator.",
           "repeatable": false,
-          "conflicts": []
+          "conflicts": ["--invocation"]
         },
         {
           "flag": "--expected-facts-sha256",
@@ -151,7 +167,7 @@
           "conflicts": []
         }
       ],
-      "stdin": "none",
+      "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",

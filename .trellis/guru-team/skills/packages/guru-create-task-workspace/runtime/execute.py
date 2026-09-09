@@ -5,6 +5,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 from common import CONSUMERS,digest,finalize,git,load,now,parse,require_directory_ancestors,resolve_workspace,root,snapshot,stage,validate_plan,worktrees
 from runtime.io import CommandError
+from plan_input import load_plan_envelope
 def run_gh(repo,*args):
  p=subprocess.run(["gh",*args,"--repo",repo],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
  if p.returncode:raise CommandError("stale_identity","target",p.stderr.strip() or "Repair GitHub access and refresh the reviewed target.",3)
@@ -200,7 +201,7 @@ def rollback_created(repo,workspace,branch,original_branch,created_worktree,crea
   if p.returncode:errors.append(p.stderr.strip() or "branch removal failed")
  if errors:raise CommandError("stale_identity","rollback","Creation rollback did not complete; stop before retry.",3)
 def run(package_root:Path,command:dict,argv:list[str])->dict:
- p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--input");p.add_argument("--invocation");a=parse(p,argv);repo=root(package_root,a.root);e=load(repo,package_root,a.invocation,"invocation") if a.invocation else None;plan=e.get("plan") if isinstance(e,dict) else load(repo,package_root,a.input,"input");validate_plan(package_root,repo,plan);gate=plan["ai_review_gate"]["status"]
+ p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--input");p.add_argument("--invocation");a=parse(p,argv);repo=root(package_root,a.root);e=load(repo,package_root,a.invocation,"invocation") if a.invocation else None;plan=load_plan_envelope(package_root,e) if e is not None else load(repo,package_root,a.input,"input");validate_plan(package_root,repo,plan,"invocation.plan" if a.invocation else "input");gate=plan["ai_review_gate"]["status"]
  if gate!="passed":
   before=snapshot(repo,plan);exit_id="refresh_review" if gate=="reroute" else "blocked";result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The semantic gate did not authorize mutation."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"target_changed" if exit_id=="refresh_review" else "execution_blocked","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":exit_id,"reason":"The reviewed plan requires refresh or is blocked.","consumer":CONSUMERS[exit_id],"facts_sha256":""};return finalize(package_root,result)
  if plan["target"]["kind"]=="reviewed_draft":

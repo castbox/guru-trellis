@@ -29,14 +29,14 @@
           "flag": "--invocation",
           "required": false,
           "kind": "json",
-          "description": "Call-local plan envelope.",
+          "description": "Ordinary existing-issue {schema_version,transition,authoring}, or compatible {schema_version,transition,plan}; dash reads stdin.",
           "repeatable": false,
           "conflicts": [
             "--input"
           ]
         }
       ],
-      "stdin": "none",
+      "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
@@ -47,7 +47,7 @@
         "stale_identity",
         "internal_error"
       ],
-      "side_effect": "runtime_write",
+      "side_effect": "git_read",
       "schema_bindings": [],
       "validator_id": "task_workspace_plan_recorder",
       "runtime_role": "record"
@@ -79,14 +79,14 @@
           "flag": "--invocation",
           "required": false,
           "kind": "json",
-          "description": "Call-local execution envelope.",
+          "description": "{schema_version,transition,plan} using the recorder stdout plan; dash reads stdin.",
           "repeatable": false,
           "conflicts": [
             "--input"
           ]
         }
       ],
-      "stdin": "none",
+      "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
@@ -139,7 +139,7 @@
           "flag": "--invocation",
           "required": false,
           "kind": "json",
-          "description": "Call-local checker envelope.",
+          "description": "{schema_version,transition,plan,result} using recorder and executor stdout; dash reads stdin.",
           "repeatable": false,
           "conflicts": [
             "--input",
@@ -147,7 +147,7 @@
           ]
         }
       ],
-      "stdin": "none",
+      "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",

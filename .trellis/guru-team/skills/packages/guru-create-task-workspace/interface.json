@@ -143,6 +143,10 @@
   ],
   "schemas": [
     {
+      "id": "task_workspace_record_authoring_input",
+      "path": "schemas/record-authoring-input.schema.json"
+    },
+    {
       "id": "task_workspace_plan_schema",
       "path": "schemas/task-workspace-plan.schema.json"
     },
@@ -188,7 +192,7 @@
       "id": "task_workspace_plan_recorder",
       "command": "scripts/record-task-workspace-plan.sh",
       "runtime_command": "record-task-workspace-plan",
-      "objective_scope": "closed schema, five prerequisite identities and digests, target/scope/base projection, AI Gate binding, canonical plan digest and stdout-only pre-task or ignored-runtime persistence"
+      "objective_scope": "Validate ordinary existing-issue authoring plus the installed readiness_current consumer schema; deterministically project plan fields and hashes, preserve AI decisions, or validate a compatible complete plan; return stdout only"
     },
     {
       "id": "task_workspace_exact_executor",
@@ -206,7 +210,7 @@
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-create-task-workspace",
-      "objective_scope": "Caller-owned input validation and deterministic typed-exit serialization after the owner closed loop"
+      "objective_scope": "Validate result schema and checker status, then serialize its typed exit after the separately completed owner check; this command does not rerun the checker"
     }
   ],
   "external_exits": [
@@ -246,7 +250,8 @@
     "stale_behavior": "fail_closed"
   },
   "tests": [
-    "tests/test_contract.py"
+    "tests/test_contract.py",
+    "tests/test_record_authoring.py"
   ],
   "platform_destinations": [
     "shared",
