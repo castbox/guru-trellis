@@ -4,6 +4,7 @@ from pathlib import Path
 from common import digest,finalize,git,load,parse,resolve_workspace,root,stage,validate,validate_plan,worktrees
 from execute import expected_mapping,issue_record,label_identity,mapping_payloads,parse_utc_timestamp,workspace_payloads
 from runtime.io import CommandError
+from plan_input import load_plan_envelope,object_field
 def github(repo,number):
  p=subprocess.run(["gh","issue","view",str(number),"--repo",repo,"--json","number,url,state,title,body,updatedAt,labels"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
  if p.returncode:raise CommandError("stale_identity","created_issue",p.stderr.strip() or "Reread the created issue.",3)
@@ -13,9 +14,9 @@ def github(repo,number):
  return value
 def run(package_root:Path,command:dict,argv:list[str])->dict:
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--input");p.add_argument("--plan-input");p.add_argument("--invocation");a=parse(p,argv);repo=root(package_root,a.root)
- if a.invocation:e=load(repo,package_root,a.invocation,"invocation");plan=e.get("plan");result=e.get("result")
+ if a.invocation:e=load(repo,package_root,a.invocation,"invocation");plan=load_plan_envelope(package_root,e);result=object_field(e,"result")
  else:plan=load(repo,package_root,a.plan_input,"plan_input");result=load(repo,package_root,a.input,"input")
- validate_plan(package_root,repo,plan);validate(package_root,result,"task-workspace-result.schema.json","result")
+ validate_plan(package_root,repo,plan,"invocation.plan" if a.invocation else "input");validate(package_root,result,"task-workspace-result.schema.json","invocation.result" if a.invocation else "result")
  unsigned=copy.deepcopy(result);actual=unsigned.pop("facts_sha256");
  if digest(unsigned)!=actual or result["plan_sha256"]!=plan["freshness"]["plan_sha256"]:raise CommandError("stale_identity","result","Rerun the exact workspace executor.",3)
  if result["variant"]=="created_workspace":

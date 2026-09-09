@@ -447,6 +447,12 @@ memory. Check initial installation and reapply, zero repository/input-file
 residue, unchanged fixed scope, actual checker receipts, and live title/body
 drift rejection. Mock remote responses only at the fixture GitHub boundary;
 do not replace the installed dispatcher or synthesize a successful receipt.
+The #389 installed regression consumes actual `readiness_current` through the
+published recorder authoring input, then runs executor, result checker and public
+invoke to `created` inside disposable repositories. Verify workspace/task/ledger
+and ignored mapping identity, unchanged source state before mutation, and exact
+diagnostic paths for ordinary missing envelope/authoring fields. Do not use the
+private transcript helper to construct the final plan in this acceptance test.
 When changing workspace boundary behavior, also run
 `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task
 <task-dir>` from the selected task worktree and add regression tests for wrong

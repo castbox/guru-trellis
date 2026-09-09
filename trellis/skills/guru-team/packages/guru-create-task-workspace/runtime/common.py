@@ -6,7 +6,6 @@ from typing import NamedTuple
 SHARED_ROOT=next((p for p in Path(__file__).resolve().parents if (p/"runtime/io.py").is_file() and (p/"runtime/schema.py").is_file()),None)
 if SHARED_ROOT is not None and str(SHARED_ROOT) not in sys.path:sys.path.insert(0,str(SHARED_ROOT))
 from runtime.io import CommandError
-from runtime.schema import validate_json
 CONSUMERS={"created":{"kind":"workflow","id":"guru-task-workspace-created"},"refresh_review":{"kind":"skill","id":"guru-sync-base"},"blocked":{"kind":"stop","id":"task-workspace-blocked"},"invalid_task_state":{"kind":"stop","id":"invalid-task-state"}}
 class WorkspaceConfig(NamedTuple):
  mode:str
@@ -103,12 +102,29 @@ def git(repo,*args,check=True):
  p=subprocess.run(["git",*args],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
  if check and p.returncode:raise CommandError("stale_identity","repository",p.stderr.strip() or "Repair Git state.",3)
  return p
-def validate(package_root,v,name,field="input"):validate_json(v,package_root/"schemas"/name,field);return v
+def validate_schema(value,path,field):
+ from jsonschema import Draft202012Validator
+ schema=json.loads(path.read_text(encoding="utf-8"))
+ errors=list(Draft202012Validator(schema).iter_errors(value))
+ if errors:
+  error=min(errors,key=lambda item:tuple(str(part) for part in item.path))
+  parts=[str(part) for part in error.path]
+  if error.validator=="required" and isinstance(error.instance,dict):
+   missing=next(key for key in error.validator_value if key not in error.instance);parts.append(missing)
+   remediation="Provide the required field using the declared command envelope."
+  elif error.validator=="additionalProperties" and isinstance(error.instance,dict):
+   extra=sorted(set(error.instance)-set(error.schema.get("properties",{})))
+   if extra:parts.append(extra[0])
+   remediation="Remove this undeclared field; use only the fields in the selected input contract."
+  else:remediation="Use the declared JSON type and value for this field."
+  raise CommandError("schema_mismatch",".".join([field,*parts]),remediation)
+ return value
+def validate(package_root,v,name,field="input"):return validate_schema(v,package_root/"schemas"/name,field)
 def reviewable(plan):return {k:copy.deepcopy(plan[k]) for k in ("schema_version","skill_id","mode","invocation","prerequisites","target","scope","base","naming","assignee","side_effects")}
 def plan_digest(plan):
  v=copy.deepcopy(plan);v["freshness"].pop("plan_sha256",None);return digest(v)
-def validate_plan(package_root,repo,plan):
- validate(package_root,plan,"task-workspace-plan.schema.json")
+def validate_plan(package_root,repo,plan,field="input"):
+ validate(package_root,plan,"task-workspace-plan.schema.json",field)
  r=digest(reviewable(plan));f=plan["freshness"]
  if f["reviewable_plan_sha256"]!=r or f["plan_sha256"]!=plan_digest(plan) or plan["ai_review_gate"]["reviewed_plan_sha256"]!=r:raise CommandError("stale_identity","freshness","Rerecord the exact current plan.",3)
  if git(repo,"rev-parse","HEAD").stdout.strip()!=plan["base"]["decision_head"]:raise CommandError("stale_identity","base.decision_head","Refresh base and plan.",3)
