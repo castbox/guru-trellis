@@ -24,23 +24,29 @@ Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
 不写入共享来源记录。`GURU_SOURCE` 必须是包含本来源合同的已审查 checkout。
 
 ```bash
-: "${GURU_SOURCE:?请设置 Guru 源码目录}"
-: "${FORK_SOURCE:?请设置已有 Fork 源码目录}"
-: "${TARGET_REPO:?请设置目标仓库目录}"
-SOURCE_LOCK="$GURU_SOURCE/trellis/presets/guru-team/source/trellis-source.json"
-FORK_REPOSITORY="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["repository"])' "$SOURCE_LOCK")"
-FORK_COMMIT="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["commit"])' "$SOURCE_LOCK")"
-test -z "$(git -C "$FORK_SOURCE" status --porcelain)"
-git -C "$FORK_SOURCE" fetch "$FORK_REPOSITORY" "$FORK_COMMIT"
-git -C "$FORK_SOURCE" checkout --detach "$FORK_COMMIT"
-test "$(git -C "$FORK_SOURCE" rev-parse HEAD)" = "$FORK_COMMIT"
-(cd "$FORK_SOURCE" && pnpm install --frozen-lockfile && pnpm build)
+: "${GURU_SOURCE:?请设置 Guru 源码目录}" &&
+: "${FORK_SOURCE:?请设置已有 Fork 源码目录}" &&
+: "${TARGET_REPO:?请设置目标仓库目录}" &&
+SOURCE_LOCK="$GURU_SOURCE/trellis/presets/guru-team/source/trellis-source.json" &&
+FORK_REPOSITORY="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["repository"])' "$SOURCE_LOCK")" &&
+FORK_COMMIT="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["commit"])' "$SOURCE_LOCK")" &&
+FORK_STATUS="$(git -C "$FORK_SOURCE" status --porcelain)" &&
+test -z "$FORK_STATUS" &&
+git -C "$FORK_SOURCE" fetch "$FORK_REPOSITORY" "$FORK_COMMIT" &&
+git -C "$FORK_SOURCE" checkout --detach "$FORK_COMMIT" &&
+test "$(git -C "$FORK_SOURCE" rev-parse HEAD)" = "$FORK_COMMIT" &&
+(cd "$FORK_SOURCE" && pnpm install --frozen-lockfile && pnpm build &&
+ git rev-parse HEAD > packages/cli/dist/.guru-source-commit) &&
 node "$FORK_SOURCE/packages/cli/bin/trellis.js" --version
 ```
 
 使用来源记录声明的 package-manager 版本。保留 Fork 的 ESM 与 workspace 依赖布局，
 不复制 dist、不重造 launcher、不全局安装原 Trellis npm 包。后续修改框架版本先评审
 source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgrade`。
+整个代码块使用 `&&` 串联；任何准备步骤失败，都不会执行版本检查或写入构建标记。
+`.guru-source-commit` 仅记录本次成功构建的源码 HEAD，用于识别同版本 stale dist，
+不是审批或防篡改凭据。单独执行校验时不补写该标记；旧 root-bin predecessor 构建后
+将同样的 HEAD 记录到其 `dist/.guru-source-commit`。
 
 ## 发布身份边界
 

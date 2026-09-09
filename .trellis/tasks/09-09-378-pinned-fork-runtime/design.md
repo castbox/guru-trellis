@@ -44,6 +44,10 @@ manifest，确保 #388/#389 保留。
 
 ## 来源证明
 
+准备命令以 `&&` 串联，成功完成 Fork 自身构建后才将实际 HEAD 写入 CLI dist 下的
+`.guru-source-commit`。来源校验比较此标记与固定 HEAD，避免同版本源码切换后误用旧
+编译代码。它只表示本地成功构建的来源，不承担语义批准、防篡改或发布身份。
+
 验证器检查固定源 commit、构建版本及关键 installed 文件对应关系，不以版本号相同
 推断来自 Fork。构建日志中的机器路径只保留在本机；共享来源记录只保存固定源码身份。
 不得把用户授权、语义批准或完整扫描过程写入 lock/manifest。
@@ -65,6 +69,7 @@ manifest，确保 #388/#389 保留。
 
 ## 风险与约束
 
-verify-throwaway-install.sh 接近 3000 行；修改前计数，触发阈值时只拆出来源构建职责，
-保持现有 fixture 和业务检查不变。保留 #267/#332 对完整发布矩阵的独立 ownership。
+verify-throwaway-install.sh 只承接参数与受管 Python dispatch；移除 dispatch 后不可达的
+历史尾部，full/focused 场景由现有 Python matrix 单独拥有，不复制构建或场景编排。
+保留 #267/#332 对完整发布矩阵的独立 ownership。
 固定源码不可用、构建失败、版本不符、未知定制冲突均停止，不删除旧安装或全局 CLI。

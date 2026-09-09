@@ -1799,470 +1799,56 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertFalse((self.repo / ".claude").exists())
 
     def test_throwaway_verifier_cleans_preview_and_scans_sidecars_after_reapply(self) -> None:
-        verifier = (
-            self.guru_root
-            / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
-        ).read_text(encoding="utf-8")
+        import verify_trellis_compatibility_matrix as matrix
 
-        current_private_schema = (
-            'assert "guru-extension-installation-verification-result-5.0" '
-            'in api["skill_contracts"]["private_artifact_schema_ids"]'
-        )
-        retired_private_schema = current_private_schema.replace("5.0", "4.0")
-        self.assertIn(current_private_schema, verifier)
-        self.assertNotIn(retired_private_schema, verifier)
-        self.assertNotIn("test_issue_174_controlled_replay_is_one_chained_session", verifier)
-        self.assertNotIn("GURU_ISSUE_174_REPLAY_REPORT", verifier)
-        self.assertIn(
-            'assert managed_specs.issubset(set(assets))',
-            verifier,
-        )
-        self.assertNotIn(
-            'assert (target / ".trellis/spec/workflow/semantic-retrieval.md").is_file()',
-            verifier,
-        )
-        grading_path = (
-            self.guru_root
-            / "trellis/presets/guru-team/tests/semantic-retrieval-grading.json"
-        )
-        grading = json.loads(grading_path.read_text(encoding="utf-8"))
-        self.assertEqual(grading["schema_version"], "1.0")
-        self.assertEqual(
-            {(item["case_id"], item["assertion_id"]) for item in grading["results"]},
-            {
-                ("clear-route", "bilingual-history-decision"),
-                ("clear-route", "single-language-negative-blocked"),
-                ("context-ready-route", "bilingual-current-evidence"),
-                ("context-ready-route", "exact-literal-preserved"),
-            },
-        )
-        self.assertTrue(all(item["passed"] for item in grading["results"]))
-        self.assertEqual(
-            verifier.count('--semantic-grading "$SEMANTIC_RETRIEVAL_GRADING"'),
-            4,
-        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target, before, source = (root / name for name in ("target", "before", "source"))
+            relative = "trellis/workflows/guru-team/workflow.md"
+            for tree, content in ((before, "before\n"), (source, "candidate\n")):
+                path = tree / relative
+                path.parent.mkdir(parents=True)
+                path.write_text(content)
+            workflow = target / ".trellis/workflow.md"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text("before\n")
+            preview = workflow.with_name("workflow.md.new")
+            operations = []
 
-        workflow_helper = verifier.index("preview_and_switch_managed_workflow() {")
-        preview_create = verifier.index(
-            'trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --create-new',
-            workflow_helper,
-        )
-        force_switch = verifier.index(
-            'trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force',
-            preview_create,
-        )
-        initial_switch = verifier.index(
-            'preview_and_switch_managed_workflow "$TARGET" "initial-workflow-switch"',
-            force_switch,
-        )
-        update = verifier.index("trellis update --dry-run 2>&1", initial_switch)
-        workflow_reapply = verifier.index(
-            'preview_and_switch_managed_workflow "$TARGET" "post-update-workflow-switch"',
-            update,
-        )
-        preset_reapply = verifier.index(
-            'source_python "$REPO_ROOT/trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"',
-            workflow_reapply,
-        )
-        final_scan = verifier.index('FINAL_SIDECARS="$(find "$TARGET"', preset_reapply)
-        initial_ownership = verifier.index('ownership_checkpoint "initial-init-before-preset-apply"')
-        initial_apply = verifier.index(
-            'source_python "$REPO_ROOT/trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"',
-            initial_ownership,
-        )
-        post_update_ownership = verifier.index(
-            'ownership_checkpoint "post-update-before-workflow-and-preset-reapply"',
-            update,
-        )
-        post_reapply_ownership = verifier.index(
-            'ownership_checkpoint "post-preset-reapply-before-final-checks"',
-            preset_reapply,
-        )
+            def run(argv, **kwargs):
+                if "--create-new" in argv:
+                    operations.append("preview")
+                    preview.write_text("candidate\n")
+                elif "--force" in argv:
+                    operations.append("switch")
+                    self.assertFalse(preview.exists())
+                    workflow.write_text("candidate\n")
+                else:
+                    self.fail(f"unexpected workflow operation: {argv}")
+                return ""
 
-        self.assertLess(preview_create, force_switch)
-        self.assertLess(force_switch, initial_switch)
-        self.assertLess(initial_switch, update)
-        self.assertLess(update, workflow_reapply)
-        self.assertLess(workflow_reapply, preset_reapply)
-        self.assertLess(preset_reapply, final_scan)
-        self.assertLess(initial_ownership, initial_apply)
-        self.assertLess(update, post_update_ownership)
-        self.assertLess(post_update_ownership, workflow_reapply)
-        self.assertLess(preset_reapply, post_reapply_ownership)
-        self.assertLess(post_reapply_ownership, final_scan)
-        self.assertEqual(verifier.count('ownership_checkpoint "'), 3)
-        self.assertIn('WORKSPACE_SENTINEL="$TARGET/.trellis/workspace/private/shared-start-secret-journal.md"', verifier)
-        self.assertIn("Unexpected .new/.bak sidecars after preview, switch, update, and preset reapply", verifier)
-        self.assertIn('"id":"guru-requirements-clear-router"', verifier)
-        self.assertNotIn(
-            '"exit":"clear","consumer":{"kind":"workflow","id":"guru-review-contract-wording"}',
-            verifier,
-        )
-        self.assertIn('verify_requirements_clarification_exits "initial"', verifier)
-        self.assertIn('verify_requirements_clarification_exits "after-update"', verifier)
-        self.assertIn('--mode installed', verifier)
-        self.assertIn('--skill guru-clarify-requirements', verifier)
-        self.assertIn('"clear", "needs_context", "refresh_context", "retarget_context", "new_task", "blocked"', verifier)
-        self.assertNotIn("derive_requirements_clarification_result", verifier)
-        self.assertIn('verify_contract_wording_standalone_profiles "initial"', verifier)
-        self.assertIn('verify_contract_wording_standalone_profiles "after-update"', verifier)
-        self.assertIn('verify_change_request_review_package "initial"', verifier)
-        self.assertIn('verify_change_request_review_package "after-update"', verifier)
-        self.assertNotIn('facts["planned_ids"] == []', verifier)
-        self.assertIn(
-            'facts["planned_ids"] == expected_planned_ids',
-            verifier,
-        )
-        self.assertIn(
-            'manifest["extension"]["public_api"]["skill_contracts"]["planned_skill_ids"]',
-            verifier,
-        )
-        self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/SKILL.md"', verifier)
-        self.assertIn('test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"', verifier)
-        self.assertIn('test ! -e "$TARGET/.claude/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"', verifier)
-        self.assertIn('test ! -e "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"', verifier)
-        self.assertIn('test ! -e "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"', verifier)
-        self.assertIn('fail_if_python_cache "throwaway target" "$TARGET"', verifier)
-        self.assertIn('record_planning_contract_wording "$TASK_REL"', verifier)
-        self.assertIn('record_and_check_planning_approval "$TASK_REL" "initial"', verifier)
-        self.assertIn(
-            'record_and_check_planning_approval "$POST_UPDATE_TASK_REL" "after-update"',
-            verifier,
-        )
-        self.assertIn('--task "$task_rel" --input "$input" >"$result"', verifier)
-        self.assertIn('recorded["schema_version"] == "5.0"', verifier)
-        self.assertNotIn("--ambiguity-reviewer", verifier)
-        self.assertNotIn("--normative-hit", verifier)
-        self.assertIn("verify_installed_closeout.py", verifier)
-        self.assertIn("--case initial", verifier)
-        self.assertIn("--case after-update", verifier)
-        self.assertIn('verify_closeout_package_boundaries "fresh-install"', verifier)
-        self.assertIn(
-            'verify_closeout_package_boundaries "after-update-reapply"', verifier
-        )
-        for skill_id in (
-            "guru-review-task-publication",
-            "guru-verify-extension-installation",
-            "guru-finalize-task",
-            "guru-merge-task-pr",
-        ):
-            self.assertIn(f'    "{skill_id}",', verifier)
-        self.assertIn('private_dirs = [projection / name for name in ("runtime", "tests", "errors")]', verifier)
-        self.assertIn(
-            'public_wrapper = interface["public_contracts"]["invocation"]["wrapper"]',
-            verifier,
-        )
-        self.assertIn("private_wrappers = wrappers - {public_wrapper}", verifier)
-        self.assertIn(
-            'for artifact in interface["public_contracts"]["private_artifacts"]',
-            verifier,
-        )
-        self.assertIn('payload["after_archive_hook_preflight"] is True', verifier)
-        self.assertIn('payload["merge_exit"] == "merged"', verifier)
-        self.assertIn(
-            'payload["local_head"] == payload["remote_head"] == payload["pr_head"]',
-            verifier,
-        )
-        self.assertIn('payload["merge_commit"] == "2" * 40', verifier)
-        self.assertNotIn('payload["pr_head"] == payload["merge_commit"]', verifier)
-        self.assertIn('payload["verifier_artifacts"] == 0', verifier)
-        self.assertIn("verify_installed_task_workspace.py", verifier)
-        self.assertIn("installed-task-workspace-initial", verifier)
-        self.assertIn("installed-task-workspace-after-update", verifier)
-        self.assertIn("--checkpoint initial", verifier)
-        self.assertIn("--checkpoint after-update", verifier)
-        self.assertIn("--existing-developer-identity", verifier)
-        self.assertIn('payload["developer_identity_preserved"] is True', verifier)
-        self.assertIn('payload["task_creator"] == "fixture-maintainer"', verifier)
-        self.assertEqual(verifier.count("verify_installed_phase0_transcript.py"), 2)
-        self.assertEqual(
-            verifier.count(
-                'verify_installed_phase0_transcript.py" --installed-repo "$TARGET" '
-                '--work-root "$WORK_DIR/installed-phase0-transcript-'
-            ),
-            2,
-        )
-        self.assertEqual(
-            verifier.count(
-                '--checkpoint initial-install --semantic-grading '
-                '"$SEMANTIC_RETRIEVAL_GRADING"'
-            ),
-            1,
-        )
-        self.assertEqual(
-            verifier.count(
-                '--checkpoint update-reapply --semantic-grading '
-                '"$SEMANTIC_RETRIEVAL_GRADING"'
-            ),
-            1,
-        )
-        self.assertIn("installed-phase0-transcript-initial", verifier)
-        self.assertIn("installed-phase0-transcript-after-update", verifier)
-        self.assertIn('payload["exit_family_count"] == 24', verifier)
-        self.assertNotIn('payload["exit_family_count"] == 23', verifier)
-        self.assertIn('len(payload["six_step_transcript"]) == 6', verifier)
-        self.assertIn('row["edge_id"] for row in payload["reentry_transcripts"]', verifier)
-        self.assertIn(
-            'row["source"] for row in payload["refresh_provenance_transcripts"]',
-            verifier,
-        )
-        self.assertIn('"legacy_typed_output_schema_ids"', verifier)
-        self.assertNotIn(
-            'len(api["skill_contracts"]["legacy_typed_output_schema_ids"]) == 5',
-            verifier,
-        )
-        self.assertIn(
-            'assert len(inventory) == len(set(inventory))',
-            verifier,
-        )
-        self.assertIn("build_discovery_invocation", verifier)
-        self.assertIn("write_discovery_inputs", verifier)
-        self.assertNotIn('"sync_result"', verifier)
-        self.assertNotIn('"base_evidence"', verifier)
-        self.assertNotIn("installed_ephemeral_context_package_runtime", verifier)
-        self.assertIn('"base_observation": {}', verifier)
-        self.assertIn('"${1:-}" == "-C"', verifier)
-        self.assertIn('"${3:-}" == "remote"', verifier)
-        self.assertIn('"${4:-}" == "get-url"', verifier)
-        self.assertIn('--public-input "$DISCOVERY_STANDALONE_PUBLIC"', verifier)
-        self.assertIn('--transition "$DISCOVERY_STANDALONE_TRANSITION"', verifier)
-        self.assertIn("DISCOVERY_TASK_ROOT", verifier)
-        self.assertIn("DISCOVERY_WORKFLOW_CONTINUATION", verifier)
-        self.assertIn("DISCOVERY_RECOVERY_CONTINUATION", verifier)
-        self.assertIn("DISCOVERY_STANDALONE_BASE_JSON", verifier)
-        self.assertIn("DISCOVERY_WORKFLOW_BASE_JSON", verifier)
-        self.assertNotIn("DISCOVERY_PUBLIC_INPUT_REL", verifier)
-        self.assertNotIn("DISCOVERY_RECOVERY_PUBLIC_INPUT_REL", verifier)
-        self.assertIn("PHASE0_REVIEWED_BASE_PROVENANCE", verifier)
-        self.assertIn(
-            '--reviewed-base-provenance "$PHASE0_REVIEWED_BASE_PROVENANCE"',
-            verifier,
-        )
-        self.assertIn('trellis init -y --claude --codex --cursor', verifier)
-        self.assertIn(
-            'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
-            verifier,
-        )
-        self.assertIn(
-            f"assert len(assets) == {len(preset.MANAGED_ASSET_PATHS) + len(preset.MANAGED_SPEC_PATHS) + len(preset.MANAGED_SOURCE_PATHS) + len(GURU_FINISH_ENTRIES) + 1}",
-            verifier,
-        )
-        self.assertIn('ownership["schema_version"] == "3.0"', verifier)
-        self.assertIn('test -f "$TARGET/.codex/prompts/guru-finish-work.md"', verifier)
-        self.assertIn('test -f "$TARGET/.claude/commands/guru/finish-work.md"', verifier)
-        self.assertIn('test -f "$TARGET/.cursor/commands/guru-finish-work.md"', verifier)
-        self.assertIn(
-            'installed_python "$TARGET" "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py" -q',
-            verifier,
-        )
-        self.assertIn(
-            '"$TARGET/.trellis/guru-team/skills/tests/test_base_continuity_integration.py" -q',
-            verifier,
-        )
-        self.assertIn('verify_finish_family_integration "initial"', verifier)
-        self.assertIn('verify_base_continuity_integration "initial"', verifier)
-        self.assertIn(
-            'verify_finish_family_integration "after-update-reapply"', verifier
-        )
-        self.assertIn(
-            'verify_base_continuity_integration "after-update-reapply"', verifier
-        )
-        self.assertIn(
-            '"$REPO_ROOT/trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh"',
-            verifier,
-        )
-        self.assertIn(
-            '--root "$REPO_ROOT" \\\n'
-            '    --mode source \\\n'
-            '    --skill guru-verify-extension-installation',
-            verifier,
-        )
-        self.assertNotIn("record_throwaway_completed_agent", verifier)
-        self.assertIn('! grep -q "record-subagent-liveness-event.sh"', verifier)
-        self.assertIn("record-agent-recovery.sh", verifier)
-        self.assertNotIn("TASK_COMMIT_RUNTIME_DIR", verifier)
-        self.assertIn("prepare_task_commit_candidate initial_commit", verifier)
-        self.assertIn("scripts/prepare-task-commit.sh", verifier)
-        self.assertNotIn("/rules/" + "branches/", verifier)
-        self.assertNotIn("create_task_commit_plan", verifier)
-        self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/native_adapter.py"', verifier)
-        for adapter_id in ("shared", "codex", "claude", "cursor"):
-            self.assertIn(
-                f'test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/{adapter_id}.sh"',
-                verifier,
-            )
-        self.assertIn("SkillPackageIntegrationTests", verifier)
-        self.assertNotIn('trellis init -y -u', verifier)
-        self.assertIn('DEVELOPER_IDENTITY_DIGEST_BEFORE="$(file_sha256', verifier)
-        self.assertIn('assert_official_state_absent "$ABSENCE_TARGET" "initial preset apply"', verifier)
-        self.assertIn('assert_official_state_absent "$ABSENCE_TARGET" "trellis update"', verifier)
-        self.assertIn('assert_official_state_absent "$ABSENCE_TARGET" "workflow reapply"', verifier)
-        self.assertIn('assert_official_state_absent "$ABSENCE_TARGET" "preset reapply"', verifier)
-        installed_workspace = (
-            self.guru_root
-            / "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py"
-        ).read_text(encoding="utf-8")
-        self.assertNotIn("importlib", installed_workspace)
-        self.assertNotIn("guru_team_trellis.py", installed_workspace)
-        self.assertIn('wrappers / "create-task-workspace.sh"', installed_workspace)
-        self.assertIn('wrappers / "check-task-workspace-result.sh"', installed_workspace)
-        self.assertIn('wrappers / "invoke.sh"', installed_workspace)
-        self.assertIn("--existing-developer-identity", installed_workspace)
-        self.assertIn('task_data.get("creator") != "fixture-maintainer"', installed_workspace)
-        installed_phase0 = (
-            self.guru_root
-            / "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py"
-        ).read_text(encoding="utf-8")
-        self.assertNotIn("importlib", installed_phase0)
-        self.assertNotIn("guru_team_trellis.py", installed_phase0)
-        self.assertIn('"--invocation",', installed_phase0)
-        self.assertIn('"-",', installed_phase0)
-        self.assertIn('parser.add_argument("--semantic-grading", required=True)', installed_phase0)
-        self.assertIn('"--semantic-grading",\n                    semantic_grading,', installed_phase0)
-        self.assertNotIn('"passed": True', installed_phase0)
-        self.assertIn("actual_exit != expected_exit", installed_phase0)
-        self.assertIn("if expected_pairs != actual_pairs:", installed_phase0)
-        self.assertNotIn("len(actual_pairs) != 23", installed_phase0)
-        self.assertIn("create-task-workspace.sh", installed_phase0)
-        self.assertIn("check-task-workspace-result.sh", installed_phase0)
-        self.assertIn('"gh",', installed_phase0)
-        self.assertIn('issue["facts_sha256"] = context_digest(issue)', installed_phase0)
-        self.assertIn('"history_preview": preview', installed_phase0)
-        wording_owner_source = installed_phase0[
-            installed_phase0.index("def wording_owner_for_issue("):
-            installed_phase0.index("def readiness_owner_for_issue(")
-        ]
-        self.assertNotIn('"semantic_review": {', wording_owner_source)
-        self.assertIn("def checked_readiness_owner_for_issue(", installed_phase0)
-        self.assertIn("readiness-change-request.json", installed_phase0)
-        self.assertIn("wording-change-request.json", installed_phase0)
-        self.assertIn('"--query-json",', installed_phase0)
-        self.assertIn(
-            "json.dumps(change_input, ensure_ascii=False, sort_keys=True)",
-            installed_phase0,
-        )
-        for retired_flag in (
-            '"--issue-ref",',
-            '"--path",',
-            '"--command",',
-            '"--term",',
-            '"--query",',
-            '"--symbol",',
-        ):
-            self.assertNotIn(retired_flag, installed_phase0)
-        self.assertNotIn("owner_eval_payload", installed_phase0)
-        self.assertNotIn("cleanup_seed_workspace", installed_phase0)
-        self.assertNotIn("bind_workspace_plan_to_transition", installed_phase0)
-        self.assertNotIn("phase0-transcript/change-request.json", installed_phase0)
-        self.assertIn("stage_transcript_owner_repo", installed_phase0)
-        self.assertIn("project_installed_output", installed_phase0)
-        self.assertNotIn("def base_sync_payload(", installed_phase0)
-        self.assertNotIn('"sync_result"', installed_phase0)
-        self.assertNotIn('"base_evidence"', installed_phase0)
-        self.assertNotIn('"guru-base-sync-result-1.0"', installed_phase0)
-        self.assertIn('"schema_version": "3.0"', installed_phase0)
-        self.assertIn('"--public-input", public_path', installed_phase0)
-        self.assertIn('"--transition", transition_path', installed_phase0)
-        self.assertIn(
-            'root, "guru-sync-base", "synced", sync',
-            installed_phase0,
-        )
-        self.assertIn("def reentry_transcripts(", installed_phase0)
-        self.assertIn("def refresh_provenance_transcripts(", installed_phase0)
-        self.assertIn("workspace_plan_for_transition", installed_phase0)
-        self.assertIn("assert_forbidden_runtime_absent", installed_phase0)
-        chain_source = installed_phase0[
-            installed_phase0.index("def six_step_transcript("):
-            installed_phase0.index("def parse_args()")
-        ]
-        self.assertNotIn("records", chain_source)
-        self.assertNotIn("HAPPY_CASES", chain_source)
-        self.assertNotIn("evals", chain_source)
-        self.assertNotIn("base_sync_payload", chain_source)
-        self.assertNotIn("sync_result", chain_source)
-        self.assertNotIn("base_evidence", chain_source)
-        self.assertIn("sync_projection", chain_source)
-        installed_closeout = (
-            self.guru_root
-            / "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py"
-        ).read_text(encoding="utf-8")
-        self.assertIn(
-            'root / ".trellis/guru-team/skills/packages/guru-finalize-task"',
-            installed_closeout,
-        )
-        self.assertNotIn("rules/" + "branches/", installed_closeout)
-        for wrapper_name in (
-            "preview-finalization",
-            "invoke",
-        ):
-            self.assertIn(f'"{wrapper_name}"', installed_closeout)
-        self.assertIn('merge_wrappers = {"invoke":', installed_closeout)
-        for retired_wrapper in (
-            "finalize-task-happy-path",
-            "complete-task-pr-merge",
-            "invoke-happy-path-v1.sh",
-            "review-task-publication.sh",
-        ):
-            self.assertNotIn(retired_wrapper, installed_closeout)
-        self.assertNotIn(
-            '.trellis/guru-team/scripts/bash/finish-work.sh', installed_closeout
-        )
-        self.assertNotIn("guru_team_trellis.py", installed_closeout)
-        self.assertNotIn("class InstalledRuntimeFacade", installed_closeout)
-        self.assertNotIn("load_installed_package_runtime", installed_closeout)
-        self.assertNotIn('"runtime/owner.py"', installed_closeout)
-        self.assertIn("class InstalledPackageClient", installed_closeout)
-        self.assertIn('process_env["PYTHONDONTWRITEBYTECODE"] = "1"', installed_closeout)
-        self.assertIn('["git", "reset", "--mixed", "HEAD"]', installed_closeout)
-        for wrapper_name in (
-            "record-planning-approval.sh",
-            "check-planning-approval.sh",
-            "record-phase2-check.sh",
-            "check-phase2-check.sh",
-            "prepare-task-commit.sh",
-            "invoke.sh",
-            "review-branch.sh",
-            "check-review-gate.sh",
-        ):
-            self.assertIn(f'"{wrapper_name}"', installed_closeout)
-        self.assertIn('publication_package / "scripts/invoke.sh"', installed_closeout)
-        self.assertIn('owners["guru-approve-task-plan"]', installed_closeout)
-        self.assertIn('owners["guru-check-task"]', installed_closeout)
-        self.assertIn('owners["guru-create-task-commit"]', installed_closeout)
-        self.assertIn('owners["guru-review-branch"]', installed_closeout)
-        self.assertIn('owners["guru-review-task-publication"]', installed_closeout)
-        self.assertNotIn(
-            'list(root.rglob("marketplace-verification.json"))',
-            installed_closeout,
-        )
-        self.assertIn('root / ".trellis/tasks"', installed_closeout)
-        self.assertIn('root / ".trellis/.runtime/guru-team"', installed_closeout)
-        self.assertIn(
-            '".trellis/guru-team/skills/packages/guru-review-task-publication"',
-            installed_closeout,
-        )
-        self.assertIn('args[:2] == ["remote", "get-url"]', installed_closeout)
-        self.assertIn('args[:2] == ["pr", "ready"]', installed_closeout)
-        self.assertIn('value("--match-head-commit")', installed_closeout)
-        self.assertIn('merged_payload.get("exit_id") != expected_merge_exit', installed_closeout)
-        self.assertIn('expected_merge_exit = "closure_mismatch" if closure_mismatch else "merged"', installed_closeout)
-        self.assertIn("installed Merge terminal recovery repeated the merge mutation", installed_closeout)
-        self.assertIn("installed Finalizer terminal recovery repeated a GitHub mutation", installed_closeout)
-        self.assertIn('after_archive:', installed_closeout)
-        self.assertIn('after-archive-hook-preflight', installed_closeout)
-        self.assertIn('hook_executed', installed_closeout)
-        self.assertIn('installed-after-archive-hook-', installed_closeout)
-        self.assertIn('ledger = {\n        "schema_version": "2.0",', installed_closeout)
-        self.assertIn("def write_semantic_review()", installed_closeout)
-        self.assertIn("write_semantic_review()", installed_closeout)
-        self.assertIn("finalization_input.relative_to(root).as_posix()", installed_closeout)
-        self.assertNotIn("verification_required", installed_closeout)
-        self.assertIn('root.rglob("marketplace-verification.json")', installed_closeout)
-        self.assertNotIn("copytree", installed_closeout)
-        self.assertIn(
-            '"branch_review_commit": branch_check["review_commit"]',
-            installed_closeout,
-        )
+            with mock.patch.object(matrix, "_run", side_effect=run):
+                matrix._preview_and_switch_workflow(
+                    target, ("node", "trellis.js"), {}, "fixture-source",
+                    source, before, False, root,
+                )
+            self.assertEqual(operations, ["preview", "switch"])
+            self.assertEqual(workflow.read_text(), "candidate\n")
+            self.assertEqual(matrix._sidecars(target), [])
+
+            success = subprocess.CompletedProcess([], 0, stdout='{"status":"ok"}')
+            with mock.patch.object(matrix.subprocess, "run", return_value=success):
+                result = matrix._apply_preset(source, target, "codex", root / "apply.log")
+                self.assertEqual(result["status"], "passed")
+                for suffix in (".new", ".bak"):
+                    with self.subTest(sidecar=suffix):
+                        sidecar = target / ".trellis/guru-team/nested" / ("asset" + suffix)
+                        sidecar.parent.mkdir(parents=True, exist_ok=True)
+                        sidecar.write_text("unresolved\n")
+                        with self.assertRaisesRegex(matrix.MatrixError, "sidecar-free"):
+                            matrix._apply_preset(source, target, "codex", root / "reapply.log")
+                        self.assertEqual(sidecar.read_text(), "unresolved\n")
+                        sidecar.unlink()
 
     def test_dogfood_drift_checks_ownership_before_payload_bytes(self) -> None:
         checker_path = (

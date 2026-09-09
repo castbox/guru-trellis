@@ -40,6 +40,11 @@ build. Use the existing Fork checkout's `packages/cli/bin/trellis.js` after
 checking HEAD and running its own locked dependency install/build commands;
 see the repository README for executable commands. Do not use stock npm
 `trellis upgrade`, copy dist, or create another CLI launcher.
+After the successful normal build, the documented preparation writes actual
+HEAD to `packages/cli/dist/.guru-source-commit` (or root `dist/` for the flat
+predecessor layout). Source validation requires this build origin to match the
+locked checkout, so a same-version checkout with stale compiled output fails.
+The marker is local build metadata, not semantic approval or authentication.
 It is idempotent: identical files are skipped, missing files are installed,
 Guru-managed companion assets are upgraded in place with `.bak` backups,
 and existing `.trellis/guru-team/config.yml` is preserved. Current-only

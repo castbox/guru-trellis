@@ -2,7 +2,8 @@
 
 ## 当前阶段
 
-planning。未开始实现，未恢复 stash，未更新主 checkout runtime。
+in_progress。实现已进入首个本地提交，当前修复 Branch Review findings 并重新检查。
+未恢复 stash，未更新主 checkout runtime；修复增量尚未提交。
 
 ## 实施顺序
 
@@ -29,7 +30,7 @@ git diff --check
 
 新增测试落在 preset scripts/python 的现有 unittest 体系，覆盖 source identity、构建失败
 无回退、两次 update、canonical/installed hooks 和 session fixture。执行命令及结果在
-实际实现后记录，当前不填写 PASS。已有 #388/#389 集成测试按其现有文件运行。
+实际实现后记录。已有 #388/#389 集成测试按其现有文件运行。
 
 ## 安装态 closeout 测试边界
 
@@ -83,3 +84,16 @@ Branch Review、Publication 入口执行；测试输入是 synthetic fixture，�
 - 99 项 caller/routing 回归通过；真实 shell focused 调用完成 clean 与两次同候选
   update/reapply。完整历史矩阵只完成入口/调度的轻量回归，未声明实际运行通过。
 - standalone 合同已同步三平台；reapply、drift、whitespace 通过。本轮未提交或发布。
+
+## Branch Review 修复与定向复验
+
+- C01：README 准备链逐步失败即停止，状态读取失败不能被当作干净 checkout。
+- C02：成功执行 Fork 自身 build 后记录实际 HEAD；校验器拒绝缺失或不匹配的
+  `dist/.guru-source-commit`，覆盖同版本源码推进但未重建的正常错误。
+- C03：删除 full/focused dispatch 后不可达的 shell 尾部及其失效注册，实际场景由
+  Python matrix 承接；不保留仅满足静态断言的死调用文本。
+- 84 项准备、来源与 routing 测试通过；显式提供 Fork/installed 路径后两项隔离
+  回归均通过，无 skip。真实 focused clean 与两次同候选 update/reapply 通过。
+- 三平台 worktree reapply 通过。五份合同备份逐份匹配修复前 canonical，安装后的
+  文件匹配当前 canonical；备份移到仓库外保留，第二次 reapply 无未解决 sidecar。
+- 这些结果不代替修复后正式 Phase 2、独立 Branch Review、历史版本矩阵或远端发布。

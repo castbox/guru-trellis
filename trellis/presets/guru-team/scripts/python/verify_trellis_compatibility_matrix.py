@@ -1267,6 +1267,12 @@ def _validate_source_build(
     for path in build_paths:
         if not path.is_file():
             raise MatrixError(f"supplied fork build is missing: {path}")
+    build_origin = package / "dist/.guru-source-commit"
+    if not build_origin.is_file() or build_origin.read_text(encoding="utf-8").strip() != head:
+        raise MatrixError(
+            "missing or stale fork build origin; run the checkout's normal build "
+            "and record HEAD in dist/.guru-source-commit only after success"
+        )
     templates = package / "src/templates"
     tracked = _run(("git", "ls-files", "-z", templates.relative_to(source).as_posix()),
                    cwd=source, capture=True).split("\0")

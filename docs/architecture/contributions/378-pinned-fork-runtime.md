@@ -24,13 +24,17 @@ Changing Git remotes alone did not bind those installed bytes to a Fork.
 The candidate uses one managed source record and an explicitly supplied
 `castbox/Trellis` checkout. The Fork's own build and Node CLI remain the only
 framework implementation. The verifier checks HEAD, repository identity,
-version/package-manager metadata and source/build template bytes. It does not
+version/package-manager metadata, successful-build HEAD metadata and source/build
+template bytes. The local dist marker has one source-validator consumer; it is
+not approval or publication evidence. It does not
 clone, package, copy dist, invent a launcher or fall back to another distribution.
 
 Existing standalone callers inherit declared source configuration. Full
 verification retains its capability catalog and representative output, using an
 explicit predecessor checkout/SHA for historical cells. Focused verification
 remains separate and cannot establish predecessor or full-matrix success.
+The shell entry only dispatches to that matrix; its unreachable legacy tail and
+dead registrations are removed rather than retained as a second implementation.
 
 Closeout fixture preparation belongs to the verifier; installed Planning,
 Phase 2, Commit, Review and Publication entries own their actual operations.

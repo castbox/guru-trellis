@@ -2,7 +2,7 @@
 
 ## 状态与来源
 
-状态：planning，尚未取得 Planning Gate approved。
+状态：in_progress，当前进行 Branch Review finding 修复后的完整 Phase 2 复核。
 需求来源：GitHub `castbox/guru-trellis#378` 当前正文。
 前置修复：#388、#389 已由 PR #390 合入基线
 `a2b32ea8dc730eecf0507e0adfb946ce9b8c7bc8`；本任务不关闭这两个 Issue。
@@ -13,7 +13,7 @@ Guru 的新安装与后续更新实际消费带会话隔离补丁的 castbox/Tre
 不再依赖原 Trellis 源码仓库或原 Trellis npm 发行包获取框架代码。
 主会话缺少身份或身份不匹配时不能继承其他 session 的 task。
 
-## 当前缺口
+## 实施前缺口
 
 - README 的安装命令与验证脚本仍选择原 npm 发行包。
 - 当前 manifest 的 Trellis target 为 0.6.15，源码来源没有固定 Fork commit。
@@ -49,5 +49,5 @@ Guru 的新安装与后续更新实际消费带会话隔离补丁的 castbox/Tre
 
 ## 剩余门禁
 
-完成 planning wording review、Architecture/RDT impact 与 plan approval 后再呈现正式实施确认。
-本文件不构成实现或发布放行。
+修复后的 Phase 2、独立 committed Branch Review、Docs promotion 与发布门禁仍需完成。
+本文件不构成发布放行。

@@ -18,6 +18,10 @@ the predecessor version remains the matrix's declared before version. The
 existing executor passes this environment to the throwaway shell, which
 validates it and calls each checkout's own Node CLI directly. No framework
 clone/build, npm fallback, launcher synthesis or global CLI lookup occurs here.
+Each supplied build carries `.guru-source-commit` in its CLI `dist/` directory,
+written by the documented preparation only after that checkout's own build
+succeeds. Validation compares it with actual HEAD and does not write or repair
+the marker; it detects an ordinary same-version stale build, not authenticity.
 Missing predecessor inputs are a concrete full-catalog blocker, not permission
 to return `verified` from focused clean/reapply evidence. Successful full mode
 retains the original representative `install/project` and capability postcheck

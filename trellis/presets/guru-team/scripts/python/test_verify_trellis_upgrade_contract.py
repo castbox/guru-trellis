@@ -15,15 +15,6 @@ from unittest import mock
 
 REPO = Path(__file__).resolve().parents[5]
 VERIFIER = REPO / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
-SCHEMAS = REPO / "trellis/skills/guru-team/schemas"
-EXTENSION = REPO / "trellis/guru-team-extension.json"
-PHASE2_EXAMPLE = (
-    REPO
-    / "trellis/skills/guru-team/packages/guru-check-task/examples/phase2-check.json"
-)
-PHASE2_RECORDER = (
-    REPO / "trellis/skills/guru-team/packages/guru-check-task/runtime/record.py"
-)
 FINISH_WORK_WRAPPER = REPO / "trellis/workflows/guru-team/scripts/bash/finish-work.sh"
 MATRIX_HELPER = (
     REPO
@@ -48,9 +39,6 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         cls.text = VERIFIER.read_text(encoding="utf-8")
         cls.matrix_text = MATRIX_HELPER.read_text(encoding="utf-8")
         cls.matrix = load_matrix_helper()
-        workflow_start = cls.text.index("preview_and_switch_managed_workflow() {")
-        workflow_end = cls.text.index('\nmkdir "$TARGET"', workflow_start)
-        cls.shell_workflow_function = cls.text[workflow_start:workflow_end]
 
     def fork_fixture(self, root: Path) -> tuple[Path, Path]:
         root = root.resolve()
@@ -77,6 +65,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         git("add", ".")
         git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
             "commit", "-qm", "source fixture")
+        (source / "packages/cli/dist/.guru-source-commit").write_text(git("rev-parse", "HEAD") + "\n")
         git("remote", "add", "upstream", "https://github.com/castbox/Trellis.git")
         lock = repo / "trellis/presets/guru-team/source/trellis-source.json"
         lock.parent.mkdir(parents=True)
@@ -165,6 +154,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             git("init", "-q")
             git("add", ".")
             git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "flat")
+            (flat / "dist/.guru-source-commit").write_text(git("rev-parse", "HEAD") + "\n")
             git("remote", "add", "origin", "https://github.com/castbox/Trellis.git")
             args = argparse.Namespace(repo_root=repo, predecessor_source=flat,
                 predecessor_commit=git("rev-parse", "HEAD"), before_cli="0.6.16")
@@ -440,81 +430,12 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             fork_source=checkout,
         )
 
-    def run_shell_workflow_switch(
-        self,
-        root: Path,
-        *,
-        current: str = "managed\n",
-        preview: str = "managed\n",
-        preexisting_sidecar: str | None = None,
-        force_failure: bool = False,
-    ) -> tuple[subprocess.CompletedProcess[str], Path, Path]:
-        target = root / "target"
-        workflow = target / ".trellis/workflow.md"
-        candidate = root / "trellis/workflows/guru-team/workflow.md"
-        fake_bin = root / "bin"
-        call_log = root / "trellis-calls.log"
-        workflow.parent.mkdir(parents=True)
-        candidate.parent.mkdir(parents=True)
-        fake_bin.mkdir()
-        workflow.write_text(current, encoding="utf-8")
-        candidate.write_text("managed\n", encoding="utf-8")
-        preview_path = root / "preview.md"
-        preview_path.write_text(preview, encoding="utf-8")
-        if preexisting_sidecar is not None:
-            Path(str(workflow) + preexisting_sidecar).write_text(
-                "preserve sidecar\n", encoding="utf-8"
-            )
-        fake_trellis = fake_bin / "trellis"
-        fake_trellis.write_text(
-            """#!/usr/bin/env bash
-set -euo pipefail
-printf '%s\\n' "$*" >>"$FAKE_TRELLIS_CALL_LOG"
-if [[ " $* " == *" --create-new "* ]]; then
-  cp "$FAKE_TRELLIS_PREVIEW" "$PWD/.trellis/workflow.md.new"
-elif [[ " $* " == *" --force "* ]]; then
-  if [[ "$FAKE_TRELLIS_FORCE_FAILURE" == "1" ]]; then
-    printf '%s\\n' 'primary workflow switch failure' >&2
-    exit 41
-  fi
-  cp "$FAKE_TRELLIS_PREVIEW" "$PWD/.trellis/workflow.md"
-fi
-""",
-            encoding="utf-8",
-        )
-        fake_trellis.chmod(0o755)
-        script = f"""set -euo pipefail
-REPO_ROOT={json.dumps(str(root))}
-TARGET={json.dumps(str(target))}
-WORKFLOW_SOURCE=gh:example/guru-trellis/trellis#candidate
-USE_LOCAL_WORKFLOW_SAMPLE=0
-file_sha256() {{ python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$1"; }}
-apply_local_workflow_sample() {{ :; }}
-{self.shell_workflow_function}
-preview_and_switch_managed_workflow "$TARGET" targeted-shell-switch
-"""
-        result = subprocess.run(
-            ("bash", "-c", script),
-            cwd=REPO,
-            env={
-                "PATH": f"{fake_bin}:{os.environ['PATH']}",
-                "FAKE_TRELLIS_CALL_LOG": str(call_log),
-                "FAKE_TRELLIS_PREVIEW": str(preview_path),
-                "FAKE_TRELLIS_FORCE_FAILURE": "1" if force_failure else "0",
-            },
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        return result, workflow, call_log
-
     def test_default_entry_delegates_to_live_manifest_matrix(self) -> None:
         dispatch = self.text.index(
             'if [[ "$VERIFY_MODE" == full || "$VERIFY_MODE" == focused ]]; then'
         )
-        legacy_target = self.text.index('mkdir "$TARGET"', dispatch)
-        self.assertLess(dispatch, legacy_target)
-        segment = self.text[dispatch:legacy_target]
+        segment = self.text[dispatch:]
+        self.assertTrue(segment.rstrip().endswith("exit 0\nfi"))
         self.assertIn('source_python "$COMPATIBILITY_MATRIX_HELPER" "${MATRIX_ARGS[@]}"', segment)
         self.assertIn('--fork-source "$FORK_SOURCE"', segment)
         self.assertIn('--mode "$VERIFY_MODE"', segment)
@@ -534,70 +455,6 @@ preview_and_switch_managed_workflow "$TARGET" targeted-shell-switch
         self.assertEqual(result.returncode, 2)
         self.assertIn("Target already exists", result.stderr)
         self.assertNotIn("GURU_TEMP_FILES[@]: unbound variable", result.stderr)
-
-    def test_single_repo_shell_workflow_switch_managed_path_uses_preview_then_force(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            result, workflow, call_log = self.run_shell_workflow_switch(root)
-            self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(workflow.read_text(encoding="utf-8"), "managed\n")
-            self.assertFalse(Path(str(workflow) + ".new").exists())
-            self.assertFalse(Path(str(workflow) + ".bak").exists())
-            calls = call_log.read_text(encoding="utf-8").splitlines()
-            self.assertEqual(len(calls), 2)
-            self.assertIn("--create-new", calls[0])
-            self.assertIn("--force", calls[1])
-
-    def test_single_repo_shell_workflow_switch_preserves_user_edit_and_sidecars(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            result, workflow, call_log = self.run_shell_workflow_switch(
-                root, current="user edit\n"
-            )
-            self.assertEqual(result.returncode, 2)
-            self.assertIn("not the expected managed before-candidate", result.stderr)
-            self.assertEqual(workflow.read_text(encoding="utf-8"), "user edit\n")
-            self.assertFalse(call_log.exists())
-
-        for suffix in (".new", ".bak"):
-            with self.subTest(sidecar=suffix), tempfile.TemporaryDirectory() as directory:
-                root = Path(directory)
-                result, workflow, call_log = self.run_shell_workflow_switch(
-                    root, preexisting_sidecar=suffix
-                )
-                self.assertEqual(result.returncode, 2)
-                self.assertIn("unresolved .new/.bak", result.stderr)
-                self.assertEqual(
-                    Path(str(workflow) + suffix).read_text(encoding="utf-8"),
-                    "preserve sidecar\n",
-                )
-                self.assertFalse(call_log.exists())
-
-    def test_single_repo_shell_workflow_switch_retains_bad_preview_and_primary_error(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            result, workflow, call_log = self.run_shell_workflow_switch(
-                root, preview="unexpected candidate\n"
-            )
-            self.assertEqual(result.returncode, 2)
-            self.assertIn("does not match the expected marketplace candidate", result.stderr)
-            self.assertEqual(workflow.read_text(encoding="utf-8"), "managed\n")
-            self.assertEqual(
-                Path(str(workflow) + ".new").read_text(encoding="utf-8"),
-                "unexpected candidate\n",
-            )
-            self.assertEqual(len(call_log.read_text(encoding="utf-8").splitlines()), 1)
-
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            result, workflow, call_log = self.run_shell_workflow_switch(
-                root, force_failure=True
-            )
-            self.assertEqual(result.returncode, 41)
-            self.assertIn("primary workflow switch failure", result.stderr)
-            self.assertNotIn("unbound variable", result.stderr)
-            self.assertEqual(workflow.read_text(encoding="utf-8"), "managed\n")
-            self.assertEqual(len(call_log.read_text(encoding="utf-8").splitlines()), 2)
 
     def test_nonempty_cleanup_removes_only_allowed_temporary_files(self) -> None:
         cleanup_start = self.text.index("GURU_TEMP_FILES=()")
@@ -1164,6 +1021,29 @@ exit 23
         self.assertIn("covered_profiles != declared_profiles", smoke)
         self.assertNotIn('"--help"', smoke)
 
+    def test_python_matrix_runs_installed_smokes_through_target_resolver(self) -> None:
+        target, source, work = Path("/fixture/target"), Path("/fixture/source"), Path("/fixture/work")
+        def load(path):
+            if path.name == "evals.json":
+                return {"evals": [{"input_profile_id": "normal"}]}
+            return {"public_contracts": {"input": {"profiles": [{"id": "normal"}]}}}
+        def run(argv, **kwargs):
+            if Path(argv[0]).name == "run-skill-evals.sh":
+                return json.dumps({"status": "passed", "cases": [{}]})
+            return json.dumps({"status": "ok"})
+        for scenario, closeout_case in (("clean", "initial"), ("existing", "after-update")):
+            with self.subTest(scenario=scenario), mock.patch.object(self.matrix, "_load_json", side_effect=load), mock.patch.object(self.matrix, "_run", side_effect=run) as invoked:
+                result = self.matrix._run_installed_smokes(target, source, work, scenario, "codex")
+                self.assertEqual(result["runtime_smokes"], ["closeout", "phase0", "task_workspace"])
+                calls = [call.args[0] for call in invoked.call_args_list
+                         if Path(call.args[0][0]).name == "resolve-python.sh"]
+                self.assertEqual(len(calls), 3)
+                for argv in calls:
+                    self.assertEqual(argv[:3], (str(target / ".trellis/guru-team/runtime/resolve-python.sh"),
+                                               str(target), str(target / ".trellis/guru-team/runtime")))
+                self.assertEqual(Path(calls[0][3]).name, "verify_installed_closeout.py")
+                self.assertEqual(calls[0][calls[0].index("--case") + 1], closeout_case)
+
     def test_capability_projection_is_compact_and_complete(self) -> None:
         projection = self.matrix.capability_projection(REPO)
 
@@ -1692,53 +1572,11 @@ exit 23
     def test_cli_install_and_upgrade_stay_in_disposable_prefix(self) -> None:
         self.assertNotIn('npm install', self.text)
         self.assertNotIn('trellis upgrade --tag', self.text)
-        self.assertIn('TRELLIS_COMMAND=("$(command -v node)"', self.text)
+        self.assertNotIn("trellis()", self.text)
         with tempfile.TemporaryDirectory() as directory:
             result = subprocess.run((str(VERIFIER), directory), capture_output=True, text=True)
         self.assertEqual(result.returncode, 2)
         self.assertIn("--fork-source is required", result.stderr)
-
-    def test_initial_install_upgrade_update_preview_and_reapply_order_is_closed(self) -> None:
-        initial = self.text.index("trellis init -y --claude --codex --cursor")
-        initial_switch = self.text.index(
-            'preview_and_switch_managed_workflow "$TARGET" "initial-workflow-switch"',
-            initial,
-        )
-        upgrade = self.text.index('# Historical predecessor upgrade is unsupported')
-        dry_run = self.text.index("trellis update --dry-run 2>&1", upgrade)
-        migrate_branch = self.text.index('if grep -Fq "MIGRATION REQUIRED"', dry_run)
-        migrate = self.text.index("trellis update --migrate --skip-all", migrate_branch)
-        normal_update = self.text.index("    trellis update --skip-all\n", migrate)
-        post_update_switch = self.text.index(
-            'preview_and_switch_managed_workflow "$TARGET" "post-update-workflow-switch"',
-            normal_update,
-        )
-        reapply = self.text.index(
-            'apply_guru_team_trellis_preset.py" \\\n  --repo "$TARGET"',
-            post_update_switch,
-        )
-        self.assertLess(initial, initial_switch)
-        self.assertLess(initial_switch, upgrade)
-        self.assertLess(upgrade, dry_run)
-        self.assertLess(dry_run, migrate_branch)
-        self.assertLess(migrate_branch, migrate)
-        self.assertLess(migrate, normal_update)
-        self.assertLess(normal_update, post_update_switch)
-        self.assertLess(post_update_switch, reapply)
-        primary_update_segment = self.text[upgrade:reapply]
-        self.assertNotIn("trellis update --force", primary_update_segment)
-        self.assertIn("trellis update --migrate --skip-all", primary_update_segment)
-        self.assertIn("trellis update --skip-all", primary_update_segment)
-        self.assertIn('printf \'%s\\n\' "migrate" >"$WORK_DIR/trellis-update-mode.txt"', primary_update_segment)
-        self.assertIn('printf \'%s\\n\' "update" >"$WORK_DIR/trellis-update-mode.txt"', primary_update_segment)
-
-    def test_post_reapply_gate_checks_ownership_and_recursive_sidecars(self) -> None:
-        self.assertIn('ownership_checkpoint "post-preset-reapply-before-final-checks"', self.text)
-        self.assertIn(
-            'FINAL_SIDECARS="$(find "$TARGET" -type f \\( -name \'*.new\' -o -name \'*.bak\' \\) -print)"',
-            self.text,
-        )
-        self.assertIn("Unexpected .new/.bak sidecars after preview, switch, update, and preset reapply", self.text)
 
     def test_finish_work_compatibility_wrapper_exposes_shared_runtime(self) -> None:
         wrapper = FINISH_WORK_WRAPPER.read_text(encoding="utf-8")
@@ -1747,85 +1585,6 @@ exit 23
             wrapper,
         )
         self.assertIn('"$RUNTIME/legacy.py" finish-work "$@"', wrapper)
-
-    def test_embedded_installed_schema_inventory_matches_canonical_source(self) -> None:
-        inventory_anchor = 'skills_root = root / ".trellis/guru-team/skills"'
-        assertion_start = self.text.index("assert {", self.text.index(inventory_anchor))
-        literal_start = self.text.index("} == {", assertion_start) + len("} == ")
-        literal_end = self.text.index("\n}\nfor artifact", literal_start) + 2
-        embedded_inventory = ast.literal_eval(self.text[literal_start:literal_end])
-        canonical_inventory = {path.name for path in SCHEMAS.iterdir() if path.is_file()}
-
-        self.assertEqual(embedded_inventory, canonical_inventory)
-
-    def test_embedded_installed_public_api_expectations_match_canonical_source(self) -> None:
-        contract_anchor = 'assert api["skill_contracts"]["contract_manifests"] == '
-        contract_start = self.text.index(contract_anchor) + len(contract_anchor)
-        contract_end = self.text.index(
-            '\nassert api["skill_evals"]["schema_id"]',
-            contract_start,
-        )
-        embedded_contracts = ast.literal_eval(self.text[contract_start:contract_end])
-
-        run_schemas_anchor = 'assert api["skill_evals"]["run_schema_ids"] == '
-        run_schemas_start = self.text.index(run_schemas_anchor) + len(run_schemas_anchor)
-        run_schemas_end = self.text.index("\n", run_schemas_start)
-        embedded_run_schemas = ast.literal_eval(
-            self.text[run_schemas_start:run_schemas_end]
-        )
-
-        public_api = json.loads(EXTENSION.read_text(encoding="utf-8"))["public_api"]
-        self.assertEqual(
-            embedded_contracts,
-            public_api["skill_contracts"]["contract_manifests"],
-        )
-        self.assertEqual(
-            embedded_run_schemas,
-            public_api["skill_evals"]["run_schema_ids"],
-        )
-        self.assertIn(
-            'test -f "$TARGET/.trellis/guru-team/skills/contracts/production-current-4.0.json"',
-            self.text,
-        )
-
-    def test_phase2_smoke_matches_current_recorder_and_stops_on_command_error(self) -> None:
-        function_start = self.text.index("record_throwaway_phase2() {")
-        function_end = self.text.index("\n}\n\nPHASE2_DTO=", function_start) + 2
-        function = self.text[function_start:function_end]
-
-        projection_anchor = "    for key in "
-        projection_start = function.index(projection_anchor) + len(projection_anchor)
-        projection_end = function.index("\n}", projection_start)
-        projected_keys = set(
-            ast.literal_eval(function[projection_start:projection_end])
-        )
-
-        recorder_tree = ast.parse(PHASE2_RECORDER.read_text(encoding="utf-8"))
-        recorder_keys = next(
-            set(ast.literal_eval(node.value))
-            for node in ast.walk(recorder_tree)
-            if isinstance(node, ast.Assign)
-            and any(
-                isinstance(target, ast.Name) and target.id == "expected"
-                for target in node.targets
-            )
-        )
-        example = json.loads(PHASE2_EXAMPLE.read_text(encoding="utf-8"))
-
-        self.assertEqual(projected_keys, recorder_keys)
-        self.assertIn(
-            f'recorded["schema_version"] == "{example["schema_version"]}"',
-            function,
-        )
-        self.assertEqual(
-            function.count('|| { rm -f "$input_path"; return 1; }'),
-            2,
-        )
-        self.assertEqual(
-            function.count('|| { rm -f "$public_input"; return 1; }'),
-            1,
-        )
-        self.assertGreaterEqual(function.count("|| return 1"), 3)
 
 
 if __name__ == "__main__":
