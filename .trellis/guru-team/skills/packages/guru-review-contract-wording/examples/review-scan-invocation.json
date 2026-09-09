@@ -1,0 +1,13 @@
+{
+  "profile": "change_request",
+  "mode": "workflow",
+  "change_request": {
+    "source_kind": "draft",
+    "identity": "draft-wording-example",
+    "title": "Fixed wording scope",
+    "body": "Read the complete title and body.",
+    "updated_at": null,
+    "selected_comments": []
+  },
+  "owner_result": {}
+}

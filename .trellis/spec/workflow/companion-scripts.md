@@ -1240,6 +1240,12 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   bytes, current reread bytes, and source update time with the rebuilt live
   scope. Authorization remains in the current dialogue and is never passed to,
   derived by, or validated by the script.
+  For #388 change-request stdin composition, scan/record/check consume one
+  closed `--invocation -` object containing `profile`, `mode`,
+  `change_request`, and `owner_result`. Scan uses an empty owner object;
+  record receives the AI review and check receives the recorded result.
+  The actual checker receipt is passed to public invoke in memory. This
+  transport does not write source/review files or replace semantic judgment.
 - `record-change-request-review.sh` and
   `check-change-request-review.sh` are the stdout-only recorder/checker for
   `guru-review-change-request`. The recorder accepts a complete AI-authored

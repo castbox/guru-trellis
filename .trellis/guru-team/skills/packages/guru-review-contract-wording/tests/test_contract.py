@@ -118,7 +118,18 @@ class ContractWordingPackageTest(unittest.TestCase):
         wording_common.validate_result(PACKAGE_ROOT, owner)
         return owner, change
 
-    def invoke_change_request(self, owner: dict) -> dict:
+    def invoke_change_request(self, owner: dict, change: dict | None = None) -> dict:
+        if change is not None:
+            check_input = self.write_json("check-invocation.json", {
+                "profile": owner["profile"], "mode": owner["mode"],
+                "change_request": change, "owner_result": owner,
+            })
+            receipt = wording_check.run(PACKAGE_ROOT, {}, [
+                "--root", str(self.root), "--invocation", str(check_input),
+            ])["validation_receipt"]
+        else:
+            # Invalid fixed-scope cases below isolate the serializer rejection.
+            receipt = wording_common.validation_receipt(owner)
         transition = json.loads(
             (PACKAGE_ROOT / "examples/public-pass-output-2.0.json").read_text()
         )["transition"]
@@ -138,7 +149,7 @@ class ContractWordingPackageTest(unittest.TestCase):
             },
             "transition": transition,
             "owner_result": owner,
-            "validation_receipt": wording_common.validation_receipt(owner),
+            "validation_receipt": receipt,
         })
         return wording_invoke.run(
             PACKAGE_ROOT,
@@ -179,7 +190,7 @@ class ContractWordingPackageTest(unittest.TestCase):
 
     def test_change_request_pass_projects_canonical_title_body_identity(self) -> None:
         owner, change = self.change_request_owner()
-        output = self.invoke_change_request(owner)
+        output = self.invoke_change_request(owner, change)
         title_sha256 = hashlib.sha256(change["title"].encode()).hexdigest()
         body_sha256 = hashlib.sha256(change["body"].encode()).hexdigest()
         expected = wording_common.digest({

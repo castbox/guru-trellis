@@ -199,7 +199,7 @@ classification history, file digests, or this Skill's private result.
 The public profiles remain the fixed `change_request`, `planning_artifacts`,
 and `explicit_paths` scopes. `scripts/invoke.sh --invocation -` receives the
 closed call-local public input, current transition, and owner result only after
-the semantic owner loop, reruns the existing checker, and emits a router DTO
+the semantic owner loop, validates the actual checker receipt, and emits a router DTO
 containing the fixed profile selected by the checked owner result. The complete
 review result remains stdout-only owner-private evidence.
 # Invocation-Local Validation Receipt
@@ -210,3 +210,63 @@ authority validation and returns a call-local receipt bound to exact result,
 profile/mode prerequisite and scope/scan snapshot digests. The public serializer
 requires that receipt and performs no GitHub read. Independent CLI invocations
 still validate live authority in the checker.
+
+## Single-Read Review Input Migration (#388)
+
+The existing recorder (also scanner) and checker accept `--invocation -`.
+Schema `guru-contract-wording-review-invocation-1.0` defines a closed object
+with exactly `profile`, `mode`, `change_request`, and `owner_result`.
+`profile` is `change_request`; `mode` is `workflow` or `standalone`.
+The closed source object requires `source_kind` (`issue` or `draft`),
+`identity`, `title`, `body`, and `updated_at`, and accepts the optional legacy
+`selected_comments` array. This metadata keeps its existing behavior: the
+current runtime scans title/body only, so accepting it is not evidence that
+comment text has been scanned. Issue identity is the canonical
+GitHub Issue URL and updated_at is the captured live updatedAt; draft identity
+is caller-owned and its updated_at can be null. No locator aliases are added.
+
+1. Run `scripts/record-contract-wording-review.sh --root REPO --invocation - --scan-only`
+   with `owner_result={}`. See `examples/review-scan-invocation.json`.
+2. Complete the AI classification and semantic gate against that scan. Run the
+   same recorder without `--scan-only`, replacing `owner_result` with the
+   existing flat authoring object: `generated_at`, `revisions`,
+   `classifications`, `ai_review_gate`, and `typed_exit`. Do not wrap it in
+   `semantic_review`. Existing result validation remains authoritative.
+3. Run `scripts/check-contract-wording-review.sh --root REPO --invocation -`
+   with unchanged source/profile/mode and `owner_result` equal to the exact
+   recorder output. The checker rebuilds the scope/scan and rereads live Issue
+   authority before issuing its receipt. Optional `--expected-facts-sha256`
+   retains its existing digest assertion.
+4. Run the unchanged public invoke with `public_input`, `owner_result`, the
+   real checker's `validation_receipt`, and the current `clarity_current`
+   transition for change-request pass. Review commands do not consume a
+   transition, synthesize a receipt, or project a public route.
+
+All intermediate objects stay in caller memory/stdout. No input cache, review
+file, checkpoint, task, journal, or descriptor workaround is needed. Each
+review envelope is read exactly once. A JSON file locator remains accepted
+by `--invocation` for ordinary explicit CLI usage, not as the normal intake path.
+
+Compatibility is argument-selected within the same commands, not a second
+entry: existing `--mode/--profile/--input/--change-request-input` file-based
+change-request calls remain supported, as do the existing planning-artifacts
+and explicit-paths selectors and their fixed scope semantics. One legacy
+locator can be stdin if the other is a file; two `-` locators fail with
+`conflicting_arguments` and must migrate to the envelope. Legacy scan does
+not require `--input`. New envelopes are change-request-only; other profiles
+retain their original API rather than acquiring another input path.
+
+Mixing `--invocation` with any legacy source/owner/profile/mode/task/path
+argument fails closed. Missing or extra envelope/source fields, nonempty scan
+owner_result, malformed JSON, and mismatched checker profile/mode fail closed.
+This additive transport migration does not change the result schema, fixed
+scope, classification/revision rules, live authority check, receipt, or public
+output/consumer contracts. It neither adds selected-comment semantics nor
+removes any old file-based source shape.
+
+The review transport is package-local rather than the shared semantic-owner
+public envelope because scan has no semantic result or transition yet, record
+consumes flat AI authoring, and check consumes a recorded review. These commands
+need the captured title/body source, not the downstream public input. Reusing
+the public serializer envelope would require irrelevant public/transition
+fields or a second source read. Only the final invoke uses that shared envelope.

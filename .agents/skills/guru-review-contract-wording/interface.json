@@ -77,6 +77,10 @@
   ],
   "artifacts": [
     {
+      "id": "review_scan_invocation_example",
+      "path": "examples/review-scan-invocation.json"
+    },
+    {
       "id": "contract_wording_review_example",
       "path": "examples/contract-wording-review.json"
     },
@@ -114,6 +118,10 @@
     }
   ],
   "schemas": [
+    {
+      "id": "review_invocation",
+      "path": "schemas/review-invocation.schema.json"
+    },
     {
       "id": "contract_wording_review_schema",
       "path": "schemas/contract-wording-review.schema.json"
@@ -160,13 +168,13 @@
       "id": "contract_wording_recorder",
       "command": "scripts/record-contract-wording-review.sh",
       "runtime_command": "record-contract-wording-review",
-      "objective_scope": "fixed profile scope reconstruction, deterministic scan, schema and whitelist validation, exact planning-profile dimension shape/value validation, derived unchecked hits, live issue payload/result identities and canonical digests"
+      "objective_scope": "single-read review-invocation.schema.json envelope for change_request scan/record, unmixed legacy file-input compatibility, fixed profile scope reconstruction, deterministic scan, schema and whitelist validation, exact planning-profile dimension shape/value validation, derived unchecked hits, live issue payload/result identities and canonical digests"
     },
     {
       "id": "contract_wording_checker",
       "command": "scripts/check-contract-wording-review.sh",
       "runtime_command": "check-contract-wording-review",
-      "objective_scope": "published schema, fixed scope and scan completeness, selected-comment metadata, live issue payload/preimage/result binding, content freshness, classification structure, exact planning-profile dimension shape/value validation, Gate/exit biconditional and result digest validation"
+      "objective_scope": "single-read review-invocation.schema.json envelope or unmixed legacy inputs, published schema, fixed scope and scan completeness, selected-comment metadata, live issue payload/preimage/result binding, content freshness, classification structure, exact planning-profile dimension shape/value validation, Gate/exit biconditional and result digest validation; returns actual call-local validation_receipt"
     },
     {
       "id": "public_invocation",
@@ -207,7 +215,9 @@
     "stale_behavior": "fail_closed"
   },
   "tests": [
-    "tests/test_contract.py"
+    "tests/test_contract.py",
+    "tests/test_runtime.py",
+    "tests/test_invocation.py"
   ],
   "platform_destinations": [
     "shared",

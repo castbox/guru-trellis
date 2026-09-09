@@ -6,7 +6,7 @@
   "evals": [
     {
       "id": "pass-route",
-      "prompt": "Review the staged fixed-scope wording scenario with a complete scan and no required revision, complete the semantic owner result, and invoke guru-review-contract-wording through its call-local --invocation - envelope. Return the checker-derived route.",
+      "prompt": "Review the staged fixed-scope wording scenario with no required revision. Use the original recorder with --invocation - --scan-only and the closed profile/mode/change_request/owner_result envelope (owner_result={}); classify the actual hits, record flat AI authoring in owner_result, and check the exact recorded owner_result through --invocation -. Pass the real checker validation_receipt, current transition and owner result to public invoke. Keep intermediates in memory; do not fabricate a receipt or replace the scan/record/check chain with final invoke alone. Return the checker-derived route.",
       "expected_exit": "pass",
       "expected_output": "The public DTO is the declared pass route.",
       "assertions": {

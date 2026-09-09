@@ -1,16 +1,23 @@
 from __future__ import annotations
 import argparse,hashlib
 from pathlib import Path
-from common import digest,load,parse,root,scan,scope,validate_result
+from common import check_legacy_inputs,digest,load,load_review_invocation,parse,root,scan,scope,validate_result
 from runtime.io import CommandError
 def run(package_root:Path,command:dict,argv:list[str])->dict:
- p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--mode",required=True,choices=("workflow","standalone"));p.add_argument("--profile",required=True,choices=("change_request","planning_artifacts","explicit_paths"));p.add_argument("--input");p.add_argument("--task");p.add_argument("--path",action="append",default=[]);p.add_argument("--change-request-input");p.add_argument("--scan-only",action="store_true")
- a=parse(p,argv);repo=root(package_root,a.root);change=load(repo,package_root,a.change_request_input,"change_request") if a.change_request_input else None;sc=scope(repo,a.profile,a.task,a.path,change);contents={}
+ p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation");p.add_argument("--mode",choices=("workflow","standalone"));p.add_argument("--profile",choices=("change_request","planning_artifacts","explicit_paths"));p.add_argument("--input");p.add_argument("--task");p.add_argument("--path",action="append",default=[]);p.add_argument("--change-request-input");p.add_argument("--scan-only",action="store_true")
+ a=parse(p,argv);repo=root(package_root,a.root);envelope=None
+ if a.invocation:
+  envelope=load_review_invocation(repo,package_root,a,"scan" if a.scan_only else "record");a.profile=envelope["profile"];a.mode=envelope["mode"];change=envelope["change_request"]
+ else:
+  check_legacy_inputs(a)
+  if not a.mode or not a.profile:raise CommandError("invalid_arguments","profile","Provide --invocation or legacy --mode and --profile.")
+  change=load(repo,package_root,a.change_request_input,"change_request") if a.change_request_input else None
+ sc=scope(repo,a.profile,a.task,a.path,change);contents={}
  for item in sc["items"]:
   contents[item["id"]]=(repo/item["path"]).read_text() if item["kind"]=="markdown_file" else str(change[item["field"]])
  sn=scan(sc,contents)
  if a.scan_only:return {"status":"scanned","skill_id":"guru-review-contract-wording","profile":a.profile,"mode":a.mode,"vocabulary_version":"contract-wording-v2","scope":sc,"scan":sn}
- auth=load(repo,package_root,a.input,"input");classes=auth.get("classifications",[]);by={x.get("hit_id"):x for x in classes if isinstance(x,dict)};ids={x["hit_id"] for x in sn["hits"]};unchecked=sorted(x for x in ids if x not in by or by[x].get("classification")=="contract_violation")
+ auth=envelope["owner_result"] if envelope is not None else load(repo,package_root,a.input,"input");classes=auth.get("classifications",[]);by={x.get("hit_id"):x for x in classes if isinstance(x,dict)};ids={x["hit_id"] for x in sn["hits"]};unchecked=sorted(x for x in ids if x not in by or by[x].get("classification")=="contract_violation")
  if set(by)!=ids or len(by)!=len(classes):raise CommandError("schema_mismatch","classifications","Classify every current hit exactly once.")
  auth["unchecked_normative_hits"]=unchecked;gate=auth.get("ai_review_gate",{});gate["reviewed_scan_sha256"]=sn["scan_sha256"];exit_id=auth.pop("typed_exit",None)
  if exit_id not in {"pass","content_changed","blocked"}:raise CommandError("schema_mismatch","typed_exit","Provide exactly one AI-owned declared typed exit.")
