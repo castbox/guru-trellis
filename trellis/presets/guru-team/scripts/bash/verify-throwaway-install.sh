@@ -3,6 +3,20 @@ set -euo pipefail
 export PYTHONDONTWRITEBYTECODE=1
 
 WORK_DIR="${1:-}"
+if [[ $# -gt 0 && "$1" != --* ]]; then shift; else WORK_DIR=""; fi
+FORK_SOURCE="${TRELLIS_FORK_SOURCE:-}"
+PREDECESSOR_SOURCE="${TRELLIS_PREDECESSOR_SOURCE:-}"
+PREDECESSOR_COMMIT="${TRELLIS_PREDECESSOR_COMMIT:-}"
+VERIFY_MODE="full"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --fork-source) FORK_SOURCE="${2:?--fork-source requires a checkout}"; shift 2 ;;
+    --predecessor-source) PREDECESSOR_SOURCE="${2:?--predecessor-source requires a checkout}"; shift 2 ;;
+    --predecessor-commit) PREDECESSOR_COMMIT="${2:?--predecessor-commit requires a SHA}"; shift 2 ;;
+    --mode) VERIFY_MODE="${2:?--mode requires full or focused}"; shift 2 ;;
+    *) echo "Unknown verifier option: $1" >&2; exit 2 ;;
+  esac
+done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#main}"
@@ -42,32 +56,17 @@ trap cleanup_guru_temporary_objects EXIT INT TERM
 
 mkdir -p "$WORK_DIR"
 TARGET="$WORK_DIR/project"
-TRELLIS_CLI_PREFIX="$WORK_DIR/trellis-cli-prefix"
-TRELLIS_PRE_UPGRADE_PACKAGE="${TRELLIS_PRE_UPGRADE_PACKAGE:-@mindfoldhq/trellis@0.6.5}"
-TRELLIS_UPGRADE_TAG="${TRELLIS_UPGRADE_TAG:-0.6.15}"
-TRELLIS_TARGET_VERSION="${TRELLIS_TARGET_VERSION:-0.6.15}"
 
 if [[ -e "$TARGET" ]]; then
   echo "Target already exists: $TARGET" >&2
   exit 2
 fi
 
-command -v npm >/dev/null 2>&1 || {
-  echo "npm not found on PATH" >&2
-  exit 127
+[[ -n "$FORK_SOURCE" ]] || { echo "--fork-source is required; no npm fallback" >&2; exit 2; }
+[[ "$VERIFY_MODE" == full || "$VERIFY_MODE" == focused ]] || {
+  echo "Unknown verifier mode: $VERIFY_MODE" >&2
+  exit 2
 }
-
-mkdir -p "$TRELLIS_CLI_PREFIX"
-npm_config_prefix="$TRELLIS_CLI_PREFIX" npm install -g "$TRELLIS_PRE_UPGRADE_PACKAGE" \
-  >"$WORK_DIR/trellis-pre-upgrade-install.log" 2>&1
-export npm_config_prefix="$TRELLIS_CLI_PREFIX"
-export PATH="$TRELLIS_CLI_PREFIX/bin:$PATH"
-TRELLIS_CLI_BIN="$TRELLIS_CLI_PREFIX/bin/trellis"
-if [[ "$(command -v trellis)" != "$TRELLIS_CLI_BIN" || ! -x "$TRELLIS_CLI_BIN" ]]; then
-  echo "isolated pre-upgrade trellis CLI is unavailable" >&2
-  exit 127
-fi
-trellis --version >"$WORK_DIR/trellis-version-before-upgrade.txt"
 
 command -v git >/dev/null 2>&1 || {
   echo "git not found on PATH" >&2
@@ -96,6 +95,11 @@ export TRELLIS_PYTHON_CMD=python3
 
 source "$SCRIPT_DIR/verify-throwaway-runtime-helpers.sh"
 
+source_python "$COMPATIBILITY_MATRIX_HELPER" validate-source \
+  --repo-root "$REPO_ROOT" --fork-source "$FORK_SOURCE" >"$WORK_DIR/trellis-source.json"
+TRELLIS_COMMAND=("$(command -v node)" "$FORK_SOURCE/packages/cli/bin/trellis.js")
+trellis() { "${TRELLIS_COMMAND[@]}" "$@"; }
+
 
 SOURCE_RUNTIME_CHECKPOINT="$(
   source_python "$PYTHON_ROUTING_HELPER" checkpoint \
@@ -114,19 +118,22 @@ source_python "$PYTHON_ROUTING_HELPER" check-inventory \
   --inventory "$PYTHON_CALLER_INVENTORY" \
   --json
 
-# The default cumulative gate is the live-manifest-derived matrix.  The
-# historical single-repository path below remains available only as an explicit
-# bounded compatibility diagnostic while its focused regressions are migrated.
-if [[ "${GURU_TEAM_THROWAWAY_SINGLE_REPO_COMPATIBILITY:-0}" != "1" ]]; then
+# Full preserves the standalone catalog; focused is an explicit bounded run.
+if [[ "$VERIFY_MODE" == full || "$VERIFY_MODE" == focused ]]; then
   MATRIX_ARGS=(
     run
     --repo-root "$REPO_ROOT"
     --work-root "$WORK_DIR/matrix"
     --workflow-source "$WORKFLOW_SOURCE"
-    --before-tag "v0.6.5-guru.10"
-    --before-cli "0.6.5"
-    --target-cli "$TRELLIS_TARGET_VERSION"
+    --fork-source "$FORK_SOURCE"
+    --mode "$VERIFY_MODE"
   )
+  if [[ -n "$PREDECESSOR_SOURCE" ]]; then
+    MATRIX_ARGS+=(--predecessor-source "$PREDECESSOR_SOURCE")
+  fi
+  if [[ -n "$PREDECESSOR_COMMIT" ]]; then
+    MATRIX_ARGS+=(--predecessor-commit "$PREDECESSOR_COMMIT")
+  fi
   if [[ "$ALLOW_PUBLIC_SAMPLE" == "1" ]]; then
     MATRIX_ARGS+=(--allow-local-sample)
   fi
@@ -1219,7 +1226,7 @@ assert len(ownership["guru_owned_rules"]) == 11
 assert len(ownership["managed_path_claims"]) == 9
 assert extension["extension_id"] == "guru-team"
 assert extension["version"] == "0.6.15-guru.40"
-assert extension["target_trellis_cli"] == "0.6.15"
+assert extension["target_trellis_cli"] == expected_cli
 assert assets == sorted(set(assets))
 assert len(assets) == 70
 managed_specs = {
@@ -1617,10 +1624,10 @@ done
 test -z "$(find "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print -quit)"
 CHECK_ENV_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-env.sh" --root "$TARGET" --json)"
 printf '%s\n' "$CHECK_ENV_JSON"
-installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["github_repo"] == "castbox/guru-trellis-throwaway"; assert payload["status"] == "ok"; assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == "0.6.15"' <<<"$CHECK_ENV_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); expected_cli = sys.argv[1]; assert payload["github_repo"] == "castbox/guru-trellis-throwaway"; assert payload["status"] == "ok"; assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == expected_cli' "$TRELLIS_TARGET_VERSION" <<<"$CHECK_ENV_JSON"
 VERSION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/version.sh" --root "$TARGET" --json)"
 printf '%s\n' "$VERSION_JSON"
-installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == "0.6.15"' <<<"$VERSION_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); expected_cli = sys.argv[1]; assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == expected_cli' "$TRELLIS_TARGET_VERSION" <<<"$VERSION_JSON"
 
 set +e
 FINISH_ERROR_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/finish-work.sh" --root "$TARGET" --json --dry-run 2>&1)"
@@ -2629,12 +2636,7 @@ preview_and_switch_managed_workflow "$TARGET" "initial-workflow-switch"
 grep -q 'guru-skill-invoke: {"skill":"guru-review-branch","required":true}' "$TARGET/.trellis/workflow.md"
 ! grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 
-trellis upgrade --tag "$TRELLIS_UPGRADE_TAG" \
-  >"$WORK_DIR/trellis-upgrade.log" 2>&1
-if [[ "$(command -v trellis)" != "$TRELLIS_CLI_BIN" || ! -x "$TRELLIS_CLI_BIN" ]]; then
-  echo "trellis upgrade escaped the isolated npm prefix" >&2
-  exit 2
-fi
+# Historical predecessor upgrade is unsupported without a separate source input.
 trellis --version >"$WORK_DIR/trellis-version-after-upgrade.txt"
 test -s "$WORK_DIR/trellis-version-before-upgrade.txt"
 test -s "$WORK_DIR/trellis-version-after-upgrade.txt"

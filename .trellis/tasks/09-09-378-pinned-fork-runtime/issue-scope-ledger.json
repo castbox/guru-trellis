@@ -1,0 +1,32 @@
+{
+  "close_issues": [
+    {
+      "number": 378,
+      "reason": "Primary delivery authority for patched Fork runtime adoption.",
+      "title": "fix(active-task): 缺失 session identity 时禁止主 Codex 会话借用 single-session fallback",
+      "url": "https://github.com/castbox/guru-trellis/issues/378"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 378,
+    "reason": "Primary delivery authority for patched Fork runtime adoption.",
+    "title": "fix(active-task): 缺失 session identity 时禁止主 Codex 会话借用 single-session fallback",
+    "url": "https://github.com/castbox/guru-trellis/issues/378"
+  },
+  "related_issues": [
+    {
+      "number": 388,
+      "reason": "Independent merged prerequisite; not closed by #378.",
+      "title": "修复 Wording change_request recorder/checker 无文件输入通道并补齐完整调用链回归",
+      "url": "https://github.com/castbox/guru-trellis/issues/388"
+    },
+    {
+      "number": 389,
+      "reason": "Independent merged prerequisite; not closed by #378.",
+      "title": "fix(guru-create-task-workspace): 收敛 Readiness 到 workspace 的可执行调用合同与错误诊断",
+      "url": "https://github.com/castbox/guru-trellis/issues/389"
+    }
+  ],
+  "schema_version": "2.0"
+}

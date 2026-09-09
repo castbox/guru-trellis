@@ -1,0 +1,3 @@
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"核验 canonical 和 installed ownership"}
+{"file":".trellis/spec/workflow/subtraction-first-compatibility.md","reason":"核验旧来源退出与无冗余双路径"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"核验 session 与安装更新真实证据"}

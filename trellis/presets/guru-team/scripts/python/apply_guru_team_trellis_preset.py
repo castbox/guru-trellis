@@ -187,6 +187,12 @@ MANAGED_SPEC_PATHS = (
         Path(".trellis/spec/workflow/quality-guidelines.md"),
     ),
 )
+MANAGED_SOURCE_PATHS = (
+    (
+        Path("trellis/presets/guru-team/source/trellis-source.json"),
+        Path(".trellis/guru-team/trellis-source.json"),
+    ),
+)
 MANAGED_ASSET_PATHS = [
     Path("config-template.yml"),
     Path("schemas/closeout-plan.schema.json"),
@@ -1832,7 +1838,7 @@ def managed_source_projections(
             raise SystemExit(f"Conflicting managed source projection: {relative.as_posix()}")
         projections[relative] = source
 
-    for source_relative, target_relative in MANAGED_SPEC_PATHS:
+    for source_relative, target_relative in MANAGED_SPEC_PATHS + MANAGED_SOURCE_PATHS:
         add(source_root / source_relative, repo / target_relative)
     for relative in MANAGED_ASSET_PATHS:
         add(workflow_source_root / relative, dst / relative)
@@ -2342,7 +2348,7 @@ def _install_assets_in_place(
     managed_spec_conflicts: list[dict[str, str]] = []
     managed_spec_sidecars: list[str] = []
     managed_asset_hashes: dict[str, str] = {}
-    for source_relative, target_relative in MANAGED_SPEC_PATHS:
+    for source_relative, target_relative in MANAGED_SPEC_PATHS + MANAGED_SOURCE_PATHS:
         result = copy_managed_spec(
             guru_root / source_relative,
             repo / target_relative,

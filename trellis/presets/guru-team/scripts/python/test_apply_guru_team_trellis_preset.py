@@ -105,7 +105,7 @@ class InstalledCloseoutFixtureTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "declared public preflight error"):
             self.closeout.preflight_error(result, "archive preflight", public=True)
 
-    def test_client_failure_keeps_payload_for_native_adapter(self) -> None:
+    def test_client_failure_keeps_payload_for_verifier_fixture(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             client = self.closeout.InstalledPackageClient(root, "guru-create-task-commit")
@@ -120,19 +120,16 @@ class InstalledCloseoutFixtureTest(unittest.TestCase):
             self.assertEqual(raised.exception.payload, payload)
             self.assertEqual(raised.exception.exit_code, 2)
 
-            adapter_path = Path(__file__).resolve().parents[5] / "trellis/skills/guru-team/adapters/eval/native_adapter.py"
-            spec = importlib.util.spec_from_file_location("closeout_native_adapter_test", adapter_path)
-            assert spec is not None and spec.loader is not None
-            adapter = importlib.util.module_from_spec(spec)
-            sys.modules[spec.name] = adapter
-            self.addCleanup(sys.modules.pop, spec.name, None)
-            spec.loader.exec_module(adapter)
-            with mock.patch.object(adapter, "production_task_commit_authoring", return_value={}):
+            with mock.patch.object(client, "git_status_paths", return_value=[]):
                 with mock.patch.object(client, "build_task_commit_candidate", side_effect=raised.exception):
-                    with self.assertRaisesRegex(ValueError, "commit_stale"):
-                        adapter.production_commit_for_review(
-                            client, root, root / "task", {"phase2_capture_commit": "a" * 40}
+                    with self.assertRaises(client.WorkflowError) as forwarded:
+                        self.closeout.commit_fixture_for_review(
+                            client, root, root / "task", {
+                                "task_ref": "task", "exit_id": "passed",
+                                "phase2_commit_anchor": "a" * 40,
+                            },
                         )
+                    self.assertIs(forwarded.exception, raised.exception)
 
     def test_linked_target_is_rejected_before_shared_config_or_ref_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -878,6 +875,27 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.tmp.cleanup()
 
+    def test_source_lock_is_managed_and_preserves_unknown_local_edits(self) -> None:
+        payload = preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex"})
+        relative = ".trellis/guru-team/trellis-source.json"
+        target = self.repo / relative
+        canonical = self.guru_root / "trellis/presets/guru-team/source/trellis-source.json"
+        self.assertEqual(target.read_bytes(), canonical.read_bytes())
+        manifest = json.loads((self.install_dst / "extension.json").read_text())
+        self.assertIn(relative, manifest["install"]["managed_assets"])
+        self.assertEqual(manifest["install"]["managed_asset_hashes"][relative], hashlib.sha256(target.read_bytes()).hexdigest())
+        repeated = preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex"})
+        self.assertEqual(target.read_bytes(), canonical.read_bytes())
+        self.assertEqual(repeated["skill_installed_validation"]["returncode"], 0)
+        modified = json.loads(target.read_text())
+        modified["commit"] = "b" * 40
+        target.write_text(json.dumps(modified))
+        before = target.read_bytes()
+        conflicted = preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex"})
+        self.assertEqual(target.read_bytes(), before)
+        self.assertNotEqual(conflicted["skill_installed_validation"]["returncode"], 0)
+        self.assertEqual(target.with_name(target.name + ".new").read_bytes(), canonical.read_bytes())
+
     def test_upstream_ownership_failure_precedes_every_target_mutation(self) -> None:
         before = {
             path.relative_to(self.repo).as_posix(): path.read_bytes()
@@ -1027,7 +1045,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
                 target.as_posix(): hashlib.sha256(
                     (self.guru_root / source).read_bytes()
                 ).hexdigest()
-                for source, target in preset.MANAGED_SPEC_PATHS
+                for source, target in preset.MANAGED_SPEC_PATHS + preset.MANAGED_SOURCE_PATHS
             },
         )
         self.assertEqual(
@@ -1504,6 +1522,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             len(managed_assets),
             len(preset.MANAGED_ASSET_PATHS)
             + len(preset.MANAGED_SPEC_PATHS)
+            + len(preset.MANAGED_SOURCE_PATHS)
             + len(GURU_FINISH_ENTRIES)
             + 1,
         )
@@ -2025,7 +2044,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             verifier,
         )
         self.assertIn(
-            f"assert len(assets) == {len(preset.MANAGED_ASSET_PATHS) + len(preset.MANAGED_SPEC_PATHS) + len(GURU_FINISH_ENTRIES) + 1}",
+            f"assert len(assets) == {len(preset.MANAGED_ASSET_PATHS) + len(preset.MANAGED_SPEC_PATHS) + len(preset.MANAGED_SOURCE_PATHS) + len(GURU_FINISH_ENTRIES) + 1}",
             verifier,
         )
         self.assertIn('ownership["schema_version"] == "3.0"', verifier)
@@ -2442,7 +2461,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
         self.assertEqual(installed["extension"]["version"], "0.6.15-guru.40")
-        self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.15")
+        self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.16")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
             (self.guru_root / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
@@ -2870,8 +2889,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("check-skill-packages", public_api["companion_scripts"])
         self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")
-        self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.15")
-        self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.15"])
+        self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.16")
+        self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.16"])
         self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
         self.assertEqual(
             installed["install"]["managed_asset_hashes"],
@@ -2879,7 +2898,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 target.as_posix(): hashlib.sha256(
                     (self.guru_root / source).read_bytes()
                 ).hexdigest()
-                for source, target in preset.MANAGED_SPEC_PATHS
+                for source, target in preset.MANAGED_SPEC_PATHS + preset.MANAGED_SOURCE_PATHS
             },
         )
         self.assertIn("observed at apply time", installed["notes"])

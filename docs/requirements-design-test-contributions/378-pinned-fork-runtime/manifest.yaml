@@ -1,0 +1,8 @@
+task_ref: 378-pinned-fork-runtime
+status: task_local_contribution
+authority:
+  requirements: docs/requirements/README.md
+  design: docs/design/README.md
+  test: docs/test/README.md
+  architecture: docs/architecture/README.md
+scope: fixed patched castbox/Trellis source and active-task isolation

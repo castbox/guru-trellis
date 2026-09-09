@@ -32,6 +32,14 @@ task target. For future changes, a touched non-generated code file at or above
 untouched historical large files remain outside the task.
 
 It does not run `trellis init` and does not modify Trellis upstream files.
+The framework source is pinned by `source/trellis-source.json` to the
+`castbox/Trellis` Fork. Preset installation projects that record to
+`.trellis/guru-team/trellis-source.json` using the existing managed-file
+provenance rules. It is an expected-source record, not proof of a completed CLI
+build. Use the existing Fork checkout's `packages/cli/bin/trellis.js` after
+checking HEAD and running its own locked dependency install/build commands;
+see the repository README for executable commands. Do not use stock npm
+`trellis upgrade`, copy dist, or create another CLI launcher.
 It is idempotent: identical files are skipped, missing files are installed,
 Guru-managed companion assets are upgraded in place with `.bak` backups,
 and existing `.trellis/guru-team/config.yml` is preserved. Current-only
@@ -201,8 +209,9 @@ that same immutable tag. Unpinned
 `gh:castbox/guru-trellis/trellis` is a latest/canary source and should be
 reported as mutable provenance.
 
-Current `main` carries extension candidate `0.6.15-guru.40` targeting official
-Trellis `0.6.15`. The successor Release Issue (#332) must re-freeze the
+Before the Fork migration, `main` carried extension candidate `0.6.15-guru.40`
+targeting official Trellis `0.6.15`. This is historical release-plan context,
+not the current framework source contract. The successor Release Issue (#332) must re-freeze the
 candidate after the preparation PR merges and rerun the complete matrix;
 prior partial evidence does not establish the target tag or Release.
 
@@ -499,10 +508,11 @@ Only the three additive Guru finish entries remain under
 `trellis/presets/guru-team/overlays/`. For a current installation, use this
 sequence:
 
-1. install the target official Trellis CLI, currently `0.6.15`;
-2. run the required Trellis version upgrade, then `trellis update --dry-run` and
-   exactly one preserve-mode live update: `trellis update --migrate --skip-all`
-   when migration is required, or `trellis update --skip-all` otherwise;
+1. validate the supplied `castbox/Trellis` checkout against `source/trellis-source.json`
+   and build it with its own locked install/build commands as described in the root README;
+2. invoke `node "$FORK_SOURCE/packages/cli/bin/trellis.js" update --dry-run`, then
+   the same Node entry with `update --migrate --skip-all` when migration is
+   required, or `update --skip-all` otherwise; never use a PATH-selected CLI;
 3. preview and switch the `guru-team` marketplace workflow from the selected
    immutable release tag;
 4. reapply the Guru preset from that same tag for the selected platforms;
@@ -979,11 +989,12 @@ Distributed Skill-package files are recorded separately in
 `skill_packages.files`; README text does not duplicate a numeric inventory.
 
 The active `.trellis/workflow.md` is installed or switched through the official
-Trellis workflow marketplace:
+Trellis workflow marketplace, using the verified `FORK_SOURCE` checkout and the
+same reviewed `GURU_WORKFLOW_SOURCE` as the preset source:
 
 ```bash
-trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.6 \
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
+  --marketplace "$GURU_WORKFLOW_SOURCE" \
   --template guru-team --create-new
 ```
 
@@ -991,8 +1002,8 @@ trellis workflow \
 identity；确认预览可安全应用后，再使用同一 provider 显式替换 active workflow：
 
 ```bash
-trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.6 \
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
+  --marketplace "$GURU_WORKFLOW_SOURCE" \
   --template guru-team --force
 ```
 
@@ -1554,12 +1565,13 @@ schema、adapter response 与 shared runtime；native CLI 只有通过 repo 外 
 projection、Skill/wrapper digest 与 output 时，trace assertion 才有效。Canonical corpus/private
 runtime 留在 native execution 外；四平台 projection 内对应 raw read 必须真实失败。
 
-完整门禁顺序固定为 clean initial workflow/preset install -> disposable npm prefix
-中的 `trellis upgrade --tag latest`（核验 upgrade 前后 CLI version）-> target
-throwaway project 的 `trellis update --dry-run` -> 仅当输出明确为
-`MIGRATION REQUIRED` 时执行 `trellis update --migrate --skip-all`，否则执行
-`trellis update --skip-all` -> marketplace `--create-new` preview/active switch -> canonical
+当前入口使用已验证的固定 Fork checkout，直接运行其 Node CLI：clean initial
+workflow/preset install -> target throwaway project 的 `update --dry-run` ->
+仅当输出明确为 `MIGRATION REQUIRED` 时执行 `update --migrate --skip-all`，否则执行
+`update --skip-all` -> marketplace `--create-new` preview/active switch -> canonical
 preset reapply。之后重新验证 23 Skills/97 package exits、22 invokes/95 workflow
 exits、35 workflow targets、24 stop targets、全部已声明 profile real installed entry、
 ownership、platform parity、dogfood drift 与 recursive zero `.new`/`.bak`。该流程不修改
 开发机 global npm，也不升级真实业务仓。
+历史 predecessor 到当前版本的完整升级矩阵仍是独立证据，不使用原发行源作为隐式
+fallback，也不把同一固定候选的重复 update/reapply 称为 predecessor 升级通过。

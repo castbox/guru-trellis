@@ -247,49 +247,13 @@
       "ordinal": 1
     },
     {
-      "id": "verifier-source_managed-41953e28b697",
+      "id": "verifier-source_managed-92d68f94e579",
       "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "kind": "shell_wrapper_second_hop",
-      "classification": "source_managed",
-      "expected_launcher": "source resolve-python.sh",
-      "anchor_sha256": "41953e28b69728d62d4e1f98a833f79ef9239839925d84dd4ac832e6a37121e0",
-      "ordinal": 1
-    },
-    {
-      "id": "verifier-installed_managed-12728b2820ad",
-      "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "kind": "shell_wrapper_second_hop",
-      "classification": "installed_managed",
-      "expected_launcher": "installed resolve-python.sh",
-      "anchor_sha256": "12728b2820ad1c30341394bd7d9626e3cd12364fbac2d27c9640606098c93ee5",
-      "ordinal": 1
-    },
-    {
-      "id": "verifier-source_managed-10817eab7c4c",
-      "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "kind": "inline_c",
+      "kind": "inline_stdin",
       "classification": "source_managed",
       "expected_launcher": "source_python",
-      "anchor_sha256": "10817eab7c4cafe1a672a62141e7798b0ffb4dd6f7d6970cd321e7bb26beb7a1",
+      "anchor_sha256": "92d68f94e579aa37d8c533599aabdc1e09d16c63dee56e08a3c1759522add883",
       "ordinal": 1
-    },
-    {
-      "id": "verifier-installed_managed-bda40e9a85d9",
-      "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "kind": "inline_c",
-      "classification": "installed_managed",
-      "expected_launcher": "installed_python",
-      "anchor_sha256": "bda40e9a85d968b4eaf32e40a9ae2600013534dbbe79ba12abd71e42d4e2b084",
-      "ordinal": 1
-    },
-    {
-      "id": "verifier-installed_managed-bda40e9a85d9-2",
-      "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "kind": "inline_c",
-      "classification": "installed_managed",
-      "expected_launcher": "installed_python",
-      "anchor_sha256": "bda40e9a85d968b4eaf32e40a9ae2600013534dbbe79ba12abd71e42d4e2b084",
-      "ordinal": 2
     },
     {
       "id": "verifier-source_managed-6f72bda89647",
@@ -335,24 +299,6 @@
       "expected_launcher": "source_python",
       "anchor_sha256": "29c53b1c34f9b6f3b07e24f79e616b9865a8ca32bb5cdf638ba9c90503009658",
       "ordinal": 1
-    },
-    {
-      "id": "verifier-source_managed-325fd0c16dec",
-      "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "kind": "inline_stdin",
-      "classification": "source_managed",
-      "expected_launcher": "source_python",
-      "anchor_sha256": "325fd0c16deccad7795dd831bd80f180ba8651f30da96f62a209b28695ab5b46",
-      "ordinal": 1
-    },
-    {
-      "id": "verifier-source_managed-325fd0c16dec-2",
-      "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "kind": "inline_stdin",
-      "classification": "source_managed",
-      "expected_launcher": "source_python",
-      "anchor_sha256": "325fd0c16deccad7795dd831bd80f180ba8651f30da96f62a209b28695ab5b46",
-      "ordinal": 2
     },
     {
       "id": "verifier-installed_managed-8d2f98748bb5",
@@ -406,6 +352,15 @@
       "classification": "installed_managed",
       "expected_launcher": "installed_python",
       "anchor_sha256": "9b843ed69920e0f6d6280692ff9a6770211bc11fe9f8ce5d8d42788cc21bf9e4",
+      "ordinal": 1
+    },
+    {
+      "id": "verifier-installed_managed-f22e1610dbd0",
+      "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "kind": "python_file",
+      "classification": "installed_managed",
+      "expected_launcher": "installed_python",
+      "anchor_sha256": "f22e1610dbd02663e7f248d0ef1898f5d548081784ad8359f669140908dad294",
       "ordinal": 1
     },
     {
@@ -652,21 +607,21 @@
       "ordinal": 1
     },
     {
-      "id": "verifier-installed_managed-0a942c035981",
+      "id": "verifier-installed_managed-2005a3f6c729",
       "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
       "kind": "inline_c",
       "classification": "installed_managed",
       "expected_launcher": "installed_python",
-      "anchor_sha256": "0a942c035981243425484606a5e6fc29c829805aa987c5b2bad9accbd5b33b7d",
+      "anchor_sha256": "2005a3f6c7290cafca3cecaa379124d8b5f2d00a79affdd40352ee4fc525ce34",
       "ordinal": 1
     },
     {
-      "id": "verifier-installed_managed-fff8b5c1c8c9",
+      "id": "verifier-installed_managed-82a56bd97a19",
       "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
       "kind": "inline_c",
       "classification": "installed_managed",
       "expected_launcher": "installed_python",
-      "anchor_sha256": "fff8b5c1c8c92f3aad1d8aaf71c07061a1b9676aafea3c69d09fa0865bc4b7e4",
+      "anchor_sha256": "82a56bd97a190a905c7de2d802557973ee8118dfaaf6e84d3e1b9301d5bdf977",
       "ordinal": 1
     },
     {

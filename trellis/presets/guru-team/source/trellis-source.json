@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "repository": "https://github.com/castbox/Trellis.git",
+  "commit": "ad332e3fe5a19d7274cb03e7c2f3e2128f8de291",
+  "cli_version": "0.6.16",
+  "package_manager": "pnpm@10.32.1"
+}

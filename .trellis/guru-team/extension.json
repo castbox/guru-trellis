@@ -7,13 +7,13 @@
     "version": "0.6.15-guru.40",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
-    "target_trellis_cli": "0.6.15",
+    "target_trellis_cli": "0.6.16",
     "requires": {
-      "trellis_cli": "0.6.15"
+      "trellis_cli": "0.6.16"
     },
     "tested": {
       "trellis_cli": [
-        "0.6.15"
+        "0.6.16"
       ]
     },
     "public_api": {
@@ -430,11 +430,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-09T09:20:13Z",
+  "installed_at": "2026-09-09T15:39:19Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "37a83ab6f76f53095c7a55ac2f120f0179ce18c4",
-    "commit": "37a83ab6f76f53095c7a55ac2f120f0179ce18c4",
+    "ref": "a2b32ea8dc730eecf0507e0adfb946ce9b8c7bc8",
+    "commit": "a2b32ea8dc730eecf0507e0adfb946ce9b8c7bc8",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -508,6 +508,7 @@
       ".trellis/guru-team/scripts/bash/run-skill-evals.sh",
       ".trellis/guru-team/scripts/bash/sync-base.sh",
       ".trellis/guru-team/scripts/bash/version.sh",
+      ".trellis/guru-team/trellis-source.json",
       ".trellis/spec/workflow/companion-scripts.md",
       ".trellis/spec/workflow/data-contracts.md",
       ".trellis/spec/workflow/quality-guidelines.md",
@@ -525,7 +526,8 @@
       ".trellis/spec/workflow/skill-package-contract.md": "618033843b4941098c0f9b9041e73bd223fec22fcdb3a9be11da1b12d6ecf9d2",
       ".trellis/spec/workflow/data-contracts.md": "3a49f84d39f1bb13d8a0f6f771c4c097a91d5ad4eae7572d1cf83dcb9888fc49",
       ".trellis/spec/workflow/companion-scripts.md": "4c183cc52a28aa75497f714c126756197009d150d7e2699e7a9e53e00a530ce7",
-      ".trellis/spec/workflow/quality-guidelines.md": "c077f51010e72b763fde862a145850d498ad54e18b0ab421a9ea3aba82ea885a"
+      ".trellis/spec/workflow/quality-guidelines.md": "c077f51010e72b763fde862a145850d498ad54e18b0ab421a9ea3aba82ea885a",
+      ".trellis/guru-team/trellis-source.json": "51483bfea6890cdb500159b3357cd30d582e909dd6db31733349424eb8503cd6"
     },
     "new_copies": [],
     "managed_backups": [],
@@ -641,7 +643,7 @@
       {
         "id": "guru-verify-extension-installation",
         "interface_sha256": "87925b8157721ce8f0142f3a46fccea145b0e0f5d6782a4b6bad85e76978d0f5",
-        "tree_sha256": "d08c32ef2ddfbf79c4d55a7e3da6f7f54c4eaed4b3444be35ec5271cd66ea6a9"
+        "tree_sha256": "9d52584683c4df073975a960305a5417118a2aaaf726c85707f9fe74b236548d"
       },
       {
         "id": "guru-finalize-task",
@@ -6624,7 +6626,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/SKILL.md",
-        "sha256": "5c9d528aca667185548e8024516137c2270337fd23e7a744f592bf24715e9077",
+        "sha256": "749cdd713596d6f0c23ede40272974a3f62a3c53eb5f328213542d948535e35d",
         "executable": false,
         "action": "unchanged"
       },
@@ -6778,7 +6780,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
-        "sha256": "558daef0a0dbb104bc78ccfc3bbe839c5952cb3ebaceded7827f5a6ef4510579",
+        "sha256": "c6796cafc9e618932b29c6100f17acd0dab1ffbaedfa370167b56acd3503aa85",
         "executable": false,
         "action": "unchanged"
       },
@@ -24943,7 +24945,7 @@
       {
         "path": ".agents/skills/guru-verify-extension-installation/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/SKILL.md",
-        "sha256": "5c9d528aca667185548e8024516137c2270337fd23e7a744f592bf24715e9077",
+        "sha256": "749cdd713596d6f0c23ede40272974a3f62a3c53eb5f328213542d948535e35d",
         "executable": false,
         "action": "unchanged"
       },
@@ -25048,7 +25050,7 @@
       {
         "path": ".agents/skills/guru-verify-extension-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
-        "sha256": "558daef0a0dbb104bc78ccfc3bbe839c5952cb3ebaceded7827f5a6ef4510579",
+        "sha256": "c6796cafc9e618932b29c6100f17acd0dab1ffbaedfa370167b56acd3503aa85",
         "executable": false,
         "action": "unchanged"
       },
@@ -25209,7 +25211,7 @@
       {
         "path": ".codex/skills/guru-verify-extension-installation/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/SKILL.md",
-        "sha256": "5c9d528aca667185548e8024516137c2270337fd23e7a744f592bf24715e9077",
+        "sha256": "749cdd713596d6f0c23ede40272974a3f62a3c53eb5f328213542d948535e35d",
         "executable": false,
         "action": "unchanged"
       },
@@ -25314,7 +25316,7 @@
       {
         "path": ".codex/skills/guru-verify-extension-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
-        "sha256": "558daef0a0dbb104bc78ccfc3bbe839c5952cb3ebaceded7827f5a6ef4510579",
+        "sha256": "c6796cafc9e618932b29c6100f17acd0dab1ffbaedfa370167b56acd3503aa85",
         "executable": false,
         "action": "unchanged"
       },
@@ -25475,7 +25477,7 @@
       {
         "path": ".claude/skills/guru-verify-extension-installation/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/SKILL.md",
-        "sha256": "5c9d528aca667185548e8024516137c2270337fd23e7a744f592bf24715e9077",
+        "sha256": "749cdd713596d6f0c23ede40272974a3f62a3c53eb5f328213542d948535e35d",
         "executable": false,
         "action": "unchanged"
       },
@@ -25580,7 +25582,7 @@
       {
         "path": ".claude/skills/guru-verify-extension-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
-        "sha256": "558daef0a0dbb104bc78ccfc3bbe839c5952cb3ebaceded7827f5a6ef4510579",
+        "sha256": "c6796cafc9e618932b29c6100f17acd0dab1ffbaedfa370167b56acd3503aa85",
         "executable": false,
         "action": "unchanged"
       },
@@ -25741,7 +25743,7 @@
       {
         "path": ".cursor/skills/guru-verify-extension-installation/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/SKILL.md",
-        "sha256": "5c9d528aca667185548e8024516137c2270337fd23e7a744f592bf24715e9077",
+        "sha256": "749cdd713596d6f0c23ede40272974a3f62a3c53eb5f328213542d948535e35d",
         "executable": false,
         "action": "unchanged"
       },
@@ -25846,7 +25848,7 @@
       {
         "path": ".cursor/skills/guru-verify-extension-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
-        "sha256": "558daef0a0dbb104bc78ccfc3bbe839c5952cb3ebaceded7827f5a6ef4510579",
+        "sha256": "c6796cafc9e618932b29c6100f17acd0dab1ffbaedfa370167b56acd3503aa85",
         "executable": false,
         "action": "unchanged"
       },

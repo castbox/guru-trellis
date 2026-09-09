@@ -1,0 +1,11 @@
+{
+  "id": "378-pinned-fork-runtime",
+  "name": "378-pinned-fork-runtime",
+  "title": "#378 固定 patched Fork runtime 并验证会话隔离",
+  "status": "in_progress",
+  "branch": "codex/378-pinned-fork-runtime",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/378"
+}

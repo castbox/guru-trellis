@@ -13,50 +13,81 @@ Guru Trellis 是 Guru Team 面向业务研发仓库提供的 Trellis 团队扩�
 
 [https://github.com/castbox/guru-trellis](https://github.com/castbox/guru-trellis)
 
-## 本次发布固定身份
+## 当前框架来源
+
+Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
+`trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
+`.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
+
+使用已存在的 Fork checkout；只有尚未取得源码时才 clone 记录中的 repository。
+下面的 `GURU_SOURCE`、`FORK_SOURCE`、`TARGET_REPO` 由使用者设置为本机目录，
+不写入共享来源记录。`GURU_SOURCE` 必须是包含本来源合同的已审查 checkout。
+
+```bash
+: "${GURU_SOURCE:?请设置 Guru 源码目录}"
+: "${FORK_SOURCE:?请设置已有 Fork 源码目录}"
+: "${TARGET_REPO:?请设置目标仓库目录}"
+SOURCE_LOCK="$GURU_SOURCE/trellis/presets/guru-team/source/trellis-source.json"
+FORK_REPOSITORY="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["repository"])' "$SOURCE_LOCK")"
+FORK_COMMIT="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["commit"])' "$SOURCE_LOCK")"
+test -z "$(git -C "$FORK_SOURCE" status --porcelain)"
+git -C "$FORK_SOURCE" fetch "$FORK_REPOSITORY" "$FORK_COMMIT"
+git -C "$FORK_SOURCE" checkout --detach "$FORK_COMMIT"
+test "$(git -C "$FORK_SOURCE" rev-parse HEAD)" = "$FORK_COMMIT"
+(cd "$FORK_SOURCE" && pnpm install --frozen-lockfile && pnpm build)
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" --version
+```
+
+使用来源记录声明的 package-manager 版本。保留 Fork 的 ESM 与 workspace 依赖布局，
+不复制 dist、不重造 launcher、不全局安装原 Trellis npm 包。后续修改框架版本先评审
+source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgrade`。
+
+## 发布身份边界
 
 | 组件 | 固定版本 |
 | --- | --- |
 | Guru Trellis repo tag | `v0.6.15-guru.6` |
 | Guru Team extension revision | `0.6.15-guru.40` |
-| 官方 `@mindfoldhq/trellis` CLI | `0.6.15` |
+| Fork `castbox/Trellis` CLI | `0.6.16` @ `ad332e3fe5a19d7274cb03e7c2f3e2128f8de291` |
 
 repo tag 与 extension revision 是两个独立版本轴。本次发布的 workflow 与 preset
 固定使用同一个目标 annotated tag `v0.6.15-guru.6`。该 tag object、peeled commit、
 GitHub Release、tag-pinned install 与 post-publish smoke 尚未创建或验证；#332 必须在
 preparation PR 合并后重新冻结 exact candidate，并从头执行 Release gates。
 
+上表 Guru release tag 是既有发布计划，不代表本 Fork 接入改动已随该 tag 发布。
+本次未发布源码验证使用已审查 Guru checkout；以下 `GURU_WORKFLOW_SOURCE` 必须设置为
+该 checkout 对应的可寻址 marketplace ref，本地样本不能冒充已发布版本。
+
 新仓库的非交互安装入口：
 
 ```bash
-npm install --global @mindfoldhq/trellis@0.6.15
-trellis init -y --claude --codex --cursor \
+: "${GURU_WORKFLOW_SOURCE:?请设置已审查的 Guru marketplace ref}"
+cd "$TARGET_REPO"
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" init -y --claude --codex --cursor \
   --workflow guru-team \
-  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.15-guru.6
-guru_trellis_source="$(mktemp -d)"
-git clone --depth 1 --branch v0.6.15-guru.6 \
-  https://github.com/castbox/guru-trellis.git "$guru_trellis_source"
-"$guru_trellis_source/trellis/presets/guru-team/scripts/bash/apply.sh" \
-  --repo . --all-platforms
+  --workflow-source "$GURU_WORKFLOW_SOURCE"
+(cd "$GURU_SOURCE" && bash trellis/presets/guru-team/scripts/bash/apply.sh \
+  --repo "$TARGET_REPO" --all-platforms)
 ```
 
-已有仓库先安装固定 CLI 并 preview official update：
+已有仓库先核验/构建同一固定 Fork，再预览 update：
 
 ```bash
-npm install --global @mindfoldhq/trellis@0.6.15
-trellis update --dry-run
+cd "$TARGET_REPO"
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" update --dry-run
 ```
 
 dry-run 输出包含 `MIGRATION REQUIRED` 时，只执行：
 
 ```bash
-trellis update --migrate --skip-all
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" update --migrate --skip-all
 ```
 
 否则只执行：
 
 ```bash
-trellis update --skip-all
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" update --skip-all
 ```
 
 完成适用的 preserve-mode install/upgrade/update 子步骤后，先检查
@@ -64,17 +95,14 @@ trellis update --skip-all
 确认预览可安全应用后，再切换 workflow 并 reapply 同 tag preset：
 
 ```bash
-trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.6 \
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
+  --marketplace "$GURU_WORKFLOW_SOURCE" \
   --template guru-team --create-new
-trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.6 \
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
+  --marketplace "$GURU_WORKFLOW_SOURCE" \
   --template guru-team --force
-guru_trellis_source="$(mktemp -d)"
-git clone --depth 1 --branch v0.6.15-guru.6 \
-  https://github.com/castbox/guru-trellis.git "$guru_trellis_source"
-"$guru_trellis_source/trellis/presets/guru-team/scripts/bash/apply.sh" \
-  --repo . --all-platforms
+(cd "$GURU_SOURCE" && bash trellis/presets/guru-team/scripts/bash/apply.sh \
+  --repo "$TARGET_REPO" --all-platforms)
 ```
 
 `--create-new` 只生成预览，不会切换 active workflow；无 flag replacement 不属于支持
@@ -98,7 +126,7 @@ Guru Trellis 把这些团队能力整理成可复用的 workflow、preset 和 Sk
 
 ## 与官方 Trellis 的关系
 
-Guru Trellis 不是 Trellis 的分叉版本，也不替代官方 Trellis。
+Guru Trellis 是扩展仓库，不复制框架实现；框架依赖由 `castbox/Trellis` Fork 提供。
 
 官方 Trellis 负责基础能力，包括项目规范、任务上下文、工作流运行方式以及各类 AI 工具的基础接入。Guru Trellis 使用 Trellis 提供的正式扩展方式，在其上增加 Guru Team 的团队流程和交付约定。
 
@@ -108,7 +136,8 @@ Guru Trellis 不是 Trellis 的分叉版本，也不替代官方 Trellis。
 - **Guru Trellis** 提供 Guru Team 的团队工作方式；
 - **业务仓库** 保存自己的产品需求、工程规范和项目事实。
 
-官方 Trellis 的升级继续由 Trellis 管理，Guru Team 的能力由本仓库发布和维护。业务仓库不需要修改 Trellis 上游源码，也不应把两套完整研发流程叠加在一起。
+框架更新通过锁定 Fork 的原有 CLI 执行，Guru Team 能力由本仓库维护。业务仓库不手改
+框架安装副本，也不叠加两套完整研发流程。第三方依赖与原作者许可证归属保持不变。
 
 ## Guru Team preset 增强了什么
 
@@ -225,15 +254,16 @@ clean throwaway repo，不绑定真实业务 task、branch、Finalizer plan 或 
 stage/cell/command/exit/error-tail；无法解析终态时显式记录
 `unparseable_failure_output`。这些事实只属于 standalone verifier，不进入 Finalizer。
 
-源仓的完整 upgrade/update 验收使用隔离环境并严格按顺序执行：clean initial
-workflow/preset install；在 disposable npm prefix/container 中运行
-`trellis upgrade --tag latest` 并核验前后 CLI version；在 throwaway project 运行
-`trellis update --dry-run`，只在输出明确包含 `MIGRATION REQUIRED` 时运行
-`trellis update --migrate --skip-all`，否则运行 `trellis update --skip-all`；
+源仓的安装/update 验收使用隔离环境：核验锁定 Fork checkout 和构建产物，再通过
+`node "$FORK_SOURCE/packages/cli/bin/trellis.js"` 执行 clean initial workflow/preset
+install 与目标项目的 `update --dry-run`；只在输出包含 `MIGRATION REQUIRED` 时执行
+同一 CLI 的 `update --migrate --skip-all`，否则执行 `update --skip-all`。
+版本号相同不代替源码 SHA 证明，原发行包不参与当前正常路径。
 `--skip-all` 保留项目已有修改并以非交互方式继续。随后完成 marketplace
 `--create-new` preview、active switch 与 canonical preset reapply。最后验证 package、
 workflow、十 profiles、平台投影、ownership、dogfood drift 与递归零 `.new`/`.bak`。
-该门禁不修改开发机 global npm，也不升级真实业务仓。
+该门禁不修改开发机 global npm，也不升级真实业务仓。历史 predecessor 升级矩阵
+需要单独声明 predecessor 来源；当前候选的 init/reapply 不冒充历史升级证明。
 
 ## 仓库维护者正式发布入口
 

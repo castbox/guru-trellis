@@ -23,6 +23,7 @@ import tarfile
 import tempfile
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
+from urllib.parse import urlsplit
 
 
 SCHEMA_VERSION = "1.0"
@@ -44,8 +45,7 @@ VERSION_RE = re.compile(r"(?<![0-9])([0-9]+\.[0-9]+\.[0-9]+)(?![0-9])")
 SIDECAR_SUFFIXES = (".new", ".bak")
 DEFAULT_BEFORE_TAG = "v0.6.5-guru.10"
 DEFAULT_BEFORE_CLI = "0.6.5"
-DEFAULT_TARGET_CLI = "0.6.15"
-DEFAULT_PACKAGE = "@mindfoldhq/trellis"
+DEFAULT_TARGET_CLI = "0.6.16"
 FAILURE_TAIL_LIMIT = 2000
 FAILURE_STAGES = {"pre-matrix", "matrix-cell", "post-matrix"}
 DEFAULT_COMMAND_TIMEOUT_SECONDS = 600.0
@@ -1199,27 +1199,96 @@ def _parse_cli_version(output: str) -> str:
     return matched.group(1)
 
 
-def _install_cli(prefix: Path, version: str, log: Path) -> tuple[Path, dict[str, str]]:
-    prefix.mkdir(parents=True)
-    env = {"npm_config_prefix": str(prefix)}
-    _run(
-        ("npm", "install", "-g", f"{DEFAULT_PACKAGE}@{version}"),
-        env=env,
-        log=log,
-    )
-    binary = prefix / "bin/trellis"
-    if not binary.is_file() or not os.access(binary, os.X_OK):
-        raise MatrixError(f"isolated Trellis CLI is unavailable: {binary}")
-    child_env = {
-        "npm_config_prefix": str(prefix),
-        "PATH": f"{prefix / 'bin'}:{os.environ.get('PATH', '')}",
-        "TRELLIS_PYTHON_CMD": "python3",
-    }
-    return binary, child_env
+def validate_fork_source(repo_root: Path, source: Path) -> dict[str, Any]:
+    """Read the supplied build in place; never install or repair its source."""
+    lock = _require_dict(_load_json(
+        repo_root / "trellis/presets/guru-team/source/trellis-source.json"
+    ), "Trellis source lock")
+    if lock.get("schema_version") != "1.0" or any(
+        not isinstance(lock.get(key), str) or not lock[key]
+        for key in ("repository", "commit", "cli_version", "package_manager")
+    ) or not re.fullmatch(r"[0-9a-f]{40}", lock["commit"]):
+        raise MatrixError("invalid Trellis source lock")
+    return _validate_source_build(source, lock)
 
 
-def _assert_version(binary: Path, expected: str, env: Mapping[str, str]) -> str:
-    actual = _parse_cli_version(_run((str(binary), "--version"), env=env, capture=True))
+def validate_predecessor_source(args: argparse.Namespace) -> dict[str, Any]:
+    source = getattr(args, "predecessor_source", None)
+    commit = getattr(args, "predecessor_commit", None)
+    if source is None or not commit:
+        raise MatrixError(
+            "blocked: full matrix requires --predecessor-source and --predecessor-commit "
+            "(TRELLIS_PREDECESSOR_SOURCE / TRELLIS_PREDECESSOR_COMMIT); no npm fallback",
+            command_label="predecessor-source-validation",
+        )
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise MatrixError("predecessor commit must be a full SHA", command_label="predecessor-source-validation")
+    lock = _require_dict(_load_json(
+        args.repo_root / "trellis/presets/guru-team/source/trellis-source.json"
+    ), "Trellis source lock")
+    return _validate_source_build(source, {
+        "repository": lock["repository"], "commit": commit, "cli_version": args.before_cli,
+    }, allow_flat_layout=True)
+
+
+def _validate_source_build(
+    source: Path, lock: Mapping[str, Any], *, allow_flat_layout: bool = False,
+) -> dict[str, Any]:
+    source = source.resolve()
+    head = _run(("git", "rev-parse", "HEAD"), cwd=source, capture=True).strip()
+    if head != lock["commit"]:
+        raise MatrixError("fork source HEAD does not match source lock")
+    if _run(("git", "status", "--porcelain", "--untracked-files=no"),
+            cwd=source, capture=True).strip():
+        raise MatrixError("fork source has dirty tracked files")
+    def repository_id(value: str) -> str:
+        if value.startswith("git@"):
+            value = "ssh://" + value.replace(":", "/", 1)
+        parsed = urlsplit(value)
+        return (parsed.hostname or "") + parsed.path.rstrip("/").removesuffix(".git")
+    remotes = _run(("git", "remote"), cwd=source, capture=True).splitlines()
+    observed = [
+        _run(("git", "remote", "get-url", name), cwd=source, capture=True).strip()
+        for name in remotes if name in ("origin", "upstream")
+    ]
+    matches = [url for url in observed if repository_id(url) == repository_id(lock["repository"])]
+    if not matches:
+        raise MatrixError("fork source remote does not match source lock")
+    package = source / "packages/cli"
+    if allow_flat_layout and not (package / "package.json").is_file():
+        package = source
+    version = _require_dict(_load_json(package / "package.json"), "CLI package").get("version")
+    manager = _require_dict(_load_json(source / "package.json"), "workspace package").get("packageManager")
+    if version != lock["cli_version"] or ("package_manager" in lock and manager != lock["package_manager"]):
+        raise MatrixError("fork source version/package manager does not match source lock")
+    build_paths = [package / "bin/trellis.js", package / "dist/cli/index.js"]
+    if package != source:
+        build_paths.append(source / "packages/core/dist/index.js")
+    for path in build_paths:
+        if not path.is_file():
+            raise MatrixError(f"supplied fork build is missing: {path}")
+    templates = package / "src/templates"
+    tracked = _run(("git", "ls-files", "-z", templates.relative_to(source).as_posix()),
+                   cwd=source, capture=True).split("\0")
+    assets = [source / name for name in tracked if name and Path(name).suffix != ".ts"]
+    if not assets:
+        raise MatrixError("fork source template inventory is empty")
+    for path in assets:
+        built = package / "dist/templates" / path.relative_to(templates)
+        if not built.is_file() or path.read_bytes() != built.read_bytes():
+            raise MatrixError(f"stale fork template build: {path.relative_to(templates)}")
+    node = shutil.which("node")
+    if not node:
+        raise MatrixError("node is required for the supplied fork build")
+    command = (node, str(package / "bin/trellis.js"))
+    actual = _assert_version(command, version, {})
+    return {"schema_version": "1.0", "repository": f"https://{repository_id(matches[0])}.git", "commit": head,
+            "cli_version": actual, "package_manager": manager,
+            "command": list(command), "template_count": len(assets)}
+
+
+def _assert_version(binary: Sequence[str], expected: str, env: Mapping[str, str]) -> str:
+    actual = _parse_cli_version(_run((*binary, "--version"), env=env, capture=True))
     if actual != expected:
         raise MatrixError(f"Trellis CLI version mismatch: expected {expected}, got {actual}")
     return actual
@@ -1433,7 +1502,7 @@ def _workflow_source_requires_local_sample(repo_root: Path, workflow_source: str
 
 def _install_workflow(
     target: Path,
-    binary: Path,
+    binary: Sequence[str],
     env: Mapping[str, str],
     platform: str,
     workflow_source: str,
@@ -1450,7 +1519,7 @@ def _install_workflow(
         )
     _run(
         (
-            str(binary),
+            *binary,
             "init",
             "-y",
             PLATFORM_INIT_FLAGS[platform],
@@ -1473,7 +1542,7 @@ def _install_workflow(
 
 def _preview_and_switch_workflow(
     target: Path,
-    binary: Path,
+    binary: Sequence[str],
     env: Mapping[str, str],
     workflow_source: str,
     repo_root: Path,
@@ -1502,7 +1571,7 @@ def _preview_and_switch_workflow(
     managed_before = workflow.read_bytes()
     _run(
         (
-            str(binary),
+            *binary,
             "workflow",
             "--marketplace",
             workflow_source,
@@ -1533,7 +1602,7 @@ def _preview_and_switch_workflow(
     sidecar.unlink()
     _run(
         (
-            str(binary),
+            *binary,
             "workflow",
             "--marketplace",
             workflow_source,
@@ -1738,6 +1807,25 @@ def _template_hash_state(root: Path) -> dict[str, Any]:
     }
 
 
+def _known_agents_projection(target: Path) -> bool:
+    from apply_guru_team_trellis_preset import AGENTS_AI_FIRST_BLOCK
+
+    data = (target / "AGENTS.md").read_bytes()
+    block = AGENTS_AI_FIRST_BLOCK.encode("utf-8")
+    expected = _load_json(target / ".trellis/.template-hashes.json")["hashes"].get("AGENTS.md")
+    if not data.endswith(block):
+        return False
+    prefix = data[:-len(block)]
+    # The installer appends only the canonical block and at most two LF bytes.
+    for separator in (b"", b"\n", b"\n\n"):
+        if separator and not prefix.endswith(separator):
+            continue
+        original = prefix[:-len(separator)] if separator else prefix
+        if hashlib.sha256(original).hexdigest() == expected:
+            return True
+    return False
+
+
 def _assert_template_hashes(target: Path, source_root: Path) -> dict[str, Any]:
     target_state = _template_hash_state(target)
     if target_state["missing"]:
@@ -1745,7 +1833,14 @@ def _assert_template_hashes(target: Path, source_root: Path) -> dict[str, Any]:
             f"template hash inventory has missing files: {target_state['missing']}"
         )
     source_state = _template_hash_state(source_root)
-    allowed_mismatches = set(source_state["mismatched"])
+    allowed_mismatches = set(source_state["mismatched"]) - {"AGENTS.md"}
+    known_projections = []
+    if "AGENTS.md" in target_state["mismatched"]:
+        if _known_agents_projection(target):
+            allowed_mismatches.add("AGENTS.md")
+            known_projections.append("AGENTS.md")
+        elif (target / "AGENTS.md").read_bytes() == (source_root / "AGENTS.md").read_bytes():
+            allowed_mismatches.add("AGENTS.md")
     unknown = sorted(
         set(target_state["mismatched"]) - allowed_mismatches,
         key=lambda item: item.encode("utf-8"),
@@ -1757,6 +1852,7 @@ def _assert_template_hashes(target: Path, source_root: Path) -> dict[str, Any]:
         "entry_count": target_state["entry_count"],
         "matched_count": target_state["entry_count"] - len(target_state["mismatched"]),
         "preserved_local_edit_paths": target_state["mismatched"],
+        "known_preset_projection_paths": known_projections,
         "unknown_drift_count": 0,
         "identity_sha256": target_state["identity_sha256"],
     }
@@ -2032,12 +2128,17 @@ def _run_cell(
     before_cli: str,
     target_cli: str,
     allow_local_sample: bool,
+    fork_source: Path,
+    predecessor: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    source = validate_fork_source(repo_root, fork_source)
+    if scenario == "existing" and predecessor is None:
+        raise MatrixError("blocked: existing cell requires a validated predecessor source")
     target = cell_root / "project"
-    prefix = cell_root / "trellis-cli-prefix"
     _init_git_repo(target)
     initial_cli = target_cli if scenario == "clean" else before_cli
-    binary, env = _install_cli(prefix, initial_cli, cell_root / "npm-install.log")
+    binary = tuple(predecessor["command"] if scenario == "existing" else source["command"])
+    env = {"TRELLIS_PYTHON_CMD": "python3"}
     actual_before = _assert_version(binary, initial_cli, env)
 
     if scenario == "existing":
@@ -2078,15 +2179,11 @@ def _run_cell(
             raise MatrixError(
                 "existing cell did not start from replacement release extension 0.6.5-guru.36"
             )
-        _run(
-            (str(binary), "upgrade", "--tag", target_cli),
-            cwd=target,
-            env=env,
-            log=cell_root / "trellis-upgrade.log",
-        )
+        # No CLI self-upgrade: a separately validated predecessor is required.
+        binary = tuple(source["command"])
         actual_after_upgrade = _assert_version(binary, target_cli, env)
         dry_run = _run(
-            (str(binary), "update", "--dry-run"),
+            (*binary, "update", "--dry-run"),
             cwd=target,
             env=env,
             capture=True,
@@ -2094,7 +2191,7 @@ def _run_cell(
         )
         if "MIGRATION REQUIRED" in dry_run:
             _run(
-                (str(binary), "update", "--migrate", "--skip-all"),
+                (*binary, "update", "--migrate", "--skip-all"),
                 cwd=target,
                 env=env,
                 log=cell_root / "trellis-update.log",
@@ -2102,7 +2199,7 @@ def _run_cell(
             update_mode = "migrate"
         else:
             _run(
-                (str(binary), "update", "--skip-all"),
+                (*binary, "update", "--skip-all"),
                 cwd=target,
                 env=env,
                 log=cell_root / "trellis-update.log",
@@ -2176,7 +2273,77 @@ def _run_cell(
     return result
 
 
+def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, Any]:
+    """One current-source clean init and reapply, not predecessor upgrade proof."""
+    root = args.repo_root.resolve()
+    work = args.work_root.resolve()
+    if work.exists() and any(work.iterdir()):
+        raise MatrixError(f"matrix work root must be empty: {work}")
+    work.mkdir(parents=True, exist_ok=True)
+    target = work / "project"
+    command = tuple(source["command"])
+    env = {"TRELLIS_PYTHON_CMD": "python3"}
+    def assert_installed_lock() -> None:
+        expected = _load_json(root / "trellis/presets/guru-team/source/trellis-source.json")
+        actual = _load_json(target / ".trellis/guru-team/trellis-source.json")
+        if actual != expected:
+            raise MatrixError("installed Trellis source lock does not match candidate")
+    _init_git_repo(target)
+    sample = _install_workflow(target, command, env, args.platform,
+                               args.workflow_source, root, args.allow_local_sample,
+                               work / "init.log")
+    before_docs = _docs_authority_snapshot(target)
+    initial = _apply_preset(root, target, args.platform, work / "preset-initial.log")
+    assert_installed_lock()
+    _assert_template_hashes(target, root)
+    reapplied = []
+    for iteration in (1, 2):
+        iteration_root = work / f"update-{iteration}"
+        iteration_root.mkdir()
+        _run((*command, "update", "--skip-all"), cwd=target, env=env,
+             log=iteration_root / "update.log")
+        _preview_and_switch_workflow(target, command, env, args.workflow_source,
+                                    root, root, sample, iteration_root)
+        reapplied.append(_apply_preset(
+            root, target, args.platform, iteration_root / "preset-reapply.log",
+            previous_root=root))
+        assert_installed_lock()
+        hashes = _assert_template_hashes(target, root)
+    _assert_docs_authority(target, before_docs)
+    if _sidecars(target):
+        raise MatrixError(f"unresolved focused sidecars: {_sidecars(target)}")
+    if (target / ".trellis/.version").read_text().strip() != source["cli_version"]:
+        raise MatrixError("focused project version does not match supplied source")
+    if validate_fork_source(root, args.fork_source) != source:
+        raise MatrixError("fork source changed during focused verification")
+    result = {"schema_version": SCHEMA_VERSION, "status": "passed",
+              "mode": "focused", "source": source, "platform": args.platform,
+              "scenario": "current-source-clean-update-reapply",
+              "same_candidate_update_count": len(reapplied),
+              "predecessor_upgrade_verified": False, "full_matrix_verified": False,
+              "local_workflow_sample": sample, "preset_initial": initial,
+              "preset_reapply": reapplied, "template_hashes": hashes}
+    (work / "focused-summary.json").write_bytes(_canonical_json(result))
+    return result
+
+
 def run_matrix(args: argparse.Namespace) -> dict[str, Any]:
+    source = validate_fork_source(args.repo_root.resolve(), args.fork_source)
+    requested_cli = getattr(args, "target_cli", None)
+    if requested_cli is not None and requested_cli != source["cli_version"]:
+        raise MatrixError("requested target CLI does not match supplied source lock")
+    if args.mode == "focused":
+        return run_focused(args, source)
+    predecessor = validate_predecessor_source(args)
+    args.target_cli = source["cli_version"]
+    return _run_historical_matrix(args, source=source, predecessor=predecessor)
+
+
+def _run_historical_matrix(
+    args: argparse.Namespace, *, source: Mapping[str, Any] | None = None,
+    predecessor: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Full standalone catalog using explicitly supplied Fork builds."""
     stage = "pre-matrix"
     cell_id: str | None = None
     try:
@@ -2207,6 +2374,8 @@ def run_matrix(args: argparse.Namespace) -> dict[str, Any]:
                 before_cli=args.before_cli,
                 target_cli=args.target_cli,
                 allow_local_sample=args.allow_local_sample,
+                fork_source=args.fork_source,
+                predecessor=predecessor,
             )
             result["cell_id"] = cell["cell_id"]
             (cell_root / "cell-summary.json").write_bytes(_canonical_json(result))
@@ -2264,6 +2433,9 @@ def run_matrix(args: argparse.Namespace) -> dict[str, Any]:
         summary = {
             "schema_version": SCHEMA_VERSION,
             "status": "passed",
+            "mode": "full",
+            "fork_source": source,
+            "predecessor_source": predecessor,
             "source_commit": source_before["head"],
             "source_state": source_before,
             "source_identity_sha256": source_before["identity_sha256"],
@@ -2313,15 +2485,25 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--workflow-source", required=True)
     run.add_argument("--before-tag", default=DEFAULT_BEFORE_TAG)
     run.add_argument("--before-cli", default=DEFAULT_BEFORE_CLI)
-    run.add_argument("--target-cli", default=DEFAULT_TARGET_CLI)
+    run.add_argument("--target-cli", help="optional assertion against the source lock")
     run.add_argument("--allow-local-sample", action="store_true")
+    run.add_argument("--fork-source", type=Path, required=True)
+    run.add_argument("--predecessor-source", type=Path)
+    run.add_argument("--predecessor-commit")
+    run.add_argument("--mode", choices=("full", "focused"), default="full")
+    run.add_argument("--platform", choices=tuple(PLATFORM_ROOTS), default="codex")
+    validate = sub.add_parser("validate-source")
+    validate.add_argument("--repo-root", type=Path, required=True)
+    validate.add_argument("--fork-source", type=Path, required=True)
     return parser
 
 
 def main() -> int:
     args = _parser().parse_args()
     try:
-        if args.command == "derive-platforms":
+        if args.command == "validate-source":
+            result = validate_fork_source(args.repo_root.resolve(), args.fork_source)
+        elif args.command == "derive-platforms":
             result = derive_platform_inventory(args.repo_root.resolve())
         elif args.command == "plan":
             result = build_matrix(args.repo_root.resolve())

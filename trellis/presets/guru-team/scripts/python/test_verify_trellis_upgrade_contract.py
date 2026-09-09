@@ -52,6 +52,265 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         workflow_end = cls.text.index('\nmkdir "$TARGET"', workflow_start)
         cls.shell_workflow_function = cls.text[workflow_start:workflow_end]
 
+    def fork_fixture(self, root: Path) -> tuple[Path, Path]:
+        root = root.resolve()
+        source, repo = root / "fork checkout", root / "extension"
+        source.mkdir()
+        files = {
+            "package.json": json.dumps({"packageManager": "pnpm@10.32.1"}),
+            "packages/cli/package.json": json.dumps({"version": "0.6.16", "type": "module"}),
+            "packages/cli/bin/trellis.js": 'import("../dist/cli/index.js");\n',
+            "packages/cli/dist/cli/index.js": 'console.log("0.6.16");\n',
+            "packages/core/dist/index.js": "export {};\n",
+            "packages/cli/src/templates/trellis/example.md": "template\n",
+            "packages/cli/dist/templates/trellis/example.md": "template\n",
+            ".gitignore": "**/dist/\n",
+        }
+        for relative, content in files.items():
+            path = source / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content)
+        def git(*args):
+            return subprocess.run(("git", *args), cwd=source, check=True,
+                                  text=True, capture_output=True).stdout.strip()
+        git("init", "-q")
+        git("add", ".")
+        git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+            "commit", "-qm", "source fixture")
+        git("remote", "add", "upstream", "https://github.com/castbox/Trellis.git")
+        lock = repo / "trellis/presets/guru-team/source/trellis-source.json"
+        lock.parent.mkdir(parents=True)
+        lock.write_text(json.dumps({"schema_version": "1.0",
+            "repository": "https://github.com/castbox/Trellis.git", "commit": git("rev-parse", "HEAD"),
+            "cli_version": "0.6.16", "package_manager": "pnpm@10.32.1"}))
+        return repo, source
+
+    def test_fork_source_uses_real_node_esm_entry_and_observed_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo, source = self.fork_fixture(Path(directory))
+            result = self.matrix.validate_fork_source(repo, source)
+            self.assertEqual(result["cli_version"], "0.6.16")
+            self.assertEqual(result["command"][1], str(source / "packages/cli/bin/trellis.js"))
+            self.assertEqual(result["template_count"], 1)
+            self.assertEqual(result["commit"], json.loads((repo /
+                "trellis/presets/guru-team/source/trellis-source.json").read_text())["commit"])
+
+    def test_fork_source_rejects_wrong_stale_missing_and_dirty_inputs(self) -> None:
+        cases = ("head", "schema", "manager", "version", "remote", "dirty", "missing", "template", "runtime")
+        for case in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as directory:
+                repo, source = self.fork_fixture(Path(directory))
+                lock_path = repo / "trellis/presets/guru-team/source/trellis-source.json"
+                lock = json.loads(lock_path.read_text())
+                if case in ("head", "schema", "manager", "version"):
+                    key, value = {"head": ("commit", "0" * 40), "schema": ("schema_version", "2.0"),
+                                  "manager": ("package_manager", "pnpm@9.0.0"),
+                                  "version": ("cli_version", "0.6.15")}[case]
+                    lock[key] = value
+                    lock_path.write_text(json.dumps(lock))
+                elif case == "remote":
+                    subprocess.run(("git", "remote", "set-url", "upstream",
+                                    "https://github.com/mindfold-ai/Trellis.git"), cwd=source, check=True)
+                elif case == "dirty":
+                    (source / "packages/cli/bin/trellis.js").write_text("changed\n")
+                elif case == "missing":
+                    (source / "packages/cli/dist/cli/index.js").unlink()
+                elif case == "template":
+                    (source / "packages/cli/dist/templates/trellis/example.md").write_text("old\n")
+                else:
+                    (source / "packages/cli/dist/cli/index.js").write_text('console.log("0.6.15");\n')
+                with self.assertRaises(self.matrix.MatrixError):
+                    self.matrix.validate_fork_source(repo, source)
+
+    def test_full_mode_blocks_before_creating_resources(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repo, source = self.fork_fixture(root)
+            args = argparse.Namespace(repo_root=repo, fork_source=source,
+                                      mode="full", work_root=root / "work")
+            with self.assertRaisesRegex(self.matrix.MatrixError, "requires --predecessor-source") as raised:
+                self.matrix.run_matrix(args)
+            failure = self.matrix.matrix_failure_payload(raised.exception)["failure"]
+            self.assertEqual(failure["stage"], "pre-matrix")
+            self.assertEqual(failure["command_label"], "predecessor-source-validation")
+            self.assertFalse(args.work_root.exists())
+
+    def test_full_public_dispatch_reaches_catalog_with_verified_sources(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repo, source = self.fork_fixture(root)
+            commit = json.loads((repo / "trellis/presets/guru-team/source/trellis-source.json").read_text())["commit"]
+            args = argparse.Namespace(repo_root=repo, fork_source=source, mode="full",
+                predecessor_source=source, predecessor_commit=commit, before_cli="0.6.16")
+            with mock.patch.object(self.matrix, "_run_historical_matrix", return_value={"status": "passed"}) as catalog:
+                self.assertEqual(self.matrix.run_matrix(args), {"status": "passed"})
+            catalog.assert_called_once()
+            self.assertEqual(catalog.call_args.kwargs["predecessor"]["commit"], commit)
+            self.assertEqual(catalog.call_args.kwargs["source"]["command"],
+                             catalog.call_args.kwargs["predecessor"]["command"])
+            self.assertEqual(args.target_cli, "0.6.16")
+
+    def test_predecessor_accepts_flat_build_and_rejects_wrong_identity(self) -> None:
+        import shutil
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repo, source = self.fork_fixture(root)
+            flat = root / "old fork"
+            shutil.copytree(source / "packages/cli", flat)
+            (flat / ".gitignore").write_text("dist/\n")
+            def git(*args):
+                return subprocess.run(("git", *args), cwd=flat, check=True,
+                                      text=True, capture_output=True).stdout.strip()
+            git("init", "-q")
+            git("add", ".")
+            git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "flat")
+            git("remote", "add", "origin", "https://github.com/castbox/Trellis.git")
+            args = argparse.Namespace(repo_root=repo, predecessor_source=flat,
+                predecessor_commit=git("rev-parse", "HEAD"), before_cli="0.6.16")
+            result = self.matrix.validate_predecessor_source(args)
+            self.assertEqual(result["command"][1], str(flat.resolve() / "bin/trellis.js"))
+            args.before_cli = "0.6.5"
+            with self.assertRaisesRegex(self.matrix.MatrixError, "version/package manager"):
+                self.matrix.validate_predecessor_source(args)
+            args.before_cli = "0.6.16"
+            args.predecessor_commit = "0" * 40
+            with self.assertRaisesRegex(self.matrix.MatrixError, "HEAD"):
+                self.matrix.validate_predecessor_source(args)
+
+    def test_full_catalog_runs_cells_parallel_check_and_owner_representative(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            repo, source = self.fork_fixture(root)
+            commit = json.loads((repo / "trellis/presets/guru-team/source/trellis-source.json").read_text())["commit"]
+            args = argparse.Namespace(repo_root=repo, fork_source=source, mode="full",
+                predecessor_source=source, predecessor_commit=commit, before_cli="0.6.16",
+                before_tag="before", work_root=root / "install/matrix", workflow_source="fixture",
+                allow_local_sample=False)
+            cells = [{"cell_id": "codex-" + scenario, "platform": "codex", "scenario": scenario}
+                     for scenario in ("clean", "existing")]
+            def cell(**kwargs):
+                target = kwargs["cell_root"] / "project"
+                target.mkdir()
+                (target / "installed-marker").write_text("installed")
+                self.assertEqual(kwargs["predecessor"]["commit"], commit)
+                return {"status": "passed", "workflow_sample": "exact_marketplace"}
+            real_run = self.matrix._run
+            def run(command, **kwargs):
+                if any(str(part).endswith("verify_installed_parallel_finish.py") for part in command):
+                    return '{"status":"passed"}'
+                return real_run(command, **kwargs)
+            with mock.patch.object(self.matrix, "build_matrix", return_value={
+                    "cells": cells, "platform_inventory_sha256": "platforms", "matrix_sha256": "matrix"}), \
+                 mock.patch.object(self.matrix, "source_state", return_value={"head": commit, "identity_sha256": "state"}), \
+                 mock.patch.object(self.matrix, "resolve_before_tag", return_value={
+                    "before_tag": "before", "before_commit": commit, "before_tag_object": commit}), \
+                 mock.patch.object(self.matrix, "_run_cell", side_effect=cell) as run_cell, \
+                 mock.patch.object(self.matrix, "_run", side_effect=run):
+                result = self.matrix.run_matrix(args)
+            self.assertEqual(run_cell.call_count, 2)
+            self.assertEqual(result["mode"], "full")
+            self.assertEqual(result["parallel_finish"]["status"], "passed")
+            self.assertEqual((root / "install/project/installed-marker").read_text(), "installed")
+
+    def test_existing_cell_seeds_before_command_then_updates_target_command(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            before = ("node", "/before/bin/trellis.js")
+            target = ("node", "/target/packages/cli/bin/trellis.js")
+            projection = {"projection_sha256": "projection"}
+            with mock.patch.object(self.matrix, "validate_fork_source", return_value={"command": target}), \
+                 mock.patch.object(self.matrix, "_init_git_repo"), \
+                 mock.patch.object(self.matrix, "_assert_version", side_effect=["0.6.5", "0.6.16"]), \
+                 mock.patch.object(self.matrix, "_export_git_tree"), \
+                 mock.patch.object(self.matrix, "_install_workflow", return_value=False) as init, \
+                 mock.patch.object(self.matrix, "_docs_authority_snapshot", return_value={}), \
+                 mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
+                 mock.patch.object(self.matrix, "capability_projection", return_value=projection), \
+                 mock.patch.object(self.matrix, "installed_capability_projection", return_value=projection), \
+                 mock.patch.object(self.matrix, "_load_json", return_value={"extension": {"version": "0.6.5-guru.36"}}), \
+                 mock.patch.object(self.matrix, "_run", return_value="MIGRATION REQUIRED") as run, \
+                 mock.patch.object(self.matrix, "_workflow_source_requires_local_sample", return_value=False), \
+                 mock.patch.object(self.matrix, "_preview_and_switch_workflow") as switch, \
+                 mock.patch.object(self.matrix, "_assert_docs_authority"), \
+                 mock.patch.object(self.matrix, "compare_capabilities", return_value={"comparison_sha256": "comparison"}), \
+                 mock.patch.object(self.matrix, "_assert_projection_consistency"), \
+                 mock.patch.object(self.matrix, "validate_cell", return_value={}):
+                result = self.matrix._run_cell(repo_root=root, cell_root=root / "cell", platform="codex",
+                    scenario="existing", workflow_source="fixture", before_tag="before",
+                    before_cli="0.6.5", target_cli="0.6.16", allow_local_sample=False,
+                    fork_source=root / "fork", predecessor={"command": before})
+            self.assertEqual(init.call_args.args[1], before)
+            self.assertEqual([call.args[0] for call in run.call_args_list], [
+                (*target, "update", "--dry-run"), (*target, "update", "--migrate", "--skip-all")])
+            self.assertEqual(switch.call_args.args[1], target)
+            self.assertEqual(result["update_mode"], "migrate")
+
+    def test_standalone_shell_env_forwards_full_and_explicit_focused(self) -> None:
+        import shutil
+        import sys
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            shell = root / VERIFIER.relative_to(REPO)
+            shell.parent.mkdir(parents=True)
+            shutil.copy2(VERIFIER, shell)
+            runtime = root / "trellis/skills/guru-team/runtime"
+            runtime.mkdir(parents=True)
+            (runtime / "bootstrap.py").write_text('print("{}")\n')
+            resolver = runtime / "resolve-python.sh"
+            resolver.write_text(f'#!/bin/sh\nshift 2\nexec "{sys.executable}" "$@"\n')
+            resolver.chmod(0o755)
+            helpers = shell.parent / "verify-throwaway-runtime-helpers.sh"
+            helpers.write_text(f'source_python() {{ "{sys.executable}" "$@"; }}\nassert_source_runtime_checkpoint() {{ :; }}\n')
+            scripts = shell.parent.parent / "python"
+            scripts.mkdir()
+            (scripts / "verify_throwaway_python_routing.py").write_text('print("{}")\n')
+            (scripts / MATRIX_HELPER.name).write_text('import json, sys\nprint(json.dumps(sys.argv[1:]))\n')
+            env = {**os.environ, "TRELLIS_FORK_SOURCE": str(root / "target fork"),
+                   "TRELLIS_PREDECESSOR_SOURCE": str(root / "before fork"),
+                   "TRELLIS_PREDECESSOR_COMMIT": "a" * 40}
+            for options, expected_mode, expected_source in (
+                ([], "full", env["TRELLIS_FORK_SOURCE"]),
+                (["--mode", "focused", "--fork-source", str(root / "explicit fork")], "focused", str(root / "explicit fork")),
+            ):
+                result = subprocess.run([str(shell), str(root / expected_mode), *options],
+                                        env=env, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                argv = json.loads(result.stdout.splitlines()[-1])
+                self.assertEqual(argv[0], "run")
+                for flag, value in (("--mode", expected_mode), ("--fork-source", expected_source),
+                    ("--predecessor-source", env["TRELLIS_PREDECESSOR_SOURCE"]),
+                    ("--predecessor-commit", "a" * 40)):
+                    self.assertEqual(argv[argv.index(flag) + 1], value)
+
+    def test_focused_mode_passes_exact_command_and_labels_its_boundary(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repo, source = self.fork_fixture(root)
+            args = argparse.Namespace(repo_root=repo, fork_source=source, mode="focused",
+                work_root=root / "work", platform="codex", workflow_source="fixture", allow_local_sample=False)
+            def init(target, command, *unused):
+                (target / ".trellis/spec").mkdir(parents=True)
+                (target / ".trellis/guru-team").mkdir()
+                (target / ".trellis/guru-team/trellis-source.json").write_bytes(
+                    (repo / "trellis/presets/guru-team/source/trellis-source.json").read_bytes())
+                (target / ".trellis/.version").write_text("0.6.16")
+                self.assertEqual(command[1], str(source / "packages/cli/bin/trellis.js"))
+                return False
+            with mock.patch.object(self.matrix, "_install_workflow", side_effect=init), \
+                 mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
+                 mock.patch.object(self.matrix, "_assert_template_hashes", return_value={}), \
+                 mock.patch.object(self.matrix, "_run", wraps=self.matrix._run) as runner, \
+                 mock.patch.object(self.matrix, "_preview_and_switch_workflow"):
+                result = self.matrix.run_matrix(args)
+            updates = [call.args[0] for call in runner.call_args_list if "update" in call.args[0]]
+            self.assertEqual(updates, [(*result["source"]["command"], "update", "--skip-all")] * 2)
+            self.assertEqual(result["same_candidate_update_count"], 2)
+            self.assertFalse(result["predecessor_upgrade_verified"])
+            self.assertFalse(result["full_matrix_verified"])
+            self.assertTrue((args.work_root / "focused-summary.json").is_file())
+
     def create_shallow_before_tag_fixture(
         self,
         root: Path,
@@ -178,6 +437,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             before_cli="0.6.5",
             target_cli="0.6.15",
             allow_local_sample=False,
+            fork_source=checkout,
         )
 
     def run_shell_workflow_switch(
@@ -250,17 +510,14 @@ preview_and_switch_managed_workflow "$TARGET" targeted-shell-switch
 
     def test_default_entry_delegates_to_live_manifest_matrix(self) -> None:
         dispatch = self.text.index(
-            'if [[ "${GURU_TEAM_THROWAWAY_SINGLE_REPO_COMPATIBILITY:-0}" != "1" ]]'
+            'if [[ "$VERIFY_MODE" == full || "$VERIFY_MODE" == focused ]]; then'
         )
         legacy_target = self.text.index('mkdir "$TARGET"', dispatch)
         self.assertLess(dispatch, legacy_target)
         segment = self.text[dispatch:legacy_target]
         self.assertIn('source_python "$COMPATIBILITY_MATRIX_HELPER" "${MATRIX_ARGS[@]}"', segment)
-        self.assertIn('--before-tag "v0.6.5-guru.10"', segment)
-        self.assertIn('--before-cli "0.6.5"', segment)
-        self.assertIn('--target-cli "$TRELLIS_TARGET_VERSION"', segment)
-        self.assertIn('TRELLIS_TARGET_VERSION="${TRELLIS_TARGET_VERSION:-0.6.15}"', self.text)
-        self.assertIn('TRELLIS_UPGRADE_TAG="${TRELLIS_UPGRADE_TAG:-0.6.15}"', self.text)
+        self.assertIn('--fork-source "$FORK_SOURCE"', segment)
+        self.assertIn('--mode "$VERIFY_MODE"', segment)
 
     def test_empty_cleanup_preserves_the_primary_verifier_failure(self) -> None:
         self.assertIn('if [[ "${#GURU_TEMP_FILES[@]}" -gt 0 ]]; then', self.text)
@@ -425,7 +682,7 @@ exit 23
                 wraps=self.matrix._run,
             ) as run_command:
                 with self.assertRaises(self.matrix.MatrixError) as raised:
-                    self.matrix.run_matrix(
+                    self.matrix._run_historical_matrix(
                         self.matrix_args(checkout, root / "work", tag_name)
                     )
 
@@ -554,7 +811,7 @@ exit 23
                 "_run_cell",
             ) as run_cell:
                 with self.assertRaises(self.matrix.MatrixError) as raised:
-                    self.matrix.run_matrix(
+                    self.matrix._run_historical_matrix(
                         self.matrix_args(checkout, root / "work", tag_name)
                     )
             failure = self.matrix.matrix_failure_payload(raised.exception)["failure"]
@@ -583,7 +840,7 @@ exit 23
                 return_value={"head": candidate, "identity_sha256": "source"},
             ), mock.patch.object(self.matrix, "_run_cell") as run_cell:
                 with self.assertRaises(self.matrix.MatrixError) as raised:
-                    self.matrix.run_matrix(
+                    self.matrix._run_historical_matrix(
                         self.matrix_args(checkout, root / "work", tag_name)
                     )
             failure = self.matrix.matrix_failure_payload(raised.exception)["failure"]
@@ -610,7 +867,7 @@ exit 23
                 "_run_cell",
             ) as run_cell:
                 with self.assertRaises(self.matrix.MatrixError) as raised:
-                    self.matrix.run_matrix(
+                    self.matrix._run_historical_matrix(
                         self.matrix_args(checkout, root / "work", "../bad^{commit}")
                     )
             failure = self.matrix.matrix_failure_payload(raised.exception)["failure"]
@@ -621,14 +878,13 @@ exit 23
             self.assertEqual(list((root / "work").iterdir()), [])
 
     def test_matrix_executor_uses_exact_upgrade_and_conditional_migrate(self) -> None:
-        upgrade = self.matrix_text.index('(str(binary), "upgrade", "--tag", target_cli)')
-        dry_run = self.matrix_text.index('(str(binary), "update", "--dry-run")', upgrade)
+        dry_run = self.matrix_text.index('(*binary, "update", "--dry-run")')
         conditional = self.matrix_text.index('if "MIGRATION REQUIRED" in dry_run:', dry_run)
         migrate = self.matrix_text.index(
-            '(str(binary), "update", "--migrate", "--skip-all")', conditional
+            '(*binary, "update", "--migrate", "--skip-all")', conditional
         )
         normal = self.matrix_text.index(
-            '(str(binary), "update", "--skip-all")', migrate
+            '(*binary, "update", "--skip-all")', migrate
         )
         workflow_call = self.matrix_text.index(
             "_preview_and_switch_workflow(", normal
@@ -639,7 +895,7 @@ exit 23
         reapply_call = self.matrix_text[
             reapply : self.matrix_text.index("\n        )", reapply) + len("\n        )")
         ]
-        self.assertLess(upgrade, dry_run)
+        self.assertNotIn('"upgrade", "--tag"', self.matrix_text)
         self.assertLess(dry_run, conditional)
         self.assertLess(conditional, migrate)
         self.assertLess(migrate, normal)
@@ -683,7 +939,7 @@ exit 23
 
             with mock.patch.object(self.matrix, "_run", side_effect=fake_run):
                 self.matrix._preview_and_switch_workflow(
-                    target, Path("trellis"), {}, "gh:example/workflows#candidate",
+                    target, ("node", "/fixture/bin/trellis.js"), {}, "gh:example/workflows#candidate",
                     current, previous, False, work,
                 )
             self.assertEqual(workflow.read_text(), "candidate\n")
@@ -704,7 +960,7 @@ exit 23
             with mock.patch.object(self.matrix, "_run") as runner:
                 with self.assertRaisesRegex(self.matrix.MatrixError, "not the expected managed"):
                     self.matrix._preview_and_switch_workflow(
-                        target, Path("trellis"), {}, "source", current, previous, False, root,
+                        target, ("node", "/fixture/bin/trellis.js"), {}, "source", current, previous, False, root,
                     )
                 runner.assert_not_called()
             self.assertEqual(workflow.read_text(), "user edit\n")
@@ -715,7 +971,7 @@ exit 23
             with mock.patch.object(self.matrix, "_run") as runner:
                 with self.assertRaisesRegex(self.matrix.MatrixError, "unresolved"):
                     self.matrix._preview_and_switch_workflow(
-                        target, Path("trellis"), {}, "source", current, previous, False, root,
+                        target, ("node", "/fixture/bin/trellis.js"), {}, "source", current, previous, False, root,
                     )
                 runner.assert_not_called()
             self.assertEqual(sidecar.read_text(), "unresolved\n")
@@ -745,7 +1001,7 @@ exit 23
                     with self.assertRaisesRegex(self.matrix.MatrixError, "unresolved"):
                         self.matrix._preview_and_switch_workflow(
                             target,
-                            Path("trellis"),
+                            ("node", "/fixture/bin/trellis.js"),
                             {},
                             "source",
                             current,
@@ -775,7 +1031,7 @@ exit 23
             with mock.patch.object(self.matrix, "_run", side_effect=mismatched_preview):
                 with self.assertRaisesRegex(self.matrix.MatrixError, "does not match"):
                     self.matrix._preview_and_switch_workflow(
-                        target, Path("trellis"), {}, "source", current, previous, False, root,
+                        target, ("node", "/fixture/bin/trellis.js"), {}, "source", current, previous, False, root,
                     )
             self.assertEqual(Path(str(workflow) + ".new").read_text(), "other\n")
 
@@ -793,7 +1049,7 @@ exit 23
             with mock.patch.object(self.matrix, "_run", side_effect=failing_switch):
                 with self.assertRaisesRegex(self.matrix.MatrixError, "primary workflow switch failure"):
                     self.matrix._preview_and_switch_workflow(
-                        target, Path("trellis"), {}, "source", current, previous, False, root,
+                        target, ("node", "/fixture/bin/trellis.js"), {}, "source", current, previous, False, root,
                     )
 
     def test_matrix_retains_legacy_representative_and_runs_parallel_finish(self) -> None:
@@ -1115,6 +1371,43 @@ exit 23
         self.assertEqual(template_hashes["unknown_drift_count"], 0)
         self.assertGreater(template_hashes["entry_count"], 0)
 
+    def test_arbitrary_agents_edits_fail_hash_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source, target = Path(directory) / "source", Path(directory) / "target"
+            for root in (source, target):
+                (root / ".trellis").mkdir(parents=True)
+                (root / "AGENTS.md").write_text("official\n")
+                (root / ".trellis/.template-hashes.json").write_text(json.dumps({
+                    "__version": 2, "hashes": {
+                        "AGENTS.md": hashlib.sha256(b"official\n").hexdigest()
+                    }
+                }))
+            self.matrix._assert_template_hashes(target, source)
+            (target / "AGENTS.md").write_text("unrelated local edit\n")
+            with self.assertRaisesRegex(self.matrix.MatrixError, "AGENTS.md"):
+                self.matrix._assert_template_hashes(target, source)
+
+    def test_agents_preset_delta_requires_original_hash_and_exact_block(self) -> None:
+        import apply_guru_team_trellis_preset as preset
+
+        with tempfile.TemporaryDirectory() as directory:
+            source, target = Path(directory) / "source", Path(directory) / "target"
+            original = b"official\n"
+            for root in (source, target):
+                (root / ".trellis").mkdir(parents=True)
+                (root / "AGENTS.md").write_bytes(original)
+                (root / ".trellis/.template-hashes.json").write_text(json.dumps({
+                    "__version": 2, "hashes": {"AGENTS.md": hashlib.sha256(original).hexdigest()},
+                }))
+            projected = original + b"\n" + preset.AGENTS_AI_FIRST_BLOCK.encode("utf-8")
+            (target / "AGENTS.md").write_bytes(projected)
+            result = self.matrix._assert_template_hashes(target, source)
+            self.assertEqual(result["known_preset_projection_paths"], ["AGENTS.md"])
+            for changed in (b"other\n" + projected, projected + b"extra\n", projected.replace(b"AI-first", b"AI-first-edited", 1)):
+                (target / "AGENTS.md").write_bytes(changed)
+                with self.assertRaisesRegex(self.matrix.MatrixError, "AGENTS.md"):
+                    self.matrix._assert_template_hashes(target, source)
+
     def test_managed_asset_hashes_are_a_verified_subset_of_managed_assets(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1397,17 +1690,13 @@ exit 23
             self.assertIn('"status": "failed"', raised.exception.error_tail)
 
     def test_cli_install_and_upgrade_stay_in_disposable_prefix(self) -> None:
-        self.assertIn('TRELLIS_CLI_PREFIX="$WORK_DIR/trellis-cli-prefix"', self.text)
-        self.assertIn(
-            'npm_config_prefix="$TRELLIS_CLI_PREFIX" npm install -g "$TRELLIS_PRE_UPGRADE_PACKAGE"',
-            self.text,
-        )
-        self.assertIn('export npm_config_prefix="$TRELLIS_CLI_PREFIX"', self.text)
-        self.assertIn('TRELLIS_CLI_BIN="$TRELLIS_CLI_PREFIX/bin/trellis"', self.text)
-        self.assertIn('trellis upgrade --tag "$TRELLIS_UPGRADE_TAG"', self.text)
-        self.assertIn('trellis-version-before-upgrade.txt', self.text)
-        self.assertIn('trellis-version-after-upgrade.txt', self.text)
-        self.assertIn('trellis upgrade escaped the isolated npm prefix', self.text)
+        self.assertNotIn('npm install', self.text)
+        self.assertNotIn('trellis upgrade --tag', self.text)
+        self.assertIn('TRELLIS_COMMAND=("$(command -v node)"', self.text)
+        with tempfile.TemporaryDirectory() as directory:
+            result = subprocess.run((str(VERIFIER), directory), capture_output=True, text=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("--fork-source is required", result.stderr)
 
     def test_initial_install_upgrade_update_preview_and_reapply_order_is_closed(self) -> None:
         initial = self.text.index("trellis init -y --claude --codex --cursor")
@@ -1415,7 +1704,7 @@ exit 23
             'preview_and_switch_managed_workflow "$TARGET" "initial-workflow-switch"',
             initial,
         )
-        upgrade = self.text.index('trellis upgrade --tag "$TRELLIS_UPGRADE_TAG"')
+        upgrade = self.text.index('# Historical predecessor upgrade is unsupported')
         dry_run = self.text.index("trellis update --dry-run 2>&1", upgrade)
         migrate_branch = self.text.index('if grep -Fq "MIGRATION REQUIRED"', dry_run)
         migrate = self.text.index("trellis update --migrate --skip-all", migrate_branch)
