@@ -115,6 +115,7 @@
 
 `BEH-017` 由 `D392-04..06` 承接，并由 `T392-04..06`、`SCN-077..078` 验证。
 定义定位：本版本 Requirements `requirement-main.md`、Design `design-main.md`、Test
-`test-strategy.md` / `test-plan.md`。reviewed candidate 输入保留在
-`docs/requirements-design-test-contributions/392-release-v0616-guru1/`，promotion 后不改写其
-`reviewed_candidate` 历史状态。
+`test-strategy.md` / `test-plan.md`。reviewed promotion 来源保留在
+`docs/requirements-design-test-contributions/392-release-v0616-guru1/`；其稳定状态为
+`reviewed_promoted`，`.47` 是 immutable predecessor，`.48` 是 current active authority。
+该 promotion identity 不证明后续 Phase 2、Branch Review 或发布 gate outcome。

@@ -21,9 +21,10 @@
 
 ## Boundary And Decision
 
-active `.47` 已记录固定 Fork 来源、CLI `0.6.16` 与 extension
-`0.6.15-guru.40` 的过渡状态，但正式 predecessor 仍为 `v0.6.15-guru.6`，current
-release-facing surfaces 尚未统一到 `v0.6.16-guru.1` / `0.6.16-guru.41`。
+immutable `.47` 记录固定 Fork 来源、CLI `0.6.16` 与 extension
+`0.6.15-guru.40` 的过渡状态；正式 predecessor 仍为 `v0.6.15-guru.6`。promoted
+`.48` 将 current release-facing surfaces 统一到 `v0.6.16-guru.1` /
+`0.6.16-guru.41`，但该 mapping 不证明后续发布 gate、tag 或 GitHub Release 已完成。
 
 目标边界以 `target_native` 直接演进 current mapping：
 
@@ -45,7 +46,7 @@ release-facing surfaces 尚未统一到 `v0.6.16-guru.1` / `0.6.16-guru.41`。
 
 | Concern | Applicability | #392 stable contract |
 | --- | --- | --- |
-| `authority-binding` | `applicable` | 绑定 Architecture 2.0、active `.47`、Issue #392 与 project change contract v1 |
+| `authority-binding` | `applicable` | 绑定 Architecture 2.0、immutable `.47` predecessor、active `.48` successor、Issue #392 与 project change contract v1 |
 | `constitution-binding` | `applicable` | 命中概念完整、职责隔离、最小复杂度与单向收敛；constitution identity 不变 |
 | `boundary-and-decision` | `applicable` | `target_native` 直接演进 current release mapping，并派生 `.48` knowledge authority |
 | `owner-and-single-writer` | `applicable` | task worktree 写 contribution 和 delivery；Architecture/RDT promotion owner 单写 shared current；tag、Release、Issue close 各自独立 |
