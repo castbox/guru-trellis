@@ -1,27 +1,5 @@
 # Design Contribution
 
-## Ownership
-
-`D378-01` owns explicit source validation and direct Fork CLI use; `D378-02`
-owns the Fork resolver/main-hook boundary; `D378-03` owns preset source-record
-projection; `D378-04` owns verifier fixture composition and full/focused routing.
-
-`castbox/Trellis` owns framework source and official generated templates.
-`guru-trellis` owns Guru workflow/preset assets and source provenance records.
-The fixed Fork SHA is the source identity; Guru does not create a second
-framework implementation or patch installed upstream files directly.
-
-## Integration
-
-The existing verifier consumes the source lock and validates an explicitly
-supplied Fork checkout. The Fork's own install/build commands produce the CLI;
-the verifier calls its Node entry directly for init/update and reapplies the
-Guru preset. No new launcher, distribution package, or dist-copy mechanism is
-introduced. Source and installed checks consume the same lock; failure does not
-select the original npm distribution.
-
-## Compatibility
-
-Use direct evolution for the original framework source path. No permanent
-dual-source fallback is introduced. Existing local customizations, session
-files, sidecars and unrelated worktrees are preserved and audited separately.
+状态：promoted；`D378-01..04` 的 accepted/current 定义见 [current Design](../../design/versions/current-main-0.6.5-guru.47/design-main.md)。
+关系：promoted_to；原 Fork/Guru namespace ownership、direct source evolution 与 verifier fixture composition 在同版本正文承接。
+Architecture public inheritance 为 [baseline](../../architecture/README.md) / `current-main-0.6.5-guru.47` / `active`；不复制 Architecture 私有状态或正文。

@@ -2,13 +2,13 @@
 
 ## Current identity
 
-- version：`current-main-0.6.5-guru.46`
+- version：`current-main-0.6.5-guru.47`
 - status：`active`
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
 - Architecture inheritance：`docs/architecture/README.md`，同版本、`active`
-- source binding：reviewed `architecture-contribution-376-base-continuity-command-v1` + inherited `current-main-0.6.5-guru.45` authority；current graph 23 Skills / 97 exits / 78 commands；#305 已确认的 `EVO-001..007` target delta 保持独立 target authority（精确 revision 由包含本 authority 的 Git object/tree identity 绑定；本 projection 不记录可变 HEAD 或 lifecycle 状态）
+- source binding：reviewed `architecture-contribution-378-pinned-fork-runtime-v1` + inherited `current-main-0.6.5-guru.46` authority；current graph 23 Skills / 97 exits / 78 commands；#305 target authority 不变（精确 revision 由包含本 authority 的 Git object/tree identity 绑定；本 projection 不记录可变 HEAD 或 lifecycle 状态）
 
 ## 读取与更新
 

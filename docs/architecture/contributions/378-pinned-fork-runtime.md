@@ -12,8 +12,10 @@
 - Change contract: `docs/architecture/06-governance/change-contract.md`,
   `guru-trellis-architecture-change-contract-v1`, concern set
   `guru-trellis-architecture-change-concerns-v1`.
-- Change path: `target_native`. State: unpromoted candidate. Independent
-  committed Branch Review and shared-authority promotion remain outstanding.
+- Change path: `target_native`. Successor: `current-main-0.6.5-guru.47`.
+  Independent committed review covers `a2b32ea8dc730eecf0507e0adfb946ce9b8c7bc8`
+  through `5f7a8a9a8d6d74f35c3fce10439fda9846508c57`; the promotion delta still
+  requires its own Phase 2, commit and independent Branch Review.
 
 ## Before And Candidate
 
@@ -79,6 +81,7 @@ merge values are not remote delivery evidence.
 
 No separate ADR is required: this applies the existing ownership and
 minimum-complexity constitution without a new architectural pattern.
-The shared .46 baseline is unchanged. Promotion must reconcile distribution
-source/version statements and evidence boundaries after independent committed
-review; no successor baseline is claimed here.
+The shared authority evolves from expected .46 to successor .47 after the
+independent committed review. Current source/version statements and evidence
+boundaries are reconciled in the successor; no release or business continuation
+claim follows from this knowledge promotion. Post-promotion checks remain required.

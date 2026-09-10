@@ -32,6 +32,12 @@
 
 ## Capability 与 installation consistency 边界
 
+- `ARCH-INT-014`：框架与扩展来源分离：`trellis/presets/guru-team/source/trellis-source.json`
+  是唯一框架来源记录，preset 仅投影到 `.trellis/guru-team/trellis-source.json`。
+  README 准备链与 verifier 使用显式 checkout、固定 SHA 和 Fork 自身构建/Node bin；
+  失败不回退到原 npm 包或全局 CLI，不复制 dist、不新增 launcher 或打包分发系统。
+  full 历史验证需独立 predecessor checkout/SHA；focused 只证明当前 candidate 场景。
+
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。
 - `skill_api` 与 interface/schema/command projection、distribution、managed/installed file

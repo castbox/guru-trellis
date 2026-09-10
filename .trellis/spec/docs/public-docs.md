@@ -52,9 +52,11 @@ latest/canary inputs and must not be presented as stable release provenance.
 Prompts in `README.md` are meant to be copied into an AI coding session in a
 target business repository. They should tell the AI to:
 
-- confirm the current `@mindfoldhq/trellis` latest version live, while clearly
-  distinguishing it from the pinned official Trellis target used by the current
-  Guru Team stable release
+- read the canonical `trellis/presets/guru-team/source/trellis-source.json`,
+  verify its exact `castbox/Trellis` commit and successful local build, and use
+  that checkout's normal Node CLI; do not select the original npm distribution,
+  global CLI or mutable latest as a fallback. Keep framework commit, CLI version,
+  Guru extension revision and historical stable release identity distinct
 - detect conflicting SDD or agent harness frameworks before installing
 - use the `guru-team` marketplace workflow source
 - apply the preset installer from this public repository
