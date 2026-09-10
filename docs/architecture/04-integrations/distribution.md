@@ -38,6 +38,13 @@
   失败不回退到原 npm 包或全局 CLI，不复制 dist、不新增 launcher 或打包分发系统。
   full 历史验证需独立 predecessor checkout/SHA；focused 只证明当前 candidate 场景。
 
+- `ARCH-INT-015`：#392 Stage 1 的 repository-private release orchestration 按唯一顺序连接
+  pre-promotion fresh Phase 2 / Task Commit / `origin/main...HEAD` Branch Review -> expected `.47`
+  serialized Architecture/RDT promotion -> post-promotion fresh Phase 2 / Task Commit /完整 Branch Review。
+  第二次 review 通过后才可进入 Publication。preparation merge 后所有 Stage 1 gate identity 失效，
+  Stage 2 只接受 fresh `origin/main` exact commit/tree；完整 Release Gate、annotated tag、tag-pinned smoke、
+  GitHub Release、Issue close 与 cleanup 各自由其 live owner 独立处理。
+
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。
 - `skill_api` 与 interface/schema/command projection、distribution、managed/installed file

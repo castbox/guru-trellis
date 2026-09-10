@@ -1,0 +1,65 @@
+schema_version: "1.0"
+task_ref: "392-release-v0616-guru1"
+task_locator: ".trellis/tasks/09-10-392-release-v0616-guru1"
+issue_ref: "https://github.com/castbox/guru-trellis/issues/392"
+source_version: "current-main-0.6.5-guru.47"
+expected_current_version: "current-main-0.6.5-guru.47"
+candidate_successor_version: "current-main-0.6.5-guru.48"
+status: "reviewed_promoted"
+authority_scope: "isolated_contribution"
+change_path: "target_native"
+contribution:
+  requirements: "docs/requirements-design-test-contributions/392-release-v0616-guru1/requirements.md"
+  design: "docs/requirements-design-test-contributions/392-release-v0616-guru1/design.md"
+  test: "docs/requirements-design-test-contributions/392-release-v0616-guru1/test.md"
+  traceability: "docs/requirements-design-test-contributions/392-release-v0616-guru1/traceability.md"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.5-guru.48"
+  status: "active"
+architecture_candidate:
+  contribution_locator: "docs/architecture/contributions/392-release-v0616-guru1.md"
+  contribution_identity: "architecture-contribution-392-release-v0616-guru1-v2"
+  candidate_successor_version: "current-main-0.6.5-guru.48"
+  promotion_state: "reviewed_promoted"
+  adr_required: false
+traceability:
+  requirements:
+    - "R392-01"
+    - "R392-02"
+    - "R392-03"
+    - "R392-04"
+    - "R392-05"
+    - "R392-06"
+    - "R392-07"
+    - "R392-08"
+    - "R392-09"
+  designs:
+    - "D392-01"
+    - "D392-02"
+    - "D392-03"
+    - "D392-04"
+    - "D392-05"
+    - "D392-06"
+  tests:
+    - "T392-01"
+    - "T392-02"
+    - "T392-03"
+    - "T392-04"
+    - "T392-05"
+    - "T392-06"
+  scenarios:
+    - "SCN-077"
+    - "SCN-078"
+  architecture_refs:
+    - "ARCH-CUR-025"
+    - "ARCH-INT-015"
+    - "EVD-024"
+public_contracts:
+  rdt_owner: "guru-maintain-requirements-design-test-ssot:task_impact_sync"
+  architecture_candidate: "guru-maintain-architecture-baseline:2.0"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+architecture_promotion_owner: "guru-maintain-architecture-baseline"
+promotion_state: "reviewed_promoted"
+promotion_decision: "promoted_to_current-main-0.6.5-guru.48"
+shared_current_write: true

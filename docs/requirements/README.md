@@ -6,7 +6,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.5-guru.47` | [requirement-main.md](./versions/current-main-0.6.5-guru.47/requirement-main.md) | #378 reviewed 固定 Fork runtime 与会话隔离；继承 .46 authority，不构成 npm/Release 或完整矩阵证明 |
+| `active` | `current-main-0.6.5-guru.48` | [requirement-main.md](./versions/current-main-0.6.5-guru.48/requirement-main.md) | #392 reviewed release mapping 与 serialized promotion lifecycle；继承 immutable `.47`，不构成 tag/Release/merge/完整矩阵/business smoke/Issue closure 证明 |
+| `superseded` | `current-main-0.6.5-guru.47` | [requirement-main.md](./versions/current-main-0.6.5-guru.47/requirement-main.md) | #378 reviewed 固定 Fork runtime 与会话隔离；immutable history |
 | `superseded` | `current-main-0.6.5-guru.46` | [requirement-main.md](./versions/current-main-0.6.5-guru.46/requirement-main.md) | #376 reviewed post-review base continuity；继承 `.45` authority，current graph 23 Skills / 97 exits / 78 commands，不执行 push/tag/Release 或记录 lifecycle 状态 |
 | `superseded` | `current-main-0.6.5-guru.45` | [requirement-main.md](./versions/current-main-0.6.5-guru.45/requirement-main.md) | #332 original-entry convergence 与 23/97/77 before-state |
 | `superseded` | `current-main-0.6.5-guru.44` | [requirement-main.md](./versions/current-main-0.6.5-guru.44/requirement-main.md) | #332 release-current alignment、#240/#348 reviewed authority 与 23/97/81 before-state |
@@ -21,8 +22,8 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [requirement-main.md](./versions/current-main-0.6.5-guru.35/requirement-main.md) | #266 激活的历史 current snapshot |
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
-当前框架源码固定为 `castbox/Trellis@ad332e3fe5a19d7274cb03e7c2f3e2128f8de291`，CLI/core `0.6.16`；Guru live manifest 为 `0.6.15-guru.40`。
-Docs `.47` 只提升 #378 reviewed contribution，不是 npm、tag 或 Release 发布。历史 official `0.6.15` compatibility 与 #332 Release authority 保持其原 evidence 边界；完整历史矩阵、业务 #31/#127 接续、独立 TypeCheck 与 remote Release 均保持 `unverified`。
+当前框架源码固定为 `castbox/Trellis@ad332e3fe5a19d7274cb03e7c2f3e2128f8de291`，CLI/core `0.6.16`；Guru live manifest 为 `0.6.16-guru.41`，repository release target 为 `v0.6.16-guru.1`。
+Docs `.48` 提升 #392 reviewed contribution 与 serialized promotion 顺序，不是 npm、tag 或 GitHub Release 发布。promotion-created diff 必须通过 fresh Phase 2/commit/Branch Review 后才能进入 Publication；merge 后重新冻结 exact candidate，并由后续 owner 独立验证完整 matrix、业务 smoke、tag、Release 与 Issue closure。
 
 `R378-01..04 -> D378-01..04 -> T378-01..05` 承接固定来源、会话隔离、installed 投影与原 verifier 入口；#388/#389 保留为关联前置，既有 #240/#348/#332/#376 与 Evolution authority 不扩张。
 

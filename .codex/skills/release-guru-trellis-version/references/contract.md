@@ -43,32 +43,47 @@ Route preparation through standard intake and the existing global workflow:
 
 1. Planning records stable `prd.md`, `design.md`, `implement.md`, and the Docs
    SSOT plan.
-2. Phase 2 changes final delivery content and performs the scoped semantic
-   check.
-3. `guru-create-task-commit` exclusively owns every task commit preview,
-   confirmation, and commit mutation.
-4. After the final delivery-content commit, invoke `guru-review-branch` once
-   for one independent full `origin/<base>...HEAD` Branch Review.
-5. Only a fresh passed Branch Review enters
+2. Phase 2 changes the pre-promotion delivery content and performs the scoped
+   semantic check.
+3. `guru-create-task-commit` exclusively owns the pre-promotion task commit
+   preview, confirmation, and commit mutation.
+4. Invoke `guru-review-branch` for one independent full
+   `origin/<base>...HEAD` review of the committed pre-promotion delivery.
+5. Only a fresh passed pre-promotion Branch Review with zero open P0-P3 findings
+   may enter the serialized Architecture and RDT promotion owners. Promotion
+   binds the expected current identity and changes shared delivery content.
+6. The promotion-created diff returns through fresh Phase 2 and
+   `guru-create-task-commit`; that commit preview, confirmation, and mutation
+   remain exclusively owned by `guru-create-task-commit`.
+7. Invoke `guru-review-branch` again for one independent full
+   `origin/<base>...HEAD` review of the complete post-promotion delivery.
+8. Only the fresh passed post-promotion Branch Review enters
    `guru-review-task-publication`, which generates and semantically reviews the
    Chinese PR title and body from the live Issue, exact diff, current
    validation, and reviewed-content identity.
-6. Only Publication's current minimal result enters `guru-finalize-task`.
+9. Only Publication's current minimal result enters `guru-finalize-task`.
    Finalizer exclusively owns its push, PR creation, archive, and Ready
    transaction. Only `guru-finalize-task:ready_for_merge` may enter
    `guru-merge-task-pr`, which exclusively owns expected-head merge and closure
    verification.
 
+Each `guru-create-task-commit` invocation exclusively owns its exact task commit
+preview, confirmation, and commit mutation. The first review cannot be reused
+for promotion-created bytes, and the second review cannot run before promotion.
+
 The honest path is exactly:
 
 ```text
-stable_plan -> final_delivery_content -> guru-create-task-commit -> final_delivery_content_commit -> guru-review-branch_once -> guru-review-task-publication -> guru-finalize-task
+stable_plan -> pre_promotion_delivery -> guru-create-task-commit -> pre_promotion_commit -> guru-review-branch_pre_promotion -> serialized_architecture_rdt_promotion -> fresh_phase2 -> guru-create-task-commit -> post_promotion_commit -> guru-review-branch_post_promotion -> guru-review-task-publication -> guru-finalize-task
 ```
 
 Owner-private lifecycle metadata and the existing Finalizer metadata tail
 excluded by `guru-reviewed-content-1.0` do not change reviewed delivery
 identity and MUST NOT create a release-status commit, self-reference loop, or
-second Branch Review. Any non-allowlisted tracked change returns to task work.
+an additional Branch Review. Any non-allowlisted tracked change returns to task
+work. Architecture/RDT promotion is an intentional reviewed-content mutation,
+not lifecycle metadata, and therefore requires the explicit fresh Phase 2,
+commit, and post-promotion Branch Review above.
 
 ### Stage 2: Post-Merge Exact Candidate
 
@@ -89,7 +104,7 @@ and bind every command and result to `predecessor_tag` and `candidate_commit`:
 | source and installed validators | `./trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh --root . --mode source --json` and `./.trellis/guru-team/scripts/bash/check-skill-packages.sh --root . --mode installed --json` |
 | Shared/Codex/Claude/Cursor parity | Run the source validator once for each stable projection root: `for root in .agents/skills .codex/skills .claude/skills .cursor/skills; do ./trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh --root . --mode source --platform-root "$root" --json; done`, then byte-compare the release Skill's `SKILL.md` and `references/contract.md` across those four roots. |
 | ownership, preset, and dogfood drift | `./trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json`, `./trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms`, and `./trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh --repo .`; inspect and reject any unexpected mutation from reapply. |
-| install/update/reapply checks | Run the existing single-repository compatibility profile against the exact candidate: `GURU_TEAM_THROWAWAY_SINGLE_REPO_COMPATIBILITY=1 TRELLIS_WORKFLOW_SOURCE="gh:castbox/guru-trellis/trellis#${candidate_commit}" ./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh`. This one clean Shared/Codex/Claude/Cursor install plus existing-project update/reapply flow is the ordinary Issue's targeted proof, not the verifier's default cumulative multi-platform Release Gate matrix. |
+| install/update/reapply checks | Resolve `trellis_fork_source` to the already-built clean Fork checkout whose HEAD equals the candidate tree's pinned Trellis source-lock commit, then run the verifier's focused profile against the exact candidate: `TRELLIS_FORK_SOURCE="${trellis_fork_source}" TRELLIS_WORKFLOW_SOURCE="gh:castbox/guru-trellis/trellis#${candidate_commit}" ./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh --mode focused`. The resolved checkout is invocation-local evidence, not a seventh release input. This one clean Shared plus selected-platform install (Codex by default) with existing-project update/reapply is the ordinary Issue's targeted proof; four-platform source-contract parity remains the separate gate above, and this focused invocation is not the verifier's default cumulative multi-platform Release Gate matrix. |
 | secret scan | Derive the exact changed-file set with `git diff --name-only --diff-filter=ACMRT "${predecessor_tag}^{commit}" "${candidate_commit}^{commit}" --` and run the current environment's real secret-scanning capability over those candidate file bytes. A missing scanner, incomplete file set, alert, or unavailable result is `SKIP` or `FAIL`, not a pass. |
 | residue check; residue and diff hygiene | `git status --short`, `git diff --check`, and `find . \( -type d -name '__pycache__' -o -type f \( -name '*.pyc' -o -name '*.pyo' -o -name '*.new' -o -name '*.bak' \) \) -print`; any unexpected output is blocking. |
 

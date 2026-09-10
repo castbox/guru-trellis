@@ -55,10 +55,10 @@ spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`�
 安装来源。当前框架来源以 source lock 的完整 SHA 为准，未发布 Guru 候选不能声称已由
 该历史 tag 提供。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
 并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 精确映射。本次 stable
-source 目标是 annotated tag `v0.6.15-guru.6`，canonical extension version 为
-`0.6.15-guru.40`。Repo release tag 与 extension revision 是独立版本轴；workflow
+source 目标是 annotated tag `v0.6.16-guru.1`，canonical extension version 为
+`0.6.16-guru.41`。Repo release tag 与 extension revision 是独立版本轴；workflow
 marketplace 与 preset 必须来自同一个 immutable tag。该 tag object、peeled source
-commit、GitHub Release、tag-pinned install 与 post-publish smoke 尚未创建或验证；#332
+commit、GitHub Release、tag-pinned install 与 post-publish smoke 尚未创建或验证；#392
 必须在 preparation PR 合并后重新冻结 exact candidate，并从头执行 Release gates。
 
 已有 Trellis 项目切换 active workflow：
@@ -203,8 +203,8 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 `.trellis/guru-team/runtime/resolve-python.sh`。缺 runtime、版本漂移或未解决 sidecar 时必须在
 业务副作用前 fail closed，不得回退 PATH Python。
 
-当前 release-facing source 的 canonical extension version 为 `0.6.15-guru.40`，目标
-release tag 为 `v0.6.15-guru.6`；二者的发布事实仍由 #332 successor Release gates 建立。
+当前 release-facing source 的 canonical extension version 为 `0.6.16-guru.41`，目标
+release tag 为 `v0.6.16-guru.1`；二者的发布事实仍由 #392 exact-candidate Release gates 建立。
 Source/installed package validation 必须同时验证
 registry、22 invokes / 95 exits / 59 combined targets（35 workflow + 24 stop）
 business marker graph、23-package/97-exit closure、consumer
