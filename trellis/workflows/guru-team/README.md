@@ -37,20 +37,23 @@ provenance 写入目标仓库的 `.trellis/guru-team/extension.json`，并通过
 
 ## Marketplace 安装
 
+先按根 README 核验并构建 source lock 指定的 `castbox/Trellis` checkout。
+`FORK_SOURCE` 是调用者提供的已核验目录；`GURU_WORKFLOW_SOURCE` 是与 preset
+源码一致的已审查 marketplace ref。当前命令不使用 PATH/global CLI。
+
 ```bash
-trellis init -y --claude --codex --cursor \
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" init -y --claude --codex --cursor \
   --workflow guru-team \
-  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.15-guru.6
+  --workflow-source "$GURU_WORKFLOW_SOURCE"
 ```
 
 `-y` 是团队默认安装路径的一部分，用于跳过交互式 spec template picker。自动验收、
 throwaway 安装验证和 README 默认命令都必须使用非交互形式；只有用户明确想手动选择
 spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`。
 
-本次发布 source 固定使用目标 repo release tag `#v0.6.15-guru.6`，并要求官方 Trellis CLI 安装到
-`0.6.15`。维护者刻意跟随最新 `main` / canary 时可以去掉 `#ref` 或改用其它 branch/tag ref，
-但应在验证和排障报告中说明 source 是否为 mutable ref，以及是否仍以官方 Trellis `0.6.15`
-为目标基线。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
+历史发布计划曾以 `#v0.6.15-guru.6` 与官方 CLI `0.6.15` 为目标；它不定义当前 Fork
+安装来源。当前框架来源以 source lock 的完整 SHA 为准，未发布 Guru 候选不能声称已由
+该历史 tag 提供。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
 并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 精确映射。本次 stable
 source 目标是 annotated tag `v0.6.15-guru.6`，canonical extension version 为
 `0.6.15-guru.40`。Repo release tag 与 extension revision 是独立版本轴；workflow
@@ -61,8 +64,8 @@ commit、GitHub Release、tag-pinned install 与 post-publish smoke 尚未创建
 已有 Trellis 项目切换 active workflow：
 
 ```bash
-trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.6 \
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
+  --marketplace "$GURU_WORKFLOW_SOURCE" \
   --template guru-team --create-new
 ```
 
@@ -70,8 +73,8 @@ trellis workflow \
 identity；确认预览可安全应用后，使用同一 provider 显式替换 active workflow：
 
 ```bash
-trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.15-guru.6 \
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
+  --marketplace "$GURU_WORKFLOW_SOURCE" \
   --template guru-team --force
 ```
 
@@ -239,8 +242,9 @@ managed claims 和上述 3 个 additive overlays，只记录 current Guru-owned 
 非 current ownership/installed manifest 在 mutation 前统一
 fail closed，不存在 projection 或迁移入口。当前完整升级/更新顺序为：
 
-1. 在 disposable npm prefix/container 中执行 `trellis upgrade --tag latest`，核验
-   upgrade 前后 CLI version，绝不修改开发机 global npm；
+1. 通过 source lock 核验已构建的 `castbox/Trellis` checkout，直接运行其
+   `packages/cli/bin/trellis.js`；历史升级 cell 还需明确的 predecessor checkout
+   与 SHA，不下载原框架 npm 包，也不运行 stock `trellis upgrade`；
 2. 在目标 throwaway project 执行 `trellis update --dry-run`；只有输出明确包含
    `MIGRATION REQUIRED` 时执行 `trellis update --migrate --skip-all`，否则执行
    `trellis update --skip-all`；`--skip-all` 保留已有修改并非交互继续，两条 live

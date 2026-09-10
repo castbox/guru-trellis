@@ -32,7 +32,13 @@ evidence，避免 tracked evidence 对 candidate tree 形成自引用。
 `EVD-009` 是独立完成的真实 provider evidence。当前 authority 组合消费两类证据，
 不声称任何 matrix JSON 已被改写，也不构造伪造的 combined artifact。
 
-当前 Architecture/RDT evidence 已由各自 serialized owner 建立唯一 active `.46` successor；promotion-created
-combined diff 仍须 fresh Phase 2、task commit 与 Branch Review。`v0.6.15-guru.6` / extension
-`0.6.15-guru.40` stable tag、GitHub Release、tag-pinned install、latest-stable 晋升与 release smoke 仍保持
-`unverified`，owner 为 Issue #332 post-merge exact-candidate Release lifecycle；#267 不由本 promotion 修改。
+`EVD-023`：#378 精确 `a2b32ea8dc730eecf0507e0adfb946ce9b8c7bc8...5f7a8a9a8d6d74f35c3fce10439fda9846508c57`
+范围已通过 independent fresh-final Branch Review 及正式 checker/public wrapper。
+它支撑 `ARCH-CUR-024`、`ARCH-INT-014` 与 `.47` contribution promotion：固定 Fork 源码与
+installed 字节一致；canonical/installed isolation、#388/#389 integration、真实 focused clean
+和两次 update/reapply 通过；三平台 reapply 无漂移，备份已保留。fixture provider closeout
+不等于真实远端发布。完整历史矩阵、真实业务接续与独立 TypeCheck 未验证。
+
+当前 Architecture knowledge successor 为 `.47`；promotion-created combined diff 仍须 fresh
+Phase 2、task commit 与 Branch Review。继承的 #332/#267 发布门禁保持独立，不由本 promotion
+更新 stable、tag、GitHub Release 或 smoke 结果。

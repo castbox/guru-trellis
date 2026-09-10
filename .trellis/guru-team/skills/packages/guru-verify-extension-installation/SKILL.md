@@ -10,6 +10,14 @@ Invoke only for explicit standalone verification from a clean
 use. This package is not a global workflow step and accepts no business task,
 Publication, Finalizer, branch-review, or task-artifact identity.
 
+The source executor inherits the explicitly supplied `TRELLIS_FORK_SOURCE`
+checkout and, for predecessor upgrade cells, `TRELLIS_PREDECESSOR_SOURCE` plus
+`TRELLIS_PREDECESSOR_COMMIT`. The throwaway entry validates these builds against
+the current source lock and declared predecessor identity. It never obtains
+the framework from the original npm distribution or infers a local checkout.
+This standalone catalog uses full mode; focused same-candidate verification is
+not a substitute for its required capabilities.
+
 Run source identity preflight before clone, install, temporary-directory
 creation, or owner-result write. Then execute the clean throwaway installation
 catalog, perform the AI adequacy review, record/check only ignored session

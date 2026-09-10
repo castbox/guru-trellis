@@ -10,6 +10,23 @@ supplies `repo_ref=castbox/guru-trellis`, `remote=origin`, a requested ref, and
 Finalizer, review, business repository, and credential-bearing locator fields
 are forbidden.
 
+Framework builds are explicit execution configuration, not Task or approval
+identity. Set `TRELLIS_FORK_SOURCE` to the already-built checkout selected by
+the candidate's `source/trellis-source.json`. Full predecessor cells additionally
+require `TRELLIS_PREDECESSOR_SOURCE` and its exact `TRELLIS_PREDECESSOR_COMMIT`;
+the predecessor version remains the matrix's declared before version. The
+existing executor passes this environment to the throwaway shell, which
+validates it and calls each checkout's own Node CLI directly. No framework
+clone/build, npm fallback, launcher synthesis or global CLI lookup occurs here.
+Each supplied build carries `.guru-source-commit` in its CLI `dist/` directory,
+written by the documented preparation only after that checkout's own build
+succeeds. Validation compares it with actual HEAD and does not write or repair
+the marker; it detects an ordinary same-version stale build, not authenticity.
+Missing predecessor inputs are a concrete full-catalog blocker, not permission
+to return `verified` from focused clean/reapply evidence. Successful full mode
+retains the original representative `install/project` and capability postcheck
+contract; focused mode is only a separately labeled maintainer diagnostic.
+
 Before any clone, install, temporary directory, artifact write, or Git/GitHub
 mutation, the runtime proves canonical source assets exist, origin normalizes to
 `castbox/guru-trellis`, the requested ref resolves to current HEAD, and the

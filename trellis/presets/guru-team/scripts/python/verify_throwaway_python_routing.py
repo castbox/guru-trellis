@@ -361,6 +361,58 @@ def discover_referenced_shell_helpers(verifier_text: str) -> list[dict[str, str]
     return [discovered[key] for key in sorted(discovered)]
 
 
+MATRIX_OWNER = "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+PARALLEL_OWNER = "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py"
+
+
+def matrix_shell_references(repo_root: Path) -> list[dict[str, str]]:
+    """Read the matrix's explicit installed wrapper calls, not a general call graph."""
+    tree = ast.parse((repo_root / MATRIX_OWNER).read_text(encoding="utf-8"))
+    smoke = next((node for node in tree.body if isinstance(node, ast.FunctionDef)
+                  and node.name == "_run_installed_smokes"), None)
+    if smoke is None:
+        raise RoutingError("matrix installed smoke entry is missing")
+    references = set()
+    for node in ast.walk(smoke):
+        if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                and node.func.id == "_run" and node.args
+                and isinstance(node.args[0], (ast.Tuple, ast.List)) and node.args[0].elts):
+            continue
+        first = node.args[0].elts[0]
+        if not (isinstance(first, ast.Call) and isinstance(first.func, ast.Name)
+                and first.func.id == "str" and len(first.args) == 1):
+            continue
+        path = first.args[0]
+        if (isinstance(path, ast.BinOp) and isinstance(path.op, ast.Div)
+                and isinstance(path.left, ast.Name) and path.left.id == "wrappers"
+                and isinstance(path.right, ast.Constant) and isinstance(path.right.value, str)
+                and path.right.value.endswith(".sh")):
+            references.add("trellis/workflows/guru-team/scripts/bash/" + path.right.value)
+    return [{"owner": path, "classification": "installed_managed"}
+            for path in sorted(references)]
+
+
+def matrix_parallel_source(repo_root: Path) -> str:
+    source = (repo_root / MATRIX_OWNER).read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    full = next((node for node in tree.body if isinstance(node, ast.FunctionDef)
+                 and node.name == "_run_historical_matrix"), None)
+    if full is None:
+        raise RoutingError("matrix parallel helper entry is missing")
+    body = ast.get_source_segment(source, full)
+    for token in (PARALLEL_OWNER,
+                  'representative / ".trellis/guru-team/runtime/resolve-python.sh"',
+                  'representative / ".trellis/guru-team/runtime"',
+                  'str(installed_python),\n                str(representative),\n'
+                  '                str(installed_runtime),\n                str(parallel_helper),'):
+        if token not in body:
+            raise RoutingError("matrix parallel helper managed launcher drift")
+    helper = (repo_root / PARALLEL_OWNER).read_text(encoding="utf-8")
+    # This file is passed as data to the verified installed interpreter above.
+    # Its top-level shebang is not executed; generated shebangs are still checked.
+    return helper.split("\n", 1)[1] if helper.startswith("#!") else helper
+
+
 def discover_shell_python_helpers(
     repo_root: Path, verifier_text: str
 ) -> list[dict[str, Any]]:
@@ -427,7 +479,8 @@ def discover_shell_python_helpers(
         return route + route_for(nested[0], seen | {owner})
 
     discovered: dict[tuple[str, str], dict[str, Any]] = {}
-    for reference in discover_referenced_shell_helpers(verifier_text):
+    for reference in [*discover_referenced_shell_helpers(verifier_text),
+                      *matrix_shell_references(repo_root)]:
         owner = reference["owner"]
         classification = reference["classification"]
         name = Path(owner).name
@@ -591,6 +644,10 @@ def discover_package_platform_wrappers(
         if block["classification"] == "installed_managed":
             executed.update(inline_executed_package_wrappers(block["body"], verifier_owner))
 
+    executed.update(inline_executed_package_wrappers(
+        matrix_parallel_source(repo_root), PARALLEL_OWNER
+    ))
+
     launcher = "trellis/skills/guru-team/runtime/launch.sh"
     resolver = "trellis/skills/guru-team/runtime/resolve-python.sh"
     launcher_source = (repo_root / launcher).read_text(encoding="utf-8")
@@ -709,7 +766,8 @@ def registered_helper_shebang_bindings(
         path = row.get("path") if isinstance(row, dict) else None
         if not isinstance(path, str) or path in trees:
             raise RoutingError("python helper inventory contains a missing or duplicate path")
-        source = (repo_root / path).read_text(encoding="utf-8")
+        source = (matrix_parallel_source(repo_root) if path == PARALLEL_OWNER
+                  else (repo_root / path).read_text(encoding="utf-8"))
         if source.startswith("#!") or "#!/usr/bin/env python3" in source:
             raise RoutingError(f"PATH Python shebang is forbidden: {path}")
         trees[path] = ast.parse(source, filename=path)
@@ -1172,7 +1230,9 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
     trellis_python_binding_offset = text.find(trellis_python_binding, seed_end)
     bootstrap_consumer = 'source_python "$PYTHON_ROUTING_HELPER" checkpoint'
     consumer_offset = text.find(bootstrap_consumer, seed_end)
-    first_trellis_call_offset = text.find("trellis init ", seed_end)
+    matrix_dispatch_offset = text.find(
+        'source_python "$COMPATIBILITY_MATRIX_HELPER" "${MATRIX_ARGS[@]}"', seed_end
+    )
     if (
         poison_offset < 0
         or bridge_assignment_offset < 0
@@ -1182,7 +1242,7 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
         or bridge_path_export_offset < 0
         or trellis_python_binding_offset < 0
         or consumer_offset < 0
-        or first_trellis_call_offset < 0
+        or matrix_dispatch_offset < 0
         or not (
             seed_end
             < poison_offset
@@ -1193,7 +1253,7 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
             < bridge_path_export_offset
             < trellis_python_binding_offset
             < consumer_offset
-            < first_trellis_call_offset
+            < matrix_dispatch_offset
         )
     ):
         raise RoutingError(
@@ -1271,8 +1331,8 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
         number for number, line in enumerate(text.splitlines(), start=1)
         if re.search(r"\binstalled_python\b", line) and not re.match(r"\s*installed_python\(\)", line)
     ]
-    if not source_calls or not installed_calls:
-        raise RoutingError("verifier must exercise both source and installed managed runners")
+    if not source_calls:
+        raise RoutingError("verifier must exercise the source managed runner")
 
     expected_helper_paths = set()
     helper_facts = []
@@ -1287,11 +1347,7 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
         expected_helper_paths.add(path_text)
         path = repo_root / path_text
         source = path.read_text(encoding="utf-8")
-        if row in helpers:
-            direct_token = f'installed_python "$TARGET" "$REPO_ROOT/{path_text}"'
-            if direct_token not in text:
-                raise RoutingError(f"registered helper is not launched by installed_python: {path_text}")
-        else:
+        if row not in helpers:
             launch_owner = row.get("launch_owner")
             launch_token = row.get("launch_token")
             if not isinstance(launch_owner, str) or not isinstance(launch_token, str):
@@ -1324,7 +1380,7 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
             {
                 "id": row.get("id"),
                 "path": path_text,
-                "classification": "installed_managed",
+                "classification": row.get("classification"),
                 "launcher": row.get("expected_launcher"),
                 "sys_executable_subprocesses": sys_executable_calls,
                 "managed_shebang_bindings": actual_bindings,
@@ -1384,13 +1440,27 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
             f"stale={sorted(registered_ids - discovered_ids)}"
         )
 
+    matrix_path = repo_root / "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+    matrix_source = matrix_path.read_text(encoding="utf-8")
+    matrix_tree = ast.parse(matrix_source)
+    smoke = next((node for node in matrix_tree.body
+                  if isinstance(node, ast.FunctionDef) and node.name == "_run_installed_smokes"), None)
+    if smoke is None:
+        raise RoutingError("matrix installed smoke entry is missing")
     discovered_helpers = {
-        match.group(1)
-        for match in re.finditer(
-            r'installed_python \"\$TARGET\" \"\$REPO_ROOT/([^\"]+\.py)\"', text
-        )
-        if match.group(1).startswith("trellis/presets/guru-team/scripts/python/verify_installed_")
+        node.value for node in ast.walk(smoke)
+        if isinstance(node, ast.Constant) and isinstance(node.value, str)
+        and node.value.startswith("trellis/presets/guru-team/scripts/python/verify_installed_")
+        and node.value.endswith(".py")
     }
+    smoke_source = ast.get_source_segment(matrix_source, smoke)
+    if not all(token in smoke_source for token in (
+        'target / ".trellis/guru-team/runtime/resolve-python.sh"',
+        "str(installed_python)", "str(target)", "str(installed_runtime)",
+        "*(str(value) for value in args)", "_run(argv,",
+    )):
+        raise RoutingError("matrix installed managed runner drift")
+    discovered_helpers.add(PARALLEL_OWNER)
     expected_direct_helper_paths = {str(row.get("path")) for row in helpers}
     if discovered_helpers != expected_direct_helper_paths:
         raise RoutingError(

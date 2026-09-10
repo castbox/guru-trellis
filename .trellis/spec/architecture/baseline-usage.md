@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.5-guru.46`
+- version：`current-main-0.6.5-guru.47`
 - status：`active`
-- source binding：reviewed #376 contribution `architecture-contribution-376-base-continuity-command-v1` + inherited `.45` authority；current graph 23 Skills / 97 exits / 78 commands；#305 已确认的 `EVO-001..007` target delta 保持独立 target authority（精确 revision 由包含本 authority 的 Git commit/tree identity 绑定）
+- source binding：reviewed #378 contribution `architecture-contribution-378-pinned-fork-runtime-v1` + inherited `.46` authority；current graph 23 Skills / 97 exits / 78 commands；#305 target authority 不变（精确 revision 由包含本 authority 的 Git commit/tree identity 绑定）
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`
 - required concern set：`guru-trellis-architecture-change-concerns-v1`

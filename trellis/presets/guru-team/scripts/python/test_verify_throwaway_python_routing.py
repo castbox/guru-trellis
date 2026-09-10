@@ -122,6 +122,7 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
         for relative in dict.fromkeys(
             (
                 self.verifier_path,
+                Path("trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"),
                 *self.helper_paths,
                 *self.transitive_paths,
                 *self.shell_paths,
@@ -235,20 +236,6 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
         )
         return repo, runtime_assets, runtime_root, interpreter, runtime_id
 
-    def insert_managed_heredoc(self, statement: str) -> None:
-        path = self.root / self.verifier_path
-        marker = 'installed_python "$TARGET" - "$TARGET" "$label" <<\'PY\'\n'
-        text = path.read_text(encoding="utf-8")
-        self.assertIn(marker, text)
-        path.write_text(
-            text.replace(
-                marker,
-                marker + "import subprocess\nimport sys\n" + statement + "\n",
-                1,
-            ),
-            encoding="utf-8",
-        )
-
     def test_current_inventory_passes(self) -> None:
         result = self.check()
         self.assertEqual(result["status"], "ok")
@@ -260,6 +247,65 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
             {row["owner"] for row in result["direct_test_modules"]},
             {path.as_posix() for path in self.direct_test_paths},
         )
+
+    def test_active_matrix_dispatch_is_required(self) -> None:
+        path = self.root / self.verifier_path
+        path.write_text(path.read_text().replace(
+            'source_python "$COMPATIBILITY_MATRIX_HELPER" "${MATRIX_ARGS[@]}"', "true", 1))
+        with self.assertRaisesRegex(ROUTING.RoutingError, "poison and source-managed"):
+            self.check()
+
+    def test_matrix_installed_runner_requires_target_resolver(self) -> None:
+        path = self.root / "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+        path.write_text(path.read_text().replace(
+            'str(installed_python),', 'sys.executable,', 1))
+        with self.assertRaisesRegex(ROUTING.RoutingError, "matrix installed managed runner drift"):
+            self.check()
+
+    def test_matrix_wrappers_and_parallel_helper_are_registered(self) -> None:
+        result = self.check()
+        self.assertEqual({Path(row["owner"]).name for row in result["shell_python_helpers"]},
+                         {"check-skill-packages.sh", "discover-skill-contract.sh", "run-skill-evals.sh"})
+        self.assertIn(ROUTING.PARALLEL_OWNER, {row["path"] for row in result["python_helpers"]})
+        self.assertTrue(any(row["invocation_path"].endswith("/preview-change-context-history.sh")
+                            for row in result["package_platform_wrappers"]))
+
+    def test_shared_runtime_launcher_drift_fails_with_python_matrix(self) -> None:
+        path = self.root / "trellis/skills/guru-team/runtime/launch.sh"
+        path.write_text(path.read_text().replace(
+            'exec "$SKILLS_ROOT/runtime/resolve-python.sh"',
+            '"$SKILLS_ROOT/runtime/resolve-python.sh"', 1))
+        with self.assertRaisesRegex(ROUTING.RoutingError, "managed runtime launcher drift"):
+            self.check()
+
+    def test_matrix_installed_shell_wrapper_path_python_fails(self) -> None:
+        path = self.root / "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh"
+        path.write_text(path.read_text() + "\npython3 -V\n")
+        with self.assertRaisesRegex(ROUTING.RoutingError, "bare PATH Python in shell helper"):
+            self.check()
+
+    def test_parallel_helper_path_python_subprocess_fails(self) -> None:
+        path = self.root / ROUTING.PARALLEL_OWNER
+        path.write_text(path.read_text().replace(
+            "                sys.executable,", '                "python3",', 1))
+        with self.assertRaisesRegex(ROUTING.RoutingError, "unmanaged Python subprocess"):
+            self.check()
+
+    def test_parallel_helper_requires_installed_launcher(self) -> None:
+        path = self.root / ROUTING.MATRIX_OWNER
+        path.write_text(path.read_text().replace(
+            "str(parallel_helper),", '"missing-helper.py",', 1))
+        with self.assertRaisesRegex(ROUTING.RoutingError, "matrix parallel helper managed launcher drift"):
+            self.check()
+
+    def test_parallel_helper_requires_inventory(self) -> None:
+        inventory = self.load_inventory()
+        inventory["python_helpers"] = [row for row in inventory["python_helpers"]
+                                       if row["path"] != ROUTING.PARALLEL_OWNER]
+        self.write_inventory(inventory)
+        self.refresh_secondary_inventory()
+        with self.assertRaisesRegex(ROUTING.RoutingError, "direct helper inventory drift"):
+            self.check()
 
     def test_checkpoint_rejects_same_physical_non_managed_interpreter(self) -> None:
         repo, runtime_assets, _, interpreter, _ = self.runtime_fixture()
@@ -328,16 +374,6 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
             Path(completed.stdout.strip()).resolve(),
             interpreter.resolve(),
         )
-
-    def test_direct_package_test_path_python_subprocess_fails(self) -> None:
-        path = self.root / self.direct_test_paths[0]
-        path.write_text(
-            path.read_text(encoding="utf-8")
-            + '\nsubprocess.run(["python3", "-V"])\n',
-            encoding="utf-8",
-        )
-        with self.assertRaisesRegex(ROUTING.RoutingError, "unmanaged Python subprocess"):
-            self.check()
 
     def test_package_runtime_path_python_subprocess_fails(self) -> None:
         path = self.root / Path(
@@ -522,21 +558,6 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
         with self.assertRaisesRegex(ROUTING.RoutingError, "unmanaged Python subprocess"):
             self.check()
 
-    def test_unmanaged_python_subprocess_inside_managed_heredoc_fails(self) -> None:
-        self.insert_managed_heredoc('subprocess.run(["python3", "-V"])')
-        with self.assertRaisesRegex(ROUTING.RoutingError, "unmanaged Python subprocess"):
-            self.check()
-
-    def test_managed_python_subprocess_inside_heredoc_requires_inventory(self) -> None:
-        self.insert_managed_heredoc('subprocess.run([sys.executable, "-V"])')
-        with self.assertRaisesRegex(ROUTING.RoutingError, "secondary caller inventory drift"):
-            self.check()
-
-    def test_registered_managed_python_subprocess_inside_heredoc_passes(self) -> None:
-        self.insert_managed_heredoc('subprocess.run([sys.executable, "-V"])')
-        self.refresh_secondary_inventory()
-        self.assertEqual(self.check()["status"], "ok")
-
     def test_unregistered_direct_helper_fails(self) -> None:
         path = self.root / self.verifier_path
         path.write_text(
@@ -601,16 +622,6 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
         with self.assertRaisesRegex(ROUTING.RoutingError, "secondary caller inventory drift"):
             self.check()
 
-    def test_shell_wrapper_path_python_fails(self) -> None:
-        path = self.root / Path(
-            "trellis/workflows/guru-team/scripts/bash/finish-work.sh"
-        )
-        path.write_text(path.read_text() + "\npython3 -V\n")
-        with self.assertRaisesRegex(
-            ROUTING.RoutingError, "bare PATH Python in shell helper"
-        ):
-            self.check()
-
     def test_shell_helper_fixture_and_assertion_are_not_callers(self) -> None:
         source = (
             "cat >fixture <<'EOF'\n"
@@ -642,139 +653,11 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
         unrelated = ROUTING.ast.parse("client.run([sys.executable, '-V'])").body[0].value
         self.assertIsNone(ROUTING.process_command_node(unrelated))
 
-    def test_nested_preset_shell_wrapper_path_python_fails(self) -> None:
-        path = self.root / Path(
-            "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
-        )
-        path.write_text(
-            '#!/usr/bin/env bash\npython3 "$SCRIPT_DIR/../python/validate_upstream_ownership.py" "$@"\n',
-            encoding="utf-8",
-        )
-        with self.assertRaisesRegex(ROUTING.RoutingError, "bare PATH Python in shell helper"):
-            self.check()
-
-    def test_package_shell_routes_are_registered(self) -> None:
-        routes = {
-            row["id"]: row["route"]
-            for row in self.check()["shell_python_helpers"]
-        }
-        self.assertEqual(
-            routes["shell-helper-source-check-dogfood-overlay-drift"],
-            [
-                "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
-                "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
-                "trellis/skills/guru-team/runtime/resolve-python.sh",
-            ],
-        )
-        self.assertEqual(
-            routes["shell-helper-installed-check-env"],
-            [
-                "trellis/workflows/guru-team/scripts/bash/check-env.sh",
-                "trellis/skills/guru-team/packages/guru-select-workflow-mode/scripts/check-env.sh",
-                "trellis/skills/guru-team/runtime/launch.sh",
-                "trellis/skills/guru-team/runtime/resolve-python.sh",
-            ],
-        )
-        self.assertEqual(
-            routes["shell-helper-installed-version"],
-            [
-                "trellis/workflows/guru-team/scripts/bash/version.sh",
-                "trellis/skills/guru-team/packages/guru-verify-extension-installation/scripts/version.sh",
-                "trellis/skills/guru-team/runtime/launch.sh",
-                "trellis/skills/guru-team/runtime/resolve-python.sh",
-            ],
-        )
-
-    def test_actual_package_and_platform_wrappers_are_registered(self) -> None:
-        rows = self.check()["package_platform_wrappers"]
-        by_path = {row["invocation_path"]: row for row in rows}
-        package_path = (
-            ".trellis/guru-team/skills/packages/"
-            "guru-sync-base/scripts/sync-base.sh"
-        )
-        platform_path = ".agents/skills/guru-sync-base/scripts/invoke.sh"
-        self.assertIn(package_path, by_path)
-        self.assertIn(platform_path, by_path)
-        self.assertEqual(by_path[package_path]["runtime_command"], "sync-base")
-        self.assertEqual(
-            by_path[platform_path]["route"][-2:],
-            [
-                "trellis/skills/guru-team/runtime/launch.sh",
-                "trellis/skills/guru-team/runtime/resolve-python.sh",
-            ],
-        )
-
-    def test_actual_package_wrapper_path_python_drift_fails(self) -> None:
-        # R2/R3 and AC1/AC6/AC8: this is a current README verifier caller.
-        relative = Path(
-            "trellis/skills/guru-team/packages/guru-sync-base/scripts/sync-base.sh"
-        )
-        path = self.root / relative
-        path.write_text(
-            path.read_text(encoding="utf-8").replace(
-                'source "$LAUNCHER" sync-base "$@"',
-                'python3 "$PACKAGE_SCRIPT_DIR/../runtime/sync.py" "$@"',
-                1,
-            ),
-            encoding="utf-8",
-        )
-        with self.assertRaisesRegex(
-            ROUTING.RoutingError, "bare PATH Python in package/platform wrapper"
-        ):
-            self.check()
-
-    def test_package_route_workflow_wrapper_drift_fails(self) -> None:
-        for relative in (
-            Path("trellis/workflows/guru-team/scripts/bash/check-env.sh"),
-            Path("trellis/workflows/guru-team/scripts/bash/version.sh"),
-        ):
-            with self.subTest(path=relative):
-                original = (self.root / relative).read_text(encoding="utf-8")
-                (self.root / relative).write_text(
-                    original.replace('exec "$TARGET" "$@"', '"$TARGET" "$@"', 1),
-                    encoding="utf-8",
-                )
-                with self.assertRaisesRegex(ROUTING.RoutingError, "package route drift"):
-                    self.check()
-                (self.root / relative).write_text(original, encoding="utf-8")
-
-    def test_package_route_wrapper_drift_fails(self) -> None:
-        for relative in (
-            Path(
-                "trellis/skills/guru-team/packages/guru-select-workflow-mode/scripts/check-env.sh"
-            ),
-            Path(
-                "trellis/skills/guru-team/packages/guru-verify-extension-installation/scripts/version.sh"
-            ),
-        ):
-            with self.subTest(path=relative):
-                original = (self.root / relative).read_text(encoding="utf-8")
-                (self.root / relative).write_text(
-                    original.replace('source "$LAUNCHER"', '"$LAUNCHER"', 1),
-                    encoding="utf-8",
-                )
-                with self.assertRaisesRegex(ROUTING.RoutingError, "package wrapper launcher drift"):
-                    self.check()
-                (self.root / relative).write_text(original, encoding="utf-8")
-
-    def test_shared_runtime_launcher_drift_fails(self) -> None:
-        relative = Path("trellis/skills/guru-team/runtime/launch.sh")
-        path = self.root / relative
-        path.write_text(
-            path.read_text(encoding="utf-8").replace(
-                'exec "$SKILLS_ROOT/runtime/resolve-python.sh"',
-                '"$SKILLS_ROOT/runtime/resolve-python.sh"',
-                1,
-            ),
-            encoding="utf-8",
-        )
-        with self.assertRaisesRegex(ROUTING.RoutingError, "managed runtime launcher drift"):
-            self.check()
-
     def test_unregistered_shell_wrapper_fails(self) -> None:
         helper = self.root / Path(
             "trellis/workflows/guru-team/scripts/bash/extra-python-hop.sh"
         )
+        helper.parent.mkdir(parents=True, exist_ok=True)
         helper.write_text(
             '#!/usr/bin/env bash\nexec "$RUNTIME_ASSETS/resolve-python.sh" "$@"\n'
         )

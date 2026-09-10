@@ -76,22 +76,6 @@ def write_executable(path: Path, content: str) -> None:
     path.chmod(path.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
-def load_installed_eval_adapter(root: Path) -> Any:
-    import importlib.util
-
-    path = root / ".trellis/guru-team/skills/adapters/eval/native_adapter.py"
-    spec = importlib.util.spec_from_file_location(
-        "installed_guru_team_eval_adapter",
-        path,
-    )
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"could not load installed eval adapter: {path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
 class InstalledWrapperError(RuntimeError):
     def __init__(self, result: subprocess.CompletedProcess[str]) -> None:
         self.exit_code = result.returncode
@@ -129,9 +113,9 @@ class InstalledPackageClient:
     )
 
     def __init__(self, root: Path, skill_id: str) -> None:
-        self.root = root
+        self.root = root.resolve()
         self.skill_id = skill_id
-        self.package = root / ".trellis/guru-team/skills/packages" / skill_id
+        self.package = self.root / ".trellis/guru-team/skills/packages" / skill_id
         self._last_review_gate: str | None = None
 
     @staticmethod
@@ -182,7 +166,7 @@ class InstalledPackageClient:
         result = run([str(wrapper), *arguments], self.root, check=False)
         if result.returncode != 0:
             raise self.WorkflowError(result)
-        return json.loads(result.stdout)
+        return single_json_stdout(result, f"installed {self.skill_id} {script}")
 
     def cmd_record_planning_approval(self, args: argparse.Namespace) -> dict[str, Any]:
         values = ["--root", args.root, "--task", args.task, "--input", args.input]
@@ -376,6 +360,218 @@ def write_fixture_runtime_mappings(root: Path, task_slug: str, task_dir: Path, b
     })
 
 
+def fixture_input(root: Path, name: str, payload: dict[str, Any]) -> str:
+    path = root / ".trellis/.runtime/guru-team/installed-closeout" / name
+    write_json(path, payload)
+    return path.relative_to(root).as_posix()
+
+
+def fixture_classification(stage: str, consumer: str) -> list[dict[str, Any]]:
+    """Synthetic scenario input, never a receipt or approval of a real task."""
+    return [{
+        "candidate_ref": f"candidate:installed-closeout:{stage}",
+        "decision": "rejected_not_reproduced",
+        "witness": {
+            "requirement_refs": ["task:prd:R1"],
+            "supported_entry_refs": [f"entry:installed-closeout:{stage}"],
+            "existing_caller_refs": ["caller:installed-closeout-verifier"],
+            "honest_action_sequence": ["Run the isolated closeout happy-path fixture."],
+            "defect_observation": "The synthetic happy-path scenario contains no task defect.",
+            "excluded_assumptions": [],
+        },
+        "consumer_use": consumer,
+    }]
+
+
+def record_fixture_planning(
+    client: InstalledPackageClient, root: Path, task: Path, issue: int,
+) -> dict[str, Any]:
+    task_ref = task.relative_to(root).as_posix()
+    semantic_input = fixture_input(root, "planning-input.json", {
+        "mode": "workflow",
+        "authority_refs": [f"issue:{issue}"],
+        "docs_ssot_plan": {
+            "strategy": "ssot_first", "durable_paths": ["docs/requirements.md"],
+            "summary": "The isolated fixture uses the durable closeout requirement.",
+        },
+        "semantic_review": {
+            "status": "passed",
+            "summary": "Synthetic planning scenario for installed wrapper verification only.",
+            "checked_dimensions": {name: True for name in (
+                "requirement_authority", "scope_boundary", "design_adequacy",
+                "implementation_plan", "acceptance_verifiability", "docs_ssot",
+                "provenance", "unusual_scenarios",
+            )},
+            "findings": [], "revision_actions": [], "scope_proposals": [],
+            "blocking_reasons": [],
+        },
+        "typed_exit": "approved",
+        "reason": "Exercise planning activation in the isolated fixture.",
+        "consumer": {"kind": "workflow", "id": "phase-1-task-activation"},
+    })
+    client.cmd_record_planning_approval(argparse.Namespace(
+        root=str(root), task=task_ref, input=semantic_input, dry_run=False,
+    ))
+    checked = client.cmd_check_planning_approval(argparse.Namespace(
+        root=str(root), task=task_ref, require_exit="approved",
+    ))
+    public_input = fixture_input(root, "planning-public-input.json", {
+        "profile": "initial_review", "mode": "workflow", "task_ref": task_ref,
+        "source_exit": "planning_ready",
+    })
+    approved = client._call(
+        "invoke.sh", "--root", str(root), "--input", public_input,
+        "--owner-result", checked["artifact_path"],
+    )
+    if approved != {"exit_id": "approved", "task_ref": task_ref}:
+        raise RuntimeError("installed Planning did not return the approved task DTO")
+    return approved
+
+
+def record_fixture_phase2(
+    client: InstalledPackageClient, root: Path, task: Path,
+) -> dict[str, Any]:
+    task_ref = task.relative_to(root).as_posix()
+    paths = set(client.changed_files(root, f"{client.diff_base_ref(root, BASE_BRANCH)}...HEAD"))
+    paths.update(client.git_status_paths(root))
+    semantic_input = fixture_input(root, "phase2-input.json", {
+        "mode": "workflow",
+        "reviewed_paths": sorted(p for p in paths if not p.startswith(".trellis/.runtime/")),
+        "validation": {
+            "commands": [{"id": "fixture-scenario", "outcome": "passed",
+                          "summary": "Synthetic validation input, not real task test evidence."}],
+            "unverified_items": [], "summary": "Isolated happy-path validation scenario.",
+        },
+        "docs_ssot": {
+            "status": "passed", "strategy": "ssot_first",
+            "durable_paths": ["docs/requirements.md"],
+            "summary": "Fixture documentation represents the closeout requirement.",
+        },
+        "candidate_classifications": fixture_classification("phase2", "task_commit_preflight"),
+        "semantic_review": {
+            "status": "passed", "summary": "Synthetic complete-scope Phase 2 scenario.",
+            "adequacy_dimensions": [{
+                "id": name, "status": "passed", "summary": f"Fixture scenario covers {name}.",
+            } for name in (
+                "requirements", "design", "implementation", "tests", "docs_ssot",
+                "cross_layer", "compatibility", "deployment_and_operations",
+                "verification_completeness",
+            )],
+            "scope_decisions": [], "findings": [],
+        },
+        "typed_exit": "passed", "route": None,
+        "reason": "Exercise the checked Phase 2 to commit transition.",
+        "consumer": {"kind": "skill", "id": "guru-create-task-commit"},
+    })
+    client.cmd_record_phase2_check(argparse.Namespace(
+        root=str(root), task=task_ref, input=semantic_input, dry_run=False,
+    ))
+    checked = client.cmd_check_phase2_check(argparse.Namespace(root=str(root), task=task_ref))
+    public_input = fixture_input(root, "phase2-public-input.json", {
+        "profile": "initial_check", "mode": "workflow", "task_ref": task_ref,
+        "source_exit": "implementation_complete",
+    })
+    passed = client._call(
+        "invoke.sh", "--root", str(root), "--input", public_input,
+        "--owner-result", checked["artifact_path"],
+    )
+    if passed.get("exit_id") != "passed" or passed.get("task_ref") != task_ref:
+        raise RuntimeError("installed Phase 2 did not return the passed task DTO")
+    return passed
+
+
+def commit_fixture_for_review(
+    client: InstalledPackageClient, root: Path, task: Path, checked: dict[str, Any],
+) -> dict[str, Any]:
+    public_input = {
+        "profile": "initial_commit", "mode": "workflow", "task_ref": checked["task_ref"],
+        "source_exit": checked["exit_id"], "phase2_commit_anchor": checked["phase2_commit_anchor"],
+    }
+    authoring = {
+        "path_classifications": [{
+            "path": path, "category": "task-reviewed",
+            "reason": "This path belongs to the isolated closeout fixture.",
+            "coverage_source": "guru-check-task:passed " + checked["phase2_commit_anchor"],
+        } for path in client.git_status_paths(root)],
+        "message": {
+            "type": "test", "scope": "closeout", "summary": "验证安装态收尾链路",
+            "background": "需要验证安装态公开入口承接。",
+            "changes": "提交隔离 fixture 的已检查路径。",
+            "boundaries": "仅操作隔离测试仓库，不发布真实资源。",
+            "validations": "使用真实 installed recorder、checker 与 public wrapper。",
+        },
+        "ai_review": {
+            "status": "passed", "summary": "Synthetic isolated commit scenario.",
+            "evidence": ["The Phase 2 public DTO covers the fixture paths."],
+        },
+    }
+    _, candidate, _ = client.build_task_commit_candidate(root, task, public_input, authoring)
+    committed = client.execute_task_commit_candidate(root, candidate, task)
+    if committed.get("exit") != "committed":
+        raise RuntimeError("installed task commit did not return committed")
+    return committed
+
+
+def record_fixture_review(
+    client: InstalledPackageClient, root: Path, task: Path, committed: dict[str, Any],
+) -> dict[str, Any]:
+    task_ref = task.relative_to(root).as_posix()
+    public_input = fixture_input(root, "review-public-input.json", {
+        "profile": "branch_review", "mode": "workflow", "task_ref": task_ref,
+        "base_ref": committed["base_ref"], "branch_review_commit": committed["commit_sha"],
+        "review_intent": "initial_review",
+    })
+    semantic_input = fixture_input(root, "review-input.json", {
+        "candidate_classifications": fixture_classification("review", "branch_review_route_checker"),
+        "semantic_review": {
+            "qualified_findings": [], "scope_proposals": [], "observations": [],
+            "followup_candidates": [], "rejected_candidates": [{
+                "candidate_ref": "candidate:installed-closeout:review",
+                "disposition": "rejected_candidate",
+                "affected_behavior": "The installed closeout fixture preserves its reviewed content.",
+                "path": "docs/requirements.md", "evidence_refs": ["git:branch_review_commit"],
+            }],
+            "ai_review_gate": {"status": "passed", "summary": "Synthetic clean branch-review scenario."},
+        },
+        "verification_evidence": {
+            "reviewer": "isolated-fixture-reviewer", "review_source": "independent-agent",
+            "evidence": ["Synthetic full-range review input for the isolated fixture, not real task approval."],
+        },
+    })
+    client.cmd_review_branch(argparse.Namespace(
+        root=str(root), task=task_ref, skill_input=public_input,
+        semantic_review_file=semantic_input, typed_exit="passed",
+    ))
+    client.cmd_check_review_gate(argparse.Namespace(
+        root=str(root), task=task_ref, expected_exit="passed",
+    ))
+    passed = client._call("invoke.sh", "--root", str(root), "--input", public_input)
+    if passed.get("exit_id") != "passed" or passed.get("task_ref") != task_ref:
+        raise RuntimeError("installed Branch Review did not return the passed task DTO")
+    return passed
+
+
+def write_fixture_publication_authoring(
+    client: InstalledPackageClient, root: Path, public_input: dict[str, Any], issue: int,
+) -> Path:
+    path = fixture_input(root, "publication-authoring.json", {
+        **{key: public_input[key] for key in ("profile", "mode", "review_intent")},
+        "pr_payload": {"title": f"完成：#{issue} 验证安装后 closeout", "body": valid_pr_body(issue)},
+        "candidate_classifications": fixture_classification("publication", "publication_route_checker"),
+        "dimensions": [{
+            "id": name, "status": "passed", "summary": f"Synthetic publication scenario covers {name}.",
+            "evidence_refs": ["pr_payload", "issue-scope-ledger.json", "git:branch_review_commit"],
+        } for name in client.TASK_PUBLICATION_DIMENSIONS],
+        "findings": [],
+        "conclusions": {name: {
+            "status": "passed", "summary": f"Synthetic {name} scenario.",
+            "evidence_refs": ["pr_payload", "docs/requirements.md"],
+        } for name in ("issue_scope", "docs_ssot", "safety_deployment")},
+        "route": {"typed_exit": "ready"},
+    })
+    return root / path
+
+
 def write_fixture(
     root: Path,
     owners: dict[str, Any],
@@ -385,6 +581,8 @@ def write_fixture(
     *,
     repo_ref: str = REPO,
 ) -> tuple[Path, str, str]:
+    # Installed owners resolve repository paths before checking workspace mappings.
+    root = root.resolve()
     branch = f"fix/{issue}-installed-closeout-{case_name}"
     git(root, real_git, "switch", "-C", branch, BASE_BRANCH)
     smoke_path = root / f"installed-closeout-{case_name}.txt"
@@ -427,8 +625,6 @@ def write_fixture(
         ("implement.md", "# 实施\n\n先通过 publication gate，再执行 finish-work。\n"),
     ):
         (task_dir / name).write_text(content, encoding="utf-8")
-    adapter = load_installed_eval_adapter(root)
-
     docs_path = root / "docs/requirements.md"
     docs_path.parent.mkdir(parents=True, exist_ok=True)
     if not docs_path.exists():
@@ -445,63 +641,34 @@ def write_fixture(
     task_payload = read_json(task_dir / "task.json")
     task_payload.update({"status": "planning", "branch": branch})
     write_json(task_dir / "task.json", task_payload)
-    adapter.production_record_planning(
-        owners["guru-approve-task-plan"],
-        root,
-        task_dir,
-        "approved",
+    approved = record_fixture_planning(
+        owners["guru-approve-task-plan"], root, task_dir, issue,
     )
     task_payload["status"] = "in_progress"
-    write_json(task_dir / "task.json", task_payload)
-    checked = adapter.production_record_phase2(
-        owners["guru-check-task"],
-        root,
-        task_dir,
-        root / ".trellis/guru-team/skills/packages/guru-check-task",
-        "passed",
+    write_json(root / approved["task_ref"] / "task.json", task_payload)
+    checked = record_fixture_phase2(
+        owners["guru-check-task"], root, task_dir,
     )
-    adapter.production_commit_for_review(
+    committed = commit_fixture_for_review(
         owners["guru-create-task-commit"], root, task_dir, checked
     )
-    branch_input = {
-        "profile": "branch_review",
-        "mode": "workflow",
-        "task_ref": task_dir.relative_to(root).as_posix(),
-        "base_ref": "origin/main",
-        "branch_review_commit": "0" * 40,
-        "review_intent": "initial_review",
-    }
-    branch_check = adapter.production_record_review(
-        owners["guru-review-branch"],
-        root,
-        task_dir,
-        branch_input,
-        "review-passed",
+    branch_check = record_fixture_review(
+        owners["guru-review-branch"], root, task_dir, committed,
     )
     publication_input = {
         "profile": "publication_review",
         "mode": "workflow",
         "task_ref": task_dir.relative_to(root).as_posix(),
-        "branch_review_commit": branch_check["review_commit"],
+        "branch_review_commit": branch_check["branch_review_commit"],
         "review_intent": "initial_review",
     }
     publication_input_path = (
         root / ".trellis/.runtime/guru-team/installed-closeout/publication-input.json"
     )
     write_json(publication_input_path, publication_input)
-    authoring_path = adapter.production_publication_authoring(
-        owners["guru-review-task-publication"],
-        root,
-        task_dir,
-        publication_input,
-        "publication-ready",
+    authoring_path = write_fixture_publication_authoring(
+        owners["guru-review-task-publication"], root, publication_input, issue,
     )
-    authoring = read_json(authoring_path)
-    authoring["pr_payload"] = {
-        "title": f"完成：#{issue} 验证安装后 closeout",
-        "body": valid_pr_body(issue),
-    }
-    write_json(authoring_path, authoring)
     fixture_remote_url = git(root, real_git, "remote", "get-url", "origin")
     publication_package = root / ".trellis/guru-team/skills/packages/guru-review-task-publication"
     publication_invoke = publication_package / "scripts/invoke.sh"
@@ -1314,6 +1481,7 @@ def main() -> int:
         "INSTALLED_CLOSEOUT_BRANCH": branch,
         "INSTALLED_CLOSEOUT_PR_NUMBER": str(issue),
         "INSTALLED_CLOSEOUT_PR_STORE": str(store),
+        "INSTALLED_CLOSEOUT_MUTATION_STORE": str(root.parent / f"installed-closeout-mutations-{issue}.txt"),
     })
     task_dir, branch, branch_review_commit = write_fixture(
         root, owners, real_git, args.case, issue

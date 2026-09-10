@@ -1,0 +1,10 @@
+task_ref: 378-pinned-fork-runtime
+status: promoted
+predecessor: current-main-0.6.5-guru.46
+successor: current-main-0.6.5-guru.47
+authority:
+  requirements: docs/requirements/versions/current-main-0.6.5-guru.47/requirement-main.md
+  design: docs/design/versions/current-main-0.6.5-guru.47/design-main.md
+  test: docs/test/versions/current-main-0.6.5-guru.47/test-strategy.md
+  architecture: docs/architecture/README.md
+scope: fixed patched castbox/Trellis source and active-task isolation
