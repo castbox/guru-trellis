@@ -33,8 +33,10 @@ tag / GitHub Release `v0.6.16-guru.1`，并将 extension revision 提升到
 - `REQ-392-04`：从 `.47` 派生新的 Requirements、Design、Test 与 Architecture
   current authority，记录 #392 version/publication contract，并将 `.47` 标记为
   immutable superseded evidence。
-- `REQ-392-05`：准备分支完成 Phase 2、task commit 和覆盖
-  `origin/main...HEAD` 的独立 Branch Review；P0-P3 open findings 必须为零。
+- `REQ-392-05`：repository-private release orchestration 必须支持 preparation delivery
+  在 serialized Architecture/RDT promotion 前后各完成一次 fresh Phase 2、task commit 和覆盖
+  `origin/main...HEAD` 的独立 Branch Review；每次 P0-P3 open findings 必须为零，且
+  promotion-created diff 未复核时不得进入 Publication/Finish。
 - `REQ-392-06`：准备 PR 合并后重新 fetch `origin/main`，冻结一个 commit/tree
   exact candidate；准备分支 HEAD、#378 evidence 或其他 SHA 的结果不得复用。
 - `REQ-392-07`：exact candidate 必须完成 Issue #392 与 release contract 指定的
@@ -55,8 +57,10 @@ tag / GitHub Release `v0.6.16-guru.1`，并将 extension revision 提升到
   design、test 和 Architecture contribution。
 - `AC-392-03`：canonical、dogfood、installed package 检查、managed byte/mode parity、
   overlay reapply 和 drift 检查通过，无未处理 `.new`、`.bak` 或未知 sidecar。
-- `AC-392-04`：准备分支的完整 committed diff 通过独立 Branch Review，P0-P3 open
-  findings 为零；局部或历史验证不会被表述为本次发布通过。
+- `AC-392-04`：pre-promotion delivery 与 promotion-created delivery diff 分别通过 fresh
+  Phase 2、task commit 和独立完整 Branch Review，P0-P3 open findings 均为零；
+  repository-private release skill 四平台投影与合同测试覆盖该顺序，局部或历史验证不会被
+  表述为本次发布通过。
 - `AC-392-05`：合并后的同一 exact candidate 通过全部 Release Gate；任何 `FAIL`、
   `SKIP`、stale、cross-SHA、unknown/multiple/unmapped exit 都阻止 tag 创建。
 - `AC-392-06`：经独立确认创建并 push annotated tag `v0.6.16-guru.1`，live 回读

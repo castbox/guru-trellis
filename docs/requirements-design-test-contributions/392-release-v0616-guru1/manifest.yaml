@@ -19,7 +19,7 @@ architecture_baseline:
   status: "active"
 architecture_candidate:
   contribution_locator: "docs/architecture/contributions/392-release-v0616-guru1.md"
-  contribution_identity: "architecture-contribution-392-release-v0616-guru1-v1"
+  contribution_identity: "architecture-contribution-392-release-v0616-guru1-v2"
   candidate_successor_version: "current-main-0.6.5-guru.48"
   promotion_state: "reviewed_candidate"
   adr_required: false

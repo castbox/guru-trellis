@@ -127,7 +127,7 @@ class SkillContractTest(unittest.TestCase):
                     SKILL_ID, path.read_text(encoding="utf-8", errors="ignore")
                 )
 
-    def test_contract_owns_two_stages_one_review_and_independent_confirmations(self) -> None:
+    def test_contract_owns_two_stages_two_reviews_and_independent_confirmations(self) -> None:
         contract = (
             ROOTS["shared"] / "references/contract.md"
         ).read_text(encoding="utf-8")
@@ -168,12 +168,29 @@ class SkillContractTest(unittest.TestCase):
         self.assertIn("residue", normalized)
         self.assertIn("diff hygiene", normalized)
         honest_path = (
-            "stable_plan -> final_delivery_content -> guru-create-task-commit -> "
-            "final_delivery_content_commit -> guru-review-branch_once -> "
+            "stable_plan -> pre_promotion_delivery -> guru-create-task-commit -> "
+            "pre_promotion_commit -> guru-review-branch_pre_promotion -> "
+            "serialized_architecture_rdt_promotion -> fresh_phase2 -> "
+            "guru-create-task-commit -> post_promotion_commit -> "
+            "guru-review-branch_post_promotion -> "
             "guru-review-task-publication -> guru-finalize-task"
         )
         self.assertIn(honest_path, contract)
-        self.assertEqual(1, honest_path.split(" -> ").count("guru-review-branch_once"))
+        self.assertEqual(2, honest_path.split(" -> ").count("guru-create-task-commit"))
+        self.assertEqual(
+            2,
+            sum(
+                step.startswith("guru-review-branch_")
+                for step in honest_path.split(" -> ")
+            ),
+        )
+        self.assertEqual(
+            1,
+            honest_path.split(" -> ").count("serialized_architecture_rdt_promotion"),
+        )
+        self.assertIn("The first review cannot be reused", contract)
+        self.assertIn("the second review cannot run before promotion", contract)
+        self.assertIn("promotion is an intentional reviewed-content mutation", contract)
 
         for boundary in (
             "task commit",
@@ -631,6 +648,8 @@ class ReviewedContentIdentityTest(unittest.TestCase):
                 "repo_ref": "castbox/guru-trellis",
                 "remote": "origin",
                 "head_branch": self.git("branch", "--show-current"),
+                "pr_title": publication_output["pr_title"],
+                "pr_body": publication_output["pr_body"],
                 "publication_status": "current",
                 "publication_stale_reason": None,
                 "transaction_state": transaction_state,

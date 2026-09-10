@@ -22,9 +22,10 @@ authority；当前 Requirements/Design/Test 与 Architecture authority 仍为 `.
 - `R392-04`：Requirements、Design、Test 与 Architecture 必须从 immutable predecessor
   `.47` 派生唯一 `.48` successor，并建立 #392 requirement/design/test/scenario 与
   Architecture contribution trace；serialized promotion 前 `.48` 只可称为 candidate。
-- `R392-05`：Stage 1 preparation 必须完成 Phase 2、task commit 与覆盖
-  `origin/main...HEAD` 的独立 Branch Review；任何 open P0-P3 finding 阻止进入后续
-  Publication/Finish owner。
+- `R392-05`：Stage 1 preparation 必须在 serialized Architecture/RDT promotion 前后
+  分别完成 fresh Phase 2、task commit 与覆盖 `origin/main...HEAD` 的独立 Branch Review；
+  repository-private release orchestration 的四平台投影必须承接该顺序。任何 open P0-P3
+  finding 或 promotion-created 未复核 diff 均阻止进入 Publication/Finish owner。
 - `R392-06`：preparation PR 合并后必须 fresh-fetch `origin/main` 并冻结一个 commit/tree
   exact candidate；Stage 1 HEAD、#378 focused evidence 或其他 SHA 的结果不得复用。
 - `R392-07`：同一 exact candidate 必须完成 #392 与 release contract 要求的

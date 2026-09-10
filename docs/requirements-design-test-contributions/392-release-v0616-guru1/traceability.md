@@ -22,7 +22,7 @@ Requirements、Design 与 Test candidate 定义分别位于
 
 Architecture delta locator 为
 [#392 Architecture contribution](../../architecture/contributions/392-release-v0616-guru1.md)，
-identity 为 `architecture-contribution-392-release-v0616-guru1-v1`。`ARCH-CUR-025`、
+identity 为 `architecture-contribution-392-release-v0616-guru1-v2`。`ARCH-CUR-025`、
 `ARCH-INT-015`、`EVD-024` 是 `.48` candidate promotion refs；serialized promotion 前，
 public Architecture inheritance 仍为 [baseline](../../architecture/README.md) /
 `current-main-0.6.5-guru.47` / `active`。

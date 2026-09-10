@@ -22,10 +22,13 @@
 1. 提升 manifest revision 并同步 canonical、dogfood、installed projection。
 2. 直接更新受控 current 文档、fixture、schema/validator expectation；不保留双版本
    current parser、fallback 或 compatibility adapter。
-3. 从 `.47` 复制并派生 `.48` RDT authority，新增 #392 requirement/design/test trace；
-   Architecture 通过独立 contribution 和 promotion 将 `.48` 设为唯一 active。
-4. 执行 scoped Phase 2 validation、task commit、完整分支独立 review、publication 和
-   Finalizer，再由 expected-head merge owner 合并准备 PR。
+3. 从 `.47` 复制并派生 `.48` RDT candidate，新增 #392 requirement/design/test trace，
+   并创建独立 Architecture contribution；此时 `.47` 仍是唯一 active shared authority。
+4. 对 pre-promotion delivery 执行 scoped Phase 2、task commit 和完整分支独立 review；
+   只有该 committed review 的 P0-P3 open findings 为零，serialized Architecture/RDT
+   promotion owners 才能绑定 expected `.47` 将 `.48` 设为唯一 active。
+5. promotion-created diff 必须重新执行 Phase 2、task commit 和完整分支独立 review，
+   通过后才进入 publication、Finalizer 和 expected-head merge。
 
 task/provenance 元数据不属于 release delivery identity；不得用 metadata commit 记录
 gate 或发布进度。
@@ -45,7 +48,8 @@ Release 文案都绑定该 identity。任一命令结果来自其他 SHA 时 fai
 - `docs/requirements`、`docs/design`、`docs/test` 和 `docs/architecture` 由各自 SSOT
   owner 派生 successor identity；历史目录只改导航状态，不改历史正文事实。
 - `release-guru-trellis-version` 只编排已有 owner，不新增 runtime、schema、checkpoint
-  或公共 inventory 项。
+  或公共 inventory 项；其四平台 project-local projection 直接演进为 pre-promotion review、
+  serialized promotion、post-promotion fresh review 的唯一 Stage 1 顺序。
 - `issue-scope-ledger.json` 保持 `close=[392]`、`related=[378]`、`followup=[]`。
 
 ## Compatibility And Subtraction

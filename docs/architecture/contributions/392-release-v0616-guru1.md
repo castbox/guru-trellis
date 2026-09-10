@@ -2,7 +2,7 @@
 
 ## Identity And Authority Boundary
 
-- candidate identity：`architecture-contribution-392-release-v0616-guru1-v1`。
+- candidate identity：`architecture-contribution-392-release-v0616-guru1-v2`。
 - requirement authority：live Issue #392 与 task `prd.md`。
 - behavior authority：task `design.md`、`implement.md` 与后续 `.48` RDT successor。
 - source/expected current：`docs/architecture/README.md` /
@@ -33,6 +33,8 @@ release-facing surfaces 尚未统一到 `v0.6.16-guru.1` / `0.6.16-guru.41`。
   `castbox/Trellis@ad332e3fe5a19d7274cb03e7c2f3e2128f8de291`；
 - Architecture/RDT 从 `.47` 派生 `.48`，`.47` 仅转为 immutable superseded
   authority；
+- repository-private release orchestration 四平台投影直接演进为 pre-promotion committed
+  review、serialized promotion、post-promotion fresh committed review 的唯一 Stage 1 路径；
 - preparation PR 合并后重新冻结 `origin/main` exact candidate，Release Gate、tag、
   tag-pinned smoke 和 GitHub Release 只消费该 identity。
 
@@ -72,7 +74,7 @@ release-facing surfaces 尚未统一到 `v0.6.16-guru.1` / `0.6.16-guru.41`。
 - after：`.48` 是唯一 active Architecture/RDT knowledge identity；current surfaces 唯一
   映射 `v0.6.16-guru.1` / `0.6.16-guru.41` / CLI `0.6.16` / 固定 Fork
   full SHA，`.47` 保持 immutable superseded。
-- preserved：公共 Skill I/O、typed exits、global workflow、Fork source、CLI version、
+- preserved：公共 Skill I/O、typed exits、global workflow、release owner 边界、Fork source、CLI version、
   historical releases、#378 evidence、业务仓库与 npm package 均不改变。
 
 ## Project Check Contract And Planning Result
@@ -86,22 +88,25 @@ release-facing surfaces 尚未统一到 `v0.6.16-guru.1` / `0.6.16-guru.41`。
   serialized shared-current writer 和一个 `.48` successor；无 ADR、dual writer、
   compatibility layer、公共 API 扩张或新增/恶化 deviation。
 
-serialized promotion 只消费本 contribution 的 Planning semantic review 与 expected `.47`；
-promotion-created delivery diff 随后必须重新进入 Phase 2、task commit 与独立 committed
-full-diff Branch Review。post-merge Release Gate 再绑定 fresh exact candidate。本 Planning
-结果不替代任何后续 gate，也不证明 tag 或 GitHub Release 已发布。
+serialized promotion 只消费本 contribution 的 Planning semantic review、pre-promotion
+delivery 的独立 committed full-diff Branch Review 与 expected `.47`；promotion-created
+delivery diff 随后必须重新进入 Phase 2、task commit 与独立 committed full-diff Branch
+Review。post-merge Release Gate 再绑定 fresh exact candidate。本 Planning 结果不替代
+任何后续 gate，也不证明 tag 或 GitHub Release 已发布。
 
 ## Review And Promotion Boundary
 
-- current planning state：`reviewed_candidate`；贡献内容已完成 Planning semantic review，
-  尚未接受独立 committed full-diff Branch Review。
+- lifecycle candidate state：`reviewed_candidate`；它不是 shared current authority，
+  serialized promotion 还必须消费 pre-promotion delivery 的独立 committed full-diff
+  Branch Review。
 - expected current：`current-main-0.6.5-guru.47`。
 - candidate successor：`current-main-0.6.5-guru.48`。
 - ADR：`required=false`。
-- shared current 只有在本 contribution 的 Planning semantic review 通过且 expected `.47`
-  仍 current 时，才可由 serialized promotion owner 写入；promotion-created diff 必须接受后续
-  fresh Phase 2 与独立 committed full-diff Branch Review。live current advance、finding、
-  project-check failure 或 stale contribution 必须返回对应 owner route，不得覆盖。
+- shared current 只有在本 contribution 的 Planning semantic review 与 pre-promotion
+  committed full-diff Branch Review 均通过、P0-P3 open findings 为零且 expected `.47`
+  仍 current 时，才可由 serialized promotion owner 写入；promotion-created diff 必须接受
+  后续 fresh Phase 2 与独立 committed full-diff Branch Review。live current advance、
+  finding、project-check failure 或 stale contribution 必须返回对应 owner route，不得覆盖。
 
 ## Explicit Boundaries
 

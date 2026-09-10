@@ -10,12 +10,19 @@
 3. 更新 README、workflow/preset 文档、public-docs spec、测试 fixture、schema/validator 中
    属于 current release contract 的旧 mapping；历史 archived/released 内容保持原事实。
 4. 从 `current-main-0.6.5-guru.47` 派生 Requirements、Design、Test successor `.48`，
-   新增 #392 traceability；创建 Architecture #392 contribution 并按 owner promotion 规则
-   将 `.48` 设为唯一 active，`.47` 标记为 superseded。
-5. 运行 source/installed package、manifest、overlay/ownership、dogfood drift、定向测试、
+   新增 #392 traceability 并创建 Architecture #392 contribution；保持 `.48` 为
+   `reviewed_candidate`、`.47` 为唯一 active shared authority。
+5. 直接演进 `.agents/.codex/.claude/.cursor` 四份 repository-private
+   `release-guru-trellis-version` contract，删除 one-review 假设，明确 pre-promotion review、
+   serialized promotion 与 post-promotion fresh review 顺序；同步更新 canonical contract test。
+6. 运行 source/installed package、manifest、overlay/ownership、dogfood drift、定向测试、
    引用扫描、`git diff --check` 和 task scope 验证；修复 current-scope finding。
-6. 完成 Phase 2 semantic check。之后 task commit、独立 full-branch review、Publication、
-   Finalizer push/PR/archive/Ready 和 PR merge 分别进入其 owner 与确认边界。
+7. 完成 pre-promotion Phase 2 semantic check、task commit 和独立 full-branch review；
+   P0-P3 open findings 为零后，Architecture/RDT serialized promotion owners 才绑定
+   expected `.47` 将 `.48` 设为唯一 active，并把 `.47` 标记为 superseded。
+8. 对 promotion-created diff 重新执行 Phase 2、task commit 和独立 full-branch review；
+   通过后 Publication、Finalizer push/PR/archive/Ready 和 PR merge 分别进入其 owner
+   与确认边界。
 
 ## Stage 2: Exact-Candidate Release
 
