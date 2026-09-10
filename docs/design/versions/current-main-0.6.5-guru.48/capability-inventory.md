@@ -110,5 +110,6 @@ remote mutation、第二 writer、legacy dual-read、ADR、GAP 或 Evolution tar
 `.48` 消费 reviewed #392 contributions 并保持 23 public Skills / 97 external exits / 78 commands。
 current mapping 为 `v0.6.16-guru.1` / extension `0.6.16-guru.41` / CLI `0.6.16` / fixed Fork full SHA。
 repository-private release orchestration 只增加 pre-promotion review、serialized promotion、post-promotion
-fresh review 的 Stage 1 顺序，不进入 public inventory。Promotion 后的 Phase 2/commit/Branch Review、
-Publication、merge、exact-candidate matrix、business smoke、tag、Release 与 Issue closure 均保持 `unverified`。
+fresh review 的 Stage 1 顺序，不进入 public inventory。Promotion-created diff 必须通过 fresh Phase 2、
+task commit 与完整 Branch Review 后才能进入 Publication；merge 后必须重新冻结 exact candidate，
+matrix、business smoke、tag、Release 与 Issue closure 分别由其后续 owner 依据 fresh live facts 独立验证。
