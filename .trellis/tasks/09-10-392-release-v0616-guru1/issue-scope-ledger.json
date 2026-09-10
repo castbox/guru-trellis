@@ -1,12 +1,5 @@
 {
-  "close_issues": [
-    {
-      "number": 392,
-      "reason": "Readiness assigns complete acceptance and eventual closeout ownership to Issue #392.",
-      "title": "release: 发布 v0.6.16-guru.1 并将 Guru Team extension 提升至 0.6.16-guru.41",
-      "url": "https://github.com/castbox/guru-trellis/issues/392"
-    }
-  ],
+  "close_issues": [],
   "followup_issues": [],
   "primary_issue": {
     "number": 392,
