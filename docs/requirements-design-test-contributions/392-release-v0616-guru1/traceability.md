@@ -1,7 +1,7 @@
 # #392 Release v0.6.16-guru.1 Traceability
 
-状态：`reviewed_candidate`；关系：`pending_promotion`；predecessor：
-`current-main-0.6.5-guru.47`；candidate successor：
+状态：`reviewed_promoted`；immutable superseded predecessor：
+`current-main-0.6.5-guru.47`；promoted/current active successor：
 `current-main-0.6.5-guru.48`。
 
 | Requirement | Design | Test / Scenario | Architecture candidate refs |
@@ -23,10 +23,11 @@ Requirements、Design 与 Test candidate 定义分别位于
 Architecture delta locator 为
 [#392 Architecture contribution](../../architecture/contributions/392-release-v0616-guru1.md)，
 identity 为 `architecture-contribution-392-release-v0616-guru1-v2`。`ARCH-CUR-025`、
-`ARCH-INT-015`、`EVD-024` 是 `.48` candidate promotion refs；serialized promotion 前，
-public Architecture inheritance 仍为 [baseline](../../architecture/README.md) /
-`current-main-0.6.5-guru.47` / `active`。
+`ARCH-INT-015`、`EVD-024` 是已 promotion 的 `.48` current refs；public Architecture
+inheritance 以 [baseline](../../architecture/README.md) /
+`current-main-0.6.5-guru.48` / `active` 为 authority，`.47` 为 immutable predecessor。
 
 本 contribution 绑定 Issue [#392](https://github.com/castbox/guru-trellis/issues/392)、
-task `392-release-v0616-guru1` 与 expected `.47`。它不记录动态 HEAD、Gate/checkpoint、
-runtime state、时间、tag/Release 状态或用户授权，也不声明 `.48` 已成为 current。
+task `392-release-v0616-guru1`、expected predecessor `.47` 与 promoted successor `.48`。
+promotion identity 不证明后续 Gate outcome；本 contribution 不记录动态 HEAD、
+Gate/checkpoint、runtime state、时间、tag/Release 状态或用户授权。

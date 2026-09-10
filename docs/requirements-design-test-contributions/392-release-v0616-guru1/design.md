@@ -1,8 +1,8 @@
 # #392 Release v0.6.16-guru.1 Design contribution
 
-状态：`reviewed_candidate`；关系：`pending_promotion`；change path：`target_native`。
-当前 shared authority 仍为 `current-main-0.6.5-guru.47` / `active`，候选 successor
-`current-main-0.6.5-guru.48` 尚未 promotion。
+状态：`reviewed_promoted`；change path：`target_native`。immutable superseded
+predecessor 为 `current-main-0.6.5-guru.47`，promoted/current active authority 为
+`current-main-0.6.5-guru.48`。
 
 ## Design responsibilities
 
@@ -34,12 +34,12 @@
 
 ## Architecture inheritance
 
-Architecture candidate 由
+Architecture contribution 由
 [#392 contribution](../../architecture/contributions/392-release-v0616-guru1.md) 拥有，
 identity 为 `architecture-contribution-392-release-v0616-guru1-v2`。它继承
-[current baseline](../../architecture/README.md) / `current-main-0.6.5-guru.47` / `active`，
-候选 `.48` 计划承接 `ARCH-CUR-025`、`ARCH-INT-015`、`EVD-024`；这些 refs 在 serialized
-promotion 前均不是 current Architecture authority。
+[current baseline](../../architecture/README.md) 的 `.47` immutable superseded predecessor，
+并已将 `ARCH-CUR-025`、`ARCH-INT-015`、`EVD-024` promotion 为 `.48` current
+Architecture authority。
 
-本 contribution 不声明 Stage 1 或 Stage 2 已通过，也不授权 shared current write、Git/GitHub
-mutation、release publication 或 Issue closure。
+本 contribution 的 promotion identity 不声明后续 Phase 2、Branch Review、Stage 1 或 Stage 2
+结果，也不授权 Git/GitHub mutation、release publication 或 Issue closure。

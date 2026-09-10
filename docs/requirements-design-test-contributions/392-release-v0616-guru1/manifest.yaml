@@ -5,7 +5,7 @@ issue_ref: "https://github.com/castbox/guru-trellis/issues/392"
 source_version: "current-main-0.6.5-guru.47"
 expected_current_version: "current-main-0.6.5-guru.47"
 candidate_successor_version: "current-main-0.6.5-guru.48"
-status: "reviewed_candidate"
+status: "reviewed_promoted"
 authority_scope: "isolated_contribution"
 change_path: "target_native"
 contribution:
@@ -15,13 +15,13 @@ contribution:
   traceability: "docs/requirements-design-test-contributions/392-release-v0616-guru1/traceability.md"
 architecture_baseline:
   locator: "docs/architecture/README.md"
-  version: "current-main-0.6.5-guru.47"
+  version: "current-main-0.6.5-guru.48"
   status: "active"
 architecture_candidate:
   contribution_locator: "docs/architecture/contributions/392-release-v0616-guru1.md"
   contribution_identity: "architecture-contribution-392-release-v0616-guru1-v2"
   candidate_successor_version: "current-main-0.6.5-guru.48"
-  promotion_state: "reviewed_candidate"
+  promotion_state: "reviewed_promoted"
   adr_required: false
 traceability:
   requirements:
@@ -60,6 +60,6 @@ public_contracts:
   architecture_candidate: "guru-maintain-architecture-baseline:2.0"
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
-promotion_state: "pending_promotion"
-promotion_decision: "pending_serialized_promotion"
-shared_current_write: false
+promotion_state: "reviewed_promoted"
+promotion_decision: "promoted_to_current-main-0.6.5-guru.48"
+shared_current_write: true

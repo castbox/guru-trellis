@@ -209,16 +209,16 @@ full validator 或未运行的 Release/upgrade matrix表述为通过，也不记
 完整历史矩阵、真实业务 #31/#127、独立 TypeCheck、remote Release/tag/npm/tag-pinned smoke 均保持 `unverified`。
 `.47` 只保留为 immutable predecessor；`.48` promotion-created diff 不继承先前 Branch Review pass，后续正式 owner 需 fresh 检查。
 
-## #392 v0.6.16-guru.1 verification authority
+## #392 v0.6.16-guru.1 verification contract
 
-| Gate | Required proof | Current state |
+| Gate | Required proof | Stable boundary |
 | --- | --- | --- |
-| authority promotion | expected `.47`、reviewed contribution v2、唯一 active `.48`、R392/D392/T392/SCN 与 Architecture refs 闭合 | `active`；本次 promotion 内容已建立 |
+| authority promotion | expected `.47`、reviewed contribution v2、唯一 active `.48`、R392/D392/T392/SCN 与 Architecture refs 闭合 | `.47` immutable superseded；`.48` promoted/current active；不证明后续 gate outcome |
 | release mapping | `v0.6.16-guru.1` / `0.6.16-guru.41` / CLI `0.6.16` / fixed Fork full SHA 在 current authority 一致 | reviewed current contract；不证明 published |
-| post-promotion review | promotion-created diff 的 fresh Phase 2、task commit 与完整 Branch Review，P0-P3 open findings zero | `unverified`；Publication 前置 blocker |
-| preparation publication/merge | Publication、Finalizer、PR 与 expected-head merge | `unverified` |
-| exact-candidate gate | fresh `origin/main` candidate 的 lineage/full diff、source/installed、四平台、ownership/reapply/drift、clean/existing/update/switch、Fork build、business smoke、secret scan、residue | `unverified`；历史/focused evidence 不可替代 |
-| release transactions | annotated tag、tag-pinned smoke、GitHub Release/latest stable、Issue #392 close、cleanup | 全部 `unverified` 且各自独立 |
+| post-promotion review | promotion-created diff 的 fresh Phase 2、task commit 与完整 Branch Review，P0-P3 open findings zero | 必须绑定 fresh reviewed-content identity；Publication 前置 blocker |
+| preparation publication/merge | Publication、Finalizer、PR 与 expected-head merge | 各 owner fresh-read live authority并消费前序最小结果 |
+| exact-candidate gate | fresh `origin/main` candidate 的 lineage/full diff、source/installed、四平台、ownership/reapply/drift、clean/existing/update/switch、Fork build、business smoke、secret scan、residue | 所有 proof 绑定同一 exact candidate；历史/focused evidence 不可替代 |
+| release transactions | annotated tag、tag-pinned smoke、GitHub Release/latest stable、Issue #392 close、cleanup | 各自 fresh 验证并进入独立 mutation boundary |
 
 `SCN-077` 验证 promotion 前后两轮 review；`SCN-078` 验证 post-merge exact-candidate 与独立 release
 transactions。任一 required `FAIL`、`SKIP`、stale、cross-SHA 或 unknown/multiple/unmapped exit 阻断后续动作。

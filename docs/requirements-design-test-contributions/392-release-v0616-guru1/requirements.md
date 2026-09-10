@@ -1,13 +1,13 @@
 # #392 Release v0.6.16-guru.1 Requirements contribution
 
-状态：`reviewed_candidate`；关系：`pending_promotion`；source / expected current：
-`current-main-0.6.5-guru.47`；candidate successor：
-`current-main-0.6.5-guru.48`。
+状态：`reviewed_promoted`；predecessor：
+`current-main-0.6.5-guru.47` / `immutable superseded`；promoted successor：
+`current-main-0.6.5-guru.48` / `active`。
 
 本 contribution 绑定 live Issue
 [#392](https://github.com/castbox/guru-trellis/issues/392) 与 task
-`392-release-v0616-guru1`。它是 pre-promotion 的隔离候选，不是 shared current
-authority；当前 Requirements/Design/Test 与 Architecture authority 仍为 `.47` / `active`。
+`392-release-v0616-guru1`。它已由 serialized promotion owner 投影为 `.48` shared
+Requirements/Design/Test authority；`.47` 仅保留为 immutable superseded predecessor。
 
 - `R392-01`：canonical、dogfood 与 installed manifest 必须一致声明 Guru Team
   extension `0.6.16-guru.41`；target、required 与 tested Trellis CLI 均保持
@@ -42,6 +42,6 @@ authority；当前 Requirements/Design/Test 与 Architecture authority 仍为 `.
 `origin/main` 建立 Stage 2 exact candidate；任何 required `FAIL`、`SKIP`、stale、
 cross-SHA 或 unknown/multiple/unmapped exit 都在 release mutation 前停止。
 
-以上条目仅是 reviewed candidate。只有 RDT 与 Architecture serialized promotion owner
-在 expected `.47` 仍为 current 时，才能把它们投影为 `.48` shared authority；promotion
-产生的新 diff 仍需 fresh Phase 2、commit 与独立 Branch Review。
+以上条目已 promotion 为 `.48` current authority。该 promotion identity 只证明稳定
+predecessor/successor 与 shared-current 关系；promotion-created diff 仍需由后续 owner 执行
+fresh Phase 2、commit 与独立 Branch Review，且不证明 Publication、merge 或发布结果。

@@ -43,16 +43,16 @@
 
 前表的 official 0.6.15 与六 cell PASS 为继承历史，不适用于当前 Fork 0.6.16 candidate。
 
-## #392 当前非功能与未验证边界
+## #392 非功能与证明边界
 
-| 边界 | 当前状态 | Owner |
+| 边界 | 稳定合同 | Owner |
 | --- | --- | --- |
 | `.48` Architecture/RDT authority | `active`；唯一 current，`.47` immutable superseded | serialized Architecture/RDT promotion owners |
 | release mapping | `reviewed current contract`：`v0.6.16-guru.1` / `0.6.16-guru.41` / CLI `0.6.16` / fixed Fork full SHA | #392 preparation delivery |
-| post-promotion fresh Phase 2/commit/Branch Review | `unverified`；第二次 review 前 Publication 不可达 | Phase 2 / Task Commit / Branch Review owners |
-| preparation merge 与 post-merge exact candidate | `unverified` | Publication / Finalizer / Merge / release owner |
-| full throwaway matrix、business smoke、secret scan、residue gate | `unverified`；历史或 focused evidence 不可复用 | #392 exact-candidate Release Gate |
-| annotated tag、tag-pinned smoke、GitHub Release、Issue close、cleanup | `unverified`；每项独立 mutation boundary | 各 live action owner |
+| post-promotion fresh Phase 2/commit/Branch Review | promotion-created diff 必须绑定 fresh identity；完整 review 前 Publication 不可达 | Phase 2 / Task Commit / Branch Review owners |
+| preparation merge 与 post-merge exact candidate | merge 使用 reviewed expected head；随后 fresh-fetch `origin/main` 并冻结唯一 candidate | Publication / Finalizer / Merge / release owner |
+| full throwaway matrix、business smoke、secret scan、residue gate | 只接受同一 exact candidate 的 live proof；历史或 focused evidence 不可复用 | #392 exact-candidate Release Gate |
+| annotated tag、tag-pinned smoke、GitHub Release、Issue close、cleanup | 每项 fresh-read live authority，并保持独立 mutation boundary | 各 live action owner |
 
 `.48` 不新增 public Skill、typed exit、schema、compatibility adapter、第二 release state machine 或
 runtime owner artifact；public graph 保持 23 Skills / 97 exits / 78 commands。

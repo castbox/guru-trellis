@@ -2,12 +2,12 @@
 
 ## Identity And Authority Boundary
 
-- candidate identity：`architecture-contribution-392-release-v0616-guru1-v2`。
+- contribution identity：`architecture-contribution-392-release-v0616-guru1-v2` / `reviewed_promoted`。
 - requirement authority：live Issue #392 与 task `prd.md`。
 - behavior authority：task `design.md`、`implement.md` 与后续 `.48` RDT successor。
-- source/expected current：`docs/architecture/README.md` /
-  `current-main-0.6.5-guru.47` / `active`。
-- candidate successor：`current-main-0.6.5-guru.48`。
+- source/expected predecessor：`current-main-0.6.5-guru.47` / `immutable superseded`。
+- promoted successor：`docs/architecture/README.md` /
+  `current-main-0.6.5-guru.48` / `active`。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` /
   `guru-trellis-design-constitution-v1` / `current`。
 - project change contract：`docs/architecture/06-governance/change-contract.md` /
@@ -15,9 +15,9 @@
   `guru-trellis-architecture-change-concerns-v1`。
 - change path：`target_native`；ADR required：`false`。
 
-本 contribution 只定义 #392 的稳定目标边界。它不记录 task HEAD、动态 gate
-结果、tag、smoke、Release、Issue closure、时间或用户授权，也不自行声明 shared
-current 已完成 promotion。
+本 contribution 定义 #392 已 promotion 的稳定 identity 与目标边界。它不记录 task HEAD、
+动态 gate 结果、tag、smoke、Release、Issue closure、时间或用户授权；promotion identity
+不证明任何后续 gate outcome。
 
 ## Boundary And Decision
 
@@ -96,17 +96,15 @@ Review。post-merge Release Gate 再绑定 fresh exact candidate。本 Planning 
 
 ## Review And Promotion Boundary
 
-- lifecycle candidate state：`reviewed_candidate`；它不是 shared current authority，
-  serialized promotion 还必须消费 pre-promotion delivery 的独立 committed full-diff
-  Branch Review。
-- expected current：`current-main-0.6.5-guru.47`。
-- candidate successor：`current-main-0.6.5-guru.48`。
+- promotion identity：`reviewed_promoted`；`.47` 为 immutable superseded predecessor，
+  `.48` 为 promoted/current active shared authority。
+- expected predecessor：`current-main-0.6.5-guru.47`。
+- promoted successor：`current-main-0.6.5-guru.48`。
 - ADR：`required=false`。
-- shared current 只有在本 contribution 的 Planning semantic review 与 pre-promotion
-  committed full-diff Branch Review 均通过、P0-P3 open findings 为零且 expected `.47`
-  仍 current 时，才可由 serialized promotion owner 写入；promotion-created diff 必须接受
-  后续 fresh Phase 2 与独立 committed full-diff Branch Review。live current advance、
-  finding、project-check failure 或 stale contribution 必须返回对应 owner route，不得覆盖。
+- serialized promotion 已基于 expected `.47` 建立 `.48` shared current；该稳定 promotion
+  identity 不保存或替代当时的动态 review result。promotion-created diff 必须由后续 owner
+  接受 fresh Phase 2、task commit 与独立 committed full-diff Branch Review；live current
+  advance、finding、project-check failure 或 stale identity 必须返回对应 owner route，不得覆盖。
 
 ## Explicit Boundaries
 

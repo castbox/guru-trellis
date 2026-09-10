@@ -23,7 +23,7 @@
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
 当前框架源码固定为 `castbox/Trellis@ad332e3fe5a19d7274cb03e7c2f3e2128f8de291`，CLI/core `0.6.16`；Guru live manifest 为 `0.6.16-guru.41`，repository release target 为 `v0.6.16-guru.1`。
-Docs `.48` 提升 #392 reviewed contribution 与 serialized promotion 顺序，不是 npm、tag 或 GitHub Release 发布。promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、merge、完整 exact-candidate matrix、业务 smoke 与 Issue closure 均保持 `unverified`。
+Docs `.48` 提升 #392 reviewed contribution 与 serialized promotion 顺序，不是 npm、tag 或 GitHub Release 发布。promotion-created diff 必须通过 fresh Phase 2/commit/Branch Review 后才能进入 Publication；merge 后重新冻结 exact candidate，并由后续 owner 独立验证完整 matrix、业务 smoke、tag、Release 与 Issue closure。
 
 `R378-01..04 -> D378-01..04 -> T378-01..05` 承接固定来源、会话隔离、installed 投影与原 verifier 入口；#388/#389 保留为关联前置，既有 #240/#348/#332/#376 与 Evolution authority 不扩张。
 
