@@ -167,6 +167,13 @@ class SkillContractTest(unittest.TestCase):
                 self.assertIn(post_merge_gate, normalized)
         self.assertIn("residue", normalized)
         self.assertIn("diff hygiene", normalized)
+        self.assertIn('TRELLIS_FORK_SOURCE="${trellis_fork_source}"', contract)
+        self.assertIn("verify-throwaway-install.sh --mode focused", contract)
+        self.assertIn("invocation-local evidence, not a seventh release input", contract)
+        self.assertIn("Shared plus selected-platform install (Codex by default)", contract)
+        self.assertIn("four-platform source-contract parity remains the separate gate", contract)
+        self.assertNotIn("Shared/Codex/Claude/Cursor install", contract)
+        self.assertNotIn("GURU_TEAM_THROWAWAY_SINGLE_REPO_COMPATIBILITY", contract)
         honest_path = (
             "stable_plan -> pre_promotion_delivery -> guru-create-task-commit -> "
             "pre_promotion_commit -> guru-review-branch_pre_promotion -> "

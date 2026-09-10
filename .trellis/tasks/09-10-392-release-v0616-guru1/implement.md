@@ -55,9 +55,9 @@ git diff --name-status "v0.6.15-guru.6^{commit}" "${candidate_commit}^{commit}" 
 ./trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
 ./trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms
 ./trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh --repo .
-GURU_TEAM_THROWAWAY_SINGLE_REPO_COMPATIBILITY=1 \
+TRELLIS_FORK_SOURCE="${trellis_fork_source}" \
   TRELLIS_WORKFLOW_SOURCE="gh:castbox/guru-trellis/trellis#${candidate_commit}" \
-  ./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh
+  ./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh --mode focused
 git status --short
 git diff --check
 find . \( -type d -name '__pycache__' -o -type f \( -name '*.pyc' -o -name '*.pyo' -o -name '*.new' -o -name '*.bak' \) \) -print
@@ -65,6 +65,11 @@ find . \( -type d -name '__pycache__' -o -type f \( -name '*.pyc' -o -name '*.py
 
 secret scan 必须覆盖由 predecessor-to-candidate changed-file set 得到的 candidate bytes；
 使用当前环境真实 scanner，缺失能力不得用文本扫描冒充通过。
+`trellis_fork_source` 必须在本次 invocation 中解析为已构建、tracked clean 且 HEAD 与
+candidate source lock 固定 commit 一致的 Fork checkout；它是本地验证 evidence，不新增
+release Skill 的第七个 invocation input。focused profile 只覆盖 Shared 与 selected platform
+（未传 `--platform` 时默认 Codex）的安装、更新与 reapply，不消费 predecessor checkout；
+Shared/Codex/Claude/Cursor 四平台 source-contract parity 由前置独立 gate 覆盖。
 
 ## Risky Files And Rollback Points
 
