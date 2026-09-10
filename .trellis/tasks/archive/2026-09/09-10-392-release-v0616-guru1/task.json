@@ -2,10 +2,11 @@
   "id": "392-release-v0616-guru1",
   "name": "392-release-v0616-guru1",
   "title": "#392 发布 v0.6.16-guru.1 并提升 Guru Team extension 至 0.6.16-guru.41",
-  "status": "in_progress",
+  "status": "completed",
   "branch": "chore/392-release-v0616-guru1",
   "base_branch": "main",
   "creator": "wesleywu",
   "assignee": "wesleywu",
-  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/392"
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/392",
+  "completedAt": "2026-09-11"
 }

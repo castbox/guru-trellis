@@ -1,8 +1,0 @@
-{"file":".agents/skills/release-guru-trellis-version/references/contract.md","reason":"验证 Stage 1/Stage 2 身份重置、完整 gate locator 和各 mutation 独立确认。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"验证 task scope、Docs SSOT closure、Branch Review、secret scan 和 residue 证据充分性。"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"验证 semantic owner、typed exit、freshness 与 Git/GitHub 副作用边界。"}
-{"file":".trellis/spec/preset/installer.md","reason":"验证 canonical/installed parity、clean/existing/update/reapply 和 managed provenance。"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"验证四平台投影、dogfood drift、用户修改保留和零未知 sidecar。"}
-{"file":".trellis/spec/docs/public-docs.md","reason":"验证 current release mapping、安装命令和历史/current 陈述没有串位。"}
-{"file":".trellis/spec/docs/requirements-design-test-ssot.md","reason":"验证 .48 RDT authority、单一 active 状态、trace 和 Architecture inheritance。"}
-{"file":"docs/architecture/README.md","reason":"验证 Architecture successor contribution/promotion 与 immutable .47 predecessor。"}
