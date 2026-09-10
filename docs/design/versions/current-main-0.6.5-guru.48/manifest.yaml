@@ -1,0 +1,19 @@
+schema_version: "1.0"
+authority: design
+version: current-main-0.6.5-guru.48
+status: active
+predecessor: current-main-0.6.5-guru.47
+source_binding: "reviewed 392-release-v0616-guru1 contribution v2 + inherited immutable current-main-0.6.5-guru.47 authority + containing Git object/tree identity"
+extension_manifest_version: 0.6.16-guru.41
+target_trellis_cli: 0.6.16
+release_target: v0.6.16-guru.1
+released_baseline: v0.6.15-guru.6
+framework_source: castbox/Trellis@ad332e3fe5a19d7274cb03e7c2f3e2128f8de291
+requirements_locator: docs/requirements/versions/current-main-0.6.5-guru.48/requirement-main.md
+test_locator: docs/test/versions/current-main-0.6.5-guru.48/test-strategy.md
+architecture_locator: docs/architecture/README.md
+registry_locator: trellis/skills/guru-team/registry.json
+active_skill_count: 23
+external_exit_count: 97
+command_count: 78
+provenance: "code_recovered + reviewed 392-release-v0616-guru1 contribution v2 + inherited immutable current-main-0.6.5-guru.47 authority"

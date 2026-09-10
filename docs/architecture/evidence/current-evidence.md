@@ -39,6 +39,14 @@ installed 字节一致；canonical/installed isolation、#388/#389 integration�
 和两次 update/reapply 通过；三平台 reapply 无漂移，备份已保留。fixture provider closeout
 不等于真实远端发布。完整历史矩阵、真实业务接续与独立 TypeCheck 未验证。
 
-当前 Architecture knowledge successor 为 `.47`；promotion-created combined diff 仍须 fresh
-Phase 2、task commit 与 Branch Review。继承的 #332/#267 发布门禁保持独立，不由本 promotion
-更新 stable、tag、GitHub Release 或 smoke 结果。
+`EVD-024`：#392 reviewed candidate inputs 包含 live Issue/task planning、
+`docs/architecture/contributions/392-release-v0616-guru1.md` identity
+`architecture-contribution-392-release-v0616-guru1-v2`、五文件 RDT contribution、固定 Fork source lock、
+current delivery mapping 与 pre-promotion 独立完整 Branch Review。它支撑 `ARCH-CUR-025`、
+`ARCH-INT-015` 以及 expected `.47` -> `.48` serialized promotion；只证明 promotion 输入已通过既定
+review boundary，不证明 promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、merge、
+exact-candidate Release Gate、tag、tag-pinned smoke、GitHub Release、business smoke 或 Issue closure。
+
+当前 Architecture knowledge successor 为 `.48`；`.47` 是 immutable superseded predecessor。
+promotion-created combined diff 仍须 fresh Phase 2、task commit 与完整 Branch Review。继承的历史发布
+证据保持独立，不由本 promotion 更新 tag、GitHub Release 或 smoke 结果。
