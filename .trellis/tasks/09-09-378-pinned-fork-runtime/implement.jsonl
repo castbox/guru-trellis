@@ -1,3 +1,0 @@
-{"file":".trellis/spec/preset/upstream-ownership.md","reason":"Fork CLI 与 Guru namespace 的源头职责"}
-{"file":".trellis/spec/workflow/subtraction-first-compatibility.md","reason":"直接迁移来源并控制兼容与文件复杂度"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"定向验证与 Release matrix ownership"}
