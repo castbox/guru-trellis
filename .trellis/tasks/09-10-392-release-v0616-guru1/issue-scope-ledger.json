@@ -10,7 +10,7 @@
   "followup_issues": [],
   "primary_issue": {
     "number": 392,
-    "reason": "Issue #392 is the reviewed primary release delivery.",
+    "reason": "Readiness assigns complete acceptance and eventual closeout ownership to Issue #392.",
     "title": "release: 发布 v0.6.16-guru.1 并将 Guru Team extension 提升至 0.6.16-guru.41",
     "url": "https://github.com/castbox/guru-trellis/issues/392"
   },
