@@ -52,16 +52,16 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 
 | 组件 | 固定版本 |
 | --- | --- |
-| Guru Trellis repo tag | `v0.6.15-guru.6` |
-| Guru Team extension revision | `0.6.15-guru.40` |
+| Guru Trellis repo tag | `v0.6.16-guru.1` |
+| Guru Team extension revision | `0.6.16-guru.41` |
 | Fork `castbox/Trellis` CLI | `0.6.16` @ `ad332e3fe5a19d7274cb03e7c2f3e2128f8de291` |
 
 repo tag 与 extension revision 是两个独立版本轴。本次发布的 workflow 与 preset
-固定使用同一个目标 annotated tag `v0.6.15-guru.6`。该 tag object、peeled commit、
-GitHub Release、tag-pinned install 与 post-publish smoke 尚未创建或验证；#332 必须在
+固定使用同一个目标 annotated tag `v0.6.16-guru.1`。该 tag object、peeled commit、
+GitHub Release、tag-pinned install 与 post-publish smoke 尚未创建或验证；#392 必须在
 preparation PR 合并后重新冻结 exact candidate，并从头执行 Release gates。
 
-上表 Guru release tag 是既有发布计划，不代表本 Fork 接入改动已随该 tag 发布。
+上表 Guru release tag 是目标发布计划，不代表本 Fork 接入改动已随该 tag 发布。
 本次未发布源码验证使用已审查 Guru checkout；以下 `GURU_WORKFLOW_SOURCE` 必须设置为
 该 checkout 对应的可寻址 marketplace ref，本地样本不能冒充已发布版本。
 

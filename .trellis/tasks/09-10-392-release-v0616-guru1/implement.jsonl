@@ -1,0 +1,8 @@
+{"file":".agents/skills/release-guru-trellis-version/references/contract.md","reason":"仓库私有两阶段发布、fresh exact candidate、禁止持久化和独立 mutation confirmation 合同。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Phase 2、Docs SSOT、完整 Branch Review、package/install 与 residue 质量门禁。"}
+{"file":".trellis/spec/workflow/subtraction-first-compatibility.md","reason":"current version authority 直接演进、旧 consumer 退出和禁止无 consumer 兼容层。"}
+{"file":".trellis/spec/preset/installer.md","reason":"canonical、dogfood、installed、update/reapply、managed provenance 与 sidecar 约束。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"Shared/Codex/Claude/Cursor projection、all-platform reapply 与 drift 合同。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"稳定安装入口、release-facing version mapping 与文档证据口径。"}
+{"file":".trellis/spec/docs/requirements-design-test-ssot.md","reason":"RDT successor identity、Architecture inheritance、traceability 与 promotion 规则。"}
+{"file":"docs/architecture/README.md","reason":"当前 .47 Architecture authority、固定 Fork 来源和 successor promotion 起点。"}
