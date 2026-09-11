@@ -2,10 +2,11 @@
   "id": "356-active-task-workspace-identity",
   "name": "356-active-task-workspace-identity",
   "title": "#356 根治 active task workspace 身份断裂与错误重入 Intake",
-  "status": "in_progress",
+  "status": "completed",
   "branch": "fix/356-active-task-workspace-identity",
   "base_branch": "main",
   "creator": "wesleywu",
   "assignee": "wesleywu",
-  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/356"
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/356",
+  "completedAt": "2026-09-11"
 }
