@@ -388,16 +388,23 @@ Phase 3: Finish  -> docs reconciliation, commit, Architecture full-diff review, 
 
 | State | Route |
 | --- | --- |
-| no active task and no incomplete closeout | Tool-free classification, then Phase 0 for repo-changing work. |
+| no relevant active task and no bound incomplete closeout | Invoke guru-select-workflow-mode; consume task_free or standard_intake. |
 | planning | Produce the three planning documents and Docs SSOT Plan, run wording review, obtain current Planning Architecture impact, then invoke guru-approve-task-plan. |
 | in_progress | Validate the task worktree, re-enter Architecture on qualifying expansion, implement the approved scope, then run the Phase 2 Architecture/check route. |
 | completed | Enter Phase 3 through the canonical guru-finish-work route. |
 | invalid task state | Stop at `invalid-task-state`; do not enter Intake, restore, migration, mapping rebuild, cleanup, or confirmation retry. |
 
 [workflow-state:no_task]
-Every file-changing request first resolves and validates the active-task identity.
-An incomplete or conflicting identity stops at `invalid-task-state`. Only when
-no active task or archived incomplete-closeout identity exists does the request
+Every file-changing request first resolves task identity for the current
+workspace and requested Issue. Unrelated `in_progress` tasks in the repository
+inventory are not current-task conflicts, even for the same user; do not ask
+the user to select one or switch to task-free because they exist. A mapping's
+`source_checkout` alone does not bind its task to that checkout.
+A task bound to the current workspace must be validated; an incomplete or
+conflicting identity stops at `invalid-task-state`. An unfinished task for the
+same Issue must resolve to its existing identity rather than create a duplicate;
+missing or conflicting bindings stop at `invalid-task-state`.
+Only when no relevant active task or bound archived incomplete-closeout identity exists does the request
 invoke `guru-select-workflow-mode`, including requests without an Issue or
 task-free wording. Before treating an archived task as complete, read the live
 branch, workspace mapping, archived task, PR, and Finalizer facts. If they bind

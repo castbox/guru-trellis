@@ -239,6 +239,18 @@ create an issue, branch, worktree, or task directly and does not copy the
 workspace owner's target selection, recovery, confirmation, executor, or
 checker behavior.
 
+The pre-selection identity check is scoped to the current workspace and the
+requested Issue, not the repository-wide active-task inventory. Unrelated
+`in_progress` tasks, including tasks owned by the same user, do not prevent
+`guru-select-workflow-mode` and do not justify asking the user to select an
+unrelated task or use task-free. A mapping's `source_checkout` is provenance,
+not a binding of its task to that checkout. Validate a task bound to the current
+workspace and resolve an unfinished task for the same Issue before selecting
+new work; incomplete or conflicting relevant identity remains fail closed.
+An archived task's incomplete Finalizer/closeout blocks only when live workspace,
+branch, task, PR and Finalizer facts bind it to the current identity. None of
+these relevance checks permits task mutation, mapping repair, or cleanup.
+
 Every file-changing request not already routed through an active task invokes
 the selector, including requests without an Issue or task-free wording.
 Explicit task-free intent selects that route without another confirmation.

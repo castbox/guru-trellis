@@ -260,6 +260,67 @@ def markers(kind: str) -> list[dict[str, Any]]:
     return [json.loads(value) for value in pattern.findall(WORKFLOW.read_text(encoding="utf-8"))]
 
 
+class NoTaskBreadcrumbStaticContractTests(unittest.TestCase):
+    """Guard #395's Markdown contract, not agent task-resolution behavior."""
+
+    def setUp(self) -> None:
+        text = WORKFLOW.read_text(encoding="utf-8")
+        start = "[workflow-state:no_task]"
+        end = "[/workflow-state:no_task]"
+        self.assertEqual(text.count(start), 1)
+        self.assertEqual(text.count(end), 1)
+        self.assertLess(text.index(start), text.index(end))
+        self.state = " ".join(text.split(start, 1)[1].split(end, 1)[0].split())
+
+    def test_unrelated_in_progress_inventory_is_not_a_workspace_conflict(self) -> None:
+        self.assertIn(
+            "Unrelated `in_progress` tasks in the repository inventory "
+            "are not current-task conflicts",
+            self.state,
+        )
+
+    def test_same_user_inventory_does_not_force_selection_or_task_free(self) -> None:
+        self.assertIn(
+            "are not current-task conflicts, even for the same user; do not ask "
+            "the user to select one or switch to task-free because they exist.",
+            self.state,
+        )
+
+    def test_source_checkout_provenance_alone_does_not_bind_a_task(self) -> None:
+        self.assertIn(
+            "A mapping's `source_checkout` alone does not bind its task to that checkout.",
+            self.state,
+        )
+
+    def test_same_issue_reuses_identity_and_preserves_binding_blockers(self) -> None:
+        self.assertIn(
+            "An unfinished task for the same Issue must resolve to its existing "
+            "identity rather than create a duplicate; missing or conflicting "
+            "bindings stop at `invalid-task-state`.",
+            self.state,
+        )
+
+    def test_bound_workspace_identity_still_requires_validation(self) -> None:
+        self.assertIn(
+            "Every file-changing request first resolves task identity for the "
+            "current workspace and requested Issue.",
+            self.state,
+        )
+        self.assertIn(
+            "A task bound to the current workspace must be validated; an incomplete "
+            "or conflicting identity stops at `invalid-task-state`.",
+            self.state,
+        )
+
+    def test_mode_selection_remains_conditional_on_no_relevant_identity(self) -> None:
+        self.assertIn(
+            "Only when no relevant active task or bound archived incomplete-closeout "
+            "identity exists does the request invoke `guru-select-workflow-mode`, "
+            "including requests without an Issue or task-free wording.",
+            self.state,
+        )
+
+
 class FinishFamilyIntegrationTests(unittest.TestCase):
     def test_finish_exits_have_exact_unique_public_consumers(self) -> None:
         seen: set[tuple[str, str]] = set()
