@@ -1,5 +1,0 @@
-{"file":".trellis/spec/workflow/index.md","reason":"Current runtime ownership and detailed guideline locators"}
-{"file":"trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md","reason":"Exact candidate and persistent reconciliation owner contract"}
-{"file":".trellis/spec/workflow/subtraction-first-compatibility.md","reason":"Direct in-place fix without compatibility branches"}
-{"file":".trellis/tasks/09-12-397-fix-base-candidate-gitlink/design.md","reason":"Exact gitlink representation and unchanged blob behavior"}
-{"file":".trellis/tasks/09-12-397-fix-base-candidate-gitlink/implement.md","reason":"Scoped implementation and verification sequence"}

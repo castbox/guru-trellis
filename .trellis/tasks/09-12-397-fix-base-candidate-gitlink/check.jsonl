@@ -1,4 +1,0 @@
-{"file":".trellis/spec/workflow/index.md","reason":"Current validation owners and detailed guideline locators"}
-{"file":".trellis/spec/preset/index.md","reason":"Canonical and dogfood installation constraints"}
-{"file":".trellis/tasks/09-12-397-fix-base-candidate-gitlink/prd.md","reason":"Complete R1-R7 acceptance and explicit exclusions"}
-{"file":".trellis/tasks/09-12-397-fix-base-candidate-gitlink/design.md","reason":"Candidate/reconciliation identity and evidence compatibility"}
