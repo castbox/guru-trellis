@@ -24,6 +24,21 @@ def file_snapshot(root: Path) -> dict[str, str]:
     }
 
 
+def run_preset_install(installed: Path, *, all_platforms: bool = False) -> subprocess.CompletedProcess[str]:
+    command = [sys.executable, str(INSTALLER), "--repo", str(installed)]
+    if all_platforms:
+        command.append("--all-platforms")
+    command.append("--json")
+    return subprocess.run(
+        command,
+        cwd=SOURCE,
+        env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
 class DiscoveryStdinInstallationTests(unittest.TestCase):
     def test_fresh_install_and_reapply_close_the_stdin_chain(self) -> None:
         with tempfile.TemporaryDirectory(prefix="guru-384-installed-") as name:
@@ -38,13 +53,9 @@ class DiscoveryStdinInstallationTests(unittest.TestCase):
                 SOURCE / ".trellis/scripts", installed / ".trellis/scripts",
                 ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
             )
-            environment = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
             for stage in ("initial", "reapply"):
                 with self.subTest(stage=stage):
-                    applied = subprocess.run(
-                        [sys.executable, str(INSTALLER), "--repo", str(installed), "--json"],
-                        env=environment, text=True, capture_output=True, check=False,
-                    )
+                    applied = run_preset_install(installed)
                     self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
                     self.assertEqual(list(installed.rglob("*.new")), [])
                     self.assertEqual(list(installed.rglob("*.bak")), [])

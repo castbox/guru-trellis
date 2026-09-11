@@ -3,15 +3,13 @@ from __future__ import annotations
 import copy
 import datetime
 import json
-import os
 import shutil
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 import verify_installed_phase0_transcript as transcript
+from test_discovery_stdin_integration import run_preset_install
 from test_readiness_transition_integration import producers, snapshot
 
 SOURCE = Path(__file__).resolve().parents[5]
@@ -27,10 +25,7 @@ class WorkspaceInvocationIntegrationTests(unittest.TestCase):
             shutil.copytree(SOURCE / ".trellis/scripts", installed / ".trellis/scripts", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
             for phase in ("initial", "reapply"):
                 with self.subTest(phase=phase):
-                    result = subprocess.run(
-                        [sys.executable, str(Path(__file__).with_name("apply_guru_team_trellis_preset.py")), "--repo", str(installed), "--all-platforms", "--json"],
-                        capture_output=True, text=True, env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
-                    )
+                    result = run_preset_install(installed, all_platforms=True)
                     self.assertEqual(result.returncode, 0, result.stdout[-3000:] + result.stderr)
                     self.check_chain(installed, work / phase)
 

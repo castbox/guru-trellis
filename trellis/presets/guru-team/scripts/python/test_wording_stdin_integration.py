@@ -2,16 +2,13 @@ from __future__ import annotations
 
 import copy
 import json
-import os
 import shutil
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 import verify_installed_phase0_transcript as transcript
-from test_discovery_stdin_integration import file_snapshot
+from test_discovery_stdin_integration import file_snapshot, run_preset_install
 
 SOURCE = Path(__file__).resolve().parents[5]
 
@@ -26,10 +23,7 @@ class WordingStdinIntegrationTests(unittest.TestCase):
             shutil.copytree(SOURCE / ".trellis/scripts", installed / ".trellis/scripts", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
             for phase in ("initial", "reapply"):
                 with self.subTest(phase=phase):
-                    applied = subprocess.run(
-                        [sys.executable, str(Path(__file__).with_name("apply_guru_team_trellis_preset.py")), "--repo", str(installed), "--all-platforms", "--json"],
-                        capture_output=True, text=True, env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
-                    )
+                    applied = run_preset_install(installed, all_platforms=True)
                     self.assertEqual(applied.returncode, 0, applied.stdout[-2500:] + applied.stderr)
                     self.assertEqual(list(installed.rglob("*.new")) + list(installed.rglob("*.bak")), [])
                     self.chain(installed, work / phase)

@@ -3,19 +3,16 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
-import os
 import shutil
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 import verify_installed_phase0_transcript as transcript
+from test_discovery_stdin_integration import run_preset_install
 
 
 SOURCE = Path(__file__).resolve().parents[5]
-INSTALLER = Path(__file__).with_name("apply_guru_team_trellis_preset.py")
 
 
 def snapshot(root: Path) -> dict[str, str]:
@@ -80,10 +77,7 @@ class InstalledReadinessTransitionTests(unittest.TestCase):
             shutil.copytree(SOURCE / ".trellis/scripts", installed / ".trellis/scripts", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
             for phase in ("initial", "reapply"):
                 with self.subTest(phase=phase):
-                    applied = subprocess.run(
-                        [sys.executable, str(INSTALLER), "--repo", str(installed), "--all-platforms", "--json"],
-                        text=True, capture_output=True, env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
-                    )
+                    applied = run_preset_install(installed, all_platforms=True)
                     self.assertEqual(applied.returncode, 0, applied.stdout[-5000:] + applied.stderr[-2000:])
                     self.assertEqual(list(installed.rglob("*.bak")) + list(installed.rglob("*.new")), [])
                     self.check_chain(installed, work / phase)
