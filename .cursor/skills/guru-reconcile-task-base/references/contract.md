@@ -73,6 +73,25 @@ candidate tree identity, and removes the worktree. It never selects commands,
 interprets failures, resolves conflicts, or chooses a route. Arbitrary shell
 strings are rejected.
 
+Candidate and persistent reconciliation use the same stage-0 index identity
+owner, `index_tree_digest`. In Git index order, each `160000` gitlink contributes
+`path_bytes + NUL + b"160000" + NUL + index_oid_ascii + NUL`.
+The recorded pointer participates directly: no `cat-file` call, initialized
+submodule, local child commit object, credentials, or remote download is needed.
+All blob-backed entries retain
+`path_bytes + NUL + sha256(blob_bytes).hexdigest().encode() + NUL`, including
+ordinary files, executable files, and symlink target blobs. The final identity
+is SHA-256 of the concatenated rows. This does not expand blob-backed mode-only
+identity semantics or change their existing read-failure behavior.
+
+Trees without gitlinks retain byte-identical digests and existing successful
+short-lived evidence. The previous implementation could not produce successful
+candidate evidence for a gitlink tree. Rerun those failed attempts with the
+updated complete preset/runtime; do not migrate errors into candidate tokens.
+There is no digest/schema version bump, fallback, or dual-read path. Existing
+managed-copy consistency and live candidate-tree comparisons remain in force
+when updating between candidate validation and persistent reconciliation.
+
 For a post-review continuity result, the AI completes the semantic gate before
 any persistent Git write. It then displays the exact branch, prior task HEAD,
 old/new base pair, prior full-review commit, candidate tree, commit message,
