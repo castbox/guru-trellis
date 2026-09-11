@@ -1,0 +1,12 @@
+{
+  "id": "397-fix-base-candidate-gitlink",
+  "name": "397-fix-base-candidate-gitlink",
+  "title": "#397 修复基线候选树身份计算对未初始化 gitlink 的处理",
+  "status": "completed",
+  "branch": "codex/397-fix-base-candidate-gitlink",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/397",
+  "completedAt": "2026-09-12"
+}

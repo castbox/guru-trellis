@@ -185,6 +185,9 @@ def index_tree_digest(repo: Path) -> str:
                 "Resolve the candidate before computing its identity.",
                 3,
             )
+        if parts[0] == b"160000":
+            rows.append(path + b"\0" + b"160000" + b"\0" + parts[1] + b"\0")
+            continue
         blob = subprocess.run(
             ["git", "cat-file", "blob", parts[1].decode("ascii")],
             cwd=repo,

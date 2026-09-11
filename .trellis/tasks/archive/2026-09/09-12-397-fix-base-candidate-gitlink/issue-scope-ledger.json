@@ -1,0 +1,38 @@
+{
+  "close_issues": [
+    {
+      "number": 397,
+      "reason": "唯一当前修复目标，完成验收后才进入后续关闭判断。",
+      "title": "修复基线候选树身份计算对未初始化 gitlink 的处理",
+      "url": "https://github.com/castbox/guru-trellis/issues/397"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 397,
+    "reason": "唯一当前修复目标，完成验收后才进入后续关闭判断。",
+    "title": "修复基线候选树身份计算对未初始化 gitlink 的处理",
+    "url": "https://github.com/castbox/guru-trellis/issues/397"
+  },
+  "related_issues": [
+    {
+      "number": 172,
+      "reason": "基线协调合同背景，不重开或关闭。",
+      "title": "改进：建立在途 Trellis task 的 Base Evolution Gate 与集成就绪合同",
+      "url": "https://github.com/castbox/guru-trellis/issues/172"
+    },
+    {
+      "number": 186,
+      "reason": "未初始化 gitlink 指针语义参考，不冒领既有任务。",
+      "title": "[Bug] Task-bearing verification rejects unchanged uninitialized Gitlinks",
+      "url": "https://github.com/castbox/guru-trellis/issues/186"
+    },
+    {
+      "number": 376,
+      "reason": "双时钟与持久 reconciliation 边界，不改变其路由。",
+      "title": "降低基线分支已更新对并行进行中的任务的干扰",
+      "url": "https://github.com/castbox/guru-trellis/issues/376"
+    }
+  ],
+  "schema_version": "2.0"
+}

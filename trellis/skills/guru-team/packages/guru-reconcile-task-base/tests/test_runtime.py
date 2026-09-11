@@ -1,10 +1,12 @@
 from __future__ import annotations
-import json, subprocess, sys, tempfile, unittest
+import hashlib, json, os, subprocess, sys, tempfile, unittest
 from pathlib import Path
+from unittest import mock
 PACKAGE=Path(__file__).resolve().parents[1]; SKILLS=PACKAGE.parents[1]; LOCAL=PACKAGE/'runtime'
 for path in (SKILLS,LOCAL):
     if str(path) not in sys.path: sys.path.insert(0,str(path))
 import execute, invoke, record
+from common import index_tree_digest
 from runtime.io import CommandError
 
 class RuntimeTest(unittest.TestCase):
@@ -36,6 +38,216 @@ class RuntimeTest(unittest.TestCase):
         request={'task_ref':self.task_ref,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'branch_review_commit':self.head,'candidate_tree_sha256':candidate_tree,'commit_message':'chore(base): reconcile reviewed task'}
         receipt=execute.reconcile(PACKAGE,['--root',str(self.repo),'--request',str(self.write(profile+'-reconciliation-request.json',request))])
         return public,candidate_tree,receipt
+    def add_uninitialized_gitlink(self):
+        child = Path(self.tmp.name) / 'child'
+        subprocess.run(['git', 'init', '-q', '-b', 'main', str(child)], check=True)
+        def child_git(*args):
+            return subprocess.run(
+                ['git', *args], cwd=child, text=True, check=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            ).stdout.strip()
+        child_git('config', 'user.name', 'Test')
+        child_git('config', 'user.email', 'test@example.invalid')
+        pointers = []
+        for content in ('first\n', 'second\n'):
+            (child / 'child.txt').write_text(content)
+            child_git('add', 'child.txt')
+            child_git('commit', '-qm', content.strip())
+            pointers.append(child_git('rev-parse', 'HEAD'))
+        self.git('config', '-f', '.gitmodules', 'submodule.child.path', 'vendor/child')
+        self.git('config', '-f', '.gitmodules', 'submodule.child.url', str(child))
+        self.git('add', '.gitmodules')
+        self.git('update-index', '--add', '--cacheinfo', '160000', pointers[0], 'vendor/child')
+        self.git('commit', '-qm', 'record uninitialized child pointer')
+        self.head = self.git('rev-parse', 'HEAD')
+        (self.repo / 'vendor/child').mkdir(parents=True)
+        self.assertEqual([], list((self.repo / 'vendor/child').iterdir()))
+        self.assertFalse((self.repo / '.git/modules').exists())
+        self.assertEqual('', self.git('status', '--short'))
+        self.assertEqual('', self.git('remote'))
+        for oid in pointers:
+            missing = subprocess.run(
+                ['git', 'cat-file', '-e', oid], cwd=self.repo,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            )
+            self.assertNotEqual(0, missing.returncode)
+        return pointers
+
+    def candidate_state(self):
+        return (
+            self.git('rev-parse', 'HEAD'),
+            (self.repo / '.git/index').read_bytes(),
+            self.git('show-ref'),
+            self.git('worktree', 'list', '--porcelain'),
+        )
+
+    def checked_gitlink_candidate(self, request, marker):
+        before = self.candidate_state()
+        with mock.patch.dict(os.environ, {'GIT_ALLOW_PROTOCOL': '', 'GIT_TERMINAL_PROMPT': '0'}):
+            with mock.patch.object(subprocess, 'run', wraps=subprocess.run) as calls:
+                try:
+                    return execute.candidate(PACKAGE, [
+                        '--root', str(self.repo), '--request', str(request),
+                    ])
+                except CommandError as error:
+                    self.assertEqual('candidate_failed', error.code)
+                    self.assertEqual('repository.index', error.field_path)
+                    self.assertFalse(marker.exists())
+                    raise
+                finally:
+                    self.assertEqual(before, self.candidate_state())
+                    worktrees = [
+                        Path(call.args[0][4]) for call in calls.call_args_list
+                        if call.args[0][:3] == ['git', 'worktree', 'add']
+                    ]
+                    self.assertEqual(1, len(worktrees))
+                    self.assertFalse(worktrees[0].exists())
+                    self.assertFalse(worktrees[0].parent.exists())
+                    for call in calls.call_args_list:
+                        argv = call.args[0]
+                        if argv[0] == 'git':
+                            self.assertNotIn(argv[1], ('submodule', 'fetch', 'clone', 'pull', 'push', 'credential'))
+
+    def test_gitlink_candidate_reaches_validation_and_preserves_task(self):
+        self.add_uninitialized_gitlink()
+        for exit_code in (0, 7):
+            with self.subTest(exit_code=exit_code):
+                marker = self.inputs / f'validation-{exit_code}.txt'
+                command = [sys.executable, '-c',
+                           'from pathlib import Path; import sys; '
+                           'Path(sys.argv[1]).write_text(str(Path.cwd())); '
+                           'raise SystemExit(int(sys.argv[2]))', str(marker), str(exit_code)]
+                request = self.write(f'gitlink-{exit_code}.json', {
+                    'task_head': self.head, 'new_base_head': self.new,
+                    'validation_commands': [command],
+                })
+                result = self.checked_gitlink_candidate(request, marker)
+                self.assertEqual('clean', result['merge_status'])
+                self.assertEqual([], result['conflict_paths'])
+                self.assertRegex(result['candidate_tree_sha256'], r'^[0-9a-f]{64}$')
+                self.assertEqual([{'argv': command, 'exit_code': exit_code}], result['validations'])
+                validation_cwd = Path(marker.read_text())
+                self.assertEqual('worktree', validation_cwd.name)
+                self.assertTrue(validation_cwd.parent.name.startswith('guru-base-candidate-'))
+                self.assertFalse(validation_cwd.parent.exists())
+
+    def test_gitlink_pointer_digest_is_exact_stable_and_needs_no_object(self):
+        pointers = self.add_uninitialized_gitlink()
+        blob_rows = []
+        for path in ('.gitignore', '.gitmodules', 'base.txt', 'task.txt'):
+            blob = subprocess.run(
+                ['git', 'show', f':{path}'], cwd=self.repo,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True,
+            ).stdout
+            blob_rows.append(path.encode() + b'\0' + hashlib.sha256(blob).hexdigest().encode() + b'\0')
+        identities = []
+        with mock.patch.dict(os.environ, {'GIT_ALLOW_PROTOCOL': '', 'GIT_TERMINAL_PROMPT': '0'}):
+            with mock.patch.object(subprocess, 'run', wraps=subprocess.run) as calls:
+                for oid in pointers:
+                    self.git('update-index', '--cacheinfo', '160000', oid, 'vendor/child')
+                    expected = hashlib.sha256(b''.join(blob_rows) +
+                        b'vendor/child\0' + b'160000\0' + oid.encode('ascii') + b'\0').hexdigest()
+                    actual = index_tree_digest(self.repo)
+                    self.assertEqual(expected, actual)
+                    self.assertEqual(actual, index_tree_digest(self.repo))
+                    identities.append(actual)
+                for call in calls.call_args_list:
+                    argv = call.args[0]
+                    if argv[:2] == ['git', 'cat-file']:
+                        self.assertNotIn(argv[-1], pointers)
+        self.assertNotEqual(*identities)
+        self.assertEqual([], list((self.repo / 'vendor/child').iterdir()))
+        self.assertFalse((self.repo / '.git/modules').exists())
+
+    def test_blob_modes_retain_prior_digest_and_content_sensitivity(self):
+        ordinary = self.repo / 'ordinary\tfile\n.txt'
+        executable = self.repo / 'executable.sh'
+        symlink = self.repo / 'link'
+        ordinary.write_bytes(b'ordinary\0bytes\n')
+        executable.write_bytes(b'#!/bin/sh\nexit 0\n')
+        executable.chmod(0o755)
+        symlink.symlink_to('missing-target')
+        self.git('add', '--', ordinary.name, executable.name, symlink.name)
+        self.git('update-index', '--chmod=+x', executable.name)
+
+        def prior_digest():
+            staged = subprocess.run(
+                ['git', 'ls-files', '--stage', '-z'], cwd=self.repo,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True,
+            ).stdout
+            rows = []
+            modes = set()
+            for entry in staged.split(b'\0'):
+                if not entry:
+                    continue
+                metadata, path = entry.split(b'\t', 1)
+                mode, oid, stage = metadata.split()
+                self.assertEqual(b'0', stage)
+                modes.add(mode)
+                blob = subprocess.run(
+                    ['git', 'cat-file', 'blob', oid.decode('ascii')], cwd=self.repo,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True,
+                ).stdout
+                rows.append(path + b'\0' + hashlib.sha256(blob).hexdigest().encode() + b'\0')
+            self.assertEqual({b'100644', b'100755', b'120000'}, modes)
+            return hashlib.sha256(b''.join(rows)).hexdigest()
+
+        previous = index_tree_digest(self.repo)
+        self.assertEqual(prior_digest(), previous)
+        for path in (ordinary, executable, symlink):
+            with self.subTest(path=path.name):
+                if path == symlink:
+                    path.unlink()
+                    path.symlink_to('another-missing-target')
+                else:
+                    path.write_bytes(path.read_bytes() + b'changed\n')
+                self.git('add', '--', path.name)
+                current = index_tree_digest(self.repo)
+                self.assertEqual(prior_digest(), current)
+                self.assertNotEqual(previous, current)
+                previous = current
+        # A link's index blob, not its filesystem target, owns its identity.
+        (self.repo / 'another-missing-target').write_text('not indexed\n')
+        self.assertEqual(previous, index_tree_digest(self.repo))
+
+    def test_gitlink_reconciliation_retains_candidate_identity_and_parent_order(self):
+        self.add_uninitialized_gitlink()
+        observations = []
+        def observe_index(repo):
+            identity = index_tree_digest(repo)
+            head = subprocess.run(
+                ['git', 'rev-parse', 'HEAD'], cwd=repo, text=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True,
+            ).stdout.strip()
+            observations.append((repo, head, identity))
+            return identity
+        with mock.patch.dict(os.environ, {'GIT_ALLOW_PROTOCOL': '', 'GIT_TERMINAL_PROMPT': '0'}):
+            with mock.patch.object(execute, 'index_tree_digest', side_effect=observe_index):
+                public, candidate_tree, receipt = self.execute_reconciliation('post_branch_review')
+            reconciled = receipt['reconciled_task_head']
+            self.assertEqual(3, len(observations))
+            self.assertEqual([candidate_tree] * 3, [row[2] for row in observations])
+            self.assertEqual([self.new, self.head, reconciled], [row[1] for row in observations])
+            self.assertEqual([self.repo.resolve()] * 2, [row[0].resolve() for row in observations[1:]])
+            self.assertFalse(observations[0][0].parent.exists())
+            self.assertEqual(candidate_tree, receipt['candidate_tree_sha256'])
+            self.assertEqual([self.head, self.new], self.git('show', '-s', '--format=%P', reconciled).split())
+            self.assertEqual('', self.git('status', '--short'))
+            gate = self.continuity_gate(candidate_tree)
+            owner = record.run(PACKAGE, {}, [
+                '--root', str(self.repo), '--skill-input', str(self.write('gitlink-public.json', public)),
+                '--semantic-review-file', str(self.write('gitlink-gate.json', gate)),
+                '--typed-exit', 'review_continuity_required',
+                '--reconciliation-result', str(self.write('gitlink-receipt.json', receipt)),
+            ])
+            output = invoke.run(PACKAGE, {}, [
+                '--root', str(self.repo), '--invocation', str(self.write('gitlink-envelope.json', {
+                    'public_input': public, 'owner_result': owner,
+                })),
+            ])
+            self.assertEqual(reconciled, output['task_head'])
+            self.assertEqual(candidate_tree, output['candidate_tree_sha256'])
+            self.assertEqual('review_continuity_required', output['exit_id'])
     def test_guard_unchanged_and_new_pair_write_nothing(self):
         before=self.runtime_snapshot(); public=self.public(); path=self.write('public.json',public); self.assertEqual('new_pair',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)])['status']); public['old_base_head']=self.new; path=self.write('same.json',public); self.assertEqual('unchanged',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)])['status']); self.assertEqual(before,self.runtime_snapshot())
     def test_all_boundaries_unchanged_are_zero_write_and_need_no_review_identity(self):

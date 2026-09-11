@@ -360,7 +360,12 @@ def tree_identity(repo, commit):
             continue
         metadata, separator, path = entry.partition(b"\t")
         parts = metadata.split()
-        if not separator or len(parts) != 3 or parts[1] != b"blob":
+        if not separator or len(parts) != 3:
+            continue
+        if parts[0] == b"160000" and parts[1] == b"commit":
+            rows.append(path + b"\0" + b"160000" + b"\0" + parts[2] + b"\0")
+            continue
+        if parts[1] != b"blob":
             continue
         blob = subprocess.run(
             ["git", "cat-file", "blob", parts[2].decode("ascii")],

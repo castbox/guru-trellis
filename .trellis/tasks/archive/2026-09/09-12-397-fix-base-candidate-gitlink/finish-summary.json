@@ -1,0 +1,222 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-11T19:51:34Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-12-397-fix-base-candidate-gitlink",
+    "title": "#397 修复基线候选树身份计算对未初始化 gitlink 的处理",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-12-397-fix-base-candidate-gitlink",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/397-fix-base-candidate-gitlink",
+    "commits": [
+      "fffbd5e621ac9a300754c1c7437163e969081c5a",
+      "6894682af6f10dee810341f6422f6aee9af59f88"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-reconcile-task-base/references/contract.md",
+      ".agents/skills/guru-review-branch/references/contract.md",
+      ".claude/skills/guru-reconcile-task-base/references/contract.md",
+      ".claude/skills/guru-review-branch/references/contract.md",
+      ".codex/skills/guru-reconcile-task-base/references/contract.md",
+      ".codex/skills/guru-review-branch/references/contract.md",
+      ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+      ".cursor/skills/guru-review-branch/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/common.py",
+      ".trellis/guru-team/skills/packages/guru-reconcile-task-base/tests/test_runtime.py",
+      ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-review-branch/runtime/common.py",
+      ".trellis/guru-team/skills/tests/test_base_continuity_integration.py",
+      ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+      ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/check.jsonl",
+      ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/design.md",
+      ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/implement.jsonl",
+      ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/implement.md",
+      ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/issue-scope-ledger.json",
+      ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/prd.md",
+      ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/task.json",
+      ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/design.md",
+      ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/implement.md",
+      ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/prd.md",
+      ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/task.json",
+      "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/common.py",
+      "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_runtime.py",
+      "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-review-branch/runtime/common.py",
+      "trellis/skills/guru-team/tests/test_base_continuity_integration.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      397
+    ],
+    "close_issues": [
+      397
+    ],
+    "related_issues": [
+      172,
+      186,
+      376
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/399"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#397 修复基线候选树身份计算对未初始化 gitlink 的处理",
+    "outcome": "Reconcile 的索引身份计算使用 gitlink 已记录的 OID，不再把 commit 当作 blob 读取，不要求子模块初始化或下载。",
+    "changed_behavior": [
+      "Reconcile 的索引身份计算使用 gitlink 已记录的 OID，不再把 commit 当作 blob 读取，不要求子模块初始化或下载。",
+      "Branch Review 的已提交树 reader 消费同一行表示，保留原 recorder/checker 身份比较，闭合 candidate → reconciliation → continuity 验证链。",
+      "普通文件、可执行文件和符号链接的原有 blob 行保持不变；同步两包合同、测试、dogfood 和平台投影。",
+      "Preset 同步包含 #395 已存在于基线 canonical 的安装测试副本，不新增其功能或修改其源码。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/design.md",
+          ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/implement.md",
+          ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/prd.md",
+          ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/design.md",
+          ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/implement.md",
+          ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/prd.md"
+        ],
+        "change": "Reconcile 的索引身份计算使用 gitlink 已记录的 OID，不再把 commit 当作 blob 读取，不要求子模块初始化或下载。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "Reconcile 的索引身份计算使用 gitlink 已记录的 OID，不再把 commit 当作 blob 读取，不要求子模块初始化或下载。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/common.py",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/tests/test_runtime.py",
+          ".trellis/guru-team/skills/packages/guru-review-branch/runtime/common.py",
+          ".trellis/guru-team/skills/tests/test_base_continuity_integration.py",
+          ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/common.py",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_runtime.py",
+          "trellis/skills/guru-team/packages/guru-review-branch/runtime/common.py",
+          "trellis/skills/guru-team/tests/test_base_continuity_integration.py"
+        ],
+        "change": "Reconcile 的索引身份计算使用 gitlink 已记录的 OID，不再把 commit 当作 blob 读取，不要求子模块初始化或下载。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-reconcile-task-base/references/contract.md",
+          ".agents/skills/guru-review-branch/references/contract.md",
+          ".claude/skills/guru-reconcile-task-base/references/contract.md",
+          ".claude/skills/guru-review-branch/references/contract.md",
+          ".codex/skills/guru-reconcile-task-base/references/contract.md",
+          ".codex/skills/guru-review-branch/references/contract.md",
+          ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+          ".cursor/skills/guru-review-branch/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md"
+        ],
+        "change": "Reconcile 的索引身份计算使用 gitlink 已记录的 OID，不再把 commit 当作 blob 读取，不要求子模块初始化或下载。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/check.jsonl",
+          ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/implement.jsonl",
+          ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/issue-scope-ledger.json",
+          ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/task.json",
+          ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/task.json"
+        ],
+        "change": "Reconcile 的索引身份计算使用 gitlink 已记录的 OID，不再把 commit 当作 blob 读取，不要求子模块初始化或下载。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#172",
+        "#186",
+        "#376",
+        "#397"
+      ],
+      "pr_refs": [
+        "PR #399"
+      ],
+      "branches": [
+        "codex/397-fix-base-candidate-gitlink"
+      ],
+      "paths": [
+        ".agents/skills/guru-reconcile-task-base/references/contract.md",
+        ".agents/skills/guru-review-branch/references/contract.md",
+        ".claude/skills/guru-reconcile-task-base/references/contract.md",
+        ".claude/skills/guru-review-branch/references/contract.md",
+        ".codex/skills/guru-reconcile-task-base/references/contract.md",
+        ".codex/skills/guru-review-branch/references/contract.md",
+        ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+        ".cursor/skills/guru-review-branch/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/common.py",
+        ".trellis/guru-team/skills/packages/guru-reconcile-task-base/tests/test_runtime.py",
+        ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-review-branch/runtime/common.py",
+        ".trellis/guru-team/skills/tests/test_base_continuity_integration.py",
+        ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+        ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/check.jsonl",
+        ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/design.md",
+        ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/implement.jsonl",
+        ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/implement.md",
+        ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/issue-scope-ledger.json",
+        ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/prd.md",
+        ".trellis/tasks/09-12-397-fix-base-candidate-gitlink/task.json",
+        ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/design.md",
+        ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/implement.md",
+        ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/prd.md",
+        ".trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/task.json",
+        "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/common.py",
+        "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_runtime.py",
+        "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-review-branch/runtime/common.py",
+        "trellis/skills/guru-team/tests/test_base_continuity_integration.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#397 修复基线候选树身份计算对未初始化 gitlink 的处理",
+        "Reconcile 的索引身份计算使用 gitlink 已记录的 OID，不再把 commit 当作 blob 读取，不",
+        "完成 contract.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#397 修复基线候选树身份计算对未初始化 gitlink 的处理\nReconcile 的索引身份计算使用 gitlink 已记录的 OID，不再把 commit 当作 blob 读取，不要求子模块初始化或下载。\nBranch Review 的已提交树 reader 消费同一行表示，保留原 recorder/checker 身份比较，闭合 candidate → reconciliation → continuity 验证链。\n普通文件、可执行文件和符号链接的原有 blob 行保持不变；同步两包合同、测试、dogfood 和平台投影。\nPreset 同步包含 #395 已存在于基线 canonical 的安装测试副本，不新增其功能或修改其源码。\nReconcile 的索引身份计算使用 gitlink 已记录的 OID，不再把 commit 当作 blob 读取，不\n完成 contract.md 相关变更"
+  }
+}
