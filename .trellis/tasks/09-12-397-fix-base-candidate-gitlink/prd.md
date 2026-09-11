@@ -8,15 +8,20 @@
 
 ## 当前问题
 
-`trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/common.py:166`
+初始基线中，`trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/common.py:166`
 的 `index_tree_digest` 对全部 stage-0 entry 执行 `git cat-file blob`。
 `runtime/execute.py:46` 在执行验证命令前调用该函数；mode `160000` 的 OID
 指向 commit，导致合法 gitlink 提前失败。临时候选和持久整合共用此函数。
 
-2026-09-12 在当前源码的既有真实 Git fixture 中加入未初始化 gitlink，复现
+初始真实 Git fixture 加入未初始化 gitlink 后复现
 `candidate_failed / repository.index / git cat-file ...: bad file`。
 复现前后 fixture HEAD、索引条目、refs 和注册 worktree 列表一致，未访问网络。
 该证据只证明修复前失败，不表示修复已完成。
+
+当前提交已修复索引 producer，但 Branch Review 的 `tree_identity` 仍跳过 gitlink。
+正常 Reconcile 输出进入 `base_continuity` recorder 后，同一提交被重算为不同摘要，
+返回 `stale_identity / candidate_tree_sha256`。R4 必须覆盖这个既有下游 consumer，
+不能只验收到 Reconcile 的输出。
 
 ## 需求与验收
 
@@ -25,7 +30,7 @@
 | R1 | 在既有身份 owner 中使用索引记录的 gitlink OID，不将其作为 blob 读取 | 合法、未初始化 gitlink 候选返回 clean 与非空身份；验证命令执行并返回记录 |
 | R2 | gitlink 指针必须参与身份 | 相同索引重复计算字节一致；正常更新 gitlink 指针后身份不同；本地缺少子模块 commit 对象仍通过 |
 | R3 | 保留普通文件、可执行文件和符号链接现有计算行为 | 三种 blob-backed mode 的内容改变仍改变摘要；不含 gitlink 的树与旧算法结果逐字一致 |
-| R4 | 临时候选和持久整合使用同一身份算法 | 真实 fixture 中候选、整合前索引与提交后索引身份字节一致；整合提交具有原任务和新基线两个父提交 |
+| R4 | 临时候选、持久整合及 Branch Review 已提交树重算使用同一行表示 | 真实 fixture 中三者身份字节一致、整合父顺序正确；实际 Reconcile 输出进入 Branch Review recorder/checker/invoke 并返回 continuity_passed |
 | R5 | 明确既有短期证据的适用边界 | 无 gitlink 的既有成功摘要不失效；旧实现无法为含 gitlink 的树生成成功候选证据；含 gitlink 的失败尝试重新计算，不迁移或补造摘要 |
 | R6 | 用真实 Git 状态验证无额外任务副作用 | candidate 前后任务 HEAD、index、refs 不变；验证失败退出码被记录；成功及原缺陷失败后的临时 worktree 均清理 |
 | R7 | 从 canonical 交付并验证安装副本 | canonical 与 dogfood package 测试、一次代表性干净安装的候选调用、preset reapply 与 drift 检查通过 |
@@ -44,6 +49,8 @@
 `implement.md` 拥有实施顺序与验证清单。实现阶段更新 package 的
 `references/contract.md`，将 Git entry 与失败证据重算规则放在唯一候选 owner，
 并经 preset 投影至 dogfood。最终 Phase 2 前完成该合并。
+Branch Review 的 package contract 只引用这一候选表示并说明其 committed-tree consumer
+责任，不另建算法 authority。跨 owner 回归放在既有 `test_base_continuity_integration.py`。
 
 共享 RDT/CURRENT、Architecture、workflow 和通用 spec 不增加新的 authority：本次修复
 既有 owner 的类型处理缺陷，不增加 domain、command 或 route。若实现发现必须改变这些边界，

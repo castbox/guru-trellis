@@ -5,6 +5,8 @@
 修改 `trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/common.py`
 中的 `index_tree_digest`，不新增 helper owner、dispatcher、command、schema 或工作流边。
 `execute.candidate`、`execute.reconcile` 和当前 receipt 校验继续调用同一函数。
+候选表示的合同仍属于 Reconcile。Branch Review 自己的 committed-tree reader 必须消费同一
+表示；在其既有 `tree_identity` 中补齐 gitlink，不跨包导入另一 owner 的 private runtime。
 
 ## Entry 计算
 
@@ -28,6 +30,14 @@ path_bytes + NUL + sha256(blob_bytes).hexdigest() + NUL
 符号链接 `120000` 不变；符号链接读取 Git blob 中的链接目标，不追踪文件系统目标。
 gitlink 行显式携带类型和完整 OID，不忽略指针，也不伪装为 blob 内容。
 
+## 已提交树 Consumer
+
+`guru-review-branch/runtime/common.py` 的 `tree_identity` 使用 `git ls-tree -r -z`
+读取已提交树。在 mode `160000`、type `commit` 时，以该 entry 的 path 和 OID 生成上述
+gitlink 行；其余 blob 行、Git 顺序、读取失败行为和最终 SHA-256 保持不变。
+不再跳过合法 gitlink，也不移除 recorder/checker 的原有摘要比较。
+这是既有 consumer 对同一表示的承接，不新增共享 helper、schema、route 或第二算法版本。
+
 ## 兼容与短期证据
 
 选择原位直接修复，不选择全量摘要重写、算法版本字段、旧算法 fallback 或双读。
@@ -47,6 +57,9 @@ gitlink 行显式携带类型和完整 OID，不忽略指针，也不伪装为 b
 - 既有普通、可执行、符号链接 fixture 与旧行算法作字节一致性比较，并验证内容变更敏感性。
 - 在既有 feature/new-base fixture 中同时包含 gitlink 和不冲突改动，验证 candidate 与真实
   reconciliation commit 身份一致、父提交顺序正确。
+- 将实际 Reconcile `review_continuity_required` 输出投影给 Branch Review，执行真实
+  recorder、checker 和 public invoke，断言 `continuity_passed` 及当前提交身份。
+  修复前同一 fixture 必须复现 `candidate_tree_sha256` 不一致；修复后不得改写 producer token。
 - candidate 成功、验证命令非零退出、旧缺陷失败均比较 HEAD、原始 index 字节、refs、worktree
   注册和临时目录清理。验证非零退出只是结果记录，不改写为成功。
 - canonical、dogfood 与一次代表性干净 preset 安装通过各自真实候选入口；不调用完整 Release verifier。

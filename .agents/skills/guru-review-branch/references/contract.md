@@ -61,6 +61,13 @@ exact `candidate_tree_sha256`. The profile also binds one exact
 It reviews only that bounded integration surface; it does not rewrite or replay
 the task-content review and its success is not a full Branch Review.
 
+The committed-tree reader consumes the candidate row representation defined by
+[`guru-reconcile-task-base`](../../guru-reconcile-task-base/references/contract.md#candidate-and-script-boundary).
+It includes `160000`/`commit` gitlinks using their recorded path and OID without
+reading child objects or initializing submodules. Blob-backed rows and existing
+recorder/checker identity comparisons remain unchanged; this consumer does not
+define a separate algorithm or rewrite the producer's candidate token.
+
 ## Semantic Review
 
 Before full-range Docs, code, test, fixture, consumer, or history retrieval,

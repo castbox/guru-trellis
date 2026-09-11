@@ -12,6 +12,11 @@ from pathlib import Path
 
 SKILLS = Path(__file__).resolve().parents[1]
 REPO = SKILLS.parents[2]
+SCHEMAS = REPO / (
+    ".trellis/guru-team/schemas"
+    if SKILLS == REPO / ".trellis/guru-team/skills"
+    else "trellis/workflows/guru-team/schemas"
+)
 FINALIZER = SKILLS / "packages/guru-finalize-task"
 RECONCILE = SKILLS / "packages/guru-reconcile-task-base"
 REVIEW = SKILLS / "packages/guru-review-branch"
@@ -56,9 +61,9 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
         target_package = self.repo / PUBLICATION.relative_to(REPO)
         target_package.parent.mkdir(parents=True)
         shutil.copytree(PUBLICATION, target_package)
-        target_schemas = self.repo / "trellis/workflows/guru-team/schemas"
-        target_schemas.parent.mkdir(parents=True)
-        shutil.copytree(REPO / "trellis/workflows/guru-team/schemas", target_schemas)
+        target_schemas = self.repo / SCHEMAS.relative_to(REPO)
+        target_schemas.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(SCHEMAS, target_schemas)
         config = self.repo / ".trellis/guru-team/config.yml"
         config.parent.mkdir(parents=True, exist_ok=True)
         config.write_text(
@@ -104,7 +109,11 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            env={"PATH": "/usr/bin:/bin:/usr/sbin:/sbin"},
+            env={
+                "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+                "GIT_ALLOW_PROTOCOL": "",
+                "GIT_TERMINAL_PROMPT": "0",
+            },
         )
         payload = json.loads(process.stdout or process.stderr)
         self.assertEqual(0, process.returncode, payload)
@@ -300,7 +309,7 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
             ],
         )
 
-    def test_finalizer_mismatch_reconciles_reviews_and_publishes_current_head(self) -> None:
+    def reconcile_and_review(self) -> dict:
         reconcile_input = self.finalizer_reconciliation_input()
         candidate = self.run_wrapper(
             RECONCILE,
@@ -384,14 +393,21 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
         )
         self.assertEqual(reconciled_head, continuity_seed["task_head"])
         self.assertEqual(self.review_head, continuity_seed["branch_review_commit"])
+        self.assertEqual("review_continuity_required", continuity_seed["exit_id"])
+        self.assertEqual(candidate["candidate_tree_sha256"], receipt["candidate_tree_sha256"])
+        self.assertEqual(candidate["candidate_tree_sha256"], continuity_seed["candidate_tree_sha256"])
 
+        interface = json.loads((RECONCILE / "interface.json").read_text())
+        projection = next(
+            item for item in interface["public_contracts"]["projections"]
+            if item["id"] == "project_review_continuity"
+        )
         review_input = {
-            **continuity_seed,
+            **{item["target"]: continuity_seed[item["source"]] for item in projection["mappings"]},
             "profile": "base_continuity",
             "mode": "workflow",
             "review_intent": "base_continuity",
         }
-        review_input.pop("exit_id")
         self.run_wrapper(
             REVIEW,
             "review-branch.sh",
@@ -406,6 +422,16 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
             "--typed-exit",
             "continuity_passed",
         )
+        checked = self.run_wrapper(
+            REVIEW,
+            "check-review-gate.sh",
+            "--root", self.repo,
+            "--task", TASK_REF,
+            "--expected-exit", "continuity_passed",
+        )
+        self.assertEqual("continuity_passed", checked["typed_exit"])
+        self.assertEqual(reconciled_head, checked["head"])
+        self.assertEqual(reconciled_head, checked["review_commit"])
         continuity = self.run_wrapper(
             REVIEW,
             "invoke.sh",
@@ -416,7 +442,51 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
             "--input",
             self.write_json("continuity-input.json", review_input),
         )
+        self.assertEqual("continuity_passed", continuity["exit_id"])
         self.assertEqual(reconciled_head, continuity["branch_review_commit"])
+        self.assertEqual(candidate["candidate_tree_sha256"], continuity["candidate_tree_sha256"])
+        self.assertEqual(reconciled_head, self.git("rev-parse", "HEAD"))
+        return continuity
+
+    def test_gitlink_reconcile_output_passes_actual_branch_review_consumers(self) -> None:
+        child = self.parent / "child"
+        subprocess.run(["git", "init", "-q", "-b", "main", str(child)], check=True)
+        def child_git(*args: str) -> str:
+            return subprocess.run(
+                ["git", *args], cwd=child, text=True, check=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            ).stdout.strip()
+        child_git("config", "user.name", "Gitlink Integration")
+        child_git("config", "user.email", "gitlink@example.invalid")
+        (child / "child.txt").write_text("child content\n")
+        child_git("add", "child.txt")
+        child_git("commit", "-qm", "child pointer")
+        oid = child_git("rev-parse", "HEAD")
+        self.git("config", "-f", ".gitmodules", "submodule.child.path", "vendor/child")
+        self.git("config", "-f", ".gitmodules", "submodule.child.url", "https://example.invalid/child.git")
+        self.git("add", ".gitmodules")
+        self.git("update-index", "--add", "--cacheinfo", "160000", oid, "vendor/child")
+        self.git("commit", "-qm", "reviewed uninitialized gitlink")
+        (self.repo / "vendor/child").mkdir(parents=True)
+        self.review_head = self.git("rev-parse", "HEAD")
+        self.assertEqual("", self.git("status", "--short"))
+        for stage in ("before", "after"):
+            with self.subTest(stage=stage):
+                if stage == "after":
+                    continuity = self.reconcile_and_review()
+                    self.assertEqual(self.git("rev-parse", "HEAD"), continuity["task_head"])
+                missing = subprocess.run(
+                    ["git", "cat-file", "-e", oid], cwd=self.repo,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                )
+                self.assertNotEqual(0, missing.returncode)
+                self.assertEqual([], list((self.repo / "vendor/child").iterdir()))
+                self.assertFalse((self.repo / ".git/modules").exists())
+                self.assertEqual(f"160000 commit {oid}\tvendor/child", self.git("ls-tree", "HEAD", "vendor/child"))
+
+    def test_finalizer_mismatch_reconciles_reviews_and_publishes_current_head(self) -> None:
+        continuity = self.reconcile_and_review()
+        reconciled_head = continuity["branch_review_commit"]
 
         publication_input = {
             "profile": "publication_review",
