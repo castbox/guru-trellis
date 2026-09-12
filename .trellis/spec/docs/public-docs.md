@@ -156,7 +156,7 @@ Public Intake docs must name active semantic `guru-create-task-workspace` as
 the sole consumer of `guru-review-change-request:ready` and the sole
 issue/branch/worktree/task mutation owner. All three README files list its
 ignored-runtime schemas `guru-task-workspace-plan-2.0` and
-`guru-task-workspace-result-2.0`, runtime commands
+`guru-task-workspace-result-3.0`, runtime commands
 `record-task-workspace-plan`, `create-task-workspace`, and
 `check-task-workspace-result`, and exits `created`, `refresh_review`, and
 `blocked` with unique consumers. Refusal stops before recording and returns no

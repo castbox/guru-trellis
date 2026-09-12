@@ -795,7 +795,7 @@ Active workspace Skill 使用三个 managed runtime commands：
 ```
 
 Package schemas 是 ignored-runtime `guru-task-workspace-plan-2.0` 与
-`guru-task-workspace-result-2.0`。Workflow/standalone preconditions 完全一致。
+`guru-task-workspace-result-3.0`。Workflow/standalone preconditions 完全一致。
 Reviewed draft invocation 只取得 `github_issue_mutation` confirmation，创建 exact issue 并
 重读后固定返回 `refresh_review`；同一调用不创建 branch/worktree/task。完整 Intake 重跑后，
 open issue invocation 另行取得 `workspace_and_task_mutation` confirmation。外部出口固定为

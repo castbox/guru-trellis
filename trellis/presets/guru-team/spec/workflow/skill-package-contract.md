@@ -1220,7 +1220,7 @@ ordinary recovery disposition, and typed route. Runtime commands are
 `record-task-workspace-plan`, `create-task-workspace`, and
 `check-task-workspace-result`; artifact schemas are
 ignored-runtime `guru-task-workspace-plan-2.0` and
-`guru-task-workspace-result-2.0`. Recorder,
+`guru-task-workspace-result-3.0`. Recorder,
 executor, and checker validate deterministic facts only and never select a
 duplicate, target, closed-state disposition, semantic name, assignee route,
 confirmation need, Gate status, or exit intent.

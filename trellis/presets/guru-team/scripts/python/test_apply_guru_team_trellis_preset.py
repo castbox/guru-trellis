@@ -2137,6 +2137,50 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "guru-phase2-check-4.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
+        workspace_interface = json.loads(
+            (
+                self.guru_root
+                / "trellis/skills/guru-team/packages/guru-create-task-workspace/interface.json"
+            ).read_text(encoding="utf-8")
+        )
+        workspace_result_contract = next(
+            artifact
+            for artifact in workspace_interface["public_contracts"]["private_artifacts"]
+            if artifact["id"] == "task_workspace_result"
+        )
+        workspace_result_schema = json.loads(
+            (
+                self.guru_root
+                / "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-result.schema.json"
+            ).read_text(encoding="utf-8")
+        )
+        workspace_result_schema_id = workspace_result_schema["$id"]
+        self.assertEqual(
+            workspace_result_contract["schema"]["schema_id"],
+            workspace_result_schema_id,
+        )
+        self.assertEqual(
+            workspace_result_schema_id,
+            "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-3.0.json",
+        )
+        for manifest in (canonical, installed["extension"]):
+            skill_contracts = manifest["public_api"]["skill_contracts"]
+            self.assertIn(
+                workspace_result_schema_id,
+                skill_contracts["private_artifact_schema_ids"],
+            )
+            self.assertNotIn(
+                "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-2.0.json",
+                skill_contracts["private_artifact_schema_ids"],
+            )
+            self.assertIn(
+                "guru-task-workspace-result-3.0",
+                skill_contracts["artifact_schema_ids"],
+            )
+            self.assertNotIn(
+                "guru-task-workspace-result-2.0",
+                skill_contracts["artifact_schema_ids"],
+            )
         self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.4")
         self.assertEqual(
             set(public_api["skill_contracts"]),

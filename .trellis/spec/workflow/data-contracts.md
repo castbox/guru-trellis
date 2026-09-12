@@ -842,7 +842,7 @@ Target provenance uses two coordinated nullable fields:
 issue and a reviewed draft before create require both null. An existing issue
 produced by an earlier draft invocation requires both non-null: the binding SHA
 equals the embedded created issue facts digest, and `created_issue_result` is
-the complete `guru-task-workspace-result-2.0` `created_issue` variant with
+the complete `guru-task-workspace-result-3.0` `created_issue` variant with
 passed executor/checker stages, valid result and binding facts digests, and the
 fixed `refresh_review` consumer. Its current issue facts match the plan and its
 complete Intake rerun exposes the canonical live existing issue with
@@ -850,7 +850,7 @@ complete Intake rerun exposes the canonical live existing issue with
 facts digests, and null `issue_binding`. Missing or partial provenance is
 invalid.
 
-Schema `guru-task-workspace-result-2.0` is a closed ignored-runtime union:
+Schema `guru-task-workspace-result-3.0` is a closed ignored-runtime union:
 
 - `created_issue` binds the exact plan and live created issue and can only
   return `refresh_review`; branch/worktree/task/artifact/runtime operations are

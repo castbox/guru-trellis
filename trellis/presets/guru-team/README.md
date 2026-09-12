@@ -957,7 +957,7 @@ private stdout transport、伪造 digest 或 import private package runtime。�
 经 checkout-local managed resolver；PATH Python 是否能 import `jsonschema` 不代表产品依赖通过。
 
 `guru-create-task-workspace` package 安装
-ignored-runtime `guru-task-workspace-plan-2.0`、`guru-task-workspace-result-2.0`、contract、examples、tests
+ignored-runtime `guru-task-workspace-plan-2.0`、`guru-task-workspace-result-3.0`、contract、examples、tests
 和三个 executable dispatcher wrappers。Draft invocation 创建 exact issue 后固定
 `refresh_review`；open issue invocation 使用独立 workspace/task confirmation。Assignee 按
 explicit、single issue assignee、zero issue assignees/current login、multiple/unresolved user
@@ -1376,7 +1376,7 @@ or runtime writes. The next complete Intake round invokes the sole authoritative
 `guru-sync-base`; an unchanged identity continues normally.
 
 The active package uses ignored-runtime schemas `guru-task-workspace-plan-2.0`
-and `guru-task-workspace-result-2.0` plus runtime commands
+and `guru-task-workspace-result-3.0` plus runtime commands
 `record-task-workspace-plan`, `create-task-workspace`, and
 `check-task-workspace-result`. It keeps workflow/standalone preconditions
 identical, uses mutually exclusive issue/workspace confirmations, and exposes

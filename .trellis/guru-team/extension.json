@@ -255,7 +255,7 @@
           "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-5.0.json",
           "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-4.0.json",
           "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-2.0.json",
-          "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-2.0.json"
+          "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-3.0.json"
         ],
         "artifact_schema_ids": [
           "guru-base-sync-result-1.0",
@@ -271,7 +271,7 @@
           "guru-task-finalization-gate-3.0",
           "guru-task-publication-readiness-4.0",
           "guru-task-workspace-plan-2.0",
-          "guru-task-workspace-result-2.0"
+          "guru-task-workspace-result-3.0"
         ],
         "active_skill_ids": [
           "guru-approve-task-plan",
@@ -430,11 +430,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-12T13:50:21Z",
+  "installed_at": "2026-09-12T15:13:29Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "8a39abcb376e4cf2426a9259a4ed1df02acc8b33",
-    "commit": "8a39abcb376e4cf2426a9259a4ed1df02acc8b33",
+    "ref": "1aba6b4c6ec412145b98446cbeb653ad1bb161a0",
+    "commit": "1aba6b4c6ec412145b98446cbeb653ad1bb161a0",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -524,8 +524,8 @@
       ".trellis/spec/workflow/semantic-retrieval.md": "2c9a3097949979e84d42e15811278df1b047ec4c2101f3019e887e7799aef483",
       ".trellis/spec/workflow/subtraction-first-compatibility.md": "4b4ad9a2a37a77ac8ac8faf05c9b432ca5302a3acbe85ef372ced3517861547b",
       ".trellis/spec/workflow/workflow-contract.md": "cdf2c4676e5ff31d9cc8ba68e61b0f92c52af5b719178072643078aa7226406a",
-      ".trellis/spec/workflow/skill-package-contract.md": "912aa96fb771fab0560483833324939216f55db4dc87c90fb74d0aac6917ff2e",
-      ".trellis/spec/workflow/data-contracts.md": "54c7c941f5b961922a1b3c6434db5fd7c9e1c9db26e09fc5c7635bad652cef39",
+      ".trellis/spec/workflow/skill-package-contract.md": "f861ba3365800cecda2cf727c6c9f966f526e9a7d1442c26c027c5bd32e3e38a",
+      ".trellis/spec/workflow/data-contracts.md": "8b2a4701dbbc28bc52cadd2f40481851acfab6084321ed1eb3b177b4a88caac9",
       ".trellis/spec/workflow/companion-scripts.md": "9b7d5d355d5650533d256f5b15e17b69ff5734eb24cd20dbe6711edbf92145ac",
       ".trellis/spec/workflow/quality-guidelines.md": "04d620488ab3441cec8cae87e045014175f94cb895998d4cfce074b361dee1a6",
       ".trellis/guru-team/trellis-source.json": "6405aaab1a29f2af0830ff762896c1bccc729dfec44c547abb499844c569fb3a"

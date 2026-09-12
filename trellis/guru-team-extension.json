@@ -253,7 +253,7 @@
         "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-5.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-4.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-2.0.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-2.0.json"
+        "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-3.0.json"
       ],
       "artifact_schema_ids": [
         "guru-base-sync-result-1.0",
@@ -269,7 +269,7 @@
         "guru-task-finalization-gate-3.0",
         "guru-task-publication-readiness-4.0",
         "guru-task-workspace-plan-2.0",
-        "guru-task-workspace-result-2.0"
+        "guru-task-workspace-result-3.0"
       ],
       "active_skill_ids": [
         "guru-approve-task-plan",
