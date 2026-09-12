@@ -13,4 +13,3 @@
 {"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"source lock 到 generated runtime、preset、platform、task lifecycle 的跨层数据流"}
 {"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"修改版本常量和共享 owner/helper 前搜索既有 consumer，避免重复实现"}
 {"file":".trellis/tasks/09-12-329-adopt-developer-free-trellis/research/authority-and-impact.md","reason":"live Issue、固定上游 candidate、迁移合同、当前引用面和版本轴规划证据"}
-

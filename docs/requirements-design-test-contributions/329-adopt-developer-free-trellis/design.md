@@ -1,7 +1,8 @@
 # #329 Developer-free Trellis adoption Design contribution
 
-状态：`reviewed_candidate`；change path：`target_native`；expected current：
-`current-main-0.6.5-guru.48`。本设计不建立兼容分支或第二 identity authority。
+状态：`reviewed_promoted`；change path：`target_native`；promotion input：
+`current-main-0.6.5-guru.48`；current successor：`current-main-0.6.5-guru.49`。本设计不建立兼容分支
+或第二 identity authority。
 
 - `D329-01`：`trellis-source.json` 是唯一 source lock。固定 Fork checkout 自行安装依赖并 build，
   `packages/cli/bin/trellis.js`、CLI version、package manager 与 `.guru-source-commit` 必须绑定实际 HEAD。

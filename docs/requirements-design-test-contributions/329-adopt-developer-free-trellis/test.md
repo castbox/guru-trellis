@@ -1,7 +1,7 @@
 # #329 Developer-free Trellis adoption Test contribution
 
-状态：`reviewed_candidate`。下列条目定义稳定验证合同，不记录尚未执行的 PASS，也不把 focused
-fixture 结果表述为完整 adoption、release 或 business smoke 证明。
+状态：`reviewed_promoted`；current successor：`current-main-0.6.5-guru.49`。下列条目定义稳定验证合同，
+不记录尚未执行的 PASS，也不把 focused fixture 结果表述为完整 adoption、release 或 business smoke 证明。
 
 - `T329-01`：验证 source lock、CLI `0.6.17`、`pnpm@10.32.1`、Fork HEAD、source marker、Guru
   manifest、installed source record、README 与 RDT/Architecture candidate 的 exact identity 一致。

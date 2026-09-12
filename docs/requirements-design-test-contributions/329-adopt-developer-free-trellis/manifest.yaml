@@ -5,7 +5,7 @@ issue_ref: "https://github.com/castbox/guru-trellis/issues/329"
 source_version: "current-main-0.6.5-guru.48"
 expected_current_version: "current-main-0.6.5-guru.48"
 candidate_successor_version: "current-main-0.6.5-guru.49"
-status: "reviewed_candidate"
+status: "reviewed_promoted"
 authority_scope: "isolated_contribution"
 change_path: "target_native"
 contribution:
@@ -15,13 +15,13 @@ contribution:
   traceability: "docs/requirements-design-test-contributions/329-adopt-developer-free-trellis/traceability.md"
 architecture_baseline:
   locator: "docs/architecture/README.md"
-  version: "current-main-0.6.5-guru.48"
+  version: "current-main-0.6.5-guru.49"
   status: "active"
 architecture_candidate:
   contribution_locator: "docs/architecture/contributions/329-adopt-developer-free-trellis.md"
   contribution_identity: "architecture-contribution-329-developer-free-trellis-v1"
   candidate_successor_version: "current-main-0.6.5-guru.49"
-  promotion_state: "reviewed_candidate"
+  promotion_state: "reviewed_promoted"
   adr_required: false
 traceability:
   requirements:
@@ -59,15 +59,16 @@ traceability:
     - "SCN-081"
     - "SCN-082"
     - "SCN-083"
+    - "SCN-084"
   architecture_refs:
-    - "ARCH-CUR-026-candidate"
-    - "ARCH-INT-016-candidate"
-    - "EVD-025-candidate"
+    - "ARCH-CUR-026"
+    - "ARCH-INT-016"
+    - "EVD-025"
 public_contracts:
   rdt_owner: "guru-maintain-requirements-design-test-ssot:task_impact_sync"
   architecture_candidate: "guru-maintain-architecture-baseline:2.0"
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
-promotion_state: "reviewed_candidate"
-promotion_decision: "pending_independent_review"
-shared_current_write: false
+promotion_state: "reviewed_promoted"
+promotion_decision: "promoted_to_current-main-0.6.5-guru.49"
+shared_current_write: true

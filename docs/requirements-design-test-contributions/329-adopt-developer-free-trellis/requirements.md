@@ -1,8 +1,8 @@
 # #329 Developer-free Trellis adoption Requirements contribution
 
-状态：`reviewed_candidate`；expected current：`current-main-0.6.5-guru.48`；candidate
-successor：`current-main-0.6.5-guru.49`。本 contribution 仅属于 #329 task，在 serialized
-promotion 前不修改或代表 shared current authority。
+状态：`reviewed_promoted`；promotion input：`current-main-0.6.5-guru.48`；current successor：
+`current-main-0.6.5-guru.49`。本 contribution 保留 #329 promotion provenance；shared current authority
+由 `.49` versioned Requirements/Design/Test 与 Architecture locators 拥有。
 
 - `R329-01`：framework source 必须固定为
   `castbox/Trellis@a2003296b4c4ce46c50d72ead3b2ec9c317f69fc`，CLI 必须为 `0.6.17`，

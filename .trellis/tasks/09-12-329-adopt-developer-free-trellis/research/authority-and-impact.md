@@ -61,4 +61,3 @@ Release. Public docs must not imply that the already released `v0.6.16-guru.1` c
 - Architecture impact is material because source binding, task identity resolution, distribution migration
   and lifecycle verification change. RDT and Architecture contributions are required before shared-current
   promotion.
-

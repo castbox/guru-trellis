@@ -2,11 +2,11 @@
 
 ## Identity And Authority Boundary
 
-- contribution identity：`architecture-contribution-329-developer-free-trellis-v1` / `reviewed_candidate`。
+- contribution identity：`architecture-contribution-329-developer-free-trellis-v1` / `reviewed_promoted`。
 - requirement authority：live Issue #329、task `prd.md` 与 #329 RDT contribution。
 - behavior authority：task `design.md`、`implement.md` 与 #329 RDT contribution。
-- expected current：`docs/architecture/README.md` / `current-main-0.6.5-guru.48` / `active`。
-- candidate successor：`current-main-0.6.5-guru.49`；serialized promotion 前不是 current。
+- promotion input：`docs/architecture/README.md` / expected `current-main-0.6.5-guru.48`。
+- promoted successor：`current-main-0.6.5-guru.49` / `active`；`.48` 为 immutable superseded predecessor。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` /
   `guru-trellis-design-constitution-v1` / `current`。
 - project change contract：`docs/architecture/06-governance/change-contract.md` /
@@ -68,10 +68,11 @@ exception，因此不新增 ADR。
 
 ## Review And Promotion Boundary
 
-- promotion state：`reviewed_candidate`；expected current：`current-main-0.6.5-guru.48`。
+- promotion state：`reviewed_promoted`；expected input：`current-main-0.6.5-guru.48`；current successor：
+  `current-main-0.6.5-guru.49`。
 - 本 contribution 不记录或证明 Phase 2、matrix、publication、merge、tag、Release 或 Issue closure；
   这些动态结果由各自 stage 的 fresh evidence owner 承接。
-- serialized promotion 只能在 contribution 与 delivery 通过 independent committed review 后发生；
+- serialized promotion 已在 contribution 与 delivery 通过 independent committed review 后建立 `.49`；
   promotion-created diff 必须重新进入 fresh Phase 2、Task Commit 与完整 Branch Review。
 - implementation 若扩大 public graph、owner、persistence、SDK、external 或 compatibility boundary，
   本 Planning result 立即 stale 并重新进入 Architecture owner。
