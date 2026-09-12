@@ -1249,6 +1249,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertEqual(payload["platforms"], ["codex", "cursor"])
         self.assertFalse(payload["all_platforms"])
         self.assertIn(Path("scripts/bash/check-workspace-boundary.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/start-task.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/discover-skill-contract.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/discover-skill-evals.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/run-skill-evals.sh"), preset.MANAGED_ASSET_PATHS)
@@ -1284,6 +1285,16 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn(Path("scripts/bash/format-merge-commit.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("schemas/finish-summary.schema.json"), preset.MANAGED_ASSET_PATHS)
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh").is_file())
+        start_task = self.repo / ".trellis/guru-team/scripts/bash/start-task.sh"
+        self.assertTrue(start_task.is_file())
+        self.assertTrue(os.access(start_task, os.X_OK))
+        installed_manifest = json.loads(
+            (self.repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8")
+        )
+        self.assertIn(".trellis/guru-team/scripts/bash/start-task.sh", installed_manifest["install"]["managed_assets"])
+        self.assertEqual(installed_manifest["skill_packages"]["status"], "ok")
+        self.assertEqual(installed_manifest["skill_packages"]["sidecars"], [])
+        self.assertEqual(installed_manifest["skill_packages"]["conflicts"], [])
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/discover-skill-contract.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/discover-skill-contract.sh", os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/discover-skill-evals.sh", os.X_OK))
@@ -2552,6 +2563,32 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertFalse(provenance["is_mutable_ref"])
         self.assertEqual(provenance["ref"], source_commit)
         self.assertEqual(provenance["commit"], source_commit)
+
+    def test_install_manifest_keeps_apply_time_source_snapshot_separate_from_manifest(self) -> None:
+        source_snapshot = {
+            "repo": "https://github.com/castbox/guru-trellis.git",
+            "ref": "b" * 40,
+            "commit": "b" * 40,
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+
+        with mock.patch.object(preset, "source_provenance", return_value=source_snapshot):
+            preset.install_assets(
+                self.workflow_src,
+                self.install_dst,
+                self.repo,
+                {"codex", "cursor"},
+            )
+
+        installed = json.loads(
+            (self.repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(installed["source"], source_snapshot)
+        self.assertIn(
+            "not a claim that this installed manifest is contained in that commit",
+            installed["notes"],
+        )
 
 
 if __name__ == "__main__":

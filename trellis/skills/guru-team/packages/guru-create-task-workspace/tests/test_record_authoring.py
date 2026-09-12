@@ -30,6 +30,7 @@ from runtime.io import CommandError
 class RecordAuthoringTest(unittest.TestCase):
     def setUp(self):
         self.transition = json.loads((SKILLS / "packages/guru-review-change-request/examples/public-ready-output-3.0.json").read_text())["transition"]
+        self.transition["context_result_sha256"] = "2" * 64
         self.authoring = json.loads((PACKAGE / "examples/workspace-authoring.json").read_text())
         self.envelope = {"schema_version": "1.0", "transition": self.transition, "authoring": self.authoring}
 
@@ -82,6 +83,13 @@ class RecordAuthoringTest(unittest.TestCase):
         with self.assertRaises(CommandError) as caught:
             self.call_record()
         self.assertEqual("invocation.authoring.naming.branch_name", caught.exception.field_path)
+
+    def test_missing_discovery_identity_is_rejected_before_plan_authoring(self):
+        transition = copy.deepcopy(self.transition)
+        del transition["context_result_sha256"]
+        with self.assertRaises(CommandError) as caught:
+            self.call_record({"schema_version": "1.0", "transition": transition, "authoring": self.authoring})
+        self.assertEqual("invocation.transition.context_result_sha256", caught.exception.field_path)
 
     def test_extra_and_wrong_type_fields_have_exact_paths(self):
         self.authoring["assignee"]["login"] = 12

@@ -22,6 +22,7 @@ def validate_transition(package_root, transition):
     path = package_root.parents[1] / "consumers/workflow/stage0/transitions/readiness-current.schema.json"
     validate_schema(transition, path, "invocation.transition")
     pairs = (
+        (transition["context_result_sha256"], transition["context_result_sha256"]),
         (transition["clarity_result_sha256"], transition["clarity"]["facts_sha256"]),
         (transition["wording_facts_sha256"], transition["wording"]["facts_sha256"]),
         (transition["readiness_facts_sha256"], transition["readiness"]["facts_sha256"]),
@@ -30,7 +31,7 @@ def validate_transition(package_root, transition):
         (transition["target_content_sha256"], transition["readiness"]["content_sha256"]),
         (transition["target_content_sha256"], transition["wording"]["target_content_sha256"]),
     )
-    fields = ("clarity_result_sha256", "wording_facts_sha256", "readiness_facts_sha256", "readiness_linkage_sha256", "target.content_sha256", "readiness.content_sha256", "wording.target_content_sha256")
+    fields = ("context_result_sha256", "clarity_result_sha256", "wording_facts_sha256", "readiness_facts_sha256", "readiness_linkage_sha256", "target.content_sha256", "readiness.content_sha256", "wording.target_content_sha256")
     for field, (left, right) in zip(fields, pairs):
         if left != right:
             raise CommandError("stale_identity", f"invocation.transition.{field}", "Use the corresponding same-source identity from the current readiness_current output.", 3)
@@ -40,6 +41,7 @@ def validate_transition(package_root, transition):
 def prerequisite(key, projection, facts, content=None, linkage=None):
     owner, schema, exit_id = {
         "base": ("guru-sync-base", "guru-stage0-transition-base-current-1.0", "synced"),
+        "discovery": ("guru-discover-change-context", "guru-stage0-transition-context-current-1.0", "context_ready"),
         "clarity": ("guru-clarify-requirements", "guru-requirements-clarification-2.0", "clear"),
         "wording": ("guru-review-contract-wording", "guru-contract-wording-review-1.0", "pass"),
         "readiness": ("guru-review-change-request", "guru-change-request-review-2.0", "ready"),
@@ -81,6 +83,7 @@ def prepare_plan(package_root, envelope):
         "invocation": {"caller": "guru-review-change-request:ready", "target_kind": "existing_issue", "action_scope": "workspace_and_task_mutation", "resume_identity": transition["continuation_id"]},
         "prerequisites": {
             "base": prerequisite("base", base_projection, digest(base_projection)),
+            "discovery": prerequisite("discovery", {"context_result_sha256": transition["context_result_sha256"]}, transition["context_result_sha256"]),
             "clarity": prerequisite("clarity", clarity, clarity["facts_sha256"], clarity["content_sha256"], clarity["content_sha256"]),
             "wording": prerequisite("wording", wording, wording["facts_sha256"], wording["scope_sha256"], wording["scan_sha256"]),
             "readiness": prerequisite("readiness", readiness, readiness["facts_sha256"], readiness["content_sha256"], readiness["linkage_sha256"]),

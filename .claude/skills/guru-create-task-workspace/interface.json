@@ -12,6 +12,7 @@
       "entry_precondition_ids": [
         "runtime_dependency",
         "base_evidence",
+        "discovery_evidence",
         "clarity_evidence",
         "wording_evidence",
         "readiness_evidence",
@@ -26,6 +27,7 @@
       "entry_precondition_ids": [
         "runtime_dependency",
         "base_evidence",
+        "discovery_evidence",
         "clarity_evidence",
         "wording_evidence",
         "readiness_evidence",
@@ -48,6 +50,12 @@
       "evidence": "current guru-base-sync-result-1.0 synced result",
       "binding": "selected base, remote, post-sync resolution identity and decision/local/remote HEAD",
       "freshness": "shared resolver/sync rerun once before first confirmed mutation; changed identity refreshes review"
+    },
+    {
+      "id": "discovery_evidence",
+      "evidence": "current guru-discover-change-context context_ready result carried by readiness_current",
+      "binding": "same context_result_sha256, target locator and continuation identity",
+      "freshness": "must be present and match the current readiness transition"
     },
     {
       "id": "clarity_evidence",
