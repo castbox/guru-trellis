@@ -66,7 +66,7 @@ class InstalledParallelFinishTests(unittest.TestCase):
             },
         )
         self.assertEqual(result["b"]["github_pr_call_count"], 0)
-        self.assertFalse(result["b"]["workspace_journal_tracked"])
+        self.assertTrue(result["b"]["legacy_state_absent"])
         self.assertTrue(result["cleanup_failure_recovered"])
         self.assertFalse(result["a"]["real_github_verified"])
         self.assertEqual(

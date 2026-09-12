@@ -1,0 +1,15 @@
+{"file":".trellis/spec/workflow/subtraction-first-compatibility.md","reason":"独立检查 code/docs subtraction、deprecated asset exit 与无未授权兼容路径"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"检查 task-only lifecycle、current-task resolution、phase route 与旧 identity 无关"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"检查 schema/interface/mapping/version 与 legacy exclusion 的完整 consumer migration"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"检查脚本未恢复 developer/session semantic owner 或隐藏 fallback"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"检查 public Skill ids/exits 稳定且必要 schema migration 显式闭合"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"执行并复核 Issue 要求的 full install/update/reapply/platform/lifecycle matrix"}
+{"file":".trellis/spec/preset/installer.md","reason":"检查 fixed source、official generation、unknown edit、sidecar、legacy bytes 与幂等 reapply"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"检查没有手工 patch upstream-managed files 或扩大 Guru ownership"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"检查 canonical/dogfood/Codex/Claude/Cursor bytes、mode 和入口一致"}
+{"file":".trellis/spec/docs/requirements-design-test-ssot.md","reason":"检查 R329-D329-T329 contribution 与 current promotion/traceability 一致"}
+{"file":".trellis/spec/architecture/baseline-usage.md","reason":"检查 source/identity/distribution/lifecycle architecture contribution 与 freshness"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"检查 README 不把 source checkout adoption 冒充 tag/Release 或完整业务发布"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查 source-build-generation-preset-platform-lifecycle 全链无遗漏"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"检查未复制 updater、owner resolver、version parser 或 fixture orchestration"}
+{"file":".trellis/tasks/09-12-329-adopt-developer-free-trellis/research/authority-and-impact.md","reason":"复核实现仍绑定 live Issue 与固定 upstream migration authority"}

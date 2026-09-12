@@ -1075,8 +1075,12 @@ def workspace_prerequisites(
     )
     if public.get("exit_id") != "ready":
         raise ValueError("Workspace fixture requires the production ready transition")
+    transition = public["transition"]
     return {
         "base": base,
+        "discovery": {
+            "context_result_sha256": transition["context_result_sha256"],
+        },
         "clarity": state["producer_results"]["clarity"],
         "wording": state["producer_results"]["wording"],
         "readiness": readiness,
@@ -1084,7 +1088,7 @@ def workspace_prerequisites(
         "repo": repo, "issue_number": issue_number, "url": issue_url,
         "updated_at": updated_at, "title": title, "body": body,
         "title_sha256": title_sha256, "body_sha256": body_sha256,
-    }, public["transition"]
+    }, transition
 
 def workspace_plan(
     runtime: Any,

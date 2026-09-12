@@ -113,6 +113,10 @@ class ReadinessAdapterTests(unittest.TestCase):
             prerequisites, issue, transition = workspace_prerequisites(runtime, self.fixture, "workflow")
         self.assertEqual("readiness_current", transition["stage"])
         self.assertEqual([145], transition["scope"]["close_issues"])
+        self.assertEqual(
+            prerequisites["discovery"]["context_result_sha256"],
+            transition["context_result_sha256"],
+        )
         self.assertEqual(prerequisites["readiness"]["facts_sha256"], transition["readiness_facts_sha256"])
         self.assertEqual(hashlib.sha256(issue["title"].encode()).hexdigest(), transition["target"]["title_sha256"])
         self.assertFalse((self.fixture / ".trellis/tasks").exists())

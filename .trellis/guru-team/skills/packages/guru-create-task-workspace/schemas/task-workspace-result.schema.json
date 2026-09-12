@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-2.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-3.0.json",
   "title": "Guru Team Task Workspace Result",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "skill_id", "generated_at", "mode", "variant", "plan_sha256", "executor", "checker", "created_issue", "created_workspace", "no_side_effect", "typed_exit", "reason", "consumer", "facts_sha256"],
   "properties": {
-    "schema_version": {"const": "2.0"},
+    "schema_version": {"const": "3.0"},
     "skill_id": {"const": "guru-create-task-workspace"},
     "generated_at": {"type": "string", "format": "date-time"},
     "mode": {"enum": ["workflow", "standalone"]},
@@ -129,7 +129,7 @@
     },
     "createdWorkspace": {
       "type": "object", "additionalProperties": false,
-      "required": ["repo", "issue_number", "branch_name", "base_ref", "base_head", "workspace_slug", "task_slug", "task_artifact_dir", "assignee", "task_status", "artifacts", "runtime_mappings", "workspace_boundary_match", "source_developer_identity_created", "target_developer_identity_created", "workspace_journal_created"],
+      "required": ["repo", "issue_number", "branch_name", "base_ref", "base_head", "workspace_slug", "task_slug", "task_artifact_dir", "assignee", "task_status", "artifacts", "runtime_mappings", "workspace_boundary_match"],
       "properties": {
         "repo": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
         "issue_number": {"type": "integer", "minimum": 1},
@@ -143,10 +143,7 @@
         "task_status": {"enum": ["planning", "in_progress"]},
         "artifacts": {"type": "array", "items": {"$ref": "#/$defs/artifact"}, "minItems": 1, "maxItems": 1, "uniqueItems": true},
         "runtime_mappings": {"type": "array", "items": {"$ref": "#/$defs/runtimeMapping"}, "minItems": 2, "uniqueItems": true},
-        "workspace_boundary_match": {"const": true},
-        "source_developer_identity_created": {"const": false},
-        "target_developer_identity_created": {"const": false},
-        "workspace_journal_created": {"const": false}
+        "workspace_boundary_match": {"const": true}
       }
     },
     "snapshot": {

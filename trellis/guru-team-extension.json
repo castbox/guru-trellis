@@ -5,13 +5,13 @@
   "version": "0.6.16-guru.41",
   "workflow_template_id": "guru-team",
   "marketplace_index_schema_version": 1,
-  "target_trellis_cli": "0.6.16",
+  "target_trellis_cli": "0.6.17",
   "requires": {
-    "trellis_cli": "0.6.16"
+    "trellis_cli": "0.6.17"
   },
   "tested": {
     "trellis_cli": [
-      "0.6.16"
+      "0.6.17"
     ]
   },
   "public_api": {

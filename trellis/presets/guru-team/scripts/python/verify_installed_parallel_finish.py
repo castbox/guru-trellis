@@ -98,22 +98,10 @@ def configure_repo(root: Path) -> None:
     git(root, "config", "user.email", "guru-team-ab@example.invalid")
 
 
-def initialize_developer(root: Path, name: str) -> None:
-    run((sys.executable, ".trellis/scripts/init_developer.py", name), root)
-    developer = root / ".trellis/.developer"
-    workspace = root / ".trellis/workspace" / name
-    if not developer.is_file() or not workspace.is_dir():
-        raise ParallelFinishError("official developer initialization did not complete")
-    for path in (developer, workspace / "journal-1.md", workspace / "index.md"):
-        ignored = run(
-            ("git", "check-ignore", "-q", path.relative_to(root).as_posix()),
-            root,
-            check=False,
-        )
-        if ignored.returncode != 0:
-            raise ParallelFinishError(
-                f"developer runtime path is not ignored: {path.relative_to(root)}"
-            )
+def assert_legacy_state_absent(root: Path) -> None:
+    for relative in (".trellis/.developer", ".trellis/workspace"):
+        if (root / relative).exists():
+            raise ParallelFinishError(f"task-only lifecycle created legacy state: {relative}")
 
 
 def bootstrap_installed_runtime(root: Path) -> dict[str, Any]:
@@ -192,6 +180,47 @@ def copy_installed_repository(installed_repo: Path, target: Path) -> None:
             shutil.copy2(source, destination)
 
 
+def prepare_clean_installed_repository(installed_repo: Path, work_root: Path) -> Path:
+    source = work_root / "clean-installed-source"
+    source.mkdir()
+    copy_installed_repository(installed_repo, source)
+    run(("git", "init", "-q", "-b", "main", str(source)), work_root)
+    configure_repo(source)
+    git(source, "remote", "add", "origin", "https://github.com/castbox/guru-trellis.git")
+    git(source, "add", ".")
+    git(source, "commit", "-q", "-m", "chore: stage clean installed candidate")
+    apply_script = (
+        source
+        / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"
+    )
+    if not apply_script.is_file():
+        raise ParallelFinishError("clean installed source has no preset installer")
+    applied = json.loads(
+        run(
+            (
+                sys.executable,
+                str(apply_script),
+                "--repo",
+                str(source),
+                "--all-platforms",
+                "--json",
+            ),
+            source,
+        ).stdout
+    )
+    extension = json.loads(
+        (source / ".trellis/guru-team/extension.json").read_text(encoding="utf-8")
+    )
+    if (
+        applied.get("status") != "ok"
+        or applied.get("skill_packages", {}).get("sidecars") != []
+        or applied.get("overlays", {}).get("sidecars") != []
+        or extension.get("source", {}).get("tree_state") != "clean"
+    ):
+        raise ParallelFinishError("clean installed candidate preparation did not pass")
+    return source
+
+
 @contextmanager
 def temporary_environment(values: Mapping[str, str]):
     previous = {key: os.environ.get(key) for key in values}
@@ -218,7 +247,6 @@ def initialize_seed(installed_repo: Path, root: Path) -> tuple[Path, Path, str, 
     existing_ignore = ignore_path.read_text(encoding="utf-8") if ignore_path.is_file() else ""
     required_ignores = (
         ".trellis/.runtime/",
-        ".trellis/workspace/",
         "__pycache__/",
         "*.py[cod]",
     )
@@ -446,7 +474,7 @@ def finish_none(
     sibling_bytes: bytes,
     *,
     fail_before_archive: bool = False,
-) -> tuple[Path, str, list[str]]:
+) -> tuple[Path, str]:
     if fail_before_archive:
         if not task.is_dir():
             raise ParallelFinishError("failure injection lost the active task")
@@ -460,28 +488,6 @@ def finish_none(
     if len(matches) != 1 or task.exists():
         raise ParallelFinishError("B none Finish did not move only its task")
     archived = matches[0]
-    run(
-        (
-            sys.executable,
-            ".trellis/scripts/add_session.py",
-            "--title",
-            "Parallel Finish B",
-            "--commit",
-            review_commit,
-            "--summary",
-            "Installed current/none compatibility lifecycle completed.",
-            "--branch",
-            branch,
-            "--change",
-            "Archived only the B task-local path.",
-            "--test",
-            "Planning, Phase 2, Branch Review and publication review passed.",
-            "--next-step",
-            "No GitHub PR route is allowed for B.",
-            "--no-commit",
-        ),
-        root,
-    )
     sibling = root / ".trellis/tasks/08-19-sibling/task.json"
     if sibling.read_bytes() != sibling_bytes:
         raise ParallelFinishError("B none Finish changed sibling task bytes")
@@ -490,37 +496,10 @@ def finish_none(
         "children", []
     ) != []:
         raise ParallelFinishError("B none Finish changed parent/child identity")
-    workspace_files = sorted(
-        path
-        for path in (root / ".trellis/workspace").rglob("*")
-        if path.is_file()
-    )
-    if not workspace_files:
-        raise ParallelFinishError("B upstream Finish did not run add_session.py")
-    if not any(
-        "Parallel Finish B" in path.read_text(encoding="utf-8")
-        for path in workspace_files
-        if path.name.startswith("journal-")
-    ):
-        raise ParallelFinishError("B upstream Finish did not append its session journal")
-    for path in workspace_files:
-        ignored = run(
-            ("git", "check-ignore", "-q", path.relative_to(root).as_posix()),
-            root,
-            check=False,
-        )
-        if ignored.returncode != 0:
-            raise ParallelFinishError("B workspace journal is not ignored")
-    tracked_status = git(root, "status", "--short")
-    if ".trellis/workspace/" in tracked_status:
-        raise ParallelFinishError("B none Finish added workspace journal to tracked diff")
+    assert_legacy_state_absent(root)
     git(root, "add", "-A", ".trellis/tasks")
     git(root, "commit", "-q", "-m", "chore(task): archive parallel b")
-    return (
-        archived,
-        git(root, "rev-parse", "HEAD"),
-        [path.relative_to(root).as_posix() for path in workspace_files],
-    )
+    return archived, git(root, "rev-parse", "HEAD")
 
 
 def make_gh_sentinel(root: Path) -> tuple[Path, Path]:
@@ -632,7 +611,8 @@ def run_fixture(installed_repo: Path, work_root: Path) -> dict[str, Any]:
         raise ParallelFinishError(f"work root must be empty: {work_root}")
     work_root.mkdir(parents=True, exist_ok=True)
     closeout = load_closeout_helper()
-    remote, seed, base, sibling_bytes = initialize_seed(installed_repo, work_root)
+    clean_installed = prepare_clean_installed_repository(installed_repo, work_root)
+    remote, seed, base, sibling_bytes = initialize_seed(clean_installed, work_root)
 
     a_control = work_root / "a-control"
     run(("git", "clone", "-q", str(remote), str(a_control)), work_root)
@@ -640,7 +620,6 @@ def run_fixture(installed_repo: Path, work_root: Path) -> dict[str, Any]:
     a_worktree = work_root / "a-worktree"
     git(a_control, "worktree", "add", "-q", "--detach", str(a_worktree), "origin/main")
     configure_repo(a_worktree)
-    initialize_developer(a_worktree, "parallel-a")
     bootstrap_installed_runtime(a_worktree)
     phase0_a = run_phase0(a_worktree, work_root / "phase0-a", "parallel-a")
     a_task, a_branch, a_work = run_installed_lifecycle(
@@ -666,11 +645,11 @@ def run_fixture(installed_repo: Path, work_root: Path) -> dict[str, Any]:
     sibling_a = a_worktree / ".trellis/tasks/08-19-sibling/task.json"
     if sibling_a.read_bytes() != sibling_bytes:
         raise ParallelFinishError("A github_pr Finish changed sibling task bytes")
+    assert_legacy_state_absent(a_worktree)
 
     b_current = work_root / "b-current"
     run(("git", "clone", "-q", str(remote), str(b_current)), work_root)
     configure_repo(b_current)
-    initialize_developer(b_current, "parallel-b")
     bootstrap_installed_runtime(b_current)
     phase0_b = run_phase0(b_current, work_root / "phase0-b", "parallel-b")
     gh_calls, gh_sentinel = make_gh_sentinel(work_root / "b-provider")
@@ -705,7 +684,7 @@ def run_fixture(installed_repo: Path, work_root: Path) -> dict[str, Any]:
             "GURU_GH_CALL_LOG": str(gh_calls),
         }
     ):
-        b_archive, b_finish, b_workspace_files = finish_none(
+        b_archive, b_finish = finish_none(
             b_current,
             b_task,
             b_branch,
@@ -797,8 +776,7 @@ def run_fixture(installed_repo: Path, work_root: Path) -> dict[str, Any]:
             "archive_locator": b_archive.relative_to(b_current).as_posix(),
             "github_pr_call_count": 0,
             "finish_recovery": "same_task_remaining_action",
-            "workspace_journal_files": b_workspace_files,
-            "workspace_journal_tracked": False,
+            "legacy_state_absent": True,
         },
         "metadata_intersection": intersection,
         "merge_orders": orders,

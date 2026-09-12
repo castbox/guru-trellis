@@ -1,0 +1,12 @@
+{
+  "id": "329-adopt-developer-free-trellis",
+  "name": "329-adopt-developer-free-trellis",
+  "title": "#329 承接 Trellis 无 developer/workspace 版本并清理 Guru Team 残余依赖",
+  "status": "in_progress",
+  "branch": "codex/329-adopt-developer-free-trellis",
+  "base_branch": "main",
+  "worktree_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/329-adopt-developer-free-trellis",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/329"
+}

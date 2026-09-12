@@ -570,11 +570,14 @@ direct consumer.
 
 Assignee remains a portable task/context audit field, never a path namespace.
 The workspace executor invokes official `common.task_store.cmd_create` in an
-isolated subprocess with the reviewed assignee and a call-scoped null developer
-accessor. The official creator fallback therefore produces
-`task.json.creator=task.json.assignee=<reviewed-login>`. Guru runtime does not
+isolated subprocess with explicit reviewed creator and assignee values.
+Official task creation therefore produces
+`task.json.creator=task.json.assignee=<reviewed-login>` and rejects missing
+ownership before writes. Guru runtime does not
 read, copy, initialize, restore, or require `.trellis/.developer` or
 `.trellis/workspace/**`; existing official identity bytes remain untouched.
+The `workspace_slug` and workspace mappings above identify the isolated task
+checkout/worktree only; they have no journal/index/developer dimension.
 
 The task-level `issue-scope-ledger.json` exclusively owns `close_issues`,
 `related_issues`, and `followup_issues`.

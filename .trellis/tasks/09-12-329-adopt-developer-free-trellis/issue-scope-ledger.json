@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 329,
+      "reason": "Issue #329 是本次已审阅独立交付单元，workspace 与 task 仅承接其当前 accepted scope。",
+      "title": "承接 Trellis 无 developer/workspace 版本并清理 Guru Team 残余依赖",
+      "url": "https://github.com/castbox/guru-trellis/issues/329"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 329,
+    "reason": "Issue #329 是本次已审阅独立交付单元，workspace 与 task 仅承接其当前 accepted scope。",
+    "title": "承接 Trellis 无 developer/workspace 版本并清理 Guru Team 残余依赖",
+    "url": "https://github.com/castbox/guru-trellis/issues/329"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}

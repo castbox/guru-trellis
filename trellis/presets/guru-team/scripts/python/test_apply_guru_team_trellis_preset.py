@@ -295,7 +295,7 @@ class CanonicalWorkflowBaseEvolutionTest(unittest.TestCase):
     def test_base_reconciliation_eval_staging_uses_current_task_identity(self) -> None:
         adapter = (
             preset.guru_root_from_script()
-            / "trellis/skills/guru-team/adapters/eval/native_adapter.py"
+            / "trellis/skills/guru-team/adapters/eval/production_fixtures.py"
         ).read_text(encoding="utf-8")
         self.assertIn('"task_artifact_dir": task_ref', adapter)
         self.assertIn('"workspace_path": str(fixture.resolve())', adapter)
@@ -323,6 +323,9 @@ class CanonicalWorkflowBaseEvolutionTest(unittest.TestCase):
             root / "trellis/skills/guru-team/adapters/eval/native_adapter.py"
         )
         native_adapter = native_adapter_path.read_text(encoding="utf-8")
+        fixture_io = (
+            root / "trellis/skills/guru-team/adapters/eval/fixture_io.py"
+        ).read_text(encoding="utf-8")
         shared_eval_path = (
             root / "trellis/skills/guru-team/adapters/eval/guru-team-shared-eval"
         )
@@ -337,15 +340,15 @@ class CanonicalWorkflowBaseEvolutionTest(unittest.TestCase):
         )
         self.assertIn(
             'source_repo / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"',
-            native_adapter,
+            fixture_io,
         )
         self.assertIn(
             '[sys.executable, str(apply_script), "--repo", str(fixture), "--all-platforms"]',
-            native_adapter,
+            fixture_io,
         )
         self.assertNotIn(
             '[str(apply_script), "--repo", str(fixture), "--all-platforms"]',
-            native_adapter,
+            fixture_io,
         )
 
     def test_verifier_shell_second_hops_use_checkout_local_managed_python(self) -> None:
@@ -566,15 +569,15 @@ class CodexDispatchModeInstallerTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.tmp.cleanup()
 
-    def test_missing_config_installs_sub_agent_default(self) -> None:
+    def test_missing_config_installs_auto_default(self) -> None:
         payload = preset.ensure_codex_dispatch_mode(self.repo)
 
         self.assertEqual(payload["action"], "installed")
         text = (self.repo / ".trellis/config.yaml").read_text(encoding="utf-8")
         self.assertIn("codex:", text)
-        self.assertIn("dispatch_mode: sub-agent", text)
+        self.assertIn("dispatch_mode: auto", text)
 
-    def test_commented_default_is_materialized_as_sub_agent(self) -> None:
+    def test_commented_default_is_materialized_as_auto(self) -> None:
         config = self.repo / ".trellis/config.yaml"
         config.write_text(
             "# codex:\n#   dispatch_mode: inline\n",
@@ -584,10 +587,10 @@ class CodexDispatchModeInstallerTest(unittest.TestCase):
         payload = preset.ensure_codex_dispatch_mode(self.repo)
 
         self.assertEqual(payload["action"], "updated")
-        self.assertEqual(payload["mode"], "sub-agent")
+        self.assertEqual(payload["mode"], "auto")
         text = config.read_text(encoding="utf-8")
         self.assertIn("codex:", text)
-        self.assertIn("dispatch_mode: sub-agent", text)
+        self.assertIn("dispatch_mode: auto", text)
 
     def test_explicit_inline_is_preserved(self) -> None:
         config = self.repo / ".trellis/config.yaml"
@@ -599,7 +602,7 @@ class CodexDispatchModeInstallerTest(unittest.TestCase):
         self.assertEqual(payload["mode"], "inline")
         self.assertEqual(config.read_text(encoding="utf-8"), "codex:\n  dispatch_mode: inline\n")
 
-    def test_invalid_value_is_replaced_with_sub_agent(self) -> None:
+    def test_invalid_value_is_replaced_with_auto(self) -> None:
         config = self.repo / ".trellis/config.yaml"
         config.write_text("codex:\n  dispatch_mode: disabled\n", encoding="utf-8")
 
@@ -607,7 +610,18 @@ class CodexDispatchModeInstallerTest(unittest.TestCase):
 
         self.assertEqual(payload["action"], "updated")
         self.assertEqual(payload["previous"], "disabled")
-        self.assertIn("dispatch_mode: sub-agent", config.read_text(encoding="utf-8"))
+        self.assertIn("dispatch_mode: auto", config.read_text(encoding="utf-8"))
+
+    def test_legacy_sub_agent_alias_is_normalized_to_auto(self) -> None:
+        config = self.repo / ".trellis/config.yaml"
+        config.write_text("codex:\n  dispatch_mode: sub-agent\n", encoding="utf-8")
+
+        payload = preset.ensure_codex_dispatch_mode(self.repo)
+
+        self.assertEqual(payload["action"], "updated")
+        self.assertEqual(payload["previous"], "sub-agent")
+        self.assertEqual(payload["mode"], "auto")
+        self.assertEqual(config.read_text(encoding="utf-8"), "codex:\n  dispatch_mode: auto\n")
 
 
 class FinishSummaryPresetPolicyTest(unittest.TestCase):
@@ -619,37 +633,15 @@ class FinishSummaryPresetPolicyTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.tmp.cleanup()
 
-    def test_session_auto_commit_missing_true_false_and_invalid_values(self) -> None:
+    def test_legacy_session_config_and_workspace_ignore_are_untouched(self) -> None:
         config = self.repo / ".trellis/config.yaml"
-        cases = [
-            ("# config\n", None, "updated"),
-            ("session_auto_commit: true\n", "true", "updated"),
-            ("session_auto_commit: false\n", "false", "unchanged"),
-            ("session_auto_commit: sometimes\n", "sometimes", "updated"),
-        ]
-        for content, previous, action in cases:
-            with self.subTest(content=content):
-                config.write_text(content, encoding="utf-8")
-                payload = preset.ensure_session_auto_commit_false(self.repo)
-                self.assertEqual(payload["action"], action)
-                self.assertEqual(payload["previous"], previous)
-                text = config.read_text(encoding="utf-8")
-                self.assertEqual(sum(line == "session_auto_commit: false" for line in text.splitlines()), 1)
-
-    def test_duplicate_active_session_auto_commit_keys_fail_closed(self) -> None:
-        config = self.repo / ".trellis/config.yaml"
-        config.write_text("session_auto_commit: true\nsession_auto_commit: false\n", encoding="utf-8")
-        with self.assertRaises(SystemExit):
-            preset.ensure_session_auto_commit_false(self.repo)
-
-    def test_workspace_ignore_is_idempotent_and_does_not_write_workspace(self) -> None:
-        first = preset.ensure_workspace_gitignore(self.repo)
-        second = preset.ensure_workspace_gitignore(self.repo)
-        self.assertEqual(first["action"], "installed")
-        self.assertEqual(second["action"], "unchanged")
-        text = (self.repo / ".gitignore").read_text(encoding="utf-8")
-        self.assertEqual(text.splitlines().count(".trellis/workspace/"), 1)
-        self.assertFalse((self.repo / ".trellis/workspace").exists())
+        gitignore = self.repo / ".gitignore"
+        config.write_text("session_auto_commit: true\n", encoding="utf-8")
+        gitignore.write_text(".trellis/workspace/\n", encoding="utf-8")
+        before = (config.read_bytes(), gitignore.read_bytes())
+        preset.ensure_runtime_gitignore(self.repo)
+        self.assertEqual(config.read_bytes(), before[0])
+        self.assertTrue(gitignore.read_bytes().startswith(before[1]))
 
 
 class AgentsAiFirstPrinciplesInstallerTest(unittest.TestCase):
@@ -1153,6 +1145,40 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertEqual(conflicts[0]["reason"], "legacy_unknown_local_edit")
         self.assertIn("package-local", sidecar.read_text(encoding="utf-8"))
 
+    def test_retired_trellis_workspace_memory_is_removed_or_preserved_as_conflict(self) -> None:
+        managed = self.repo / ".agents/skills/trellis-meta/references/local-architecture/workspace-memory.md"
+        managed.parent.mkdir(parents=True, exist_ok=True)
+        managed.write_bytes(
+            subprocess.run(
+                [
+                    "git",
+                    "show",
+                    "v0.6.16-guru.1:.agents/skills/trellis-meta/references/local-architecture/workspace-memory.md",
+                ],
+                cwd=self.guru_root,
+                check=True,
+                stdout=subprocess.PIPE,
+            ).stdout
+        )
+
+        removals, conflicts, sidecars = preset.remove_retired_trellis_platform_assets(self.repo)
+
+        self.assertFalse(managed.exists())
+        self.assertEqual(conflicts, [])
+        self.assertEqual(sidecars, [])
+        self.assertEqual(removals[0]["path"], managed.relative_to(self.repo).as_posix())
+
+        managed.parent.mkdir(parents=True, exist_ok=True)
+        managed.write_text("local workspace notes\n", encoding="utf-8")
+        removals, conflicts, sidecars = preset.remove_retired_trellis_platform_assets(self.repo)
+
+        self.assertEqual(removals, [])
+        self.assertEqual(managed.read_text(encoding="utf-8"), "local workspace notes\n")
+        self.assertEqual(conflicts[0]["reason"], "legacy_unknown_local_edit")
+        self.assertEqual(sidecars, [
+            ".agents/skills/trellis-meta/references/local-architecture/workspace-memory.md.new"
+        ])
+
     def test_skill_manifest_file_order_is_stable_across_hash_seeds_and_reapply(self) -> None:
         module_path = Path(preset.__file__).resolve()
         guru_root = preset.guru_root_from_script()
@@ -1351,8 +1377,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/format-merge-commit.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/format-merge-commit.sh", os.X_OK))
         self.assertTrue((self.repo / ".trellis/guru-team/schemas/finish-summary.schema.json").is_file())
-        self.assertIn("session_auto_commit: false", (self.repo / ".trellis/config.yaml").read_text(encoding="utf-8"))
-        self.assertIn(".trellis/workspace/", (self.repo / ".gitignore").read_text(encoding="utf-8"))
+        self.assertNotIn("session_auto_commit", (self.repo / ".trellis/config.yaml").read_text(encoding="utf-8"))
+        self.assertNotIn(".trellis/workspace/", (self.repo / ".gitignore").read_text(encoding="utf-8"))
+        self.assertNotIn("session_auto_commit", payload)
+        self.assertNotIn("workspace_gitignore", payload)
         self.assertEqual(payload["replaced_overlays"], [])
         self.assertFalse((self.repo / ".agents/skills/trellis-start/SKILL.md").exists())
         self.assertFalse((self.repo / ".trellis/agents/implement.md").exists())
@@ -2058,7 +2086,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
         self.assertEqual(installed["extension"]["version"], "0.6.16-guru.41")
-        self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.16")
+        self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.17")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
             (self.guru_root / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
@@ -2486,8 +2514,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("check-skill-packages", public_api["companion_scripts"])
         self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")
-        self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.16")
-        self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.16"])
+        self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.17")
+        self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.17"])
         self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
         self.assertEqual(
             installed["install"]["managed_asset_hashes"],

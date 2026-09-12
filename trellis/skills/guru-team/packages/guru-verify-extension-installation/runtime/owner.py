@@ -1898,7 +1898,7 @@ def extension_verification_ownership_facts(path: Path) -> dict[str, Any]:
         }
         and payload.get("schema_version") == "3.0"
         and payload.get("inventory_id") == "guru-team-upstream-ownership"
-        and payload.get("target_trellis_cli") == "0.6.16"
+        and payload.get("target_trellis_cli") == "0.6.17"
         and payload.get("overlay_root") == "trellis/presets/guru-team/overlays"
         and isinstance(rules, list)
         and len(rules) == 11

@@ -15,6 +15,13 @@ Official Trellis owns every `trellis-*` Skill, command, prompt, hook, agent,
 runtime agent, bundled reference, and meta entry. Guru Team must not install,
 claim, patch, delete, or managed-upgrade those paths.
 
+Retired historical roots `.trellis/.developer`, `.trellis/workspace/**`, and
+`.trellis/agent-traces/**` are outside the active ownership graph. Installer,
+update, reapply, context, task-owner, and recovery paths preserve their bytes
+without reading, indexing, copying, migrating, restoring, deleting, or claiming
+them. Upstream `0.6.17` retired command stubs remain upstream-owned migration
+messages, not supported Guru runtime entries.
+
 Guru Team owns only paths inside an anchored Guru namespace. Current ownership
 contains exactly 11 rules:
 

@@ -483,7 +483,7 @@ created-issue identity mismatch, and fresh live existing-issue identity or null
 target/disposition change `refresh_review` and blocked zero-write results; explicit, one
 issue assignee, zero issue assignees/current-login, multiple/user-choice, and
 unresolved assignee cases; isolated official `common.task_store.cmd_create`
-adapter with a call-scoped null developer accessor; exact
+adapter with explicit creator and assignee; missing-owner failure before writes; exact
 `task.json.creator=task.json.assignee=reviewed login`; preservation of existing
 identity bytes; exact object reuse/conflict blocking; exactly one Guru-owned
 tracked task-local artifact (`issue-scope-ledger.json`); task identity derived
@@ -1208,8 +1208,8 @@ execute this command directly and complete the full matrix:
 
 After that seed, static validation must require a temporary `python3` PATH
 bridge before every upstream Trellis invocation. The bridge must directly exec
-the canonical source resolver, so the CLI's `python3 --version` probe and
-`init_developer.py` subprocess remain source-managed. It is valid only after
+the canonical source resolver, so the CLI's `python3 --version` probe and other
+official Python subprocesses remain source-managed. It is valid only after
 the managed runtime exists, must pin `TRELLIS_PYTHON_CMD=python3`, and must
 precede bootstrap-result consumption while leaving poisoned caller PATH
 `python3` and inherited-override `python` shims behind it as negative sentinels.

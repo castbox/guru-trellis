@@ -52,25 +52,25 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 
 | 组件 | 固定版本 |
 | --- | --- |
-| Guru Trellis repo tag | `v0.6.16-guru.1` |
-| Guru Team extension revision | `0.6.16-guru.41` |
-| Fork `castbox/Trellis` CLI | `0.6.16` @ `ad332e3fe5a19d7274cb03e7c2f3e2128f8de291` |
+| Latest released Guru Trellis repo tag | `v0.6.16-guru.1` |
+| Current Guru Team extension revision | `0.6.16-guru.41` |
+| Current fixed Fork `castbox/Trellis` CLI | `0.6.17` @ `a2003296b4c4ce46c50d72ead3b2ec9c317f69fc` |
+| Fork package manager | `pnpm@10.32.1` |
 
-repo tag 与 extension revision 是两个独立版本轴。本次发布的 workflow 与 preset
-固定使用同一个目标 annotated tag `v0.6.16-guru.1`。该 tag object、peeled commit、
-GitHub Release、tag-pinned install 与 post-publish smoke 尚未创建或验证；#392 必须在
-preparation PR 合并后重新冻结 exact candidate，并从头执行 Release gates。
-
-上表 Guru release tag 是目标发布计划，不代表本 Fork 接入改动已随该 tag 发布。
-本次未发布源码验证使用已审查 Guru checkout；以下 `GURU_WORKFLOW_SOURCE` 必须设置为
-该 checkout 对应的可寻址 marketplace ref，本地样本不能冒充已发布版本。
+repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。已发布的
+`v0.6.16-guru.1` 是最新稳定 Guru tag，但不包含当前 main/source checkout 对
+developer/workspace retirement 的 `0.6.17` 接入。当前未发布源码验证使用已审查 Guru
+checkout；以下 `GURU_WORKFLOW_SOURCE` 必须设置为该 checkout 对应的可寻址 marketplace
+ref，不能把本地样本或已发布 predecessor 描述为当前 source candidate 的发布证明。
 
 新仓库的非交互安装入口：
 
 ```bash
 : "${GURU_WORKFLOW_SOURCE:?请设置已审查的 Guru marketplace ref}"
+: "${GURU_TASK_OWNER:?请设置 bootstrap task 的 creator/assignee}"
 cd "$TARGET_REPO"
 node "$FORK_SOURCE/packages/cli/bin/trellis.js" init -y --claude --codex --cursor \
+  --creator "$GURU_TASK_OWNER" --assignee "$GURU_TASK_OWNER" \
   --workflow guru-team \
   --workflow-source "$GURU_WORKFLOW_SOURCE"
 (cd "$GURU_SOURCE" && bash trellis/presets/guru-team/scripts/bash/apply.sh \
@@ -84,10 +84,13 @@ cd "$TARGET_REPO"
 node "$FORK_SOURCE/packages/cli/bin/trellis.js" update --dry-run
 ```
 
-dry-run 输出包含 `MIGRATION REQUIRED` 时，只执行：
+dry-run 输出包含 `MIGRATION REQUIRED` 或 `Retirement conflicts:` 时，审查将被替换的
+managed 文件后只执行：
 
 ```bash
-node "$FORK_SOURCE/packages/cli/bin/trellis.js" update --migrate --skip-all
+: "${GURU_TASK_OWNER:?请设置 migration task 的 assignee}" && \
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" update --force --migrate \
+  --assignee "$GURU_TASK_OWNER" --skip-all
 ```
 
 否则只执行：
@@ -116,6 +119,13 @@ node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
 
 升级完成后必须处理全部 `.new` / `.bak`，再验证 source/installed/platform equality、
 managed inventory、受管 Python runtime、dogfood drift 和递归零 sidecar，才能声明升级成功。
+
+Guru 正常路径不初始化或读取 developer identity，不记录 session，也不读取或写入旧
+`.trellis/workspace/**` journal/index。新 task 显式提供 `--creator` 与 `--assignee`，查询
+个人任务使用 `task.py list --assignee <name>`。文档中的 Guru task workspace/mapping 仅表示
+task 的隔离 checkout/worktree 及其 ignored runtime mapping，不是旧 journal workspace。
+既有 `.trellis/.developer`、`.trellis/workspace/**` 与 `.trellis/agent-traces/**` 保持原字节，
+不迁移、不删除，也不作为 current task、owner 或 recovery 输入。
 
 ## 它解决什么问题
 
@@ -262,8 +272,9 @@ stage/cell/command/exit/error-tail；无法解析终态时显式记录
 
 源仓的安装/update 验收使用隔离环境：核验锁定 Fork checkout 和构建产物，再通过
 `node "$FORK_SOURCE/packages/cli/bin/trellis.js"` 执行 clean initial workflow/preset
-install 与目标项目的 `update --dry-run`；只在输出包含 `MIGRATION REQUIRED` 时执行
-同一 CLI 的 `update --migrate --skip-all`，否则执行 `update --skip-all`。
+install 与目标项目的 `update --dry-run`；只在输出包含 `MIGRATION REQUIRED` 或
+`Retirement conflicts:`、已审查 managed replacement 且提供显式 assignee 时执行同一 CLI 的
+`update --force --migrate --assignee <owner> --skip-all`，否则执行 `update --skip-all`。
 版本号相同不代替源码 SHA 证明，原发行包不参与当前正常路径。
 `--skip-all` 保留项目已有修改并以非交互方式继续。随后完成 marketplace
 `--create-new` preview、active switch 与 canonical preset reapply。最后验证 package、

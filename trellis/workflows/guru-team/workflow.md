@@ -639,8 +639,8 @@ declared workflow targets.
 
 For a Guru task, `guru-finish-work` is the exclusive finish entry. Never invoke
 the upstream-owned `trellis-finish-work` Skill: it is not a consumer in this
-workflow graph. Before Finalizer starts, no caller may invoke `task.py archive`,
-`add_session.py`, or another archive/journal executor.
+workflow graph. Before Finalizer starts, no caller may invoke direct task
+archival or any retired session-recording executor.
 
 #### 3.3 Docs SSOT reconciliation
 
@@ -734,7 +734,7 @@ response after a separate expected-head confirmation, without base sync or
 direct Issue closure.
 
 Only publication ready enters finalization. Finalizer alone may display and execute the bounded push, PR, archive, and Ready side-effect set.
-No generic finish entry or direct `task.py archive` / `add_session.py` call may
+No generic finish entry or direct task-archival/session-recording call may
 perform any part of that side-effect set.
 Verification, stale publication, base reconciliation, resume, and reprepare
 exits are automatically consumed by their declared Skills; the workflow never
@@ -783,6 +783,12 @@ mutation, or task cleanup.
   write and routes to explicit recovery or re-selection.
 - Editors without an explicit working-directory option use absolute paths under
   that confirmed task worktree.
+- In this workflow, task workspace and workspace mapping mean the isolated task
+  checkout/worktree plus ignored Guru runtime mappings. They never mean the
+  retired `.trellis/workspace/<developer>/journal-*` namespace. Current task
+  resolution uses task metadata, current checkout/branch, live Git worktree
+  facts, and those ignored mappings; it does not initialize or read developer
+  identity, workspace journal/index, session records, or legacy agent traces.
 - Task activation consumes only guru-approve-task-plan:approved.
 - Downstream phases consume public DTOs and live facts, never an upstream
   package artifact.

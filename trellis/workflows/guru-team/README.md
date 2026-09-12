@@ -39,10 +39,13 @@ provenance 写入目标仓库的 `.trellis/guru-team/extension.json`，并通过
 
 先按根 README 核验并构建 source lock 指定的 `castbox/Trellis` checkout。
 `FORK_SOURCE` 是调用者提供的已核验目录；`GURU_WORKFLOW_SOURCE` 是与 preset
-源码一致的已审查 marketplace ref。当前命令不使用 PATH/global CLI。
+源码一致的已审查 marketplace ref。`TASK_OWNER` 是 bootstrap task 的显式 creator/
+assignee。当前命令不使用 PATH/global CLI，也不初始化 developer identity。
 
 ```bash
+: "${TASK_OWNER:?set TASK_OWNER}" && \
 node "$FORK_SOURCE/packages/cli/bin/trellis.js" init -y --claude --codex --cursor \
+  --creator "$TASK_OWNER" --assignee "$TASK_OWNER" \
   --workflow guru-team \
   --workflow-source "$GURU_WORKFLOW_SOURCE"
 ```
@@ -52,14 +55,12 @@ throwaway 安装验证和 README 默认命令都必须使用非交互形式；�
 spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`。
 
 历史发布计划曾以 `#v0.6.15-guru.6` 与官方 CLI `0.6.15` 为目标；它不定义当前 Fork
-安装来源。当前框架来源以 source lock 的完整 SHA 为准，未发布 Guru 候选不能声称已由
-该历史 tag 提供。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
-并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 精确映射。本次 stable
-source 目标是 annotated tag `v0.6.16-guru.1`，canonical extension version 为
-`0.6.16-guru.41`。Repo release tag 与 extension revision 是独立版本轴；workflow
-marketplace 与 preset 必须来自同一个 immutable tag。该 tag object、peeled source
-commit、GitHub Release、tag-pinned install 与 post-publish smoke 尚未创建或验证；#392
-必须在 preparation PR 合并后重新冻结 exact candidate，并从头执行 Release gates。
+安装来源。当前框架来源以 source lock 的完整 SHA 为准。Latest released stable source 是
+annotated tag `v0.6.16-guru.1`，canonical extension version 仍为 `0.6.16-guru.41`；
+current main/source checkout 则固定到
+`castbox/Trellis@a2003296b4c4ce46c50d72ead3b2ec9c317f69fc`、CLI `0.6.17`、
+`pnpm@10.32.1`。Repo release tag、extension revision、CLI/source commit 是独立版本轴；
+`v0.6.16-guru.1` 不包含当前 developer-free framework adoption。
 
 已有 Trellis 项目切换 active workflow：
 
@@ -203,8 +204,10 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 `.trellis/guru-team/runtime/resolve-python.sh`。缺 runtime、版本漂移或未解决 sidecar 时必须在
 业务副作用前 fail closed，不得回退 PATH Python。
 
-当前 release-facing source 的 canonical extension version 为 `0.6.16-guru.41`，目标
-release tag 为 `v0.6.16-guru.1`；二者的发布事实仍由 #392 exact-candidate Release gates 建立。
+Current main/source checkout 的 canonical extension version 为 `0.6.16-guru.41`，固定
+framework source 为 `castbox/Trellis@a2003296b4c4ce46c50d72ead3b2ec9c317f69fc`，
+CLI 为 `0.6.17`，package manager 为 `pnpm@10.32.1`。Latest released Guru tag
+`v0.6.16-guru.1` 是独立 predecessor/release identity，不证明当前 source adoption 已发布。
 Source/installed package validation 必须同时验证
 registry、22 invokes / 95 exits / 59 combined targets（35 workflow + 24 stop）
 business marker graph、23-package/97-exit closure、consumer
@@ -246,7 +249,8 @@ fail closed，不存在 projection 或迁移入口。当前完整升级/更新�
    `packages/cli/bin/trellis.js`；历史升级 cell 还需明确的 predecessor checkout
    与 SHA，不下载原框架 npm 包，也不运行 stock `trellis upgrade`；
 2. 在目标 throwaway project 执行 `trellis update --dry-run`；只有输出明确包含
-   `MIGRATION REQUIRED` 时执行 `trellis update --migrate --skip-all`，否则执行
+   `MIGRATION REQUIRED` 或 `Retirement conflicts:`、managed replacement 已审查且提供显式 assignee 时执行
+   `trellis update --force --migrate --assignee <owner> --skip-all`，否则执行
    `trellis update --skip-all`；`--skip-all` 保留已有修改并非交互继续，两条 live
    update 命令不得同时试跑后挑选结果；
 3. 用 `--create-new` preview 并重新选择 guru-team marketplace workflow；
@@ -807,9 +811,9 @@ existing-issue identity；该 context使用`kind=issue`与 null `issue_binding`�
 
 Assignee 固定按 explicit input、exactly one issue assignee、zero issue assignees 时 current
 GitHub login、multiple/unresolved 时 AI/user 选择解析；executor 始终向 official
-task-create handler 显式传 reviewed assignee。Executor 在隔离子进程中调用 official
-`common.task_store.cmd_create`，并仅在该 handler 调用内禁用 developer accessor，使
-`task.json.assignee` 与 `task.json.creator` 都等于 reviewed login。创建成功除 official
+task-create handler 显式传 reviewed creator 与 assignee。Executor 在隔离子进程中调用 official
+`common.task_store.cmd_create`，使 `task.json.assignee` 与 `task.json.creator` 都等于
+reviewed login；缺任一显式 owner 时在 task/artifact/runtime write 前停止。创建成功除 official
 `task.json` 外只写 tracked task-local `issue-scope-ledger.json`；其余 Intake evidence、
 plan/result 保持 ignored owner-private，本机 mapping 只在 ignored
 `.trellis/.runtime/guru-team/**`。Public result 不含 absolute workspace path；checker
@@ -823,6 +827,8 @@ checker 与 reuse/recovery 的配置语义。`workspace_mode: worktree` 下，�
 object conflict 或 stale mapping 在 branch/worktree/task/mapping 业务写入前 fail closed。
 Public DTO 与 tracked task artifact 不携带本机绝对路径，只有 ignored runtime mapping 保存
 与 live workspace 一致的规范化 `workspace_path`。
+这里的 task workspace、`workspace_slug` 与 workspace mapping 仅指隔离 task checkout/worktree，
+不是已退役的 `.trellis/workspace/<developer>/journal-*` 机制。
 
 `workspace_mode: worktree` 下，task artifact 写入边界由 current `task.json`、当前 checkout、
 `.trellis/.runtime/guru-team/**`、`git worktree list` 和
@@ -855,9 +861,10 @@ Plan 绑定 initial checker-passed `post_sync_resolution_sha256`。Executor 的 
 authoritative `guru-sync-base` public invocation。Identity 不变才继续。
 
 Guru preset apply/update/reapply 与 workspace executor 不读取、不创建、不复制、不恢复
-`.trellis/.developer` 或 `.trellis/workspace/**`，也不要求 `init_developer.py`。Official
-Trellis 仍可独立创建和使用 identity/workspace journal；Guru 不删除已有数据，source/target
-中 existing identity bytes 在 workspace transaction 前后保持不变。
+`.trellis/.developer` 或 `.trellis/workspace/**`，也不调用 retired identity/session commands。
+Trellis `0.6.17` normal runtime 不再消费 identity/workspace journal/index；Guru 不删除已有
+identity/workspace/agent-trace 数据，source/target 中 historical bytes 在 workspace transaction
+前后保持不变。
 A/B merge fixture 从同一 clean base 分别走 production recorder/executor/checker 与
 task-local archive/commit，再验证 A -> B、B -> A 两个本地 merge 顺序无 Guru metadata
 conflict；不创建远程 PR或并发进程。
@@ -1079,7 +1086,8 @@ task history 的内容，以及 follow-up / 当前 PR limitation。Publication r
 
 Guru Team 不调用 `.trellis/scripts/add_session.py`，不读写 `.trellis/workspace/**`。
 shared `trellis-start` 只读取 phase/packages/current-task/Git facts，Codex/Cursor
-SessionStart overlay 不导入或调用 journal helper，也不打开、枚举、读取或输出 journal。
+SessionStart overlay 不导入或调用 identity/journal helper，也不打开、枚举、读取或输出
+historical journal/index/agent-trace 数据。
 finish-work 先绑定唯一 draft PR，再从 reviewed PR payload 与 live facts 在 active task 中
 一次构建 schema 2 `finish-summary.json`，包含 canonical URL 与唯一 `PR #<number>` ref。
 recorder 对 raw base-to-HEAD paths 排序去重后过滤 workspace/runtime

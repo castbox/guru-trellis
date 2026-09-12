@@ -112,6 +112,14 @@ def workspace_payloads(plan,artifact_rel,workspace_path):
  def entry(x):return {k:x[k] for k in ("number","url","title","reason")}
  s=plan["scope"];ledger={"schema_version":"2.0","primary_issue":entry(s["primary"]),"close_issues":[entry(x) for x in s["close"]],"related_issues":[entry(x) for x in s["related"]],"followup_issues":[entry(x) for x in s["followup"]]}
  return task,json.dumps(ledger,ensure_ascii=False,sort_keys=True,indent=2)+"\n"
+def task_matches_expected(actual,expected):return isinstance(actual,dict) and all(actual.get(key)==value for key,value in expected.items())
+def create_official_task(workspace,plan):
+ n=plan["naming"];script=workspace/".trellis/scripts/task.py"
+ if not script.is_file():raise CommandError("stale_identity","created_workspace.task","Official Trellis task store is unavailable in the target workspace.",3)
+ owner=plan["assignee"]["login"]
+ argv=[os.environ.get("GURU_TRELLIS_PYTHON") or os.environ.get("TRELLIS_PYTHON") or "python3",str(script),"create",n["task_title"],"--description",n["reason"],"--slug",n["task_slug"],"--creator",owner,"--assignee",owner,"--base-branch",plan["base"]["selected_base"],"--no-start"]
+ completed=subprocess.run(argv,cwd=workspace,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+ if completed.returncode:raise CommandError("stale_identity","created_workspace.task",completed.stderr.strip() or "Official Trellis task creation failed.",3)
 def mapping_payloads(repo,plan,workspace,artifact_rel):
  n=plan["naming"]
  workspace_mapping={"schema_version":"1.0","workspace_slug":n["workspace_slug"],"workspace_path":str(workspace),"source_checkout":str(repo),"branch_name":n["branch_name"],"updated_at":now()}
@@ -121,6 +129,9 @@ def expected_mapping(rel,workspace_mapping,task_mapping):
  return workspace_mapping if "/workspaces/" in rel else task_mapping
 def preflight(repo,plan,workspace):
  n=plan["naming"];branch=n["branch_name"];artifact_rel=Path(plan["side_effects"]["task_artifacts"][0]);task_dir=workspace.path/artifact_rel.parent
+ expected_dir=f"{datetime.now().strftime('%m-%d')}-{n['task_slug']}"
+ if artifact_rel.parent.name!=expected_dir:raise CommandError("stale_identity","side_effects.task_artifacts","Reviewed task path does not match the official task-store date and slug.",3)
+ if not (repo/".trellis/scripts/task.py").is_file():raise CommandError("stale_identity","created_workspace.task","Official Trellis task store is unavailable in the source checkout.",3)
  require_directory_ancestors(workspace.path,"worktree_root");require_directory_ancestors(task_dir,"task_artifacts")
  branch_exists=git(repo,"show-ref","--verify","--quiet",f"refs/heads/{branch}",check=False).returncode==0
  branch_exact=branch_exists and git(repo,"rev-parse",f"refs/heads/{branch}").stdout.strip()==plan["base"]["decision_head"]
@@ -134,7 +145,7 @@ def preflight(repo,plan,workspace):
  else:
   exact_workspace=bool(row and row.get("branch")==f"refs/heads/{branch}" and workspace.path.is_dir() and branch_exact)
  task_path=task_dir/"task.json";ledger_path=workspace.path/artifact_rel;expected_task,expected_ledger=workspace_payloads(plan,artifact_rel,workspace.path)
- try:exact_task=task_path.is_file() and json.loads(task_path.read_text())==expected_task
+ try:exact_task=task_path.is_file() and task_matches_expected(json.loads(task_path.read_text()),expected_task)
  except Exception:exact_task=False
  facts={"branch":branch_exists,"workspace":workspace_exists,"exact_branch":branch_exact,"exact_workspace":exact_workspace,"task":task_path.exists(),"exact_task":exact_task}
  expected={"branch":"branch_disposition","workspace":"workspace_disposition","task":"task_disposition"}
@@ -170,7 +181,7 @@ def verify_created_boundary(repo,plan,workspace,workspace_mode,artifact_rel,task
  try:task=json.loads(task_path.read_text(encoding="utf-8"))
  except Exception as exc:raise CommandError("stale_identity","created_workspace.task","Created task identity is invalid.",3) from exc
  expected_task,_=workspace_payloads(plan,artifact_rel,workspace)
- if task!=expected_task:raise CommandError("stale_identity","created_workspace.task","Created task identity does not match the reviewed plan.",3)
+ if not task_matches_expected(task,expected_task):raise CommandError("stale_identity","created_workspace.task","Created task identity does not match the reviewed plan.",3)
  workspace_mapping,task_mapping=mapping_payloads(repo,plan,workspace,artifact_rel)
  for rel in plan["side_effects"]["runtime_mappings"]:
   expected=expected_mapping(rel,workspace_mapping,task_mapping)
@@ -203,12 +214,12 @@ def rollback_created(repo,workspace,branch,original_branch,created_worktree,crea
 def run(package_root:Path,command:dict,argv:list[str])->dict:
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--input");p.add_argument("--invocation");a=parse(p,argv);repo=root(package_root,a.root);e=load(repo,package_root,a.invocation,"invocation") if a.invocation else None;plan=load_plan_envelope(package_root,e) if e is not None else load(repo,package_root,a.input,"input");validate_plan(package_root,repo,plan,"invocation.plan" if a.invocation else "input");gate=plan["ai_review_gate"]["status"]
  if gate!="passed":
-  before=snapshot(repo,plan);exit_id="refresh_review" if gate=="reroute" else "blocked";result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The semantic gate did not authorize mutation."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"target_changed" if exit_id=="refresh_review" else "execution_blocked","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":exit_id,"reason":"The reviewed plan requires refresh or is blocked.","consumer":CONSUMERS[exit_id],"facts_sha256":""};return finalize(package_root,result)
+  before=snapshot(repo,plan);exit_id="refresh_review" if gate=="reroute" else "blocked";result={"schema_version":"3.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The semantic gate did not authorize mutation."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"target_changed" if exit_id=="refresh_review" else "execution_blocked","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":exit_id,"reason":"The reviewed plan requires refresh or is blocked.","consumer":CONSUMERS[exit_id],"facts_sha256":""};return finalize(package_root,result)
  if plan["target"]["kind"]=="reviewed_draft":
   before=snapshot(repo,plan)
   if not mutation_boundary_current(repo,plan):
-   result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The authoritative base or target changed at the mutation boundary."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"prerequisite_refresh","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":"refresh_review","reason":"Current authority changed before the first business write.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
-  created=create_issue(plan);result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"created_issue","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("passed",["Created and immediately reread the exact reviewed GitHub issue."]),"checker":stage("not_run",[]),"created_issue":created,"created_workspace":None,"no_side_effect":None,"typed_exit":"refresh_review","reason":"The reviewed issue was created and now requires a complete Intake refresh.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
+   result={"schema_version":"3.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The authoritative base or target changed at the mutation boundary."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"prerequisite_refresh","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":"refresh_review","reason":"Current authority changed before the first business write.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
+  created=create_issue(plan);result={"schema_version":"3.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"created_issue","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("passed",["Created and immediately reread the exact reviewed GitHub issue."]),"checker":stage("not_run",[]),"created_issue":created,"created_workspace":None,"no_side_effect":None,"typed_exit":"refresh_review","reason":"The reviewed issue was created and now requires a complete Intake refresh.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
  n=plan["naming"];workspace_config=resolve_workspace(repo,n["workspace_slug"]);workspace=workspace_config.path;branch=n["branch_name"];artifact_rel=Path(plan["side_effects"]["task_artifacts"][0]);task_dir=workspace/artifact_rel.parent
  before=snapshot(repo,plan)
  try:
@@ -221,11 +232,11 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   except (OSError, json.JSONDecodeError, AttributeError):
    pass
   if exc.code=="stale_identity" and active_task:
-   result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The reviewed task identity is incomplete or conflicting; no repair was attempted."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"invalid_task_state","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":"invalid_task_state","reason":"The reviewed task identity cannot be consumed safely.","consumer":CONSUMERS["invalid_task_state"],"facts_sha256":""}
+   result={"schema_version":"3.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The reviewed task identity is incomplete or conflicting; no repair was attempted."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"invalid_task_state","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":"invalid_task_state","reason":"The reviewed task identity cannot be consumed safely.","consumer":CONSUMERS["invalid_task_state"],"facts_sha256":""}
    return finalize(package_root,result)
   raise
  if not mutation_boundary_current(repo,plan):
-  result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The authoritative base or target changed at the mutation boundary."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"prerequisite_refresh","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":"refresh_review","reason":"Current authority changed before the first business write.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
+  result={"schema_version":"3.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The authoritative base or target changed at the mutation boundary."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"prerequisite_refresh","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":"refresh_review","reason":"Current authority changed before the first business write.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
  created_files=[];created_dirs=[];created_worktree=False;created_branch=False;original_branch=git(repo,"branch","--show-current").stdout.strip()
  try:
   if n["branch_disposition"]=="create_new":
@@ -234,14 +245,19 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
    created_branch=True;created_worktree=workspace_config.mode=="worktree"
   if workspace_config.mode=="current" and n["branch_disposition"]=="reuse_exact" and git(repo,"branch","--show-current").stdout.strip()!=branch:git(repo,"switch",branch)
   if n["workspace_disposition"]=="create_new" and workspace_config.mode=="worktree" and n["branch_disposition"]!="create_new":git(repo,"worktree","add",str(workspace),branch);created_worktree=True
-  if not task_dir.exists():created_dirs.append(task_dir)
-  task_dir.mkdir(parents=True,exist_ok=True)
   task_path=task_dir/"task.json"
   if n["task_disposition"]=="reuse_exact":
    try:existing_task=json.loads(task_path.read_text())
    except Exception as exc:raise CommandError("stale_identity","naming.task_disposition","Reusable task is invalid.",3) from exc
-   if existing_task!=task:raise CommandError("stale_identity","naming.task_disposition","Reusable task does not match the reviewed task.",3)
-  else:task_path.write_text(json.dumps(task,ensure_ascii=False,indent=2)+"\n");created_files.append(task_path)
+   if not task_matches_expected(existing_task,task):raise CommandError("stale_identity","naming.task_disposition","Reusable task does not match the reviewed task.",3)
+  else:
+   create_official_task(workspace,plan)
+   created_files.extend(path for path in task_dir.rglob("*") if path.is_file())
+   created_dirs.extend(sorted((path for path in task_dir.rglob("*") if path.is_dir()),key=lambda path:len(path.parts)))
+   created_dirs.append(task_dir)
+   try:official_task=json.loads(task_path.read_text(encoding="utf-8"))
+   except Exception as exc:raise CommandError("stale_identity","created_workspace.task","Official Trellis task creation returned an invalid task.",3) from exc
+   official_task.update(task);task_path.write_text(json.dumps(official_task,ensure_ascii=False,indent=2)+"\n")
   ledger_path=workspace/artifact_rel
   ledger_path.write_text(ledger_bytes);os.chmod(ledger_path,0o644);created_files.append(ledger_path)
   mappings=[];workspace_mapping,task_mapping=mapping_payloads(repo,plan,workspace,artifact_rel)
@@ -253,8 +269,8 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
     q.write_text(json.dumps(payload)+"\n")
    mappings.append({"path":rel,"ignored":True})
   verify_created_boundary(repo,plan,workspace,workspace_config.mode,artifact_rel,task_dir)
-  data=ledger_path.read_bytes();artifact={"path":artifact_rel.as_posix(),"sha256":__import__('hashlib').sha256(data).hexdigest(),"size":len(data),"mode":"100644","tracked":True};created={"repo":plan["target"]["repo"],"issue_number":plan["target"]["issue_number"],"branch_name":branch,"base_ref":plan["base"]["base_ref"],"base_head":plan["base"]["decision_head"],"workspace_slug":n["workspace_slug"],"task_slug":n["task_slug"],"task_artifact_dir":artifact_rel.parent.as_posix(),"assignee":plan["assignee"]["login"],"task_status":"planning","artifacts":[artifact],"runtime_mappings":mappings,"workspace_boundary_match":True,"source_developer_identity_created":False,"target_developer_identity_created":False,"workspace_journal_created":False}
+  data=ledger_path.read_bytes();artifact={"path":artifact_rel.as_posix(),"sha256":__import__('hashlib').sha256(data).hexdigest(),"size":len(data),"mode":"100644","tracked":True};created={"repo":plan["target"]["repo"],"issue_number":plan["target"]["issue_number"],"branch_name":branch,"base_ref":plan["base"]["base_ref"],"base_head":plan["base"]["decision_head"],"workspace_slug":n["workspace_slug"],"task_slug":n["task_slug"],"task_artifact_dir":artifact_rel.parent.as_posix(),"assignee":plan["assignee"]["login"],"task_status":"planning","artifacts":[artifact],"runtime_mappings":mappings,"workspace_boundary_match":True}
  except Exception:
   rollback_created(repo,workspace,branch,original_branch,created_worktree,created_branch,created_files,created_dirs)
   raise
- result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"created_workspace","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("passed",["Created the exact reviewed branch, worktree, task, ledger, and runtime mappings."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":created,"no_side_effect":None,"typed_exit":"created","reason":"The reviewed task workspace was created.","consumer":CONSUMERS["created"],"facts_sha256":""};return finalize(package_root,result)
+ result={"schema_version":"3.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"created_workspace","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("passed",["Created the exact reviewed branch, worktree, task, ledger, and runtime mappings."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":created,"no_side_effect":None,"typed_exit":"created","reason":"The reviewed task workspace was created.","consumer":CONSUMERS["created"],"facts_sha256":""};return finalize(package_root,result)

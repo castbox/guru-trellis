@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import shutil
+import stat
 import subprocess
 import sys
 from datetime import datetime
@@ -13,6 +14,13 @@ from pathlib import Path
 from typing import Any
 
 from verify_throwaway_python_routing import runtime_checkpoint
+
+
+LEGACY_ROOTS = (
+    Path(".trellis/.developer"),
+    Path(".trellis/workspace"),
+    Path(".trellis/agent-traces"),
+)
 
 
 def run(*args: str, cwd: Path) -> str:
@@ -56,6 +64,61 @@ def run_json(wrapper: Path, root: Path, *args: str) -> dict[str, Any]:
     return payload
 
 
+def legacy_snapshot(root: Path) -> dict[str, dict[str, Any]]:
+    rows: dict[str, dict[str, Any]] = {}
+    for legacy_root in LEGACY_ROOTS:
+        path = root / legacy_root
+        if not path.exists():
+            continue
+        candidates = [path]
+        if path.is_dir():
+            candidates.extend(sorted(path.rglob("*")))
+        for candidate in candidates:
+            relative = candidate.relative_to(root).as_posix()
+            mode = stat.S_IMODE(candidate.stat().st_mode)
+            if candidate.is_dir():
+                rows[relative] = {"kind": "directory", "mode": mode}
+            elif candidate.is_file():
+                rows[relative] = {
+                    "kind": "file",
+                    "mode": mode,
+                    "sha256": hashlib.sha256(candidate.read_bytes()).hexdigest(),
+                }
+            else:
+                raise AssertionError(f"unsupported legacy fixture path: {relative}")
+    return rows
+
+
+def seed_legacy_fixture(root: Path, profile: str) -> dict[str, dict[str, Any]]:
+    if profile == "absent":
+        return {}
+    payloads = {
+        "present-a": {
+            ".trellis/.developer": (b"name=legacy-a\n", 0o640),
+            ".trellis/workspace/index.md": (b"# Legacy workspace A\n", 0o600),
+            ".trellis/workspace/alice/index.md": (b"# Alice\n", 0o640),
+            ".trellis/workspace/alice/journal.md": (b"legacy journal a\n", 0o600),
+            ".trellis/agent-traces/a.jsonl": (b'{"trace":"a"}\n', 0o640),
+        },
+        "present-b": {
+            ".trellis/.developer": (b"name=legacy-b\n", 0o600),
+            ".trellis/workspace/index.md": (b"# Legacy workspace B\n", 0o640),
+            ".trellis/workspace/bob/index.md": (b"# Bob\n", 0o600),
+            ".trellis/workspace/bob/journal.md": (b"legacy journal b\nsecond line\n", 0o640),
+            ".trellis/workspace/bob/archive/old.md": (b"old entry\n", 0o600),
+            ".trellis/agent-traces/b.jsonl": (b'{"trace":"b","step":2}\n', 0o600),
+        },
+    }.get(profile)
+    if payloads is None:
+        raise AssertionError(f"unsupported legacy profile: {profile}")
+    for relative, (content, mode) in payloads.items():
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+        path.chmod(mode)
+    return legacy_snapshot(root)
+
+
 def build_plan(package: Path, source: Path, base_head: str) -> dict[str, Any]:
     sha = "1" * 64
     prerequisite = {
@@ -87,6 +150,7 @@ def build_plan(package: Path, source: Path, base_head: str) -> dict[str, Any]:
             }
             for name, skill_id, typed_exit in (
                 ("base", "guru-sync-base", "synced"),
+                ("discovery", "guru-discover-change-context", "context_ready"),
                 ("clarity", "guru-clarify-requirements", "clear"),
                 ("wording", "guru-review-contract-wording", "pass"),
                 ("readiness", "guru-review-change-request", "ready"),
@@ -275,7 +339,11 @@ def main() -> int:
     parser.add_argument("--installed-repo", required=True)
     parser.add_argument("--work-root", required=True)
     parser.add_argument("--checkpoint", required=True)
-    parser.add_argument("--existing-developer-identity", action="store_true")
+    parser.add_argument(
+        "--legacy-profile",
+        choices=("absent", "present-a", "present-b"),
+        default="absent",
+    )
     args = parser.parse_args()
     installed_repo = Path(args.installed_repo).resolve()
     work_root = Path(args.work_root).resolve()
@@ -284,11 +352,17 @@ def main() -> int:
         raise RuntimeError(f"installed task workspace fixture already exists: {source}")
     source.mkdir(parents=True)
     (source / ".trellis/guru-team").mkdir(parents=True)
+    shutil.copytree(
+        installed_repo / ".trellis/scripts",
+        source / ".trellis/scripts",
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+    )
     (source / ".trellis/guru-team/config.yml").write_text(
         "workspace_mode: worktree\nworktree_root:\nbase_branch: main\n"
     )
     (source / ".gitignore").write_text(
-        ".trellis/.developer\n.trellis/.runtime/\n__pycache__/\n*.py[cod]\n"
+        ".trellis/.developer\n.trellis/workspace/\n.trellis/agent-traces/\n"
+        ".trellis/.runtime/\n__pycache__/\n*.py[cod]\n"
     )
     (source / "README.md").write_text("# Installed task workspace fixture\n")
     run("git", "init", "-q", "-b", "main", cwd=source)
@@ -318,10 +392,7 @@ def main() -> int:
     fake_gh.chmod(0o755)
     os.environ["PATH"] = f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}"
 
-    identity = source / ".trellis/.developer"
-    identity_bytes = b"name=existing-installed-identity\n"
-    if args.existing_developer_identity:
-        identity.write_bytes(identity_bytes)
+    legacy_before = seed_legacy_fixture(source, args.legacy_profile)
 
     package = (
         installed_repo
@@ -366,16 +437,26 @@ def main() -> int:
         raise AssertionError("installed checker did not validate the created workspace")
     if task_data.get("creator") != "fixture-maintainer":
         raise AssertionError("installed runtime depended on developer identity for creator")
-    if args.existing_developer_identity and identity.read_bytes() != identity_bytes:
-        raise AssertionError("installed runtime changed source developer identity")
+    legacy_after = legacy_snapshot(source)
+    if legacy_after != legacy_before:
+        raise AssertionError("installed runtime changed legacy path, bytes, or mode state")
     target_identity = workspace / ".trellis/.developer"
     if target_identity.exists():
         raise AssertionError("installed runtime copied private developer identity")
     for mapping in plan["side_effects"]["runtime_mappings"]:
         if not (source / mapping).is_file():
             raise AssertionError(f"installed runtime did not write mapping: {mapping}")
-    if (source / ".trellis/workspace").exists() or (workspace / ".trellis/workspace").exists():
-        raise AssertionError("installed runtime created workspace journal state")
+    for legacy_root in LEGACY_ROOTS:
+        if (workspace / legacy_root).exists():
+            raise AssertionError(f"installed runtime copied legacy state: {legacy_root}")
+
+    lifecycle_outcome = {
+        "typed_exit": checked["typed_exit"],
+        "checker_status": checked["checker"]["status"],
+        "artifact_names": ["issue-scope-ledger.json"],
+        "task_creator": task_data.get("creator"),
+        "target_legacy_state_absent": True,
+    }
 
     print(
         json.dumps(
@@ -384,12 +465,16 @@ def main() -> int:
                 "typed_exit": checked["typed_exit"],
                 "checker_status": checked["checker"]["status"],
                 "task_artifact_dir": created["task_artifact_dir"],
-                "artifact_names": ["issue-scope-ledger.json"],
-                "source_developer_identity": identity.exists(),
+                "artifact_names": lifecycle_outcome["artifact_names"],
+                "legacy_profile": args.legacy_profile,
+                "source_developer_identity": (source / ".trellis/.developer").exists(),
                 "target_developer_identity": target_identity.exists(),
-                "developer_identity_preserved": args.existing_developer_identity,
+                "legacy_preserved": legacy_after == legacy_before,
+                "legacy_path_count": len(legacy_after),
+                "legacy_snapshot_sha256": digest(legacy_after),
+                "lifecycle_outcome_sha256": digest(lifecycle_outcome),
                 "task_creator": task_data.get("creator"),
-                "source_workspace_journal": False,
+                "source_workspace_journal": (source / ".trellis/workspace").exists(),
                 "target_workspace_journal": False,
                 "runtime_checkpoint": runtime_checkpoint(
                     installed_repo,

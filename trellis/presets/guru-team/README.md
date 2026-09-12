@@ -60,8 +60,8 @@ this key; if it is absent, the workflow interprets it as `optional_warn`.
 `required` is opt-in only, and `off` is opt-out only.
 
 The preset also materializes the project-level `.trellis/config.yaml`
-`codex.dispatch_mode` default. Missing, commented-out, or invalid values are
-updated to `sub-agent` so Codex can dispatch `trellis-implement` /
+`codex.dispatch_mode` default. Missing, commented-out, legacy `sub-agent`, or invalid values are
+updated to `auto` so Codex can dispatch `trellis-implement` /
 `trellis-check` and satisfy Branch Review Gate by default. In that default mode
 implementation, Phase 2 check, and post-commit Branch Review are three separate
 sub-agent evidence boundaries: `trellis-implement` / channel `implement`
@@ -202,23 +202,22 @@ documentation rule. It does not scan `.trellis/workspace/**`, ordinary task hist
 business `docs/**`; those documents are governed by the workflow's AI-facing
 Chinese documentation contract.
 
-Stable workflow marketplace installs should pin the repo release tag that
-combines the target official Trellis CLI version and Guru Team revision, for
-example `gh:castbox/guru-trellis/trellis#v0.6.16-guru.1`. The release-facing
-target is annotated tag `v0.6.16-guru.1`, extension revision `0.6.16-guru.41`,
-and Fork Trellis CLI `0.6.16` from the fixed source lock. Its tag object, peeled commit,
-GitHub Release, tag-pinned install, and post-publish smoke are not created or
-verified yet; #392 establishes those facts only after a fresh exact candidate
-passes every Release gate. Workflow marketplace and preset sources must use
-that same immutable tag. Unpinned
+Stable workflow marketplace installs pin the latest released repo tag, currently
+`gh:castbox/guru-trellis/trellis#v0.6.16-guru.1`. That released tag carries
+extension revision `0.6.16-guru.41`; it is a separate axis from the current
+main/source checkout, whose fixed framework source is
+`castbox/Trellis@a2003296b4c4ce46c50d72ead3b2ec9c317f69fc`, CLI `0.6.17`, and
+package manager `pnpm@10.32.1`. The released tag does not prove or contain this
+unreleased framework-source adoption. Workflow marketplace and preset sources
+for one stable installation must use the same immutable tag. Unpinned
 `gh:castbox/guru-trellis/trellis` is a latest/canary source and should be
 reported as mutable provenance.
 
 Before the Fork migration, `main` carried extension candidate `0.6.15-guru.40`
 targeting official Trellis `0.6.15`. This is historical release-plan context,
-not the current framework source contract. Issue #332 later established the
-released predecessor `v0.6.15-guru.6`; Issue #392 now owns the fresh exact-candidate
-gate for `v0.6.16-guru.1`. Prior partial evidence proves neither target release.
+not the current framework source contract. Issue #332 established predecessor
+`v0.6.15-guru.6`, and Issue #392 released `v0.6.16-guru.1`. Neither tag is
+evidence that the current main/source checkout already published Trellis `0.6.17`.
 
 ## Current Ownership Contract
 
@@ -401,8 +400,8 @@ source/installed helper routing drift before and after the business matrix.
 
 After the managed bootstrap succeeds, the verifier creates a temporary
 `python3` PATH bridge ahead of the caller's PATH. The bridge directly execs the
-canonical source `resolve-python.sh`, so Trellis's own version probe and
-`init_developer.py` subprocess use the source managed interpreter while the
+canonical source `resolve-python.sh`, so Trellis's own version probe and other
+official CLI Python subprocesses use the source managed interpreter while the
 platform-default `python3` command name remains unchanged. The verifier pins
 `TRELLIS_PYTHON_CMD=python3` after activating the bridge, so an inherited
 override cannot bypass it. Static validation
@@ -462,7 +461,7 @@ installed-manifest schema 2.0, derives its managed inventory from canonical
 current assets, and verifies the three selected Guru finish entries match their
 canonical additive overlays. Source ownership validation must report schema
 3.0 with 11 rules, nine managed claims, and three overlays before and after
-the dry-run-selected `trellis update --migrate --skip-all` or
+the dry-run-selected `trellis update --force --migrate --assignee <owner> --skip-all` or
 `trellis update --skip-all` plus workflow/preset reapply.
 It also asserts target `.trellis/spec/**` and
 `00-bootstrap-guidelines` do not retain known English documentation language
@@ -516,8 +515,10 @@ sequence:
 1. validate the supplied `castbox/Trellis` checkout against `source/trellis-source.json`
    and build it with its own locked install/build commands as described in the root README;
 2. invoke `node "$FORK_SOURCE/packages/cli/bin/trellis.js" update --dry-run`, then
-   the same Node entry with `update --migrate --skip-all` when migration is
-   required, or `update --skip-all` otherwise; never use a PATH-selected CLI;
+   the same Node entry with `update --force --migrate --assignee <owner> --skip-all`
+   when dry-run reports `MIGRATION REQUIRED` or `Retirement conflicts:` and the
+   managed replacements were reviewed,
+   or `update --skip-all` otherwise; never use a PATH-selected CLI;
 3. preview and switch the `guru-team` marketplace workflow from the selected
    immutable release tag;
 4. reapply the Guru preset from that same tag for the selected platforms;
@@ -751,11 +752,12 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 standalone-only verifier 共声明 97 个 external exits。
 `guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
-invoke 与六个 exit marker。当前 release-facing source 的 canonical extension version 为
-`0.6.16-guru.41`，目标 stable source 为 `v0.6.16-guru.1`，并以固定 Fork Trellis CLI
-`0.6.16` 为目标。该 annotated tag 只在重新冻结的 exact candidate 通过 pre-tag gate
-后创建；当前不声明 tag object、peeled commit、GitHub Release 或 post-publish smoke。Repo release
-tag 与 extension revision 是独立版本轴；workflow 与 preset 必须 pin 同一 immutable tag。
+invoke 与六个 exit marker。Current main/source checkout 的 canonical extension version 为
+`0.6.16-guru.41`，固定 Fork 为
+`castbox/Trellis@a2003296b4c4ce46c50d72ead3b2ec9c317f69fc` / CLI `0.6.17` /
+`pnpm@10.32.1`。Latest released stable source 仍为 `v0.6.16-guru.1`，不包含该 current
+framework adoption。Repo release tag、extension revision、CLI/source commit 是独立版本轴；
+同一次 stable install 的 workflow 与 preset 必须 pin 同一 immutable tag。
 本发布未取得 live GPT-5.6 Sol production semantic evidence；deterministic/no-model/
 fake-production 结果不能证明 pressure matrix、模型稳定性或未来模型行为。
 Preset 将 active package
@@ -1384,24 +1386,27 @@ creation happens only after full Intake re-entry.
 
 Guru preset apply/update/reapply and the workspace executor do not read,
 create, copy, initialize, restore, or delete `.trellis/.developer` or
-`.trellis/workspace/**`; they do not require `init_developer.py`. Existing
-official identity/journal bytes are preserved, and official Trellis remains free
-to use those paths separately. In an isolated subprocess, the exact executor calls
-official `common.task_store.cmd_create` with the resolved assignee and disables the
-developer accessor only for that handler invocation. `task.json.assignee` and
-`task.json.creator` therefore both equal the reviewed login, while existing identity
-bytes remain unchanged. The executor writes only the tracked task-local
-`issue-scope-ledger.json` plus ignored runtime mappings. The real local A/B
+`.trellis/workspace/**`; retired identity/session commands are not normal entry
+points. Trellis `0.6.17` leaves existing identity/journal/agent-trace bytes
+untouched and no longer consumes those roots. In an isolated subprocess, the
+executor calls official `common.task_store.cmd_create` with explicit reviewed
+creator and assignee values. `task.json.assignee` and `task.json.creator` therefore
+both equal the reviewed login, while existing historical bytes remain unchanged.
+Here, Guru task workspace and `workspace_slug` mean the isolated task checkout/
+worktree and its ignored runtime mapping, not a legacy journal workspace. The
+executor writes only the tracked task-local `issue-scope-ledger.json` plus
+ignored runtime mappings. The real local A/B
 fixture verifies both merge orders without a remote PR or concurrent process.
 
 The installer retains `schemas/closeout-plan.schema.json` only as an immutable
 legacy compatibility asset and manages current
 `schemas/finalization-transaction.schema.json` in the Finalizer package plus
 `schemas/finish-summary.schema.json`. It writes top-level
-`session_auto_commit: false` into `.trellis/config.yaml`, adds
-`.trellis/workspace/` to `.gitignore`, and never creates or rewrites workspace
-journal/index files. Shared start and installed Codex/Cursor SessionStart hooks
-do not open, enumerate, read, count, or output workspace journals. Before
+`task_auto_commit: false` into `.trellis/config.yaml`. It does not add a legacy
+workspace ignore, provision journal merge attributes, or create/rewrite/index
+workspace journals. Shared start and installed Codex/Cursor SessionStart hooks
+resolve current task from task/Git/worktree facts and do not open, enumerate,
+read, count, or output historical workspace journals. Before
 archive, current recovery validates the owner-private transaction, active
 locator, repo/base/head, current/remote HEAD, minimal marketplace owner result
 when applicable, and exact PR identity. Prepare parses `.trellis/config.yaml` with the installed official
@@ -1573,8 +1578,8 @@ runtime 留在 native execution 外；四平台 projection 内对应 raw read �
 
 当前入口使用已验证的固定 Fork checkout，直接运行其 Node CLI：clean initial
 workflow/preset install -> target throwaway project 的 `update --dry-run` ->
-仅当输出明确为 `MIGRATION REQUIRED` 时执行 `update --migrate --skip-all`，否则执行
-`update --skip-all` -> marketplace `--create-new` preview/active switch -> canonical
+仅当输出包含 `MIGRATION REQUIRED` 或 `Retirement conflicts:`、managed replacement 已审查且提供显式 assignee 时执行
+`update --force --migrate --assignee <owner> --skip-all`，否则执行 `update --skip-all` -> marketplace `--create-new` preview/active switch -> canonical
 preset reapply。之后重新验证 23 Skills/97 package exits、22 invokes/95 workflow
 exits、35 workflow targets、24 stop targets、全部已声明 profile real installed entry、
 ownership、platform parity、dogfood drift 与 recursive zero `.new`/`.bak`。该流程不修改

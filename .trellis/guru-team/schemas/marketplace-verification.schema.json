@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["schema_version", "generated_at", "status", "repo", "remote", "branch", "marketplace_source", "verified_head", "remote_head", "task_dir", "steps", "assets"],
   "properties": {
-    "schema_version": {"const": "1.1"},
+    "schema_version": {"const": "1.2"},
     "generated_at": {"type": "string", "minLength": 1},
     "status": {"enum": ["passed", "failed"]},
     "repo": {"type": "string", "minLength": 1},
@@ -36,15 +36,13 @@
     "assets": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["workflow_sha256", "preview_sha256", "finish_summary_schema_sha256", "closeout_plan_schema_sha256", "runtime_gitignore_present", "workspace_gitignore_present", "session_auto_commit_false"],
+      "required": ["workflow_sha256", "preview_sha256", "finish_summary_schema_sha256", "closeout_plan_schema_sha256", "runtime_gitignore_present"],
       "properties": {
         "workflow_sha256": {"type": "string", "pattern": "^([0-9a-f]{64})?$"},
         "preview_sha256": {"type": "string", "pattern": "^([0-9a-f]{64})?$"},
         "finish_summary_schema_sha256": {"type": "string", "pattern": "^([0-9a-f]{64})?$"},
         "closeout_plan_schema_sha256": {"type": "string", "pattern": "^([0-9a-f]{64})?$"},
-        "runtime_gitignore_present": {"type": "boolean"},
-        "workspace_gitignore_present": {"type": "boolean"},
-        "session_auto_commit_false": {"type": "boolean"}
+        "runtime_gitignore_present": {"type": "boolean"}
       }
     }
   },
@@ -60,9 +58,7 @@
               "preview_sha256": {"pattern": "^[0-9a-f]{64}$"},
               "finish_summary_schema_sha256": {"pattern": "^[0-9a-f]{64}$"},
               "closeout_plan_schema_sha256": {"pattern": "^[0-9a-f]{64}$"},
-              "runtime_gitignore_present": {"const": true},
-              "workspace_gitignore_present": {"const": true},
-              "session_auto_commit_false": {"const": true}
+              "runtime_gitignore_present": {"const": true}
             }
           }
         }
