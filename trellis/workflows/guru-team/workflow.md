@@ -550,7 +550,7 @@ invokes guru-reconcile-task-base and follows only its declared exit.
 After the checked pair route resolves, require workspace-boundary success,
 validate the approved DTO, and run:
 
-    python3 ./.trellis/scripts/task.py start <task-path>
+    ./.trellis/guru-team/scripts/bash/start-task.sh <task-path>
 
 The status write is not a second planning judgment. Revision and scope exits
 return only to their declared consumers.

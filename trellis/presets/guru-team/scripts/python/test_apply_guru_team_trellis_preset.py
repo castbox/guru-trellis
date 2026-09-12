@@ -1249,6 +1249,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertEqual(payload["platforms"], ["codex", "cursor"])
         self.assertFalse(payload["all_platforms"])
         self.assertIn(Path("scripts/bash/check-workspace-boundary.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/start-task.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/discover-skill-contract.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/discover-skill-evals.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/run-skill-evals.sh"), preset.MANAGED_ASSET_PATHS)
