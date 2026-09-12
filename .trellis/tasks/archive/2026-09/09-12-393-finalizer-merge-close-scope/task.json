@@ -1,0 +1,12 @@
+{
+  "id": "393-finalizer-merge-close-scope",
+  "name": "393-finalizer-merge-close-scope",
+  "title": "#393 修复 Finalizer refs-only Merge 关闭集合合同不一致",
+  "status": "completed",
+  "branch": "codex/393-finalizer-merge-close-scope",
+  "base_branch": "main",
+  "creator": "wumengye",
+  "assignee": "wumengye",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/393",
+  "completedAt": "2026-09-12"
+}
