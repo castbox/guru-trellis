@@ -1,0 +1,165 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-12T06:18:43Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-12-393-finalizer-merge-close-scope",
+    "title": "#393 修复 Finalizer refs-only Merge 关闭集合合同不一致",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-12-393-finalizer-merge-close-scope",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/393-finalizer-merge-close-scope",
+    "commits": [
+      "7ed3e34491fffb39e9fcc982c9c1a9074ccc5175",
+      "54ff6690d94594d509011160d11a00234ab4465f"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/09-12-393-finalizer-merge-close-scope/check.jsonl",
+      ".trellis/tasks/09-12-393-finalizer-merge-close-scope/design.md",
+      ".trellis/tasks/09-12-393-finalizer-merge-close-scope/implement.jsonl",
+      ".trellis/tasks/09-12-393-finalizer-merge-close-scope/implement.md",
+      ".trellis/tasks/09-12-393-finalizer-merge-close-scope/issue-scope-ledger.json",
+      ".trellis/tasks/09-12-393-finalizer-merge-close-scope/prd.md",
+      ".trellis/tasks/09-12-393-finalizer-merge-close-scope/task.json",
+      ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/design.md",
+      ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/implement.md",
+      ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/prd.md",
+      ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/task.json",
+      "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+      "trellis/presets/guru-team/spec/workflow/workflow-contract.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      393
+    ],
+    "close_issues": [
+      393
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/401"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#393 修复 Finalizer refs-only Merge 关闭集合合同不一致",
+    "outcome": "分离 Issue Scope Ledger 的交付验收范围与 PR close keyword 的 Merge 自动关闭意图。",
+    "changed_behavior": [
+      "分离 Issue Scope Ledger 的交付验收范围与 PR close keyword 的 Merge 自动关闭意图。",
+      "Finalizer 的 `expected_close_issues` 改为从已审阅 PR body 解析，refs-only PR 正确传递空集合。",
+      "existing PR recovery 与 Finalizer ready projection 使用同一 close-intent 语义。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/workflow-contract.md",
+          ".trellis/tasks/09-12-393-finalizer-merge-close-scope/design.md",
+          ".trellis/tasks/09-12-393-finalizer-merge-close-scope/implement.md",
+          ".trellis/tasks/09-12-393-finalizer-merge-close-scope/prd.md",
+          ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/design.md",
+          ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/implement.md",
+          ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/prd.md"
+        ],
+        "change": "分离 Issue Scope Ledger 的交付验收范围与 PR close keyword 的 Merge 自动关闭意图。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+          "trellis/presets/guru-team/spec/workflow/workflow-contract.md"
+        ],
+        "change": "分离 Issue Scope Ledger 的交付验收范围与 PR close keyword 的 Merge 自动关闭意图。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "change": "分离 Issue Scope Ledger 的交付验收范围与 PR close keyword 的 Merge 自动关闭意图。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-12-393-finalizer-merge-close-scope/check.jsonl",
+          ".trellis/tasks/09-12-393-finalizer-merge-close-scope/implement.jsonl",
+          ".trellis/tasks/09-12-393-finalizer-merge-close-scope/issue-scope-ledger.json",
+          ".trellis/tasks/09-12-393-finalizer-merge-close-scope/task.json",
+          ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/task.json"
+        ],
+        "change": "分离 Issue Scope Ledger 的交付验收范围与 PR close keyword 的 Merge 自动关闭意图。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#393"
+      ],
+      "pr_refs": [
+        "PR #401"
+      ],
+      "branches": [
+        "codex/393-finalizer-merge-close-scope"
+      ],
+      "paths": [
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/09-12-393-finalizer-merge-close-scope/check.jsonl",
+        ".trellis/tasks/09-12-393-finalizer-merge-close-scope/design.md",
+        ".trellis/tasks/09-12-393-finalizer-merge-close-scope/implement.jsonl",
+        ".trellis/tasks/09-12-393-finalizer-merge-close-scope/implement.md",
+        ".trellis/tasks/09-12-393-finalizer-merge-close-scope/issue-scope-ledger.json",
+        ".trellis/tasks/09-12-393-finalizer-merge-close-scope/prd.md",
+        ".trellis/tasks/09-12-393-finalizer-merge-close-scope/task.json",
+        ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/design.md",
+        ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/implement.md",
+        ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/prd.md",
+        ".trellis/tasks/archive/2026-09/09-12-393-finalizer-merge-close-scope/task.json",
+        "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+        "trellis/presets/guru-team/spec/workflow/workflow-contract.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#393 修复 Finalizer refs-only Merge 关闭集合合同不一致",
+        "分离 Issue Scope Ledger 的交付验收范围与 PR close keyword 的 Merge 自动关闭",
+        "完成 owner.py 相关变更"
+      ]
+    },
+    "retrieval_text": "#393 修复 Finalizer refs-only Merge 关闭集合合同不一致\n分离 Issue Scope Ledger 的交付验收范围与 PR close keyword 的 Merge 自动关闭意图。\nFinalizer 的 `expected_close_issues` 改为从已审阅 PR body 解析，refs-only PR 正确传递空集合。\nexisting PR recovery 与 Finalizer ready projection 使用同一 close-intent 语义。\n分离 Issue Scope Ledger 的交付验收范围与 PR close keyword 的 Merge 自动关闭\n完成 owner.py 相关变更"
+  }
+}

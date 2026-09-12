@@ -1,3 +1,0 @@
-{"file": "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py", "reason": "Publication refs-only and issue-scope contract coverage target."}
-{"file": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py", "reason": "Finalizer projection and recovery validation target."}
-{"file": "trellis/skills/guru-team/packages/guru-merge-task-pr/tests/test_contract.py", "reason": "Merge empty/non-empty exact close-set validation target."}
