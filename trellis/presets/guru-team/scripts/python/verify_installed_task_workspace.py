@@ -68,17 +68,30 @@ def legacy_snapshot(root: Path) -> dict[str, dict[str, Any]]:
     rows: dict[str, dict[str, Any]] = {}
     for legacy_root in LEGACY_ROOTS:
         path = root / legacy_root
-        if not path.exists():
+        try:
+            root_metadata = path.lstat()
+        except FileNotFoundError:
             continue
         candidates = [path]
-        if path.is_dir():
-            candidates.extend(sorted(path.rglob("*")))
+        if stat.S_ISDIR(root_metadata.st_mode):
+            for current, directories, files in os.walk(path, followlinks=False):
+                current_path = Path(current)
+                candidates.extend(
+                    current_path / name for name in sorted(directories + files)
+                )
         for candidate in candidates:
             relative = candidate.relative_to(root).as_posix()
-            mode = stat.S_IMODE(candidate.stat().st_mode)
-            if candidate.is_dir():
+            metadata = candidate.lstat()
+            mode = stat.S_IMODE(metadata.st_mode)
+            if stat.S_ISLNK(metadata.st_mode):
+                rows[relative] = {
+                    "kind": "symlink",
+                    "mode": mode,
+                    "target": os.readlink(candidate),
+                }
+            elif stat.S_ISDIR(metadata.st_mode):
                 rows[relative] = {"kind": "directory", "mode": mode}
-            elif candidate.is_file():
+            elif stat.S_ISREG(metadata.st_mode):
                 rows[relative] = {
                     "kind": "file",
                     "mode": mode,
@@ -116,6 +129,18 @@ def seed_legacy_fixture(root: Path, profile: str) -> dict[str, dict[str, Any]]:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
         path.chmod(mode)
+    symlinks = {
+        "present-a": {
+            ".trellis/workspace/alice/latest.md": "journal.md",
+        },
+        "present-b": {
+            ".trellis/workspace/bob/archive/missing.md": "not-created.md",
+        },
+    }[profile]
+    for relative, target in symlinks.items():
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.symlink_to(target)
     return legacy_snapshot(root)
 
 
