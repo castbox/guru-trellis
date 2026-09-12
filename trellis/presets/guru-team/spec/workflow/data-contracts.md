@@ -1139,12 +1139,15 @@ Issue close semantics must be explicit:
 - `related_issues` are references only.
 - `followup_issues` are future work and must never be closed by the current PR.
 
-Finalizer `expected_close_issues` and Merge input preserve this exact
-zero-or-more set. Schema cardinality must not invent a non-empty requirement:
-runtime compares the complete parsed PR close-keyword set with the expected
-set, and Merge treats the empty post-merge closure loop as vacuously complete.
-For non-empty sets, missing or additional close keywords and any Issue that did
-not close after merge remain blocking mismatches.
+The ledger `close_issues` collection is the delivery and acceptance scope.
+Finalizer projects `expected_close_issues` and the Merge input from the
+reviewed PR body's close keywords. This projection may be empty even when the
+ledger acceptance scope is non-empty, which is the valid refs-only case. Schema
+cardinality must not invent a non-empty requirement: runtime compares the
+complete parsed PR close-keyword set with the expected set, and Merge treats the
+empty post-merge closure loop as vacuously complete. For non-empty sets,
+missing or additional close keywords and any Issue that did not close after
+merge remain blocking mismatches.
 
 The ledger never carries verification state, acceptance evidence, proposal
 digests, GitHub comment checksums, review metadata, or marketplace state.
@@ -1574,8 +1577,9 @@ duplicate `changed_files` inventory. The rebuilt list is the single input to
 closeout review reporting, marketplace candidate-surface classification,
 archive retention, and finish-summary changed paths.
 `review.close_issues_reviewed` is projected from the publication-validated
-`issue-scope-ledger.json.close_issues`, not from removed compact-gate scope
-fields.
+`issue-scope-ledger.json.close_issues` and remains the delivery acceptance
+scope. The separate Finalizer `expected_close_issues` projection is derived
+from the reviewed PR body close keywords for Merge.
 
 `git.repo` is the normalized `owner/repository` identity. All effective fetch
 and push URLs of `git.remote` have a raw/effective two-layer contract. Raw

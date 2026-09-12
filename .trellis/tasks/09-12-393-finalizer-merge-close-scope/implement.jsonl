@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "Direct-evolution and compatibility boundary for merge and projection changes."}
+{"file": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py", "reason": "Finalizer normal and recovery ready_for_merge projection sites."}
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-pr/runtime/owner.py", "reason": "Existing exact close-set and refs-only merge contract."}

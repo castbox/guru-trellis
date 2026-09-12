@@ -8001,6 +8001,12 @@ def closeout_pull_request_close_issues(body: str) -> list[int]:
         raise WorkflowError("Closeout pull request body identity is invalid.", exit_code=2)
     return sorted({int(match.group(2)) for match in close_keyword_pattern().finditer(body)})
 
+
+def finalization_merge_close_issues(plan: dict[str, Any]) -> list[int]:
+    """Project only PR close-keyword intent; ledger scope remains delivery scope."""
+    publish = plan.get("publish") if isinstance(plan.get("publish"), dict) else {}
+    return closeout_pull_request_close_issues(str(publish.get("body") or ""))
+
 def classify_existing_pr_recovery(
     root: Path,
     plan: dict[str, Any],
@@ -8057,7 +8063,7 @@ def classify_existing_pr_recovery(
                 "publication_head": publication_head,
             },
         )
-    reviewed_scope = sorted(set(plan["review"]["close_issues_reviewed"]))
+    reviewed_scope = finalization_merge_close_issues(plan)
     live_scope = closeout_pull_request_close_issues(str(pr.get("body") or ""))
     if live_scope != reviewed_scope:
         raise WorkflowError(
@@ -9123,9 +9129,7 @@ def finalization_pre_mutation_remote_preflight(
             expected_head=remote_head,
             bound_pr=bound_pr,
         )
-        if closeout_pull_request_close_issues(str(existing_pr.get("body") or "")) != sorted(
-            set(transaction["close_issues"])
-        ):
+        if closeout_pull_request_close_issues(str(existing_pr.get("body") or "")) != finalization_merge_close_issues(plan):
             raise WorkflowError(
                 "Existing PR recovery close scope drifted after transaction binding.",
                 exit_code=2,
@@ -14025,7 +14029,7 @@ def finalization_gate_with_ready_for_merge_output(
         "expected_head_sha": pr["headRefOid"],
         "expected_base_branch": plan["git"]["base_branch"],
         "expected_head_branch": plan["git"]["head_branch"],
-        "expected_close_issues": plan["review"]["close_issues_reviewed"],
+        "expected_close_issues": finalization_merge_close_issues(plan),
     }
     errors = skill_json_schema_validation_errors(
         updated["route"]["output"],

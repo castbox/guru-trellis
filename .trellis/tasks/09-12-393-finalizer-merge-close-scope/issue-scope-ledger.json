@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 393,
+      "reason": "Issue #393 is fully covered by the bounded fix.",
+      "title": "修复 Finalizer 将交付验收集合误作 Merge 自动关闭集合的 refs-only 合同不一致",
+      "url": "https://github.com/castbox/guru-trellis/issues/393"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 393,
+    "reason": "Primary reviewed delivery.",
+    "title": "修复 Finalizer 将交付验收集合误作 Merge 自动关闭集合的 refs-only 合同不一致",
+    "url": "https://github.com/castbox/guru-trellis/issues/393"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}
