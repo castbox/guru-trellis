@@ -276,6 +276,7 @@ def compose_task_workspace_eval_runtime(runtime_target: Path, module: Any) -> No
     ) -> dict[str, Any]:
         identities = {
             "base": ("guru-sync-base", "guru-base-sync-result-1.0", "synced"),
+            "discovery": ("guru-discover-change-context", "guru-stage0-transition-context-current-1.0", "context_ready"),
             "clarity": ("guru-clarify-requirements", "guru-requirements-clarification-2.0", "clear"),
             "wording": ("guru-review-contract-wording", "guru-contract-wording-review-1.0", "pass"),
             "readiness": ("guru-review-change-request", "guru-change-request-review-2.0", "ready"),
@@ -283,6 +284,8 @@ def compose_task_workspace_eval_runtime(runtime_target: Path, module: Any) -> No
         skill_id, schema_id, typed_exit = identities[key]
         if key == "base":
             facts, content, linkage = payload.get("facts_sha256"), None, None
+        elif key == "discovery":
+            facts, content, linkage = payload.get("context_result_sha256"), None, None
         elif key == "clarity":
             identity = payload.get("content_identity", {})
             facts, content, linkage = identity.get("result_sha256"), identity.get("content_sha256"), identity.get("context_sha256")

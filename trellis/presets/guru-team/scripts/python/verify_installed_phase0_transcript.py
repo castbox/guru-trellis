@@ -1565,6 +1565,9 @@ def workspace_transition_payloads(
     }
     return {
         "base": base_current_payload(transition),
+        "discovery": {
+            "context_result_sha256": transition["context_result_sha256"],
+        },
         "clarity": clarity_payload,
         "wording": wording_payload,
         "readiness": readiness,
@@ -1580,6 +1583,11 @@ def workspace_prerequisite(
             "guru-sync-base",
             "guru-stage0-transition-base-current-1.0",
             "synced",
+        ),
+        "discovery": (
+            "guru-discover-change-context",
+            "guru-stage0-transition-context-current-1.0",
+            "context_ready",
         ),
         "clarity": (
             "guru-clarify-requirements",
@@ -1600,6 +1608,10 @@ def workspace_prerequisite(
     skill_id, schema_id, typed_exit = identities[key]
     if key == "base":
         facts = context_digest(payload)
+        content = None
+        linkage = None
+    elif key == "discovery":
+        facts = payload["context_result_sha256"]
         content = None
         linkage = None
     elif key == "clarity":

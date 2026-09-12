@@ -233,11 +233,10 @@ conflicts fail before branch, worktree, task, artifact or mapping writes.
 
 An open-issue transaction creates or exactly reuses the reviewed branch and
 workspace and reruns the guards in the resolved workspace. In an isolated
-subprocess, its adapter invokes official `common.task_store.cmd_create` with the
-reviewed assignee and replaces the module's developer accessor with a null
-result only for that handler invocation. Official fallback therefore writes
-`task.json.creator=task.json.assignee=<reviewed-login>` without consuming
-developer identity. The executor then sets branch, base and issue scope.
+subprocess, its adapter invokes the official task store with explicit
+`--creator <reviewed-login>` and `--assignee <reviewed-login>`. The official
+store therefore writes task ownership without a developer accessor. The
+executor then sets branch, worktree, base and issue scope.
 It writes exactly one tracked task-local Intake artifact:
 
 - `issue-scope-ledger.json`

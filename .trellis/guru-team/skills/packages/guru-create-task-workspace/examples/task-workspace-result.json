@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "3.0",
   "skill_id": "guru-create-task-workspace",
   "generated_at": "2026-01-01T00:01:00Z",
   "mode": "workflow",
@@ -26,10 +26,7 @@
       {"path": ".trellis/.runtime/guru-team/workspaces/027-create-task-workspace.json", "ignored": true},
       {"path": ".trellis/.runtime/guru-team/tasks/027-create-task-workspace.json", "ignored": true}
     ],
-    "workspace_boundary_match": true,
-    "source_developer_identity_created": false,
-    "target_developer_identity_created": false,
-    "workspace_journal_created": false
+    "workspace_boundary_match": true
   },
   "no_side_effect": null,
   "typed_exit": "created",

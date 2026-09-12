@@ -158,8 +158,8 @@ repositories. Keep them portable:
 - After the verifier's managed bootstrap and poison activation, it must prepend
   a temporary `python3` PATH bridge before any `trellis` subprocess. The bridge
   must directly exec canonical source `runtime/resolve-python.sh` with the
-  source repo and runtime assets, so Trellis's version probe and
-  `init_developer.py` subprocess use the source managed interpreter without
+  source repo and runtime assets, so Trellis's version probe and official CLI
+  Python subprocesses use the source managed interpreter without
   changing the platform-default command name. The verifier must pin
   `TRELLIS_PYTHON_CMD=python3` after bridge activation so inherited overrides
   cannot bypass the bridge. Static routing validation owns bridge contents,
@@ -720,9 +720,10 @@ immediately rereads it and emits a created-issue result with
 `typed_exit=refresh_review`, and stops without branch/worktree/task/runtime
 writes. An open-issue invocation creates or reuses only exact matching
 branch/worktree/task identity. In an isolated subprocess it calls official
-`common.task_store.cmd_create` with the reviewed assignee and replaces the
-module's developer accessor with a null result only for that handler call, so
-  official fallback writes `creator=assignee=reviewed login`. It then writes
+`common.task_store.cmd_create` with explicit reviewed creator and assignee
+values, so official task creation writes
+`creator=assignee=reviewed login`. Missing ownership stops before writes. It
+then writes
   exactly one Guru-owned task-local tracked Intake artifact,
   `issue-scope-ledger.json`, and only ignored
 `.trellis/.runtime/guru-team/**` mappings.
@@ -767,7 +768,9 @@ reviewed slug, and live Git facts.
 
 Neither command reads, creates, copies, initializes, restores, or deletes
 `.trellis/.developer` or `.trellis/workspace/**`. Existing official identity
-bytes are unchanged; clean source/target inputs remain absent. The public
+bytes are unchanged and unconsumed; clean source/target inputs remain absent.
+Guru workspace mappings describe isolated task checkouts/worktrees, not legacy
+journal workspaces. The public
 plan/result contain no absolute paths, runtime paths, full process output,
 secrets, or raw private records.
 

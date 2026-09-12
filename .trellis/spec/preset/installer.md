@@ -21,10 +21,10 @@ Guru-owned explicit finish entries from
 `trellis/presets/guru-team/overlays/`. It never installs or managed-upgrades an
 upstream-owned `trellis-*` path.
 
-It also installs the managed finish-summary schema, materializes top-level
-`session_auto_commit: false`, and adds `.trellis/workspace/` to the target root
-`.gitignore`. It does not create, scan, translate, or rewrite workspace
-journal/index files.
+It also installs the managed finish-summary schema and materializes top-level
+`task_auto_commit: false`. It does not add a legacy workspace ignore, provision
+journal merge attributes, or create, scan, translate, index, or rewrite
+historical identity/workspace/agent-trace data.
 
 Before `install_assets()` creates the target `.trellis/guru-team/` directory or
 performs any other target mutation, it must run the source ownership validator
@@ -250,14 +250,14 @@ restore, or delete `.trellis/.developer` or `.trellis/workspace/**`. A clean
 fixture begins from an initialized repository where those official paths are
 absent and proves all Guru operations leave them absent. A preservation fixture
 begins with existing official identity/journal bytes and proves Guru operations
-leave them unchanged. Official Trellis may still create/use those paths outside
-the Guru preset contract.
+leave them unchanged. Trellis `0.6.17` retains retired command stubs but normal
+runtime no longer consumes these historical roots.
 
 The installed workspace verification invokes the isolated official
 `common.task_store.cmd_create` adapter in both fixture shapes. It proves the
-reviewed assignee becomes both `task.json.assignee` and `task.json.creator`, the
-call-scoped developer accessor does not consume existing identity, and existing
-identity bytes remain exact.
+reviewed creator and assignee are passed explicitly, both
+`task.json.assignee` and `task.json.creator` equal the reviewed login, missing
+ownership fails before writes, and existing identity bytes remain exact.
 
 Fresh install and update/reapply verification must exercise a selected-platform
 standalone wrapper with the full preset runtime. Missing runtime, runtime drift,

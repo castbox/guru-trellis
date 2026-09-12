@@ -4,9 +4,14 @@ import copy
 import datetime
 import json
 import shutil
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+SCRIPT_ROOT = Path(__file__).resolve().parent
+if str(SCRIPT_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_ROOT))
 
 import verify_installed_phase0_transcript as transcript
 from test_discovery_stdin_integration import run_preset_install
@@ -70,7 +75,6 @@ class WorkspaceInvocationIntegrationTests(unittest.TestCase):
         self.assertEqual(public, {"exit_id": "created"})
         created = result["created_workspace"]
         self.assertTrue(created["workspace_boundary_match"])
-        self.assertFalse(created["workspace_journal_created"])
         self.assertEqual(created["issue_number"], issue["number"])
         self.assertEqual(created["task_status"], "planning")
         for mapping in created["runtime_mappings"]:

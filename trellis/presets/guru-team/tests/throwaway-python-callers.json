@@ -61,7 +61,7 @@
       "path": "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py",
       "classification": "installed_managed",
       "expected_launcher": "installed resolve-python.sh",
-      "sys_executable_subprocesses": 5,
+      "sys_executable_subprocesses": 4,
       "managed_shebang_bindings": 0
     }
   ],
@@ -231,15 +231,6 @@
       "ordinal": 1
     },
     {
-      "id": "helper-python_subprocess_second_hop-5d8ce79c0d82",
-      "owner": "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py",
-      "kind": "python_subprocess_second_hop",
-      "classification": "installed_managed",
-      "expected_launcher": "sys.executable",
-      "anchor_sha256": "5d8ce79c0d820361366194a9338c0df35c1d46eaa7eba358542c5936c8588bc5",
-      "ordinal": 1
-    },
-    {
       "id": "helper-python_subprocess_second_hop-74aa98515cf4",
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py",
       "kind": "python_subprocess_second_hop",
@@ -258,21 +249,21 @@
       "ordinal": 2
     },
     {
-      "id": "helper-python_subprocess_second_hop-d8ec6664de5b",
-      "owner": "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py",
-      "kind": "python_subprocess_second_hop",
-      "classification": "installed_managed",
-      "expected_launcher": "sys.executable",
-      "anchor_sha256": "d8ec6664de5b980f77020c7cb019160af315b01ac8903d74ff060c3c8c5a9e58",
-      "ordinal": 1
-    },
-    {
       "id": "helper-python_subprocess_second_hop-87aaf6ce1738",
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
       "anchor_sha256": "87aaf6ce17382a2d69520061f83765c7041a6f3172e3bfe7ca31c46847f7a59b",
+      "ordinal": 1
+    },
+    {
+      "id": "helper-python_subprocess_second_hop-adacb3b0a0df",
+      "owner": "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py",
+      "kind": "python_subprocess_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "sys.executable",
+      "anchor_sha256": "adacb3b0a0dfacebb1bc4afae8d56c36918c4658bd050c5d70e82a9750f227dc",
       "ordinal": 1
     },
     {

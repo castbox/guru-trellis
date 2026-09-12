@@ -212,7 +212,7 @@
       "id": "task_workspace_result_checker",
       "command": "scripts/check-task-workspace-result.sh",
       "runtime_command": "check-task-workspace-result",
-      "objective_scope": "published result schema, live issue binding or branch/worktree/task identity, exact ledger bytes/digest/trackability, ignored runtime, workspace boundary, no-developer and typed consumer"
+      "objective_scope": "published result schema, live issue binding or branch/worktree/task identity, exact ledger bytes/digest/trackability, ignored runtime, workspace boundary and typed consumer"
     },
     {
       "id": "public_invocation",
@@ -468,7 +468,7 @@
         "id": "task_workspace_result",
         "kind": "runtime_checkpoint",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-2.0.json",
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-3.0.json",
           "path": "schemas/task-workspace-result.schema.json"
         },
         "persistence": "ignored_runtime"

@@ -19,7 +19,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .paths import get_repo_root, get_tasks_dir
+from .paths import FILE_TASK_JSON, get_repo_root, get_tasks_dir
+from .history_paths import RetiredDataPathError, require_active_path
 
 if TYPE_CHECKING:
     import subprocess
@@ -56,7 +57,7 @@ def is_within_tasks_dir(task_dir_abs: Path, repo_root: Path | None = None) -> bo
 # Task Lookup
 # =============================================================================
 
-def find_task_by_name(task_name: str, tasks_dir: Path) -> Path | None:
+def find_task_by_name(task_name: str, tasks_dir: Path, repo_root: Path | None = None) -> Path | None:
     """Find task directory by name (exact or suffix match).
 
     A task name is a single directory name under ``tasks_dir``, never a path:
@@ -75,6 +76,8 @@ def find_task_by_name(task_name: str, tasks_dir: Path) -> Path | None:
     Returns:
         Absolute path to task directory, or None if not found or ambiguous.
     """
+    root = repo_root if repo_root is not None else get_repo_root()
+    require_active_path(tasks_dir, root)
     if not task_name or not tasks_dir or not tasks_dir.is_dir():
         return None
 
@@ -84,14 +87,22 @@ def find_task_by_name(task_name: str, tasks_dir: Path) -> Path | None:
 
     # Try exact match first
     exact_match = tasks_dir / task_name
+    require_active_path(exact_match / FILE_TASK_JSON, root)
     if exact_match.is_dir():
         return exact_match
 
     # Try suffix match (e.g., "my-task" matches "01-21-my-task")
-    matches = sorted(
-        d for d in tasks_dir.iterdir()
-        if d.is_dir() and d.name.endswith(f"-{task_name}")
-    )
+    matches = []
+    for d in sorted(tasks_dir.iterdir()):
+        if not d.name.endswith(f"-{task_name}"):
+            continue
+        try:
+            require_active_path(d / FILE_TASK_JSON, root)
+        except RetiredDataPathError as exc:
+            print(f"[WARN] Skipping task '{d.name}': {exc}", file=sys.stderr)
+            continue
+        if d.is_dir():
+            matches.append(d)
     if len(matches) == 1:
         return matches[0]
     if matches:
@@ -237,7 +248,7 @@ def resolve_task_dir(target_dir: str, repo_root: Path) -> Path | None:
         # Task name - must resolve inside the tasks directory. The historical
         # fallback to repo_root/<name> only ever produced a path the check
         # below rejects, so a miss ends here instead.
-        candidate = find_task_by_name(target_dir, tasks_dir)
+        candidate = find_task_by_name(target_dir, tasks_dir, repo_root)
         if candidate is None:
             # find_task_by_name reports invalid names and ambiguity itself.
             print(
@@ -247,6 +258,7 @@ def resolve_task_dir(target_dir: str, repo_root: Path) -> Path | None:
             return None
 
     try:
+        require_active_path(candidate / FILE_TASK_JSON, repo_root)
         resolved = candidate.resolve()
         tasks_lexical = get_tasks_dir(repo_root.resolve())
         tasks_resolved = tasks_lexical.resolve()

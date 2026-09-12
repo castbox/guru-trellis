@@ -1220,7 +1220,7 @@ ordinary recovery disposition, and typed route. Runtime commands are
 `record-task-workspace-plan`, `create-task-workspace`, and
 `check-task-workspace-result`; artifact schemas are
 ignored-runtime `guru-task-workspace-plan-2.0` and
-`guru-task-workspace-result-2.0`. Recorder,
+`guru-task-workspace-result-3.0`. Recorder,
 executor, and checker validate deterministic facts only and never select a
 duplicate, target, closed-state disposition, semantic name, assignee route,
 confirmation need, Gate status, or exit intent.
@@ -1264,13 +1264,15 @@ next complete Intake round re-enters the sole authoritative
 Assignee resolution order is explicit input, exactly one issue assignee, zero
 issue assignees to current GitHub login, then an AI/user choice for multiple or
 unresolved candidates. In an isolated subprocess, the exact executor calls
-official `common.task_store.cmd_create` with the resolved assignee and replaces
-that module's developer accessor with a null result only for the handler
-invocation. The official fallback therefore writes
-`task.json.creator=task.json.assignee=<reviewed-login>` without reading or
-rewriting `.trellis/.developer`. The executor never copies, initializes, or
+official `common.task_store.cmd_create` with explicit resolved creator and
+assignee values. Official task creation writes
+`task.json.creator=task.json.assignee=<reviewed-login>` and missing ownership
+fails before any task/artifact/runtime write, without reading or rewriting
+`.trellis/.developer`. The executor never copies, initializes, or
 restores `.trellis/.developer` or `.trellis/workspace/**`; existing official
 identity/journal bytes are outside this package and remain unchanged.
+`workspace_slug` and workspace mappings identify the isolated task checkout/
+worktree, not a legacy journal workspace.
 
 External exits are exactly `created` to workflow target
 `guru-task-workspace-created`, `refresh_review` to active Skill

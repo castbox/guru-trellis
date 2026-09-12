@@ -2,7 +2,7 @@ from __future__ import annotations
 import argparse,copy,hashlib,json,os,subprocess
 from pathlib import Path
 from common import digest,finalize,git,load,parse,resolve_workspace,root,stage,validate,validate_plan,worktrees
-from execute import expected_mapping,issue_record,label_identity,mapping_payloads,parse_utc_timestamp,workspace_payloads
+from execute import expected_mapping,issue_record,label_identity,mapping_payloads,parse_utc_timestamp,task_matches_expected,workspace_payloads
 from runtime.io import CommandError
 from plan_input import load_plan_envelope,object_field
 def github(repo,number):
@@ -30,7 +30,7 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   expected_task,_=workspace_payloads(plan,Path(c["artifacts"][0]["path"]),workspace)
   if task_value.get("worktree_path") != str(workspace.resolve()):
    raise CommandError("stale_identity","created_workspace.task.worktree_path","task.json worktree_path does not match the live workspace.",3)
-  if task_value!=expected_task:raise CommandError("stale_identity","created_workspace.artifacts","Task identity drifted.",3)
+  if not task_matches_expected(task_value,expected_task):raise CommandError("stale_identity","created_workspace.artifacts","Task identity drifted.",3)
   data=ledger.read_bytes();row=c["artifacts"][0]
   if hashlib.sha256(data).hexdigest()!=row["sha256"] or len(data)!=row["size"] or oct(os.stat(ledger).st_mode&0o777)!="0o644":raise CommandError("stale_identity","created_workspace.artifacts","Ledger bytes or mode drifted.",3)
   workspace_mapping,task_mapping=mapping_payloads(repo,plan,workspace,Path(c["artifacts"][0]["path"]))

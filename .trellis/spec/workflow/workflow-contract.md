@@ -10,6 +10,13 @@ The workflow marketplace installs only `.trellis/workflow.md`. The complete
 Guru Team extension, public Skill projections, package runtimes, minimal shared kernel, schemas, platform
 discovery copies, and Guru-owned explicit entries are installed by the preset.
 
+Guru task workspace terminology means the isolated task checkout/worktree and
+its ignored Guru runtime mappings. It never refers to the retired
+`.trellis/workspace/<developer>/journal-*` namespace. Current task resolution
+uses task metadata, current checkout/branch, live Git worktree facts, and those
+mappings; no normal workflow path initializes or reads developer identity,
+workspace journal/index, session recording, or legacy agent traces.
+
 ## SSOT Boundary
 
 The global workflow owns only:

@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from .io import read_json as _io_read_json, write_json as _io_write_json
+from .history_paths import RetiredDataPathError, require_active_path
 
 DIR_WORKFLOW = ".trellis"
 DIR_TASKS = "tasks"
@@ -227,9 +228,10 @@ def resolve_task_ref(task_ref: str, repo_root: Path) -> Path | None:
     # symlink (/tmp on macOS does), and resolve() is what collapses `..`
     # instead of leaving it for a lexical relative_to() to wave through.
     try:
+        require_active_path(candidate, repo_root)
         resolved = candidate.resolve()
         workflow_real = (root / DIR_WORKFLOW).resolve()
-    except OSError:
+    except (OSError, RetiredDataPathError):
         return None
 
     try:
@@ -251,7 +253,20 @@ def resolve_task_ref(task_ref: str, repo_root: Path) -> Path | None:
 
 
 def _runtime_sessions_dir(repo_root: Path) -> Path:
-    return repo_root / DIR_WORKFLOW / DIR_RUNTIME / DIR_SESSIONS
+    directory = repo_root / DIR_WORKFLOW / DIR_RUNTIME / DIR_SESSIONS
+    require_active_path(directory, repo_root)
+    return directory
+
+
+def session_files(repo_root: Path) -> list[Path]:
+    """Validate session storage before readers or lifecycle mutations proceed."""
+    directory = _runtime_sessions_dir(repo_root)
+    if not directory.is_dir():
+        return []
+    files = list(directory.glob("*.json"))
+    for file in files:
+        require_active_path(file, repo_root)
+    return files
 
 
 def _sanitize_key(raw: str) -> str:
@@ -380,10 +395,13 @@ def _find_repo_root_from_cwd() -> Path | None:
 
 def _shell_ticket_dirs(repo_root: Path) -> tuple[Path, ...]:
     runtime_dir = repo_root / DIR_WORKFLOW / DIR_RUNTIME
-    return (
+    directories = (
         runtime_dir / DIR_SHELL_TICKETS,
         runtime_dir / DIR_LEGACY_CURSOR_SHELL_TICKETS,
     )
+    for directory in directories:
+        require_active_path(directory, repo_root)
+    return directories
 
 
 def _remove_file(path: Path) -> bool:
@@ -469,7 +487,7 @@ def _matching_ticket_context_key(
     The `platform` field a ticket carries is debugging metadata; gating on it
     was what kept this bridge invisible to every platform but Cursor.
     """
-    ticket = _read_json(ticket_path)
+    ticket = _read_json(ticket_path, repo_root)
     if ticket is None:
         return None
     if not _ticket_is_fresh(ticket, ticket_path, now):
@@ -555,13 +573,14 @@ def resolve_context_key(
     return None
 
 
-def _read_json(path: Path) -> dict[str, Any] | None:
+def _read_json(path: Path, repo_root: Path) -> dict[str, Any] | None:
     """Tolerant read of a session runtime file, non-objects included."""
+    require_active_path(path, repo_root)
     data = _io_read_json(path)
     return data if isinstance(data, dict) else None
 
 
-def _write_json(path: Path, data: dict[str, Any]) -> bool:
+def _write_json(path: Path, data: dict[str, Any], repo_root: Path) -> bool:
     """Write a session runtime file atomically, creating the runtime dir.
 
     Routes through io.write_json so session pointers get the same
@@ -569,6 +588,7 @@ def _write_json(path: Path, data: dict[str, Any]) -> bool:
     truncates the target first, so a crash mid-write would leave a session
     file that reads back as no active task.
     """
+    require_active_path(path, repo_root)
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
     except OSError:
@@ -604,6 +624,10 @@ def _relative_task_ref(task_path: str, repo_root: Path) -> str:
     if not normalized:
         return ""
     candidate = Path(normalized)
+    try:
+        require_active_path(candidate if candidate.is_absolute() else repo_root / candidate, repo_root)
+    except RetiredDataPathError:
+        return ""
     if not candidate.is_absolute():
         return normalized
     try:
@@ -640,7 +664,9 @@ def _active_from_ref(
 
 
 def _context_path(repo_root: Path, context_key: str) -> Path:
-    return _runtime_sessions_dir(repo_root) / f"{context_key}.json"
+    path = _runtime_sessions_dir(repo_root) / f"{context_key}.json"
+    require_active_path(path, repo_root)
+    return path
 
 
 def resolve_active_task(
@@ -664,7 +690,7 @@ def resolve_active_task(
         allow_environment_context=allow_environment_context,
     )
     if context_key:
-        context = _read_json(_context_path(repo_root, context_key)) or {}
+        context = _read_json(_context_path(repo_root, context_key), repo_root) or {}
         task_ref = _string_value(context.get("current_task"))
         active = _active_from_ref(task_ref, repo_root, "session", context_key)
         if active:
@@ -685,16 +711,12 @@ def _resolve_single_session_fallback(repo_root: Path) -> ActiveTask | None:
     sub-agents). Returns None if 0 or ≥2 session files are present — refuses
     to pick across windows so 04-21's multi-session isolation contract holds.
     """
-    sessions_dir = _runtime_sessions_dir(repo_root)
-    if not sessions_dir.is_dir():
+    files = sorted(session_files(repo_root))
+    if len(files) != 1:
         return None
 
-    session_files = sorted(sessions_dir.glob("*.json"))
-    if len(session_files) != 1:
-        return None
-
-    session_file = session_files[0]
-    context = _read_json(session_file) or {}
+    session_file = files[0]
+    context = _read_json(session_file, repo_root) or {}
     task_ref = _string_value(context.get("current_task"))
     if not task_ref:
         return None
@@ -749,11 +771,11 @@ def set_active_task(
         return None
 
     context_path = _context_path(repo_root, context_key)
-    context = _read_json(context_path) or {}
+    context = _read_json(context_path, repo_root) or {}
     context.update(_context_metadata(platform_input, platform, context_key))
     context["current_task"] = canonical
     context.setdefault("current_run", None)
-    if not _write_json(context_path, context):
+    if not _write_json(context_path, context, repo_root):
         return None
     return ActiveTask(canonical, "session", context_key)
 
@@ -785,12 +807,8 @@ def clear_task_from_sessions(task_path: str, repo_root: Path) -> int:
         return 0
 
     cleared = 0
-    sessions_dir = _runtime_sessions_dir(repo_root)
-    if not sessions_dir.is_dir():
-        return cleared
-
-    for session_path in sessions_dir.glob("*.json"):
-        context = _read_json(session_path) or {}
+    for session_path in session_files(repo_root):
+        context = _read_json(session_path, repo_root) or {}
         current = _string_value(context.get("current_task"))
         if not current:
             continue
@@ -822,12 +840,8 @@ def repoint_task_in_sessions(old_path: str, new_path: str, repo_root: Path) -> i
         return 0
 
     moved = 0
-    sessions_dir = _runtime_sessions_dir(repo_root)
-    if not sessions_dir.is_dir():
-        return moved
-
-    for session_path in sorted(sessions_dir.glob("*.json")):
-        context = _read_json(session_path)
+    for session_path in sorted(session_files(repo_root)):
+        context = _read_json(session_path, repo_root)
         if not context:
             continue
         current = _string_value(context.get("current_task"))
@@ -839,7 +853,7 @@ def repoint_task_in_sessions(old_path: str, new_path: str, repo_root: Path) -> i
         if current_ref != target:
             continue
         context["current_task"] = replacement
-        if _write_json(session_path, context):
+        if _write_json(session_path, context, repo_root):
             moved += 1
 
     return moved

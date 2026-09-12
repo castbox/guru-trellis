@@ -6,7 +6,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.5-guru.48` | [requirement-main.md](./versions/current-main-0.6.5-guru.48/requirement-main.md) | #392 reviewed release mapping 与 serialized promotion lifecycle；继承 immutable `.47`，不构成 tag/Release/merge/完整矩阵/business smoke/Issue closure 证明 |
+| `active` | `current-main-0.6.5-guru.49` | [requirement-main.md](./versions/current-main-0.6.5-guru.49/requirement-main.md) | #329 reviewed developer-free source/lifecycle；继承 immutable `.48`，不构成 Publication/push/PR/merge/tag/Release/Issue closure 证明 |
+| `superseded` | `current-main-0.6.5-guru.48` | [requirement-main.md](./versions/current-main-0.6.5-guru.48/requirement-main.md) | #392 reviewed release mapping 与 serialized promotion lifecycle；immutable history |
 | `superseded` | `current-main-0.6.5-guru.47` | [requirement-main.md](./versions/current-main-0.6.5-guru.47/requirement-main.md) | #378 reviewed 固定 Fork runtime 与会话隔离；immutable history |
 | `superseded` | `current-main-0.6.5-guru.46` | [requirement-main.md](./versions/current-main-0.6.5-guru.46/requirement-main.md) | #376 reviewed post-review base continuity；继承 `.45` authority，current graph 23 Skills / 97 exits / 78 commands，不执行 push/tag/Release 或记录 lifecycle 状态 |
 | `superseded` | `current-main-0.6.5-guru.45` | [requirement-main.md](./versions/current-main-0.6.5-guru.45/requirement-main.md) | #332 original-entry convergence 与 23/97/77 before-state |
@@ -22,10 +23,13 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [requirement-main.md](./versions/current-main-0.6.5-guru.35/requirement-main.md) | #266 激活的历史 current snapshot |
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
-当前框架源码固定为 `castbox/Trellis@ad332e3fe5a19d7274cb03e7c2f3e2128f8de291`，CLI/core `0.6.16`；Guru live manifest 为 `0.6.16-guru.41`，repository release target 为 `v0.6.16-guru.1`。
-Docs `.48` 提升 #392 reviewed contribution 与 serialized promotion 顺序，不是 npm、tag 或 GitHub Release 发布。promotion-created diff 必须通过 fresh Phase 2/commit/Branch Review 后才能进入 Publication；merge 后重新冻结 exact candidate，并由后续 owner 独立验证完整 matrix、业务 smoke、tag、Release 与 Issue closure。
+当前框架源码固定为 `castbox/Trellis@a2003296b4c4ce46c50d72ead3b2ec9c317f69fc`，CLI/core `0.6.17`，package manager `pnpm@10.32.1`；Guru live manifest 为 `0.6.16-guru.41`。released repository axis `v0.6.16-guru.1` 不包含 #329 candidate。
+Docs `.49` 提升 #329 reviewed developer-free contribution。promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、push、PR、merge、tag、Release 与 Issue closure 均保持 `unverified`。
 
 `R378-01..04 -> D378-01..04 -> T378-01..05` 承接固定来源、会话隔离、installed 投影与原 verifier 入口；#388/#389 保留为关联前置，既有 #240/#348/#332/#376 与 Evolution authority 不扩张。
+
+`R329-01..10 -> D329-01..08 -> T329-01..08 / SCN-079..084` 承接 developer-free source、
+explicit task/caller authority、legacy preservation、installed lifecycle 与 clean candidate provenance。
 
 Guru Trellis 下一阶段产品进化 Requirements 的唯一文档集位于
 [`evolution/`](./evolution/README.md)，主定义为

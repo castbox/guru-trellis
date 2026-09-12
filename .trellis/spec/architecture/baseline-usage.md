@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.5-guru.48`
+- version：`current-main-0.6.5-guru.49`
 - status：`active`
-- source binding：reviewed #392 contribution `architecture-contribution-392-release-v0616-guru1-v2` + inherited immutable `.47` authority；current graph 23 Skills / 97 exits / 78 commands；current mapping `v0.6.16-guru.1` / extension `0.6.16-guru.41` / CLI `0.6.16` / fixed Fork `castbox/Trellis@ad332e3fe5a19d7274cb03e7c2f3e2128f8de291`；#305 target authority 不变（精确 revision 由包含本 authority 的 Git commit/tree identity 绑定；tag、Release 与 Gate 状态不进入本 projection）
+- source binding：reviewed #329 contribution `architecture-contribution-329-developer-free-trellis-v1` + inherited immutable `.48` authority；current graph 23 Skills / 97 exits / 78 commands；framework source `castbox/Trellis@a2003296b4c4ce46c50d72ead3b2ec9c317f69fc` / CLI `0.6.17` / `pnpm@10.32.1` / extension `0.6.16-guru.41`；released `v0.6.16-guru.1` 不包含 #329 candidate；#305 target authority 不变（精确 revision 由包含本 authority 的 Git commit/tree identity 绑定；远端动作与 Gate 状态不进入本 projection）
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`
 - required concern set：`guru-trellis-architecture-change-concerns-v1`

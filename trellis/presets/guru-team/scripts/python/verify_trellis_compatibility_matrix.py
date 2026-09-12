@@ -26,6 +26,11 @@ from typing import Any, Iterable, Mapping, Sequence
 from urllib.parse import urlsplit
 
 
+SCRIPT_ROOT = Path(__file__).resolve().parent
+if str(SCRIPT_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_ROOT))
+
+
 SCHEMA_VERSION = "1.0"
 SCENARIOS = ("clean", "existing")
 SHARED_PLATFORM = "shared"
@@ -45,7 +50,15 @@ VERSION_RE = re.compile(r"(?<![0-9])([0-9]+\.[0-9]+\.[0-9]+)(?![0-9])")
 SIDECAR_SUFFIXES = (".new", ".bak")
 DEFAULT_BEFORE_TAG = "v0.6.5-guru.10"
 DEFAULT_BEFORE_CLI = "0.6.5"
-DEFAULT_TARGET_CLI = "0.6.16"
+DEFAULT_TARGET_CLI = "0.6.17"
+EXCLUDED_BUILT_TEMPLATE_NAMES = {
+    "__pycache__",
+    ".DS_Store",
+    "init_developer.py",
+    "get_developer.py",
+    "add_session.py",
+}
+EXCLUDED_BUILT_TEMPLATE_SUFFIXES = {".pyc", ".pyo", ".ts"}
 FAILURE_TAIL_LIMIT = 2000
 FAILURE_STAGES = {"pre-matrix", "matrix-cell", "post-matrix"}
 DEFAULT_COMMAND_TIMEOUT_SECONDS = 600.0
@@ -855,6 +868,7 @@ def compare_capabilities(before: Mapping[str, Any], after: Mapping[str, Any]) ->
         "after": {field: after_extension.get(field) for field in version_fields},
     }
     differences: list[dict[str, Any]] = []
+    additive_differences: list[dict[str, Any]] = []
     before_identity = {
         key: value for key, value in before_extension.items() if key not in version_fields
     }
@@ -867,15 +881,37 @@ def compare_capabilities(before: Mapping[str, Any], after: Mapping[str, Any]) ->
         "consistent": before_identity == after_identity,
     }
     for group in ("workflow", "task_data", "docs_authority"):
-        if before.get(group) != after.get(group):
-            differences.append(
-                {"group": group, "before": before.get(group), "after": after.get(group)}
-            )
+        before_group = _require_dict(before.get(group), f"before {group}")
+        after_group = _require_dict(after.get(group), f"after {group}")
+        missing: dict[str, Any] = {}
+        added: dict[str, Any] = {}
+        for field in sorted(set(before_group) | set(after_group)):
+            before_value = before_group.get(field)
+            after_value = after_group.get(field)
+            if isinstance(before_value, list) and isinstance(after_value, list):
+                missing_values = _sorted_strings(
+                    str(value) for value in set(before_value) - set(after_value)
+                )
+                added_values = _sorted_strings(
+                    str(value) for value in set(after_value) - set(before_value)
+                )
+                if missing_values:
+                    missing[field] = missing_values
+                if added_values:
+                    added[field] = added_values
+            elif before_value != after_value:
+                missing[field] = before_value
+                added[field] = after_value
+        if missing:
+            differences.append({"group": group, "missing": missing})
+        if added:
+            additive_differences.append({"group": group, "added": added})
     result = {
         "schema_version": SCHEMA_VERSION,
         "version_binding": version_binding,
         "extension_identity": extension_identity,
         "blocking_differences": differences,
+        "additive_differences": additive_differences,
         "capabilities_preserved": not differences,
     }
     result["comparison_sha256"] = _digest(result)
@@ -1276,7 +1312,13 @@ def _validate_source_build(
     templates = package / "src/templates"
     tracked = _run(("git", "ls-files", "-z", templates.relative_to(source).as_posix()),
                    cwd=source, capture=True).split("\0")
-    assets = [source / name for name in tracked if name and Path(name).suffix != ".ts"]
+    assets = [
+        source / name
+        for name in tracked
+        if name
+        and Path(name).name not in EXCLUDED_BUILT_TEMPLATE_NAMES
+        and Path(name).suffix not in EXCLUDED_BUILT_TEMPLATE_SUFFIXES
+    ]
     if not assets:
         raise MatrixError("fork source template inventory is empty")
     for path in assets:
@@ -1488,6 +1530,60 @@ def _apply_preset(
     }
 
 
+def _prepare_clean_candidate_source(source_root: Path, destination: Path) -> Path:
+    source_root = source_root.resolve()
+    destination.mkdir()
+
+    def ignore(directory: str, names: list[str]) -> set[str]:
+        relative = Path(directory).resolve().relative_to(source_root)
+        ignored = {
+            name
+            for name in names
+            if name == "__pycache__" or name.endswith((".pyc", ".pyo"))
+        }
+        if relative == Path(".trellis"):
+            ignored.update(
+                name
+                for name in names
+                if name in {".developer", ".runtime", "agent-traces", "tasks", "workspace"}
+                or name.startswith(".backup-")
+            )
+        return ignored
+
+    for source in sorted(source_root.iterdir(), key=lambda item: item.name):
+        if source.name == ".git":
+            continue
+        target = destination / source.name
+        if source.is_dir():
+            shutil.copytree(source, target, ignore=ignore)
+        else:
+            shutil.copy2(source, target)
+    _run(("git", "init", "-q", "-b", "main", str(destination)))
+    _run(("git", "config", "user.name", "Guru Team Matrix"), cwd=destination)
+    _run(
+        ("git", "config", "user.email", "guru-team-matrix@example.invalid"),
+        cwd=destination,
+    )
+    _run(
+        (
+            "git",
+            "remote",
+            "add",
+            "origin",
+            "https://github.com/castbox/guru-trellis.git",
+        ),
+        cwd=destination,
+    )
+    _run(("git", "add", "."), cwd=destination)
+    _run(
+        ("git", "commit", "-q", "-m", "chore: stage clean matrix candidate"),
+        cwd=destination,
+    )
+    if _git(destination, "status", "--porcelain"):
+        raise MatrixError("clean candidate source preparation left a dirty tree")
+    return destination
+
+
 def _workflow_source_requires_local_sample(repo_root: Path, workflow_source: str) -> bool:
     if workflow_source not in {
         "gh:castbox/guru-trellis/trellis",
@@ -1506,6 +1602,10 @@ def _workflow_source_requires_local_sample(repo_root: Path, workflow_source: str
     return current_branch != "main" or bool(dirty)
 
 
+def _dry_run_requires_retirement_migration(output: str) -> bool:
+    return "MIGRATION REQUIRED" in output or "Retirement conflicts:" in output
+
+
 def _install_workflow(
     target: Path,
     binary: Sequence[str],
@@ -1514,6 +1614,7 @@ def _install_workflow(
     workflow_source: str,
     repo_root: Path,
     allow_local_sample: bool,
+    cli_version: str,
     log: Path,
 ) -> bool:
     local_sample = _workflow_source_requires_local_sample(repo_root, workflow_source)
@@ -1523,16 +1624,24 @@ def _install_workflow(
             "push an exact ref or set TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 and "
             "report the unpublished local-sample boundary"
         )
+    identity_arguments = (
+        ("--creator", "matrix-owner", "--assignee", "matrix-owner")
+        if cli_version == "0.6.17"
+        else ("--user", "matrix-owner")
+    )
+    workflow_arguments = (
+        ("--workflow", "native")
+        if local_sample
+        else ("--workflow", "guru-team", "--workflow-source", workflow_source)
+    )
     _run(
         (
             *binary,
             "init",
             "-y",
             PLATFORM_INIT_FLAGS[platform],
-            "--workflow",
-            "guru-team",
-            "--workflow-source",
-            workflow_source,
+            *identity_arguments,
+            *workflow_arguments,
         ),
         cwd=target,
         env=env,
@@ -1575,20 +1684,26 @@ def _preview_and_switch_workflow(
     ):
         raise MatrixError("current workflow is not the expected managed before-candidate")
     managed_before = workflow.read_bytes()
-    _run(
-        (
-            *binary,
-            "workflow",
-            "--marketplace",
-            workflow_source,
-            "--template",
-            "guru-team",
-            "--create-new",
-        ),
-        cwd=target,
-        env=env,
-        log=work_root / "workflow-preview.log",
-    )
+    if local_sample:
+        shutil.copyfile(
+            repo_root / "trellis/workflows/guru-team/workflow.md",
+            sidecar,
+        )
+    else:
+        _run(
+            (
+                *binary,
+                "workflow",
+                "--marketplace",
+                workflow_source,
+                "--template",
+                "guru-team",
+                "--create-new",
+            ),
+            cwd=target,
+            env=env,
+            log=work_root / "workflow-preview.log",
+        )
     if not sidecar.is_file() or sidecar.is_symlink():
         raise MatrixError("workflow preview did not create .trellis/workflow.md.new")
     preview = sidecar.read_bytes()
@@ -1605,32 +1720,27 @@ def _preview_and_switch_workflow(
             raise MatrixError("workflow preview does not match the expected marketplace candidate")
     elif not any(_workflow_markers(sidecar).values()):
         raise MatrixError("workflow preview has no Guru Team workflow markers")
-    sidecar.unlink()
-    _run(
-        (
-            *binary,
-            "workflow",
-            "--marketplace",
-            workflow_source,
-            "--template",
-            "guru-team",
-            "--force",
-        ),
-        cwd=target,
-        env=env,
-        log=work_root / "workflow-switch.log",
-    )
+    if local_sample:
+        shutil.copyfile(sidecar, workflow)
+        sidecar.unlink()
+    else:
+        sidecar.unlink()
+        _run(
+            (
+                *binary,
+                "workflow",
+                "--marketplace",
+                workflow_source,
+                "--template",
+                "guru-team",
+                "--force",
+            ),
+            cwd=target,
+            env=env,
+            log=work_root / "workflow-switch.log",
+        )
     if workflow.read_bytes() != preview:
         raise MatrixError("active workflow does not match the validated preview candidate")
-    if local_sample:
-        shutil.copyfile(
-            repo_root / "trellis/workflows/guru-team/workflow.md",
-            workflow,
-        )
-        if workflow.read_bytes() != (
-            repo_root / "trellis/workflows/guru-team/workflow.md"
-        ).read_bytes():
-            raise MatrixError("local candidate workflow reapply did not converge")
     if sidecar.exists() or backup.exists():
         raise MatrixError("workflow switch left an unresolved .new/.bak sidecar")
 
@@ -1997,14 +2107,24 @@ def _run_installed_smokes(
                 "status": "passed",
             }
         )
+    clean_source = _prepare_clean_candidate_source(
+        source_root, work_root / "clean-candidate-source"
+    )
+    _apply_preset(
+        clean_source,
+        target,
+        platform,
+        work_root / "preset-clean-provenance.log",
+    )
     smoke_results = []
+    workspace_outcomes: list[str] = []
     installed_python = target / ".trellis/guru-team/runtime/resolve-python.sh"
     installed_runtime = target / ".trellis/guru-team/runtime"
-    for name, args in (
+    smoke_specs = [
         (
             "closeout",
             (
-                source_root
+                clean_source
                 / "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
                 "--repo",
                 target,
@@ -2028,20 +2148,26 @@ def _run_installed_smokes(
                 / "trellis/presets/guru-team/tests/semantic-retrieval-grading.json",
             ),
         ),
-        (
-            "task_workspace",
+    ]
+    for legacy_profile in ("absent", "present-a", "present-b"):
+        smoke_specs.append(
             (
-                source_root
-                / "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py",
-                "--installed-repo",
-                target,
-                "--work-root",
-                work_root / "task-workspace",
-                "--checkpoint",
-                "matrix-cell",
+                "task_workspace_" + legacy_profile.replace("-", "_"),
+                (
+                    source_root
+                    / "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py",
+                    "--installed-repo",
+                    target,
+                    "--work-root",
+                    work_root / f"task-workspace-{legacy_profile}",
+                    "--checkpoint",
+                    "matrix-cell",
+                    "--legacy-profile",
+                    legacy_profile,
+                ),
             ),
-        ),
-    ):
+        )
+    for name, args in smoke_specs:
         argv = (
             str(installed_python),
             str(target),
@@ -2052,10 +2178,20 @@ def _run_installed_smokes(
         payload = _require_dict(json.loads(output), f"{name} smoke")
         if payload.get("status") != "ok":
             raise MatrixError(f"{name} installed smoke did not pass")
+        if name.startswith("task_workspace_"):
+            if payload.get("legacy_preserved") is not True:
+                raise MatrixError(f"{name} did not preserve legacy state")
+            outcome = payload.get("lifecycle_outcome_sha256")
+            if not isinstance(outcome, str) or not SHA256_RE.fullmatch(outcome):
+                raise MatrixError(f"{name} returned no lifecycle outcome identity")
+            workspace_outcomes.append(outcome)
         smoke_results.append(name)
+    if len(set(workspace_outcomes)) != 1:
+        raise MatrixError("legacy absent/present task workspace outcomes differ")
     return {
         "installed_profiles": installed_profile_evals,
         "runtime_smokes": smoke_results,
+        "legacy_workspace_outcome_sha256": workspace_outcomes[0],
     }
 
 
@@ -2163,6 +2299,7 @@ def _run_cell(
         initial_workflow_source,
         repo_root if scenario == "clean" else source_root,
         allow_local_sample if scenario == "clean" else False,
+        initial_cli,
         cell_root / "trellis-init.log",
     )
     before_docs = _docs_authority_snapshot(target)
@@ -2195,9 +2332,17 @@ def _run_cell(
             capture=True,
             log=cell_root / "trellis-update-dry-run.log",
         )
-        if "MIGRATION REQUIRED" in dry_run:
+        if _dry_run_requires_retirement_migration(dry_run):
             _run(
-                (*binary, "update", "--migrate", "--skip-all"),
+                (
+                    *binary,
+                    "update",
+                    "--force",
+                    "--migrate",
+                    "--assignee",
+                    "matrix-owner",
+                    "--skip-all",
+                ),
                 cwd=target,
                 env=env,
                 log=cell_root / "trellis-update.log",
@@ -2297,6 +2442,7 @@ def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, A
     _init_git_repo(target)
     sample = _install_workflow(target, command, env, args.platform,
                                args.workflow_source, root, args.allow_local_sample,
+                               source["cli_version"],
                                work / "init.log")
     before_docs = _docs_authority_snapshot(target)
     initial = _apply_preset(root, target, args.platform, work / "preset-initial.log")
@@ -2409,7 +2555,7 @@ def _run_historical_matrix(
                 str(installed_runtime),
                 str(parallel_helper),
                 "--installed-repo",
-                str(representative),
+                str(repo_root),
                 "--work-root",
                 str(parallel_root),
             ),

@@ -47,6 +47,18 @@ current delivery mapping 与 pre-promotion 独立完整 Branch Review。它支�
 review boundary，不证明 promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、merge、
 exact-candidate Release Gate、tag、tag-pinned smoke、GitHub Release、business smoke 或 Issue closure。
 
-当前 Architecture knowledge successor 为 `.48`；`.47` 是 immutable superseded predecessor。
-promotion-created combined diff 仍须 fresh Phase 2、task commit 与完整 Branch Review。继承的历史发布
-证据保持独立，不由本 promotion 更新 tag、GitHub Release 或 smoke 结果。
+`EVD-024` 建立的 `.48` 现为 immutable superseded authority；其 #392 promotion 与 release evidence
+边界保持历史事实，不由 #329 改写。
+
+`EVD-025`：#329 reviewed candidate inputs 包含 live Issue/task planning、
+`docs/architecture/contributions/329-adopt-developer-free-trellis.md` identity
+`architecture-contribution-329-developer-free-trellis-v1`、五文件 RDT contribution、fixed Fork source lock、
+official `0.6.17` generated adoption、focused consumer migration、legacy preservation、three-platform installed
+lifecycle、clean committed candidate provenance，以及 pre-promotion independent full Branch Review。它支撑
+`ARCH-CUR-026`、`ARCH-INT-016` 与 expected `.48` -> `.49` serialized promotion；只证明 reviewed
+promotion inputs，不证明 promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、push、
+PR、merge、tag、Release、remote marketplace publication、business production 或 Issue closure。
+
+当前 Architecture knowledge successor 为 `.49`；`.48` 是 immutable superseded predecessor。
+released `v0.6.16-guru.1` 不包含 #329 candidate。promotion-created combined diff 仍须 fresh Phase 2、
+task commit 与完整 Branch Review，后续远端动作由各 live owner 独立验证。

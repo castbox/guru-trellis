@@ -34,20 +34,15 @@ officially supported explicit `--template <name>` path when a specific template
 is intended. If docs mention interactive template selection, describe it as an
 opt-in user choice, not as the team default or automated validation path.
 
-Stable install and upgrade docs must list the complete release-facing mapping:
-repo release tag, extension revision, and target official Trellis CLI. The
-current target mapping is annotated tag `v0.6.16-guru.1`, extension revision
-`0.6.16-guru.41`, and target CLI `0.6.16`. Issue #392 creates the tag only after
-the preparation PR merges and the exact remote candidate passes the pre-tag gate.
-Until then, docs must state that its tag object, peeled commit, GitHub Release,
-tag-pinned install, and post-publish smoke are unverified; they must not guess
-or hard-code a future candidate commit. After publication, the peeled commit
-must equal that candidate and is recorded through immutable Git facts, GitHub
-Release notes, and release evidence. Repo release
-tags and extension revisions are independent version axes; docs must bind the
-exact pair instead of assuming their Guru suffixes match. Workflow marketplace
-and preset sources must use the same immutable release tag. Unpinned or branch sources remain mutable
-latest/canary inputs and must not be presented as stable release provenance.
+Stable install and upgrade docs must keep four version axes explicit. The latest
+released Guru repo tag is `v0.6.16-guru.1`; the current extension revision is
+`0.6.16-guru.41`; the current main/source framework lock is
+`castbox/Trellis@a2003296b4c4ce46c50d72ead3b2ec9c317f69fc`, CLI `0.6.17`, package
+manager `pnpm@10.32.1`. The released tag does not prove or contain the current
+framework-source adoption. Stable workflow marketplace and preset sources for
+one installation use the same immutable release tag; an unreleased reviewed
+checkout is identified as such and never described as tag-pinned release
+provenance. Unpinned or branch sources remain mutable latest/canary inputs.
 
 Prompts in `README.md` are meant to be copied into an AI coding session in a
 target business repository. They should tell the AI to:
@@ -161,7 +156,7 @@ Public Intake docs must name active semantic `guru-create-task-workspace` as
 the sole consumer of `guru-review-change-request:ready` and the sole
 issue/branch/worktree/task mutation owner. All three README files list its
 ignored-runtime schemas `guru-task-workspace-plan-2.0` and
-`guru-task-workspace-result-2.0`, runtime commands
+`guru-task-workspace-result-3.0`, runtime commands
 `record-task-workspace-plan`, `create-task-workspace`, and
 `check-task-workspace-result`, and exits `created`, `refresh_review`, and
 `blocked` with unique consumers. Refusal stops before recording and returns no
@@ -196,18 +191,22 @@ fetch, fast-forward, or update refs. A remote advance routes to
 the sole authoritative `guru-sync-base`; unchanged identity continues normally.
 
 Public docs state that the workspace executor calls official
-`common.task_store.cmd_create` through an isolated adapter, passes the reviewed
-assignee explicitly, and disables the developer accessor only for that handler
-invocation. They must state that `task.json.creator` and `task.json.assignee`
-both equal the reviewed login and that an existing official identity file keeps
-its exact bytes.
+`common.task_store.cmd_create` through an isolated adapter and passes the
+reviewed creator and assignee explicitly. They must state that
+`task.json.creator` and `task.json.assignee` both equal the reviewed login,
+missing ownership fails before writes, and historical identity files keep their
+exact bytes without becoming owner input.
 
-Guru install commands and prompts do not require a developer name,
-`TRELLIS_USER`, `-u`, or `--user`. Public docs accurately state that official
-Trellis may independently create/use `.trellis/.developer` and
-`.trellis/workspace/**`, while Guru preset apply/update/reapply and the task
-workspace executor neither depend on nor create/restore those paths and never
-delete existing official data.
+Guru install commands and prompts do not initialize or read a developer identity
+and do not use `TRELLIS_DEVELOPER`, `TRELLIS_USER`, `-u`, or `--user`. When init
+creates a bootstrap task, docs require explicit `--creator` and `--assignee`;
+task filtering uses `task.py list --assignee <name>` rather than `--mine`.
+Trellis `0.6.17` retains retired command stubs and preserves historical
+`.trellis/.developer`, `.trellis/workspace/**`, and `.trellis/agent-traces/**`
+bytes, but normal runtime does not read, index, copy, migrate, restore, or delete
+those roots. Guru task workspace/mapping always means the isolated task
+checkout/worktree plus ignored runtime mapping, never the retired journal
+workspace namespace.
 
 Public docs that describe Phase 0 must name `guru-sync-base` as the active
 selected-base closed-loop owner, list stable exits `synced` / `skipped` /

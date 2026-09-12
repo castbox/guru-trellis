@@ -4,7 +4,7 @@
 Task Management Script.
 
 Usage:
-    python3 task.py create "<title>" --description "<desc>" [--slug <name>] [--assignee <dev>] [--priority P0|P1|P2|P3] [--parent <dir>] [--package <pkg>] [--no-start] [--force]
+    python3 task.py create --creator alice --assignee bob "<title>" --description "<desc>" [--slug <name>] --creator <name> --assignee <name> [--priority P0|P1|P2|P3] [--parent <dir>] [--package <pkg>] [--no-start] [--force]
     python3 task.py add-context <dir> <file> <path> [reason] # Add jsonl entry
     python3 task.py validate <dir>              # Validate jsonl files
     python3 task.py list-context <dir>          # List jsonl entries
@@ -32,12 +32,10 @@ from pathlib import Path
 
 from common.log import Colors, colored
 from common.paths import (
-    DEVELOPER_HINT,
     DIR_WORKFLOW,
     DIR_TASKS,
     FILE_TASK_JSON,
     get_repo_root,
-    get_developer,
     get_tasks_dir,
     get_current_task,
 )
@@ -48,6 +46,7 @@ from common.active_task import (
     set_active_task,
 )
 from common.git import current_branch_name
+from common.history_paths import require_active_path
 from common.io import (
     describe_json_read_failure,
     read_json_checked,
@@ -97,6 +96,7 @@ def _record_start_state(
     file it just read, so no failure may be silent: without a message the
     absent status line looks like the task simply was not in planning.
     """
+    require_active_path(task_json_path, repo_root)
     data, reason = read_json_checked(task_json_path)
     if data is None:
         problem, hint = describe_json_read_failure(task_json_path, reason)
@@ -200,7 +200,7 @@ def cmd_start(args: argparse.Namespace) -> int:
         empty_manifests = [
             name
             for name in ("implement.jsonl", "check.jsonl")
-            if curated_entry_count(full_path / name) == 0
+            if curated_entry_count(full_path / name, repo_root) == 0
         ]
         if empty_manifests:
             print(colored(
@@ -303,6 +303,7 @@ def cmd_current(args: argparse.Namespace) -> int:
         read_error = None
         if active.task_path:
             task_json_path = repo_root / active.task_path / FILE_TASK_JSON
+            require_active_path(task_json_path, repo_root)
             data, reason = read_json_checked(task_json_path)
             if data is None:
                 # Without this, a corrupt task.json emits null for every field
@@ -373,30 +374,25 @@ def _display_status(t, all_statuses: dict) -> str:
 
 def cmd_list(args: argparse.Namespace) -> int:
     """List active tasks."""
+    if args.mine:
+        print("Error: --mine/-m is retired; use --assignee <name>.", file=sys.stderr)
+        return 2
     repo_root = get_repo_root()
     tasks_dir = get_tasks_dir(repo_root)
     current_task = get_current_task(repo_root)
-    developer = get_developer(repo_root)
-    filter_mine = args.mine
+    filter_assignee = getattr(args, "assignee", None)
     filter_status = args.status
     as_json = getattr(args, "json", False)
 
     # Single pass: collect all tasks via shared iterator
-    all_tasks = {t.dir_name: t for t in iter_active_tasks(tasks_dir)}
+    all_tasks = {t.dir_name: t for t in iter_active_tasks(tasks_dir, repo_root)}
     all_statuses = {name: t.status for name, t in all_tasks.items()}
 
     if as_json:
-        if filter_mine and not developer:
-            print(
-                json.dumps({"error": "No developer set", "hint": DEVELOPER_HINT}),
-                file=sys.stderr,
-            )
-            return 1
-
         items = []
         for dir_name in sorted(all_tasks.keys()):
             t = all_tasks[dir_name]
-            if filter_mine and (t.assignee or "-") != developer:
+            if filter_assignee is not None and t.assignee != filter_assignee:
                 continue
             if filter_status and t.status != filter_status:
                 continue
@@ -415,14 +411,14 @@ def cmd_list(args: argparse.Namespace) -> int:
         print(json.dumps({"tasks": items}, ensure_ascii=False))
         return 0
 
-    if filter_mine:
-        if not developer:
-            print(colored("Error: No developer set. Run init_developer.py first", Colors.RED), file=sys.stderr)
-            print(DEVELOPER_HINT, file=sys.stderr)
-            return 1
-        print(colored(f"My tasks (assignee: {developer}):", Colors.BLUE))
-    else:
-        print(colored("All active tasks:", Colors.BLUE))
+    # Filter before tree rendering so a matching child of an excluded parent
+    # remains visible as a root, just as it does in JSON output.
+    all_tasks = {
+        name: task for name, task in all_tasks.items()
+        if (filter_assignee is None or task.assignee == filter_assignee)
+        and (not filter_status or task.status == filter_status)
+    }
+    print(colored("Project tasks:", Colors.BLUE))
     print()
 
     # Display tasks hierarchically
@@ -432,8 +428,8 @@ def cmd_list(args: argparse.Namespace) -> int:
         nonlocal count
         t = all_tasks[dir_name]
 
-        # Apply --mine filter
-        if filter_mine and (t.assignee or "-") != developer:
+        # Apply explicit assignee filter
+        if filter_assignee is not None and t.assignee != filter_assignee:
             return
 
         # Apply --status filter
@@ -454,7 +450,7 @@ def cmd_list(args: argparse.Namespace) -> int:
 
         prefix = "  " * indent + "  - "
 
-        if filter_mine:
+        if filter_assignee is not None:
             print(f"{prefix}{dir_name}/ ({status_label}){pkg_tag}{progress}{marker}")
         else:
             print(f"{prefix}{dir_name}/ ({status_label}){pkg_tag}{progress} [{colored(t.assignee or '-', Colors.CYAN)}]{marker}")
@@ -474,8 +470,8 @@ def cmd_list(args: argparse.Namespace) -> int:
             _print_task(dir_name)
 
     if count == 0:
-        if filter_mine:
-            print("  (no tasks assigned to you)")
+        if filter_assignee is not None:
+            print("  (no matching tasks)")
         else:
             print("  (no active tasks)")
 
@@ -527,10 +523,10 @@ def show_usage() -> None:
     print("""Task Management Script
 
 Usage:
-  python3 task.py create <title> --description <desc>  Create new task directory (both required, non-empty)
-  python3 task.py create <title> --description <desc> --package <pkg>   Create task for a specific package
-  python3 task.py create <title> --description <desc> --parent <dir>    Create task as child of parent
-  python3 task.py create <title> --description <desc> --no-start        Create without making it active in this session
+  python3 task.py create --creator <name> --assignee <name> <title> --description <desc>  Create new task directory (title, description and ownership required)
+  python3 task.py create --creator <name> --assignee <name> <title> --description <desc> --package <pkg>   Create task for a specific package
+  python3 task.py create --creator <name> --assignee <name> <title> --description <desc> --parent <dir>    Create task as child of parent
+  python3 task.py create --creator <name> --assignee <name> <title> --description <desc> --no-start        Create without making it active in this session
   python3 task.py add-context <dir> <jsonl> <path> [reason]  Add entry to jsonl
   python3 task.py validate <dir>                     Validate jsonl files
   python3 task.py list-context <dir>                 List jsonl entries
@@ -545,7 +541,7 @@ Usage:
   python3 task.py archive <task-dir>                 Archive completed task
   python3 task.py add-subtask <parent> <child>       Link child task to parent
   python3 task.py remove-subtask <parent> <child>    Unlink child from parent
-  python3 task.py list [--mine] [--status <status>] [--json]  List tasks
+  python3 task.py list [--assignee <name>] [--status <status>] [--json]  List tasks
   python3 task.py list-archive [YYYY-MM]             List archived tasks
 
 Monorepo options:
@@ -565,15 +561,16 @@ Archive options:
                              deleted is only a warning and needs no flag.
 
 List options:
-  --mine, -m           Show only tasks assigned to current developer
+  --assignee, -a <name> Filter by exact assignee
+  --mine, -m           Retired; use --assignee <name>
   --status, -s <s>     Filter by status (planning, in_progress, review, completed)
   --json               Output machine-readable JSON (also available on `current`)
 
 Examples:
-  python3 task.py create "Add login feature" --description "Email + password sign-in" --slug add-login
-  python3 task.py create "Add login feature" --description "Email + password sign-in" --slug add-login --package cli
-  python3 task.py create "Add login feature" --description "Email + password sign-in" --meta linear=ENG-123 --meta epic=auth
-  python3 task.py create "Child task" --description "Session cookie handling" --slug child --parent .trellis/tasks/01-21-parent
+  python3 task.py create --creator alice --assignee bob "Add login feature" --description "Email + password sign-in" --slug add-login
+  python3 task.py create --creator alice --assignee bob "Add login feature" --description "Email + password sign-in" --slug add-login --package cli
+  python3 task.py create --creator alice --assignee bob "Add login feature" --description "Email + password sign-in" --meta linear=ENG-123 --meta epic=auth
+  python3 task.py create --creator alice --assignee bob "Child task" --description "Session cookie handling" --slug child --parent .trellis/tasks/01-21-parent
   python3 task.py add-context <dir> implement .trellis/spec/cli/backend/auth.md "Auth guidelines"
   python3 task.py set-branch <dir> task/add-login
   python3 task.py start .trellis/tasks/01-21-add-login
@@ -586,8 +583,8 @@ Examples:
   python3 task.py add-subtask parent-task child-task  # Link existing tasks
   python3 task.py remove-subtask parent-task child-task
   python3 task.py list                               # List all active tasks
-  python3 task.py list --mine                        # List my tasks only
-  python3 task.py list --mine --status in_progress   # List my in-progress tasks
+  python3 task.py list --assignee alice                        # List tasks assigned to alice
+  python3 task.py list --assignee alice --status in_progress   # List alice's in-progress tasks
 """)
 
 
@@ -637,7 +634,8 @@ def main() -> int:
     p_create = subparsers.add_parser("create", help="Create new task")
     p_create.add_argument("title", help="Task title (required, non-empty)")
     p_create.add_argument("--slug", "-s", help="Task slug without the MM-DD date prefix")
-    p_create.add_argument("--assignee", "-a", help="Assignee developer")
+    p_create.add_argument("--creator", help="Explicit task creator")
+    p_create.add_argument("--assignee", "-a", help="Explicit task assignee")
     p_create.add_argument("--priority", "-p", default="P2", help="Priority (P0-P3)")
     p_create.add_argument(
         "--description",
@@ -746,7 +744,8 @@ def main() -> int:
 
     # list
     p_list = subparsers.add_parser("list", help="List tasks")
-    p_list.add_argument("--mine", "-m", action="store_true", help="My tasks only")
+    p_list.add_argument("--mine", "-m", action="store_true", help="Retired; use --assignee")
+    p_list.add_argument("--assignee", "-a", help="Filter by exact assignee")
     p_list.add_argument("--status", "-s", help="Filter by status")
     p_list.add_argument("--json", action="store_true", help="Output machine-readable JSON")
 
@@ -791,7 +790,13 @@ def main() -> int:
     }
 
     if args.command in commands:
-        return commands[args.command](args)
+        from common.history_paths import RetiredDataPathError
+
+        try:
+            return commands[args.command](args)
+        except RetiredDataPathError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
     else:
         show_usage()
         return 1

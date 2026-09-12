@@ -20,6 +20,7 @@ from .paths import (
     get_current_task,
     get_repo_root,
 )
+from .history_paths import is_active_path
 from .tasks import load_task
 
 
@@ -27,17 +28,19 @@ from .tasks import load_task
 # Internal Helpers
 # =============================================================================
 
-def _scan_spec_layers(spec_dir: Path, package: str | None = None) -> list[str]:
+def _scan_spec_layers(spec_dir: Path, repo_root: Path, package: str | None = None) -> list[str]:
     """Scan spec directory for available layers (subdirectories).
 
     For monorepo: scans spec/<package>/
     For single-repo: scans spec/
     """
     target = spec_dir / package if package else spec_dir
-    if not target.is_dir():
+    if not is_active_path(target, repo_root) or not target.is_dir():
         return []
     return sorted(
-        d.name for d in target.iterdir() if d.is_dir() and d.name != "guides"
+        d.name for d in target.iterdir()
+        if d.name != "guides" and is_active_path(d, repo_root) and d.is_dir()
+        and is_active_path(d / "index.md", repo_root)
     )
 
 
@@ -46,7 +49,7 @@ def _get_active_task_package(repo_root: Path) -> str | None:
     current = get_current_task(repo_root)
     if not current:
         return None
-    ct = load_task(repo_root / current)
+    ct = load_task(repo_root / current, repo_root)
     return ct.package if ct and ct.package else None
 
 
@@ -107,7 +110,7 @@ def get_packages_info(repo_root: Path) -> list[dict]:
         pkg_path = pkg_config.get("path", pkg_name) if isinstance(pkg_config, dict) else str(pkg_config)
         pkg_type = pkg_config.get("type", "local") if isinstance(pkg_config, dict) else "local"
         pkg_git = pkg_config.get("git", False) if isinstance(pkg_config, dict) else False
-        layers = _scan_spec_layers(spec_dir, pkg_name)
+        layers = _scan_spec_layers(spec_dir, repo_root, pkg_name)
 
         result.append({
             "name": pkg_name,
@@ -132,7 +135,7 @@ def get_packages_section(repo_root: Path) -> str:
 
     if not pkg_info:
         lines.append("(single-repo mode)")
-        layers = _scan_spec_layers(spec_dir)
+        layers = _scan_spec_layers(spec_dir, repo_root)
         if layers:
             lines.append(f"Spec layers: {', '.join(layers)}")
         return "\n".join(lines)
@@ -166,7 +169,7 @@ def get_context_packages_text(repo_root: Path | None = None) -> str:
         spec_dir = repo_root / DIR_WORKFLOW / DIR_SPEC
         lines.append("Single-repo project (no packages configured)")
         lines.append("")
-        layers = _scan_spec_layers(spec_dir)
+        layers = _scan_spec_layers(spec_dir, repo_root)
         if layers:
             lines.append(f"Spec layers: {', '.join(layers)}")
         return "\n".join(lines)
@@ -202,7 +205,7 @@ def get_context_packages_text(repo_root: Path | None = None) -> str:
 
     # Also show shared guides
     guides_dir = repo_root / DIR_WORKFLOW / DIR_SPEC / "guides"
-    if guides_dir.is_dir():
+    if is_active_path(guides_dir / "index.md", repo_root) and guides_dir.is_dir():
         lines.append("### Shared Guides (always included)")
         lines.append("Path: .trellis/spec/guides/index.md")
         lines.append("")
@@ -219,7 +222,7 @@ def get_context_packages_json(repo_root: Path | None = None) -> dict:
 
     if not pkg_info:
         spec_dir = repo_root / DIR_WORKFLOW / DIR_SPEC
-        layers = _scan_spec_layers(spec_dir)
+        layers = _scan_spec_layers(spec_dir, repo_root)
         return {
             "mode": "single-repo",
             "specLayers": layers,

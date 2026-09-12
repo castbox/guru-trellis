@@ -8,7 +8,7 @@ these active owners by stable Skill id:
 This is the exclusive finish entry for a Guru task. The upstream-owned
 `trellis-finish-work` Skill is not applicable to Guru tasks and must not be
 loaded or invoked. Before Finalizer, do not call `task.py archive`,
-`add_session.py`, or any archive/journal executor.
+or any task archival executor.
 
 All GitHub platform operations use authenticated, explicitly repo-bound
 `gh`/`gh api` only. Do not use or fall back to App, MCP, connector, or browser

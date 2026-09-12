@@ -45,6 +45,13 @@
   Stage 2 只接受 fresh `origin/main` exact commit/tree；完整 Release Gate、annotated tag、tag-pinned smoke、
   GitHub Release、Issue close 与 cleanup 各自由其 live owner 独立处理。
 
+- `ARCH-INT-016`：framework generation owner 为 fixed Fork `a2003296...` 的 official CLI；Guru canonical
+  owner 直接迁移 workflow/Skill/runtime/installer/spec/platform consumers，并经 preset 投影到 dogfood 与
+  installed copies。task resolution 只消费 task metadata、Git common-dir/branch/worktree、ignored mappings
+  与 issue ledger；creator/assignee 只来自 explicit metadata 或 repository-access-preflight 后的 authenticated
+  GitHub caller。legacy identity/workspace 数据只由 preservation validator 读取 bytes/mode snapshot，
+  不进入 owner、selection、recovery 或 migration authority。
+
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。
 - `skill_api` 与 interface/schema/command projection、distribution、managed/installed file

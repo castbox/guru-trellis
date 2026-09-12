@@ -143,7 +143,23 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             self.assertEqual(preimage["bytes"], preflight["managed_bytes"])
             self.assertFalse((staging_repo / "build-output").exists())
             self.assertFalse((staging_repo / "untracked-large.bin").exists())
-            self.assertEqual(preimage["file_count"], len(inventory))
+            regular_files = {
+                relative
+                for relative in inventory
+                if (self.repo / relative).is_file()
+                and not (self.repo / relative).is_symlink()
+            }
+            missing = {
+                relative
+                for relative in inventory
+                if not (self.repo / relative).exists()
+                and not (self.repo / relative).is_symlink()
+            }
+            self.assertEqual(preimage["file_count"], len(regular_files))
+            self.assertEqual(
+                missing,
+                set(preset.RETIRED_TRELLIS_PLATFORM_ASSET_HASHES),
+            )
 
     def test_space_preflight_counts_target_projections_and_fails_before_materialization(self) -> None:
         source_projections = preset.managed_source_projections(

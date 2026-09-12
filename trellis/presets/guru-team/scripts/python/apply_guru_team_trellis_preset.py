@@ -144,13 +144,11 @@ ALWAYS_OVERLAY_PREFIXES = (Path(".agents"), Path(".trellis/agents"))
 CODEX_DISPATCH_HEADER = """#-------------------------------------------------------------------------------
 # Codex (dispatch behavior)
 #-------------------------------------------------------------------------------
-# Codex-only knob; other platforms ignore it. Default ("sub-agent") lets the
-# main Codex session dispatch trellis-implement / trellis-check /
-# trellis-research. Codex sub-agents run with `fork_turns="none"` isolation, so
-# the main session must include `Active task: <task path>` in dispatch prompts
-# and sub-agents fall back to `task.py current --source` if needed. Set
-# "inline" only as an explicit downgrade/debug mode where the main Codex agent
-# edits and checks directly.
+# Codex-only knob; other platforms ignore it. Default ("auto") dispatches
+# trellis-implement / trellis-check / trellis-research sub-agents. Codex's
+# native SubagentStart hook injects task context when trusted, and child-side
+# loading remains the fallback. Set "inline" only as an explicit downgrade or
+# debug mode where the main Codex agent edits and checks directly.
 """
 MANAGED_CONFIG = Path("config-template.yml")
 MANAGED_SPEC_PATHS = (
@@ -262,6 +260,17 @@ LEGACY_MANAGED_ASSET_HASHES = {
         "78fb34e209c7b87eecdb515929b726dab160399001f3deed582eaaa9bcb90377",
     }),
 }
+RETIRED_TRELLIS_PLATFORM_ASSET_HASHES = {
+    Path(".agents/skills/trellis-meta/references/local-architecture/workspace-memory.md"): frozenset({
+        "e6427b46aba744563c2444b30df4043cd856561b7709ec2dece26095416421fd",
+    }),
+    Path(".claude/skills/trellis-meta/references/local-architecture/workspace-memory.md"): frozenset({
+        "e6427b46aba744563c2444b30df4043cd856561b7709ec2dece26095416421fd",
+    }),
+    Path(".cursor/skills/trellis-meta/references/local-architecture/workspace-memory.md"): frozenset({
+        "e6427b46aba744563c2444b30df4043cd856561b7709ec2dece26095416421fd",
+    }),
+}
 LEGACY_MANAGED_ASSET_REMOVAL_SIDECAR = (
     "This former Guru Team managed runtime is obsolete after the package-local "
     "Skill runtime migration. The installed bytes do not match a known managed "
@@ -278,8 +287,6 @@ CHINESE_LANGUAGE_RULE = (
 )
 RUNTIME_GITIGNORE_MARKER = "# Guru Team local runtime cache"
 RUNTIME_GITIGNORE_RULE = ".trellis/.runtime/"
-WORKSPACE_GITIGNORE_MARKER = "# Guru Team excludes upstream workspace journals"
-WORKSPACE_GITIGNORE_RULE = ".trellis/workspace/"
 AGENTS_AI_FIRST_START_MARKER = "<!-- guru-team-ai-first-principles:start -->"
 AGENTS_AI_FIRST_END_MARKER = "<!-- guru-team-ai-first-principles:end -->"
 AGENTS_AI_FIRST_BLOCK = f"""{AGENTS_AI_FIRST_START_MARKER}
@@ -292,9 +299,6 @@ AGENTS_AI_FIRST_BLOCK = f"""{AGENTS_AI_FIRST_START_MARKER}
 - **交互只服务真实选择和副作用**：只有真实选择、scope/authority 变化或 Git/GitHub 副作用才询问；mapped exit、stale/re-entry/reprepare/recovery 自动承接。
 - **语义门禁与持久化解耦**：AI 语义门禁仍然必需；recorder/checker 不得替代判断，也不得为留下证明制造 tracked dirty。
 {AGENTS_AI_FIRST_END_MARKER}
-"""
-SESSION_AUTO_COMMIT_HEADER = """# Guru Team owns archive and finish-summary metadata commits.
-# Keep official task.py/add_session.py bookkeeping from committing implicitly.
 """
 
 
@@ -1321,19 +1325,6 @@ def ensure_runtime_gitignore(repo: Path) -> dict[str, str]:
     return {"action": "updated" if original else "installed", "path": ".gitignore", "rule": RUNTIME_GITIGNORE_RULE}
 
 
-def ensure_workspace_gitignore(repo: Path) -> dict[str, str]:
-    path = repo / ".gitignore"
-    original = path.read_text(encoding="utf-8") if path.exists() else ""
-    if WORKSPACE_GITIGNORE_RULE in {line.strip() for line in original.splitlines()}:
-        return {"action": "unchanged", "path": ".gitignore", "rule": WORKSPACE_GITIGNORE_RULE}
-    separator = "" if not original or original.endswith("\n\n") else ("\n" if original.endswith("\n") else "\n\n")
-    path.write_text(
-        f"{original}{separator}{WORKSPACE_GITIGNORE_MARKER}\n{WORKSPACE_GITIGNORE_RULE}\n",
-        encoding="utf-8",
-    )
-    return {"action": "updated" if original else "installed", "path": ".gitignore", "rule": WORKSPACE_GITIGNORE_RULE}
-
-
 def ensure_agents_ai_first_principles(repo: Path) -> dict[str, str]:
     path = repo / "AGENTS.md"
     exists = path.exists() or path.is_symlink()
@@ -1389,34 +1380,6 @@ def ensure_agents_ai_first_principles(repo: Path) -> dict[str, str]:
     return {"action": action, "path": "AGENTS.md", "marker": AGENTS_AI_FIRST_START_MARKER}
 
 
-def ensure_session_auto_commit_false(repo: Path) -> dict[str, str | None]:
-    path = repo / ".trellis/config.yaml"
-    original = path.read_text(encoding="utf-8") if path.exists() else ""
-    lines = original.splitlines()
-    active_indexes: list[int] = []
-    previous: str | None = None
-    for index, line in enumerate(lines):
-        if line.startswith("session_auto_commit:"):
-            active_indexes.append(index)
-            if previous is None:
-                previous = strip_inline_comment(line.split(":", 1)[1]) or None
-    if len(active_indexes) > 1:
-        raise SystemExit(".trellis/config.yaml contains duplicate top-level session_auto_commit keys")
-    if active_indexes and previous == "false":
-        return {"action": "unchanged", "path": ".trellis/config.yaml", "previous": "false", "value": "false"}
-    if active_indexes:
-        lines[active_indexes[0]] = "session_auto_commit: false"
-        path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
-        return {"action": "updated", "path": ".trellis/config.yaml", "previous": previous, "value": "false"}
-    separator = "" if not original else ("\n" if original.endswith("\n") else "\n\n")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        f"{original}{separator}{SESSION_AUTO_COMMIT_HEADER}session_auto_commit: false\n",
-        encoding="utf-8",
-    )
-    return {"action": "updated" if original else "installed", "path": ".trellis/config.yaml", "previous": None, "value": "false"}
-
-
 def path_has_prefix(path: Path, prefix: Path) -> bool:
     return path == prefix or prefix in path.parents
 
@@ -1452,15 +1415,15 @@ def ensure_codex_dispatch_mode(repo: Path) -> dict[str, str | None]:
     """Materialize the Guru Team Codex default in project .trellis/config.yaml.
 
     Explicit `dispatch_mode: inline` is a user downgrade and is preserved.
-    Missing, commented-out, or invalid values are updated to `sub-agent` so
+    Missing, commented-out, legacy-alias, or invalid values are updated to `auto` so
     Codex can satisfy the independent Branch Review Gate path by default.
     """
 
     config_path = repo / ".trellis/config.yaml"
     if not config_path.exists():
         config_path.parent.mkdir(parents=True, exist_ok=True)
-        config_path.write_text(f"{CODEX_DISPATCH_HEADER}codex:\n  dispatch_mode: sub-agent\n", encoding="utf-8")
-        return {"action": "installed", "path": ".trellis/config.yaml", "previous": None, "mode": "sub-agent"}
+        config_path.write_text(f"{CODEX_DISPATCH_HEADER}codex:\n  dispatch_mode: auto\n", encoding="utf-8")
+        return {"action": "installed", "path": ".trellis/config.yaml", "previous": None, "mode": "auto"}
 
     original = config_path.read_text(encoding="utf-8")
     lines = original.splitlines()
@@ -1486,7 +1449,7 @@ def ensure_codex_dispatch_mode(repo: Path) -> dict[str, str | None]:
                 dispatch_value = strip_inline_comment(stripped.split(":", 1)[1])
                 break
 
-    if dispatch_value in {"sub-agent", "inline"}:
+    if dispatch_value in {"auto", "inline"}:
         return {
             "action": "unchanged",
             "path": ".trellis/config.yaml",
@@ -1497,10 +1460,10 @@ def ensure_codex_dispatch_mode(repo: Path) -> dict[str, str | None]:
     if dispatch_index is not None:
         indent = " " * leading_spaces(lines[dispatch_index])
         previous = dispatch_value or None
-        lines[dispatch_index] = f"{indent}dispatch_mode: sub-agent"
+        lines[dispatch_index] = f"{indent}dispatch_mode: auto"
         updated = "\n".join(lines).rstrip() + "\n"
         config_path.write_text(updated, encoding="utf-8")
-        return {"action": "updated", "path": ".trellis/config.yaml", "previous": previous, "mode": "sub-agent"}
+        return {"action": "updated", "path": ".trellis/config.yaml", "previous": previous, "mode": "auto"}
 
     if codex_index is not None:
         insert_at = codex_index + 1
@@ -1510,15 +1473,15 @@ def ensure_codex_dispatch_mode(repo: Path) -> dict[str, str | None]:
             if line.strip() and not line.lstrip().startswith("#") and leading_spaces(line) <= codex_indent:
                 break
             insert_at += 1
-        lines.insert(insert_at, f"{child_indent}dispatch_mode: sub-agent")
+        lines.insert(insert_at, f"{child_indent}dispatch_mode: auto")
         updated = "\n".join(lines).rstrip() + "\n"
         config_path.write_text(updated, encoding="utf-8")
-        return {"action": "updated", "path": ".trellis/config.yaml", "previous": None, "mode": "sub-agent"}
+        return {"action": "updated", "path": ".trellis/config.yaml", "previous": None, "mode": "auto"}
 
     separator = "" if original.endswith("\n") or not original else "\n"
-    addition = f"{separator}\n{CODEX_DISPATCH_HEADER}codex:\n  dispatch_mode: sub-agent\n"
+    addition = f"{separator}\n{CODEX_DISPATCH_HEADER}codex:\n  dispatch_mode: auto\n"
     config_path.write_text(original.rstrip() + addition, encoding="utf-8")
-    return {"action": "updated", "path": ".trellis/config.yaml", "previous": None, "mode": "sub-agent"}
+    return {"action": "updated", "path": ".trellis/config.yaml", "previous": None, "mode": "auto"}
 
 
 def copy_managed(source: Path, target: Path) -> dict[str, str]:
@@ -1594,6 +1557,50 @@ def remove_legacy_managed_assets(
             sidecar_relative = None
         conflicts.append(skill_conflict(
             relative_target.as_posix(),
+            "legacy_unknown_local_edit",
+            sidecar=sidecar_relative,
+            previous_managed_sha256=digest,
+        ))
+        if sidecar_relative:
+            sidecars.append(sidecar_relative)
+    return removals, conflicts, sidecars
+
+
+def remove_retired_trellis_platform_assets(
+    repo: Path,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+    removals: list[dict[str, Any]] = []
+    conflicts: list[dict[str, Any]] = []
+    sidecars: list[str] = []
+    for relative, known_hashes in RETIRED_TRELLIS_PLATFORM_ASSET_HASHES.items():
+        target = Path(os.path.abspath(repo)) / relative
+        checked_relative, target_stat, error = lstat_repo_path(repo, target)
+        if error or checked_relative != relative:
+            conflicts.append(skill_conflict(relative.as_posix(), "unsafe_legacy_path_boundary"))
+            continue
+        if target_stat is None:
+            continue
+        if not stat.S_ISREG(target_stat.st_mode):
+            conflicts.append(skill_conflict(relative.as_posix(), "legacy_target_not_regular_file"))
+            continue
+        digest = hashlib.sha256(target.read_bytes()).hexdigest()
+        if digest in known_hashes:
+            target.unlink()
+            prune_empty_managed_skill_parents(repo, target)
+            removals.append({
+                "path": relative.as_posix(),
+                "action": "removed_managed",
+                "previous_managed_sha256": digest,
+            })
+            continue
+        sidecar = target.with_name(f"{target.name}.new")
+        try:
+            write_safe_repo_file(repo, sidecar, LEGACY_MANAGED_ASSET_REMOVAL_SIDECAR, 0o644)
+            sidecar_relative = lexical_repo_relative(repo, sidecar).as_posix()
+        except ValueError:
+            sidecar_relative = None
+        conflicts.append(skill_conflict(
+            relative.as_posix(),
             "legacy_unknown_local_edit",
             sidecar=sidecar_relative,
             previous_managed_sha256=digest,
@@ -1813,6 +1820,7 @@ def managed_transaction_paths(
     )
     paths.update(projections)
     paths.update(_manifest_paths(previous_manifest))
+    paths.update(RETIRED_TRELLIS_PLATFORM_ASSET_HASHES)
     # Preserve the existing bounded language-guidance behavior without opening
     # the transaction to arbitrary repository documentation.
     paths.update(
@@ -2339,6 +2347,9 @@ def _install_assets_in_place(
     legacy_removals, legacy_conflicts, legacy_sidecars = remove_legacy_managed_assets(
         repo, dst
     )
+    retired_removals, retired_conflicts, retired_sidecars = (
+        remove_retired_trellis_platform_assets(repo)
+    )
 
     installed: list[str] = []
     unchanged: list[str] = []
@@ -2460,9 +2471,11 @@ def _install_assets_in_place(
     skill_packages = install_skill_packages(repo, guru_root, dst, selected, previous_manifest)
     skill_packages["conflicts"].extend(managed_spec_conflicts)
     skill_packages["sidecars"] = sorted(set(skill_packages["sidecars"] + managed_spec_sidecars))
-    skill_packages["removals"].extend(legacy_removals)
-    skill_packages["conflicts"].extend(legacy_conflicts)
-    skill_packages["sidecars"] = sorted(set(skill_packages["sidecars"] + legacy_sidecars))
+    skill_packages["removals"].extend(legacy_removals + retired_removals)
+    skill_packages["conflicts"].extend(legacy_conflicts + retired_conflicts)
+    skill_packages["sidecars"] = sorted(set(
+        skill_packages["sidecars"] + legacy_sidecars + retired_sidecars
+    ))
     if skill_packages["conflicts"] or skill_packages["sidecars"]:
         skill_packages["status"] = "conflict"
     overlays = install_overlays(repo, guru_root, selected, previous_manifest)
@@ -2474,9 +2487,7 @@ def _install_assets_in_place(
     managed_backups.extend(overlays["managed_backups"])
     agents_principles = ensure_agents_ai_first_principles(repo)
     codex_dispatch = ensure_codex_dispatch_mode(repo)
-    session_auto_commit = ensure_session_auto_commit_false(repo)
     runtime_gitignore = ensure_runtime_gitignore(repo)
-    workspace_gitignore = ensure_workspace_gitignore(repo)
     language_guidance = normalize_business_doc_language_guidance(repo)
 
     result = {
@@ -2489,9 +2500,7 @@ def _install_assets_in_place(
         "managed_asset_hashes": managed_asset_hashes,
         "agents_principles": agents_principles,
         "codex_dispatch": codex_dispatch,
-        "session_auto_commit": session_auto_commit,
         "runtime_gitignore": runtime_gitignore,
-        "workspace_gitignore": workspace_gitignore,
         "language_guidance": language_guidance,
         "platforms": sorted(selected),
         "all_platforms": all_platforms,
@@ -2728,9 +2737,7 @@ def main() -> int:
         "managed_transaction": result["managed_transaction"],
         "agents_principles": result["agents_principles"],
         "codex_dispatch": result["codex_dispatch"],
-        "session_auto_commit": result["session_auto_commit"],
         "runtime_gitignore": result["runtime_gitignore"],
-        "workspace_gitignore": result["workspace_gitignore"],
         "language_guidance": result["language_guidance"],
         "extension_manifest": result["extension_manifest"],
         "guru_team_extension": result["guru_team_extension"],

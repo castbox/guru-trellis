@@ -4,9 +4,14 @@ import copy
 import hashlib
 import json
 import shutil
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+SCRIPT_ROOT = Path(__file__).resolve().parent
+if str(SCRIPT_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_ROOT))
 
 import verify_installed_phase0_transcript as transcript
 from test_discovery_stdin_integration import run_preset_install
