@@ -2564,6 +2564,32 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(provenance["ref"], source_commit)
         self.assertEqual(provenance["commit"], source_commit)
 
+    def test_install_manifest_keeps_apply_time_source_snapshot_separate_from_manifest(self) -> None:
+        source_snapshot = {
+            "repo": "https://github.com/castbox/guru-trellis.git",
+            "ref": "b" * 40,
+            "commit": "b" * 40,
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+
+        with mock.patch.object(preset, "source_provenance", return_value=source_snapshot):
+            preset.install_assets(
+                self.workflow_src,
+                self.install_dst,
+                self.repo,
+                {"codex", "cursor"},
+            )
+
+        installed = json.loads(
+            (self.repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(installed["source"], source_snapshot)
+        self.assertIn(
+            "not a claim that this installed manifest is contained in that commit",
+            installed["notes"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
