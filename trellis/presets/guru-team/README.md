@@ -674,6 +674,7 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/version.sh`
 - `.trellis/guru-team/scripts/bash/prepare-task.sh`
 - `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh`
+- `.trellis/guru-team/scripts/bash/start-task.sh`
 - `.trellis/guru-team/scripts/bash/check-skill-packages.sh`
 - `.trellis/guru-team/scripts/bash/discover-skill-contract.sh`
 - `.trellis/guru-team/scripts/bash/discover-skill-evals.sh`
