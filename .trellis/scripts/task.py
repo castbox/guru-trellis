@@ -233,20 +233,28 @@ def cmd_start(args: argparse.Namespace) -> int:
     task_json_path = full_path / FILE_TASK_JSON
 
     task_data, task_reason = read_json_checked(task_json_path)
-    if task_data is not None and task_data.get("worktree_path"):
-        expected_worktree = str(repo_root.resolve())
-        try:
-            actual_worktree = str(Path(str(task_data["worktree_path"])).resolve())
-        except OSError:
-            actual_worktree = ""
-        if actual_worktree != expected_worktree:
-            print(colored(
-                "Error: task.json worktree_path does not match the current checkout",
-                Colors.RED,
-            ))
-            print(f"Expected: {expected_worktree}")
-            print(f"Recorded: {task_data['worktree_path']}")
-            return 1
+    recorded_worktree = task_data.get("worktree_path") if task_data is not None else None
+    if not isinstance(recorded_worktree, str) or not recorded_worktree.strip():
+        print(colored(
+            "Error: task.json worktree_path is required before starting a task",
+            Colors.RED,
+        ))
+        print("The task workspace identity is incomplete; no task state was changed.")
+        return 1
+
+    expected_worktree = str(repo_root.resolve())
+    try:
+        actual_worktree = str(Path(recorded_worktree).resolve())
+    except OSError:
+        actual_worktree = ""
+    if actual_worktree != expected_worktree:
+        print(colored(
+            "Error: task.json worktree_path does not match the current checkout",
+            Colors.RED,
+        ))
+        print(f"Expected: {expected_worktree}")
+        print(f"Recorded: {recorded_worktree}")
+        return 1
 
     if not resolve_context_key():
         # Degraded mode: no session identity available.
