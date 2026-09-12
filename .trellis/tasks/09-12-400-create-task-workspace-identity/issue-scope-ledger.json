@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 400,
+      "reason": "Issue #400 is the independently deliverable primary scope.",
+      "title": "阻止绕过 guru-create-task-workspace 前置证据导致不完整任务 workspace identity",
+      "url": "https://github.com/castbox/guru-trellis/issues/400"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 400,
+    "reason": "Issue #400 is the independently deliverable primary scope.",
+    "title": "阻止绕过 guru-create-task-workspace 前置证据导致不完整任务 workspace identity",
+    "url": "https://github.com/castbox/guru-trellis/issues/400"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}

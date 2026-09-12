@@ -106,9 +106,9 @@ def create_issue(plan):
  for label in d["labels"]:args.extend(["--label",label])
  url,_=decode_created_issue_url(t["repo"],run_gh(t["repo"],*args))
  return bind_reviewed_issue(plan,url)
-def workspace_payloads(plan,artifact_rel):
+def workspace_payloads(plan,artifact_rel,workspace_path):
  n=plan["naming"]
- task={"id":n["task_slug"],"name":n["task_slug"],"title":n["task_title"],"status":"planning","branch":n["branch_name"],"base_branch":plan["base"]["selected_base"],"creator":plan["assignee"]["login"],"assignee":plan["assignee"]["login"],"scope":f"GitHub issue: {plan['target']['url']}"}
+ task={"id":n["task_slug"],"name":n["task_slug"],"title":n["task_title"],"status":"planning","branch":n["branch_name"],"base_branch":plan["base"]["selected_base"],"worktree_path":str(workspace_path),"creator":plan["assignee"]["login"],"assignee":plan["assignee"]["login"],"scope":f"GitHub issue: {plan['target']['url']}"}
  def entry(x):return {k:x[k] for k in ("number","url","title","reason")}
  s=plan["scope"];ledger={"schema_version":"2.0","primary_issue":entry(s["primary"]),"close_issues":[entry(x) for x in s["close"]],"related_issues":[entry(x) for x in s["related"]],"followup_issues":[entry(x) for x in s["followup"]]}
  return task,json.dumps(ledger,ensure_ascii=False,sort_keys=True,indent=2)+"\n"
@@ -133,7 +133,7 @@ def preflight(repo,plan,workspace):
   exact_workspace=True
  else:
   exact_workspace=bool(row and row.get("branch")==f"refs/heads/{branch}" and workspace.path.is_dir() and branch_exact)
- task_path=task_dir/"task.json";ledger_path=workspace.path/artifact_rel;expected_task,expected_ledger=workspace_payloads(plan,artifact_rel)
+ task_path=task_dir/"task.json";ledger_path=workspace.path/artifact_rel;expected_task,expected_ledger=workspace_payloads(plan,artifact_rel,workspace.path)
  try:exact_task=task_path.is_file() and json.loads(task_path.read_text())==expected_task
  except Exception:exact_task=False
  facts={"branch":branch_exists,"workspace":workspace_exists,"exact_branch":branch_exact,"exact_workspace":exact_workspace,"task":task_path.exists(),"exact_task":exact_task}
@@ -169,7 +169,7 @@ def verify_created_boundary(repo,plan,workspace,workspace_mode,artifact_rel,task
   raise CommandError("stale_identity","created_workspace","Created task artifacts are incomplete.",3)
  try:task=json.loads(task_path.read_text(encoding="utf-8"))
  except Exception as exc:raise CommandError("stale_identity","created_workspace.task","Created task identity is invalid.",3) from exc
- expected_task,_=workspace_payloads(plan,artifact_rel)
+ expected_task,_=workspace_payloads(plan,artifact_rel,workspace)
  if task!=expected_task:raise CommandError("stale_identity","created_workspace.task","Created task identity does not match the reviewed plan.",3)
  workspace_mapping,task_mapping=mapping_payloads(repo,plan,workspace,artifact_rel)
  for rel in plan["side_effects"]["runtime_mappings"]:

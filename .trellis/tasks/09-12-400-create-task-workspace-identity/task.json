@@ -1,0 +1,12 @@
+{
+  "id": "400-create-task-workspace-identity",
+  "name": "400-create-task-workspace-identity",
+  "title": "#400 修复任务 workspace identity 闭环",
+  "status": "in_progress",
+  "branch": "codex/400-create-task-workspace-identity",
+  "base_branch": "main",
+  "worktree_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/400-create-task-workspace-identity",
+  "creator": "wumengye",
+  "assignee": "wumengye",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/400"
+}

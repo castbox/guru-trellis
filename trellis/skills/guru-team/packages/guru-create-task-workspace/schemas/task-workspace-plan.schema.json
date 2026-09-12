@@ -120,9 +120,10 @@
     },
     "prerequisites": {
       "type": "object", "additionalProperties": false,
-      "required": ["base", "clarity", "wording", "readiness"],
+      "required": ["base", "discovery", "clarity", "wording", "readiness"],
       "properties": {
         "base": {"$ref": "#/$defs/prerequisite"},
+        "discovery": {"$ref": "#/$defs/prerequisite"},
         "clarity": {"$ref": "#/$defs/prerequisite"},
         "wording": {"$ref": "#/$defs/prerequisite"},
         "readiness": {"$ref": "#/$defs/prerequisite"}
