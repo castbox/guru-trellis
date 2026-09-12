@@ -340,7 +340,9 @@ confirmation or remote mutation. Exact restoration resumes Phase 2 through
 
 `guru-merge-task-pr` is a semantic, remote-only post-publication route. It
 compares live PR base/head branches and close keywords with Finalizer's minimal
-reviewed authority. The Merge owner authors and reviews the exact Chinese
+reviewed merge-intent authority; this close-keyword set may be empty even when
+the task ledger has a non-empty delivery acceptance scope. The Merge owner
+authors and reviews the exact Chinese
 `chore(merge)` subject/body on top of that seed, then rebuilds check, review, mergeability, repository-policy
 and Issue facts using repo-bound `gh`; it never enters Phase 0, invokes `guru-sync-base`, updates
 the PR branch, synchronizes local `main`, or cleans resources. After one exact

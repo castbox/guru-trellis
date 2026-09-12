@@ -438,6 +438,19 @@ def eval_after_archive_hook_fixture(
 
 
 class FinalizeTaskContractTests(unittest.TestCase):
+    def test_merge_close_scope_is_projected_from_pr_body_not_delivery_ledger(self) -> None:
+        refs_only = {
+            "review": {"close_issues_reviewed": [127, 129, 130]},
+            "publish": {"body": "## Issue 关闭范围\n\nRefs #127, #129, #130。"},
+        }
+        closes_one = {
+            "review": {"close_issues_reviewed": [127, 129, 130]},
+            "publish": {"body": "## Issue 关闭范围\n\nCloses #127; Refs #129, #130。"},
+        }
+
+        self.assertEqual(GTT.finalization_merge_close_issues(refs_only), [])
+        self.assertEqual(GTT.finalization_merge_close_issues(closes_one), [127])
+
     def test_eval_staging_preview_rejects_nonempty_after_archive_hook_before_context(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
