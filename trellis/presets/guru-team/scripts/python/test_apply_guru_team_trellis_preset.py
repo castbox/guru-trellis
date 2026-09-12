@@ -1285,6 +1285,16 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn(Path("scripts/bash/format-merge-commit.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("schemas/finish-summary.schema.json"), preset.MANAGED_ASSET_PATHS)
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh").is_file())
+        start_task = self.repo / ".trellis/guru-team/scripts/bash/start-task.sh"
+        self.assertTrue(start_task.is_file())
+        self.assertTrue(os.access(start_task, os.X_OK))
+        installed_manifest = json.loads(
+            (self.repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8")
+        )
+        self.assertIn(".trellis/guru-team/scripts/bash/start-task.sh", installed_manifest["install"]["managed_assets"])
+        self.assertEqual(installed_manifest["skill_packages"]["status"], "ok")
+        self.assertEqual(installed_manifest["skill_packages"]["sidecars"], [])
+        self.assertEqual(installed_manifest["skill_packages"]["conflicts"], [])
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/discover-skill-contract.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/discover-skill-contract.sh", os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/discover-skill-evals.sh", os.X_OK))
