@@ -427,11 +427,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-13T04:33:03Z",
+  "installed_at": "2026-09-13T06:16:31Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "55ac46aa96cd5f2a59cd78309c51c5cc01b4887a",
-    "commit": "55ac46aa96cd5f2a59cd78309c51c5cc01b4887a",
+    "ref": "a9a8fb3c151debedc756f873f63a8398a535aa49",
+    "commit": "a9a8fb3c151debedc756f873f63a8398a535aa49",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -643,7 +643,7 @@
       {
         "id": "guru-finalize-task",
         "interface_sha256": "55468abf6880e9e5613c67d851c67ae7f77273553c4811d8635a6d2f056dcd32",
-        "tree_sha256": "f04c4bb4eeba9a40b1e7f40e8d47400e8aac1b8e2a1b5d6c705ec33a5742beda"
+        "tree_sha256": "e49f138eed4dca832130933c52e2312c7e36eea48338b3677c3f86ffb7299862"
       },
       {
         "id": "guru-merge-task-pr",
@@ -7613,9 +7613,30 @@
         "action": "unchanged"
       },
       {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/support.py",
+        "source": "trellis/skills/guru-team/packages/guru-finalize-task/tests/support.py",
+        "sha256": "c70472732f486a8fe515f73d5c2763808da3f6ebb6342eaaeb8114ebe03bd30f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
-        "sha256": "f03fc9bacba097d06fdcd95b1f6d9e1696b8b987c32d9ada1e1191e62969cb72",
+        "sha256": "dc3b85cfb487ec146db083a9c9ed56996fd1efc1311cd903f663681a1d3815dc",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_provenance.py",
+        "source": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_provenance.py",
+        "sha256": "b7414966d36819a2e8f23d0fe43859510f2f7b6f152edf82fc64a68cbf5a2ae2",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_recovery.py",
+        "source": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_recovery.py",
+        "sha256": "f5af9e33f259511f746f8247bcb33f09866289b5c14a078df7c58818769c8996",
         "executable": false,
         "action": "unchanged"
       },

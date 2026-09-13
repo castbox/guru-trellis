@@ -763,7 +763,7 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                     self.assertEqual(mutation_count, len(owner.mutations))
             return ExecutedRoute(output, commands, owner.full_reads - 1, list(owner.mutations), lifecycle, boundary, recovery)
 
-    def merge_route(self, *, recommended: bool) -> ExecutedRoute:
+    def merge_route(self) -> ExecutedRoute:
         package = PACKAGES / "guru-merge-task-pr"
         with tempfile.TemporaryDirectory(prefix="closeout-merge-") as temporary:
             root = Path(temporary)
@@ -774,40 +774,33 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
             public_path.write_text("{}\n", encoding="utf-8")
             review_path.write_text("{}\n", encoding="utf-8")
             with package_modules(package):
-                record = command_module(package, "record.py", "merge")
-                check = command_module(package, "check.py", "merge")
-                execute = command_module(package, "execute.py", "merge")
                 invoke = command_module(package, "invoke.py", "merge")
-                with (
-                    mock.patch.object(record, "_owner", return_value=owner),
-                    mock.patch.object(check, "_owner", return_value=owner),
-                    mock.patch.object(execute, "_owner", return_value=owner),
-                    mock.patch.object(invoke, "_owner", return_value=owner),
-                ):
+                with mock.patch.object(invoke, "_owner", return_value=owner):
                     common = ["--root", str(root), "--input", str(public_path)]
-                    if recommended:
-                        commands.append("invoke-task-pr-merge")
-                        output = invoke.run(package, {"id": commands[-1]}, common + ["--review-input", str(review_path)])
-                        boundary = ("semantic.review", *owner.boundary, "public.project")
-                        lifecycle = list(owner.lifecycle)
-                        mutation_count = len(owner.mutations)
-                        recovery = invoke.run(package, {"id": commands[-1]}, common + ["--review-input", str(review_path)])
-                        self.assertEqual(mutation_count, len(owner.mutations))
-                    else:
-                        commands.append("record-task-pr-merge")
-                        record.run(package, {"id": commands[-1]}, common + ["--review-input", str(review_path)])
-                        commands.append("check-task-pr-merge")
-                        check.run(package, {"id": commands[-1]}, common)
-                        commands.append("execute-task-pr-merge")
-                        execute.run(package, {"id": commands[-1]}, common)
-                        commands.append("invoke-task-pr-merge")
-                        output = invoke.run(package, {"id": commands[-1]}, common)
-                        boundary = ("semantic.review", *owner.boundary, "public.project")
-                        lifecycle = list(owner.lifecycle)
-                        mutation_count = len(owner.mutations)
-                        recovery = json.loads(json.dumps(output))
-                        self.assertEqual(mutation_count, len(owner.mutations))
-            return ExecutedRoute(output, commands, owner.full_reads - (1 if recommended else 0), list(owner.mutations), lifecycle, boundary, recovery)
+                    commands.append("invoke-task-pr-merge")
+                    output = invoke.run(
+                        package,
+                        {"id": commands[-1]},
+                        common + ["--review-input", str(review_path)],
+                    )
+                    boundary = ("semantic.review", *owner.boundary, "public.project")
+                    lifecycle = list(owner.lifecycle)
+                    mutation_count = len(owner.mutations)
+                    recovery = invoke.run(
+                        package,
+                        {"id": commands[-1]},
+                        common + ["--review-input", str(review_path)],
+                    )
+                    self.assertEqual(mutation_count, len(owner.mutations))
+            return ExecutedRoute(
+                output,
+                commands,
+                owner.full_reads - 1,
+                list(owner.mutations),
+                lifecycle,
+                boundary,
+                recovery,
+            )
 
     def test_each_stage_keeps_one_original_public_wrapper(self) -> None:
         for skill_id, expected in HAPPY_PATHS.items():
@@ -834,11 +827,10 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                     interface["public_contracts"]["invocation"]["wrapper"],
                 )
 
-    def test_old_and_new_routes_execute_equivalent_public_contracts(self) -> None:
+    def test_supported_internal_and_wrapper_routes_are_equivalent(self) -> None:
         for stage, runner, required_reads in (
             ("commit", self.commit_route, 1),
             ("publication", self.publication_route, 1),
-            ("merge", self.merge_route, 2),
         ):
             with self.subTest(stage=stage):
                 old = runner(recommended=False)
@@ -875,6 +867,17 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                 }[stage] / "interface.json")
                 self.assertEqual(interface["judgment_mode"], "semantic")
 
+    def test_current_merge_route_retires_gate_and_recovers_without_mutation(self) -> None:
+        route = self.merge_route()
+        self.assertEqual(route.commands, ["invoke-task-pr-merge"])
+        self.assertEqual(route.lifecycle, ["gate:create", "gate:retire"])
+        self.assertEqual(route.mutations, ["github.merge.mutate"])
+        self.assertEqual(route.output, route.recovery_output)
+        self.assertEqual(
+            read_json(PACKAGES / "guru-merge-task-pr/interface.json")["judgment_mode"],
+            "semantic",
+        )
+
     def test_current_finalizer_route_is_preview_bound_and_recoverable(self) -> None:
         route = self.finalizer_route()
         self.assertEqual(
@@ -896,7 +899,7 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
         )
         source = Path(__file__).read_text(encoding="utf-8")
         executable_test = source.split(
-            "def test_old_and_new_routes_execute_equivalent_public_contracts", 1
+            "def test_supported_internal_and_wrapper_routes_are_equivalent", 1
         )[1].split(
             "def test_sanitized_fixture_is_historical_observation_not_budget_input",
             1,

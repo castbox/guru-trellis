@@ -205,7 +205,7 @@ identity 与 Issue closeout 在同一 post-merge exact candidate 上完成前均
   身份、fencing、monitor、inspection、cancel、recovery、publication 或 evidence authority；普通文件和
   目录仅作为 state/artifact/log/cache/config/durable record 时保持允许。
 - `REQ-071`：Merge 发现已归档 task 的 current-scope content finding 时，必须使用
-  `phase2_reentry_required` 将最小 repository/PR/head/branch/Issue/task/archive/finding identity 投影给
+  `phase2_reentry_required` 将最小 repository/PR/head/branch/task/archive/finding identity 投影给
   `guru-restore-archived-task`；外部 provider、permission、ruleset、CI、scope 或 identity blocker 继续
   `merge_blocked` 且零恢复写入。
 - `REQ-072`：恢复 owner 必须复用原 Issue、task、branch、worktree、remote branch 与 PR，恢复

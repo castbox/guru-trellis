@@ -24,7 +24,7 @@
   改变，任何未迁移 projection drift 都阻塞安装成功，但不因此归类为 capability loss。
 - `DES-011` Provider recovery：Git/GitHub drift、base evolution、partial finalization 与重试状态由
   当前 owning Skill 的短生命周期 private state 恢复；unknown/stale/mismatch 进入唯一 typed route。
-- `DES-012` Finalizer terminal authority：正常 closeout 已退休 gate/transaction/plan 后，只有调用方提供的精确 retired owner locator 可触发 terminal reconstruction。runtime 读取六文件 archive 中的 durable summary，绑定 active/archive task locator、branch review commit、archive cleanliness，并重新读取 local/remote/Ready PR/title/body/base/branch/issue scope；全部一致才投影 `ready_for_merge`。
+- `DES-012` Finalizer terminal authority：正常 closeout 已退休 gate/transaction/plan 后，只有调用方提供的精确 retired owner locator 可触发 terminal reconstruction。runtime 读取 archive 中 `task.json`、`prd.md`、`design.md`、`implement.md`、`finish-summary.json` 五个 durable 文件，绑定 active/archive task locator、branch review commit、archive cleanliness，并重新读取 local/remote/Ready PR/title/body/base/branch；不重读 issue scope，全部一致才投影 `ready_for_merge`。
 - `DES-013` Verifier inventory：source validator 从 registry/interface 形成 active package ids、commands 与 complete package commands；Throwaway verifier 只比较 validator projection 与 installed projection，不维护数量常量。
 - `DES-014` Matrix orchestration：compatibility runner 由独立 cell executor 与 compact aggregator 组成；每个 cell 使用隔离 repo、npm prefix 与 runtime root，并输出 platform/scenario/version、inventory、template hash、sidecar 与 installed smoke 结论。runner 以 HEAD、tracked delta、untracked path/mode/content 与 isolated-index candidate tree 构成 source identity，且 run 前后必须一致。
 - `DES-015` Platform derivation：canonical/installed manifest、ownership claims、overlay entries 与 registry destinations 交叉派生声明平台；`.agents` 是 shared projection，不是独立 platform，集合不一致即 fail closed。
@@ -226,7 +226,7 @@
   extension inventory 或业务仓 installed projection。
 - `CON-006`：orchestrator 只消费既有 owner 的 public minimal outputs；不得读取其 private artifact、
   复制 transaction implementation 或把 action-local confirmation 扩张到其它动作。
-- `CON-007`：Merge-to-recovery DTO 只含 repository、PR/head/branch、Issue、task/archive、finding 与
+- `CON-007`：Merge-to-recovery DTO 只含 repository、PR/head/branch、task/archive、finding 与
   `resume_target=phase-2` identity；不得携带用户授权、machine-local path、完整 provider payload 或旧 gate。
 - `CON-008`：base-continuity handoff 只携带 exact task/base pair、prior/current review anchors、candidate tree、
   relevant paths 与原 resume target；producer-to-consumer projection 必须显式，任何旧 schema/checkpoint 直接 stale。
@@ -343,8 +343,8 @@ full throwaway matrix、business smoke、tag、GitHub Release 或 Issue closure 
 - `D329-02`：Trellis-owned managed assets 只由 `0.6.17` official update/migrate/generation 产生；
   Guru-owned workflow、Skill、runtime、installer、fixture、spec 与 overlay 在 canonical source 直接演进，
   再经 preset reapply 投影到 dogfood/installed copies。
-- `D329-03`：current task resolution 使用 explicit selector、task metadata、Git common-dir/branch/worktree、
-  ignored task/workspace mappings 与 issue ledger；mapping 只表示隔离 checkout，不是 legacy journal。
+- `D329-03`：current task resolution 使用 explicit selector、task metadata、Git common-dir/branch/worktree
+  与 ignored task/workspace mappings；mapping 只表示隔离 checkout，不是 legacy journal。
 - `D329-04`：新 task 的 creator/assignee 由 workspace owner executor 显式传入 official task store；
   Issue 未分配时仅在 repository access preflight 通过后使用 authenticated GitHub login，失败则 write 前停止。
 - `D329-05`：update/reapply 前后对 legacy roots 建立 path/mode/byte snapshot；snapshot 只服务 preservation
@@ -388,4 +388,6 @@ full throwaway matrix、business smoke、tag、GitHub Release 或 Issue closure 
 该设计使用 `target_native` 并由 accepted `ADR-009`、`ARCH-CUR-027`、`ARCH-DOM-015`、
 `ARCH-INT-017`、`ARCH-GOV-009` 与 closed `ARCH-GAP-008` 承接。它保持 23 Skills / 97 exits / 78 commands、
 四阶段顺序、#305 Evolution target及framework/CLI/extension/release独立轴；promotion-created diff仍需
-fresh Phase 2、Task Commit与完整Branch Review。
+fresh Phase 2、Task Commit与完整Branch Review。`D247-02`、`D247-04`、`D247-08` 分别收敛
+`D329-03`、`DES-012`、`CON-007` 的 current task resolution、terminal reconstruction 与 recovery DTO，
+不改变其 predecessor 版本中的 immutable historical authority。
