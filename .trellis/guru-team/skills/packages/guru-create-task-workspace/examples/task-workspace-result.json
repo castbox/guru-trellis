@@ -4,9 +4,9 @@
   "generated_at": "2026-01-01T00:01:00Z",
   "mode": "workflow",
   "variant": "created_workspace",
-  "plan_sha256": "cad75e344779f14feefb875ab9f7be8e6cd9d2c8340c8ea629b4c5e3d638822f",
-  "executor": {"status": "passed", "checked_at": "2026-01-01T00:00:59Z", "evidence": ["Exact branch, worktree and task were created with one durable Issue Scope Ledger."]},
-  "checker": {"status": "passed", "checked_at": "2026-01-01T00:01:00Z", "evidence": ["The durable Issue Scope Ledger and ignored runtime mappings passed."]},
+  "plan_sha256": "110c93e6f12ac75f9bad4d840e0b4a4d3080a14800764304db4cb81aba94d881",
+  "executor": {"status": "passed", "checked_at": "2026-01-01T00:00:59Z", "evidence": ["Exact branch, worktree and task were created."]},
+  "checker": {"status": "passed", "checked_at": "2026-01-01T00:01:00Z", "evidence": ["The task identity and ignored runtime mappings passed."]},
   "created_issue": null,
   "created_workspace": {
     "repo": "example/guru-extension",
@@ -19,9 +19,6 @@
     "task_artifact_dir": ".trellis/tasks/01-01-027-create-task-workspace",
     "assignee": "example-maintainer",
     "task_status": "planning",
-    "artifacts": [
-      {"path": ".trellis/tasks/01-01-027-create-task-workspace/issue-scope-ledger.json", "sha256": "8282828282828282828282828282828282828282828282828282828282828282", "size": 800, "mode": "100644", "tracked": true}
-    ],
     "runtime_mappings": [
       {"path": ".trellis/.runtime/guru-team/workspaces/027-create-task-workspace.json", "ignored": true},
       {"path": ".trellis/.runtime/guru-team/tasks/027-create-task-workspace.json", "ignored": true}
@@ -30,7 +27,7 @@
   },
   "no_side_effect": null,
   "typed_exit": "created",
-  "reason": "The exact reviewed task workspace and durable Issue Scope Ledger passed checking.",
+  "reason": "The exact reviewed task workspace passed checking.",
   "consumer": {"kind": "workflow", "id": "guru-task-workspace-created"},
-  "facts_sha256": "6daafe961a65f3047f6892733677ea71d4d1da5771abe434405e66341bfa6c92"
+  "facts_sha256": "9d1d664153690240d120edf6295697ff1a1094435a2a02cbee2f307edab97341"
 }

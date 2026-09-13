@@ -8,7 +8,7 @@
     "profile": "verification_required",
     "mode": "workflow",
     "task_ref": ".trellis/tasks/07-25-117-verify-extension-installation",
-    "plan_ref": "closeout-plan:0123456789abcdef",
+    "plan_ref": "finalization:0123456789abcdef",
     "repo_ref": "castbox/guru-trellis",
     "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "publication_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
@@ -70,7 +70,7 @@
           "resolve_extension_source_ref"
         ],
         "asset_paths": [
-          ".trellis/guru-team/schemas/marketplace-verification.schema.json",
+          ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
           ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json"
         ]
       }
@@ -98,10 +98,10 @@
         "checkout_owner": "extension_source_checkout",
         "category": "schema",
         "platform": null,
-        "path": ".trellis/guru-team/schemas/marketplace-verification.schema.json",
-        "source_path": "trellis/workflows/guru-team/schemas/marketplace-verification.schema.json",
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
+        "source_path": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
         "expected_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
-        "relation": "managed_manifest"
+        "relation": "skill_manifest"
       },
       {
         "checkout_owner": "extension_source_checkout",
@@ -141,7 +141,7 @@
         "checkout_owner": "extension_source_checkout",
         "category": "schema",
         "platform": null,
-        "path": ".trellis/guru-team/schemas/marketplace-verification.schema.json",
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
         "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
       },
       {
@@ -160,7 +160,7 @@
       }
     ],
     "asset_inventory": {
-      "expected_set_sha256": "66aa43757ed92b43cdfe26347e4ffddbde7da26047743d02c73e9227e13341da",
+      "expected_set_sha256": "7adf0e11bb18e36397fc2c22ecbb7006d7bfac263667886217fa45cd9d639e80",
       "expected_count": 5,
       "observed_count": 5,
       "matched_count": 5,
@@ -278,7 +278,7 @@
   },
   "blocker": null,
   "freshness": {
-    "plan_ref": "closeout-plan:0123456789abcdef",
+    "plan_ref": "finalization:0123456789abcdef",
     "supersedes_verification_ref": null,
     "current": true
   },

@@ -146,8 +146,6 @@ def _matches_identity(public: dict[str, Any], semantic: dict[str, Any], facts: d
         "pr.head_sha": (facts["pr"]["head_sha"], public["expected_head_sha"]),
         "pr.base_branch": (facts["pr"]["base_branch"], public["expected_base_branch"]),
         "pr.head_branch": (facts["pr"]["head_branch"], public["expected_head_branch"]),
-        "issue.number": (facts["issue"]["number"], public["issue_number"]),
-        "issue.state": (facts["issue"]["state"], "OPEN"),
         "remote_branch.name": (facts["remote_branch"]["name"], public["expected_head_branch"]),
         "remote_branch.head_sha": (facts["remote_branch"]["head_sha"], public["expected_head_sha"]),
         "local_branch.name": (facts["local_branch"]["name"], public["expected_head_branch"]),
@@ -158,7 +156,6 @@ def _matches_identity(public: dict[str, Any], semantic: dict[str, Any], facts: d
         "task.branch": (facts["task"]["branch"], public["expected_head_branch"]),
         "task.base_branch": (facts["task"]["base_branch"], public["expected_base_branch"]),
         "task.repo_ref": (facts["task"]["repo_ref"], public["repo_ref"]),
-        "task.issue_number": (facts["task"]["issue_number"], public["issue_number"]),
         "task.pr_number": (facts["task"]["pr_number"], public["pr_number"]),
         "task.expected_head_sha": (facts["task"]["expected_head_sha"], public["expected_head_sha"]),
         "runtime_mapping.task_id": (facts["runtime_mapping"]["task_id"], public["task_id"]),
@@ -171,8 +168,6 @@ def _matches_identity(public: dict[str, Any], semantic: dict[str, Any], facts: d
     for field, (actual, wanted) in expected.items():
         if actual != wanted:
             return "head_drift" if "head" in field or "branch" in field else "identity_drift"
-    if facts["issue"]["close_intent"] != "unchanged":
-        return "scope_drift"
     if facts["task"]["status"] not in {"completed", "in_progress"}:
         return "archive_conflict"
     if not facts["worktree"]["exists"] or facts["worktree"]["occupied_by"] is not None:
@@ -389,7 +384,6 @@ def _restore(root: Path, public: dict[str, Any], facts: dict[str, Any]) -> dict[
             or summary_git.get("branch") != public["expected_head_branch"]
             or summary_git.get("base_branch") != public["expected_base_branch"]
             or summary_github.get("pr_url") != public["pr_url"]
-            or public["issue_number"] not in [number for key in ("source_issues", "close_issues", "related_issues", "followup_issues") for number in summary_github.get(key, [])]
         ):
             return _blocked("identity_drift", "The finish summary does not match the immutable recovery identity.")
         committed_summary = _archive_blob(root, public, FINISH_SUMMARY)

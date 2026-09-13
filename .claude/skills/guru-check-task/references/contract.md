@@ -71,7 +71,7 @@ negative-conclusion requirements while judging the existing nine dimensions.
 Do not persist raw searches, query lists, or search-process fields in the
 private result or public DTO.
 
-1. Reread the current task, approved plan, live authority, issue scope, diff,
+1. Reread the current task, approved plan, live authority, diff,
    dirty paths, code, tests, docs, the current Phase 2 Architecture result, and
    applicable validation commands.
 2. Perform early candidate hygiene over the committed task-base diff, staged,

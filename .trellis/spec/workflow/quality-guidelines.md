@@ -86,7 +86,7 @@ planning.
 Search before editing a phrase, command, marker, or config key:
 
 ```bash
-rg "review-branch|finding|observation|followup-candidate|最终放行审查代理|finish-work|issue-scope-ledger|middle_platform_knowledge|guru-team-overlay"
+rg "review-branch|finding|observation|followup-candidate|最终放行审查代理|finish-work|closing keyword|middle_platform_knowledge|guru-team-overlay"
 rg "wait-timeout|progress-observed|continue-waiting|supersedes_agent_id|default at least 5 minutes|stale_after_unanswered_status_request|agent-progress.jsonl|long-command wrapper|periodic heartbeat"
 ```
 
@@ -359,12 +359,12 @@ checkpoint, runtime, archive, schema, example, or public DTO; rejection of an
 ambiguous continuation when multiple actions or proposals remain (while any
 clear affirmative response accepts one fully displayed unchanged action);
 optional-mechanism removal or
-replacement; active-task scope-only Ledger plus owner-result decision trail and live planning/context/action/re-entry bindings; all five
+replacement; active-task requirement authority plus owner-result decision trail and live planning/context/action/re-entry bindings; all five
 scope dispositions; all six typed exits including `retarget_context` and unique
 consumers; exact current schema 2.0 rejection/acceptance paths; pre-task
 zero-write; live mutation freshness; caller-aware clear resume targets;
 payload/mutation/live body equality; unfinalized related/followup/new-task/
-out-of-scope rejection; exact scope-only Ledger validation, owner-result trail,
+out-of-scope rejection; exact current task and requirement-authority validation, owner-result trail,
 and live GitHub authority binding; unknown current-shape field rejection; mutation-only
 `refresh_context`; fresh re-entry before exact interrupted progression; active
 `new_task` scope classification with side-effect-free draft-only continuation;
@@ -449,8 +449,8 @@ drift rejection. Mock remote responses only at the fixture GitHub boundary;
 do not replace the installed dispatcher or synthesize a successful receipt.
 The #389 installed regression consumes actual `readiness_current` through the
 published recorder authoring input, then runs executor, result checker and public
-invoke to `created` inside disposable repositories. Verify workspace/task/ledger
-and ignored mapping identity, unchanged source state before mutation, and exact
+invoke to `created` inside disposable repositories. Verify workspace/task/runtime
+mapping identity, unchanged source state before mutation, and exact
 diagnostic paths for ordinary missing envelope/authoring fields. Do not use the
 private transcript helper to construct the final plan in this acceptance test.
 When changing workspace boundary behavior, also run
@@ -485,9 +485,9 @@ issue assignee, zero issue assignees/current-login, multiple/user-choice, and
 unresolved assignee cases; isolated official `common.task_store.cmd_create`
 adapter with explicit creator and assignee; missing-owner failure before writes; exact
 `task.json.creator=task.json.assignee=reviewed login`; preservation of existing
-identity bytes; exact object reuse/conflict blocking; exactly one Guru-owned
-tracked task-local artifact (`issue-scope-ledger.json`); task identity derived
-only from current `task.json`, ignored runtime mappings, and live Git worktree
+identity bytes; exact object reuse/conflict blocking; no Guru-owned tracked
+task-local Intake aggregate; task identity derived only from current `task.json`,
+ignored runtime mappings, and live Git worktree
 facts; source and target with no `.trellis/.developer` or
 `.trellis/workspace/**`; preservation
 of existing official identity/journal bytes; exactly three typed exits and unique
@@ -735,7 +735,7 @@ Python or shell.
 - Making shell scripts detect AI runtime capabilities such as MCP availability.
   Treat those as AI runtime/tool capabilities and express the decision in
   workflow or prompt text.
-- Relying on chat memory for issue close scope, base branch, or `branch_review_commit`.
+- Relying on chat memory for Publication payload effect, base branch, or `branch_review_commit`.
 - Treating one phrase, Issue presence, file count, or path as an independent
   task-free classifier instead of applying the complete semantic decision in
   `guru-select-workflow-mode`.
@@ -900,8 +900,8 @@ the Publication wrapper retires its checkpoint after valid output, old 3.0
 Publication/Finalizer shapes fail closed, and Finalizer
 never augments, parses, or deletes that checkpoint. Finalizer terminal tests
 prove it retires its transaction, gate, and request only after the
-`ready_for_merge` DTO validates. The closeout transaction must leave Issue Scope
-Ledger bytes unchanged and must not invoke, read, archive, or retain extension
+`ready_for_merge` DTO validates. The closeout transaction must preserve unowned
+legacy files unchanged and must not invoke, read, archive, or retain extension
 verification state.
 Recovery tests build a real commit topology where an existing PR/remote HEAD is
 a strict ancestor of the current publication HEAD. They prove exact
@@ -1035,19 +1035,16 @@ the five prior and four task-free execution handoffs, the active package graph c
 
 Current gate 5.0 and transaction 3.0 regressions prove Publication input, exact
 pre-push authority, Draft/Ready identity, archive recovery, and terminal cleanup.
-Current interfaces, manifests, runtime preparation and archives do not select,
-create, read, move, or retain `closeout-plan.json` or a verifier result; legacy
-schemas/examples remain immutable and are tested only by explicit rejection or
-compatibility selectors. Archive projection contains exactly six durable core
-files.
+Current interfaces, manifests, runtime preparation and archives use only the
+owner-private finalization transaction and do not select or retain a verifier
+result. Archive projection contains exactly five durable core files.
 
 Focused recovery coverage includes a business reviewed HEAD that differs from
 the external extension source commit, a bound Draft or Ready PR at each
-post-bind transition, and a historical index-tracked `closeout-plan.json` whose
-working-tree file is already deleted. It proves post-bind recovery precedes
-pre-PR provenance inference, the legacy path is committed only as an exact
-active-side deletion, the six-file current archive omits it, and PR/remote/
-payload/scope/plan/HEAD drift remains fail closed.
+post-bind transition, and terminal consumption after transaction cleanup. It
+proves post-bind recovery precedes pre-PR provenance inference and that
+PR/remote/payload/external-work-item-effect/transaction/HEAD drift remains fail
+closed.
 
 Focused provenance reprepare coverage contains both closed source modes. The
 self-hosted fixture proves distinct source/target paths while both identities
@@ -1273,7 +1270,7 @@ least 70%, with `terminal.post_exit_operation=0`. These are hard structural
 acceptance checks.
 
 The fixture matrix includes Commit hook/drift/active-operation/stdout-loss,
-Publication ready/metadata/content/ledger routes, Finalizer same-plan
+Publication ready/metadata/content routes, Finalizer same-plan
 reprepare/recovery and changed-plan reconfirmation, and Merge pending/success/
 failure/head drift/default/non-default/refs-only closure plus mutation-output
 loss. It must also prove one expected-head-bound watcher and reject stacked

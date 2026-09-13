@@ -324,7 +324,6 @@ def build_plan(package: Path, source: Path, base_head: str) -> dict[str, Any]:
     )
     plan["side_effects"].update(
         {
-            "task_artifacts": [f"{task_dir}/issue-scope-ledger.json"],
             "runtime_mappings": [
                 f".trellis/.runtime/guru-team/workspaces/{task_slug}.json",
                 f".trellis/.runtime/guru-team/tasks/{task_slug}.json",
@@ -457,8 +456,7 @@ def main() -> int:
     workspace = source.parent / f"{source.name}-worktrees" / created["workspace_slug"]
     task_dir = workspace / created["task_artifact_dir"]
     task_data = json.loads((task_dir / "task.json").read_text())
-    ledger = task_dir / "issue-scope-ledger.json"
-    if checked["checker"]["status"] != "passed" or not ledger.is_file():
+    if checked["checker"]["status"] != "passed":
         raise AssertionError("installed checker did not validate the created workspace")
     if task_data.get("creator") != "fixture-maintainer":
         raise AssertionError("installed runtime depended on developer identity for creator")
@@ -478,7 +476,7 @@ def main() -> int:
     lifecycle_outcome = {
         "typed_exit": checked["typed_exit"],
         "checker_status": checked["checker"]["status"],
-        "artifact_names": ["issue-scope-ledger.json"],
+        "artifact_names": [],
         "task_creator": task_data.get("creator"),
         "target_legacy_state_absent": True,
     }

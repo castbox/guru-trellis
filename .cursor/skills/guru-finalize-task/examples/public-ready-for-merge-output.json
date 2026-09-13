@@ -6,5 +6,5 @@
   "expected_head_sha": "1111111111111111111111111111111111111111",
   "expected_base_branch": "main",
   "expected_head_branch": "codex/180-minimal-finalizer-replay-174",
-  "expected_close_issues": [180]
+  "publication_body_sha256": "bde3310f347bcb69b76f642f8581b0d901b08df13ff1956a8e96428da46940d2"
 }

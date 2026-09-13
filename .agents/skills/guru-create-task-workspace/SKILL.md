@@ -22,7 +22,7 @@ The package wrappers require the complete installed Guru Team preset and route
 through `run-skill-command`. They are not standalone implementations. Missing,
 stale, mismatched, ambiguous, or unconsumed evidence fails closed.
 
-For an ordinary existing issue, author only `scope`, `naming`, `assignee`,
+For an ordinary existing issue, author only `naming`, `assignee`,
 `side_effects`, and `ai_review_gate`; use the exact input preparation contract
 in [references/contract.md](references/contract.md#recorder-input-preparation).
 Do not author hashes or reconstruct predecessor private payloads. After the

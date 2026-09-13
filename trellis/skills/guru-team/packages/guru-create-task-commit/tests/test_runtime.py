@@ -16,6 +16,12 @@ from execute import index_entries, run as execute_commit
 from runtime.io import CommandError
 
 class PackageLocalRuntimeTest(unittest.TestCase):
+ def test_canonical_message_supports_issue_and_no_issue_authority(self):
+  raw={"type":"fix","scope":"commit","summary":"收敛消息合同","background":"验证来源引用。","changes":"按当前 authority 生成消息。","boundaries":"不生成关闭语义。","validations":"运行 package-local 测试。"}
+  no_issue=canonical_message(raw);with_issue=canonical_message({**raw,"issue_reference":247})
+  self.assertEqual("fix(commit): 收敛消息合同",no_issue["subject"]);self.assertNotIn("Refs #",no_issue["body"]);self.assertNotIn("issue_reference",no_issue)
+  self.assertEqual("fix(commit): #247 收敛消息合同",with_issue["subject"]);self.assertTrue(with_issue["body"].endswith("Refs #247"));self.assertEqual(247,with_issue["issue_reference"])
+
  def git(self,repo,*args,input=None,check=True):
   result=subprocess.run(["git",*args],cwd=repo,text=True,input=input,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
   if check and result.returncode:

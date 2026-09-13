@@ -1,12 +1,12 @@
 # Preset Installer
 
-The managed Guru Team assets retain `schemas/closeout-plan.schema.json` only as
-an immutable legacy compatibility asset. Current interfaces, runtime and archive
-selection use `schemas/finalization-transaction.schema.json`. Fresh install,
-workflow switch/update, and preset reapply must preserve the current transaction,
-Draft-to-Ready handshake, `ready_for_merge` route and Merge entry across shared,
-Codex, Claude, and Cursor. Recursive `.new`/`.bak` scans and canonical/dogfood
-equality include both the current schema and explicit legacy asset.
+The managed Guru Team assets install only current Finalizer and Publication
+contracts. Fresh install, workflow switch/update, and preset reapply must
+preserve the current transaction, Draft-to-Ready handshake, `ready_for_merge`
+route and Merge entry across shared, Codex, Claude, and Cursor. Retired
+closeout-plan and Issue scope ledger schemas are not installed, registered,
+read, migrated, or retained as compatibility assets. Recursive `.new`/`.bak`
+scans and canonical/dogfood equality cover only current managed assets.
 
 ## Boundary
 
@@ -699,7 +699,7 @@ owned by the Publication package, marketplace workflow, and active public
 package graph. The installed asset inventory contains no task-local body/index
 template, reader, writer, fixture, or CLI compatibility flag. It distributes
 the current readiness/ready/Finalizer input 4.0 schemas, transaction 1.0,
-finish-summary 2.0, and explicit legacy closeout-plan 3.0 asset together.
+and finish-summary 2.0 without a closeout-plan or Issue scope ledger asset.
 
 Clean throwaway install and post-`trellis update` preset reapply both run
 source/installed validation, workflow marker and consumer uniqueness checks,
@@ -754,9 +754,10 @@ Unknown edits and sidecars retain the existing managed-hash remediation.
 with four current public input profiles, six output contracts, current gate
 5.0, transaction 2.0, real-wrapper eval corpus, and deterministic runtime
 wrappers. Canonical, installed shared, Codex, Cursor, and Claude package/corpus
-bytes remain identical and wrappers retain executable mode. Legacy aggregate,
-gate, transaction, verification re-entry, and closeout-plan assets remain
-immutable but are absent from current inventories and routes.
+bytes remain identical and wrappers retain executable mode. Retired aggregate,
+gate, transaction, verification re-entry, closeout-plan, and Issue scope ledger
+assets are absent from current inventories and routes; the current package does
+not provide compatibility or migration for them.
 
 Business content push proceeds directly to Draft PR, archive, Ready, and Merge.
 Finalizer does not invoke verifier, emit `verification_required`, accept

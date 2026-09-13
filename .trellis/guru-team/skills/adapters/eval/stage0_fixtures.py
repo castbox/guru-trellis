@@ -893,8 +893,7 @@ def readiness_semantic_review(
     } for index, dimension_id in enumerate(runtime.CHANGE_REQUEST_REVIEW_DIMENSIONS)]
     scope_conclusion = {
         "requirement_scope_basis": "The reviewed draft and current prerequisites define the scope.",
-        "delivery_unit_id": "stage0-readiness-eval", "close_issues": [],
-        "related_issues": [], "followup_issues": [],
+        "delivery_unit_id": "stage0-readiness-eval",
         "duplicate_reuse_decision": "No duplicate replaces this delivery unit.",
         "implementation_target": "The Stage 0 minimal handoff package graph.",
         "current_gap": "The selected route identifies the next readiness owner.",
@@ -922,7 +921,6 @@ def build_readiness_owner(
     mode: str,
     profile: str,
     continuation: str = "stage0-current",
-    close_issues: list[int] | None = None,
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]], dict[str, Any]]:
     route_by_recipe = {
         "readiness-ready": "ready",
@@ -1012,11 +1010,6 @@ def build_readiness_owner(
     )
     linkage = review.linkage(target, projections)
     semantic_review = readiness_semantic_review(runtime, target, linkage, typed_exit)
-    if close_issues is not None:
-        semantic_review["scope_conclusion"]["close_issues"] = close_issues
-        semantic_review["ai_review_gate"]["scope_conclusion_sha256"] = runtime.context_digest(
-            semantic_review["scope_conclusion"]
-        )
     authored = {
         "generated_at": "2026-01-01T00:00:00Z", "mode": mode,
         "target": raw_target,
@@ -1067,7 +1060,6 @@ def workspace_prerequisites(
     package = fixture / ".trellis/guru-team/skills/packages/guru-review-change-request"
     readiness, state, _ = build_readiness_owner(
         runtime, fixture, package, "readiness-ready", mode, "current_issue",
-        close_issues=[issue_number],
     )
     public = stage0_command(
         fixture, "guru-review-change-request", "invoke", state["invocation"],
@@ -1113,12 +1105,6 @@ def workspace_plan(
     if gate_status is None:
         raise ValueError(f"unsupported task workspace owner staging recipe: {recipe}")
     task_slug = "145-stage0-owner-eval"
-    task_dir = f".trellis/tasks/{time.strftime('%m-%d')}-{task_slug}"
-    scope_item = {
-        "number": issue["issue_number"], "url": issue["url"],
-        "title": issue["title"],
-        "reason": "The reviewed Stage 0 delivery unit closes this exact issue.",
-    }
     base_result = prerequisites["base"]
     naming_disposition = "conflict_blocked" if gate_status == "blocked" else "create_new"
     plan: dict[str, Any] = {
@@ -1139,10 +1125,6 @@ def workspace_plan(
             "disposition_sha256": prerequisites["clarity"]["target_disposition"]["disposition_digest"],
             "duplicate_decision_sha256": prerequisites["clarity"]["target_disposition"]["duplicate_facts_sha256"],
             "created_issue_binding_sha256": None, "created_issue_result": None,
-        },
-        "scope": {
-            "primary": scope_item, "close": [scope_item], "related": [], "followup": [],
-            "scope_sha256": "0" * 64,
         },
         "base": {
             "selected_base": base_result["resolution"]["selected_base"],
@@ -1170,10 +1152,7 @@ def workspace_plan(
         "side_effects": {
             "operations": [
                 "create_branch", "create_worktree", "create_task",
-                "write_task_artifacts", "write_runtime_mappings",
-            ],
-            "task_artifacts": [
-                f"{task_dir}/{name}" for name in runtime.TASK_WORKSPACE_ARTIFACT_NAMES
+                "write_runtime_mappings",
             ],
             "runtime_mappings": [
                 f".trellis/.runtime/guru-team/workspaces/{task_slug}.json",
@@ -1185,10 +1164,10 @@ def workspace_plan(
         "ai_review_gate": {
             "status": gate_status, "reviewer": "stage0-eval-reviewer",
             "reviewed_plan_sha256": "0" * 64,
-            "summary": "The exact target, names, assignee, scope and mutation boundary were reviewed.",
+            "summary": "The exact target, names, assignee and mutation boundary were reviewed.",
             "evidence": [
                 "The invocation owns one isolated workspace and task.",
-                "All durable artifacts are task-local and all runtime mappings are ignored.",
+                "Task metadata is task-local and all runtime mappings are ignored.",
             ],
         },
         "freshness": {
@@ -1196,7 +1175,6 @@ def workspace_plan(
             "reviewable_plan_sha256": "0" * 64, "plan_sha256": "0" * 64,
         },
     }
-    plan["scope"]["scope_sha256"] = runtime.task_workspace_scope_digest(plan["scope"])
     reviewable = runtime.context_digest(runtime.task_workspace_reviewable_projection(plan))
     plan["ai_review_gate"]["reviewed_plan_sha256"] = reviewable
     plan["freshness"]["reviewable_plan_sha256"] = reviewable
@@ -1224,7 +1202,10 @@ def build_workspace_owner(
     )
     if recipe == "workspace-invalid-task-state":
         workspace_path = fixture.parent / "owner-worktrees" / plan["naming"]["workspace_slug"]
-        task_dir = workspace_path / Path(plan["side_effects"]["task_artifacts"][0]).parent
+        task_dir = (
+            workspace_path / ".trellis/tasks"
+            / f"{time.strftime('%m-%d')}-{plan['naming']['task_slug']}"
+        )
         task_dir.mkdir(parents=True, exist_ok=True)
         (task_dir / "task.json").write_text(
             json.dumps({

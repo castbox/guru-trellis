@@ -46,9 +46,6 @@ class PublicInvocationTest(unittest.TestCase):
                 }
             )
         )
-        (task / "issue-scope-ledger.json").write_text(
-            json.dumps({"primary_issue": {"number": 330}})
-        )
         self.git("add", ".")
         self.git("commit", "-q", "-m", "base")
         self.parent = self.git("rev-parse", "HEAD")
@@ -140,6 +137,7 @@ class PublicInvocationTest(unittest.TestCase):
                 "changes": "在原 public invoke 中执行确认后事务。",
                 "boundaries": "保留无关工作区状态。",
                 "validations": "运行 package-local 回归。",
+                "issue_reference": 330,
                 "subject": subject,
                 "body": body,
                 "bytes": subject + "\n\n" + body + "\n",

@@ -123,6 +123,80 @@ def bind_owner_result_argument(
         raise ValueError("semantic case must declare one owner-result invocation argument")
     return result_relative
 
+def bind_task_commit_candidate_argument(
+    request: dict[str, Any],
+    fixture: Path,
+    candidate_artifact: Path | str,
+) -> str:
+    candidate_path = Path(candidate_artifact).resolve()
+    try:
+        candidate_relative = candidate_path.relative_to(fixture.resolve()).as_posix()
+    except ValueError as exc:
+        raise ValueError("task commit candidate must stay inside the installed eval fixture") from exc
+    if candidate_path.is_symlink() or not candidate_path.is_file():
+        raise ValueError("task commit candidate is unavailable or unsafe")
+
+    workdir = Path(request["workdir"]).resolve()
+    rewritten = 0
+    for relative in request.get("files", []):
+        path = workdir / str(relative)
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        invocation = payload.get("public_invocation")
+        arguments = invocation.get("arguments") if isinstance(invocation, dict) else None
+        if not isinstance(arguments, list) or "--candidate-artifact" not in arguments:
+            continue
+        index = arguments.index("--candidate-artifact")
+        if index + 1 >= len(arguments) or not isinstance(arguments[index + 1], str):
+            raise ValueError("case candidate-artifact invocation argument is invalid")
+        arguments[index + 1] = candidate_relative
+        path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
+        rewritten += 1
+    if rewritten != 1:
+        raise ValueError("semantic case must declare one candidate-artifact invocation argument")
+    return candidate_relative
+
+def bind_semantic_result_argument(
+    request: dict[str, Any],
+    fixture: Path,
+    semantic_result: Path | str,
+) -> str:
+    result_path = Path(semantic_result).resolve()
+    try:
+        result_relative = result_path.relative_to(fixture.resolve()).as_posix()
+    except ValueError as exc:
+        raise ValueError("semantic result must stay inside the installed eval fixture") from exc
+    if result_path.is_symlink() or not result_path.is_file():
+        raise ValueError("semantic result is unavailable or unsafe")
+
+    workdir = Path(request["workdir"]).resolve()
+    rewritten = 0
+    for relative in request.get("files", []):
+        path = workdir / str(relative)
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        invocation = payload.get("public_invocation")
+        arguments = invocation.get("arguments") if isinstance(invocation, dict) else None
+        if not isinstance(arguments, list) or "--semantic-result" not in arguments:
+            continue
+        index = arguments.index("--semantic-result")
+        if index + 1 >= len(arguments) or not isinstance(arguments[index + 1], str):
+            raise ValueError("case semantic-result invocation argument is invalid")
+        arguments[index + 1] = result_relative
+        path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
+        rewritten += 1
+    if rewritten != 1:
+        raise ValueError("semantic case must declare one semantic-result invocation argument")
+    return result_relative
+
 def bind_review_input_argument(
     request: dict[str, Any],
     fixture: Path,
@@ -159,42 +233,6 @@ def bind_review_input_argument(
     if rewritten != 1:
         raise ValueError("semantic case must declare one review-input invocation argument")
     return review_relative
-
-def bind_merge_gate_argument(
-    request: dict[str, Any],
-    fixture: Path,
-    gate_path: Path,
-) -> str:
-    try:
-        gate_relative = gate_path.resolve().relative_to(fixture.resolve()).as_posix()
-    except ValueError as exc:
-        raise ValueError("merge gate must stay inside the installed eval fixture") from exc
-    if gate_path.is_symlink() or not gate_path.is_file():
-        raise ValueError("merge gate is unavailable or unsafe")
-
-    workdir = Path(request["workdir"]).resolve()
-    rewritten = 0
-    for relative in request.get("files", []):
-        path = workdir / str(relative)
-        try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-        if not isinstance(payload, dict):
-            continue
-        invocation = payload.get("public_invocation")
-        arguments = invocation.get("arguments") if isinstance(invocation, dict) else None
-        if not isinstance(arguments, list) or "--gate" not in arguments:
-            continue
-        index = arguments.index("--gate")
-        if index + 1 >= len(arguments) or not isinstance(arguments[index + 1], str):
-            raise ValueError("case merge-gate invocation argument is invalid")
-        arguments[index + 1] = gate_relative
-        path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
-        rewritten += 1
-    if rewritten != 1:
-        raise ValueError("semantic merge case must declare one gate invocation argument")
-    return gate_relative
 
 def stage_clean_installed_owner_repo(
     execution_root: Path, runtime_target: Path, request_package: Path,
@@ -428,18 +466,12 @@ def write_fake_merge_gh(
             "body": "Closes #174\n",
             "closure_mismatch": False,
         },
-        "merge-workflow-added-close-scope-blocked": {
+        "merge-phase2-reentry": {
             "draft": False,
             "head": "1" * 40,
             "merge_state_status": "CLEAN",
-            "body": "Closes #174\nCloses #180\n",
-            "closure_mismatch": False,
-        },
-        "merge-workflow-close-scope-blocked": {
-            "draft": False,
-            "head": "1" * 40,
-            "merge_state_status": "CLEAN",
-            "body": "Related #174\n",
+            "head_branch": "codex/348-merge-blocked-phase2-reentry",
+            "body": "Closes #348\n",
             "closure_mismatch": False,
         },
         "merge-workflow-closure-mismatch": {

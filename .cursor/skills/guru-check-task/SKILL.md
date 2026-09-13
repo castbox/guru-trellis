@@ -20,7 +20,7 @@ findings, tests, implementation routing, or planning-stale judgment, invoke
 and returns here for fresh qualification; it never enters scope confirmation.
 
 Read the approved planning, live diff and dirty paths, implementation, tests,
-Docs SSOT, issue scope, and applicable repository validation directly. Classify
+Docs SSOT, source Issue authority, and applicable repository validation directly. Classify
 every candidate through `guru-qualify-normal-scenario:phase2_candidate_set`
 before assigning P0-P3 severity, then
 review the nine Phase 2 adequacy dimensions. Worker output is ephemeral input to

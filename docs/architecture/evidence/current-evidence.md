@@ -59,6 +59,20 @@ lifecycle、clean committed candidate provenance，以及 pre-promotion independ
 promotion inputs，不证明 promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、push、
 PR、merge、tag、Release、remote marketplace publication、business production 或 Issue closure。
 
-当前 Architecture knowledge successor 为 `.49`；`.48` 是 immutable superseded predecessor。
-released `v0.6.16-guru.1` 不包含 #329 candidate。promotion-created combined diff 仍须 fresh Phase 2、
+`EVD-025` 建立的 `.49` 现为 immutable superseded authority；其 #329 framework source、CLI、package
+manager、extension 与 released axis保持 current inherited facts，不由 #247 改写。
+
+`EVD-026`：#247 current inputs 绑定 live Issue r24、task/RDT planning、
+`docs/architecture/contributions/247-remove-issue-scope-ledger.md` identity
+`architecture-contribution-247-remove-issue-scope-ledger-v1`、accepted `ADR-009`、active-zero ledger
+inventory、旧流程Publication/Finalizer/Merge/Restore回归、legacy inert、capability与canonical/dogfood/
+installed/platform parity。r19 target-native review range仅为历史过程证据；r24 corrective commit后必须fresh review。
+它支撑 `ARCH-CUR-027`、`ARCH-DOM-015`、`ARCH-INT-017`、`ARCH-GOV-009`、`ARCH-GAP-008`、accepted
+`ADR-009` 与 expected `.49` -> `.50` serialized promotion；只证明 reviewed promotion inputs，不证明
+promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、push、PR、merge、tag、Release、
+完整多平台 exact-candidate matrix、business production 或 Issue closure。
+
+当前 Architecture knowledge successor 为 `.50`；`.49` 是 immutable superseded predecessor。
+framework source/CLI/package manager、23 Skills / 97 exits / 78 commands、extension `0.6.16-guru.41` 与
+released `v0.6.16-guru.1` 均保持独立 inherited facts。promotion-created combined diff 仍须 fresh Phase 2、
 task commit 与完整 Branch Review，后续远端动作由各 live owner 独立验证。

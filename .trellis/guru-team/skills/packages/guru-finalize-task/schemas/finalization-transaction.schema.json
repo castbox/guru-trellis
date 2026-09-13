@@ -3,7 +3,7 @@
   "$id": "guru-finalization-transaction-3.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "skill_id", "mode", "task_ref", "repo_ref", "base_branch", "branch", "branch_review_commit", "publication_head", "plan_digest", "publication", "close_issues", "next_transition"],
+  "required": ["schema_version", "skill_id", "mode", "task_ref", "repo_ref", "base_branch", "branch", "branch_review_commit", "publication_head", "plan_digest", "publication", "next_transition"],
   "properties": {
     "schema_version": {"const": "3.0"},
     "skill_id": {"const": "guru-finalize-task"},
@@ -19,10 +19,6 @@
       "type": "object", "additionalProperties": false,
       "required": ["title", "body"],
       "properties": {"title": {"type": "string", "minLength": 1}, "body": {"type": "string", "minLength": 1}}
-    },
-    "close_issues": {
-      "type": "array", "uniqueItems": true,
-      "items": {"type": "integer", "minimum": 1}
     },
     "next_transition": {"enum": ["push_content", "bind_pr", "archive", "push_archive", "mark_ready"]},
     "pre_push_remote_head": {"type": "string", "pattern": "^(?:|[0-9a-f]{40})$"},

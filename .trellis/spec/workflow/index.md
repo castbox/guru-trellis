@@ -25,7 +25,7 @@ Before editing workflow behavior:
 1. Read the [Guru Trellis evolution requirements](../../../docs/requirements/evolution/requirement-main.md), map the proposed refactor to `EVO-001..007`, and identify any unaffected goals before choosing implementation boundaries.
 2. Read [workflow-contract.md](./workflow-contract.md).
 3. Read [companion-scripts.md](./companion-scripts.md) when changing Bash or Python helpers.
-4. Read [data-contracts.md](./data-contracts.md) when changing config, current task identity, runtime boundary, review-gate, issue ledger, or PR payload data.
+4. Read [data-contracts.md](./data-contracts.md) when changing config, current task identity, runtime boundary, review-gate, external-work-item references, or PR payload data.
 5. Read [skill-package-contract.md](./skill-package-contract.md) when changing public workflow skills, registry/interface schemas, workflow markers, installation, or typed exits.
 6. Read [quality-guidelines.md](./quality-guidelines.md) before validation or commit.
 7. Read shared guides under `.trellis/spec/guides/` when the change touches multiple generated surfaces or payload contracts.
@@ -76,10 +76,9 @@ Before editing workflow behavior:
 - `guru-discover-change-context` owns the semantic Phase 0 current-state/history discovery loop; its deterministic runtime reads only archived `finish-summary.json:index.*` and persists no repo-level cache.
 - `guru-create-task-workspace` owns the final Intake mutation closed loop. Its
   recorder/executor/checker publish stdout plan/result contracts, create either
-  one exact reviewed issue or one exact workspace/task invocation, persist only
-  one Guru-owned portable task-local Intake artifact
-  (`issue-scope-ledger.json`), and use only ignored
-  `.trellis/.runtime/guru-team/**` mappings.
+  one exact reviewed issue or one exact workspace/task invocation, persist no
+  Guru-owned task-local scope aggregate, and use only official `task.json` plus
+  ignored `.trellis/.runtime/guru-team/**` mappings for workspace identity.
 - `guru-approve-task-plan` owns the Phase 1 semantic planning approval closed
   loop. Its shared recorder/checker validate the compact schema 3.0 semantic
   projection in ignored owner-private runtime; consumers receive only one
@@ -105,13 +104,14 @@ Before editing workflow behavior:
   verifier for clean throwaway installation adequacy. It is standalone-only,
   accepts `source_repository_verification`, returns `verified|blocked`, and is
   unreachable from business tasks, Publication, Finalizer, and finish-work.
-- `guru-finalize-task` is the active semantic owner of the exact closeout plan
-  review, current-conversation Finalizer confirmation, four distinct input profiles,
-  six public exits, and the owner-private transaction/recovery loop. Current
-  re-entry uses ignored `finalization-transaction.json`; current preparation and
-  archives never select `closeout-plan.json`. Package discovery, global invocation
-  after publication `ready`, three Guru-owned daily entries, and automatic machine
-  recovery routing are active. Terminal `ready_for_merge` evals feed
+- `guru-finalize-task` is the active semantic owner of exact Publication payload
+  readiness, current-conversation Finalizer confirmation, four distinct input
+  profiles, six public exits, and the owner-private transaction/recovery loop.
+  Current re-entry uses ignored `finalization-transaction.json`; no retired
+  task-local aggregate participates in current preparation or archive selection.
+  Package discovery, global invocation after publication `ready`, three Guru-owned
+  daily entries, and automatic machine recovery routing are active. Terminal
+  `ready_for_merge` evals feed
   `guru-merge-task-pr`. Upstream
   `trellis-finish-work` entries are owned only by official Trellis and are not
   installed or managed by the Guru preset.

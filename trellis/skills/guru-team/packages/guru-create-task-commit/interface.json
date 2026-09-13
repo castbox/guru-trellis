@@ -13,7 +13,6 @@
         "workspace_boundary",
         "task_identity",
         "phase2_result",
-        "issue_scope_ledger",
         "pre_commit_head",
         "git_operation_state",
         "dirty_snapshot"
@@ -25,7 +24,6 @@
         "workspace_boundary",
         "task_identity",
         "phase2_result",
-        "issue_scope_ledger",
         "pre_commit_head",
         "git_operation_state",
         "dirty_snapshot"
@@ -50,12 +48,6 @@
       "evidence": "guru-check-task passed DTO",
       "binding": "task_ref, profile-owned source_exit, and phase2_commit_anchor",
       "freshness": "the Phase 2 checker confirms phase2_commit_anchor remains in current history and the current reviewed-content identity still matches the owner checkpoint"
-    },
-    {
-      "id": "issue_scope_ledger",
-      "evidence": "issue-scope-ledger.json",
-      "binding": "primary issue and ledger SHA-256",
-      "freshness": "current bytes and primary issue match"
     },
     {
       "id": "pre_commit_head",
@@ -237,7 +229,7 @@
   ],
   "reentry": {
     "identity": "task id, sequence, passed DTO phase2_commit_anchor and pre-commit HEAD",
-    "freshness": "the minimal Phase 2 result, live task, ledger, Git state and complete dirty snapshot still match",
+    "freshness": "the minimal Phase 2 result, live task, Git state and complete dirty snapshot still match",
     "stale_behavior": "fail_closed"
   },
   "tests": [

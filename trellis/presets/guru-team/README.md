@@ -273,21 +273,15 @@ Commits contract:
 
 ```bash
 .trellis/guru-team/scripts/bash/check-commit-messages.sh --json --task <task-path>
-.trellis/guru-team/scripts/bash/format-merge-commit.sh --json \
-  --task <task-path> \
-  --pull-request <pr-number> \
-  --summary "中文 PR 摘要"
 ```
 
-The helpers validate subject/body shape and format merge commit payloads only.
-They do not decide whether implementation, Phase 2 check, Branch Review Gate, or
-PR readiness is sufficient. Work commits use
-`{type}({scope}): #{primary_issue} 中文描述` with fixed body sections and
-`Refs #<primary_issue>`; commit messages must not use close keywords such as
+The helper validates work-commit subject/body shape only. It does not decide
+whether implementation, Phase 2 check, Branch Review Gate, or PR readiness is
+sufficient. Issue-backed work commits may include a current-authority Issue
+reference; no-Issue tasks must not manufacture one. Commit messages must not use close keywords such as
 `Closes`, `Fixes`, `Resolves`, `Close`, `Fix`, or `Resolve`; Trellis metadata commits use an empty body; publish
-payloads provide `chore(merge): #{pull_request} 合并 #{primary_issue} 中文 PR 摘要`
-plus the fixed merge body and explicit `gh pr merge ... --subject ... --body-file ...`
-command.
+payloads use the Publication-reviewed PR title/body, while merge commit metadata
+is PR-native and does not require an Issue number.
 
 ## Apply
 
@@ -667,10 +661,7 @@ platform selection:
 - `.trellis/guru-team/config.yml`
 - `.trellis/guru-team/config-template.yml`
 - `.trellis/guru-team/extension.json`
-- `.trellis/guru-team/schemas/closeout-plan.schema.json`
 - `.trellis/guru-team/schemas/finish-summary.schema.json`
-- `.trellis/guru-team/schemas/marketplace-verification.schema.json`（verifier
-  package 的 legacy/private schema dependency，不是业务 task artifact）
 - `.trellis/guru-team/scripts/bash/check-env.sh`
 - `.trellis/guru-team/scripts/bash/version.sh`
 - `.trellis/guru-team/scripts/bash/prepare-task.sh`
@@ -706,7 +697,6 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/prepare-task-commit.sh`
 - `.trellis/guru-team/scripts/bash/check-commit-messages.sh`
 - `.trellis/guru-team/scripts/bash/create-task-commit.sh`
-- `.trellis/guru-team/scripts/bash/format-merge-commit.sh`
 - `.trellis/guru-team/scripts/bash/review-branch.sh`
 - `.trellis/guru-team/scripts/bash/check-review-gate.sh`
 - `.trellis/guru-team/scripts/bash/record-task-publication-review.sh`
@@ -885,17 +875,15 @@ dispatcher wrappers。Runtime assets 是
 preconditions相同；answered evidence、question lifecycle与objective payload/live mutation均
 fail-closed验证。Pre-task/standalone stdout-only，
 active-task Scope Change Gate mandatory invoke本Skill，并由caller-aware clear router恢复planning或
-exact interrupted progression；只验证 compact ledger 与当前 live owner linkage，不创建专用 clarification artifact。Throwaway initial install、
+exact interrupted progression；只验证 compact owner result 与当前 live owner linkage，不创建专用 clarification artifact。Throwaway initial install、
 `trellis update`、workflow re-selection与preset reapply均执行 standalone record/check probe，
 并验证 `clear` / `needs_context` / `refresh_context` / `retarget_context` / `new_task` /
 `blocked` consumers。只接受 closed 2.0 artifact；其他 schema version 在 normalization 前
 fail closed，recorder/checker 不执行迁移或投影。
 
-Active-task `clear`/`new_task` 必须携带非空七类 terminal proposal set，每个五类 scope
-classification 保存已选择的 disposition，并 exact 绑定 compact owner-result
-`decision_trail`。该 trail 只含 `trail_id`、proposal id/digest/decision 与 live GitHub authority
-kind/URL/content checksum；`issue-scope-ledger.json` 是 closed scope-only 2.0，只含 schema
-version 与 primary/close/related/followup issue。planning/context/review/stale/interrupted/re-entry
+Active-task `clear`/`new_task` 必须携带非空 terminal proposal set，并 exact 绑定 compact
+owner-result `decision_trail`。该 trail 只含 `trail_id`、proposal id/digest/decision 与 live
+GitHub authority kind/URL/content checksum。planning/context/review/stale/interrupted/re-entry
 evidence 由 checker 从 owner 与 live facts 重读。Result、trail、runtime、checkpoint、
 archive、schema 和 public DTO 均不得保存用户授权状态、原话、ref、时间或 digest。
 `mechanism_removed/replaced` 使用 optional origin，不进入 trail/action mutation。GitHub authority mutation
@@ -931,8 +919,8 @@ tests 和两个 executable dispatcher wrappers。Runtime assets 是
 context/clarity/wording linkage、十项 dimensions、findings、scope conclusion、AI Gate 与五出口
 由 canonical semantic package 拥有。Runtime 只重建 portable projection/linkage/facts 并校验
 schema/hash/ref/freshness/consumer/ready invariant，不生成 readiness、finding、delivery unit 或
-route。Pre-task/standalone stdout-only；#112 直接消费 checked exit，只持久化
-`issue-scope-ledger.json`，不复制 `issue-review.json`。Record/check/invoke 统一以
+route。Pre-task/standalone stdout-only；#112 直接消费 checked exit，不持久化
+`issue-review.json` 或 Issue 分类 aggregate。Record/check/invoke 统一以
 `--invocation -` 传入原始 public transition；#386 直接退出旧分离参数与完整 producer-private
 result/flat projection 输入，调用方和完整 preset 同步迁移。正常路径使用 `wording_current`；
 缺失前序重入使用真实保存的较早 transition，精确合同由 Readiness package 拥有。
@@ -961,8 +949,8 @@ ignored-runtime `guru-task-workspace-plan-2.0`、`guru-task-workspace-result-3.0
 和三个 executable dispatcher wrappers。Draft invocation 创建 exact issue 后固定
 `refresh_review`；open issue invocation 使用独立 workspace/task confirmation。Assignee 按
 explicit、single issue assignee、zero issue assignees/current login、multiple/unresolved user
-choice 顺序解析。成功后除 official `task.json` 外只写 tracked task-local
-`issue-scope-ledger.json` 与 ignored `.trellis/.runtime/guru-team/**` mappings。
+choice 顺序解析。成功后只写 official `task.json` 与 ignored
+`.trellis/.runtime/guru-team/**` mappings，不创建 task-local Issue aggregate。
 
 Draft create 前使用 exact open title/body/labels 与 creation time执行 0/1/>1 recovery；
 唯一匹配被恢复，零匹配才创建，多个匹配阻断。完整 Intake重入时，workflow-created issue
@@ -1060,8 +1048,8 @@ dimensions, and returns one of four typed exits. The installed
 `record-planning-approval.sh` and `check-planning-approval.sh` commands preserve
 and validate the compact `guru-planning-approval-3.0` result; they do not create
 semantic conclusions or persist authorization. Every non-3.0 input fails closed;
-the owner accepts only a newly checked current invocation. Scope
-ledger task identity and requirement authority use the same issue-category
+the owner accepts only a newly checked current invocation. Task identity and
+requirement authority use the same issue-category
 projection. The checker revalidates the invocation base/HEAD/dirty snapshot
 while the task is still planning; after activation freshness is based on
 planning, Docs SSOT, authority and wording content, not later implementation
@@ -1144,7 +1132,7 @@ cannot chain closeout, commit review metadata, push, or create a PR before the
 explicit `guru-finish-work` entrypoint. That entry is
 a thin live-workflow router: it runs Phase 3.6 through
 `guru-review-task-publication`, then invokes `guru-finalize-task` only from
-`ready`. The finalizer alone may call the private deterministic closeout engine
+`ready`. The finalizer alone may call the private deterministic finalization engine
 after its semantic review and exact plan confirmation. It automatically routes
 verification, stale publication evidence, same-plan recovery, and reprepare;
 every interruption resumes through the same semantic owner loop.
@@ -1194,10 +1182,8 @@ validates the gate, dirty state, Publication ready 4.0 title/body payload, and
 live facts, then prints exact side effects, future archive mapping, transaction
 stage, and transitions without moving or writing task files, creating commits,
 pushing, or creating a PR. Current Finalizer persists
-`finalization-transaction.json` only for same-owner re-entry. Immutable legacy
-closeout-plan schemas/examples remain installed for explicit compatibility
-tests, but current interfaces, runtime preparation, recovery and archives never
-select, create, read, move, or retain `closeout-plan.json`.
+`finalization-transaction.json` only for same-owner re-entry. Retired task-local
+plan schemas, examples, readers, and recovery paths are not installed.
 After dry-run, the AI should render the active-task `Markdown 产物 review 表`;
 after formal archive, it must rerun the resolver and render the archive-path
 table because active task links are no longer the final review entry points.
@@ -1215,7 +1201,7 @@ ignored-runtime owner checkpoint and deletes it after its public DTO validates.
 Finalizer neither reads nor deletes that checkpoint and no task-local body or
 index handoff is created. The current transaction binds the exact title/body.
 After the draft PR is bound, Finalizer generates schema 2
-`finish-summary.json` once from the reviewed PR body and live Git/task/ledger/PR
+`finish-summary.json` once from the reviewed PR body and live Git/task/PR
 facts, validates it in the active task, and commits it only with the archive
 metadata transaction. Historical schema 1 finish summaries remain readable by
 Discovery. The preset installs no alternate summary command.
@@ -1394,13 +1380,11 @@ creator and assignee values. `task.json.assignee` and `task.json.creator` theref
 both equal the reviewed login, while existing historical bytes remain unchanged.
 Here, Guru task workspace and `workspace_slug` mean the isolated task checkout/
 worktree and its ignored runtime mapping, not a legacy journal workspace. The
-executor writes only the tracked task-local `issue-scope-ledger.json` plus
-ignored runtime mappings. The real local A/B
+executor writes only official task metadata plus ignored runtime mappings. The real local A/B
 fixture verifies both merge orders without a remote PR or concurrent process.
 
-The installer retains `schemas/closeout-plan.schema.json` only as an immutable
-legacy compatibility asset and manages current
-`schemas/finalization-transaction.schema.json` in the Finalizer package plus
+The installer manages current `schemas/finalization-transaction.schema.json`
+in the Finalizer package plus
 `schemas/finish-summary.schema.json`. It writes top-level
 `task_auto_commit: false` into `.trellis/config.yaml`. It does not add a legacy
 workspace ignore, provision journal merge attributes, or create/rewrite/index
@@ -1416,7 +1400,7 @@ official move it also checks the live archive month, empty index, exact
 untracked set, regular-file/mode contract, and tracked source blob bytes. A
 stale archive month returns the mapped `reprepare_required` route and rebuilds
 the archive mapping from the current transaction plus live facts; it does not
-create a closeout plan, readiness/evidence commit, history rewrite, or directory
+create a finalization plan, readiness/evidence commit, history rewrite, or directory
 migration. After the official move but before the exact archive commit exists,
 current recovery first completes idempotent compact-archive pruning, then
 requires the exact retained working-tree layout, dirty/staged paths, blob
@@ -1429,15 +1413,11 @@ ancestor of the reviewed publication HEAD. Equality is accepted only after the
 same recovery transaction binds and pushes that exact pre-push HEAD. It binds original
 Draft/Ready state and pre-push HEAD before mutation, performs only an exact
 fast-forward push, converges current reviewed title/body, and preserves Ready
-or follows Draft-to-Ready. Legacy transaction 2.0 remains installed under its
-versioned filename but cannot authorize PR adoption.
+or follows Draft-to-Ready.
 
 At `archive`, `push_archive`, or `mark_ready`, that exact transaction is
 validated before any pre-PR provenance inference, so an external extension
-source commit need not equal the business reviewed-content commit. Historical
-index-tracked but working-tree-deleted `closeout-plan.json` is retired as one
-active-side archive deletion with parent-blob continuity; it is not restored,
-moved, or retained.
+source commit need not equal the business reviewed-content commit.
 
 When a pre-PR tail is required, the apply executable comes from the resolved
 extension source checkout but receives the target reviewed checkout through
@@ -1447,9 +1427,8 @@ direct child of target reviewed HEAD. Self-hosted postimage ref/commit equal
 that reviewed HEAD; installed postimage repo/ref/commit retain the manifest-
 bound immutable Guru Trellis source identity instead of the business HEAD.
 
-The current retained set contains exactly 6 durable files: `task.json`,
-`prd.md`, `design.md`, `implement.md`, `issue-scope-ledger.json`, and
-`finish-summary.json`; there is no optional verifier artifact. Publication readiness,
+The current retained set contains exactly 5 durable files: `task.json`,
+`prd.md`, `design.md`, `implement.md`, and `finish-summary.json`; there is no optional verifier artifact. Publication readiness,
 Finalizer transaction/gate/request, intake snapshots, assignments,
 commit plans, raw review rounds and rollups, PR preparation, and other
 reconstructible checkpoints remain ignored runtime and do not enter the
@@ -1457,7 +1436,7 @@ archive.
 
 Once current `HEAD` is the exact archive commit, current recovery reads the
 committed `task.json` and `finish-summary.json` blobs together with Git
-parent/path/tree/blob lineage; it never selects a committed closeout plan.
+parent/path/tree/blob lineage; it never selects a committed finalization plan.
 Missing or tampered archived working-tree files do not block exact push, remote
 title/body checks, HEAD alignment, or draft-to-ready when the immutable commit
 facts remain valid. Exact recovery uses the committed
@@ -1467,11 +1446,9 @@ commands continue to require `task.json`, and worktree boundaries derive from
 the current task, ignored runtime mapping, current checkout, and live Git
 facts.
 
-`closeout-plan.json`, plan-only archived lookup, committed-plan-blob recovery,
-and schema 2.0/3.0 plan migration remain installed only as explicit legacy
-compatibility assets and regression selectors. Current Interface, registry,
-manifest, Finalizer preparation, recovery, archive, and the canonical
-`guru-finish-work` route never select, create, read, move, or retain them.
+Task-local plan lookup, committed-plan-blob recovery, and plan migration are not
+part of the installed package. Current recovery uses only the ignored current
+transaction plus committed `task.json` and `finish-summary.json` authority.
 Installed final projection, incomplete recovery, and exact recovery share one
 strict PR URL parser. GitHub owner/repository identity is case-insensitive,
 while the canonical summary URL preserves the exact valid casing returned by

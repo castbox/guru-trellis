@@ -10,7 +10,7 @@ finding as task work and obtained any required dialogue-local confirmation.
 Pass the current public re-entry input, semantic result, and fresh live-facts
 snapshot to `restore-archived-task`.
 
-The AI owner rereads the PR, Issue, remote branch, archive, task,
+The AI owner rereads the PR, remote branch, archive, task,
 finish-summary, runtime mapping, worktree and active-task facts immediately
 before invocation. The runtime validates that closed snapshot, rereads the
 local task artifacts and Git worktree, then owns only deterministic local

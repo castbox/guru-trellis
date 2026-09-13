@@ -104,7 +104,7 @@ class RestoreArchivedTaskContractTest(unittest.TestCase):
         self.assertEqual("skill_input_authoring_seed", contract["kind"])
         self.assertEqual([
             "exit_id", "repo_ref", "pr_number", "pr_url", "expected_head_sha",
-            "expected_base_branch", "expected_head_branch", "issue_number", "task_id",
+            "expected_base_branch", "expected_head_branch", "task_id",
             "archive_locator", "active_locator", "archive_commit", "finding_refs", "resume_target",
         ], contract["seed_fields"])
         self.assertEqual(["schema_version", "profile", "mode"], contract["authoring_fields"])

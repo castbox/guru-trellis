@@ -60,15 +60,6 @@ def prepare_plan(package_root, envelope):
     if target["kind"] != "existing_issue":
         raise CommandError("invalid_arguments", "invocation.transition.target.kind", "Authoring supports ordinary existing issues only. Use the complete-plan compatibility input for a reviewed draft or created-issue provenance.")
     authoring = copy.deepcopy(envelope["authoring"])
-    scope = authoring["scope"]
-    primary = scope["primary"]
-    if primary["number"] != target["issue_number"] or primary["url"] != target["url"]:
-        raise CommandError("stale_identity", "invocation.authoring.scope.primary", "Keep the current readiness target as the primary issue.", 3)
-    for key in ("close", "related", "followup"):
-        numbers = [row["number"] for row in scope[key]]
-        if len(numbers) != len(set(numbers)) or set(numbers) != set(transition["scope"][f"{key}_issues"]):
-            raise CommandError("stale_identity", f"invocation.authoring.scope.{key}", "Preserve the readiness issue set and provide one detail row per issue.", 3)
-    scope["scope_sha256"] = digest(scope)
     base = transition["base"]
     base_projection = {
         "schema_version": "1.0", "transition_id": "base_current:" + base["post_sync_resolution_sha256"][:24],
@@ -95,7 +86,6 @@ def prepare_plan(package_root, envelope):
             "duplicate_decision_sha256": transition["target_disposition"]["duplicate_facts_sha256"],
             "created_issue_binding_sha256": None, "created_issue_result": None,
         },
-        "scope": scope,
         "base": {
             "selected_base": base["selected_base"], "remote": base["remote"],
             "base_ref": f"refs/remotes/{base['remote']}/{base['selected_base']}",

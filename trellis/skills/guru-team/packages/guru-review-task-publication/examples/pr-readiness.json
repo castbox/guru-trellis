@@ -13,10 +13,18 @@
       "candidate_ref": "candidate:publication:no-defect",
       "decision": "rejected_not_reproduced",
       "witness": {
-        "requirement_refs": ["issue:#179"],
-        "supported_entry_refs": ["entry:publication-review"],
-        "existing_caller_refs": ["caller:guru-review-task-publication"],
-        "honest_action_sequence": ["review the current publication payload and complete diff"],
+        "requirement_refs": [
+          "issue:#179"
+        ],
+        "supported_entry_refs": [
+          "entry:publication-review"
+        ],
+        "existing_caller_refs": [
+          "caller:guru-review-task-publication"
+        ],
+        "honest_action_sequence": [
+          "review the current publication payload and complete diff"
+        ],
         "defect_observation": "Current evidence does not reproduce a publication defect.",
         "excluded_assumptions": []
       },
@@ -28,79 +36,107 @@
       "id": "diff_outcome_consistency",
       "status": "passed",
       "summary": "The diff matches the reviewed outcome.",
-      "evidence_refs": ["git:branch_review_commit"]
+      "evidence_refs": [
+        "git:branch_review_commit"
+      ]
     },
     {
-      "id": "issue_scope_closure",
+      "id": "external_work_item_effect",
       "status": "passed",
-      "summary": "Issue closure matches the current ledger.",
-      "evidence_refs": ["issue-scope-ledger.json"]
+      "summary": "Issue closure matches the current requirement authority.",
+      "evidence_refs": [
+        "current-requirement-authority"
+      ]
     },
     {
       "id": "pr_body_quality",
       "status": "passed",
       "summary": "The PR body is specific and reviewable.",
-      "evidence_refs": ["pr_payload"]
+      "evidence_refs": [
+        "pr_payload"
+      ]
     },
     {
       "id": "validation_claims",
       "status": "passed",
       "summary": "Validation claims match current evidence.",
-      "evidence_refs": ["git:branch_review_commit"]
+      "evidence_refs": [
+        "git:branch_review_commit"
+      ]
     },
     {
       "id": "branch_review_summary",
       "status": "passed",
       "summary": "The branch review conclusion is current.",
-      "evidence_refs": ["git:branch_review_commit"]
+      "evidence_refs": [
+        "git:branch_review_commit"
+      ]
     },
     {
       "id": "docs_ssot_reconciliation",
       "status": "passed",
       "summary": "Docs SSOT reconciliation is complete.",
-      "evidence_refs": ["git:branch_review_commit", "durable-docs"]
+      "evidence_refs": [
+        "git:branch_review_commit",
+        "durable-docs"
+      ]
     },
     {
       "id": "safety_deployment_impact",
       "status": "passed",
       "summary": "Safety and deployment impact are stated.",
-      "evidence_refs": ["pr_payload"]
+      "evidence_refs": [
+        "pr_payload"
+      ]
     },
     {
       "id": "finish_summary_semantics",
       "status": "passed",
       "summary": "The finish summary projection is current.",
-      "evidence_refs": ["pr_payload#变更摘要"]
+      "evidence_refs": [
+        "pr_payload#变更摘要"
+      ]
     },
     {
       "id": "metadata_tail_integrity",
       "status": "passed",
       "summary": "Only the declared metadata tail follows content review.",
-      "evidence_refs": ["git-status"]
+      "evidence_refs": [
+        "git-status"
+      ]
     },
     {
       "id": "artifact_binding_freshness",
       "status": "passed",
       "summary": "Every directly consumed owner result is current.",
-      "evidence_refs": ["owner-checkers"]
+      "evidence_refs": [
+        "owner-checkers"
+      ]
     }
   ],
   "findings": [],
   "conclusions": {
     "issue_scope": {
       "status": "passed",
-      "summary": "The current close scope is complete.",
-      "evidence_refs": ["issue-scope-ledger.json"]
+      "summary": "The current external work item effect is complete.",
+      "evidence_refs": [
+        "current-requirement-authority"
+      ]
     },
     "docs_ssot": {
       "status": "passed",
       "summary": "The approved Docs SSOT plan is reconciled.",
-      "evidence_refs": ["git:branch_review_commit", "durable-docs"]
+      "evidence_refs": [
+        "git:branch_review_commit",
+        "durable-docs"
+      ]
     },
     "safety_deployment": {
       "status": "passed",
       "summary": "The publication has no undisclosed safety or deployment impact.",
-      "evidence_refs": ["pr_payload"]
+      "evidence_refs": [
+        "pr_payload"
+      ]
     }
   },
   "route": {

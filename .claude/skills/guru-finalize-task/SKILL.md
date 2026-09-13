@@ -1,6 +1,6 @@
 ---
 name: guru-finalize-task
-description: Finalize a reviewed Trellis task through one semantic closeout loop, one deterministic transaction engine, and six typed exits.
+description: Finalize a reviewed Trellis task through one semantic finalization loop, one deterministic transaction engine, and six typed exits.
 ---
 
 # Guru Finalize Task
@@ -8,7 +8,7 @@ description: Finalize a reviewed Trellis task through one semantic closeout loop
 Use only after `guru-review-task-publication:ready`, or for one declared
 same-owner resume/reprepare profile. Read `references/contract.md` before use.
 
-The current business closeout graph never invokes
+The current business finalization graph never invokes
 `guru-verify-extension-installation`, never requests a `not_required` result,
 and never reads verifier DTOs, checkpoints, refs, or task artifacts. Ordinary
 publication continues through a new Draft PR. A separately previewed
@@ -70,19 +70,22 @@ AI review, executes the current
 transaction, and internally continues only mapped same-plan provenance/archive
 reprepare, existing-PR adoption, resumable transaction recovery, and terminal
 output-loss recovery. A scope, repository/base/head authority, reviewed commit,
-PR title/body, close-Issue set, publication mode, or side-effect-set change
+PR title/body external-work-item effect, publication mode, or side-effect-set change
 returns a stable exit and requires a new preview and confirmation. The digest
 identifies the plan only; it is not authorization and is never persisted.
 
+`ready_for_merge` carries the SHA-256 identity of the exact Publication-reviewed
+PR body bytes as `publication_body_sha256`. This is the minimal handoff required
+by Merge to reject a later body-only edit before it derives closing keywords or
+performs any remote mutation; it does not restore Issue arrays or transfer the
+Publication decision itself.
+
 `record-finalization-gate`, `check-finalization-gate`, and
 `execute-finalization-transition` remain package-private focused-test,
-diagnostic, and recovery commands. The old `--owner-result` argument shape is a
-compatibility-only branch of `invoke-guru-finalize-task`; it is not a normal
-path prerequisite and never runs before the confirmed-preview transaction.
+diagnostic, and recovery commands. `invoke-guru-finalize-task` accepts the
+current semantic review input and never consumes a prebuilt owner result.
 Unknown,
-multiple, retired, stale, or unmapped inputs and exits fail closed. Retired
-verification re-entry input requires a fresh current Publication result and
-full Finalizer reprepare.
+multiple, retired, stale, or unmapped inputs and exits fail closed.
 An already Ready same-plan transaction is a terminal read-only recovery: live
 facts are revalidated and the current Merge DTO is materialized without
 repeating any Git or GitHub mutation.

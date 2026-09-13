@@ -39,17 +39,28 @@
     "pr_payload": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["title", "body"],
+      "required": [
+        "title",
+        "body"
+      ],
       "properties": {
-        "title": {"type": "string", "minLength": 1},
-        "body": {"type": "string", "minLength": 1}
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "candidate_classifications": {
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": {"$ref": "#/$defs/candidateClassification"}
+      "items": {
+        "$ref": "#/$defs/candidateClassification"
+      }
     },
     "dimensions": {
       "type": "array",
@@ -78,7 +89,9 @@
         "properties": {
           "route": {
             "properties": {
-              "typed_exit": {"const": "ready"}
+              "typed_exit": {
+                "const": "ready"
+              }
             }
           }
         }
@@ -88,22 +101,44 @@
           "dimensions": {
             "items": {
               "properties": {
-                "status": {"const": "passed"}
+                "status": {
+                  "const": "passed"
+                }
               }
             }
           },
           "findings": {
             "items": {
               "properties": {
-                "status": {"const": "closed"}
+                "status": {
+                  "const": "closed"
+                }
               }
             }
           },
           "conclusions": {
             "properties": {
-              "issue_scope": {"properties": {"status": {"const": "passed"}}},
-              "docs_ssot": {"properties": {"status": {"const": "passed"}}},
-              "safety_deployment": {"properties": {"status": {"const": "passed"}}}
+              "issue_scope": {
+                "properties": {
+                  "status": {
+                    "const": "passed"
+                  }
+                }
+              },
+              "docs_ssot": {
+                "properties": {
+                  "status": {
+                    "const": "passed"
+                  }
+                }
+              },
+              "safety_deployment": {
+                "properties": {
+                  "status": {
+                    "const": "passed"
+                  }
+                }
+              }
             }
           }
         }
@@ -114,7 +149,9 @@
         "properties": {
           "route": {
             "properties": {
-              "typed_exit": {"const": "return_to_task_work"}
+              "typed_exit": {
+                "const": "return_to_task_work"
+              }
             }
           }
         }
@@ -124,13 +161,17 @@
           "dimensions": {
             "contains": {
               "properties": {
-                "status": {"const": "finding"}
+                "status": {
+                  "const": "finding"
+                }
               }
             },
             "not": {
               "contains": {
                 "properties": {
-                  "status": {"const": "blocked"}
+                  "status": {
+                    "const": "blocked"
+                  }
                 }
               }
             }
@@ -138,8 +179,12 @@
           "findings": {
             "contains": {
               "properties": {
-                "route_class": {"const": "task_work"},
-                "status": {"const": "open"}
+                "route_class": {
+                  "const": "task_work"
+                },
+                "status": {
+                  "const": "open"
+                }
               }
             }
           }
@@ -151,7 +196,9 @@
         "properties": {
           "route": {
             "properties": {
-              "typed_exit": {"const": "blocked"}
+              "typed_exit": {
+                "const": "blocked"
+              }
             }
           }
         }
@@ -161,15 +208,21 @@
           "dimensions": {
             "contains": {
               "properties": {
-                "status": {"const": "blocked"}
+                "status": {
+                  "const": "blocked"
+                }
               }
             }
           },
           "findings": {
             "contains": {
               "properties": {
-                "route_class": {"const": "external_blocker"},
-                "status": {"const": "open"}
+                "route_class": {
+                  "const": "external_blocker"
+                },
+                "status": {
+                  "const": "open"
+                }
               }
             }
           }
@@ -200,7 +253,10 @@
     "stringList": {
       "type": "array",
       "uniqueItems": true,
-      "items": {"type": "string", "minLength": 1}
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
     "normalScenarioWitness": {
       "type": "object",
@@ -214,34 +270,66 @@
         "excluded_assumptions"
       ],
       "properties": {
-        "requirement_refs": {"$ref": "#/$defs/stringList"},
-        "supported_entry_refs": {"$ref": "#/$defs/stringList"},
-        "existing_caller_refs": {"$ref": "#/$defs/stringList"},
-        "honest_action_sequence": {"$ref": "#/$defs/non_empty_strings"},
-        "defect_observation": {"type": "string", "minLength": 1},
-        "excluded_assumptions": {"$ref": "#/$defs/stringList"}
+        "requirement_refs": {
+          "$ref": "#/$defs/stringList"
+        },
+        "supported_entry_refs": {
+          "$ref": "#/$defs/stringList"
+        },
+        "existing_caller_refs": {
+          "$ref": "#/$defs/stringList"
+        },
+        "honest_action_sequence": {
+          "$ref": "#/$defs/non_empty_strings"
+        },
+        "defect_observation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "excluded_assumptions": {
+          "$ref": "#/$defs/stringList"
+        }
       }
     },
     "candidateClassification": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["candidate_ref", "decision", "witness", "consumer_use"],
+      "required": [
+        "candidate_ref",
+        "decision",
+        "witness",
+        "consumer_use"
+      ],
       "properties": {
-        "candidate_ref": {"type": "string", "minLength": 1},
-        "decision": {"$ref": "#/$defs/qualificationDecision"},
-        "witness": {"$ref": "#/$defs/normalScenarioWitness"},
-        "consumer_use": {"const": "publication_route_checker"}
+        "candidate_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision": {
+          "$ref": "#/$defs/qualificationDecision"
+        },
+        "witness": {
+          "$ref": "#/$defs/normalScenarioWitness"
+        },
+        "consumer_use": {
+          "const": "publication_route_checker"
+        }
       }
     },
     "dimension": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "status", "summary", "evidence_refs"],
+      "required": [
+        "id",
+        "status",
+        "summary",
+        "evidence_refs"
+      ],
       "properties": {
         "id": {
           "enum": [
             "diff_outcome_consistency",
-            "issue_scope_closure",
+            "external_work_item_effect",
             "pr_body_quality",
             "validation_claims",
             "branch_review_summary",
@@ -253,7 +341,11 @@
           ]
         },
         "status": {
-          "enum": ["passed", "finding", "blocked"]
+          "enum": [
+            "passed",
+            "finding",
+            "blocked"
+          ]
         },
         "summary": {
           "type": "string",
@@ -266,62 +358,142 @@
     },
     "diff_outcome_consistency": {
       "allOf": [
-        {"$ref": "#/$defs/dimension"},
-        {"properties": {"id": {"const": "diff_outcome_consistency"}}}
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "diff_outcome_consistency"
+            }
+          }
+        }
       ]
     },
-    "issue_scope_closure": {
+    "external_work_item_effect": {
       "allOf": [
-        {"$ref": "#/$defs/dimension"},
-        {"properties": {"id": {"const": "issue_scope_closure"}}}
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "external_work_item_effect"
+            }
+          }
+        }
       ]
     },
     "pr_body_quality": {
       "allOf": [
-        {"$ref": "#/$defs/dimension"},
-        {"properties": {"id": {"const": "pr_body_quality"}}}
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "pr_body_quality"
+            }
+          }
+        }
       ]
     },
     "validation_claims": {
       "allOf": [
-        {"$ref": "#/$defs/dimension"},
-        {"properties": {"id": {"const": "validation_claims"}}}
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "validation_claims"
+            }
+          }
+        }
       ]
     },
     "branch_review_summary": {
       "allOf": [
-        {"$ref": "#/$defs/dimension"},
-        {"properties": {"id": {"const": "branch_review_summary"}}}
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "branch_review_summary"
+            }
+          }
+        }
       ]
     },
     "docs_ssot_reconciliation": {
       "allOf": [
-        {"$ref": "#/$defs/dimension"},
-        {"properties": {"id": {"const": "docs_ssot_reconciliation"}}}
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "docs_ssot_reconciliation"
+            }
+          }
+        }
       ]
     },
     "safety_deployment_impact": {
       "allOf": [
-        {"$ref": "#/$defs/dimension"},
-        {"properties": {"id": {"const": "safety_deployment_impact"}}}
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "safety_deployment_impact"
+            }
+          }
+        }
       ]
     },
     "finish_summary_semantics": {
       "allOf": [
-        {"$ref": "#/$defs/dimension"},
-        {"properties": {"id": {"const": "finish_summary_semantics"}}}
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "finish_summary_semantics"
+            }
+          }
+        }
       ]
     },
     "metadata_tail_integrity": {
       "allOf": [
-        {"$ref": "#/$defs/dimension"},
-        {"properties": {"id": {"const": "metadata_tail_integrity"}}}
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "metadata_tail_integrity"
+            }
+          }
+        }
       ]
     },
     "artifact_binding_freshness": {
       "allOf": [
-        {"$ref": "#/$defs/dimension"},
-        {"properties": {"id": {"const": "artifact_binding_freshness"}}}
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "artifact_binding_freshness"
+            }
+          }
+        }
       ]
     },
     "finding": {
@@ -340,12 +512,18 @@
         "closure_evidence"
       ],
       "properties": {
-        "finding_ref": {"type": "string", "minLength": 1},
-        "candidate_ref": {"type": "string", "minLength": 1},
+        "finding_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_ref": {
+          "type": "string",
+          "minLength": 1
+        },
         "dimension": {
           "enum": [
             "diff_outcome_consistency",
-            "issue_scope_closure",
+            "external_work_item_effect",
             "pr_body_quality",
             "validation_claims",
             "branch_review_summary",
@@ -356,45 +534,110 @@
             "artifact_binding_freshness"
           ]
         },
-        "summary": {"type": "string", "minLength": 1},
-        "scope_basis": {"type": "string", "minLength": 1},
-        "evidence_refs": {"$ref": "#/$defs/non_empty_strings"},
-        "affected_artifacts": {"$ref": "#/$defs/non_empty_strings"},
-        "route_class": {
-          "enum": ["metadata_revision", "task_work", "external_blocker"]
+        "summary": {
+          "type": "string",
+          "minLength": 1
         },
-        "status": {"enum": ["open", "closed"]},
+        "scope_basis": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_refs": {
+          "$ref": "#/$defs/non_empty_strings"
+        },
+        "affected_artifacts": {
+          "$ref": "#/$defs/non_empty_strings"
+        },
+        "route_class": {
+          "enum": [
+            "metadata_revision",
+            "task_work",
+            "external_blocker"
+          ]
+        },
+        "status": {
+          "enum": [
+            "open",
+            "closed"
+          ]
+        },
         "closure_evidence": {
           "type": "array",
-          "items": {"type": "string", "minLength": 1}
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       },
       "allOf": [
         {
-          "if": {"properties": {"status": {"const": "closed"}}},
-          "then": {"properties": {"closure_evidence": {"minItems": 1}}},
-          "else": {"properties": {"closure_evidence": {"maxItems": 0}}}
+          "if": {
+            "properties": {
+              "status": {
+                "const": "closed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "closure_evidence": {
+                "minItems": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "closure_evidence": {
+                "maxItems": 0
+              }
+            }
+          }
         }
       ]
     },
     "conclusion": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "summary", "evidence_refs"],
+      "required": [
+        "status",
+        "summary",
+        "evidence_refs"
+      ],
       "properties": {
-        "status": {"enum": ["passed", "finding", "blocked"]},
-        "summary": {"type": "string", "minLength": 1},
-        "evidence_refs": {"$ref": "#/$defs/non_empty_strings"}
+        "status": {
+          "enum": [
+            "passed",
+            "finding",
+            "blocked"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_refs": {
+          "$ref": "#/$defs/non_empty_strings"
+        }
       }
     },
     "conclusions": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["issue_scope", "docs_ssot", "safety_deployment"],
+      "required": [
+        "issue_scope",
+        "docs_ssot",
+        "safety_deployment"
+      ],
       "properties": {
-        "issue_scope": {"$ref": "#/$defs/conclusion"},
-        "docs_ssot": {"$ref": "#/$defs/conclusion"},
-        "safety_deployment": {"$ref": "#/$defs/conclusion"}
+        "issue_scope": {
+          "$ref": "#/$defs/conclusion"
+        },
+        "docs_ssot": {
+          "$ref": "#/$defs/conclusion"
+        },
+        "safety_deployment": {
+          "$ref": "#/$defs/conclusion"
+        }
       }
     },
     "route": {
@@ -402,27 +645,47 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["typed_exit"],
+          "required": [
+            "typed_exit"
+          ],
           "properties": {
-            "typed_exit": {"const": "ready"}
+            "typed_exit": {
+              "const": "ready"
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["typed_exit"],
+          "required": [
+            "typed_exit"
+          ],
           "properties": {
-            "typed_exit": {"const": "return_to_task_work"}
+            "typed_exit": {
+              "const": "return_to_task_work"
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["typed_exit", "reason_code", "remediation"],
+          "required": [
+            "typed_exit",
+            "reason_code",
+            "remediation"
+          ],
           "properties": {
-            "typed_exit": {"const": "blocked"},
-            "reason_code": {"type": "string", "minLength": 1},
-            "remediation": {"type": "string", "minLength": 1}
+            "typed_exit": {
+              "const": "blocked"
+            },
+            "reason_code": {
+              "type": "string",
+              "minLength": 1
+            },
+            "remediation": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         }
       ]

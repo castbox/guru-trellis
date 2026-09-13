@@ -16,4 +16,4 @@ fi
 export PYTHONPATH="$RUNTIME:$GURU_ROOT${PYTHONPATH:+:$PYTHONPATH}"
 exec "$RUNTIME_ASSETS/resolve-python.sh" \
   "$REPO_ROOT" "$RUNTIME_ASSETS" \
-  "$RUNTIME/legacy.py" finish-work "$@"
+  "$RUNTIME/lifecycle.py" finish-work "$@"

@@ -136,24 +136,6 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
         )
         for name in ("prd.md", "design.md", "implement.md"):
             (task / name).write_text(f"# {name}\n\nCurrent #376 authority.\n", encoding="utf-8")
-        issue = {
-            "number": 376,
-            "url": "https://github.com/castbox/guru-trellis/issues/376",
-            "title": "降低基线分支已更新对并行进行中的任务的干扰",
-            "reason": "The continuity path is fully covered by this regression.",
-        }
-        (task / "issue-scope-ledger.json").write_text(
-            json.dumps(
-                {
-                    "schema_version": "2.0",
-                    "primary_issue": issue,
-                    "close_issues": [issue],
-                    "related_issues": [],
-                    "followup_issues": [],
-                }
-            ),
-            encoding="utf-8",
-        )
         tasks = self.repo / ".trellis/.runtime/guru-team/tasks"
         workspaces = self.repo / ".trellis/.runtime/guru-team/workspaces"
         tasks.mkdir(parents=True)

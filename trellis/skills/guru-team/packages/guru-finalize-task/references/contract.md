@@ -12,7 +12,7 @@ The four inputs are `publication_ready`, `same_plan_resume`,
 The versioned preview receipt is `guru-finalize-task-preview-1.0`. Its
 `confirmation_identity` is the canonical digest of the current task,
 repository/base/head branches, reviewed commit, exact PR title/body, exact
-close-Issue set, publication mode, and maximum side-effect set. It excludes
+PR-body external-work-item effect, publication mode, and maximum side-effect set. It excludes
 transaction progress, archive month, plan digest, publication metadata-tail
 commit, and the user's reply so mapped same-plan deterministic continuation and
 output-loss recovery do not persist or reinterpret authorization.
@@ -22,9 +22,17 @@ only public post-confirmation entry. With `--review-input`, the command accepts
 current public input, the AI-authored semantic review, and the confirmed preview
 identity. It performs one invocation-local preview, records/checks the semantic
 gate against that checked context, and invokes the existing transaction engine.
-The old `--owner-result` argument shape remains a compatibility-only branch;
-the separate record/check/execute commands remain package-private diagnostic
-and recovery primitives rather than the normal Agent path.
+No prebuilt owner-result input is accepted. The separate record/check/execute
+commands remain package-private diagnostic and recovery primitives rather than
+the normal Agent path.
+
+The `ready_for_merge` output includes `publication_body_sha256`, the lowercase
+SHA-256 digest of the exact UTF-8 bytes in the Publication-reviewed PR body.
+Finalizer materializes the same identity from the bound plan on ordinary
+completion and terminal recovery. The field has one direct consumer: Merge
+checks the first live PR read against it before deriving closing keywords or
+performing a merge mutation. It carries no Issue list and grants no new
+closure authority.
 
 When the checked state is provenance-tail or archive-month
 `reprepare_required` and the AI-reviewed target is `ready_for_merge`, the public invocation
@@ -170,7 +178,7 @@ heuristic. The unique Open PR and remote may be newer than the predecessor
 Publication only for this classification; they must agree on a commit in the
 predecessor-to-current lineage and remain a strict ancestor of the current
 Publication. The existing strict-ancestor
-classifier still owns metadata, close scope and Draft/Ready facts, and its exact
+classifier still owns metadata, Publication payload effect and Draft/Ready facts, and its exact
 remote HEAD is copied into the unchanged recovery transaction before mutation.
 
 Preview reports the exact PR, equal/strict ancestry, push decision, initial
@@ -188,7 +196,7 @@ equal-HEAD adoption without that exact ordinary owner transaction remains
 `existing_pr_unbound_equal_head`.
 
 Once that exact transaction owns `archive`, `push_archive`, or `mark_ready`, its
-bound PR, payload, close scope, plan digest, and HEAD identities are validated
+bound PR, payload effect, plan digest, and HEAD identities are validated
 before any pre-PR provenance inference. A matching post-bind recovery continues
 from its recorded transition. The original metadata binding remains recovery
 evidence while current Publication and live reread own convergence after
@@ -202,18 +210,6 @@ Draft/Ready state, and three-way archive
 HEAD, performs only the remaining Ready transition, then persists `mark_ready`
 and retires owner state. It never reruns archive or creates a second PR.
 
-Current preparation retires a historically tracked but already deleted
-`closeout-plan.json` through the private archive projection. The path is absent
-from move, retained, required, and reviewed-binding sets, but remains an exact
-active-side deletion in the archive transaction with parent-blob continuity.
-It is never materialized or copied into the current archive.
-If a post-bind transaction still carries the predecessor projection digest,
-preview accepts the current digest only when that predecessor digest equals the
-deterministic reverse projection with `closeout-plan.json` restored to the
-tracked move set, every other transaction field is byte-for-byte identical,
-and this single retired path is present. Executor then persists that same
-minimal digest projection before continuing; any unrelated digest fails closed.
-
 Once the transaction has reached `ready`, execute performs only terminal live
 revalidation and materializes the current `ready_for_merge` DTO. It does not
 call the Draft-only finish path or repeat push, PR, archive, commit, or Ready
@@ -225,27 +221,11 @@ locator emitted by the completed checker. Its authority is then the committed
 archive terminal state, not the obsolete in-progress Publication state: the
 wrapper reconstructs only the private executor marker and requires current
 local/remote/Ready PR HEAD to remain the exact reviewed archive metadata commit.
-It rechecks that commit's active-task deletion, six-file archive tree,
-reviewed-content continuity, PR/head/branch/close-Issue facts and output schema before
+It rechecks that commit's active-task deletion, five-file archive tree,
+reviewed-content continuity, PR/head/branch/publication-effect facts and output schema before
 projecting `ready_for_merge`. A different locator, a surviving transaction
 without its gate, an unsafe gate path, or any terminal fact drift remains
 fail-closed and never falls back to reprepare.
-
-## Migration
-
-The 5.0 aggregate, verification re-entry schemas, verification-required output,
-3.0 and 4.0 gates, 2.0 semantic-review input, and 1.0/2.0 transactions are immutable
-legacy assets with explicit versioned filenames. Unversioned gate and semantic
-review schemas/examples are current 5.0/3.0 assets and route to Merge. They are not
-current profiles, outputs, projections, or private artifacts. A retired
-task-bearing verification input or `next_transition=verify` fails closed with
-remediation to rerun current Publication and rebuild Finalizer state. No
-automatic projection or dual route is supported.
-
-Recovery never treats an arbitrary prior push as authority. PR/remote identity,
-pre-push HEAD, Publication payload, Issue close scope, original Draft/Ready
-state, archive transaction, or three-way HEAD drift fails closed. The final
-public output remains only `ready_for_merge`; recovery facts stay owner-private.
 
 ## Typed Exits
 
@@ -258,7 +238,7 @@ exact pair and `finalization_resume`. This route is distinct from
 `publication_review_stale`, which is reserved for Publication content or
 metadata evidence. Finalizer does not interpret the base delta.
 
-`publication_review_stale` is valid before a closeout plan or transaction
+`publication_review_stale` is valid before a finalization plan or transaction
 exists. Its `task_ref`, `branch_review_commit`, and `stale_reason` bind the
 current public input and the Publication owner facts exactly; in particular,
 the commit is `publication_branch_review_commit`, not a value inferred from a

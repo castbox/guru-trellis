@@ -1,8 +1,8 @@
 from __future__ import annotations
-import argparse,copy,hashlib,json,os,subprocess
+import argparse,copy,hashlib,json,subprocess
 from pathlib import Path
 from common import digest,finalize,git,load,parse,resolve_workspace,root,stage,validate,validate_plan,worktrees
-from execute import expected_mapping,issue_record,label_identity,mapping_payloads,parse_utc_timestamp,task_matches_expected,workspace_payloads
+from execute import expected_mapping,issue_record,label_identity,mapping_payloads,parse_utc_timestamp,task_matches_expected,workspace_payload
 from runtime.io import CommandError
 from plan_input import load_plan_envelope,object_field
 def github(repo,number):
@@ -23,17 +23,15 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   c=result["created_workspace"];resolved=resolve_workspace(repo,c["workspace_slug"]);workspace=resolved.path
   listed=worktrees(repo);row=listed.get(workspace)
   if not workspace.is_dir() or git(workspace,"rev-parse","--abbrev-ref","HEAD").stdout.strip()!=c["branch_name"] or (resolved.mode=="worktree" and (not row or row.get("branch")!=f"refs/heads/{c['branch_name']}")):raise CommandError("stale_identity","created_workspace","Workspace identity drifted.",3)
-  task=workspace/c["task_artifact_dir"]/"task.json";ledger=workspace/c["artifacts"][0]["path"]
-  if not task.is_file() or not ledger.is_file():raise CommandError("stale_identity","created_workspace.artifacts","Task artifacts are missing.",3)
+  task_dir_rel=Path(c["task_artifact_dir"]);task=workspace/task_dir_rel/"task.json"
+  if not task.is_file():raise CommandError("stale_identity","created_workspace.task","Task identity is missing.",3)
   try:task_value=json.loads(task.read_text())
-  except Exception as exc:raise CommandError("stale_identity","created_workspace.artifacts","Task identity is invalid.",3) from exc
-  expected_task,_=workspace_payloads(plan,Path(c["artifacts"][0]["path"]),workspace)
+  except Exception as exc:raise CommandError("stale_identity","created_workspace.task","Task identity is invalid.",3) from exc
+  expected_task=workspace_payload(plan,workspace)
   if task_value.get("worktree_path") != str(workspace.resolve()):
    raise CommandError("stale_identity","created_workspace.task.worktree_path","task.json worktree_path does not match the live workspace.",3)
-  if not task_matches_expected(task_value,expected_task):raise CommandError("stale_identity","created_workspace.artifacts","Task identity drifted.",3)
-  data=ledger.read_bytes();row=c["artifacts"][0]
-  if hashlib.sha256(data).hexdigest()!=row["sha256"] or len(data)!=row["size"] or oct(os.stat(ledger).st_mode&0o777)!="0o644":raise CommandError("stale_identity","created_workspace.artifacts","Ledger bytes or mode drifted.",3)
-  workspace_mapping,task_mapping=mapping_payloads(repo,plan,workspace,Path(c["artifacts"][0]["path"]))
+  if not task_matches_expected(task_value,expected_task):raise CommandError("stale_identity","created_workspace.task","Task identity drifted.",3)
+  workspace_mapping,task_mapping=mapping_payloads(repo,plan,workspace,task_dir_rel)
   for row in c["runtime_mappings"]:
    expected=expected_mapping(row["path"],workspace_mapping,task_mapping)
    for mapping_root in {repo.resolve(),workspace.resolve()}:
@@ -48,4 +46,4 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   live=github(c["repo"],c["number"]);row=issue_record(c["repo"],live,"created_issue")
   title_sha256=hashlib.sha256(row["title"].encode()).hexdigest();body_sha256=hashlib.sha256(row["body"].encode()).hexdigest()
   if row["number"]!=c["number"] or row["url"]!=c["canonical_url"] or row["state"]!="open" or row["title"]!=d["title"] or row["body"]!=d["body"] or label_identity(row["labels"])!=label_identity(d["labels"]) or row["updated_at"]!=parse_utc_timestamp(c["updated_at"],"created_issue.updated_at") or title_sha256!=c["title_sha256"] or body_sha256!=c["body_sha256"] or title_sha256!=t["title_sha256"] or body_sha256!=t["body_sha256"]:raise CommandError("stale_identity","created_issue","Created issue identity drifted; refresh Intake.",3)
- checked=copy.deepcopy(result);checked["checker"]=stage("passed",["Validated plan identity, typed consumer, live workspace, task artifacts, and runtime mappings."]);return finalize(package_root,checked)
+ checked=copy.deepcopy(result);checked["checker"]=stage("passed",["Validated plan identity, typed consumer, live workspace, task identity, and runtime mappings."]);return finalize(package_root,checked)

@@ -3,14 +3,23 @@
 `judgment_mode=semantic`. The AI reads the repo-bound live PR and compares its
 base/head branches, expected SHA, and PR-body close keywords with the minimal
 reviewed authority supplied by Finalizer or the standalone caller. It also reads
-checks, reviews, mergeability, repository merge policy and pre-merge Issue state.
-The Finalizer edge remains a seed: the Merge AI authors `primary_issue`, one
-concrete Chinese `summary`, and the exact fixed Chinese `subject/body` before
-the semantic gate. Active input and gate schemas are 2.0; all 1.0 assets remain
-immutable compatibility inventory and are rejected by the current runtime.
+checks, reviews, mergeability and repository merge policy. The Finalizer edge
+remains a seed: the Merge AI authors one concrete Chinese `summary` and the
+exact PR-native Chinese `subject/body` before the semantic gate. Active input
+and gate schemas are 2.0; no legacy adapter is supported.
 It selects one method only when policy and
 reviewed intent determine it, displays the exact action, and accepts
 `确认继续` without asking the user to repeat identities.
+
+Workflow-mode `ready_for_merge` additionally requires
+`publication_body_sha256`, the exact Finalizer handoff for the
+Publication-reviewed PR body UTF-8 bytes. Merge validates that digest against
+the first live PR read before repository-policy or base-ref reads, closing-keyword
+derivation, Issue reads, gate recording, or merge mutation. Body-only drift
+fails closed under the existing error contract; the caller must obtain a fresh
+Publication decision and Finalizer handoff. Merge does not own a typed
+reprepare exit. `standalone_merge` rejects the field and does not claim
+Publication authority.
 
 The recorder/checker preserve only the current semantic gate, including the
 reviewed-message identity and pre-merge base head. The executor materializes the
@@ -59,11 +68,7 @@ not start CI polling or any other Git, GitHub, Trellis, workflow, Issue,
 base-sync, or cleanup operation.
 
 The `record`, `check`, and `execute` commands remain package-private diagnostics
-and bounded recovery surfaces. The old gate-only `invoke-task-pr-merge`
-argument shape remains compatibility-only and projects an existing checked
-gate; the normal `--review-input` branch does not call it or duplicate its live
-reads.
-
+and bounded recovery surfaces.
 ## Required Check Watcher
 
 `watch-task-pr-checks` is one deterministic external-CI watcher bound to exact
@@ -75,7 +80,7 @@ status: `checks_succeeded`, `checks_failed`, `checks_pending_timeout`, or
 decision, route selection, Issue mutation, or terminal follow-up, and it must
 not be combined with another watcher or Agent while-loop.
 
-The reviewed body canonical form ends at the final `Refs #<primary_issue>`
+The reviewed body canonical form ends at the final `PR: #<pull_request>`
 line without a trailing newline. This is the exact body returned by GitHub's
 commit API after `--body-file` persistence, so the post-merge comparison does
 not weaken or normalize either side.
@@ -87,11 +92,10 @@ parents, remote base ref, close keywords, and Issue closure facts. Only an exact
 the executor performs zero repeated GitHub mutation, and a persisted
 `closure_mismatch` remains that exit until consumed.
 
-`expected_close_issues` is an ordered unique exact set with zero allowed
-cardinality. For `[]`, parsed PR close keywords must also be `[]`; after a
-successful merge, closure is vacuously complete and the executor performs no
-Issue reads or closure effects. For a non-empty set, keywords and pre/post-merge
-Issue facts must match every expected number exactly.
+The closure verification set is parsed from the live PR body. Before merge this
+set is observed but does not trigger Issue reads or a new closure decision. After
+merge, every named Issue must be `CLOSED`/`COMPLETED` with `closed_at >= merged_at`;
+an empty set is vacuously complete and triggers no Issue reads.
 
 The gate is ignored owner-private runtime and is deleted after its typed output
 is consumed. It never stores authorization, Finalizer transaction, local base

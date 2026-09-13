@@ -11,7 +11,7 @@ requirements review.
 
 For active-task scope change, the canonical workflow mandatory invokes this
 same Skill with an exact caller-aware `resume_target`; no caller may duplicate
-classification, ledger, or planning-update semantics.
+classification or planning-update semantics.
 
 Before this owner creates a scope proposal, asks a scope question, or assigns a
 terminal scope disposition to a newly observed scenario, form only candidate
@@ -57,7 +57,7 @@ disposition, empty/non-final active-task proposal sets on `clear`/`new_task`,
 any unresolved scope classification, any classification task update not bound
 to the same current proposal set,
 mechanism disposition with a classification trail or mutation, incomplete or
-stale planning content, missing scope-only Ledger binding, missing compact
+stale planning content, missing compact
 owner-result `decision_trail`, or missing live GitHub-visible scope authority,
 load-bearing clarification without a current issue/draft
 authority action, authority/context/task-update order mismatch, invalid caller

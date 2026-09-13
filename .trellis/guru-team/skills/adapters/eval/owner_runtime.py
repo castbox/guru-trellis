@@ -49,7 +49,29 @@ def load_package_owner_runtime(runtime_target: Path, skill_id: str) -> Any:
         spec.loader.exec_module(module)
     finally:
         sys.dont_write_bytecode = previous
+    if skill_id == "guru-review-task-publication":
+        compose_publication_eval_runtime(module)
     return module
+
+def compose_publication_eval_runtime(module: Any) -> None:
+    module.INDEPENDENT_REVIEW_SOURCE = "independent-agent"
+
+    def commit_review_fixture(
+        fixture: Path, task: Path, checked: dict[str, Any]
+    ) -> tuple[str, str]:
+        del checked
+        run_git(fixture, "add", "-A")
+        run_git(fixture, "commit", "-q", "-m", "commit reviewed production fixture")
+        phase2 = (
+            fixture
+            / ".trellis/.runtime/guru-team/owner-checkpoints"
+            / task.name
+            / "phase2-check.json"
+        )
+        phase2.unlink(missing_ok=True)
+        return run_git(fixture, "rev-parse", "HEAD"), "origin/main"
+
+    module.commit_review_fixture = commit_review_fixture
 
 def compose_change_request_eval_runtime(runtime_target: Path, module: Any) -> None:
     review = load_package_runtime_module(
@@ -212,6 +234,23 @@ def compose_production_owner_command_runtime(
             "check-phase2-check.sh",
             ["--root", str(args.root), "--task", str(args.task)],
         ),
+        "cmd_prepare_task_commit": lambda args: run_component(
+            "guru-create-task-commit",
+            "prepare-task-commit.sh",
+            [
+                "--root", str(args.root),
+                "--input", str(args.input),
+                "--candidate-json", str(args.candidate_json),
+            ],
+        ),
+        "cmd_create_task_commit": lambda args: run_component(
+            "guru-create-task-commit",
+            "create-task-commit.sh",
+            [
+                "--root", str(args.root),
+                "--candidate-artifact", str(args.candidate_artifact),
+            ],
+        ),
         "cmd_review_branch": lambda args: run_component(
             "guru-review-branch",
             "review-branch.sh",
@@ -262,14 +301,8 @@ def compose_task_workspace_eval_runtime(runtime_target: Path, module: Any) -> No
         / "skills/packages/guru-create-task-workspace"
     )
     module.context_digest = module.digest
-    module.TASK_WORKSPACE_ARTIFACT_NAMES = ("issue-scope-ledger.json",)
     module.task_workspace_reviewable_projection = module.reviewable
     module.task_workspace_plan_digest = module.plan_digest
-
-    def scope_digest(value: dict[str, Any]) -> str:
-        projection = copy.deepcopy(value)
-        projection.pop("scope_sha256", None)
-        return module.digest(projection)
 
     def prerequisite_projection(
         key: str, artifact: str, payload: dict[str, Any], payload_sha256: str
@@ -306,7 +339,6 @@ def compose_task_workspace_eval_runtime(runtime_target: Path, module: Any) -> No
         argv = ["--root", str(args.root), "--invocation", "-"]
         return component.run(package_root, {}, argv)
 
-    module.task_workspace_scope_digest = scope_digest
     module.task_workspace_prerequisite_projection = prerequisite_projection
     module.cmd_record_task_workspace_plan = lambda args: invoke(record, args)
     module.cmd_create_task_workspace = lambda args: invoke(execute, args)

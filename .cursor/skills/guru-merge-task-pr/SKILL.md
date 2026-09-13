@@ -7,9 +7,8 @@ description: Merge one Ready task PR through a semantic live gate, expected-head
 
 Use this Skill only for the remote post-publication merge boundary. In workflow
 mode consume `guru-finalize-task:ready_for_merge`; in standalone mode accept one
-repo-bound PR identity plus the expected base/head branches and reviewed close
-Issue set. Before invocation, author and review the exact Chinese
-`chore(merge)` subject/body plus its primary Issue and concrete Chinese summary,
+repo-bound PR identity plus the expected base/head branches. Before invocation,
+author and review the exact PR-native Chinese `chore(merge)` subject/body plus a concrete Chinese summary,
 then rebuild the same live evidence.
 
 Read [references/contract.md](references/contract.md), run the preview, and
@@ -34,9 +33,7 @@ mutation.
 
 `record-task-pr-merge`, `check-task-pr-merge`, `execute-task-pr-merge`, and
 their wrappers remain package-private diagnostic and bounded recovery commands.
-The old `scripts/invoke.sh --input <public-input.json> [--gate <gate>]` shape is
-compatibility-only: it checks and projects an existing gate and never runs
-before, alongside, or after the normal `--review-input` transaction branch.
+`scripts/invoke.sh` accepts only the current `--review-input` transaction shape.
 An already persisted terminal output is recovered only after read-only live
 revalidation of the exact merge SHA, two parents, reviewed subject/body, remote
 base ref and closure facts; recovery never repeats the merge mutation.
@@ -46,15 +43,24 @@ that requires changing the archived task's content. External CI, policy,
 permission, provider, mergeability, or other non-task blockers remain
 `merge_blocked`.
 
-Fail closed on stale head, base/head branch drift, PR-body close-scope drift,
+Fail closed on stale head, base/head branch drift,
 Draft/Open/readiness drift, unknown policy, incomplete GitHub response, or
 unmapped output. Never enter Phase
 0, sync a base, update/rebase the PR branch, close Issues directly, synchronize
 local `main`, or clean task resources.
 
-`expected_close_issues=[]` is a valid refs-only merge contract: the PR body must
-contain no close keyword, and successful merge requires no Issue closure reads
-or effects. Non-empty sets still require exact equality and post-merge closure.
+Workflow-mode `ready_for_merge` requires Finalizer's
+`publication_body_sha256`. Merge compares it with the exact bytes from its first
+live PR read before deriving closing keywords, reading their Issues, or
+performing the merge mutation. A mismatch fails closed; the caller must re-enter
+fresh Publication and Finalizer preparation. Merge does not expose a new
+reprepare exit. Standalone merge neither accepts nor synthesizes this
+Publication authority.
+
+Merge derives the closure verification set only from closing keywords in the
+live PR body. It performs no Issue read before merge. After merge, it reads only
+those named Issues and verifies GitHub's automatic effect; a body without closing
+keywords requires no Issue reads.
 
 If required CI is still pending, run exactly one repo/PR/expected-head-bound
 watcher:

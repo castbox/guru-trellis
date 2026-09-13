@@ -13,6 +13,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import verify_installed_phase0_transcript as phase0_transcript
 from verify_throwaway_python_routing import runtime_checkpoint
 
 
@@ -101,7 +102,7 @@ class InstalledPackageClient:
     WorkflowError = InstalledWrapperError
     TASK_PUBLICATION_DIMENSIONS = (
         "diff_outcome_consistency",
-        "issue_scope_closure",
+        "external_work_item_effect",
         "pr_body_quality",
         "validation_claims",
         "branch_review_summary",
@@ -297,11 +298,11 @@ def valid_pr_body(issue: int) -> str:
 ## 影响范围
 
 - 已安装 Guru Team finish-work wrapper
-- task-local closeout artifacts
+- owner-private Finalizer transaction state
 
 ## 验证结果
 
-- dry-run digest 与 formal expected digest 一致。
+- preview confirmation identity 与 formal invocation 一致。
 - draft、archive、三方 HEAD 与 ready 状态全部通过。
 
 ## Review Gate
@@ -560,7 +561,7 @@ def write_fixture_publication_authoring(
         "candidate_classifications": fixture_classification("publication", "publication_route_checker"),
         "dimensions": [{
             "id": name, "status": "passed", "summary": f"Synthetic publication scenario covers {name}.",
-            "evidence_refs": ["pr_payload", "issue-scope-ledger.json", "git:branch_review_commit"],
+            "evidence_refs": ["pr_payload", "issue:current", "git:branch_review_commit"],
         } for name in client.TASK_PUBLICATION_DIMENSIONS],
         "findings": [],
         "conclusions": {name: {
@@ -570,6 +571,67 @@ def write_fixture_publication_authoring(
         "route": {"typed_exit": "ready"},
     })
     return root / path
+
+
+def complete_fixture_from_planning(
+    root: Path,
+    owners: dict[str, Any],
+    real_git: str,
+    task_dir: Path,
+    branch: str,
+    issue: int,
+) -> str:
+    task_payload = read_json(task_dir / "task.json")
+    task_payload.update({"status": "planning", "branch": branch})
+    write_json(task_dir / "task.json", task_payload)
+    approved = record_fixture_planning(
+        owners["guru-approve-task-plan"], root, task_dir, issue,
+    )
+    task_payload["status"] = "in_progress"
+    write_json(root / approved["task_ref"] / "task.json", task_payload)
+    checked = record_fixture_phase2(owners["guru-check-task"], root, task_dir)
+    committed = commit_fixture_for_review(
+        owners["guru-create-task-commit"], root, task_dir, checked
+    )
+    branch_check = record_fixture_review(
+        owners["guru-review-branch"], root, task_dir, committed,
+    )
+    publication_input = {
+        "profile": "publication_review",
+        "mode": "workflow",
+        "task_ref": task_dir.relative_to(root).as_posix(),
+        "branch_review_commit": branch_check["branch_review_commit"],
+        "review_intent": "initial_review",
+    }
+    publication_input_path = (
+        root / ".trellis/.runtime/guru-team/installed-closeout/publication-input.json"
+    )
+    write_json(publication_input_path, publication_input)
+    authoring_path = write_fixture_publication_authoring(
+        owners["guru-review-task-publication"], root, publication_input, issue,
+    )
+    fixture_remote_url = git(root, real_git, "remote", "get-url", "origin")
+    publication_invoke = (
+        root
+        / ".trellis/guru-team/skills/packages/guru-review-task-publication/scripts/invoke.sh"
+    )
+    checked_publication = single_json_stdout(
+        run(
+            [
+                str(publication_invoke),
+                "--root", str(root),
+                "--input", publication_input_path.relative_to(root).as_posix(),
+                "--semantic-result", authoring_path.relative_to(root).as_posix(),
+            ],
+            root,
+        ),
+        "installed Publication original public invocation",
+    )
+    if checked_publication.get("exit_id") != "ready":
+        raise RuntimeError("installed Publication invocation did not return ready")
+    if git(root, real_git, "remote", "get-url", "origin") != fixture_remote_url:
+        raise RuntimeError("publication fixture changed the real origin remote")
+    return str(checked_publication["branch_review_commit"])
 
 
 def write_fixture(
@@ -600,21 +662,7 @@ def write_fixture(
         "branch": branch,
         "base_branch": BASE_BRANCH,
     }
-    issue_entry = {
-        "number": issue,
-        "url": f"https://github.com/{repo_ref}/issues/{issue}",
-        "title": f"#{issue} 验证安装后 closeout",
-        "reason": "Installed closeout smoke fully covers this issue.",
-    }
-    ledger = {
-        "schema_version": "2.0",
-        "primary_issue": issue_entry,
-        "close_issues": [dict(issue_entry)],
-        "related_issues": [],
-        "followup_issues": [],
-    }
     write_json(task_dir / "task.json", task)
-    write_json(task_dir / "issue-scope-ledger.json", ledger)
     write_fixture_runtime_mappings(root, task_slug, task_dir, branch)
     for name, content in (
         (
@@ -638,57 +686,84 @@ def write_fixture(
         "Strategy: ssot_first. Durable requirements own the closeout contract.\n",
         encoding="utf-8",
     )
-    task_payload = read_json(task_dir / "task.json")
-    task_payload.update({"status": "planning", "branch": branch})
-    write_json(task_dir / "task.json", task_payload)
-    approved = record_fixture_planning(
-        owners["guru-approve-task-plan"], root, task_dir, issue,
+    branch_review_commit = complete_fixture_from_planning(
+        root, owners, real_git, task_dir, branch, issue,
     )
-    task_payload["status"] = "in_progress"
-    write_json(root / approved["task_ref"] / "task.json", task_payload)
-    checked = record_fixture_phase2(
-        owners["guru-check-task"], root, task_dir,
+    return task_dir, branch, branch_review_commit
+
+
+def write_full_fixture(
+    installed_root: Path,
+    real_git: str,
+    case_name: str,
+    issue: int,
+    *,
+    repo_ref: str = REPO,
+) -> tuple[Path, str, str, dict[str, Any]]:
+    branch = f"fix/{issue}-installed-closeout-{case_name}"
+    task_slug = f"{issue}-installed-closeout-{case_name}"
+    chain_root = installed_root.parent / f"installed-closeout-intake-{issue}"
+    if chain_root.exists():
+        raise RuntimeError(f"installed closeout Intake root already exists: {chain_root}")
+    chain, _, workspace = phase0_transcript.six_step_transcript(
+        installed_root,
+        chain_root,
+        repo=repo_ref,
+        issue=issue,
+        task_slug=task_slug,
+        branch_name=branch,
+        task_title=f"#{issue} 验证安装后 closeout",
     )
-    committed = commit_fixture_for_review(
-        owners["guru-create-task-commit"], root, task_dir, checked
-    )
-    branch_check = record_fixture_review(
-        owners["guru-review-branch"], root, task_dir, committed,
-    )
-    publication_input = {
-        "profile": "publication_review",
-        "mode": "workflow",
-        "task_ref": task_dir.relative_to(root).as_posix(),
-        "branch_review_commit": branch_check["branch_review_commit"],
-        "review_intent": "initial_review",
+    if len(chain) != 6 or workspace.get("actual_exit") != "created":
+        raise RuntimeError("installed closeout Intake did not create one reviewed task workspace")
+    root = Path(str(workspace["workspace_path"])).resolve()
+    task_dir = root / str(workspace["task_artifact_dir"])
+    task = read_json(task_dir / "task.json")
+    if (
+        task.get("status") != "planning"
+        or task.get("branch") != branch
+        or task.get("scope") != f"GitHub issue: https://github.com/{repo_ref}/issues/{issue}"
+    ):
+        raise RuntimeError("installed closeout did not consume the created task identity")
+
+    owner_repo = Path(str(workspace["owner_repo"])).resolve()
+    remote = chain_root / "closeout-remote.git"
+    run([real_git, "init", "--bare", "-q", str(remote)], owner_repo)
+    git(owner_repo, real_git, "remote", "set-url", "origin", str(remote))
+    git(owner_repo, real_git, "push", "-u", "origin", BASE_BRANCH)
+
+    owners = {
+        skill_id: InstalledPackageClient(root, skill_id)
+        for skill_id in (
+            "guru-approve-task-plan",
+            "guru-check-task",
+            "guru-create-task-commit",
+            "guru-review-branch",
+            "guru-review-task-publication",
+        )
     }
-    publication_input_path = (
-        root / ".trellis/.runtime/guru-team/installed-closeout/publication-input.json"
-    )
-    write_json(publication_input_path, publication_input)
-    authoring_path = write_fixture_publication_authoring(
-        owners["guru-review-task-publication"], root, publication_input, issue,
-    )
-    fixture_remote_url = git(root, real_git, "remote", "get-url", "origin")
-    publication_package = root / ".trellis/guru-team/skills/packages/guru-review-task-publication"
-    publication_invoke = publication_package / "scripts/invoke.sh"
-    checked_publication = single_json_stdout(
-        run(
-            [
-                str(publication_invoke),
-                "--root", str(root),
-                "--input", publication_input_path.relative_to(root).as_posix(),
-                "--semantic-result", authoring_path.relative_to(root).as_posix(),
-            ],
-            root,
+    smoke_path = root / f"installed-closeout-{case_name}.txt"
+    smoke_path.write_text(f"installed closeout smoke {case_name}\n", encoding="utf-8")
+    for name, content in (
+        ("prd.md", "# 需求\n\n## R1. Production eval\n\n验证安装后的 closeout 事务。\n"),
+        (
+            "design.md",
+            "# 设计\n\n## Docs SSOT Plan\n\n"
+            "Strategy: ssot_first. Durable requirements own the closeout contract.\n",
         ),
-        "installed Publication original public invocation",
+        ("implement.md", "# 实施\n\n先通过 publication gate，再执行 finish-work。\n"),
+    ):
+        (task_dir / name).write_text(content, encoding="utf-8")
+    branch_review_commit = complete_fixture_from_planning(
+        root, owners, real_git, task_dir, branch, issue,
     )
-    if checked_publication.get("exit_id") != "ready":
-        raise RuntimeError("installed Publication invocation did not return ready")
-    if git(root, real_git, "remote", "get-url", "origin") != fixture_remote_url:
-        raise RuntimeError("publication fixture changed the real origin remote")
-    return task_dir, branch, str(checked_publication["branch_review_commit"])
+    return task_dir, branch, branch_review_commit, {
+        "intake_steps": len(chain),
+        "workspace_exit": workspace["actual_exit"],
+        "workspace_path": str(root),
+        "remote_path": str(remote),
+        "task_status_after_creation": "planning",
+    }
 
 
 def install_fake_commands(fake_bin: Path) -> None:
@@ -737,6 +812,7 @@ os.execv(real_git, [real_git, *args])
         managed_shebang + """
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -782,16 +858,27 @@ def load():
 def save(payload):
     store_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
 
+def closes_issue(payload, issue_number):
+    body = str((payload or {}).get("body") or "")
+    pattern = r"(?im)^\\s*(?:[-+*][ \\t]+)?(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\\s*:?[ \\t]+#(\\d+)\\b"
+    return issue_number in {int(value) for value in re.findall(pattern, body)}
+
 if args[:2] == ["auth", "status"]:
     raise SystemExit(0)
 if len(args) >= 3 and args[:2] == ["issue", "view"]:
     issue_number = int(args[2])
     if issue_number != number:
         raise SystemExit(2)
+    payload = load() or {}
+    closed = (
+        payload.get("state") == "MERGED"
+        and closes_issue(payload, issue_number)
+        and os.environ.get("INSTALLED_CLOSEOUT_CLOSURE_MISMATCH") != "1"
+    )
     print(json.dumps({
         "number": issue_number,
-        "state": "CLOSED" if (load() or {}).get("state") == "MERGED" and os.environ.get("INSTALLED_CLOSEOUT_CLOSURE_MISMATCH") != "1" else "OPEN",
-        "closedAt": "2026-08-12T10:00:01Z" if (load() or {}).get("state") == "MERGED" and os.environ.get("INSTALLED_CLOSEOUT_CLOSURE_MISMATCH") != "1" else None,
+        "state": "CLOSED" if closed else "OPEN",
+        "closedAt": "2026-08-12T10:00:01Z" if closed else None,
         "url": f"https://github.com/microsoft/powertoys/issues/{issue_number}",
     }))
     raise SystemExit(0)
@@ -991,7 +1078,7 @@ def run_closeout(
                     "skill_id": "guru-finalize-task",
                     "review": {
                         "status": "passed",
-                        "summary": "The installed Finalizer plan is sufficient for the "
+                        "summary": "The installed Finalizer transaction is sufficient for the "
                         "complete non-extension closeout transaction.",
                     },
                     "route": {
@@ -1056,7 +1143,6 @@ def run_closeout(
         or initial_finalizer_state not in {"prepared", "reprepare_required"}
     ):
         raise RuntimeError("installed Finalizer preview was not ready for the original public invocation")
-    digest = dry_payload["closeout_plan_digest"]
     confirmation_identity = dry_payload.get("confirmation_identity")
     if not isinstance(confirmation_identity, str):
         raise RuntimeError("installed Finalizer preview omitted its confirmation identity")
@@ -1079,8 +1165,6 @@ def run_closeout(
             "pr_store": store.read_bytes() if store.is_file() else None,
             "git_status": git(root, real_git, "status", "--porcelain"),
             "task": (task_dir / "task.json").read_bytes(),
-            "ledger": (task_dir / "issue-scope-ledger.json").read_bytes(),
-            "legacy_plan_present": (task_dir / "closeout-plan.json").exists(),
             "readiness": (
                 (task_dir / "pr-readiness.json").read_bytes()
                 if (task_dir / "pr-readiness.json").is_file()
@@ -1288,7 +1372,6 @@ def run_closeout(
         or ready_payload.get("expected_head_sha") != local_head
         or ready_payload.get("expected_base_branch") != BASE_BRANCH
         or ready_payload.get("expected_head_branch") != branch
-        or ready_payload.get("expected_close_issues") != [issue]
     ):
         raise RuntimeError("installed Finalizer invocation returned an invalid ready_for_merge DTO")
     merge_package = (
@@ -1309,18 +1392,16 @@ def run_closeout(
                 "mode": "workflow",
                 **{key: value for key, value in ready_payload.items() if key != "exit_id"},
                 "reviewed_merge_message": {
-                    "primary_issue": issue,
                     "summary": "验证安装态 Merge Skill 中文提交消息承接",
-                    "subject": f"chore(merge): #{issue} 合并 #{issue} 验证安装态 Merge Skill 中文提交消息承接",
+                    "subject": f"chore(merge): #{issue} 验证安装态 Merge Skill 中文提交消息承接",
                     "body": (
                         "合并：\n"
                         f"合入 `{branch}` 到 `main`，保留 PR 内部提交历史。\n\n"
                         "范围：\n"
-                        f"本次 PR 完成 #{issue}：验证安装态 Merge Skill 中文提交消息承接。\n\n"
+                        "本次 PR：验证安装态 Merge Skill 中文提交消息承接。\n\n"
                         "审计：\n"
                         "Trellis task archive、review gate、finish-summary 和 readiness 提交保留在 PR 分支历史中，用于审计任务过程。\n\n"
-                        f"PR: #{issue}\n"
-                        f"Refs #{issue}"
+                        f"PR: #{issue}"
                     ),
                 },
             },
@@ -1347,7 +1428,7 @@ def run_closeout(
                             "checks_and_reviews",
                             "mergeability",
                             "repository_policy",
-                            "close_scope",
+                            "publication_effect",
                         )
                     ]
                 },
@@ -1400,7 +1481,6 @@ def run_closeout(
         raise RuntimeError("installed Merge invocation returned an invalid merged DTO")
     recovered_remote_pr = json.loads(store.read_text(encoding="utf-8"))
     forbidden_terminal = [
-        archived / "closeout-plan.json",
         archived / "finalization-transaction.json",
         root / ".trellis/.runtime/guru-team" / task_dir.name / "finalization-transaction.json",
     ]
@@ -1423,7 +1503,6 @@ def run_closeout(
         "status": "ok",
         "issue": issue,
         "branch": branch,
-        "digest": digest,
         "archived_task_dir": str(archived),
         "local_head": local_head,
         "remote_head": remote_head,
@@ -1458,16 +1537,6 @@ def main() -> int:
     remote = root.parent / "installed-closeout-remote.git"
     after_update = args.case == "after-update"
     ensure_baseline(root, real_git, remote, after_update)
-    owners = {
-        skill_id: InstalledPackageClient(root, skill_id)
-        for skill_id in (
-            "guru-approve-task-plan",
-            "guru-check-task",
-            "guru-create-task-commit",
-            "guru-review-branch",
-            "guru-review-task-publication",
-        )
-    }
     issue = 106 if after_update else 105
     branch = f"fix/{issue}-installed-closeout-{args.case}"
     fake_bin = root.parent / f"fake-closeout-bin-{issue}"
@@ -1483,23 +1552,26 @@ def main() -> int:
         "INSTALLED_CLOSEOUT_PR_STORE": str(store),
         "INSTALLED_CLOSEOUT_MUTATION_STORE": str(root.parent / f"installed-closeout-mutations-{issue}.txt"),
     })
-    task_dir, branch, branch_review_commit = write_fixture(
-        root, owners, real_git, args.case, issue
+    task_dir, branch, branch_review_commit, intake = write_full_fixture(
+        root, real_git, args.case, issue
     )
+    task_root = task_dir.parents[2]
+    transaction_remote = Path(str(intake["remote_path"])).resolve()
     payload = run_closeout(
-        root,
+        task_root,
         task_dir,
         branch,
         issue,
         branch_review_commit,
         real_git,
-        remote,
+        transaction_remote,
         terminal_recovery_only=args.terminal_recovery_only,
         closure_mismatch=args.closure_mismatch,
     )
+    payload["intake"] = intake
     payload["runtime_checkpoint"] = runtime_checkpoint(
-        root,
-        root / ".trellis/guru-team/runtime",
+        task_root,
+        task_root / ".trellis/guru-team/runtime",
         f"closeout-{args.case}",
     )
     print(json.dumps(payload, ensure_ascii=False, indent=2))

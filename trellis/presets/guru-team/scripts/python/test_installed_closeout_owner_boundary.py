@@ -47,6 +47,7 @@ import json, os, shutil, sys
 from pathlib import Path
 sys.path.insert(0, sys.argv[1])
 import verify_installed_closeout as v
+import verify_installed_phase0_transcript as phase0
 root = Path(sys.argv[2]).resolve()
 real_git = shutil.which("git")
 remote = root.parent / "fixture.git"
@@ -62,31 +63,79 @@ os.environ.update({
     "INSTALLED_CLOSEOUT_PR_STORE": str(root.parent / "pr.json"),
     "INSTALLED_CLOSEOUT_MUTATION_STORE": str(root.parent / "mutations.json"),
 })
-owners = {name: v.InstalledPackageClient(root, name) for name in (
-    "guru-approve-task-plan", "guru-check-task", "guru-create-task-commit",
-    "guru-review-branch", "guru-review-task-publication",
-)}
 calls = []
 real_run = v.run
+real_phase0_run = phase0.run
 def observed_run(command, cwd, **kwargs):
     calls.append([str(part) for part in command])
     return real_run(command, cwd, **kwargs)
+def observed_phase0_run(command, *, cwd, **kwargs):
+    calls.append([str(part) for part in command])
+    return real_phase0_run(command, cwd=cwd, **kwargs)
 v.run = observed_run
-task, branch, commit = v.write_fixture(root, owners, real_git, "initial", 105)
-for skill in owners:
-    expected = str(root / ".trellis/guru-team/skills/packages" / skill / "scripts/invoke.sh")
-    assert any(command[0] == expected for command in calls), (skill, calls)
+phase0.run = observed_phase0_run
+task, branch, commit, intake = v.write_full_fixture(root, real_git, "initial", 105)
+skills = (
+    "guru-sync-base", "guru-discover-change-context",
+    "guru-clarify-requirements", "guru-review-contract-wording",
+    "guru-review-change-request", "guru-create-task-workspace",
+    "guru-approve-task-plan", "guru-check-task", "guru-create-task-commit",
+    "guru-review-branch", "guru-review-task-publication",
+)
+for skill in skills:
+    suffix = "/" + skill + "/scripts/invoke.sh"
+    assert any(command[0].endswith(suffix) for command in calls), (skill, calls)
 for script in ("record-planning-approval.sh", "check-planning-approval.sh"):
     assert any(command[0].endswith("/" + script) for command in calls), (script, calls)
 loaded = [str(getattr(m, "__file__", "")) for m in sys.modules.values() if m]
 assert not any(p.endswith(("native_adapter.py", "production_fixtures.py", "owner_runtime.py")) for p in loaded), loaded
 assert task.is_dir() and len(commit) == 40
-print(json.dumps({"task": task.name, "branch": branch, "reviewed_commit": commit, "fixture_prepared": True}))
+assert intake["intake_steps"] == 6
+assert intake["workspace_exit"] == "created"
+assert intake["workspace_path"] == str(task.parents[2])
+assert intake["task_status_after_creation"] == "planning"
+assert Path(intake["remote_path"]).is_dir()
+print(json.dumps({"task": task.name, "branch": branch, "reviewed_commit": commit, "fixture_prepared": True, "intake": intake}))
 '''
             prepared = self.run_ok([sys.executable, "-c", driver, str(SCRIPTS), str(repo)], work, env)
             value = json.loads(prepared.stdout.strip().splitlines()[-1])
             self.assertTrue(value["fixture_prepared"])
             self.assertEqual(value["branch"], "fix/105-installed-closeout-initial")
+            self.assertEqual(value["intake"]["intake_steps"], 6)
+            self.assertEqual(value["intake"]["workspace_exit"], "created")
+
+    def test_fake_github_recognizes_markdown_list_closing_keyword(self):
+        import verify_installed_closeout as closeout
+
+        with tempfile.TemporaryDirectory(prefix="guru-closeout-closing-keyword-") as tmp:
+            work = Path(tmp)
+            fake = work / "fake-bin"
+            closeout.install_fake_commands(fake)
+            store = work / "pr.json"
+            store.write_text(
+                json.dumps({
+                    "number": 105,
+                    "state": "MERGED",
+                    "body": "## Issue 关闭范围\n\n- Closes #105\n",
+                }),
+                encoding="utf-8",
+            )
+            env = {
+                **os.environ,
+                "INSTALLED_CLOSEOUT_PR_STORE": str(store),
+                "INSTALLED_CLOSEOUT_REAL_GIT": shutil.which("git") or "git",
+                "INSTALLED_CLOSEOUT_REMOTE": str(work / "unused.git"),
+                "INSTALLED_CLOSEOUT_BRANCH": "fix/105-installed-closeout-initial",
+                "INSTALLED_CLOSEOUT_PR_NUMBER": "105",
+                "INSTALLED_CLOSEOUT_MUTATION_STORE": str(work / "mutations.txt"),
+                "INSTALLED_CLOSEOUT_CLOSURE_MISMATCH": "0",
+            }
+            result = self.run_ok(
+                [str(fake / "gh"), "issue", "view", "105", "--repo", "microsoft/PowerToys", "--json", "number,state,closedAt,url"],
+                work,
+                env,
+            )
+            self.assertEqual(json.loads(result.stdout)["state"], "CLOSED")
 
     def run_ok(self, argv, cwd, env):
         result = subprocess.run(argv, cwd=cwd, env=env, text=True, capture_output=True, timeout=180)

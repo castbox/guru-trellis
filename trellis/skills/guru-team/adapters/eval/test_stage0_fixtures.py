@@ -10,15 +10,24 @@ import sys
 import tempfile
 import unittest
 from unittest import mock
+from types import SimpleNamespace
 
 SKILLS = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(SKILLS))
 
-from adapters.eval.fixture_io import run_git, write_fake_gh
-from adapters.eval.owner_runtime import load_package_owner_runtime
+from adapters.eval.fixture_io import (
+    bind_task_commit_candidate_argument,
+    run_git,
+    write_fake_gh,
+)
+from adapters.eval.owner_runtime import (
+    compose_production_owner_command_runtime,
+    load_package_owner_runtime,
+)
 from adapters.eval.stage0_fixtures import (
     build_readiness_owner,
     stage0_command,
+    workspace_plan,
     workspace_prerequisites,
 )
 
@@ -112,15 +121,88 @@ class ReadinessAdapterTests(unittest.TestCase):
         with mock.patch.dict(os.environ, {"PATH": f"{binary}:{os.environ['PATH']}"}):
             prerequisites, issue, transition = workspace_prerequisites(runtime, self.fixture, "workflow")
         self.assertEqual("readiness_current", transition["stage"])
-        self.assertEqual([145], transition["scope"]["close_issues"])
         self.assertEqual(
             prerequisites["discovery"]["context_result_sha256"],
             transition["context_result_sha256"],
         )
         self.assertEqual(prerequisites["readiness"]["facts_sha256"], transition["readiness_facts_sha256"])
         self.assertEqual(hashlib.sha256(issue["title"].encode()).hexdigest(), transition["target"]["title_sha256"])
+        plan = workspace_plan(
+            runtime, self.fixture, "workspace-created", "workflow", prerequisites, issue
+        )
+        self.assertNotIn("scope", plan)
+        self.assertNotIn("task_artifacts", plan["side_effects"])
+        self.assertNotIn("write_task_artifacts", plan["side_effects"]["operations"])
+        self.assertFalse(hasattr(runtime, "task_workspace_scope_digest"))
+        self.assertFalse(hasattr(runtime, "TASK_WORKSPACE_ARTIFACT_NAMES"))
         self.assertFalse((self.fixture / ".trellis/tasks").exists())
         self.assertEqual("", run_git(self.fixture, "status", "--porcelain"))
+
+    def test_task_commit_bindings_use_package_wrappers(self):
+        runtime = SimpleNamespace()
+        compose_production_owner_command_runtime(self.target, runtime)
+        completed = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout='{"status":"ok"}\n', stderr="",
+        )
+        with mock.patch("adapters.eval.owner_runtime.subprocess.run", return_value=completed) as run:
+            runtime.cmd_prepare_task_commit(SimpleNamespace(
+                root=self.fixture,
+                input=".trellis/.runtime/input.json",
+                candidate_json=".trellis/.runtime/authoring.json",
+            ))
+            runtime.cmd_create_task_commit(SimpleNamespace(
+                root=self.fixture,
+                candidate_artifact=".trellis/.runtime/plans/001.json",
+            ))
+
+        prepare = run.call_args_list[0].args[0]
+        create = run.call_args_list[1].args[0]
+        self.assertTrue(str(prepare[0]).endswith(
+            "guru-create-task-commit/scripts/prepare-task-commit.sh"
+        ))
+        self.assertEqual([
+            "--root", str(self.fixture),
+            "--input", ".trellis/.runtime/input.json",
+            "--candidate-json", ".trellis/.runtime/authoring.json",
+            "--json",
+        ], prepare[1:])
+        self.assertTrue(str(create[0]).endswith(
+            "guru-create-task-commit/scripts/create-task-commit.sh"
+        ))
+        self.assertEqual([
+            "--root", str(self.fixture),
+            "--candidate-artifact", ".trellis/.runtime/plans/001.json",
+            "--json",
+        ], create[1:])
+
+    def test_task_commit_candidate_binding_rewrites_public_invocation(self):
+        workdir = self.root / "task-commit-case"
+        workdir.mkdir(exist_ok=True)
+        case = workdir / "facts.json"
+        case.write_text(json.dumps({
+            "public_invocation": {
+                "arguments": ["--candidate-artifact", "placeholder.json"],
+            },
+        }) + "\n", encoding="utf-8")
+        candidate = (
+            self.fixture
+            / ".trellis/.runtime/guru-team/task-commit-plans/current/001.json"
+        )
+        candidate.parent.mkdir(parents=True, exist_ok=True)
+        candidate.write_text("{}\n", encoding="utf-8")
+
+        relative = bind_task_commit_candidate_argument(
+            {"workdir": str(workdir), "files": [case.name]},
+            self.fixture,
+            candidate,
+        )
+
+        self.assertEqual(
+            ".trellis/.runtime/guru-team/task-commit-plans/current/001.json",
+            relative,
+        )
+        payload = json.loads(case.read_text(encoding="utf-8"))
+        self.assertEqual(relative, payload["public_invocation"]["arguments"][1])
 
 
 if __name__ == "__main__":

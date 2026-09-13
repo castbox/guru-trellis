@@ -171,11 +171,6 @@
     "scope_conclusion": {
       "requirement_scope_basis": "The reviewed issue and linked prerequisites define the scope.",
       "delivery_unit_id": "example-change-27",
-      "close_issues": [
-        27
-      ],
-      "related_issues": [],
-      "followup_issues": [],
       "duplicate_reuse_decision": "No current duplicate replaces this delivery unit.",
       "implementation_target": "The fictional Guru extension package.",
       "current_gap": "The readiness Skill is not yet implemented.",
@@ -195,7 +190,7 @@
       "reviewed_linkage_sha256": "825bf37781b6321def08de7678ecfab95767d9585a8b88c72feb7c1a87d4a1e4",
       "summary": "All ten dimensions were reviewed against the linked evidence.",
       "findings_count": 0,
-      "scope_conclusion_sha256": "4b83487898c871999240674a47aceb874fb69fa799a48e8ae2db0d19ddfc1ad1"
+      "scope_conclusion_sha256": "24099de55e8c29f9e7f1a945125fd16d93f36d6d1467365453bc9c5a86abe095"
     }
   },
   "typed_exit": "ready",
@@ -211,5 +206,5 @@
     "kind": "skill",
     "id": "guru-create-task-workspace"
   },
-  "facts_sha256": "79573a1344e582949500e0fa8f36504703d2b16a9154aae23e20bfdd7d627078"
+  "facts_sha256": "3c730dae782fa73c099478a9bd28b8cd8cb54dc1716a7505368bd7f958e86441"
 }

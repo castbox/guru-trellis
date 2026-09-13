@@ -17,9 +17,10 @@ from adapters.eval.eval_constants import (
 )
 
 from adapters.eval.fixture_io import (
-    bind_merge_gate_argument,
     bind_owner_result_argument,
     bind_review_input_argument,
+    bind_semantic_result_argument,
+    bind_task_commit_candidate_argument,
     run_git,
     write_fake_gh,
     write_fake_merge_gh,
@@ -61,19 +62,6 @@ def production_task_fixture(runtime: Any, fixture: Path) -> tuple[Path, str]:
         ),
     }.items():
         (task / name).write_text(content, encoding="utf-8")
-    issue = {
-        "number": 146,
-        "url": "https://github.com/example/guru-extension/issues/146",
-        "title": "Production minimal handoff eval",
-        "reason": "The current production eval delivery scope.",
-    }
-    runtime.write_json(task / "issue-scope-ledger.json", {
-        "schema_version": "2.0",
-        "primary_issue": issue,
-        "close_issues": [issue],
-        "related_issues": [],
-        "followup_issues": [],
-    })
     durable = fixture / "docs/requirements.md"
     durable.parent.mkdir(parents=True, exist_ok=True)
     durable.write_text(
@@ -373,6 +361,7 @@ def production_task_commit_authoring(
         "message": {
             "type": "feat",
             "scope": "workflow",
+            "issue_reference": 146,
             "summary": "增加生产闭环评测",
             "background": "需要以真实 public wrapper 验证 AI-first 任务提交合同。",
             "changes": "提交隔离 fixture 中已由 Phase 2 覆盖的精确路径。",
@@ -388,14 +377,36 @@ def production_task_commit_authoring(
         },
     }
 
+def production_prepare_task_commit(
+    runtime: Any,
+    fixture: Path,
+    public_input: dict[str, Any],
+    authoring: dict[str, Any],
+) -> tuple[Path, dict[str, Any], dict[str, Any]]:
+    runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    input_path = runtime_dir / "task-commit-public-input.json"
+    authoring_path = runtime_dir / "task-commit-authoring.json"
+    runtime.write_json(input_path, public_input)
+    runtime.write_json(authoring_path, authoring)
+    prepared = runtime.cmd_prepare_task_commit(argparse.Namespace(
+        root=str(fixture),
+        input=input_path.relative_to(fixture).as_posix(),
+        candidate_json=authoring_path.relative_to(fixture).as_posix(),
+    ))
+    candidate_locator = str(prepared["candidate_artifact"])
+    candidate_path = Path(candidate_locator)
+    if not candidate_path.is_absolute():
+        candidate_path = fixture / candidate_path
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+    return candidate_path, candidate, prepared
+
 def production_commit_for_review(
     runtime: Any,
     fixture: Path,
     task: Path,
     checked: dict[str, Any],
 ) -> tuple[str, str]:
-    if hasattr(runtime, "commit_review_fixture"):
-        return runtime.commit_review_fixture(fixture, task, checked)
     public_input = {
         "profile": "initial_commit",
         "mode": "workflow",
@@ -404,9 +415,9 @@ def production_commit_for_review(
         "phase2_commit_anchor": checked["phase2_capture_commit"],
     }
     try:
-        candidate, plan, _ = runtime.build_task_commit_candidate(
+        candidate_path, candidate, prepared = production_prepare_task_commit(
+            runtime,
             fixture,
-            task,
             public_input,
             production_task_commit_authoring(
                 runtime,
@@ -415,13 +426,17 @@ def production_commit_for_review(
                 "passed",
             ),
         )
-        executed = runtime.execute_task_commit_candidate(fixture, candidate, task)
-    except runtime.WorkflowError as exc:
+        executed = runtime.cmd_create_task_commit(argparse.Namespace(
+            root=str(fixture),
+            candidate_artifact=str(prepared["candidate_artifact"]),
+        ))
+    except ValueError as exc:
         raise ValueError(
-            "production Branch Review fixture task commit failed: "
-            + json.dumps(exc.payload, ensure_ascii=False, sort_keys=True)
+            "production Branch Review fixture task commit failed: " + str(exc)
         ) from exc
-    return str(executed["commit_sha"]), str(plan["git"]["base_ref"])
+    if candidate_path.exists():
+        raise ValueError("production Branch Review fixture retained its consumed candidate")
+    return str(executed["commit_sha"]), str(candidate["git"]["base_ref"])
 
 def production_review_candidate(
     exit_id: str,
@@ -574,6 +589,8 @@ def production_record_review(
     recipe: str,
 ) -> dict[str, Any]:
     exit_id = recipe.removeprefix("review-")
+    if exit_id == "continuity-passed":
+        exit_id = "continuity_passed"
     resolved = exit_id == "finding-fix-passed"
     if resolved:
         exit_id = "passed"
@@ -642,16 +659,28 @@ def production_record_review(
             ),
         },
     }) + "\n", encoding="utf-8")
-    public_input.update({
-        "task_ref": task.relative_to(fixture).as_posix(),
-        "base_ref": runtime.diff_base_ref(fixture, "main"),
-        "branch_review_commit": head,
-        "review_intent": (
-            "fresh_final_review"
-            if resolved or recipe == "review-fresh-final-passed"
-            else public_input.get("review_intent", "initial_review")
-        ),
-    })
+    public_input["task_ref"] = task.relative_to(fixture).as_posix()
+    if public_input.get("profile") == "base_continuity":
+        prior_head = run_git(fixture, "rev-parse", f"{head}^")
+        public_input.update({
+            "task_head": head,
+            "branch_review_commit": prior_head,
+            "old_base_head": run_git(fixture, "rev-parse", "origin/main"),
+            "new_base_head": prior_head,
+            "candidate_tree_sha256": runtime.tree_identity(fixture, head),
+            "relevant_paths": ["src/production-eval.txt"],
+            "review_intent": "base_continuity",
+        })
+    else:
+        public_input.update({
+            "base_ref": runtime.diff_base_ref(fixture, "main"),
+            "branch_review_commit": head,
+            "review_intent": (
+                "fresh_final_review"
+                if resolved or recipe == "review-fresh-final-passed"
+                else public_input.get("review_intent", "initial_review")
+            ),
+        })
     runtime_input = fixture / OWNER_INPUT
     runtime_input.write_text(json.dumps(public_input) + "\n", encoding="utf-8")
     runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
@@ -732,11 +761,20 @@ def production_publication_authoring(
             "The complete current publication review reproduces no required-"
             "behavior defect."
         )
+    no_external_work_item = route == "no-external-work-item-ready"
+    non_default_branch = route == "non-default-branch-reference-ready"
+    remain_open = route == "remain-open-reference-ready"
+    requirement_refs = ["pr_payload"] if no_external_work_item else ["issue:146", "pr_payload"]
+    effect_evidence_refs = (
+        ["current-requirement-authority:no-external-work-item", "pr_payload"]
+        if no_external_work_item
+        else ["issue:146", "pr_payload"]
+    )
     candidate_classifications = [{
         "candidate_ref": candidate_ref,
         "decision": decision,
         "witness": {
-            "requirement_refs": ["issue-scope-ledger.json", "pr_payload"],
+            "requirement_refs": requirement_refs,
             "supported_entry_refs": [
                 "guru-review-task-publication",
                 "git:branch_review_commit",
@@ -765,6 +803,15 @@ def production_publication_authoring(
         if route == "metadata-fix-ready"
         else ""
     )
+    issue_effect = (
+        "- 当前任务没有 external work item；PR 不产生 Issue 引用或关闭效果。"
+        if no_external_work_item
+        else "- Refs #146；目标为非默认分支，本 PR 不产生关闭效果，后续进入默认分支时重新审查。"
+        if non_default_branch
+        else "- Refs #146；当前 Issue 要求合并后继续完成发布观测，因此本 PR 保持 Issue open。"
+        if remain_open
+        else "- Closes #146。"
+    )
     pr_payload = {
         "title": "完成：#146 验证 Publication public wrapper 闭环",
         "body": (
@@ -777,7 +824,7 @@ def production_publication_authoring(
             "## Review Gate\n\n"
             "- Branch Review Gate 已通过并绑定当前 HEAD。\n\n"
             "## Issue 关闭范围\n\n"
-            "- Closes #146。\n\n"
+            f"{issue_effect}\n\n"
             "## 安全说明\n\n"
             "- 不写生产环境，不处理 secret，不执行真实 GitHub 发布。\n\n"
             "## Docs SSOT\n\n"
@@ -844,11 +891,7 @@ def production_publication_authoring(
         "id": dimension,
         "status": dimension_status[dimension],
         "summary": f"The semantic owner reviewed {dimension} against current evidence.",
-        "evidence_refs": [
-            "pr_payload",
-            "issue-scope-ledger.json",
-            "git:branch_review_commit",
-        ],
+        "evidence_refs": [*effect_evidence_refs, "git:branch_review_commit"],
     } for dimension in runtime.TASK_PUBLICATION_DIMENSIONS]
     authoring: dict[str, Any] = {
         "profile": public_input["profile"],
@@ -867,8 +910,8 @@ def production_publication_authoring(
                     if typed_exit == "return_to_task_work"
                     else "blocked"
                 ),
-                "summary": "The owner reviewed current issue closure scope.",
-                "evidence_refs": ["issue-scope-ledger.json"],
+                "summary": "The owner reviewed the current external-work-item effect.",
+                "evidence_refs": effect_evidence_refs,
             },
             "docs_ssot": {
                 "status": (
@@ -1157,16 +1200,6 @@ def stage_task_pr_merge_owner_execution(
             "expected_branch_changed",
             "Restore the reviewed base/head branches and rerun the live preview.",
         ),
-        "merge-workflow-close-scope-blocked": (
-            "close_scope",
-            "close_scope_mismatch",
-            "Repair and rereview the PR close-keyword scope before merge.",
-        ),
-        "merge-workflow-added-close-scope-blocked": (
-            "close_scope",
-            "close_scope_mismatch",
-            "Repair and rereview the PR close-keyword scope before merge.",
-        ),
     }
     blocked = blocked_routes.get(recipe)
     dimensions = []
@@ -1180,44 +1213,59 @@ def stage_task_pr_merge_owner_execution(
                 else f"The controlled live facts pass {identifier}."
             ),
         })
-    route = (
-        {
+    if recipe == "merge-phase2-reentry":
+        blocked_dimension = "checks_and_reviews"
+        for dimension in dimensions:
+            if dimension["id"] == blocked_dimension:
+                dimension["status"] = "blocked"
+                dimension["summary"] = "The current task-work finding blocks merge execution."
+        route = {
+            "typed_exit": "phase2_reentry_required",
+            "scope_classification": "task_work",
+            "requires_task_content_change": True,
+            "blocked_dimension": blocked_dimension,
+            "repo_ref": public_input["repo_ref"],
+            "pr_number": public_input["pr_number"],
+            "pr_url": public_input["pr_url"],
+            "expected_head_sha": public_input["expected_head_sha"],
+            "expected_base_branch": public_input["expected_base_branch"],
+            "expected_head_branch": public_input["expected_head_branch"],
+            "task_id": "09-03-348-merge-blocked-phase2-reentry",
+            "archive_locator": ".trellis/tasks/archive/2026-09/09-03-348-merge-blocked-phase2-reentry",
+            "active_locator": ".trellis/tasks/09-03-348-merge-blocked-phase2-reentry",
+            "archive_commit": "a" * 40,
+            "finding_refs": ["merge-finding:348:phase2-reentry"],
+            "resume_target": "phase-2",
+        }
+    elif blocked:
+        route = {
             "typed_exit": "merge_blocked",
             "reason_code": blocked[1],
             "remediation": blocked[2],
         }
-        if blocked
-        else {"typed_exit": "merged", "merge_method": "merge"}
-    )
+    else:
+        route = {"typed_exit": "merged", "merge_method": "merge"}
     review_path = fixture / ".trellis/.runtime/guru-team/evals/merge-review.json"
     runtime.write_json(
         review_path,
         {"semantic_review": {"dimensions": dimensions}, "route": route},
     )
-    fake_bin = write_fake_merge_gh(Path(request["workdir"]).resolve().parent, recipe)
+    fake_kwargs = (
+        {
+            "repo_ref": public_input["repo_ref"],
+            "pr_number": public_input["pr_number"],
+            "issue_number": public_input["pr_number"],
+        }
+        if recipe == "merge-phase2-reentry"
+        else {}
+    )
+    fake_bin = write_fake_merge_gh(
+        Path(request["workdir"]).resolve().parent,
+        recipe,
+        **fake_kwargs,
+    )
     environment = {"PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}"}
-    previous_path = os.environ.get("PATH")
-    os.environ["PATH"] = environment["PATH"]
-    owner_context: dict[str, Any] = {}
-    try:
-        recorded = runtime.cmd_record_task_pr_merge(argparse.Namespace(
-            root=str(fixture),
-            input=runtime_input.relative_to(fixture).as_posix(),
-            review_input=str(review_path),
-        ))
-        gate_path = fixture / str(recorded["gate"])
-        if not blocked:
-            runtime.cmd_execute_task_pr_merge(argparse.Namespace(
-                root=str(fixture),
-                input=runtime_input.relative_to(fixture).as_posix(),
-                gate=gate_path.relative_to(fixture).as_posix(),
-            ))
-        bind_merge_gate_argument(request, fixture, gate_path)
-    finally:
-        if previous_path is None:
-            os.environ.pop("PATH", None)
-        else:
-            os.environ["PATH"] = previous_path
+    bind_review_input_argument(request, fixture, review_path)
     return package, fixture_runtime_target, environment
 
 def stage_finalization_owner_execution(
@@ -1295,7 +1343,7 @@ def stage_finalization_owner_execution(
     public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
     public_input["task_ref"] = ".trellis/tasks/current"
     plan_digest = "b" * 64
-    plan_ref = f"closeout-plan:{plan_digest}"
+    plan_ref = f"finalization:{plan_digest}"
     if "plan_ref" in public_input:
         public_input["plan_ref"] = plan_ref
     if "branch_review_commit" in public_input:
@@ -1752,9 +1800,9 @@ def stage_production_owner_execution(
                 "commit-blocked-recovery": "blocked",
             }.get(recipe, "passed")
             if recipe == "commit-revision-required":
-                runtime.build_task_commit_candidate(
+                production_prepare_task_commit(
+                    runtime,
                     fixture,
-                    task,
                     {
                         "profile": "initial_commit",
                         "mode": public_input["mode"],
@@ -1771,9 +1819,9 @@ def stage_production_owner_execution(
                         "revision-required",
                     ),
                 )
-            owner_result_path, _, _ = runtime.build_task_commit_candidate(
+            owner_result_path, _, _ = production_prepare_task_commit(
+                runtime,
                 fixture,
-                task,
                 public_input,
                 production_task_commit_authoring(
                     runtime,
@@ -1858,24 +1906,21 @@ def stage_production_owner_execution(
                 public_input,
                 recipe,
             )
-            publication_owner = runtime.cmd_record_task_publication_review(argparse.Namespace(
-                root=str(fixture),
-                task=task.relative_to(fixture).as_posix(),
-                input=authoring_path.relative_to(fixture).as_posix(),
-                branch_review_commit=branch_review_commit,
-                dry_run=False,
-            ))
-            owner_result_path = Path(publication_owner["artifact_path"])
             runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
             for runtime_artifact in runtime_dir.rglob("*"):
                 if (
                     runtime_artifact.is_file()
                     and runtime_artifact != fixture / OWNER_INPUT
+                    and runtime_artifact != authoring_path
                 ):
                     runtime_artifact.unlink()
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
-    if skill_id != "guru-review-branch":
+    if skill_id == "guru-review-task-publication":
+        bind_semantic_result_argument(request, fixture, authoring_path)
+    elif skill_id == "guru-create-task-commit":
+        bind_task_commit_candidate_argument(request, fixture, owner_result_path)
+    elif skill_id != "guru-review-branch":
         bind_owner_result_argument(request, fixture, owner_result_path)
     return package, fixture_runtime_target, production_environment
 
@@ -1926,7 +1971,7 @@ def stage_restore_archived_task_owner_execution(
     finish_summary = {
         "task": {"slug": task_id, "artifact_dir": active_locator, "archive_dir": archive_locator, "status": "completed"},
         "git": {"branch": branch, "base_branch": "main"},
-        "github": {"pr_url": f"https://github.com/{repo_ref}/pull/{pr_number}", "source_issues": [pr_number], "close_issues": [], "related_issues": [], "followup_issues": []},
+        "github": {"pr_url": f"https://github.com/{repo_ref}/pull/{pr_number}"},
     }
     (archive / "finish-summary.json").write_text(json.dumps(finish_summary) + "\n", encoding="utf-8")
     run_git(worktree, "add", archive_locator)
@@ -1955,7 +2000,7 @@ def stage_restore_archived_task_owner_execution(
         "exit_id": "phase2_reentry_required", "repo_ref": repo_ref,
         "pr_number": pr_number, "pr_url": f"https://github.com/{repo_ref}/pull/{pr_number}",
         "expected_head_sha": expected_head, "expected_base_branch": "main",
-        "expected_head_branch": branch, "issue_number": pr_number, "task_id": task_id,
+        "expected_head_branch": branch, "task_id": task_id,
         "archive_locator": archive_locator, "active_locator": active_locator,
         "archive_commit": archive_commit, "finding_refs": ["merge-finding:348:phase2-reentry"],
         "resume_target": "phase-2",
@@ -1967,11 +2012,10 @@ def stage_restore_archived_task_owner_execution(
     }
     facts = json.loads((package / "examples/live-facts.json").read_text(encoding="utf-8"))
     facts["pr"].update({"state": "OPEN", "number": pr_number, "url": public["pr_url"], "head_sha": expected_head, "base_branch": "main", "head_branch": branch})
-    facts["issue"].update({"number": pr_number, "state": "OPEN", "close_intent": "unchanged"})
     facts["remote_branch"].update({"name": branch, "head_sha": expected_head})
     facts["local_branch"].update({"name": branch, "head_sha": expected_head})
     facts["archive"].update({"locator": archive_locator, "commit": archive_commit, "task_json_sha256": hashlib.sha256((archive / "task.json").read_bytes()).hexdigest(), "finish_summary_sha256": hashlib.sha256((archive / "finish-summary.json").read_bytes()).hexdigest()})
-    facts["task"].update({"id": task_id, "status": "completed", "completed_at": task_payload["completedAt"], "branch": branch, "base_branch": "main", "repo_ref": repo_ref, "issue_number": pr_number, "pr_number": pr_number, "expected_head_sha": expected_head})
+    facts["task"].update({"id": task_id, "status": "completed", "completed_at": task_payload["completedAt"], "branch": branch, "base_branch": "main", "repo_ref": repo_ref, "pr_number": pr_number, "expected_head_sha": expected_head})
     facts["runtime_mapping"].update({"state": "archived", "task_id": task_id, "archive_locator": archive_locator, "active_locator": active_locator, "repo_ref": repo_ref, "branch_name": branch, "worktree_path": str(worktree)})
     facts["worktree"].update({"path": str(worktree), "exists": True, "clean": True, "branch": branch, "occupied_by": None})
     facts["active_task"] = {"present": False, "task_id": None, "locator": None}

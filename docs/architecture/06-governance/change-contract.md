@@ -33,7 +33,7 @@ Identity：`guru-trellis-architecture-change-contract-v1`；状态：`current`�
 - check id/version：`guru-trellis-architecture-convergence` / `1`。
 - entrypoint：`docs/architecture/06-governance/change-contract.md`；这是 AI 语义检查协议，不是替代判断的脚本。
 - applicable scope：stage invocation、authority binding、path exclusivity、required concern completeness、before/after regression、single-writer、parallel stale、contribution/ADR review 与 promotion freshness。
-- rule refs：`ARCH-GOV-006..008`；decision refs：`ADR-005`；gap refs：`ARCH-GAP-006`。
+- rule refs：`ARCH-GOV-006..009`；decision refs：`ADR-005`、`ADR-009`；gap refs：`ARCH-GAP-006`、`ARCH-GAP-008`。
 - result contract：`guru-project-architecture-check-result-2.0`；freshness source 是当前 task candidate 或 exact committed range。
 
 稳定失败路由为：缺适用 contract/constitution/check facts -> `contract_incomplete`；与 current authority 冲突 -> `architecture_conflict`；新增或恶化偏移、owner 扩张、无退出双写或 closed GAP 重现 -> `fitness_regression`；baseline、constitution、contribution 或 expected-current stale -> `sync_required`。AI 根据 applicability 与 task 真实依赖决定 `blocking`，runtime 只验证 descriptor/result 一一绑定、locator、freshness 与 route consistency。

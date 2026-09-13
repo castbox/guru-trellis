@@ -258,7 +258,7 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
         )
         self.assertEqual("ok", fresh["status"])
         current_gate = json.loads(checkpoint.read_text())
-        self.assertEqual("6.0", current_gate["schema_version"])
+        self.assertEqual("7.0", current_gate["schema_version"])
         self.assertEqual(
             "guru-reviewed-content-1.0",
             current_gate["reviewed_content_algorithm"],

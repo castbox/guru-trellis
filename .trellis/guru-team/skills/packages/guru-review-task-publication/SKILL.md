@@ -48,8 +48,29 @@ dimension may be carried forward only when its evidence references remain
 current and byte-identical; source, test, durable-doc, spec, workflow, schema,
 config, or deployment drift returns to task work.
 
+Publication alone decides the external work item effect from current requirement
+authority, the reviewed diff, and live Git/GitHub branch facts. Apply these
+normal-path rules without creating a cross-stage closure DTO:
+
+- An Issue-backed delivery that completely resolves the current Issue defaults
+  to closure. When the PR targets the repository default branch, put a GitHub
+  closing keyword for that Issue in the reviewed PR body.
+- Keep an Issue open only when current authority names a concrete condition that
+  remains after this merge, such as later verification, observation, release, or
+  uncovered scope. State that reason and use a reference without a closing
+  keyword.
+- A task with no external work item produces no Issue reference and no closing
+  effect.
+- A PR targeting a non-default branch references the Issue without a closing
+  keyword. A later PR into the default branch receives a fresh Publication
+  judgment; this PR must not claim that it closes the Issue.
+
+GitHub owns the actual automatic close when a closing-keyword PR reaches the
+default branch. Publication does not call an Issue-close API, and Finalizer or
+Merge must not reinterpret the reviewed effect.
+
 Re-entry is scope-precise: tracked task artifacts, code, tests, durable docs,
-or the Issue Scope Ledger return through Phase 2, Task Commit, Branch Review,
+or current requirement authority return through Phase 2, Task Commit, Branch Review,
 and Publication; PR title/body or other publication payload changes retry only
 Publication; identity-only expiry refreshes the affected identity; and scope,
 reviewed-content, or close-scope changes invalidate the prior ready result.

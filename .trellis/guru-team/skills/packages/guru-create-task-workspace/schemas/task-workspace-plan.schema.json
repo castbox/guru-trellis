@@ -4,7 +4,7 @@
   "title": "Guru Team Task Workspace Plan",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "skill_id", "generated_at", "mode", "invocation", "prerequisites", "target", "scope", "base", "naming", "assignee", "side_effects", "ai_review_gate", "freshness"],
+  "required": ["schema_version", "skill_id", "generated_at", "mode", "invocation", "prerequisites", "target", "base", "naming", "assignee", "side_effects", "ai_review_gate", "freshness"],
   "properties": {
     "schema_version": {"const": "2.0"},
     "skill_id": {"const": "guru-create-task-workspace"},
@@ -13,7 +13,6 @@
     "invocation": {"$ref": "#/$defs/invocation"},
     "prerequisites": {"$ref": "#/$defs/prerequisites"},
     "target": {"$ref": "#/$defs/target"},
-    "scope": {"$ref": "#/$defs/scope"},
     "base": {"$ref": "#/$defs/base"},
     "naming": {"$ref": "#/$defs/naming"},
     "assignee": {"$ref": "#/$defs/assignee"},
@@ -160,27 +159,6 @@
         "created_issue_result": {"anyOf": [{"$ref": "#/$defs/createdIssueResult"}, {"type": "null"}]}
       }
     },
-    "issueRef": {
-      "type": "object", "additionalProperties": false,
-      "required": ["number", "url", "title", "reason"],
-      "properties": {
-        "number": {"type": "integer", "minimum": 1},
-        "url": {"$ref": "#/$defs/issueUrl"},
-        "title": {"$ref": "#/$defs/cleanText"},
-        "reason": {"$ref": "#/$defs/cleanText"}
-      }
-    },
-    "scope": {
-      "type": "object", "additionalProperties": false,
-      "required": ["primary", "close", "related", "followup", "scope_sha256"],
-      "properties": {
-        "primary": {"anyOf": [{"$ref": "#/$defs/issueRef"}, {"type": "null"}]},
-        "close": {"type": "array", "items": {"$ref": "#/$defs/issueRef"}, "uniqueItems": true},
-        "related": {"type": "array", "items": {"$ref": "#/$defs/issueRef"}, "uniqueItems": true},
-        "followup": {"type": "array", "items": {"$ref": "#/$defs/issueRef"}, "uniqueItems": true},
-        "scope_sha256": {"$ref": "#/$defs/sha256"}
-      }
-    },
     "base": {
       "type": "object", "additionalProperties": false,
       "required": ["selected_base", "remote", "base_ref", "decision_head", "local_head", "remote_head", "post_sync_resolution_sha256", "sync_facts_sha256"],
@@ -268,10 +246,9 @@
     },
     "sideEffects": {
       "type": "object", "additionalProperties": false,
-      "required": ["operations", "task_artifacts", "runtime_mappings", "command_argv", "stop_after"],
+      "required": ["operations", "runtime_mappings", "command_argv", "stop_after"],
       "properties": {
-        "operations": {"type": "array", "items": {"enum": ["create_issue", "create_branch", "create_worktree", "create_task", "write_task_artifacts", "write_runtime_mappings"]}, "uniqueItems": true},
-        "task_artifacts": {"type": "array", "items": {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+/issue-scope-ledger\\.json$"}, "uniqueItems": true},
+        "operations": {"type": "array", "items": {"enum": ["create_issue", "create_branch", "create_worktree", "create_task", "write_runtime_mappings"]}, "uniqueItems": true},
         "runtime_mappings": {"type": "array", "items": {"type": "string", "pattern": "^\\.trellis/\\.runtime/guru-team/(workspaces|tasks)/[^/]+\\.json$"}, "uniqueItems": true},
         "command_argv": {"type": "array", "items": {"type": "string", "pattern": "^(?!/)(?![A-Za-z]:/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\r\\n\\\\]*$"}, "minItems": 1},
         "stop_after": {"enum": ["created_issue_refresh", "created_workspace"]}

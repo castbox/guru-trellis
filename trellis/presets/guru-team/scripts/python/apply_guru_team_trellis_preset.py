@@ -193,9 +193,7 @@ MANAGED_SOURCE_PATHS = (
 )
 MANAGED_ASSET_PATHS = [
     Path("config-template.yml"),
-    Path("schemas/closeout-plan.schema.json"),
     Path("schemas/finish-summary.schema.json"),
-    Path("schemas/marketplace-verification.schema.json"),
     Path("scripts/bash/check-env.sh"),
     Path("scripts/bash/version.sh"),
     Path("scripts/bash/prepare-task.sh"),
@@ -247,7 +245,6 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/prepare-task-commit.sh"),
     Path("scripts/bash/check-commit-messages.sh"),
     Path("scripts/bash/create-task-commit.sh"),
-    Path("scripts/bash/format-merge-commit.sh"),
     Path("scripts/bash/review-branch.sh"),
     Path("scripts/bash/check-review-gate.sh"),
     Path("scripts/bash/finish-work.sh"),
@@ -362,6 +359,21 @@ def load_extension_manifest(guru_root: Path) -> dict[str, Any]:
     for key in ["schema_version", "extension_id", "version", "workflow_template_id"]:
         if not str(payload.get(key) or "").strip():
             raise SystemExit(f"Guru Team extension manifest missing required field: {key}")
+    public_api = payload.get("public_api")
+    capabilities = public_api.get("migration_capabilities") if isinstance(public_api, dict) else None
+    expected_capability = {
+        "capability_id": "guru-ledger-free-runtime",
+        "version": "1.0.0",
+        "projection_identity": {
+            "extension_id": payload["extension_id"],
+            "extension_version": payload["version"],
+            "workflow_template_id": payload["workflow_template_id"],
+        },
+    }
+    if not isinstance(capabilities, dict) or capabilities.get("guru-ledger-free-runtime") != expected_capability:
+        raise SystemExit(
+            "Guru Team extension manifest has invalid guru-ledger-free-runtime capability"
+        )
     return payload
 
 
@@ -2459,7 +2471,6 @@ def _install_assets_in_place(
         dst / "scripts/bash/prepare-task-commit.sh",
         dst / "scripts/bash/check-commit-messages.sh",
         dst / "scripts/bash/create-task-commit.sh",
-        dst / "scripts/bash/format-merge-commit.sh",
         dst / "scripts/bash/review-branch.sh",
         dst / "scripts/bash/check-review-gate.sh",
         dst / "scripts/bash/finish-work.sh",

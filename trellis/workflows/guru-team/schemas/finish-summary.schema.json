@@ -44,12 +44,8 @@
     "github": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source_issues", "close_issues", "related_issues", "followup_issues", "pr_url"],
+      "required": ["pr_url"],
       "properties": {
-        "source_issues": {"$ref": "#/$defs/issueNumbers"},
-        "close_issues": {"$ref": "#/$defs/issueNumbers"},
-        "related_issues": {"$ref": "#/$defs/issueNumbers"},
-        "followup_issues": {"$ref": "#/$defs/issueNumbers"},
         "pr_url": {"type": "string", "maxLength": 1000, "pattern": "^$|^https://github\\.com/[^/]+/[^/]+/pull/[1-9][0-9]*$"}
       }
     },
@@ -59,10 +55,7 @@
       "properties": {
         "prd": {"$ref": "#/$defs/taskPath"},
         "design": {"$ref": "#/$defs/taskPath"},
-        "implement": {"$ref": "#/$defs/taskPath"},
-        "issue_scope_ledger": {"$ref": "#/$defs/taskPath"},
-        "closeout_plan": {"$ref": "#/$defs/taskPath"},
-        "marketplace_verification": {"$ref": "#/$defs/taskPath"}
+        "implement": {"$ref": "#/$defs/taskPath"}
       }
     },
     "index": {
@@ -89,7 +82,6 @@
     },
     "optionalSafePath": {"anyOf": [{"const": ""}, {"$ref": "#/$defs/safePath"}]},
     "taskPath": {"$ref": "#/$defs/safePath"},
-    "issueNumbers": {"type": "array", "maxItems": 100, "uniqueItems": true, "items": {"type": "integer", "minimum": 1}},
     "affectedSurface": {
       "type": "object",
       "additionalProperties": false,

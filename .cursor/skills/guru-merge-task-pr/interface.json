@@ -13,7 +13,6 @@
         "repo_bound_pr",
         "expected_head",
         "live_merge_readiness",
-        "close_scope",
         "invocation_freshness"
       ]
     },
@@ -24,7 +23,6 @@
         "repo_bound_pr",
         "expected_head",
         "live_merge_readiness",
-        "close_scope",
         "invocation_freshness"
       ]
     }
@@ -55,12 +53,6 @@
       "freshness": "reread by preview and checker"
     },
     {
-      "id": "close_scope",
-      "evidence": "Finalizer or caller supplied reviewed close-Issue set, PR body close keywords and current Issue states",
-      "binding": "exact keyword-set equality and all reviewed close Issues Open before merge",
-      "freshness": "reread before and after merge"
-    },
-    {
       "id": "invocation_freshness",
       "evidence": "current input identity and owner-private gate",
       "binding": "one repository, PR and expected head",
@@ -76,45 +68,103 @@
     "typed_exit"
   ],
   "artifacts": [
-    {"id": "workflow_input", "path": "examples/public-ready-for-merge-input-2.0.json"},
-    {"id": "workflow_authoring", "path": "examples/public-ready-for-merge-authoring-2.0.json"},
-    {"id": "standalone_input", "path": "examples/public-standalone-merge-input-2.0.json"},
-    {"id": "legacy_workflow_input_1_0", "path": "examples/public-ready-for-merge-input.json"},
-    {"id": "legacy_workflow_authoring_1_0", "path": "examples/public-ready-for-merge-authoring.json"},
-    {"id": "legacy_standalone_input_1_0", "path": "examples/public-standalone-merge-input.json"},
-    {"id": "merged_output", "path": "examples/public-merged-output.json"},
-    {"id": "merge_blocked_output", "path": "examples/public-merge-blocked-output.json"},
-    {"id": "phase2_reentry_required_output", "path": "examples/public-phase2-reentry-required-output.json"},
-    {"id": "restore_archived_task_authoring", "path": "examples/public-restore-archived-task-authoring.json"},
-    {"id": "closure_mismatch_output", "path": "examples/public-closure-mismatch-output.json"},
-    {"id": "invocation_error", "path": "examples/public-invocation-error.json"},
-    {"id": "semantic_review", "path": "examples/semantic-review-input.json"},
-    {"id": "check_watcher_result", "path": "examples/check-watcher-result.json"},
-    {"id": "private_gate", "path": "examples/task-pr-merge-gate-2.0.json"},
-    {"id": "legacy_private_gate_1_0", "path": "examples/task-pr-merge-gate.json"}
+    {
+      "id": "workflow_input",
+      "path": "examples/public-ready-for-merge-input-2.0.json"
+    },
+    {
+      "id": "workflow_authoring",
+      "path": "examples/public-ready-for-merge-authoring-2.0.json"
+    },
+    {
+      "id": "standalone_input",
+      "path": "examples/public-standalone-merge-input-2.0.json"
+    },
+    {
+      "id": "merged_output",
+      "path": "examples/public-merged-output.json"
+    },
+    {
+      "id": "merge_blocked_output",
+      "path": "examples/public-merge-blocked-output.json"
+    },
+    {
+      "id": "phase2_reentry_required_output",
+      "path": "examples/public-phase2-reentry-required-output.json"
+    },
+    {
+      "id": "restore_archived_task_authoring",
+      "path": "examples/public-restore-archived-task-authoring.json"
+    },
+    {
+      "id": "closure_mismatch_output",
+      "path": "examples/public-closure-mismatch-output.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "semantic_review",
+      "path": "examples/semantic-review-input.json"
+    },
+    {
+      "id": "check_watcher_result",
+      "path": "examples/check-watcher-result.json"
+    },
+    {
+      "id": "private_gate",
+      "path": "examples/task-pr-merge-gate-2.0.json"
+    }
   ],
   "schemas": [
-    {"id": "workflow_input", "path": "schemas/public-ready-for-merge-input-2.0.schema.json"},
-    {"id": "standalone_input", "path": "schemas/public-standalone-merge-input-2.0.schema.json"},
-    {"id": "aggregate_input", "path": "schemas/public-input-2.0.schema.json"},
-    {"id": "legacy_workflow_input_1_0", "path": "schemas/public-ready-for-merge-input.schema.json"},
-    {"id": "legacy_standalone_input_1_0", "path": "schemas/public-standalone-merge-input.schema.json"},
-    {"id": "legacy_aggregate_input_1_0", "path": "schemas/public-input.schema.json"},
-    {"id": "merged_output", "path": "schemas/public-merged-output.schema.json"},
-    {"id": "merge_blocked_output", "path": "schemas/public-merge-blocked-output.schema.json"},
-    {"id": "phase2_reentry_required_output", "path": "schemas/public-phase2-reentry-required-output.schema.json"},
-    {"id": "closure_mismatch_output", "path": "schemas/public-closure-mismatch-output.schema.json"},
-    {"id": "invocation_error", "path": "schemas/public-invocation-error.schema.json"},
-    {"id": "private_gate", "path": "schemas/task-pr-merge-gate-2.0.schema.json"},
-    {"id": "check_watcher_result", "path": "schemas/check-watcher-result.schema.json"},
-    {"id": "legacy_private_gate_1_0", "path": "schemas/task-pr-merge-gate.schema.json"}
+    {
+      "id": "workflow_input",
+      "path": "schemas/public-ready-for-merge-input-2.0.schema.json"
+    },
+    {
+      "id": "standalone_input",
+      "path": "schemas/public-standalone-merge-input-2.0.schema.json"
+    },
+    {
+      "id": "aggregate_input",
+      "path": "schemas/public-input-2.0.schema.json"
+    },
+    {
+      "id": "merged_output",
+      "path": "schemas/public-merged-output.schema.json"
+    },
+    {
+      "id": "merge_blocked_output",
+      "path": "schemas/public-merge-blocked-output.schema.json"
+    },
+    {
+      "id": "phase2_reentry_required_output",
+      "path": "schemas/public-phase2-reentry-required-output.schema.json"
+    },
+    {
+      "id": "closure_mismatch_output",
+      "path": "schemas/public-closure-mismatch-output.schema.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "private_gate",
+      "path": "schemas/task-pr-merge-gate-2.0.schema.json"
+    },
+    {
+      "id": "check_watcher_result",
+      "path": "schemas/check-watcher-result.schema.json"
+    }
   ],
   "validators": [
     {
       "id": "merge_previewer",
       "command": "scripts/preview-task-pr-merge.sh",
       "runtime_command": "preview-task-pr-merge",
-      "objective_scope": "Read complete repo-bound PR, checks, review, policy and close-Issue facts without mutation"
+      "objective_scope": "Read complete repo-bound PR, checks, review, policy without mutation"
     },
     {
       "id": "merge_recorder",
@@ -144,7 +194,7 @@
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-task-pr-merge",
-      "objective_scope": "After exact confirmation, run the single public Happy Path with one pre snapshot, one expected-head merge, one post snapshot, exact recovery and terminal projection; accept the old gate-only shape only as compatibility"
+      "objective_scope": "After exact confirmation, run the single public Happy Path with one pre snapshot, one expected-head merge, one post snapshot, exact recovery and terminal projection"
     }
   ],
   "public_contracts": {
@@ -161,8 +211,14 @@
             "schema_id": "guru-merge-task-pr-input-ready-for-merge-2.0",
             "path": "schemas/public-ready-for-merge-input-2.0.schema.json"
           },
-          "example": {"id": "ready_for_merge_input", "path": "examples/public-ready-for-merge-input-2.0.json"},
-          "discriminator": {"field": "profile", "value": "ready_for_merge"}
+          "example": {
+            "id": "ready_for_merge_input",
+            "path": "examples/public-ready-for-merge-input-2.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "ready_for_merge"
+          }
         },
         {
           "id": "standalone_merge",
@@ -170,65 +226,131 @@
             "schema_id": "guru-merge-task-pr-input-standalone-merge-2.0",
             "path": "schemas/public-standalone-merge-input-2.0.schema.json"
           },
-          "example": {"id": "standalone_merge_input", "path": "examples/public-standalone-merge-input-2.0.json"},
-          "discriminator": {"field": "profile", "value": "standalone_merge"}
+          "example": {
+            "id": "standalone_merge_input",
+            "path": "examples/public-standalone-merge-input-2.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "standalone_merge"
+          }
         }
       ]
     },
     "invocation": {
       "command_id": "run-skill-command",
       "wrapper": "scripts/invoke.sh",
-      "input_binding": {"kind": "structured_json", "profile_id": "ready_for_merge"},
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "ready_for_merge"
+      },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
         "schema_id": "guru-merge-task-pr-invocation-error-1.0",
         "path": "schemas/public-invocation-error.schema.json"
       },
-      "error_example": {"id": "invalid_public_input", "path": "examples/public-invocation-error.json"},
-      "example_argv": ["--input", "examples/public-ready-for-merge-input-2.0.json", "--review-input", "examples/semantic-review-input.json"]
+      "error_example": {
+        "id": "invalid_public_input",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-ready-for-merge-input-2.0.json",
+        "--review-input",
+        "examples/semantic-review-input.json"
+      ]
     },
     "outputs": [
       {
         "exit_id": "merged",
-        "schema": {"schema_id": "guru-merge-task-pr-output-merged-1.0", "path": "schemas/public-merged-output.schema.json"},
-        "example": {"id": "merged_output", "path": "examples/public-merged-output.json"},
-        "consumer_use_ids": ["project_merged"]
+        "schema": {
+          "schema_id": "guru-merge-task-pr-output-merged-1.0",
+          "path": "schemas/public-merged-output.schema.json"
+        },
+        "example": {
+          "id": "merged_output",
+          "path": "examples/public-merged-output.json"
+        },
+        "consumer_use_ids": [
+          "project_merged"
+        ]
       },
       {
         "exit_id": "merge_blocked",
-        "schema": {"schema_id": "guru-merge-task-pr-output-merge-blocked-1.0", "path": "schemas/public-merge-blocked-output.schema.json"},
-        "example": {"id": "merge_blocked_output", "path": "examples/public-merge-blocked-output.json"},
-        "consumer_use_ids": ["project_merge_blocked"]
+        "schema": {
+          "schema_id": "guru-merge-task-pr-output-merge-blocked-1.0",
+          "path": "schemas/public-merge-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "merge_blocked_output",
+          "path": "examples/public-merge-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "project_merge_blocked"
+        ]
       },
       {
         "exit_id": "phase2_reentry_required",
-        "schema": {"schema_id": "guru-merge-task-pr-output-phase2-reentry-required-1.0", "path": "schemas/public-phase2-reentry-required-output.schema.json"},
-        "example": {"id": "phase2_reentry_required_output", "path": "examples/public-phase2-reentry-required-output.json"},
-        "consumer_use_ids": ["project_phase2_reentry_required"]
+        "schema": {
+          "schema_id": "guru-merge-task-pr-output-phase2-reentry-required-1.0",
+          "path": "schemas/public-phase2-reentry-required-output.schema.json"
+        },
+        "example": {
+          "id": "phase2_reentry_required_output",
+          "path": "examples/public-phase2-reentry-required-output.json"
+        },
+        "consumer_use_ids": [
+          "project_phase2_reentry_required"
+        ]
       },
       {
         "exit_id": "closure_mismatch",
-        "schema": {"schema_id": "guru-merge-task-pr-output-closure-mismatch-1.0", "path": "schemas/public-closure-mismatch-output.schema.json"},
-        "example": {"id": "closure_mismatch_output", "path": "examples/public-closure-mismatch-output.json"},
-        "consumer_use_ids": ["project_closure_mismatch"]
+        "schema": {
+          "schema_id": "guru-merge-task-pr-output-closure-mismatch-1.0",
+          "path": "schemas/public-closure-mismatch-output.schema.json"
+        },
+        "example": {
+          "id": "closure_mismatch_output",
+          "path": "examples/public-closure-mismatch-output.json"
+        },
+        "consumer_use_ids": [
+          "project_closure_mismatch"
+        ]
       }
     ],
     "consumer_inputs": [
       {
         "id": "merged_workflow_input",
-        "consumer": {"kind": "workflow", "id": "guru-finalization-finish-response"},
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-finalization-finish-response"
+        },
         "payload_kind": "structured_json",
-        "contract": {"kind": "json_schema", "schema_id": "guru-merge-task-pr-workflow-merged-input-1.0", "path": "consumers/workflow/production/merge-task-pr-merged.schema.json"}
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-merge-task-pr-workflow-merged-input-1.0",
+          "path": "consumers/workflow/production/merge-task-pr-merged.schema.json"
+        }
       },
       {
         "id": "merge_blocked_stop_input",
-        "consumer": {"kind": "stop", "id": "task-pr-merge-blocked"},
+        "consumer": {
+          "kind": "stop",
+          "id": "task-pr-merge-blocked"
+        },
         "payload_kind": "structured_json",
-        "contract": {"kind": "json_schema", "schema_id": "guru-merge-task-pr-stop-merge-blocked-input-1.0", "path": "consumers/stop/production/merge-task-pr-blocked.schema.json"}
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-merge-task-pr-stop-merge-blocked-input-1.0",
+          "path": "consumers/stop/production/merge-task-pr-blocked.schema.json"
+        }
       },
       {
         "id": "phase2_reentry_required_input",
-        "consumer": {"kind": "skill", "id": "guru-restore-archived-task"},
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-restore-archived-task"
+        },
         "payload_kind": "structured_json",
         "contract": {
           "kind": "skill_input_authoring_seed",
@@ -236,70 +358,185 @@
           "input_kind": "structured_json",
           "profile_id": "restore_archived_task",
           "seed_fields": [
-            "exit_id", "repo_ref", "pr_number", "pr_url", "expected_head_sha",
-            "expected_base_branch", "expected_head_branch", "issue_number", "task_id",
-            "archive_locator", "active_locator", "archive_commit", "finding_refs", "resume_target"
+            "exit_id",
+            "repo_ref",
+            "pr_number",
+            "pr_url",
+            "expected_head_sha",
+            "expected_base_branch",
+            "expected_head_branch",
+            "task_id",
+            "archive_locator",
+            "active_locator",
+            "archive_commit",
+            "finding_refs",
+            "resume_target"
           ],
-          "authoring_fields": ["schema_version", "profile", "mode"],
-          "authoring_example": {"id": "restore_archived_task_authoring", "path": "examples/public-restore-archived-task-authoring.json"}
+          "authoring_fields": [
+            "schema_version",
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "restore_archived_task_authoring",
+            "path": "examples/public-restore-archived-task-authoring.json"
+          }
         }
       },
       {
         "id": "closure_mismatch_stop_input",
-        "consumer": {"kind": "stop", "id": "task-pr-closure-mismatch"},
+        "consumer": {
+          "kind": "stop",
+          "id": "task-pr-closure-mismatch"
+        },
         "payload_kind": "structured_json",
-        "contract": {"kind": "json_schema", "schema_id": "guru-merge-task-pr-stop-closure-mismatch-input-1.0", "path": "consumers/stop/production/merge-task-pr-closure-mismatch.schema.json"}
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-merge-task-pr-stop-closure-mismatch-input-1.0",
+          "path": "consumers/stop/production/merge-task-pr-closure-mismatch.schema.json"
+        }
       }
     ],
     "projections": [
-      {"id": "project_merged", "exit_id": "merged", "consumer_input_id": "merged_workflow_input", "operation": "direct"},
-      {"id": "project_merge_blocked", "exit_id": "merge_blocked", "consumer_input_id": "merge_blocked_stop_input", "operation": "direct"},
+      {
+        "id": "project_merged",
+        "exit_id": "merged",
+        "consumer_input_id": "merged_workflow_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_merge_blocked",
+        "exit_id": "merge_blocked",
+        "consumer_input_id": "merge_blocked_stop_input",
+        "operation": "direct"
+      },
       {
         "id": "project_phase2_reentry_required",
         "exit_id": "phase2_reentry_required",
         "consumer_input_id": "phase2_reentry_required_input",
         "operation": "select",
         "mappings": [
-          {"source": "exit_id", "target": "exit_id"},
-          {"source": "repo_ref", "target": "repo_ref"},
-          {"source": "pr_number", "target": "pr_number"},
-          {"source": "pr_url", "target": "pr_url"},
-          {"source": "expected_head_sha", "target": "expected_head_sha"},
-          {"source": "expected_base_branch", "target": "expected_base_branch"},
-          {"source": "expected_head_branch", "target": "expected_head_branch"},
-          {"source": "issue_number", "target": "issue_number"},
-          {"source": "task_id", "target": "task_id"},
-          {"source": "archive_locator", "target": "archive_locator"},
-          {"source": "active_locator", "target": "active_locator"},
-          {"source": "archive_commit", "target": "archive_commit"},
-          {"source": "finding_refs", "target": "finding_refs"},
-          {"source": "resume_target", "target": "resume_target"}
+          {
+            "source": "exit_id",
+            "target": "exit_id"
+          },
+          {
+            "source": "repo_ref",
+            "target": "repo_ref"
+          },
+          {
+            "source": "pr_number",
+            "target": "pr_number"
+          },
+          {
+            "source": "pr_url",
+            "target": "pr_url"
+          },
+          {
+            "source": "expected_head_sha",
+            "target": "expected_head_sha"
+          },
+          {
+            "source": "expected_base_branch",
+            "target": "expected_base_branch"
+          },
+          {
+            "source": "expected_head_branch",
+            "target": "expected_head_branch"
+          },
+          {
+            "source": "task_id",
+            "target": "task_id"
+          },
+          {
+            "source": "archive_locator",
+            "target": "archive_locator"
+          },
+          {
+            "source": "active_locator",
+            "target": "active_locator"
+          },
+          {
+            "source": "archive_commit",
+            "target": "archive_commit"
+          },
+          {
+            "source": "finding_refs",
+            "target": "finding_refs"
+          },
+          {
+            "source": "resume_target",
+            "target": "resume_target"
+          }
         ]
       },
-      {"id": "project_closure_mismatch", "exit_id": "closure_mismatch", "consumer_input_id": "closure_mismatch_stop_input", "operation": "direct"}
+      {
+        "id": "project_closure_mismatch",
+        "exit_id": "closure_mismatch",
+        "consumer_input_id": "closure_mismatch_stop_input",
+        "operation": "direct"
+      }
     ],
     "private_artifacts": [
       {
         "id": "merge_gate",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "guru-task-pr-merge-gate-2.0", "path": "schemas/task-pr-merge-gate-2.0.schema.json"},
+        "schema": {
+          "schema_id": "guru-task-pr-merge-gate-2.0",
+          "path": "schemas/task-pr-merge-gate-2.0.schema.json"
+        },
         "persistence": "ignored_runtime"
       }
     ]
   },
   "external_exits": [
-    {"id": "merged", "evidence": "expected-head merge succeeded and every close Issue was closed by GitHub at or after merged_at", "consumer": {"kind": "workflow", "id": "guru-finalization-finish-response"}},
-    {"id": "merge_blocked", "evidence": "one current pre-merge semantic or objective condition prevents mutation", "consumer": {"kind": "stop", "id": "task-pr-merge-blocked"}},
-    {"id": "phase2_reentry_required", "evidence": "the semantic owner identified a current task-work content finding and supplied the exact archived task recovery identity; Merge performs no mutation", "consumer": {"kind": "skill", "id": "guru-restore-archived-task"}},
-    {"id": "closure_mismatch", "evidence": "the PR merged but GitHub close-keyword effects are incomplete or temporally invalid", "consumer": {"kind": "stop", "id": "task-pr-closure-mismatch"}}
+    {
+      "id": "merged",
+      "evidence": "expected-head merge succeeded and every Issue named by a live PR-body closing keyword was closed by GitHub at or after merged_at",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-finalization-finish-response"
+      }
+    },
+    {
+      "id": "merge_blocked",
+      "evidence": "one current pre-merge semantic or objective condition prevents mutation",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-pr-merge-blocked"
+      }
+    },
+    {
+      "id": "phase2_reentry_required",
+      "evidence": "the semantic owner identified a current task-work content finding and supplied the exact archived task recovery identity; Merge performs no mutation",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-restore-archived-task"
+      }
+    },
+    {
+      "id": "closure_mismatch",
+      "evidence": "the PR merged but GitHub close-keyword effects are incomplete or temporally invalid",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-pr-closure-mismatch"
+      }
+    }
   ],
   "reentry": {
     "identity": "repository, PR number/URL and expected head SHA",
     "freshness": "all GitHub facts are reread before gate check, mutation and post-merge projection",
     "stale_behavior": "fail_closed"
   },
-  "tests": ["tests/test_contract.py"],
-  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "tests": [
+    "tests/test_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "codex",
+    "cursor",
+    "claude"
+  ],
   "runtime_dependency": {
     "extension_id": "guru-team",
     "api_version": "1.0",

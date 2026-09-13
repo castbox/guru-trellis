@@ -110,11 +110,11 @@ workflow or extension manifest. The integrated business graph has 22 invoke
 markers, 95 exit markers and 59 unique workflow/stop targets.
 
 The Finalizer-to-Merge edge is target-authored. Finalizer returns canonical
-repository/PR identity, `expected_head_sha`, expected base/head branch identity,
-and the reviewed close-Issue number set; Merge supplies only its fixed
+repository/PR identity, `expected_head_sha`, and expected base/head branch identity;
+Merge supplies only its fixed
 `profile=ready_for_merge`, `mode=workflow`, active `schema_version=2.0`, and one
-reviewed merge message containing primary Issue, concrete Chinese summary, and
-exact Chinese `chore(merge)` subject/body. These are the minimal facts the
+reviewed merge message containing a concrete Chinese summary and exact Chinese
+`chore(merge)` subject/body. These are the minimal facts the
 consumer cannot rederive from live PR state without turning that mutable state
 into authority. No transaction, review narrative, authorization, task runtime or
 local checkout identity crosses the edge. A task-work Merge finding projects
@@ -128,7 +128,7 @@ The Merge 1.0 input/aggregate/gate schemas and examples remain immutable legacy
 assets. Interface 1.4 explicitly selects the active 2.0 profiles and gate; no
 legacy input is synthesized from live state or neighboring fields.
 
-The Merge AI owns readiness, close scope, policy/method sufficiency, the exact
+The Merge AI owns readiness, live PR-body closing-effect verification, policy/method sufficiency, the exact
 displayed action and the dialogue-local confirmation. Its deterministic
 commands own repo-bound fact capture, gate checking, expected-head merge and
 post-merge read-only validation. A terminal projection retires the merge gate.
@@ -715,7 +715,7 @@ actual exit. The commit public input contains only profile/mode/task/source-exit
 `phase2_commit_anchor`. Target-owned AI authoring supplies path classifications,
 structured message fields, and the semantic result to a deterministic private
 candidate builder, which combines them with the passed Phase 2 DTO and live
-task, ledger, Git, snapshot, and sequence facts. It canonicalizes and validates
+task, requirement/source authority, Git, snapshot, and sequence facts. It canonicalizes and validates
 the complete candidate before dialogue-local commit confirmation; neither the
 candidate nor any persisted state records user authorization. The checked
 executor consumes only that private candidate.
@@ -1100,9 +1100,9 @@ URL, and content checksum. It contains no
 user identity, confirmation reference, authorization state/digest, authority
 timestamp, planning identity, review state, context snapshot, interrupted
 target, or re-entry route. The active-task checker independently rereads
-the closed scope-only Ledger 2.0, current planning, context, task-update
-preimage, re-entry facts, and live authority time from their owners. The trail
-stays in the transient owner result and is never written to the Ledger. Inputs
+current planning, context, task-update preimage, re-entry facts, and live
+authority time from their owners. The trail stays in the transient owner result
+and is never written to a task artifact. Inputs
 outside the current closed schema fail before normalization. GitHub authority
 mutation returns `refresh_context`; only a context
 snapshot generated at or after authority `updated_at`, followed by a task update
@@ -1233,7 +1233,7 @@ fail closed. It binds the live title/body/update facts to the reviewed draft
 and confirmation, returns `refresh_review`, and performs no
 branch/worktree/task/runtime mutation. An open-issue invocation uses a separate
 `workspace_and_task_mutation` confirmation and may return `created` only after
-the branch/worktree/task, one tracked task-local Issue Scope Ledger, ignored
+the branch/worktree/task, ignored
 runtime mappings, and workspace boundary all pass objective validation.
 Refusal stops before the recorder/executor and produces no plan, result, or DTO.
 The non-mutation matrix is `reroute` -> `refresh_review` and `blocked` ->
@@ -1666,8 +1666,7 @@ or copied into a Publication exit. The fresh semantic result replaces the
 single owner-private checkpoint; no supersession ref or user confirmation is
 required for mapped stale/re-entry handling.
 
-Metadata-only findings may revise only the owner-private PR payload or Issue
-Scope Ledger publication metadata, followed by
+Metadata-only findings may revise only the owner-private PR payload, followed by
 a dependency-scoped review: reread all eight objective preconditions, re-review
 dimensions whose direct evidence changed, and carry a prior passed dimension
 only while its evidence remains current and byte-identical. Source, test,
@@ -1677,7 +1676,8 @@ and never decide sufficiency, issue closure, dimension status, finding route,
 or `ready`.
 
 The publication repository binding uses the shared reviewed-content boundary,
-scope-only `issue-scope-ledger.json`, and the exact owner-private PR payload.
+current requirement authority, live external-work-item facts, and the exact
+owner-private PR payload.
 Branch Review continuity comes from the public current Git
 anchor, shared content identity, and live Git, not from reopening its private checkpoint. The recorder-owned
 ignored `pr-readiness.json` is excluded from its own snapshot. Runtime input is
@@ -1784,39 +1784,31 @@ the standalone verifier lifecycle or expose a shared source resolver.
 For a transaction-bound recovery whose next transition is `archive`,
 `push_archive`, or `mark_ready`, exact transaction validation precedes pre-PR
 provenance inference. That stage ownership does not relax PR, payload, scope,
-plan, or three-way HEAD drift checks. Current archive projection may also own
-the deletion of one historical tracked-but-absent `closeout-plan.json`; the path
-stays private, is excluded from move/retained/reviewed sets, and never enters a
-public input, output, or Merge DTO.
+transaction, or three-way HEAD drift checks.
 
 `publication_review_stale` projects exactly
 `task_ref/branch_review_commit/stale_reason` to Publication. Publication itself
 retains `return_to_task_work` for real content drift. `reprepare_required`
 projects only task/reason and reviewed/publication HEAD identity needed by the
 next Finalizer invocation. `ready_for_merge` carries the canonical PR and
-expected-head/branch/close-Issue authority needed by `guru-merge-task-pr`.
+expected-head/branch identity needed by `guru-merge-task-pr`.
 Internal transaction state, semantic review, authorization, live facts, paths,
 and digests remain private.
 
 When successful terminal cleanup has already retired the Finalizer gate and
 transaction, public invoke may consume the exact retired gate locator as a
 continuity assertion and project from committed archive terminal authority.
-It must recheck the archive/PR/head/branch/close-Issue facts and schema; it may
+It must recheck the archive/PR/head/branch/external-work-item-effect facts and schema; it may
 not treat a missing arbitrary owner result as current, return to in-progress
 Publication authority, or weaken any stale failure.
-Transaction 2.0 remains an explicit legacy schema and is not current Interface
-authority.
 
 Finalizer and Publication consume the same canonical reviewed-content helper
 as Branch Review and Verification. Their base, range, reviewed/publication HEAD,
 remote, and ancestry checks remain package-owned independent freshness gates;
 the reviewed-content digest is not a substitute for those authorities.
 
-Current archive contains exactly six durable core files: `task.json`, `prd.md`,
-`design.md`, `implement.md`, `issue-scope-ledger.json`, and
-`finish-summary.json`. Legacy closeout-plan and task-bearing verification schemas
-remain immutable compatibility assets and never enter current Interface,
-registry, workflow, preparation, recovery, eval, or archive routes.
+Current archive contains exactly five durable core files: `task.json`, `prd.md`,
+`design.md`, `implement.md`, and `finish-summary.json`.
 
 ## Task Base Reconciliation Owner
 

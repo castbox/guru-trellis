@@ -186,12 +186,12 @@
       "ordinal": 1
     },
     {
-      "id": "helper-generated_shebang-e205de236e6b",
+      "id": "helper-generated_shebang-29d79f5ac93e",
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
       "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "e205de236e6bf2e905aa965bb80b5b4fd3eb414d81076e00953d7d551d5321f0",
+      "anchor_sha256": "29d79f5ac93ecdaddbbac71880a787f35c3d34f1e12b4696c85b1c33995bdca5",
       "ordinal": 1
     },
     {
@@ -357,39 +357,30 @@
       "ordinal": 1
     },
     {
-      "id": "package-runtime-python_subprocess_second_hop-a1f0ebff2f5b",
-      "owner": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "id": "package-runtime-python_subprocess_second_hop-5417c9bc88d7",
+      "owner": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/_owner_part_01.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
-      "anchor_sha256": "a1f0ebff2f5be70622c0c2b909a855906baf2963781fccddd0330d119b7e7890",
+      "anchor_sha256": "5417c9bc88d7a84f4f5d75a7d8b733b21fb5bc22135f34325738ed9359b0c521",
       "ordinal": 1
     },
     {
-      "id": "package-runtime-python_subprocess_second_hop-7dd5c8a437de",
-      "owner": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "id": "package-runtime-python_subprocess_second_hop-3ba09952d640",
+      "owner": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/_owner_part_03.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
-      "anchor_sha256": "7dd5c8a437defd857d97bee9595f22ed8643f68342779fa4511d5914acdd691e",
+      "anchor_sha256": "3ba09952d64069372d0165bca6b419e221e0650e3d582659f97dbb958e7e8906",
       "ordinal": 1
     },
     {
-      "id": "package-runtime-python_subprocess_second_hop-1ccb8a70d4d7",
-      "owner": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "id": "package-runtime-python_subprocess_second_hop-70eaa11ff3ab",
+      "owner": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/_owner_part_04.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
-      "anchor_sha256": "1ccb8a70d4d70f2fd5c44bc63891e28fd79c9368a11a24bd3d41807c59fb4bc3",
-      "ordinal": 1
-    },
-    {
-      "id": "package-runtime-python_subprocess_second_hop-843b0bb74003",
-      "owner": "trellis/skills/guru-team/packages/guru-merge-task-pr/runtime/legacy.py",
-      "kind": "python_subprocess_second_hop",
-      "classification": "installed_managed",
-      "expected_launcher": "sys.executable",
-      "anchor_sha256": "843b0bb74003d78232ad6396f688f7fc353f58a9154f9bb0db82f270abc0d323",
+      "anchor_sha256": "70eaa11ff3abc12bfed8f037b71879d8df7e8a9fa250e03c6708125eabd08b06",
       "ordinal": 1
     },
     {
@@ -411,21 +402,21 @@
       "ordinal": 1
     },
     {
-      "id": "package-runtime-python_subprocess_second_hop-67d5a31b1403",
-      "owner": "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py",
+      "id": "package-runtime-python_subprocess_second_hop-70c153e0881c",
+      "owner": "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/_owner_part_01.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
-      "anchor_sha256": "67d5a31b1403630cd5dd63e5c2d6c3d1213a4e30f60b01e5a24ef56417b32b88",
+      "anchor_sha256": "70c153e0881c5658064c6bd2f483d794b68fabdc1901ea0be1e4aa3b1e6222f1",
       "ordinal": 1
     },
     {
-      "id": "package-runtime-python_subprocess_second_hop-08ff7b81611e",
-      "owner": "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py",
+      "id": "package-runtime-python_subprocess_second_hop-06297fc43ed2",
+      "owner": "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/_owner_part_03.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
-      "anchor_sha256": "08ff7b81611e604058a7cb15e785cee492097c2fddfa59922aaa9e7b1e307a08",
+      "anchor_sha256": "06297fc43ed2374fd07bd6d1fbade6620a913f7f1dea11cbfd9a964a6c988b23",
       "ordinal": 1
     }
   ],

@@ -22,8 +22,8 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   out={"exit_id":exit_id,"handoff_profile":"initial_change_request" if exit_id=="clarify_requirements" else "change_request","handoff_mode":owner["mode"],"handoff_target_locator":up["target_locator"],"handoff_continuation_id":public["continuation_id"],"transition":up};schema=f"public-{exit_id.replace('_','-')}-output.schema.json"
  else:
   if not isinstance(up,dict) or up.get("stage")!="wording_current":raise CommandError("stale_identity","transition","Provide the current wording transition.",3)
-  prereq=owner["prerequisites"];scope=owner["semantic_review"]["scope_conclusion"]
+  prereq=owner["prerequisites"]
   readiness={"payload_sha256":digest(owner),"facts_sha256":owner["facts_sha256"],"content_sha256":owner["target"]["content_sha256"],"linkage_sha256":owner["evidence_linkage"]["linkage_sha256"]}
-  current=dict(up);current.update({"transition_id":"readiness_current:"+owner["facts_sha256"][:24],"stage":"readiness_current","readiness_facts_sha256":owner["facts_sha256"],"readiness_linkage_sha256":owner["evidence_linkage"]["linkage_sha256"],"target_content_sha256":owner["target"]["content_sha256"],"readiness":readiness,"target":public_target(owner["target"]),"scope":{k:scope[k] for k in ("close_issues","related_issues","followup_issues")}})
+  current=dict(up);current.update({"transition_id":"readiness_current:"+owner["facts_sha256"][:24],"stage":"readiness_current","readiness_facts_sha256":owner["facts_sha256"],"readiness_linkage_sha256":owner["evidence_linkage"]["linkage_sha256"],"target_content_sha256":owner["target"]["content_sha256"],"readiness":readiness,"target":public_target(owner["target"])})
   out={"exit_id":"ready","profile":"execute_reviewed_plan","mode":owner["mode"],"transition":current};schema="public-ready-output-3.0.schema.json"
  validate_json(out,package_root/"schemas"/schema,"stdout");return out

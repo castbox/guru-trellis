@@ -210,7 +210,7 @@
           "kind": "json",
           "description": "AI-authored semantic review for the confirmed plan.",
           "repeatable": false,
-          "conflicts": ["--owner-result"]
+          "conflicts": []
         },
         {
           "flag": "--confirmed-preview-sha256",
@@ -218,15 +218,7 @@
           "kind": "string",
           "description": "Preview confirmation identity; required only before a mutating ready_for_merge route.",
           "repeatable": false,
-          "conflicts": ["--owner-result"]
-        },
-        {
-          "flag": "--owner-result",
-          "required": false,
-          "kind": "json",
-          "description": "Compatibility-only prebuilt owner-private gate.",
-          "repeatable": false,
-          "conflicts": ["--review-input", "--confirmed-preview-sha256"]
+          "conflicts": []
         },
         {
           "flag": "--repo",

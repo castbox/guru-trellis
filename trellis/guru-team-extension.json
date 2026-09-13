@@ -17,6 +17,17 @@
   "public_api": {
     "workflow_template_id": "guru-team",
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
+    "migration_capabilities": {
+      "guru-ledger-free-runtime": {
+        "capability_id": "guru-ledger-free-runtime",
+        "version": "1.0.0",
+        "projection_identity": {
+          "extension_id": "guru-team",
+          "extension_version": "0.6.16-guru.41",
+          "workflow_template_id": "guru-team"
+        }
+      }
+    },
     "managed_paths": [
       ".trellis/guru-team/",
       ".trellis/guru-team/skills/",
@@ -38,7 +49,6 @@
       "contract-wording-review.json",
       "issue-review.json",
       "phase2-check.json",
-      "issue-scope-ledger.json",
       "review-gate.json",
       "pr-readiness.json",
       "task-finalization-gate.json",
@@ -261,7 +271,6 @@
         "guru-change-context-recovery-1.0",
         "guru-change-request-review-2.0",
         "guru-contract-wording-review-1.0",
-        "guru-issue-scope-ledger-2.0",
         "guru-phase2-check-4.0",
         "guru-planning-approval-3.0",
         "guru-requirements-clarification-2.0",
@@ -397,7 +406,6 @@
       "prepare-task-commit",
       "check-commit-messages",
       "create-task-commit",
-      "format-merge-commit",
       "review-branch",
       "check-review-gate",
       "record-task-publication-review",

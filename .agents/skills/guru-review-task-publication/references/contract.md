@@ -23,7 +23,7 @@ semantic authority.
 
 The invocation preserves the existing `ready`, `return_to_task_work`, and `blocked`
 outputs. Metadata-only revision remains inside the AI owner loop. Reviewed
-content, durable docs, task, ledger, or publication metadata drift still fails
+content, durable docs, task, requirement-authority, or publication metadata drift still fails
 the existing bindings or returns through the AI-authored current route; the
 invocation never selects or changes that route. Package-private record and check
 commands remain supported for tests and bounded diagnosis. The same public
@@ -49,6 +49,21 @@ repository state.
 Author the members as follows:
 
 - `pr_payload` has exactly non-empty `title` and `body` strings.
+- Publication authors the `Issue 关闭范围` section from current requirement
+  authority and live target/default-branch facts. Use exactly one applicable
+  semantic route:
+  - `issue-backed completed + default branch`: complete delivery defaults to
+    closure; write a GitHub closing keyword for the completed Issue.
+  - `issue-backed remain-open`: use an ordinary Issue reference and state the
+    concrete current-authority condition that remains after merge. Preference or
+    uncertainty alone is not a remain-open reason.
+  - `no external work item`: state that there is no external work item and emit
+    no Issue number, reference, or closing keyword.
+  - `issue-backed completed + non-default branch`: use an ordinary reference,
+    state that this PR has no closing effect, and leave the later default-branch
+    Publication owner to make a fresh decision.
+  The reviewed PR body is the only projection of this decision. Do not create a
+  closure DTO, ledger replacement, hidden aggregate, or Issue-close API plan.
 - `candidate_classifications` contains every candidate that participated in
   the final route. Each item has exactly `candidate_ref`, `decision`, `witness`,
   and `consumer_use=publication_route_checker`. `decision` is one of
@@ -94,7 +109,7 @@ remove candidate items as needed, but keep the declared object shapes exact.
   "review_intent": "initial_review",
   "pr_payload": {
     "title": "具体的中文 PR 标题",
-    "body": "## 变更摘要\n\n- 具体结果。\n\n## 验证结果\n\n- 当前验证证据。\n\n## Issue 关闭范围\n\n- Closes #123。\n\n## 安全与部署影响\n\n- 如实说明。"
+    "body": "## 变更摘要\n\n- 具体结果。\n\n## 验证结果\n\n- 当前验证证据。\n\n## Issue 关闭范围\n\n- 按上述四条路径写入当前审查结论；不要保留此占位文字。\n\n## 安全与部署影响\n\n- 如实说明。"
   },
   "candidate_classifications": [
     {
@@ -119,10 +134,10 @@ remove candidate items as needed, but keep the declared object shapes exact.
       "evidence_refs": ["git:branch_review_commit"]
     },
     {
-      "id": "issue_scope_closure",
+      "id": "external_work_item_effect",
       "status": "passed",
-      "summary": "Issue closure matches the current ledger.",
-      "evidence_refs": ["issue-scope-ledger.json"]
+      "summary": "External work item effect matches current requirement authority.",
+      "evidence_refs": ["current-requirement-authority"]
     },
     {
       "id": "pr_body_quality",
@@ -177,8 +192,8 @@ remove candidate items as needed, but keep the declared object shapes exact.
   "conclusions": {
     "issue_scope": {
       "status": "passed",
-      "summary": "The current close scope is complete.",
-      "evidence_refs": ["issue-scope-ledger.json"]
+      "summary": "The reviewed PR payload has the intended external work item effect.",
+      "evidence_refs": ["current-requirement-authority"]
     },
     "docs_ssot": {
       "status": "passed",
@@ -206,8 +221,8 @@ bounded locator, and a short recovery instruction. Namespaced owner errors are
 projected by their stable namespace. A safe namespaced detail code remains the
 public code; a non-code detail falls back to
 `<namespace>_contract_failed`. When the owner omits a locator, the projection
-selects the narrow stable field owned by that namespace: the ledger or its
-`primary_issue`, the PR payload `title`/`body`, `input.branch_review_commit`,
+selects the narrow stable field owned by that namespace: the PR payload
+`title`/`body`, `input.branch_review_commit`,
 or `runtime`. The public error
 contains only `code`, `field_path`, `remediation`, and the optional bounded
 `recovery_scope`; stderr, exception text, URLs, credentials, tokens, absolute
@@ -224,7 +239,7 @@ remediation.
 Branch Review owner and are not read by this v2 path. `publication_review_stale`
 consumes Finalizer seed `task_ref`, `branch_review_commit`, `stale_reason` and
 caller-authored `profile`, `mode`, `review_intent`. Workflow and standalone use
-the same eight preconditions. The recorder uses the stale reason only to bind
+the same seven preconditions. The recorder uses the stale reason only to bind
 the current re-entry round; the checked owner result remains bound to the
 supplied reviewed commit and never expands a public output. Inputs outside the
 current profile schema fail closed. Publication never reads or projects another
@@ -245,7 +260,7 @@ check.
 Review these dimensions against current private evidence:
 
 1. `diff_outcome_consistency`
-2. `issue_scope_closure`
+2. `external_work_item_effect`
 3. `pr_body_quality`
 4. `validation_claims`
 5. `branch_review_summary`
@@ -254,6 +269,14 @@ Review these dimensions against current private evidence:
 8. `finish_summary_semantics`
 9. `metadata_tail_integrity`
 10. `artifact_binding_freshness`
+
+For `external_work_item_effect`, independently establish whether a current
+external work item exists, whether the reviewed delivery completes it, and
+whether the PR target is the repository default branch. Completed Issue-backed
+work defaults to closure only on a default-branch PR. Any remain-open result
+must cite the specific uncompleted condition in current authority. No-work-item
+and non-default-branch routes must contain no closing keyword. This is a
+semantic Publication judgment; recorder/checker success cannot select the route.
 
 Every finding records a stable ref, dimension, scope basis, evidence and
 affected artifacts, route, status, and closure evidence. The AI chooses
@@ -270,7 +293,7 @@ Rejected candidates cannot become clarification, task work, or publication
 blockers. Publication neither reads nor persists a qualifier artifact.
 
 The owner may revise only its in-memory PR title/body and contract-listed
-Issue-Scope-Ledger publication metadata. It never creates a task-local PR body
+current requirement authority and live GitHub facts. It never creates a task-local PR body
 or finish-summary index handoff. After revision, reread all eight objective
 preconditions and re-review only dimensions whose declared evidence
 dependencies changed. The freshness reread is not a demand to repeat unrelated
@@ -280,7 +303,7 @@ Any source, test, durable docs, spec, workflow, schema, config, preset, CI/CD,
 deployment, or Branch Review drift returns to task work.
 
 Use the immutable reviewed content identity, live base-to-HEAD Git facts,
-current task and durable docs, Issue Scope Ledger, and the exact PR payload as
+current task and durable docs, current requirement authority, and the exact PR payload as
 semantic evidence. Publication does not read Planning, Phase 2, or
 Branch Review private checkpoints and never requires an
 `implementation-handoff.md` transcription.
@@ -329,7 +352,7 @@ base-only mismatch never reaches this profile and cannot use
 scope/Docs/safety conclusion, and an open `external_blocker` finding whose
 dimension references blocked evidence. Open metadata-revision findings remain
 inside the Skill loop and cannot satisfy an external exit. Recorder and checker
-rebuild all eight objective preconditions transiently; those live facts and
+rebuild all seven objective preconditions transiently; those live facts and
 digests do not enter the private semantic checkpoint or public DTO. Every
 `ready` precondition must be passed. A non-ready semantic route may carry its
 explicit finding or blocker without a script choosing that route.

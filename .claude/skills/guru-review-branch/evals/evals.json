@@ -69,7 +69,7 @@
       "assertions": {
         "deterministic": [
           {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "continuity_passed"},
-          {"id": "current-review-anchor", "kind": "json_path", "pointer": "/branch_review_commit", "operation": "equals", "expected": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"}
+          {"id": "resume-route", "kind": "json_path", "pointer": "/resume_target", "operation": "equals", "expected": "publication_review"}
         ]
       },
       "files": ["evals/files/base-continuity-passed-input.json", "evals/files/base-continuity-passed-facts.json"]
