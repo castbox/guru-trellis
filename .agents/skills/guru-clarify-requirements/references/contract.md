@@ -183,7 +183,7 @@ authority action merely to satisfy the contract.
 ## Active-Task Scope Change
 
 Pause implementation/check/commit/review progression. Classify new input as
-current close scope, related, followup, new task or out-of-scope. Current
+current task scope, related, followup, new task or out-of-scope. Current
 inclusion requires the same delivery unit, no material boundary/risk/test
 expansion, complete updated planning and the required dialogue decision.
 
@@ -203,22 +203,19 @@ dispositions instead require `optional_mechanism_origin=true`; they never enter
 the trail or trigger GitHub/task authority mutation. A mechanism-only payload
 may return `clear`, and a mixed payload places only its five-classification
 subset in the trail.
-Mechanism-only still carries the current task-local ledger, all three planning
-documents, re-entry owners, and current context evidence in the owner-private
+Mechanism-only still carries all three planning documents, re-entry owners,
+and current context evidence in the owner-private
 result; only `decision_trail` is null. Every
 terminal active-task path receives the same live task/context freshness check.
-The current `issue-scope-ledger.json` is a closed scope-only 2.0 document with
-exactly `schema_version`, `primary_issue`, `close_issues`, `related_issues`, and
-`followup_issues`. The checker validates those current bytes and independently
-validates the owner-result trail against the current proposal set and live
-GitHub authority. Current planning, context, task action and re-entry facts are
-reread from their owning sources. Those rederivable bindings and the trail stay
-in the transient owner result and never enter the ledger.
+The checker independently validates the owner-result trail against the current
+proposal set and live GitHub authority. Current planning, context, task action
+and re-entry facts are reread from their owning sources. Those rederivable
+bindings and the trail stay in the transient owner result.
 
 GitHub comment/body mutation returns `refresh_context` before any task-local
 update. On re-entry, live authority kind/URL/content and update time are reread
 directly. The task-update action preimage must equal the current transient
-`context_evidence` digest. The AI then validates the current ledger/planning identities and
+`context_evidence` digest. The AI then validates the current planning identities and
 one `active_task_scope_update` action. After the dialogue decision, the
 task-local write binds that action to the same five-class proposal set and the
 current preimage. Recorder/checker retain only the objective action and result

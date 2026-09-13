@@ -28,13 +28,12 @@ GTT = load_runtime()
 
 class MergeTaskPrContractTest(unittest.TestCase):
     def reviewed_message(
-        self, *, pr: int = 218, issue: int = 218,
+        self, *, pr: int = 218,
         head: str = "fix/218-terminal-output", base: str = "main",
         summary: str = "修复 Merge Skill 中文提交消息承接",
     ) -> dict:
         return GTT.build_reviewed_merge_message(
             pull_request=pr,
-            primary_issue=issue,
             summary=summary,
             head_branch=head,
             base_branch=base,
@@ -51,7 +50,6 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "expected_head_sha": "1" * 40,
             "expected_base_branch": "main",
             "expected_head_branch": "fix/218-terminal-output",
-            "expected_close_issues": [218],
             "reviewed_merge_message": self.reviewed_message(),
         }
         gate = {"pre_merge_base_head": "3" * 40}
@@ -74,7 +72,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 "body": public_input["reviewed_merge_message"]["body"],
                 "parents": ["3" * 40, "1" * 40],
             },
-            "close_issues": [218],
+            "pr_body_closing_issue_numbers": [218],
             "issues": [{
                 "number": 218,
                 "state": "CLOSED" if closed else "OPEN",
@@ -183,7 +181,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
             },
             "base_ref": {"name": "main", "head_sha": "3" * 40},
             "repository_policy": {"allowed_methods": ["merge"]},
-            "close_issues": [348],
+            "pr_body_closing_issue_numbers": [348],
             "issues": [{"number": 348, "state": "OPEN", "closed_at": None}],
         }
         facts["facts_sha256"] = GTT.canonical_json_sha256(facts)
@@ -209,7 +207,6 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 "expected_head_sha": public_input["expected_head_sha"],
                 "expected_base_branch": public_input["expected_base_branch"],
                 "expected_head_branch": public_input["expected_head_branch"],
-                "issue_number": 348,
                 "task_id": "09-03-348-merge-blocked-phase2-reentry",
                 "archive_locator": ".trellis/tasks/archive/2026-09/09-03-348-merge-blocked-phase2-reentry",
                 "active_locator": ".trellis/tasks/09-03-348-merge-blocked-phase2-reentry",
@@ -236,7 +233,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
         expected = {
             "schema_version", "profile", "mode", "repo_ref", "pr_number",
             "pr_url", "expected_head_sha", "expected_base_branch",
-            "expected_head_branch", "expected_close_issues",
+            "expected_head_branch",
             "reviewed_merge_message",
         }
         for profile in profiles:
@@ -244,65 +241,6 @@ class MergeTaskPrContractTest(unittest.TestCase):
             self.assertEqual(set(schema["required"]), expected)
             self.assertEqual(set(schema["properties"]), expected)
 
-    def test_active_two_point_zero_selector_preserves_legacy_bytes(self) -> None:
-        aggregate = self.interface["public_contracts"]["input"]["aggregate_schema"]
-        self.assertEqual(aggregate["schema_id"], "guru-merge-task-pr-input-aggregate-2.0")
-        private = self.interface["public_contracts"]["private_artifacts"][0]["schema"]
-        self.assertEqual(private["schema_id"], "guru-task-pr-merge-gate-2.0")
-        extension_path = next(
-            (
-                path
-                for path in (
-                    PACKAGE.parents[4] / "trellis/guru-team-extension.json",
-                    PACKAGE.parents[2] / "extension.json",
-                )
-                if path.is_file()
-            ),
-            None,
-        )
-        if extension_path is None:
-            self.fail("source or installed Guru Team extension manifest is required")
-        extension_manifest = json.loads(extension_path.read_text(encoding="utf-8"))
-        public_api = extension_manifest.get("public_api")
-        if public_api is None:
-            public_api = extension_manifest["extension"]["public_api"]
-        extension = public_api["skill_contracts"]
-        self.assertIn(
-            "guru-merge-task-pr-input-ready-for-merge-2.0",
-            extension["public_input_schema_ids"],
-        )
-        self.assertIn(
-            "guru-merge-task-pr-input-standalone-merge-2.0",
-            extension["public_input_schema_ids"],
-        )
-        self.assertNotIn(
-            "guru-merge-task-pr-input-ready-for-merge-1.0",
-            extension["public_input_schema_ids"],
-        )
-        self.assertNotIn(
-            "guru-merge-task-pr-input-standalone-merge-1.0",
-            extension["public_input_schema_ids"],
-        )
-        self.assertIn(
-            "guru-task-pr-merge-gate-2.0",
-            extension["private_artifact_schema_ids"],
-        )
-        self.assertNotIn(
-            "guru-task-pr-merge-gate-1.0",
-            extension["private_artifact_schema_ids"],
-        )
-        legacy = {
-            "schemas/public-ready-for-merge-input.schema.json": "8b6a96c150603c84807ff0568e872cfd82b6326d19267fc8c78ba1ba30af028b",
-            "schemas/public-standalone-merge-input.schema.json": "60e173e908a19388f2a4704ac204cba689c0f8fd33618936e87839099e8973b3",
-            "schemas/public-input.schema.json": "cd6173a27ca223385d728218cd1ecd7f2a17e2f7f4ba8c9da88fbf2b3e878745",
-            "schemas/task-pr-merge-gate.schema.json": "ac2b3ccb337f88b8619bc4845c55d4790cbc2f8a71e21d4c3b67344be2af3edd",
-            "examples/public-ready-for-merge-input.json": "5041709b7d79f7f7a0db3bb41e5790eec9f7ab30aa4f2c6f23f626e958daab70",
-            "examples/public-standalone-merge-input.json": "96f6c473e05a4f5670b5c116e6c0be1de0e79ba476197b5d1c51a9944aee4f9d",
-            "examples/task-pr-merge-gate.json": "e5b58e5fd1039724bddd6fd633ab2b74f5aea2aa4a76252586101370ab3f447d",
-        }
-        for path, expected in legacy.items():
-            with self.subTest(path=path):
-                self.assertEqual(hashlib.sha256((PACKAGE / path).read_bytes()).hexdigest(), expected)
 
     def test_active_command_input_bindings_validate_the_two_point_zero_example(self) -> None:
         import jsonschema
@@ -367,7 +305,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "- This sentence mentions Closes #998。\n"
         )
         self.assertEqual(
-            GTT.task_pr_merge_close_issues(body),
+            GTT.task_pr_merge_pr_body_closing_issue_numbers(body),
             [180, 181, 182, 183],
         )
 
@@ -377,7 +315,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
             for index, keyword in enumerate(GTT.PR_CLOSE_KEYWORDS, start=180)
         )
         self.assertEqual(
-            GTT.task_pr_merge_close_issues(local_body),
+            GTT.task_pr_merge_pr_body_closing_issue_numbers(local_body),
             list(range(180, 180 + len(GTT.PR_CLOSE_KEYWORDS))),
         )
 
@@ -387,7 +325,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
                     GTT.WorkflowError,
                     "must not contain cross-repository Issue references",
                 ):
-                    GTT.task_pr_merge_close_issues(
+                    GTT.task_pr_merge_pr_body_closing_issue_numbers(
                         f"- {keyword} castbox/other#999。\n"
                     )
 
@@ -403,9 +341,9 @@ class MergeTaskPrContractTest(unittest.TestCase):
             )
         )
 
-        self.assertEqual(GTT.task_pr_merge_close_issues(public_ready["pr_body"]), [179])
+        self.assertEqual(GTT.task_pr_merge_pr_body_closing_issue_numbers(public_ready["pr_body"]), [179])
         self.assertEqual(
-            GTT.task_pr_merge_close_issues(readiness["pr_payload"]["body"]),
+            GTT.task_pr_merge_pr_body_closing_issue_numbers(readiness["pr_payload"]["body"]),
             [179],
         )
 
@@ -414,7 +352,6 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "repo_ref": "castbox/guru-trellis",
             "pr_number": 180,
             "expected_base_branch": "main",
-            "expected_close_issues": [180],
         }
         pr = {
             "number": 180,
@@ -470,9 +407,8 @@ class MergeTaskPrContractTest(unittest.TestCase):
         public_input = {
             "repo_ref": "castbox/guru-trellis",
             "pr_number": 180,
-            "expected_close_issues": [180],
             "reviewed_merge_message": self.reviewed_message(
-                pr=180, issue=180, head="codex/180-eval"
+                pr=180, head="codex/180-eval"
             ),
         }
         pr = {
@@ -500,7 +436,6 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "expected_head_sha": "1" * 40,
             "expected_base_branch": "main",
             "expected_head_branch": "codex/180-eval",
-            "expected_close_issues": [180],
         }
         facts = {
             "pr": {
@@ -509,17 +444,15 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 "mergeable": "UNKNOWN", "merge_state_status": "BLOCKED",
                 "checks": [{"name": "ci", "state": "PENDING"}],
             },
-            "close_issues": [180, 181],
+            "pr_body_closing_issue_numbers": [180, 181],
             "base_ref": {"name": "main", "head_sha": "0" * 40},
             "issues": [{"number": 180, "state": "CLOSED"}],
         }
         errors = GTT.task_pr_merge_preflight_errors(public_input, facts)
-        self.assertEqual(len(errors), 7)
+        self.assertEqual(len(errors), 5)
         self.assertTrue(any("expected head" in item for item in errors))
         self.assertTrue(any("base branch" in item for item in errors))
         self.assertTrue(any("head branch" in item for item in errors))
-        self.assertTrue(any("reviewed close scope" in item for item in errors))
-        self.assertTrue(any("before merge" in item for item in errors))
         self.assertFalse(any("checks" in item for item in errors))
 
     def test_optional_failed_check_is_not_an_objective_blocker(self) -> None:
@@ -527,9 +460,8 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "expected_head_sha": "1" * 40,
             "expected_base_branch": "main",
             "expected_head_branch": "codex/180-eval",
-            "expected_close_issues": [180],
             "reviewed_merge_message": self.reviewed_message(
-                pr=180, issue=180, head="codex/180-eval"
+                pr=180, head="codex/180-eval"
             ),
         }
         facts = {
@@ -542,7 +474,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
                     {"name": "optional-preview", "state": "FAILURE"},
                 ],
             },
-            "close_issues": [180],
+            "pr_body_closing_issue_numbers": [180],
             "base_ref": {"name": "main", "head_sha": "0" * 40},
             "issues": [{"number": 180, "state": "OPEN"}],
         }
@@ -556,9 +488,8 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "expected_head_sha": "1" * 40,
             "expected_base_branch": "main",
             "expected_head_branch": "codex/180-eval",
-            "expected_close_issues": [180],
             "reviewed_merge_message": self.reviewed_message(
-                pr=180, issue=180, head="codex/180-eval"
+                pr=180, head="codex/180-eval"
             ),
         }
         facts = {
@@ -570,7 +501,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 "checks": [],
             },
             "repository_policy": {"allowed_methods": ["merge"]},
-            "close_issues": [180],
+            "pr_body_closing_issue_numbers": [180],
             "base_ref": {"name": "main", "head_sha": "0" * 40},
             "issues": [{"number": 180, "state": "OPEN"}],
         }
@@ -602,9 +533,8 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "expected_head_sha": "1" * 40,
             "expected_base_branch": "main",
             "expected_head_branch": "codex/180-eval",
-            "expected_close_issues": [180],
             "reviewed_merge_message": self.reviewed_message(
-                pr=180, issue=180, head="codex/180-eval"
+                pr=180, head="codex/180-eval"
             ),
         }
         facts = {
@@ -616,7 +546,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 "checks": [],
             },
             "repository_policy": {"allowed_methods": ["merge", "squash", "rebase"]},
-            "close_issues": [180],
+            "pr_body_closing_issue_numbers": [180],
             "base_ref": {"name": "main", "head_sha": "0" * 40},
             "issues": [{"number": 180, "state": "OPEN"}],
         }
@@ -646,7 +576,6 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "expected_head_sha": "1" * 40,
             "expected_base_branch": "main",
             "expected_head_branch": "codex/180-eval",
-            "expected_close_issues": [180],
         }
         clean_facts = {
             "pr": {"state": "OPEN", "merge_state_status": "CLEAN"},
@@ -684,7 +613,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "repository_policy": {"allowed_methods": ["merge", "squash", "rebase"]},
             "base_ref": {"name": "main", "head_sha": gate["pre_merge_base_head"]},
             "merge_commit": None,
-            "close_issues": [218],
+            "pr_body_closing_issue_numbers": [218],
             "issues": [{"number": 218, "state": "OPEN"}],
         }
         facts["facts_sha256"] = GTT.canonical_json_sha256(facts)
@@ -723,7 +652,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "repository_policy": {"allowed_methods": ["merge"]},
             "base_ref": {"name": "main", "head_sha": gate["pre_merge_base_head"]},
             "merge_commit": None,
-            "close_issues": [218],
+            "pr_body_closing_issue_numbers": [218],
             "issues": [{"number": 218, "state": "OPEN"}],
         }
         pre["facts_sha256"] = GTT.canonical_json_sha256(pre)
@@ -795,8 +724,8 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 GTT.task_pr_merge_cleanup_body_file(root, bad)
 
     def test_reviewed_message_builder_rejects_default_subject_title_and_close_keyword(self) -> None:
-        valid = self.reviewed_message(pr=180, issue=180, head="codex/180-eval")
-        self.assertTrue(valid["body"].endswith("Refs #180"))
+        valid = self.reviewed_message(pr=180, head="codex/180-eval")
+        self.assertTrue(valid["body"].endswith("PR: #180"))
         self.assertFalse(valid["body"].endswith("\n"))
         self.assertEqual(
             GTT.validate_reviewed_merge_message(
@@ -838,7 +767,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 summary = f"修复 {keyword} {issue_reference} 误用"
                 with self.subTest(summary=summary):
                     changed = self.reviewed_message(
-                        pr=180, issue=180, head="codex/180-eval", summary=summary
+                        pr=180, head="codex/180-eval", summary=summary
                     )
                     with self.assertRaisesRegex(
                         GTT.WorkflowError, "must not contain close keywords"
@@ -851,7 +780,6 @@ class MergeTaskPrContractTest(unittest.TestCase):
                         )
         changed = self.reviewed_message(
             pr=180,
-            issue=180,
             head="codex/180-eval",
             summary="修复 Fixes: #180 误用",
         )
@@ -860,50 +788,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 changed, pull_request=180, head_branch="codex/180-eval", base_branch="main"
             )
 
-    def test_public_input_rejects_primary_issue_outside_close_scope(self) -> None:
-        payload = {
-            "schema_version": "2.0",
-            "profile": "ready_for_merge",
-            "mode": "workflow",
-            "repo_ref": "castbox/guru-trellis",
-            "pr_number": 180,
-            "pr_url": "https://github.com/castbox/guru-trellis/pull/180",
-            "expected_head_sha": "1" * 40,
-            "expected_base_branch": "main",
-            "expected_head_branch": "codex/180-eval",
-            "expected_close_issues": [180],
-            "reviewed_merge_message": self.reviewed_message(
-                pr=180, issue=181, head="codex/180-eval"
-            ),
-        }
-        with tempfile.TemporaryDirectory() as temp_dir:
-            path = Path(temp_dir) / "input.json"
-            path.write_text(json.dumps(payload), encoding="utf-8")
-            with self.assertRaisesRegex(GTT.WorkflowError, "outside the reviewed close scope"):
-                GTT.task_pr_merge_json_input(Path(temp_dir), str(path))
 
-    def test_public_input_accepts_primary_issue_for_empty_refs_only_close_scope(self) -> None:
-        payload = {
-            "schema_version": "2.0",
-            "profile": "ready_for_merge",
-            "mode": "workflow",
-            "repo_ref": "castbox/guru-trellis",
-            "pr_number": 180,
-            "pr_url": "https://github.com/castbox/guru-trellis/pull/180",
-            "expected_head_sha": "1" * 40,
-            "expected_base_branch": "main",
-            "expected_head_branch": "codex/180-eval",
-            "expected_close_issues": [],
-            "reviewed_merge_message": self.reviewed_message(
-                pr=180, issue=181, head="codex/180-eval"
-            ),
-        }
-        with tempfile.TemporaryDirectory() as temp_dir:
-            path = Path(temp_dir) / "input.json"
-            path.write_text(json.dumps(payload), encoding="utf-8")
-            parsed = GTT.task_pr_merge_json_input(Path(temp_dir), str(path))
-        self.assertEqual(parsed["expected_close_issues"], [])
-        self.assertEqual(parsed["reviewed_merge_message"]["primary_issue"], 181)
 
     def test_checker_rejects_pre_merge_base_head_mismatch(self) -> None:
         public_input, _, gate, _ = self.terminal_fixture()
@@ -920,7 +805,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "repository_policy": {"allowed_methods": ["merge"]},
             "base_ref": {"name": "main", "head_sha": "4" * 40},
             "merge_commit": None,
-            "close_issues": [218],
+            "pr_body_closing_issue_numbers": [218],
             "issues": [{"number": 218, "state": "OPEN"}],
         }
         facts["facts_sha256"] = GTT.canonical_json_sha256(facts)
@@ -979,11 +864,8 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 "head_sha": pre_base_head,
             },
             "merge_commit": None,
-            "close_issues": public_input["expected_close_issues"],
-            "issues": [
-                {"number": number, "state": "OPEN", "closed_at": None}
-                for number in public_input["expected_close_issues"]
-            ],
+            "pr_body_closing_issue_numbers": GTT.task_pr_merge_pr_body_closing_issue_numbers("Closes #218\n"),
+            "issues": [],
         }
         facts["facts_sha256"] = GTT.canonical_json_sha256(facts)
         return facts
@@ -1088,9 +970,8 @@ class MergeTaskPrContractTest(unittest.TestCase):
 
     def test_public_invoke_refs_only_reads_no_issue_terminal_scope(self) -> None:
         public_input, post, gate_seed, _ = self.terminal_fixture()
-        public_input["expected_close_issues"] = []
-        public_input["reviewed_merge_message"] = self.reviewed_message(issue=330)
-        post["close_issues"] = []
+        public_input["reviewed_merge_message"] = self.reviewed_message()
+        post["pr_body_closing_issue_numbers"] = []
         post["issues"] = []
         post["merge_commit"]["subject"] = public_input["reviewed_merge_message"]["subject"]
         post["merge_commit"]["body"] = public_input["reviewed_merge_message"]["body"]
@@ -1358,8 +1239,6 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "standalone-draft-blocked",
             "workflow-head-drift-blocked",
             "workflow-branch-drift-blocked",
-            "workflow-close-keyword-mismatch-blocked",
-            "workflow-added-close-keyword-blocked",
             "workflow-task-work-phase2-reentry",
         } <= ids)
 

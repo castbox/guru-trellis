@@ -108,17 +108,6 @@
         "facts_sha256": {"$ref": "#/$defs/sha256"}
       }
     },
-    "artifact": {
-      "type": "object", "additionalProperties": false,
-      "required": ["path", "sha256", "size", "mode", "tracked"],
-      "properties": {
-        "path": {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+/issue-scope-ledger\\.json$"},
-        "sha256": {"$ref": "#/$defs/sha256"},
-        "size": {"type": "integer", "minimum": 1},
-        "mode": {"const": "100644"},
-        "tracked": {"const": true}
-      }
-    },
     "runtimeMapping": {
       "type": "object", "additionalProperties": false,
       "required": ["path", "ignored"],
@@ -129,7 +118,7 @@
     },
     "createdWorkspace": {
       "type": "object", "additionalProperties": false,
-      "required": ["repo", "issue_number", "branch_name", "base_ref", "base_head", "workspace_slug", "task_slug", "task_artifact_dir", "assignee", "task_status", "artifacts", "runtime_mappings", "workspace_boundary_match"],
+      "required": ["repo", "issue_number", "branch_name", "base_ref", "base_head", "workspace_slug", "task_slug", "task_artifact_dir", "assignee", "task_status", "runtime_mappings", "workspace_boundary_match"],
       "properties": {
         "repo": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
         "issue_number": {"type": "integer", "minimum": 1},
@@ -141,7 +130,6 @@
         "task_artifact_dir": {"type": "string", "pattern": "^\\.trellis/tasks/(?!archive/)[^/]+$"},
         "assignee": {"$ref": "#/$defs/cleanText"},
         "task_status": {"enum": ["planning", "in_progress"]},
-        "artifacts": {"type": "array", "items": {"$ref": "#/$defs/artifact"}, "minItems": 1, "maxItems": 1, "uniqueItems": true},
         "runtime_mappings": {"type": "array", "items": {"$ref": "#/$defs/runtimeMapping"}, "minItems": 2, "uniqueItems": true},
         "workspace_boundary_match": {"const": true}
       }

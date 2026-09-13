@@ -147,7 +147,7 @@ Mandatory skill 缺失，或出现 unknown、multiple、unmapped exit，或出�
 - `trellis-check` 是否完整覆盖当前 task scope；不能用几个命令通过替代完整 check。
 - 是否需要更新 `.trellis/spec/`。
 - Branch Review Gate 是否覆盖完整 `origin/<base>...HEAD` diff，是否有 P0/P1/P2/P3 finding。
-- `issue-scope-ledger.json` 中 `close_issues`、`related_issues`、`followup_issues` 是否正确。
+- Publication 是否基于 current requirement authority、reviewed diff、目标分支与 live GitHub facts 正确判断 Issue 关闭意图。
 - PR readiness：PR 标题、正文、验证结果、安全说明、部署影响、关闭 issue 语义是否真实充分。
 
 ## 6. 验证范围与开箱即用门禁
@@ -233,8 +233,8 @@ Mandatory skill 缺失，或出现 unknown、multiple、unmapped exit，或出�
 PR 发布前必须由 AI 审查 PR readiness，至少确认：
 
 - PR title 和 body 是否为中文且具体；
-- `Closes #xx` 只用于 `issue-scope-ledger.json` 中已完整验收并被 review gate 覆盖的 `close_issues`；
-- `related_issues` / `followup_issues` 不被关闭；
+- `Closes #xx` 只用于 Publication 已确认完整交付、且目标为默认分支的 Issue-backed PR；
+- reference-only 与 no external work item 不产生关闭效果；
 - 验证结果不是泛化占位；
 - 安全说明、部署影响、配置/脚本/schema/CI/CD/容器/K8s/DB migration/Makefile 影响判断真实完整；
 - 如果未验证完整链路，PR body 和最终回复必须明确说明。

@@ -213,13 +213,10 @@
     "scopeConclusion": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["requirement_scope_basis", "delivery_unit_id", "close_issues", "related_issues", "followup_issues", "duplicate_reuse_decision", "implementation_target", "current_gap", "archived_constraints", "risk_boundary", "excluded_scope"],
+      "required": ["requirement_scope_basis", "delivery_unit_id", "duplicate_reuse_decision", "implementation_target", "current_gap", "archived_constraints", "risk_boundary", "excluded_scope"],
       "properties": {
         "requirement_scope_basis": {"$ref": "#/$defs/cleanText"},
         "delivery_unit_id": {"$ref": "#/$defs/cleanText"},
-        "close_issues": {"type": "array", "items": {"type": "integer", "minimum": 1}, "uniqueItems": true},
-        "related_issues": {"type": "array", "items": {"type": "integer", "minimum": 1}, "uniqueItems": true},
-        "followup_issues": {"type": "array", "items": {"type": "integer", "minimum": 1}, "uniqueItems": true},
         "duplicate_reuse_decision": {"$ref": "#/$defs/cleanText"},
         "implementation_target": {"$ref": "#/$defs/cleanText"},
         "current_gap": {"$ref": "#/$defs/cleanText"},

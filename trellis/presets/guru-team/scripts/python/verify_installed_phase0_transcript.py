@@ -1205,9 +1205,6 @@ def readiness_owner_for_issue(
             "The reviewed draft and current prerequisites define the scope."
         ),
         "delivery_unit_id": "phase0-public-transcript",
-        "close_issues": [145],
-        "related_issues": [],
-        "followup_issues": [],
         "duplicate_reuse_decision": "No duplicate replaces this delivery unit.",
         "implementation_target": "The Stage 0 minimal handoff package graph.",
         "current_gap": "The selected route identifies the next readiness owner.",
@@ -1538,12 +1535,7 @@ def workspace_transition_payloads(
         "wording_facts_sha256": prerequisites["wording"]["facts_sha256"],
     }
     linkage["linkage_sha256"] = context_digest(linkage)
-    scope = transition["scope"]
-    readiness_scope = {
-        "close_issues": copy.deepcopy(scope.get("close_issues")),
-        "related_issues": copy.deepcopy(scope.get("related_issues")),
-        "followup_issues": copy.deepcopy(scope.get("followup_issues")),
-    }
+    readiness_scope = {}
     readiness = {
         "schema_version": "1.0",
         "skill_id": "guru-review-change-request",
@@ -1653,28 +1645,9 @@ def workspace_plan_for_transition(
         or target.get("url") != issue.get("url")
     ):
         raise RuntimeError("workspace authoring target does not match live authority")
-    title = str(issue.get("title") or "")
-    scope_ref = {
-        "number": 145,
-        "url": str(issue["url"]),
-        "title": title,
-        "reason": "The current readiness scope identifies this delivery authority.",
-    }
-    scope = {
-        "primary": copy.deepcopy(scope_ref),
-        "close": [copy.deepcopy(scope_ref)],
-        "related": [],
-        "followup": [],
-    }
-    scope["scope_sha256"] = context_digest(scope)
     base_payload = payloads["base"]
     base = base_payload["base"]
     task_slug = "145-phase0-public-transcript"
-    task_dir = (
-        ".trellis/tasks/"
-        + datetime.datetime.now().astimezone().strftime("%m-%d-")
-        + task_slug
-    )
     plan = {
         "schema_version": "2.0",
         "skill_id": "guru-create-task-workspace",
@@ -1705,7 +1678,6 @@ def workspace_plan_for_transition(
             "created_issue_binding_sha256": None,
             "created_issue_result": None,
         },
-        "scope": scope,
         "base": {
             "selected_base": base["selected_base"],
             "remote": base["remote"],
@@ -1735,9 +1707,8 @@ def workspace_plan_for_transition(
         "side_effects": {
             "operations": [
                 "create_branch", "create_worktree", "create_task",
-                "write_task_artifacts", "write_runtime_mappings",
+                "write_runtime_mappings",
             ],
-            "task_artifacts": [f"{task_dir}/issue-scope-ledger.json"],
             "runtime_mappings": [
                 f".trellis/.runtime/guru-team/workspaces/{task_slug}.json",
                 f".trellis/.runtime/guru-team/tasks/{task_slug}.json",
@@ -1752,7 +1723,7 @@ def workspace_plan_for_transition(
             "summary": "Live target, current transition, names and side effects were reviewed.",
             "evidence": [
                 "The actual readiness transition is current.",
-                "The live issue has one assignee and one close scope.",
+                "The live issue has one assignee and one current target.",
             ],
         },
         "freshness": {
@@ -1765,7 +1736,7 @@ def workspace_plan_for_transition(
         key: copy.deepcopy(plan.get(key))
         for key in (
             "schema_version", "skill_id", "mode", "invocation", "prerequisites",
-            "target", "scope", "base", "naming", "assignee", "side_effects",
+            "target", "base", "naming", "assignee", "side_effects",
         )
     }
     reviewable_sha256 = digest(reviewable)

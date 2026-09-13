@@ -22,9 +22,8 @@ scope, author names, choose an assignee, grant confirmation, or choose an exit.
    `guru-sync-base`, `guru-clarify-requirements`,
    `guru-review-contract-wording`, and `guru-review-change-request`, plus the
    live issue/task authority. Discovery private evidence is not an input.
-2. Project the final target, duplicate and disposition decisions, authority
-   impact, and readiness close/related/follow-up conclusion without changing
-   them.
+2. Project the final target, duplicate and disposition decisions, and authority
+   impact without changing them.
 3. Read current Git, GitHub, package-local workspace configuration, branch,
    worktree and task facts without mutation. `workspace_mode` must be exactly
    `worktree` or `current`; missing or unsupported modes fail closed.
@@ -37,7 +36,7 @@ scope, author names, choose an assignee, grant confirmation, or choose an exit.
    user question when the issue has multiple assignees or the actor is
    unresolved.
 6. Display the exact repository, target, GitHub operation, base, branch,
-   worktree, task, assignee, task-local issue ledger, ignored runtime writes,
+   worktree, task, assignee, ignored runtime writes,
    command argv, and invocation stop condition.
 7. Complete the AI Review Gate below.
 8. Obtain exactly the confirmation required for this invocation without
@@ -63,7 +62,6 @@ The additive `record-task-workspace-plan --invocation -` input is:
   "schema_version": "1.0",
   "transition": "the actual ready output's transition object, not this string",
   "authoring": {
-    "scope": {"primary": {}, "close": [], "related": [], "followup": []},
     "naming": {},
     "assignee": {},
     "side_effects": {},
@@ -78,9 +76,6 @@ This diagram is not executable input. Use
 Readiness `ready.transition`. A recorder's `typed_exit=ready` is not that public
 handoff. Never use example transition digests as live evidence.
 
-- `scope` contains the existing plan's primary/close/related/followup issue rows
-  (`number`, `url`, `title`, `reason`), without `scope_sha256`. The primary must
-  match the transition target; each other issue set must match Readiness.
 - `naming`, `assignee`, and `side_effects` retain their existing complete plan
   shapes. The caller supplies exact paths, object dispositions and operations;
   runtime does not generate names, choose an assignee, or decide side effects.
@@ -115,7 +110,7 @@ Facts/content/linkage fields copy their corresponding transition values; base
 facts and `base.sync_facts_sha256` hash that base projection. Clarity linkage
 retains the content-identity projection; wording content/linkage use scope/scan.
 All derived hashes use canonical UTF-8 JSON with sorted keys, compact separators,
-and unescaped Unicode. Scope excludes its own digest; reviewable fields are
+and unescaped Unicode. Reviewable fields are
 exactly `common.reviewable`; final plan hashing excludes only
 `freshness.plan_sha256`. The recorder supplies capture/generation time and both
 reviewable bindings, then validates and returns the existing plan schema.
@@ -146,8 +141,8 @@ The AI must verify that prerequisite bytes still own target and disposition;
 no duplicate, closed-state, reopen, retarget, or follow-up decision was remade;
 names contain issue identity and semantic action; assignee evidence follows the
 fixed order; issue and workspace mutations are not mixed; the plan enumerates
-every exact side effect; readiness scope projection is unchanged; artifacts,
-runtime, no-developer and no-shared-write boundaries are complete; recovery
+every exact side effect; runtime, no-developer and no-shared-write boundaries
+are complete; recovery
 cannot overwrite a conflict; and the scenario remains inside normal supported
 operation. Only a passed Gate can authorize mutation.
 
@@ -236,10 +231,8 @@ workspace and reruns the guards in the resolved workspace. In an isolated
 subprocess, its adapter invokes the official task store with explicit
 `--creator <reviewed-login>` and `--assignee <reviewed-login>`. The official
 store therefore writes task ownership without a developer accessor. The
-executor then sets branch, worktree, base and issue scope.
-It writes exactly one tracked task-local Intake artifact:
-
-- `issue-scope-ledger.json`
+executor then sets branch, worktree, base and the owner-native source Issue
+reference in `task.json`.
 
 All other prerequisite evidence stays call-local and owner-private. The new
 recorder input validates the readiness consumer schema and prepares
@@ -249,9 +242,7 @@ reconstruct predecessor payloads or independently revalidate the transition.
 Execution additionally checks live base/target at its mutation boundary, and
 check validates the result binding and the applicable live created objects.
 These calls do not create or reread prerequisite files.
-Compatibility-only locator calls remain available until the next
-breaking Interface migration and are excluded from workflow, production eval,
-and installed transcript paths. Local path mappings are
+Local path mappings are
 written only under ignored `.trellis/.runtime/guru-team/workspaces/` and
 `.trellis/.runtime/guru-team/tasks/`. Guru runtime never reads, copies,
 initializes, restores, or requires `.trellis/.developer` or
@@ -263,13 +254,13 @@ resolver as the executor and verifies the resolved workspace against live Git,
 task and mapping facts. The exact normalized `workspace_path` remains only in
 ignored runtime mappings.
 
-Ordinary re-entry may reuse only an identity-exact branch/worktree/task and
-byte-identical artifacts. Any repo, base, issue, branch, task locator, status or
-artifact mismatch returns `blocked` without overwrite. No transaction log,
+Ordinary re-entry may reuse only an identity-exact branch/worktree/task. Any
+repo, base, issue, branch, task locator, or status mismatch returns `blocked`
+without overwrite. No transaction log,
 lock, concurrency protocol, cross-OS mechanism, or hostile-input boundary is
 part of this contract.
 
-If the task, branch/worktree, ledger, or Guru runtime mappings cannot be closed
+If the task, branch/worktree, or Guru runtime mappings cannot be closed
 into one identity, the state is invalid. The package makes no repair,
 migration, restore, cleanup, or Intake decision and returns
 `invalid_task_state` to the single `invalid-task-state` stop consumer.

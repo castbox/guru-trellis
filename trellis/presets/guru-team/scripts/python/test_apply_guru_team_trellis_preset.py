@@ -247,7 +247,6 @@ def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> No
         "not_required",
         "finish-work.sh",
         "--expected-plan-digest",
-        "closeout_plan_digest",
         "artifact schema field",
     ):
         testcase.assertNotIn(forbidden, text, path)
@@ -1308,7 +1307,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn(Path("scripts/bash/record-subagent-liveness-event.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertNotIn(Path("scripts/bash/check-subagent-liveness.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-commit-messages.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/format-merge-commit.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertNotIn(Path("scripts/bash/format-merge-commit.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("schemas/finish-summary.schema.json"), preset.MANAGED_ASSET_PATHS)
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh").is_file())
         start_task = self.repo / ".trellis/guru-team/scripts/bash/start-task.sh"
@@ -1374,8 +1373,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             self.assertFalse((self.repo / ".trellis/guru-team/scripts/bash" / obsolete).exists())
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-commit-messages.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-commit-messages.sh", os.X_OK))
-        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/format-merge-commit.sh").is_file())
-        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/format-merge-commit.sh", os.X_OK))
+        self.assertFalse((self.repo / ".trellis/guru-team/scripts/bash/format-merge-commit.sh").exists())
         self.assertTrue((self.repo / ".trellis/guru-team/schemas/finish-summary.schema.json").is_file())
         self.assertNotIn("session_auto_commit", (self.repo / ".trellis/config.yaml").read_text(encoding="utf-8"))
         self.assertNotIn(".trellis/workspace/", (self.repo / ".gitignore").read_text(encoding="utf-8"))
@@ -1687,9 +1685,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
         private_paths = (
             Path("schemas/task-pr-merge-gate-2.0.schema.json"),
-            Path("schemas/task-pr-merge-gate.schema.json"),
             Path("examples/task-pr-merge-gate-2.0.json"),
-            Path("examples/task-pr-merge-gate.json"),
         )
         platform_roots = (
             self.repo / ".agents/skills" / package_relative,
@@ -1708,13 +1704,15 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 with self.subTest(relative=relative, platform_root=platform_root):
                     self.assertFalse((platform_root / relative).exists())
 
-        legacy_public_schema = Path("schemas/public-ready-for-merge-input.schema.json")
+        retired_paths = (
+            Path("schemas/task-pr-merge-gate.schema.json"),
+            Path("examples/task-pr-merge-gate.json"),
+            Path("schemas/public-ready-for-merge-input.schema.json"),
+        )
         for platform_root in platform_roots:
-            with self.subTest(platform_root=platform_root, asset="legacy-public"):
-                self.assertEqual(
-                    (platform_root / legacy_public_schema).read_bytes(),
-                    (canonical_root / legacy_public_schema).read_bytes(),
-                )
+            for relative in retired_paths:
+                with self.subTest(platform_root=platform_root, retired=relative):
+                    self.assertFalse((platform_root / relative).exists())
 
     def test_all_platforms_to_subset_removes_clean_managed_overlay(self) -> None:
         platforms, all_platforms = preset.selected_platforms(None, True)
@@ -2555,7 +2553,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "guru-team-skill-interface-1.6",
             ],
         )
-        self.assertIn("format-merge-commit", public_api["companion_scripts"])
+        self.assertNotIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("check-skill-packages", public_api["companion_scripts"])
         self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")
         self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.17")

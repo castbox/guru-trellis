@@ -86,12 +86,17 @@ def capture_snapshot(repo,excluded=()):
 def normalize(value,field):
  if not isinstance(value,str) or not value.strip():raise CommandError("schema_mismatch",field,"Provide concrete text.")
  return "\n".join(line.rstrip() for line in value.replace("\r\n","\n").replace("\r","\n").split("\n")).strip()
-def canonical_message(raw,issue):
+def canonical_message(raw,issue_reference=None):
  kind=str(raw.get("type") or "").strip().lower();scope=str(raw.get("scope") or "").strip().lower()
  if kind not in {"feat","fix","refactor","perf","test","docs","style","build","ci","chore","revert"} or not re.fullmatch(r"[a-z0-9._/-]+",scope):raise CommandError("schema_mismatch","message","Use a supported Conventional Commit type and scope.")
  values={k:normalize(raw.get(k),f"message.{k}") for k in ("summary","background","changes","boundaries","validations")}
- subject=f"{kind}({scope}): #{issue} {values['summary']}";body=f"背景：\n{values['background']}\n\n变更：\n{values['changes']}\n\n边界：\n{values['boundaries']}\n\n验证：\n{values['validations']}\n\nRefs #{issue}"
- return {"type":kind,"scope":scope,**values,"subject":subject,"body":body,"bytes":subject+"\n\n"+body+"\n"}
+ issue=raw.get("issue_reference",issue_reference)
+ if issue is not None and (isinstance(issue,bool) or not isinstance(issue,int) or issue<1):raise CommandError("schema_mismatch","message.issue_reference","Use a positive Issue number or omit the reference.")
+ prefix=f"#{issue} " if issue is not None else "";footer=f"\n\nRefs #{issue}" if issue is not None else ""
+ subject=f"{kind}({scope}): {prefix}{values['summary']}";body=f"背景：\n{values['background']}\n\n变更：\n{values['changes']}\n\n边界：\n{values['boundaries']}\n\n验证：\n{values['validations']}{footer}"
+ result={"type":kind,"scope":scope,**values,"subject":subject,"body":body,"bytes":subject+"\n\n"+body+"\n"}
+ if issue is not None:result["issue_reference"]=issue
+ return result
 def candidate_path(repo,td):
  root=repo/".trellis/.runtime/guru-team/task-commit-plans"/td.name;root.mkdir(parents=True,exist_ok=True)
  existing=sorted(root.glob("[0-9][0-9][0-9].json"))
@@ -111,8 +116,6 @@ def build_candidate(package_root,repo,public,authoring):
  if task.get("status")!="in_progress" or task.get("branch")!=git(repo,"rev-parse","--abbrev-ref","HEAD").stdout.strip():raise CommandError("stale_identity","task","Use the current in-progress task branch.",3)
  phase2_path=repo/".trellis/.runtime/guru-team/owner-checkpoints"/td.name/"phase2-check.json";phase2=json_file(phase2_path,"phase2")
  if phase2.get("typed_exit")!="passed" or phase2.get("task_ref")!=public["task_ref"] or phase2.get("phase2_capture_commit")!=public["phase2_commit_anchor"]:raise CommandError("stale_identity","phase2_commit_anchor","Rerun Phase 2 for the current task.",3)
- ledger=json_file(td/"issue-scope-ledger.json","issue_scope_ledger");issue=ledger.get("primary_issue",{}).get("number")
- if not isinstance(issue,int) or issue<1:raise CommandError("schema_mismatch","issue_scope_ledger","Provide one primary issue.")
  cp,sequence=candidate_path(repo,td);snapshot=capture_snapshot(repo,{repo_rel(repo,cp)});raw=authoring.get("path_classifications")
  if not isinstance(raw,list):raise CommandError("schema_mismatch","path_classifications","Classify every dirty path.")
  classifications=[]
@@ -128,7 +131,7 @@ def build_candidate(package_root,repo,public,authoring):
  review=authoring.get("ai_review")
  if not isinstance(review,dict) or review.get("status") not in {"passed","revision-required","blocked"} or not isinstance(review.get("evidence"),list) or not review["evidence"]:raise CommandError("schema_mismatch","ai_review","Provide the completed AI review.")
  base=str(task.get("base_branch") or "main");base_ref=f"origin/{base}" if git(repo,"rev-parse","--verify",f"origin/{base}",check=False).returncode==0 else base
- candidate={"$schema":"https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json","schema_version":"5.0","skill_id":"guru-create-task-commit","sequence":sequence,"task":{"id":task["id"],"path":public["task_ref"],"status":"in_progress","branch":task["branch"]},"git":{"base_branch":base,"base_ref":base_ref,"pre_commit_head":git(repo,"rev-parse","HEAD").stdout.strip(),"phase2_commit_anchor":public["phase2_commit_anchor"]},"dirty_snapshot":snapshot,"path_classifications":sorted(classifications,key=lambda x:x["path"]),"exact_stage_paths":sorted(exact),"message":canonical_message(authoring.get("message") if isinstance(authoring.get("message"),dict) else {},issue),"ai_review":{"status":review["status"],"summary":normalize(review.get("summary"),"ai_review.summary"),"evidence":[normalize(x,"ai_review.evidence") for x in review["evidence"]]}}
+ candidate={"$schema":"https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json","schema_version":"5.0","skill_id":"guru-create-task-commit","sequence":sequence,"task":{"id":task["id"],"path":public["task_ref"],"status":"in_progress","branch":task["branch"]},"git":{"base_branch":base,"base_ref":base_ref,"pre_commit_head":git(repo,"rev-parse","HEAD").stdout.strip(),"phase2_commit_anchor":public["phase2_commit_anchor"]},"dirty_snapshot":snapshot,"path_classifications":sorted(classifications,key=lambda x:x["path"]),"exact_stage_paths":sorted(exact),"message":canonical_message(authoring.get("message") if isinstance(authoring.get("message"),dict) else {}),"ai_review":{"status":review["status"],"summary":normalize(review.get("summary"),"ai_review.summary"),"evidence":[normalize(x,"ai_review.evidence") for x in review["evidence"]]}}
  validate_candidate(package_root,repo,candidate);cp.write_text(json.dumps(candidate,ensure_ascii=False,indent=2)+"\n");receipt=commit_result_path(repo,td.name,sequence);receipt.unlink(missing_ok=True)
  try:receipt.parent.rmdir()
  except OSError:pass

@@ -49,7 +49,7 @@ current and byte-identical; source, test, durable-doc, spec, workflow, schema,
 config, or deployment drift returns to task work.
 
 Re-entry is scope-precise: tracked task artifacts, code, tests, durable docs,
-or the Issue Scope Ledger return through Phase 2, Task Commit, Branch Review,
+or current requirement authority return through Phase 2, Task Commit, Branch Review,
 and Publication; PR title/body or other publication payload changes retry only
 Publication; identity-only expiry refreshes the affected identity; and scope,
 reviewed-content, or close-scope changes invalidate the prior ready result.

@@ -15,7 +15,7 @@ format is not downstream freshness authority.
 
 Workflow and standalone mode use the same eight preconditions: runtime,
 workspace, task identity, the committed DTO plus live Git, the current Issue
-Scope Ledger, complete review range, working tree, and invocation freshness.
+source Issue identity, complete review range, working tree, and invocation freshness.
 The Skill reads no Planning or Phase 2 checkpoint or Task Commit candidate.
 Input that does not satisfy the current public schema fails closed.
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import datetime
 import json
 import shutil
 import sys
@@ -43,22 +42,21 @@ class WorkspaceInvocationIntegrationTests(unittest.TestCase):
         transition = ready["transition"]
         issue = transcript.live_issue(root, env)
         slug = "145-workspace-authoring-regression"
-        task_dir = ".trellis/tasks/" + datetime.datetime.now().astimezone().strftime("%m-%d-") + slug
-        scope_ref = {"number": issue["number"], "url": issue["url"], "title": issue["title"], "reason": "The fixture delivery unit has one primary and close issue."}
         # The fixture supplies only owner decisions. The production recorder,
         # not a test reconstruction helper, derives every plan identity.
         authoring = {
-            "scope": {"primary": scope_ref, "close": [copy.deepcopy(scope_ref)], "related": [], "followup": []},
             "naming": {"branch_name": "feat/" + slug, "workspace_slug": slug, "task_slug": slug, "task_title": "#145 Workspace authoring regression", "reason": "Isolated fixture verifies the published call contract.", "branch_disposition": "create_new", "workspace_disposition": "create_new", "task_disposition": "create_new"},
             "assignee": {"login": "stage0-transcript", "source": "single_issue_assignee", "candidates": ["stage0-transcript"], "resolution_evidence": "The fixture issue has one assignee."},
-            "side_effects": {"operations": ["create_branch", "create_worktree", "create_task", "write_task_artifacts", "write_runtime_mappings"], "task_artifacts": [task_dir + "/issue-scope-ledger.json"], "runtime_mappings": [f".trellis/.runtime/guru-team/workspaces/{slug}.json", f".trellis/.runtime/guru-team/tasks/{slug}.json"], "command_argv": ["create-task-workspace", "--invocation", "-"], "stop_after": "created_workspace"},
+            "side_effects": {"operations": ["create_branch", "create_worktree", "create_task", "write_runtime_mappings"], "runtime_mappings": [f".trellis/.runtime/guru-team/workspaces/{slug}.json", f".trellis/.runtime/guru-team/tasks/{slug}.json"], "command_argv": ["create-task-workspace", "--invocation", "-"], "stop_after": "created_workspace"},
             "ai_review_gate": {"status": "passed", "reviewer": "integration-fixture", "summary": "The fixture decisions preserve the actual readiness scope and enumerate only disposable local effects.", "evidence": ["Actual readiness_current output", "Current fixture issue"]},
         }
         invocation = {"schema_version": "1.0", "transition": transition, "authoring": authoring}
         before = snapshot(root)
         plan = self.call(root, env, "record-task-workspace-plan.sh", invocation)
         self.assertEqual(snapshot(root), before)
-        self.assertEqual(plan["scope"]["primary"], scope_ref)
+        self.assertNotIn("scope", plan)
+        self.assertNotIn("task_artifacts", plan["side_effects"])
+        self.assertNotIn("write_task_artifacts", plan["side_effects"]["operations"])
         self.assertNotIn("content_sha256", plan["target"])
         self.assertEqual(plan["base"]["decision_head"], transition["base"]["decision_head"])
         invalid = copy.deepcopy(invocation)

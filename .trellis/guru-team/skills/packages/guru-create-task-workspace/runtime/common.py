@@ -120,7 +120,7 @@ def validate_schema(value,path,field):
   raise CommandError("schema_mismatch",".".join([field,*parts]),remediation)
  return value
 def validate(package_root,v,name,field="input"):return validate_schema(v,package_root/"schemas"/name,field)
-def reviewable(plan):return {k:copy.deepcopy(plan[k]) for k in ("schema_version","skill_id","mode","invocation","prerequisites","target","scope","base","naming","assignee","side_effects")}
+def reviewable(plan):return {k:copy.deepcopy(plan[k]) for k in ("schema_version","skill_id","mode","invocation","prerequisites","target","base","naming","assignee","side_effects")}
 def plan_digest(plan):
  v=copy.deepcopy(plan);v["freshness"].pop("plan_sha256",None);return digest(v)
 def validate_plan(package_root,repo,plan,field="input"):

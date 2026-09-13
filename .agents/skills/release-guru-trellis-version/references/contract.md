@@ -67,6 +67,11 @@ Route preparation through standard intake and the existing global workflow:
    `guru-merge-task-pr`, which exclusively owns expected-head merge and closure
    verification.
 
+The Stage 1 preparation PR is reference-only because the release Issue still
+owns the post-merge exact-candidate, tag, smoke, and GitHub Release work. Its
+Publication payload uses `Refs #<issue>`; Issue closure remains the independent
+Stage 2 boundary after those requirements are complete.
+
 Each `guru-create-task-commit` invocation exclusively owns its exact task commit
 preview, confirmation, and commit mutation. The first review cannot be reused
 for promotion-created bytes, and the second review cannot run before promotion.

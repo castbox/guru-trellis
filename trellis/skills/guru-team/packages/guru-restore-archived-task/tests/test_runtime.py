@@ -61,7 +61,7 @@ class RestoreArchivedTaskRuntimeTest(unittest.TestCase):
         self._write_json(archive / "finish-summary.json", {
             "task": {"slug": self.task_id, "artifact_dir": self.active_locator, "archive_dir": self.archive_locator, "status": "completed"},
             "git": {"branch": self.branch, "base_branch": "main"},
-            "github": {"pr_url": "https://github.com/castbox/guru-trellis/pull/348", "source_issues": [348], "close_issues": [], "related_issues": [], "followup_issues": []},
+            "github": {"pr_url": "https://github.com/castbox/guru-trellis/pull/348"},
         })
         for name in ("phase2-check.json", "review-gate.json", "pr-readiness.json", "task-finalization-gate.json"):
             (archive / name).write_text("stale\n", encoding="utf-8")
@@ -79,7 +79,7 @@ class RestoreArchivedTaskRuntimeTest(unittest.TestCase):
         self.mapping = {"schema_version": "1.0", "task_slug": self.task_id, "workspace_slug": self.workspace_slug, "workspace_path": str(self.root), "task_artifact_dir": self.archive_locator}
         self._write_json(self.mapping_path, self.mapping)
         self._write_json(self.workspace_mapping_path, {"schema_version": "1.0", "workspace_slug": self.workspace_slug, "workspace_path": str(self.root), "source_checkout": str(self.source), "branch_name": self.branch})
-        self.public = {"schema_version": "1.0", "profile": "restore_archived_task", "mode": "workflow", "exit_id": "phase2_reentry_required", "repo_ref": "castbox/guru-trellis", "pr_number": 348, "pr_url": "https://github.com/castbox/guru-trellis/pull/348", "expected_head_sha": self.expected_head, "expected_base_branch": "main", "expected_head_branch": self.branch, "issue_number": 348, "task_id": self.task_id, "archive_locator": self.archive_locator, "active_locator": self.active_locator, "archive_commit": self.archive_commit, "finding_refs": ["merge-finding:348:phase2-reentry"], "resume_target": "phase-2"}
+        self.public = {"schema_version": "1.0", "profile": "restore_archived_task", "mode": "workflow", "exit_id": "phase2_reentry_required", "repo_ref": "castbox/guru-trellis", "pr_number": 348, "pr_url": "https://github.com/castbox/guru-trellis/pull/348", "expected_head_sha": self.expected_head, "expected_base_branch": "main", "expected_head_branch": self.branch, "task_id": self.task_id, "archive_locator": self.archive_locator, "active_locator": self.active_locator, "archive_commit": self.archive_commit, "finding_refs": ["merge-finding:348:phase2-reentry"], "resume_target": "phase-2"}
         self.semantic = {"schema_version": "1.0", "profile": "restore_archived_task", "mode": "workflow", "review_intent": "task_work_reentry", "classification": "task_work", "requires_task_content_change": True, "finding_refs": list(self.public["finding_refs"])}
         self.facts = self._facts("archived", "completed", None, False)
         self.input_path = self._write_json(Path(self.temp.name) / "input.json", self.public)
@@ -104,11 +104,10 @@ class RestoreArchivedTaskRuntimeTest(unittest.TestCase):
         return {
             "schema_version": "1.0",
             "pr": {"state": "OPEN", "number": 348, "url": self.public["pr_url"], "head_sha": self.expected_head, "base_branch": "main", "head_branch": self.branch},
-            "issue": {"number": 348, "state": "OPEN", "close_intent": "unchanged"},
             "remote_branch": {"name": self.branch, "head_sha": self.expected_head},
             "local_branch": {"name": self.branch, "head_sha": self.expected_head},
             "archive": {"locator": self.archive_locator, "commit": self.archive_commit, "task_json_sha256": __import__("hashlib").sha256(task_path.read_bytes()).hexdigest(), "finish_summary_sha256": __import__("hashlib").sha256(finish_path.read_bytes()).hexdigest() if finish_path.is_file() else "0" * 64},
-            "task": {"id": self.task_id, "status": task_status, "completed_at": "2026-09-03T00:00:00Z" if task_status == "completed" else None, "branch": self.branch, "base_branch": "main", "repo_ref": "castbox/guru-trellis", "issue_number": 348, "pr_number": 348, "expected_head_sha": self.expected_head},
+            "task": {"id": self.task_id, "status": task_status, "completed_at": "2026-09-03T00:00:00Z" if task_status == "completed" else None, "branch": self.branch, "base_branch": "main", "repo_ref": "castbox/guru-trellis", "pr_number": 348, "expected_head_sha": self.expected_head},
             "runtime_mapping": {"state": mapping_state, "task_id": self.task_id, "archive_locator": self.archive_locator, "active_locator": self.active_locator, "repo_ref": "castbox/guru-trellis", "branch_name": self.branch, "worktree_path": str(self.root)},
             "worktree": {"path": str(self.root), "exists": True, "clean": True, "branch": self.branch, "occupied_by": None},
             "active_task": {"present": active_task is not None, "task_id": active_task, "locator": self.active_locator if active_task else None},

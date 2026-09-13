@@ -16,7 +16,6 @@
         "planning_documents",
         "docs_ssot",
         "wording_result",
-        "issue_scope",
         "invocation_freshness"
       ]
     },
@@ -29,7 +28,6 @@
         "planning_documents",
         "docs_ssot",
         "wording_result",
-        "issue_scope",
         "invocation_freshness"
       ]
     }
@@ -70,12 +68,6 @@
       "evidence": "current passed planning wording result",
       "binding": "the same planning scope consumed by this owner",
       "freshness": "the wording owner is rerun only when its semantic dependency changes"
-    },
-    {
-      "id": "issue_scope",
-      "evidence": "current primary, close, related, and follow-up issue decisions",
-      "binding": "the accepted task scope",
-      "freshness": "the AI rereads the issue scope ledger and live authority"
     },
     {
       "id": "invocation_freshness",

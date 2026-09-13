@@ -11,7 +11,7 @@ This marketplace workflow is the global Guru Team route. It owns only:
 - every external typed exit, its one declared consumer, and every workflow or
   stop target;
 - workspace and task boundary selection, plus task activation;
-- Docs SSOT and Issue Scope Ledger integration points;
+- Docs SSOT and external-work-item publication integration points;
 - human-readable artifact presentation;
 - user interaction, external side-effect boundaries, and the authenticated repo-bound `gh`-only GitHub I/O contract in `workflow-contract.md`.
 
@@ -749,14 +749,14 @@ HEAD through bounded continuity before Publication resumes.
 
 Publication diagnostics preserve the owner error code and expose only a bounded
 `recovery_scope`: `task_content`, `publication_content`, `stale_identity`, or
-`runtime_dependency`. Tracked task/code/test/durable-doc/ledger changes route
+`runtime_dependency`. Tracked task/code/test/durable-doc changes route
 back through Phase 2, Task Commit, Branch Review, and Publication; PR
 title/body/publication-payload changes retry only Publication; identity expiry
 refreshes the affected identity; and scope or reviewed-content changes reject
 the old ready result. Unknown or unmapped classifications stop fail closed.
 
 Before its first remote mutation, Finalizer requires no Open PR and only an absent remote branch or strict historical ancestor of the reviewed commit; recovery accepts only transaction-bound remote/PR identity.
-Reprepare keeps title/body in Finalizer owner-private state while its public DTO remains minimal. `close_issues=[]` is refs-only: close keywords stay empty and merge closure is vacuously complete without Issue effects.
+Reprepare keeps title/body in Finalizer owner-private state while its public DTO remains minimal. Finalizer binds the Publication-reviewed PR payload and never derives or reclassifies Issue effects.
 
 Merge normally uses one expected-head-bound `watch-task-pr-checks` invocation
 only when required checks are pending, then one confirmed `invoke-task-pr-merge`
@@ -869,12 +869,18 @@ Phase 2 executes the chosen strategy. delta_first merges durable docs before
 the final Phase 2 check. Branch Review verifies reconciliation but never
 performs the first merge.
 
-### Issue Scope Ledger
+### External work item and closure
 
-issue-scope-ledger.json is the task-local close/reference authority.
-close_issues alone may use PR close keywords. related_issues and followup_issues
-remain open. A new or changed scope decision enters the Scope Change Gate
-before implementation resumes.
+Publication is the sole semantic owner that decides whether the current delivery
+should close its Issue. A fully delivered Issue-backed task defaults to closure;
+Publication keeps it open only when current authority contains a concrete
+post-merge validation, observation, release, or incomplete-delivery condition.
+No external work item produces no Issue reference or effect. Publication writes
+the reviewed closing keyword only for a PR targeting the default branch; a
+non-default-branch PR references the Issue and leaves the later default-branch
+Publication to decide again from fresh authority. Finalizer only executes the
+reviewed payload, and Merge reviews readiness and expected HEAD without
+re-deciding closure or calling an Issue-close API.
 
 ### Human artifacts
 

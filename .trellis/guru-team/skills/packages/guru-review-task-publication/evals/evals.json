@@ -10,13 +10,36 @@
       "expected_exit": "ready",
       "expected_output": "The DTO contains task identity, branch_review_commit, and the exact reviewed PR title/body.",
       "input_profile_id": "publication_review",
-      "assertions": {"deterministic": [
-        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready"},
-        {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
-        {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
-        {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
-      ]},
-      "files": ["evals/files/workflow-initial-ready-input.json", "evals/files/workflow-initial-ready-facts.json"]
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/workflow-initial-ready-input.json",
+        "evals/files/workflow-initial-ready-facts.json"
+      ]
     },
     {
       "id": "standalone-initial-ready",
@@ -24,10 +47,21 @@
       "expected_exit": "ready",
       "expected_output": "The standalone DTO carries the same exact reviewed PR payload.",
       "input_profile_id": "publication_review",
-      "assertions": {"deterministic": [
-        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready"}
-      ]},
-      "files": ["evals/files/standalone-initial-ready-input.json", "evals/files/standalone-initial-ready-facts.json"]
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/standalone-initial-ready-input.json",
+        "evals/files/standalone-initial-ready-facts.json"
+      ]
     },
     {
       "id": "return-to-task-work",
@@ -35,10 +69,21 @@
       "expected_exit": "return_to_task_work",
       "expected_output": "The DTO contains exact finding references and the fixed phase-2 resume target.",
       "input_profile_id": "publication_review",
-      "assertions": {"deterministic": [
-        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "return_to_task_work"}
-      ]},
-      "files": ["evals/files/return-to-task-work-input.json", "evals/files/return-to-task-work-facts.json"]
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "return_to_task_work"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/return-to-task-work-input.json",
+        "evals/files/return-to-task-work-facts.json"
+      ]
     },
     {
       "id": "blocked-external",
@@ -46,10 +91,21 @@
       "expected_exit": "blocked",
       "expected_output": "The DTO contains only the stable blocker reason and remediation.",
       "input_profile_id": "publication_review",
-      "assertions": {"deterministic": [
-        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "blocked"}
-      ]},
-      "files": ["evals/files/blocked-external-input.json", "evals/files/blocked-external-facts.json"]
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/blocked-external-input.json",
+        "evals/files/blocked-external-facts.json"
+      ]
     },
     {
       "id": "stale-reentry-ready",
@@ -57,10 +113,21 @@
       "expected_exit": "ready",
       "expected_output": "The stale profile produces a freshly checked exact PR payload.",
       "input_profile_id": "publication_review_stale",
-      "assertions": {"deterministic": [
-        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready"}
-      ]},
-      "files": ["evals/files/stale-reentry-ready-input.json", "evals/files/stale-reentry-ready-facts.json"]
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/stale-reentry-ready-input.json",
+        "evals/files/stale-reentry-ready-facts.json"
+      ]
     },
     {
       "id": "metadata-fix-fresh-ready",
@@ -68,10 +135,21 @@
       "expected_exit": "ready",
       "expected_output": "The closed metadata finding remains private while ready carries the exact revised PR payload.",
       "input_profile_id": "publication_review",
-      "assertions": {"deterministic": [
-        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready"}
-      ]},
-      "files": ["evals/files/metadata-fix-fresh-ready-input.json", "evals/files/metadata-fix-fresh-ready-facts.json"]
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/metadata-fix-fresh-ready-input.json",
+        "evals/files/metadata-fix-fresh-ready-facts.json"
+      ]
     },
     {
       "id": "metadata-fix-durable-drift-return",
@@ -79,10 +157,21 @@
       "expected_exit": "return_to_task_work",
       "expected_output": "The actual owner exit selects the return schema and exact finding reference.",
       "input_profile_id": "publication_review",
-      "assertions": {"deterministic": [
-        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "return_to_task_work"}
-      ]},
-      "files": ["evals/files/metadata-fix-durable-drift-return-input.json", "evals/files/metadata-fix-durable-drift-return-facts.json"]
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "return_to_task_work"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/metadata-fix-durable-drift-return-input.json",
+        "evals/files/metadata-fix-durable-drift-return-facts.json"
+      ]
     }
   ]
 }

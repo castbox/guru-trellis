@@ -38,7 +38,6 @@ class NormalScenarioQualificationRuntimeTest(unittest.TestCase):
         task.mkdir(parents=True)
         for name in ("prd.md", "design.md", "implement.md"):
             (task / name).write_text(name + "\n", encoding="utf-8")
-        (task / "issue-scope-ledger.json").write_text("{}\n", encoding="utf-8")
         subprocess.run(["git", "add", "."], cwd=self.repo, check=True)
         subprocess.run(["git", "commit", "-qm", "fixture"], cwd=self.repo, check=True)
         self.head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repo, check=True, text=True, stdout=subprocess.PIPE).stdout.strip()
@@ -64,7 +63,7 @@ class NormalScenarioQualificationRuntimeTest(unittest.TestCase):
             "task_free_evolution": {"repo_locator":".","request_locator":"request:test","checkout_head":self.head,"approved_paths":["AGENTS.md"],"edited_paths":["AGENTS.md"]},
             "requirements_scope_set": {"repo_locator":".","authority_kind":"active_task","authority_locator":".trellis/tasks/current","authority_identity":"current-task","scope_locator":"path:AGENTS.md"},
             "change_request_candidate_set": {"repo_locator":".","request_locator":"request:test","request_identity":"current-request","readiness_locators":["path:AGENTS.md"]},
-            "planning_scenario_set": {"repo_locator":".","task_ref":"current","planning_paths":planning_paths,"scope_ledger_path":".trellis/tasks/current/issue-scope-ledger.json","planning_identity":planning_identity},
+            "planning_scenario_set": {"repo_locator":".","task_ref":"current","planning_paths":planning_paths,"planning_identity":planning_identity},
             "implementation_discovery": {"repo_locator":".","task_ref":"current","planning_identity":planning_identity,"checkout_head":self.head,"diff_locator":"HEAD^...HEAD"},
             "base_impact_candidate_set": {"repo_locator":".","task_ref":"current","old_base_head":self.head,"new_base_head":self.head,"task_head":self.head,"base_pair_locator":"HEAD...HEAD"},
             "phase2_candidate_set": {"repo_locator":".","task_ref":"current","checkout_head":self.head,"planning_identity":planning_identity,"diff_locator":"HEAD^...HEAD"},

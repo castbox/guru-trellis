@@ -80,13 +80,10 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "Success returns `refresh_context`",
             "compact owner-result `decision_trail`",
             "remote authority locator and content checksum",
-            "closed scope-only 2.0 document",
-            "the trail stay in the transient owner result and never enter the ledger",
             "reject any schema mismatch before normalization",
             "`blocked` if and only if",
         ):
             self.assertIn(phrase, contract)
-        self.assertIn("missing scope-only Ledger binding", skill)
         self.assertNotIn("dialogue-local authorization", contract)
         self.assertNotIn("user_confirmation", contract)
         self.assertNotIn("context_before_task_update_sha256", contract)
@@ -421,7 +418,6 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         owner["active_task_evidence"] = {
             "task_locator": ".trellis/tasks/current",
             "github_authority_facts_sha256": "8" * 64,
-            "ledger": {"path": ".trellis/tasks/current/issue-scope-ledger.json", "content_sha256": "7" * 64},
             "planning_documents": [
                 {"path": ".trellis/tasks/current/prd.md", "content_sha256": "6" * 64},
                 {"path": ".trellis/tasks/current/design.md", "content_sha256": "5" * 64},

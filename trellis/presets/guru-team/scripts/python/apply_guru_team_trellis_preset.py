@@ -193,9 +193,7 @@ MANAGED_SOURCE_PATHS = (
 )
 MANAGED_ASSET_PATHS = [
     Path("config-template.yml"),
-    Path("schemas/closeout-plan.schema.json"),
     Path("schemas/finish-summary.schema.json"),
-    Path("schemas/marketplace-verification.schema.json"),
     Path("scripts/bash/check-env.sh"),
     Path("scripts/bash/version.sh"),
     Path("scripts/bash/prepare-task.sh"),
@@ -247,7 +245,6 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/prepare-task-commit.sh"),
     Path("scripts/bash/check-commit-messages.sh"),
     Path("scripts/bash/create-task-commit.sh"),
-    Path("scripts/bash/format-merge-commit.sh"),
     Path("scripts/bash/review-branch.sh"),
     Path("scripts/bash/check-review-gate.sh"),
     Path("scripts/bash/finish-work.sh"),
@@ -2459,7 +2456,6 @@ def _install_assets_in_place(
         dst / "scripts/bash/prepare-task-commit.sh",
         dst / "scripts/bash/check-commit-messages.sh",
         dst / "scripts/bash/create-task-commit.sh",
-        dst / "scripts/bash/format-merge-commit.sh",
         dst / "scripts/bash/review-branch.sh",
         dst / "scripts/bash/check-review-gate.sh",
         dst / "scripts/bash/finish-work.sh",

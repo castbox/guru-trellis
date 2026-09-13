@@ -19,6 +19,7 @@ from adapters.eval.owner_runtime import load_package_owner_runtime
 from adapters.eval.stage0_fixtures import (
     build_readiness_owner,
     stage0_command,
+    workspace_plan,
     workspace_prerequisites,
 )
 
@@ -112,13 +113,20 @@ class ReadinessAdapterTests(unittest.TestCase):
         with mock.patch.dict(os.environ, {"PATH": f"{binary}:{os.environ['PATH']}"}):
             prerequisites, issue, transition = workspace_prerequisites(runtime, self.fixture, "workflow")
         self.assertEqual("readiness_current", transition["stage"])
-        self.assertEqual([145], transition["scope"]["close_issues"])
         self.assertEqual(
             prerequisites["discovery"]["context_result_sha256"],
             transition["context_result_sha256"],
         )
         self.assertEqual(prerequisites["readiness"]["facts_sha256"], transition["readiness_facts_sha256"])
         self.assertEqual(hashlib.sha256(issue["title"].encode()).hexdigest(), transition["target"]["title_sha256"])
+        plan = workspace_plan(
+            runtime, self.fixture, "workspace-created", "workflow", prerequisites, issue
+        )
+        self.assertNotIn("scope", plan)
+        self.assertNotIn("task_artifacts", plan["side_effects"])
+        self.assertNotIn("write_task_artifacts", plan["side_effects"]["operations"])
+        self.assertFalse(hasattr(runtime, "task_workspace_scope_digest"))
+        self.assertFalse(hasattr(runtime, "TASK_WORKSPACE_ARTIFACT_NAMES"))
         self.assertFalse((self.fixture / ".trellis/tasks").exists())
         self.assertEqual("", run_git(self.fixture, "status", "--porcelain"))
 

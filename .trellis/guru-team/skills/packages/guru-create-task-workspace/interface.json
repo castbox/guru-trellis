@@ -72,7 +72,7 @@
     {
       "id": "readiness_evidence",
       "evidence": "current Readiness public readiness_current transition from the checked guru-change-request-review-2.0 result",
-      "binding": "same live-normalized target/content, clarification/wording linkage and close/related/followup conclusion",
+      "binding": "same live-normalized target/content and clarification/wording linkage",
       "freshness": "facts digest, target authority and two-prerequisite linkage remain current"
     },
     {
@@ -125,10 +125,6 @@
       "path": "examples/task-workspace-result.json"
     },
     {
-      "id": "issue_scope_ledger_example",
-      "path": "examples/issue-scope-ledger.json"
-    },
-    {
       "id": "public_input_execute_reviewed_plan_example",
       "path": "examples/public-execute-reviewed-plan-input.json"
     },
@@ -161,10 +157,6 @@
     {
       "id": "task_workspace_result_schema",
       "path": "schemas/task-workspace-result.schema.json"
-    },
-    {
-      "id": "issue_scope_ledger_schema",
-      "path": "schemas/issue-scope-ledger.schema.json"
     },
     {
       "id": "public_input_execute_reviewed_plan",
@@ -206,13 +198,13 @@
       "id": "task_workspace_exact_executor",
       "command": "scripts/create-task-workspace.sh",
       "runtime_command": "create-task-workspace",
-      "objective_scope": "mutation-time shared base sync, exact issue recovery, current target/prerequisite/plan facts, issue-only or workspace/task-only mutations, object reuse identity, explicit assignee and one task-local ledger without developer identity"
+      "objective_scope": "mutation-time shared base sync, exact issue recovery, current target/prerequisite/plan facts, issue-only or workspace/task-only mutations, object reuse identity and explicit assignee"
     },
     {
       "id": "task_workspace_result_checker",
       "command": "scripts/check-task-workspace-result.sh",
       "runtime_command": "check-task-workspace-result",
-      "objective_scope": "published result schema, live issue binding or branch/worktree/task identity, exact ledger bytes/digest/trackability, ignored runtime, workspace boundary and typed consumer"
+      "objective_scope": "published result schema, live issue binding or branch/worktree/task identity, ignored runtime, workspace boundary and typed consumer"
     },
     {
       "id": "public_invocation",
@@ -224,7 +216,7 @@
   "external_exits": [
     {
       "id": "created",
-      "evidence": "exact workspace, branch, active task, task-local issue ledger and ignored runtime mappings passed result checking",
+      "evidence": "exact workspace, branch, active task and ignored runtime mappings passed result checking",
       "consumer": {
         "kind": "workflow",
         "id": "guru-task-workspace-created"
@@ -248,13 +240,13 @@
     },
     {
       "id": "invalid_task_state",
-      "evidence": "task identity cannot be closed across task, branch/worktree, ledger, and Guru runtime mappings",
+      "evidence": "task identity cannot be closed across task, branch/worktree and Guru runtime mappings",
       "consumer": {"kind": "stop", "id": "invalid-task-state"}
     }
   ],
   "reentry": {
-    "identity": "five prerequisite result digests, final target/disposition, complete created-issue provenance when applicable, scope, post-sync base identity, naming, assignee, side-effect scope and plan digest",
-    "freshness": "draft retry recovers one exact post-plan issue; complete Intake replay validates the checker-passed created-issue result; first mutation reruns shared base sync; workspace recovery only reuses identity-exact live objects and byte-identical artifacts",
+    "identity": "five prerequisite result digests, final target/disposition, complete created-issue provenance when applicable, post-sync base identity, naming, assignee, side-effect scope and plan digest",
+    "freshness": "draft retry recovers one exact post-plan issue; complete Intake replay validates the checker-passed created-issue result; first mutation reruns shared base sync; workspace recovery only reuses identity-exact live objects",
     "stale_behavior": "fail_closed"
   },
   "tests": [

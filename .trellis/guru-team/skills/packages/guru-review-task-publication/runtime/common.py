@@ -45,7 +45,6 @@ _KNOWN_LOCATORS = {
 }
 
 _OWNER_NAMESPACE_PROJECTIONS = {
-    "issue_scope_ledger": ("task_content", "publication.issue_scope_ledger"),
     "publication_content": ("publication_content", "publication.pr_payload.body"),
     "branch_review_handoff": ("stale_identity", "input.branch_review_commit"),
     "runtime_dependency": ("runtime_dependency", "runtime"),
@@ -146,8 +145,6 @@ def _owner_namespace(payload: dict[str, Any]) -> str | None:
 def _owner_locator(payload: dict[str, Any], namespace: str, code: str) -> str:
     values = _owner_error_values(payload)
     details = [item.split(":", 1)[1].strip() for item in values if ":" in item]
-    if namespace == "issue_scope_ledger" and code == "issue_scope_ledger_primary_disposition_invalid":
-        return "publication.issue_scope_ledger.primary_issue"
     if namespace == "publication_content":
         title_error = any(detail == "PR title is empty" for detail in details)
         body_error = any(

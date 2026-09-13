@@ -1766,7 +1766,7 @@ exit 23
             'export PYTHONPATH="$RUNTIME:$GURU_ROOT${PYTHONPATH:+:$PYTHONPATH}"',
             wrapper,
         )
-        self.assertIn('"$RUNTIME/legacy.py" finish-work "$@"', wrapper)
+        self.assertIn('"$RUNTIME/lifecycle.py" finish-work "$@"', wrapper)
 
 
 if __name__ == "__main__":

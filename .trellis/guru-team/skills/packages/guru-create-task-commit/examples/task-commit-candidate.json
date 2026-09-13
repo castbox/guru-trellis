@@ -48,6 +48,7 @@
     "changes": "增加去身份化的候选示例。",
     "boundaries": "不包含业务数据或用户授权记录。",
     "validations": "通过候选 schema 与共享 commit parser。",
+    "issue_reference": 123,
     "subject": "feat(example): #123 增加示例能力",
     "body": "背景：\n需要演示 AI-first 提交合同。\n\n变更：\n增加去身份化的候选示例。\n\n边界：\n不包含业务数据或用户授权记录。\n\n验证：\n通过候选 schema 与共享 commit parser。\n\nRefs #123",
     "bytes": "feat(example): #123 增加示例能力\n\n背景：\n需要演示 AI-first 提交合同。\n\n变更：\n增加去身份化的候选示例。\n\n边界：\n不包含业务数据或用户授权记录。\n\n验证：\n通过候选 schema 与共享 commit parser。\n\nRefs #123\n"

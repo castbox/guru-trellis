@@ -46,13 +46,7 @@ HAPPY_PATHS = {
     },
     "guru-finalize-task": {
         "commands": ["preview-finalization", "invoke-guru-finalize-task"],
-        "compatibility": [
-            "preview-finalization",
-            "record-finalization-gate",
-            "check-finalization-gate",
-            "execute-finalization-transition",
-            "invoke-guru-finalize-task",
-        ],
+        "compatibility": [],
         "wrapper": "scripts/invoke.sh",
     },
     "guru-merge-task-pr": {
@@ -234,7 +228,6 @@ class FinalizerOwnerAdapter:
             "expected_head_sha": "1" * 40,
             "expected_base_branch": "main",
             "expected_head_branch": "codex/330-closeout-happy-path-consolidation",
-            "expected_close_issues": [330],
         }
         self.full_reads = 0
         self.mutations: list[str] = []
@@ -511,9 +504,6 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
-            (task / "issue-scope-ledger.json").write_text(
-                json.dumps({"primary_issue": {"number": 330}}), encoding="utf-8"
-            )
             git("add", ".")
             git("commit", "-q", "-m", "base")
             parent = git("rev-parse", "HEAD")
@@ -745,7 +735,7 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                 boundary=("semantic.review", *owner.boundary, "public.project"),
             )
 
-    def finalizer_route(self, *, recommended: bool) -> ExecutedRoute:
+    def finalizer_route(self) -> ExecutedRoute:
         package = PACKAGES / "guru-finalize-task"
         with tempfile.TemporaryDirectory(prefix="closeout-finalizer-") as temporary:
             root = Path(temporary)
@@ -753,48 +743,24 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
             commands: list[str] = []
             public_path = root / "public.json"
             review_path = root / "review.json"
-            owner_path = root / "owner.json"
-            for path in (public_path, review_path, owner_path):
+            for path in (public_path, review_path):
                 path.write_text("{}\n", encoding="utf-8")
             with package_modules(package):
-                record = command_module(package, "record.py", "finalizer")
-                check = command_module(package, "check.py", "finalizer")
-                execute = command_module(package, "execute.py", "finalizer")
                 invoke = command_module(package, "invoke.py", "finalizer")
                 transaction = command_module(package, "transaction.py", "finalizer")
                 with (
-                    mock.patch.object(record, "_o", return_value=owner),
-                    mock.patch.object(check, "_o", return_value=owner),
-                    mock.patch.object(execute, "_o", return_value=owner),
                     mock.patch.object(invoke, "_o", return_value=owner),
                     mock.patch.object(invoke, "_transaction", return_value=transaction),
                 ):
                     common = ["--root", str(root), "--input", str(public_path)]
-                    if recommended:
-                        commands.append("preview-finalization")
-                        commands.append("invoke-guru-finalize-task")
-                        output = invoke.run(package, {"id": commands[-1]}, common + ["--review-input", str(review_path), "--confirmed-preview-sha256", "a" * 64])
-                        boundary = ("semantic.review", *owner.boundary, "public.project")
-                        lifecycle = list(owner.lifecycle)
-                        mutation_count = len(owner.mutations)
-                        recovery = invoke.run(package, {"id": commands[-1]}, common + ["--review-input", str(review_path)])
-                        self.assertEqual(mutation_count, len(owner.mutations))
-                    else:
-                        commands.append("preview-finalization")
-                        check.run(package, {"id": commands[-1]}, common)
-                        commands.append("record-finalization-gate")
-                        record.run(package, {"id": commands[-1]}, common + ["--review-input", str(review_path)])
-                        commands.append("check-finalization-gate")
-                        check.run(package, {"id": commands[-1]}, common)
-                        commands.append("execute-finalization-transition")
-                        execute.run(package, {"id": commands[-1]}, common)
-                        commands.append("invoke-guru-finalize-task")
-                        output = invoke.run(package, {"id": commands[-1]}, common + ["--owner-result", str(owner_path)])
-                        boundary = ("semantic.review", *owner.boundary, "public.project")
-                        lifecycle = list(owner.lifecycle)
-                        mutation_count = len(owner.mutations)
-                        recovery = invoke.run(package, {"id": commands[-1]}, common + ["--owner-result", str(owner_path)])
-                        self.assertEqual(mutation_count, len(owner.mutations))
+                    commands.append("preview-finalization")
+                    commands.append("invoke-guru-finalize-task")
+                    output = invoke.run(package, {"id": commands[-1]}, common + ["--review-input", str(review_path), "--confirmed-preview-sha256", "a" * 64])
+                    boundary = ("semantic.review", *owner.boundary, "public.project")
+                    lifecycle = list(owner.lifecycle)
+                    mutation_count = len(owner.mutations)
+                    recovery = invoke.run(package, {"id": commands[-1]}, common + ["--review-input", str(review_path)])
+                    self.assertEqual(mutation_count, len(owner.mutations))
             return ExecutedRoute(output, commands, owner.full_reads - 1, list(owner.mutations), lifecycle, boundary, recovery)
 
     def merge_route(self, *, recommended: bool) -> ExecutedRoute:
@@ -872,7 +838,6 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
         for stage, runner, required_reads in (
             ("commit", self.commit_route, 1),
             ("publication", self.publication_route, 1),
-            ("finalizer", self.finalizer_route, 1),
             ("merge", self.merge_route, 2),
         ):
             with self.subTest(stage=stage):
@@ -909,6 +874,19 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                     "merge": "guru-merge-task-pr",
                 }[stage] / "interface.json")
                 self.assertEqual(interface["judgment_mode"], "semantic")
+
+    def test_current_finalizer_route_is_preview_bound_and_recoverable(self) -> None:
+        route = self.finalizer_route()
+        self.assertEqual(
+            route.commands,
+            ["preview-finalization", "invoke-guru-finalize-task"],
+        )
+        self.assertEqual(route.full_reads, 1)
+        self.assertIsNotNone(route.recovery_output)
+        self.assertEqual(
+            read_json(PACKAGES / "guru-finalize-task/interface.json")["judgment_mode"],
+            "semantic",
+        )
 
     def test_sanitized_fixture_is_historical_observation_not_budget_input(self) -> None:
         fixture = read_json(FIXTURE)

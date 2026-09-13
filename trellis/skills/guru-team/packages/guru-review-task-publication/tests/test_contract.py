@@ -134,7 +134,7 @@ def large_finish_summary() -> dict:
         }],
         "contract_changes": [],
         "search_terms": {
-            "issue_refs": ["#227"],
+            "issue_refs": [],
             "pr_refs": [],
             "branches": ["fix/227-finish-summary-large-path-set"],
             "paths": paths,
@@ -167,13 +167,7 @@ def large_finish_summary() -> dict:
             "commits": ["a" * 40],
             "changed_paths": paths,
         },
-        "github": {
-            "source_issues": [227],
-            "close_issues": [227],
-            "related_issues": [],
-            "followup_issues": [],
-            "pr_url": "",
-        },
+        "github": {"pr_url": ""},
         "artifacts": {},
         "index": index,
     }
@@ -219,7 +213,6 @@ def workspace_boundary_fixture() -> tuple[Path, Path, dict[str, object]]:
         "implement.md",
         "implement.jsonl",
         "check.jsonl",
-        "issue-scope-ledger.json",
     )
     for name in ordinary:
         (source_task / name).write_text(f"{name}\n", encoding="utf-8")
@@ -255,8 +248,7 @@ class TaskPublicationContractTest(unittest.TestCase):
                 "implement.md",
                 "implement.jsonl",
                 "check.jsonl",
-                "issue-scope-ledger.json",
-            ):
+                    ):
                 self.assertNotIn(f"{context['task_dir_relative']}/{name}", suspicious_paths)
             for name in GTT.WORKSPACE_BOUNDARY_REVIEW_METADATA:
                 self.assertIn(f"{context['task_dir_relative']}/{name}", suspicious_paths)
@@ -293,7 +285,7 @@ class TaskPublicationContractTest(unittest.TestCase):
             "unstaged": lambda _source, task: (task / "design.md").write_text("unstaged\n", encoding="utf-8"),
             "deleted": lambda _source, task: (task / "implement.md").unlink(),
             "renamed": lambda source, task: subprocess.run(
-                ["git", "mv", str((task / "issue-scope-ledger.json").relative_to(source)), str((task / "renamed-ledger.json").relative_to(source))],
+                ["git", "mv", str((task / "check.jsonl").relative_to(source)), str((task / "renamed-check.jsonl").relative_to(source))],
                 cwd=source,
                 check=True,
             ),
@@ -767,7 +759,7 @@ class TaskPublicationContractTest(unittest.TestCase):
         route_expectations = (
             (
                 "task-content",
-                "tracked task artifacts, code, tests, durable docs, or the Issue Scope Ledger return through Phase 2, Task Commit, Branch Review, and Publication",
+                "tracked task artifacts, code, tests, durable docs, or current requirement authority return through Phase 2, Task Commit, Branch Review, and Publication",
             ),
             (
                 "publication-only",
@@ -1144,12 +1136,6 @@ class TaskPublicationContractTest(unittest.TestCase):
             ({"error_codes": ["reviewed_content_continuity_invalid"]}, "reviewed_content_continuity_failed", "publication", "stale_identity"),
             ({"error_codes": ["invalid_input_shape"]}, "publication_input_invalid", "publication", None),
             (
-                {"error_codes": ["issue_scope_ledger:issue_scope_ledger_primary_disposition_invalid"]},
-                "issue_scope_ledger_primary_disposition_invalid",
-                "publication.issue_scope_ledger.primary_issue",
-                "task_content",
-            ),
-            (
                 {"error_codes": ["publication_content:PR body 缺少 `Docs SSOT` section。"]},
                 "publication_content_contract_failed",
                 "publication.pr_payload.body",
@@ -1212,12 +1198,6 @@ class TaskPublicationContractTest(unittest.TestCase):
                     "unclassified_failure",
                 ]
             },
-            {
-                "error_codes": [
-                    "publication_content:missing_section",
-                    "issue_scope_ledger:issue_scope_ledger_primary_disposition_invalid",
-                ]
-            },
         ):
             with self.subTest(payload=payload):
                 with self.assertRaises(CommandError) as raised:
@@ -1234,13 +1214,6 @@ class TaskPublicationContractTest(unittest.TestCase):
         self.assertEqual(invalid.exception.code, "invalid_arguments")
 
     def test_each_missing_required_pr_body_section_is_publication_content(self) -> None:
-        ledger = {
-            "schema_version": "2.0",
-            "primary_issue": {"number": 361},
-            "close_issues": [{"number": 361}],
-            "related_issues": [],
-            "followup_issues": [],
-        }
         section_content = {
             "变更摘要": "- 保留 Publication owner 错误分类。",
             "影响范围": "仅影响 Publication Review public invocation 与恢复路由。",
@@ -1256,7 +1229,7 @@ class TaskPublicationContractTest(unittest.TestCase):
                 for section, content in section_content.items()
                 if section != missing
             )
-            errors = GTT.validate_pr_body_quality(body, ledger, False)
+            errors = GTT.validate_pr_body_quality(body, False)
             self.assertIn(f"PR body 缺少 `{missing}` section。", errors)
 
     @classmethod
@@ -1561,87 +1534,6 @@ class TaskPublicationContractTest(unittest.TestCase):
             schema = json.loads((PACKAGE / output["schema"]["path"]).read_text(encoding="utf-8"))
             self.assertFalse(forbidden & set(schema["properties"]))
 
-    def test_ready_schema_migration_preserves_legacy_and_projects_current(self) -> None:
-        import jsonschema
-
-        legacy_path = PACKAGE / "schemas/public-ready-output.schema.json"
-        current_path = PACKAGE / "schemas/public-ready-output-4.0.schema.json"
-        self.assertEqual(
-            hashlib.sha256(legacy_path.read_bytes()).hexdigest(),
-            "57d984c5ef50b9ab2f4fa5e15fbde58c59ad76e563e1690d7cc4c6ceafc6062c",
-        )
-        legacy_schema = json.loads(legacy_path.read_text(encoding="utf-8"))
-        current_schema = json.loads(current_path.read_text(encoding="utf-8"))
-        current_payload = json.loads(
-            (PACKAGE / "examples/public-ready-output.json").read_text(encoding="utf-8")
-        )
-        legacy_payload = {
-            key: current_payload[key]
-            for key in ("exit_id", "task_ref", "branch_review_commit")
-        }
-
-        self.assertEqual(
-            list(jsonschema.Draft202012Validator(legacy_schema).iter_errors(legacy_payload)),
-            [],
-        )
-        self.assertTrue(
-            list(jsonschema.Draft202012Validator(current_schema).iter_errors(legacy_payload))
-        )
-        self.assertTrue(
-            list(jsonschema.Draft202012Validator(legacy_schema).iter_errors(current_payload))
-        )
-        self.assertEqual(
-            list(jsonschema.Draft202012Validator(current_schema).iter_errors(current_payload)),
-            [],
-        )
-
-        schema_paths = {item["path"] for item in self.interface["schemas"]}
-        self.assertIn("schemas/public-ready-output.schema.json", schema_paths)
-        self.assertIn("schemas/public-ready-output-4.0.schema.json", schema_paths)
-        ready_output = next(
-            item
-            for item in self.interface["public_contracts"]["outputs"]
-            if item["exit_id"] == "ready"
-        )
-        self.assertEqual(
-            ready_output["schema"],
-            {
-                "schema_id": "guru-production-review-task-publication-output-ready-4.0",
-                "path": "schemas/public-ready-output-4.0.schema.json",
-            },
-        )
-
-        projection = next(
-            item
-            for item in self.interface["public_contracts"]["projections"]
-            if item["id"] == "project_ready"
-        )
-        projected = {
-            mapping["target"]: current_payload[mapping["source"]]
-            for mapping in projection["mappings"]
-        }
-        finalizer_package = PACKAGE.parent / "guru-finalize-task"
-        authoring = json.loads(
-            (finalizer_package / "examples/public-publication-ready-authoring.json")
-            .read_text(encoding="utf-8")
-        )
-        finalizer = json.loads(
-            (finalizer_package / "interface.json").read_text(
-                encoding="utf-8"
-            )
-        )
-        target_profile = next(
-            item
-            for item in finalizer["public_contracts"]["input"]["profiles"]
-            if item["id"] == "publication_ready"
-        )
-        target_schema = json.loads(
-            (finalizer_package / target_profile["schema"]["path"])
-            .read_text(encoding="utf-8")
-        )
-        jsonschema.Draft202012Validator(target_schema).validate(
-            {**projected, **authoring}
-        )
 
     def test_pr_readiness_is_one_private_gate(self) -> None:
         private = self.interface["public_contracts"]["private_artifacts"]
@@ -2060,7 +1952,6 @@ class TaskPublicationContractTest(unittest.TestCase):
             "task_workspace",
             "task_identity",
             "branch_review_handoff",
-            "issue_scope_ledger",
             "publication_content",
             "review_range_and_working_tree",
             "invocation_freshness",

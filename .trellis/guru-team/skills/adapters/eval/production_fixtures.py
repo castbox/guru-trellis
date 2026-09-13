@@ -61,19 +61,6 @@ def production_task_fixture(runtime: Any, fixture: Path) -> tuple[Path, str]:
         ),
     }.items():
         (task / name).write_text(content, encoding="utf-8")
-    issue = {
-        "number": 146,
-        "url": "https://github.com/example/guru-extension/issues/146",
-        "title": "Production minimal handoff eval",
-        "reason": "The current production eval delivery scope.",
-    }
-    runtime.write_json(task / "issue-scope-ledger.json", {
-        "schema_version": "2.0",
-        "primary_issue": issue,
-        "close_issues": [issue],
-        "related_issues": [],
-        "followup_issues": [],
-    })
     durable = fixture / "docs/requirements.md"
     durable.parent.mkdir(parents=True, exist_ok=True)
     durable.write_text(
@@ -736,7 +723,7 @@ def production_publication_authoring(
         "candidate_ref": candidate_ref,
         "decision": decision,
         "witness": {
-            "requirement_refs": ["issue-scope-ledger.json", "pr_payload"],
+            "requirement_refs": ["issue:146", "pr_payload"],
             "supported_entry_refs": [
                 "guru-review-task-publication",
                 "git:branch_review_commit",
@@ -846,7 +833,7 @@ def production_publication_authoring(
         "summary": f"The semantic owner reviewed {dimension} against current evidence.",
         "evidence_refs": [
             "pr_payload",
-            "issue-scope-ledger.json",
+            "issue:146",
             "git:branch_review_commit",
         ],
     } for dimension in runtime.TASK_PUBLICATION_DIMENSIONS]
@@ -867,8 +854,8 @@ def production_publication_authoring(
                     if typed_exit == "return_to_task_work"
                     else "blocked"
                 ),
-                "summary": "The owner reviewed current issue closure scope.",
-                "evidence_refs": ["issue-scope-ledger.json"],
+                "summary": "The owner reviewed the current external-work-item effect.",
+                "evidence_refs": ["issue:146", "pr_payload"],
             },
             "docs_ssot": {
                 "status": (
@@ -1295,7 +1282,7 @@ def stage_finalization_owner_execution(
     public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
     public_input["task_ref"] = ".trellis/tasks/current"
     plan_digest = "b" * 64
-    plan_ref = f"closeout-plan:{plan_digest}"
+    plan_ref = f"finalization:{plan_digest}"
     if "plan_ref" in public_input:
         public_input["plan_ref"] = plan_ref
     if "branch_review_commit" in public_input:
@@ -1926,7 +1913,7 @@ def stage_restore_archived_task_owner_execution(
     finish_summary = {
         "task": {"slug": task_id, "artifact_dir": active_locator, "archive_dir": archive_locator, "status": "completed"},
         "git": {"branch": branch, "base_branch": "main"},
-        "github": {"pr_url": f"https://github.com/{repo_ref}/pull/{pr_number}", "source_issues": [pr_number], "close_issues": [], "related_issues": [], "followup_issues": []},
+        "github": {"pr_url": f"https://github.com/{repo_ref}/pull/{pr_number}"},
     }
     (archive / "finish-summary.json").write_text(json.dumps(finish_summary) + "\n", encoding="utf-8")
     run_git(worktree, "add", archive_locator)

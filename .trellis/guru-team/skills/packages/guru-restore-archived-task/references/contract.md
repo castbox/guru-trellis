@@ -11,7 +11,7 @@ runtime never infers that decision from file names, issue text, or a diff.
 
 The `restore_archived_task` profile is authored from the Merge
 `phase2_reentry_required` seed and contains stable caller-owned identity:
-`repo_ref`, PR and Issue numbers/URL, expected immutable PR head and branch
+`repo_ref`, PR number/URL, expected immutable PR head and branch
 names, task id, archive/active task locators, archive commit, exact finding
 references, and `resume_target=phase-2`. It contains no local worktree path,
 authorization, merge permission, private checkpoint, or full remote payload.
@@ -24,7 +24,6 @@ to `classification=task_work` and `requires_task_content_change=true`.
 Before any write, the runtime validates:
 
 - PR is open and exactly matches repository, number, URL, base, head, and head SHA;
-- Issue is open and its close intent is unchanged;
 - local and remote branch identity matches the expected branch and head;
 - the archived task, `task.json`, `finish-summary.json`, and archive commit
   match the public identity;
@@ -47,7 +46,7 @@ The first valid invocation moves the archive directory to the canonical active
 locator, changes `task.json.status` to `in_progress`, removes `completedAt`,
 writes the existing owner-private mapping as active, writes the active task
 pointer, removes the archived `finish-summary.json`, and retires stale
-check/review/publication/finalization authority from both legacy task-local
+check/review/publication/finalization authority from task-local
 paths and current owner-private checkpoint paths. No new object is created.
 
 If the archive is already absent and the exact active task is present, the

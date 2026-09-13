@@ -26,7 +26,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         expected = [
             "runtime_dependency", "task_workspace", "approved_planning",
             "live_implementation", "validation_scope", "docs_ssot",
-            "issue_scope", "invocation_freshness",
+            "invocation_freshness",
         ]
         self.assertEqual(self.interface["modes"]["workflow"]["entry_precondition_ids"], expected)
         self.assertEqual(self.interface["modes"]["standalone"]["entry_precondition_ids"], expected)

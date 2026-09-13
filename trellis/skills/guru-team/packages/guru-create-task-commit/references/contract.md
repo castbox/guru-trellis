@@ -2,8 +2,8 @@
 
 ## Entry And Candidate
 
-Workflow and standalone mode perform the same seven preconditions. Read the
-current task, the minimal passed Phase 2 DTO, Issue Scope Ledger and complete
+Workflow and standalone mode perform the same six preconditions. Read the
+current task, the minimal passed Phase 2 DTO and complete
 Git state. The DTO supplies `task_ref`, its profile-owned `source_exit`, and
 `phase2_commit_anchor`; Task Commit rereads the Phase 2 owner's retained
 checkpoint to verify its current reviewed-content identity and capture-commit
@@ -42,12 +42,12 @@ the reviewed submodule HEAD and clean state. The executor rechecks these facts
 before any index/ref mutation.
 
 Author `type`, `scope`, `summary`, `background`, `changes`, `boundaries`, and
-`validations` from the current diff, task docs, durable docs and ledger. The
-builder produces the exact Chinese Conventional Commit subject, four-section
-body, and `Refs #<primary_issue>`, then runs the shared parser. Missing primary
-issue, sections, footer, line-ending normalization, and similar mechanical
-errors are corrected before the action is shown. Issue close keywords belong
-to the PR body.
+`validations` from the current diff, task docs, and durable docs. When the
+current task has an owner-native source Issue, the AI may also author the
+minimal positive `issue_reference`; no-Issue tasks omit it. The builder
+produces the exact Chinese Conventional Commit subject and four-section body,
+adding `#<issue>` and `Refs #<issue>` only when that optional reference exists,
+then runs the shared parser. Issue close keywords belong to the PR body.
 
 ## Semantic Gate And Confirmation
 

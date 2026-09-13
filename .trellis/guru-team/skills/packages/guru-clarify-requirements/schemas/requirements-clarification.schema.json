@@ -430,11 +430,10 @@
     },
     "activeTaskEvidence": {
       "type": "object", "additionalProperties": false,
-      "required": ["task_locator", "github_authority_facts_sha256", "ledger", "planning_documents", "decision_trail", "reentry_owners"],
+      "required": ["task_locator", "github_authority_facts_sha256", "planning_documents", "decision_trail", "reentry_owners"],
       "properties": {
         "task_locator": {"$ref": "#/$defs/portablePath"},
         "github_authority_facts_sha256": {"$ref": "#/$defs/sha256"},
-        "ledger": {"$ref": "#/$defs/fileEvidence"},
         "planning_documents": {"$ref": "#/$defs/planningDocumentEvidence"},
         "decision_trail": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/decisionTrail"}]},
         "reentry_owners": {"$ref": "#/$defs/reentryOwners"}
@@ -442,10 +441,9 @@
     },
     "activeTaskActionPayload": {
       "type": "object", "additionalProperties": false,
-      "required": ["github_authority_facts_sha256", "ledger", "planning_documents", "decision_trail", "reentry_owners"],
+      "required": ["github_authority_facts_sha256", "planning_documents", "decision_trail", "reentry_owners"],
       "properties": {
         "github_authority_facts_sha256": {"$ref": "#/$defs/sha256"},
-        "ledger": {"$ref": "#/$defs/fileEvidence"},
         "planning_documents": {"$ref": "#/$defs/planningDocumentEvidence"},
         "decision_trail": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/decisionTrail"}]},
         "reentry_owners": {"$ref": "#/$defs/reentryOwners"}

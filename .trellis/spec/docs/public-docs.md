@@ -165,8 +165,8 @@ typed exit.
 Docs distinguish the two confirmations: a reviewed draft may create only the
 exact issue and immediately returns `refresh_review`; the later open-issue
 invocation obtains a fresh workspace/task confirmation. They state the fixed
-assignee order, the one tracked task-local Issue Scope Ledger, ignored
-`.trellis/.runtime/guru-team/**` mappings, exact object reuse/blocking, and the
+assignee order, ignored `.trellis/.runtime/guru-team/**` mappings, exact object
+reuse/blocking, and the
 A/B two-order local merge fixture. `prepare-task` is query-only; all issue,
 branch, worktree, task, artifact, and runtime mutations belong exclusively to
 `guru-create-task-workspace`.
@@ -283,13 +283,12 @@ content. For active tasks they must state that `clear`/`new_task` requires a
 non-empty terminal proposal set and every five-class scope classification has a
 finalized disposition, live GitHub authority, and one compact owner-result
 `decision_trail` containing only `trail_id`, proposal id/digest/decision, and
-remote authority kind/URL/content checksum. The closed Ledger 2.0 contains only
-`schema_version`, `primary_issue`, `close_issues`, `related_issues`, and
-`followup_issues`. The trail and planning/context/review/interrupted/re-entry
-facts are owner-private or live checks and must not be copied into the ledger.
+remote authority kind/URL/content checksum. No task-local Issue classification
+aggregate is created; planning/context/review/interrupted/re-entry facts remain
+owner-private or are reread from live authority.
 Public docs must explicitly forbid persisting user authorization
 state, text, refs, timestamps, digests, or process in the clarification result,
-ledger, runtime, checkpoint, archive, schema, example, or DTO. GitHub authority mutation returns
+runtime, checkpoint, archive, schema, example, or DTO. GitHub authority mutation returns
 `refresh_context`; context time must not predate authority time, the task update
 binds that digest without a second refresh, and mechanism dispositions require
 no trail/mutation before exact progression or a #112 side-effect-free new-task
@@ -558,10 +557,10 @@ entries route Publication -> Finalizer -> Merge only. Publication
 Current Finalizer content push proceeds directly to Draft PR, archive, Ready,
 and Merge. It never invokes verifier, emits `verification_required`, accepts a
 verification re-entry profile, reads verifier state/ref, or moves a verifier
-artifact. Current archive contains exactly six durable core files. Legacy
-closeout-plan, task-bearing verifier, and verification re-entry schemas remain
-immutable compatibility assets but are absent from current Interface, manifest,
-eval, runtime, and documentation inventories.
+artifact. Current archive contains exactly five durable core files. Retired
+task-bearing verification and task-local plan DTOs, schemas, examples, readers,
+and recovery paths are absent from current Interface, manifest, eval, runtime,
+and documentation inventories.
 
 The READMEs also explain installed pre-PR provenance reprepare without exposing
 private implementation DTOs. The business reviewed checkout owns the target

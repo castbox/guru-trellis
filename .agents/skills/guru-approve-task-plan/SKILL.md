@@ -9,8 +9,8 @@ Use this Skill after the current planning wording review has passed and before
 task activation. Load [references/contract.md](references/contract.md) before
 acting.
 
-Read the live requirement authority, `prd.md`, `design.md`, `implement.md`, the
-Docs SSOT plan, and the issue scope ledger directly. Review requirement
+Read the live requirement authority, `prd.md`, `design.md`, `implement.md`, and
+the Docs SSOT plan directly. Review requirement
 authority, scope, design, implementation planning, acceptance verifiability,
 Docs SSOT, provenance, and supported unusual scenarios. The AI owns findings,
 revision actions, scope proposals, the final route, and delta classification.

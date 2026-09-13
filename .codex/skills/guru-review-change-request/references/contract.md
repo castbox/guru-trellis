@@ -131,11 +131,10 @@ set `requirement_gap`, `delivery_conflict`, `wording_gap`, `context_stale`,
 `prerequisite_mismatch`. Category structure is audit data; it never selects an
 exit.
 
-`scope_conclusion` records requirement/scope basis, delivery unit, close/
-related/follow-up issue projections, duplicate/reuse conclusion,
+`scope_conclusion` records requirement/scope basis, delivery unit,
+duplicate/reuse conclusion,
 implementation target and current gap, archived constraints, risk boundary,
-and excluded scope. The public schema does not hard-code issue #101; this
-task's Issue Scope Ledger and finish-work gate own its `[101]` close projection.
+and excluded scope.
 
 The AI Review Gate records reviewer, reviewed linkage digest, summary, findings
 count, scope-conclusion digest, and status. `passed` pairs with `ready`,
@@ -171,7 +170,7 @@ Schema `guru-change-request-review-2.0` defines the owner-private result and
 checker are pre-task/standalone stdout-only and reject any output or task
 locator. They do not create repository caches, workspace journals, history
 indexes, sidecars, or task artifacts. The workspace owner consumes the current
-public readiness transition and persists only the task-local issue scope ledger.
+public readiness transition directly.
 
 Examples and tests use fictional repositories, issues, hashes, and findings.
 They contain no active task state, workspace journal, credential, private

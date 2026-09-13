@@ -14,7 +14,7 @@ fallback. Local Git and Git transport remain `git` operations.
 
 这个 workflow 的 marketplace id 固定为通用的 `guru-team`。它只承载 global
 phase/status route、22 个 mandatory Skill invocation、95 个 typed exit、35 个 workflow
-target 与 24 个 stop target，以及 workspace、Docs SSOT、Issue Scope Ledger、human artifact、
+target 与 24 个 stop target，以及 workspace、Docs SSOT、Publication-owned external work item effect、human artifact、
 interaction 和外部 side-effect boundary。具体 intake、planning、check、review、
 publication 与 finalization 判断由对应 active package 独占。
 
@@ -163,11 +163,11 @@ invocation-local snapshot 内完成 record/check/projection。其 ready 4.0 DTO 
 按 Interface 自动路由，不形成新的用户 continuation gate；业务 Finalizer 不调用、投影或
 读取 extension verifier。
 
-Finalizer `ready_for_merge` 只证明唯一 PR 已 Ready、expected head 对齐且 close Issues
-仍 Open；它不是 finish。Workflow 随即 mandatory invoke `guru-merge-task-pr`。Merge owner
-在 target-owned active 2.0 input 中补充并审查中文摘要、primary Issue 和精确
+Finalizer `ready_for_merge` 只证明唯一 PR 已 Ready、expected head 与 branch identity
+对齐；它不是 finish。Workflow 随即 mandatory invoke `guru-merge-task-pr`。Merge owner
+在 target-owned active 2.0 input 中补充并审查中文摘要和精确
 `chore(merge)` subject/body；Finalizer public output 不扩张。随后用 repo-bound `gh`
-重建 checks/reviews/mergeability/policy/close-keyword facts，独立展示并确认
+重建 checks/reviews/mergeability/policy，并从 live PR body 派生 closing-effect facts，独立展示并确认
 expected-head merge，并传递 `--subject/--body-file`；执行后只读验证 PR=MERGED、
 双 parent、subject/body、remote base 以及 Issues 由 GitHub 自动关闭。`merged` 才进入
 finish response；`merge_blocked` 与 `closure_mismatch` 分别 fail closed，任何 Guru 命令都不
@@ -220,7 +220,7 @@ Canonical workflow 是 trellis/workflows/guru-team/workflow.md；dogfood
 .trellis/workflow.md 必须 byte-identical。Global Markdown 只拥有 phase order、
 current-task router、22 mandatory Skill markers、95 exits、35 workflow targets、
 24 stop targets、
-workspace/task activation、Docs SSOT、Issue Scope Ledger、human artifact、
+workspace/task activation、Docs SSOT、Publication-owned external work item effect、human artifact、
 interaction 与外部 side-effect boundary。Step-local 合同只存在于对应 active
 package/interface。
 
@@ -487,8 +487,7 @@ recorder/checker。成功 mutation
 返回 `refresh_context`，不直接 `clear`。
 
 Pre-task/standalone 结果 stdout-only且无专用 artifact。Active-task owner result 临时绑定
-GitHub-visible authority、`issue-scope-ledger.json`、当前 planning/context/task-update 与 re-entry owner；
-ledger 只接收不可重新推导的 compact classification。Schema 是
+GitHub-visible authority、当前 planning/context/task-update 与 re-entry owner。Schema 是
 `guru-requirements-clarification-2.0`，commands 是
 `record-requirements-clarification` / `check-requirements-clarification`。Active-task Scope Change
 Gate mandatory invoke同一Skill。Exits 为 `clear` -> caller-aware
@@ -507,10 +506,9 @@ recorder/checker 不执行迁移或投影。
 Active-task `clear`/`new_task` 要求非空且全部属于七类 terminal decision 的 proposal set；
 五类 scope classification 无论 origin 均要求最终 disposition；只有真实产品/范围选择仍未决时才在当前对话询问。
 compact owner-result `decision_trail` 精确保存 `trail_id`、proposal id/digest/decision 与 live
-GitHub authority kind/URL/content checksum。`issue-scope-ledger.json` 是 closed scope-only 2.0，
-只含 schema version 与 primary/close/related/followup issue；trail 和
-planning/context/review/stale/interrupted/re-entry 均由 checker 从 owner 或 live facts 重读，
-不进入 ledger。`mechanism_removed/replaced` 使用 optional origin，
+GitHub authority kind/URL/content checksum。Planning/context/review/stale/interrupted/re-entry
+均由 checker 从 owner 或 live facts 重读，不进入 task-local scope aggregate。
+`mechanism_removed/replaced` 使用 optional origin，
 不进入 trail/action mutation。GitHub authority mutation 后只能 `refresh_context`；context
 时间覆盖 live authority 后 task update preimage 绑定当前 context digest，不要求第二次 refresh。Active-task `new_task` 仍只给 #112
 side-effect-free reviewed draft。
@@ -612,12 +610,11 @@ sidecar 或 tracked artifact。#386 直接退出完整 upstream 私有结果、f
 
 `ready` 不得回退 `guru-full-task-intake-chain`、`check-env` 或 `prepare-task`。
 Active `guru-create-task-workspace` 是唯一 mutation owner，直接消费当前 checked `ready`
-exit，并且只持久化有真实后续 consumer 的 task-local `issue-scope-ledger.json`；不写
-tracked `issue-review.json`。
+exit，并且不持久化 Guru-owned task-local scope aggregate 或 tracked `issue-review.json`。
 
 `ready` 的 actual stdout 投影为 closed `readiness_current`。Workspace 通过 call-local plan/result
 transport 完成已确认 mutation；用户确认仍只存在于当前对话，且不会写入 transition、plan、
-result、ledger 或 runtime checkpoint。
+result 或 runtime checkpoint。
 
 ## 中文 Conventional Commits
 
@@ -625,30 +622,26 @@ result、ledger 或 runtime checkpoint。
 Commits。工作提交和 Trellis metadata 提交 subject 格式为：
 
 ```text
-{type}({scope}): #{primary_issue} 中文描述
+{type}({scope}): 中文描述
 ```
 
-工作提交 body 必须按 `背景：`、`变更：`、`边界：`、`验证：` 固定顺序编写，并用
-`Refs #<primary_issue>` 作为 footer；不得在 commit message 中使用 close keywords
+工作提交 body 必须按 `背景：`、`变更：`、`边界：`、`验证：` 固定顺序编写；Issue-backed
+任务可使用 `Refs #<issue>` footer。不得在 commit message 中使用 close keywords
 （`Closes` / `Fixes` / `Resolves` / `Close` / `Fix` / `Resolve`）。Issue 关闭语义只放在 PR body 的
-`issue-scope-ledger.json.close_issues` 范围内。Trellis metadata 提交必须为空 body，
+Publication-reviewed payload 中。Trellis metadata 提交必须为空 body，
 例如 `chore(trellis): #73 固化任务收尾元数据`。
 
-本仓库保留 merge commit，最终 merge commit subject/body 必须由 publish payload 或
-formatter 明确生成：
+本仓库保留 merge commit，最终 merge commit subject/body 必须由 Merge semantic owner
+基于 Publication-reviewed payload 明确生成：
 
 ```text
-chore(merge): #{pull_request} 合并 #{primary_issue} 中文 PR 摘要
+chore(merge): #{pull_request} 合并中文 PR 摘要
 ```
 
-companion helpers 只做 objective 校验和格式化，不替代 AI review：
+companion helpers 只做 objective 校验，不替代 AI review：
 
 ```bash
 .trellis/guru-team/scripts/bash/check-commit-messages.sh --json --task <task-path>
-.trellis/guru-team/scripts/bash/format-merge-commit.sh --json \
-  --task <task-path> \
-  --pull-request <pr-number> \
-  --summary "中文 PR 摘要"
 ```
 
 Fresh final Phase 2 check 后，canonical workflow mandatory invoke
@@ -676,9 +669,9 @@ message、增加或修改路径会在 live branch 发布前阻断；若 transact
 失败结果携带其 identity 并保留 candidate/Phase 2 checkpoint。live ref 已推进后的失败
 同样返回 created commit 供 bounded recovery，不尝试自定义 rollback。
 
-`finish-work` dry-run 会输出合规 metadata commit subject 和 publish 计划；
-`format-merge-commit` payload 会输出 `merge_commit.subject`、`merge_commit.body`
-和显式 `gh pr merge ... --subject ... --body-file ...` 命令。维护者合并 PR 时不得使用
+`finish-work` dry-run 会输出合规 metadata commit subject 和 publish 计划；Merge owner
+会审查 subject/body 并由 executor 使用显式
+`gh pr merge ... --subject ... --body-file ...` 命令。维护者合并 PR 时不得使用
 GitHub 默认 `Merge pull request #xx from ...` subject，也不得把中文 PR title
 `完成：#xx ... (#yy)` 直接作为 commit subject。
 
@@ -814,7 +807,7 @@ GitHub login、multiple/unresolved 时 AI/user 选择解析；executor 始终向
 task-create handler 显式传 reviewed creator 与 assignee。Executor 在隔离子进程中调用 official
 `common.task_store.cmd_create`，使 `task.json.assignee` 与 `task.json.creator` 都等于
 reviewed login；缺任一显式 owner 时在 task/artifact/runtime write 前停止。创建成功除 official
-`task.json` 外只写 tracked task-local `issue-scope-ledger.json`；其余 Intake evidence、
+`task.json` 外不写 Guru-owned tracked task-local scope aggregate；其余 Intake evidence、
 plan/result 保持 ignored owner-private，本机 mapping 只在 ignored
 `.trellis/.runtime/guru-team/**`。Public result 不含 absolute workspace path；checker
 从 current config、reviewed slug 与 live Git facts 推导 worktree。
@@ -909,7 +902,6 @@ dispatch/wait/review 不调用 recovery recorder：
   --handoff-summary "接续范围、剩余工作与 blocker"
 .trellis/guru-team/scripts/bash/check-agent-recovery.sh --json --task ".trellis/tasks/<task>"
 .trellis/guru-team/scripts/bash/check-commit-messages.sh --json --task ".trellis/tasks/<task>"
-.trellis/guru-team/scripts/bash/format-merge-commit.sh --json --task ".trellis/tasks/<task>" --pull-request "<pr-number>" --summary "中文 PR 摘要"
 .trellis/guru-team/scripts/bash/check-review-gate.sh --json
 ```
 
@@ -945,7 +937,7 @@ recorder/checker 和四出口；checked `approved` 进入 workflow-owned
 `task.py start`。现有 Open Issue happy path 为四次确认，新建 Issue path 为五次。Phase 0 route DTO、非 3.0 planning input、缺失/过期/non-pass wording、
 真实 planning/authority 语义漂移或 exit/Gate/consumer 不一致均 fail closed；owner 只接受
 重新检查过的 current invocation。`task.py start` 只是状态写入，
-不代表规划已审查。若 active-task identity 无法在 task、branch/worktree、ledger
+不代表规划已审查。若 active-task identity 无法在 task、branch/worktree
 与 Guru runtime mapping 间闭合，必须停止到唯一 `invalid-task-state` consumer，
 不得重入 Intake、restore、迁移、mapping rebuild 或 cleanup。
 阶段停止点和阶段完成回复先运行
@@ -1037,12 +1029,8 @@ Prepare 使用已安装的官方 config parser，只支持缺失或空 `hooks.af
 非空、歧义、不可读、含 NUL 或 symlink 配置在副作用前拒绝，且不会执行 hook。
 official move 前重新核对实时 archive 月份、空 index、精确 untracked 集合、regular-file/mode
 与 tracked source blob。跨月时同一 entry 从 transaction 与 live facts 重建 mapping，不创建
-plan/readiness/evidence commit、不 rewrite history 或迁移目录。`closeout-plan.json` 的
-schema/example 仅是 immutable legacy compatibility assets；current Interface、registry、
-manifest、prepare、recovery 与 archive 均不选择、创建、读取、移动或保留它。
-若历史 Git index 仍跟踪该文件、但 working tree 已删除，current Finalizer 只把它作为
-archive transaction 的 active-side retired deletion，并校验 transaction parent blob 与
-commit path continuity；不会恢复或归档旧文件。已绑定 `existing_pr_recovery` 且进入
+plan/readiness/evidence commit、不 rewrite history 或迁移目录。Task-local plan schema、example、
+reader、migration 和 recovery path 均不属于 current package。已绑定 `existing_pr_recovery` 且进入
 `archive|push_archive|mark_ready` 时，先校验 exact transaction 再判断 pre-PR provenance，
 外部 extension source commit 与业务 reviewed-content commit 不同不会覆盖 post-bind stage。
 
@@ -1076,8 +1064,11 @@ archive-path 表，不能复用 archive 前的 active task 链接。
 PR body 是给 GitHub reviewer 看的发布材料，不是 Trellis task artifact。Publication
 owner 在同一 semantic loop 内生成并审查 body readiness，确认 `变更摘要` 具体、
 `影响范围` 明确、`验证结果` 是实际命令与结果、`Review Gate` 写明
-`branch_review_commit` / diff range / content identity / findings 状态、`Issue 关闭范围`
-只关闭 ledger 中的 `close_issues`，并且
+`branch_review_commit` / diff range / content identity / findings 状态。`Issue 关闭范围`
+由 Publication 从 current requirement authority 智能判断：完整交付的 Issue-backed task
+通常请求关闭；存在合并后验证、观测、发布或未完整交付要求时仅引用；无 external work item
+时不产生 Issue 引用或关闭效果。Default-branch PR 才携带关闭关键字，non-default PR 仅引用，
+后续进入 default branch 时重新判断。并且
 `安全说明` / 部署影响与本次 diff 相符。Body 还必须包含 `Docs SSOT` / `文档同步`
 section，说明策略、durable docs 更新或 no-update 理由、已 merge 的 task delta、仅保留
 task history 的内容，以及 follow-up / 当前 PR limitation。Publication ready 4.0 DTO
@@ -1100,8 +1091,8 @@ transaction、readiness、active locator 与 live facts 恢复。official move �
 尚未形成时，仍校验 archived working-tree 布局、dirty/staged path、blob continuity 与官方
 `task.json` delta；失败只从 immutable `publication_head` 恢复 task locator 的 tracked bytes。
 
-Current core 固定为 6 个 durable 文件：`task.json`、`prd.md`、`design.md`、`implement.md`、
-`issue-scope-ledger.json`、`finish-summary.json`。Publication readiness 与 Finalizer
+Current core 固定为 5 个 durable 文件：`task.json`、`prd.md`、`design.md`、`implement.md`、
+`finish-summary.json`。Publication readiness 与 Finalizer
 transaction/gate/request 为 ignored runtime，不进入 archive，terminal
 `ready_for_merge` 后全部退休。业务 task 不创建、读取、移动或归档 verifier artifact。
 
@@ -1118,7 +1109,7 @@ Publication owner 在 ignored runtime 记录 schema 5.0 `pr-readiness.json`，�
 `ready` DTO 携带 task、`branch_review_commit` 与 exact `pr_title/pr_body`；Publication
 wrapper 校验 DTO 后删除自己的 checkpoint，Finalizer 不读取、删除或提交该 owner
 checkpoint。Finalizer transaction 直接绑定 title/body，且不创建独立 evidence commit。
-Finalizer 从 reviewed body 的 `变更摘要` 与 live Git/task/ledger/PR facts 一次生成 schema 2
+Finalizer 从 reviewed body 的 `变更摘要` 与 live Git/task/PR facts 一次生成 schema 2
 `finish-summary.json`；Discovery 仍可只读检索历史 schema 1 archive。
 脚本只做客观结构校验、低信息量短语阻塞、close/ref 语义校验和 reviewed source 门禁；
 不能用脚本生成的空泛摘要或 `generated` body 替代 AI 发布判断。

@@ -358,7 +358,6 @@ def authority_paths(root: Path) -> list[Path]:
             task / name
             for name in (
                 "task.json",
-                "issue-scope-ledger.json",
                 "prd.md",
                 "design.md",
                 "implement.md",

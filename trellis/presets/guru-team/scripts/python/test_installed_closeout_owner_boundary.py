@@ -88,6 +88,39 @@ print(json.dumps({"task": task.name, "branch": branch, "reviewed_commit": commit
             self.assertTrue(value["fixture_prepared"])
             self.assertEqual(value["branch"], "fix/105-installed-closeout-initial")
 
+    def test_fake_github_recognizes_markdown_list_closing_keyword(self):
+        import verify_installed_closeout as closeout
+
+        with tempfile.TemporaryDirectory(prefix="guru-closeout-closing-keyword-") as tmp:
+            work = Path(tmp)
+            fake = work / "fake-bin"
+            closeout.install_fake_commands(fake)
+            store = work / "pr.json"
+            store.write_text(
+                json.dumps({
+                    "number": 105,
+                    "state": "MERGED",
+                    "body": "## Issue 关闭范围\n\n- Closes #105\n",
+                }),
+                encoding="utf-8",
+            )
+            env = {
+                **os.environ,
+                "INSTALLED_CLOSEOUT_PR_STORE": str(store),
+                "INSTALLED_CLOSEOUT_REAL_GIT": shutil.which("git") or "git",
+                "INSTALLED_CLOSEOUT_REMOTE": str(work / "unused.git"),
+                "INSTALLED_CLOSEOUT_BRANCH": "fix/105-installed-closeout-initial",
+                "INSTALLED_CLOSEOUT_PR_NUMBER": "105",
+                "INSTALLED_CLOSEOUT_MUTATION_STORE": str(work / "mutations.txt"),
+                "INSTALLED_CLOSEOUT_CLOSURE_MISMATCH": "0",
+            }
+            result = self.run_ok(
+                [str(fake / "gh"), "issue", "view", "105", "--repo", "microsoft/PowerToys", "--json", "number,state,closedAt,url"],
+                work,
+                env,
+            )
+            self.assertEqual(json.loads(result.stdout)["state"], "CLOSED")
+
     def run_ok(self, argv, cwd, env):
         result = subprocess.run(argv, cwd=cwd, env=env, text=True, capture_output=True, timeout=180)
         self.assertEqual(result.returncode, 0, result.stdout[-6000:] + result.stderr[-6000:])

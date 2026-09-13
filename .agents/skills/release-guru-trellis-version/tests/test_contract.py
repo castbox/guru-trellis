@@ -311,25 +311,6 @@ class ReviewedContentIdentityTest(unittest.TestCase):
             )
             + "\n",
         )
-        issue = {
-            "number": 335,
-            "url": "https://github.com/castbox/guru-trellis/issues/335",
-            "title": "建立 guru-trellis 仓库私有正式发布 Skill",
-            "reason": "The fixture covers the accepted Issue #335 release workflow.",
-        }
-        self.write(
-            f"{TASK_REF}/issue-scope-ledger.json",
-            json.dumps(
-                {
-                    "schema_version": "2.0",
-                    "primary_issue": issue,
-                    "close_issues": [issue],
-                    "related_issues": [],
-                    "followup_issues": [],
-                }
-            )
-            + "\n",
-        )
         self.write(".agents/skills/release/SKILL.md", "delivery-v1\n")
         self.write("README.md", "durable-v1\n")
         self.write("config/release.yml", "revision: v1\n")
@@ -404,7 +385,6 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         reviewed_paths = (
             f"{TASK_REF}/design.md",
             f"{TASK_REF}/implement.md",
-            f"{TASK_REF}/issue-scope-ledger.json",
             f"{TASK_REF}/prd.md",
             f"{TASK_REF}/task.json",
             ".agents/skills/release/SKILL.md",
@@ -570,7 +550,7 @@ class ReviewedContentIdentityTest(unittest.TestCase):
                     "## 影响范围\n\n- 仅影响 guru-trellis 私有 Skill 与 Docs SSOT。\n\n"
                     "## 验证结果\n\n- honest-path owner 链验证通过。\n\n"
                     "## Review Gate\n\n- 完整 Branch Review 无未关闭 finding。\n\n"
-                    "## Issue 关闭范围\n\n- Closes #335。\n\n"
+                    "## Issue 关闭范围\n\n- Refs #335；Stage 2 完成后再独立判断关闭。\n\n"
                     "## 安全与部署影响\n\n- 不涉及 secret、部署或数据迁移。\n\n"
                     "## Docs SSOT\n\n"
                     "- strategy: delta_first。\n"
@@ -638,7 +618,7 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         }
         public_path = self.write_json("inputs/finalizer-public.json", public_input)
         plan_digest = "b" * 64
-        plan_ref = f"closeout-plan:{plan_digest}"
+        plan_ref = f"finalization:{plan_digest}"
         archive_ref = ".trellis/tasks/archive/2026-09/09-02-release"
 
         def write_context(transaction_state: str, publication_head: str) -> None:
@@ -718,7 +698,6 @@ class ReviewedContentIdentityTest(unittest.TestCase):
             "prd.md",
             "design.md",
             "implement.md",
-            "issue-scope-ledger.json",
         ):
             self.write(
                 f"{archive_ref}/{relative}",

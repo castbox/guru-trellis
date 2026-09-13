@@ -49,7 +49,7 @@ class RecordAuthoringTest(unittest.TestCase):
         for key in ("naming", "assignee", "side_effects"):
             self.assertEqual(self.authoring[key], plan[key])
         self.assertEqual(self.authoring["ai_review_gate"], {key: value for key, value in plan["ai_review_gate"].items() if key != "reviewed_plan_sha256"})
-        self.assertEqual(self.authoring["scope"], {key: value for key, value in plan["scope"].items() if key != "scope_sha256"})
+        self.assertNotIn("scope", plan)
         self.assertNotIn("content_sha256", plan["target"])
         self.assertEqual(self.transition["continuation_id"], plan["invocation"]["resume_identity"])
         self.assertEqual(common.digest(self.transition["clarity"]), plan["prerequisites"]["clarity"]["payload_sha256"])
@@ -64,7 +64,7 @@ class RecordAuthoringTest(unittest.TestCase):
             self.assertEqual(first, second)
             self.assertEqual(status, first["ai_review_gate"]["status"])
 
-    def test_full_plan_envelope_compatibility(self):
+    def test_complete_plan_envelope(self):
         plan = self.call_record()
         self.assertEqual(plan, self.call_record({"schema_version": "1.0", "transition": self.transition, "plan": plan}))
 
@@ -116,14 +116,7 @@ class RecordAuthoringTest(unittest.TestCase):
                 self.call_record(package=package)
             self.assertEqual("invocation.transition.readiness.payload_sha256", caught.exception.field_path)
 
-    def test_scope_mismatch_does_not_rewrite_ai_decision(self):
-        self.authoring["scope"]["close"] = []
-        with self.assertRaises(CommandError) as caught:
-            self.call_record()
-        self.assertEqual("invocation.authoring.scope.close", caught.exception.field_path)
-        self.assertEqual([], self.authoring["scope"]["close"])
-
-    def test_draft_is_explicitly_compatibility_only(self):
+    def test_draft_requires_complete_plan_authoring(self):
         self.transition["target"] = {
             "kind": "proposed_draft", "repo": "example/repo", "draft_id": "draft-example",
             "source_request_sha256": self.transition["target"]["body_sha256"],

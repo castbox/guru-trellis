@@ -16,7 +16,6 @@
         "live_implementation",
         "validation_scope",
         "docs_ssot",
-        "issue_scope",
         "invocation_freshness"
       ]
     },
@@ -29,7 +28,6 @@
         "live_implementation",
         "validation_scope",
         "docs_ssot",
-        "issue_scope",
         "invocation_freshness"
       ]
     }
@@ -70,12 +68,6 @@
       "evidence": "current durable paths, strategy, and semantic reconciliation conclusion",
       "binding": "the task's durable documentation responsibility",
       "freshness": "the AI rereads current docs and planning before recording"
-    },
-    {
-      "id": "issue_scope",
-      "evidence": "current primary, close, related, and follow-up issue decisions",
-      "binding": "the accepted task scope and finding boundary",
-      "freshness": "the AI rereads the issue scope ledger and live authority"
     },
     {
       "id": "invocation_freshness",

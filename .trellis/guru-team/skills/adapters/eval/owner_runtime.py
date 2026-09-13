@@ -262,14 +262,8 @@ def compose_task_workspace_eval_runtime(runtime_target: Path, module: Any) -> No
         / "skills/packages/guru-create-task-workspace"
     )
     module.context_digest = module.digest
-    module.TASK_WORKSPACE_ARTIFACT_NAMES = ("issue-scope-ledger.json",)
     module.task_workspace_reviewable_projection = module.reviewable
     module.task_workspace_plan_digest = module.plan_digest
-
-    def scope_digest(value: dict[str, Any]) -> str:
-        projection = copy.deepcopy(value)
-        projection.pop("scope_sha256", None)
-        return module.digest(projection)
 
     def prerequisite_projection(
         key: str, artifact: str, payload: dict[str, Any], payload_sha256: str
@@ -306,7 +300,6 @@ def compose_task_workspace_eval_runtime(runtime_target: Path, module: Any) -> No
         argv = ["--root", str(args.root), "--invocation", "-"]
         return component.run(package_root, {}, argv)
 
-    module.task_workspace_scope_digest = scope_digest
     module.task_workspace_prerequisite_projection = prerequisite_projection
     module.cmd_record_task_workspace_plan = lambda args: invoke(record, args)
     module.cmd_create_task_workspace = lambda args: invoke(execute, args)

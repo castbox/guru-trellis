@@ -27,7 +27,7 @@ The global workflow owns only:
 - workflow targets, fail-closed stops, and automatic mapped re-entry;
 - tool-free initial request classification;
 - workspace/task boundary selection and task activation;
-- Docs SSOT and Issue Scope Ledger integration points;
+- Docs SSOT and Publication-owned external-work-item disposition points;
 - human-readable artifact presentation;
 - the user interaction and external side-effect boundaries.
 
@@ -336,8 +336,8 @@ commit/push/PR/archive/ready side-effect plan. The global workflow never calls
 deterministic closeout scripts directly.
 
 Finalizer `ready_for_merge` is not completion. It proves that the unique PR is
-Ready, still points at the reviewed expected head, and every `close_issues`
-entry remains Open before merge. The workflow immediately and mandatorily
+Ready, still points at the reviewed expected head, and still carries the exact
+Publication-reviewed reference or closing-keyword semantics. The workflow immediately and mandatorily
 invokes `guru-merge-task-pr`; only `merged` reaches the finish response.
 `phase2_reentry_required` invokes `guru-restore-archived-task` without merge
 confirmation or remote mutation. Exact restoration resumes Phase 2 through
@@ -346,9 +346,9 @@ confirmation or remote mutation. Exact restoration resumes Phase 2 through
 `closure_mismatch` remains the post-merge closure stop.
 
 `guru-merge-task-pr` is a semantic, remote-only post-publication route. It
-compares live PR base/head branches and close keywords with Finalizer's minimal
-reviewed merge-intent authority; this close-keyword set may be empty even when
-the task ledger has a non-empty delivery acceptance scope. The Merge owner
+compares live PR base/head branches with Finalizer's minimal reviewed identity,
+then derives the GitHub closing effect from the live PR body for semantic review
+and post-merge verification. The Merge owner
 authors and reviews the exact Chinese
 `chore(merge)` subject/body on top of that seed, then rebuilds check, review, mergeability, repository-policy
 and Issue facts using repo-bound `gh`; it never enters Phase 0, invokes `guru-sync-base`, updates
@@ -373,21 +373,14 @@ continuity.
 canonical thin `guru-finish-work` router. Formal closeout accepts exactly one
 reviewed payload source: Publication `ready` schema 4.0 projects
 `task_ref/branch_review_commit/pr_title/pr_body`, and Finalizer target authoring
-adds only `profile/mode`. The schema 3.0 closeout plan binds that exact payload;
-no body file, summary-index file, alternate locator, or generated source
-participates in closeout. Legacy 3.0 Publication/Finalizer DTO shapes fail
-closed and require a fresh Publication run.
-
-The paragraph above describes only legacy compatibility. Current Finalizer
-persists an owner-private ignored `finalization-transaction.json` before its
+adds only `profile/mode`. Finalizer binds that exact payload in an owner-private
+ignored `finalization-transaction.json` before its
 first remote mutation, including the exact accepted pre-push remote head, and
 retires it only after terminal public consumption. The minimal state binds
 task/repository/base/branch, reviewed and publication heads, immutable
 publication input, current transition and an optional PR identity. It contains no live scan, review
 history, authorization, command transcript or archive projection.
 `ready_for_merge` retires transaction, gate, request and superseded owner state.
-Legacy `closeout-plan.json` schema/example bytes remain immutable assets and
-never enter a current route.
 
 GitHub PR discovery must bind the exact repository identity as well as the
 branch and HEAD: `headRepository.nameWithOwner` must match the selected repo,
@@ -440,17 +433,26 @@ The canonical workflow declares those five possible boundaries with one
 open/new-Issue budgets from those markers and its single chained event log; it
 must not hard-code totals or sum isolated eval cases.
 
-## Docs SSOT And Issue Scope
+## Docs SSOT And External Work Items
 
 Every planning cycle chooses one Docs SSOT strategy:
 `ssot_first`, `delta_first`, `bootstrap_or_repair_docs`, or
 `no_docs_update_needed`. Phase 2 executes that decision; Branch Review verifies
 the final reconciliation but must not perform the first merge.
 
-`issue-scope-ledger.json` is the task-local scope classification source.
-`close_issues` alone may appear in PR close keywords. `related_issues` and
-`followup_issues` remain open unless a later independently accepted task closes
-them.
+Publication is the sole semantic owner of external-work-item disposition. It
+rereads current requirement authority and live GitHub state, then decides one
+of three effects: a fully delivered Issue-backed task normally requests closure;
+a concrete post-merge validation, observation, release, or incomplete-delivery
+requirement keeps the Issue reference-only; and a task with no external work
+item produces no Issue reference or closing effect. A PR targeting the default
+branch carries the reviewed closing keyword when closure is requested. A PR
+targeting a non-default branch remains reference-only; the later Publication
+onto the default branch rereads authority and decides closure afresh.
+
+Finalizer binds the exact Publication-reviewed PR payload. Merge verifies that
+payload and GitHub's resulting state but does not re-decide disposition or call
+an Issue-close API.
 
 Before a planning, Phase 2, Branch Review, or publication stop, resolve the
 human-authored artifacts and show only files that exist. JSON gates, private
@@ -494,7 +496,7 @@ Every stable active-task boundary observes the selected base through the single
 boundaries are planning approval before activation, Phase 2 pass before Task
 Commit, Task Commit before Branch Review, Branch Review before Publication,
 Publication readiness before the first Finalizer publication side effect, and
-Finalizer base-only mismatch before resuming the same closeout plan.
+Finalizer base-only mismatch before resuming the same finalization plan.
 
 The workflow owns one closed `resume_target` table, mandatory invocation of the
 semantic owner for a new pair, and one `guru-base-reconciliation-router`.

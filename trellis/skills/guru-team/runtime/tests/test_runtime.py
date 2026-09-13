@@ -1035,7 +1035,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
         class FixtureRuntime:
             TASK_PUBLICATION_DIMENSIONS = (
                 "diff_outcome_consistency",
-                "issue_scope_closure",
+                "external_work_item_effect",
                 "pr_body_quality",
                 "validation_claims",
                 "branch_review_summary",

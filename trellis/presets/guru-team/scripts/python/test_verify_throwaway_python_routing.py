@@ -426,7 +426,7 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
 
     def test_finalizer_provenance_python_launcher_drift_fails(self) -> None:
         path = self.root / Path(
-            "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py"
+            "trellis/skills/guru-team/packages/guru-finalize-task/runtime/_owner_part_01.py"
         )
         text = path.read_text(encoding="utf-8")
         marker = 'run([sys.executable, "./.trellis/scripts/task.py", "current"],'

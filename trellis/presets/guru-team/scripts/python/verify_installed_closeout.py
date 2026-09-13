@@ -101,7 +101,7 @@ class InstalledPackageClient:
     WorkflowError = InstalledWrapperError
     TASK_PUBLICATION_DIMENSIONS = (
         "diff_outcome_consistency",
-        "issue_scope_closure",
+        "external_work_item_effect",
         "pr_body_quality",
         "validation_claims",
         "branch_review_summary",
@@ -297,11 +297,11 @@ def valid_pr_body(issue: int) -> str:
 ## 影响范围
 
 - 已安装 Guru Team finish-work wrapper
-- task-local closeout artifacts
+- owner-private Finalizer transaction state
 
 ## 验证结果
 
-- dry-run digest 与 formal expected digest 一致。
+- preview confirmation identity 与 formal invocation 一致。
 - draft、archive、三方 HEAD 与 ready 状态全部通过。
 
 ## Review Gate
@@ -560,7 +560,7 @@ def write_fixture_publication_authoring(
         "candidate_classifications": fixture_classification("publication", "publication_route_checker"),
         "dimensions": [{
             "id": name, "status": "passed", "summary": f"Synthetic publication scenario covers {name}.",
-            "evidence_refs": ["pr_payload", "issue-scope-ledger.json", "git:branch_review_commit"],
+            "evidence_refs": ["pr_payload", "issue:current", "git:branch_review_commit"],
         } for name in client.TASK_PUBLICATION_DIMENSIONS],
         "findings": [],
         "conclusions": {name: {
@@ -600,21 +600,7 @@ def write_fixture(
         "branch": branch,
         "base_branch": BASE_BRANCH,
     }
-    issue_entry = {
-        "number": issue,
-        "url": f"https://github.com/{repo_ref}/issues/{issue}",
-        "title": f"#{issue} 验证安装后 closeout",
-        "reason": "Installed closeout smoke fully covers this issue.",
-    }
-    ledger = {
-        "schema_version": "2.0",
-        "primary_issue": issue_entry,
-        "close_issues": [dict(issue_entry)],
-        "related_issues": [],
-        "followup_issues": [],
-    }
     write_json(task_dir / "task.json", task)
-    write_json(task_dir / "issue-scope-ledger.json", ledger)
     write_fixture_runtime_mappings(root, task_slug, task_dir, branch)
     for name, content in (
         (
@@ -737,6 +723,7 @@ os.execv(real_git, [real_git, *args])
         managed_shebang + """
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -782,16 +769,27 @@ def load():
 def save(payload):
     store_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
 
+def closes_issue(payload, issue_number):
+    body = str((payload or {}).get("body") or "")
+    pattern = r"(?im)^\\s*(?:[-+*][ \\t]+)?(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\\s*:?[ \\t]+#(\\d+)\\b"
+    return issue_number in {int(value) for value in re.findall(pattern, body)}
+
 if args[:2] == ["auth", "status"]:
     raise SystemExit(0)
 if len(args) >= 3 and args[:2] == ["issue", "view"]:
     issue_number = int(args[2])
     if issue_number != number:
         raise SystemExit(2)
+    payload = load() or {}
+    closed = (
+        payload.get("state") == "MERGED"
+        and closes_issue(payload, issue_number)
+        and os.environ.get("INSTALLED_CLOSEOUT_CLOSURE_MISMATCH") != "1"
+    )
     print(json.dumps({
         "number": issue_number,
-        "state": "CLOSED" if (load() or {}).get("state") == "MERGED" and os.environ.get("INSTALLED_CLOSEOUT_CLOSURE_MISMATCH") != "1" else "OPEN",
-        "closedAt": "2026-08-12T10:00:01Z" if (load() or {}).get("state") == "MERGED" and os.environ.get("INSTALLED_CLOSEOUT_CLOSURE_MISMATCH") != "1" else None,
+        "state": "CLOSED" if closed else "OPEN",
+        "closedAt": "2026-08-12T10:00:01Z" if closed else None,
         "url": f"https://github.com/microsoft/powertoys/issues/{issue_number}",
     }))
     raise SystemExit(0)
@@ -991,7 +989,7 @@ def run_closeout(
                     "skill_id": "guru-finalize-task",
                     "review": {
                         "status": "passed",
-                        "summary": "The installed Finalizer plan is sufficient for the "
+                        "summary": "The installed Finalizer transaction is sufficient for the "
                         "complete non-extension closeout transaction.",
                     },
                     "route": {
@@ -1056,7 +1054,6 @@ def run_closeout(
         or initial_finalizer_state not in {"prepared", "reprepare_required"}
     ):
         raise RuntimeError("installed Finalizer preview was not ready for the original public invocation")
-    digest = dry_payload["closeout_plan_digest"]
     confirmation_identity = dry_payload.get("confirmation_identity")
     if not isinstance(confirmation_identity, str):
         raise RuntimeError("installed Finalizer preview omitted its confirmation identity")
@@ -1079,8 +1076,6 @@ def run_closeout(
             "pr_store": store.read_bytes() if store.is_file() else None,
             "git_status": git(root, real_git, "status", "--porcelain"),
             "task": (task_dir / "task.json").read_bytes(),
-            "ledger": (task_dir / "issue-scope-ledger.json").read_bytes(),
-            "legacy_plan_present": (task_dir / "closeout-plan.json").exists(),
             "readiness": (
                 (task_dir / "pr-readiness.json").read_bytes()
                 if (task_dir / "pr-readiness.json").is_file()
@@ -1288,7 +1283,6 @@ def run_closeout(
         or ready_payload.get("expected_head_sha") != local_head
         or ready_payload.get("expected_base_branch") != BASE_BRANCH
         or ready_payload.get("expected_head_branch") != branch
-        or ready_payload.get("expected_close_issues") != [issue]
     ):
         raise RuntimeError("installed Finalizer invocation returned an invalid ready_for_merge DTO")
     merge_package = (
@@ -1309,18 +1303,16 @@ def run_closeout(
                 "mode": "workflow",
                 **{key: value for key, value in ready_payload.items() if key != "exit_id"},
                 "reviewed_merge_message": {
-                    "primary_issue": issue,
                     "summary": "验证安装态 Merge Skill 中文提交消息承接",
-                    "subject": f"chore(merge): #{issue} 合并 #{issue} 验证安装态 Merge Skill 中文提交消息承接",
+                    "subject": f"chore(merge): #{issue} 验证安装态 Merge Skill 中文提交消息承接",
                     "body": (
                         "合并：\n"
                         f"合入 `{branch}` 到 `main`，保留 PR 内部提交历史。\n\n"
                         "范围：\n"
-                        f"本次 PR 完成 #{issue}：验证安装态 Merge Skill 中文提交消息承接。\n\n"
+                        "本次 PR：验证安装态 Merge Skill 中文提交消息承接。\n\n"
                         "审计：\n"
                         "Trellis task archive、review gate、finish-summary 和 readiness 提交保留在 PR 分支历史中，用于审计任务过程。\n\n"
-                        f"PR: #{issue}\n"
-                        f"Refs #{issue}"
+                        f"PR: #{issue}"
                     ),
                 },
             },
@@ -1347,7 +1339,7 @@ def run_closeout(
                             "checks_and_reviews",
                             "mergeability",
                             "repository_policy",
-                            "close_scope",
+                            "publication_effect",
                         )
                     ]
                 },
@@ -1400,7 +1392,6 @@ def run_closeout(
         raise RuntimeError("installed Merge invocation returned an invalid merged DTO")
     recovered_remote_pr = json.loads(store.read_text(encoding="utf-8"))
     forbidden_terminal = [
-        archived / "closeout-plan.json",
         archived / "finalization-transaction.json",
         root / ".trellis/.runtime/guru-team" / task_dir.name / "finalization-transaction.json",
     ]
@@ -1423,7 +1414,6 @@ def run_closeout(
         "status": "ok",
         "issue": issue,
         "branch": branch,
-        "digest": digest,
         "archived_task_dir": str(archived),
         "local_head": local_head,
         "remote_head": remote_head,

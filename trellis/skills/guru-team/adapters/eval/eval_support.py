@@ -380,10 +380,6 @@ def stage_qualification_public_authoring_fixture(owner_repository: Path) -> Path
         "prd.md": "# Qualification Eval PRD\n\nReview the declared candidate set.\n",
         "design.md": "# Qualification Eval Design\n\nUse the public qualification entry.\n",
         "implement.md": "# Qualification Eval Implementation\n\nInvoke the installed wrapper once.\n",
-        "issue-scope-ledger.json": json.dumps(
-            {"schema_version": "1.0", "close_issues": [237]},
-            separators=(",", ":"),
-        ) + "\n",
     }
     for name, content in planning.items():
         (task_root / name).write_text(content, encoding="utf-8")
@@ -409,7 +405,7 @@ def stage_qualification_public_authoring_fixture(owner_repository: Path) -> Path
             "obligations.\n"
         ),
         "publication-payload.json": json.dumps(
-            {"title": "Qualification eval", "close_issues": [237]},
+            {"title": "Qualification eval", "body": "Refs #237"},
             separators=(",", ":"),
         ) + "\n",
     }
@@ -421,7 +417,6 @@ def stage_qualification_public_authoring_fixture(owner_repository: Path) -> Path
         ".trellis/tasks/current/design.md",
         ".trellis/tasks/current/implement.md",
     ]
-    scope_ledger_path = ".trellis/tasks/current/issue-scope-ledger.json"
     planning_rows = [
         {
             "path": relative,
@@ -493,7 +488,6 @@ def stage_qualification_public_authoring_fixture(owner_repository: Path) -> Path
                 "repo_locator": ".",
                 "task_ref": task_ref,
                 "planning_paths": planning_paths,
-                "scope_ledger_path": scope_ledger_path,
                 "planning_identity": planning_identity,
             },
             "current_head_fields": [],
