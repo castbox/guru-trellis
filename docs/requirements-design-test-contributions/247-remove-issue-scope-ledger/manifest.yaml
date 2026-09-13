@@ -9,7 +9,7 @@ candidate_successor_version: "assigned-by-reviewed-promotion"
 status: "contribution_candidate"
 authority_scope: "isolated_contribution"
 architecture_impact: "architecture_impact"
-change_path: "dedicated_refactor_slice"
+change_path: "target_native"
 contribution:
   requirements: "docs/requirements-design-test-contributions/247-remove-issue-scope-ledger/requirements.md"
   design: "docs/requirements-design-test-contributions/247-remove-issue-scope-ledger/design.md"
@@ -30,7 +30,8 @@ architecture_candidate:
   contribution_identity: "architecture-contribution-247-remove-issue-scope-ledger-v1"
   candidate_successor_version: "assigned-by-reviewed-promotion"
   promotion_state: "reviewed_candidate"
-  adr_required: false
+  adr_required: true
+  adr_locator: "docs/architecture/adr/009-issue-reference-closure-ownership.md"
 traceability:
   requirements:
     - "R247-01"

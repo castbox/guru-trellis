@@ -114,8 +114,8 @@ fixture 直接演进；不保留 alias、adapter、dual-read、dual-write、comp
   active asset 删除与 canonical/installed/platform 投影策略。
 - Test：在同一 contribution 中定义 active-zero inventory、三路 closure、legacy
   absent/present-A/present-B 等价、安装更新保留和跨投影验证场景。
-- Architecture：本变更修改 current authority/owner integration 与 distribution contract，
-  通过 task-owned Architecture contribution 承接；shared current 仅由后续 serialized
-  promotion owner 更新。
-- Historical boundary：不修改 archive、ADR、superseded/released RDT 版本或旧 release evidence；
-  这些历史对象也不是新 runtime 的兼容或迁移输入。
+- Architecture：本变更修改 current authority/owner integration、Issue closure 规则与
+  distribution contract，按 `target_native` 由 task-owned Architecture contribution 和
+  `ADR-009-CANDIDATE` 承接；shared current 仅由后续 serialized promotion owner 更新。
+- Historical boundary：不修改 archive、既有 accepted ADR、superseded/released RDT 版本或旧
+  release evidence；这些历史对象也不是新 runtime 的兼容或迁移输入。

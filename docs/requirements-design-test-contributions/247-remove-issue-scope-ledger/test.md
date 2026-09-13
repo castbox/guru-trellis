@@ -36,11 +36,22 @@ Release matrix 或生产业务验证。
 
 ## Phase 2 Validation Evidence
 
-2026-09-13 的完整 current-candidate 验证结果：
+2026-09-13 fresh Phase 2 finding-fix round 的 current-candidate 验证结果：
 
 | Validation | Result | Coverage |
 | --- | --- | --- |
-| preset Python complete suite | `203 tests / OK (skipped=1)`，961.219s | canonical package、runtime、eval、installed verifier 与 integration 的完整 Python 回归集；唯一 skip 保持既有条件性外部场景。 |
+| fresh Phase 2 Architecture | `baseline_current / architecture_impact / target_native / reviewed_candidate`，`ADR required=true` | 完整 current candidate、九 concerns、project check、owner/single-writer、GAP/compatibility exit与promotion boundary。 |
+| Phase 2 qualification | normal-scenario与solution-mechanism均为 `classified / qualified_current` | current requirement、supported lifecycle、target-native owner-native mechanism及排除的migration/compatibility/hostile assumptions。 |
+| fresh task check | `passed` | schema 5.0 freshness、完整 reviewed path set、九 adequacy dimensions、code subtraction与Docs SSOT subtraction。 |
+| related package/runtime/integration | `392 tests / PASS` | Workspace、Commit、Branch Review、Task Check、Architecture、Publication、Finalizer、Merge、Restore、Clarification、Plan、qualifiers与通用runtime。 |
+| active-zero / ownership / drift | `PASS / status=ok` | ledger writer、reader、precondition、schema registration、aggregate DTO consumer为零；upstream ownership、dogfood overlay drift及canonical/installed/platform parity通过。 |
+
+同一实现候选此前还完成过以下较早完整回归；这些事实用于补充广度，不是本次 fresh Phase 2 的唯一
+gate，也不替代上表的 Architecture、qualifier、freshness checker与public wrapper结果：
+
+| Validation | Result | Coverage |
+| --- | --- | --- |
+| prior preset Python complete suite | `203 tests / OK (skipped=1)`，961.219s | 较早的 canonical package、runtime、eval、installed verifier 与 integration 完整 Python 回归；唯一 skip 保持既有条件性外部场景。 |
 | parallel finish integration | `2/2 PASS`，551.930s | parallel finish/recovery 不读取 ledger，current owner facts闭合。 |
 | workspace invocation integration | `1/1 PASS` | task/workspace plan、result 与 invocation 不含 ledger-era `scope`、`task_artifacts` 或 writer字段。 |
 | adapter Stage 0 | `3/3 PASS` | current task identity/path构造不依赖 ledger compatibility shim。 |

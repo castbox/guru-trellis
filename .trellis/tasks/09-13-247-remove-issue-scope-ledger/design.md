@@ -97,10 +97,10 @@ source reference 与 closure decision 始终分离；reference-only 必须有 cu
 
 ## Architecture Path
 
-选择 `dedicated_refactor_slice`：本 Issue 在保持 Skill id、owner 和 lifecycle 行为边界不变的前提下，
-移除跨 owner 的 legacy aggregate authority，并把现有 consumer 同步迁移到 owner-native current facts。
-这是单一主写、可验证的小切片，不是 `legacy_boundary_convergence`，因为没有兼容层或 remaining
-runtime legacy boundary；也不是 #305 target 大重构。
+选择 `target_native`：本 Issue 直接建立不依赖 ledger aggregate 的 current authority boundary，
+并有意调整 Issue closure 判断规则与 public Skill DTO。它不是 `dedicated_refactor_slice`，因为该路径
+要求行为/API/规则不变；也不是 `legacy_boundary_convergence`，因为没有 remaining compatibility
+layer、reader 或退出期。该 target-native 变化仍是 #247 的独立小幅优化，不恢复 #305 target 大重构。
 
 命中的设计原则：
 
@@ -109,9 +109,9 @@ runtime legacy boundary；也不是 #305 target 大重构。
 - `minimum-necessary-complexity`：直接删除，不增加 wrapper、fallback 或 graph scanner。
 - `debt-one-way-convergence`：active legacy ledger 单向退出，legacy 文件仅 inert preservation。
 
-需要 task-owned Architecture contribution，因为 current integration/distribution 与 task identity
-authority 明确提到 ledger，且本任务改变这些 current architecture facts。无需 ADR：不引入新的
-长期架构选择，只执行 current constitution 已要求的局部技术债收敛。
+需要 task-owned Architecture contribution 与 `ADR-009-CANDIDATE`，因为本任务同时改变长期的
+closure-intent owner、GitHub closing-keyword 执行边界、Merge result verification、GAP lifecycle 与
+compatibility exit。ADR candidate 只记录这一目标边界，不引入新 owner、旧 task migration 或兼容层。
 
 ## Failure And Recovery
 

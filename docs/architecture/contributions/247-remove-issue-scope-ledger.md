@@ -12,7 +12,8 @@
 - project change contract：`docs/architecture/06-governance/change-contract.md` /
   `guru-trellis-architecture-change-contract-v1` /
   `guru-trellis-architecture-change-concerns-v1`。
-- change path：`dedicated_refactor_slice`；promotion state：`reviewed_candidate`；ADR required：`false`。
+- change path：`target_native`；promotion state：`reviewed_candidate`；ADR required：`true`；
+  ADR locator：`docs/architecture/adr/009-issue-reference-closure-ownership.md`。
 
 本 contribution 只定义 current ledger authority 的局部收敛，不恢复 #305 target 大重构，
 不迁移旧 task，不改变 Skill id、owner、typed route 或四阶段顺序。
@@ -30,9 +31,10 @@ Finalizer只绑定发布事务，Merge不重判关闭决定，GitHub通过进入
 Merge再以live facts验证结果。
 legacy ledger path不进入 managed inventory，preset/update不主动触碰，active runtime不打开；旧 task无迁移。
 
-选择 `dedicated_refactor_slice`，因为本变更保持业务 lifecycle 与 owner拓扑不变，只收敛一个跨 owner
-legacy aggregate boundary。它不是 `legacy_boundary_convergence`：没有 remaining compatibility layer、
-reader或退出期；也不是 `target_native` 新能力或 #305 architecture rewrite。
+选择 `target_native`，因为本变更有意改变 closure-intent authority、默认关闭规则、非默认分支效果和
+public DTO compatibility boundary，并直接删除旧 ledger 路径。它不是 `dedicated_refactor_slice`，因为
+该路径要求行为/API/规则不变；也不是 `legacy_boundary_convergence`，因为没有 remaining compatibility
+layer、reader 或退出期。该 target-native decision 仍局限于 #247，不恢复 #305 architecture rewrite。
 
 ## Required Concerns
 
@@ -40,13 +42,13 @@ reader或退出期；也不是 `target_native` 新能力或 #305 architecture re
 | --- | --- | --- |
 | `authority-binding` | `applicable` | 绑定 Architecture 2.0、active `.49`、Issue #247 r19、RDT candidate与project contract v1。 |
 | `constitution-binding` | `applicable` | 命中概念完整、职责隔离、最小复杂度、技术债单向收敛；constitution identity不变。 |
-| `boundary-and-decision` | `applicable` | dedicated slice移除ledger aggregate并保留现有owner-native lifecycle。 |
+| `boundary-and-decision` | `applicable` | `target_native` 建立 reference、closure intent、GitHub action 与 live result 的独立 owner boundary。 |
 | `owner-and-single-writer` | `applicable` | 各semantic owner单写自己的current result；task只写delivery/contributions；serialized owner单写shared current。 |
 | `compatibility-and-exit` | `applicable` | current consumer同步迁移并删除旧资产；无旧task migration、adapter、fallback、dual-read/write。 |
-| `gap-and-deviation` | `applicable` | 关闭ledger跨owner authority debt；不重开closed GAP，不新增owner、router或替代aggregate。 |
+| `gap-and-deviation` | `applicable` | `ADR-009-CANDIDATE` 承接 ledger authority debt 的关闭；不重开其它 closed GAP，不新增 owner、router 或替代 aggregate。 |
 | `parallel-scope` | `applicable` | #247只写自己的worktree与contributions；promotion前不修改`.49` shared current或其它task。 |
 | `evidence-and-freshness` | `applicable` | active-zero inventory、三路closure、legacy inert、package/eval/install/platform与full diff各绑定current candidate。 |
-| `review-and-promotion` | `applicable` | contribution随delivery接受independent committed review；serialized promotion绑定expected `.49`，其diff重新过gate。 |
+| `review-and-promotion` | `applicable` | contribution 与 `ADR-009-CANDIDATE` 随 delivery 接受 independent committed review；serialized promotion 绑定 expected `.49`，其 diff 重新过 gate。 |
 
 ## Owners And Single Writers
 
@@ -66,41 +68,47 @@ reader或退出期；也不是 `target_native` 新能力或 #305 architecture re
 
 - descriptor：`guru-trellis-architecture-convergence:repository:1` /
   `guru-trellis-architecture-convergence@1`。
-- refs：`ARCH-GOV-006..008`、`ADR-005`、`ARCH-GAP-006`。
+- refs：`ARCH-GOV-006..008`、`ADR-005`、`ADR-009-CANDIDATE`、`ARCH-GAP-006`。
 - Planning evidence：live Issue #247 r19、task planning、active `.49` Architecture/RDT、fresh
   ledger consumer inventory、#247 RDT candidate与本 contribution。
-- Planning result：`pass / blocking=true`。方案只有一个 direct-deletion path、现有 owner与一个
+- Revised Planning result（2026-09-13）：`pass / blocking=true`；Architecture typed exit 为
+  `baseline_current`。方案只有一个 target-native direct-deletion path、现有 owner与一个
   serialized promotion writer；无 compatibility layer、old-task migration、替代 aggregate、owner expansion
-  或新增/恶化 deviation。
+  或新增/恶化 deviation；`ADR-009-CANDIDATE` 完整承接 closure authority、GAP lifecycle 与
+  compatibility exit。
 
-Phase 2与Branch Review必须分别基于完整 current candidate和exact committed range重新执行；本结果不替代。
+Phase 2与Branch Review必须分别基于完整 current candidate和exact committed range执行；Planning
+re-entry后的 fresh Phase 2 已完成，但仍不替代提交后的 independent Branch Review。
 
-Phase 2 result（2026-09-13）：`pass / blocking=true`。完整 current candidate 已重新检查 before/after：
+Fresh Phase 2 result（2026-09-13）：Architecture 官方 invoke 返回
+`baseline_current / architecture_impact / target_native / reviewed_candidate`，`ADR required=true`；九项
+required concerns和 blocking project check均为pass。normal-scenario与solution-mechanism qualifier均将
+`issue247-target-native-ledger-retirement`判定为`qualified_current`，`guru-check-task`返回`passed`：
 
 - before 的 ledger跨 owner aggregate、writer/reader/schema/DTO/compatibility path已从 current active graph退出；
   未新增替代 aggregate、dual-read/write、migration或第二 authority owner。
 - Publication唯一 fresh判断 Issue reference/closure intent；Finalizer只绑定该 payload；Merge读取live PR
   body、执行expected-head merge并验证 GitHub closing-keyword效果，不调用 Issue-close API或重判关闭意图。
-- project check `guru-trellis-architecture-convergence:repository:1` 结果为 `pass`：`ARCH-GOV-006..008`、
-  `ADR-005` 与 `ARCH-GAP-006` 的 owner、single-writer、compatibility exit和debt convergence均未回归。
-- 证据包括完整 preset Python suite `203 tests / OK (skipped=1)`、parallel finish `2/2`、workspace
-  invocation `1/1`、installed closeout `3/3`、routing `42/42`、live inventory `status=ok`，以及
-  canonical reapply/source-installed/dogfood/sidecar/static hygiene通过。
+- 本次相关 package/runtime/integration 共 `392` tests通过；active ledger writer、reader、precondition、
+  schema registration与aggregate DTO consumer为零，upstream ownership与dogfood overlay drift均为
+  `status=ok`，canonical/installed/platform projection保持一致。
+- 此前完整 preset Python suite `203 tests / OK (skipped=1)`、parallel finish `2/2`、installed closeout
+  `3/3` 与routing `42/42`仍是同一实现候选的较早完整回归事实，但不是本次fresh Phase 2的唯一gate，
+  也不替代新的Architecture、qualification、freshness checker或public wrapper结果。
 - code subtraction与Docs SSOT subtraction均通过：增长仅来自 current behavior测试、managed projection和
   task-owned RDT/Architecture contribution；不存在为 ledger兼容保留的 production/test/schema/docs资产。
 
-Phase 2 Architecture route：`baseline_current`；impact kind：`architecture_impact`；change path：
-`dedicated_refactor_slice`；promotion state：`reviewed_candidate`；ADR required：`false`。完整多平台
-exact-candidate Release matrix、tag、GitHub Release和生产业务仓验证不属于本 project check，保持明确 deferred。
-Branch Review仍必须从未来 exact committed `origin/main...HEAD` 独立重算，不能复用本结果。
+Fresh Phase 2 Architecture route：`baseline_current`；impact kind：`architecture_impact`；change path：
+`target_native`；promotion state：`reviewed_candidate`；ADR required：`true`。完整多平台 exact-candidate
+Release matrix、tag、GitHub Release和生产业务仓验证不属于本 project check，保持明确 deferred。
 
 ## Review And Promotion Boundary
 
-- Phase 2 review：`reviewed_candidate`；完整未提交 worktree candidate已审查通过。
-- independent Branch Review：`pending`；exact committed range尚未形成。
+- Phase 2 review：`passed`；已绑定2026-09-13完整current candidate与fresh Architecture/task-check结果。
+- independent Branch Review：`pending`；原 committed review 因 Architecture `contract_incomplete` 未通过。
 - expected current：`current-main-0.6.5-guru.49`。
 - promotion：`required`，但本 contribution不授权 shared current write。
-- ADR：`required=false`；本 task执行现有constitution的局部债务收敛，没有新增长期architecture decision。
+- ADR：`required=true`；`ADR-009-CANDIDATE` 记录 closure authority、GitHub action/result 和无兼容退出的长期 decision。
 - live current advance、scope/owner扩张、兼容机制、project-check failure或stale contribution必须返回对应owner。
 
 ## Explicit Boundaries

@@ -22,8 +22,9 @@
    DTO、runtime/script、fixture/test、commands、manifest/registry 内容。对共享文件逐 consumer 审查，
    只删除 ledger-owned 分支，避免破坏其它 active responsibility。
 7. 创建 `docs/requirements-design-test-contributions/247-remove-issue-scope-ledger/`，提供 manifest、
-   requirement、design、test 和 traceability；创建 task-owned Architecture contribution，记录
-   dedicated refactor slice、before/after、project check、legacy preservation 与 promotion contract。
+   requirement、design、test 和 traceability；创建 task-owned Architecture contribution 与
+   `ADR-009-CANDIDATE`，按 `target_native` 记录 before/after、closure authority decision、project check、
+   legacy preservation 与 promotion contract。
 8. 更新 canonical workflow/README/spec/extension manifest/preset ownership 与 verifier；运行 preset
    apply 同步 dogfood 及 Shared/Codex/Claude/Cursor 投影，逐项处理 `.new`/`.bak`，不得覆盖用户改动。
 9. 添加/调整 targeted tests 与 eval：active-zero inventory、task creation no-ledger、Publication
@@ -93,3 +94,19 @@ git diff --check
 完整多平台 exact-candidate Release matrix、tag、GitHub Release、生产业务仓验证不属于 #247。
 本任务必须完成 touched package 的 canonical/dogfood/installed/declared-platform parity，以及一个
 代表性 clean 或 existing install/update 场景；其余明确记录为 deferred，不得声称 Release Gate 已通过。
+
+## Planning Re-entry And Fresh Phase 2
+
+2026-09-13 的第一次 committed Branch Review 暴露 Architecture contract 缺口：
+`dedicated_refactor_slice` 不适用于本任务明确包含的行为/API/规则变化，且 closure authority、
+compatibility exit 与 GAP lifecycle 变化需要 ADR candidate。Planning 已改用 `target_native` 并新增
+`ADR-009-CANDIDATE`；先前 Phase 2 Architecture/check 与 Branch Review 结果因此 stale。
+
+同日完成的 fresh Phase 2 finding-fix round 已基于完整 current candidate 重新执行：Architecture 官方
+invoke 返回 `baseline_current / architecture_impact / target_native / reviewed_candidate`，并确认
+`ADR required=true`；normal-scenario 与 solution-mechanism qualifier 均将
+`issue247-target-native-ledger-retirement` 判定为 `qualified_current`；`guru-check-task` public wrapper
+返回 `passed`。相关 package/runtime/integration 共 `392` tests 通过，active ledger writer、reader、
+precondition、schema registration、aggregate DTO consumer 均为零，upstream ownership 与 dogfood
+overlay drift 检查均为 `status=ok`。此前 `203 tests / OK (skipped=1)` 仅保留为该实现 HEAD 的较早完整
+回归事实，不是本次 fresh Phase 2 的唯一 gate，也不替代本次 Architecture、qualifier 与 task check。
