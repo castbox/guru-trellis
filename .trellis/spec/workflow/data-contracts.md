@@ -427,6 +427,16 @@ expectations independently.
 Do not use `.trellis/guru-team/extension.json` as the canonical source of the
 team extension version. The canonical source is `trellis/guru-team-extension.json`.
 
+`public_api.migration_capabilities.guru-ledger-free-runtime` is the closed
+capability declaration for the ledger-free current runtime. Version `1.0.0`
+contains only `capability_id`, `version`, and a `projection_identity` bound to
+the current extension id/version and workflow template id. The preset copies
+this declaration unchanged into the installed manifest. It does not include
+apply-time source provenance, selected platforms, a manifest digest, or any
+claim that a future Task lifecycle, Release, or migration owner is active.
+Current source and installed validators require the exact shape and fail closed
+on a missing, extra, or mismatched identity field.
+
 ### Public Skill I/O Current Fields
 
 The canonical and installed extension manifests publish one closed current

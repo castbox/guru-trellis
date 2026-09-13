@@ -6,12 +6,13 @@
 `issue-scope-ledger.json` 及其 Issue aggregate authority，使 task identity、
 external work item reference、delivery object 和 mutation authority 按现有 owner
 职责分离。#247 是当前版本上的小幅优化，不恢复 #305 Evolution 大规模重构，
-不依赖或绑定其它 Issue。
+不依赖或绑定其它 Issue。交付后的单独版本必须在不安装后续 lifecycle package 的
+条件下继续运行修改前已支持的完整旧流程；新的 Task lifecycle 由后续 Issue 渐进实现。
 
 ## Current Authority
 
 - Live Issue：`https://github.com/castbox/guru-trellis/issues/247`。
-- Issue contract：`2026-09-13-r19`；该正文替代旧 body 与历史评论。
+- Issue contract：`2026-09-13-r24`；该正文替代旧 body 与历史评论中的实施要求。
 - Base：`origin/main` / `ec016827fac81d33faeacb307b0db76d5259dc28`。
 - RDT / Architecture：`current-main-0.6.5-guru.50`，状态 `active`；由 reviewed #247
   contribution 和 accepted `ADR-009` 从 immutable `.49` serialized promotion 得到。
@@ -48,12 +49,12 @@ external work item reference、delivery object 和 mutation authority 按现有 
      判断并在目标默认分支 PR 写入 closing keyword；
    - workflow 不调用 Issue close API 补偿自动关闭；只有用户显式要求手动关闭时才进入
      单独确认的 GitHub mutation。
-9. Finalizer 只绑定并执行已审查 Publication payload，并向 Merge 投影 exact PR body 的最小
-   SHA-256 identity。Merge 保留独立 semantic review、expected-head 与本次 merge 确认，且必须在
-   mutation 前验证 live PR body 与该 identity 一致；不一致时直接 fail closed，由调用方重新进入
-   fresh Publication/Finalizer，Merge 不新增 reprepare typed exit，且不得按漂移后的 body 重新决定
-   Issue 是否应关闭。Merge 后只以 live
-   PR/Issue facts验证 GitHub 自动关闭结果，不根据历史 ledger 宣称成功。
+9. Finalizer 保留当前 transaction 的 local preparation、push、PR create/update、official archive、
+   Ready、handoff 与已声明 recovery；只移除 ledger 输入。它继续向 Merge 投影 exact PR body 的
+   最小 SHA-256 identity。Merge 保留独立 semantic review、expected-head、本次 merge 确认、
+   post-merge verification 与四个 declared exits；body identity 不一致时在 mutation 前 fail closed。
+   `phase2_reentry_required` 继续携带 archived identity 进入 `guru-restore-archived-task`，
+   `closure_mismatch` 继续报告 GitHub closing-keyword effect 不完整。
 10. 现有项目 update/reapply 时，不主动删除或改写磁盘上的 legacy
    `issue-scope-ledger.json`；active runtime 不读取、不解析、不登记该文件。ledger absent、
    present-A、present-B 不得改变 current task/runtime 的结果。
@@ -64,20 +65,29 @@ external work item reference、delivery object 和 mutation authority 按现有 
 12. canonical、dogfood、installed、Shared、Codex、Claude、Cursor 与 preset
     apply/reapply/update 投影保持一致；不修改 Trellis upstream、global npm、
     `node_modules` 或业务仓库。
+13. 修改前后既有 producer/consumer、target/stop、成功与恢复语义保持一致；只安装本次 candidate
+    即可从无 task/无 ledger 起步，经过真实 production wrappers 完成 Intake、Task creation、Planning、
+    Phase 2、Commit、Branch Review、Publication、Finalizer、Merge 与 current terminal。
+14. 声明 `guru-ledger-free-runtime@1.0.0`，canonical 与 installed manifest 只记录 capability id/version
+    和 current projection identity；该 capability 不宣称新 lifecycle 已激活，也不依赖 #398。
+15. 明确披露旧流程的提前归档、PR 冲突及同一 task 多次 Delivery 接续局限；这些是后续 Issue 范围，
+    不是 #247 已解决能力，也不阻止本次兼容交付。
 
 ## Compatibility Decision
 
-本 Issue 明确不提供向后兼容。内部 Skill I/O、artifact schema、DTO、script 参数和
-fixture 直接演进；不保留 alias、adapter、dual-read、dual-write、compatibility reader、
-旧字段 nullable 壳或隐藏替代 aggregate。历史 archive、ADR、旧版本 RDT/release evidence
-保持 immutable history，不回写删除。legacy ledger 文件只作为 inert history 原样保留，
-不构成 current compatibility consumer。
+本 Issue 不提供 ledger reader、adapter、dual-read、dual-write、ledger conversion 或隐藏替代
+aggregate，但必须保持当前生产调用链在同一版本内端到端完整。ledger 专属 public 字段按既有
+API 版本约定收敛；仍有旧流程直接 consumer 的最小步骤局部 Issue identity、reviewed close set、
+archive locator 和 recovery DTO 保留。历史 schema 可作为明确 inactive 的兼容验证资产保留，
+但不得恢复 ledger reader。legacy ledger 仅作为 inert history 原样保留。
 
 ## Out Of Scope
 
 - 不实施或恢复 #305 Evolution 大规模重构。
 - 不新建或重构 lifecycle owner、graph-entry router、全局 authority graph、每入口全图扫描
   或 `guru-validate-authority-free-graph` Skill。
+- 不强制所有 PR 改为 Refs-only，不禁止旧 Finalizer 归档，不替换现有 Merge/Restore route。
+- 不实现同一 active task 多个顺序 PR、merge 后保持 active 或新的独立 Completion/Finish/Cleanup。
 - 不等待、消费或修改 #249、#250、#292、#293、#261、#248、#252、#267 以及任何其它 Issue。
 - 不迁移旧 task，不支持旧 task schema/DTO/runtime continuation，不增加 legacy task recovery。
 - 不执行完整多平台 exact-candidate Release matrix、tag、GitHub Release 或生产业务仓验证。
@@ -102,6 +112,11 @@ fixture 直接演进；不保留 alias、adapter、dual-read、dual-write、comp
 - [ ] Finalizer/Merge 不重新决定关闭范围、不调用 Issue close API；Finalizer-to-Merge handoff
       保留 Publication-reviewed PR body 的最小 identity，body-only metadata drift 在 merge mutation
       前 fail closed；Merge 后 closure result 与 live GitHub facts 一致。
+- [ ] Finalizer 的 archive/Ready/handoff、Merge 的四个 exits、`phase2_reentry_required -> Restore`
+      及现有 stale/reprepare/existing-PR/lost-result 路径在无 ledger 条件下保持可用。
+- [ ] 代表性 installed Git fixture 通过真实 production wrappers 串联完整旧流程到 current terminal；
+      remote provider 模拟与真实 GitHub evidence 边界明确。
+- [ ] canonical/installed manifest 均声明同一 `guru-ledger-free-runtime@1.0.0` projection identity。
 - [ ] current Skill id、owner、typed route 和四阶段 workflow 顺序除 ledger 必要字段删除外保持不变。
 - [ ] canonical、dogfood、installed、Shared、Codex、Claude、Cursor 及 preset
       apply/reapply/update 投影一致，recursive sidecar 为零。
@@ -119,9 +134,8 @@ fixture 直接演进；不保留 alias、adapter、dual-read、dual-write、comp
   active asset 删除与 canonical/installed/platform 投影策略。
 - Test：在同一 contribution 中定义 active-zero inventory、三路 closure、legacy
   absent/present-A/present-B 等价、安装更新保留和跨投影验证场景。
-- Architecture：本变更修改 current authority/owner integration、Issue closure 规则与
-  distribution contract，按 `target_native` 由 task-owned Architecture contribution 承接；
-  serialized promotion 已建立唯一 active `.50` 并接受 `ADR-009`，promotion-created diff
-  仍须 fresh Task Commit 与独立完整 Branch Review。
+- Architecture：本变更替换 ledger authority 来源但保持旧 lifecycle owner、edge、时点和恢复语义；
+  task-owned contribution 与 `ADR-009` 必须按 r24 修订为兼容交付边界，唯一 active `.50` 同步
+  capability、已知局限和后续 Issue 边界；promotion-created diff 仍须 fresh Task Commit 与独立完整 Branch Review。
 - Historical boundary：不修改 archive、既有 accepted ADR、superseded/released RDT 版本或旧
   release evidence；这些历史对象也不是新 runtime 的兼容或迁移输入。

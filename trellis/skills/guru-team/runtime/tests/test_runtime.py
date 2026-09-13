@@ -797,6 +797,27 @@ class SharedRuntimeTests(unittest.TestCase):
         installed = _package_paths(Path("/repo"), "installed")
         self.assertEqual(installed[0], Path("/repo/.trellis/guru-team/skills"))
         self.assertEqual(installed[3], Path("/repo/.trellis/guru-team/runtime"))
+
+    def test_installed_manifest_declares_ledger_free_runtime_capability(self) -> None:
+        repo = Path(__file__).resolve().parents[5]
+        manifest = json.loads(
+            (repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8")
+        )
+        extension = manifest["extension"]
+        self.assertEqual(
+            extension["public_api"]["migration_capabilities"],
+            {
+                "guru-ledger-free-runtime": {
+                    "capability_id": "guru-ledger-free-runtime",
+                    "version": "1.0.0",
+                    "projection_identity": {
+                        "extension_id": extension["extension_id"],
+                        "extension_version": extension["version"],
+                        "workflow_template_id": extension["workflow_template_id"],
+                    },
+                }
+            },
+        )
     def test_command_and_error_contracts_for_pilots(self) -> None:
         from jsonschema import Draft202012Validator
         command_schema = json.loads((SKILLS / "schemas/skill-commands.schema.json").read_text())

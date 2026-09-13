@@ -283,11 +283,11 @@ R392 -> D392 -> T392 trace。promotion-created Docs diff 仍需 fresh Phase 2/co
 | `T247-01` | active graph中的ledger名称/schema id、writer、reader、precondition、registration与Issue aggregate consumer均为零 | 历史archive/ADR/version evidence不属于active scan |
 | `T247-02` | task/workspace creation不生成、登记或返回ledger，official task/worktree/mapping identity闭合 | mixed old/new package必须fail closed |
 | `T247-03` | Planning、qualification、Phase 2、Commit与Branch Review不读取ledger，reference由current authority fresh形成 | no-Issue不得制造primary Issue |
-| `T247-04` | completed、remain-open、no-Issue、non-default-base四路Publication决定；Finalizer normal/terminal handoff生成同一reviewed body SHA-256，Merge在scope推导和mutation前拒绝body-only drift；standalone不接受该identity | static keyword scan不替代owner behavior，Merge不新增reprepare typed exit |
-| `T247-05` | existing PR、terminal recovery、restore/re-entry、Finish与Cleanup只消费current owner facts | 不建立ledger fallback或替代aggregate |
+| `T247-04` | completed、reference-only empty close set、no-Issue、non-default-base四路Publication决定；Finalizer archive/Ready与normal/terminal handoff生成同一reviewed body SHA-256，Merge在scope推导和mutation前拒绝body-only drift | static keyword scan不替代owner behavior，Merge不新增reprepare typed exit |
+| `T247-05` | Finalizer archive-month、existing PR、lost-result、reprepare、terminal recovery、Merge四 exits与archived Restore只消费current owner facts | 不建立ledger fallback或替代aggregate |
 | `T247-06` | ledger absent/present-A/present-B的current lifecycle outcome一致，preset/update不主动触碰present文件 | inert preservation不是old-task migration |
 | `T247-07` | ledger-only Markdown、schema、eval/example、DTO、runtime/script、fixture/test、manifest/registry全部退出 | 不执行旧task compatibility scenario |
-| `T247-08` | canonical/dogfood/installed/Shared/Codex/Claude/Cursor parity、apply/reapply/update、ownership/drift/sidecar与代表性install/update | 不等于完整Release matrix |
+| `T247-08` | canonical/dogfood/installed/Shared/Codex/Claude/Cursor parity、`guru-ledger-free-runtime@1.0.0`、apply/reapply/update、ownership/drift/sidecar与真实wrapper旧流程fixture | 不等于完整Release matrix |
 
 - `SCN-085 issue-backed completed`：Publication默认判定关闭；默认分支PR body写入closing keyword，
   GitHub自动执行，Merge只验证live facts。
@@ -296,10 +296,10 @@ R392 -> D392 -> T392 trace。promotion-created Docs diff 仍需 fresh Phase 2/co
 - `SCN-087 no-Issue`：Commit/PR不制造Issue reference、primary Issue或关闭效果。
 - `SCN-088 inert legacy present`：absent/present-A/present-B不影响current lifecycle；active runtime无read，
   preset/update不主动触碰。
-- `SCN-089 recovery`：existing PR、terminal、restore/re-entry使用current task/Git/PR/provider facts，
-  不重复副作用且不读取ledger。
+- `SCN-089 recovery`：Finalizer archive/Ready、existing PR、lost-result、reprepare、terminal与archived
+  restore/re-entry使用current task/Git/PR/provider facts，不重复副作用且不读取ledger。
 - `SCN-090 distribution, non-default publication and body continuity`：canonical、dogfood、installed与
-  四平台package一致；非默认分支PR只引用，后续目标默认分支Publication fresh判断并编码closing keyword；
+  四平台package/capability一致；非默认分支PR只引用，后续目标默认分支Publication fresh判断并编码closing keyword；
   Finalizer后仅编辑PR body时，Merge在closing-scope推导与mutation前fail closed并要求调用方重新进入fresh
   Publication/Finalizer。
 

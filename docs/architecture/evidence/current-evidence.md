@@ -62,12 +62,11 @@ PR、merge、tag、Release、remote marketplace publication、business productio
 `EVD-025` 建立的 `.49` 现为 immutable superseded authority；其 #329 framework source、CLI、package
 manager、extension 与 released axis保持 current inherited facts，不由 #247 改写。
 
-`EVD-026`：#247 reviewed promotion inputs 包含 live Issue r19、task/RDT planning、
+`EVD-026`：#247 current inputs 绑定 live Issue r24、task/RDT planning、
 `docs/architecture/contributions/247-remove-issue-scope-ledger.md` identity
-`architecture-contribution-247-remove-issue-scope-ledger-v1`、`ADR-009-CANDIDATE`、active-zero ledger
-inventory、Publication/Finalizer/Merge closure owner tests、legacy inert/current-only rejection、canonical/dogfood/
-installed/platform parity，以及 independent reviewed range
-`origin/main@ec016827fac81d33faeacb307b0db76d5259dc28...9c3c00908446ac0fa86974cb9886f37917ac40ca`。
+`architecture-contribution-247-remove-issue-scope-ledger-v1`、accepted `ADR-009`、active-zero ledger
+inventory、旧流程Publication/Finalizer/Merge/Restore回归、legacy inert、capability与canonical/dogfood/
+installed/platform parity。r19 target-native review range仅为历史过程证据；r24 corrective commit后必须fresh review。
 它支撑 `ARCH-CUR-027`、`ARCH-DOM-015`、`ARCH-INT-017`、`ARCH-GOV-009`、`ARCH-GAP-008`、accepted
 `ADR-009` 与 expected `.49` -> `.50` serialized promotion；只证明 reviewed promotion inputs，不证明
 promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、push、PR、merge、tag、Release、

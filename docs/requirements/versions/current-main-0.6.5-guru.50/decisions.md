@@ -62,8 +62,9 @@
   既有数据原字节保留。extension `0.6.16-guru.41`、released `v0.6.16-guru.1` 与 23/97/78 public graph
   不变；不新增第二 authority、adapter、compatibility layer、owner、GAP 或 ADR。
 
-- `RDEC-024`（accepted）：#247 以 `target_native` 绑定 expected immutable `.49`，由 Architecture/RDT
+- `RDEC-024`（accepted，r24 修订）：#247 以 `dedicated_refactor_slice` 绑定 expected immutable `.49`，由 Architecture/RDT
   serialized owners建立唯一 active `.50`。task-local Issue classification aggregate与全部 current
-  writer/reader/schema/DTO consumer直接退出；Publication独占 reference/closure intent，Finalizer只执行
-  reviewed payload，GitHub执行默认分支closing keyword，Merge只验证live result。accepted `ADR-009`
-  固化 owner与无兼容退出；不迁移旧 task，不改变 23/97/78 graph、#305 target或独立版本轴。
+  writer/reader/schema/DTO consumer直接退出；Publication保留 reference/closure intent，Finalizer保留
+  push/PR/archive/Ready/recovery，GitHub执行默认分支closing keyword，Merge保留四 exits与live result验证。
+  accepted `ADR-009` 固化 ledger-free old-flow compatibility；不迁移旧 ledger-bound task，不改变
+  23/97/78 graph、#305 target或独立版本轴，并声明 `guru-ledger-free-runtime@1.0.0`。

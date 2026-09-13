@@ -354,7 +354,8 @@ def tree_identity(repo, commit):
             or "Rebuild the current integration candidate.",
             3,
         )
-    rows = []
+    entries = []
+    blobs = []
     for entry in raw.stdout.split(b"\0"):
         if not entry:
             continue
@@ -363,25 +364,72 @@ def tree_identity(repo, commit):
         if not separator or len(parts) != 3:
             continue
         if parts[0] == b"160000" and parts[1] == b"commit":
-            rows.append(path + b"\0" + b"160000" + b"\0" + parts[2] + b"\0")
+            entries.append(("gitlink", path, parts[2]))
             continue
         if parts[1] != b"blob":
             continue
-        blob = subprocess.run(
-            ["git", "cat-file", "blob", parts[2].decode("ascii")],
-            cwd=repo,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+        entries.append(("blob", path, parts[2]))
+        blobs.append((path, parts[2]))
+    batch = subprocess.run(
+        ["git", "cat-file", "--batch"],
+        cwd=repo,
+        input=b"".join(oid + b"\n" for _, oid in blobs),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if batch.returncode:
+        raise CommandError(
+            "stale_identity",
+            "candidate_tree_sha256",
+            batch.stderr.decode("utf-8", "replace").strip()
+            or "Rebuild the current integration candidate.",
+            3,
         )
-        if blob.returncode:
+    offset = 0
+    blob_digests = {}
+    for _, expected_oid in blobs:
+        header_end = batch.stdout.find(b"\n", offset)
+        if header_end < 0:
             raise CommandError(
                 "stale_identity",
                 "candidate_tree_sha256",
-                blob.stderr.decode("utf-8", "replace").strip()
-                or "Rebuild the current integration candidate.",
+                "Git returned an incomplete candidate tree batch.",
                 3,
             )
-        rows.append(path + b"\0" + hashlib.sha256(blob.stdout).hexdigest().encode() + b"\0")
+        header = batch.stdout[offset:header_end].split()
+        if len(header) != 3 or header[0] != expected_oid or header[1] != b"blob":
+            raise CommandError(
+                "stale_identity",
+                "candidate_tree_sha256",
+                "Git returned an invalid candidate tree batch entry.",
+                3,
+            )
+        try:
+            size = int(header[2])
+        except ValueError as exc:
+            raise CommandError(
+                "stale_identity",
+                "candidate_tree_sha256",
+                "Git returned an invalid candidate blob size.",
+                3,
+            ) from exc
+        content_start = header_end + 1
+        content_end = content_start + size
+        if content_end >= len(batch.stdout) or batch.stdout[content_end:content_end + 1] != b"\n":
+            raise CommandError(
+                "stale_identity",
+                "candidate_tree_sha256",
+                "Git returned an incomplete candidate blob.",
+                3,
+            )
+        blob_digests[expected_oid] = hashlib.sha256(
+            batch.stdout[content_start:content_end]
+        ).hexdigest().encode()
+        offset = content_end + 1
+    rows = []
+    for kind, path, oid in entries:
+        identity = b"160000" if kind == "gitlink" else blob_digests[oid]
+        rows.append(path + b"\0" + identity + b"\0" + (oid + b"\0" if kind == "gitlink" else b""))
     return hashlib.sha256(b"".join(rows)).hexdigest()
 
 

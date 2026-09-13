@@ -29,20 +29,26 @@ identity：`ADR-009`。
 
 - `R247-01..10` 已由 `D247-01..08`、`T247-01..08` 与 `SCN-085..090` 覆盖；没有旧 task migration、
   ledger compatibility或替代 Issue aggregate进入 accepted traceability。
-- 原 Phase 2 Architecture 曾按 `dedicated_refactor_slice` 审查；2026-09-13 committed Branch Review
-  发现该 path 与 ADR contract 不完整后，该结论及其 downstream gate 已 stale。Planning 随后改为
-  `target_native` / `ADR-009-CANDIDATE`，并已由本次 promotion 接受为 `ADR-009`。
-- 2026-09-13 fresh Phase 2 已重新执行：Architecture 官方 invoke 返回
-  `baseline_current / architecture_impact / target_native / reviewed_candidate`，`ADR required=true`；两个
-  qualifier 均返回 `classified / qualified_current`，`guru-check-task` 返回 `passed`。
-- 本次 fresh round 的相关 package/runtime/integration 共 `392` tests 通过；active ledger
-  writer/reader/precondition/schema registration/aggregate DTO consumer为零，upstream ownership 与
-  dogfood overlay drift 均为 `status=ok`，canonical/installed/platform projection保持一致。
+- live Issue #247 `2026-09-13-r24` 已替换 r19-r22，并要求旧 lifecycle 行为/API/graph 保持；因此 current
+  Architecture path 回到 `dedicated_refactor_slice`。此前基于 `target_native` 的 Phase 2、qualification、
+  Branch Review 与 validation evidence 只作为历史过程事实，不是 r24 current gate。
+- r24 corrective candidate 已 fresh 执行 Architecture、两个 qualifier 与 `guru-check-task`：Architecture
+  返回 `baseline_current / architecture_impact / dedicated_refactor_slice / reviewed_promoted`，两个 qualifier
+  均返回 `classified`，Phase 2 schema 5.0 checkpoint 与 public wrapper 返回 `passed`；无 open P0-P3 finding。
+- 本次 fresh focused rerun 共 534 tests 通过，覆盖 package、runtime、shared integration、workspace invocation、
+  installed closeout boundary、preset apply 与 upgrade contract。focused install/update、legacy
+  absent/present-A/present-B、upstream ownership、dogfood drift、canonical/installed/platform projection 与
+  capability shape 同样通过；active ledger writer/reader/precondition/schema registration/aggregate DTO
+  consumer为零。
 - 此前完整 preset Python suite `203 tests / OK (skipped=1)`、parallel finish `2/2`、installed closeout
   `3/3` 与 routing `42/42` 仍是同一实现候选的较早完整回归事实，但不是本次 fresh Phase 2 的唯一 gate，
   也不替代新的 Architecture、qualification、freshness checker 或 public wrapper结果。
-- independent committed full-diff Branch Review 已绑定 exact range
+- 旧 independent committed full-diff Branch Review 曾绑定 exact range
   `ec016827fac81d33faeacb307b0db76d5259dc28...9c3c00908446ac0fa86974cb9886f37917ac40ca`
-  并返回候选 `none`、P0-P3 findings zero；serialized Architecture/RDT promotion 已建立唯一 active `.50`。
+  并返回候选 `none`、P0-P3 findings zero，但该结论已因 r24 authority 与 corrective diff stale；serialized
+  Architecture/RDT promotion 已建立唯一 active `.50`，仍须 fresh Phase 2、commit 与完整 Branch Review。
+- r24 fresh Phase 2 已完成；当前剩余 gate 是单独授权的 Task Commit，以及 commit 后覆盖完整
+  `origin/main...HEAD` 的独立 Branch Review。Production eval deterministic cases 已通过，但 external semantic
+  grading 不可用，保持显式 non-blocking unverified，不得写成 PASS。
 - 完整 Release matrix、tag、GitHub Release与生产业务仓验证继续作为明确 deferred boundary；promotion-created
   combined diff仍须fresh Phase 2、Task Commit与独立完整Branch Review，不证明Publication或远端结果。

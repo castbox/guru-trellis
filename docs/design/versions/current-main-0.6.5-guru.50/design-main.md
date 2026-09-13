@@ -373,22 +373,23 @@ full throwaway matrix、business smoke、tag、GitHub Release 或 Issue closure 
   branch与live GitHub facts唯一形成PR reference/closure intent；completed默认关闭，remain-open必须有
   具体current-authority原因，no-Issue不制造identity。
 - `D247-04`：默认分支PR由Publication在body编码closing keyword；非默认分支PR只引用，后续进入默认
-  分支的Publication fresh判断。Finalizer只绑定reviewed payload与exact task/base/head identity，并向
-  Merge投影exact reviewed body UTF-8 bytes的SHA-256；normal、existing-PR、terminal recovery使用同一
-  payload identity。
+  分支的Publication fresh判断。Finalizer保留preparation、push、PR create/update、official archive、
+  Ready、handoff与recovery，并向Merge投影archive locator和exact reviewed body UTF-8 bytes的SHA-256；
+  normal、existing-PR、lost-result、reprepare与terminal recovery使用current transaction。
 - `D247-05`：Merge独立重读live PR/GitHub facts并完成readiness semantic review、confirmation、
   expected-head与closure result verification；merge mutation前必须验证live PR body SHA-256与Finalizer
   handoff一致，body-only drift直接fail closed并由调用方重新进入fresh Publication/Finalizer；Merge不新增
-  reprepare typed exit、不重判关闭决定、不调用Issue close API；
-  Finish/Restore/Cleanup不消费Issue aggregate。
+  reprepare typed exit、不重判关闭决定、不调用Issue close API；四个declared exits与
+  `phase2_reentry_required -> guru-restore-archived-task`保持；Finish/Restore/Cleanup不消费Issue aggregate。
 - `D247-06`：所有仅服务ledger的Skill Markdown、interface/schema、eval/example JSON、DTO、runtime/script、
   fixture/test、manifest、registry与current docs直接删除；共享文件只移除ledger-owned分支。
 - `D247-07`：canonical是唯一编辑源，preset reapply同步dogfood与Shared/Codex/Claude/Cursor；source/
   installed/ownership/drift/sidecar检查验证current package unit一致。
 - `D247-08`：legacy ledger path不属于managed inventory；preset/update不主动触碰，current runtime不打开。
-  旧task不迁移、不转换、不建立兼容测试；历史archive、ADR、superseded/released RDT保持不变。
+  旧ledger-bound task不迁移、不转换；既有ledger-free recovery保留。manifest声明
+  `guru-ledger-free-runtime@1.0.0`；历史archive、superseded/released RDT保持不变。
 
-该设计使用 `target_native` 并由 accepted `ADR-009`、`ARCH-CUR-027`、`ARCH-DOM-015`、
+该设计按 live r24 修订为 `dedicated_refactor_slice`，并由 accepted `ADR-009`、`ARCH-CUR-027`、`ARCH-DOM-015`、
 `ARCH-INT-017`、`ARCH-GOV-009` 与 closed `ARCH-GAP-008` 承接。它保持 23 Skills / 97 exits / 78 commands、
 四阶段顺序、#305 Evolution target及framework/CLI/extension/release独立轴；promotion-created diff仍需
 fresh Phase 2、Task Commit与完整Branch Review。`D247-02`、`D247-04`、`D247-08` 分别收敛

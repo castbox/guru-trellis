@@ -123,6 +123,43 @@ def bind_owner_result_argument(
         raise ValueError("semantic case must declare one owner-result invocation argument")
     return result_relative
 
+def bind_task_commit_candidate_argument(
+    request: dict[str, Any],
+    fixture: Path,
+    candidate_artifact: Path | str,
+) -> str:
+    candidate_path = Path(candidate_artifact).resolve()
+    try:
+        candidate_relative = candidate_path.relative_to(fixture.resolve()).as_posix()
+    except ValueError as exc:
+        raise ValueError("task commit candidate must stay inside the installed eval fixture") from exc
+    if candidate_path.is_symlink() or not candidate_path.is_file():
+        raise ValueError("task commit candidate is unavailable or unsafe")
+
+    workdir = Path(request["workdir"]).resolve()
+    rewritten = 0
+    for relative in request.get("files", []):
+        path = workdir / str(relative)
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        invocation = payload.get("public_invocation")
+        arguments = invocation.get("arguments") if isinstance(invocation, dict) else None
+        if not isinstance(arguments, list) or "--candidate-artifact" not in arguments:
+            continue
+        index = arguments.index("--candidate-artifact")
+        if index + 1 >= len(arguments) or not isinstance(arguments[index + 1], str):
+            raise ValueError("case candidate-artifact invocation argument is invalid")
+        arguments[index + 1] = candidate_relative
+        path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
+        rewritten += 1
+    if rewritten != 1:
+        raise ValueError("semantic case must declare one candidate-artifact invocation argument")
+    return candidate_relative
+
 def bind_semantic_result_argument(
     request: dict[str, Any],
     fixture: Path,

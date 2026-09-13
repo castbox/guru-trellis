@@ -234,6 +234,23 @@ def compose_production_owner_command_runtime(
             "check-phase2-check.sh",
             ["--root", str(args.root), "--task", str(args.task)],
         ),
+        "cmd_prepare_task_commit": lambda args: run_component(
+            "guru-create-task-commit",
+            "prepare-task-commit.sh",
+            [
+                "--root", str(args.root),
+                "--input", str(args.input),
+                "--candidate-json", str(args.candidate_json),
+            ],
+        ),
+        "cmd_create_task_commit": lambda args: run_component(
+            "guru-create-task-commit",
+            "create-task-commit.sh",
+            [
+                "--root", str(args.root),
+                "--candidate-artifact", str(args.candidate_artifact),
+            ],
+        ),
         "cmd_review_branch": lambda args: run_component(
             "guru-review-branch",
             "review-branch.sh",

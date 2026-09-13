@@ -1039,12 +1039,19 @@ def cmd_record_task_publication_review(
             },
         )
     branch_review_commit = str(invocation["branch_review_commit"])
+    reviewed_content_sha256 = reviewed_content_identity(root)["sha256"]
+    if typed_exit == "return_to_task_work":
+        reviewed_content_sha256 = reviewed_content_identity(
+            root,
+            branch_review_commit,
+            include_worktree=False,
+        )["sha256"]
     payload: dict[str, Any] = {
         "schema_version": "5.0",
         "skill_id": TASK_PUBLICATION_SKILL_ID,
         "task_ref": repo_relative(root, task_dir),
         "branch_review_commit": branch_review_commit,
-        "reviewed_content_sha256": reviewed_content_identity(root)["sha256"],
+        "reviewed_content_sha256": reviewed_content_sha256,
         "pr_payload": copy.deepcopy(authored.get("pr_payload")),
         "candidate_classifications": copy.deepcopy(authored.get("candidate_classifications")),
         "dimensions": copy.deepcopy(authored.get("dimensions")),

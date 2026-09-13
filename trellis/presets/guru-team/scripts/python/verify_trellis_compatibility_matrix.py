@@ -541,6 +541,35 @@ def _interface_projection(repo_root: Path, row: Mapping[str, Any]) -> dict[str, 
     return _interface_projection_from(repo_root / "trellis/skills/guru-team", row)
 
 
+def _migration_capabilities_projection(
+    extension: Mapping[str, Any], public_api: Mapping[str, Any], label: str
+) -> dict[str, Any]:
+    raw = public_api.get("migration_capabilities")
+    if raw is None:
+        return {}
+    capabilities = _require_dict(raw, f"{label} migration_capabilities")
+    result: dict[str, Any] = {}
+    for capability_id, value in capabilities.items():
+        capability = _require_dict(value, f"{label} capability {capability_id}")
+        projection_identity = _require_dict(
+            capability.get("projection_identity"),
+            f"{label} capability {capability_id}.projection_identity",
+        )
+        expected = {
+            "capability_id": capability_id,
+            "version": capability.get("version"),
+            "projection_identity": {
+                "extension_id": extension.get("extension_id"),
+                "extension_version": extension.get("version"),
+                "workflow_template_id": extension.get("workflow_template_id"),
+            },
+        }
+        if capability != expected or projection_identity != expected["projection_identity"]:
+            raise MatrixError(f"{label} capability {capability_id} has invalid projection identity")
+        result[capability_id] = capability
+    return result
+
+
 def capability_projection(repo_root: Path) -> dict[str, Any]:
     """Build a compact complete projection from current canonical authorities."""
 
@@ -696,6 +725,9 @@ def capability_projection(repo_root: Path) -> dict[str, Any]:
             "companion_commands": _sorted_strings(commands),
         },
         "docs_authority": {"locators": docs_locators},
+        "migration_capabilities": _migration_capabilities_projection(
+            canonical, public_api, "canonical"
+        ),
     }
     projection["projection_sha256"] = _digest(projection)
     return projection
@@ -842,6 +874,9 @@ def installed_capability_projection(target: Path) -> dict[str, Any]:
             "companion_commands": command_ids,
         },
         "docs_authority": {"locators": docs_locators},
+        "migration_capabilities": _migration_capabilities_projection(
+            extension, public_api, "installed"
+        ),
     }
     projection["projection_sha256"] = _digest(projection)
     return projection
@@ -880,7 +915,7 @@ def compare_capabilities(before: Mapping[str, Any], after: Mapping[str, Any]) ->
         "after": after_identity,
         "consistent": before_identity == after_identity,
     }
-    for group in ("workflow", "task_data", "docs_authority"):
+    for group in ("workflow", "task_data", "docs_authority", "migration_capabilities"):
         before_group = _require_dict(before.get(group), f"before {group}")
         after_group = _require_dict(after.get(group), f"after {group}")
         missing: dict[str, Any] = {}

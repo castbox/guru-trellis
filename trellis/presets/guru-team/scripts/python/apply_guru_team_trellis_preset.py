@@ -359,6 +359,21 @@ def load_extension_manifest(guru_root: Path) -> dict[str, Any]:
     for key in ["schema_version", "extension_id", "version", "workflow_template_id"]:
         if not str(payload.get(key) or "").strip():
             raise SystemExit(f"Guru Team extension manifest missing required field: {key}")
+    public_api = payload.get("public_api")
+    capabilities = public_api.get("migration_capabilities") if isinstance(public_api, dict) else None
+    expected_capability = {
+        "capability_id": "guru-ledger-free-runtime",
+        "version": "1.0.0",
+        "projection_identity": {
+            "extension_id": payload["extension_id"],
+            "extension_version": payload["version"],
+            "workflow_template_id": payload["workflow_template_id"],
+        },
+    }
+    if not isinstance(capabilities, dict) or capabilities.get("guru-ledger-free-runtime") != expected_capability:
+        raise SystemExit(
+            "Guru Team extension manifest has invalid guru-ledger-free-runtime capability"
+        )
     return payload
 
 

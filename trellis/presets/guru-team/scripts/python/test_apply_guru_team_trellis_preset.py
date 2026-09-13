@@ -2089,6 +2089,23 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         canonical = json.loads(
             (self.guru_root / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
         )
+        expected_capability = {
+            "capability_id": "guru-ledger-free-runtime",
+            "version": "1.0.0",
+            "projection_identity": {
+                "extension_id": "guru-team",
+                "extension_version": "0.6.16-guru.41",
+                "workflow_template_id": "guru-team",
+            },
+        }
+        self.assertEqual(
+            canonical["public_api"]["migration_capabilities"],
+            {"guru-ledger-free-runtime": expected_capability},
+        )
+        self.assertEqual(
+            public_api["migration_capabilities"],
+            {"guru-ledger-free-runtime": expected_capability},
+        )
         self.assertIn(
             "contract-wording-review.json",
             canonical["public_api"]["artifact_contracts"],

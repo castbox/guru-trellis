@@ -1,8 +1,13 @@
 # Design
 
+## Current Contract
+
+唯一 current authority 为 live Issue #247 `2026-09-13-r24`。本设计只移除 ledger authority，
+保持当前旧 lifecycle 的 producer/consumer、target/stop、成功、归档、关闭验证与恢复语义。
+
 ## Design Decision
 
-采用 subtraction-first 的直接删除与同步 consumer migration。ledger 不是被替换成另一份
+采用 subtraction-first 的直接删除与同步 current consumer input。ledger 不是被替换成另一份
 task context，而是从 current graph 中完全退出。各 owner 直接读取其职责所需的 current
 authority 和 live facts，并只向唯一 consumer 投影不可重新推导的最小数据。
 
@@ -18,7 +23,7 @@ journal 或聚合 closure frame。legacy ledger 文件本身不参与 active gra
 | requirement/scope/source reference | live external authority、Phase 0 reviewed authority、current planning provenance | Clarification/Planning/Check/Review fresh reread，不持久化 aggregate |
 | commit reference | current task/source/requirement authority | Commit owner fresh 生成，不读取 `primary_issue` |
 | reviewed PR reference/closure decision | current requirement authority、reviewed diff、target/default branch、live Issue/PR facts | Publication 唯一判断 issue-backed completed/remain-open/no-item；completed 默认关闭 |
-| publication/merge execution | Publication-reviewed PR payload + exact task/base/head identity | Finalizer 绑定发布事务并向 Merge 投影 exact PR body SHA-256；Merge 先验证 live body identity，再独立检查 readiness、expected-head 并确认本次 merge，不重判关闭决定 |
+| publication/merge execution | Publication-reviewed PR payload + exact task/base/head identity | Finalizer 保留 push、PR create/update、archive、Ready 与 recovery，并向 Merge 投影 exact PR body SHA-256；Merge 验证 identity、readiness、expected-head、closure effect 和 declared exits |
 | actual closure action/result | 进入默认分支的 GitHub closing keyword + merge 后 live Issue/PR facts | GitHub 自动执行关闭；Merge/closeout 只验证结果，不调用 Issue close API |
 | task completion/resource state | official Finish/task/archive/Git/provider facts | Finish/Restore/Cleanup 不读取 Issue 分类 |
 
@@ -36,11 +41,11 @@ authority 传递的字段删除。Publication 的 current reviewed closure decis
 2. **Intake / Planning / Qualification / Check / Commit / Review**：删除 ledger path、
    precondition、`scope_ledger_path`、`primary_issue` 和 Issue-array aggregate 输入；各 semantic
    owner直接重读 current requirement/planning/source authority。
-3. **Publication / Finalizer / Merge**：删除 ledger loader、validator、binding、hash、recovery
-   和 closeout projection；Publication 唯一判断 Issue 是否应关闭并形成 PR payload，Finalizer
-   只绑定发布事务，Merge 只完成 readiness/expected-head/confirmation 和 live closure verification。
-4. **Finish / Restore / Cleanup**：删除任何由 ledger 决定完成、恢复、清理或 release route 的
-   reader/fixture，改用现有 task/archive/Git/provider facts。
+3. **Publication / Finalizer / Merge**：删除 ledger loader、validator、binding 和 aggregate projection；
+   Publication 继续判断本次 Issue effect，Finalizer 保留既有 preparation/push/PR/archive/Ready/recovery，
+   Merge 保留 readiness/expected-head/confirmation、closure verification 与四个 declared exits。
+4. **Finish / Restore / Cleanup**：只删除 ledger reader/fixture，保留现有 task/archive/Git/provider
+   facts、current terminal 和 `phase2_reentry_required -> guru-restore-archived-task` 恢复链。
 5. **Package contract surface**：删除只为 ledger 存在的 Skill Markdown、interface、consumer
    schema、eval/example JSON、DTO 字段、runtime/script、fixture/test、commands/manifest/registry
    registration；共享资产仅在存在其它 verified active consumer 时保留。
@@ -79,13 +84,15 @@ Issue-backed task完整解决对应 Issue 时默认关闭；只有 live authorit
 目标为非默认分支时，当前 PR body 不承诺关闭效果，只引用 Issue；该 base 分支后续进入默认分支时，
 由后续 Publication 基于届时 current authority fresh 判断并在目标默认分支 PR 编码 closing keyword。
 
-Finalizer 仅承接已 reviewed PR payload 与 exact task/base/head identity，并在 `ready_for_merge` 最小
-handoff 中携带 exact reviewed body UTF-8 bytes 的 SHA-256。Merge 先对 live PR body 重算同一 identity；
+Finalizer 承接已 reviewed PR payload 与 exact task/base/head identity，保留 current transaction 的
+local preparation、push、PR create/update、official archive、Ready、handoff 和已声明 recovery，
+并在 `ready_for_merge` 最小 handoff 中携带 exact reviewed body UTF-8 bytes 的 SHA-256。Merge 先对 live PR body 重算同一 identity；
 body-only metadata drift 与 head/base/branch drift 一样在 mutation 前直接 fail closed；调用方必须重新
 进入 fresh Publication/Finalizer，Merge 不新增 reprepare typed exit。identity 一致后，Merge 才基于
 live PR body、policy、CI、review、mergeability 完成独立 readiness
 review、expected-head 检查和本次确认，但不重新决定 Issue 是否应关闭，也不调用 Issue close API。
-Merge 后重新读取 live Issue/PR facts验证 GitHub 自动效果。
+Merge 后重新读取 live Issue/PR facts验证 GitHub 自动效果；成功进入 current terminal，
+`closure_mismatch` 保留精确 mismatch，task-content finding 继续携带 archived identity 进入 Restore。
 
 source reference 与 closure decision 始终分离；reference-only 必须有 current-authority 原因，
 非默认分支的技术性延迟关闭也不得被误报为当前 PR 已产生关闭效果。
@@ -102,10 +109,9 @@ source reference 与 closure decision 始终分离；reference-only 必须有 cu
 
 ## Architecture Path
 
-选择 `target_native`：本 Issue 直接建立不依赖 ledger aggregate 的 current authority boundary，
-并有意调整 Issue closure 判断规则与 public Skill DTO。它不是 `dedicated_refactor_slice`，因为该路径
-要求行为/API/规则不变；也不是 `legacy_boundary_convergence`，因为没有 remaining compatibility
-layer、reader 或退出期。该 target-native 变化仍是 #247 的独立小幅优化，不恢复 #305 target 大重构。
+选择 `dedicated_refactor_slice`：本 Issue 直接移除 ledger aggregate，并把必要输入改由现有 semantic
+owner fresh 读取；旧 lifecycle 的业务行为、owner、edge、target/stop、archive/Ready/closure verification
+和 Restore 语义保持不变。没有 remaining ledger compatibility reader，也不恢复 #305 target 大重构。
 
 命中的设计原则：
 
@@ -126,7 +132,9 @@ compatibility exit。该 candidate 已在 independent committed review 后由 se
   变化均 fail closed。
 - Finalizer 完成后、Merge 前的 live PR body 漂移必须在 merge mutation 前 fail closed；不得仅凭
   unchanged HEAD/base/head branch 接受漂移后的 closing effect。
-- 已存在 PR/transaction 的恢复仍以 live PR/Git/task identity 与当前 reviewed payload为准，不读取 ledger。
+- 已存在 PR/transaction、archive-month、post-archive Ready、lost-result 与 archived Restore 仍按现有
+  declared contract 恢复，以 live PR/Git/task/archive identity 与当前 reviewed payload为准，不读取 ledger。
+- 旧流程的提前归档、PR 冲突和多 Delivery 接续局限明确保留为后续 Issue，不冒充本 Issue 已修复。
 - 不新增 retry、lock、并发协议、迁移状态机或第二 recovery owner。
 
 ## Rollback

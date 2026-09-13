@@ -66,7 +66,8 @@
   explicit caller authority 取得 identity。legacy identity/workspace 数据只保留 bytes，不进入 current flow；
   不引入 adapter、dual-read/write、第二 resolver、owner、GAP、ADR 或基础设施层。
 
-- `DDEC-029`（accepted）：#247 使用 `target_native` 将 task-local Issue aggregate直接删除并同步迁移
-  current consumers。Publication、Finalizer、GitHub与Merge分别拥有intent、payload execution、closing action
-  与live result；accepted `ADR-009` 固化这一长期边界。legacy ledger不进入managed inventory，old task不迁移，
-  不引入compatibility reader、第二closure owner、Issue close API补偿、graph router或#305 target重构。
+- `DDEC-029`（accepted，r24 修订）：#247 使用 `dedicated_refactor_slice` 删除 task-local Issue aggregate，
+  保持 current producer/consumer、23/97/78 graph、Finalizer archive/Ready/recovery、Merge 四 exits 与 Restore。
+  Publication、Finalizer、GitHub与Merge分别拥有intent、current transaction、closing action与live result；
+  manifest声明 `guru-ledger-free-runtime@1.0.0`。不引入ledger reader、第二closure owner、future lifecycle、
+  graph router或#305 target重构。

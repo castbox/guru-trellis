@@ -1,64 +1,56 @@
 # ADR-009: Issue reference and closure ownership
 
-状态：`accepted`。来源：Issue #247 reviewed Architecture contribution。Promotion input：
-`current-main-0.6.5-guru.49`；current successor：`current-main-0.6.5-guru.50`。Independent reviewed range：
-`origin/main@ec016827fac81d33faeacb307b0db76d5259dc28...9c3c00908446ac0fa86974cb9886f37917ac40ca`。
+状态：`accepted`，已按 live Issue #247 `2026-09-13-r24` 修订。Promotion input：
+`current-main-0.6.5-guru.49`；current successor：`current-main-0.6.5-guru.50`。最初 reviewed range：
+`origin/main@ec016827fac81d33faeacb307b0db76d5259dc28...9c3c00908446ac0fa86974cb9886f37917ac40ca`；
+r24 corrective diff 必须重新完成 fresh Phase 2、commit 和 independent full-diff Branch Review。
 
 ## Context
 
 Task-local `issue-scope-ledger.json` 把 external work item reference、Issue closure intent、关闭执行和
-结果验证聚合为跨阶段 authority。该 aggregate 迫使 Workspace、Planning、Commit、Review、Finalizer、
-Merge、Finish 与 recovery 共享 `primary_issue`、`close_issues`、`related_issues`、`followup_issues` 等
-分类，即使各 owner 只需要自己的 current authority 或 live facts。
-
-移除 ledger 不能只做内部重构：current workflow 还需要明确 Issue-backed completed、remain-open、
-no external work item 与 non-default-base PR 的长期关闭语义，以及谁判断、谁执行、谁验证。
+结果验证聚合为跨阶段 authority，迫使多个 owner 共享 `primary_issue`、`close_issues`、
+`related_issues`、`followup_issues`。#247 删除该 aggregate，但 r24 明确要求当前旧 lifecycle 的行为、
+public producer/consumer、edge、target/stop、archive、Ready、Merge 与 Restore 语义保持不变。
 
 ## Decision
 
-采用 `target_native` authority boundary，并直接演进受控 public Skill contracts：
+采用 `dedicated_refactor_slice`：
 
-1. requirement/scope/source reference 由 current user、live external authority 和对应 lifecycle
-   semantic owner持有，不形成 task-local Issue classification aggregate；
-2. Publication 是 Issue reference 与 closure intent 的唯一 semantic owner，基于 current requirement
-   authority、reviewed diff、target/default branch 与 live Git/GitHub facts形成 reviewed PR body；
-3. Issue-backed delivery 完整解决 current Issue 且 PR 目标为默认分支时，Publication 默认写入 GitHub
-   closing keyword；remain-open 必须引用 current authority 中具体的合并后未完成条件；
-4. 无 external work item 时不产生 Issue 引用或关闭效果；目标为非默认分支时当前 PR 只引用，后续进入
-   默认分支的 Publication 基于届时 authority fresh 判断；
-5. Finalizer 只绑定并执行 reviewed Publication payload，并向 Merge 投影 exact reviewed PR body 的
-   最小 SHA-256 identity，不重新判断关闭范围；
-6. GitHub 在 closing-keyword PR 进入默认分支时自动执行关闭；Merge 只做独立 readiness、expected-head、
-   当前 merge confirmation 与 merge 后 live PR/Issue result verification；merge mutation 前必须验证 live
-   body identity 与 Finalizer handoff 一致，不一致时直接 fail closed，由调用方重新进入 fresh
-   Publication/Finalizer；Merge 不新增 reprepare typed exit，也不调用 Issue close API；
-7. 旧 ledger、旧 task DTO/schema/invocation 不迁移、不 dual-read、不提供 adapter 或 compatibility reader。
+1. requirement/scope/source reference 由 current user、live external authority 和对应 semantic owner持有，
+   不形成 task-local Issue classification aggregate；
+2. Publication 继续按 current authority 和 reviewed delivery 判断 reference 与 closure intent；Issue-backed
+   completed/default-base 可写 closing keyword，reference-only 保持 empty close set，no-Issue 不制造引用；
+3. Finalizer 保留 current preparation、push、PR create/update、official archive、Ready、handoff、existing-PR、
+   lost-result、reprepare 与 terminal recovery，只删除 ledger 输入；
+4. Finalizer 向 Merge 保留 archived locator、reviewed close set 所需步骤局部输入和 exact reviewed PR body
+   SHA-256；这些字段只服务直接 consumer，不构成长期 scope aggregate；
+5. GitHub 在 closing-keyword PR 进入默认分支时执行关闭。Merge 保留独立 readiness、expected-head、merge
+   confirmation、post-merge closure verification 和四个 declared exits，不调用 Issue close API；
+6. `phase2_reentry_required -> guru-restore-archived-task` 保持 current recovery；Restore 不成为正常多 PR
+   lifecycle 的新 owner；
+7. legacy ledger 不迁移、不 dual-read、不提供 adapter/compatibility reader；preset/update 不主动触碰；
+8. canonical 与 installed manifest 声明 `guru-ledger-free-runtime@1.0.0`，只证明 ledger-free runtime 和
+   current projection identity，不宣称新 lifecycle 或 Release 已完成。
 
 ## Consequences
 
-- reference、closure intent、closure action 与 closure result 获得独立语义和 owner。
-- public DTO 直接删除 ledger-era aggregate；current consumer必须读取自己的 authority 或最小 transition。
-- preset/update 不拥有或主动触碰磁盘上的 legacy ledger；文件存在与否不影响 current runtime。
-- Finalizer/Merge/Finish/Restore/Cleanup 不获得替代 closure decision authority。
-- shared current 已由 Architecture promotion owner在 #247 committed review 后绑定 expected `.49` 串行提升为
-  `.50`；promotion diff仍需 fresh Phase 2、commit 与 Branch Review。
+- ledger writer、reader、registration、aggregate DTO 与 ledger-only assets退出 current graph。
+- 旧 workflow 的 producer/consumer、23 Skills / 97 exits / 78 commands、target/stop 和行为时点保持。
+- Finalizer 的提前归档、PR 冲突后接续和同一 task 多 PR 的限制仍是已知问题，由后续 Issue 渐进处理。
+- historical archived completed tasks 不 backfill；legacy ledger absent/present-A/present-B 不影响 fresh result。
+- `.50` 保持唯一 active authority；immutable `.49` 不回写。
 
 ## Rejected Alternatives
 
-- 保留或重命名 ledger aggregate：继续形成跨 owner 第二 authority。
-- nullable 旧字段、adapter、dual-read/write 或旧 task migration：与 #247 的 current-only contract冲突。
-- 由 Finalizer 或 Merge重新判断关闭范围：会产生多个 semantic owner并使 Publication payload不再完整。
-- workflow 调用 Issue close API补偿：绕过 GitHub closing-keyword 的默认分支语义与 live result验证。
-- 在非默认分支 PR声称 closing keyword 会关闭 Issue：GitHub实际效果与声明不一致。
+- 保留、改名或隐藏 ledger aggregate：继续形成跨 owner 第二 authority。
+- Refs-only、禁止 Finalizer archive、Merge 后 task 保持 active 或 conservative Delivery consumer：属于
+  r21/r22 已被 r24 废止的生命周期改造，不进入 #247。
+- 由 Finalizer/Merge 重新判断 closure，或 workflow 调用 Issue close API：产生第二 closure owner。
+- 引入 #398 migration stop/global graph，或要求 #248/#261/#293 等未来 package：破坏独立交付边界。
 
 ## Verification And Promotion
 
-Acceptance 必须覆盖 active ledger inventory 为零、Publication 四路 effect、Finalizer payload binding、
-Finalizer-to-Merge body identity continuity、body-only drift pre-mutation rejection、Merge live closure
-verification、legacy absent/present 等价、current-only rejection、canonical/dogfood/
-installed/Shared/Codex/Claude/Cursor parity，以及一个代表性 install/update 场景。完整多平台
-exact-candidate Release matrix、tag、GitHub Release和生产业务仓验证保持 deferred。
-
-本 decision 已随 `.50` serialized promotion 进入 current authority。该 promotion 只接受 reviewed #247
-contribution 与 inherited immutable `.49`，不修改 #305 target、framework/CLI/extension/release独立版本轴，
-也不证明 push、PR、merge、tag、GitHub Release、生产业务仓验证或 Issue closure。
+Acceptance 覆盖 active-zero inventory、task creation no-ledger、Publication close/reference-only/no-Issue、
+Finalizer archive/Ready/recovery、Merge 四 exits、archived Restore、legacy absent/present 等价、capability
+shape、canonical/dogfood/installed/platform parity，以及真实 production wrappers 的代表性旧流程 E2E。
+完整多平台 Release matrix、tag、GitHub Release 和生产业务验证保持 deferred。

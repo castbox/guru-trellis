@@ -128,8 +128,9 @@ matrix、business smoke、tag、Release 与 Issue closure 分别由其后续 own
 
 - task-local `issue-scope-ledger.json`、Issue classification arrays、writer/reader/schema registration与
   ledger-era DTO已退出current consumer graph；没有替代aggregate、fallback、adapter或dual-read/write。
-- Publication独占Issue reference/closure intent；Finalizer只执行reviewed payload，GitHub执行默认分支
-  closing keyword，Merge独立完成readiness/expected-head并验证live result。completed、remain-open、no-Issue、
-  non-default-base四路保持显式。
+- Publication保留Issue reference/closure intent；Finalizer保留push/PR/archive/Ready/handoff/recovery，GitHub
+  执行默认分支closing keyword，Merge保留readiness/expected-head、四 exits与live result验证。completed、
+  reference-only empty close set、no-Issue、non-default-base四路保持显式。
 - legacy ledger不属于managed inventory，preset/update不主动触碰，active runtime不打开；old task不迁移。
-  canonical/dogfood/installed/Shared/Codex/Claude/Cursor parity与23/97/78 public graph保持不变。
+  canonical/dogfood/installed/Shared/Codex/Claude/Cursor parity与23/97/78 public graph保持不变；声明
+  `guru-ledger-free-runtime@1.0.0`。提前归档与多 PR 接续局限未解决。

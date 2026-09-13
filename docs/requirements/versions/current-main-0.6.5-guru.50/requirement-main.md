@@ -386,17 +386,21 @@ classification aggregate，不改变 23 Skills / 97 exits / 78 commands、四阶
   交付不完整事实；no external work item 不产生 Issue identity、引用或关闭效果。
 - `R247-06`：目标为默认分支时，Publication 在 reviewed PR body 编码 closing keyword并由 GitHub 自动
   执行关闭；非默认分支 PR 只引用，后续进入默认分支的 Publication 基于届时 current authority fresh
-  判断。Finalizer 只绑定 payload并向 Merge 投影 exact reviewed body 的最小 SHA-256 identity；Merge 在
+  判断。Finalizer 保留 preparation、push、PR create/update、official archive、Ready、handoff 与 recovery，
+  并向 Merge 投影 archive locator 和 exact reviewed body 的最小 SHA-256 identity；Merge 在
   mutation 前验证 live body identity，不一致时直接 fail closed，由调用方重新进入 fresh Publication/
   Finalizer；Merge 不新增 reprepare typed exit、不重判意图、不调用 Issue close API，只验证 live result。
-- `R247-07`：Finish、Restore、re-entry 与 Cleanup 只消费各自 current task/archive/Git/provider facts，
-  不读取 ledger决定完成、恢复、删除、Release 或其它 mutation route。
+- `R247-07`：Finalizer archive/Ready、Merge 四 exits、current terminal 与
+  `phase2_reentry_required -> guru-restore-archived-task` 保持旧语义；Finish、Restore、re-entry 与 Cleanup
+  只消费各自 current task/archive/Git/provider facts，不读取 ledger。
 - `R247-08`：legacy ledger path 不属于 managed inventory；preset/update 不主动触碰，active runtime
   不打开。absent、present-A、present-B 不得改变 current lifecycle 结果。
-- `R247-09`：旧 task、DTO、schema 与 invocation 不迁移、不转换、不保证继续运行，也不进入 acceptance
-  matrix；不提供 compatibility reader、re-entry 或 fixture。
+- `R247-09`：旧 ledger-bound task、DTO、schema 与 invocation 不迁移或 backfill；不提供 conversion、
+  ledger compatibility reader 或 fixture。该边界不删除新 ledger-free 流程既有的 Restore/recovery。
 - `R247-10`：canonical、dogfood、installed、Shared、Codex、Claude、Cursor 与 preset
-  apply/reapply/update 投影保持一致；framework/CLI/extension/released 版本轴保持独立。
+  apply/reapply/update 投影保持一致；canonical/installed manifest 声明同一
+  `guru-ledger-free-runtime@1.0.0` projection identity；framework/CLI/extension/released 版本轴保持独立。
+  提前归档、PR 冲突和同一 task 多 PR 接续局限保持已知问题，不宣称已解决。
 
 `BEH-019` Inert legacy ledger：在相同 current task、Git、external authority 与 reviewed PR effect 下，
 ledger absent、present-A 与 present-B 的 lifecycle outcome 相同；present 文件不被 active runtime打开，

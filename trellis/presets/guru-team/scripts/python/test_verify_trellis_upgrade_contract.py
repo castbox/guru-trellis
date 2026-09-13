@@ -1216,6 +1216,20 @@ exit 23
             projection["distribution"]["platforms"],
             ["claude", "codex", "cursor"],
         )
+        self.assertEqual(
+            projection["migration_capabilities"],
+            {
+                "guru-ledger-free-runtime": {
+                    "capability_id": "guru-ledger-free-runtime",
+                    "version": "1.0.0",
+                    "projection_identity": {
+                        "extension_id": "guru-team",
+                        "extension_version": "0.6.16-guru.41",
+                        "workflow_template_id": "guru-team",
+                    },
+                }
+            },
+        )
         self.assertGreater(
             len(projection["distribution"]["skill_package_files_and_modes"]),
             4000,
@@ -1360,6 +1374,15 @@ exit 23
         )
 
         after = json.loads(json.dumps(before))
+        del after["migration_capabilities"]["guru-ledger-free-runtime"]
+        lost_capability = self.matrix.compare_capabilities(before, after)
+        self.assertFalse(lost_capability["capabilities_preserved"])
+        self.assertEqual(
+            [difference["group"] for difference in lost_capability["blocking_differences"]],
+            ["migration_capabilities"],
+        )
+
+        after = json.loads(json.dumps(before))
         after["workflow"]["skill_invokes"] = after["workflow"]["skill_invokes"][1:]
         lost = self.matrix.compare_capabilities(before, after)
         self.assertFalse(lost["capabilities_preserved"])
@@ -1430,6 +1453,10 @@ exit 23
         self.assertTrue(comparison["capabilities_preserved"])
         self.assertEqual(len(installed["skill_api"]["interfaces"]), 23)
         self.assertEqual(installed["distribution"]["platforms"], ["claude", "codex", "cursor"])
+        self.assertEqual(
+            installed["migration_capabilities"],
+            self.matrix.capability_projection(REPO)["migration_capabilities"],
+        )
         self.assertEqual(template_hashes["unknown_drift_count"], 0)
         self.assertGreater(template_hashes["entry_count"], 0)
 

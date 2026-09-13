@@ -75,10 +75,12 @@ state machine 或 runtime owner artifact；public graph 保持 23 Skills / 97 ex
   archive、superseded/released authority、accepted ADR 与 promotion source不属于 active runtime consumer。
 - 直接删除是唯一 current mechanism；旧 task、DTO、schema、invocation不迁移，不提供 adapter、fallback、
   compatibility reader、dual-read/write 或隐藏 Issue aggregate。
-- Publication、Finalizer、GitHub 与 Merge 分别单写 closure intent、reviewed payload execution、默认分支
-  closing action 与 live result verification；其它 owner不得重新判断或补偿调用 Issue close API。
+- Publication、Finalizer、GitHub 与 Merge 分别单写 closure intent、current publication transaction、默认分支
+  closing action 与 live result verification；Finalizer archive/Ready、Merge 四 exits 与 archived Restore
+  保持旧语义，其它 owner不得重新判断或补偿调用 Issue close API。
 - canonical/dogfood/installed/Shared/Codex/Claude/Cursor 及 preset apply/reapply/update保持同一 package
-  contract；legacy ledger因不受管理而保持 inert，而不是由 preservation reader维持。
+  contract；canonical/installed manifest 必须声明 exact `guru-ledger-free-runtime@1.0.0` identity；legacy
+  ledger因不受管理而保持 inert，而不是由 preservation reader维持。
 - `.50` 继承 `.49` 的 framework source、CLI、package manager、extension、released history与 23/97/78
   graph，并保持 #305 Evolution target独立。完整多平台 exact-candidate Release matrix、tag、GitHub Release、
   生产业务仓验证与 live Issue closure继续由后续 owner fresh验证。

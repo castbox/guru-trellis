@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import inspect
 import copy
 import hashlib
 import json
@@ -2023,6 +2024,18 @@ class TaskPublicationContractTest(unittest.TestCase):
                 "branch_review_commit is invalid" in error
                 for error in checked(invalid)
             )
+        )
+
+    def test_return_to_task_work_records_review_gate_content_identity(self) -> None:
+        source = Path(inspect.getsourcefile(GTT.cmd_record_task_publication_review) or "")
+        implementation = source.read_text(encoding="utf-8")
+        self.assertIn(
+            'typed_exit == "return_to_task_work"',
+            implementation,
+        )
+        self.assertIn(
+            "include_worktree=False",
+            implementation,
         )
 
     def test_both_modes_declare_exact_eight_entry_preconditions(self) -> None:

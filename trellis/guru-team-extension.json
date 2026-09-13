@@ -17,6 +17,17 @@
   "public_api": {
     "workflow_template_id": "guru-team",
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
+    "migration_capabilities": {
+      "guru-ledger-free-runtime": {
+        "capability_id": "guru-ledger-free-runtime",
+        "version": "1.0.0",
+        "projection_identity": {
+          "extension_id": "guru-team",
+          "extension_version": "0.6.16-guru.41",
+          "workflow_template_id": "guru-team"
+        }
+      }
+    },
     "managed_paths": [
       ".trellis/guru-team/",
       ".trellis/guru-team/skills/",
