@@ -8,5 +8,6 @@
 - `ARCH-GOV-006`：每个标准 task mandatory 进入 Architecture semantic owner；`architecture_impact` 恰好选择 `target_native`、`legacy_boundary_convergence` 或 `dedicated_refactor_slice`，`no_architecture_impact` 只返回 current identity 与可审核理由。
 - `ARCH-GOV-007`：Guru public identity 与项目 baseline/change-contract identity 只在 task-local Architecture change contract 相交。适用 concern、owner、GAP、before/after、project check、evidence、review 或 freshness 缺失、过期或冲突时 fail closed。
 - `ARCH-GOV-008`：普通 task 只写 task-owned contribution；shared current 仅由 Architecture owner 在 independent committed-diff review 后按 expected current identity 串行 promotion。live current 推进使旧 task 返回 `sync_required`，promotion diff 必须重新通过 Phase 2、task commit 与独立 Branch Review。
+- `ARCH-GOV-009`：Issue reference 与 closure intent 由 Publication 唯一语义判断；Finalizer 只绑定 reviewed payload，GitHub 只按进入默认分支的 closing keyword执行关闭，Merge只验证 live result。no-Issue不制造 Issue identity，remain-open与non-default-base路径必须绑定current authority，不得恢复task-local classification aggregate或调用Issue close API补偿。
 
 完整项目 change contract 与 project-check descriptor 见 [`change-contract.md`](./change-contract.md)。

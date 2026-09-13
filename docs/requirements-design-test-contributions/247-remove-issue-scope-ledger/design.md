@@ -1,7 +1,8 @@
 # #247 Issue Scope Ledger retirement Design contribution
 
-本 candidate 采用 `target_native`，保持 23 Skills / 97 exits / 78 commands 与四阶段 workflow
-顺序，直接建立无 ledger aggregate 的 authority boundary，并同步迁移受控 consumer。
+本 reviewed promotion 采用 `target_native`，保持 23 Skills / 97 exits / 78 commands 与四阶段 workflow
+顺序，直接建立无 ledger aggregate 的 authority boundary，并同步迁移受控 consumer。稳定设计已合并到
+`docs/design/versions/current-main-0.6.5-guru.50/`；本文件只保留 promotion provenance。
 
 - `D247-01`：Workspace owner 删除 ledger authoring、writer、artifact declaration、checker reader、
   schema/example/eval/test；created output只保留 official task identity 和唯一 consumer 必需数据。
@@ -24,8 +25,9 @@
 - `D247-08`：legacy ledger path 不属于新 managed inventory；preset/update不主动触碰，current runtime
   不打开。旧 task不迁移、不转换、不建立兼容测试；历史 archive/ADR/superseded/released RDT保持不变。
 
-Architecture inheritance 由
+Promotion status：`reviewed_promoted`；Architecture inheritance 由
 [`architecture-contribution-247-remove-issue-scope-ledger-v1`](../../architecture/contributions/247-remove-issue-scope-ledger.md)
-和 [`ADR-009-CANDIDATE`](../../architecture/adr/009-issue-reference-closure-ownership.md) 拥有。
+和 accepted [`ADR-009`](../../architecture/adr/009-issue-reference-closure-ownership.md) 拥有，current
+successor为 `current-main-0.6.5-guru.50`。
 实现若要求新增 owner、public Skill、graph router、替代 aggregate、兼容层或 #305 target 重构，
 本 Planning result 立即 stale 并返回对应 semantic owner。

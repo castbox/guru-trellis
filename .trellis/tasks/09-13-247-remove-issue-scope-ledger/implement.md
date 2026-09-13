@@ -22,9 +22,10 @@
    DTO、runtime/script、fixture/test、commands、manifest/registry 内容。对共享文件逐 consumer 审查，
    只删除 ledger-owned 分支，避免破坏其它 active responsibility。
 7. 创建 `docs/requirements-design-test-contributions/247-remove-issue-scope-ledger/`，提供 manifest、
-   requirement、design、test 和 traceability；创建 task-owned Architecture contribution 与
-   `ADR-009-CANDIDATE`，按 `target_native` 记录 before/after、closure authority decision、project check、
-   legacy preservation 与 promotion contract。
+   requirement、design、test 和 traceability；创建 task-owned Architecture contribution 与 ADR
+   candidate，按 `target_native` 记录 before/after、closure authority decision、project check、legacy
+   preservation 与 promotion contract；committed review 后 serialized promotion 已将其接受为
+   `ADR-009` 并建立唯一 active `.50`。
 8. 更新 canonical workflow/README/spec/extension manifest/preset ownership 与 verifier；运行 preset
    apply 同步 dogfood 及 Shared/Codex/Claude/Cursor 投影，逐项处理 `.new`/`.bak`，不得覆盖用户改动。
 9. 添加/调整 targeted tests 与 eval：active-zero inventory、task creation no-ledger、Publication
@@ -110,3 +111,19 @@ invoke 返回 `baseline_current / architecture_impact / target_native / reviewed
 precondition、schema registration、aggregate DTO consumer 均为零，upstream ownership 与 dogfood
 overlay drift 检查均为 `status=ok`。此前 `203 tests / OK (skipped=1)` 仅保留为该实现 HEAD 的较早完整
 回归事实，不是本次 fresh Phase 2 的唯一 gate，也不替代本次 Architecture、qualifier 与 task check。
+
+## Serialized Promotion And Promotion-Created Phase 2
+
+同日，independent committed full-diff review 对
+`origin/main@ec016827fac81d33faeacb307b0db76d5259dc28...9c3c00908446ac0fa86974cb9886f37917ac40ca`
+返回 P0-P3 findings zero。Architecture/RDT serialized owners 随后绑定 expected immutable `.49`，建立
+唯一 active `current-main-0.6.5-guru.50`，接受 `ADR-009`、关闭 `ARCH-GAP-008`，并保留 23 Skills /
+97 exits / 78 commands、#305 target 与 framework/CLI/extension/release 独立版本轴。
+
+Promotion-created combined diff 已重新完成 Phase 2：Architecture 返回
+`baseline_current / architecture_impact / target_native / reviewed_promoted`，RDT 返回
+`ssot_current`；normal-scenario 与 solution-mechanism qualifier 返回
+`classified / qualified_current`；Architecture、RDT 与 `guru-check-task` package 共 56 tests 通过，
+task/YAML/trace/immutable-history/diff/ownership/drift 检查通过，`guru-check-task` public wrapper 返回
+`passed`。该 gate 不证明 commit、后续独立 Branch Review、Publication、push、PR、merge、tag、Release、
+生产业务仓验证或 live Issue closure。

@@ -48,9 +48,15 @@
 - `ARCH-INT-016`：framework generation owner 为 fixed Fork `a2003296...` 的 official CLI；Guru canonical
   owner 直接迁移 workflow/Skill/runtime/installer/spec/platform consumers，并经 preset 投影到 dogfood 与
   installed copies。task resolution 只消费 task metadata、Git common-dir/branch/worktree、ignored mappings
-  与 issue ledger；creator/assignee 只来自 explicit metadata 或 repository-access-preflight 后的 authenticated
-  GitHub caller。legacy identity/workspace 数据只由 preservation validator 读取 bytes/mode snapshot，
-  不进入 owner、selection、recovery 或 migration authority。
+  与 explicit caller authority；creator/assignee 只来自 explicit metadata 或 repository-access-preflight 后的
+  authenticated GitHub caller。legacy identity/workspace 数据只由 preservation validator 读取 bytes/mode
+  snapshot，不进入 owner、selection、recovery 或 migration authority。
+
+- `ARCH-INT-017`：Issue-backed task 不通过 task-local ledger 或 Issue arrays 交换 closure authority。
+  Publication 基于 current requirement authority、reviewed diff、target/default branch 与 live Git/GitHub facts
+  形成唯一 reviewed reference/closure intent；Finalizer 只绑定该 payload。默认分支 closing keyword由 GitHub
+  执行，Merge 读取 live PR/Issue facts验证结果；non-default-base 当前只引用并由后续进入默认分支的
+  Publication fresh判断。no-Issue不制造 Issue identity，remain-open 必须绑定具体 current-authority原因。
 
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。

@@ -1,8 +1,8 @@
-# ADR-009-CANDIDATE: Issue reference and closure ownership
+# ADR-009: Issue reference and closure ownership
 
-状态：`candidate`。Owner：Issue #247。Expected current：
-`current-main-0.6.5-guru.49`。只有在 #247 independent committed full-diff review 通过并由
-expected-current-bound serialized promotion 接受后，才可成为 `ADR-009` current authority。
+状态：`accepted`。来源：Issue #247 reviewed Architecture contribution。Promotion input：
+`current-main-0.6.5-guru.49`；current successor：`current-main-0.6.5-guru.50`。Independent reviewed range：
+`origin/main@ec016827fac81d33faeacb307b0db76d5259dc28...9c3c00908446ac0fa86974cb9886f37917ac40ca`。
 
 ## Context
 
@@ -37,8 +37,8 @@ no external work item 与 non-default-base PR 的长期关闭语义，以及谁�
 - public DTO 直接删除 ledger-era aggregate；current consumer必须读取自己的 authority 或最小 transition。
 - preset/update 不拥有或主动触碰磁盘上的 legacy ledger；文件存在与否不影响 current runtime。
 - Finalizer/Merge/Finish/Restore/Cleanup 不获得替代 closure decision authority。
-- shared current 只能由 Architecture/RDT promotion owner在 #247 committed review 后绑定 expected `.49`
-  串行更新；promotion diff仍需 fresh Phase 2、commit 与 Branch Review。
+- shared current 已由 Architecture promotion owner在 #247 committed review 后绑定 expected `.49` 串行提升为
+  `.50`；promotion diff仍需 fresh Phase 2、commit 与 Branch Review。
 
 ## Rejected Alternatives
 
@@ -55,5 +55,6 @@ Merge live closure verification、legacy absent/present 等价、current-only re
 installed/Shared/Codex/Claude/Cursor parity，以及一个代表性 install/update 场景。完整多平台
 exact-candidate Release matrix、tag、GitHub Release和生产业务仓验证保持 deferred。
 
-本 candidate 不修改 shared current、accepted ADR index或其它 Issue authority。Promotion接受后再将其
-登记为 `ADR-009`；此前任何下游只能把它作为 #247 task-owned candidate审查。
+本 decision 已随 `.50` serialized promotion 进入 current authority。该 promotion 只接受 reviewed #247
+contribution 与 inherited immutable `.49`，不修改 #305 target、framework/CLI/extension/release独立版本轴，
+也不证明 push、PR、merge、tag、GitHub Release、生产业务仓验证或 Issue closure。

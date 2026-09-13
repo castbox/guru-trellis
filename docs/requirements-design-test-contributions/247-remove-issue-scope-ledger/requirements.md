@@ -1,8 +1,13 @@
 # #247 Issue Scope Ledger retirement Requirements contribution
 
-本 contribution 绑定 live Issue #247 `2026-09-13-r19`、task planning 与 active
-`current-main-0.6.5-guru.49`。它是 task-isolated candidate，不修改 shared current，
-不实施 #305 Evolution 大规模重构，也不建立旧 task migration 或 compatibility contract。
+本 contribution 绑定 live Issue #247 `2026-09-13-r19`、task planning、immutable predecessor
+`current-main-0.6.5-guru.49` 与 reviewed serialized promotion。其稳定 ID 已合并到唯一 active
+`current-main-0.6.5-guru.50`；本文件只保留 provenance，不是第二 current authority，不实施 #305
+Evolution 大规模重构，也不建立旧 task migration 或 compatibility contract。
+
+Promotion status：`reviewed_promoted`；Architecture inheritance：`current-main-0.6.5-guru.50` / accepted
+`ADR-009`；current Requirements locator：
+`docs/requirements/versions/current-main-0.6.5-guru.50/requirement-main.md`。
 
 - `R247-01`：current active graph 必须移除 `issue-scope-ledger.json`、
   `guru-issue-scope-ledger-*` 和 `primary_issue` / Issue-array aggregate 的 writer、reader、

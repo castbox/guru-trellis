@@ -2,17 +2,17 @@
 
 ## Identity And Authority Boundary
 
-- contribution identity：`architecture-contribution-247-remove-issue-scope-ledger-v1`。
+- contribution identity：`architecture-contribution-247-remove-issue-scope-ledger-v1` / `reviewed_promoted`。
 - requirement authority：live Issue #247 `2026-09-13-r19`、task `prd.md` 与 #247 RDT contribution。
 - behavior authority：task `design.md`、`implement.md` 与 #247 RDT contribution。
-- current/expected baseline：`docs/architecture/README.md` /
-  `current-main-0.6.5-guru.49` / `active`。
+- promotion input：`docs/architecture/README.md` / expected `current-main-0.6.5-guru.49`。
+- promoted successor：`current-main-0.6.5-guru.50` / `active`；`.49` 为 immutable superseded predecessor。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` /
   `guru-trellis-design-constitution-v1` / `current`。
 - project change contract：`docs/architecture/06-governance/change-contract.md` /
   `guru-trellis-architecture-change-contract-v1` /
   `guru-trellis-architecture-change-concerns-v1`。
-- change path：`target_native`；promotion state：`reviewed_candidate`；ADR required：`true`；
+- change path：`target_native`；promotion state：`reviewed_promoted`；ADR required：`true`；
   ADR locator：`docs/architecture/adr/009-issue-reference-closure-ownership.md`。
 
 本 contribution 只定义 current ledger authority 的局部收敛，不恢复 #305 target 大重构，
@@ -45,10 +45,10 @@ layer、reader 或退出期。该 target-native decision 仍局限于 #247，不
 | `boundary-and-decision` | `applicable` | `target_native` 建立 reference、closure intent、GitHub action 与 live result 的独立 owner boundary。 |
 | `owner-and-single-writer` | `applicable` | 各semantic owner单写自己的current result；task只写delivery/contributions；serialized owner单写shared current。 |
 | `compatibility-and-exit` | `applicable` | current consumer同步迁移并删除旧资产；无旧task migration、adapter、fallback、dual-read/write。 |
-| `gap-and-deviation` | `applicable` | `ADR-009-CANDIDATE` 承接 ledger authority debt 的关闭；不重开其它 closed GAP，不新增 owner、router 或替代 aggregate。 |
+| `gap-and-deviation` | `applicable` | accepted `ADR-009` 与 closed `ARCH-GAP-008` 承接 ledger authority debt 的关闭；不重开其它 closed GAP，不新增 owner、router 或替代 aggregate。 |
 | `parallel-scope` | `applicable` | #247只写自己的worktree与contributions；promotion前不修改`.49` shared current或其它task。 |
 | `evidence-and-freshness` | `applicable` | active-zero inventory、三路closure、legacy inert、package/eval/install/platform与full diff各绑定current candidate。 |
-| `review-and-promotion` | `applicable` | contribution 与 `ADR-009-CANDIDATE` 随 delivery 接受 independent committed review；serialized promotion 绑定 expected `.49`，其 diff 重新过 gate。 |
+| `review-and-promotion` | `applicable` | contribution 与 `ADR-009` 已接受 independent committed review；serialized promotion 绑定 expected `.49` 并建立 `.50`，其 diff 重新过 gate。 |
 
 ## Owners And Single Writers
 
@@ -68,14 +68,14 @@ layer、reader 或退出期。该 target-native decision 仍局限于 #247，不
 
 - descriptor：`guru-trellis-architecture-convergence:repository:1` /
   `guru-trellis-architecture-convergence@1`。
-- refs：`ARCH-GOV-006..008`、`ADR-005`、`ADR-009-CANDIDATE`、`ARCH-GAP-006`。
+- refs：`ARCH-GOV-006..009`、`ADR-005`、`ADR-009`、`ARCH-GAP-006`、`ARCH-GAP-008`。
 - Planning evidence：live Issue #247 r19、task planning、active `.49` Architecture/RDT、fresh
   ledger consumer inventory、#247 RDT candidate与本 contribution。
 - Revised Planning result（2026-09-13）：`pass / blocking=true`；Architecture typed exit 为
   `baseline_current`。方案只有一个 target-native direct-deletion path、现有 owner与一个
   serialized promotion writer；无 compatibility layer、old-task migration、替代 aggregate、owner expansion
-  或新增/恶化 deviation；`ADR-009-CANDIDATE` 完整承接 closure authority、GAP lifecycle 与
-  compatibility exit。
+  或新增/恶化 deviation；Planning 当时的 `ADR-009-CANDIDATE` 完整承接 closure authority、GAP
+  lifecycle 与 compatibility exit，现已随 `.50` promotion 成为 accepted `ADR-009`。
 
 Phase 2与Branch Review必须分别基于完整 current candidate和exact committed range执行；Planning
 re-entry后的 fresh Phase 2 已完成，但仍不替代提交后的 independent Branch Review。
@@ -105,10 +105,13 @@ Release matrix、tag、GitHub Release和生产业务仓验证不属于本 projec
 ## Review And Promotion Boundary
 
 - Phase 2 review：`passed`；已绑定2026-09-13完整current candidate与fresh Architecture/task-check结果。
-- independent Branch Review：`pending`；原 committed review 因 Architecture `contract_incomplete` 未通过。
-- expected current：`current-main-0.6.5-guru.49`。
-- promotion：`required`，但本 contribution不授权 shared current write。
-- ADR：`required=true`；`ADR-009-CANDIDATE` 记录 closure authority、GitHub action/result 和无兼容退出的长期 decision。
+- independent Branch Review：`passed`；绑定 exact range
+  `origin/main@ec016827fac81d33faeacb307b0db76d5259dc28...9c3c00908446ac0fa86974cb9886f37917ac40ca`。
+- promotion：`reviewed_promoted`；expected input `current-main-0.6.5-guru.49`，current successor
+  `current-main-0.6.5-guru.50`。
+- ADR：`required=true`；accepted `ADR-009` 记录 closure authority、GitHub action/result 和无兼容退出的长期 decision。
+- promotion-created diff 必须重新进入 fresh Phase 2、Task Commit 与 independent Branch Review，之后才可由
+  Publication/Acceptance消费 current `.50`。
 - live current advance、scope/owner扩张、兼容机制、project-check failure或stale contribution必须返回对应owner。
 
 ## Explicit Boundaries

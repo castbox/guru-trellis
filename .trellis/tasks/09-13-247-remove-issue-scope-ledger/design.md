@@ -46,8 +46,9 @@ authority 传递的字段删除。Publication 的 current reviewed closure decis
    registration；共享资产仅在存在其它 verified active consumer 时保留。
 6. **Distribution surface**：先修改 canonical，再通过 preset apply 同步 dogfood 与 Shared、
    Codex、Claude、Cursor 投影；更新 installed inventory、verification、mode/byte 和 sidecar checks。
-7. **Current docs authority**：创建 #247 task-owned RDT/Architecture contribution；更新 current
-   contract 的候选只在 serialized promotion 后生效。
+7. **Current docs authority**：创建 #247 task-owned RDT/Architecture contribution；independent
+   committed review 通过后由 serialized owners 将其提升为唯一 active `.50`，并让 promotion-created
+   diff重新进入 Phase 2、Task Commit 与 Branch Review。
 
 历史 archive、ADR、superseded/released RDT、旧 release evidence 和当前 task 创建时已经生成的
 `issue-scope-ledger.json` 都不作为 active match-zero 检查的删除目标；它们不被迁移、解析或作为
@@ -109,9 +110,10 @@ layer、reader 或退出期。该 target-native 变化仍是 #247 的独立小�
 - `minimum-necessary-complexity`：直接删除，不增加 wrapper、fallback 或 graph scanner。
 - `debt-one-way-convergence`：active legacy ledger 单向退出，legacy 文件仅 inert preservation。
 
-需要 task-owned Architecture contribution 与 `ADR-009-CANDIDATE`，因为本任务同时改变长期的
+本任务需要 task-owned Architecture contribution 与 ADR decision，因为它同时改变长期的
 closure-intent owner、GitHub closing-keyword 执行边界、Merge result verification、GAP lifecycle 与
-compatibility exit。ADR candidate 只记录这一目标边界，不引入新 owner、旧 task migration 或兼容层。
+compatibility exit。该 candidate 已在 independent committed review 后由 serialized promotion 接受为
+`ADR-009` 并进入唯一 active `.50`；不引入新 owner、旧 task migration 或兼容层。
 
 ## Failure And Recovery
 

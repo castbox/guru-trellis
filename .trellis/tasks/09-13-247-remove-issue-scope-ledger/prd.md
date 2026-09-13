@@ -13,7 +13,8 @@ external work item reference、delivery object 和 mutation authority 按现有 
 - Live Issue：`https://github.com/castbox/guru-trellis/issues/247`。
 - Issue contract：`2026-09-13-r19`；该正文替代旧 body 与历史评论。
 - Base：`origin/main` / `ec016827fac81d33faeacb307b0db76d5259dc28`。
-- RDT / Architecture：`current-main-0.6.5-guru.49`，状态 `active`。
+- RDT / Architecture：`current-main-0.6.5-guru.50`，状态 `active`；由 reviewed #247
+  contribution 和 accepted `ADR-009` 从 immutable `.49` serialized promotion 得到。
 - 当前 public graph 仍为 23 Skills / 97 exits / 78 commands；本 Issue 不改变四阶段顺序或无关 owner。
 
 ## Requirements
@@ -115,7 +116,8 @@ fixture 直接演进；不保留 alias、adapter、dual-read、dual-write、comp
 - Test：在同一 contribution 中定义 active-zero inventory、三路 closure、legacy
   absent/present-A/present-B 等价、安装更新保留和跨投影验证场景。
 - Architecture：本变更修改 current authority/owner integration、Issue closure 规则与
-  distribution contract，按 `target_native` 由 task-owned Architecture contribution 和
-  `ADR-009-CANDIDATE` 承接；shared current 仅由后续 serialized promotion owner 更新。
+  distribution contract，按 `target_native` 由 task-owned Architecture contribution 承接；
+  serialized promotion 已建立唯一 active `.50` 并接受 `ADR-009`，promotion-created diff
+  仍须 fresh Task Commit 与独立完整 Branch Review。
 - Historical boundary：不修改 archive、既有 accepted ADR、superseded/released RDT 版本或旧
   release evidence；这些历史对象也不是新 runtime 的兼容或迁移输入。

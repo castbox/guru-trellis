@@ -86,8 +86,16 @@
   legacy 数据原 path/mode/bytes 保留。public graph、extension `0.6.16-guru.41` 与 released
   `v0.6.16-guru.1` 不变，后者不包含本 candidate。
 
-当前 Architecture knowledge identity 为 `.49`，extension revision 为 `0.6.16-guru.41`，Fork CLI 为
-`0.6.17`，framework source 为 `a2003296...`，package manager 为 `pnpm@10.32.1`。`.48` 是 immutable
-superseded predecessor；released `v0.6.16-guru.1` 保持独立且不包含 #329 candidate。promotion-created diff
+- `ARCH-CUR-027`（`source_confirmed` + `reviewed`）：#247 以 `target_native` 从 current graph 删除
+  task-local `issue-scope-ledger.json`、Issue classification aggregate、writer/reader/schema registration 与
+  ledger-era public DTO。requirement/source reference 回到 current authority；Publication 独占 Issue reference
+  与 closure intent，Finalizer 只绑定 reviewed payload，GitHub 按默认分支 closing keyword 执行关闭，Merge
+  只做独立 readiness、expected-head merge 与 live result verification。no-Issue、remain-open 与 non-default-base
+  路径保持显式；legacy ledger 不迁移、不 dual-read，也不进入 managed inventory。public graph保持
+  23 Skills / 97 exits / 78 commands，accepted `ADR-009` 固化该长期 owner 与 compatibility exit。
+
+当前 Architecture knowledge identity 为 `.50`，extension revision 为 `0.6.16-guru.41`，Fork CLI 为
+`0.6.17`，framework source 为 `a2003296...`，package manager 为 `pnpm@10.32.1`。`.49` 是 immutable
+superseded predecessor；released `v0.6.16-guru.1` 保持独立且不包含 #247 candidate。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。

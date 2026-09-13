@@ -10,6 +10,7 @@
 | `ADR-006` | accepted | base selection 与 authority checkout binding 分离；detached session 只作为 invocation shell，selected-base checkout 独占同步与 equality authority |
 | `ADR-007` | accepted | Finalizer extension source checkout 与 target reviewed checkout 独立绑定；closed `self_hosted|installed` modes |
 | `ADR-008` | accepted | normal-scenario 与 solution-mechanism 资格由独立 semantic owners 承接，OS primitive 不得成为业务 authority |
+| `ADR-009` | accepted | Publication 独占 Issue reference/closure intent；Finalizer执行 reviewed payload，GitHub执行默认分支closing keyword，Merge验证live result；不保留ledger aggregate或compatibility reader |
 
 后续 supersede 时保留 predecessor/successor identity 与历史边界，不改写旧决策为 current evidence。
 
@@ -17,3 +18,4 @@
 `ADR-006` 正文见 [`006-base-authority-checkout-routing.md`](./006-base-authority-checkout-routing.md)。
 `ADR-007` 正文见 [`007-finalizer-extension-source-target-binding.md`](./007-finalizer-extension-source-target-binding.md)。
 `ADR-008` 正文见 [`008-solution-mechanism-qualification.md`](./008-solution-mechanism-qualification.md)。
+`ADR-009` 正文见 [`009-issue-reference-closure-ownership.md`](./009-issue-reference-closure-ownership.md)。

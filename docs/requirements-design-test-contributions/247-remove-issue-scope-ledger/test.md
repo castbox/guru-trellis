@@ -3,6 +3,10 @@
 本文件定义稳定验证合同，不记录尚未执行的 PASS，也不把 focused install/update 证据表述为完整
 Release matrix 或生产业务验证。
 
+Promotion status：`reviewed_promoted`；稳定 Test contract 已合并到
+`docs/test/versions/current-main-0.6.5-guru.50/`。本文件保留 promotion source与既有验证边界，
+不作为第二 current Test authority。
+
 - `T247-01`：fresh inventory 验证 current active graph 中 ledger 名称/schema id、writer、reader、
   precondition、registration 与 Issue aggregate consumer 数量为零；历史 archive/ADR/version evidence排除。
 - `T247-02`：验证 task/workspace creation 不生成、登记或返回 ledger；current task identity/worktree/mapping
@@ -69,3 +73,7 @@ current runtime authority，preset/update不主动打开、迁移或删除旧 ta
 未验证边界保持不变：完整多平台 exact-candidate Release matrix、tag、GitHub Release、生产业务仓验证。
 这些是 Release/production proof，不阻塞 #247 current-version 小幅优化的 Phase 2 完成，也不得由上述
 focused/complete repository suite推导为已通过。
+
+Serialized promotion 已建立 `.50` RDT/Architecture successor与accepted `ADR-009`；该 promotion-created
+combined diff仍须fresh Phase 2、Task Commit与独立完整Branch Review，且不证明Publication、push、PR、
+merge、tag、Release或Issue closure。
