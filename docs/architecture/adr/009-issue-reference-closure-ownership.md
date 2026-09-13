@@ -26,9 +26,12 @@ no external work item 与 non-default-base PR 的长期关闭语义，以及谁�
    closing keyword；remain-open 必须引用 current authority 中具体的合并后未完成条件；
 4. 无 external work item 时不产生 Issue 引用或关闭效果；目标为非默认分支时当前 PR 只引用，后续进入
    默认分支的 Publication 基于届时 authority fresh 判断；
-5. Finalizer 只绑定并执行 reviewed Publication payload，不重新判断关闭范围；
+5. Finalizer 只绑定并执行 reviewed Publication payload，并向 Merge 投影 exact reviewed PR body 的
+   最小 SHA-256 identity，不重新判断关闭范围；
 6. GitHub 在 closing-keyword PR 进入默认分支时自动执行关闭；Merge 只做独立 readiness、expected-head、
-   当前 merge confirmation 与 merge 后 live PR/Issue result verification，不调用 Issue close API；
+   当前 merge confirmation 与 merge 后 live PR/Issue result verification；merge mutation 前必须验证 live
+   body identity 与 Finalizer handoff 一致，不一致时直接 fail closed，由调用方重新进入 fresh
+   Publication/Finalizer；Merge 不新增 reprepare typed exit，也不调用 Issue close API；
 7. 旧 ledger、旧 task DTO/schema/invocation 不迁移、不 dual-read、不提供 adapter 或 compatibility reader。
 
 ## Consequences
@@ -51,7 +54,8 @@ no external work item 与 non-default-base PR 的长期关闭语义，以及谁�
 ## Verification And Promotion
 
 Acceptance 必须覆盖 active ledger inventory 为零、Publication 四路 effect、Finalizer payload binding、
-Merge live closure verification、legacy absent/present 等价、current-only rejection、canonical/dogfood/
+Finalizer-to-Merge body identity continuity、body-only drift pre-mutation rejection、Merge live closure
+verification、legacy absent/present 等价、current-only rejection、canonical/dogfood/
 installed/Shared/Codex/Claude/Cursor parity，以及一个代表性 install/update 场景。完整多平台
 exact-candidate Release matrix、tag、GitHub Release和生产业务仓验证保持 deferred。
 

@@ -599,6 +599,7 @@ def task_pr_merge_json_input(root: Path, value: str | None) -> dict[str, Any]:
     expected = str(payload.get("expected_head_sha") or "")
     expected_base = payload.get("expected_base_branch")
     expected_branch = payload.get("expected_head_branch")
+    publication_body_sha256 = payload.get("publication_body_sha256")
     reviewed_merge_message = payload.get("reviewed_merge_message")
     if (
         payload.get("schema_version") != TASK_PR_MERGE_SCHEMA_VERSION
@@ -614,6 +615,15 @@ def task_pr_merge_json_input(root: Path, value: str | None) -> dict[str, Any]:
         or not expected_base.strip()
         or not isinstance(expected_branch, str)
         or not expected_branch.strip()
+        or (
+            payload.get("profile") == "ready_for_merge"
+            and re.fullmatch(r"[0-9a-f]{64}", str(publication_body_sha256 or ""))
+            is None
+        )
+        or (
+            payload.get("profile") == "standalone_merge"
+            and "publication_body_sha256" in payload
+        )
     ):
         raise WorkflowError("Task PR merge input failed its current closed contract.", exit_code=2)
     expected_url = canonical_pull_request_url(repo, number, payload.get("pr_url"))
@@ -623,7 +633,7 @@ def task_pr_merge_json_input(root: Path, value: str | None) -> dict[str, Any]:
         head_branch=expected_branch,
         base_branch=expected_base,
     )
-    return {
+    normalized = {
         "schema_version": TASK_PR_MERGE_SCHEMA_VERSION,
         "profile": payload["profile"],
         "mode": payload["mode"],
@@ -635,6 +645,9 @@ def task_pr_merge_json_input(root: Path, value: str | None) -> dict[str, Any]:
         "expected_head_branch": expected_branch,
         "reviewed_merge_message": reviewed_merge_message,
     }
+    if payload["profile"] == "ready_for_merge":
+        normalized["publication_body_sha256"] = publication_body_sha256
+    return normalized
 
 def task_pr_merge_pr_body_closing_issue_numbers(body: Any) -> list[int]:
     if not isinstance(body, str):
@@ -714,6 +727,16 @@ def task_pr_merge_live_facts(root: Path, public_input: dict[str, Any]) -> dict[s
             repo=repo,
             detail="mergeStateStatus is outside the supported GitHub enum.",
         )
+    body = pr.get("body")
+    if not isinstance(body, str):
+        raise WorkflowError("Task PR merge requires a complete PR body.", exit_code=2)
+    if public_input.get("profile") == "ready_for_merge":
+        live_body_sha256 = hashlib.sha256(body.encode("utf-8")).hexdigest()
+        if live_body_sha256 != public_input.get("publication_body_sha256"):
+            raise WorkflowError(
+                "Task PR body differs from the Publication-reviewed bytes.",
+                exit_code=2,
+            )
     pr_url = canonical_pull_request_url(repo, number, pr.get("url"))
     policy = gh_json(
         ["api", f"repos/{repo}"],
@@ -758,7 +781,7 @@ def task_pr_merge_live_facts(root: Path, public_input: dict[str, Any]) -> dict[s
         raise github_response_incomplete(
             operation="merge_base_ref", repo=repo, detail="Expected base ref identity is incomplete."
         )
-    pr_body_closing_issue_numbers = task_pr_merge_pr_body_closing_issue_numbers(pr.get("body"))
+    pr_body_closing_issue_numbers = task_pr_merge_pr_body_closing_issue_numbers(body)
     issues: list[dict[str, Any]] = []
     for issue_number in pr_body_closing_issue_numbers if str(pr.get("state") or "").upper() == "MERGED" else []:
         issue = gh_json(

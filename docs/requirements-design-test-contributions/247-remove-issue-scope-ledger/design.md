@@ -14,9 +14,12 @@
   remain-open 必须有明确 current-authority 原因，reference 与 closure intent 是不同语义。
 - `D247-04`：默认分支 PR 由 Publication 在 body 编码 closing keyword；非默认分支 PR 只引用，后续
   目标默认分支 Publication fresh 判断。Finalizer 只绑定已 reviewed PR payload 和 exact
-  task/base/head identity；正常、existing-PR 与 terminal recovery使用同一规则。
+  task/base/head identity，并向 Merge 投影 exact reviewed body UTF-8 bytes 的 SHA-256；正常、
+  existing-PR 与 terminal recovery使用同一 materializer。
 - `D247-05`：Merge 独立重读 live PR/GitHub facts并完成 readiness semantic review、confirmation、
-  expected-head 与 closure verification，但不重判关闭决定、不调用 Issue close API；
+  expected-head 与 closure verification；首次 live PR read 后先验证 body identity，mismatch直接 fail
+  closed并由调用方重新进入 fresh Publication/Finalizer，不新增 reprepare typed exit。Merge 不重判关闭
+  决定、不调用 Issue close API；
   Finish/Restore/Cleanup不消费 Issue aggregate。
 - `D247-06`：所有仅服务 ledger 的 package contract、runtime、script、schema、DTO、example、eval、
   fixture、test、manifest、registry、README/spec 内容直接删除；共享文件只移除 ledger-owned 分支。

@@ -8,6 +8,7 @@
   "expected_head_sha": "1111111111111111111111111111111111111111",
   "expected_base_branch": "main",
   "expected_head_branch": "codex/348-merge-blocked-phase2-reentry",
+  "publication_body_sha256": "7f9d676f85807dd9cedfaefa346a366f9725a781b686bc992efb30dda2a4c3d5",
   "reviewed_merge_message": {
     "summary": "修复归档任务无法返回 Phase 2 的流程缺口",
     "subject": "chore(merge): #348 修复归档任务无法返回 Phase 2 的流程缺口",

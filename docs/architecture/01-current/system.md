@@ -89,8 +89,9 @@
 - `ARCH-CUR-027`（`source_confirmed` + `reviewed`）：#247 以 `target_native` 从 current graph 删除
   task-local `issue-scope-ledger.json`、Issue classification aggregate、writer/reader/schema registration 与
   ledger-era public DTO。requirement/source reference 回到 current authority；Publication 独占 Issue reference
-  与 closure intent，Finalizer 只绑定 reviewed payload，GitHub 按默认分支 closing keyword 执行关闭，Merge
-  只做独立 readiness、expected-head merge 与 live result verification。no-Issue、remain-open 与 non-default-base
+  与 closure intent，Finalizer 只绑定 reviewed payload并投影 exact body SHA-256，GitHub 按默认分支 closing
+  keyword 执行关闭，Merge 在 mutation 前验证 live body identity，只做独立 readiness、expected-head merge
+  与 live result verification。no-Issue、remain-open 与 non-default-base
   路径保持显式；legacy ledger 不迁移、不 dual-read，也不进入 managed inventory。public graph保持
   23 Skills / 97 exits / 78 commands，accepted `ADR-009` 固化该长期 owner 与 compatibility exit。
 

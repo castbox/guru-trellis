@@ -15,7 +15,8 @@ Promotion status：`reviewed_promoted`；稳定 Test contract 已合并到
   Issue-backed/no-Issue reference 由 current authority fresh形成。
 - `T247-04`：验证 Issue-backed completed、remain-open、no-Issue 三路 Publication 判断，以及默认/
   非默认分支 closing-keyword 路径；Finalizer/Merge 不重判、不调用 Issue close API，live post-merge
-  facts与 GitHub 自动效果一致。
+  facts与 GitHub 自动效果一致；Finalizer normal/terminal path生成同一 exact reviewed body SHA-256，
+  Merge在closing-scope推导和mutation前拒绝body-only drift，standalone profile不接受该Publication identity。
 - `T247-05`：验证 existing PR、terminal recovery、restore/re-entry、Finish 与 Cleanup 仅消费 current
   owner facts且不重复副作用；没有 ledger fallback 或替代 aggregate。
 - `T247-06`：对 current lifecycle 比较 ledger absent、present-A、present-B；结果一致且 active runtime
@@ -34,7 +35,7 @@ Promotion status：`reviewed_promoted`；稳定 Test contract 已合并到
 | `SCN-087 no-Issue` | Commit/PR不制造Issue reference、primary Issue或关闭效果。 |
 | `SCN-088 inert legacy present` | absent/present-A/present-B不影响current lifecycle；active runtime无read，preset/update不主动触碰。 |
 | `SCN-089 recovery` | existing PR、terminal、restore/re-entry使用current task/Git/PR/provider facts且无重复副作用。 |
-| `SCN-090 distribution/non-default publication` | canonical、dogfood、installed与四平台current package一致；非默认分支PR只引用，后续目标默认分支Publication fresh判断并编码closing keyword。 |
+| `SCN-090 distribution/non-default publication and body continuity` | canonical、dogfood、installed与四平台current package一致；非默认分支PR只引用，后续目标默认分支Publication fresh判断并编码closing keyword；Finalizer后body-only edit在Merge mutation前fail closed。 |
 
 完整多平台 exact-candidate Release matrix、tag、GitHub Release 和生产业务仓验证保持 deferred。
 

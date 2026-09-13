@@ -26,6 +26,14 @@ No prebuilt owner-result input is accepted. The separate record/check/execute
 commands remain package-private diagnostic and recovery primitives rather than
 the normal Agent path.
 
+The `ready_for_merge` output includes `publication_body_sha256`, the lowercase
+SHA-256 digest of the exact UTF-8 bytes in the Publication-reviewed PR body.
+Finalizer materializes the same identity from the bound plan on ordinary
+completion and terminal recovery. The field has one direct consumer: Merge
+checks the first live PR read against it before deriving closing keywords or
+performing a merge mutation. It carries no Issue list and grants no new
+closure authority.
+
 When the checked state is provenance-tail or archive-month
 `reprepare_required` and the AI-reviewed target is `ready_for_merge`, the public invocation
 may execute that declared deterministic transition, rebuild the target-owned

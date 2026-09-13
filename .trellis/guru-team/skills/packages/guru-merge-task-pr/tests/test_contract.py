@@ -50,6 +50,9 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "expected_head_sha": "1" * 40,
             "expected_base_branch": "main",
             "expected_head_branch": "fix/218-terminal-output",
+            "publication_body_sha256": hashlib.sha256(
+                b"Closes #218\n"
+            ).hexdigest(),
             "reviewed_merge_message": self.reviewed_message(),
         }
         gate = {"pre_merge_base_head": "3" * 40}
@@ -230,7 +233,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
     def test_workflow_and_standalone_profiles_are_closed_and_minimal(self) -> None:
         profiles = self.interface["public_contracts"]["input"]["profiles"]
         self.assertEqual([item["id"] for item in profiles], ["ready_for_merge", "standalone_merge"])
-        expected = {
+        common = {
             "schema_version", "profile", "mode", "repo_ref", "pr_number",
             "pr_url", "expected_head_sha", "expected_base_branch",
             "expected_head_branch",
@@ -238,8 +241,53 @@ class MergeTaskPrContractTest(unittest.TestCase):
         }
         for profile in profiles:
             schema = json.loads((PACKAGE / profile["schema"]["path"]).read_text(encoding="utf-8"))
+            expected = common | (
+                {"publication_body_sha256"}
+                if profile["id"] == "ready_for_merge"
+                else set()
+            )
             self.assertEqual(set(schema["required"]), expected)
             self.assertEqual(set(schema["properties"]), expected)
+
+    def test_json_input_requires_publication_identity_only_for_workflow(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            ready = json.loads(
+                (PACKAGE / "examples/public-ready-for-merge-input-2.0.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            ready_path = root / "ready.json"
+            ready_path.write_text(json.dumps(ready), encoding="utf-8")
+            normalized = GTT.task_pr_merge_json_input(root, str(ready_path))
+            self.assertEqual(
+                normalized["publication_body_sha256"],
+                ready["publication_body_sha256"],
+            )
+
+            missing = dict(ready)
+            missing.pop("publication_body_sha256")
+            missing_path = root / "missing.json"
+            missing_path.write_text(json.dumps(missing), encoding="utf-8")
+            with self.assertRaisesRegex(GTT.WorkflowError, "closed contract"):
+                GTT.task_pr_merge_json_input(root, str(missing_path))
+
+            standalone = json.loads(
+                (PACKAGE / "examples/public-standalone-merge-input-2.0.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            standalone_path = root / "standalone.json"
+            standalone_path.write_text(json.dumps(standalone), encoding="utf-8")
+            self.assertNotIn(
+                "publication_body_sha256",
+                GTT.task_pr_merge_json_input(root, str(standalone_path)),
+            )
+
+            standalone["publication_body_sha256"] = "a" * 64
+            standalone_path.write_text(json.dumps(standalone), encoding="utf-8")
+            with self.assertRaisesRegex(GTT.WorkflowError, "closed contract"):
+                GTT.task_pr_merge_json_input(root, str(standalone_path))
 
 
     def test_active_command_input_bindings_validate_the_two_point_zero_example(self) -> None:
@@ -348,10 +396,13 @@ class MergeTaskPrContractTest(unittest.TestCase):
         )
 
     def test_live_facts_capture_required_readiness_composite(self) -> None:
+        body = "Closes #180\n"
         public_input = {
+            "profile": "ready_for_merge",
             "repo_ref": "castbox/guru-trellis",
             "pr_number": 180,
             "expected_base_branch": "main",
+            "publication_body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
         }
         pr = {
             "number": 180,
@@ -368,7 +419,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 {"name": "required-ci", "conclusion": "SUCCESS"},
                 {"name": "optional-preview", "conclusion": "FAILURE"},
             ],
-            "body": "Closes #180\n",
+            "body": body,
             "mergedAt": None,
             "mergeCommit": None,
         }
@@ -402,6 +453,50 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 {"name": "optional-preview", "state": "FAILURE"},
             ],
         )
+
+    def test_live_facts_reject_body_only_drift_before_closure_derivation(self) -> None:
+        reviewed_body = "Closes #180\n"
+        public_input = {
+            "profile": "ready_for_merge",
+            "repo_ref": "castbox/guru-trellis",
+            "pr_number": 180,
+            "expected_base_branch": "main",
+            "publication_body_sha256": hashlib.sha256(
+                reviewed_body.encode("utf-8")
+            ).hexdigest(),
+        }
+        pr = {
+            "number": 180,
+            "url": "https://github.com/castbox/guru-trellis/pull/180",
+            "state": "OPEN",
+            "isDraft": False,
+            "baseRefName": "main",
+            "headRefName": "codex/180-eval",
+            "headRefOid": "1" * 40,
+            "mergeable": "MERGEABLE",
+            "mergeStateStatus": "CLEAN",
+            "reviewDecision": "APPROVED",
+            "statusCheckRollup": [],
+            "body": reviewed_body + "\nBody-only edit after Publication review.\n",
+            "mergedAt": None,
+            "mergeCommit": None,
+        }
+        with (
+            mock.patch.object(GTT, "gh_json", return_value=pr) as gh_json,
+            mock.patch.object(
+                GTT,
+                "task_pr_merge_pr_body_closing_issue_numbers",
+                side_effect=AssertionError("closure scope must not be derived"),
+            ) as closing_scope,
+        ):
+            with self.assertRaisesRegex(
+                GTT.WorkflowError,
+                "differs from the Publication-reviewed bytes",
+            ):
+                GTT.task_pr_merge_live_facts(Path("."), public_input)
+
+        self.assertEqual(gh_json.call_count, 1)
+        closing_scope.assert_not_called()
 
     def test_live_facts_reject_unknown_required_readiness_composite(self) -> None:
         public_input = {

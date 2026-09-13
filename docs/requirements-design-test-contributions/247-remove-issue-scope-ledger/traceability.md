@@ -15,7 +15,8 @@ provenance，不是第二 current authority。
 | `R247-10` | `D247-06..08` | `T247-08`, `SCN-090` | `ARCH-CUR-027`, `EVD-026` |
 
 `BEH-019` 由 `D247-08` / `T247-06` / `SCN-088` 承接；`BEH-020` 由
-`D247-03..05` / `T247-04` / `SCN-085..087` 承接。旧 task migration明确不进入 traceability。
+`D247-03..05` / `T247-04` / `SCN-085..087` / `SCN-090` 承接，其中 `SCN-090` 同时验证
+Finalizer-to-Merge body identity continuity。旧 task migration明确不进入 traceability。
 
 Architecture contribution locator：
 [`docs/architecture/contributions/247-remove-issue-scope-ledger.md`](../../architecture/contributions/247-remove-issue-scope-ledger.md)，

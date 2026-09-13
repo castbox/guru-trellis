@@ -373,11 +373,14 @@ full throwaway matrix、business smoke、tag、GitHub Release 或 Issue closure 
   branch与live GitHub facts唯一形成PR reference/closure intent；completed默认关闭，remain-open必须有
   具体current-authority原因，no-Issue不制造identity。
 - `D247-04`：默认分支PR由Publication在body编码closing keyword；非默认分支PR只引用，后续进入默认
-  分支的Publication fresh判断。Finalizer只绑定reviewed payload与exact task/base/head identity；normal、
-  existing-PR、terminal recovery使用同一规则。
+  分支的Publication fresh判断。Finalizer只绑定reviewed payload与exact task/base/head identity，并向
+  Merge投影exact reviewed body UTF-8 bytes的SHA-256；normal、existing-PR、terminal recovery使用同一
+  payload identity。
 - `D247-05`：Merge独立重读live PR/GitHub facts并完成readiness semantic review、confirmation、
-  expected-head与closure result verification，但不重判关闭决定、不调用Issue close API；Finish/Restore/
-  Cleanup不消费Issue aggregate。
+  expected-head与closure result verification；merge mutation前必须验证live PR body SHA-256与Finalizer
+  handoff一致，body-only drift直接fail closed并由调用方重新进入fresh Publication/Finalizer；Merge不新增
+  reprepare typed exit、不重判关闭决定、不调用Issue close API；
+  Finish/Restore/Cleanup不消费Issue aggregate。
 - `D247-06`：所有仅服务ledger的Skill Markdown、interface/schema、eval/example JSON、DTO、runtime/script、
   fixture/test、manifest、registry与current docs直接删除；共享文件只移除ledger-owned分支。
 - `D247-07`：canonical是唯一编辑源，preset reapply同步dogfood与Shared/Codex/Claude/Cursor；source/

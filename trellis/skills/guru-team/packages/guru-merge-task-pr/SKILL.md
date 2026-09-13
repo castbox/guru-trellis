@@ -49,6 +49,14 @@ unmapped output. Never enter Phase
 0, sync a base, update/rebase the PR branch, close Issues directly, synchronize
 local `main`, or clean task resources.
 
+Workflow-mode `ready_for_merge` requires Finalizer's
+`publication_body_sha256`. Merge compares it with the exact bytes from its first
+live PR read before deriving closing keywords, reading their Issues, or
+performing the merge mutation. A mismatch fails closed; the caller must re-enter
+fresh Publication and Finalizer preparation. Merge does not expose a new
+reprepare exit. Standalone merge neither accepts nor synthesizes this
+Publication authority.
+
 Merge derives the closure verification set only from closing keywords in the
 live PR body. It performs no Issue read before merge. After merge, it reads only
 those named Issues and verifies GitHub's automatic effect; a body without closing

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import importlib.util
 import os
@@ -220,6 +221,7 @@ class FinalizerOwnerAdapter:
         self.root = root
         self.task_dir = root / ".trellis/tasks/fixture"
         self.task_dir.mkdir(parents=True)
+        self.publication_body = "## Issue 关闭范围\n\nCloses #330\n"
         self.facts = {
             "exit_id": "ready_for_merge",
             "repo_ref": "castbox/guru-trellis",
@@ -228,6 +230,9 @@ class FinalizerOwnerAdapter:
             "expected_head_sha": "1" * 40,
             "expected_base_branch": "main",
             "expected_head_branch": "codex/330-closeout-happy-path-consolidation",
+            "publication_body_sha256": hashlib.sha256(
+                self.publication_body.encode("utf-8")
+            ).hexdigest(),
         }
         self.full_reads = 0
         self.mutations: list[str] = []
@@ -259,7 +264,10 @@ class FinalizerOwnerAdapter:
     def _context(self):
         self.full_reads += 1
         return {
-            "plan": {"git": {"branch_review_commit": "1" * 40, "publication_head": "1" * 40}},
+            "plan": {
+                "git": {"branch_review_commit": "1" * 40, "publication_head": "1" * 40},
+                "publish": {"body": self.publication_body},
+            },
             "task_dir": self.task_dir,
             "transaction_state": "ready" if self.terminal else "prepared",
             "published_transition_complete": self.terminal,
@@ -890,6 +898,110 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
             read_json(PACKAGES / "guru-finalize-task/interface.json")["judgment_mode"],
             "semantic",
         )
+
+    def test_finalizer_identity_blocks_body_only_drift_before_merge_scope_read(self) -> None:
+        finalizer_package = PACKAGES / "guru-finalize-task"
+        merge_package = PACKAGES / "guru-merge-task-pr"
+        finalizer = load_module(
+            finalizer_package / "runtime/owner.py",
+            "closeout_body_identity_finalizer",
+        )
+        merge = load_module(
+            merge_package / "runtime/owner.py",
+            "closeout_body_identity_merge",
+        )
+        with tempfile.TemporaryDirectory(prefix="closeout-body-identity-") as temporary:
+            root = Path(temporary)
+            task_dir = root / ".trellis/tasks/archive/2026-09/247"
+            task_dir.mkdir(parents=True)
+            body = "## Issue 关闭范围\n\nCloses #247\n"
+            plan = {
+                "task": {
+                    "archive_locator": ".trellis/tasks/archive/2026-09/247"
+                },
+                "git": {
+                    "repo": "castbox/guru-trellis",
+                    "base_branch": "main",
+                    "head_branch": "codex/247-remove-issue-scope-ledger",
+                },
+                "publish": {"body": body},
+            }
+            gate = {
+                "route": {
+                    "typed_exit": "ready_for_merge",
+                    "output": finalizer.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+                }
+            }
+            pr = {
+                "number": 247,
+                "url": "https://github.com/castbox/guru-trellis/pull/247",
+                "headRefOid": "1" * 40,
+            }
+            with mock.patch.object(
+                finalizer,
+                "finalization_output_contract",
+                return_value=read_json(
+                    finalizer_package
+                    / "schemas/public-ready-for-merge-output.schema.json"
+                ),
+            ):
+                projected = finalizer.finalization_gate_with_ready_for_merge_output(
+                    root, task_dir, gate, plan, pr
+                )["route"]["output"]
+
+            merge_input = {
+                "schema_version": "2.0",
+                "profile": "ready_for_merge",
+                "mode": "workflow",
+                **{key: value for key, value in projected.items() if key != "exit_id"},
+                "reviewed_merge_message": merge.build_reviewed_merge_message(
+                    pull_request=247,
+                    summary="修复 Publication body identity 承接",
+                    head_branch=plan["git"]["head_branch"],
+                    base_branch=plan["git"]["base_branch"],
+                ),
+            }
+            input_path = root / "merge-input.json"
+            input_path.write_text(json.dumps(merge_input), encoding="utf-8")
+            normalized = merge.task_pr_merge_json_input(root, str(input_path))
+            self.assertEqual(
+                normalized["publication_body_sha256"],
+                hashlib.sha256(body.encode("utf-8")).hexdigest(),
+            )
+            live_pr = {
+                "number": 247,
+                "url": pr["url"],
+                "state": "OPEN",
+                "isDraft": False,
+                "baseRefName": plan["git"]["base_branch"],
+                "headRefName": plan["git"]["head_branch"],
+                "headRefOid": pr["headRefOid"],
+                "mergeable": "MERGEABLE",
+                "mergeStateStatus": "CLEAN",
+                "reviewDecision": "APPROVED",
+                "statusCheckRollup": [],
+                "body": body + "\nBody-only edit after Finalizer.\n",
+                "mergedAt": None,
+                "mergeCommit": None,
+            }
+            with (
+                mock.patch.object(merge, "gh_json", return_value=live_pr) as gh_json,
+                mock.patch.object(
+                    merge,
+                    "task_pr_merge_pr_body_closing_issue_numbers",
+                    side_effect=AssertionError("closure scope must not be derived"),
+                ) as closing_scope,
+                mock.patch.object(merge, "run") as mutation,
+            ):
+                with self.assertRaisesRegex(
+                    merge.WorkflowError,
+                    "differs from the Publication-reviewed bytes",
+                ):
+                    merge.task_pr_merge_live_facts(root, normalized)
+
+            self.assertEqual(gh_json.call_count, 1)
+            closing_scope.assert_not_called()
+            mutation.assert_not_called()
 
     def test_sanitized_fixture_is_historical_observation_not_budget_input(self) -> None:
         fixture = read_json(FIXTURE)

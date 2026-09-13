@@ -386,7 +386,9 @@ classification aggregate，不改变 23 Skills / 97 exits / 78 commands、四阶
   交付不完整事实；no external work item 不产生 Issue identity、引用或关闭效果。
 - `R247-06`：目标为默认分支时，Publication 在 reviewed PR body 编码 closing keyword并由 GitHub 自动
   执行关闭；非默认分支 PR 只引用，后续进入默认分支的 Publication 基于届时 current authority fresh
-  判断。Finalizer 只绑定 payload；Merge 不重判意图、不调用 Issue close API，只验证 live result。
+  判断。Finalizer 只绑定 payload并向 Merge 投影 exact reviewed body 的最小 SHA-256 identity；Merge 在
+  mutation 前验证 live body identity，不一致时直接 fail closed，由调用方重新进入 fresh Publication/
+  Finalizer；Merge 不新增 reprepare typed exit、不重判意图、不调用 Issue close API，只验证 live result。
 - `R247-07`：Finish、Restore、re-entry 与 Cleanup 只消费各自 current task/archive/Git/provider facts，
   不读取 ledger决定完成、恢复、删除、Release 或其它 mutation route。
 - `R247-08`：legacy ledger path 不属于 managed inventory；preset/update 不主动触碰，active runtime

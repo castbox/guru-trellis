@@ -24,8 +24,11 @@ Promotion status：`reviewed_promoted`；Architecture inheritance：`current-mai
   才 remain-open/reference-only；no-external-work-item 不产生 Issue 引用或关闭效果。
 - `R247-06`：默认分支 PR 的 closing keyword 只来自 Publication 已审查决定；非默认分支 PR 不宣称
   其 body 关键字会关闭 Issue，后续目标默认分支 Publication 基于届时 current authority fresh 判断。
-  Finalizer/Merge 不重新决定关闭范围、不调用 Issue close API；Merge 保留独立 readiness semantic
-  review、expected-head、current confirmation 和 live post-merge Issue/PR verification。
+  Finalizer 通过既有 `ready_for_merge` transition 只投影 exact reviewed body 的最小 SHA-256 identity；
+  Merge 在 mutation 与 closing-scope 推导前校验 live body，不一致时直接 fail closed并由调用方重新进入
+  fresh Publication/Finalizer。Finalizer/Merge 不重新决定关闭范围、不调用 Issue close API，Merge 不新增
+  reprepare typed exit，只保留独立 readiness semantic review、expected-head、current confirmation 和 live
+  post-merge Issue/PR verification。
 - `R247-07`：Finish、Restore、re-entry 与 Cleanup 只消费各自 current task/archive/Git/provider
   facts，不读取 ledger决定完成、恢复、删除、Release 或其它 mutation route。
 - `R247-08`：preset/update 不拥有或主动触碰已存在的 legacy ledger 文件；active runtime不读取、

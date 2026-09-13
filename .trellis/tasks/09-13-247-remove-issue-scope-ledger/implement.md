@@ -12,9 +12,10 @@
    aggregate DTO；由 owner直接读取 current requirement/planning/source authority。
 4. 修改 Publication、Finalizer 与 Merge：删除 ledger loader/validator/hash/recovery/closeout projection；
    Publication 成为唯一关闭意图判断 owner，按 Issue-backed completed 默认关闭、明确 remain-open
-   例外和 no-Issue 形成 PR payload；Finalizer 只绑定发布事务，Merge 只做 readiness、expected-head、
-   confirmation 与 live result verification。正常、existing-PR、terminal recovery 和 phase2-reentry
-   均使用同一 current owner-native 数据流。
+   例外和 no-Issue 形成 PR payload；Finalizer 只绑定发布事务，并通过 `publication_body_sha256`
+   把 exact reviewed body identity 交给 Merge；Merge 在 mutation 前验证 live body identity，只做
+   readiness、expected-head、confirmation 与 live result verification。正常、existing-PR、terminal
+   recovery 和 phase2-reentry 均使用同一 current owner-native 数据流。
 5. 修改 Finish、Restore、Cleanup、release verifier 与 installed closeout fixture，删除 ledger reader
    和 ledger 决策；只保留 current task/archive/Git/provider facts。删除旧 task continuation、转换和
    compatibility fixture，不新增 ledger migration verifier。
@@ -75,6 +76,7 @@ git diff --check
 | legacy ledger present-A / present-B | 不影响 current runtime；preset/update 不主动触碰且无 open/read |
 | insufficient current intent | current lifecycle 返回既有 semantic owner，不读取 legacy；不作为旧 task continuation |
 | existing PR / terminal recovery | 使用 live PR/Git/current reviewed payload，不重复副作用 |
+| PR body edited after Finalizer | Merge 在 mutation 前发现 `publication_body_sha256` mismatch 并直接 fail closed；调用方重新进入 fresh Publication/Finalizer，Merge 不新增 typed exit，也不按新 body 产生关闭效果 |
 | canonical/installed/platform package | interface/schema/runtime/examples/evals bytes/mode 一致，无 ledger sidecar |
 | update/reapply | 不创建 ledger，不登记 ledger，保留已有 legacy 文件 |
 | active graph inventory | writer/reader/precondition/schema registration/consumer 计数均为零 |
@@ -127,3 +129,12 @@ Promotion-created combined diff 已重新完成 Phase 2：Architecture 返回
 task/YAML/trace/immutable-history/diff/ownership/drift 检查通过，`guru-check-task` public wrapper 返回
 `passed`。该 gate 不证明 commit、后续独立 Branch Review、Publication、push、PR、merge、tag、Release、
 生产业务仓验证或 live Issue closure。
+
+## Fresh Final Review P1 Re-entry
+
+2026-09-13 的 distinct fresh-final reviewer 在完整
+`origin/main@ec016827fac81d33faeacb307b0db76d5259dc28...bce1e0e8f18e7a1935a7102db5a2bc2ed55ade30`
+范围发现一个 current-scope P1：Finalizer 在退休 owner-private state 前没有把 Publication-reviewed PR
+body 的最小 identity 投影给 Merge，导致正常 maintainer body-only metadata edit 可在 HEAD/base/branch
+不变时替换 closing effect。修复只新增 exact UTF-8 body SHA-256 的 producer/consumer binding 与 merge
+preflight mismatch；不新增 Issue 数组、ledger、兼容入口、旧 task migration 或第二 closure owner。

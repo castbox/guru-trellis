@@ -11,6 +11,16 @@ It selects one method only when policy and
 reviewed intent determine it, displays the exact action, and accepts
 `确认继续` without asking the user to repeat identities.
 
+Workflow-mode `ready_for_merge` additionally requires
+`publication_body_sha256`, the exact Finalizer handoff for the
+Publication-reviewed PR body UTF-8 bytes. Merge validates that digest against
+the first live PR read before repository-policy or base-ref reads, closing-keyword
+derivation, Issue reads, gate recording, or merge mutation. Body-only drift
+fails closed under the existing error contract; the caller must obtain a fresh
+Publication decision and Finalizer handoff. Merge does not own a typed
+reprepare exit. `standalone_merge` rejects the field and does not claim
+Publication authority.
+
 The recorder/checker preserve only the current semantic gate, including the
 reviewed-message identity and pre-merge base head. The executor materializes the
 reviewed body in its ignored owner directory and runs authenticated repo-bound

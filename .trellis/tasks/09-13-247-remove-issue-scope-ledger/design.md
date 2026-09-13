@@ -18,7 +18,7 @@ journal 或聚合 closure frame。legacy ledger 文件本身不参与 active gra
 | requirement/scope/source reference | live external authority、Phase 0 reviewed authority、current planning provenance | Clarification/Planning/Check/Review fresh reread，不持久化 aggregate |
 | commit reference | current task/source/requirement authority | Commit owner fresh 生成，不读取 `primary_issue` |
 | reviewed PR reference/closure decision | current requirement authority、reviewed diff、target/default branch、live Issue/PR facts | Publication 唯一判断 issue-backed completed/remain-open/no-item；completed 默认关闭 |
-| publication/merge execution | Publication-reviewed PR payload + exact task/base/head identity | Finalizer 绑定发布事务；Merge 独立检查 readiness、expected-head 并确认本次 merge，不重判关闭决定 |
+| publication/merge execution | Publication-reviewed PR payload + exact task/base/head identity | Finalizer 绑定发布事务并向 Merge 投影 exact PR body SHA-256；Merge 先验证 live body identity，再独立检查 readiness、expected-head 并确认本次 merge，不重判关闭决定 |
 | actual closure action/result | 进入默认分支的 GitHub closing keyword + merge 后 live Issue/PR facts | GitHub 自动执行关闭；Merge/closeout 只验证结果，不调用 Issue close API |
 | task completion/resource state | official Finish/task/archive/Git/provider facts | Finish/Restore/Cleanup 不读取 Issue 分类 |
 
@@ -79,9 +79,13 @@ Issue-backed task完整解决对应 Issue 时默认关闭；只有 live authorit
 目标为非默认分支时，当前 PR body 不承诺关闭效果，只引用 Issue；该 base 分支后续进入默认分支时，
 由后续 Publication 基于届时 current authority fresh 判断并在目标默认分支 PR 编码 closing keyword。
 
-Finalizer 仅承接已 reviewed PR payload 与 exact task/base/head identity。Merge 基于 live PR body、policy、
-CI、review、mergeability 完成独立 readiness review、expected-head 检查和本次确认，但不重新决定
-Issue 是否应关闭，也不调用 Issue close API。Merge 后重新读取 live Issue/PR facts验证 GitHub 自动效果。
+Finalizer 仅承接已 reviewed PR payload 与 exact task/base/head identity，并在 `ready_for_merge` 最小
+handoff 中携带 exact reviewed body UTF-8 bytes 的 SHA-256。Merge 先对 live PR body 重算同一 identity；
+body-only metadata drift 与 head/base/branch drift 一样在 mutation 前直接 fail closed；调用方必须重新
+进入 fresh Publication/Finalizer，Merge 不新增 reprepare typed exit。identity 一致后，Merge 才基于
+live PR body、policy、CI、review、mergeability 完成独立 readiness
+review、expected-head 检查和本次确认，但不重新决定 Issue 是否应关闭，也不调用 Issue close API。
+Merge 后重新读取 live Issue/PR facts验证 GitHub 自动效果。
 
 source reference 与 closure decision 始终分离；reference-only 必须有 current-authority 原因，
 非默认分支的技术性延迟关闭也不得被误报为当前 PR 已产生关闭效果。
@@ -120,6 +124,8 @@ compatibility exit。该 candidate 已在 independent committed review 后由 se
 - 缺少 current requirement/source/PR effect 时返回现有 semantic clarification/review route。
 - mixed old/new package、残留 reader/writer/schema registration、平台投影不一致或 preservation
   变化均 fail closed。
+- Finalizer 完成后、Merge 前的 live PR body 漂移必须在 merge mutation 前 fail closed；不得仅凭
+  unchanged HEAD/base/head branch 接受漂移后的 closing effect。
 - 已存在 PR/transaction 的恢复仍以 live PR/Git/task identity 与当前 reviewed payload为准，不读取 ledger。
 - 不新增 retry、lock、并发协议、迁移状态机或第二 recovery owner。
 

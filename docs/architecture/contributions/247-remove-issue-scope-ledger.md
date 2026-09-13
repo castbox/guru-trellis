@@ -89,6 +89,9 @@ required concerns和 blocking project check均为pass。normal-scenario与soluti
   未新增替代 aggregate、dual-read/write、migration或第二 authority owner。
 - Publication唯一 fresh判断 Issue reference/closure intent；Finalizer只绑定该 payload；Merge读取live PR
   body、执行expected-head merge并验证 GitHub closing-keyword效果，不调用 Issue-close API或重判关闭意图。
+  Finalizer-to-Merge transition 以 exact reviewed body SHA-256 维持 payload continuity；Merge mutation前对
+  live body重算identity，body-only drift直接fail closed，由调用方重新进入fresh Publication/Finalizer；
+  Merge不新增reprepare typed exit。
 - 本次相关 package/runtime/integration 共 `392` tests通过；active ledger writer、reader、precondition、
   schema registration与aggregate DTO consumer为零，upstream ownership与dogfood overlay drift均为
   `status=ok`，canonical/installed/platform projection保持一致。
@@ -101,6 +104,12 @@ required concerns和 blocking project check均为pass。normal-scenario与soluti
 Fresh Phase 2 Architecture route：`baseline_current`；impact kind：`architecture_impact`；change path：
 `target_native`；promotion state：`reviewed_candidate`；ADR required：`true`。完整多平台 exact-candidate
 Release matrix、tag、GitHub Release和生产业务仓验证不属于本 project check，保持明确 deferred。
+
+Distinct fresh-final review 在 `bce1e0e8f18e7a1935a7102db5a2bc2ed55ade30` 发现一个 P1：Finalizer
+`ready_for_merge` handoff 丢失 Publication-reviewed body identity，使正常 body-only metadata edit 可在
+HEAD/base/branch 不变时替换 closure effect。finding-fix 保持原 `target_native` owner graph，只增加
+`publication_body_sha256` 最小 producer/consumer identity 与 Merge pre-mutation mismatch；不恢复 ledger、
+Issue aggregate、兼容 reader、旧 task migration、第二 closure owner或新 GAP。
 
 ## Review And Promotion Boundary
 

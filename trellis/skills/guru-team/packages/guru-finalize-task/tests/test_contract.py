@@ -29,7 +29,16 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 "expected_head_sha",
                 "expected_base_branch",
                 "expected_head_branch",
+                "publication_body_sha256",
             ],
+        )
+        consumer_input = next(
+            item for item in interface["public_contracts"]["consumer_inputs"]
+            if item["id"] == "ready_for_merge_input"
+        )
+        self.assertEqual(
+            consumer_input["contract"]["seed_fields"][-1],
+            "publication_body_sha256",
         )
 
     def test_ready_output_has_no_close_projection(self) -> None:
@@ -37,6 +46,49 @@ class FinalizeTaskContractTests(unittest.TestCase):
         jsonschema.Draft202012Validator(
             load("schemas/public-ready-for-merge-output.schema.json")
         ).validate(output)
+        publication = load("examples/public-publication-ready-input.json")
+        self.assertEqual(
+            output["publication_body_sha256"],
+            hashlib.sha256(publication["pr_body"].encode("utf-8")).hexdigest(),
+        )
+
+    def test_ready_output_materializes_exact_publication_body_identity(self) -> None:
+        root = Path("/repo")
+        task_dir = root / ".trellis/tasks/archive/2026-09/example"
+        body = "## Issue 关闭范围\n\nCloses #247\n"
+        plan = {
+            "task": {"archive_locator": ".trellis/tasks/archive/2026-09/example"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "base_branch": "main",
+                "head_branch": "codex/247-remove-issue-scope-ledger",
+            },
+            "publish": {"body": body},
+        }
+        gate = {
+            "route": {
+                "typed_exit": "ready_for_merge",
+                "output": copy.deepcopy(GTT.FINALIZATION_EXECUTOR_OUTPUT_MARKER),
+            }
+        }
+        pr = {
+            "number": 247,
+            "url": "https://github.com/castbox/guru-trellis/pull/247",
+            "headRefOid": "1" * 40,
+        }
+        with mock.patch.object(
+            GTT,
+            "finalization_output_contract",
+            return_value=load("schemas/public-ready-for-merge-output.schema.json"),
+        ):
+            materialized = GTT.finalization_gate_with_ready_for_merge_output(
+                root, task_dir, gate, plan, pr
+            )
+
+        self.assertEqual(
+            materialized["route"]["output"]["publication_body_sha256"],
+            hashlib.sha256(body.encode("utf-8")).hexdigest(),
+        )
 
     def test_pr_quality_accepts_publication_owned_closing_keyword(self) -> None:
         body = """## 变更摘要

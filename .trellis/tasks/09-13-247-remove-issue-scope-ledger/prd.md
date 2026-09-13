@@ -48,8 +48,11 @@ external work item reference、delivery object 和 mutation authority 按现有 
      判断并在目标默认分支 PR 写入 closing keyword；
    - workflow 不调用 Issue close API 补偿自动关闭；只有用户显式要求手动关闭时才进入
      单独确认的 GitHub mutation。
-9. Finalizer 只绑定并执行已审查 Publication payload。Merge 保留独立 semantic review、
-   expected-head 与本次 merge 确认，但不重新决定 Issue 是否应关闭；Merge 后只以 live
+9. Finalizer 只绑定并执行已审查 Publication payload，并向 Merge 投影 exact PR body 的最小
+   SHA-256 identity。Merge 保留独立 semantic review、expected-head 与本次 merge 确认，且必须在
+   mutation 前验证 live PR body 与该 identity 一致；不一致时直接 fail closed，由调用方重新进入
+   fresh Publication/Finalizer，Merge 不新增 reprepare typed exit，且不得按漂移后的 body 重新决定
+   Issue 是否应关闭。Merge 后只以 live
    PR/Issue facts验证 GitHub 自动关闭结果，不根据历史 ledger 宣称成功。
 10. 现有项目 update/reapply 时，不主动删除或改写磁盘上的 legacy
    `issue-scope-ledger.json`；active runtime 不读取、不解析、不登记该文件。ledger absent、
@@ -96,8 +99,9 @@ fixture 直接演进；不保留 alias、adapter、dual-read、dual-write、comp
       关键字会关闭 Issue，后续默认分支 Publication fresh 判断并编码关闭决定。
 - [ ] Commit、Branch Review、Publication、Finalizer、Merge、Finish、restore/re-entry 和
       Cleanup 均不读取 ledger，source reference 不自动授权 closure、merge、Finish 或 Cleanup。
-- [ ] Finalizer/Merge 不重新决定关闭范围、不调用 Issue close API；Merge 后 closure result 与
-      live GitHub facts 一致。
+- [ ] Finalizer/Merge 不重新决定关闭范围、不调用 Issue close API；Finalizer-to-Merge handoff
+      保留 Publication-reviewed PR body 的最小 identity，body-only metadata drift 在 merge mutation
+      前 fail closed；Merge 后 closure result 与 live GitHub facts 一致。
 - [ ] current Skill id、owner、typed route 和四阶段 workflow 顺序除 ledger 必要字段删除外保持不变。
 - [ ] canonical、dogfood、installed、Shared、Codex、Claude、Cursor 及 preset
       apply/reapply/update 投影一致，recursive sidecar 为零。

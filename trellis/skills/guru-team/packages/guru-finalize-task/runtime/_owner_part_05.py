@@ -2302,6 +2302,9 @@ def finalization_gate_with_ready_for_merge_output(
         "expected_head_sha": pr["headRefOid"],
         "expected_base_branch": plan["git"]["base_branch"],
         "expected_head_branch": plan["git"]["head_branch"],
+        "publication_body_sha256": hashlib.sha256(
+            plan["publish"]["body"].encode("utf-8")
+        ).hexdigest(),
     }
     errors = skill_json_schema_validation_errors(
         updated["route"]["output"],

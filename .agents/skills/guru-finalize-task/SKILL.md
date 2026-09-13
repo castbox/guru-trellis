@@ -74,6 +74,12 @@ PR title/body external-work-item effect, publication mode, or side-effect-set ch
 returns a stable exit and requires a new preview and confirmation. The digest
 identifies the plan only; it is not authorization and is never persisted.
 
+`ready_for_merge` carries the SHA-256 identity of the exact Publication-reviewed
+PR body bytes as `publication_body_sha256`. This is the minimal handoff required
+by Merge to reject a later body-only edit before it derives closing keywords or
+performs any remote mutation; it does not restore Issue arrays or transfer the
+Publication decision itself.
+
 `record-finalization-gate`, `check-finalization-gate`, and
 `execute-finalization-transition` remain package-private focused-test,
 diagnostic, and recovery commands. `invoke-guru-finalize-task` accepts the

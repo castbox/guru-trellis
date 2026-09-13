@@ -8,6 +8,7 @@
   "expected_head_sha": "1111111111111111111111111111111111111111",
   "expected_base_branch": "main",
   "expected_head_branch": "codex/180-eval",
+  "publication_body_sha256": "fd9d6ce5848eb5b1f05a4011e2b3cdbb6e2688c08799546d424d4f661228ac7d",
   "reviewed_merge_message": {
     "summary": "修复 Merge Skill 中文提交消息承接",
     "subject": "chore(merge): #176 修复 Merge Skill 中文提交消息承接",

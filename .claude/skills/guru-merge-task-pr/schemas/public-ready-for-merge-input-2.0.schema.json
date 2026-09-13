@@ -13,6 +13,7 @@
     "expected_head_sha",
     "expected_base_branch",
     "expected_head_branch",
+    "publication_body_sha256",
     "reviewed_merge_message"
   ],
   "properties": {
@@ -48,6 +49,10 @@
     "expected_head_branch": {
       "type": "string",
       "minLength": 1
+    },
+    "publication_body_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
     },
     "reviewed_merge_message": {
       "$ref": "#/$defs/reviewed_merge_message"

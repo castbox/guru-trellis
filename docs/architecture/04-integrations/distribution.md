@@ -54,8 +54,9 @@
 
 - `ARCH-INT-017`：Issue-backed task 不通过 task-local ledger 或 Issue arrays 交换 closure authority。
   Publication 基于 current requirement authority、reviewed diff、target/default branch 与 live Git/GitHub facts
-  形成唯一 reviewed reference/closure intent；Finalizer 只绑定该 payload。默认分支 closing keyword由 GitHub
-  执行，Merge 读取 live PR/Issue facts验证结果；non-default-base 当前只引用并由后续进入默认分支的
+  形成唯一 reviewed reference/closure intent；Finalizer 只绑定该 payload并投影 exact body SHA-256。默认
+  分支 closing keyword由 GitHub执行，Merge mutation前验证 live body identity，再读取 live PR/Issue facts
+  验证结果；non-default-base 当前只引用并由后续进入默认分支的
   Publication fresh判断。no-Issue不制造 Issue identity，remain-open 必须绑定具体 current-authority原因。
 
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
