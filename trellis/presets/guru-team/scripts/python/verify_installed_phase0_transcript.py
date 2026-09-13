@@ -73,9 +73,32 @@ def operation_delta(before: dict[str, int], after: dict[str, int]) -> dict[str, 
     }
 
 
-def empty_duplicate_snapshot(transition: dict[str, Any]) -> dict[str, Any]:
+def transcript_identity(env: dict[str, str]) -> dict[str, Any]:
+    return {
+        "repo": env.get("GURU_PHASE0_FIXTURE_REPO", "example/guru-extension"),
+        "issue": int(env.get("GURU_PHASE0_FIXTURE_ISSUE", "145")),
+        "task_slug": env.get(
+            "GURU_PHASE0_FIXTURE_TASK_SLUG", "145-phase0-public-transcript"
+        ),
+        "branch_name": env.get(
+            "GURU_PHASE0_FIXTURE_BRANCH", "feat/145-phase0-public-transcript"
+        ),
+        "task_title": env.get(
+            "GURU_PHASE0_FIXTURE_TASK_TITLE", "#145 Phase 0 public transcript"
+        ),
+    }
+
+
+def duplicate_query(env: dict[str, str]) -> str:
+    identity = transcript_identity(env)
+    return f"repo:{identity['repo']} is:issue is:open phase0 transition"
+
+
+def empty_duplicate_snapshot(
+    transition: dict[str, Any], env: dict[str, str]
+) -> dict[str, Any]:
     value = {
-        "query": "repo:example/guru-extension is:issue is:open phase0 transition",
+        "query": duplicate_query(env),
         "checked_at": "2026-01-01T00:00:00Z",
         "target_locator": transition["target_locator"],
         "authority_content_sha256": transition["authority_content_sha256"],
@@ -217,6 +240,12 @@ def assert_forbidden_runtime_absent(root: Path) -> None:
 def stage_transcript_owner_repo(
     installed_repo: Path,
     chain_root: Path,
+    *,
+    repo: str = "example/guru-extension",
+    issue: int = 145,
+    task_slug: str = "145-phase0-public-transcript",
+    branch_name: str = "feat/145-phase0-public-transcript",
+    task_title: str = "#145 Phase 0 public transcript",
 ) -> tuple[Path, dict[str, str]]:
     root = chain_root / "owner-repo"
     root.mkdir(parents=True)
@@ -315,7 +344,7 @@ def stage_transcript_owner_repo(
         cwd=root,
     )
     run(
-        ["git", "remote", "add", "origin", "https://github.com/example/guru-extension.git"],
+        ["git", "remote", "add", "origin", f"https://github.com/{repo}.git"],
         cwd=root,
     )
 
@@ -374,9 +403,9 @@ def stage_transcript_owner_repo(
         "if len(args)>=3 and args[:2]==['issue','view']:\n"
         " count('issue.get')\n"
         " number=int(args[2])\n"
-        " if number != 145: raise SystemExit(2)\n"
+        f" if number != {issue}: raise SystemExit(2)\n"
         " body=Path(issue_body_path).read_text(encoding='utf-8')\n"
-        " print(json.dumps({'number':145,'url':'https://github.com/example/guru-extension/issues/145',"
+        f" print(json.dumps({{'number':{issue},'url':'https://github.com/{repo}/issues/{issue}',"
         "'state':'OPEN','updatedAt':'2026-01-01T00:00:00Z',"
         "'title':Path(issue_title_path).read_text(encoding='utf-8'),"
         "'body':body,"
@@ -385,7 +414,7 @@ def stage_transcript_owner_repo(
         "if len(args)>=2 and args[:2]==['issue','list']:\n"
         " count('issue.search')\n"
         " print('[]'); raise SystemExit(0)\n"
-        "if len(args)>=2 and args[:2]==['api','repos/example/guru-extension/issues/145/comments']:\n"
+        f"if len(args)>=2 and args[:2]==['api','repos/{repo}/issues/{issue}/comments']:\n"
         " count('issue.comments.list')\n"
         " print('[]'); raise SystemExit(0)\n"
         "print('unsupported transcript gh invocation',file=sys.stderr); raise SystemExit(2)\n",
@@ -434,6 +463,11 @@ def stage_transcript_owner_repo(
         "PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}",
         "PYTHONDONTWRITEBYTECODE": "1",
         "GURU_PHASE0_OPERATION_LOG": str(operation_log),
+        "GURU_PHASE0_FIXTURE_REPO": repo,
+        "GURU_PHASE0_FIXTURE_ISSUE": str(issue),
+        "GURU_PHASE0_FIXTURE_TASK_SLUG": task_slug,
+        "GURU_PHASE0_FIXTURE_BRANCH": branch_name,
+        "GURU_PHASE0_FIXTURE_TASK_TITLE": task_title,
     }
     assert_forbidden_runtime_absent(root)
     return root, env
@@ -688,8 +722,9 @@ def assert_owner_binding(
 
 
 def live_issue(root: Path, env: dict[str, str]) -> dict[str, Any]:
-    repo = "example/guru-extension"
-    number = 145
+    identity = transcript_identity(env)
+    repo = identity["repo"]
+    number = identity["issue"]
     issue = json_stdout(
         run(
             [
@@ -708,9 +743,13 @@ def live_issue(root: Path, env: dict[str, str]) -> dict[str, Any]:
 
 
 def live_issue_comments(root: Path, env: dict[str, str]) -> list[dict[str, Any]]:
+    identity = transcript_identity(env)
     value = json.loads(
         run(
-            ["gh", "api", "repos/example/guru-extension/issues/145/comments"],
+            [
+                "gh", "api",
+                f"repos/{identity['repo']}/issues/{identity['issue']}/comments",
+            ],
             cwd=root,
             env=env,
         ).stdout
@@ -724,8 +763,9 @@ def context_owner_for_issue(
     root: Path,
     env: dict[str, str],
 ) -> dict[str, Any]:
-    repo = "example/guru-extension"
-    number = 145
+    identity = transcript_identity(env)
+    repo = identity["repo"]
+    number = identity["issue"]
     live = live_issue(root, env)
     url = f"https://github.com/{repo}/issues/{number}"
     if live.get("number") != number or live.get("url") != url:
@@ -751,7 +791,7 @@ def context_owner_for_issue(
     }
     issue["facts_sha256"] = context_digest(issue)
     change_input = {
-        "issue_refs": ["#145"],
+        "issue_refs": [f"#{number}"],
         "pr_refs": [],
         "branches": [],
         "paths": ["docs/requirements.md"],
@@ -824,7 +864,7 @@ def context_owner_for_issue(
             "issue_binding": None,
         },
         "duplicate_search": {
-            "query": "repo:example/guru-extension is:issue is:open phase0 transition",
+            "query": duplicate_query(env),
             "checked_at": "2026-01-01T00:00:00Z",
             "scope": "open_issues",
             "candidates": candidates,
@@ -930,14 +970,15 @@ def clarification_owner_for_issue(
     duplicate_snapshot: dict[str, Any],
     typed_exit: str = "clear",
 ) -> tuple[dict[str, Any], dict[str, Any]]:
+    identity = transcript_identity(env)
     issue = live_issue(root, env)
     if transition.get("target_locator") != issue.get("url"):
         raise RuntimeError("clarification transition does not target the current live issue")
     body_sha256 = hashlib.sha256(str(issue.get("body") or "").encode()).hexdigest()
     target = {
         "kind": "issue",
-        "repo": "example/guru-extension",
-        "issue_number": 145,
+        "repo": identity["repo"],
+        "issue_number": identity["issue"],
         "url": issue.get("url"),
         "state": str(issue.get("state") or "").casefold(),
         "updated_at": issue.get("updatedAt"),
@@ -959,7 +1000,7 @@ def clarification_owner_for_issue(
         "review_target": target,
         "target_disposition": {
             "disposition": "keep_current_open_issue",
-            "duplicate_query": "repo:example/guru-extension is:issue is:open phase0 transition",
+            "duplicate_query": duplicate_query(env),
             "duplicate_checked_at": "2026-01-01T00:00:00Z",
             "duplicate_candidates": [],
             "duplicate_facts_sha256": duplicate_snapshot["facts_sha256"],
@@ -1161,13 +1202,14 @@ def readiness_owner_for_issue(
     transition: dict[str, Any],
     typed_exit: str = "ready",
 ) -> dict[str, Any]:
+    identity = transcript_identity(env)
     issue = transition.get("readiness_source") or live_issue(root, env)
     title_sha256 = hashlib.sha256(str(issue.get("title") or "").encode()).hexdigest()
     body_sha256 = hashlib.sha256(str(issue.get("body") or "").encode()).hexdigest()
     raw_target = {
         "kind": "existing_issue",
-        "repo": "example/guru-extension",
-        "issue_number": 145,
+        "repo": identity["repo"],
+        "issue_number": identity["issue"],
         "url": issue.get("url"),
         "updated_at": issue.get("updatedAt") or issue.get("updated_at"),
         "title_sha256": title_sha256,
@@ -1204,7 +1246,7 @@ def readiness_owner_for_issue(
         "requirement_scope_basis": (
             "The reviewed draft and current prerequisites define the scope."
         ),
-        "delivery_unit_id": "phase0-public-transcript",
+        "delivery_unit_id": identity["task_slug"],
         "duplicate_reuse_decision": "No duplicate replaces this delivery unit.",
         "implementation_target": "The Stage 0 minimal handoff package graph.",
         "current_gap": "The selected route identifies the next readiness owner.",
@@ -1636,6 +1678,7 @@ def workspace_plan_for_transition(
     env: dict[str, str],
     transition: dict[str, Any],
 ) -> dict[str, Any]:
+    identity = transcript_identity(env)
     payloads = workspace_transition_payloads(transition)
     issue = live_issue(root, env)
     target = transition["target"]
@@ -1647,7 +1690,7 @@ def workspace_plan_for_transition(
         raise RuntimeError("workspace authoring target does not match live authority")
     base_payload = payloads["base"]
     base = base_payload["base"]
-    task_slug = "145-phase0-public-transcript"
+    task_slug = identity["task_slug"]
     plan = {
         "schema_version": "2.0",
         "skill_id": "guru-create-task-workspace",
@@ -1689,10 +1732,10 @@ def workspace_plan_for_transition(
             "sync_facts_sha256": context_digest(base_payload),
         },
         "naming": {
-            "branch_name": "feat/145-phase0-public-transcript",
+            "branch_name": identity["branch_name"],
             "workspace_slug": task_slug,
             "task_slug": task_slug,
-            "task_title": "#145 Phase 0 public transcript",
+            "task_title": identity["task_title"],
             "reason": "Names bind the live issue to this independent transcript chain.",
             "branch_disposition": "create_new",
             "workspace_disposition": "create_new",
@@ -1856,7 +1899,11 @@ def reentry_transcripts(
         )
         if target_skill == "guru-clarify-requirements":
             target_owner, target_checked = clarification_owner_for_issue(
-                root, env, producer["transition"], empty_duplicate_snapshot(producer["transition"]), "clear"
+                root,
+                env,
+                producer["transition"],
+                empty_duplicate_snapshot(producer["transition"], env),
+                "clear",
             )
             owner_context: dict[str, Any] = {}
         else:
@@ -1905,8 +1952,22 @@ def reentry_transcripts(
 def six_step_transcript(
     installed_repo: Path,
     chain_root: Path,
+    *,
+    repo: str = "example/guru-extension",
+    issue: int = 145,
+    task_slug: str = "145-phase0-public-transcript",
+    branch_name: str = "feat/145-phase0-public-transcript",
+    task_title: str = "#145 Phase 0 public transcript",
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
-    root, env = stage_transcript_owner_repo(installed_repo, chain_root)
+    root, env = stage_transcript_owner_repo(
+        installed_repo,
+        chain_root,
+        repo=repo,
+        issue=issue,
+        task_slug=task_slug,
+        branch_name=branch_name,
+        task_title=task_title,
+    )
     call_counts_before = operation_counts(env)
     before_status = run(
         ["git", "status", "--porcelain=v1", "--untracked-files=all"], cwd=root, env=env
@@ -1985,9 +2046,9 @@ def six_step_transcript(
 
     source = {
         "kind": "issue",
-        "repo": "example/guru-extension",
-        "number": 145,
-        "url": "https://github.com/example/guru-extension/issues/145",
+        "repo": repo,
+        "number": issue,
+        "url": f"https://github.com/{repo}/issues/{issue}",
         "selected_comments": [],
     }
     issue = live_issue(root, env)
@@ -2184,13 +2245,15 @@ def six_step_transcript(
         check=False,
     ).returncode:
         raise RuntimeError("six-step transcript did not create its reviewed branch")
-    task_dir = root / str(created.get("task_artifact_dir") or "")
+    mapping = load_json(
+        root
+        / ".trellis/.runtime/guru-team/workspaces"
+        / f"{created.get('workspace_slug')}.json"
+    )
+    workspace_path = Path(str(mapping.get("workspace_path") or "")).resolve()
+    task_dir = workspace_path / str(created.get("task_artifact_dir") or "")
     if not task_dir.is_dir() or not (task_dir / "task.json").is_file():
-        # The task belongs to the created worktree, not the decision checkout.
-        worktrees = run(["git", "worktree", "list", "--porcelain"], cwd=root, env=env).stdout
-        paths = [Path(line[9:]) for line in worktrees.splitlines() if line.startswith("worktree ")]
-        if not any((path / str(created.get("task_artifact_dir") or "") / "task.json").is_file() for path in paths):
-            raise RuntimeError("six-step transcript did not create its reviewed task")
+        raise RuntimeError("six-step transcript did not create its reviewed task")
     assert_forbidden_runtime_absent(root)
     return rows, reentry, {
         "actual_exit": workspace["exit_id"],
@@ -2198,6 +2261,7 @@ def six_step_transcript(
         "workspace_slug": created.get("workspace_slug"),
         "task_slug": created.get("task_slug"),
         "task_artifact_dir": created.get("task_artifact_dir"),
+        "workspace_path": str(workspace_path),
         "checker_status": checked_result.get("checker", {}).get("status"),
         "clarification_checker_status": clarity_checked.get("status"),
         "wording_checker_status": wording_checked.get("status"),
