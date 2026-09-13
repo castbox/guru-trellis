@@ -172,6 +172,122 @@
         "evals/files/metadata-fix-durable-drift-return-input.json",
         "evals/files/metadata-fix-durable-drift-return-facts.json"
       ]
+    },
+    {
+      "id": "default-branch-close",
+      "prompt": "Review a complete Issue-backed delivery targeting the repository default branch; apply the default closure rule and emit the reviewed PR payload.",
+      "expected_exit": "ready",
+      "expected_output": "The PR body uses a GitHub closing keyword for the completed Issue.",
+      "input_profile_id": "publication_review",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready"
+          },
+          {
+            "id": "closing-keyword",
+            "kind": "json_path",
+            "pointer": "/pr_body",
+            "operation": "contains",
+            "expected": "Closes #146"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/workflow-initial-ready-input.json",
+        "evals/files/default-branch-close-facts.json"
+      ]
+    },
+    {
+      "id": "remain-open-reference",
+      "prompt": "Review an Issue-backed delivery whose live authority requires post-merge release observation; keep the Issue open with that concrete reason and no closing keyword.",
+      "expected_exit": "ready",
+      "expected_output": "The PR body references the Issue and states the current-authority remain-open reason.",
+      "input_profile_id": "publication_review",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready"
+          },
+          {
+            "id": "remain-open-reason",
+            "kind": "json_path",
+            "pointer": "/pr_body",
+            "operation": "contains",
+            "expected": "发布观测"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/workflow-initial-ready-input.json",
+        "evals/files/remain-open-reference-facts.json"
+      ]
+    },
+    {
+      "id": "no-external-work-item",
+      "prompt": "Review a task with no external work item; emit a PR body with no Issue number, reference, or closing effect.",
+      "expected_exit": "ready",
+      "expected_output": "The PR body explicitly states that no external work item exists and contains no Issue reference.",
+      "input_profile_id": "publication_review",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready"
+          },
+          {
+            "id": "no-external-reference",
+            "kind": "json_path",
+            "pointer": "/pr_body",
+            "operation": "contains",
+            "expected": "没有 external work item"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/workflow-initial-ready-input.json",
+        "evals/files/no-external-work-item-facts.json"
+      ]
+    },
+    {
+      "id": "non-default-branch-reference",
+      "prompt": "Review a complete Issue-backed delivery targeting a non-default branch; reference the Issue without claiming closure and require a fresh later default-branch Publication judgment.",
+      "expected_exit": "ready",
+      "expected_output": "The PR body uses a reference only and states that this non-default-branch PR has no closing effect.",
+      "input_profile_id": "publication_review",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready"
+          },
+          {
+            "id": "non-default-effect",
+            "kind": "json_path",
+            "pointer": "/pr_body",
+            "operation": "contains",
+            "expected": "目标为非默认分支"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/workflow-initial-ready-input.json",
+        "evals/files/non-default-branch-reference-facts.json"
+      ]
     }
   ]
 }

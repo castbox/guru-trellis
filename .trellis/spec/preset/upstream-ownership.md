@@ -142,7 +142,7 @@ unknown asset, manifest mismatch, or any `.new`/`.bak` sidecar remains a
 current-contract failure before activation.
 
 Schema migrations inside those existing Guru namespaces do not expand path
-ownership or managed claims. Publication/Finalizer 4.0, closeout plan 3.0, and
-finish-summary 2.0 replace current managed bytes in place; retired task-local
-publication artifacts are not installed or claimed, and no compatibility asset
-may be added outside the declared inventories.
+ownership or managed claims. Publication/Finalizer 4.0 and finish-summary 2.0
+replace current managed bytes in place; retired closeout-plan, Issue scope
+ledger, and other task-local publication artifacts are not installed or claimed,
+and no compatibility asset may be added outside the declared inventories.

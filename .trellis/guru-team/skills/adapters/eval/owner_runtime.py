@@ -49,7 +49,29 @@ def load_package_owner_runtime(runtime_target: Path, skill_id: str) -> Any:
         spec.loader.exec_module(module)
     finally:
         sys.dont_write_bytecode = previous
+    if skill_id == "guru-review-task-publication":
+        compose_publication_eval_runtime(module)
     return module
+
+def compose_publication_eval_runtime(module: Any) -> None:
+    module.INDEPENDENT_REVIEW_SOURCE = "independent-agent"
+
+    def commit_review_fixture(
+        fixture: Path, task: Path, checked: dict[str, Any]
+    ) -> tuple[str, str]:
+        del checked
+        run_git(fixture, "add", "-A")
+        run_git(fixture, "commit", "-q", "-m", "commit reviewed production fixture")
+        phase2 = (
+            fixture
+            / ".trellis/.runtime/guru-team/owner-checkpoints"
+            / task.name
+            / "phase2-check.json"
+        )
+        phase2.unlink(missing_ok=True)
+        return run_git(fixture, "rev-parse", "HEAD"), "origin/main"
+
+    module.commit_review_fixture = commit_review_fixture
 
 def compose_change_request_eval_runtime(runtime_target: Path, module: Any) -> None:
     review = load_package_runtime_module(

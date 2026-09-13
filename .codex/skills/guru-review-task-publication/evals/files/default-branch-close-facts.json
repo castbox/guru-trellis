@@ -1,0 +1,18 @@
+{
+  "scenario": "The Issue-backed delivery is complete and targets the default branch.",
+  "owner_evidence": {
+    "semantic_gate": "passed",
+    "checker_required": true
+  },
+  "owner_staging": {
+    "recipe": "publication-default-branch-close-ready"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--input",
+      ".trellis/.runtime/guru-team/evals/public-input.json",
+      "--semantic-result",
+      ".trellis/.runtime/guru-team/evals/publication-owner-input.json"
+    ]
+  }
+}

@@ -49,6 +49,21 @@ repository state.
 Author the members as follows:
 
 - `pr_payload` has exactly non-empty `title` and `body` strings.
+- Publication authors the `Issue 关闭范围` section from current requirement
+  authority and live target/default-branch facts. Use exactly one applicable
+  semantic route:
+  - `issue-backed completed + default branch`: complete delivery defaults to
+    closure; write a GitHub closing keyword for the completed Issue.
+  - `issue-backed remain-open`: use an ordinary Issue reference and state the
+    concrete current-authority condition that remains after merge. Preference or
+    uncertainty alone is not a remain-open reason.
+  - `no external work item`: state that there is no external work item and emit
+    no Issue number, reference, or closing keyword.
+  - `issue-backed completed + non-default branch`: use an ordinary reference,
+    state that this PR has no closing effect, and leave the later default-branch
+    Publication owner to make a fresh decision.
+  The reviewed PR body is the only projection of this decision. Do not create a
+  closure DTO, ledger replacement, hidden aggregate, or Issue-close API plan.
 - `candidate_classifications` contains every candidate that participated in
   the final route. Each item has exactly `candidate_ref`, `decision`, `witness`,
   and `consumer_use=publication_route_checker`. `decision` is one of
@@ -94,7 +109,7 @@ remove candidate items as needed, but keep the declared object shapes exact.
   "review_intent": "initial_review",
   "pr_payload": {
     "title": "具体的中文 PR 标题",
-    "body": "## 变更摘要\n\n- 具体结果。\n\n## 验证结果\n\n- 当前验证证据。\n\n## Issue 关闭范围\n\n- Closes #123。\n\n## 安全与部署影响\n\n- 如实说明。"
+    "body": "## 变更摘要\n\n- 具体结果。\n\n## 验证结果\n\n- 当前验证证据。\n\n## Issue 关闭范围\n\n- 按上述四条路径写入当前审查结论；不要保留此占位文字。\n\n## 安全与部署影响\n\n- 如实说明。"
   },
   "candidate_classifications": [
     {
@@ -254,6 +269,14 @@ Review these dimensions against current private evidence:
 8. `finish_summary_semantics`
 9. `metadata_tail_integrity`
 10. `artifact_binding_freshness`
+
+For `external_work_item_effect`, independently establish whether a current
+external work item exists, whether the reviewed delivery completes it, and
+whether the PR target is the repository default branch. Completed Issue-backed
+work defaults to closure only on a default-branch PR. Any remain-open result
+must cite the specific uncompleted condition in current authority. No-work-item
+and non-default-branch routes must contain no closing keyword. This is a
+semantic Publication judgment; recorder/checker success cannot select the route.
 
 Every finding records a stable ref, dimension, scope basis, evidence and
 affected artifacts, route, status, and closure evidence. The AI chooses

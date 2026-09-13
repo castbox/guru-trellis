@@ -20,6 +20,7 @@ from adapters.eval.fixture_io import (
     bind_merge_gate_argument,
     bind_owner_result_argument,
     bind_review_input_argument,
+    bind_semantic_result_argument,
     run_git,
     write_fake_gh,
     write_fake_merge_gh,
@@ -719,11 +720,20 @@ def production_publication_authoring(
             "The complete current publication review reproduces no required-"
             "behavior defect."
         )
+    no_external_work_item = route == "no-external-work-item-ready"
+    non_default_branch = route == "non-default-branch-reference-ready"
+    remain_open = route == "remain-open-reference-ready"
+    requirement_refs = ["pr_payload"] if no_external_work_item else ["issue:146", "pr_payload"]
+    effect_evidence_refs = (
+        ["current-requirement-authority:no-external-work-item", "pr_payload"]
+        if no_external_work_item
+        else ["issue:146", "pr_payload"]
+    )
     candidate_classifications = [{
         "candidate_ref": candidate_ref,
         "decision": decision,
         "witness": {
-            "requirement_refs": ["issue:146", "pr_payload"],
+            "requirement_refs": requirement_refs,
             "supported_entry_refs": [
                 "guru-review-task-publication",
                 "git:branch_review_commit",
@@ -752,6 +762,15 @@ def production_publication_authoring(
         if route == "metadata-fix-ready"
         else ""
     )
+    issue_effect = (
+        "- 当前任务没有 external work item；PR 不产生 Issue 引用或关闭效果。"
+        if no_external_work_item
+        else "- Refs #146；目标为非默认分支，本 PR 不产生关闭效果，后续进入默认分支时重新审查。"
+        if non_default_branch
+        else "- Refs #146；当前 Issue 要求合并后继续完成发布观测，因此本 PR 保持 Issue open。"
+        if remain_open
+        else "- Closes #146。"
+    )
     pr_payload = {
         "title": "完成：#146 验证 Publication public wrapper 闭环",
         "body": (
@@ -764,7 +783,7 @@ def production_publication_authoring(
             "## Review Gate\n\n"
             "- Branch Review Gate 已通过并绑定当前 HEAD。\n\n"
             "## Issue 关闭范围\n\n"
-            "- Closes #146。\n\n"
+            f"{issue_effect}\n\n"
             "## 安全说明\n\n"
             "- 不写生产环境，不处理 secret，不执行真实 GitHub 发布。\n\n"
             "## Docs SSOT\n\n"
@@ -831,11 +850,7 @@ def production_publication_authoring(
         "id": dimension,
         "status": dimension_status[dimension],
         "summary": f"The semantic owner reviewed {dimension} against current evidence.",
-        "evidence_refs": [
-            "pr_payload",
-            "issue:146",
-            "git:branch_review_commit",
-        ],
+        "evidence_refs": [*effect_evidence_refs, "git:branch_review_commit"],
     } for dimension in runtime.TASK_PUBLICATION_DIMENSIONS]
     authoring: dict[str, Any] = {
         "profile": public_input["profile"],
@@ -855,7 +870,7 @@ def production_publication_authoring(
                     else "blocked"
                 ),
                 "summary": "The owner reviewed the current external-work-item effect.",
-                "evidence_refs": ["issue:146", "pr_payload"],
+                "evidence_refs": effect_evidence_refs,
             },
             "docs_ssot": {
                 "status": (
@@ -1845,24 +1860,19 @@ def stage_production_owner_execution(
                 public_input,
                 recipe,
             )
-            publication_owner = runtime.cmd_record_task_publication_review(argparse.Namespace(
-                root=str(fixture),
-                task=task.relative_to(fixture).as_posix(),
-                input=authoring_path.relative_to(fixture).as_posix(),
-                branch_review_commit=branch_review_commit,
-                dry_run=False,
-            ))
-            owner_result_path = Path(publication_owner["artifact_path"])
             runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
             for runtime_artifact in runtime_dir.rglob("*"):
                 if (
                     runtime_artifact.is_file()
                     and runtime_artifact != fixture / OWNER_INPUT
+                    and runtime_artifact != authoring_path
                 ):
                     runtime_artifact.unlink()
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
-    if skill_id != "guru-review-branch":
+    if skill_id == "guru-review-task-publication":
+        bind_semantic_result_argument(request, fixture, authoring_path)
+    elif skill_id != "guru-review-branch":
         bind_owner_result_argument(request, fixture, owner_result_path)
     return package, fixture_runtime_target, production_environment
 

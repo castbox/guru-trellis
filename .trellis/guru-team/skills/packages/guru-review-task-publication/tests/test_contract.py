@@ -1232,6 +1232,85 @@ class TaskPublicationContractTest(unittest.TestCase):
             errors = GTT.validate_pr_body_quality(body, False)
             self.assertIn(f"PR body 缺少 `{missing}` section。", errors)
 
+    def test_publication_owns_complete_external_work_item_effect_matrix(self) -> None:
+        skill = (PACKAGE / "SKILL.md").read_text(encoding="utf-8")
+        contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
+        normalized_skill = " ".join(skill.split())
+        normalized_contract = " ".join(contract.split())
+        for expected in (
+            "An Issue-backed delivery that completely resolves the current Issue",
+            "to closure. When the PR targets the repository default branch",
+            "Keep an Issue open only when current authority names a concrete condition",
+            "A task with no external work item produces no Issue reference",
+            "A PR targeting a non-default branch references the Issue without a closing keyword",
+        ):
+            self.assertIn(expected, normalized_skill)
+        for expected in (
+            "issue-backed completed + default branch",
+            "issue-backed remain-open",
+            "no external work item",
+            "issue-backed completed + non-default branch",
+            "The reviewed PR body is the only projection of this decision",
+        ):
+            self.assertIn(expected, normalized_contract)
+        template = contract.split(
+            "<!-- publication-semantic-result-template:start -->", 1
+        )[1].split("<!-- publication-semantic-result-template:end -->", 1)[0]
+        self.assertNotIn("Closes #123", template)
+
+    def test_publication_effect_examples_cover_all_current_routes(self) -> None:
+        payload = json.loads(
+            (PACKAGE / "examples/publication-effect-examples.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        examples = {item["case"]: item for item in payload["examples"]}
+        self.assertEqual(
+            set(examples),
+            {
+                "issue-backed-completed-default-branch",
+                "issue-backed-remain-open",
+                "no-external-work-item",
+                "issue-backed-completed-non-default-branch",
+            },
+        )
+        self.assertIn(
+            "Closes #247",
+            examples["issue-backed-completed-default-branch"]["issue_section"],
+        )
+        for case in (
+            "issue-backed-remain-open",
+            "no-external-work-item",
+            "issue-backed-completed-non-default-branch",
+        ):
+            self.assertNotIn("Closes ", examples[case]["issue_section"])
+        self.assertNotIn(
+            "#247", examples["no-external-work-item"]["issue_section"]
+        )
+        self.assertIn(
+            "发布观测", examples["issue-backed-remain-open"]["issue_section"]
+        )
+        self.assertIn(
+            "非默认分支",
+            examples["issue-backed-completed-non-default-branch"]["issue_section"],
+        )
+
+    def test_eval_corpus_covers_publication_effect_routes(self) -> None:
+        corpus = json.loads(
+            (PACKAGE / "evals/evals.json").read_text(encoding="utf-8")
+        )
+        cases = {item["id"]: item for item in corpus["evals"]}
+        expected = {
+            "default-branch-close",
+            "remain-open-reference",
+            "no-external-work-item",
+            "non-default-branch-reference",
+        }
+        self.assertTrue(expected.issubset(cases))
+        for case_id in expected:
+            self.assertEqual(cases[case_id]["expected_exit"], "ready")
+            self.assertEqual(cases[case_id]["input_profile_id"], "publication_review")
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))

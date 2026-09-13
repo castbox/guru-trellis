@@ -104,13 +104,14 @@ Before editing workflow behavior:
   verifier for clean throwaway installation adequacy. It is standalone-only,
   accepts `source_repository_verification`, returns `verified|blocked`, and is
   unreachable from business tasks, Publication, Finalizer, and finish-work.
-- `guru-finalize-task` is the active semantic owner of the exact closeout plan
-  review, current-conversation Finalizer confirmation, four distinct input profiles,
-  six public exits, and the owner-private transaction/recovery loop. Current
-  re-entry uses ignored `finalization-transaction.json`; current preparation and
-  archives never select `closeout-plan.json`. Package discovery, global invocation
-  after publication `ready`, three Guru-owned daily entries, and automatic machine
-  recovery routing are active. Terminal `ready_for_merge` evals feed
+- `guru-finalize-task` is the active semantic owner of exact Publication payload
+  readiness, current-conversation Finalizer confirmation, four distinct input
+  profiles, six public exits, and the owner-private transaction/recovery loop.
+  Current re-entry uses ignored `finalization-transaction.json`; no retired
+  task-local aggregate participates in current preparation or archive selection.
+  Package discovery, global invocation after publication `ready`, three Guru-owned
+  daily entries, and automatic machine recovery routing are active. Terminal
+  `ready_for_merge` evals feed
   `guru-merge-task-pr`. Upstream
   `trellis-finish-work` entries are owned only by official Trellis and are not
   installed or managed by the Guru preset.

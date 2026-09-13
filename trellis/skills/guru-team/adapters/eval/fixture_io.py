@@ -123,6 +123,43 @@ def bind_owner_result_argument(
         raise ValueError("semantic case must declare one owner-result invocation argument")
     return result_relative
 
+def bind_semantic_result_argument(
+    request: dict[str, Any],
+    fixture: Path,
+    semantic_result: Path | str,
+) -> str:
+    result_path = Path(semantic_result).resolve()
+    try:
+        result_relative = result_path.relative_to(fixture.resolve()).as_posix()
+    except ValueError as exc:
+        raise ValueError("semantic result must stay inside the installed eval fixture") from exc
+    if result_path.is_symlink() or not result_path.is_file():
+        raise ValueError("semantic result is unavailable or unsafe")
+
+    workdir = Path(request["workdir"]).resolve()
+    rewritten = 0
+    for relative in request.get("files", []):
+        path = workdir / str(relative)
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        invocation = payload.get("public_invocation")
+        arguments = invocation.get("arguments") if isinstance(invocation, dict) else None
+        if not isinstance(arguments, list) or "--semantic-result" not in arguments:
+            continue
+        index = arguments.index("--semantic-result")
+        if index + 1 >= len(arguments) or not isinstance(arguments[index + 1], str):
+            raise ValueError("case semantic-result invocation argument is invalid")
+        arguments[index + 1] = result_relative
+        path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
+        rewritten += 1
+    if rewritten != 1:
+        raise ValueError("semantic case must declare one semantic-result invocation argument")
+    return result_relative
+
 def bind_review_input_argument(
     request: dict[str, Any],
     fixture: Path,
