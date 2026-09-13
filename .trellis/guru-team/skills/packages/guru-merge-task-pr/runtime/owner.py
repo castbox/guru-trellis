@@ -1430,30 +1430,8 @@ def _cmd_invoke_task_pr_merge_happy_path(args: argparse.Namespace) -> dict[str, 
     task_pr_merge_retire_terminal_state(root, public_input, gate_path)
     return output
 
-def _cmd_invoke_task_pr_merge_compatibility(args: argparse.Namespace) -> dict[str, Any]:
-    root = repo_root(Path(args.root or "."))
-    public_input = task_pr_merge_json_input(root, args.input)
-    gate_path, gate = task_pr_merge_gate(root, public_input, args.gate)
-    task_pr_merge_cleanup_body_file(root, public_input)
-    checked = check_task_pr_merge_result(root, public_input, gate)
-    if checked.get("typed_exit") == "ready_to_merge":
-        raise WorkflowError("Task PR merge has not executed its checked expected-head mutation.", exit_code=2)
-    output = checked.get("output")
-    if not isinstance(output, dict):
-        raise WorkflowError("Task PR merge typed output is unavailable.", exit_code=2)
-    task_pr_merge_retire_terminal_state(root, public_input, gate_path)
-    return output
-
-
 def cmd_invoke_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
-    if args.review_input and args.gate:
-        raise WorkflowError(
-            "Task PR merge public invocation cannot combine --review-input with --gate.",
-            exit_code=2,
-        )
-    if args.review_input:
-        return _cmd_invoke_task_pr_merge_happy_path(args)
-    return _cmd_invoke_task_pr_merge_compatibility(args)
+    return _cmd_invoke_task_pr_merge_happy_path(args)
 
 
 def task_pr_merge_required_checks(

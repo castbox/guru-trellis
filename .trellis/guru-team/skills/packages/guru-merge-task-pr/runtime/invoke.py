@@ -15,8 +15,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--root")
     parser.add_argument("--input", required=True)
-    parser.add_argument("--gate")
-    parser.add_argument("--review-input")
+    parser.add_argument("--review-input", required=True)
     values = parser.parse_args(argv)
     if command["id"] != "invoke-task-pr-merge":
         raise KeyError(command["id"])

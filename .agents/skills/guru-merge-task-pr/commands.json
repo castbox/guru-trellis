@@ -267,23 +267,11 @@
         },
         {
           "flag": "--review-input",
-          "required": false,
+          "required": true,
           "kind": "json",
           "description": "Completed semantic review for the normal confirmed transaction or exact stdout-loss recovery.",
           "repeatable": false,
-          "conflicts": [
-            "--gate"
-          ]
-        },
-        {
-          "flag": "--gate",
-          "required": false,
-          "kind": "string",
-          "description": "Existing private gate path for the compatibility-only gate projection shape.",
-          "repeatable": false,
-          "conflicts": [
-            "--review-input"
-          ]
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
@@ -296,8 +284,7 @@
       ],
       "side_effect": "github_write",
       "schema_bindings": [
-        "schemas/public-ready-for-merge-input-2.0.schema.json",
-        "schemas/task-pr-merge-gate-2.0.schema.json"
+        "schemas/public-ready-for-merge-input-2.0.schema.json"
       ],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"

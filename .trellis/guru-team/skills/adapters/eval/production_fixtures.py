@@ -17,7 +17,6 @@ from adapters.eval.eval_constants import (
 )
 
 from adapters.eval.fixture_io import (
-    bind_merge_gate_argument,
     bind_owner_result_argument,
     bind_review_input_argument,
     bind_semantic_result_argument,
@@ -1159,16 +1158,6 @@ def stage_task_pr_merge_owner_execution(
             "expected_branch_changed",
             "Restore the reviewed base/head branches and rerun the live preview.",
         ),
-        "merge-workflow-close-scope-blocked": (
-            "close_scope",
-            "close_scope_mismatch",
-            "Repair and rereview the PR close-keyword scope before merge.",
-        ),
-        "merge-workflow-added-close-scope-blocked": (
-            "close_scope",
-            "close_scope_mismatch",
-            "Repair and rereview the PR close-keyword scope before merge.",
-        ),
     }
     blocked = blocked_routes.get(recipe)
     dimensions = []
@@ -1182,44 +1171,59 @@ def stage_task_pr_merge_owner_execution(
                 else f"The controlled live facts pass {identifier}."
             ),
         })
-    route = (
-        {
+    if recipe == "merge-phase2-reentry":
+        blocked_dimension = "checks_and_reviews"
+        for dimension in dimensions:
+            if dimension["id"] == blocked_dimension:
+                dimension["status"] = "blocked"
+                dimension["summary"] = "The current task-work finding blocks merge execution."
+        route = {
+            "typed_exit": "phase2_reentry_required",
+            "scope_classification": "task_work",
+            "requires_task_content_change": True,
+            "blocked_dimension": blocked_dimension,
+            "repo_ref": public_input["repo_ref"],
+            "pr_number": public_input["pr_number"],
+            "pr_url": public_input["pr_url"],
+            "expected_head_sha": public_input["expected_head_sha"],
+            "expected_base_branch": public_input["expected_base_branch"],
+            "expected_head_branch": public_input["expected_head_branch"],
+            "task_id": "09-03-348-merge-blocked-phase2-reentry",
+            "archive_locator": ".trellis/tasks/archive/2026-09/09-03-348-merge-blocked-phase2-reentry",
+            "active_locator": ".trellis/tasks/09-03-348-merge-blocked-phase2-reentry",
+            "archive_commit": "a" * 40,
+            "finding_refs": ["merge-finding:348:phase2-reentry"],
+            "resume_target": "phase-2",
+        }
+    elif blocked:
+        route = {
             "typed_exit": "merge_blocked",
             "reason_code": blocked[1],
             "remediation": blocked[2],
         }
-        if blocked
-        else {"typed_exit": "merged", "merge_method": "merge"}
-    )
+    else:
+        route = {"typed_exit": "merged", "merge_method": "merge"}
     review_path = fixture / ".trellis/.runtime/guru-team/evals/merge-review.json"
     runtime.write_json(
         review_path,
         {"semantic_review": {"dimensions": dimensions}, "route": route},
     )
-    fake_bin = write_fake_merge_gh(Path(request["workdir"]).resolve().parent, recipe)
+    fake_kwargs = (
+        {
+            "repo_ref": public_input["repo_ref"],
+            "pr_number": public_input["pr_number"],
+            "issue_number": public_input["pr_number"],
+        }
+        if recipe == "merge-phase2-reentry"
+        else {}
+    )
+    fake_bin = write_fake_merge_gh(
+        Path(request["workdir"]).resolve().parent,
+        recipe,
+        **fake_kwargs,
+    )
     environment = {"PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}"}
-    previous_path = os.environ.get("PATH")
-    os.environ["PATH"] = environment["PATH"]
-    owner_context: dict[str, Any] = {}
-    try:
-        recorded = runtime.cmd_record_task_pr_merge(argparse.Namespace(
-            root=str(fixture),
-            input=runtime_input.relative_to(fixture).as_posix(),
-            review_input=str(review_path),
-        ))
-        gate_path = fixture / str(recorded["gate"])
-        if not blocked:
-            runtime.cmd_execute_task_pr_merge(argparse.Namespace(
-                root=str(fixture),
-                input=runtime_input.relative_to(fixture).as_posix(),
-                gate=gate_path.relative_to(fixture).as_posix(),
-            ))
-        bind_merge_gate_argument(request, fixture, gate_path)
-    finally:
-        if previous_path is None:
-            os.environ.pop("PATH", None)
-        else:
-            os.environ["PATH"] = previous_path
+    bind_review_input_argument(request, fixture, review_path)
     return package, fixture_runtime_target, environment
 
 def stage_finalization_owner_execution(

@@ -918,9 +918,6 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 mock.patch.object(
                     GTT, "task_pr_merge_retire_terminal_state", side_effect=retire
                 ),
-                mock.patch.object(
-                    GTT, "_cmd_invoke_task_pr_merge_compatibility"
-                ) as compatibility,
             ):
                 result = GTT.cmd_invoke_task_pr_merge(args)
 
@@ -928,7 +925,6 @@ class MergeTaskPrContractTest(unittest.TestCase):
             self.assertEqual(events, ["snapshot", "mutation", "snapshot", "retire"])
             self.assertEqual(snapshots.call_count, 2)
             self.assertEqual(mutation.call_count, 1)
-            compatibility.assert_not_called()
             self.assertIn("--match-head-commit", mutation.call_args.args[0])
             self.assertFalse(GTT.task_pr_merge_gate_path(root, public_input).exists())
             self.assertFalse(GTT.task_pr_merge_body_path(root, public_input).exists())
@@ -1098,52 +1094,6 @@ class MergeTaskPrContractTest(unittest.TestCase):
                 gate_write.assert_not_called()
                 mutation.assert_not_called()
 
-    def test_public_invoke_gate_only_shape_remains_compatibility_projection(self) -> None:
-        public_input, post, gate, expected = self.terminal_fixture()
-        gate["terminal_output"] = expected
-        with tempfile.TemporaryDirectory() as temp_dir:
-            root = Path(temp_dir)
-            gate_path = root / "gate.json"
-            args = Namespace(
-                root=temp_dir,
-                input="input.json",
-                review_input=None,
-                gate="gate.json",
-            )
-            with (
-                mock.patch.object(GTT, "repo_root", return_value=root),
-                mock.patch.object(GTT, "task_pr_merge_json_input", return_value=public_input),
-                mock.patch.object(
-                    GTT, "task_pr_merge_gate", return_value=(gate_path, gate)
-                ),
-                mock.patch.object(
-                    GTT, "task_pr_merge_live_facts", return_value=post
-                ) as snapshots,
-                mock.patch.object(GTT, "run") as mutation,
-                mock.patch.object(GTT, "require_gh_auth") as auth,
-                mock.patch.object(
-                    GTT, "_cmd_invoke_task_pr_merge_happy_path"
-                ) as happy_path,
-            ):
-                result = GTT.cmd_invoke_task_pr_merge(args)
-
-            self.assertEqual(result, expected)
-            self.assertEqual(snapshots.call_count, 1)
-            mutation.assert_not_called()
-            auth.assert_not_called()
-            happy_path.assert_not_called()
-
-    def test_public_invoke_rejects_combined_happy_and_compatibility_arguments(self) -> None:
-        with self.assertRaisesRegex(GTT.WorkflowError, "cannot combine"):
-            GTT.cmd_invoke_task_pr_merge(
-                Namespace(
-                    root="/repo",
-                    input="input.json",
-                    review_input="review.json",
-                    gate="gate.json",
-                )
-            )
-
     def test_required_check_watcher_returns_all_stable_fact_states(self) -> None:
         base_args = {
             "root": "/repo",
@@ -1206,8 +1156,9 @@ class MergeTaskPrContractTest(unittest.TestCase):
             item for item in commands["commands"] if item["id"] == "invoke-task-pr-merge"
         )
         arguments = {item["flag"]: item for item in invocation["arguments"]}
-        self.assertEqual(arguments["--review-input"]["conflicts"], ["--gate"])
-        self.assertEqual(arguments["--gate"]["conflicts"], ["--review-input"])
+        self.assertTrue(arguments["--review-input"]["required"])
+        self.assertEqual(arguments["--review-input"]["conflicts"], [])
+        self.assertNotIn("--gate", arguments)
         self.assertEqual(invocation["side_effect"], "github_write")
         self.assertEqual(
             sum(item["id"] == "watch-task-pr-checks" for item in commands["commands"]),

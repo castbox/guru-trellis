@@ -197,42 +197,6 @@ def bind_review_input_argument(
         raise ValueError("semantic case must declare one review-input invocation argument")
     return review_relative
 
-def bind_merge_gate_argument(
-    request: dict[str, Any],
-    fixture: Path,
-    gate_path: Path,
-) -> str:
-    try:
-        gate_relative = gate_path.resolve().relative_to(fixture.resolve()).as_posix()
-    except ValueError as exc:
-        raise ValueError("merge gate must stay inside the installed eval fixture") from exc
-    if gate_path.is_symlink() or not gate_path.is_file():
-        raise ValueError("merge gate is unavailable or unsafe")
-
-    workdir = Path(request["workdir"]).resolve()
-    rewritten = 0
-    for relative in request.get("files", []):
-        path = workdir / str(relative)
-        try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-        if not isinstance(payload, dict):
-            continue
-        invocation = payload.get("public_invocation")
-        arguments = invocation.get("arguments") if isinstance(invocation, dict) else None
-        if not isinstance(arguments, list) or "--gate" not in arguments:
-            continue
-        index = arguments.index("--gate")
-        if index + 1 >= len(arguments) or not isinstance(arguments[index + 1], str):
-            raise ValueError("case merge-gate invocation argument is invalid")
-        arguments[index + 1] = gate_relative
-        path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
-        rewritten += 1
-    if rewritten != 1:
-        raise ValueError("semantic merge case must declare one gate invocation argument")
-    return gate_relative
-
 def stage_clean_installed_owner_repo(
     execution_root: Path, runtime_target: Path, request_package: Path,
 ) -> tuple[Path, Path]:
@@ -465,18 +429,12 @@ def write_fake_merge_gh(
             "body": "Closes #174\n",
             "closure_mismatch": False,
         },
-        "merge-workflow-added-close-scope-blocked": {
+        "merge-phase2-reentry": {
             "draft": False,
             "head": "1" * 40,
             "merge_state_status": "CLEAN",
-            "body": "Closes #174\nCloses #180\n",
-            "closure_mismatch": False,
-        },
-        "merge-workflow-close-scope-blocked": {
-            "draft": False,
-            "head": "1" * 40,
-            "merge_state_status": "CLEAN",
-            "body": "Related #174\n",
+            "head_branch": "codex/348-merge-blocked-phase2-reentry",
+            "body": "Closes #348\n",
             "closure_mismatch": False,
         },
         "merge-workflow-closure-mismatch": {
