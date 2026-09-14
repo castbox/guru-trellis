@@ -5,7 +5,7 @@ issue_ref: "https://github.com/castbox/guru-trellis/issues/410"
 source_version: "v0.6.16-guru.1"
 expected_current_version: "v0.6.16-guru.1"
 candidate_successor_version: "v0.6.17-guru.1"
-status: "candidate"
+status: "reviewed_promoted"
 authority_scope: "isolated_contribution"
 change_path: "target_native"
 contribution:
@@ -16,7 +16,7 @@ contribution:
 architecture_candidate:
   contribution_locator: "docs/architecture/contributions/410-release-v0617-guru1.md"
   contribution_identity: "architecture-contribution-410-release-v0617-guru1-v1"
-  promotion_state: "candidate"
+  promotion_state: "reviewed_promoted"
   adr_required: false
 public_contracts:
   rdt_owner: "guru-maintain-requirements-design-test-ssot:task_impact_sync"
@@ -24,4 +24,5 @@ public_contracts:
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
 promotion_state: "pending"
-shared_current_write: false
+promoted_version: "current-main-0.6.17-guru.52"
+shared_current_write: true

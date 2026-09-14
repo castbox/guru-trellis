@@ -2,10 +2,11 @@
 
 ## Identity And Authority Boundary
 
-- contribution identity: `architecture-contribution-410-release-v0617-guru1-v1` / `candidate`.
+- contribution identity: `architecture-contribution-410-release-v0617-guru1-v1` / `reviewed_promoted`.
 - requirement authority: live Issue #410 and task `410-release-v0617-guru1`.
 - source predecessor: `v0.6.16-guru.1` / immutable released history.
 - change path: `target_native`; ADR required: `false`.
+- promoted successor: `current-main-0.6.17-guru.52`.
 
 This contribution records the stable architecture boundary for the release
 candidate. It does not record task HEAD, dynamic gate results, tag, Release,
