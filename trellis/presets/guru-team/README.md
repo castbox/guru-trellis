@@ -213,8 +213,8 @@ business `docs/**`; those documents are governed by the workflow's AI-facing
 Chinese documentation contract.
 
 Stable workflow marketplace installs pin the latest released repo tag, currently
-`gh:castbox/guru-trellis/trellis#v0.6.17-guru.1`. That released tag carries
-extension revision `0.6.17-guru.42`; it is a separate axis from the current
+`gh:castbox/guru-trellis/trellis#v0.6.16-guru.1`. That released tag carries
+extension revision `0.6.16-guru.41`; it is a separate axis from the current
 main/source checkout, whose fixed framework source is
 `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`, CI `34838784963`, CLI `0.6.17`, and
 package manager `pnpm@10.32.1`. The released tag does not prove or contain this
@@ -297,7 +297,7 @@ is PR-native and does not require an Issue number.
 ## Apply
 
 ```bash
-git clone --depth 1 --branch v0.6.17-guru.1 \
+git clone --depth 1 --branch v0.6.16-guru.1 \
   https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project \
