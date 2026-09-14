@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"发布相关 workflow/preset/source/installed、reapply、drift 与 validation scope 规则"}
+{"file":".agents/skills/guru-review-branch/references/contract.md","reason":"两次完整 origin/base 到 HEAD 独立 Branch Review 的 freshness 与 finding 边界"}
+{"file":".agents/skills/guru-finalize-task/references/contract.md","reason":"Publication 到 push/PR/archive/Ready 的 owner 边界与恢复约束"}
+{"file":".trellis/tasks/09-15-410-release-v0617-guru1/implement.md","reason":"T410 验证矩阵、命令族与未验证边界"}

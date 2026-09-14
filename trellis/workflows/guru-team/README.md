@@ -59,12 +59,13 @@ throwaway 安装验证和 README 默认命令都必须使用非交互形式；�
 spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`。
 
 历史发布计划曾以 `#v0.6.15-guru.6` 与官方 CLI `0.6.15` 为目标；它不定义当前 Fork
-安装来源。当前框架来源以 source lock 的完整 SHA 为准。Latest released stable source 是
-annotated tag `v0.6.16-guru.1`，canonical extension version 仍为 `0.6.16-guru.41`；
+安装来源。当前框架来源以 source lock 的完整 SHA 为准。当前目标 stable source 是
+annotated tag `v0.6.17-guru.1`，canonical extension version 为 `0.6.17-guru.42`；
 current main/source checkout 则固定到
 `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`、CI `34838784963`、CLI `0.6.17`、
 `pnpm@10.32.1`。不依赖上游 `v0.6.18`。Repo release tag、extension revision、CLI/source commit 是独立版本轴；
-`v0.6.16-guru.1` 不包含当前 developer-free framework adoption。
+`v0.6.17-guru.1` 的 tag、Release、tag-pinned install 与 smoke 仍须由 #410 的
+exact-candidate gate 建立；当前文档不把 preparation candidate 当作已发布事实。
 
 已有 Trellis 项目切换 active workflow：
 
@@ -208,10 +209,11 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 `.trellis/guru-team/runtime/resolve-python.sh`。缺 runtime、版本漂移或未解决 sidecar 时必须在
 业务副作用前 fail closed，不得回退 PATH Python。
 
-Current main/source checkout 的 canonical extension version 为 `0.6.16-guru.41`，固定
+Current main/source checkout 的 canonical extension version 为 `0.6.17-guru.42`，固定
 framework source 为 `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`，
 上游 CI identity 为 `34838784963`，CLI 为 `0.6.17`，package manager 为 `pnpm@10.32.1`。Latest released Guru tag
-`v0.6.16-guru.1` 是独立 predecessor/release identity，不证明当前 source adoption 已发布。
+`v0.6.16-guru.1` 是独立 released predecessor；`v0.6.17-guru.1` 仍需在 #410
+exact-candidate gate 后建立，不证明当前 source adoption 已发布。
 Source/installed package validation 必须同时验证
 registry、22 invokes / 95 exits / 59 combined targets（35 workflow + 24 stop）
 business marker graph、23-package/97-exit closure、consumer

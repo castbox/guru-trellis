@@ -213,8 +213,8 @@ business `docs/**`; those documents are governed by the workflow's AI-facing
 Chinese documentation contract.
 
 Stable workflow marketplace installs pin the latest released repo tag, currently
-`gh:castbox/guru-trellis/trellis#v0.6.16-guru.1`. That released tag carries
-extension revision `0.6.16-guru.41`; it is a separate axis from the current
+`gh:castbox/guru-trellis/trellis#v0.6.17-guru.1`. That released tag carries
+extension revision `0.6.17-guru.42`; it is a separate axis from the current
 main/source checkout, whose fixed framework source is
 `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`, CI `34838784963`, CLI `0.6.17`, and
 package manager `pnpm@10.32.1`. The released tag does not prove or contain this
@@ -226,8 +226,9 @@ reported as mutable provenance.
 Before the Fork migration, `main` carried extension candidate `0.6.15-guru.40`
 targeting official Trellis `0.6.15`. This is historical release-plan context,
 not the current framework source contract. Issue #332 established predecessor
-`v0.6.15-guru.6`, and Issue #392 released `v0.6.16-guru.1`. Neither tag is
-evidence that the current main/source checkout already published Trellis `0.6.17`.
+`v0.6.15-guru.6`, and Issue #392 released `v0.6.16-guru.1`. Issue #410 is the
+current release candidate for `v0.6.17-guru.1`; until its exact-candidate gate,
+tag-pinned smoke, and GitHub Release complete, the target is not a released fact.
 
 ## Current Ownership Contract
 
@@ -296,7 +297,7 @@ is PR-native and does not require an Issue number.
 ## Apply
 
 ```bash
-git clone --depth 1 --branch v0.6.16-guru.1 \
+git clone --depth 1 --branch v0.6.17-guru.1 \
   https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project \
@@ -753,10 +754,11 @@ standalone-only verifier 共声明 97 个 external exits。
 `guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
 invoke 与六个 exit marker。Current main/source checkout 的 canonical extension version 为
-`0.6.16-guru.41`，固定 Fork 为
+`0.6.17-guru.42`，固定 Fork 为
 `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0` / CI `34838784963` / CLI `0.6.17` /
-`pnpm@10.32.1`。Latest released stable source 仍为 `v0.6.16-guru.1`，不包含该 current
-framework adoption。Repo release tag、extension revision、CLI/source commit 是独立版本轴；
+`pnpm@10.32.1`。前序 released stable source 为 `v0.6.16-guru.1`；目标
+`v0.6.17-guru.1` 的 exact-candidate gate、tag-pinned smoke 与 GitHub Release 尚未在本候选
+之外得到证明。Repo release tag、extension revision、CLI/source commit 是独立版本轴；
 同一次 stable install 的 workflow 与 preset 必须 pin 同一 immutable tag。
 本发布未取得 live GPT-5.6 Sol production semantic evidence；deterministic/no-model/
 fake-production 结果不能证明 pressure matrix、模型稳定性或未来模型行为。

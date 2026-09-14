@@ -1,0 +1,4 @@
+{"file":".agents/skills/release-guru-trellis-version/references/contract.md","reason":"两阶段发布生命周期、exact candidate、独立 mutation confirmation 与 fail-closed 合同"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"四版本轴、README/marketplace/preset/source lock 与升级文档 SSOT 规则"}
+{"file":".trellis/spec/docs/requirements-design-test-ssot.md","reason":"RDT current authority、task_impact_sync、promotion 与 freshness 约束"}
+{"file":".trellis/tasks/09-15-410-release-v0617-guru1/design.md","reason":"本任务技术设计与 Docs SSOT Plan"}
