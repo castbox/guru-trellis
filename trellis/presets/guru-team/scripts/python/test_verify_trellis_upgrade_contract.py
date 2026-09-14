@@ -1440,7 +1440,7 @@ exit 23
                     "version": "1.0.0",
                     "projection_identity": {
                         "extension_id": "guru-team",
-                        "extension_version": "0.6.16-guru.41",
+                        "extension_version": "0.6.17-guru.42",
                         "workflow_template_id": "guru-team",
                     },
                 }

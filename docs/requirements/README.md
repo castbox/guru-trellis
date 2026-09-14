@@ -6,7 +6,7 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.5-guru.51` | [requirement-main.md](./versions/current-main-0.6.5-guru.51/requirement-main.md) | #408 Nightly/session/独立手动操作；完整继承 immutable `.50`，不构成后续 gate 或发布证明 |
+| `active` | `current-main-0.6.17-guru.52` | [requirement-main.md](./versions/current-main-0.6.17-guru.52/requirement-main.md) | #410 release-facing 四轴映射；完整继承 immutable `.51`，不构成后续 gate 或发布证明 |
 | `superseded` | `current-main-0.6.5-guru.50` | [requirement-main.md](./versions/current-main-0.6.5-guru.50/requirement-main.md) | #247 reviewed ledger retirement与Issue closure ownership；immutable history |
 | `superseded` | `current-main-0.6.5-guru.49` | [requirement-main.md](./versions/current-main-0.6.5-guru.49/requirement-main.md) | #329 reviewed developer-free source/lifecycle；immutable history |
 | `superseded` | `current-main-0.6.5-guru.48` | [requirement-main.md](./versions/current-main-0.6.5-guru.48/requirement-main.md) | #392 reviewed release mapping 与 serialized promotion lifecycle；immutable history |

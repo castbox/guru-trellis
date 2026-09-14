@@ -105,8 +105,10 @@
   手动结果不取得 Guru lifecycle 完成状态。此能力不新增 Skill、exit、owner 或恢复状态。
   需求/设计/测试承接为 `R408-01..08 -> D408-01..05 -> T408-01..08`，证据边界见 `EVD-027`。
 
-当前 Architecture knowledge identity 为 `.51`，extension revision 为 `0.6.16-guru.41`，Fork CLI/core 为
+当前 Architecture knowledge identity 为 `.52`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
 `0.6.17`，framework source/CI 由 `ARCH-CUR-028` 与 canonical source record 绑定，package manager 为
-`pnpm@10.32.1`。`.50` 是 immutable superseded predecessor；released `v0.6.16-guru.1` 不包含 #408 candidate。promotion-created diff
+`pnpm@10.32.1`。`.51` 是 immutable superseded predecessor；released `v0.6.16-guru.1` 不包含 #410 candidate。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。
+
+- `ARCH-CUR-029`（`source_confirmed` + `reviewed`）：#410 将 current release-facing mapping 提升为 `v0.6.17-guru.1` / extension `0.6.17-guru.42` / CLI-core `0.6.17` / fixed Fork source；Architecture/RDT successor 为 `current-main-0.6.17-guru.52`，前序 `.51` 与 released `v0.6.16-guru.1` 保持 immutable。该知识 promotion 不声明 preparation PR merge、tag、GitHub Release、业务 smoke 或 Issue closure 已完成。

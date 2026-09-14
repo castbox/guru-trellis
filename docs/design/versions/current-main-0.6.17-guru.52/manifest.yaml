@@ -1,0 +1,19 @@
+schema_version: "1.0"
+authority: design
+version: current-main-0.6.17-guru.52
+status: active
+predecessor: current-main-0.6.5-guru.51
+source_binding: "reviewed #410 contribution + inherited immutable current-main-0.6.5-guru.51 authority + Fork CI 34838784963 + containing Git object/tree identity"
+extension_manifest_version: 0.6.17-guru.42
+target_trellis_cli: 0.6.17
+release_target: v0.6.17-guru.1
+released_baseline: v0.6.16-guru.1
+framework_source: castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0
+requirements_locator: docs/requirements/versions/current-main-0.6.17-guru.52/requirement-main.md
+test_locator: docs/test/versions/current-main-0.6.17-guru.52/test-strategy.md
+architecture_locator: docs/architecture/README.md
+registry_locator: trellis/skills/guru-team/registry.json
+active_skill_count: 23
+external_exit_count: 97
+command_count: 78
+provenance: "code_recovered + reviewed #410 contribution + inherited immutable current-main-0.6.5-guru.51 authority; knowledge promotion is not post-promotion gate or release proof"

@@ -34,9 +34,9 @@ officially supported explicit `--template <name>` path when a specific template
 is intended. If docs mention interactive template selection, describe it as an
 opt-in user choice, not as the team default or automated validation path.
 
-Stable install and upgrade docs must keep four version axes explicit. The latest
-released Guru repo tag is `v0.6.16-guru.1`; the current extension revision is
-`0.6.16-guru.41`; the current main/source framework lock is
+Stable install and upgrade docs must keep four version axes explicit. The current
+target Guru repo tag is `v0.6.17-guru.1`; the target extension revision is
+`0.6.17-guru.42`; the current main/source framework lock is
 `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`, CI `34838784963`, CLI/core `0.6.17`, package
 manager `pnpm@10.32.1`. The released tag does not prove or contain the current
 framework-source adoption. Stable workflow marketplace and preset sources for

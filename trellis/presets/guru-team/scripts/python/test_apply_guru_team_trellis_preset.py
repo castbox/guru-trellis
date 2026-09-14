@@ -2038,7 +2038,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(set(installed), preset.INSTALLED_EXTENSION_KEYS)
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.16-guru.41")
+        self.assertEqual(installed["extension"]["version"], "0.6.17-guru.42")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.17")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
@@ -2049,7 +2049,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "version": "1.0.0",
             "projection_identity": {
                 "extension_id": "guru-team",
-                "extension_version": "0.6.16-guru.41",
+                "extension_version": "0.6.17-guru.42",
                 "workflow_template_id": "guru-team",
             },
         }
