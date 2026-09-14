@@ -1,0 +1,4 @@
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"固定Fork正式生成与Guru ownership边界"}
+{"file":".trellis/spec/workflow/index.md","reason":"按索引显式读取旧生命周期合同，避免正文注入截断"}
+{"file":".trellis/spec/workflow/subtraction-first-compatibility.md","reason":"直接演进、禁止新增恢复层与代码规模门槛"}
+{"file":".trellis/tasks/09-14-408-nightly-session-binding-manual-fallback/design.md","reason":"本任务唯一设计与Docs SSOT Plan"}

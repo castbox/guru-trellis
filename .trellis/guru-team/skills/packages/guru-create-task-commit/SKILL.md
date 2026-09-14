@@ -51,6 +51,10 @@ not be added between prepare and the confirmed public invocation.
 Return exactly one declared exit: `committed`, `revision-required`, or
 `blocked`. Unknown, multiple, stale, or unmapped results fail closed.
 
+For an explicit independent manual operation after an automatic stop, read
+`.trellis/workflow.md#manual-gitgithub-operations` (Manual Git/GitHub Operations).
+That global boundary does not relax this Skill's entry or completion contract.
+
 The current candidate lives only under ignored
 `.trellis/.runtime/guru-team/task-commit-plans/**`, is never staged, and is
 removed after success. Candidate 5.0 has no authorization, branch

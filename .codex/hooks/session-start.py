@@ -255,6 +255,8 @@ def _load_task_data(trellis_dir: Path, task_dir: Path) -> dict:
 
 def _get_task_status(trellis_dir: Path, hook_input: dict) -> str:
     active = _resolve_active_task(trellis_dir, hook_input)
+    if getattr(active, "error", None) or getattr(active, "stale", False):
+        return f"Status: TASK ERROR\nError: {active.error or 'stale binding'}\nSource: {active.source}"
     if not active.task_path:
         return (
             "Status: NO ACTIVE TASK\n"
@@ -263,7 +265,8 @@ def _get_task_status(trellis_dir: Path, hook_input: dict) -> str:
         )
 
     task_ref = active.task_path
-    task_dir = _resolve_task_dir(trellis_dir, task_ref)
+    task_dir = active.resolved_task_path
+    trellis_dir = active.task_workspace_root / ".trellis"
     if active.stale or not task_dir.is_dir():
         return (
             f"Status: STALE POINTER\nTask: {task_ref}\n"
@@ -401,12 +404,15 @@ def _build_compact_current_state(
     lines.append(_format_git_state(repo_root))
 
     active = _resolve_active_task(trellis_dir, hook_input)
-    if active.task_path:
-        task_dir = _resolve_task_dir(trellis_dir, active.task_path)
+    if getattr(active, "error", None) or getattr(active, "stale", False):
+        lines.append(f"Current task: ERROR ({active.error or 'stale binding'}); source={active.source}.")
+    elif active.task_path:
+        task_dir = active.resolved_task_path
         status = "unknown"
-        data = _load_task_data(trellis_dir, task_dir)
+        data = _load_task_data(active.task_workspace_root / ".trellis", task_dir)
         status = str(data.get("status") or "unknown")
         lines.append(f"Current task: {_repo_relative(repo_root, task_dir)}; status={status}.")
+        lines.append(f"Task workspace: {active.task_workspace_root}; caller workspace: {repo_root}.")
     else:
         lines.append("Current task: none.")
 
@@ -494,7 +500,9 @@ def main() -> None:
     configure_project_encoding(project_dir)
 
     trellis_dir = project_dir / ".trellis"
-    spec_index_paths = _collect_spec_index_paths(trellis_dir)
+    active = _resolve_active_task(trellis_dir, hook_input)
+    task_trellis_dir = (getattr(active, "task_workspace_root", None) or project_dir) / ".trellis"
+    spec_index_paths = _collect_spec_index_paths(task_trellis_dir)
 
     output = StringIO()
 
@@ -511,7 +519,7 @@ Trellis compact SessionStart context. Use it to orient the session; load details
     output.write("\n</current-state>\n\n")
 
     output.write("<trellis-workflow>\n")
-    output.write(_build_workflow_toc(trellis_dir / "workflow.md"))
+    output.write(_build_workflow_toc(task_trellis_dir / "workflow.md"))
     output.write("\n</trellis-workflow>\n\n")
 
     output.write("<guidelines>\n")

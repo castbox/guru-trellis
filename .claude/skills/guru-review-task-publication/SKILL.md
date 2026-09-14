@@ -96,6 +96,10 @@ qualification; it never enters scope confirmation.
 Emit exactly one declared typed exit. Missing, stale, ambiguous, multiple,
 unmapped, or checker-failed evidence fails closed.
 
+For an explicit independent manual operation after an automatic stop, read
+`.trellis/workflow.md#manual-gitgithub-operations` (Manual Git/GitHub Operations).
+That global boundary does not relax this Skill's entry or completion contract.
+
 `ready` has exactly one consumer: `guru-finalize-task`. The caller must not
 push the reviewed/publication HEAD or create a PR between this Skill and that
 consumer; Finalizer owns the complete remote transaction.

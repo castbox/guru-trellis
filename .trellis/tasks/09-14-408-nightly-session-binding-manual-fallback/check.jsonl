@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/index.md","reason":"按索引显式读取quality-guidelines适用正文，避免注入截断"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"官方模板更新、managed projections与sidecar检查"}
+{"file":".trellis/tasks/09-14-408-nightly-session-binding-manual-fallback/prd.md","reason":"完整R408验收与非目标"}
+{"file":".trellis/tasks/09-14-408-nightly-session-binding-manual-fallback/implement.md","reason":"T408验证集合与UNVERIFIED边界"}

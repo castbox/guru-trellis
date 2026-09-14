@@ -32,22 +32,20 @@ with tempfile.TemporaryDirectory(prefix="fork-isolation-") as tmp:
         sessions = root / ".trellis/.runtime/sessions"
         for count in (0, 1, 2):
             if count:
-                (sessions / f"codex_foreign{count}.json").write_text(json.dumps({"current_task": ".trellis/tasks/own"}))
+                (sessions / f"codex_{root.name}_foreign{count}.json").write_text(json.dumps({"current_task": ".trellis/tasks/own"}))
             before = {p.name: p.read_bytes() for p in sessions.iterdir()}
             for payload in ({}, {"session_id": "unmatched"}):
                 assert resolve_active_task(root, payload, "codex", allow_environment_context=False).task_path is None
             if count == 1:
-                exact = resolve_active_task(root, {"session_id": "foreign1"}, "codex", allow_environment_context=False)
+                exact = resolve_active_task(root, {"session_id": f"{root.name}_foreign1"}, "codex", allow_environment_context=False)
                 assert exact.source_type == "session" and not exact.stale
                 child = resolve_active_task(root, {}, "codex", allow_single_session_fallback=True, allow_environment_context=False)
                 assert child.source_type == "session-fallback"
             assert {p.name: p.read_bytes() for p in sessions.iterdir()} == before
         (sessions / "codex_stale.json").write_text(json.dumps({"current_task": ".trellis/tasks/missing"}))
         assert resolve_active_task(root, {"session_id": "stale"}, "codex", allow_environment_context=False).stale
-    # The first checkout cannot use the second checkout's exact session key.
-    second = roots[1] / ".trellis/.runtime/sessions/codex_second_only.json"
-    second.write_text(json.dumps({"current_task": ".trellis/tasks/own"}))
-    assert resolve_active_task(roots[0], {"session_id": "second_only"}, "codex", allow_environment_context=False).task_path is None
+    # A different session never borrows a binding from either linked checkout.
+    assert resolve_active_task(roots[0], {"session_id": "unmatched"}, "codex", allow_environment_context=False).task_path is None
     main = Path(tmp) / "hook-root"
     sessions = main / ".trellis/.runtime/sessions"
     sessions.mkdir(parents=True)
@@ -80,14 +78,18 @@ class ForkSessionIsolationTests(unittest.TestCase):
                                 env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"})
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    @unittest.skipUnless(os.environ.get("TRELLIS_INSTALLED_REPO"), "UNVERIFIED: explicit target installation required")
     def test_installed_runtime_and_main_hooks(self):
-        root = Path(os.environ.get("TRELLIS_INSTALLED_REPO", str(SOURCE)))
+        from fork_session_probe import check_linked_session
+        root = Path(os.environ["TRELLIS_INSTALLED_REPO"])
         self.check_root(root / ".trellis/scripts", root / ".codex/hooks")
+        check_linked_session(root / ".trellis/scripts", root / ".codex/hooks")
 
     @unittest.skipUnless(os.environ.get("TRELLIS_FORK_SOURCE"), "Explicit verified Fork checkout required")
     def test_canonical_fork_runtime_and_main_hooks(self):
         import tempfile
         import shutil
+        from fork_session_probe import check_linked_session
 
         root = Path(os.environ["TRELLIS_FORK_SOURCE"]) / "packages/cli/src/templates"
         with tempfile.TemporaryDirectory(prefix="canonical-hooks-") as tmp:
@@ -95,6 +97,7 @@ class ForkSessionIsolationTests(unittest.TestCase):
             shutil.copy2(root / "codex/hooks/session-start.py", hooks / "session-start.py")
             shutil.copy2(root / "shared-hooks/inject-workflow-state.py", hooks / "inject-workflow-state.py")
             self.check_root(root / "trellis/scripts", hooks)
+            check_linked_session(root / "trellis/scripts", hooks)
 
 
 if __name__ == "__main__":

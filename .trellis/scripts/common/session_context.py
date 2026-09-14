@@ -19,7 +19,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from .active_task import resolve_context_key
+from .active_task import resolve_active_task, resolve_context_key
 from .history_paths import RetiredDataPathError, is_active_path
 from .config import get_git_packages
 from .git import run_git
@@ -29,8 +29,6 @@ from .paths import (
     DIR_SPEC,
     DIR_TASKS,
     DIR_WORKFLOW,
-    get_current_task,
-    get_current_task_source,
     get_repo_root,
     get_tasks_dir,
 )
@@ -555,11 +553,20 @@ def get_context_json(repo_root: Path | None = None) -> dict:
         },
     }
 
-    source, context_key, task_path = get_current_task_source(repo_root)
+    active = resolve_active_task(repo_root)
+    result["invocationRoot"] = str(active.invocation_root)
+    result["repositoryCommonDir"] = str(active.repository_common_dir) if active.repository_common_dir else None
     result["currentTask"] = (
-        {"path": task_path, "source": source, "contextKey": context_key}
-        if task_path else None
+        {"path": active.task_path, "source": active.source_type, "contextKey": active.context_key,
+         "taskWorkspaceRoot": str(active.task_workspace_root),
+         "resolvedTaskPath": str(active.resolved_task_path)}
+        if active.resolved_task_path else None
     )
+    if active.error:
+        result["error"] = active.error
+        result["stale"] = active.stale
+    if active.task_workspace_root and active.task_workspace_root != repo_root.resolve():
+        result["taskGit"] = _collect_root_git_info(active.task_workspace_root)
 
     if pkg_git_info:
         result["packageGit"] = pkg_git_info
@@ -613,16 +620,18 @@ def get_context_text(repo_root: Path | None = None) -> str:
 
     # Current task
     lines.append("## CURRENT SESSION TASK")
-    current_task = get_current_task(repo_root)
-    if current_task:
-        current_task_dir = repo_root / current_task
-        source_type, context_key, _ = get_current_task_source(repo_root)
-        lines.append(f"Path: {current_task}")
-        lines.append(
-            f"Source: {source_type}" + (f":{context_key}" if context_key else "")
-        )
+    active = resolve_active_task(repo_root)
+    lines.append(f"Invocation root (Git and project inventory): {active.invocation_root}")
+    if active.error:
+        lines.append(f"Error: {active.error}")
+    elif active.resolved_task_path and active.task_workspace_root:
+        current_task_dir = active.resolved_task_path
+        lines.append(f"Path: {active.task_path}")
+        lines.append(f"Task workspace: {active.task_workspace_root}")
+        lines.append(f"Resolved task: {current_task_dir}")
+        lines.append(f"Source: {active.source}")
 
-        ct = load_task(current_task_dir, repo_root)
+        ct = load_task(current_task_dir, active.task_workspace_root)
         if ct:
             lines.append(f"Name: {ct.name}")
             lines.append(f"Status: {ct.status}")
@@ -632,7 +641,7 @@ def get_context_text(repo_root: Path | None = None) -> str:
 
         # Check for prd.md
         prd_file = current_task_dir / "prd.md"
-        if prd_file.is_file():
+        if is_active_path(prd_file, active.task_workspace_root) and prd_file.is_file():
             lines.append("")
             lines.append("[!] This task has prd.md - read it for task details")
     else:

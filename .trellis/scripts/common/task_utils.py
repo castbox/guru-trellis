@@ -203,6 +203,64 @@ def archive_task_complete(
 # Task Directory Resolution
 # =============================================================================
 
+def resolve_lifecycle_target(
+    target: str, repo_root: Path, *, use_active: bool = False,
+) -> tuple[Path, Path] | None:
+    """Resolve start/archive/rename without guessing task ownership by name."""
+    from .active_task import resolve_active_task, task_workspace_for_path
+    from .session_storage import SessionBindingError, task_location
+
+    try:
+        root = repo_root.resolve()
+        if Path(target).is_absolute():
+            workspace = task_workspace_for_path(Path(target), root)
+            _, path = task_location(target, workspace)
+            return workspace, path
+        if use_active:
+            active = resolve_active_task(root)
+            if active.error:
+                raise SessionBindingError(active.error)
+            if active.resolved_task_path and active.task_workspace_root:
+                normalized = target.replace("\\", "/")
+                while normalized.startswith("./"):
+                    normalized = normalized[2:]
+                if normalized.startswith("tasks/"):
+                    normalized = ".trellis/" + normalized
+                name = active.resolved_task_path.name
+                matches = normalized in {active.task_path, name} or (
+                    "/" not in normalized and name.endswith("-" + normalized)
+                )
+                if matches:
+                    tasks = get_tasks_dir(root)
+                    # Check every suffix candidate, not a lookup that conflates
+                    # an ambiguous local name with a missing local candidate.
+                    if "/" in normalized:
+                        locals_ = [root / normalized]
+                    elif tasks.is_dir():
+                        locals_ = [p for p in tasks.iterdir()
+                                   if p.name == normalized or p.name.endswith("-" + normalized)]
+                    else:
+                        locals_ = []
+                    for candidate in locals_:
+                        require_active_path(candidate / FILE_TASK_JSON, root)
+                        if candidate.is_dir() and (
+                            root != active.task_workspace_root or
+                            candidate.resolve() != active.resolved_task_path.resolve()
+                        ):
+                            raise SessionBindingError(
+                                f"ambiguous_task_target: {target}; pass an absolute task path"
+                            )
+                    return active.task_workspace_root, active.resolved_task_path
+        path = resolve_task_dir(target, root)
+        if path is None:
+            return None
+        _, path = task_location(str(path), root)
+        return root, path
+    except (ValueError, OSError, RuntimeError) as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return None
+
+
 def resolve_task_dir(target_dir: str, repo_root: Path) -> Path | None:
     """Resolve task directory to an absolute path inside the tasks directory.
 

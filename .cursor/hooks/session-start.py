@@ -454,6 +454,9 @@ def _get_task_status(trellis_dir: Path, input_data: dict) -> str:
     """Return compact active-task status, artifact presence, and next action."""
     active = _resolve_active_task(trellis_dir, input_data)
 
+    if getattr(active, "error", None) or getattr(active, "stale", False):
+        return f"Status: TASK ERROR\nError: {active.error or 'stale binding'}\nSource: {active.source}"
+
     if not active.task_path:
         return (
             "Status: NO ACTIVE TASK\n"
@@ -463,7 +466,8 @@ def _get_task_status(trellis_dir: Path, input_data: dict) -> str:
         )
 
     task_ref = active.task_path
-    task_dir = _resolve_task_dir(trellis_dir, task_ref)
+    task_dir = active.resolved_task_path
+    trellis_dir = active.task_workspace_root / ".trellis"
     if active.stale or not task_dir.is_dir():
         return (
             f"Status: STALE POINTER\nTask: {task_ref}\n"
@@ -549,22 +553,17 @@ def _load_trellis_config(trellis_dir: Path, input_data: dict) -> tuple:
 
     try:
         from common.config import get_default_package, get_packages, get_spec_scope, is_monorepo  # type: ignore[import-not-found]
-        from common.paths import get_current_task  # type: ignore[import-not-found]
-
-        repo_root = trellis_dir.parent
+        active = _resolve_active_task(trellis_dir, input_data)
+        repo_root = getattr(active, "task_workspace_root", None) or trellis_dir.parent
+        trellis_dir = repo_root / ".trellis"
         is_mono = is_monorepo(repo_root)
         packages = get_packages(repo_root) or {}
         scope = get_spec_scope(repo_root)
 
         # Get active task's package
         task_pkg = None
-        current = get_current_task(
-            repo_root,
-            input_data,
-            platform=_detect_platform(input_data),
-        )
-        if current:
-            data = _load_task_data(trellis_dir, repo_root / current)
+        if active.task_path and not active.error:
+            data = _load_task_data(trellis_dir, active.resolved_task_path)
             tp = data.get("package")
             if isinstance(tp, str) and tp:
                 task_pkg = tp
@@ -733,12 +732,15 @@ def _build_compact_current_state(
     lines.append(_format_git_state(repo_root))
 
     active = _resolve_active_task(trellis_dir, input_data)
-    if active.task_path:
-        task_dir = _resolve_task_dir(trellis_dir, active.task_path)
+    if getattr(active, "error", None) or getattr(active, "stale", False):
+        lines.append(f"Current task: ERROR ({active.error or 'stale binding'}); source={active.source}.")
+    elif active.task_path:
+        task_dir = active.resolved_task_path
         status = "unknown"
-        data = _load_task_data(trellis_dir, task_dir)
+        data = _load_task_data(active.task_workspace_root / ".trellis", task_dir)
         status = str(data.get("status") or "unknown")
         lines.append(f"Current task: {_repo_relative(repo_root, task_dir)}; status={status}.")
+        lines.append(f"Task workspace: {active.task_workspace_root}; caller workspace: {repo_root}.")
     else:
         lines.append("Current task: none.")
 
@@ -858,6 +860,8 @@ def main():
     trellis_dir = project_dir / ".trellis"
     context_key = _resolve_context_key(trellis_dir, hook_input)
     _persist_context_key_for_bash(context_key, trellis_dir.parent)
+    active = _resolve_active_task(trellis_dir, hook_input)
+    task_trellis_dir = (getattr(active, "task_workspace_root", None) or project_dir) / ".trellis"
 
     # Load config for scope filtering and legacy detection
     is_mono, packages, scope_config, task_pkg, default_pkg = _load_trellis_config(
@@ -868,7 +872,7 @@ def main():
 
     output = StringIO()
 
-    spec_index_paths = _collect_spec_index_paths(trellis_dir, allowed_pkgs)
+    spec_index_paths = _collect_spec_index_paths(task_trellis_dir, allowed_pkgs)
 
     output.write("""<session-context>
 Trellis compact SessionStart context. Use it to orient the session; load details on demand.
@@ -879,7 +883,7 @@ Trellis compact SessionStart context. Use it to orient the session; load details
     output.write("\n\n")
 
     # Legacy migration warning
-    legacy_warning = _check_legacy_spec(trellis_dir, is_mono, packages)
+    legacy_warning = _check_legacy_spec(task_trellis_dir, is_mono, packages)
     if legacy_warning:
         output.write(f"<migration-warning>\n{legacy_warning}\n</migration-warning>\n\n")
 
@@ -888,7 +892,7 @@ Trellis compact SessionStart context. Use it to orient the session; load details
     output.write("\n</current-state>\n\n")
 
     output.write("<trellis-workflow>\n")
-    output.write(_build_workflow_overview(trellis_dir / "workflow.md"))
+    output.write(_build_workflow_overview(task_trellis_dir / "workflow.md"))
     output.write("\n</trellis-workflow>\n\n")
 
     output.write("<guidelines>\n")

@@ -33,7 +33,26 @@ def load_matrix_helper():
     return module
 
 
+def mock_fork_ci(matrix, **updates):
+    original = matrix._run
+    def run(command, **kwargs):
+        if tuple(command[:2]) != ("gh", "api"):
+            return original(command, **kwargs)
+        payload = {"id": 34838784963, "head_sha": original(
+            ("git", "rev-parse", "HEAD"), cwd=kwargs["cwd"], capture=True).strip(),
+            "status": "completed", "conclusion": "success",
+            "repository": {"full_name": "castbox/Trellis"}}
+        payload.update(updates)
+        return json.dumps(payload)
+    return mock.patch.object(matrix, "_run", side_effect=run)
+
+
 class VerifyTrellisUpgradeContractTests(unittest.TestCase):
+    def setUp(self):
+        patcher = mock_fork_ci(self.matrix)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.text = VERIFIER.read_text(encoding="utf-8")
@@ -47,6 +66,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         files = {
             "package.json": json.dumps({"packageManager": "pnpm@10.32.1"}),
             "packages/cli/package.json": json.dumps({"version": "0.6.17", "type": "module"}),
+            "packages/core/package.json": json.dumps({"version": "0.6.17"}),
             "packages/cli/bin/trellis.js": 'import("../dist/cli/index.js");\n',
             "packages/cli/dist/cli/index.js": 'console.log("0.6.17");\n',
             "packages/core/dist/index.js": "export {};\n",
@@ -71,7 +91,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         lock.parent.mkdir(parents=True)
         lock.write_text(json.dumps({"schema_version": "1.0",
             "repository": "https://github.com/castbox/Trellis.git", "commit": git("rev-parse", "HEAD"),
-            "cli_version": "0.6.17", "package_manager": "pnpm@10.32.1"}))
+            "cli_version": "0.6.17", "package_manager": "pnpm@10.32.1",
+            "ci_run_id": 34838784963}))
         return repo, source
 
     def test_fork_source_uses_real_node_esm_entry_and_observed_identity(self) -> None:
@@ -79,10 +100,40 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             repo, source = self.fork_fixture(Path(directory))
             result = self.matrix.validate_fork_source(repo, source)
             self.assertEqual(result["cli_version"], "0.6.17")
+            self.assertEqual(result["ci_run_id"], 34838784963)
             self.assertEqual(result["command"][1], str(source / "packages/cli/bin/trellis.js"))
             self.assertEqual(result["template_count"], 1)
             self.assertEqual(result["commit"], json.loads((repo /
                 "trellis/presets/guru-team/source/trellis-source.json").read_text())["commit"])
+
+    def test_current_source_requires_positive_integer_ci_identity(self):
+        for value in (None, 0, -1, True, "34838784963"):
+            with self.subTest(value=value), tempfile.TemporaryDirectory() as directory:
+                repo, source = self.fork_fixture(Path(directory))
+                path = repo / "trellis/presets/guru-team/source/trellis-source.json"
+                lock = json.loads(path.read_text())
+                lock["ci_run_id"] = value
+                path.write_text(json.dumps(lock))
+                with self.assertRaisesRegex(self.matrix.MatrixError, "invalid Trellis source lock"):
+                    self.matrix.validate_fork_source(repo, source)
+
+    def test_ci_run_must_match_completed_successful_source(self):
+        for update in ({"id": 1}, {"head_sha": "0" * 40},
+                       {"status": "in_progress"}, {"conclusion": "failure"},
+                       {"repository": {"full_name": "other/Trellis"}}):
+            with self.subTest(update=update), tempfile.TemporaryDirectory() as directory:
+                repo, source = self.fork_fixture(Path(directory))
+                with mock_fork_ci(self.matrix, **update), self.assertRaisesRegex(
+                    self.matrix.MatrixError, "fork CI run identity/status"
+                ):
+                    self.matrix.validate_fork_source(repo, source)
+
+    def test_ci_success_does_not_replace_local_build_marker(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repo, source = self.fork_fixture(Path(directory))
+            (source / "packages/cli/dist/.guru-source-commit").unlink()
+            with self.assertRaisesRegex(self.matrix.MatrixError, "stale fork build origin"):
+                self.matrix.validate_fork_source(repo, source)
 
     def test_fork_source_rejects_wrong_stale_missing_and_dirty_inputs(self) -> None:
         cases = ("head", "schema", "manager", "version", "remote", "dirty", "missing", "template", "runtime")
@@ -415,6 +466,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             with mock.patch.object(self.matrix, "_install_workflow", side_effect=init), \
                  mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
                  mock.patch.object(self.matrix, "_assert_template_hashes", return_value={}), \
+                 mock.patch.object(self.matrix, "_verify_focused_sessions", return_value={"status": "passed"}) as sessions, \
                  mock.patch.object(self.matrix, "_run", wraps=self.matrix._run) as runner, \
                  mock.patch.object(self.matrix, "_preview_and_switch_workflow"):
                 result = self.matrix.run_matrix(args)
@@ -424,6 +476,60 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             self.assertFalse(result["predecessor_upgrade_verified"])
             self.assertFalse(result["full_matrix_verified"])
             self.assertTrue((args.work_root / "focused-summary.json").is_file())
+            sessions.assert_called_once_with(args.work_root.resolve() / "project", "codex", args.work_root.resolve())
+            self.assertEqual(result["session_binding"], {"status": "passed"})
+
+    def test_focused_session_probe_uses_installed_python_and_runtime(self):
+        root = Path("/fixture/project")
+        with mock.patch.object(self.matrix, "_run") as run:
+            result = self.matrix._verify_focused_sessions(root, "codex", Path("/fixture/logs"))
+        self.assertEqual(result["status"], "passed")
+        self.assertEqual(run.call_args.args[0], (
+            str(root / ".trellis/guru-team/runtime/resolve-python.sh"),
+            str(root), str(root / ".trellis/guru-team/runtime"),
+            str(MATRIX_HELPER.with_name("fork_session_probe.py")),
+            str(root / ".trellis/scripts"), str(root / ".codex/hooks")))
+        self.assertEqual(run.call_args.kwargs["cwd"], root)
+
+    def test_focused_session_probe_executes_real_resolver_argument_contract(self):
+        import shutil
+        import sys
+
+        with tempfile.TemporaryDirectory(prefix="focused resolver ") as directory:
+            work = Path(directory).resolve()
+            target, probes = work / "target project", work / "source probes"
+            runtime = target / ".trellis/guru-team/runtime"
+            state = target / ".trellis/.runtime/guru-team/python"
+            identity = "a" * 24
+            interpreter = work / "cache" / identity / "venv/bin/python"
+            for path in (runtime, state, probes, interpreter.parent):
+                path.mkdir(parents=True)
+            interpreter.symlink_to(sys.executable)
+            (state / "active.json").write_text(json.dumps(
+                {"runtime_id": identity, "interpreter": str(interpreter)}, separators=(",", ":")))
+            shutil.copy2(REPO / "trellis/skills/guru-team/runtime/resolve-python.sh",
+                         runtime / "resolve-python.sh")
+            # Real shell and Python processes; only bootstrap/probe bodies are fixtures.
+            for script, receipt in ((runtime / "bootstrap.py", work / "bootstrap-argv.json"),
+                                    (probes / "fork_session_probe.py", work / "probe-argv.json")):
+                script.write_text(
+                    "import json, sys\nfrom pathlib import Path\n"
+                    f"Path({str(receipt)!r}).write_text(json.dumps(sys.argv))\n")
+            with mock.patch.object(self.matrix, "SCRIPT_ROOT", probes):
+                result = self.matrix._verify_focused_sessions(target, "codex", work)
+            self.assertEqual(result["status"], "passed")
+            self.assertEqual(json.loads((work / "bootstrap-argv.json").read_text()), [
+                str(runtime / "bootstrap.py"), "--repo", str(target),
+                "--runtime-assets", str(runtime), "--validate-active", identity, "--json"])
+            self.assertEqual(json.loads((work / "probe-argv.json").read_text()), [
+                str(probes / "fork_session_probe.py"), str(target / ".trellis/scripts"),
+                str(target / ".codex/hooks")])
+
+    def test_focused_non_codex_does_not_claim_session_hook_proof(self):
+        with mock.patch.object(self.matrix, "_run") as run:
+            result = self.matrix._verify_focused_sessions(Path("/fixture"), "claude", Path("/logs"))
+        run.assert_not_called()
+        self.assertEqual(result["status"], "UNVERIFIED")
 
     def create_shallow_before_tag_fixture(
         self,

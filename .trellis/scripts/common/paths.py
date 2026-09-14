@@ -185,20 +185,28 @@ def get_current_task(
     platform_input: dict | None = None,
     platform: str | None = None,
 ) -> str | None:
-    """Get current task directory path (relative to repo_root).
+    """Get a join-safe task path, absolute when owned by another workspace.
 
     Args:
         repo_root: Repository root path. Defaults to auto-detected.
 
     Returns:
-        Relative path to current task directory or None.
+        Local relative path, validated cross-workspace absolute path, or None.
     """
     if repo_root is None:
         repo_root = get_repo_root()
 
     from .active_task import resolve_active_task
+    from .session_storage import SessionBindingError
 
-    return resolve_active_task(repo_root, platform_input, platform).task_path
+    active = resolve_active_task(repo_root, platform_input, platform)
+    if active.error:
+        raise SessionBindingError(active.error)
+    # Compatibility callers join this string to their own root. Return an
+    # absolute path across workspaces so that join cannot select a namesake.
+    if active.task_workspace_root and active.task_workspace_root != repo_root.resolve():
+        return str(active.resolved_task_path) if active.resolved_task_path else None
+    return active.task_path
 
 
 def get_current_task_abs(
@@ -217,10 +225,13 @@ def get_current_task_abs(
     if repo_root is None:
         repo_root = get_repo_root()
 
-    relative = get_current_task(repo_root, platform_input, platform)
-    if relative:
-        return resolve_task_ref(relative, repo_root)
-    return None
+    from .active_task import resolve_active_task
+    from .session_storage import SessionBindingError
+
+    active = resolve_active_task(repo_root, platform_input, platform)
+    if active.error:
+        raise SessionBindingError(active.error)
+    return active.resolved_task_path
 
 
 def get_current_task_source(

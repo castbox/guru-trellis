@@ -31,10 +31,6 @@ Before checking, read:
 - Task `implement.md` - Execution plan (if exists)
 - Pre-commit checklist for quality standards
 
-Before searching Docs, code, tests, fixtures, history, or consumers, read
-`.trellis/spec/workflow/semantic-retrieval.md` and apply it to coverage and
-negative conclusions. Do not persist the query process.
-
 ## Core Responsibilities
 
 1. **Get code changes** - Use git diff to get uncommitted code

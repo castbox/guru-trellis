@@ -204,12 +204,12 @@
       "ordinal": 1
     },
     {
-      "id": "helper-generated_shebang-53294f9ffcaa",
+      "id": "helper-generated_shebang-b82c5e196efb",
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
       "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "53294f9ffcaa2a1834eafcd6759ac5314dad13a9baae7e53f6bbd9c96020d56f",
+      "anchor_sha256": "b82c5e196efb485cbd3926bd847a1238765200aad162bf1b9ffc3fcd5d7bcdb3",
       "ordinal": 1
     },
     {

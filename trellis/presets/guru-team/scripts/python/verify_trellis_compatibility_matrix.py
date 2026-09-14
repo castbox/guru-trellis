@@ -1278,9 +1278,34 @@ def validate_fork_source(repo_root: Path, source: Path) -> dict[str, Any]:
     if lock.get("schema_version") != "1.0" or any(
         not isinstance(lock.get(key), str) or not lock[key]
         for key in ("repository", "commit", "cli_version", "package_manager")
-    ) or not re.fullmatch(r"[0-9a-f]{40}", lock["commit"]):
+    ) or not re.fullmatch(r"[0-9a-f]{40}", lock["commit"]) or (
+        type(lock.get("ci_run_id")) is not int or lock["ci_run_id"] <= 0
+    ):
         raise MatrixError("invalid Trellis source lock")
-    return _validate_source_build(source, lock)
+    result = _validate_source_build(source, lock)
+    _validate_source_ci(lock, source.resolve())
+    result["ci_run_id"] = lock["ci_run_id"]
+    return result
+
+
+def _validate_source_ci(lock: Mapping[str, Any], source: Path) -> None:
+    """Check upstream CI independently of the supplied local build evidence."""
+    repository = urlsplit(lock["repository"]).path.strip("/").removesuffix(".git")
+    raw = _run(("gh", "api", f"repos/{repository}/actions/runs/{lock['ci_run_id']}"),
+               cwd=source, capture=True)
+    try:
+        run = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise MatrixError("invalid fork CI run response") from exc
+    if not isinstance(run, dict) or (
+        run.get("id") != lock["ci_run_id"]
+        or run.get("head_sha") != lock["commit"]
+        or run.get("status") != "completed"
+        or run.get("conclusion") != "success"
+        or not isinstance(run.get("repository"), dict)
+        or run["repository"].get("full_name") != repository
+    ):
+        raise MatrixError("fork CI run identity/status does not match source lock")
 
 
 def validate_predecessor_source(args: argparse.Namespace) -> dict[str, Any]:
@@ -1332,6 +1357,11 @@ def _validate_source_build(
     manager = _require_dict(_load_json(source / "package.json"), "workspace package").get("packageManager")
     if version != lock["cli_version"] or ("package_manager" in lock and manager != lock["package_manager"]):
         raise MatrixError("fork source version/package manager does not match source lock")
+    if "ci_run_id" in lock:
+        core_version = _require_dict(_load_json(source / "packages/core/package.json"),
+                                     "core package").get("version")
+        if core_version != version:
+            raise MatrixError("fork core version does not match CLI source lock")
     build_paths = [package / "bin/trellis.js", package / "dist/cli/index.js"]
     if package != source:
         build_paths.append(source / "packages/core/dist/index.js")
@@ -2459,6 +2489,17 @@ def _run_cell(
     return result
 
 
+def _verify_focused_sessions(target: Path, platform: str, work: Path) -> dict[str, str]:
+    if platform != "codex":
+        return {"status": "UNVERIFIED", "reason": "Codex hooks not installed for selected platform"}
+    _run((str(target / ".trellis/guru-team/runtime/resolve-python.sh"),
+          str(target), str(target / ".trellis/guru-team/runtime"),
+          str(SCRIPT_ROOT / "fork_session_probe.py"),
+          str(target / ".trellis/scripts"), str(target / ".codex/hooks")),
+         cwd=target, log=work / "linked-session.log")
+    return {"status": "passed", "scenario": "same-session-linked-worktree-and-foreign-isolation"}
+
+
 def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, Any]:
     """One current-source clean init and reapply, not predecessor upgrade proof."""
     root = args.repo_root.resolve()
@@ -2503,6 +2544,7 @@ def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, A
         raise MatrixError("focused project version does not match supplied source")
     if validate_fork_source(root, args.fork_source) != source:
         raise MatrixError("fork source changed during focused verification")
+    sessions = _verify_focused_sessions(target, args.platform, work)
     result = {"schema_version": SCHEMA_VERSION, "status": "passed",
               "mode": "focused", "source": source, "platform": args.platform,
               "scenario": "current-source-clean-update-reapply",
@@ -2510,6 +2552,7 @@ def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, A
               "predecessor_upgrade_verified": False, "full_matrix_verified": False,
               "local_workflow_sample": sample, "preset_initial": initial,
               "preset_reapply": reapplied, "template_hashes": hashes}
+    result["session_binding"] = sessions
     (work / "focused-summary.json").write_bytes(_canonical_json(result))
     return result
 

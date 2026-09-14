@@ -872,6 +872,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         target = self.repo / relative
         canonical = self.guru_root / "trellis/presets/guru-team/source/trellis-source.json"
         self.assertEqual(target.read_bytes(), canonical.read_bytes())
+        self.assertEqual(json.loads(target.read_text())["ci_run_id"], 34838784963)
         manifest = json.loads((self.install_dst / "extension.json").read_text())
         self.assertIn(relative, manifest["install"]["managed_assets"])
         self.assertEqual(manifest["install"]["managed_asset_hashes"][relative], hashlib.sha256(target.read_bytes()).hexdigest())
