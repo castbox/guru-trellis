@@ -1,5 +1,8 @@
 # PLAN
 
+既有行的版本与 gate 状态保留对应 Issue 当时的记录，不作为当前调用的完成或执行依据。
+当前知识提升条目为 #408；后续动作仍需各 owner 读取 live authority。
+
 | 顺序 | Issue | 已知目的 | 状态语义 |
 | --- | --- | --- | --- |
 | completed predecessors | #264 -> #263 -> #265 -> #266 -> #275 -> #260 -> #285 | 建立三项 SSOT package、激活 current authority、完成 replacement release/compatibility 与 merge message contract | `source_confirmed` closed/merged；已完成项不因本 baseline 重开 |
@@ -10,6 +13,7 @@
 | current release | #392 | 发布 `v0.6.16-guru.1` / extension `0.6.16-guru.41` / CLI `0.6.16`，固定 framework source `castbox/Trellis@ad332e3fe5a19d7274cb03e7c2f3e2128f8de291` | Architecture/RDT `.48` 由 expected `.47` serialized promotion 产生；promotion-created diff 必须通过 fresh Phase 2、task commit 与完整 Branch Review 后才能进入 Publication。merge 后重新冻结 exact candidate，并由后续 owner 独立验证 matrix、tag、Release、business smoke 与 Issue closure |
 | current framework adoption | #329 | 采用 fixed Fork `a2003296...` / CLI `0.6.17` / `pnpm@10.32.1`，并从受控 lifecycle 移除 developer identity 与 legacy workspace journal consumer | reviewed contribution 已由 expected `.48` serialized promotion 为唯一 active `.49`；`.48` immutable，`v0.6.16-guru.1` 保持 released history且不含本 candidate。promotion-created diff 仍须 fresh Phase 2/commit/full Branch Review 后才能进入 Publication/Finalizer |
 | current ledger-free compatibility | #247 | 移除 task-local Issue scope ledger，保留 Publication closing、Finalizer archive/Ready/recovery、Merge四 exits与Restore旧流程 | r24 将 path修订为 `dedicated_refactor_slice`；`.50`、accepted `ADR-009` 与 capability记录ledger-free旧流程边界。corrective diff仍须fresh Phase 2/commit/full review；提前归档与多PR接续局限未解决 |
+| current Nightly and normal-chain adoption | #408 | 采用固定 `db4ca1df...` / CI `34838784963`，闭合正常 authoring/创建/激活与同 session 接续；自动停止不阻断独立手动操作 | reviewed contribution 由 expected `.50` 提升为 `.51`；不新增 lifecycle 或恢复状态。promotion-created diff 仍须 fresh Phase 2、commit、完整 Branch Review；不证明远端发布或 Release matrix |
 | post-stable refactor | #249 -> #250 -> #292 -> #293 -> #261 -> #248 -> #252 -> #267 | Phase/owner 解耦、Intake、Planning、Publication、Acceptance/Finish、cleanup 与最终重构版 Release | TARGET/PLAN 候选参考；不作为重构前 Release 的前置、owner 或验收范围；#247 已作为 `.50` current predecessor完成独立 Architecture scope，不表示后续 #305 target 已实现 |
 
 PLAN 记录依赖与 owner，不证明 outcome，也不改变各 Issue 的 live authority。

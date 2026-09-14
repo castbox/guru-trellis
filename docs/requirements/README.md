@@ -6,7 +6,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.5-guru.50` | [requirement-main.md](./versions/current-main-0.6.5-guru.50/requirement-main.md) | #247 reviewed ledger retirement与Issue closure ownership；继承 immutable `.49` 与 accepted `ADR-009`，不构成 Publication/push/PR/merge/tag/Release/Issue closure 证明 |
+| `active` | `current-main-0.6.5-guru.51` | [requirement-main.md](./versions/current-main-0.6.5-guru.51/requirement-main.md) | #408 Nightly/session/独立手动操作；完整继承 immutable `.50`，不构成后续 gate 或发布证明 |
+| `superseded` | `current-main-0.6.5-guru.50` | [requirement-main.md](./versions/current-main-0.6.5-guru.50/requirement-main.md) | #247 reviewed ledger retirement与Issue closure ownership；immutable history |
 | `superseded` | `current-main-0.6.5-guru.49` | [requirement-main.md](./versions/current-main-0.6.5-guru.49/requirement-main.md) | #329 reviewed developer-free source/lifecycle；immutable history |
 | `superseded` | `current-main-0.6.5-guru.48` | [requirement-main.md](./versions/current-main-0.6.5-guru.48/requirement-main.md) | #392 reviewed release mapping 与 serialized promotion lifecycle；immutable history |
 | `superseded` | `current-main-0.6.5-guru.47` | [requirement-main.md](./versions/current-main-0.6.5-guru.47/requirement-main.md) | #378 reviewed 固定 Fork runtime 与会话隔离；immutable history |
@@ -24,8 +25,10 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [requirement-main.md](./versions/current-main-0.6.5-guru.35/requirement-main.md) | #266 激活的历史 current snapshot |
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
-当前框架源码固定为 `castbox/Trellis@a2003296b4c4ce46c50d72ead3b2ec9c317f69fc`，CLI/core `0.6.17`，package manager `pnpm@10.32.1`；Guru live manifest 为 `0.6.16-guru.41`。released repository axis `v0.6.16-guru.1` 不包含 #247 candidate。
-Docs `.50` 提升 #247 reviewed ledger retirement、Issue reference/closure owner boundary与accepted `ADR-009`；`.49` 保持 immutable predecessor。promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、push、PR、merge、tag、Release 与 Issue closure 均保持 `unverified`。
+当前框架源码固定为 `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`，CI `34838784963`，CLI/core `0.6.17`，package manager `pnpm@10.32.1`；Guru live manifest 为 `0.6.16-guru.41`。released repository axis `v0.6.16-guru.1` 不包含 #408 candidate。
+Docs `.51` 承接 #408 并完整继承 `.50` 的旧 lifecycle、developer/ledger retired-zero 与 23/97/78；`.50` 及更早版本保持 immutable。知识提升不证明正式 promotion 校验、promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、push、PR、merge、tag、Release 或 Issue closure 已完成。
+
+`R408-01..08 -> D408-01..05 -> T408-01..08` 见 [current trace](./versions/current-main-0.6.5-guru.51/traceability.md)。R408-01 仅替代 R329-01 的旧 pin；R378 pin 为历史，不是并列 current 要求。实际证明边界由同版本 Test 层维护。
 
 `R378-01..04 -> D378-01..04 -> T378-01..05` 承接固定来源、会话隔离、installed 投影与原 verifier 入口；#388/#389 保留为关联前置，既有 #240/#348/#332/#376 与 Evolution authority 不扩张。
 

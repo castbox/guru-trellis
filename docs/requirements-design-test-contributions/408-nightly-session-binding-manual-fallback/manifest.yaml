@@ -2,10 +2,9 @@ schema_version: "1.0"
 task_ref: "408-nightly-session-binding-manual-fallback"
 task_locator: ".trellis/tasks/09-14-408-nightly-session-binding-manual-fallback"
 issue_ref: "https://github.com/castbox/guru-trellis/issues/408"
-status: "draft"
+status: "reviewed_promoted"
 source_version: "current-main-0.6.5-guru.50"
 expected_current_version: "current-main-0.6.5-guru.50"
-authority_scope: "isolated_contribution"
 contribution:
   requirements: "docs/requirements-design-test-contributions/408-nightly-session-binding-manual-fallback/requirements.md"
   design: "docs/requirements-design-test-contributions/408-nightly-session-binding-manual-fallback/design.md"
@@ -13,8 +12,8 @@ contribution:
   traceability: "docs/requirements-design-test-contributions/408-nightly-session-binding-manual-fallback/traceability.md"
 architecture_baseline:
   locator: "docs/architecture/README.md"
-  version: "current-main-0.6.5-guru.50"
+  version: "current-main-0.6.5-guru.51"
   status: "active"
 architecture_contribution: "docs/architecture/contributions/408-nightly-session-binding-manual-fallback.md"
-promotion_state: "not_promoted"
-shared_current_write: false
+promotion_state: "reviewed_promoted"
+promoted_version: "current-main-0.6.5-guru.51"

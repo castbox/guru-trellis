@@ -1,14 +1,11 @@
-# #408 Traceability
+# #408 Traceability 来源与导航
 
-各层定义分别见 [Requirements](requirements.md)、[Design](design.md)、[Test](test.md)。架构映射见 [contribution](../../architecture/contributions/408-nightly-session-binding-manual-fallback.md)。所有行是未提升candidate，不改写current `.50`。
+状态：`reviewed_promoted`；source/expected `current-main-0.6.5-guru.50` -> successor `current-main-0.6.5-guru.51`。
+稳定 `R408-01..08 -> D408-01..05 -> T408-01..08` 的双向关系由以下 current 索引独占：
 
-| Requirement | Design | Test |
-| --- | --- | --- |
-| R408-01 | D408-01 | T408-01 |
-| R408-02 | D408-02、D408-04 | T408-02、T408-08 |
-| R408-03 | D408-02、D408-04、D408-05 | T408-03 |
-| R408-04 | D408-03、D408-04、D408-05 | T408-04 |
-| R408-05 | D408-03 | T408-05 |
-| R408-06 | D408-03 | T408-06 |
-| R408-07 | D408-03 | T408-07 |
-| R408-08 | D408-04 | T408-08 |
+- [Requirements trace](../../requirements/versions/current-main-0.6.5-guru.51/traceability.md)。
+- [Design trace](../../design/versions/current-main-0.6.5-guru.51/traceability.md)。
+- [Test trace](../../test/versions/current-main-0.6.5-guru.51/traceability.md)。
+- [Architecture `.51/active`](../../architecture/README.md)：`ARCH-CUR-028`、`ARCH-DOM-015`、`ARCH-INT-014/016`、`EVD-027`。
+
+这里只保存来源关系，不复制 current trace 表；knowledge promotion 不等于后续 gate 或发布结果。

@@ -72,7 +72,17 @@ installed/platform parity。r19 target-native review range仅为历史过程证�
 promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、push、PR、merge、tag、Release、
 完整多平台 exact-candidate matrix、business production 或 Issue closure。
 
-当前 Architecture knowledge successor 为 `.50`；`.49` 是 immutable superseded predecessor。
-framework source/CLI/package manager、23 Skills / 97 exits / 78 commands、extension `0.6.16-guru.41` 与
-released `v0.6.16-guru.1` 均保持独立 inherited facts。promotion-created combined diff 仍须 fresh Phase 2、
+`EVD-027`：#408 的已审查输入绑定精确提交范围
+`8bb16516e211e9bd7b9560c025fe48a18fee0fb3...18df89680b9eae187b2b23c543ba08304212e211`、
+当前 Issue/task/RDT contribution 与固定 `db4ca1df...` / CI `34838784963` 来源。独立完整 Branch Review
+及正式 checker/public wrapper 通过；来源/build/CI、197 个构建模板、17 个官方脚本/hook 字节、
+source/dogfood/installed 投影与当前 23/97/78 图已核对。正常 authoring 经实际 wrapper 创建双端 mapping，
+脚本与文档澄清后的 native 演练均完成受控激活和双端 context/hook 检查；这些调用的 GitHub/fetch
+为 mock，不证明宿主自动 hook 分发或真实远端 mutation。它支撑 `ARCH-CUR-028`、`ARCH-INT-014/016`、
+`ARCH-DOM-015` 的 Guru/独立操作边界及 `.50 -> .51` 知识提升，不证明软件发布或完整升级矩阵。
+
+当前 Architecture knowledge successor 为 `.51`；`.50` 是 immutable superseded predecessor。
+旧 source pin 的证据保留历史用途，current pin/CI 由 `EVD-027` 承接；CLI/core、package manager、
+23 Skills / 97 exits / 78 commands、extension `0.6.16-guru.41` 与 released `v0.6.16-guru.1` 保持独立版本轴。
+promotion-created combined diff 仍须 fresh Phase 2、
 task commit 与完整 Branch Review，后续远端动作由各 live owner 独立验证。

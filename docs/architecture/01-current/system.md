@@ -63,23 +63,23 @@
   identity。public graph 为 23 Skills / 97 exits / 78 commands，未增加 public Skill/exit、remote mutation、
   dual-read、第二 writer、GAP 或 ADR。
 
-- `ARCH-CUR-024`（`source_confirmed` + `reviewed`）：#378 以单一 canonical source lock 固定
-  `castbox/Trellis@ad332e3fe5a19d7274cb03e7c2f3e2128f8de291`。正常 install/build 后直接运行
+- `ARCH-CUR-024`（`source_confirmed` + `reviewed`）：#378 建立单一 canonical source lock；其历史值
+  `castbox/Trellis@ad332e3fe5a19d7274cb03e7c2f3e2128f8de291` 不再是 current pin，当前值见 `ARCH-CUR-028`。正常 install/build 后直接运行
   Fork Node CLI；成功构建 HEAD 标记只由来源校验器检测 stale dist，不承担批准语义。
   主 session/普通 CLI 不猜唯一 session，child 仅显式选择 fallback；非所属 session 保持不变。
   verifier fixture 自己组合 installed owner 入口；full/focused 由同一 Python matrix 分别承接，
   不可达 shell 和原 npm 获取路径退出。#388/#389 前置修复保持，三平台 preset 投影不回退。
 
-- `ARCH-CUR-025`（`source_confirmed` + `reviewed`）：#392 以 `target_native` 将 release-facing current
-  mapping 收敛为 `v0.6.16-guru.1` / extension `0.6.16-guru.41` / CLI `0.6.16` / fixed Fork full SHA，
+- `ARCH-CUR-025`（`source_confirmed` + `reviewed`）：#392 在 `.48` 的历史 release-facing
+  mapping 为 `v0.6.16-guru.1` / extension `0.6.16-guru.41` / CLI `0.6.16` / fixed Fork full SHA，
   public graph 保持 23 Skills / 97 exits / 78 commands。Stage 1 必须先完成 pre-promotion Phase 2、task
   commit 与独立 full-branch review，再由 Architecture/RDT owner 绑定 expected `.47` serialized promotion
   `.48`；promotion-created diff 随后重新进入 fresh Phase 2、task commit 与完整 Branch Review。第二次 review
   通过前 Publication 不可达；本 current fact 不声明 merge、tag、Release、完整 throwaway matrix、业务 smoke
   或 Issue closure 已完成。
 
-- `ARCH-CUR-026`（`source_confirmed` + `reviewed`）：#329 以 `target_native` 将 framework source
-  直接演进为 `castbox/Trellis@a2003296b4c4ce46c50d72ead3b2ec9c317f69fc`、CLI/core `0.6.17`、
+- `ARCH-CUR-026`（`source_confirmed` + `reviewed`）：#329 的历史 framework source 为
+  `castbox/Trellis@a2003296b4c4ce46c50d72ead3b2ec9c317f69fc`；pin 已由 `ARCH-CUR-028` 承接，CLI/core 仍为 `0.6.17`、
   package manager `pnpm@10.32.1`。official generated runtime 与 Guru controlled consumers 使用 task
   metadata、Git/worktree facts、ignored runtime mappings 与 explicit caller authority；developer identity、
   legacy workspace journal/index、agent trace、session recording 与 `--mine` 已退出 current consumer graph。
@@ -96,8 +96,17 @@
   23 Skills / 97 exits / 78 commands，accepted `ADR-009` 固化 ledger-free old-flow compatibility；manifest
   声明 `guru-ledger-free-runtime@1.0.0`，不宣称新 lifecycle 已实现。
 
-当前 Architecture knowledge identity 为 `.50`，extension revision 为 `0.6.16-guru.41`，Fork CLI 为
-`0.6.17`，framework source 为 `a2003296...`，package manager 为 `pnpm@10.32.1`。`.49` 是 immutable
-superseded predecessor；released `v0.6.16-guru.1` 保持独立且不包含 #247 candidate。promotion-created diff
+- `ARCH-CUR-028`（`source_confirmed` + `reviewed`）：#408 直接采用固定 Nightly
+  `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0` / CI `34838784963`，不依赖 `0.6.18`。
+  正常 Guru authoring 通过原 recorder/checker 和 workspace executor 建立双端 mapping，受控激活后
+  同一 session 在 primary/linked checkout 解析同一 task。私有派生字段由原 recorder 计算，不依赖
+  eval/private input builder 或手工补 mapping。自动异常停止与独立 Git/GitHub 请求的唯一合同见
+  [canonical workflow](../../../trellis/workflows/guru-team/workflow.md#manual-gitgithub-operations)；
+  手动结果不取得 Guru lifecycle 完成状态。此能力不新增 Skill、exit、owner 或恢复状态。
+  需求/设计/测试承接为 `R408-01..08 -> D408-01..05 -> T408-01..08`，证据边界见 `EVD-027`。
+
+当前 Architecture knowledge identity 为 `.51`，extension revision 为 `0.6.16-guru.41`，Fork CLI/core 为
+`0.6.17`，framework source/CI 由 `ARCH-CUR-028` 与 canonical source record 绑定，package manager 为
+`pnpm@10.32.1`。`.50` 是 immutable superseded predecessor；released `v0.6.16-guru.1` 不包含 #408 candidate。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。
