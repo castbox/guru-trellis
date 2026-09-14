@@ -1,0 +1,238 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-14T23:15:39Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-15-410-release-v0617-guru1",
+    "title": "#410 发布 v0.6.17-guru.1 并提升 Guru Team extension 至 0.6.17-guru.42",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-15-410-release-v0617-guru1",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "chore/410-release-v0617-guru1",
+    "commits": [
+      "9e8775c5183e9f328e05ad716d4072c18629bc57",
+      "58fd9e85e0dd30ef12c3000422b7100d5750d80f",
+      "8e5a943ae601620005c815a53eddb4ec6b6b0a55"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/tasks/09-15-410-release-v0617-guru1/check.jsonl",
+      ".trellis/tasks/09-15-410-release-v0617-guru1/design.md",
+      ".trellis/tasks/09-15-410-release-v0617-guru1/implement.jsonl",
+      ".trellis/tasks/09-15-410-release-v0617-guru1/implement.md",
+      ".trellis/tasks/09-15-410-release-v0617-guru1/prd.md",
+      ".trellis/tasks/09-15-410-release-v0617-guru1/task.json",
+      ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/design.md",
+      ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/implement.md",
+      ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/prd.md",
+      ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/task.json",
+      "README.md",
+      "docs/architecture/01-current/system.md",
+      "docs/architecture/README.md",
+      "docs/architecture/contributions/410-release-v0617-guru1.md",
+      "docs/design/README.md",
+      "docs/design/versions/current-main-0.6.17-guru.52/capability-inventory.md",
+      "docs/design/versions/current-main-0.6.17-guru.52/decisions.md",
+      "docs/design/versions/current-main-0.6.17-guru.52/design-main.md",
+      "docs/design/versions/current-main-0.6.17-guru.52/manifest.yaml",
+      "docs/design/versions/current-main-0.6.17-guru.52/traceability.md",
+      "docs/requirements-design-test-contributions/410-release-v0617-guru1/design.md",
+      "docs/requirements-design-test-contributions/410-release-v0617-guru1/manifest.yaml",
+      "docs/requirements-design-test-contributions/410-release-v0617-guru1/requirements.md",
+      "docs/requirements-design-test-contributions/410-release-v0617-guru1/test.md",
+      "docs/requirements-design-test-contributions/410-release-v0617-guru1/traceability.md",
+      "docs/requirements/README.md",
+      "docs/requirements/versions/current-main-0.6.17-guru.52/decisions.md",
+      "docs/requirements/versions/current-main-0.6.17-guru.52/requirement-main.md",
+      "docs/requirements/versions/current-main-0.6.17-guru.52/requirement-non-functional.md",
+      "docs/requirements/versions/current-main-0.6.17-guru.52/traceability.md",
+      "docs/test/README.md",
+      "docs/test/versions/current-main-0.6.17-guru.52/test-plan.md",
+      "docs/test/versions/current-main-0.6.17-guru.52/test-strategy.md",
+      "docs/test/versions/current-main-0.6.17-guru.52/traceability.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+      "trellis/workflows/guru-team/README.md"
+    ]
+  },
+  "github": {
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/411"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#410 发布 v0.6.17-guru.1 并提升 Guru Team extension 至 0.6.17-guru.42",
+    "outcome": "承接 Issue #410 的 Stage 1 preparation，晋升 Architecture 与 Requirements/Design/Test current authority 至 current-main-0.6.17-guru.52。",
+    "changed_behavior": [
+      "承接 Issue #410 的 Stage 1 preparation，晋升 Architecture 与 Requirements/Design/Test current authority 至 current-main-0.6.17-guru.52。",
+      "对齐 repository release target v0.6.17-guru.1、Guru Team extension 0.6.17-guru.42、Trellis CLI/core 0.6.17 与固定 Fork source lock。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "config",
+        "name": "config",
+        "paths": [
+          "docs/design/versions/current-main-0.6.17-guru.52/manifest.yaml",
+          "docs/requirements-design-test-contributions/410-release-v0617-guru1/manifest.yaml"
+        ],
+        "change": "承接 Issue #410 的 Stage 1 preparation，晋升 Architecture 与 Requirements/Design/Test current authority 至 current-main-0.6.17-guru.52。"
+      },
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/docs/public-docs.md",
+          ".trellis/tasks/09-15-410-release-v0617-guru1/design.md",
+          ".trellis/tasks/09-15-410-release-v0617-guru1/implement.md",
+          ".trellis/tasks/09-15-410-release-v0617-guru1/prd.md",
+          ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/design.md",
+          ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/implement.md",
+          ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/prd.md",
+          "README.md",
+          "docs/architecture/01-current/system.md",
+          "docs/architecture/README.md",
+          "docs/architecture/contributions/410-release-v0617-guru1.md",
+          "docs/design/README.md",
+          "docs/design/versions/current-main-0.6.17-guru.52/capability-inventory.md",
+          "docs/design/versions/current-main-0.6.17-guru.52/decisions.md",
+          "docs/design/versions/current-main-0.6.17-guru.52/design-main.md",
+          "docs/design/versions/current-main-0.6.17-guru.52/traceability.md",
+          "docs/requirements-design-test-contributions/410-release-v0617-guru1/design.md",
+          "docs/requirements-design-test-contributions/410-release-v0617-guru1/requirements.md",
+          "docs/requirements-design-test-contributions/410-release-v0617-guru1/test.md",
+          "docs/requirements-design-test-contributions/410-release-v0617-guru1/traceability.md",
+          "docs/requirements/README.md",
+          "docs/requirements/versions/current-main-0.6.17-guru.52/decisions.md",
+          "docs/requirements/versions/current-main-0.6.17-guru.52/requirement-main.md",
+          "docs/requirements/versions/current-main-0.6.17-guru.52/requirement-non-functional.md",
+          "docs/requirements/versions/current-main-0.6.17-guru.52/traceability.md",
+          "docs/test/README.md",
+          "docs/test/versions/current-main-0.6.17-guru.52/test-plan.md",
+          "docs/test/versions/current-main-0.6.17-guru.52/test-strategy.md",
+          "docs/test/versions/current-main-0.6.17-guru.52/traceability.md"
+        ],
+        "change": "承接 Issue #410 的 Stage 1 preparation，晋升 Architecture 与 Requirements/Design/Test current authority 至 current-main-0.6.17-guru.52。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "承接 Issue #410 的 Stage 1 preparation，晋升 Architecture 与 Requirements/Design/Test current authority 至 current-main-0.6.17-guru.52。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md"
+        ],
+        "change": "承接 Issue #410 的 Stage 1 preparation，晋升 Architecture 与 Requirements/Design/Test current authority 至 current-main-0.6.17-guru.52。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py"
+        ],
+        "change": "承接 Issue #410 的 Stage 1 preparation，晋升 Architecture 与 Requirements/Design/Test current authority 至 current-main-0.6.17-guru.52。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-15-410-release-v0617-guru1/check.jsonl",
+          ".trellis/tasks/09-15-410-release-v0617-guru1/implement.jsonl",
+          ".trellis/tasks/09-15-410-release-v0617-guru1/task.json",
+          ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/task.json"
+        ],
+        "change": "承接 Issue #410 的 Stage 1 preparation，晋升 Architecture 与 Requirements/Design/Test current authority 至 current-main-0.6.17-guru.52。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "change": "承接 Issue #410 的 Stage 1 preparation，晋升 Architecture 与 Requirements/Design/Test current authority 至 current-main-0.6.17-guru.52。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [],
+      "pr_refs": [
+        "PR #411"
+      ],
+      "branches": [
+        "chore/410-release-v0617-guru1"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/spec/docs/public-docs.md",
+        ".trellis/tasks/09-15-410-release-v0617-guru1/check.jsonl",
+        ".trellis/tasks/09-15-410-release-v0617-guru1/design.md",
+        ".trellis/tasks/09-15-410-release-v0617-guru1/implement.jsonl",
+        ".trellis/tasks/09-15-410-release-v0617-guru1/implement.md",
+        ".trellis/tasks/09-15-410-release-v0617-guru1/prd.md",
+        ".trellis/tasks/09-15-410-release-v0617-guru1/task.json",
+        ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/design.md",
+        ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/implement.md",
+        ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/prd.md",
+        ".trellis/tasks/archive/2026-09/09-15-410-release-v0617-guru1/task.json",
+        "README.md",
+        "docs/architecture/01-current/system.md",
+        "docs/architecture/README.md",
+        "docs/architecture/contributions/410-release-v0617-guru1.md",
+        "docs/design/README.md",
+        "docs/design/versions/current-main-0.6.17-guru.52/capability-inventory.md",
+        "docs/design/versions/current-main-0.6.17-guru.52/decisions.md",
+        "docs/design/versions/current-main-0.6.17-guru.52/design-main.md",
+        "docs/design/versions/current-main-0.6.17-guru.52/manifest.yaml",
+        "docs/design/versions/current-main-0.6.17-guru.52/traceability.md",
+        "docs/requirements-design-test-contributions/410-release-v0617-guru1/design.md",
+        "docs/requirements-design-test-contributions/410-release-v0617-guru1/manifest.yaml",
+        "docs/requirements-design-test-contributions/410-release-v0617-guru1/requirements.md",
+        "docs/requirements-design-test-contributions/410-release-v0617-guru1/test.md",
+        "docs/requirements-design-test-contributions/410-release-v0617-guru1/traceability.md",
+        "docs/requirements/README.md",
+        "docs/requirements/versions/current-main-0.6.17-guru.52/decisions.md",
+        "docs/requirements/versions/current-main-0.6.17-guru.52/requirement-main.md",
+        "docs/requirements/versions/current-main-0.6.17-guru.52/requirement-non-functional.md",
+        "docs/requirements/versions/current-main-0.6.17-guru.52/traceability.md",
+        "docs/test/README.md",
+        "docs/test/versions/current-main-0.6.17-guru.52/test-plan.md",
+        "docs/test/versions/current-main-0.6.17-guru.52/test-strategy.md",
+        "docs/test/versions/current-main-0.6.17-guru.52/traceability.md",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+        "trellis/workflows/guru-team/README.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#410 发布 v0.6.17-guru.1 并提升 Guru Team extension 至 0.6.17-guru",
+        "承接 Issue #410 的 Stage 1 preparation，晋升 Architecture 与 Requir",
+        "完成 extension.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#410 发布 v0.6.17-guru.1 并提升 Guru Team extension 至 0.6.17-guru.42\n承接 Issue #410 的 Stage 1 preparation，晋升 Architecture 与 Requirements/Design/Test current authority 至 current-main-0.6.17-guru.52。\n对齐 repository release target v0.6.17-guru.1、Guru Team extension 0.6.17-guru.42、Trellis CLI/core 0.6.17 与固定 Fork source lock。\n#410 发布 v0.6.17-guru.1 并提升 Guru Team extension 至 0.6.17-guru\n承接 Issue #410 的 Stage 1 preparation，晋升 Architecture 与 Requir\n完成 extension.json 相关变更"
+  }
+}
