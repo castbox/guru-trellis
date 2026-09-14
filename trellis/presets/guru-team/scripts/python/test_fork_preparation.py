@@ -70,7 +70,8 @@ exit 0
         matrix = upgrade_tests.load_matrix_helper()
         with tempfile.TemporaryDirectory(prefix="stale-build-") as tmp:
             repo, fork = upgrade_tests.VerifyTrellisUpgradeContractTests().fork_fixture(Path(tmp))
-            matrix.validate_fork_source(repo, fork)
+            with upgrade_tests.mock_fork_ci(matrix):
+                matrix.validate_fork_source(repo, fork)
             source = fork / "packages/cli/src/cli/index.ts"
             source.parent.mkdir(parents=True)
             source.write_text('console.log("changed behavior, unchanged release version");\n')

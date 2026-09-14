@@ -14,6 +14,11 @@ The preset installs companion assets, Guru Skill packages, and three additive
 Guru finish entries for the `guru-team` Trellis workflow into an existing
 Trellis project.
 
+Independent Git/GitHub requests after an automatic Guru failure follow
+[Manual Git/GitHub Operations](../../workflows/guru-team/workflow.md#manual-gitgithub-operations).
+The preset keeps those entry references aligned without adding a recovery
+workflow or treating a manual result as lifecycle completion.
+
 The installed workflow follows the canonical subtraction-first compatibility
 contract in `.trellis/spec/workflow/subtraction-first-compatibility.md`.
 Existing semantic owners review direct deletion/modification/reuse first,
@@ -45,6 +50,11 @@ HEAD to `packages/cli/dist/.guru-source-commit` (or root `dist/` for the flat
 predecessor layout). Source validation requires this build origin to match the
 locked checkout, so a same-version checkout with stale compiled output fails.
 The marker is local build metadata, not semantic approval or authentication.
+The current source record also carries `ci_run_id=34838784963` for Nightly
+commit `db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`. Source validation binds that
+upstream run's repository, head and successful result independently from local
+build and installed-runtime proof. Both packages remain `0.6.17`; no upstream
+`v0.6.18` dependency or publication is introduced.
 It is idempotent: identical files are skipped, missing files are installed,
 Guru-managed companion assets are upgraded in place with `.bak` backups,
 and existing `.trellis/guru-team/config.yml` is preserved. Current-only
@@ -206,7 +216,7 @@ Stable workflow marketplace installs pin the latest released repo tag, currently
 `gh:castbox/guru-trellis/trellis#v0.6.16-guru.1`. That released tag carries
 extension revision `0.6.16-guru.41`; it is a separate axis from the current
 main/source checkout, whose fixed framework source is
-`castbox/Trellis@a2003296b4c4ce46c50d72ead3b2ec9c317f69fc`, CLI `0.6.17`, and
+`castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`, CI `34838784963`, CLI `0.6.17`, and
 package manager `pnpm@10.32.1`. The released tag does not prove or contain this
 unreleased framework-source adoption. Workflow marketplace and preset sources
 for one stable installation must use the same immutable tag. Unpinned
@@ -744,7 +754,7 @@ standalone-only verifier 共声明 97 个 external exits。
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
 invoke 与六个 exit marker。Current main/source checkout 的 canonical extension version 为
 `0.6.16-guru.41`，固定 Fork 为
-`castbox/Trellis@a2003296b4c4ce46c50d72ead3b2ec9c317f69fc` / CLI `0.6.17` /
+`castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0` / CI `34838784963` / CLI `0.6.17` /
 `pnpm@10.32.1`。Latest released stable source 仍为 `v0.6.16-guru.1`，不包含该 current
 framework adoption。Repo release tag、extension revision、CLI/source commit 是独立版本轴；
 同一次 stable install 的 workflow 与 preset 必须 pin 同一 immutable tag。

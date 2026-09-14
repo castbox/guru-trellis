@@ -2,6 +2,6 @@
   "profile": "change_request",
   "source_exit": "start",
   "mode": "workflow",
-  "target_locator": "#145",
+  "target_locator": "https://github.com/example/guru-extension/issues/145",
   "continuation_id": "stage0-current"
 }

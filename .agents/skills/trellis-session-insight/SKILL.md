@@ -15,11 +15,6 @@ A local CLI that indexes the user's past Claude Code, Codex, Devin CLI, Grok, Op
 
 Nothing in `mem` is uploaded. All reads are local.
 
-Before searching sessions, read `.trellis/spec/workflow/semantic-retrieval.md`.
-Apply its minimal concept family and negative-conclusion bar to current and
-legacy decision names while preserving exact literals. Do not persist raw query
-transcripts or search-process metadata merely to prove retrieval.
-
 ## When to reach for it
 
 The bar is "would a senior teammate ask 'didn't we already talk about this?'" — those are the moments. Some concrete patterns:

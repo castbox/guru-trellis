@@ -18,6 +18,10 @@ Guru Trellis 是 Guru Team 面向业务研发仓库提供的 Trellis 团队扩�
 Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
 `trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
 `.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
+当前 source candidate 固定到 Nightly commit `db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`，
+并记录上游 CI `34838784963`。CLI/core 仍为 `0.6.17`，不依赖上游 `v0.6.18`。
+`ci_run_id` 用于核对该 run 的仓库、head SHA 与成功状态；它不证明本地 build 或 Guru
+installed/lifecycle 验证已完成。安装与发布 evidence 必须同时记录 commit 和 CI identity。
 
 使用已存在的 Fork checkout；只有尚未取得源码时才 clone 记录中的 repository。
 下面的 `GURU_SOURCE`、`FORK_SOURCE`、`TARGET_REPO` 由使用者设置为本机目录，
@@ -54,7 +58,8 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | --- | --- |
 | Latest released Guru Trellis repo tag | `v0.6.16-guru.1` |
 | Current Guru Team extension revision | `0.6.16-guru.41` |
-| Current fixed Fork `castbox/Trellis` CLI | `0.6.17` @ `a2003296b4c4ce46c50d72ead3b2ec9c317f69fc` |
+| Current fixed Fork `castbox/Trellis` CLI | `0.6.17` @ `db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0` |
+| Upstream Nightly CI identity | `34838784963` |
 | Fork package manager | `pnpm@10.32.1` |
 
 repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。已发布的
@@ -126,6 +131,13 @@ Guru 正常路径不初始化或读取 developer identity，不记录 session，
 task 的隔离 checkout/worktree 及其 ignored runtime mapping，不是旧 journal workspace。
 既有 `.trellis/.developer`、`.trellis/workspace/**` 与 `.trellis/agent-traces/**` 保持原字节，
 不迁移、不删除，也不作为 current task、owner 或 recovery 输入。
+
+## 自动流程失败后的独立操作
+
+Guru 自动流程的停止不等于禁止用户明确要求的独立 Git/GitHub 操作。完整行为由
+[canonical workflow](trellis/workflows/guru-team/workflow.md#manual-gitgithub-operations) 的手动操作合同定义：
+每项操作独立读取 live facts、展示精确范围并确认，完成后区分实际结果与 workflow residue。
+本能力不新增恢复节点，也不把手动完成描述为 Guru lifecycle 已完成。
 
 ## 它解决什么问题
 

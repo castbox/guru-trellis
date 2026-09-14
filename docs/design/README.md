@@ -1,12 +1,13 @@
 # Design SSOT
 
-唯一 current Design authority：[`versions/current-main-0.6.5-guru.50/design-main.md`](./versions/current-main-0.6.5-guru.50/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；完整 live-derived 23 Skills / 97 exits / 78 commands locator、#247 ledger retirement与Issue closure ownership及继承的framework/release/base-continuity authority见 [`capability-inventory.md`](./versions/current-main-0.6.5-guru.50/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。
+唯一 current Design authority：[`versions/current-main-0.6.5-guru.51/design-main.md`](./versions/current-main-0.6.5-guru.51/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；完整继承的 23 Skills / 97 exits / 78 commands 与 #408 source/authoring/manual boundary 见 [`capability-inventory.md`](./versions/current-main-0.6.5-guru.51/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。Architecture 继承 `.51` / `active`；`.50` 保持 immutable，知识提升不证明后续 gate 或 Release。
 
 Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Architecture。普通 task 通过 RDT `task_impact_sync` / contribution / `promotion` 更新 current。
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.5-guru.50` | [`design-main.md`](./versions/current-main-0.6.5-guru.50/design-main.md) |
+| `active` | `current-main-0.6.5-guru.51` | [`design-main.md`](./versions/current-main-0.6.5-guru.51/design-main.md) |
+| `superseded` | `current-main-0.6.5-guru.50` | [`design-main.md`](./versions/current-main-0.6.5-guru.50/design-main.md) |
 | `superseded` | `current-main-0.6.5-guru.49` | [`design-main.md`](./versions/current-main-0.6.5-guru.49/design-main.md) |
 | `superseded` | `current-main-0.6.5-guru.48` | [`design-main.md`](./versions/current-main-0.6.5-guru.48/design-main.md) |
 | `superseded` | `current-main-0.6.5-guru.47` | [`design-main.md`](./versions/current-main-0.6.5-guru.47/design-main.md) |

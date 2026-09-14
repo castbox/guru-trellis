@@ -1054,7 +1054,11 @@ def _apply_rename(plan: _RenamePlan, repo_root: Path) -> int:
     # moves them, because the task is still the one being worked on.
     from .active_task import repoint_task_in_sessions
 
-    repoint_task_in_sessions(str(plan.task_dir), str(plan.new_dir), repo_root)
+    try:
+        repoint_task_in_sessions(str(plan.task_dir), str(plan.new_dir), repo_root)
+    except (ValueError, OSError) as exc:
+        print(f"Error: Task moved to {plan.new_dir}, but session repoint failed: {exc}", file=sys.stderr)
+        return 1
 
     return 0
 
@@ -1062,9 +1066,12 @@ def _apply_rename(plan: _RenamePlan, repo_root: Path) -> int:
 def cmd_rename(args: argparse.Namespace) -> int:
     """Rename a task and every reference to it."""
     repo_root = get_repo_root()
+    from .task_utils import resolve_lifecycle_target
+    target = resolve_lifecycle_target(args.name, repo_root, use_active=True)
+    if target is None:
+        return 1
+    repo_root, task_dir = target
     tasks_dir = get_tasks_dir(repo_root)
-
-    task_dir = resolve_task_dir(args.name, repo_root)
     if task_dir is None or not task_dir.is_dir():
         if task_dir is not None:
             print(colored(f"Error: Task not found: {args.name}", Colors.RED), file=sys.stderr)
@@ -1292,10 +1299,13 @@ def cmd_archive(args: argparse.Namespace) -> int:
         print(colored("Error: Task name is required", Colors.RED), file=sys.stderr)
         return 1
 
+    from .task_utils import resolve_lifecycle_target
+    target = resolve_lifecycle_target(task_name, repo_root, use_active=True)
+    if target is None:
+        print(f"Error: refusing to archive '{task_name}': task authority could not be validated", file=sys.stderr)
+        return 1
+    repo_root, task_dir = target
     tasks_dir = get_tasks_dir(repo_root)
-
-    # Resolve task directory (supports task name, relative path, or absolute path)
-    task_dir = resolve_task_dir(task_name, repo_root)
 
     if task_dir is None or not task_dir.is_dir():
         if task_dir is None:
@@ -1458,7 +1468,11 @@ def cmd_archive(args: argparse.Namespace) -> int:
 
     # Clear any session that still points at this task before the path moves.
     from .active_task import clear_task_from_sessions
-    clear_task_from_sessions(str(task_dir), repo_root)
+    try:
+        clear_task_from_sessions(str(task_dir), repo_root)
+    except ValueError as exc:
+        print(f"Error: {exc}; task metadata may already be updated, but the task was not moved", file=sys.stderr)
+        return 1
 
     # Archive
     result = archive_task_complete(task_dir, repo_root)

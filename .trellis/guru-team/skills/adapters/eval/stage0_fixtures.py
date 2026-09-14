@@ -336,7 +336,6 @@ def bind_sync_call_local_invocation(
         raise ValueError("sync-base eval must declare one call-local invocation")
 
 def clarity_target(
-    runtime: Any,
     payload: dict[str, Any],
     *,
     state: str = "open",
@@ -348,7 +347,6 @@ def clarity_target(
         "updated_at": "2026-01-01T00:00:00Z",
         "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
     }
-    target["facts_sha256"] = runtime.context_digest(target)
     payload["invocation_context"] = {
         "kind": "initial_issue", "caller": "stage0 eval owner staging",
         "task_locator": None, "resume_target": "guru-review-contract-wording",
@@ -357,7 +355,6 @@ def clarity_target(
     return payload
 
 def clarity_disposition(
-    runtime: Any,
     payload: dict[str, Any],
     disposition: str,
     *,
@@ -372,22 +369,26 @@ def clarity_disposition(
         "duplicate_candidates": candidates or [], "duplicate_facts_sha256": "0" * 64,
         "selected_issue": selected_issue, "original_target_role": role,
         "decision_summary": f"The reviewed owner staging selected {disposition}.",
-        "disposition_digest": "0" * 64,
     }
-    return runtime.derive_requirements_clarification_result(payload)
-
-def clarity_finalize(runtime: Any, payload: dict[str, Any]) -> dict[str, Any]:
-    return runtime.derive_requirements_clarification_result(payload)
+    return payload
 
 def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[str, Any]:
     payload = json.loads(
         (package_root / "examples/requirements-clarification.json").read_text(encoding="utf-8")
     )
+    # The example is a complete result; fixtures author semantics for recording.
+    del payload["content_identity"]
+    del payload["review_target"]["facts_sha256"]
+    del payload["target_disposition"]["disposition_digest"]
+    for proposal in payload["scope_proposals"]:
+        del proposal["proposal_digest"]
+    for action in payload["source_actions"]:
+        del action["payload_sha256"], action["action_digest"]
+    if recipe != "clarity-clear":
+        payload["mode"] = "workflow"
     if recipe == "clarity-clear":
-        return runtime.derive_requirements_clarification_result(payload)
-
-    payload["mode"] = "workflow"
-    if recipe == "clarity-needs-context":
+        pass
+    elif recipe == "clarity-needs-context":
         payload["typed_exit"] = "needs_context"
         payload["consumer"] = {"kind": "skill", "id": "guru-discover-change-context"}
         payload["context_evidence"] = {
@@ -395,18 +396,16 @@ def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[s
             "missing_reason": "The current repository owner evidence is unavailable.",
         }
         payload["reason"] = "A named repository fact is required before clarification can continue."
-        return runtime.derive_requirements_clarification_result(payload)
-    if recipe == "clarity-refresh-context":
+    elif recipe == "clarity-refresh-context":
         payload["mode"] = "standalone"
         payload["typed_exit"] = "refresh_context"
         payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
         payload["context_evidence"]["status"] = "stale"
         payload["context_evidence"]["missing_reason"] = "The reviewed source binding changed."
         payload["reason"] = "The context snapshot must be refreshed from current authority."
-        return runtime.derive_requirements_clarification_result(payload)
-    if recipe == "clarity-blocked":
-        payload = clarity_target(runtime, payload)
-        payload = clarity_disposition(runtime, payload, "keep_current_open_issue")
+    elif recipe == "clarity-blocked":
+        payload = clarity_target(payload)
+        payload = clarity_disposition(payload, "keep_current_open_issue")
         payload["typed_exit"] = "blocked"
         payload["consumer"] = {"kind": "stop", "id": "requirements-clarification-blocked"}
         payload["ai_review_gate"]["status"] = "blocked"
@@ -415,9 +414,8 @@ def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[s
             "summary": "A load-bearing requirement decision remains unresolved.",
         }
         payload["reason"] = "The unresolved load-bearing decision blocks the clarification loop."
-        return runtime.derive_requirements_clarification_result(payload)
-    if recipe == "clarity-retarget":
-        payload = clarity_target(runtime, payload)
+    elif recipe == "clarity-retarget":
+        payload = clarity_target(payload)
         projection = {
             "repo": "example/guru-extension", "number": 146, "identity": "#146",
             "url": "https://github.com/example/guru-extension/issues/146", "state": "open",
@@ -437,31 +435,36 @@ def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[s
         payload["source_actions"] = [{
             "action_id": "select_existing", "kind": "select_existing_issue",
             "target": {"repo": candidate["repo"], "issue_number": candidate["number"]},
-            "payload": selected, "preimage_sha256": payload["review_target"]["facts_sha256"],
-            "payload_sha256": None, "action_digest": "0" * 64, "status": "validated",
+            "payload": selected,
+            "preimage_sha256": runtime.facts_digest(payload["review_target"]),
+            "status": "validated",
             "mutation_evidence": None,
         }]
         payload = clarity_disposition(
-            runtime, payload, "retarget_existing_issue", candidates=[candidate],
+            payload, "retarget_existing_issue", candidates=[candidate],
             selected_issue=selected, role="related",
         )
-        return clarity_finalize(runtime, payload)
-    if recipe == "clarity-new-task":
-        payload = clarity_target(runtime, payload, state="closed")
+    elif recipe == "clarity-new-task":
+        payload = clarity_target(payload, state="closed")
         payload["typed_exit"] = "new_task"
         payload["consumer"] = {"kind": "workflow", "id": "guru-full-task-intake-chain"}
         payload["source_actions"] = [{
             "action_id": "new_issue", "kind": "new_issue_draft",
             "target": {"repo": "example/guru-extension"},
             "payload": {"title": "Independent Stage 0 follow-up", "body": "Reviewed independent delivery scope."},
-            "preimage_sha256": None, "payload_sha256": None, "action_digest": "0" * 64,
+            "preimage_sha256": None,
             "status": "draft_ready", "mutation_evidence": None,
         }]
         payload = clarity_disposition(
-            runtime, payload, "create_followup_draft", role="related",
+            payload, "create_followup_draft", role="related",
         )
-        return clarity_finalize(runtime, payload)
-    raise ValueError(f"unsupported clarification owner staging recipe: {recipe}")
+    else:
+        raise ValueError(f"unsupported clarification owner staging recipe: {recipe}")
+    return stage0_command(
+        package_root.parents[4], "guru-clarify-requirements",
+        "record-requirements-clarification", payload,
+        "--mode", payload["mode"], "--input", "-",
+    )
 
 def build_workflow_mode_owner(
     public_input: dict[str, Any], recipe: str,
@@ -780,12 +783,17 @@ def readiness_prerequisites(
     clarity = json.loads(
         (clarity_package / "examples/requirements-clarification.json").read_text(encoding="utf-8")
     )
+    del clarity["content_identity"]
+    for proposal in clarity["scope_proposals"]:
+        del proposal["proposal_digest"]
+    for action in clarity["source_actions"]:
+        del action["payload_sha256"], action["action_digest"]
     clarity["mode"] = mode
     clarity["invocation_context"] = {
         "kind": invocation_kind, "caller": "stage0 readiness eval",
         "task_locator": None, "resume_target": "guru-review-contract-wording",
     }
-    clarity["review_target"] = {**authority, "facts_sha256": runtime.context_digest(authority)}
+    clarity["review_target"] = authority
     clarity["target_disposition"] = {
         "disposition": disposition,
         "duplicate_query": "repo:example/guru-extension is:issue is:open readiness eval",
@@ -793,7 +801,6 @@ def readiness_prerequisites(
         "duplicate_facts_sha256": "0" * 64, "selected_issue": None,
         "original_target_role": "primary",
         "decision_summary": "No current duplicate replaces the reviewed draft.",
-        "disposition_digest": "0" * 64,
     }
     snapshot = context["duplicate_snapshot"]
     clarity["target_disposition"].update({
@@ -807,7 +814,6 @@ def readiness_prerequisites(
         "evidence_refs": ["live-authority:stage0-readiness-eval"],
         "missing_reason": None,
     }
-    clarity = runtime.derive_requirements_clarification_result(clarity)
     clarity = stage0_command(
         fixture, "guru-clarify-requirements", "record-requirements-clarification",
         clarity, "--mode", mode, "--input", "-",
@@ -868,7 +874,7 @@ def readiness_prerequisites(
     return {"clarity": clarity, "wording": wording, "transition": worded["transition"]}
 
 def readiness_semantic_review(
-    runtime: Any, target: dict[str, Any], linkage: dict[str, Any], typed_exit: str,
+    runtime: Any, target: dict[str, Any], typed_exit: str,
 ) -> dict[str, Any]:
     non_ready = typed_exit != "ready"
     finding_id = "stage0-readiness-finding"
@@ -906,10 +912,7 @@ def readiness_semantic_review(
         "ai_review_gate": {
             "status": runtime.CHANGE_REQUEST_REVIEW_GATE_BY_EXIT[typed_exit],
             "reviewer": "stage0-eval-reviewer",
-            "reviewed_linkage_sha256": linkage["linkage_sha256"],
             "summary": "The complete readiness evidence was reviewed for one declared route.",
-            "findings_count": 1 if non_ready else 0,
-            "scope_conclusion_sha256": runtime.context_digest(scope_conclusion),
         },
     }
 
@@ -1004,12 +1007,7 @@ def build_readiness_owner(
         fixture, raw_target, source_path.relative_to(fixture).as_posix(), mode,
     )
     transition = prerequisites["transition"]
-    review = runtime.readiness_runtime
-    projections = review.normalize_prerequisites(
-        transition, target, source, package_root,
-    )
-    linkage = review.linkage(target, projections)
-    semantic_review = readiness_semantic_review(runtime, target, linkage, typed_exit)
+    semantic_review = readiness_semantic_review(runtime, target, typed_exit)
     authored = {
         "generated_at": "2026-01-01T00:00:00Z", "mode": mode,
         "target": raw_target,

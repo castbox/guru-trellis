@@ -86,6 +86,10 @@ diagnostic, and recovery commands. `invoke-guru-finalize-task` accepts the
 current semantic review input and never consumes a prebuilt owner result.
 Unknown,
 multiple, retired, stale, or unmapped inputs and exits fail closed.
+For an explicit independent manual operation after an automatic stop, read
+`.trellis/workflow.md#manual-gitgithub-operations` (Manual Git/GitHub Operations).
+That global boundary does not relax this Skill's entry or completion contract.
+
 An already Ready same-plan transaction is a terminal read-only recovery: live
 facts are revalidated and the current Merge DTO is materialized without
 repeating any Git or GitHub mutation.

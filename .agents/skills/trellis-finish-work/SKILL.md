@@ -53,4 +53,4 @@ If there is no active task and the user did not confirm any cleanup archives, sk
 
 ## Step 4: Report outcome
 
-Summarize the archived task, validation results, and remaining follow-ups. Keep durable evidence in the task artifacts; no separate session recording step is needed.
+Summarize the archived task, validation results, and remaining follow-ups. Keep durable evidence in the task artifacts; no additional recording step is needed.

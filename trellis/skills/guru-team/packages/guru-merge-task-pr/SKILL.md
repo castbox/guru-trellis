@@ -49,6 +49,10 @@ unmapped output. Never enter Phase
 0, sync a base, update/rebase the PR branch, close Issues directly, synchronize
 local `main`, or clean task resources.
 
+For an explicit independent manual operation after an automatic stop, read
+`.trellis/workflow.md#manual-gitgithub-operations` (Manual Git/GitHub Operations).
+That global boundary does not relax this Skill's entry or completion contract.
+
 Workflow-mode `ready_for_merge` requires Finalizer's
 `publication_body_sha256`. Merge compares it with the exact bytes from its first
 live PR read before deriving closing keywords, reading their Issues, or

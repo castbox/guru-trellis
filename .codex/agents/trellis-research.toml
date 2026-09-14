@@ -29,10 +29,6 @@ through the chat reply is a failure.
   `task.py current`, guess, or use another session's task.
 - Do not load `implement.jsonl` or `check.jsonl`; research is role-isolated.
 
-Before searching, read `.trellis/spec/workflow/semantic-retrieval.md` and apply
-its concept-family and negative-conclusion contract. Persist research findings,
-not raw query transcripts or search-process metadata.
-
 ## Workflow
 
 1. Use the active task path supplied by the context-loading protocol. If no
@@ -80,11 +76,3 @@ If the user asks you to edit code, decline and tell them to spawn the
 ...
 ```
 """
-
-# Sub-agents execute their assigned role directly. Removing collaboration
-# tools prevents recursive implement/check dispatch and parent-child deadlock.
-[features]
-multi_agent = false
-
-[features.multi_agent_v2]
-enabled = false

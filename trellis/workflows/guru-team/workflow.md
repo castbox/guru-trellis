@@ -27,6 +27,10 @@ discovery is optional convenience; it never replaces a mandatory marker.
 
 ## Guru Team Gate
 
+Explicit independent Git/GitHub requests use
+[Manual Git/GitHub Operations](#manual-gitgithub-operations), not task-mode
+selection or an inferred lifecycle continuation.
+
 Classify the initial request before repository or network semantic reads:
 
 - simple conversation or a non-file-changing request: answer directly without
@@ -291,7 +295,9 @@ produce a current reviewed-content anchor before Publication can run again.
 
 Every stop target returns the owning Skill result and safe remediation, then
 waits for changed authority or external state. A stop never guesses another
-route or exposes package-private state.
+route or exposes package-private state. This stops the automatic chain, not an
+independently requested operation under
+[Manual Git/GitHub Operations](#manual-gitgithub-operations).
 
 ### Mandatory Architecture stage routing
 
@@ -395,6 +401,8 @@ Phase 3: Finish  -> docs reconciliation, commit, Architecture full-diff review, 
 | invalid task state | Stop at `invalid-task-state`; do not enter Intake, restore, migration, mapping rebuild, cleanup, or confirmation retry. |
 
 [workflow-state:no_task]
+For an explicit independent Git/GitHub request, read Manual Git/GitHub Operations
+in this workflow; missing context is not proof of no task.
 Every file-changing request first resolves task identity for the current
 workspace and requested Issue. Unrelated `in_progress` tasks in the repository
 inventory are not current-task conflicts, even for the same user; do not ask
@@ -772,6 +780,66 @@ mutation, or task cleanup.
 
 ## Global Integration Boundaries
 
+### Manual Git/GitHub Operations
+
+This global boundary owns automatic-stop versus independent manual-operation
+behavior. It applies when workflow-state injection, session/task routing, a
+hook, checkpoint, or wrapper is missing, stale, or fails during normal use.
+Stop that automatic invocation chain and report the failed step, original
+error (with secrets redacted), known repo/task/worktree/branch/HEAD/Issue/PR,
+and unfinished steps. Read available live facts directly; mark unreadable
+facts `unknown`. Missing injection or a failed helper is not evidence of
+`no_task`. Do not enter new Intake, switch to task-free, rebuild mappings,
+repair hooks/runtime, or manufacture checkpoints to continue.
+
+An automatic stop does not prohibit a user's explicit independent manual
+commit, push, PR creation/update, merge, Issue closure, tag/Release, or cleanup
+request. The current-session AI handles that specific operation using `git`
+and authenticated, explicitly repo-bound `gh`/`gh api`. This is not a new
+workflow node, Skill, typed exit, executor, or recovery path, nor a successful
+standalone Guru invocation. The existing Phase 2, Task Commit, Branch Review,
+Publication, Finalizer, Merge, and archive contracts remain unchanged for
+Guru lifecycle completion; their exclusive-owner restrictions apply to that
+chain, not to this separately requested operation.
+
+For each operation, reread its live facts and review its correctness. Display
+the exact repository, worktree/path, branch/ref and HEAD (where applicable),
+target resources, commands/payload, expected result, and side effects; obtain
+confirmation for this operation in the current dialogue before executing it.
+An earlier operation's confirmation does not authorize the next one. Before
+execution, a changed target, HEAD, payload, or side-effect set requires a fresh
+display and confirmation. A new commit SHA produced by the confirmed operation
+is an expected result to verify, not a reason to reconfirm that same operation.
+Never persist authorization or its process in files, schemas,
+DTOs, checkpoints, or logs. If a fact required for this operation cannot be
+read or an operation-specific check fails, stop this operation with its exact
+reason; unrelated Guru residue alone does not block it.
+
+| Operation | Fresh facts and exact display | Post-operation verification |
+| --- | --- | --- |
+| commit | Repo/worktree/branch/HEAD, complete staged and unstaged diff plus untracked contents, exact stage paths, Git transaction state, message, and hook effects. | Check new commit parents/tree/message and actual paths; preserve unrelated changes. Do not push. |
+| push | Remote, refspec, local HEAD and remote HEAD, and branch update effects. | Read the specified remote branch HEAD; do not create a PR. |
+| PR creation/update | Repo/PR/base/head/head SHA, exact Chinese title/body, Draft/Ready state, and closing-keyword effects. | Read actual PR identity, state and metadata; do not merge. |
+| merge | PR, expected head, base, GitHub-returned merge eligibility/checks, merge method and exact payload, including automatic Issue-closing effects. Do not add Ruleset or branch-protection reads as prerequisites. | Read actual merge commit and PR state; verify the displayed automatic closing effects without calling Issue closure. |
+| Issue closure | Exact Issue, current state, delivery evidence and reason for closure. | Read actual closed/open state; never infer closure from task residue. |
+| tag/Release | Exact Guru candidate, existing release contract and its required evidence, tag target, notes, remote tags/Releases, and publishing effects. | Read actual tag/Release target and publication result; never publish upstream Trellis. |
+| cleanup | Exact resource paths/refs, uncommitted contents, references/use state, and deletion impact. | Verify only listed resources were handled; do not expand deletion scope. |
+
+Secret redaction, credentials/permissions, destructive-operation confirmation,
+Git transaction correctness, and server-enforced remote rules still apply. A manual request
+does not bypass the operation's own checks or the existing release contract.
+Never chain later operations implicitly, including Ready changes, Issue
+closure, release publication, or cleanup.
+
+After success or failure, report two separate results: **Git/GitHub result**
+(observed action and verification) and **Workflow residue** (remaining task,
+runtime, Finalizer and archive state, including unknowns and unfinished steps).
+Do not write Phase 2, Branch Review, Publication, Finalizer, Merge or archive
+completion markers, forge gates, or clean runtime residue to make a manual
+success look like Guru completion. An operation failure is only that operation's
+failure, not automatic Guru re-entry. Returning to Guru lifecycle still requires
+its original current entry preconditions and declared routes.
+
 ### Workspace and task boundary
 
 - In worktree mode, every source, test, and task-local write occurs only after
@@ -925,3 +993,5 @@ Interface-declared consumer. If the package, marker, exit, target, projection,
 or required live boundary is missing, stale, ambiguous, mismatched, duplicated,
 or unknown, stop. Never infer an alternate route from prose, examples, old
 artifacts, runtime source, or platform-specific behavior.
+This automatic-chain rule preserves the separately requested operation boundary
+in [Manual Git/GitHub Operations](#manual-gitgithub-operations).

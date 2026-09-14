@@ -7,6 +7,7 @@ import importlib.util
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -33,7 +34,135 @@ def load_matrix_helper():
     return module
 
 
+def mock_fork_ci(matrix, **updates):
+    original = matrix._run
+    def run(command, **kwargs):
+        if tuple(command[:2]) != ("gh", "api"):
+            return original(command, **kwargs)
+        payload = {"id": 34838784963, "head_sha": original(
+            ("git", "rev-parse", "HEAD"), cwd=kwargs["cwd"], capture=True).strip(),
+            "status": "completed", "conclusion": "success",
+            "repository": {"full_name": "castbox/Trellis"}}
+        payload.update(updates)
+        return json.dumps(payload)
+    return mock.patch.object(matrix, "_run", side_effect=run)
+
+
+class NormalPhase0AuthoringTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        with mock.patch.object(sys, "path", [str(MATRIX_HELPER.parent), *sys.path]):
+            import verify_installed_phase0_transcript
+        cls.helper = verify_installed_phase0_transcript
+
+    def issue(self):
+        return {"url": "https://github.com/example/guru-extension/issues/145",
+                "title": "Fixture", "body": "Current requirement", "state": "OPEN",
+                "updatedAt": "2026-01-01T00:00:00Z"}
+
+    def test_clarification_leaves_owner_derivations_to_recorder(self):
+        recorded = {"content_identity": {"result_sha256": "r" * 64}}
+        checked = {"status": "passed", "typed_exit": "clear"}
+        transition = {"target_locator": self.issue()["url"], "context_result_sha256": "c" * 64}
+        snapshot = {"query": "current issue", "checked_at": "2026-01-01T00:00:00Z",
+                    "candidates": [], "facts_sha256": "d" * 64}
+        with mock.patch.object(self.helper, "live_issue", return_value=self.issue()), \
+             mock.patch.object(self.helper, "record_semantic", side_effect=[recorded, checked]) as call:
+            self.assertEqual(self.helper.clarification_owner_for_issue(
+                Path("/fixture"), {}, transition, snapshot), (recorded, checked))
+        authored = call.call_args_list[0].args[-1]
+        self.assertNotIn("content_identity", authored)
+        self.assertNotIn("facts_sha256", authored["review_target"])
+        self.assertNotIn("disposition_digest", authored["target_disposition"])
+        self.assertEqual(authored["target_disposition"]["duplicate_facts_sha256"], "d" * 64)
+        self.assertNotIn("payload_sha256", authored["source_actions"][0])
+        self.assertNotIn("action_digest", authored["source_actions"][0])
+        self.assertIs(call.call_args_list[1].args[-1], recorded)
+
+    def test_readiness_all_routes_author_only_semantic_gate_fields(self):
+        with mock.patch.object(self.helper, "live_issue", return_value=self.issue()):
+            for route in ("ready", "clarify_requirements", "review_wording", "refresh_context"):
+                with self.subTest(route=route):
+                    authored = self.helper.readiness_owner_for_issue(Path("/fixture"), {}, {}, route)
+                    self.assertEqual(set(authored["semantic_review"]["ai_review_gate"]),
+                                     {"status", "reviewer", "summary"})
+                    self.assertEqual(authored["typed_exit"], route)
+
+    def test_workspace_authoring_matches_current_recorder_schema(self):
+        from jsonschema import Draft202012Validator
+        schema = json.loads((REPO / "trellis/skills/guru-team/packages/guru-create-task-workspace/"
+                             "schemas/record-authoring-input.schema.json").read_text())
+        authored = self.helper.workspace_authoring({})
+        envelope = {"schema_version": "1.0", "transition": {}, "authoring": authored}
+        Draft202012Validator(schema).validate(envelope)
+        self.assertEqual(set(authored), {"naming", "assignee", "side_effects", "ai_review_gate"})
+        self.assertNotIn("reviewed_plan_sha256", authored["ai_review_gate"])
+
+    def test_activation_requires_exact_unmatched_session_no_task_result(self):
+        healthy = {"current_task": None, "source": "none", "stale": False}
+        cases = [(1, healthy, True), (0, healthy, False), (2, healthy, False)]
+        cases += [(1, {**healthy, **change}, False) for change in (
+            {"current_task": {"status": "in_progress"}}, {"source": "session"},
+            {"stale": True}, {"error": "cannot resolve session"},
+        )]
+        for code, payload, accepted in cases:
+            with self.subTest(code=code, payload=payload), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory).resolve()
+                workspace = root / "workspace"
+                task_ref = ".trellis/tasks/fixture"
+                task_dir = workspace / task_ref
+                task_dir.mkdir(parents=True)
+                started = False
+                foreign_callers = []
+
+                def load(path):
+                    if path.name == "task.json":
+                        return {"status": "in_progress" if started else "planning"}
+                    return {"workspace_path": str(workspace)}
+
+                def run(argv, **kwargs):
+                    nonlocal started
+                    returncode, stdout = 0, ""
+                    if Path(argv[0]).name == "start-task.sh":
+                        if not kwargs.get("check", True):
+                            returncode, stdout = 1, "no curated entries"
+                        else:
+                            started = True
+                    elif "current" in argv:
+                        if kwargs["env"].get("TRELLIS_CONTEXT_ID") == "codex_phase0_unmatched":
+                            foreign_callers.append(kwargs["cwd"])
+                            returncode, stdout = code, json.dumps(payload)
+                        else:
+                            stdout = json.dumps({"resolved_task_path": str(task_dir),
+                                "task_workspace_root": str(workspace),
+                                "current_task": {"status": "in_progress"}})
+                    elif Path(argv[0]).name == "check-workspace-boundary.sh":
+                        stdout = json.dumps({"status": "ok"})
+                    elif Path(argv[1]).name == "get_context.py":
+                        stdout = f"Resolved task: {task_dir}\n"
+                    if kwargs.get("check", True) and returncode:
+                        raise RuntimeError(f"command failed ({returncode})")
+                    return subprocess.CompletedProcess(argv, returncode, stdout, "")
+
+                with mock.patch.object(self.helper, "load_json", side_effect=load), \
+                     mock.patch.object(self.helper, "run", side_effect=run):
+                    created = {"workspace_slug": "fixture", "task_slug": "fixture",
+                               "task_artifact_dir": task_ref}
+                    if accepted:
+                        result = self.helper.verify_created_activation(root, {}, created)
+                        self.assertEqual(result["activation_status"], "in_progress")
+                        self.assertEqual(foreign_callers, [workspace, root])
+                    else:
+                        with self.assertRaisesRegex(RuntimeError, "unmatched session"):
+                            self.helper.verify_created_activation(root, {}, created)
+
+
 class VerifyTrellisUpgradeContractTests(unittest.TestCase):
+    def setUp(self):
+        patcher = mock_fork_ci(self.matrix)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.text = VERIFIER.read_text(encoding="utf-8")
@@ -47,6 +176,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         files = {
             "package.json": json.dumps({"packageManager": "pnpm@10.32.1"}),
             "packages/cli/package.json": json.dumps({"version": "0.6.17", "type": "module"}),
+            "packages/core/package.json": json.dumps({"version": "0.6.17"}),
             "packages/cli/bin/trellis.js": 'import("../dist/cli/index.js");\n',
             "packages/cli/dist/cli/index.js": 'console.log("0.6.17");\n',
             "packages/core/dist/index.js": "export {};\n",
@@ -71,7 +201,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         lock.parent.mkdir(parents=True)
         lock.write_text(json.dumps({"schema_version": "1.0",
             "repository": "https://github.com/castbox/Trellis.git", "commit": git("rev-parse", "HEAD"),
-            "cli_version": "0.6.17", "package_manager": "pnpm@10.32.1"}))
+            "cli_version": "0.6.17", "package_manager": "pnpm@10.32.1",
+            "ci_run_id": 34838784963}))
         return repo, source
 
     def test_fork_source_uses_real_node_esm_entry_and_observed_identity(self) -> None:
@@ -79,10 +210,40 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             repo, source = self.fork_fixture(Path(directory))
             result = self.matrix.validate_fork_source(repo, source)
             self.assertEqual(result["cli_version"], "0.6.17")
+            self.assertEqual(result["ci_run_id"], 34838784963)
             self.assertEqual(result["command"][1], str(source / "packages/cli/bin/trellis.js"))
             self.assertEqual(result["template_count"], 1)
             self.assertEqual(result["commit"], json.loads((repo /
                 "trellis/presets/guru-team/source/trellis-source.json").read_text())["commit"])
+
+    def test_current_source_requires_positive_integer_ci_identity(self):
+        for value in (None, 0, -1, True, "34838784963"):
+            with self.subTest(value=value), tempfile.TemporaryDirectory() as directory:
+                repo, source = self.fork_fixture(Path(directory))
+                path = repo / "trellis/presets/guru-team/source/trellis-source.json"
+                lock = json.loads(path.read_text())
+                lock["ci_run_id"] = value
+                path.write_text(json.dumps(lock))
+                with self.assertRaisesRegex(self.matrix.MatrixError, "invalid Trellis source lock"):
+                    self.matrix.validate_fork_source(repo, source)
+
+    def test_ci_run_must_match_completed_successful_source(self):
+        for update in ({"id": 1}, {"head_sha": "0" * 40},
+                       {"status": "in_progress"}, {"conclusion": "failure"},
+                       {"repository": {"full_name": "other/Trellis"}}):
+            with self.subTest(update=update), tempfile.TemporaryDirectory() as directory:
+                repo, source = self.fork_fixture(Path(directory))
+                with mock_fork_ci(self.matrix, **update), self.assertRaisesRegex(
+                    self.matrix.MatrixError, "fork CI run identity/status"
+                ):
+                    self.matrix.validate_fork_source(repo, source)
+
+    def test_ci_success_does_not_replace_local_build_marker(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repo, source = self.fork_fixture(Path(directory))
+            (source / "packages/cli/dist/.guru-source-commit").unlink()
+            with self.assertRaisesRegex(self.matrix.MatrixError, "stale fork build origin"):
+                self.matrix.validate_fork_source(repo, source)
 
     def test_fork_source_rejects_wrong_stale_missing_and_dirty_inputs(self) -> None:
         cases = ("head", "schema", "manager", "version", "remote", "dirty", "missing", "template", "runtime")
@@ -415,6 +576,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             with mock.patch.object(self.matrix, "_install_workflow", side_effect=init), \
                  mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
                  mock.patch.object(self.matrix, "_assert_template_hashes", return_value={}), \
+                 mock.patch.object(self.matrix, "_verify_focused_sessions", return_value={"status": "passed"}) as sessions, \
                  mock.patch.object(self.matrix, "_run", wraps=self.matrix._run) as runner, \
                  mock.patch.object(self.matrix, "_preview_and_switch_workflow"):
                 result = self.matrix.run_matrix(args)
@@ -424,6 +586,60 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             self.assertFalse(result["predecessor_upgrade_verified"])
             self.assertFalse(result["full_matrix_verified"])
             self.assertTrue((args.work_root / "focused-summary.json").is_file())
+            sessions.assert_called_once_with(args.work_root.resolve() / "project", "codex", args.work_root.resolve())
+            self.assertEqual(result["session_binding"], {"status": "passed"})
+
+    def test_focused_session_probe_uses_installed_python_and_runtime(self):
+        root = Path("/fixture/project")
+        with mock.patch.object(self.matrix, "_run") as run:
+            result = self.matrix._verify_focused_sessions(root, "codex", Path("/fixture/logs"))
+        self.assertEqual(result["status"], "passed")
+        self.assertEqual(run.call_args.args[0], (
+            str(root / ".trellis/guru-team/runtime/resolve-python.sh"),
+            str(root), str(root / ".trellis/guru-team/runtime"),
+            str(MATRIX_HELPER.with_name("fork_session_probe.py")),
+            str(root / ".trellis/scripts"), str(root / ".codex/hooks")))
+        self.assertEqual(run.call_args.kwargs["cwd"], root)
+
+    def test_focused_session_probe_executes_real_resolver_argument_contract(self):
+        import shutil
+        import sys
+
+        with tempfile.TemporaryDirectory(prefix="focused resolver ") as directory:
+            work = Path(directory).resolve()
+            target, probes = work / "target project", work / "source probes"
+            runtime = target / ".trellis/guru-team/runtime"
+            state = target / ".trellis/.runtime/guru-team/python"
+            identity = "a" * 24
+            interpreter = work / "cache" / identity / "venv/bin/python"
+            for path in (runtime, state, probes, interpreter.parent):
+                path.mkdir(parents=True)
+            interpreter.symlink_to(sys.executable)
+            (state / "active.json").write_text(json.dumps(
+                {"runtime_id": identity, "interpreter": str(interpreter)}, separators=(",", ":")))
+            shutil.copy2(REPO / "trellis/skills/guru-team/runtime/resolve-python.sh",
+                         runtime / "resolve-python.sh")
+            # Real shell and Python processes; only bootstrap/probe bodies are fixtures.
+            for script, receipt in ((runtime / "bootstrap.py", work / "bootstrap-argv.json"),
+                                    (probes / "fork_session_probe.py", work / "probe-argv.json")):
+                script.write_text(
+                    "import json, sys\nfrom pathlib import Path\n"
+                    f"Path({str(receipt)!r}).write_text(json.dumps(sys.argv))\n")
+            with mock.patch.object(self.matrix, "SCRIPT_ROOT", probes):
+                result = self.matrix._verify_focused_sessions(target, "codex", work)
+            self.assertEqual(result["status"], "passed")
+            self.assertEqual(json.loads((work / "bootstrap-argv.json").read_text()), [
+                str(runtime / "bootstrap.py"), "--repo", str(target),
+                "--runtime-assets", str(runtime), "--validate-active", identity, "--json"])
+            self.assertEqual(json.loads((work / "probe-argv.json").read_text()), [
+                str(probes / "fork_session_probe.py"), str(target / ".trellis/scripts"),
+                str(target / ".codex/hooks")])
+
+    def test_focused_non_codex_does_not_claim_session_hook_proof(self):
+        with mock.patch.object(self.matrix, "_run") as run:
+            result = self.matrix._verify_focused_sessions(Path("/fixture"), "claude", Path("/logs"))
+        run.assert_not_called()
+        self.assertEqual(result["status"], "UNVERIFIED")
 
     def create_shallow_before_tag_fixture(
         self,

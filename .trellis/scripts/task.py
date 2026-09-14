@@ -52,7 +52,7 @@ from common.io import (
     read_json_checked,
     write_json,
 )
-from common.task_utils import resolve_task_dir, run_task_hooks
+from common.task_utils import resolve_lifecycle_target, run_task_hooks
 from common.tasks import iter_active_tasks, children_progress
 
 # Import command handlers from split modules (also re-exports for plan.py compatibility)
@@ -178,7 +178,11 @@ def cmd_start(args: argparse.Namespace) -> int:
         return 1
 
     # Resolve task directory (supports task name, relative path, or absolute path)
-    full_path = resolve_task_dir(task_input, repo_root)
+    invocation_root = repo_root
+    target = resolve_lifecycle_target(task_input, repo_root)
+    full_path = target[1] if target else None
+    if target:
+        repo_root = target[0]
 
     if full_path is None:
         # resolve_task_dir already named the exact reason on stderr. A second,
@@ -254,7 +258,7 @@ def cmd_start(args: argparse.Namespace) -> int:
             run_task_hooks("after_start", task_json_path, repo_root)
         return 0
 
-    active = set_active_task(task_dir, repo_root)
+    active = set_active_task(str(full_path), invocation_root)
     if active:
         print(colored(f"✓ Current task set to: {task_dir}", Colors.GREEN))
         print(f"Source: {active.source}")
@@ -283,7 +287,11 @@ def cmd_finish(args: argparse.Namespace) -> int:
         return 0
 
     # Resolve task.json path before clearing
-    task_json_path = repo_root / current / FILE_TASK_JSON
+    if active.resolved_task_path is None or active.task_workspace_root is None:
+        print(colored(f"Error: {active.error or 'Invalid active task'}", Colors.RED))
+        return 1
+    repo_root = active.task_workspace_root
+    task_json_path = active.resolved_task_path / FILE_TASK_JSON
 
     print(colored(f"✓ Cleared current task (was: {current})", Colors.GREEN))
     print(f"Source: {active.source}")
@@ -301,9 +309,9 @@ def cmd_current(args: argparse.Namespace) -> int:
     if getattr(args, "json", False):
         task_obj = None
         read_error = None
-        if active.task_path:
-            task_json_path = repo_root / active.task_path / FILE_TASK_JSON
-            require_active_path(task_json_path, repo_root)
+        if active.resolved_task_path and active.task_workspace_root:
+            task_json_path = active.resolved_task_path / FILE_TASK_JSON
+            require_active_path(task_json_path, active.task_workspace_root)
             data, reason = read_json_checked(task_json_path)
             if data is None:
                 # Without this, a corrupt task.json emits null for every field
@@ -329,22 +337,39 @@ def cmd_current(args: argparse.Namespace) -> int:
             "current_task": task_obj,
             "source": active.source,
             "stale": active.stale,
+            "invocation_root": str(active.invocation_root),
+            "repository_common_dir": str(active.repository_common_dir) if active.repository_common_dir else None,
+            "task_workspace_root": str(active.task_workspace_root) if active.task_workspace_root else None,
+            "resolved_task_path": str(active.resolved_task_path) if active.resolved_task_path else None,
         }
         # Only present when the read failed, so the healthy shape is unchanged.
         if read_error:
             payload["error"] = read_error
+        elif active.error:
+            payload["error"] = active.error
         print(json.dumps(payload, ensure_ascii=False))
-        return 0 if active.task_path else 1
+        return 0 if task_obj and not read_error and not active.error else 1
 
+    if active.error:
+        print(f"Error: {active.error}", file=sys.stderr)
+        return 1
+
+    display_path = (
+        str(active.resolved_task_path)
+        if active.resolved_task_path and active.task_workspace_root != active.invocation_root
+        else active.task_path
+    )
     if args.source:
-        print(f"Current task: {active.task_path or '(none)'}")
+        print(f"Current task: {display_path or '(none)'}")
         print(f"Source: {active.source}")
+        if active.task_workspace_root:
+            print(f"Task workspace: {active.task_workspace_root}")
         if active.stale:
             print("State: stale")
         return 0 if active.task_path else 1
 
-    if active.task_path:
-        print(active.task_path)
+    if display_path:
+        print(display_path)
         return 0
 
     return 1
@@ -791,10 +816,11 @@ def main() -> int:
 
     if args.command in commands:
         from common.history_paths import RetiredDataPathError
+        from common.session_storage import SessionBindingError
 
         try:
             return commands[args.command](args)
-        except RetiredDataPathError as exc:
+        except (RetiredDataPathError, SessionBindingError, OSError) as exc:
             print(f"Error: {exc}", file=sys.stderr)
             return 1
     else:

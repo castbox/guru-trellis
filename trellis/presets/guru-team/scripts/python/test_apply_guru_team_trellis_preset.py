@@ -6,7 +6,6 @@ from __future__ import annotations
 import json
 import hashlib
 import importlib.util
-import copy
 import os
 import shutil
 import subprocess
@@ -473,51 +472,6 @@ class Phase0TranscriptOwnerBindingTest(unittest.TestCase):
                 target.write_text("{}\n", encoding="utf-8")
             self.verifier.assert_forbidden_runtime_absent(root)
 
-    def test_finalizes_clarification_owner_identity_before_recording(self) -> None:
-        owner = {
-            "review_target": {"kind": "issue", "url": "https://example.invalid/145"},
-            "target_disposition": {"disposition": "keep_current_open_issue"},
-            "context_evidence": {"status": "current"},
-            "confirmed_facts": [],
-            "repository_answerable_questions": [],
-            "clarification_rounds": [],
-            "open_questions": [],
-            "scope_proposals": [],
-            "source_actions": [{
-                "action_id": "no_source_change",
-                "kind": "none",
-                "target": None,
-                "payload": None,
-                "preimage_sha256": None,
-                "payload_sha256": "0" * 64,
-                "action_digest": "0" * 64,
-            }],
-            "affected_contracts": ["requirements"],
-            "reason": "Current evidence is sufficient.",
-            "content_identity": {},
-        }
-
-        finalized = self.verifier.finalize_clarification_owner(owner)
-        unsigned = copy.deepcopy(finalized)
-        unsigned.pop("content_identity")
-        action = finalized["source_actions"][0]
-        action_projection = {
-            key: action[key]
-            for key in (
-                "action_id", "kind", "target", "payload", "preimage_sha256",
-                "payload_sha256",
-            )
-        }
-
-        self.assertIsNone(action["payload_sha256"])
-        self.assertEqual(
-            action["action_digest"], self.verifier.digest(action_projection)
-        )
-        self.assertEqual(
-            finalized["content_identity"]["result_sha256"],
-            self.verifier.digest(unsigned),
-        )
-
     def test_phase0_transcript_does_not_inject_private_typed_output(self) -> None:
         transcript = (
             preset.guru_root_from_script()
@@ -872,6 +826,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         target = self.repo / relative
         canonical = self.guru_root / "trellis/presets/guru-team/source/trellis-source.json"
         self.assertEqual(target.read_bytes(), canonical.read_bytes())
+        self.assertEqual(json.loads(target.read_text())["ci_run_id"], 34838784963)
         manifest = json.loads((self.install_dst / "extension.json").read_text())
         self.assertIn(relative, manifest["install"]["managed_assets"])
         self.assertEqual(manifest["install"]["managed_asset_hashes"][relative], hashlib.sha256(target.read_bytes()).hexdigest())

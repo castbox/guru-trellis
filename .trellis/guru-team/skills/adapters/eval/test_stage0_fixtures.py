@@ -25,6 +25,7 @@ from adapters.eval.owner_runtime import (
     load_package_owner_runtime,
 )
 from adapters.eval.stage0_fixtures import (
+    build_clarity_owner,
     build_readiness_owner,
     stage0_command,
     workspace_plan,
@@ -101,6 +102,34 @@ class ReadinessAdapterTests(unittest.TestCase):
                         semantic_hash = state["producer_results"]["clarity"]["content_identity"]["content_sha256"]
                         self.assertEqual(semantic_hash, owner["prerequisites"]["clarity"]["content_sha256"])
                         self.assertNotEqual(semantic_hash, owner["target"]["content_sha256"])
+
+    def test_clarity_six_exits_use_recorder_authoring(self):
+        package = self.packages / "guru-clarify-requirements"
+        runtime = load_package_owner_runtime(self.target, package.name)
+        recipes = {
+            "clarity-clear": "clear", "clarity-needs-context": "needs_context",
+            "clarity-refresh-context": "refresh_context", "clarity-blocked": "blocked",
+            "clarity-retarget": "retarget_context", "clarity-new-task": "new_task",
+        }
+        for recipe, exit_id in recipes.items():
+            with self.subTest(recipe=recipe):
+                with mock.patch(
+                    "adapters.eval.stage0_fixtures.stage0_command", wraps=stage0_command,
+                ) as record:
+                    owner = build_clarity_owner(runtime, package, recipe)
+                authored = record.call_args.args[3]
+                self.assertNotIn("content_identity", authored)
+                self.assertNotIn("facts_sha256", authored["review_target"])
+                if authored["target_disposition"] is not None:
+                    self.assertNotIn("disposition_digest", authored["target_disposition"])
+                for action in authored["source_actions"]:
+                    self.assertNotIn("payload_sha256", action)
+                    self.assertNotIn("action_digest", action)
+                stage0_command(
+                    self.fixture, package.name, "check-requirements-clarification",
+                    owner, "--input", "-",
+                )
+                self.assertEqual(exit_id, owner["typed_exit"])
 
     def test_draft_and_standalone_source_profiles(self):
         package = self.packages / "guru-review-change-request"

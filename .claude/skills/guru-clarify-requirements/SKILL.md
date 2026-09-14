@@ -35,7 +35,8 @@ prior-decision evidence, read `.trellis/spec/workflow/semantic-retrieval.md` and
 apply it in this Skill's semantic gate. Do not infer absence from a
 single-language zero result or expose the query process through the public DTO.
 
-Load [references/contract.md](references/contract.md) and
+From the repository root, load
+`.trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md` and
 `trellis-brainstorm`. Execute the semantic closed loop in its declared order,
 ask at most one highest-value question per round, complete the AI Review Gate
 and any real action/proposal choice before calling recorder/checker,
@@ -64,8 +65,28 @@ authority action, authority/context/task-update order mismatch, invalid caller
 resume, stale active-task evidence, non-current artifact input, unknown exits,
 or missing current runtime. This package is not self-contained or portable.
 
-After the semantic gate and owner recorder/checker complete, invoke
-`scripts/invoke.sh --invocation -` with the closed call-local public input,
+## Installed Commands And Authoring
+
+Run from the repository root through the managed package wrappers:
+
+```bash
+bash .trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/record-requirements-clarification.sh --mode workflow --input - --json
+bash .trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/check-requirements-clarification.sh --input - --json
+bash .trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/invoke.sh --invocation - --json
+```
+
+Use `--mode standalone` for standalone recording. Feed the reviewed semantic
+owner JSON to record, its stdout result to check, and the complete invocation
+envelope to invoke. Keep these values in memory; do not create repository files.
+The contract's `Minimal Recorder Authoring` table lists required semantic fields
+and the exact omittable fields. The full checked-result example is at
+`.trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json`;
+remove only the listed derived fields when using it as an authoring shape, and
+replace every example judgment and fact with the current reviewed result.
+Agent discovery projections do not contain the package scripts or examples.
+
+After the semantic gate and owner recorder/checker complete, invoke the command
+above with the closed call-local public input,
 `context_current` transition, and checked owner result on stdin to serialize
 the minimal handoff. The runtime validates the envelope's mode, target, and
 transition bindings, reruns the existing checker, and derives the route and

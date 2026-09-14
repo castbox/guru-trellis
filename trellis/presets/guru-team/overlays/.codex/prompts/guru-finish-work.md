@@ -1,6 +1,11 @@
 <!-- guru-team-overlay: v1 -->
 # Guru Finish Work
 
+On an automatic context/route failure or an explicit independent manual request,
+read `.trellis/workflow.md#manual-gitgithub-operations` (Manual Git/GitHub
+Operations). That global owner defines the boundary; this entry adds no recovery
+steps and does not turn a manual result into Guru completion.
+
 Load current task, repository, and phase facts with the live context helpers,
 then read `.trellis/workflow.md`. Use its Phase 3.6/3.7 route and mandatory load
 these active owners by stable Skill id:
