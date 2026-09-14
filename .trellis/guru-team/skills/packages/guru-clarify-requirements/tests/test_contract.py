@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import shutil
 import subprocess
@@ -10,6 +11,32 @@ from pathlib import Path
 
 
 class RequirementsClarificationPackageContractTests(unittest.TestCase):
+    def command(self, script, payload, *args):
+        return subprocess.run(
+            [str(self.package / "scripts" / script), "--json", *args],
+            input=json.dumps(payload), text=True, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, check=False,
+        )
+
+    def authoring(self, owner):
+        value = copy.deepcopy(owner)
+        value.pop("content_identity", None)
+        value["review_target"].pop("facts_sha256", None)
+        if value["target_disposition"] is not None:
+            value["target_disposition"].pop("disposition_digest", None)
+        for proposal in value["scope_proposals"]:
+            proposal.pop("proposal_digest", None)
+        for action in value["source_actions"]:
+            action.pop("payload_sha256", None)
+            action.pop("action_digest", None)
+        return value
+
+    def record_owner(self, owner):
+        result = self.command("record-requirements-clarification.sh", self.authoring(owner),
+                              "--mode", owner["mode"], "--input", "-")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        return json.loads(result.stdout)
+
     def setUp(self) -> None:
         self.package = Path(__file__).resolve().parents[1]
         self.interface = json.loads((self.package / "interface.json").read_text(encoding="utf-8"))
@@ -80,7 +107,8 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "Success returns `refresh_context`",
             "compact owner-result `decision_trail`",
             "remote authority locator and content checksum",
-            "reject any schema mismatch before normalization",
+            "validates that shape before calculating values",
+            "Supplied derived values are consistency assertions",
             "`blocked` if and only if",
         ):
             self.assertIn(phrase, contract)
@@ -88,6 +116,11 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertNotIn("user_confirmation", contract)
         self.assertNotIn("context_before_task_update_sha256", contract)
         self.assertNotIn("preserve the decision trail", contract)
+        for filename in ("record-requirements-clarification.sh", "check-requirements-clarification.sh", "invoke.sh"):
+            path = f".trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/{filename}"
+            self.assertIn(path, skill)
+            self.assertIn(path, contract)
+            self.assertTrue((self.package / "scripts" / filename).is_file())
 
     def test_wrappers_are_package_local_launcher_only_and_have_no_mutation(self) -> None:
         wrappers = {
@@ -426,6 +459,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "decision_trail": None,
             "reentry_owners": ["guru-approve-task-plan", "guru-check-task", "guru-review-branch"],
         }
+        owner = self.record_owner(owner)
         typed = json.loads((self.package / "examples/public-clear-output-2.0.json").read_text())
         transition = copy.deepcopy(typed["transition"])
         transition["stage"] = "context_current"
@@ -497,6 +531,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         owner["consumer"] = {"kind": "skill", "id": "guru-discover-change-context"}
         owner["context_evidence"] = {"status": "missing", "evidence_refs": ["current-session:missing"], "missing_reason": "Base context is unavailable."}
         owner["target_disposition"] = None
+        owner = self.record_owner(owner)
         public_input = {
             "profile": "standalone_review",
             "source_exit": "start",
@@ -547,6 +582,158 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
                 self.assertEqual(error["code"], "stale_identity")
                 self.assertEqual(error["field_path"], "transition.base")
                 self.assertNotIn("Traceback", rejected.stdout + rejected.stderr)
+
+
+    def test_minimal_authoring_and_full_result_are_identical(self):
+        owner = self.record_owner(self.example)
+        self.assertEqual(owner, self.example)
+        full = self.command("record-requirements-clarification.sh", owner,
+                            "--mode", "standalone", "--input", "-")
+        self.assertEqual(full.returncode, 0, full.stdout)
+        self.assertEqual(json.loads(full.stdout), owner)
+
+    def test_authoring_requires_semantic_shape_and_binds_proposals(self):
+        proposal = {
+            "proposal_id": "current_scope", "scenario": "Keep current scope",
+            "trigger_evidence": ["current:scope"], "proposed_contracts": ["requirements"],
+            "cost": "Small", "alternatives": ["Defer"],
+            "consequence_if_omitted": "Scope is unclear",
+            "origin_requirement_status": "explicit", "optional_mechanism_origin": False,
+            "decision": "accepted_current",
+        }
+        source = self.authoring(self.example)
+        source["scope_proposals"] = [proposal]
+        variants = []
+        for field in ("ai_review_gate", "typed_exit", "consumer", "source_actions", "review_target"):
+            value = copy.deepcopy(source)
+            del value[field]
+            variants.append((field, value))
+        for field in ("decision", "scenario"):
+            value = copy.deepcopy(source)
+            del value["scope_proposals"][0][field]
+            variants.append((field, value))
+        for field, malformed in (("source_actions", None), ("scope_proposals", {}),
+                                 ("review_target", []), ("ai_review_gate", {"status": "passed"}),
+                                 ("content_identity", {})):
+            variants.append((field, {**source, field: malformed}))
+        for label, value in variants:
+            with self.subTest(label=label):
+                result = self.command("record-requirements-clarification.sh", value,
+                                      "--mode", "standalone", "--input", "-")
+                self.assertNotEqual(result.returncode, 0)
+                self.assertEqual(json.loads(result.stdout)["code"], "schema_mismatch")
+                self.assertNotIn("Traceback", result.stdout + result.stderr)
+        recorded = self.record_owner(source)
+        unsigned = {key: value for key, value in proposal.items() if key != "proposal_digest"}
+        encoded = json.dumps(unsigned, sort_keys=True, separators=(",", ":"), ensure_ascii=False) + "\n"
+        self.assertEqual(recorded["scope_proposals"][0]["proposal_digest"],
+                         hashlib.sha256(encoded.encode()).hexdigest())
+        recorded["scope_proposals"][0]["scenario"] = "Updated scope scenario"
+        stale = self.command("check-requirements-clarification.sh", recorded, "--input", "-")
+        self.assertNotEqual(stale.returncode, 0)
+        self.assertEqual(json.loads(stale.stdout)["field_path"], "input.scope_proposals.0.proposal_digest")
+
+    def test_changed_content_rejects_old_bindings_in_record_and_check(self):
+        owner = copy.deepcopy(self.example)
+        source_body = "Reviewed requirement body\n\nCurrent acceptance criteria."
+        updated_source_body = source_body + "\nAdditional accepted criterion."
+        owner["review_target"]["body_sha256"] = hashlib.sha256(source_body.encode()).hexdigest()
+        owner["typed_exit"] = "new_task"
+        owner["consumer"] = {"kind": "workflow", "id": "guru-full-task-intake-chain"}
+        owner["source_actions"] = [{
+            "action_id": "draft", "kind": "new_issue_draft",
+            "target": {"repo": "example/guru-extension"},
+            "payload": {"title": "Current title", "body": "Reviewed body\n\nSecond line"},
+            "preimage_sha256": None, "status": "draft_ready", "mutation_evidence": None,
+        }]
+        owner = self.record_owner(owner)
+        canonical = lambda value: hashlib.sha256(json.dumps(
+            value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ).encode()).hexdigest()
+        action = owner["source_actions"][0]
+        self.assertEqual(action["payload_sha256"], canonical(action["payload"]))
+        self.assertEqual(action["action_digest"], canonical({key: action[key] for key in (
+            "action_id", "kind", "target", "payload", "preimage_sha256", "payload_sha256"
+        )}))
+        self.assertEqual(owner["content_identity"]["result_sha256"], canonical({
+            key: value for key, value in owner.items() if key != "content_identity"
+        }))
+        variants = []
+        for path, value in (
+            (("reason",), "Updated scope reason"),
+            (("review_target", "body_sha256"), hashlib.sha256(updated_source_body.encode()).hexdigest()),
+            (("target_disposition", "decision_summary"), "Updated disposition"),
+            (("source_actions", 0, "payload", "body"), "Updated body"),
+            (("source_actions", 0, "target", "repo"), "example/another"),
+        ):
+            stale = copy.deepcopy(owner)
+            current = stale
+            for part in path[:-1]:
+                current = current[part]
+            current[path[-1]] = value
+            variants.append(stale)
+        for stale in variants:
+            for script, args in (
+                ("record-requirements-clarification.sh", ("--mode", "standalone")),
+                ("check-requirements-clarification.sh", ()),
+            ):
+                with self.subTest(script=script, stale=stale):
+                    result = self.command(script, stale, *args, "--input", "-")
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertEqual(json.loads(result.stdout)["code"], "stale_identity")
+                    self.assertNotIn("Traceback", result.stdout + result.stderr)
+
+    def test_invoke_checks_bindings_and_preserves_upstream_duplicate_token(self):
+        public = json.loads((self.package / "examples/public-initial-change-request-input-2.0.json").read_text())
+        public["source_exit"] = "context_ready"
+        snapshot = public["duplicate_snapshot"]
+        snapshot["candidates"] = [{
+            "repo": "example/guru-extension", "number": 9,
+            "url": "https://github.com/example/guru-extension/issues/9",
+            "updated_at": "2026-01-01T00:00:00Z", "facts_sha256": "8" * 64,
+        }]
+        owner = self.authoring(self.example)
+        owner["mode"] = "workflow"
+        disposition = owner["target_disposition"]
+        disposition.update({
+            "duplicate_query": snapshot["query"], "duplicate_checked_at": snapshot["checked_at"],
+            "duplicate_facts_sha256": snapshot["facts_sha256"],
+            "duplicate_candidates": [{**snapshot["candidates"][0], "identity": "#9", "state": "open",
+                                      "decision": "rejected", "reason": "Different delivery goal"}],
+        })
+        owner = self.record_owner(owner)
+        self.assertEqual(owner["target_disposition"]["duplicate_facts_sha256"], snapshot["facts_sha256"])
+        self.assertEqual(owner["target_disposition"]["duplicate_candidates"][0]["facts_sha256"], "8" * 64)
+        transition = json.loads((self.package / "examples/public-clear-output-2.0.json").read_text())["transition"]
+        for field in ("clarity_result_sha256", "target_content_sha256", "clarity", "target_disposition"):
+            transition.pop(field)
+        transition.update(stage="context_current", target_locator=public["target_locator"],
+                          authority_content_sha256=snapshot["authority_content_sha256"])
+        envelope = {"schema_version": "1.0", "public_input": public,
+                    "transition": transition, "owner_context": {}, "owner_result": owner}
+        result = self.command("invoke.sh", envelope, "--invocation", "-")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(json.loads(result.stdout)["transition"]["target_disposition"]["duplicate_facts_sha256"],
+                         snapshot["facts_sha256"])
+        for label in ("content_changed", "snapshot_refreshed", "unrecorded_authoring"):
+            stale = copy.deepcopy(envelope)
+            if label == "content_changed":
+                stale["owner_result"]["confirmed_facts"][0]["summary"] = "Updated source content"
+            elif label == "snapshot_refreshed":
+                refreshed = stale["public_input"]["duplicate_snapshot"]
+                refreshed["query"] += " accepted criterion"
+                refreshed["checked_at"] = "2026-01-01T00:05:00Z"
+                unsigned_snapshot = {key: value for key, value in refreshed.items() if key != "facts_sha256"}
+                refreshed["facts_sha256"] = hashlib.sha256(json.dumps(
+                    unsigned_snapshot, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+                ).encode()).hexdigest()
+            else:
+                stale["owner_result"] = self.authoring(owner)
+            rejected = self.command("invoke.sh", stale, "--invocation", "-")
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertEqual(json.loads(rejected.stdout)["code"],
+                             "schema_mismatch" if label == "unrecorded_authoring" else "stale_identity")
+            self.assertNotIn("Traceback", rejected.stdout + rejected.stderr)
 
 
 if __name__ == "__main__":

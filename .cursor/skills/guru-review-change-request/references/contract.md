@@ -64,6 +64,15 @@ variant identity rather than being folded into the #113 authority projection.
 
 ## Prerequisite Projection
 
+For `current_issue`, copy public `target_locator` from the real producer
+stdout's `transition.target_locator`, preserving the transition unchanged.
+Both must equal the canonical source issue URL (`target.url`), carried from
+Discovery's `live_change.identity` through Clarification and Wording. `#N` is
+only a search clue or display label here; it is not an equivalent chain binding
+and returns `stale_identity` at `public_input.target_locator`. Use the captured
+live source snapshot and actual recorder/checker stdout; never manually rebuild
+producer transitions, duplicate snapshots or validation receipts from examples.
+
 The only prerequisite input is the independent, schema-validated public
 transition from the actual producer. `wording_current` supplies clarity and
 wording. Original `clarity_current` supports a missing-wording reroute; original
@@ -136,8 +145,14 @@ duplicate/reuse conclusion,
 implementation target and current gap, archived constraints, risk boundary,
 and excluded scope.
 
-The AI Review Gate records reviewer, reviewed linkage digest, summary, findings
-count, scope-conclusion digest, and status. `passed` pairs with `ready`,
+The AI authors Gate `status`, `reviewer`, and `summary`. After that semantic
+judgment, the recorder derives `reviewed_linkage_sha256` from the current
+source/transition linkage, `scope_conclusion_sha256` from the authored scope
+conclusion, and `findings_count` from the explicit findings list. If any of
+these derived fields is supplied, it must equal the current derivation; it is
+not silently overwritten. No second version or compatibility reader is used.
+Checker and invoke still require and validate the complete recorded Gate.
+`passed` pairs with `ready`,
 `reroute` pairs with one of the mapped prerequisite or live-context exits, and `blocked` pairs
 with `blocked`. A missing or incomplete Gate fails closed. Zero scanner errors,
 successful prerequisite checkers, or ten structurally present dimensions never
@@ -213,6 +228,43 @@ requires the original `context_current`; wording re-entry requires the original
 the upstream public output in call-local context while reviewing so re-entry
 does not reconstruct Discovery private state or fabricate hashes. Missing
 original context fails closed. Refresh and blocked remain AI-authored exits.
+
+## Installed Authoring
+
+Use the target repository root as cwd. The actual runtime package is
+`.trellis/guru-team/skills/packages/guru-review-change-request/`; platform
+discovery copies do not contain the command runtime. Run these existing managed
+launchers with the appropriate envelope on stdin:
+
+```bash
+bash .trellis/guru-team/skills/packages/guru-review-change-request/scripts/record-change-request-review.sh --root . --invocation - --json
+bash .trellis/guru-team/skills/packages/guru-review-change-request/scripts/check-change-request-review.sh --root . --invocation - --json
+bash .trellis/guru-team/skills/packages/guru-review-change-request/scripts/invoke.sh --root . --invocation - --json
+```
+
+Author `owner_result` with `generated_at`, `mode`, the current variant's
+`target` authority fields, `semantic_review`, `typed_exit`, `reason`,
+`affected_evidence`, and the selected `consumer`. `semantic_review` explicitly
+contains all ten `dimensions`, `findings` (use `[]` when none), the complete
+`scope_conclusion`, and `ai_review_gate`. The minimum Gate is:
+
+```json
+{"status": "passed", "reviewer": "readiness-owner", "summary": "Completed the ten-dimension review against current authority."}
+```
+
+This is a shape example, not a supplied readiness judgment. The AI must choose
+the actual status and route. Missing status, reviewer, summary, dimensions,
+findings, scope conclusion or route is rejected, never defaulted to pass.
+For dimension/finding `affected_hashes`, use the existing public transition
+evidence or source evidence actually reviewed, with matching `evidence_refs`
+(for example `transition.context_result_sha256`). Do not precompute private
+linkage or import eval runtime. Target hashes and prerequisites are derived by
+the recorder; draft `source_request_sha256` remains the existing source
+authority input described above. `examples/issue-review.json` is a complete
+recorded-result example, not the minimal authoring input. Replace owner_result
+with record stdout for check, then add only check's `validation_receipt` for
+invoke. No repository file is needed for this call-local exchange.
+
 # Invocation-Local Authority Snapshot And Receipt
 
 One readiness invocation captures the target issue authority once. Recorder,

@@ -47,6 +47,16 @@ Record/check use `schemas/review-invocation.schema.json`; invoke uses the shared
 semantic-owner invocation schema. No separate input locators or authored
 `prerequisite_payloads` remain supported.
 
+Run from the target repository root. The installed scripts are under
+`.trellis/guru-team/skills/packages/guru-review-change-request/scripts/`,
+not beside the platform discovery copy. Call `record-change-request-review.sh`,
+`check-change-request-review.sh`, then `invoke.sh`, each with
+`--root . --invocation - --json`. See the contract's Installed Authoring section.
+The minimum authored `ai_review_gate` is `status`, `reviewer`, and `summary`.
+Explicit dimensions, findings (including `[]`), scope conclusion and selected
+exit remain AI-owned and required. Record derives both gate digests and the
+findings count; never import private linkage or eval runtime to author them.
+
 Use the actual `wording_current` producer transition for ready, original
 `clarity_current` for a missing-wording reroute, or original `context_current`
 for a missing-clarity reroute. Do not reconstruct upstream private results or

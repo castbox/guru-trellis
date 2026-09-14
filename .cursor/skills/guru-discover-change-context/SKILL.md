@@ -13,6 +13,13 @@ Load [references/contract.md](references/contract.md). Execute its semantic
 closed loop in the declared order, complete the AI Review Gate before any
 recorder/validator, then return exactly one declared typed exit.
 
+Run commands from the reviewed repository root. The full execution package is
+`.trellis/guru-team/skills/packages/guru-discover-change-context`; `scripts/`,
+`schemas/`, and `examples/` references below resolve under that package, not
+the `.agents/`, `.codex/`, `.claude/`, or `.cursor/` discovery projection.
+Use its managed shell wrappers; do not import eval/private Python runtime to
+construct recorder-owned fields. The contract lists the fields record derives.
+
 Before current-state, duplicate, or history retrieval, read
 `.trellis/spec/workflow/semantic-retrieval.md` and apply that shared contract in
 this Skill's semantic evidence gate. A one-language zero result cannot establish

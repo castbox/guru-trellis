@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 import argparse
-import copy
 import importlib.util
 import json
 import subprocess
@@ -25,9 +24,6 @@ def load_package_owner_runtime(runtime_target: Path, skill_id: str) -> Any:
         module = load_package_runtime_module(runtime_target, skill_id, "common")
         if skill_id == "guru-clarify-requirements":
             module.context_digest = module.digest
-            module.derive_requirements_clarification_result = (
-                lambda payload: derive_clarification_eval_result(module, payload)
-            )
         elif skill_id == "guru-review-change-request":
             compose_change_request_eval_runtime(runtime_target, module)
         elif skill_id == "guru-create-task-workspace":
@@ -77,9 +73,6 @@ def compose_change_request_eval_runtime(runtime_target: Path, module: Any) -> No
     review = load_package_runtime_module(
         runtime_target, "guru-review-change-request", "common"
     )
-    clarity = load_package_runtime_module(
-        runtime_target, "guru-clarify-requirements", "common"
-    )
     wording = load_package_runtime_module(
         runtime_target, "guru-review-contract-wording", "common"
     )
@@ -90,9 +83,6 @@ def compose_change_request_eval_runtime(runtime_target: Path, module: Any) -> No
     module.CONTRACT_WORDING_REVIEW_DIMENSIONS = wording.CONTRACT_WORDING_REVIEW_DIMENSIONS
     module.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS = (
         wording.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-    )
-    module.derive_requirements_clarification_result = (
-        lambda payload: derive_clarification_eval_result(clarity, payload)
     )
     module.contract_wording_build_scope = wording.contract_wording_build_scope
     module.scan_contract_wording = wording.scan_contract_wording
@@ -147,7 +137,6 @@ def compose_change_request_eval_runtime(runtime_target: Path, module: Any) -> No
     module.change_request_review_scope_hashes = scope_hashes
     module.change_request_review_request_authority_projection = authority_projection
     module.change_request_review_normalize_target = normalize_target
-    module.readiness_runtime = review
 
 def compose_review_branch_eval_runtime(runtime_target: Path, module: Any) -> None:
     publication = load_package_owner_runtime(
@@ -343,52 +332,6 @@ def compose_task_workspace_eval_runtime(runtime_target: Path, module: Any) -> No
     module.cmd_record_task_workspace_plan = lambda args: invoke(record, args)
     module.cmd_create_task_workspace = lambda args: invoke(execute, args)
     module.cmd_check_task_workspace_result = lambda args: invoke(check, args)
-
-def derive_clarification_eval_result(runtime: Any, payload: dict[str, Any]) -> dict[str, Any]:
-    result = copy.deepcopy(payload)
-    result["schema_version"] = "2.0"
-    result["skill_id"] = "guru-clarify-requirements"
-    actions = result.get("source_actions")
-    actions = actions if isinstance(actions, list) else []
-    for action in actions:
-        if not isinstance(action, dict):
-            continue
-        action["payload_sha256"] = (
-            runtime.digest(action["payload"])
-            if isinstance(action.get("payload"), dict)
-            else None
-        )
-        action["action_digest"] = runtime.digest({
-            key: copy.deepcopy(action.get(key))
-            for key in (
-                "action_id", "kind", "target", "payload", "preimage_sha256",
-                "payload_sha256",
-            )
-        })
-    unsigned = copy.deepcopy(result)
-    unsigned.pop("content_identity", None)
-    content = {
-        "confirmed_facts": result.get("confirmed_facts"),
-        "repository_answerable_questions": result.get("repository_answerable_questions"),
-        "clarification_rounds": result.get("clarification_rounds"),
-        "open_questions": result.get("open_questions"),
-        "affected_contracts": result.get("affected_contracts"),
-        "reason": result.get("reason"),
-    }
-    result["content_identity"] = {
-        "target_sha256": runtime.digest(result.get("review_target")),
-        "disposition_sha256": runtime.digest(result.get("target_disposition")),
-        "content_sha256": runtime.digest(content),
-        "context_sha256": runtime.digest(result.get("context_evidence")),
-        "scope_sha256": runtime.digest(result.get("scope_proposals")),
-        "action_sha256": runtime.digest(actions),
-        "payload_sha256": runtime.digest([
-            action.get("payload") if isinstance(action, dict) else None
-            for action in actions
-        ]),
-        "result_sha256": runtime.digest(unsigned),
-    }
-    return result
 
 def load_package_runtime_module(
     runtime_target: Path, skill_id: str, module_name: str,

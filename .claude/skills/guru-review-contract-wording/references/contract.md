@@ -1,5 +1,20 @@
 # Contract Wording Review Contract
 
+## Installed Execution Locations
+
+Keep cwd at the reviewed repository root:
+
+```bash
+GURU_SKILL_PACKAGE=.trellis/guru-team/skills/packages/guru-review-contract-wording
+```
+
+Resolve this contract's package-relative `scripts/`, `schemas/`, and `examples/`
+under that full package, not under `.agents/`, `.codex/`, `.claude/`, or
+`.cursor/` discovery copies. The existing scan example is
+`.trellis/guru-team/skills/packages/guru-review-contract-wording/examples/review-scan-invocation.json`.
+Load and replace its fictional source values before use; it supplies no semantic
+pass. These shell wrappers select the managed interpreter themselves.
+
 ## Ownership And Modes
 
 `guru-review-contract-wording` is the semantic owner of controlled contract
@@ -196,6 +211,14 @@ classification history, file digests, or this Skill's private result.
 
 ## Interface 1.4 Public Handoff
 
+For the normal Issue chain, copy public `target_locator` from the actual
+Clarification stdout's `transition.target_locator` and retain that transition
+unchanged. The locator and captured `change_request.identity` must be the same
+canonical issue URL, not the short `#N` search/display form. Pass actual record
+stdout and checker's `validation_receipt` to invoke; do not rebuild a transition,
+source snapshot or receipt from examples. Readiness consumes the resulting
+invoke stdout with that same canonical target identity.
+
 The public profiles remain the fixed `change_request`, `planning_artifacts`,
 and `explicit_paths` scopes. `scripts/invoke.sh --invocation -` receives the
 closed call-local public input, current transition, and owner result only after
@@ -225,14 +248,14 @@ comment text has been scanned. Issue identity is the canonical
 GitHub Issue URL and updated_at is the captured live updatedAt; draft identity
 is caller-owned and its updated_at can be null. No locator aliases are added.
 
-1. Run `scripts/record-contract-wording-review.sh --root REPO --invocation - --scan-only`
-   with `owner_result={}`. See `examples/review-scan-invocation.json`.
+1. Run `"$GURU_SKILL_PACKAGE/scripts/record-contract-wording-review.sh" --root . --invocation - --scan-only`
+   with `owner_result={}`. Use the full installed scan-example path above.
 2. Complete the AI classification and semantic gate against that scan. Run the
    same recorder without `--scan-only`, replacing `owner_result` with the
    existing flat authoring object: `generated_at`, `revisions`,
    `classifications`, `ai_review_gate`, and `typed_exit`. Do not wrap it in
    `semantic_review`. Existing result validation remains authoritative.
-3. Run `scripts/check-contract-wording-review.sh --root REPO --invocation -`
+3. Run `"$GURU_SKILL_PACKAGE/scripts/check-contract-wording-review.sh" --root . --invocation -`
    with unchanged source/profile/mode and `owner_result` equal to the exact
    recorder output. The checker rebuilds the scope/scan and rereads live Issue
    authority before issuing its receipt. Optional `--expected-facts-sha256`
@@ -241,6 +264,12 @@ is caller-owned and its updated_at can be null. No locator aliases are added.
    real checker's `validation_receipt`, and the current `clarity_current`
    transition for change-request pass. Review commands do not consume a
    transition, synthesize a receipt, or project a public route.
+
+For `planning_artifacts`, record instead uses
+`--root . --mode workflow --profile planning_artifacts --task TASK --input -`;
+check uses `--root . --task TASK --input -`, without `--mode` or `--profile`.
+The final wrapper is `"$GURU_SKILL_PACKAGE/scripts/invoke.sh" --invocation -`.
+Do not transfer change-request-only envelope arguments to another profile.
 
 All intermediate objects stay in caller memory/stdout. No input cache, review
 file, checkpoint, task, journal, or descriptor workaround is needed. Each

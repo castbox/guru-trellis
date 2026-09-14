@@ -6,7 +6,6 @@ from __future__ import annotations
 import json
 import hashlib
 import importlib.util
-import copy
 import os
 import shutil
 import subprocess
@@ -472,51 +471,6 @@ class Phase0TranscriptOwnerBindingTest(unittest.TestCase):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text("{}\n", encoding="utf-8")
             self.verifier.assert_forbidden_runtime_absent(root)
-
-    def test_finalizes_clarification_owner_identity_before_recording(self) -> None:
-        owner = {
-            "review_target": {"kind": "issue", "url": "https://example.invalid/145"},
-            "target_disposition": {"disposition": "keep_current_open_issue"},
-            "context_evidence": {"status": "current"},
-            "confirmed_facts": [],
-            "repository_answerable_questions": [],
-            "clarification_rounds": [],
-            "open_questions": [],
-            "scope_proposals": [],
-            "source_actions": [{
-                "action_id": "no_source_change",
-                "kind": "none",
-                "target": None,
-                "payload": None,
-                "preimage_sha256": None,
-                "payload_sha256": "0" * 64,
-                "action_digest": "0" * 64,
-            }],
-            "affected_contracts": ["requirements"],
-            "reason": "Current evidence is sufficient.",
-            "content_identity": {},
-        }
-
-        finalized = self.verifier.finalize_clarification_owner(owner)
-        unsigned = copy.deepcopy(finalized)
-        unsigned.pop("content_identity")
-        action = finalized["source_actions"][0]
-        action_projection = {
-            key: action[key]
-            for key in (
-                "action_id", "kind", "target", "payload", "preimage_sha256",
-                "payload_sha256",
-            )
-        }
-
-        self.assertIsNone(action["payload_sha256"])
-        self.assertEqual(
-            action["action_digest"], self.verifier.digest(action_projection)
-        )
-        self.assertEqual(
-            finalized["content_identity"]["result_sha256"],
-            self.verifier.digest(unsigned),
-        )
 
     def test_phase0_transcript_does_not_inject_private_typed_output(self) -> None:
         transcript = (

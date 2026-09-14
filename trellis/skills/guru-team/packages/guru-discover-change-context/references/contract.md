@@ -4,6 +4,28 @@ All live GitHub reads use the shared authenticated, repo-bound `gh` adapter
 defined by `.trellis/spec/workflow/workflow-contract.md`; adapter errors are
 facts and never replace this Skill's semantic review.
 
+## Installed Execution Locations
+
+Keep cwd at the reviewed repository root and set the existing package location:
+
+```bash
+GURU_SKILL_PACKAGE=.trellis/guru-team/skills/packages/guru-discover-change-context
+```
+
+Package-relative `scripts/`, `schemas/`, and `examples/` paths in this contract
+are below `GURU_SKILL_PACKAGE`. Cross-package `consumers/` paths are below
+`.trellis/guru-team/skills/`. Agent discovery directories contain a thin
+`invoke.sh`, not every recorder or example. A missing discovery copy does not
+require a new helper, direct module import, or system-Python dependency install.
+
+The public input example is
+`.trellis/guru-team/skills/packages/guru-discover-change-context/examples/public-pre-task-input-2.0.json`.
+The complete result example is
+`.trellis/guru-team/skills/packages/guru-discover-change-context/examples/change-context-owner-result-3.0.json`;
+It is a complete result example. Only the recorder-owned fields explicitly
+listed below may be omitted; the remaining required source facts and semantic
+fields still come from the caller's current read and review.
+
 ## Ownership And Modes
 
 The global workflow owns mandatory invocation and exit consumers. This package
@@ -44,6 +66,13 @@ Execute in this exact order:
 
 Current-state review must finish before history preview. Duplicate reuse or new
 target selection is handed to `guru-clarify-requirements`.
+
+For an issue, author `live_change.identity` as the canonical issue URL from
+the captured GitHub source response's `url`. This is the origin of
+the normal Issue chain's `handoff_target_locator` and `transition.target_locator`.
+A short `#N` is a search clue or display label, not this chain's target binding.
+Consumers copy the actual invoke stdout's target identity, transition and
+`duplicate_snapshot` unchanged; examples do not replace producer output.
 
 Each duplicate candidate fact projection is exactly `repo`, `number`,
 `identity=#<number>`, canonical issue `url`, `state=open`, and `updated_at`.
@@ -194,8 +223,9 @@ All three commands use the existing shared closed schema
 
 The empty public/transition/owner objects above illustrate only the envelope
 shape, not a runnable valid call. Populate them with the current Discovery 2.0
-public input, the independent Sync `base_current` transition, and complete
-AI-reviewed owner result 3.0. Discovery has no additional owner-context fields,
+public input, the independent Sync `base_current` transition, and the
+AI authoring fields described below. Record completes owner result 3.0;
+check and invoke consume that complete result. Discovery has no additional owner-context fields,
 so supply `{}` for `owner_context`. `public_input.mode` is the sole mode input.
 The shared envelope schema closes the outer shape; the existing Discovery
 validators still own the nested semantic evidence and freshness contracts.
@@ -204,10 +234,36 @@ Use these dispatcher entrypoints, supplying one complete JSON object on stdin
 to each command:
 
 ```bash
-scripts/record-context-discovery.sh --root . --invocation -
-scripts/check-context-discovery.sh --root . --invocation -
-scripts/invoke.sh --root . --invocation -
+"$GURU_SKILL_PACKAGE/scripts/record-context-discovery.sh" --root . --invocation -
+"$GURU_SKILL_PACKAGE/scripts/check-context-discovery.sh" --root . --invocation -
+"$GURU_SKILL_PACKAGE/scripts/invoke.sh" --root . --invocation -
 ```
+
+Before recording, the AI authors the semantic scope, observed source and
+duplicate facts, current Docs/code/test rows, history selection, mem disposition,
+and Review Gate. Record derives `mode` and `change_input` from `public_input`,
+then derives `base_observation`, `canonical_query`, `history_preview`, and
+`result_identity`. Omit those derived fields from normal record authoring;
+when a non-default preview limit was used, supply only
+`history_preview={"limit":N}` so record uses that same limit. Do not import
+`canonical_query`, `preview`, or identity helpers from package/eval runtime.
+
+`live_change.body_sha256` and `live_change.facts_sha256` are source evidence,
+not recorder-owned fields. Supply the SHA-256 of the exact UTF-8 body and the
+digest of the captured source facts; do not copy the example's placeholder
+values or omit these fields. For an issue, the existing fact projection is
+`repo`, `number`, `url`, lowercase `state`, `updated_at`, and `body_sha256`,
+encoded as sorted compact UTF-8 JSON with a trailing newline before hashing.
+Use ordinary JSON/SHA-256 APIs on the facts already read, not a private runtime
+helper or another live request. An issue has `issue_binding=null`; a draft
+retains the complete source shape required by the referenced schema.
+
+Capture complete preview stdout in caller memory and inspect its candidate
+projection before choosing history. A shortened tool display is not a new
+preview or proof of absence; it does not require rebuilding private preview
+bytes. Record rebuilds the deterministic preview itself from the current clues.
+Check and invoke consume the complete recorder result unchanged, not the
+pre-record authoring subset.
 
 The caller retains the envelope in memory, captures record stdout and replaces
 only its `owner_result`, then sends that envelope independently to check and

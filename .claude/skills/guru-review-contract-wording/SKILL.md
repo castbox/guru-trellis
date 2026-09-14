@@ -9,6 +9,12 @@ Use this Skill after requirements clarification, before planning approval, or
 for an explicit standalone Markdown review. Load
 [references/contract.md](references/contract.md) before acting.
 
+Run from the reviewed repository root. The full package is
+`.trellis/guru-team/skills/packages/guru-review-contract-wording`; resolve its
+`scripts/`, `schemas/`, and `examples/` there rather than under a thin Agent
+discovery projection. Use the existing managed wrappers and the contract's
+profile-specific argv; recorder and checker do not share every argument.
+
 Choose exactly one fixed profile. Build its complete scope, call the
 deterministic scanner, prefer a permitted rewrite over retaining weak
 wording, classify every retained hit with a non-empty reason, rebuild and

@@ -3,6 +3,22 @@
 All GitHub facts and confirmed mutations use the shared authenticated,
 repo-bound `gh` adapter in `.trellis/spec/workflow/workflow-contract.md`.
 
+## Installed Execution Locations
+
+Run from the reviewed repository root:
+
+```bash
+GURU_SKILL_PACKAGE=.trellis/guru-team/skills/packages/guru-create-task-workspace
+```
+
+All package-relative script/schema/example paths below resolve under this full
+package, not an Agent discovery directory. The normal authoring example is
+`.trellis/guru-team/skills/packages/guru-create-task-workspace/examples/workspace-authoring.json`;
+its schema is
+`.trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/record-authoring-input.schema.json`.
+Use current names and facts, never example digests or a reconstructed private
+plan. Each existing shell wrapper selects the managed Python runtime.
+
 ## Ownership and modes
 
 `guru-create-task-workspace` is the only Guru Team owner allowed to create a
@@ -125,6 +141,22 @@ check   {schema_version:"1.0", transition, plan, result} -> checked_result
 invoke  {schema_version:"1.0", public_input:{profile:"execute_reviewed_plan",mode},
          transition, owner_plan:plan, owner_result:checked_result} -> typed exit
 ```
+
+The corresponding existing commands are:
+
+```bash
+"$GURU_SKILL_PACKAGE/scripts/record-task-workspace-plan.sh" --invocation -
+"$GURU_SKILL_PACKAGE/scripts/create-task-workspace.sh" --invocation -
+"$GURU_SKILL_PACKAGE/scripts/check-task-workspace-result.sh" --invocation -
+"$GURU_SKILL_PACKAGE/scripts/invoke.sh" --invocation -
+```
+
+Only `created` enters the existing Planning route. Do not replace this sequence
+with separate `git worktree add`, bare `task.py create`, or mapping writes when
+authoring fails. Diagnose the exact input or package location and retry the
+same owner. After Planning's existing gates and dialogue boundary, use the
+workflow's `start-task.sh` entry so workspace identity is checked before task
+activation; this does not add a second approval or a recovery step.
 
 `authoring` is accepted only by record. Supplying both `plan` and `authoring`
 is an error. Full-plan record envelopes and existing `--input`/`--plan-input`

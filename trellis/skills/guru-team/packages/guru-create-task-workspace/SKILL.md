@@ -9,6 +9,12 @@ Use this Skill only after `guru-review-change-request:ready`, or as a standalone
 invocation that can supply and revalidate the same five prerequisite results.
 Load [references/contract.md](references/contract.md) before acting.
 
+Use the reviewed repository root as cwd. The full command and example root is
+`.trellis/guru-team/skills/packages/guru-create-task-workspace`; a platform
+discovery projection is not the execution package. The normal record input is
+the four-field authoring example there plus the actual readiness transition,
+not a caller-built private plan.
+
 Perform the semantic forward behavior and AI Review Gate, obtain the
 invocation-specific human confirmation without persisting it, then run the
 deterministic recorder/executor/checker and return exactly one declared typed

@@ -46,14 +46,14 @@
       "classification": "installed_managed",
       "expected_launcher": "installed resolve-python.sh",
       "sys_executable_subprocesses": 0,
-      "managed_shebang_bindings": 1
+      "managed_shebang_bindings": 0
     },
     {
       "id": "installed-phase0-transcript-helper",
       "path": "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
       "classification": "installed_managed",
       "expected_launcher": "installed resolve-python.sh",
-      "sys_executable_subprocesses": 1,
+      "sys_executable_subprocesses": 6,
       "managed_shebang_bindings": 1
     },
     {
@@ -195,12 +195,12 @@
       "ordinal": 1
     },
     {
-      "id": "helper-generated_shebang-626801ca995e",
-      "owner": "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py",
+      "id": "helper-generated_shebang-aef9a22bf354",
+      "owner": "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
       "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "626801ca995e67d6c50860fc434b5a311cfb2c09c34b50fdc26a17a4f8566b4a",
+      "anchor_sha256": "aef9a22bf354dd2436283fde3bffe0f55d339252db18cc1625683fb1dba68e1a",
       "ordinal": 1
     },
     {
@@ -222,12 +222,57 @@
       "ordinal": 1
     },
     {
+      "id": "helper-python_subprocess_second_hop-6cba9e9f5ead",
+      "owner": "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+      "kind": "python_subprocess_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "sys.executable",
+      "anchor_sha256": "6cba9e9f5ead9ac35cf40814cafda5037addd7ef80d1fcf0b84002eba6464eb2",
+      "ordinal": 1
+    },
+    {
       "id": "helper-python_subprocess_second_hop-a05c38f70722",
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
       "anchor_sha256": "a05c38f70722454cc0418dc2d100741baa1c7cbf12242bc7d4a240cade360193",
+      "ordinal": 1
+    },
+    {
+      "id": "helper-python_subprocess_second_hop-fd0375f24514",
+      "owner": "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+      "kind": "python_subprocess_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "sys.executable",
+      "anchor_sha256": "fd0375f245148c97019ee0a1b38c67bc5424342a33805c0ddd76212a517746eb",
+      "ordinal": 1
+    },
+    {
+      "id": "helper-python_subprocess_second_hop-a4a8860f1401",
+      "owner": "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+      "kind": "python_subprocess_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "sys.executable",
+      "anchor_sha256": "a4a8860f14012b5bc4565a98fb9c05c0270fda83bb693ff7c062dc899c876d34",
+      "ordinal": 1
+    },
+    {
+      "id": "helper-python_subprocess_second_hop-c2f9a2db85f3",
+      "owner": "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+      "kind": "python_subprocess_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "sys.executable",
+      "anchor_sha256": "c2f9a2db85f3062771488b9a0701ef852e72e75d5e86015e8560941bb7b81b0f",
+      "ordinal": 1
+    },
+    {
+      "id": "helper-python_subprocess_second_hop-55f4066135e5",
+      "owner": "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+      "kind": "python_subprocess_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "sys.executable",
+      "anchor_sha256": "55f4066135e54f385a33833cab2bb983e458d3585ad2e81942dbca668d9a3d76",
       "ordinal": 1
     },
     {

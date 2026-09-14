@@ -2,15 +2,15 @@ from __future__ import annotations
 
 import argparse
 import copy
-import datetime
 import hashlib
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from verify_throwaway_python_routing import runtime_checkpoint
 
@@ -109,53 +109,6 @@ def empty_duplicate_snapshot(
 
 def context_digest(value: Any) -> str:
     return hashlib.sha256(canonical_bytes(value) + b"\n").hexdigest()
-
-
-def finalize_clarification_owner(payload: dict[str, Any]) -> dict[str, Any]:
-    result = copy.deepcopy(payload)
-    actions = result.get("source_actions")
-    actions = actions if isinstance(actions, list) else []
-    for action in actions:
-        if not isinstance(action, dict):
-            continue
-        action["payload_sha256"] = (
-            digest(action["payload"])
-            if isinstance(action.get("payload"), dict)
-            else None
-        )
-        action["action_digest"] = digest({
-            key: copy.deepcopy(action.get(key))
-            for key in (
-                "action_id", "kind", "target", "payload", "preimage_sha256",
-                "payload_sha256",
-            )
-        })
-    unsigned = copy.deepcopy(result)
-    unsigned.pop("content_identity", None)
-    content = {
-        "confirmed_facts": result.get("confirmed_facts"),
-        "repository_answerable_questions": result.get(
-            "repository_answerable_questions"
-        ),
-        "clarification_rounds": result.get("clarification_rounds"),
-        "open_questions": result.get("open_questions"),
-        "affected_contracts": result.get("affected_contracts"),
-        "reason": result.get("reason"),
-    }
-    result["content_identity"] = {
-        "target_sha256": digest(result.get("review_target")),
-        "disposition_sha256": digest(result.get("target_disposition")),
-        "content_sha256": digest(content),
-        "context_sha256": digest(result.get("context_evidence")),
-        "scope_sha256": digest(result.get("scope_proposals")),
-        "action_sha256": digest(actions),
-        "payload_sha256": digest([
-            action.get("payload") if isinstance(action, dict) else None
-            for action in actions
-        ]),
-        "result_sha256": digest(unsigned),
-    }
-    return result
 
 
 def wording_change_request_source(issue: dict[str, Any]) -> dict[str, Any]:
@@ -272,6 +225,12 @@ def stage_transcript_owner_repo(
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
     )
     shutil.copy2(workflow, root / ".trellis/workflow.md")
+    hooks = installed_repo / ".codex/hooks"
+    if hooks.is_dir():
+        shutil.copytree(
+            hooks, root / ".codex/hooks",
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+        )
     inventory: list[tuple[str, str | None]] = []
     for raw in managed_assets:
         inventory.append((raw, None))
@@ -317,7 +276,8 @@ def stage_transcript_owner_repo(
         encoding="utf-8",
     )
     (root / ".gitignore").write_text(
-        ".trellis/.runtime/\n__pycache__/\n*.py[cod]\n",
+        ".trellis/.runtime/\n.trellis/.developer\n.trellis/workspace/\n"
+        ".trellis/agent-traces/\n__pycache__/\n*.py[cod]\n",
         encoding="utf-8",
     )
     for relative, content in {
@@ -374,6 +334,12 @@ def stage_transcript_owner_repo(
 
     fake_bin = chain_root / "fake-bin"
     fake_bin.mkdir()
+    # Official task/start wrappers use python3; keep their fixture hop managed too.
+    python_bridge = fake_bin / "python3"
+    python_bridge.write_text(
+        "#!/bin/sh\nexec " + shlex.quote(sys.executable) + ' "$@"\n', encoding="utf-8",
+    )
+    python_bridge.chmod(0o755)
     managed_shebang = f"#!{sys.executable}\n"
     operation_log = chain_root / "operation-counts.jsonl"
     issue_body = chain_root / "issue-body.txt"
@@ -462,6 +428,7 @@ def stage_transcript_owner_repo(
         **os.environ,
         "PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}",
         "PYTHONDONTWRITEBYTECODE": "1",
+        "TRELLIS_CONTEXT_ID": "codex_phase0_transcript",
         "GURU_PHASE0_OPERATION_LOG": str(operation_log),
         "GURU_PHASE0_FIXTURE_REPO": repo,
         "GURU_PHASE0_FIXTURE_ISSUE": str(issue),
@@ -984,7 +951,6 @@ def clarification_owner_for_issue(
         "updated_at": issue.get("updatedAt"),
         "body_sha256": body_sha256,
     }
-    target["facts_sha256"] = context_digest(target)
     owner = {
         "schema_version": "2.0",
         "skill_id": "guru-clarify-requirements",
@@ -1007,7 +973,6 @@ def clarification_owner_for_issue(
             "selected_issue": None,
             "original_target_role": "primary",
             "decision_summary": "The current open issue remains the primary delivery authority.",
-            "disposition_digest": "0" * 64,
         },
         "context_evidence": {
             "status": "current",
@@ -1037,8 +1002,6 @@ def clarification_owner_for_issue(
             "target": None,
             "payload": None,
             "preimage_sha256": None,
-            "payload_sha256": None,
-            "action_digest": "0" * 64,
             "status": "not_required",
             "mutation_evidence": None,
         }],
@@ -1057,7 +1020,6 @@ def clarification_owner_for_issue(
             "summary": "Current authority and prior transition support a clear route.",
         },
         "affected_contracts": ["requirements", "workflow routing"],
-        "content_identity": {},
         "reason": "All load-bearing requirements are confirmed by current evidence.",
         "consumer": {"kind": "workflow", "id": "guru-requirements-clear-router"},
         "error": None,
@@ -1099,7 +1061,6 @@ def clarification_owner_for_issue(
         {**candidate, "identity": f"#{candidate['number']}", "state": "open", "decision": "rejected", "reason": "The candidate does not replace the current delivery authority."}
         for candidate in duplicate_snapshot["candidates"]
     ]
-    owner = finalize_clarification_owner(owner)
     recorded = record_semantic(
         root,
         env,
@@ -1215,21 +1176,10 @@ def readiness_owner_for_issue(
         "title_sha256": title_sha256,
         "body_sha256": body_sha256,
     }
-    target_identity_sha256 = digest(raw_target)
     target_content_sha256 = digest({
         "title_sha256": title_sha256,
         "body_sha256": body_sha256,
     })
-    clarity = transition.get("clarity", {})
-    wording = transition.get("wording", {})
-    linkage = {
-        "target_identity_sha256": target_identity_sha256,
-        "target_content_sha256": target_content_sha256,
-        "clarity_facts_sha256": clarity.get("facts_sha256"),
-        "clarity_disposition_sha256": clarity.get("disposition_sha256"),
-        "wording_facts_sha256": wording.get("facts_sha256"),
-    }
-    linkage["linkage_sha256"] = digest(linkage)
     dimension_ids = (
         "requirement_completeness",
         "delivery_unit_consistency",
@@ -1277,10 +1227,7 @@ def readiness_owner_for_issue(
             "ai_review_gate": {
                 "status": "passed",
                 "reviewer": "phase0-transcript-reviewer",
-                "reviewed_linkage_sha256": linkage["linkage_sha256"],
                 "summary": "The complete readiness evidence was reviewed for one declared route.",
-                "findings_count": 0,
-                "scope_conclusion_sha256": digest(scope),
             },
         },
         "typed_exit": "ready",
@@ -1337,7 +1284,6 @@ def readiness_owner_for_issue(
         owner["semantic_review"]["ai_review_gate"].update({
             "status": "reroute",
             "summary": finding["summary"],
-            "findings_count": 1,
         })
     elif typed_exit != "ready":
         raise RuntimeError(f"unsupported transcript readiness exit: {typed_exit}")
@@ -1440,297 +1386,11 @@ def assert_readiness_content_drift_rejected(
     return rows
 
 
-def base_current_payload(transition: dict[str, Any]) -> dict[str, Any]:
-    base = transition["base"]
-    return {
-        "schema_version": "1.0",
-        "transition_id": f"base_current:{base['post_sync_resolution_sha256'][:24]}",
-        "stage": "base_current",
-        "mode": transition["mode"],
-        "repo_locator": transition["repo_locator"],
-        "base": copy.deepcopy(base),
-    }
-
-
-def workspace_transition_payloads(
-    transition: dict[str, Any],
-) -> dict[str, dict[str, Any]]:
-    compact_target = transition["target"]
-    target_kind = compact_target["kind"]
-    target = {
-        "kind": target_kind,
-        "repo": compact_target.get("repo"),
-        "issue_number": (
-            compact_target.get("issue_number")
-            if target_kind == "existing_issue" else None
-        ),
-        "url": compact_target.get("url") if target_kind == "existing_issue" else None,
-        "updated_at": (
-            compact_target.get("updated_at")
-            if target_kind == "existing_issue" else None
-        ),
-        "draft_id": (
-            compact_target.get("draft_id")
-            if target_kind == "proposed_draft" else None
-        ),
-        "source_request_sha256": (
-            compact_target.get("source_request_sha256")
-            if target_kind in {"proposed_draft", "standalone_request"} else None
-        ),
-        "caller_locator": (
-            compact_target.get("caller_locator")
-            if target_kind == "standalone_request" else None
-        ),
-        "request_id": (
-            compact_target.get("request_id")
-            if target_kind == "standalone_request" else None
-        ),
-        "title_sha256": compact_target.get("title_sha256"),
-        "body_sha256": compact_target.get("body_sha256"),
-        "side_effect_free": target_kind != "existing_issue",
-        "identity_sha256": compact_target.get("identity_sha256"),
-        "content_sha256": compact_target.get("content_sha256"),
-    }
-    clarity_projection = transition["clarity"]
-    wording_projection = transition["wording"]
-    disposition = transition["target_disposition"]
-    invocation_kind = {
-        "existing_issue": "initial_issue",
-        "proposed_draft": "proposed_draft",
-        "standalone_request": "standalone_review",
-    }[target_kind]
-    clarity_payload = {
-        "schema_version": "2.0",
-        "skill_id": "guru-clarify-requirements",
-        "mode": transition["mode"],
-        "typed_exit": "clear",
-        "invocation_context": {
-            "kind": invocation_kind,
-            "caller": target.get("caller_locator"),
-            "task_locator": None,
-            "resume_target": "guru-review-contract-wording",
-        },
-        "review_target": {
-            "kind": "issue" if target_kind == "existing_issue" else "draft",
-            "repo": target.get("repo"),
-            "issue_number": target.get("issue_number"),
-            "url": target.get("url"),
-            "state": "open" if target_kind == "existing_issue" else "draft",
-            "updated_at": target.get("updated_at"),
-            "body_sha256": target.get("body_sha256"),
-            "facts_sha256": clarity_projection.get("target_sha256"),
-        },
-        "target_disposition": {
-            "disposition_digest": disposition.get("disposition_sha256"),
-            "duplicate_facts_sha256": disposition.get("duplicate_facts_sha256"),
-        },
-        "content_identity": {
-            "result_sha256": clarity_projection.get("facts_sha256"),
-            "target_sha256": clarity_projection.get("target_sha256"),
-            "disposition_sha256": clarity_projection.get("disposition_sha256"),
-            "content_sha256": clarity_projection.get("content_sha256"),
-            "context_sha256": clarity_projection.get("content_sha256"),
-            "scope_sha256": clarity_projection.get("scope_sha256"),
-        },
-    }
-    wording_payload = {
-        "schema_version": "1.0",
-        "skill_id": "guru-review-contract-wording",
-        "profile": "change_request",
-        "mode": transition["mode"],
-        "typed_exit": "pass",
-        "facts_sha256": wording_projection.get("facts_sha256"),
-        "scope": {"scope_sha256": wording_projection.get("scope_sha256")},
-        "scan": {"scan_sha256": wording_projection.get("scan_sha256")},
-    }
-    prerequisites = {
-        "clarity": {
-            "status": "current",
-            "schema_id": "guru-requirements-clarification-2.0",
-            "typed_exit": "clear",
-            "payload_sha256": context_digest(clarity_payload),
-            "facts_sha256": clarity_projection.get("facts_sha256"),
-            "target_sha256": clarity_projection.get("target_sha256"),
-            "disposition_sha256": clarity_projection.get("disposition_sha256"),
-            "content_sha256": clarity_projection.get("content_sha256"),
-            "scope_sha256": clarity_projection.get("scope_sha256"),
-            "error_codes": [],
-        },
-        "wording": {
-            "status": "current",
-            "schema_id": "guru-contract-wording-review-1.0",
-            "profile": "change_request",
-            "typed_exit": "pass",
-            "payload_sha256": context_digest(wording_payload),
-            "facts_sha256": wording_projection.get("facts_sha256"),
-            "scope_sha256": wording_projection.get("scope_sha256"),
-            "scan_sha256": wording_projection.get("scan_sha256"),
-            "target_content_sha256": wording_projection.get("target_content_sha256"),
-            "error_codes": [],
-        },
-    }
-    linkage = {
-        "target_identity_sha256": target["identity_sha256"],
-        "target_content_sha256": target["content_sha256"],
-        "clarity_facts_sha256": prerequisites["clarity"]["facts_sha256"],
-        "clarity_disposition_sha256": prerequisites["clarity"]["disposition_sha256"],
-        "wording_facts_sha256": prerequisites["wording"]["facts_sha256"],
-    }
-    linkage["linkage_sha256"] = context_digest(linkage)
-    readiness_scope = {}
-    readiness = {
-        "schema_version": "1.0",
-        "skill_id": "guru-review-change-request",
-        "mode": transition["mode"],
-        "target": target,
-        "prerequisites": prerequisites,
-        "evidence_linkage": linkage,
-        "semantic_review": {
-            "scope_conclusion": readiness_scope,
-            "ai_review_gate": {
-                "status": "passed",
-                "reviewed_linkage_sha256": linkage["linkage_sha256"],
-                "scope_conclusion_sha256": context_digest(readiness_scope),
-            },
-        },
-        "typed_exit": "ready",
-        "consumer": {"kind": "skill", "id": "guru-create-task-workspace"},
-        "facts_sha256": transition["readiness_facts_sha256"],
-    }
-    return {
-        "base": base_current_payload(transition),
-        "discovery": {
-            "context_result_sha256": transition["context_result_sha256"],
-        },
-        "clarity": clarity_payload,
-        "wording": wording_payload,
-        "readiness": readiness,
-    }
-
-
-def workspace_prerequisite(
-    key: str,
-    payload: dict[str, Any],
-) -> dict[str, Any]:
-    identities = {
-        "base": (
-            "guru-sync-base",
-            "guru-stage0-transition-base-current-1.0",
-            "synced",
-        ),
-        "discovery": (
-            "guru-discover-change-context",
-            "guru-stage0-transition-context-current-1.0",
-            "context_ready",
-        ),
-        "clarity": (
-            "guru-clarify-requirements",
-            "guru-requirements-clarification-2.0",
-            "clear",
-        ),
-        "wording": (
-            "guru-review-contract-wording",
-            "guru-contract-wording-review-1.0",
-            "pass",
-        ),
-        "readiness": (
-            "guru-review-change-request",
-            "guru-change-request-review-2.0",
-            "ready",
-        ),
-    }
-    skill_id, schema_id, typed_exit = identities[key]
-    if key == "base":
-        facts = context_digest(payload)
-        content = None
-        linkage = None
-    elif key == "discovery":
-        facts = payload["context_result_sha256"]
-        content = None
-        linkage = None
-    elif key == "clarity":
-        identity = payload["content_identity"]
-        facts = identity["result_sha256"]
-        content = identity["content_sha256"]
-        linkage = identity["context_sha256"]
-    elif key == "wording":
-        facts = payload["facts_sha256"]
-        content = payload["scope"]["scope_sha256"]
-        linkage = payload["scan"]["scan_sha256"]
-    else:
-        facts = payload["facts_sha256"]
-        content = payload["target"]["content_sha256"]
-        linkage = payload["evidence_linkage"]["linkage_sha256"]
-    return {
-        "skill_id": skill_id,
-        "schema_id": schema_id,
-        "typed_exit": typed_exit,
-        "artifact": f"call-local:{key}",
-        "payload_sha256": context_digest(payload),
-        "facts_sha256": facts,
-        "content_sha256": content,
-        "linkage_sha256": linkage,
-    }
-
-
-def workspace_plan_for_transition(
-    root: Path,
-    env: dict[str, str],
-    transition: dict[str, Any],
-) -> dict[str, Any]:
+def workspace_authoring(env: dict[str, str]) -> dict[str, Any]:
+    """Preset semantic fixture decisions, never private recorder derivations."""
     identity = transcript_identity(env)
-    payloads = workspace_transition_payloads(transition)
-    issue = live_issue(root, env)
-    target = transition["target"]
-    if (
-        target.get("kind") != "existing_issue"
-        or target.get("issue_number") != issue.get("number")
-        or target.get("url") != issue.get("url")
-    ):
-        raise RuntimeError("workspace authoring target does not match live authority")
-    base_payload = payloads["base"]
-    base = base_payload["base"]
     task_slug = identity["task_slug"]
-    plan = {
-        "schema_version": "2.0",
-        "skill_id": "guru-create-task-workspace",
-        "generated_at": "2026-01-01T00:00:00Z",
-        "mode": transition["mode"],
-        "invocation": {
-            "caller": "guru-review-change-request:ready",
-            "target_kind": "existing_issue",
-            "action_scope": "workspace_and_task_mutation",
-            "resume_identity": transition["continuation_id"],
-        },
-        "prerequisites": {
-            key: workspace_prerequisite(key, payload)
-            for key, payload in payloads.items()
-        },
-        "target": {
-            "kind": "existing_issue",
-            "repo": target["repo"],
-            "issue_number": target["issue_number"],
-            "url": target["url"],
-            "state": "open",
-            "updated_at": target["updated_at"],
-            "title_sha256": target["title_sha256"],
-            "body_sha256": target["body_sha256"],
-            "draft": None,
-            "disposition_sha256": transition["target_disposition"]["disposition_sha256"],
-            "duplicate_decision_sha256": transition["target_disposition"]["duplicate_facts_sha256"],
-            "created_issue_binding_sha256": None,
-            "created_issue_result": None,
-        },
-        "base": {
-            "selected_base": base["selected_base"],
-            "remote": base["remote"],
-            "base_ref": f"refs/remotes/{base['remote']}/{base['selected_base']}",
-            "decision_head": base["decision_head"],
-            "local_head": base["local_base_head"],
-            "remote_head": base["remote_base_head"],
-            "post_sync_resolution_sha256": base["post_sync_resolution_sha256"],
-            "sync_facts_sha256": context_digest(base_payload),
-        },
+    return {
         "naming": {
             "branch_name": identity["branch_name"],
             "workspace_slug": task_slug,
@@ -1762,33 +1422,13 @@ def workspace_plan_for_transition(
         "ai_review_gate": {
             "status": "passed",
             "reviewer": "phase0-transcript-reviewer",
-            "reviewed_plan_sha256": "0" * 64,
             "summary": "Live target, current transition, names and side effects were reviewed.",
             "evidence": [
                 "The actual readiness transition is current.",
                 "The live issue has one assignee and one current target.",
             ],
         },
-        "freshness": {
-            "captured_at": "2026-01-01T00:00:00Z",
-            "reviewable_plan_sha256": "0" * 64,
-            "plan_sha256": "0" * 64,
-        },
     }
-    reviewable = {
-        key: copy.deepcopy(plan.get(key))
-        for key in (
-            "schema_version", "skill_id", "mode", "invocation", "prerequisites",
-            "target", "base", "naming", "assignee", "side_effects",
-        )
-    }
-    reviewable_sha256 = digest(reviewable)
-    plan["ai_review_gate"]["reviewed_plan_sha256"] = reviewable_sha256
-    plan["freshness"]["reviewable_plan_sha256"] = reviewable_sha256
-    projection = copy.deepcopy(plan)
-    projection["freshness"].pop("plan_sha256", None)
-    plan["freshness"]["plan_sha256"] = digest(projection)
-    return plan
 
 
 def reentry_transcripts(
@@ -1949,6 +1589,109 @@ def reentry_transcripts(
     return rows
 
 
+def verify_created_activation(
+    root: Path, env: dict[str, str], created: dict[str, Any],
+) -> dict[str, Any]:
+    """Exercise activation with preset Planning semantics in the isolated fixture."""
+    workspace_mapping = Path(".trellis/.runtime/guru-team/workspaces") / (
+        created["workspace_slug"] + ".json"
+    )
+    task_mapping = Path(".trellis/.runtime/guru-team/tasks") / (
+        created["task_slug"] + ".json"
+    )
+    mapping = load_json(root / workspace_mapping)
+    workspace = Path(mapping["workspace_path"]).resolve()
+    task_ref = created["task_artifact_dir"]
+    task_dir = workspace / task_ref
+    for relative in (workspace_mapping, task_mapping):
+        if load_json(root / relative) != load_json(workspace / relative):
+            raise RuntimeError(f"primary/worktree mapping mismatch: {relative}")
+    wrappers = workspace / ".trellis/guru-team/scripts/bash"
+    boundary = json_stdout(run(
+        [wrappers / "check-workspace-boundary.sh", "--task", task_ref, "--json"],
+        cwd=workspace, env=env,
+    ), "created workspace boundary")
+    if boundary.get("status") != "ok":
+        raise RuntimeError(f"created workspace boundary failed: {boundary}")
+
+    incomplete = run([wrappers / "start-task.sh", task_ref],
+                     cwd=workspace, env=env, check=False)
+    if incomplete.returncode == 0 or "no curated entries" not in incomplete.stdout:
+        raise RuntimeError("new task activation did not stop at the existing JSONL gate")
+    if load_json(task_dir / "task.json").get("status") != "planning":
+        raise RuntimeError("incomplete Planning fixture changed task status")
+
+    planning_output = {"exit_id": "approved", "task_ref": task_ref}
+    for name, body in {
+        "prd.md": "# Fixture requirement\n\nExercise the current creation and activation chain.\n",
+        "design.md": "# Fixture design\n\nUse the installed owners and stdout transitions.\n\n"
+                     "## Docs SSOT Plan\n\nFixture-only; no shared documentation change.\n",
+        "implement.md": "# Fixture implementation\n\nValidate mappings, boundary and session resolution.\n",
+    }.items():
+        (task_dir / name).write_text(body, encoding="utf-8")
+    # These are test inputs, not an AI gate or a persisted approval checkpoint.
+    entry = {"file": f"{task_ref}/design.md", "reason": "Fixture activation design"}
+    for name in ("implement.jsonl", "check.jsonl"):
+        (task_dir / name).write_text(json.dumps(entry) + "\n", encoding="utf-8")
+    run([sys.executable, workspace / ".trellis/scripts/task.py", "validate", task_ref],
+        cwd=workspace, env=env)
+    run([wrappers / "start-task.sh", planning_output["task_ref"]], cwd=workspace, env=env)
+    if load_json(task_dir / "task.json").get("status") != "in_progress":
+        raise RuntimeError("controlled activation did not enter in_progress")
+    session_checks = []
+    hook_checks = []
+    for caller in (workspace, root):
+        current = json_stdout(run(
+            [sys.executable, caller / ".trellis/scripts/task.py", "current", "--json"],
+            cwd=caller, env=env,
+        ), "same-session current task")
+        if (current.get("resolved_task_path") != str(task_dir)
+                or current.get("task_workspace_root") != str(workspace)
+                or (current.get("current_task") or {}).get("status") != "in_progress"):
+            raise RuntimeError(f"same-session task resolution mismatch: {current}")
+        context = run([sys.executable, caller / ".trellis/scripts/get_context.py"],
+                      cwd=caller, env=env).stdout
+        if f"Resolved task: {task_dir}" not in context.splitlines():
+            raise RuntimeError("same-session context omitted the created linked task")
+        foreign_process = run(
+            [sys.executable, caller / ".trellis/scripts/task.py", "current", "--json"],
+            cwd=caller, env={**env, "TRELLIS_CONTEXT_ID": "codex_phase0_unmatched"},
+            check=False,
+        )
+        foreign = json_stdout(foreign_process, "unmatched session")
+        if (foreign_process.returncode != 1
+                or "current_task" not in foreign or foreign["current_task"] is not None
+                or foreign.get("source") != "none" or foreign.get("stale") is not False
+                or "error" in foreign):
+            raise RuntimeError(
+                f"unmatched session did not return healthy no-task state "
+                f"(exit {foreign_process.returncode}): {foreign}"
+            )
+        session_checks.append(str(caller))
+        for name in ("session-start.py", "inject-workflow-state.py"):
+            hook = caller / ".codex/hooks" / name
+            if not hook.is_file():
+                continue
+            output = run([sys.executable, hook], cwd=caller, env=env, stdin={
+                "cwd": str(caller), "session_id": "phase0_transcript", "platform": "codex",
+            }).stdout
+            expected = (f"Task: {current['current_task']['id']} (in_progress)"
+                        if name == "inject-workflow-state.py" else Path(task_ref).name)
+            if "no_task" in output or expected not in output:
+                raise RuntimeError(f"created task not resolved by {name}: {output}")
+            hook_checks.append(f"{caller}:{name}")
+    return {
+        "mapping_copies_checked": 4,
+        "workspace_boundary_status": boundary["status"],
+        "activation_status": "in_progress",
+        "empty_context_activation": "blocked",
+        "planning_evidence": "preset semantic fixture; not an AI review",
+        "same_session_callers": session_checks,
+        "hook_checks": hook_checks,
+        "hook_status": "passed" if len(hook_checks) == 4 else "unverified",
+    }
+
+
 def six_step_transcript(
     installed_repo: Path,
     chain_root: Path,
@@ -1958,6 +1701,7 @@ def six_step_transcript(
     task_slug: str = "145-phase0-public-transcript",
     branch_name: str = "feat/145-phase0-public-transcript",
     task_title: str = "#145 Phase 0 public transcript",
+    setup_owner: Callable[[Path], None] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     root, env = stage_transcript_owner_repo(
         installed_repo,
@@ -1968,6 +1712,8 @@ def six_step_transcript(
         branch_name=branch_name,
         task_title=task_title,
     )
+    if setup_owner is not None:
+        setup_owner(root)
     call_counts_before = operation_counts(env)
     before_status = run(
         ["git", "status", "--porcelain=v1", "--untracked-files=all"], cwd=root, env=env
@@ -2164,9 +1910,6 @@ def six_step_transcript(
         raise RuntimeError("pre-task five-step transcript wrote repository/worktree state")
     assert_forbidden_runtime_absent(root)
 
-    workspace_plan = workspace_plan_for_transition(
-        root, env, readiness["transition"]
-    )
     workspace_plan = record_semantic(
         root,
         env,
@@ -2175,7 +1918,7 @@ def six_step_transcript(
         ["--invocation", "-"],
         {
             "schema_version": "1.0",
-            "plan": workspace_plan,
+            "authoring": workspace_authoring(env),
             "transition": readiness["transition"],
         },
     )
@@ -2254,6 +1997,7 @@ def six_step_transcript(
     task_dir = workspace_path / str(created.get("task_artifact_dir") or "")
     if not task_dir.is_dir() or not (task_dir / "task.json").is_file():
         raise RuntimeError("six-step transcript did not create its reviewed task")
+    activation = verify_created_activation(root, env, created)
     assert_forbidden_runtime_absent(root)
     return rows, reentry, {
         "actual_exit": workspace["exit_id"],
@@ -2273,6 +2017,7 @@ def six_step_transcript(
         "readiness_operation_delta": readiness_delta,
         "content_drift_rejections": content_drift_rejections,
         "public_serializer_operation_delta": serializer_delta,
+        "activation": activation,
     }
 
 

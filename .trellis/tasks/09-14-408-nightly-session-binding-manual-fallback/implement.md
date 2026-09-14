@@ -6,6 +6,14 @@
 
 ## 执行顺序
 
+本轮从 `b0b9446a` 继续 R408-03/04 覆盖补漏，原提交的已通过结果保留，但不作为正常 Agent 创建链已闭合的证明。先完成下列细化，再重新进行当前范围 Phase 2；不进入原提交的 Branch Review/Publication。
+
+- 对实际已复现的入口路径、Clarification派生和Readiness gate绑定缺口完成 qualification 与当前 Architecture判断。
+- 实现 D408-05 的两个现有 recorder确定性职责及其完整结果检查，添加不含私有派生字段的正常authoring回归；不新增自动语义判断。
+- 修正实际 installed路径和最小输入示例，让Agent不需猜脚本、读取eval实现或依赖系统Python的第三方模块。
+- 原六步 transcript使用正常Workspace authoring，连到双端mapping/boundary/受控激活；更新旧workspace fixture到当前输入，不恢复scope aggregate。
+- 先跑source package和定向fixture，再按原三平台重应用并重跑installed/native创建链；所有证据标明脚本fixture或真实Agent来源。
+
 1. 重读 #408、task/Git/mapping、current RDT/Architecture 和已接受规划。基线变化先走既有 pair/reconciliation；不处理 #407 的 resolved merge。
 2. 展示精确 Fork checkout/build、任务 worktree update 与 throwaway 安装路径后再执行对应安装动作。使用目标 commit 和真实 CI identity，不修改上游源码或共享全局 npm。
 3. 在现有 source record/validator 中实现 D408-01，同步 preparation、upgrade 与安装 fixture。保留 predecessor 的历史语义，不用旧 provenance 或版本字符串冒充 target build。
@@ -21,8 +29,8 @@
 | --- | --- | --- |
 | T408-01 | R408-01 | target Fork HEAD、CLI/core 0.6.17、pnpm identity、本地 build marker、CI run/head/success、source validator 输出一致；普通 stale build/错误来源被拒绝 |
 | T408-02 | R408-02 | official update/init 生成 templates 后，canonical/dogfood/installed source record 一致；preset reapply 与 ownership/drift 通过；未覆盖用户自定义 |
-| T408-03 | R408-03 | 同一显式session，primary经正常创建入口得到linked task，再回primary；current/context/SessionStart/workflow-state返回同一任务；两工作区foreign session不被借用 |
-| T408-04 | R408-04 | 受影响package、finish-family和实际installed public wrapper链通过；23 Skills/97 exits/78 commands既有inventory不因本任务新增；retired依赖不重现 |
+| T408-03 | R408-03 | 同一显式session，primary经Guru当前正常authoring/创建器/checker得到linked task；双端mapping与boundary通过后受控激活，再回primary；current/context/SessionStart/workflow-state同一任务；foreign session不被借用 |
+| T408-04 | R408-04 | 安装后的入口路径/示例可用；省略私有派生字段的完整AI语义输入可经managed recorder处理；six-step真实stdout串联而非手工private plan；native Agent不借eval runtime或手工补mapping；既有23/97/78及retired边界保持 |
 | T408-05 | R408-05 | 对缺失注入、缺失/stale session、routing/checkpoint/wrapper普通失败场景，Agent先报告原错误与已知/unknown事实，不重入no_task，不自修复、不虚报完成 |
 | T408-06 | R408-06 | 在状态化fixture中分别演练commit、push、PR创建/更新、merge、Issue closure、tag/Release、cleanup；每次只执行当前明确操作，缺该操作确认不执行，无授权扩张 |
 | T408-07 | R408-07 | 手动操作成功后保留task/runtime/Finalizer/archive原状态；结果报告区分操作完成和residue，不生成恢复artifact |
@@ -44,7 +52,7 @@ python3 -m unittest discover -s trellis/presets/guru-team/scripts/python -p 'tes
 python3 -m unittest discover -s trellis/presets/guru-team/scripts/python -p 'test_apply_guru_team_trellis_preset.py'
 python3 -m unittest discover -s trellis/skills/guru-team/tests -p 'test_finish_family_integration.py'
 bash trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
-bash trellis/presets/guru-team/scripts/bash/apply.sh --repo .
+bash trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms
 bash trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 python3 .trellis/scripts/task.py validate .trellis/tasks/09-14-408-nightly-session-binding-manual-fallback
 git diff --check

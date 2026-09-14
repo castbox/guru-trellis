@@ -7,6 +7,7 @@ import importlib.util
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -45,6 +46,115 @@ def mock_fork_ci(matrix, **updates):
         payload.update(updates)
         return json.dumps(payload)
     return mock.patch.object(matrix, "_run", side_effect=run)
+
+
+class NormalPhase0AuthoringTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        with mock.patch.object(sys, "path", [str(MATRIX_HELPER.parent), *sys.path]):
+            import verify_installed_phase0_transcript
+        cls.helper = verify_installed_phase0_transcript
+
+    def issue(self):
+        return {"url": "https://github.com/example/guru-extension/issues/145",
+                "title": "Fixture", "body": "Current requirement", "state": "OPEN",
+                "updatedAt": "2026-01-01T00:00:00Z"}
+
+    def test_clarification_leaves_owner_derivations_to_recorder(self):
+        recorded = {"content_identity": {"result_sha256": "r" * 64}}
+        checked = {"status": "passed", "typed_exit": "clear"}
+        transition = {"target_locator": self.issue()["url"], "context_result_sha256": "c" * 64}
+        snapshot = {"query": "current issue", "checked_at": "2026-01-01T00:00:00Z",
+                    "candidates": [], "facts_sha256": "d" * 64}
+        with mock.patch.object(self.helper, "live_issue", return_value=self.issue()), \
+             mock.patch.object(self.helper, "record_semantic", side_effect=[recorded, checked]) as call:
+            self.assertEqual(self.helper.clarification_owner_for_issue(
+                Path("/fixture"), {}, transition, snapshot), (recorded, checked))
+        authored = call.call_args_list[0].args[-1]
+        self.assertNotIn("content_identity", authored)
+        self.assertNotIn("facts_sha256", authored["review_target"])
+        self.assertNotIn("disposition_digest", authored["target_disposition"])
+        self.assertEqual(authored["target_disposition"]["duplicate_facts_sha256"], "d" * 64)
+        self.assertNotIn("payload_sha256", authored["source_actions"][0])
+        self.assertNotIn("action_digest", authored["source_actions"][0])
+        self.assertIs(call.call_args_list[1].args[-1], recorded)
+
+    def test_readiness_all_routes_author_only_semantic_gate_fields(self):
+        with mock.patch.object(self.helper, "live_issue", return_value=self.issue()):
+            for route in ("ready", "clarify_requirements", "review_wording", "refresh_context"):
+                with self.subTest(route=route):
+                    authored = self.helper.readiness_owner_for_issue(Path("/fixture"), {}, {}, route)
+                    self.assertEqual(set(authored["semantic_review"]["ai_review_gate"]),
+                                     {"status", "reviewer", "summary"})
+                    self.assertEqual(authored["typed_exit"], route)
+
+    def test_workspace_authoring_matches_current_recorder_schema(self):
+        from jsonschema import Draft202012Validator
+        schema = json.loads((REPO / "trellis/skills/guru-team/packages/guru-create-task-workspace/"
+                             "schemas/record-authoring-input.schema.json").read_text())
+        authored = self.helper.workspace_authoring({})
+        envelope = {"schema_version": "1.0", "transition": {}, "authoring": authored}
+        Draft202012Validator(schema).validate(envelope)
+        self.assertEqual(set(authored), {"naming", "assignee", "side_effects", "ai_review_gate"})
+        self.assertNotIn("reviewed_plan_sha256", authored["ai_review_gate"])
+
+    def test_activation_requires_exact_unmatched_session_no_task_result(self):
+        healthy = {"current_task": None, "source": "none", "stale": False}
+        cases = [(1, healthy, True), (0, healthy, False), (2, healthy, False)]
+        cases += [(1, {**healthy, **change}, False) for change in (
+            {"current_task": {"status": "in_progress"}}, {"source": "session"},
+            {"stale": True}, {"error": "cannot resolve session"},
+        )]
+        for code, payload, accepted in cases:
+            with self.subTest(code=code, payload=payload), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory).resolve()
+                workspace = root / "workspace"
+                task_ref = ".trellis/tasks/fixture"
+                task_dir = workspace / task_ref
+                task_dir.mkdir(parents=True)
+                started = False
+                foreign_callers = []
+
+                def load(path):
+                    if path.name == "task.json":
+                        return {"status": "in_progress" if started else "planning"}
+                    return {"workspace_path": str(workspace)}
+
+                def run(argv, **kwargs):
+                    nonlocal started
+                    returncode, stdout = 0, ""
+                    if Path(argv[0]).name == "start-task.sh":
+                        if not kwargs.get("check", True):
+                            returncode, stdout = 1, "no curated entries"
+                        else:
+                            started = True
+                    elif "current" in argv:
+                        if kwargs["env"].get("TRELLIS_CONTEXT_ID") == "codex_phase0_unmatched":
+                            foreign_callers.append(kwargs["cwd"])
+                            returncode, stdout = code, json.dumps(payload)
+                        else:
+                            stdout = json.dumps({"resolved_task_path": str(task_dir),
+                                "task_workspace_root": str(workspace),
+                                "current_task": {"status": "in_progress"}})
+                    elif Path(argv[0]).name == "check-workspace-boundary.sh":
+                        stdout = json.dumps({"status": "ok"})
+                    elif Path(argv[1]).name == "get_context.py":
+                        stdout = f"Resolved task: {task_dir}\n"
+                    if kwargs.get("check", True) and returncode:
+                        raise RuntimeError(f"command failed ({returncode})")
+                    return subprocess.CompletedProcess(argv, returncode, stdout, "")
+
+                with mock.patch.object(self.helper, "load_json", side_effect=load), \
+                     mock.patch.object(self.helper, "run", side_effect=run):
+                    created = {"workspace_slug": "fixture", "task_slug": "fixture",
+                               "task_artifact_dir": task_ref}
+                    if accepted:
+                        result = self.helper.verify_created_activation(root, {}, created)
+                        self.assertEqual(result["activation_status"], "in_progress")
+                        self.assertEqual(foreign_callers, [workspace, root])
+                    else:
+                        with self.assertRaisesRegex(RuntimeError, "unmatched session"):
+                            self.helper.verify_created_activation(root, {}, created)
 
 
 class VerifyTrellisUpgradeContractTests(unittest.TestCase):

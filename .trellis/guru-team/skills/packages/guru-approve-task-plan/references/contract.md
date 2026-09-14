@@ -140,6 +140,35 @@ schema closure, task and required-file locators, current approved route,
 consumer mapping, and objective union invariants. Neither component decides
 scope, sufficiency, findings, revisions, authorization, semantic pass, or route.
 
+Keep cwd at the task repository root. The installed package is
+`.trellis/guru-team/skills/packages/guru-approve-task-plan`; its
+`examples/planning-approval.json` describes the complete recorded result, not
+the normal recorder input. Normal authoring contains exactly these seven
+top-level fields: `mode`, `authority_refs`, `docs_ssot_plan`, `semantic_review`,
+`typed_exit`, `consumer`, and `reason`. Populate their semantic content using
+the corresponding definitions in `schemas/planning-approval.schema.json`.
+Omit `schema_version`, `skill_id`, `task_ref`, `planning_paths`, and
+`reviewed_content_sha256`: the recorder supplies those from the exact task and
+current planning files. An object with `schema_version=3.0` is already a
+complete recorded result and must not be used as partial authoring.
+
+Use the existing commands in this order. Record and invoke each receive one
+JSON object on stdin; the checker does not read stdin:
+
+```bash
+GURU_SKILL_PACKAGE=.trellis/guru-team/skills/packages/guru-approve-task-plan
+"$GURU_SKILL_PACKAGE/scripts/record-planning-approval.sh" --root . --task "$TASK_REF" --input -
+"$GURU_SKILL_PACKAGE/scripts/check-planning-approval.sh" --root . --task "$TASK_REF"
+"$GURU_SKILL_PACKAGE/scripts/invoke.sh" --root . --input - --owner-result "$CHECKPOINT"
+```
+
+The recorder receives the seven-field semantic input. Retain its returned
+`artifact_path` as `CHECKPOINT`; the checker reads that task-owned checkpoint.
+Invoke receives the minimal public route DTO on stdin and the checked owner
+result from that path. Do not pass recorder response metadata (`artifact_path`,
+`dry_run`) as owner-result fields. The wrapper retires the checkpoint after a
+valid public projection; the next owner consumes only the typed stdout.
+
 The ignored runtime result is not a tracked task artifact and is not the public
 DTO. A failed checker or invalid output retains it for same-owner repair; a
 valid public projection retires it before control reaches the next owner.

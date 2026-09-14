@@ -12,9 +12,12 @@
 | Session | 既有精确session隔离 | 同session跨linked-worktree解析由已修复Fork提供；canonical与dogfood/isolated-installed回归通过，primary调用更新脚本定位linked task；Guru不复制resolver |
 | Automatic stop | Guru typed stop终止自动流程 | 保留stop；独立用户Git/GitHub请求通过既有AI/tool authority处理，不赋予Guru完成状态 |
 | Owner / graph | 现有workflow/Skill与Git/gh，23/97/78 | owner和图不变，无恢复节点、无第二checkpoint/授权存储 |
+| Normal authoring | Agent文档的包内路径与投影不一致；Clarification/Readiness要求调用方预填自身派生数据，fixture以private计算掩盖缺口 | D408-05直接落实原recorder确定性职责，真实installed路径与正常authoring接续到创建/校验/激活；不把脚本变成semantic reviewer |
 | Retired state | developer/workspace journal、ledger inactive | 保持，不读写或迁移历史数据 |
 
 唯一change path为 `target_native`：直接演进现有应用级authority，不代表实施#398。当前方案不改变既有架构决策、single-writer、GAP生命周期或兼容退出，因此无新增ADR。
+
+D408-05属于既有R408-03/04覆盖补漏。Workspace writer已有双端mapping逻辑，不重写或新增恢复入口；checksum只是已有owner的局部一致性值，不作为授权或跨Skill语义authority。正常authoring与完整recorded result由同一现有命令处理，公开输出不变。
 
 ## Evidence 与 Promotion
 

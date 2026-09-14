@@ -245,8 +245,79 @@ never write a repo cache, workspace journal or fixed handoff. The package
 requires the complete current Guru Team preset and is not self-contained or
 portable.
 
-The recorder/checker accept only the closed Schema 2.0 artifact contract and
-reject any schema mismatch before normalization.
+The recorder accepts the closed Schema 2.0 semantic shape with only the derived
+fields listed below omitted. It validates that shape before calculating values
+and validates the complete Schema 2.0 result before returning it. Checker and
+invoke require the complete result and independently recompute the same fields.
+Supplied derived values are consistency assertions, never silently replaced.
+No schema version, Skill id, decision, target, consumer or gate is defaulted.
+
+### Minimal Recorder Authoring
+
+Public input profiles and output schemas are unchanged. This table describes
+only the transient private owner JSON consumed by record, not public input.
+
+| Required semantic fields | Source |
+| --- | --- |
+| `schema_version`, `skill_id`, `generated_at`, `mode` | Explicit current result metadata; `2.0` and `guru-clarify-requirements` |
+| `typed_exit`, `consumer`, `invocation_context`, `reason`, `error` | Completed AI route and caller decision, with explicit nullable fields |
+| `review_target`, `target_disposition`, `context_evidence` | Current reviewed facts and final target decision; null disposition only where already allowed |
+| `confirmed_facts`, `repository_answerable_questions`, `clarification_rounds`, `open_questions`, `scope_proposals`, `affected_contracts` | AI-reviewed content and final proposal decisions; explicit arrays even when empty |
+| `source_actions`, `mutation_results`, `active_task_evidence` | Explicit selected actions, preimages, external receipts and task evidence; no-action still requires the existing `none` row |
+| `ai_review_gate` | Complete explicit AI judgment; missing gate/status/decision never means passed |
+
+All nested semantic fields remain required by
+`.trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json`.
+The exact fields that normal authoring may omit are:
+
+| Omittable field | Deterministic derivation |
+| --- | --- |
+| `review_target.facts_sha256` | Facts digest of the remaining review-target fields |
+| `target_disposition.disposition_digest` | Facts digest excluding this field and the upstream `duplicate_facts_sha256` |
+| `scope_proposals[].proposal_digest` | Facts digest of the remaining proposal fields, including the AI decision |
+| `source_actions[].payload_sha256` | Compact digest of the explicit payload object; null for null payload |
+| `source_actions[].action_digest` | Compact digest of `action_id`, `kind`, `target`, `payload`, `preimage_sha256`, `payload_sha256` |
+| `content_identity` (whole object) | The eight complete bindings below, after deriving the fields above |
+
+Both encodings use UTF-8 JSON with sorted keys, compact separators, unescaped
+Unicode and unchanged array order. Facts digests retain a trailing LF; compact
+digests have no trailing LF. Target/proposal/disposition use their established
+facts projections; action/content/result use the current compact encoding.
+There is one rule per field, not a version reader or alternate accepted digest.
+
+The eight `content_identity` fields are compact digests: `target_sha256` hashes
+`review_target`; `disposition_sha256` hashes `target_disposition` (including its
+upstream token); `context_sha256` hashes `context_evidence`; `scope_sha256`
+hashes `scope_proposals`; `action_sha256` hashes `source_actions`;
+`payload_sha256` hashes the ordered action payload list. `content_sha256`
+hashes the object containing `confirmed_facts`, `repository_answerable_questions`,
+`clarification_rounds`, `open_questions`, `affected_contracts`, and `reason`.
+`result_sha256` hashes the whole completed result except `content_identity`.
+
+Do not omit or recalculate upstream `duplicate_snapshot.facts_sha256`, its
+candidate `facts_sha256`, or disposition `duplicate_facts_sha256`. Copy these
+opaque values unchanged from Discovery. Invoke checks exact token and candidate
+fact equality plus target/query/time/authority bindings, without implementing
+Discovery's hash algorithm. Selected-issue facts, body/preimage checksums,
+mutation receipts, planning/authority checksums and decision-trail references
+remain explicitly supplied evidence; this recorder does not select, reconstruct,
+or execute them. Changed content with old bindings is rejected by record,
+checker and invoke; after a fresh AI review, omit the listed fields to record
+the new content. Binding validation is not proof of a live external read.
+
+From the repository root, use the actual installed wrappers:
+
+```bash
+bash .trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/record-requirements-clarification.sh --mode workflow --input - --json
+bash .trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/check-requirements-clarification.sh --input - --json
+bash .trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/invoke.sh --invocation - --json
+```
+
+Standalone recording uses `--mode standalone`; checker optionally accepts
+`--expected-result-sha256` from record stdout. Full result examples live at
+`.trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json`,
+not under an Agent discovery projection. Scripts use the managed interpreter;
+do not import an eval helper or run a package module with system Python.
 
 The clear router validates `invocation_context.resume_target` without making a
 new semantic decision: initial issue/draft uses `guru-review-contract-wording`
@@ -257,9 +328,18 @@ target. Any kind/target mismatch fails closed.
 
 ## Interface 1.4 Public Handoff
 
+For the normal initial Issue path, copy Discovery's actual invoke stdout:
+`handoff_target_locator` becomes public `target_locator`, and `transition` and
+`duplicate_snapshot` are retained unchanged. All three target locators must
+equal the canonical issue URL originating in `live_change.identity`; do not
+replace it with `#N`. Copy the complete snapshot, including its opaque digest,
+rather than manually rebuilding it from an example. This also preserves the
+target identity for the next Wording consumer.
+
 The public profiles are `initial_change_request`, `active_task_scope_change`,
 `standalone_review`, and `normal_scenario_scope_confirmation`. After the owner loop,
-`scripts/invoke.sh --invocation -` validates the closed call-local public input,
+`.trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/invoke.sh --invocation -`
+validates the closed call-local public input,
 `context_current` transition, and current owner result, reruns the existing
 checker, validates mode/target/continuation freshness, derives the Agent-owned
 typed route and minimal output from the checked result, and serializes only the

@@ -49,26 +49,28 @@ class ChangeRequestReviewPackageTest(unittest.TestCase):
 
     def authoring(self, exit_id="ready", transition=None):
         transition = transition or self.transition
-        prerequisites = review_common.normalize_prerequisites(transition, self.target, self.source, PACKAGE_ROOT)
-        linked = review_common.linkage(self.target, prerequisites)
         example = json.loads((PACKAGE_ROOT / "examples/issue-review.json").read_text())
         owner = {key: example[key] for key in ("generated_at", "semantic_review", "reason", "affected_evidence")}
         owner.update(mode=self.public["mode"], target=copy.deepcopy(self.raw_target),
                      typed_exit=exit_id, consumer=review_common.CONSUMERS[exit_id])
+        owner["affected_evidence"] = [{"ref": "transition.context_result_sha256",
+                                       "sha256": transition["context_result_sha256"],
+                                       "summary": "Current public context evidence."}]
         semantic = owner["semantic_review"]
         semantic["findings"] = []
         for row in semantic["dimensions"]:
             row.update(status="passed", finding_ids=[])
+            row["evidence_refs"] = ["transition.context_result_sha256"]
+            row["affected_hashes"] = [transition["context_result_sha256"]]
         if exit_id != "ready":
             semantic["dimensions"][0].update(status="failed", finding_ids=["finding-1"])
             semantic["findings"] = [{"finding_id": "finding-1", "category": "requirement_gap",
                                     "summary": "Current evidence requires the selected reroute.", "blocking": True,
-                                    "evidence_refs": ["evidence_linkage"], "affected_hashes": [linked["linkage_sha256"]],
+                                    "evidence_refs": ["transition.context_result_sha256"],
+                                    "affected_hashes": [transition["context_result_sha256"]],
                                     "route_basis": "AI reviewed this exit."}]
-        semantic["ai_review_gate"].update(status=review_common.GATES[exit_id],
-                                         reviewed_linkage_sha256=linked["linkage_sha256"],
-                                         findings_count=len(semantic["findings"]),
-                                         scope_conclusion_sha256=review_common.digest(semantic["scope_conclusion"]))
+        semantic["ai_review_gate"] = {"status": review_common.GATES[exit_id],
+                                      "reviewer": "readiness-owner", "summary": "AI completed the readiness review."}
         return owner
 
     def envelope(self, exit_id="ready", transition=None):
@@ -119,6 +121,64 @@ class ChangeRequestReviewPackageTest(unittest.TestCase):
         for mode in ("workflow", "standalone"):
             self.public["mode"] = self.transition["mode"] = mode
             self.assertEqual(mode, self.run_command(review_invoke, self.checked(self.envelope()))["mode"])
+
+    def test_recorder_derives_gate_without_changing_semantic_input(self):
+        envelope = self.envelope()
+        original = copy.deepcopy(envelope)
+        result = self.run_command(review_record, envelope)
+        gate = result["semantic_review"]["ai_review_gate"]
+        self.assertEqual(original, envelope)
+        self.assertEqual(result["evidence_linkage"]["linkage_sha256"], gate["reviewed_linkage_sha256"])
+        self.assertEqual(review_common.digest(result["semantic_review"]["scope_conclusion"]), gate["scope_conclusion_sha256"])
+        self.assertEqual(0, gate["findings_count"])
+        envelope["owner_result"] = result
+        self.assertEqual(result, self.run_command(review_record, envelope))
+
+    def test_missing_semantic_inputs_never_default_to_pass(self):
+        for section, keys in (((), ("typed_exit", "consumer", "semantic_review")),
+                              (("semantic_review",), ("dimensions", "findings", "scope_conclusion", "ai_review_gate")),
+                              (("semantic_review", "ai_review_gate"), ("status", "reviewer", "summary"))):
+            for key in keys:
+                with self.subTest(section=section, field=key):
+                    envelope = self.envelope()
+                    value = envelope["owner_result"]
+                    for part in section:
+                        value = value[part]
+                    del value[key]
+                    self.assert_error(review_record, envelope, "schema_mismatch")
+
+    def test_check_and_invoke_require_complete_recorded_gate(self):
+        for key in ("reviewed_linkage_sha256", "scope_conclusion_sha256", "findings_count"):
+            for module in (review_check, review_invoke):
+                with self.subTest(field=key, command=module.__name__):
+                    envelope = self.checked(self.envelope())
+                    if module is review_check:
+                        envelope.pop("validation_receipt")
+                    del envelope["owner_result"]["semantic_review"]["ai_review_gate"][key]
+                    self.assert_error(module, envelope, "schema_mismatch")
+
+    def test_recorded_scope_change_requires_fresh_binding(self):
+        envelope = self.checked(self.envelope())
+        envelope.pop("validation_receipt")
+        envelope["owner_result"]["semantic_review"]["scope_conclusion"]["delivery_unit_id"] += " revised"
+        self.assert_error(review_check, envelope, "schema_mismatch")
+
+    def test_managed_wrappers_accept_minimal_gate(self):
+        envelope = self.envelope()
+        repo = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=PACKAGE_ROOT,
+                              text=True, capture_output=True, check=True).stdout.strip()
+        for script in ("record-change-request-review.sh", "check-change-request-review.sh", "invoke.sh"):
+            proc = subprocess.run(["bash", str(PACKAGE_ROOT / "scripts" / script),
+                                   "--root", repo, "--invocation", "-", "--json"],
+                                  cwd=repo, input=json.dumps(envelope), text=True, capture_output=True)
+            self.assertEqual(0, proc.returncode, proc.stderr)
+            output = json.loads(proc.stdout)
+            if script.startswith("record"):
+                envelope["owner_result"] = output
+            elif script.startswith("check"):
+                envelope["validation_receipt"] = output["validation_receipt"]
+            else:
+                self.assertEqual("ready", output["exit_id"])
 
     def test_all_five_exits_and_original_reroute_stages(self):
         for exit_id in review_common.CONSUMERS:

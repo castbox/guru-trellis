@@ -12,6 +12,21 @@
 | D408-02 正式模板采纳 | R408-02..03 | 使用固定 Fork 自身 `pnpm install --frozen-lockfile` 与正常 build；build 成功后写既有 `.guru-source-commit` marker。运行官方 update/init，再应用 Guru workflow/preset，不手改 upstream-owned Python/hook |
 | D408-03 自动与手动边界 | R408-04..07 | canonical workflow 拥有全局停止/独立操作边界；现有 Guru Skill 在自己的错误出口处引用该边界，入口只加载/路由，不复制步骤，不新增 Skill/exit/executor |
 | D408-04 同源分发与验证 | R408-02..04,08 | preset 复制完整 source record；source validator 输出 commit/CI/实际 CLI 路径，focused installed fixture 验证实际生成的 runtime/hook；现有 package 与 finish-family 证明旧链未回退 |
+| D408-05 正常创建链调用闭合 | R408-03..04 | 修正 Agent-visible 脚本/示例路径，落实 Clarification/Readiness 原有 recorder 派生职责，使用当前正常 authoring 串联创建、双端 mapping、boundary 与受控激活；不改映射写入算法 |
+
+## D408-05 实现细化
+
+本节补齐原正常链的覆盖遗漏。现有六步重放通过，说明没有证据支持重写 workspace writer；新修改集中于调用前的合同/确定性处理和验证入口。
+
+1. Agent discovery 投影不拥有全部包脚本或示例。Discovery、Wording、Clarification、Readiness、Workspace 的本地合同给出仓库根 cwd 与 `.trellis/guru-team/skills/packages/<skill>/` 下的实际脚本/示例位置；明确各自现有 record/check/invoke 参数，不假定参数统一。复用已有 launcher，不增加 wrapper，不让正常调用导入 eval/private runtime。
+2. Clarification recorder 接受完整的 AI 语义输入，确定性产生现有 `content_identity` 与合同声明的 proposal/action/target 派生绑定；checker 和 invoke 对同一规则核验。正常 authoring 省略派生值，仍必须显式包含 AI gate、最终 decisions、source actions 和 typed exit。来自上游的 opaque duplicate snapshot token保持原值，不由此 owner 重造。
+3. Readiness recorder 从当前 source/transition 和已完成语义结果绑定 `reviewed_linkage_sha256`、`scope_conclusion_sha256` 及客观 findings count。没有 AI judgement 不产生 pass；提供完整当前派生值的输入继续接受一致性校验。现有 public input/profile/exit、owner-result 输出 schema 与 consumer 保持不变，不加第二版本 reader 或兼容状态机。
+4. `verify_installed_phase0_transcript.py` 改用 Workspace 已有 `transition + authoring` 正常 record 路径，移除该链对手工 private plan/digest 的依赖；扩展对 primary/worktree 两份映射、boundary、当前 session 和 `start-task.sh` 的校验。测试的预置语义输入与真实 Agent 读取合同执行的证据分开报告，不把脚本预置 pass 当 AI 审查。
+5. 已有 workspace 验证 fixture 若仍发送退役 `scope`，改为消费当前正常创建链，不恢复字段或手工补 mapping。无新生产入口、无新恢复 artifact。受控激活前满足原 Planning/JSONL 条件；缺失条件必须在原 gate 停止，而不是裸 `task.py start` 代替。
+
+实现写集限于上述现有 Skill 的本地合同/示例、Clarification/Readiness recorder/checker、对应测试、两个既有 installed transcript/workspace fixture及其必要 caller inventory投影。其余五阶段 transition、workspace executor、mapping storage、上游源码和 #398/#407 不改。
+
+回归包含：不预填私有 digest 的有效语义输入经 managed recorder 成功；缺失语义判断仍被拒绝；正常记录后的内容变更导致旧派生绑定失配被 checker拒绝；真实 six-step stdout 连续承接到双端 mapping/boundary/受控激活；native Agent只按安装后的实际合同完成该路径。不能靠导入 eval helper、先写完整旧plan或人为补mapping使测试通过。
 
 ## Source 与运行链
 
