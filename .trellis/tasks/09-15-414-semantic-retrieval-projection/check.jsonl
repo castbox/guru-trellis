@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/semantic-retrieval.md", "reason": "复核 current concept-family、coverage、sufficiency 与四个 Guru owner 合同"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "复核 shared package contract 不再要求 reconcile 直接消费 broad semantic retrieval SSOT"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "复核官方 trellis-* skills、agents、workers 保持 upstream-owned 且未被 Guru patch"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "复核 canonical、preset-managed installed projection 与 update/reapply 一致性"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "复核 source/installed、focused throwaway、drift、secret 与 residue 证据"}
+{"file": "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md", "reason": "复核 bounded base reconciliation 仍完整且不再成为第五 retrieval owner"}
+{"file": "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md", "reason": "复核 exact caller/base/candidate evidence 与公共合同保持不变"}

@@ -20,12 +20,15 @@ typed output and delete the checkpoint as the deterministic one-use consumer.
 It never replaces that output with an unconditional `resume_target`; only
 `unchanged` resumes the caller target directly.
 
-## Semantic Owner
+## Bounded Reconciliation Owner
 
-Before searching Docs, code, tests, history, consumers, or prior decisions,
-read `.trellis/spec/workflow/semantic-retrieval.md`. That file is the sole
-concept-family and evidence-coverage contract. Do not copy its vocabulary or
-persist search terms/transcripts here.
+This Skill owns only the semantic impact judgment for one exact caller-supplied
+task and old/new base pair. It consumes the current task authority and planning,
+the exact base delta, candidate validation facts, and qualified base-impact
+candidates. It does not own or consume the broad Guru semantic retrieval SSOT,
+construct a repository-wide concept family, or infer absence from an unbounded
+search. A repository-searchable negative conclusion not established by these
+closed inputs is insufficient evidence and fails closed.
 
 The AI reviews three independent dimensions:
 

@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/semantic-retrieval.md", "reason": "实现 current concept-family、coverage、sufficiency 与四个 Guru owner 合同"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "移除 shared package contract 中 reconcile 的第五 direct-consumer 声明并保持公共 Skill I/O 不变"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "保持官方 trellis-* skills、agents、workers upstream-owned 且不由 Guru patch"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "按 canonical-first preset apply、installed projection 与 update/reapply 合同实施"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "执行 source/installed、focused throwaway、drift、secret 与 residue 验证"}
+{"file": "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md", "reason": "保持 bounded base reconciliation 行为并移除第五 semantic retrieval owner 依赖"}
+{"file": "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md", "reason": "按 exact caller/base/candidate evidence 收敛 reconcile ownership 边界且不改公共合同"}

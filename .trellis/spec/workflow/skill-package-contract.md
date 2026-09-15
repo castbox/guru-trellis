@@ -1812,15 +1812,16 @@ Current archive contains exactly five durable core files: `task.json`, `prd.md`,
 
 ## Task Base Reconciliation Owner
 
-`guru-reconcile-task-base` is the package-local semantic owner for active-task
-base evolution. Its public inputs are separated by caller profile and bind the
-task ref and task-content HEAD, selected base ref, old and current base HEAD,
-and one closed `resume_target`. A caller continuity identity is included only
-when this owner must judge whether that caller's semantic result remains valid.
-The Skill reads the canonical
-`.trellis/spec/workflow/semantic-retrieval.md`; its package, workflow, platform
-entries, examples, and docs must not copy the bilingual concept families or
-negative-existence algorithm.
+`guru-reconcile-task-base` is the package-local semantic owner for one exact
+caller-supplied active-task/base-evolution pair. Its public inputs are separated
+by caller profile and bind the task ref and task-content HEAD, selected base
+ref, old and current base HEAD, and one closed `resume_target`. A caller
+continuity identity is included only when this owner must judge whether that
+caller's semantic result remains valid. The Skill consumes those closed caller
+inputs, current authority and planning locators, the exact old/new base delta,
+affected validation facts, and a qualified `base_impact_candidate_set`. It does
+not own or consume the broad semantic retrieval SSOT, concept-family search
+contract, or negative-existence algorithm.
 
 The package exposes six independently versioned output schemas:
 `reconciled`, `review_continuity_required`, `implementation_required`,
