@@ -1054,6 +1054,27 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     ),
                     ["public_invocation", "evals_not_loaded", "private_runtime_not_read"],
                 )
+                package_runtime = (
+                    repository
+                    / ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py"
+                )
+                package_runtime.parent.mkdir(parents=True, exist_ok=True)
+                package_runtime.write_text("raise SystemExit(0)\n", encoding="utf-8")
+                runtime_event = {
+                    "kind": "read",
+                    "target_kind": "owner_file",
+                    "path": str(package_runtime.resolve()),
+                    "sha256": hashlib.sha256(package_runtime.read_bytes()).hexdigest(),
+                    "request_sha256": request_sha256,
+                }
+                private_package_read = copy.deepcopy(payload)
+                private_package_read["events"].insert(-1, runtime_event)
+                trace.write_text(json.dumps(private_package_read), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "undeclared file read"):
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    )
                 missing_authority = copy.deepcopy(payload)
                 omitted = str((repository / facts["required_reads"][0]).resolve())
                 missing_authority["events"] = [
@@ -2321,6 +2342,8 @@ print(json.dumps(payload,sort_keys=True));raise SystemExit(0 if result["returnco
             (source / ".trellis/guru-team/runtime").mkdir(parents=True)
             (source / ".trellis/guru-team/skills/adapters/eval").mkdir(parents=True)
             (source / ".trellis/guru-team/skills/packages/guru-qualify-normal-scenario/runtime").mkdir(parents=True)
+            (source / ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime").mkdir(parents=True)
+            (source / "trellis/skills/guru-team/packages/guru-example-action/runtime").mkdir(parents=True)
             (source / "package/evals").mkdir(parents=True)
             (source / "package/tests").mkdir(parents=True)
             (source / ".git/config").write_text("private", encoding="utf-8")
@@ -2328,6 +2351,8 @@ print(json.dumps(payload,sort_keys=True));raise SystemExit(0 if result["returnco
             (source / ".trellis/guru-team/runtime/private.py").write_text("pass\n", encoding="utf-8")
             (source / ".trellis/guru-team/skills/adapters/eval/native.py").write_text("pass\n", encoding="utf-8")
             (source / ".trellis/guru-team/skills/packages/guru-qualify-normal-scenario/runtime/private.py").write_text("pass\n", encoding="utf-8")
+            (source / ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py").write_text("pass\n", encoding="utf-8")
+            (source / "trellis/skills/guru-team/packages/guru-example-action/runtime/private.py").write_text("pass\n", encoding="utf-8")
             (source / "package/evals/evals.json").write_text("{}", encoding="utf-8")
             (source / "package/tests/test_contract.py").write_text("pass\n", encoding="utf-8")
             (source / "auth.json").write_text("{}", encoding="utf-8")

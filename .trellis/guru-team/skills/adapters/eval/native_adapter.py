@@ -36,6 +36,7 @@ from adapters.eval.eval_support import (
     canonical_permission_paths,
     emit,
     external_codex_home,
+    guru_package_runtime_path,
     minimal_native_environment,
     model_projection_copy,
     public_runtime_target,
@@ -676,6 +677,7 @@ def validate_native_trace(
                         ".git" not in owner_relative.parts
                         and ".runtime" not in owner_relative.parts
                         and "evals" not in owner_relative.parts
+                        and not guru_package_runtime_path(owner_relative)
                     )
             if (
                 target not in allowed_reads
