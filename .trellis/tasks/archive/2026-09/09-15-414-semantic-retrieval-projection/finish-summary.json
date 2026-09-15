@@ -1,0 +1,192 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-15T13:25:16Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-15-414-semantic-retrieval-projection",
+    "title": "#414 收敛 semantic retrieval ownership projection",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-15-414-semantic-retrieval-projection",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/414-semantic-retrieval-projection",
+    "commits": [
+      "9aae47f311b711f75b03c3f6465bf41df06bf37e",
+      "0c386b9c7b4e541d8f0191be43e03781a9c3a997"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-reconcile-task-base/SKILL.md",
+      ".agents/skills/guru-reconcile-task-base/references/contract.md",
+      ".claude/skills/guru-reconcile-task-base/SKILL.md",
+      ".claude/skills/guru-reconcile-task-base/references/contract.md",
+      ".codex/skills/guru-reconcile-task-base/SKILL.md",
+      ".codex/skills/guru-reconcile-task-base/references/contract.md",
+      ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+      ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+      ".trellis/spec/workflow/semantic-retrieval.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/tasks/09-15-414-semantic-retrieval-projection/check.jsonl",
+      ".trellis/tasks/09-15-414-semantic-retrieval-projection/design.md",
+      ".trellis/tasks/09-15-414-semantic-retrieval-projection/implement.jsonl",
+      ".trellis/tasks/09-15-414-semantic-retrieval-projection/implement.md",
+      ".trellis/tasks/09-15-414-semantic-retrieval-projection/prd.md",
+      ".trellis/tasks/09-15-414-semantic-retrieval-projection/task.json",
+      ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/design.md",
+      ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/implement.md",
+      ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/prd.md",
+      ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/task.json",
+      "trellis/presets/guru-team/spec/workflow/semantic-retrieval.md",
+      "trellis/presets/guru-team/spec/workflow/skill-package-contract.md",
+      "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+      "trellis/skills/guru-team/tests/test_semantic_retrieval_contract.py"
+    ]
+  },
+  "github": {
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/416"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#414 收敛 semantic retrieval ownership projection",
+    "outcome": "将 semantic retrieval authority 收敛为四个 Guru owners，移除 guru-reconcile-task-base 的第五 direct consumer 声明。",
+    "changed_behavior": [
+      "将 semantic retrieval authority 收敛为四个 Guru owners，移除 guru-reconcile-task-base 的第五 direct consumer 声明。",
+      "更新 canonical 与 installed shared contract、四平台投影及 ownership-aware regression，保持 upstream-owned trellis-* 路径不被 Guru inventory claim。",
+      "保持 reconcile 的现有 public input/output、schema、typed exit、workflow route 与 bounded base reconciliation 行为不变。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/semantic-retrieval.md",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/tasks/09-15-414-semantic-retrieval-projection/design.md",
+          ".trellis/tasks/09-15-414-semantic-retrieval-projection/implement.md",
+          ".trellis/tasks/09-15-414-semantic-retrieval-projection/prd.md",
+          ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/design.md",
+          ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/implement.md",
+          ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/prd.md"
+        ],
+        "change": "将 semantic retrieval authority 收敛为四个 Guru owners，移除 guru-reconcile-task-base 的第五 direct consumer 声明。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "将 semantic retrieval authority 收敛为四个 Guru owners，移除 guru-reconcile-task-base 的第五 direct consumer 声明。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/spec/workflow/semantic-retrieval.md",
+          "trellis/presets/guru-team/spec/workflow/skill-package-contract.md"
+        ],
+        "change": "将 semantic retrieval authority 收敛为四个 Guru owners，移除 guru-reconcile-task-base 的第五 direct consumer 声明。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          "trellis/skills/guru-team/tests/test_semantic_retrieval_contract.py"
+        ],
+        "change": "将 semantic retrieval authority 收敛为四个 Guru owners，移除 guru-reconcile-task-base 的第五 direct consumer 声明。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-reconcile-task-base/SKILL.md",
+          ".agents/skills/guru-reconcile-task-base/references/contract.md",
+          ".claude/skills/guru-reconcile-task-base/SKILL.md",
+          ".claude/skills/guru-reconcile-task-base/references/contract.md",
+          ".codex/skills/guru-reconcile-task-base/SKILL.md",
+          ".codex/skills/guru-reconcile-task-base/references/contract.md",
+          ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+          ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md"
+        ],
+        "change": "将 semantic retrieval authority 收敛为四个 Guru owners，移除 guru-reconcile-task-base 的第五 direct consumer 声明。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-15-414-semantic-retrieval-projection/check.jsonl",
+          ".trellis/tasks/09-15-414-semantic-retrieval-projection/implement.jsonl",
+          ".trellis/tasks/09-15-414-semantic-retrieval-projection/task.json",
+          ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/task.json"
+        ],
+        "change": "将 semantic retrieval authority 收敛为四个 Guru owners，移除 guru-reconcile-task-base 的第五 direct consumer 声明。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [],
+      "pr_refs": [
+        "PR #416"
+      ],
+      "branches": [
+        "fix/414-semantic-retrieval-projection"
+      ],
+      "paths": [
+        ".agents/skills/guru-reconcile-task-base/SKILL.md",
+        ".agents/skills/guru-reconcile-task-base/references/contract.md",
+        ".claude/skills/guru-reconcile-task-base/SKILL.md",
+        ".claude/skills/guru-reconcile-task-base/references/contract.md",
+        ".codex/skills/guru-reconcile-task-base/SKILL.md",
+        ".codex/skills/guru-reconcile-task-base/references/contract.md",
+        ".cursor/skills/guru-reconcile-task-base/SKILL.md",
+        ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
+        ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+        ".trellis/spec/workflow/semantic-retrieval.md",
+        ".trellis/spec/workflow/skill-package-contract.md",
+        ".trellis/tasks/09-15-414-semantic-retrieval-projection/check.jsonl",
+        ".trellis/tasks/09-15-414-semantic-retrieval-projection/design.md",
+        ".trellis/tasks/09-15-414-semantic-retrieval-projection/implement.jsonl",
+        ".trellis/tasks/09-15-414-semantic-retrieval-projection/implement.md",
+        ".trellis/tasks/09-15-414-semantic-retrieval-projection/prd.md",
+        ".trellis/tasks/09-15-414-semantic-retrieval-projection/task.json",
+        ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/design.md",
+        ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/implement.md",
+        ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/prd.md",
+        ".trellis/tasks/archive/2026-09/09-15-414-semantic-retrieval-projection/task.json",
+        "trellis/presets/guru-team/spec/workflow/semantic-retrieval.md",
+        "trellis/presets/guru-team/spec/workflow/skill-package-contract.md",
+        "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
+        "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+        "trellis/skills/guru-team/tests/test_semantic_retrieval_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#414 收敛 semantic retrieval ownership projection",
+        "将 semantic retrieval authority 收敛为四个 Guru owners，移除 guru-rec",
+        "完成 SKILL.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#414 收敛 semantic retrieval ownership projection\n将 semantic retrieval authority 收敛为四个 Guru owners，移除 guru-reconcile-task-base 的第五 direct consumer 声明。\n更新 canonical 与 installed shared contract、四平台投影及 ownership-aware regression，保持 upstream-owned trellis-* 路径不被 Guru inventory claim。\n保持 reconcile 的现有 public input/output、schema、typed exit、workflow route 与 bounded base reconciliation 行为不变。\n将 semantic retrieval authority 收敛为四个 Guru owners，移除 guru-rec\n完成 SKILL.md 相关变更"
+  }
+}

@@ -56,11 +56,14 @@ supplied by the AI, read facts, and validate objective structure. They must not
 generate synonyms, translate queries, count hits as a gate, or decide semantic
 pass or route.
 
-The retrieval owners are `guru-discover-change-context`,
-`guru-clarify-requirements`, `trellis-research`, `trellis-session-insight`,
-`trellis-implement`, `trellis-check`, `guru-check-task`, and
-`guru-review-branch`. Other workflow Skills and deterministic executors do not
-gain broad retrieval ownership from this contract.
+The Guru semantic retrieval owners are `guru-discover-change-context`,
+`guru-clarify-requirements`, `guru-check-task`, and `guru-review-branch`.
+Upstream workers and providers may supply evidence, but they do not own or
+consume this Guru SSOT. The Guru caller remains responsible for the applicable
+concept family, combined evidence coverage, and conclusion sufficiency before
+forming a current or negative conclusion from that evidence. Other workflow
+Skills and deterministic executors do not gain broad retrieval ownership from
+this contract.
 
 ## Artifact Boundary
 
