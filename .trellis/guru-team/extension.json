@@ -438,11 +438,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-15T12:42:54Z",
+  "installed_at": "2026-09-15T13:55:21Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "0c97afd0abd4c01f8ede3aca97a7f96beaf0e0b0",
-    "commit": "0c97afd0abd4c01f8ede3aca97a7f96beaf0e0b0",
+    "ref": "36fcc4ef6cff3f2ca405468781d2ac4103b852d0",
+    "commit": "36fcc4ef6cff3f2ca405468781d2ac4103b852d0",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -526,10 +526,10 @@
     ],
     "managed_asset_hashes": {
       ".trellis/spec/workflow/requirements-design-test-ssot.md": "5c92ecd811bbaba26ff443a1d3d0944ebdebbd993d7f9d2f02352f1fd3429829",
-      ".trellis/spec/workflow/semantic-retrieval.md": "2c9a3097949979e84d42e15811278df1b047ec4c2101f3019e887e7799aef483",
+      ".trellis/spec/workflow/semantic-retrieval.md": "5061a6187a8f363e5ed3af7c8666dcd6bc4d6af76832bd7c92f97214a62edacb",
       ".trellis/spec/workflow/subtraction-first-compatibility.md": "4b4ad9a2a37a77ac8ac8faf05c9b432ca5302a3acbe85ef372ced3517861547b",
       ".trellis/spec/workflow/workflow-contract.md": "3fc043e14a2664906da1076ce3ac5516b698aca25845a6323d94cffba458679e",
-      ".trellis/spec/workflow/skill-package-contract.md": "d23494c36fb450d346bbcc512fa7d05cc48514f7d33329efe4fd4e9b06eb2a61",
+      ".trellis/spec/workflow/skill-package-contract.md": "7f59a4a0b379367220ec24781c8deee08da5d7fbbb2e81ef6508029554e6c168",
       ".trellis/spec/workflow/data-contracts.md": "03f8cc297c1b4b0469255a3524b03e4028f89d4d9e796a0b9ba4df9a1e027025",
       ".trellis/spec/workflow/companion-scripts.md": "ee289c31771b8e2e88c51d05f966e24893b122e11b8bc5ef78e7e4a2dd7597b9",
       ".trellis/spec/workflow/quality-guidelines.md": "3024ef5873708d3a0d38a0ee3fcccec02f31f6ba7c4b8deebc09e24529a90466",
@@ -619,7 +619,7 @@
       {
         "id": "guru-reconcile-task-base",
         "interface_sha256": "8ab1b8657001add42f50182038553acb8ffc33bf731e5a3e52453bf09c72c645",
-        "tree_sha256": "e31a24cf4feba0e022d3f2ea2395352e5f7cb774bafed4cf22c9ce4aedb30696"
+        "tree_sha256": "b3200e7ddef4ed56be0b9ba803de5189b8e47fcb9eaa685fa7aa5cb84b5d3f3f"
       },
       {
         "id": "guru-review-contract-wording",
@@ -4273,7 +4273,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
-        "sha256": "239d7cfe3726ed115e536ddf9f975f2979629572fb83620ab6c24f74c66679ee",
+        "sha256": "1b5081dea2e7d2be3b4fa7b4936319290b154c8590d4ffebb4bf578ebf3b503d",
         "executable": false,
         "action": "unchanged"
       },
@@ -4560,7 +4560,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
-        "sha256": "61f8201f6a6b78f756273c780d8b4795ad54ec8ae9515ad06751dd85fb3a690a",
+        "sha256": "23b12bc42a4687ef482b148f14046836abbb93b91d28fbcd018e0f954d733692",
         "executable": false,
         "action": "unchanged"
       },
@@ -18336,7 +18336,7 @@
       {
         "path": ".agents/skills/guru-reconcile-task-base/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
-        "sha256": "239d7cfe3726ed115e536ddf9f975f2979629572fb83620ab6c24f74c66679ee",
+        "sha256": "1b5081dea2e7d2be3b4fa7b4936319290b154c8590d4ffebb4bf578ebf3b503d",
         "executable": false,
         "action": "unchanged"
       },
@@ -18539,7 +18539,7 @@
       {
         "path": ".agents/skills/guru-reconcile-task-base/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
-        "sha256": "61f8201f6a6b78f756273c780d8b4795ad54ec8ae9515ad06751dd85fb3a690a",
+        "sha256": "23b12bc42a4687ef482b148f14046836abbb93b91d28fbcd018e0f954d733692",
         "executable": false,
         "action": "unchanged"
       },
@@ -18700,7 +18700,7 @@
       {
         "path": ".codex/skills/guru-reconcile-task-base/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
-        "sha256": "239d7cfe3726ed115e536ddf9f975f2979629572fb83620ab6c24f74c66679ee",
+        "sha256": "1b5081dea2e7d2be3b4fa7b4936319290b154c8590d4ffebb4bf578ebf3b503d",
         "executable": false,
         "action": "unchanged"
       },
@@ -18903,7 +18903,7 @@
       {
         "path": ".codex/skills/guru-reconcile-task-base/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
-        "sha256": "61f8201f6a6b78f756273c780d8b4795ad54ec8ae9515ad06751dd85fb3a690a",
+        "sha256": "23b12bc42a4687ef482b148f14046836abbb93b91d28fbcd018e0f954d733692",
         "executable": false,
         "action": "unchanged"
       },
@@ -19064,7 +19064,7 @@
       {
         "path": ".claude/skills/guru-reconcile-task-base/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
-        "sha256": "239d7cfe3726ed115e536ddf9f975f2979629572fb83620ab6c24f74c66679ee",
+        "sha256": "1b5081dea2e7d2be3b4fa7b4936319290b154c8590d4ffebb4bf578ebf3b503d",
         "executable": false,
         "action": "unchanged"
       },
@@ -19267,7 +19267,7 @@
       {
         "path": ".claude/skills/guru-reconcile-task-base/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
-        "sha256": "61f8201f6a6b78f756273c780d8b4795ad54ec8ae9515ad06751dd85fb3a690a",
+        "sha256": "23b12bc42a4687ef482b148f14046836abbb93b91d28fbcd018e0f954d733692",
         "executable": false,
         "action": "unchanged"
       },
@@ -19428,7 +19428,7 @@
       {
         "path": ".cursor/skills/guru-reconcile-task-base/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/SKILL.md",
-        "sha256": "239d7cfe3726ed115e536ddf9f975f2979629572fb83620ab6c24f74c66679ee",
+        "sha256": "1b5081dea2e7d2be3b4fa7b4936319290b154c8590d4ffebb4bf578ebf3b503d",
         "executable": false,
         "action": "unchanged"
       },
@@ -19631,7 +19631,7 @@
       {
         "path": ".cursor/skills/guru-reconcile-task-base/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
-        "sha256": "61f8201f6a6b78f756273c780d8b4795ad54ec8ae9515ad06751dd85fb3a690a",
+        "sha256": "23b12bc42a4687ef482b148f14046836abbb93b91d28fbcd018e0f954d733692",
         "executable": false,
         "action": "unchanged"
       },
