@@ -1370,6 +1370,74 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             )
         self.assertEqual(raised.exception.code, "eval_declared_case_identity_invalid")
 
+    def test_full_run_completeness_does_not_trust_execution_selection(self) -> None:
+        from runtime import eval_runner
+
+        repo_root = SKILLS.parents[2]
+        package = SKILLS / "packages/guru-maintain-architecture-baseline"
+        corpus = json.loads((package / "evals/evals.json").read_text(encoding="utf-8"))
+        first = copy.deepcopy(
+            next(case for case in corpus["evals"] if case["id"] == "no-impact")
+        )
+        second = copy.deepcopy(first)
+        second["id"] = "second-post-owner"
+        corpus["evals"] = [first, second]
+        corpus_bytes = json.dumps(corpus, separators=(",", ":")).encode()
+
+        def fake_corpus(
+            _skills: Path,
+            _package: Path,
+            _interface: dict[str, object],
+        ) -> tuple[dict[str, object], bytes]:
+            return corpus, corpus_bytes
+
+        def fake_adapter(
+            _skills: Path,
+            _descriptor: dict[str, object],
+            request_path: Path,
+        ) -> dict[str, object]:
+            request = json.loads(request_path.read_text(encoding="utf-8"))
+            transcript = request_path.parent / "adapter-transcript.json"
+            transcript.write_text("{}\n", encoding="utf-8")
+            public_output = json.loads(
+                (package / "examples/public-output-current.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            return {
+                "corpus_sha256": request["corpus_sha256"],
+                "capability_status": "executed",
+                "public_stdout": json.dumps(public_output),
+                "public_stderr": "",
+                "trace_events": [],
+                "transcript_locator": str(transcript),
+                "native_trace_locator": str(request_path.parent / "native-trace.json"),
+                "timing_ms": 0,
+            }
+
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.object(
+            eval_runner, "corpus", side_effect=fake_corpus,
+        ), mock.patch.object(
+            eval_runner, "applicable_eval_cases", return_value=[first],
+        ), mock.patch.object(
+            eval_runner, "call_adapter", side_effect=fake_adapter,
+        ):
+            args = argparse.Namespace(
+                adapter="shared",
+                case=None,
+                comparison_package=None,
+                current_package=None,
+                human_feedback=None,
+                mode="source",
+                run_root=str(Path(temporary) / "shared"),
+                semantic_grading=None,
+                skill="guru-maintain-architecture-baseline",
+            )
+            with self.assertRaises(CommandError) as raised:
+                eval_runner.run(repo_root, SKILLS, args)
+
+        self.assertEqual(raised.exception.code, "eval_result_case_identity_mismatch")
+
     def test_architecture_semantic_authoring_uses_isolated_permissions_and_probe(self) -> None:
         from adapters.eval import eval_constants, native_adapter
 

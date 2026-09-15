@@ -1035,6 +1035,29 @@ def applicable_eval_cases(
     ]
 
 
+def declared_applicable_case_ids(
+    cases: list[dict[str, Any]], adapter: str, focused_case: str | None
+) -> list[str]:
+    expected: list[str] = []
+    for case in cases:
+        if focused_case is not None:
+            if case["id"] == focused_case:
+                expected.append(case["id"])
+            continue
+        if case.get("native_execution_mode", "post_owner") == "post_owner":
+            expected.append(case["id"])
+            continue
+        if case["native_execution_adapter"] == adapter:
+            expected.append(case["id"])
+    if focused_case is not None and not expected:
+        raise error(
+            "eval_case_unknown",
+            "case",
+            "Choose one case id returned by discovery.",
+        )
+    return expected
+
+
 def validate_eval_case_identity(
     expected_case_ids: list[str],
     comparison_sides: list[str],
@@ -1702,6 +1725,9 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
     descriptor = descriptors(skills)[args.adapter]
     selected_package, selected_interface, row = package_context(skills, args.skill)
     evals, _ = corpus(skills, selected_package, selected_interface)
+    expected_case_ids = declared_applicable_case_ids(
+        evals["evals"], args.adapter, args.case
+    )
     selected_cases = applicable_eval_cases(evals["evals"], args.adapter, args.case)
     run_root = Path(args.run_root)
     if not run_root.is_absolute():
@@ -1860,7 +1886,7 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
                     result["status"] = "passed" if all(item["passed"] for item in checks + semantic_results) else "evaluation_failed"
             results.append(result)
     validate_eval_case_identity(
-        [case["id"] for case in selected_cases],
+        expected_case_ids,
         [side for side, _ in sides],
         results,
     )
