@@ -1036,7 +1036,16 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     ),
                     ["public_invocation", "evals_not_loaded", "private_runtime_not_read"],
                 )
-                extra_authority = repository / "docs/architecture/README.md"
+                extra_authority = repository / "docs/architecture/additional-evidence.md"
+                extra_authority.write_text(
+                    "# Additional Architecture Evidence\n\n"
+                    "This repository evidence is optional and not part of the fixture minimum reads.\n",
+                    encoding="utf-8",
+                )
+                self.assertNotIn(
+                    extra_authority.relative_to(repository).as_posix(),
+                    facts["required_reads"],
+                )
                 extra_event = {
                     "kind": "read",
                     "target_kind": "owner_file",
@@ -1122,7 +1131,9 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 model_root / "public-package",
             )
 
-        self.assertIn("--ignore-user-config", argv)
+        self.assertIn("--strict-config", argv)
+        self.assertNotIn("--ignore-user-config", argv)
+        self.assertNotIn("--sandbox", argv)
         self.assertEqual(
             argv[argv.index("--model") + 1],
             "architecture-eval-model",
@@ -1137,14 +1148,17 @@ class QualificationNativeIsolationTests(unittest.TestCase):
 
         repo_root = SKILLS.parents[2]
         observed: dict[str, str] = {}
+        observed_environment: dict[str, dict[str, str] | None] = {}
 
         def fake_adapter(
             _skills: Path,
             _descriptor: dict[str, object],
             request_path: Path,
+            host_environment: dict[str, str] | None = None,
         ) -> dict[str, object]:
             request = json.loads(request_path.read_text(encoding="utf-8"))
             observed[request["case_id"]] = request["native_execution_mode"]
+            observed_environment[request["case_id"]] = host_environment
             transcript = request_path.parent / "adapter-transcript.json"
             transcript.write_text("{}\n", encoding="utf-8")
             return {
@@ -1177,6 +1191,11 @@ class QualificationNativeIsolationTests(unittest.TestCase):
 
         self.assertEqual(observed["planning-semantic-authoring"], "semantic_authoring")
         self.assertEqual(observed["no-impact"], "post_owner")
+        self.assertEqual(
+            observed_environment["planning-semantic-authoring"],
+            {"GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE": str(repo_root.resolve())},
+        )
+        self.assertIsNone(observed_environment["no-impact"])
 
     def test_semantic_authoring_is_codex_only_and_shared_skips_adapter(self) -> None:
         from adapters.eval import native_adapter
@@ -1207,6 +1226,245 @@ class QualificationNativeIsolationTests(unittest.TestCase):
         self.assertEqual(result["status"], "unsupported")
         self.assertEqual(result["cases"][0]["status"], "unsupported")
         call_adapter.assert_not_called()
+
+    def test_shared_full_eval_excludes_codex_only_semantic_authoring(self) -> None:
+        from runtime import eval_runner
+
+        repo_root = SKILLS.parents[2]
+        corpus = json.loads(
+            (
+                SKILLS
+                / "packages/guru-maintain-architecture-baseline/evals/evals.json"
+            ).read_text(encoding="utf-8")
+        )
+        expected_case_ids = {
+            case["id"]
+            for case in corpus["evals"]
+            if case.get("native_execution_adapter", "shared") == "shared"
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            args = argparse.Namespace(
+                adapter="shared",
+                case=None,
+                comparison_package=None,
+                current_package=None,
+                human_feedback=None,
+                mode="source",
+                run_root=str(Path(temporary) / "shared"),
+                semantic_grading=None,
+                skill="guru-maintain-architecture-baseline",
+            )
+            result = eval_runner.run(repo_root, SKILLS, args)
+
+        self.assertEqual(result["status"], "passed", result)
+        self.assertEqual(
+            {case["case_id"] for case in result["cases"]},
+            expected_case_ids,
+        )
+        self.assertNotIn(
+            "planning-semantic-authoring",
+            {case["case_id"] for case in result["cases"]},
+        )
+        self.assertTrue(all(case["status"] == "passed" for case in result["cases"]))
+
+    def test_architecture_semantic_authoring_uses_isolated_permissions_and_probe(self) -> None:
+        from adapters.eval import eval_constants, native_adapter
+
+        with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as auth_temporary:
+            root = Path(temporary)
+            auth_root = Path(auth_temporary)
+            codex_home = auth_root / "codex-home"
+            codex_home.mkdir(mode=0o700)
+            auth = codex_home / "auth.json"
+            auth.write_text("{}\n", encoding="utf-8")
+            auth.chmod(0o600)
+            fake_codex = auth_root / "fake-codex"
+            sentinel = auth_root / "model-called"
+            fake_codex.write_text(
+                "#!/bin/sh\n"
+                f"printf called > {str(sentinel)!r}\n"
+                "exit 1\n",
+                encoding="utf-8",
+            )
+            fake_codex.chmod(0o755)
+            request = self.architecture_semantic_request(root)
+            request_path = root / "current/planning-semantic-authoring/adapter-request.json"
+            request_path.parent.mkdir(parents=True)
+            request_path.write_text(json.dumps(request), encoding="utf-8")
+            emitted: list[dict[str, object]] = []
+            probe = {
+                "argv": [str(fake_codex), "sandbox"],
+                "returncode": 0,
+                "stdout": '{"positive":true,"denied":[]}',
+                "stderr": "",
+                "result": {"positive": True, "denied": []},
+            }
+            environment = {
+                "CODEX_HOME": str(codex_home),
+                "GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE": str(SKILLS.parents[2]),
+                "PATH": os.defpath,
+            }
+            with mock.patch.dict(os.environ, environment, clear=False), mock.patch.object(
+                native_adapter.sys,
+                "argv",
+                [
+                    "native_adapter.py",
+                    "--adapter", "codex",
+                    "--native-command", str(fake_codex),
+                    "--request", str(request_path),
+                ],
+            ), mock.patch.object(
+                native_adapter,
+                "run_codex_permission_probe",
+                return_value=probe,
+            ) as run_probe, mock.patch.object(
+                native_adapter,
+                "emit",
+                side_effect=lambda payload: emitted.append(payload) or 0,
+            ):
+                self.assertEqual(native_adapter.main(), 0)
+
+            self.assertEqual(len(emitted), 1)
+            self.assertEqual(emitted[0]["capability_status"], "execution_error")
+            self.assertTrue(sentinel.is_file())
+            run_probe.assert_called_once()
+            config = (codex_home / "config.toml").read_text(encoding="utf-8")
+            transcript = json.loads(
+                (request_path.parent / "adapter-transcript.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            protocol = json.loads(
+                Path(transcript["protocol_path"]).read_text(encoding="utf-8")
+            )
+            required_denied = {
+                codex_home.resolve(),
+                SKILLS.parents[2].resolve(),
+                Path(protocol["private_root"]).resolve(),
+                Path(protocol["owner_repository"]).resolve(),
+                Path(request["workdir"]).resolve(),
+                Path(request["package_root"]).resolve(),
+                (Path(request["package_root"]) / "evals/evals.json").resolve(),
+                Path("/tmp").resolve(),
+                Path("/private/tmp").resolve(),
+            }
+            self.assertEqual(
+                transcript["environment"]["CODEX_HOME"],
+                str(codex_home.resolve()),
+            )
+            self.assertEqual(transcript["permission_probe"], probe)
+            for denied in required_denied:
+                self.assertIn(json.dumps(str(denied)), config)
+            self.assertIn(
+                f'default_permissions = "{eval_constants.QUALIFICATION_PERMISSION_PROFILE}"',
+                config,
+            )
+
+    def test_architecture_semantic_authoring_permission_setup_and_probe_fail_closed(self) -> None:
+        from adapters.eval import native_adapter
+
+        def invoke(
+            root: Path,
+            auth_root: Path,
+            *,
+            include_codex_home: bool,
+            probe_result: object,
+        ) -> tuple[dict[str, object], Path, mock.Mock]:
+            codex_home = auth_root / f"codex-home-{root.name}"
+            codex_home.mkdir(mode=0o700)
+            auth = codex_home / "auth.json"
+            auth.write_text("{}\n", encoding="utf-8")
+            auth.chmod(0o600)
+            sentinel = auth_root / f"model-called-{root.name}"
+            fake_codex = auth_root / f"fake-codex-{root.name}"
+            fake_codex.write_text(
+                "#!/bin/sh\n"
+                f"printf called > {str(sentinel)!r}\n"
+                "exit 1\n",
+                encoding="utf-8",
+            )
+            fake_codex.chmod(0o755)
+            request = self.architecture_semantic_request(root)
+            request_path = root / "current/planning-semantic-authoring/adapter-request.json"
+            request_path.parent.mkdir(parents=True)
+            request_path.write_text(json.dumps(request), encoding="utf-8")
+            emitted: list[dict[str, object]] = []
+            environment = {
+                "GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE": str(SKILLS.parents[2]),
+                "PATH": os.defpath,
+            }
+            if include_codex_home:
+                environment["CODEX_HOME"] = str(codex_home)
+            probe_patch = mock.patch.object(
+                native_adapter,
+                "run_codex_permission_probe",
+                return_value=probe_result,
+            )
+            with mock.patch.dict(os.environ, environment, clear=False):
+                if not include_codex_home:
+                    os.environ.pop("CODEX_HOME", None)
+                with mock.patch.object(
+                    native_adapter.sys,
+                    "argv",
+                    [
+                        "native_adapter.py",
+                        "--adapter", "codex",
+                        "--native-command", str(fake_codex),
+                        "--request", str(request_path),
+                    ],
+                ), probe_patch as run_probe, mock.patch.object(
+                    native_adapter,
+                    "emit",
+                    side_effect=lambda payload: emitted.append(payload) or 0,
+                ):
+                    self.assertEqual(native_adapter.main(), 0)
+            self.assertEqual(len(emitted), 1)
+            self.assertFalse(sentinel.exists())
+            return emitted[0], request_path, run_probe
+
+        with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as auth_temporary:
+            root = Path(temporary)
+            auth_root = Path(auth_temporary)
+            missing_home, missing_home_request, missing_home_probe = invoke(
+                root / "missing-home",
+                auth_root,
+                include_codex_home=False,
+                probe_result={"returncode": 0},
+            )
+            self.assertEqual(missing_home["capability_status"], "execution_error")
+            self.assertIn("isolated Codex authoring setup failed", missing_home["public_stderr"])
+            self.assertIn(
+                "requires one external isolated CODEX_HOME",
+                json.loads(
+                    (missing_home_request.parent / "adapter-transcript.json").read_text(
+                        encoding="utf-8"
+                    )
+                )["error"],
+            )
+            missing_home_probe.assert_not_called()
+
+            for name, probe_result in (
+                ("missing-probe", {}),
+                ("failed-probe", {"returncode": 1, "result": {"positive": False}}),
+            ):
+                response, request_path, run_probe = invoke(
+                    root / name,
+                    auth_root,
+                    include_codex_home=True,
+                    probe_result=probe_result,
+                )
+                self.assertEqual(response["capability_status"], "execution_error")
+                self.assertEqual(
+                    response["public_stderr"],
+                    "isolated Codex authoring permission probe failed",
+                )
+                run_probe.assert_called_once()
+                transcript = json.loads(
+                    (request_path.parent / "adapter-transcript.json").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                self.assertEqual(transcript["permission_probe"], probe_result)
 
     def test_semantic_authoring_adapter_guard_rejects_shared_direct_call(self) -> None:
         from adapters.eval import native_adapter

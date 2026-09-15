@@ -1638,9 +1638,19 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
     descriptor = descriptors(skills)[args.adapter]
     selected_package, selected_interface, row = package_context(skills, args.skill)
     evals, _ = corpus(skills, selected_package, selected_interface)
-    selected_cases = [case for case in evals["evals"] if args.case is None or case["id"] == args.case]
-    if not selected_cases:
+    matched_cases = [
+        case
+        for case in evals["evals"]
+        if args.case is None or case["id"] == args.case
+    ]
+    if not matched_cases:
         raise error("eval_case_unknown", "case", "Choose one case id returned by discovery.")
+    selected_cases = [
+        case
+        for case in matched_cases
+        if args.case is not None
+        or case.get("native_execution_adapter", args.adapter) == args.adapter
+    ]
     run_root = Path(args.run_root)
     if not run_root.is_absolute():
         raise error("eval_run_root_invalid", "run_root", "Use an absolute temporary directory outside the repository.")
@@ -1741,7 +1751,25 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
                     "timing_ms": 0,
                 }
             else:
-                response = call_adapter(skills, descriptor, request_path)
+                adapter_environment = (
+                    {
+                        "GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE": str(
+                            root.resolve()
+                        ),
+                    }
+                    if request["native_execution_mode"] == "semantic_authoring"
+                    else None
+                )
+                response = (
+                    call_adapter(
+                        skills,
+                        descriptor,
+                        request_path,
+                        adapter_environment,
+                    )
+                    if adapter_environment is not None
+                    else call_adapter(skills, descriptor, request_path)
+                )
             result: dict[str, Any] = {
                 "case_id": case["id"], "comparison_side": side, "status": "execution_error",
                 "deterministic_results": [], "semantic_results": [],

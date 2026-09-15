@@ -77,6 +77,69 @@ def isolated_authoring_request(request: dict[str, Any], adapter: str) -> bool:
     )
 
 
+def isolated_codex_home(parent: dict[str, str], execution_root: Path) -> Path:
+    try:
+        return external_codex_home(parent, execution_root)
+    except ValueError as exc:
+        message = str(exc).replace(
+            "qualification production", "isolated Codex authoring"
+        ).replace("qualification CODEX_HOME", "isolated Codex authoring CODEX_HOME")
+        raise ValueError(message) from None
+
+
+def prepare_isolated_codex_permissions(
+    request: dict[str, Any],
+    request_path: Path,
+    protocol: dict[str, Any],
+    owner_repository: Path,
+    model_root: Path,
+    *,
+    qualification_codex: bool,
+) -> tuple[Path, list[Path]]:
+    codex_home = isolated_codex_home(dict(os.environ), request_path.parents[2])
+    source_worktree_value = os.environ.get("GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE")
+    if not source_worktree_value:
+        raise ValueError("isolated Codex authoring source worktree deny root is incomplete")
+    source_worktree = Path(source_worktree_value).expanduser().resolve()
+    if not source_worktree.is_dir() or source_worktree.is_symlink():
+        raise ValueError("isolated Codex authoring source worktree deny root is invalid")
+
+    denied_paths = [
+        codex_home,
+        source_worktree,
+        Path(protocol["private_root"]),
+        owner_repository,
+        Path(request["workdir"]),
+        Path(request["package_root"]),
+        Path("/tmp"),
+        Path("/private/tmp"),
+    ]
+    canonical_corpus = Path(request["package_root"]) / "evals/evals.json"
+    if canonical_corpus.exists():
+        denied_paths.append(canonical_corpus)
+
+    if qualification_codex:
+        control_root_value = os.environ.get("GURU_TEAM_QUALIFICATION_CONTROL_ROOT")
+        if not control_root_value:
+            raise ValueError("qualification host-only control deny root is incomplete")
+        control_root = Path(control_root_value).expanduser().resolve()
+        control_map = control_root / "case-map.json"
+        if (
+            not control_root.is_dir()
+            or control_root.is_symlink()
+            or stat.S_IMODE(control_root.stat().st_mode) != 0o700
+            or not control_map.is_file()
+            or control_map.is_symlink()
+            or stat.S_IMODE(control_map.stat().st_mode) != 0o600
+        ):
+            raise ValueError("qualification host-only control deny root is invalid")
+        denied_paths.append(control_root)
+
+    canonical_denied_paths = canonical_permission_paths(denied_paths)
+    write_codex_permission_profile(codex_home, model_root, canonical_denied_paths)
+    return codex_home, canonical_denied_paths
+
+
 def start_public_runtime_boundary(
     execution_root: Path,
     target: Path,
@@ -788,9 +851,7 @@ def native_argv(
                 command,
                 "exec",
                 "--ephemeral",
-                "--ignore-user-config",
-                "--sandbox",
-                "workspace-write",
+                "--strict-config",
                 "--skip-git-repo-check",
                 "--cd",
                 str(model_root),
@@ -935,42 +996,34 @@ def main() -> int:
     codex_home = None
     permission_probe: dict[str, Any] | None = None
     denied_paths: list[Path] = []
-    if qualification_codex:
-        private_root = Path(protocol["private_root"])
-        codex_home = external_codex_home(dict(os.environ), request_path.parents[2])
-        control_root_value = os.environ.get("GURU_TEAM_QUALIFICATION_CONTROL_ROOT")
-        source_worktree_value = os.environ.get("GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE")
-        if not control_root_value or not source_worktree_value:
-            raise ValueError("qualification host-only deny roots are incomplete")
-        control_root = Path(control_root_value).expanduser().resolve()
-        source_worktree = Path(source_worktree_value).expanduser().resolve()
-        control_map = control_root / "case-map.json"
-        if (
-            not control_root.is_dir()
-            or control_root.is_symlink()
-            or stat.S_IMODE(control_root.stat().st_mode) != 0o700
-            or not control_map.is_file()
-            or control_map.is_symlink()
-            or stat.S_IMODE(control_map.stat().st_mode) != 0o600
-            or not source_worktree.is_dir()
-            or source_worktree.is_symlink()
-        ):
-            raise ValueError("qualification host-only deny roots are invalid")
-        denied_paths = [
-            codex_home,
-            control_root,
-            source_worktree,
-            private_root,
-            owner_repository,
-            Path(request["workdir"]),
-            Path(request["package_root"]),
-            Path("/tmp"),
-            Path("/private/tmp"),
-        ]
-        canonical_corpus = Path(request["package_root"]) / "evals/evals.json"
-        if canonical_corpus.exists():
-            denied_paths.append(canonical_corpus)
-        write_codex_permission_profile(codex_home, model_root, denied_paths)
+    if isolated_authoring:
+        try:
+            codex_home, denied_paths = prepare_isolated_codex_permissions(
+                request,
+                request_path,
+                protocol,
+                owner_repository,
+                model_root,
+                qualification_codex=qualification_codex,
+            )
+        except (KeyError, OSError, TypeError, ValueError) as exc:
+            if boundary_stop is not None:
+                boundary_stop.set()
+            if boundary_thread is not None:
+                boundary_thread.join(timeout=1)
+            transcript.write_text(json.dumps({
+                "adapter": args.adapter,
+                "native_command": args.native_command,
+                "error": str(exc),
+                "status": "execution_error",
+            }, indent=2), encoding="utf-8")
+            return emit(response(
+                request,
+                "execution_error",
+                transcript,
+                stderr=f"isolated Codex authoring setup failed: {exc}",
+                native_trace=trace_path,
+            ))
     if isolated_authoring:
         request["_model_root"] = str(model_root)
     argv, output_path = native_argv(
@@ -993,16 +1046,24 @@ def main() -> int:
             "GURU_TEAM_NATIVE_PROTOCOL": str(protocol_path),
         },
     )
-    if qualification_codex:
-        permission_probe = run_codex_permission_probe(
-            native,
-            native_environment,
-            model_root,
-            canonical_permission_paths(denied_paths),
-        )
-        if permission_probe["returncode"] != 0:
+    if isolated_authoring:
+        try:
+            permission_probe = run_codex_permission_probe(
+                native,
+                native_environment,
+                model_root,
+                denied_paths,
+            )
+        except (KeyError, OSError, TypeError, ValueError) as exc:
+            permission_probe = {"error": str(exc)}
+        if (
+            not isinstance(permission_probe, dict)
+            or permission_probe.get("returncode") != 0
+        ):
             if boundary_stop is not None:
                 boundary_stop.set()
+            if boundary_thread is not None:
+                boundary_thread.join(timeout=1)
             transcript.write_text(json.dumps({
                 "adapter": args.adapter,
                 "native_command": args.native_command,
@@ -1014,7 +1075,7 @@ def main() -> int:
                 request,
                 "execution_error",
                 transcript,
-                stderr="qualification Codex permission probe failed",
+                stderr="isolated Codex authoring permission probe failed",
                 native_trace=trace_path,
             ))
     model_input_audit = {
@@ -1049,10 +1110,10 @@ def main() -> int:
     if repository_before is not None:
         repository_after = repository_file_inventory(owner_repository)
         if repository_after != repository_before:
-            residue_error = "qualification invocation changed repository file inventory"
+            residue_error = "isolated Codex authoring changed repository file inventory"
         runtime_root = owner_repository / ".trellis/.runtime"
         if runtime_root.exists():
-            residue_error = "qualification invocation created ignored runtime residue"
+            residue_error = "isolated Codex authoring created ignored runtime residue"
     transcript.write_text(json.dumps({
         "adapter": args.adapter,
         "native_command": args.native_command,
