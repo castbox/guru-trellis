@@ -1724,6 +1724,16 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     list(Draft202012Validator(request_schema).iter_errors(invalid))
                 )
 
+            for mode in (None, "post_owner"):
+                invalid = dict(request)
+                if mode is None:
+                    invalid.pop("native_execution_mode")
+                else:
+                    invalid["native_execution_mode"] = mode
+                self.assertTrue(
+                    list(Draft202012Validator(request_schema).iter_errors(invalid))
+                )
+
     def test_production_phase2_inputs_close_schema_5_for_every_exit(self) -> None:
         from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
         from jsonschema import Draft202012Validator

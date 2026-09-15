@@ -438,11 +438,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-15T20:44:25Z",
+  "installed_at": "2026-09-15T21:15:59Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "2e76e9ec76f5efd4a6448d8181f8f983e8bc52b1",
-    "commit": "2e76e9ec76f5efd4a6448d8181f8f983e8bc52b1",
+    "ref": "83ac7fd38aa25f55a79547e85edad35f2546f647",
+    "commit": "83ac7fd38aa25f55a79547e85edad35f2546f647",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -773,7 +773,7 @@
       {
         "path": ".trellis/guru-team/skills/schemas/skill-eval-adapter-request.schema.json",
         "source": "trellis/skills/guru-team/schemas/skill-eval-adapter-request.schema.json",
-        "sha256": "beba3043e3f42c4433ef1c9e31584838d6d3e8a0262c120e1ad877d78158f15b",
+        "sha256": "5321b65dd13d6dea22864f45e580fe6c0f611174c29003dc6c887d09c81c8703",
         "executable": false,
         "action": "unchanged"
       },
