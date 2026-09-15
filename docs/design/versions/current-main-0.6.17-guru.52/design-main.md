@@ -402,11 +402,25 @@ fresh Phase 2、Task Commit与完整Branch Review。`D247-02`、`D247-04`、`D24
 
 ## #410 Release authority
 
-`D410-01..04` 复用既有 release owner、Architecture/RDT promotion owner 与 exact-candidate
-边界；不新增 public Skill、owner、compatibility layer 或 release state machine。当前设计只承接
-Issue #410 的 release-facing four-axis mapping 与 post-promotion fresh review contract。
-本层只拥有设计责任。Architecture 继承 `docs/architecture/README.md` / `.51` / `active`，
-引用 `ARCH-CUR-028`、`ARCH-DOM-015`、`ARCH-INT-014/016` 与 `EVD-027`，不复制 Architecture 正文。
+`D410-01..06` 复用既有 release owner、Architecture/RDT promotion owner 与 exact-candidate
+边界；不新增 public Skill、owner、compatibility layer 或 release state machine：
+
+- `D410-01`：只推进 current release-facing mapping 与必要 canonical/dogfood projection，
+  predecessor release 与 `.51` 文档保持 immutable history。
+- `D410-02`：repository tag、extension revision、CLI/core 与 fixed Fork source 保持四条独立
+  identity axis，不以任一版本号替代另一条来源 authority。
+- `D410-03`：Architecture/RDT 继续由 serialized promotion owner 单写；promotion-created bytes
+  使此前 Phase 2、commit 与 Branch Review stale，并要求 fresh 重跑。
+- `D410-04`：preparation merge 后只从 fresh `origin/main` 冻结一个 exact candidate，禁止
+  跨 SHA 复用 Stage 1 或旧 candidate evidence。
+- `D410-05`：保留现有 owner 与 public API 边界，preparation PR 只使用 `Refs #410`，不提前
+  关闭发布主 Issue。
+- `D410-06`：annotated tag、tag-pinned smoke、GitHub Release 与 Issue closure 是依次独立的
+  live action，每项重新绑定同一 exact candidate 和当前 authority。
+
+本层只拥有设计责任。Architecture 继承 `docs/architecture/README.md` /
+`current-main-0.6.17-guru.52` / `active`，引用 `ARCH-CUR-029`、`ARCH-INT-014..016`，
+不复制 Architecture 正文，也不把 knowledge promotion 表述为发布完成。
 
 - `D408-01` Source：现有 `trellis-source.json` 唯一拥有完整 commit 与正整数 `ci_run_id`。
   source validator 核验 Fork HEAD、run/head/success、CLI/core、package manager 和成功本地 build marker；

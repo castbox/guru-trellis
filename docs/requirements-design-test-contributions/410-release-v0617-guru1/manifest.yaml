@@ -16,13 +16,49 @@ contribution:
 architecture_candidate:
   contribution_locator: "docs/architecture/contributions/410-release-v0617-guru1.md"
   contribution_identity: "architecture-contribution-410-release-v0617-guru1-v1"
+  candidate_successor_version: "current-main-0.6.17-guru.52"
   promotion_state: "reviewed_promoted"
   adr_required: false
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.52"
+  status: "active"
+traceability:
+  requirements:
+    - "R410-01"
+    - "R410-02"
+    - "R410-03"
+    - "R410-04"
+    - "R410-05"
+    - "R410-06"
+    - "R410-07"
+  designs:
+    - "D410-01"
+    - "D410-02"
+    - "D410-03"
+    - "D410-04"
+    - "D410-05"
+    - "D410-06"
+  tests:
+    - "T410-01"
+    - "T410-02"
+    - "T410-03"
+    - "T410-04"
+    - "T410-05"
+    - "T410-06"
+    - "T410-07"
+    - "T410-08"
+  architecture_refs:
+    - "ARCH-CUR-029"
+    - "ARCH-INT-014"
+    - "ARCH-INT-015"
+    - "ARCH-INT-016"
 public_contracts:
   rdt_owner: "guru-maintain-requirements-design-test-ssot:task_impact_sync"
   architecture_candidate: "guru-maintain-architecture-baseline:2.0"
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
-promotion_state: "pending"
+promotion_state: "reviewed_promoted"
+promotion_decision: "promoted_to_current-main-0.6.17-guru.52"
 promoted_version: "current-main-0.6.17-guru.52"
 shared_current_write: true

@@ -1,6 +1,6 @@
 # #410 Release v0.6.17-guru.1 Requirements contribution
 
-状态：`candidate`；前序 released tag：`v0.6.16-guru.1`。
+状态：`reviewed_promoted`；前序 released tag：`v0.6.16-guru.1`。
 
 - `R410-01`: canonical extension manifest、dogfood projection 与 current public
   release-facing docs must converge on `0.6.17-guru.42`.

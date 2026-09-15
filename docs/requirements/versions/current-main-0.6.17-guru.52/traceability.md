@@ -171,13 +171,30 @@ predecessor，`.50` 是 #247 建立的 immutable superseded authority。promotio
 | `R408-07` | `D408-03` | `T408-07` | `ARCH-CUR-028`, `ARCH-DOM-015`, `EVD-027` |
 | `R408-08` | `D408-04` | `T408-08` | `EVD-027` |
 
-状态：`.51` current，关系为 implements/verifies。定义分别位于
+状态：`.51` immutable superseded history，关系为 implements/verifies。定义分别位于
 [Requirements](./requirement-main.md)、[Design](../../../design/versions/current-main-0.6.17-guru.52/design-main.md)、
 [Test](../../../test/versions/current-main-0.6.17-guru.52/test-strategy.md)；反向索引为同版本
 [Design trace](../../../design/versions/current-main-0.6.17-guru.52/traceability.md) 与
 [Test trace](../../../test/versions/current-main-0.6.17-guru.52/traceability.md)。
-Architecture 继承 [`.51` active](../../../architecture/README.md)，证据见
+Architecture 历史继承为 `.51` / `superseded`；current public identity 见
+[`.52` active](../../../architecture/README.md)。证据见
 [Test 计划](../../../test/versions/current-main-0.6.17-guru.52/test-plan.md) 与
 [EVD-027](../../../architecture/evidence/current-evidence.md)。
 R408-01 supersedes R329-01 的旧 pin only；R378-01 的旧 pin 为 history，R329-02..10、R247 与其余
 R378 合同继承。`.50` 保持 immutable；本关系不声明 post-promotion gate 或 release 完成。
+
+## #410 Trace
+
+| Requirement | Design | Test | Architecture |
+| --- | --- | --- | --- |
+| `R410-01` | `D410-01` | `T410-01`, `T410-05` | `ARCH-CUR-029` |
+| `R410-02` | `D410-01`, `D410-02` | `T410-01` | `ARCH-CUR-029` |
+| `R410-03` | `D410-02` | `T410-02` | `ARCH-CUR-029`, `ARCH-INT-014` |
+| `R410-04` | `D410-01`, `D410-03`, `D410-05` | `T410-02`, `T410-05` | `ARCH-CUR-029`, `ARCH-INT-016` |
+| `R410-05` | `D410-03` | `T410-03` | `ARCH-INT-015` |
+| `R410-06` | `D410-04`, `D410-06` | `T410-04`, `T410-05`, `T410-07`, `T410-08` | `ARCH-CUR-029`, `ARCH-INT-015` |
+| `R410-07` | `D410-05`, `D410-06` | `T410-06`, `T410-08` | `ARCH-CUR-029`, `ARCH-INT-015` |
+
+`BEH-018` 由 `D410-03..06` 承接，并由 `T410-03..08` 验证。状态为
+`reviewed_promoted`；`.51` 是 immutable predecessor，`.52` 是 current active authority。
+本 trace 只记录 stable contract，不声明 post-promotion gate、tag、GitHub Release 或 Issue closure 完成。

@@ -1,5 +1,9 @@
 # #410 Release v0.6.17-guru.1 Design contribution
 
+状态：`reviewed_promoted`；change path：`target_native`。immutable superseded
+predecessor 为 `current-main-0.6.5-guru.51`，promoted/current active authority 为
+`current-main-0.6.17-guru.52`。Architecture public inheritance 同为 `.52` / `active`。
+
 - `D410-01`: advance only current release-facing version mapping and required
   canonical/dogfood projections; preserve historical facts.
 - `D410-02`: keep repository tag, extension version, and CLI/source lock as
@@ -12,3 +16,7 @@
   Publication reference without implying Issue closure.
 - `D410-06`: perform annotated tag, tag-pinned smoke, GitHub Release, and Issue
   closure as separate live actions with separate authority checks.
+
+本 contribution 的 promotion identity 只确认稳定设计责任已进入 `.52`。它不证明
+post-promotion Phase 2、Branch Review、exact-candidate gate、tag、GitHub Release 或
+Issue closure 已完成。
