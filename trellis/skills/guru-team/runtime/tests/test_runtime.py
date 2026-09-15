@@ -917,6 +917,8 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
             ),
             "native_execution_mode": "semantic_authoring",
+            "native_execution_adapter": "codex",
+            "model_id": "gpt-5.6-sol",
         }
 
     def test_architecture_semantic_authoring_stages_facts_without_owner_result(self) -> None:
@@ -961,12 +963,16 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
                 native_request = json.loads(native_request_path.read_text(encoding="utf-8"))
                 self.assertEqual(native_request["native_execution_mode"], "semantic_authoring")
+                self.assertEqual(request["native_execution_adapter"], "codex")
+                self.assertEqual(request["model_id"], "gpt-5.6-sol")
                 self.assertNotIn("expected_exit", native_request)
                 self.assertNotIn("owner_result", json.dumps(native_request).lower())
                 self.assertIn("references/contract.md", context)
                 self.assertIn("schemas/semantic-result.schema.json", context)
                 self.assertIn("Every listed read is mandatory", context)
                 self.assertIn("Trace validation fails closed", context)
+                self.assertIn("one process at a time", context)
+                self.assertIn("do not repair or rewrite the trace receipt", context)
                 self.assertIn("Author the smallest owner_result valid", context)
                 self.assertIn("no_architecture_impact must omit", context)
                 owner_repository = Path(protocol["owner_repository"])
@@ -1030,6 +1036,36 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     ),
                     ["public_invocation", "evals_not_loaded", "private_runtime_not_read"],
                 )
+                extra_authority = repository / "docs/architecture/README.md"
+                extra_event = {
+                    "kind": "read",
+                    "target_kind": "owner_file",
+                    "path": str(extra_authority.resolve()),
+                    "sha256": hashlib.sha256(extra_authority.read_bytes()).hexdigest(),
+                    "request_sha256": request_sha256,
+                }
+                extra_evidence = copy.deepcopy(payload)
+                extra_evidence["events"].insert(-1, extra_event)
+                trace.write_text(json.dumps(extra_evidence), encoding="utf-8")
+                self.assertEqual(
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    ),
+                    ["public_invocation", "evals_not_loaded", "private_runtime_not_read"],
+                )
+                missing_authority = copy.deepcopy(payload)
+                omitted = str((repository / facts["required_reads"][0]).resolve())
+                missing_authority["events"] = [
+                    event for event in missing_authority["events"]
+                    if event.get("path") != omitted
+                ]
+                trace.write_text(json.dumps(missing_authority), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "omitted required authority reads"):
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    )
                 missing_contract = copy.deepcopy(payload)
                 missing_contract["events"] = [
                     event for event in missing_contract["events"]
@@ -1045,14 +1081,15 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 boundary_stop.set()
                 boundary_thread.join(timeout=5)
 
-    def test_architecture_semantic_authoring_uses_declared_codex_model(self) -> None:
-        from adapters.eval import eval_constants, native_adapter
+    def test_architecture_semantic_authoring_uses_case_model_identity(self) -> None:
+        from adapters.eval import native_adapter
 
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             model_root = root / "model-root"
             model_root.mkdir()
             request = self.architecture_semantic_request(root)
+            request["model_id"] = "architecture-eval-model"
             request["_model_root"] = str(model_root)
             argv, output = native_adapter.native_argv(
                 "codex",
@@ -1067,7 +1104,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
         self.assertIn("--ignore-user-config", argv)
         self.assertEqual(
             argv[argv.index("--model") + 1],
-            eval_constants.QUALIFICATION_MODEL,
+            "architecture-eval-model",
         )
         self.assertEqual(
             output,
@@ -1119,6 +1156,112 @@ class QualificationNativeIsolationTests(unittest.TestCase):
 
         self.assertEqual(observed["planning-semantic-authoring"], "semantic_authoring")
         self.assertEqual(observed["no-impact"], "post_owner")
+
+    def test_semantic_authoring_is_codex_only_and_shared_skips_adapter(self) -> None:
+        from adapters.eval import native_adapter
+        from runtime import eval_runner
+
+        with tempfile.TemporaryDirectory() as request_root:
+            request = self.architecture_semantic_request(Path(request_root))
+            self.assertTrue(native_adapter.semantic_authoring_supported(request, "codex"))
+            for adapter in ("shared", "claude", "cursor"):
+                self.assertFalse(native_adapter.semantic_authoring_supported(request, adapter))
+
+        repo_root = SKILLS.parents[2]
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.object(
+            eval_runner, "call_adapter",
+        ) as call_adapter:
+            args = argparse.Namespace(
+                adapter="shared",
+                case="planning-semantic-authoring",
+                comparison_package=None,
+                current_package=None,
+                human_feedback=None,
+                mode="source",
+                run_root=str(Path(temporary) / "shared"),
+                semantic_grading=None,
+                skill="guru-maintain-architecture-baseline",
+            )
+            result = eval_runner.run(repo_root, SKILLS, args)
+        self.assertEqual(result["status"], "unsupported")
+        self.assertEqual(result["cases"][0]["status"], "unsupported")
+        call_adapter.assert_not_called()
+
+    def test_semantic_authoring_adapter_guard_rejects_shared_direct_call(self) -> None:
+        from adapters.eval import native_adapter
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            request = self.architecture_semantic_request(root)
+            request["adapter_id"] = "shared"
+            request["platform"] = "shared"
+            request_path = root / "adapter-request.json"
+            request_path.write_text(json.dumps(request), encoding="utf-8")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(Path(native_adapter.__file__).resolve()),
+                    "--adapter",
+                    "shared",
+                    "--native-command",
+                    "guru-team-shared-eval",
+                    "--request",
+                    str(request_path),
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        response = json.loads(result.stdout)
+        self.assertEqual(response["capability_status"], "unsupported")
+        self.assertEqual(response["public_stderr"], "")
+
+    def test_semantic_authoring_schema_requires_adapter_and_model(self) -> None:
+        from jsonschema import Draft202012Validator
+
+        case_schema = json.loads(
+            (SKILLS / "schemas/skill-evals.schema.json").read_text(encoding="utf-8")
+        )
+        request_schema = json.loads(
+            (SKILLS / "schemas/skill-eval-adapter-request.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        corpus = json.loads(
+            (
+                SKILLS
+                / "packages/guru-maintain-architecture-baseline/evals/evals.json"
+            ).read_text(encoding="utf-8")
+        )
+        semantic_case = next(
+            case for case in corpus["evals"]
+            if case["id"] == "planning-semantic-authoring"
+        )
+        self.assertEqual(
+            list(Draft202012Validator(case_schema).iter_errors(corpus)), []
+        )
+        for field in ("native_execution_adapter", "model_id"):
+            invalid = copy.deepcopy(corpus)
+            target = next(
+                case for case in invalid["evals"]
+                if case["id"] == "planning-semantic-authoring"
+            )
+            target.pop(field)
+            self.assertTrue(list(Draft202012Validator(case_schema).iter_errors(invalid)))
+
+        with tempfile.TemporaryDirectory() as temporary:
+            request = self.architecture_semantic_request(Path(temporary))
+            self.assertEqual(
+                list(Draft202012Validator(request_schema).iter_errors(request)), []
+            )
+            for field in ("native_execution_adapter", "model_id"):
+                invalid = dict(request)
+                invalid.pop(field)
+                self.assertTrue(
+                    list(Draft202012Validator(request_schema).iter_errors(invalid))
+                )
 
     def test_production_phase2_inputs_close_schema_5_for_every_exit(self) -> None:
         from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures

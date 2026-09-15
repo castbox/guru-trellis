@@ -20,6 +20,8 @@ ARCHITECTURE_PUBLIC_AUTHORING_FACTS = (
     "docs/architecture-eval/public-authoring-facts.json"
 )
 
+SEMANTIC_AUTHORING_ADAPTER = "codex"
+
 WORKSPACE_CALL_LOCAL_STATE: dict[str, tuple[dict[str, Any], dict[str, Any]]] = {}
 
 PRODUCTION_SKILLS = {

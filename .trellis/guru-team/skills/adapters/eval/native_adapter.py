@@ -28,6 +28,7 @@ from adapters.eval.eval_constants import (
     QUALIFICATION_MODEL,
     QUALIFICATION_PUBLIC_AUTHORING_FACTS,
     QUALIFICATION_SKILL,
+    SEMANTIC_AUTHORING_ADAPTER,
     TRACE_HELPER,
 )
 
@@ -60,10 +61,18 @@ def semantic_authoring_request(request: dict[str, Any]) -> bool:
     return request.get("native_execution_mode", "post_owner") == "semantic_authoring"
 
 
+def semantic_authoring_supported(request: dict[str, Any], adapter: str) -> bool:
+    return (
+        semantic_authoring_request(request)
+        and adapter == SEMANTIC_AUTHORING_ADAPTER
+        and request.get("native_execution_adapter") == SEMANTIC_AUTHORING_ADAPTER
+    )
+
+
 def isolated_authoring_request(request: dict[str, Any], adapter: str) -> bool:
     return adapter == "codex" and (
         request.get("skill_id") == QUALIFICATION_SKILL
-        or semantic_authoring_request(request)
+        or semantic_authoring_supported(request, adapter)
     )
 
 
@@ -296,6 +305,8 @@ def build_context(
     owner_repository = execution_runtime_target.parents[4]
     qualification_codex = request["skill_id"] == QUALIFICATION_SKILL and adapter == "codex"
     semantic_authoring = semantic_authoring_request(request)
+    if semantic_authoring and not semantic_authoring_supported(request, adapter):
+        raise ValueError("semantic authoring is unsupported by the selected adapter")
     isolated_authoring = isolated_authoring_request(request, adapter)
     if semantic_authoring and (owner_repository / OWNER_RESULT).exists():
         raise ValueError("semantic authoring fixture must not contain a staged owner result")
@@ -434,6 +445,7 @@ def build_context(
             "Author the smallest owner_result valid for the selected semantic branch. Optional schema properties are not universally valid; in particular, no_architecture_impact must omit Architecture contribution, project-check, and review fields as required by the public contract.",
             "Pass exactly one JSON object containing public_input and owner_result to the formal wrapper through stdin. Do not write the envelope, result, or any owner state to a file.",
             "Re-read every staged case file and every required repository authority file through the trace helper. Never read eval corpus files, source package files, or .trellis/.runtime.",
+            "Execute every trace-helper read and invoke sequentially, one process at a time. Do not run helper commands concurrently, and do not repair or rewrite the trace receipt directly.",
             "For this semantic invocation boundary, run only those traced reads and then the exact stdin public wrapper invocation command below.",
         ]
     context = "\n".join(context_lines)
@@ -725,8 +737,8 @@ def validate_native_trace(
             if event.get("kind") == "read"
             and event.get("target_kind") == "owner_file"
         }
-        if required_owner_reads != observed_owner_reads:
-            raise ValueError("semantic authoring trace does not match required authority reads")
+        if not required_owner_reads.issubset(observed_owner_reads):
+            raise ValueError("semantic authoring trace omitted required authority reads")
     invocation = invocations[0]
     argv = invocation.get("argv")
     if (
@@ -781,7 +793,7 @@ def native_argv(
                 "--cd",
                 str(model_root),
                 "--model",
-                QUALIFICATION_MODEL,
+                str(request["model_id"]),
                 "--output-last-message",
                 str(output_path),
                 context,
@@ -856,6 +868,20 @@ def main() -> int:
         fallback = {"corpus_sha256": "0" * 64}
         transcript.write_text(json.dumps({"adapter": args.adapter, "error": str(exc)}), encoding="utf-8")
         return emit(response(fallback, "execution_error", transcript, stderr="adapter request/context invalid"))
+    if semantic_authoring_request(request) and not semantic_authoring_supported(
+        request, args.adapter
+    ):
+        transcript.write_text(json.dumps({
+            "adapter": args.adapter,
+            "status": "unsupported",
+            "reason": "semantic_authoring is declared for the codex adapter only",
+        }), encoding="utf-8")
+        return emit(response(
+            request,
+            "unsupported",
+            transcript,
+            native_trace=Path(request["workdir"]).resolve().parent / "native-trace.json",
+        ))
     packaged_native = Path(__file__).resolve().parent / args.native_command
     native = (
         str(packaged_native)

@@ -4,7 +4,13 @@
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "adapter_id", "platform", "skill_id", "package_root", "interface", "case_id", "prompt", "files", "workdir", "corpus_path", "corpus_sha256", "runtime_target"],
+  "allOf": [
+    {
+      "if": {"properties": {"native_execution_mode": {"const": "semantic_authoring"}}, "required": ["native_execution_mode"]},
+      "then": {"required": ["native_execution_adapter", "model_id"]}
+    }
+  ],
   "properties": {
-    "schema_version": {"const": "1.0"}, "adapter_id": {"enum": ["shared", "codex", "claude", "cursor"]}, "platform": {"enum": ["shared", "codex", "claude", "cursor"]}, "skill_id": {"type": "string", "minLength": 1}, "package_root": {"type": "string", "minLength": 1}, "interface": {"type": "object"}, "case_id": {"type": "string", "minLength": 1}, "prompt": {"type": "string", "minLength": 1}, "files": {"type": "array", "items": {"type": "string"}}, "workdir": {"type": "string", "minLength": 1}, "corpus_path": {"type": "string", "minLength": 1}, "corpus_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "runtime_target": {"type": "string", "minLength": 1}, "native_execution_mode": {"enum": ["post_owner", "semantic_authoring"]}
+    "schema_version": {"const": "1.0"}, "adapter_id": {"enum": ["shared", "codex", "claude", "cursor"]}, "platform": {"enum": ["shared", "codex", "claude", "cursor"]}, "skill_id": {"type": "string", "minLength": 1}, "package_root": {"type": "string", "minLength": 1}, "interface": {"type": "object"}, "case_id": {"type": "string", "minLength": 1}, "prompt": {"type": "string", "minLength": 1}, "files": {"type": "array", "items": {"type": "string"}}, "workdir": {"type": "string", "minLength": 1}, "corpus_path": {"type": "string", "minLength": 1}, "corpus_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "runtime_target": {"type": "string", "minLength": 1}, "native_execution_mode": {"enum": ["post_owner", "semantic_authoring"]}, "native_execution_adapter": {"const": "codex"}, "model_id": {"type": "string", "minLength": 1}
   }
 }

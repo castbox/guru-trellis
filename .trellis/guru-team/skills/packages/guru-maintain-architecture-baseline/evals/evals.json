@@ -54,6 +54,8 @@
       "expected_exit": "baseline_current",
       "expected_output": "The native Agent authors a fresh no-architecture-impact Planning result and returns baseline_current.",
       "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
       "input_profile_id": "task_impact_sync",
       "files": [
         "evals/files/impact-current-input.json",

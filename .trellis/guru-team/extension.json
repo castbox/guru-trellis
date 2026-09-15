@@ -438,11 +438,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-15T13:55:21Z",
+  "installed_at": "2026-09-15T15:11:41Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "36fcc4ef6cff3f2ca405468781d2ac4103b852d0",
-    "commit": "36fcc4ef6cff3f2ca405468781d2ac4103b852d0",
+    "ref": "323a4430bebf3faf9cd61950c38e49c229098ad1",
+    "commit": "323a4430bebf3faf9cd61950c38e49c229098ad1",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -584,7 +584,7 @@
       {
         "id": "guru-maintain-architecture-baseline",
         "interface_sha256": "8f7eb5d7756ec47be142416038e39b7cc9aaba6e1b7a10638dc46066b27cb848",
-        "tree_sha256": "7b3930b14f0da1bb4217effe9a3d84817b0a0e3a1618f1e490a9e5f2c091d185"
+        "tree_sha256": "11ddd0ea0a64cd26eb4ef9a4a4eab8d0550dcd8c06edceb1809c45e1cdbfb28a"
       },
       {
         "id": "guru-maintain-requirements-design-test-ssot",
@@ -773,7 +773,7 @@
       {
         "path": ".trellis/guru-team/skills/schemas/skill-eval-adapter-request.schema.json",
         "source": "trellis/skills/guru-team/schemas/skill-eval-adapter-request.schema.json",
-        "sha256": "4488eabfad1f4dff43ac431f2b1fd401cc94be1a0c4fa70bd12e360bebe7ddcb",
+        "sha256": "beba3043e3f42c4433ef1c9e31584838d6d3e8a0262c120e1ad877d78158f15b",
         "executable": false,
         "action": "unchanged"
       },
@@ -864,7 +864,7 @@
       {
         "path": ".trellis/guru-team/skills/schemas/skill-evals.schema.json",
         "source": "trellis/skills/guru-team/schemas/skill-evals.schema.json",
-        "sha256": "03b6a7d66562fa858c651397cfb293e93003713cb59d44d58e2a118c46813a6a",
+        "sha256": "b3afb965455b109dc2960b83446df3240981c4a783a4c67adfa1365574860ad7",
         "executable": false,
         "action": "unchanged"
       },
@@ -962,7 +962,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/eval_constants.py",
         "source": "trellis/skills/guru-team/adapters/eval/eval_constants.py",
-        "sha256": "dc91746d1014b90889ca5f423d511be36984ccc605d0099d424ad9738c890578",
+        "sha256": "a3c40e30da65cfa29bc49dacd0994c399e66d09512cba1270430e3393eda0e74",
         "executable": false,
         "action": "unchanged"
       },
@@ -990,7 +990,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "d741dee04e8309d5222e7c8d601db4319f1e3e7fa028f6bc214bd6a6a8a9def8",
+        "sha256": "a74eb0ab84f23ca15e61e79b0ea0d65da9529374e6b0b792a9f951a7312e4d6b",
         "executable": false,
         "action": "unchanged"
       },
@@ -1809,7 +1809,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/evals.json",
-        "sha256": "7cdc0105a832dce6c9f4cc53e8a5fe48c41f29e00033f4ad8f1ccd67ea6c2de2",
+        "sha256": "ca48ffd60340ae78afc9b1cbfafb424f74be88eaed1716a4eda056a2bdf35820",
         "executable": false,
         "action": "unchanged"
       },
@@ -9957,7 +9957,7 @@
       {
         "path": ".trellis/guru-team/runtime/eval_runner.py",
         "source": "trellis/skills/guru-team/runtime/eval_runner.py",
-        "sha256": "3ea0030be7ee90b2c9db6bfa01e042b646bbf46d2ba018a21978678f0b5fe968",
+        "sha256": "e81d1f05f7e0c7ceb78599c3806ea820ec34001450b5d5644dceaba2aedfbde6",
         "executable": false,
         "action": "unchanged"
       },
@@ -11245,7 +11245,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/evals.json",
-        "sha256": "7cdc0105a832dce6c9f4cc53e8a5fe48c41f29e00033f4ad8f1ccd67ea6c2de2",
+        "sha256": "ca48ffd60340ae78afc9b1cbfafb424f74be88eaed1716a4eda056a2bdf35820",
         "executable": false,
         "action": "unchanged"
       },
@@ -11637,7 +11637,7 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/evals.json",
-        "sha256": "7cdc0105a832dce6c9f4cc53e8a5fe48c41f29e00033f4ad8f1ccd67ea6c2de2",
+        "sha256": "ca48ffd60340ae78afc9b1cbfafb424f74be88eaed1716a4eda056a2bdf35820",
         "executable": false,
         "action": "unchanged"
       },
@@ -12029,7 +12029,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/evals.json",
-        "sha256": "7cdc0105a832dce6c9f4cc53e8a5fe48c41f29e00033f4ad8f1ccd67ea6c2de2",
+        "sha256": "ca48ffd60340ae78afc9b1cbfafb424f74be88eaed1716a4eda056a2bdf35820",
         "executable": false,
         "action": "unchanged"
       },
@@ -12421,7 +12421,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/evals.json",
-        "sha256": "7cdc0105a832dce6c9f4cc53e8a5fe48c41f29e00033f4ad8f1ccd67ea6c2de2",
+        "sha256": "ca48ffd60340ae78afc9b1cbfafb424f74be88eaed1716a4eda056a2bdf35820",
         "executable": false,
         "action": "unchanged"
       },

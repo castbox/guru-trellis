@@ -1710,10 +1710,38 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
                 "corpus_sha256": discovery["corpus_sha256"], "runtime_target": str(target),
                 "native_execution_mode": case.get("native_execution_mode", "post_owner"),
             }
+            for field in ("native_execution_adapter", "model_id"):
+                if field in case:
+                    request[field] = case[field]
             validate_instance(request, skills / "schemas/skill-eval-adapter-request.schema.json", "adapter_request")
             request_path = case_root / "adapter-request.json"
             request_path.write_text(json.dumps(request, separators=(",", ":")), encoding="utf-8")
-            response = call_adapter(skills, descriptor, request_path)
+            if (
+                request["native_execution_mode"] == "semantic_authoring"
+                and request["native_execution_adapter"] != args.adapter
+            ):
+                transcript = case_root / "adapter-transcript.json"
+                transcript.write_text(json.dumps({
+                    "adapter": args.adapter,
+                    "status": "unsupported",
+                    "reason": (
+                        "semantic_authoring is declared for the "
+                        f"{request['native_execution_adapter']} adapter only"
+                    ),
+                }), encoding="utf-8")
+                response = {
+                    "schema_version": "1.0",
+                    "capability_status": "unsupported",
+                    "corpus_sha256": request["corpus_sha256"],
+                    "public_stdout": "",
+                    "public_stderr": "",
+                    "trace_events": [],
+                    "transcript_locator": str(transcript),
+                    "native_trace_locator": str(case_root / "native-trace.json"),
+                    "timing_ms": 0,
+                }
+            else:
+                response = call_adapter(skills, descriptor, request_path)
             result: dict[str, Any] = {
                 "case_id": case["id"], "comparison_side": side, "status": "execution_error",
                 "deterministic_results": [], "semantic_results": [],
