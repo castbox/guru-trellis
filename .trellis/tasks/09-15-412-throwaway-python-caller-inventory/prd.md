@@ -58,6 +58,7 @@ task commit、push、PR、merge 和 post-merge candidate 操作分别展示精�
 在同步六处 current projection 前，由 RDT owner 修复 #410 `.52` authority 内部冲突，修改范围仅限：
 
 - `docs/requirements-design-test-contributions/410-release-v0617-guru1/design.md`
+- `docs/requirements-design-test-contributions/410-release-v0617-guru1/requirements.md`
 - `docs/requirements-design-test-contributions/410-release-v0617-guru1/test.md`
 - `docs/requirements-design-test-contributions/410-release-v0617-guru1/traceability.md`
 - `docs/requirements-design-test-contributions/410-release-v0617-guru1/manifest.yaml`

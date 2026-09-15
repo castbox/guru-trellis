@@ -18,7 +18,7 @@
 ## Phase 2 实现
 
 1. 由 RDT owner 基于 reviewed #410 contribution、`.52` Requirements/Test 正文、Architecture `.52/active` 和 release contract 决定唯一 D410/T410 投影；不得预设编号集合。
-2. 只在授权的 authority 文件内统一 contribution Design/Test/traceability、`.52` Design main、三层 `.52/traceability.md` 与 manifest 的 identifier 集合、Architecture inheritance、双向 trace closure 和唯一 promotion state，并运行 RDT repair checker。
+2. 只在授权的 authority 文件内统一 contribution Requirements/Design/Test/traceability、`.52` Design main、三层 `.52/traceability.md` 与 manifest 的 identifier 集合、Architecture inheritance、双向 trace closure 和唯一 promotion state，并运行 RDT repair checker。
 3. authority checker 通过后，以收敛后的 live `.52` authority 为 source，精确修复六个 stale projection/README 导航：
    - Architecture usage projection 的 version/source binding；
    - RDT usage projection 的 version、Architecture inheritance、source binding 与 freshness wording；

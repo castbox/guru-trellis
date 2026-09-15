@@ -37,12 +37,12 @@ current source files
 RDT owner 按以下顺序完成 authority repair：
 
 1. 以 reviewed #410 contribution、`.52` Requirements/Test 正文、Architecture `.52/active` 和 release contract 为当前证据，不从 stale projection 反推 authority。
-2. 对 contribution Design/Test、versioned Design/Test 与三层 traceability 中的 D410/T410 identifier 逐项建立语义映射，决定唯一正确集合；不得预设较短或较长编号集合天然正确。
+2. 对 contribution Requirements/Design/Test、versioned Design/Test 与三层 traceability 中的 R410/D410/T410 identifier 逐项建立语义映射，决定唯一正确集合；不得预设较短或较长编号集合天然正确。
 3. 统一 contribution manifest 的 top-level/nested promotion state，只保留一个与 reviewed promotion 事实一致的状态。
 4. 在 Requirements、Design、Test 三层 `.52/traceability.md` 补齐 #410 的双向闭合，并把 Architecture inheritance 统一为 `.52/active`；移除把 `.51/current` 当作当前 source 的残留文字，同时保留 `.51` immutable predecessor 关系。
 5. 运行 RDT repair checker；只有 authority 内部无冲突后，六处 current projection 才能同步该结果。
 
-允许修改的 authority 文件仅为 contribution 的 `design.md`、`test.md`、`traceability.md`、`manifest.yaml`，`.52` Design `design-main.md`，以及 Requirements、Design、Test 三层 `.52/traceability.md`。若语义收敛需要 `.53`、新的产品决策、公共 API/runtime 变化或 release lifecycle 变化，立即停止并回到 live Issue authority。
+允许修改的 authority 文件仅为 contribution 的 `requirements.md`、`design.md`、`test.md`、`traceability.md`、`manifest.yaml`，`.52` Design `design-main.md`，以及 Requirements、Design、Test 三层 `.52/traceability.md`。若语义收敛需要 `.53`、新的产品决策、公共 API/runtime 变化或 release lifecycle 变化，立即停止并回到 live Issue authority。
 
 ## Canonical 与 installed/dogfood projection
 
@@ -53,7 +53,7 @@ inventory JSON 保持唯一手工修改点。安装副本只能由当前 preset 
 - strategy：`authority_repair_then_controlled_projection_repair`
 - durable authority evidence：Issue #412、`docs/architecture/README.md`、`docs/requirements/README.md`、`docs/design/README.md`、`docs/test/README.md`、各 `.52` manifest、#410 contribution 与 PR #411 merge facts
 - task artifacts：本 task 的 `prd.md`、`design.md`、`implement.md`
-- durable authority changes：仅修复 #410 contribution 的 `design.md`、`test.md`、`traceability.md`、`manifest.yaml`，`.52` Design `design-main.md` 和 Requirements、Design、Test 三层 `.52/traceability.md`；不创建新 authority version。
+- durable authority changes：仅修复 #410 contribution 的 `requirements.md`、`design.md`、`test.md`、`traceability.md`、`manifest.yaml`，`.52` Design `design-main.md` 和 Requirements、Design、Test 三层 `.52/traceability.md`；不创建新 authority version。
 - durable projection changes：authority checker 通过后，只修复 `.trellis/spec/architecture/baseline-usage.md`、`.trellis/spec/docs/requirements-design-test-ssot.md`、`.trellis/spec/docs/public-docs.md`、`docs/requirements/README.md`、`docs/design/README.md` 和 `docs/test/README.md` 的 current projection/导航；不修改历史 `.51` authority。
 - source-binding projection：`.52` 继续绑定 reviewed #410 contribution + inherited immutable `.51` authority；current graph 23 Skills / 97 exits / 78 commands、Fork source、CLI/core `0.6.17`、`pnpm@10.32.1`、extension `0.6.17-guru.42` 和 target repository tag `v0.6.17-guru.1` 保持四轴独立。
 - reconciliation checkpoint：先由 RDT owner 证明 authority 内部一致，再由 Architecture/RDT `repair` owners 审查 projection 充分性，最后重新运行 Planning、Phase 2 和 Branch Review，确认没有历史重写或超出授权文件集的 durable Docs 扩张。
