@@ -64,6 +64,17 @@ Architecture Skill 实质一致；仅升级 extension 不能证明问题已经�
   `.claude` 和 `.cursor` 五类声明投影。
 - preset reapply 后不得产生未处理 `.new`/`.bak` 或 projection drift。
 
+### R5 Skill Eval durable contract 一致性
+
+- 既有 workflow SSOT 与 public README 必须同步记录
+  `native_execution_mode`、`native_execution_adapter`、`model_id` 和
+  `semantic_authoring` 的当前闭合合同。
+- 缺省或显式 `post_owner` 使用 host 已准备的 checker-passed owner result，并在每个 adapter
+  full run 中执行；`semantic_authoring` 由声明 adapter 上的合同指定 Agent 自行判断、author
+  owner-result envelope 并调用正式 wrapper。
+- Full-run aggregate 必须完整覆盖该 adapter 的 declared applicable case ids；不得以非空结果
+  冒充完整执行。
+
 ## 4. 验收标准
 
 - [ ] 正常 Planning 场景中，Agent 不以“脚本不能生成 semantic owner result”为理由停止。
@@ -100,13 +111,18 @@ Architecture Skill 实质一致；仅升级 extension 不能证明问题已经�
 
 ## 7. Docs SSOT Plan
 
-策略：`contract_local`。
+策略：`contract_and_eval_ssot_sync`。
 
 - 更新 `guru-maintain-architecture-baseline` package 的 `SKILL.md` 与
   `references/contract.md`，它们是本缺陷执行语义的直接 durable owner。
 - 仅在承接文字确有歧义时更新 `guru-approve-task-plan` 的 `SKILL.md` 与 contract。
+- 更新直接拥有 Skill Eval schema/runner 行为的既有
+  `.trellis/spec/workflow/{skill-package-contract,data-contracts,companion-scripts}.md`，并同步
+  workflow/preset public README；不创建平行规范。
 - 不更新 repository Requirements/Design/Test shared authority：Issue #415 已完整定义行为需求，
   task planning 提供本次实现与验证设计，改动不引入产品能力、public I/O 或新架构决策。
 - 不更新 Architecture shared authority 或 ADR：本任务纠正当前合同/测试对既有 AI owner 语义的
   表达与证明，预期结果为 `no_architecture_impact`。
-- 若实现期发现上述判断不成立，停止写入并重新执行 RDT/Architecture impact sync。
+- `.trellis/spec/workflow/**` 不再标记为 `no_update`；其 Skill Eval durable contract 已被本任务
+  的 schema/runner 变更直接影响，必须在 Phase 2 前同步。
+- 若实现期发现其余 shared authority 判断不成立，停止写入并重新执行 RDT/Architecture impact sync。

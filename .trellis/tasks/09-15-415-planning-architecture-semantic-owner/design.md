@@ -60,6 +60,11 @@ owner result。public DTO、private checkpoint 和 activation pause 均不变化
 - `semantic_authoring`：host 只 stage public input、task、planning、Architecture authority、
   project-check descriptor/command/evidence，不创建 owner result。
 
+`native_execution_adapter` 与 `model_id` 只允许在 `semantic_authoring` 中出现且必须同时存在；
+缺省 mode 或显式 `post_owner` 携带任一字段均 schema-invalid。Full run 对所有 `post_owner`
+case 执行，不按 adapter 过滤；只按声明 adapter 过滤 `semantic_authoring`。Focused mismatch
+保持显式 `unsupported`。
+
 仅首个 Architecture Planning happy-path regression 使用 `semantic_authoring`。所有未声明该
 字段的现有 case 均按 `post_owner` 处理；不得通过 skill-id 或 case-id 隐式特判执行模式。
 
@@ -104,13 +109,21 @@ trace validator 对该模式要求：
 
 host 仍可比较最终 exit 与 eval metadata，但不得据此为 Agent author semantic fields。
 
+### 4.5 Aggregate completeness
+
+Runner 与 compatibility matrix 必须各自从声明合同计算 adapter applicable case-id 集合，并要求
+actual case ids 完全一致。Missing、duplicate、unknown 或 unexpected case 均 fail closed；测试
+使用显式独立 expected ids，不复用 runner 的过滤表达式作为 oracle。
+
 ## 5. 测试设计
 
 ### T1 Contract tests
 
 - Architecture Skill 强制 contract load、owner sequence 和故障分类文案存在。
 - Planning approval 承接 current Architecture result，不要求第二 owner。
-- eval schema 接受两种明确 mode，拒绝 unknown mode。
+- eval schema 接受两种明确 mode，拒绝 unknown mode，并拒绝 `post_owner`/缺省 mode 携带
+  adapter/model 字段。
+- `guru-approve-task-plan` contract suite 的 fresh 证据为 `23/23`；后续只记录实际重跑结果。
 
 ### T2 Adapter/runtime tests
 
@@ -119,6 +132,8 @@ host 仍可比较最终 exit 与 eval metadata，但不得据此为 Agent author
 - traced contract/authority reads 与单次 stdin invocation 均为必需。
 - 缺少 authority、遗漏 contract read、读取 private/evals、重复 invocation、wrapper validation
   failure 均 fail closed。
+- post-owner full run 不因 adapter 字段或过滤逻辑漏跑；aggregate 与 compatibility matrix 对
+  missing/duplicate/unknown/unexpected case identity fail closed。
 
 ### T3 Native behavior regression
 
@@ -153,5 +168,7 @@ Skill public I/O、owner boundary、single writer、持久化或 integration bou
 
 ## 8. Docs SSOT Plan
 
-以 `prd.md` 第 7 节为唯一 Docs SSOT Plan。durable change 限于两个 package-local
-Skill/contract；repository RDT 与 Architecture shared SSOT 记录 `no_update`。
+以 `prd.md` 第 7 节为唯一 Docs SSOT Plan。除两个 package-local Skill/contract 外，本任务直接
+更新现有 Skill Eval durable SSOT：`.trellis/spec/workflow/skill-package-contract.md`、
+`data-contracts.md`、`companion-scripts.md` 及 workflow/preset public README。Repository RDT
+与 Architecture shared SSOT 仍记录 `no_update`。

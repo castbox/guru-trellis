@@ -258,6 +258,44 @@ def _require_string_list(value: Any, label: str) -> list[str]:
     return value
 
 
+def _shared_applicable_eval_case_ids(
+    declared_cases: list[Any], skill_id: str
+) -> list[str]:
+    expected: list[str] = []
+    for index, row in enumerate(declared_cases):
+        if not isinstance(row, dict) or not isinstance(row.get("id"), str):
+            raise MatrixError(
+                f"installed {skill_id} eval case {index} has no valid id"
+            )
+        mode = row.get("native_execution_mode", "post_owner")
+        if mode != "semantic_authoring" or row.get("native_execution_adapter") == "shared":
+            expected.append(row["id"])
+    if len(expected) != len(set(expected)):
+        raise MatrixError(f"installed {skill_id} eval corpus has duplicate applicable case ids")
+    return expected
+
+
+def _assert_shared_eval_case_identity(
+    skill_id: str, declared_cases: list[Any], actual_cases: Any
+) -> list[str]:
+    expected = _shared_applicable_eval_case_ids(declared_cases, skill_id)
+    if not isinstance(actual_cases, list):
+        raise MatrixError(f"installed {skill_id} profile eval cases must be an array")
+    actual: list[str] = []
+    for index, row in enumerate(actual_cases):
+        if not isinstance(row, dict) or not isinstance(row.get("case_id"), str):
+            raise MatrixError(
+                f"installed {skill_id} eval result case {index} has no valid case_id"
+            )
+        actual.append(row["case_id"])
+    if len(actual) != len(set(actual)) or sorted(actual) != sorted(expected):
+        raise MatrixError(
+            f"installed {skill_id} shared eval case identity mismatch: "
+            f"expected={sorted(expected)}, actual={sorted(actual)}"
+        )
+    return expected
+
+
 def _platforms_from_paths(values: Iterable[str]) -> set[str]:
     platforms: set[str] = set()
     for value in values:
@@ -2135,13 +2173,14 @@ def _run_installed_smokes(
         if eval_result.get("status") != "passed":
             raise MatrixError(f"installed {skill_id} profile eval did not pass")
         cases = eval_result.get("cases")
-        if not isinstance(cases, list) or not cases:
-            raise MatrixError(f"installed {skill_id} profile eval has no cases")
         package = target / ".trellis/guru-team/skills/packages" / skill_id
         corpus = _require_dict(_load_json(package / "evals/evals.json"), "eval corpus")
         declared_cases = corpus.get("evals")
         if not isinstance(declared_cases, list) or not declared_cases:
             raise MatrixError(f"installed {skill_id} eval corpus has no cases")
+        expected_case_ids = _assert_shared_eval_case_identity(
+            skill_id, declared_cases, cases
+        )
         covered_profiles = _sorted_strings(
             str(row.get("input_profile_id"))
             for row in declared_cases
@@ -2168,7 +2207,7 @@ def _run_installed_smokes(
                 "adapter": "shared",
                 "platform_projection": platform,
                 "profiles": covered_profiles,
-                "case_count": len(cases),
+                "case_count": len(expected_case_ids),
                 "status": "passed",
             }
         )

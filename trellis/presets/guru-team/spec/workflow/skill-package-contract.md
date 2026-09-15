@@ -1451,14 +1451,24 @@ Interface 1.4 packages may publish a behavior corpus only at
 non-empty `evals[]` whose case ids are unique stable strings. Each case owns a
 prompt, expected typed exit, human-readable expected output, optional exact
 input-profile reference, optional non-empty regular files below `evals/files/`,
-and optional non-empty deterministic/semantic assertion groups. Unknown fields,
-including `expectations`, `null`, unsafe paths, symlinks, and unknown
-profile/exit/assertion references fail closed. Adapters accept only this current
-corpus shape and never translate or rewrite another input contract.
+and optional non-empty deterministic/semantic assertion groups. A case may also
+declare `native_execution_mode=post_owner|semantic_authoring`; omission is
+exactly `post_owner`. `native_execution_adapter` and `model_id` are required
+only for `semantic_authoring` and forbidden for omitted mode or `post_owner`.
+Unknown fields, including `expectations`, `null`, unsafe paths, symlinks, and
+unknown profile/exit/assertion references fail closed. Adapters accept only this
+current corpus shape and never translate or rewrite another input contract.
 
 The eval runner discovers the Interface 1.4 public invocation and executes its
-declared wrapper for every selected case. It records the actual typed exit and
-validates the DTO against that exit's independent output schema. Deterministic
+declared wrapper for every selected case. In a full run, every `post_owner` case
+is applicable to every selected adapter; only `semantic_authoring` cases are
+filtered by their declared `native_execution_adapter`. A focused request for a
+`semantic_authoring` case on another adapter returns explicit `unsupported`
+rather than silently omitting the case. Before aggregation, the runner derives
+the complete declared applicable case-id set independently and requires actual
+case ids to match it exactly; missing, duplicate, unknown, or unexpected cases
+fail closed. It records the actual typed exit and validates the DTO against that
+exit's independent output schema. Deterministic
 grading is limited to closed JSON-pointer, isolated-file, and public-invocation
 trace operations. Semantic assertions can pass only through complete external
 grading bound to comparison-side/case/assertion identity; human feedback is separate and cannot
@@ -1475,7 +1485,14 @@ projection, staged files, prompt, helper, and a minimal native request; it does
 not receive the canonical package root, corpus locator, adapter request, or
 private runtime source. Adapters return stdout/stderr/trace/timing locators.
 They consume the same corpus bytes and do not own schema, grading,
-consumer projection, semantic judgment, or platform-specific corpus. Missing
+consumer projection, semantic judgment, or platform-specific corpus. For
+`post_owner`, the host prepares the repo-local checker-passed owner result and
+the native Agent exercises the deterministic public route. For
+`semantic_authoring`, the host stages only public input and permitted evidence;
+the contract-designated native Agent performs the semantic judgment, authors
+the call-local owner-result envelope, and invokes the same formal public
+wrapper. Adapter/runtime code never generates, selects, or rewrites that
+judgment. Missing
 native capability returns `unsupported`. Comparison accepts only a pair of
 caller-resolved exact package paths, binds grading and feedback to each side
 independently, and never interprets floating refs. Before either side executes,

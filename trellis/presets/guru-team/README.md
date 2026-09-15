@@ -1564,6 +1564,12 @@ schema、adapter response 与 shared runtime；native CLI 只有通过 repo 外 
 读取 public-only projection 的 exact Skill、调用 exact wrapper，且 receipt 绑定最小 request、
 projection、Skill/wrapper digest 与 output 时，trace assertion 才有效。Canonical corpus/private
 runtime 留在 native execution 外；四平台 projection 内对应 raw read 必须真实失败。
+`guru-team-skill-evals-1.0` 中缺省/显式 `post_owner` case 使用 host 已准备并经 checker
+通过的 owner result，且在任意 adapter 的 full run 中都属于适用 case；只有同时声明
+adapter/model 的 `semantic_authoring` case 才按 adapter 过滤，并由合同指定 Agent 自行判断、
+author envelope 后调用正式 wrapper。Focused adapter mismatch 返回 `unsupported`。Source 与
+installed full eval 的 aggregate 必须校验 declared applicable 与 actual case ids 完全一致，任何
+missing、duplicate、unknown 或 unexpected case 都失败。
 
 当前入口使用已验证的固定 Fork checkout，直接运行其 Node CLI：clean initial
 workflow/preset install -> target throwaway project 的 `update --dry-run` ->

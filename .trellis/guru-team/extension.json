@@ -438,11 +438,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-15T18:03:03Z",
+  "installed_at": "2026-09-15T20:07:15Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "ca6ba3d7b0934ba26ccbcd839d31b27eb150153e",
-    "commit": "ca6ba3d7b0934ba26ccbcd839d31b27eb150153e",
+    "ref": "98744c0c4b2d721d0a4aa6eb798a9930249e0852",
+    "commit": "98744c0c4b2d721d0a4aa6eb798a9930249e0852",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -529,10 +529,10 @@
       ".trellis/spec/workflow/semantic-retrieval.md": "5061a6187a8f363e5ed3af7c8666dcd6bc4d6af76832bd7c92f97214a62edacb",
       ".trellis/spec/workflow/subtraction-first-compatibility.md": "4b4ad9a2a37a77ac8ac8faf05c9b432ca5302a3acbe85ef372ced3517861547b",
       ".trellis/spec/workflow/workflow-contract.md": "3fc043e14a2664906da1076ce3ac5516b698aca25845a6323d94cffba458679e",
-      ".trellis/spec/workflow/skill-package-contract.md": "7f59a4a0b379367220ec24781c8deee08da5d7fbbb2e81ef6508029554e6c168",
-      ".trellis/spec/workflow/data-contracts.md": "03f8cc297c1b4b0469255a3524b03e4028f89d4d9e796a0b9ba4df9a1e027025",
-      ".trellis/spec/workflow/companion-scripts.md": "ee289c31771b8e2e88c51d05f966e24893b122e11b8bc5ef78e7e4a2dd7597b9",
-      ".trellis/spec/workflow/quality-guidelines.md": "3024ef5873708d3a0d38a0ee3fcccec02f31f6ba7c4b8deebc09e24529a90466",
+      ".trellis/spec/workflow/skill-package-contract.md": "f79aef2f099f587f706ed94fb00361307bba71166f079427ca20b9448b1270fd",
+      ".trellis/spec/workflow/data-contracts.md": "867b771f310824ef00ef6ede2957459d11bcfa4381ad4c317cb7f40e8fd428a9",
+      ".trellis/spec/workflow/companion-scripts.md": "ed65421f1adb50e2758a143e5aaea80d65d7239c2887345d79d5bfc82b344216",
+      ".trellis/spec/workflow/quality-guidelines.md": "a4cfb933a8ad35d3291bbfd228283d296119929ccb342344217f15b961d24d45",
       ".trellis/guru-team/trellis-source.json": "27c84a6ced044be619a8054a6e20518323bd9628a8a4313af2fb273574a55b83"
     },
     "new_copies": [],
@@ -864,7 +864,7 @@
       {
         "path": ".trellis/guru-team/skills/schemas/skill-evals.schema.json",
         "source": "trellis/skills/guru-team/schemas/skill-evals.schema.json",
-        "sha256": "b3afb965455b109dc2960b83446df3240981c4a783a4c67adfa1365574860ad7",
+        "sha256": "8a5006a771a0d3c7d143adbc32fe6834454e13b81e7532885671858fdc8e1b96",
         "executable": false,
         "action": "unchanged"
       },
@@ -9957,7 +9957,7 @@
       {
         "path": ".trellis/guru-team/runtime/eval_runner.py",
         "source": "trellis/skills/guru-team/runtime/eval_runner.py",
-        "sha256": "115918437d41d47538b5baa9f4360cf9c2a62eaf98f76eb7b68c577faca45c06",
+        "sha256": "e27fe9ad92fb72601f01f0c68af48b47d90ed6f850f1b008dfff95fe1f9b3f02",
         "executable": false,
         "action": "unchanged"
       },

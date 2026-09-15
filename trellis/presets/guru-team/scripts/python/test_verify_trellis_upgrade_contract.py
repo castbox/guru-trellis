@@ -1367,11 +1367,14 @@ exit 23
         target, source, work = Path("/fixture/target"), Path("/fixture/source"), Path("/fixture/work")
         def load(path):
             if path.name == "evals.json":
-                return {"evals": [{"input_profile_id": "normal"}]}
+                return {"evals": [{"id": "normal-case", "input_profile_id": "normal"}]}
             return {"public_contracts": {"input": {"profiles": [{"id": "normal"}]}}}
         def run(argv, **kwargs):
             if Path(argv[0]).name == "run-skill-evals.sh":
-                return json.dumps({"status": "passed", "cases": [{}]})
+                return json.dumps({
+                    "status": "passed",
+                    "cases": [{"case_id": "normal-case"}],
+                })
             if any(
                 Path(str(part)).name == "verify_installed_task_workspace.py"
                 for part in argv
@@ -1418,6 +1421,35 @@ exit 23
                                                str(target), str(target / ".trellis/guru-team/runtime")))
                 self.assertEqual(Path(calls[0][3]).name, "verify_installed_closeout.py")
                 self.assertEqual(calls[0][calls[0].index("--case") + 1], closeout_case)
+
+    def test_matrix_fails_when_shared_eval_omits_an_applicable_case(self) -> None:
+        declared = [
+            {"id": "post-owner-default"},
+            {"id": "post-owner-explicit", "native_execution_mode": "post_owner"},
+            {
+                "id": "codex-authoring",
+                "native_execution_mode": "semantic_authoring",
+                "native_execution_adapter": "codex",
+            },
+        ]
+        actual = [{"case_id": "post-owner-default"}]
+
+        with self.assertRaises(self.matrix.MatrixError) as raised:
+            self.matrix._assert_shared_eval_case_identity(
+                "guru-example", declared, actual
+            )
+        self.assertIn("shared eval case identity mismatch", str(raised.exception))
+
+    def test_matrix_shared_eval_identity_rejects_duplicate_or_unknown_cases(self) -> None:
+        declared = [{"id": "alpha"}, {"id": "beta"}]
+        for label, actual in (
+            ("duplicate", [{"case_id": "alpha"}, {"case_id": "alpha"}]),
+            ("unknown", [{"case_id": "alpha"}, {"case_id": "gamma"}]),
+        ):
+            with self.subTest(label=label), self.assertRaises(self.matrix.MatrixError):
+                self.matrix._assert_shared_eval_case_identity(
+                    "guru-example", declared, actual
+                )
 
     def test_capability_projection_is_compact_and_complete(self) -> None:
         projection = self.matrix.capability_projection(REPO)

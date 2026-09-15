@@ -19,6 +19,7 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from runtime.validate import _package_paths
+from runtime.io import CommandError
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -1036,11 +1037,11 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     ),
                     ["public_invocation", "evals_not_loaded", "private_runtime_not_read"],
                 )
-                extra_authority = repository / "docs/architecture/additional-evidence.md"
-                extra_authority.write_text(
-                    "# Additional Architecture Evidence\n\n"
-                    "This repository evidence is optional and not part of the fixture minimum reads.\n",
-                    encoding="utf-8",
+                extra_authority = repository / ".trellis/workflow.md"
+                source_extra_authority = owner_repository / ".trellis/workflow.md"
+                self.assertTrue(extra_authority.is_file())
+                self.assertEqual(
+                    extra_authority.read_bytes(), source_extra_authority.read_bytes()
                 )
                 self.assertNotIn(
                     extra_authority.relative_to(repository).as_posix(),
@@ -1231,16 +1232,19 @@ class QualificationNativeIsolationTests(unittest.TestCase):
         from runtime import eval_runner
 
         repo_root = SKILLS.parents[2]
-        corpus = json.loads(
-            (
-                SKILLS
-                / "packages/guru-maintain-architecture-baseline/evals/evals.json"
-            ).read_text(encoding="utf-8")
-        )
         expected_case_ids = {
-            case["id"]
-            for case in corpus["evals"]
-            if case.get("native_execution_adapter", "shared") == "shared"
+            "bootstrap-foundation-current",
+            "no-impact",
+            "target-native",
+            "legacy-boundary-convergence",
+            "dedicated-refactor-slice",
+            "scope-expansion",
+            "fitness-regression",
+            "parallel-stale",
+            "unpromoted-contribution",
+            "next-task-consumption",
+            "missing-external-evidence",
+            "repair-current-contract",
         }
         with tempfile.TemporaryDirectory() as temporary:
             args = argparse.Namespace(
@@ -1266,6 +1270,105 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             {case["case_id"] for case in result["cases"]},
         )
         self.assertTrue(all(case["status"] == "passed" for case in result["cases"]))
+
+    def test_shared_full_eval_runs_schema_valid_post_owner_case(self) -> None:
+        from runtime import eval_runner
+
+        repo_root = SKILLS.parents[2]
+        package = SKILLS / "packages/guru-maintain-architecture-baseline"
+        interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+        corpus = json.loads((package / "evals/evals.json").read_text(encoding="utf-8"))
+        post_owner = copy.deepcopy(
+            next(case for case in corpus["evals"] if case["id"] == "no-impact")
+        )
+        post_owner["native_execution_mode"] = "post_owner"
+        corpus["evals"] = [post_owner]
+        corpus_bytes = json.dumps(corpus, separators=(",", ":")).encode()
+
+        def fake_corpus(
+            _skills: Path,
+            _package: Path,
+            _interface: dict[str, object],
+        ) -> tuple[dict[str, object], bytes]:
+            return corpus, corpus_bytes
+
+        def fake_adapter(
+            _skills: Path,
+            _descriptor: dict[str, object],
+            request_path: Path,
+        ) -> dict[str, object]:
+            request = json.loads(request_path.read_text(encoding="utf-8"))
+            transcript = request_path.parent / "adapter-transcript.json"
+            transcript.write_text("{}\n", encoding="utf-8")
+            public_output = json.loads(
+                (package / "examples/public-output-current.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            return {
+                "corpus_sha256": request["corpus_sha256"],
+                "capability_status": "executed",
+                "public_stdout": json.dumps(public_output),
+                "public_stderr": "",
+                "trace_events": [],
+                "transcript_locator": str(transcript),
+                "native_trace_locator": str(request_path.parent / "native-trace.json"),
+                "timing_ms": 0,
+            }
+
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.object(
+            eval_runner, "corpus", side_effect=fake_corpus,
+        ), mock.patch.object(
+            eval_runner, "call_adapter", side_effect=fake_adapter,
+        ):
+            args = argparse.Namespace(
+                adapter="shared",
+                case=None,
+                comparison_package=None,
+                current_package=None,
+                human_feedback=None,
+                mode="source",
+                run_root=str(Path(temporary) / "shared"),
+                semantic_grading=None,
+                skill="guru-maintain-architecture-baseline",
+            )
+            result = eval_runner.run(repo_root, SKILLS, args)
+
+        self.assertEqual(result["status"], "passed", result)
+        self.assertEqual(
+            [case["case_id"] for case in result["cases"]],
+            ["no-impact"],
+        )
+
+    def test_eval_case_identity_fails_closed_for_incomplete_or_invalid_results(self) -> None:
+        from runtime import eval_runner
+
+        expected = ["alpha", "beta"]
+        valid = [
+            {"comparison_side": "current", "case_id": "alpha"},
+            {"comparison_side": "current", "case_id": "beta"},
+        ]
+        eval_runner.validate_eval_case_identity(expected, ["current"], valid)
+
+        invalid_results = {
+            "missing": valid[:1],
+            "duplicate": [valid[0], valid[0]],
+            "unknown": [valid[0], {"comparison_side": "current", "case_id": "gamma"}],
+            "unexpected-side": [
+                valid[0],
+                {"comparison_side": "comparison", "case_id": "beta"},
+            ],
+        }
+        for label, results in invalid_results.items():
+            with self.subTest(label=label), self.assertRaises(CommandError) as raised:
+                eval_runner.validate_eval_case_identity(expected, ["current"], results)
+            self.assertEqual(raised.exception.code, "eval_result_case_identity_mismatch")
+
+        with self.assertRaises(CommandError) as raised:
+            eval_runner.validate_eval_case_identity(
+                ["alpha", "alpha"], ["current"], valid
+            )
+        self.assertEqual(raised.exception.code, "eval_declared_case_identity_invalid")
 
     def test_architecture_semantic_authoring_uses_isolated_permissions_and_probe(self) -> None:
         from adapters.eval import eval_constants, native_adapter
@@ -1529,6 +1632,17 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             )
             target.pop(field)
             self.assertTrue(list(Draft202012Validator(case_schema).iter_errors(invalid)))
+
+        for mode in (None, "post_owner"):
+            invalid = copy.deepcopy(corpus)
+            target = next(case for case in invalid["evals"] if case["id"] == "no-impact")
+            if mode is not None:
+                target["native_execution_mode"] = mode
+            target["native_execution_adapter"] = "codex"
+            target["model_id"] = "gpt-5.6-sol"
+            self.assertTrue(
+                list(Draft202012Validator(case_schema).iter_errors(invalid))
+            )
 
         with tempfile.TemporaryDirectory() as temporary:
             request = self.architecture_semantic_request(Path(temporary))

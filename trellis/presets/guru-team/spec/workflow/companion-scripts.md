@@ -1024,6 +1024,18 @@ before iterating either comparison side and writes it only to the private
 adapter request. Current and repo-external comparison packages use the same
 target; adapters never derive runtime location from a compared package path.
 
+Case execution mode is closed. Omitted `native_execution_mode` is
+`post_owner`; explicit `post_owner` has the same behavior. Those cases use the
+host-prepared checker-passed owner result and are adapter-neutral, so every one
+must execute in every full adapter run. `semantic_authoring` requires both its
+declared native adapter and model identity; the host stages facts only, while
+the contract-designated Agent performs the semantic judgment, authors the
+call-local envelope, and invokes the formal wrapper. Only these authoring cases
+are adapter-filtered in a full run. A focused authoring request for a different
+adapter returns explicit `unsupported`. The runner independently derives the
+declared applicable case-id set and rejects missing, duplicate, unknown, or
+unexpected actual results before it may publish an aggregate status.
+
 The shared/Codex/Claude/Cursor adapter descriptors use one request/response
 protocol. Native argv assembly is adapter-local; corpus/schema/grader/status
 policy stays in the shared runtime. Missing CLI/capability is `unsupported`,

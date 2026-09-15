@@ -1165,8 +1165,14 @@ request、projection、Skill/wrapper digest、wrapper argv/return code 和返回
 缺少 receipt 为 `execution_error`。Native argv、output、context 与 receipt locator 收集到
 repo 外 transcript；四平台 projection 中 eval/private runtime raw read 必须真实失败。缺失
 native command 为 `unsupported`，不依赖隐藏环境变量替代 adapter。
-Semantic case 必须引用 repo-local checker-passed owner result；actual exit 选择 output schema
-后才比较 expected exit。Codex 使用 trusted Git root，Claude 使用 safe non-interactive 协议，
+Case 缺省或显式 `native_execution_mode=post_owner` 时，由 host 准备 repo-local
+checker-passed owner result，且 full run 在每个 adapter 上都必须执行这些 adapter-neutral
+case。`semantic_authoring` case 必须同时声明 adapter/model；host 只准备 public input 与允许的
+repository evidence，由合同指定 Agent 自行完成 semantic judgment、author call-local envelope
+并调用同一正式 wrapper。Full run 只对 `semantic_authoring` 应用 adapter applicability；focused
+adapter mismatch 明确返回 `unsupported`。Aggregate 必须以独立推导的 declared applicable case
+ids 对照 actual ids，missing、duplicate、unknown 或 unexpected case 均 fail closed。actual exit
+选择 output schema 后才比较 expected exit。Codex 使用 trusted Git root，Claude 使用 safe non-interactive 协议，
 Cursor 未登录直接返回 `unsupported`。
 Finalizer transaction 同时绑定 `reviewed_content_head` 与 `publication_head`。业务
 content push 后直接继续 Draft PR、archive 与 Ready transaction；installed manifest、

@@ -19,7 +19,15 @@
       "allOf": [
         {
           "if": {"properties": {"native_execution_mode": {"const": "semantic_authoring"}}, "required": ["native_execution_mode"]},
-          "then": {"required": ["native_execution_adapter", "model_id"]}
+          "then": {"required": ["native_execution_adapter", "model_id"]},
+          "else": {
+            "not": {
+              "anyOf": [
+                {"required": ["native_execution_adapter"]},
+                {"required": ["model_id"]}
+              ]
+            }
+          }
         }
       ],
       "properties": {
