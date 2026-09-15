@@ -2,18 +2,18 @@
 
 ## Phase 1
 
-- [x] 完成 fresh base、live #412/#410、duplicate、clarification、wording 和 readiness intake。
-- [x] 创建唯一 task、branch 和 worktree，并保持 task 状态为 `planning`。
-- [x] 编写 `prd.md`、`design.md`、`implement.md` 与 Docs SSOT Plan。
-- [x] 在原 caller-inventory scope 上完成 wording、Planning Architecture、scenario/mechanism qualification 与 `guru-approve-task-plan`；该结果因 Phase 2 发现 projection stale 和 live Issue scope change 而失效，不再作为当前 approval。
-- [x] 通过 live Issue #412 body edit接纳六处 `.52` projection repair，并 fresh 回读 external authority。
-- [x] 基于 fresh `origin/main@6b97d4c7d659105a7a0d443946f89ba42866b72b` 完成 Discovery Refresh；`context_ready` result 为 `46a7f9704c2d889173808a05d8a91e0fe812e2e0f1f9f3e8745dad1618594f60`。
-- [ ] 校验 active-task scope update 与 task planning identities，完成 `guru-clarify-requirements` 的 current re-entry。
-- [ ] 对扩展后的三份 planning artifacts 重跑 wording review，要求 retained hit 有确定性分类且 unchecked hit 为 0。
-- [ ] 分别完成 Architecture/RDT `repair` semantic owners，并验证六个 projection/README 导航的精确 repair contract。
-- [ ] 重跑 Architecture 与 RDT `task_impact_sync(stage=planning)`，仅消费 fresh current typed exits。
-- [ ] 对扩展后的 acceptance、projection stale scenario 和两个实现机制运行 fresh qualification owners。
-- [ ] 重新完成 `guru-approve-task-plan` 八维审查并展示 approved plan；取得新的明确确认后才继续 projection 实现。
+1. 读取 fresh base、live #412/#410、duplicate、clarification、wording 和 readiness intake 事实。
+2. 创建唯一 task、branch 和 worktree，并在 Planning 期间保持 task 状态为 `planning`。
+3. 编写 `prd.md`、`design.md`、`implement.md` 与 Docs SSOT Plan。
+4. 对 caller-inventory scope 执行 wording、Planning Architecture、scenario/mechanism qualification 与 `guru-approve-task-plan`；任何后续 scope 或 authority 变化均使旧结果失效。
+5. 需要接纳 `.52` projection repair 时，先更新 live Issue #412 body 并 fresh 回读 external authority。
+6. 基于 fresh `origin/main` 执行 Discovery Refresh，只消费当前 `context_ready` typed result，不在 tracked planning artifact 中持久化 transient result identity。
+7. 校验 active-task scope update 与 task planning identities，完成 `guru-clarify-requirements` 的 current re-entry。
+8. 对扩展后的三份 planning artifacts 重跑 wording review，要求 retained hit 有确定性分类且 unchecked hit 为 0。
+9. 分别完成 Architecture/RDT `repair` semantic owners，并验证六个 projection/README 导航的精确 repair contract。
+10. 重跑 Architecture 与 RDT `task_impact_sync(stage=planning)`，仅消费 fresh current typed exits。
+11. 对扩展后的 acceptance、projection stale scenario 和两个实现机制运行 fresh qualification owners。
+12. 重新完成 `guru-approve-task-plan` 八维审查并展示 approved plan；取得新的明确确认后才继续 projection 实现。
 
 ## Phase 2 实现
 
