@@ -61,11 +61,14 @@ stdout, a result/report, locator, or checkpoint.
 
 The global workflow mandatory invokes
 `guru-maintain-architecture-baseline:task_impact_sync(stage=planning)` before
-this owner can approve Planning. This Skill consumes only the checked
-`baseline_current` route and rereads the live project-owned Architecture
+this owner can approve Planning. Its fresh `baseline_current` is the adjacent
+upstream result and proves that the contract-selected Architecture AI owner has
+already completed semantic authoring and the formal deterministic invocation.
+This Skill consumes only that checked route and rereads the live project-owned Architecture
 Baseline, design-constitution locator/identity, and Architecture change-contract
 locator/identity. It never reads Architecture private state or repeats that
-owner's impact, applicability, path, contribution, ADR, or route judgment.
+owner's impact, applicability, path, contribution, ADR, or route judgment, and
+it never searches for or delegates to a second external Architecture owner.
 
 The current Planning result must cover the current task scope and bind both the
 Guru public contract and project Architecture contract. Missing or stale

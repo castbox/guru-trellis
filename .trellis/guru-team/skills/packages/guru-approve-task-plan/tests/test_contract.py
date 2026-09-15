@@ -26,6 +26,14 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
     def read(self, relative: str) -> dict:
         return json.loads((self.package / relative).read_text(encoding="utf-8"))
 
+    def test_architecture_stage_consumes_adjacent_completed_owner_result(self) -> None:
+        skill = (self.package / "SKILL.md").read_text(encoding="utf-8")
+        contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
+        for text in (skill, contract):
+            self.assertRegex(text, r"adjacent\s+upstream")
+            self.assertRegex(text, r"second\s+external")
+            self.assertRegex(text, r"already\s+completed")
+
     def load_python_module(self, name: str, path: Path):
         spec = importlib.util.spec_from_file_location(name, path)
         self.assertIsNotNone(spec)

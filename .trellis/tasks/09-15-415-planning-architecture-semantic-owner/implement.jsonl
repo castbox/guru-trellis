@@ -1,0 +1,6 @@
+{"file": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md", "reason": "Canonical Architecture owner entry contract"}
+{"file": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md", "reason": "Canonical Architecture semantic authoring contract"}
+{"file": "trellis/skills/guru-team/packages/guru-approve-task-plan/SKILL.md", "reason": "Adjacent Planning approval consumption"}
+{"file": "trellis/skills/guru-team/adapters/eval/native_adapter.py", "reason": "Native Agent execution boundary"}
+{"file": "trellis/skills/guru-team/adapters/eval/owner_staging.py", "reason": "Owner fixture staging split"}
+{"file": "trellis/skills/guru-team/schemas/skill-evals.schema.json", "reason": "Explicit eval execution mode contract"}

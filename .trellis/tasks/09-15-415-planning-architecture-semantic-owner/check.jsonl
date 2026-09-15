@@ -1,0 +1,2 @@
+{"file": "trellis/skills/guru-team/runtime/tests/test_runtime.py", "reason": "Eval runtime and adapter regression coverage"}
+{"file": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/evals.json", "reason": "Architecture native semantic-authoring case"}

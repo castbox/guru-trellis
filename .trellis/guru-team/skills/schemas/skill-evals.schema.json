@@ -21,6 +21,7 @@
         "prompt": {"type": "string", "minLength": 1},
         "expected_exit": {"type": "string", "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$"},
         "expected_output": {"type": "string", "minLength": 1},
+        "native_execution_mode": {"enum": ["post_owner", "semantic_authoring"]},
         "input_profile_id": {"type": "string", "minLength": 1},
         "files": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^evals/files/[A-Za-z0-9._/-]+$"}},
         "assertions": {"$ref": "#/$defs/assertions"}

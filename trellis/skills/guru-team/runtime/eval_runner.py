@@ -1708,6 +1708,7 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
                 "case_id": case["id"], "prompt": case["prompt"], "files": staged,
                 "workdir": str(workdir), "corpus_path": str(package / "evals/evals.json"),
                 "corpus_sha256": discovery["corpus_sha256"], "runtime_target": str(target),
+                "native_execution_mode": case.get("native_execution_mode", "post_owner"),
             }
             validate_instance(request, skills / "schemas/skill-eval-adapter-request.schema.json", "adapter_request")
             request_path = case_root / "adapter-request.json"

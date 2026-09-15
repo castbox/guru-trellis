@@ -49,6 +49,44 @@
       }
     },
     {
+      "id": "planning-semantic-authoring",
+      "prompt": "At Planning, review the complete current task and repository Architecture authority. The bounded change clarifies the existing semantic-owner execution contract and adds regression coverage without changing public I/O, owners, persistence, integration boundaries, decisions, or GAP lifecycle. Act as the contract-selected Architecture semantic owner, author the result, and invoke the formal wrapper once.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The native Agent authors a fresh no-architecture-impact Planning result and returns baseline_current.",
+      "native_execution_mode": "semantic_authoring",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/planning-semantic-authoring-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          },
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      }
+    },
+    {
       "id": "target-native",
       "prompt": "A new capability follows the target boundary and one writer without introducing a legacy authority.",
       "expected_exit": "baseline_current",

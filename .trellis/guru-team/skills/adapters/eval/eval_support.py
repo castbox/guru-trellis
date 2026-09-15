@@ -661,7 +661,13 @@ def stage_public_projection(request: dict[str, Any], execution_root: Path) -> tu
         raise ValueError("exact public Interface identity is unavailable")
     projection_root = execution_root / "public-packages" / str(request["skill_id"])
     projection_root.mkdir(parents=True, exist_ok=False)
-    for relative in sorted(public_projection_assets(interface), key=lambda item: item.as_posix()):
+    public_assets = public_projection_assets(interface)
+    if request.get("native_execution_mode") == "semantic_authoring":
+        public_assets.update({
+            Path("references/contract.md"),
+            Path("schemas/semantic-result.schema.json"),
+        })
+    for relative in sorted(public_assets, key=lambda item: item.as_posix()):
         source = canonical_root / relative
         if source.is_symlink() or not source.is_file():
             raise ValueError(f"public projection asset is unavailable: {relative.as_posix()}")

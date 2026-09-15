@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import ast
+import argparse
+import copy
 import hashlib
 import json
 import os
@@ -880,6 +882,244 @@ class SharedRuntimeTests(unittest.TestCase):
 
 
 class QualificationNativeIsolationTests(unittest.TestCase):
+    def architecture_semantic_request(self, root: Path) -> dict[str, object]:
+        package = SKILLS / "packages/guru-maintain-architecture-baseline"
+        interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+        workdir = root / "case/execution/workdir"
+        workdir.mkdir(parents=True)
+        files = [
+            "evals/files/impact-current-input.json",
+            "evals/files/planning-semantic-authoring-facts.json",
+        ]
+        for relative in files:
+            target = workdir / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((package / relative).read_bytes())
+        return {
+            "schema_version": "1.0",
+            "adapter_id": "codex",
+            "platform": "codex",
+            "skill_id": "guru-maintain-architecture-baseline",
+            "package_root": str(package),
+            "interface": {
+                "public_invocation": interface["public_contracts"]["invocation"],
+            },
+            "case_id": "planning-semantic-authoring",
+            "prompt": "Review the current Planning Architecture facts.",
+            "files": files,
+            "workdir": str(workdir),
+            "corpus_path": str(package / "evals/evals.json"),
+            "corpus_sha256": hashlib.sha256(
+                (package / "evals/evals.json").read_bytes()
+            ).hexdigest(),
+            "runtime_target": str(
+                Path(__file__).resolve().parents[5]
+                / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+            ),
+            "native_execution_mode": "semantic_authoring",
+        }
+
+    def test_architecture_semantic_authoring_stages_facts_without_owner_result(self) -> None:
+        from adapters.eval import eval_constants, native_adapter, owner_staging
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            request = self.architecture_semantic_request(root)
+            package, target, _ = owner_staging.stage_owner_execution(
+                request,
+                Path(request["workdir"]).parent,
+                Path(request["runtime_target"]),
+            )
+            owner_repository = target.parents[4]
+            self.assertEqual(package.name, "guru-maintain-architecture-baseline")
+            self.assertFalse((owner_repository / eval_constants.OWNER_RESULT).exists())
+            self.assertFalse((owner_repository / ".trellis/.runtime").exists())
+            facts = json.loads(
+                (
+                    owner_repository
+                    / eval_constants.ARCHITECTURE_PUBLIC_AUTHORING_FACTS
+                ).read_text(encoding="utf-8")
+            )
+            self.assertEqual(facts["schema_version"], "1.0")
+            self.assertIn(".trellis/tasks/eval-task/prd.md", facts["required_reads"])
+            self.assertIn("docs/architecture/06-governance/change-contract.md", facts["required_reads"])
+            self.assertNotIn("expected", json.dumps(facts).lower())
+            self.assertNotIn("typed_exit", json.dumps(facts).lower())
+
+    def test_architecture_semantic_context_and_trace_fail_closed(self) -> None:
+        from adapters.eval import eval_constants, native_adapter
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            request = self.architecture_semantic_request(root)
+            values = native_adapter.build_context(request, "codex")
+            (
+                context, _, wrapper, trace, protocol_path, native_request_path,
+                request_sha256, _, boundary_thread, boundary_stop, _,
+            ) = values
+            try:
+                protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
+                native_request = json.loads(native_request_path.read_text(encoding="utf-8"))
+                self.assertEqual(native_request["native_execution_mode"], "semantic_authoring")
+                self.assertNotIn("expected_exit", native_request)
+                self.assertNotIn("owner_result", json.dumps(native_request).lower())
+                self.assertIn("references/contract.md", context)
+                self.assertIn("schemas/semantic-result.schema.json", context)
+                self.assertIn("Every listed read is mandatory", context)
+                self.assertIn("Trace validation fails closed", context)
+                self.assertIn("Author the smallest owner_result valid", context)
+                self.assertIn("no_architecture_impact must omit", context)
+                owner_repository = Path(protocol["owner_repository"])
+                self.assertFalse((owner_repository / eval_constants.OWNER_RESULT).exists())
+
+                projection = Path(protocol["projection_root"])
+                repository = Path(protocol["repository_projection_root"])
+                case_root = Path(protocol["model_root"]) / "evidence/case"
+                facts_path = repository / eval_constants.ARCHITECTURE_PUBLIC_AUTHORING_FACTS
+                facts = json.loads(facts_path.read_text(encoding="utf-8"))
+                public_reads = [
+                    projection / "SKILL.md",
+                    projection / "references/contract.md",
+                    projection / "interface.json",
+                    projection / "schemas/semantic-result.schema.json",
+                    projection / "schemas/public-input-aggregate.schema.json",
+                    projection / "schemas/public-input-impact.schema.json",
+                ]
+                case_reads = sorted(path for path in case_root.iterdir() if path.is_file())
+                owner_reads = [
+                    facts_path,
+                    *(repository / relative for relative in facts["required_reads"]),
+                ]
+                events = []
+                for kind, paths in (
+                    ("skill_contract", public_reads),
+                    ("case_file", case_reads),
+                    ("owner_file", owner_reads),
+                ):
+                    for path in paths:
+                        events.append({
+                            "kind": "read",
+                            "target_kind": kind,
+                            "path": str(path.resolve()),
+                            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                            "request_sha256": request_sha256,
+                        })
+                public_stdout = '{"exit_id":"baseline_current"}'
+                events.append({
+                    "kind": "invoke",
+                    "wrapper_path": str(wrapper.resolve()),
+                    "argv": [str(wrapper.resolve()), "--invocation", "-"],
+                    "returncode": 0,
+                    "stdout_sha256": hashlib.sha256(public_stdout.encode()).hexdigest(),
+                    "stderr_sha256": hashlib.sha256(b"").hexdigest(),
+                    "request_sha256": request_sha256,
+                })
+                payload = {
+                    "schema_version": "1.0",
+                    "request_sha256": request_sha256,
+                    "projection_root": str(projection.resolve()),
+                    "skill_sha256": protocol["skill_sha256"],
+                    "wrapper_sha256": protocol["wrapper_sha256"],
+                    "events": events,
+                }
+                trace.write_text(json.dumps(payload), encoding="utf-8")
+                self.assertEqual(
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    ),
+                    ["public_invocation", "evals_not_loaded", "private_runtime_not_read"],
+                )
+                missing_contract = copy.deepcopy(payload)
+                missing_contract["events"] = [
+                    event for event in missing_contract["events"]
+                    if event.get("path") != str((projection / "references/contract.md").resolve())
+                ]
+                trace.write_text(json.dumps(missing_contract), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "required public contract reads"):
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    )
+            finally:
+                boundary_stop.set()
+                boundary_thread.join(timeout=5)
+
+    def test_architecture_semantic_authoring_uses_declared_codex_model(self) -> None:
+        from adapters.eval import eval_constants, native_adapter
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            model_root = root / "model-root"
+            model_root.mkdir()
+            request = self.architecture_semantic_request(root)
+            request["_model_root"] = str(model_root)
+            argv, output = native_adapter.native_argv(
+                "codex",
+                "/usr/bin/codex",
+                request,
+                "model-visible-context",
+                model_root / "native-context.txt",
+                root / "private/native-request.json",
+                model_root / "public-package",
+            )
+
+        self.assertIn("--ignore-user-config", argv)
+        self.assertEqual(
+            argv[argv.index("--model") + 1],
+            eval_constants.QUALIFICATION_MODEL,
+        )
+        self.assertEqual(
+            output,
+            (model_root / "output/native-last-message.txt").resolve(),
+        )
+
+    def test_eval_runner_propagates_closed_native_execution_mode(self) -> None:
+        from runtime import eval_runner
+
+        repo_root = SKILLS.parents[2]
+        observed: dict[str, str] = {}
+
+        def fake_adapter(
+            _skills: Path,
+            _descriptor: dict[str, object],
+            request_path: Path,
+        ) -> dict[str, object]:
+            request = json.loads(request_path.read_text(encoding="utf-8"))
+            observed[request["case_id"]] = request["native_execution_mode"]
+            transcript = request_path.parent / "adapter-transcript.json"
+            transcript.write_text("{}\n", encoding="utf-8")
+            return {
+                "corpus_sha256": request["corpus_sha256"],
+                "capability_status": "unsupported",
+                "public_stdout": "",
+                "public_stderr": "",
+                "trace_events": [],
+                "transcript_locator": str(transcript),
+                "native_trace_locator": str(request_path.parent / "native-trace.json"),
+                "timing_ms": 0,
+            }
+
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.object(
+            eval_runner, "call_adapter", side_effect=fake_adapter,
+        ):
+            for case_id in ("planning-semantic-authoring", "no-impact"):
+                args = argparse.Namespace(
+                    adapter="codex",
+                    case=case_id,
+                    comparison_package=None,
+                    current_package=None,
+                    human_feedback=None,
+                    mode="source",
+                    run_root=str(Path(temporary) / case_id),
+                    semantic_grading=None,
+                    skill="guru-maintain-architecture-baseline",
+                )
+                eval_runner.run(repo_root, SKILLS, args)
+
+        self.assertEqual(observed["planning-semantic-authoring"], "semantic_authoring")
+        self.assertEqual(observed["no-impact"], "post_owner")
+
     def test_production_phase2_inputs_close_schema_5_for_every_exit(self) -> None:
         from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
         from jsonschema import Draft202012Validator

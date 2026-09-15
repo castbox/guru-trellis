@@ -20,6 +20,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from adapters.eval.eval_constants import (
     ADAPTERS,
+    ARCHITECTURE_PUBLIC_AUTHORING_FACTS,
+    ARCHITECTURE_SKILL,
     MANAGED_PYTHON_SHEBANG,
     OWNER_INVOCATION,
     OWNER_RESULT,
@@ -52,6 +54,17 @@ from adapters.eval.eval_support import (
 from adapters.eval.owner_staging import (
     stage_owner_execution,
 )
+
+
+def semantic_authoring_request(request: dict[str, Any]) -> bool:
+    return request.get("native_execution_mode", "post_owner") == "semantic_authoring"
+
+
+def isolated_authoring_request(request: dict[str, Any], adapter: str) -> bool:
+    return adapter == "codex" and (
+        request.get("skill_id") == QUALIFICATION_SKILL
+        or semantic_authoring_request(request)
+    )
 
 
 def start_public_runtime_boundary(
@@ -212,6 +225,8 @@ def start_qualification_runtime_boundary(
                         envelope = None
                     semantic_result = envelope.get("semantic_result") if isinstance(envelope, dict) else None
                     public_input = semantic_result.get("public_input") if isinstance(semantic_result, dict) else None
+                    if not isinstance(public_input, dict) and isinstance(envelope, dict):
+                        public_input = envelope.get("public_input")
                     observed_profile = public_input.get("profile") if isinstance(public_input, dict) else None
                     if isinstance(observed_profile, str):
                         public_input_binding["profile"] = observed_profile
@@ -280,13 +295,17 @@ def build_context(
     )
     owner_repository = execution_runtime_target.parents[4]
     qualification_codex = request["skill_id"] == QUALIFICATION_SKILL and adapter == "codex"
+    semantic_authoring = semantic_authoring_request(request)
+    isolated_authoring = isolated_authoring_request(request, adapter)
+    if semantic_authoring and (owner_repository / OWNER_RESULT).exists():
+        raise ValueError("semantic authoring fixture must not contain a staged owner result")
     public_repository_identity = (
         qualification_public_repository_identity(owner_repository)
         if qualification_codex
         else None
     )
     public_input_binding: dict[str, str] | None = None
-    if not qualification_codex:
+    if not isolated_authoring:
         boundary_path, boundary_thread, boundary_stop = start_public_runtime_boundary(
             execution_root,
             execution_runtime_target,
@@ -295,15 +314,15 @@ def build_context(
             wrapper_path,
             runtime_environment,
         )
-    if qualification_codex:
+    if isolated_authoring:
         if request.get("schema_version") == "3.0":
             model_root = (execution_root / "model-sandbox").resolve()
             if model_root.exists():
-                raise ValueError("qualification model sandbox already exists")
+                raise ValueError("semantic authoring model sandbox already exists")
             model_root.mkdir(parents=True)
         else:
             model_root = Path(
-                tempfile.mkdtemp(prefix="guru-qualification-model-")
+                tempfile.mkdtemp(prefix="guru-semantic-authoring-model-")
             ).resolve()
         model_projection_root = model_root / "public-package"
         model_repository_root = model_root / "evidence/repository"
@@ -358,10 +377,10 @@ def build_context(
     helper_path.chmod(0o755)
     file_sections: list[str] = []
     for index, relative in enumerate(request["files"]):
-        staged = evidence_paths[index] if qualification_codex else workdir / relative
+        staged = evidence_paths[index] if isolated_authoring else workdir / relative
         if not staged.is_file():
             raise ValueError("staged case file is unavailable")
-        if qualification_codex:
+        if isolated_authoring:
             file_sections.append(f"### {relative}\n{staged}")
         else:
             try:
@@ -405,6 +424,18 @@ def build_context(
             "Re-read every staged case file through the trace helper before deciding. Use the helper's owner_file read operation for any necessary read-only inspection of the repository evidence projection; never read eval corpus files or .trellis/.runtime.",
             "For this semantic invocation boundary, run only those traced reads and then the exact stdin public wrapper invocation command below.",
         ]
+    elif semantic_authoring:
+        if request.get("skill_id") != ARCHITECTURE_SKILL:
+            raise ValueError("semantic authoring context is not declared for this Skill")
+        context_lines[-3:] = [
+            "This Skill has no staged owner result. The current executing AI is the semantic owner selected by the public contract.",
+            "Review the staged public input and repository authority, author one complete owner_result, and do not infer or search for an expected exit.",
+            f"Read {model_repository_root / ARCHITECTURE_PUBLIC_AUTHORING_FACTS} for the deterministic public-input digest, required repository reads, and project-check descriptor/evidence locators. These are facts, not a semantic decision.",
+            "Author the smallest owner_result valid for the selected semantic branch. Optional schema properties are not universally valid; in particular, no_architecture_impact must omit Architecture contribution, project-check, and review fields as required by the public contract.",
+            "Pass exactly one JSON object containing public_input and owner_result to the formal wrapper through stdin. Do not write the envelope, result, or any owner state to a file.",
+            "Re-read every staged case file and every required repository authority file through the trace helper. Never read eval corpus files, source package files, or .trellis/.runtime.",
+            "For this semantic invocation boundary, run only those traced reads and then the exact stdin public wrapper invocation command below.",
+        ]
     context = "\n".join(context_lines)
     if qualification_codex:
         assert public_repository_identity is not None
@@ -416,6 +447,19 @@ def build_context(
             evidence_paths=evidence_paths,
             repository_identity=public_repository_identity,
         )
+    elif semantic_authoring:
+        native_request = {
+            "schema_version": "1.0",
+            "skill_id": request["skill_id"],
+            "case_id": request["case_id"],
+            "native_execution_mode": "semantic_authoring",
+            "prompt": request["prompt"],
+            "files": [path.relative_to(model_root).as_posix() for path in evidence_paths],
+            "workdir": workdir.relative_to(model_root).as_posix(),
+            "public_package_root": projection_root.relative_to(model_root).as_posix(),
+            "repository_evidence_root": model_repository_root.relative_to(model_root).as_posix(),
+            "public_invocation": request["interface"]["public_invocation"],
+        }
     else:
         native_request = {
             "schema_version": "1.0",
@@ -434,7 +478,7 @@ def build_context(
         })
     native_request_path = (
         execution_root / "native-request.json"
-        if qualification_codex
+        if isolated_authoring
         else model_root / "native-request.json"
     )
     native_request_path.write_text(json.dumps(native_request, separators=(",", ":")), encoding="utf-8")
@@ -448,7 +492,7 @@ def build_context(
         f"First read the exact Skill contract with: {helper_path} {helper_arguments} read --kind skill_contract --path {skill_path}\n"
         f"Then invoke the exact public wrapper with: {helper_path} {helper_arguments} invoke --wrapper {wrapper_path} --execution-wrapper {boundary_path} -- <declared wrapper arguments>",
     )
-    if qualification_codex:
+    if isolated_authoring:
         case_read_commands = "\n".join(
             f"{helper_path} {helper_arguments} --repository-root {model_repository_root} "
             f"--sandbox-root {model_root} --request-fifo {request_fifo} --response-fifo {response_fifo} "
@@ -477,11 +521,18 @@ def build_context(
             f"Then invoke the exact public wrapper with: {helper_path} {helper_arguments} invoke --wrapper {wrapper_path} --execution-wrapper {boundary_path} -- <declared wrapper arguments>",
             (
                 "Before authoring the invocation envelope, read the exact public Interface and shared "
-                "authoring schemas with these commands:\n"
+                "authoring schemas with these commands. Every listed read is mandatory; do not skip "
+                "a read because another contract or schema appears sufficient. Trace validation fails "
+                "closed when any listed read is absent:\n"
+                f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'references/contract.md'}\n"
                 f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {public_interface_path}\n"
                 f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'schemas/semantic-result.schema.json'}\n"
-                f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'schemas/public-input.schema.json'}\n"
-                "Then execute exactly one of the following profile-schema reads: choose the schema whose "
+                + (
+                    f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'schemas/public-input.schema.json'}\n"
+                    if qualification_codex else
+                    f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'schemas/public-input-aggregate.schema.json'}\n"
+                )
+                + "Then execute exactly one of the following profile-schema reads: choose the schema whose "
                 "declared discriminator equals the public_input.profile you author. Do not infer the profile "
                 "shape from an example, a prior invocation, or the case framing:\n"
                 f"{profile_schema_read_commands}\n"
@@ -497,11 +548,12 @@ def build_context(
                 "GURU_INVOCATION_JSON"
             ),
         )
-        request["prompt_sha256"] = qualification_prompt_sha256(
-            native_request,
-            skill_sha256,
-            request["model_id"],
-        )
+        if qualification_codex:
+            request["prompt_sha256"] = qualification_prompt_sha256(
+                native_request,
+                skill_sha256,
+                request["model_id"],
+            )
     context_path = model_root / "native-context.txt"
     context_path.write_text(context, encoding="utf-8")
     private_root = execution_root / "private-control"
@@ -518,6 +570,7 @@ def build_context(
         "request_fifo": str(request_fifo),
         "response_fifo": str(response_fifo),
         "private_root": str(private_root),
+        "semantic_authoring": semantic_authoring,
         "projection_root": str(projection_root),
         "skill_sha256": skill_sha256, "wrapper_sha256": wrapper_sha256,
     }, separators=(",", ":")), encoding="utf-8")
@@ -560,7 +613,9 @@ def validate_native_trace(
         request.get("skill_id") == QUALIFICATION_SKILL
         and protocol.get("model_root") != str(Path(request["workdir"]).resolve().parent)
     )
-    if qualification_codex:
+    semantic_authoring = bool(protocol.get("semantic_authoring"))
+    isolated_authoring = qualification_codex or semantic_authoring
+    if isolated_authoring:
         model_root = Path(protocol["model_root"]).resolve()
         declared_case_reads = {
             path.resolve()
@@ -587,7 +642,7 @@ def validate_native_trace(
             owner_read = False
             public_projection_read = False
             if (
-                qualification_codex
+                isolated_authoring
                 and event.get("target_kind") == "skill_contract"
             ):
                 try:
@@ -599,7 +654,7 @@ def validate_native_trace(
                         ".runtime" not in public_relative.parts
                         and "evals" not in public_relative.parts
                     )
-            if qualification_codex and event.get("target_kind") == "owner_file":
+            if isolated_authoring and event.get("target_kind") == "owner_file":
                 try:
                     owner_relative = target.relative_to(owner_repository)
                 except ValueError:
@@ -636,8 +691,42 @@ def validate_native_trace(
         raise ValueError("native trace must begin with one exact Skill read")
     if len(invocations) != 1 or events.index(invocations[0]) != len(events) - 1:
         raise ValueError("native trace must end with one public wrapper invocation")
-    if qualification_codex and case_reads != declared_case_reads:
-        raise ValueError("qualification native trace must re-read every staged case file")
+    if isolated_authoring and case_reads != declared_case_reads:
+        raise ValueError("semantic authoring trace must re-read every staged case file")
+    if semantic_authoring:
+        required_public_reads = {
+            skill_path,
+            projection_root / "references/contract.md",
+            projection_root / "interface.json",
+            projection_root / "schemas/semantic-result.schema.json",
+            projection_root / "schemas/public-input-aggregate.schema.json",
+            projection_root / "schemas/public-input-impact.schema.json",
+        }
+        observed_public_reads = {
+            Path(str(event["path"])).resolve()
+            for event in events
+            if event.get("kind") == "read"
+            and event.get("target_kind") == "skill_contract"
+        }
+        if not required_public_reads.issubset(observed_public_reads):
+            raise ValueError("semantic authoring trace omitted required public contract reads")
+        facts_path = owner_repository / ARCHITECTURE_PUBLIC_AUTHORING_FACTS
+        try:
+            facts = json.loads(facts_path.read_text(encoding="utf-8"))
+            required_owner_reads = {
+                facts_path,
+                *(owner_repository / relative for relative in facts["required_reads"]),
+            }
+        except (OSError, KeyError, TypeError, json.JSONDecodeError) as exc:
+            raise ValueError("semantic authoring required-read facts are invalid") from exc
+        observed_owner_reads = {
+            Path(str(event["path"])).resolve()
+            for event in events
+            if event.get("kind") == "read"
+            and event.get("target_kind") == "owner_file"
+        }
+        if required_owner_reads != observed_owner_reads:
+            raise ValueError("semantic authoring trace does not match required authority reads")
     invocation = invocations[0]
     argv = invocation.get("argv")
     if (
@@ -651,10 +740,10 @@ def validate_native_trace(
         or len(invocation["stderr_sha256"]) != 64
     ):
         raise ValueError("native public wrapper invocation receipt is invalid")
-    if qualification_codex and argv != [
+    if isolated_authoring and argv != [
         str(wrapper_path.resolve()), "--invocation", "-",
     ]:
-        raise ValueError("qualification public invocation arguments are invalid")
+        raise ValueError("semantic authoring public invocation arguments are invalid")
     return ["public_invocation", "evals_not_loaded", "private_runtime_not_read"]
 
 def native_argv(
@@ -670,6 +759,7 @@ def native_argv(
     if adapter == "shared":
         return [sys.executable, command, "--request", str(native_request_path), "--context", str(context_path), "--workdir", workdir], None
     if adapter == "codex":
+        semantic_authoring = semantic_authoring_request(request)
         qualification_request = (
             request.get("skill_id") == QUALIFICATION_SKILL
             or request.get("schema_version") in {"2.0", "3.0"}
@@ -678,6 +768,24 @@ def native_argv(
             request.get("_model_root") or native_request_path.resolve().parent
         ).resolve()
         output_path = model_root / "output/native-last-message.txt"
+        if semantic_authoring:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            return [
+                command,
+                "exec",
+                "--ephemeral",
+                "--ignore-user-config",
+                "--sandbox",
+                "workspace-write",
+                "--skip-git-repo-check",
+                "--cd",
+                str(model_root),
+                "--model",
+                QUALIFICATION_MODEL,
+                "--output-last-message",
+                str(output_path),
+                context,
+            ], output_path
         if qualification_request:
             if request.get("model_id") != QUALIFICATION_MODEL:
                 raise ValueError("qualification production model identity is invalid")
@@ -789,9 +897,11 @@ def main() -> int:
     owner_repository = Path(protocol["owner_repository"])
     model_root = Path(protocol["model_root"])
     qualification_codex = request.get("skill_id") == QUALIFICATION_SKILL and args.adapter == "codex"
+    semantic_authoring_codex = semantic_authoring_request(request) and args.adapter == "codex"
+    isolated_authoring = qualification_codex or semantic_authoring_codex
     repository_before = (
         repository_file_inventory(owner_repository)
-        if request.get("skill_id") == QUALIFICATION_SKILL
+        if isolated_authoring
         else None
     )
     codex_home = None
@@ -833,6 +943,7 @@ def main() -> int:
         if canonical_corpus.exists():
             denied_paths.append(canonical_corpus)
         write_codex_permission_profile(codex_home, model_root, denied_paths)
+    if isolated_authoring:
         request["_model_root"] = str(model_root)
     argv, output_path = native_argv(
         args.adapter,
@@ -847,7 +958,7 @@ def main() -> int:
         dict(os.environ),
         cwd=model_root,
         codex_home=codex_home,
-        temporary_root=model_root / "output" if qualification_codex else None,
+        temporary_root=model_root / "output" if isolated_authoring else None,
         control={
             "GURU_TEAM_DISPATCHER": str(boundary_path),
             "GURU_TEAM_NATIVE_REQUEST": str(native_request_path),

@@ -86,6 +86,24 @@ def owner_recipe(request: dict[str, Any]) -> tuple[str, Path, dict[str, Any]]:
         raise ValueError("semantic case does not declare one owner staging recipe and public input")
     return recipe, public_input, owner_staging
 
+def public_input_path(request: dict[str, Any]) -> Path:
+    workdir = Path(request["workdir"]).resolve()
+    public_input: Path | None = None
+    for relative in request.get("files", []):
+        path = workdir / str(relative)
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict) or not payload.get("profile") or not payload.get("mode"):
+            continue
+        if public_input is not None:
+            raise ValueError("multiple case files declare public inputs")
+        public_input = path
+    if public_input is None:
+        raise ValueError("semantic authoring case does not declare one public input")
+    return public_input
+
 def bind_owner_result_argument(
     request: dict[str, Any],
     fixture: Path,

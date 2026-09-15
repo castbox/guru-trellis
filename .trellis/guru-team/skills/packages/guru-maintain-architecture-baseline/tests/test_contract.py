@@ -1296,7 +1296,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
     def test_eval_inventory_covers_all_profiles_and_approved_project_neutral_scenarios(self):
         evals = json.loads((self.package / "evals/evals.json").read_text())["evals"]
         self.assertEqual([item["id"] for item in evals], [
-            "bootstrap-foundation-current", "no-impact", "target-native",
+            "bootstrap-foundation-current", "no-impact", "planning-semantic-authoring", "target-native",
             "legacy-boundary-convergence",
             "dedicated-refactor-slice", "scope-expansion", "fitness-regression",
             "parallel-stale", "unpromoted-contribution", "next-task-consumption",
@@ -1313,6 +1313,16 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             covered_profiles,
             {"bootstrap_foundation", "promotion", "repair", "task_impact_sync"},
         )
+        semantic_case = next(
+            item for item in evals if item["id"] == "planning-semantic-authoring"
+        )
+        self.assertEqual(semantic_case["native_execution_mode"], "semantic_authoring")
+        self.assertNotIn("owner_staging", json.dumps(semantic_case))
+        semantic_facts = json.loads(
+            (self.package / "evals/files/planning-semantic-authoring-facts.json").read_text()
+        )
+        self.assertNotIn("expected", json.dumps(semantic_facts).lower())
+        self.assertNotIn("owner_result", json.dumps(semantic_facts).lower())
         text = json.dumps(evals).lower()
         for private_term in ("afizzy", "flutter", "viewmodel", "controller"):
             self.assertNotIn(private_term, text)
@@ -1337,6 +1347,47 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             )
         )
         self.assertIn("pending_reviewed_promotion", unpromoted_facts["scenario"])
+
+    def test_skill_contract_requires_current_ai_owner_authoring_sequence(self):
+        skill = (self.package / "SKILL.md").read_text(encoding="utf-8")
+        contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
+        for phrase in (
+            "Load [references/contract.md](references/contract.md) completely before acting.",
+            "The AI executing this Skill is the semantic owner selected by this contract",
+            "schemas/semantic-result.schema.json",
+            "scripts/invoke.sh --invocation -",
+            "owner_not_yet_executed",
+            "platform truly cannot provide the contract-required",
+            "report the exact error and stop the current invocation",
+            "not a retry within the same semantic round",
+            "`no_architecture_impact` owner result uses `promotion_state=no_change` and omits",
+            "optional schema properties are not universally valid",
+        ):
+            self.assertIn(phrase, skill)
+        for phrase in (
+            "The AI currently executing this Skill is the contract-selected semantic owner.",
+            "another external owner",
+            "owner_not_yet_executed",
+            "true execution-capability gap",
+            "`project_check_descriptors`, `project_checks`, and `review`",
+            "schema properties belong only to the architecture-impact branches",
+            "semantic owner round with a newly authored envelope",
+            "not a retry within",
+        ):
+            self.assertIn(phrase, contract)
+
+    def test_eval_schema_closes_native_execution_mode(self):
+        schema = json.loads(
+            (self.package.parents[1] / "schemas/skill-evals.schema.json").read_text()
+        )
+        corpus = json.loads((self.package / "evals/evals.json").read_text())
+        self.assertEqual([], list(Draft202012Validator(schema).iter_errors(corpus)))
+        explicit_post_owner = copy.deepcopy(corpus)
+        explicit_post_owner["evals"][0]["native_execution_mode"] = "post_owner"
+        self.assertEqual([], list(Draft202012Validator(schema).iter_errors(explicit_post_owner)))
+        invalid = copy.deepcopy(corpus)
+        invalid["evals"][0]["native_execution_mode"] = "external_owner"
+        self.assertTrue(list(Draft202012Validator(schema).iter_errors(invalid)))
 
 
 if __name__ == "__main__":

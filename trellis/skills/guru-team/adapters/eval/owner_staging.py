@@ -9,6 +9,8 @@ import os
 import shutil
 
 from adapters.eval.eval_constants import (
+    ARCHITECTURE_PUBLIC_AUTHORING_FACTS,
+    ARCHITECTURE_SKILL,
     OWNER_INPUT,
     OWNER_RESULT,
     PRODUCTION_SKILLS,
@@ -26,6 +28,7 @@ from adapters.eval.fixture_io import (
     commit_qualification_owner_fixture,
     normalize_qualification_owner_extension,
     owner_recipe,
+    public_input_path,
     run_git,
     stage_clean_installed_owner_repo,
     write_fake_gh,
@@ -61,6 +64,123 @@ def stage_owner_execution(
     fixture, _ = stage_clean_installed_owner_repo(
         execution_root, runtime_target, request_package,
     )
+    execution_mode = str(request.get("native_execution_mode") or "post_owner")
+    if execution_mode == "semantic_authoring":
+        if skill_id != ARCHITECTURE_SKILL:
+            raise ValueError("semantic authoring fixture is not declared for this Skill")
+        package = fixture / ".trellis/guru-team/skills/packages" / skill_id
+        if (
+            hashlib.sha256((package / "interface.json").read_bytes()).hexdigest()
+            != hashlib.sha256((request_package / "interface.json").read_bytes()).hexdigest()
+            or hashlib.sha256((package / "evals/evals.json").read_bytes()).hexdigest()
+            != hashlib.sha256((request_package / "evals/evals.json").read_bytes()).hexdigest()
+        ):
+            raise ValueError("semantic authoring package does not match the evaluated contract")
+        public_path = public_input_path(request)
+        public_input = json.loads(public_path.read_text(encoding="utf-8"))
+        task_locator = Path(str(public_input["task_locator"]))
+        if task_locator.is_absolute() or ".." in task_locator.parts:
+            raise ValueError("architecture semantic task locator is unsafe")
+        task = fixture / task_locator
+        task.mkdir(parents=True, exist_ok=True)
+        task_files = {
+            "task.json": json.dumps({
+                "id": "eval-task",
+                "name": "eval-task",
+                "title": "Architecture semantic authoring fixture",
+                "status": "planning",
+                "scope": "Clarify the existing Architecture owner execution wording.",
+                "branch": "main",
+                "base_branch": "main",
+            }, indent=2) + "\n",
+            "prd.md": "# PRD\n\nClarify the existing semantic-owner instructions without changing public I/O or repository architecture.\n",
+            "design.md": "# Design\n\nKeep the current Architecture 2.0 owner and deterministic wrapper boundary unchanged.\n",
+            "implement.md": "# Implementation\n\nEdit package-local Markdown and add behavior regression coverage only.\n",
+        }
+        for name, content in task_files.items():
+            (task / name).write_text(content, encoding="utf-8")
+
+        authority_files = {
+            str(public_input["baseline"]["locator"]): "# Architecture Baseline\n\nThe current owner, public contract, and integration boundaries remain unchanged.\n",
+            str(public_input["constitution"]["authority_locator"]): "# Design Constitution\n\nUse the five declared principles without creating a second checklist.\n",
+            str(public_input["project_contract"]["change_contract_locator"]): (
+                "# Architecture Change Contract\n\n"
+                "Project check descriptor: project-architecture:contract-wording:1.\n"
+                "Entrypoint: scripts/check-architecture.sh. Applicable scope: contract wording.\n"
+                "Rule reference: RULE-semantic-owner. Result contract: guru-project-architecture-check-result-2.0.\n"
+            ),
+            str(public_input["requirement_authority"]): "# Requirements\n\nPreserve the existing Architecture 2.0 public contract.\n",
+            str(public_input["behavior_authority"]): "# Design Authority\n\nThe change is package-local wording and eval coverage.\n",
+            "scripts/check-architecture.sh": "#!/usr/bin/env bash\nset -euo pipefail\nprintf '%s\\n' '{\"status\":\"pass\",\"evidence\":\"contract wording keeps current boundaries\"}'\n",
+            "docs/architecture/evidence/planning-check.json": json.dumps({
+                "schema_version": "2.0",
+                "descriptor_identity": "project-architecture:contract-wording:1",
+                "check_id": "project-architecture",
+                "check_version": "1",
+                "applicability": "applicable",
+                "blocking": True,
+                "applicable_scope": ["contract-wording"],
+                "rule_refs": ["RULE-semantic-owner"],
+                "decision_refs": [],
+                "gap_refs": [],
+                "before": {"state": "The AI owner wording can be misread as requiring an external owner."},
+                "after": {"state": "The existing AI owner and deterministic wrapper boundary are explicit."},
+                "status": "pass",
+                "evidence_locator": "docs/architecture/evidence/planning-check.json",
+                "freshness_identity": str(public_input["freshness_identity"]),
+            }, indent=2) + "\n",
+        }
+        required_reads = []
+        for relative, content in authority_files.items():
+            target = fixture / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content, encoding="utf-8")
+            if relative.endswith(".sh"):
+                target.chmod(0o755)
+            required_reads.append(relative)
+        required_reads.extend(
+            (task_locator / name).as_posix() for name in task_files
+        )
+        input_sha256 = hashlib.sha256(
+            json.dumps(
+                public_input,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode()
+        ).hexdigest()
+        facts_path = fixture / ARCHITECTURE_PUBLIC_AUTHORING_FACTS
+        facts_path.parent.mkdir(parents=True, exist_ok=True)
+        facts_path.write_text(json.dumps({
+            "schema_version": "1.0",
+            "public_input_sha256": input_sha256,
+            "required_reads": sorted(required_reads),
+            "project_check_descriptor": {
+                "schema_version": "2.0",
+                "descriptor_identity": "project-architecture:contract-wording:1",
+                "check_id": "project-architecture",
+                "check_version": "1",
+                "entrypoint": "scripts/check-architecture.sh",
+                "applicable_scope": ["contract-wording"],
+                "rule_refs": ["RULE-semantic-owner"],
+                "decision_refs": [],
+                "gap_refs": [],
+                "result_contract_identity": "guru-project-architecture-check-result-2.0",
+                "freshness_source": "current planning fixture",
+            },
+            "project_check_evidence": "docs/architecture/evidence/planning-check.json",
+        }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        required_reads.append(ARCHITECTURE_PUBLIC_AUTHORING_FACTS)
+        run_git(fixture, "add", ".")
+        run_git(fixture, "commit", "-q", "-m", "stage architecture semantic authoring fixture")
+        head = run_git(fixture, "rev-parse", "HEAD")
+        run_git(fixture, "update-ref", "refs/remotes/origin/main", head)
+        run_git(fixture, "remote", "add", "origin", "https://github.com/example/guru-extension.git")
+        runtime_root = fixture / ".trellis/.runtime"
+        if runtime_root.exists():
+            shutil.rmtree(runtime_root)
+        fixture_runtime_target = fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+        return package, fixture_runtime_target, {}
     if skill_id == QUALIFICATION_SKILL:
         package = fixture / ".trellis/guru-team/skills/packages" / skill_id
         if (
