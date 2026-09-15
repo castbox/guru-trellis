@@ -1,0 +1,183 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-15T08:06:07Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-15-412-throwaway-python-caller-inventory",
+    "title": "#412 修复 throwaway Python caller inventory 漂移",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-15-412-throwaway-python-caller-inventory",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/412-throwaway-python-caller-inventory",
+    "commits": [
+      "24780370181a59047f910d8150d1efb2f64733e3",
+      "e41da274172f376aa51ac155cdd643ae782be512",
+      "5912f9df2b910d9909e071c85c0d906ddaed387e"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/spec/architecture/baseline-usage.md",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/docs/requirements-design-test-ssot.md",
+      ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/check.jsonl",
+      ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/design.md",
+      ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/implement.jsonl",
+      ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/implement.md",
+      ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/prd.md",
+      ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/task.json",
+      ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/design.md",
+      ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/implement.md",
+      ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/prd.md",
+      ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/task.json",
+      "docs/design/README.md",
+      "docs/design/versions/current-main-0.6.17-guru.52/design-main.md",
+      "docs/design/versions/current-main-0.6.17-guru.52/traceability.md",
+      "docs/requirements-design-test-contributions/410-release-v0617-guru1/design.md",
+      "docs/requirements-design-test-contributions/410-release-v0617-guru1/manifest.yaml",
+      "docs/requirements-design-test-contributions/410-release-v0617-guru1/requirements.md",
+      "docs/requirements-design-test-contributions/410-release-v0617-guru1/test.md",
+      "docs/requirements-design-test-contributions/410-release-v0617-guru1/traceability.md",
+      "docs/requirements/README.md",
+      "docs/requirements/versions/current-main-0.6.17-guru.52/traceability.md",
+      "docs/test/README.md",
+      "docs/test/versions/current-main-0.6.17-guru.52/traceability.md",
+      "trellis/presets/guru-team/tests/throwaway-python-callers.json"
+    ]
+  },
+  "github": {
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/413"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#412 修复 throwaway Python caller inventory 漂移",
+    "outcome": "将 throwaway Python caller inventory 中唯一过期的 second-hop caller identity 更新为当前正常源码 discovery 结果，并恢复 canonical 顺序；不修改 discovery、helper、installer runtime 或公共 API。",
+    "changed_behavior": [
+      "将 throwaway Python caller inventory 中唯一过期的 second-hop caller identity 更新为当前正常源码 discovery 结果，并恢复 canonical 顺序；不修改 discovery、helper、installer runtime 或公共 API。",
+      "在 #412 已接纳的限定路径内，统一 #410 的 `.52` Requirements/Design/Test authority、三层 traceability、Architecture inheritance 与 `reviewed_promoted` 状态。",
+      "同步六处 current projection 和 README 导航，使 `.52` 成为唯一 active authority，`.51` 保持 immutable superseded history。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "config",
+        "name": "config",
+        "paths": [
+          "docs/requirements-design-test-contributions/410-release-v0617-guru1/manifest.yaml"
+        ],
+        "change": "将 throwaway Python caller inventory 中唯一过期的 second-hop caller identity 更新为当前正常源码 discovery 结果，并恢复 canonical 顺序；不修改 discovery、helper、installer runtime 或公共 API。"
+      },
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/architecture/baseline-usage.md",
+          ".trellis/spec/docs/public-docs.md",
+          ".trellis/spec/docs/requirements-design-test-ssot.md",
+          ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/design.md",
+          ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/implement.md",
+          ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/prd.md",
+          ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/design.md",
+          ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/implement.md",
+          ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/prd.md",
+          "docs/design/README.md",
+          "docs/design/versions/current-main-0.6.17-guru.52/design-main.md",
+          "docs/design/versions/current-main-0.6.17-guru.52/traceability.md",
+          "docs/requirements-design-test-contributions/410-release-v0617-guru1/design.md",
+          "docs/requirements-design-test-contributions/410-release-v0617-guru1/requirements.md",
+          "docs/requirements-design-test-contributions/410-release-v0617-guru1/test.md",
+          "docs/requirements-design-test-contributions/410-release-v0617-guru1/traceability.md",
+          "docs/requirements/README.md",
+          "docs/requirements/versions/current-main-0.6.17-guru.52/traceability.md",
+          "docs/test/README.md",
+          "docs/test/versions/current-main-0.6.17-guru.52/traceability.md"
+        ],
+        "change": "将 throwaway Python caller inventory 中唯一过期的 second-hop caller identity 更新为当前正常源码 discovery 结果，并恢复 canonical 顺序；不修改 discovery、helper、installer runtime 或公共 API。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "将 throwaway Python caller inventory 中唯一过期的 second-hop caller identity 更新为当前正常源码 discovery 结果，并恢复 canonical 顺序；不修改 discovery、helper、installer runtime 或公共 API。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/tests/throwaway-python-callers.json"
+        ],
+        "change": "将 throwaway Python caller inventory 中唯一过期的 second-hop caller identity 更新为当前正常源码 discovery 结果，并恢复 canonical 顺序；不修改 discovery、helper、installer runtime 或公共 API。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/check.jsonl",
+          ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/implement.jsonl",
+          ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/task.json",
+          ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/task.json"
+        ],
+        "change": "将 throwaway Python caller inventory 中唯一过期的 second-hop caller identity 更新为当前正常源码 discovery 结果，并恢复 canonical 顺序；不修改 discovery、helper、installer runtime 或公共 API。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [],
+      "pr_refs": [
+        "PR #413"
+      ],
+      "branches": [
+        "fix/412-throwaway-python-caller-inventory"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/spec/architecture/baseline-usage.md",
+        ".trellis/spec/docs/public-docs.md",
+        ".trellis/spec/docs/requirements-design-test-ssot.md",
+        ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/check.jsonl",
+        ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/design.md",
+        ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/implement.jsonl",
+        ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/implement.md",
+        ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/prd.md",
+        ".trellis/tasks/09-15-412-throwaway-python-caller-inventory/task.json",
+        ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/design.md",
+        ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/implement.md",
+        ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/prd.md",
+        ".trellis/tasks/archive/2026-09/09-15-412-throwaway-python-caller-inventory/task.json",
+        "docs/design/README.md",
+        "docs/design/versions/current-main-0.6.17-guru.52/design-main.md",
+        "docs/design/versions/current-main-0.6.17-guru.52/traceability.md",
+        "docs/requirements-design-test-contributions/410-release-v0617-guru1/design.md",
+        "docs/requirements-design-test-contributions/410-release-v0617-guru1/manifest.yaml",
+        "docs/requirements-design-test-contributions/410-release-v0617-guru1/requirements.md",
+        "docs/requirements-design-test-contributions/410-release-v0617-guru1/test.md",
+        "docs/requirements-design-test-contributions/410-release-v0617-guru1/traceability.md",
+        "docs/requirements/README.md",
+        "docs/requirements/versions/current-main-0.6.17-guru.52/traceability.md",
+        "docs/test/README.md",
+        "docs/test/versions/current-main-0.6.17-guru.52/traceability.md",
+        "trellis/presets/guru-team/tests/throwaway-python-callers.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#412 修复 throwaway Python caller inventory 漂移",
+        "将 throwaway Python caller inventory 中唯一过期的 second-hop caller",
+        "完成 extension.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#412 修复 throwaway Python caller inventory 漂移\n将 throwaway Python caller inventory 中唯一过期的 second-hop caller identity 更新为当前正常源码 discovery 结果，并恢复 canonical 顺序；不修改 discovery、helper、installer runtime 或公共 API。\n在 #412 已接纳的限定路径内，统一 #410 的 `.52` Requirements/Design/Test authority、三层 traceability、Architecture inheritance 与 `reviewed_promoted` 状态。\n同步六处 current projection 和 README 导航，使 `.52` 成为唯一 active authority，`.51` 保持 immutable superseded history。\n将 throwaway Python caller inventory 中唯一过期的 second-hop caller\n完成 extension.json 相关变更"
+  }
+}
