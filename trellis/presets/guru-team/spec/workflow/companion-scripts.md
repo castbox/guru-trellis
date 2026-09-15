@@ -1082,9 +1082,11 @@ envelopes through stdin; other current packages use only their declared public
 transport. The private runtime boundary maps the repo-external public projection
 wrapper to the corresponding installed, validator-audited package before
 dispatch, reruns the owner checker, and returns the actual exit. Adapter and native requests omit
-`expected_exit`; only the runner reads it after wrapper completion. Codex runs
-from the installed runtime's trusted Git root, Claude uses safe non-interactive
-input, and missing Cursor authentication returns deterministic `unsupported`.
+`expected_exit`; only the runner reads it after wrapper completion. Codex
+`post_owner` runs from the installed runtime's trusted Git root, while Codex
+`semantic_authoring` runs from its repo-external isolated model root with
+`--skip-git-repo-check`. Claude uses safe non-interactive input, and missing
+Cursor authentication returns deterministic `unsupported`.
 
 ## Branch Review Recorder And Checker
 

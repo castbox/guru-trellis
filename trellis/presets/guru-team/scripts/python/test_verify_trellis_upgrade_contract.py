@@ -205,6 +205,26 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             "ci_run_id": 34838784963}))
         return repo, source
 
+    def test_skill_eval_docs_distinguish_codex_execution_roots_by_mode(self) -> None:
+        docs = [
+            REPO / ".trellis/spec/workflow/quality-guidelines.md",
+            REPO / ".trellis/spec/workflow/companion-scripts.md",
+            REPO / ".trellis/spec/docs/public-docs.md",
+            REPO / "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+            REPO / "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+            REPO / "trellis/workflows/guru-team/README.md",
+        ]
+        for path in docs:
+            with self.subTest(path=path.relative_to(REPO)):
+                text = path.read_text(encoding="utf-8")
+                self.assertIn("post_owner", text)
+                self.assertIn("semantic_authoring", text)
+                self.assertIn("trusted Git root", text)
+                self.assertIn("isolated model root", text)
+                self.assertIn("--skip-git-repo-check", text)
+                self.assertNotIn("Codex uses a trusted Git root", text)
+                self.assertNotIn("Codex 使用 trusted Git root", text)
+
     def test_fork_source_uses_real_node_esm_entry_and_observed_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repo, source = self.fork_fixture(Path(directory))

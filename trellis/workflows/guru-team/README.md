@@ -1172,8 +1172,9 @@ repository evidence，由合同指定 Agent 自行完成 semantic judgment、aut
 并调用同一正式 wrapper。Full run 只对 `semantic_authoring` 应用 adapter applicability；focused
 adapter mismatch 明确返回 `unsupported`。Aggregate 必须以独立推导的 declared applicable case
 ids 对照 actual ids，missing、duplicate、unknown 或 unexpected case 均 fail closed。actual exit
-选择 output schema 后才比较 expected exit。Codex 使用 trusted Git root，Claude 使用 safe non-interactive 协议，
-Cursor 未登录直接返回 `unsupported`。
+选择 output schema 后才比较 expected exit。Codex `post_owner` 使用 trusted Git root；Codex
+`semantic_authoring` 使用 repo 外 isolated model root 并传 `--skip-git-repo-check`。Claude 使用
+safe non-interactive 协议，Cursor 未登录直接返回 `unsupported`。
 Finalizer transaction 同时绑定 `reviewed_content_head` 与 `publication_head`。业务
 content push 后直接继续 Draft PR、archive 与 Ready transaction；installed manifest、
 README、docs、config、`.trellis/**` 或平台副本 changed path 都不会产生 verifier route。

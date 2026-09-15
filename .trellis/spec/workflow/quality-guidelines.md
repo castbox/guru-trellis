@@ -259,7 +259,9 @@ execute every adapter-neutral `post_owner` case and only adapter-matching
 `semantic_authoring` cases, with exact declared-applicable/actual case identity
 before aggregation. Both modes assert that neither adapter request nor native
 request contains `expected_exit`, that actual exit selects the output schema,
-shared executes the packaged native runtime, Codex uses a trusted Git root,
+and that shared executes the packaged native runtime. Codex `post_owner` runs
+from the installed runtime's trusted Git root; Codex `semantic_authoring` runs
+from its repo-external isolated model root with `--skip-git-repo-check`.
 Claude uses its supported non-interactive protocol, and missing Cursor
 authentication returns `unsupported` without entering an interactive session.
 
