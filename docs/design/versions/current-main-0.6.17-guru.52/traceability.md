@@ -141,12 +141,28 @@ Architecture refs：`ARCH-CUR-027`、`ARCH-DOM-015`、`ARCH-INT-017`、`ARCH-GOV
 | `D408-04` | `R408-02`, `R408-03`, `R408-04`, `R408-08` | `T408-02`, `T408-03`, `T408-04`, `T408-08` |
 | `D408-05` | `R408-03`, `R408-04` | `T408-03`, `T408-04` |
 
-状态：`.51` current，implements/verifies。责任定义：[design-main.md](./design-main.md)；
+状态：`.51` immutable superseded history，implements/verifies。责任定义：[design-main.md](./design-main.md)；
 需求与验收定义分别见 [Requirements](../../../requirements/versions/current-main-0.6.17-guru.52/requirement-main.md)
 及 [Test](../../../test/versions/current-main-0.6.17-guru.52/test-strategy.md)。反向索引为
 [Requirements trace](../../../requirements/versions/current-main-0.6.17-guru.52/traceability.md) 和
 [Test trace](../../../test/versions/current-main-0.6.17-guru.52/traceability.md)。
-Architecture public inheritance：[`README.md`](../../../architecture/README.md) / `.51` / `active`；
+Architecture historical inheritance：`.51` / `superseded`；current public identity 为
+[`README.md`](../../../architecture/README.md) / `current-main-0.6.17-guru.52` / `active`；
 `ARCH-CUR-028`、`ARCH-DOM-015`、`ARCH-INT-014/016`、`EVD-027`。历史来源保留于
 [#408 contribution](../../../requirements-design-test-contributions/408-nightly-session-binding-manual-fallback/design.md)，
 不形成第二 current 正文或新的 owner。
+
+## #410 Trace
+
+| Design | Requirements | Test |
+| --- | --- | --- |
+| `D410-01` | `R410-01..02`, `R410-04` | `T410-01`, `T410-05` |
+| `D410-02` | `R410-02..03` | `T410-01..02` |
+| `D410-03` | `R410-04..05`, `BEH-018` | `T410-02..03` |
+| `D410-04` | `R410-06`, `BEH-018` | `T410-04..05`, `T410-07..08` |
+| `D410-05` | `R410-04`, `R410-07`, `BEH-018` | `T410-05..06`, `T410-08` |
+| `D410-06` | `R410-06..07`, `BEH-018` | `T410-04`, `T410-06..08` |
+
+Architecture refs：`ARCH-CUR-029`、`ARCH-INT-014..016`。Contribution locator：
+`docs/requirements-design-test-contributions/410-release-v0617-guru1/`；状态为
+`reviewed_promoted`，`.51` 是 immutable predecessor，`.52` 是 current active authority。

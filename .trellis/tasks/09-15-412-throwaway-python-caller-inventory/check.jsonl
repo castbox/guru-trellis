@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"按 #412 accepted scope 审核 source/installed inventory、focused throwaway、secret 与 residue 证据充分性。"}
+{"file":".trellis/spec/preset/installer.md","reason":"验证 canonical 与 installed/update/reapply 一致，且没有隐藏第二 authority 或未解释 sidecar。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"验证四平台 projection、preset reapply 和 dogfood drift 闭合。"}
+{"file":".trellis/spec/workflow/subtraction-first-compatibility.md","reason":"确认旧 derived identity 直接替换，不保留无 consumer 的兼容行或 fallback。"}

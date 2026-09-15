@@ -147,10 +147,28 @@ superseded authority。promotion-created diff、Publication与远端Release/Issu
 | `T408-07` | `R408-07` | `D408-03` | `EVD-027`; residue preservation |
 | `T408-08` | `R408-02`, `R408-08` | `D408-04` | `EVD-027`; focused installed/boundaries |
 
-状态：`.51` current，verifies/implemented-by；策略定义和证明边界分别见
+状态：`.51` immutable superseded history，verifies/implemented-by；策略定义和证明边界分别见
 [test-strategy.md](./test-strategy.md)、[test-plan.md](./test-plan.md)。反向索引为
 [Requirements trace](../../../requirements/versions/current-main-0.6.17-guru.52/traceability.md) 与
-[Design trace](../../../design/versions/current-main-0.6.17-guru.52/traceability.md)。Architecture 为
-[`README.md`](../../../architecture/README.md) / `.51` / `active`，对应
+[Design trace](../../../design/versions/current-main-0.6.17-guru.52/traceability.md)。Architecture historical
+inheritance 为 `.51` / `superseded`；current public identity 为
+[`README.md`](../../../architecture/README.md) / `current-main-0.6.17-guru.52` / `active`，对应
 [EVD-027](../../../architecture/evidence/current-evidence.md)。表中引用不等于本轮重跑、post-promotion
 gate、真实 GitHub mutation、完整 Release matrix 或发布完成。
+
+## #410 Trace
+
+| Test | Requirements | Design | Architecture / Boundary |
+| --- | --- | --- | --- |
+| `T410-01` | `R410-01..02` | `D410-01..02` | `ARCH-CUR-029`; four-axis current mapping |
+| `T410-02` | `R410-03..04` | `D410-02..03` | `ARCH-INT-014`, `ARCH-INT-016`; package/source/API compatibility |
+| `T410-03` | `R410-05`, `BEH-018` | `D410-03` | `ARCH-INT-015`; promotion and fresh review |
+| `T410-04` | `R410-06`, `BEH-018` | `D410-04`, `D410-06` | `ARCH-CUR-029`, `ARCH-INT-015`; candidate lineage |
+| `T410-05` | `R410-01`, `R410-04`, `R410-06` | `D410-01`, `D410-04..05` | source/installed and platform parity |
+| `T410-06` | `R410-07`, `BEH-018` | `D410-05..06` | ownership, reapply, drift, secret and residue hygiene |
+| `T410-07` | `R410-06`, `BEH-018` | `D410-04`, `D410-06` | focused install/update/preview/switch/reapply |
+| `T410-08` | `R410-06..07`, `BEH-018` | `D410-04..06` | exact-candidate tag/smoke/Release/closure boundaries |
+
+本 trace 记录 `reviewed_promoted` stable contract；`.51` 是 immutable predecessor，`.52`
+是 current active authority。知识 promotion、历史 evidence 或 preparation checks 均不替代后续
+exact-candidate live gate。

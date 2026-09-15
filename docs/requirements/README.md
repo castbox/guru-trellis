@@ -7,6 +7,7 @@
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
 | `active` | `current-main-0.6.17-guru.52` | [requirement-main.md](./versions/current-main-0.6.17-guru.52/requirement-main.md) | #410 release-facing 四轴映射；完整继承 immutable `.51`，不构成后续 gate 或发布证明 |
+| `superseded` | `current-main-0.6.5-guru.51` | [requirement-main.md](./versions/current-main-0.6.5-guru.51/requirement-main.md) | #408 Nightly/session/独立手动操作；immutable history |
 | `superseded` | `current-main-0.6.5-guru.50` | [requirement-main.md](./versions/current-main-0.6.5-guru.50/requirement-main.md) | #247 reviewed ledger retirement与Issue closure ownership；immutable history |
 | `superseded` | `current-main-0.6.5-guru.49` | [requirement-main.md](./versions/current-main-0.6.5-guru.49/requirement-main.md) | #329 reviewed developer-free source/lifecycle；immutable history |
 | `superseded` | `current-main-0.6.5-guru.48` | [requirement-main.md](./versions/current-main-0.6.5-guru.48/requirement-main.md) | #392 reviewed release mapping 与 serialized promotion lifecycle；immutable history |
@@ -25,10 +26,10 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [requirement-main.md](./versions/current-main-0.6.5-guru.35/requirement-main.md) | #266 激活的历史 current snapshot |
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
-当前框架源码固定为 `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`，CI `34838784963`，CLI/core `0.6.17`，package manager `pnpm@10.32.1`；Guru live manifest 为 `0.6.16-guru.41`。released repository axis `v0.6.16-guru.1` 不包含 #408 candidate。
-Docs `.51` 承接 #408 并完整继承 `.50` 的旧 lifecycle、developer/ledger retired-zero 与 23/97/78；`.50` 及更早版本保持 immutable。知识提升不证明正式 promotion 校验、promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、push、PR、merge、tag、Release 或 Issue closure 已完成。
+当前框架源码固定为 `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`，CI `34838784963`，CLI/core `0.6.17`，package manager `pnpm@10.32.1`；Guru current extension revision 为 `0.6.17-guru.42`，target repository axis 为 `v0.6.17-guru.1`。released `v0.6.16-guru.1` 与 extension `0.6.16-guru.41` 保持 immutable history。
+Docs `.52` 承接 #410 并完整继承 `.51` 的 #408 source/session 边界、旧 lifecycle、developer/ledger retired-zero 与 23/97/78；`.51` 及更早版本保持 immutable。知识提升不证明 promotion-created diff 之后的 Phase 2/commit/Branch Review、Publication、push、PR、merge、tag、Release 或 Issue closure 已完成。
 
-`R408-01..08 -> D408-01..05 -> T408-01..08` 见 [current trace](./versions/current-main-0.6.5-guru.51/traceability.md)。R408-01 仅替代 R329-01 的旧 pin；R378 pin 为历史，不是并列 current 要求。实际证明边界由同版本 Test 层维护。
+`R410-01..07 -> D410-01..06 -> T410-01..08` 见 [current trace](./versions/current-main-0.6.17-guru.52/traceability.md)。`R408-01..08 -> D408-01..05 -> T408-01..08` 作为 inherited `.51` authority 保留；R408-01 对 R329-01 的旧 pin 替代及 R378 历史 pin 不变。实际证明边界由同版本 Test 层维护。
 
 `R378-01..04 -> D378-01..04 -> T378-01..05` 承接固定来源、会话隔离、installed 投影与原 verifier 入口；#388/#389 保留为关联前置，既有 #240/#348/#332/#376 与 Evolution authority 不扩张。
 

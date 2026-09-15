@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"实现前读取 Issue 级 validation ownership、focused throwaway、Phase 2 和 residue/secret gate 约束。"}
+{"file":".trellis/spec/preset/installer.md","reason":"确认 canonical inventory、installed projection、update/reapply 和 sidecar 语义。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"确认 preset apply、四平台 projection 与 dogfood drift 的唯一 owner 和同步边界。"}
+{"file":"AGENTS.md","reason":"遵守 canonical-first、AI/script 分层、normal happy path、确认和发布边界。"}
