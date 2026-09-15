@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import subprocess
@@ -52,6 +53,24 @@ UPSTREAM_EVIDENCE_PATHS = (
 OWNERSHIP_INVENTORY = Path(
     "trellis/presets/guru-team/ownership/upstream-ownership.json"
 )
+OWNERSHIP_VALIDATOR = Path(
+    "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py"
+)
+
+
+def load_ownership_validator():
+    spec = importlib.util.spec_from_file_location(
+        "semantic_retrieval_ownership_validator",
+        ROOT / OWNERSHIP_VALIDATOR,
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load ownership validator: {OWNERSHIP_VALIDATOR}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+OWNERSHIP = load_ownership_validator()
 
 
 class SemanticRetrievalContractTest(unittest.TestCase):
@@ -204,18 +223,19 @@ class SemanticRetrievalContractTest(unittest.TestCase):
 
     def test_upstream_evidence_paths_do_not_consume_or_claim_guru_spec(self) -> None:
         inventory = json.loads((ROOT / OWNERSHIP_INVENTORY).read_text(encoding="utf-8"))
-        exact_inventory_entries = {
-            item["pattern"] for item in inventory["guru_owned_rules"]
-        } | {
-            item["path"] for item in inventory["managed_path_claims"]
-        }
         for relative in UPSTREAM_EVIDENCE_PATHS:
             with self.subTest(upstream_path=relative):
                 self.assertNotIn(
                     SPEC.as_posix(),
                     (ROOT / relative).read_text(encoding="utf-8"),
                 )
-                self.assertNotIn(relative, exact_inventory_entries)
+                self.assertEqual(
+                    OWNERSHIP.classify_guru_path(
+                        relative,
+                        inventory["guru_owned_rules"],
+                    ),
+                    [],
+                )
 
 
 if __name__ == "__main__":
