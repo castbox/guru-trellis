@@ -441,9 +441,9 @@
   "installed_at": "2026-09-16T07:39:17Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "57e8b5df10aedc4f218a4685e819d25a44aa8928",
-    "commit": "57e8b5df10aedc4f218a4685e819d25a44aa8928",
-    "tree_state": "dirty",
+    "ref": "dd421068b72c918f8a5513deb8c6b4215a35e4d9",
+    "commit": "dd421068b72c918f8a5513deb8c6b4215a35e4d9",
+    "tree_state": "clean",
     "is_mutable_ref": false
   },
   "install": {
