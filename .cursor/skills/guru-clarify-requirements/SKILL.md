@@ -5,6 +5,14 @@ description: Clarify initial requirements, active-task scope changes, or explici
 
 # Guru Clarify Requirements
 
+The current executing AI is this Skill's semantic owner. Read the complete
+contract and perform its review yourself before authoring the current owner
+result and calling record, check, and invoke. `owner_not_yet_executed` is an
+internal state to continue this review, not a typed stop or a missing external
+owner. Do not wait for another agent, agent ID, subagent evidence, or a
+pre-existing owner result. Real missing authority or prerequisites still
+follow this Skill's declared routes; runtime cannot supply your judgment.
+
 Use this Skill after `guru-discover-change-context:context_ready`, when an
 active task receives scope-changing input, or for an explicit standalone
 requirements review.
@@ -42,6 +50,22 @@ ask at most one highest-value question per round, complete the AI Review Gate
 and any real action/proposal choice before calling recorder/checker,
 keep that authorization in the current dialogue, then return exactly one
 declared typed exit.
+
+Record only clarification rounds and answers that actually occurred. Unknown,
+unasked, or unanswered choices are not refused, deferred, or answered; never
+invent an interaction to fill the schema. When a required real choice cannot
+be obtained, express the unresolved conflict through the existing blocked Gate,
+not a fabricated round, answer, or pass. Follow Questions And Convergence in
+the contract for the no-answer blocked shape.
+
+A scope/product conflict does not erase known target identity or duplicate
+facts. Complete the independent target disposition when the facts suffice,
+even for blocked, and preserve the real Discovery snapshot. Null disposition
+is not a blocked shortcut; it applies only where the target decision itself
+is genuinely missing and the existing invocation contract permits it.
+Return only successful public invoke stdout as the final DTO. Record/check
+`typed_exit` is not a public exit; handle an invoke error truthfully through
+the existing repair/re-entry rules, never by hand-writing a blocked DTO.
 
 Use only the dispatcher wrappers for deterministic recording and checking.
 Pre-task and standalone results are stdout-only. This Skill has no mutation

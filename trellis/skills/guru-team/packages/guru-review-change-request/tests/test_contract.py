@@ -25,6 +25,26 @@ import invoke as review_invoke
 
 
 class ChangeRequestReviewPackageTest(unittest.TestCase):
+    def test_current_ai_owns_unexecuted_review_without_external_handoff(self) -> None:
+        package = Path(__file__).resolve().parents[1]
+        for path in ("SKILL.md", "references/contract.md"):
+            with self.subTest(path=path):
+                text = " ".join((package / path).read_text(encoding="utf-8").split())
+                self.assertIn("The current executing AI is this Skill's semantic owner", text)
+                self.assertIn("`owner_not_yet_executed`", text)
+                self.assertIn("not a typed", text)
+                self.assertIn("agent ID", text)
+                self.assertIn("subagent evidence", text)
+                self.assertIn("pre-existing owner result", text)
+        contract = " ".join((package / "references/contract.md").read_text(encoding="utf-8").split())
+        self.assertIn("The AI reviews these ten fixed dimensions in order", contract)
+        self.assertIn("Pass only actual public invoke stdout", contract)
+        self.assertIn("never read or reconstruct producer-private results", contract)
+        self.assertIn("declared blocker or re-entry route when a real gap remains", contract)
+        interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+        self.assertEqual(interface["judgment_mode"], "semantic")
+        self.assertNotIn("owner_not_yet_executed", [row["id"] for row in interface["external_exits"]])
+
     # Package tests exercise public shapes, not the externally owned real-producer chain.
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()

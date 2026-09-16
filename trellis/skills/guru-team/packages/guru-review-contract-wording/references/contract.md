@@ -28,6 +28,30 @@ package is not portable without the compatible Guru Team preset, extension
 manifest, dispatcher, runtime scripts, installed inventory, and selected
 platform discovery copy.
 
+## Current Executing Owner
+
+The current executing AI is this Skill's semantic owner in both workflow and
+standalone modes. `owner_not_yet_executed` means continue the current review;
+it is not a typed exit and does not require an external owner, agent ID,
+subagent evidence, or pre-existing owner result. The restriction on runtime
+semantic judgment does not restrict the current AI from authoring that judgment.
+
+Read the complete contract and current fixed-profile authority. You build the
+complete scope, run the scan, review permitted revisions, classify retained
+hits, and author the Gate and route. Zero hits do not supply a semantic pass.
+After the semantic review, run record-contract-wording-review.sh,
+check-contract-wording-review.sh, and invoke.sh with the profile-specific
+inputs and actual checker receipt; preserve the rescan and re-entry rules.
+
+Keep this owner's authoring and recorded result in call-local memory for its
+own record/check/invoke sequence. Pass only actual public invoke stdout through
+the declared thin projection to the next consumer; never read or reconstruct
+producer-private results. This responsibility does not waive missing authority,
+freshness, schema, prerequisite, or unresolved-choice checks: use the existing
+declared blocker or re-entry route when a real gap remains. Do not bypass the
+workspace gate or ask for a corrective Prompt merely because your review has
+not run yet.
+
 ## Fixed Profiles
 
 ### `change_request`
@@ -233,6 +257,25 @@ authority validation and returns a call-local receipt bound to exact result,
 profile/mode prerequisite and scope/scan snapshot digests. The public serializer
 requires that receipt and performs no GitHub read. Independent CLI invocations
 still validate live authority in the checker.
+
+Keep the complete recorder stdout and checker stdout in current-owner call-local
+memory. The checker response has `status`, `typed_exit`, `facts_sha256`, and
+`validation_receipt`; that outer response is not itself a receipt. Set
+`invoke.owner_result` to the unchanged recorder output and
+`invoke.validation_receipt = checker_response.validation_receipt` to the nested
+object unchanged. Do not serialize that object as a string, recompute it, or
+copy a receipt from an example. Preserve the current public input and required
+transition in the existing invoke envelope.
+
+If only invoke-envelope assembly failed after the checker succeeded, and the
+authority, scope/scan, profile/mode, prerequisites, and recorded owner result
+remain unchanged, correct only the envelope and call invoke again with the
+same recorded result and actual nested receipt. This assembly correction does
+not require re-recording or re-checking and must not stop to await an external
+owner. It is not a general retry rule and does not waive a failed checker,
+missing receipt, semantic Gate, or genuine stale/mismatch condition. If facts
+or the owner result changed, discard the stale evidence and follow the existing
+complete scope/scan, semantic review, record, and check sequence before invoke.
 
 ## Single-Read Review Input Migration (#388)
 

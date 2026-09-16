@@ -5,6 +5,14 @@ description: Discover fresh current and archived change context, run the semanti
 
 # Guru Discover Change Context
 
+The current executing AI is this Skill's semantic owner. Read the complete
+contract and perform its review yourself before authoring the current owner
+result and calling record, check, and invoke. `owner_not_yet_executed` is an
+internal state to continue this review, not a typed stop or a missing external
+owner. Do not wait for another agent, agent ID, subagent evidence, or a
+pre-existing owner result. Real missing authority or prerequisites still
+follow this Skill's declared routes; runtime cannot supply your judgment.
+
 Use this Skill after `guru-sync-base:synced`, or when a standalone caller asks
 to discover change context from a fresh base with explicit issue, request,
 path, command, config, schema, or symbol clues.

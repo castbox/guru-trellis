@@ -66,6 +66,9 @@ def stage_owner_execution(
     )
     execution_mode = str(request.get("native_execution_mode") or "post_owner")
     if execution_mode == "semantic_authoring":
+        if request.get("native_authoring_flow") == "standard_intake":
+            from adapters.eval.intake_authoring import stage_intake_facts
+            return stage_intake_facts(request, execution_root, fixture)
         if skill_id == "guru-check-task":
             from adapters.eval import phase2_authoring
             package = fixture / ".trellis/guru-team/skills/packages" / skill_id

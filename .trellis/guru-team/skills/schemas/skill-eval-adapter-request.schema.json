@@ -12,6 +12,7 @@
         "not": {
           "anyOf": [
             {"required": ["native_execution_adapter"]},
+            {"required": ["native_authoring_flow"]},
             {"required": ["model_id"]}
           ]
         }
@@ -19,6 +20,7 @@
     }
   ],
   "properties": {
+    "native_authoring_flow": {"const": "standard_intake"},
     "schema_version": {"const": "1.0"}, "adapter_id": {"enum": ["shared", "codex", "claude", "cursor"]}, "platform": {"enum": ["shared", "codex", "claude", "cursor"]}, "skill_id": {"type": "string", "minLength": 1}, "package_root": {"type": "string", "minLength": 1}, "interface": {"type": "object"}, "case_id": {"type": "string", "minLength": 1}, "prompt": {"type": "string", "minLength": 1}, "files": {"type": "array", "items": {"type": "string"}}, "workdir": {"type": "string", "minLength": 1}, "corpus_path": {"type": "string", "minLength": 1}, "corpus_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "runtime_target": {"type": "string", "minLength": 1}, "native_execution_mode": {"enum": ["post_owner", "semantic_authoring"]}, "native_execution_adapter": {"const": "codex"}, "model_id": {"type": "string", "minLength": 1}
   }
 }

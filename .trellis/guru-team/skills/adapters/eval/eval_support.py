@@ -238,9 +238,12 @@ def resolved_base_interpreter(error_prefix: str) -> Path:
         raise ValueError(f"{error_prefix} base interpreter is not executable")
     return interpreter
 
-def qualification_trace_helper_source() -> str:
+def qualification_trace_helper_source(intake_read_paths: dict[str, list[str]] | None = None) -> str:
     interpreter = resolved_base_interpreter("qualification trace helper")
-    return f"#!{interpreter}\n{QUALIFICATION_TRACE_HELPER_BODY}"
+    body = QUALIFICATION_TRACE_HELPER_BODY
+    if intake_read_paths is not None:
+        body = body.replace("INTAKE_READ_PATHS = {}", f"INTAKE_READ_PATHS = {intake_read_paths!r}", 1)
+    return f"#!{interpreter}\n{body}"
 
 def permission_probe_interpreter(denied_paths: list[Path]) -> Path:
     interpreter = resolved_base_interpreter("permission probe")
@@ -364,9 +367,13 @@ def repository_projection_allowed(relative: Path) -> bool:
         return False
     return relative.suffix not in {".pyc", ".pyo"}
 
-def stage_repository_projection(source: Path, destination: Path) -> None:
+def stage_repository_projection(source: Path, destination: Path, *, intake_flow: bool = False) -> None:
     destination.mkdir(parents=True, exist_ok=False)
-    for path in sorted(item for item in source.rglob("*") if item.is_file() and not item.is_symlink()):
+    if intake_flow:
+        paths = [source / path for path in intake_repository_assets(source)]
+    else:
+        paths = [item for item in source.rglob("*") if item.is_file() and not item.is_symlink()]
+    for path in sorted(paths):
         relative = path.relative_to(source)
         if not repository_projection_allowed(relative):
             continue
@@ -600,6 +607,61 @@ def qualification_prompt_sha256(
     encoded = json.dumps(identity, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
+def intake_repository_assets(source: Path) -> set[Path]:
+    from adapters.eval.intake_authoring import FACTS_PATH
+
+    facts = json.loads((source / FACTS_PATH).read_text())
+    assets = {Path(FACTS_PATH), *(Path(path) for path in facts["required_reads"])}
+    for relative in assets:
+        if (relative.is_absolute() or ".." in relative.parts
+                or any(part in {"examples", "evals", ".runtime", ".git"} for part in relative.parts)
+                or not (relative.parts[0] in {"docs", "src", "tests"}
+                        or relative == Path(".trellis/spec/workflow/semantic-retrieval.md"))):
+            raise ValueError("Intake repository asset is outside declared evidence")
+    return assets
+
+
+def intake_projection_assets(interface: dict[str, Any]) -> set[Path]:
+    from adapters.eval.intake_authoring import COMMANDS, INTAKE_SKILLS
+
+    profiles = dict(zip(INTAKE_SKILLS, (None, "pre_task", "initial_change_request", "change_request", "current_issue")))
+    owners = dict(zip(INTAKE_SKILLS, (None, "change_context_owner_result", "clarification_result", "wording_review", "change_request_review")))
+    skill = interface["id"]
+    contracts = interface["public_contracts"]
+    assets = {Path("SKILL.md"), Path("references/contract.md"), Path("interface.json")}
+    assets.update(Path(f"scripts/{command}.sh") for command in COMMANDS[skill])
+    selected = profiles[skill]
+    if selected is not None:
+        profile = next(item for item in contracts["input"]["profiles"] if item["id"] == selected)
+        assets.add(Path(profile["schema"]["path"]))
+        owner = next(item for item in contracts["private_artifacts"] if item["id"] == owners[skill])
+        assets.add(Path(owner["schema"]["path"]))
+    if skill in {"guru-review-contract-wording", "guru-review-change-request"}:
+        review = next(item for item in interface["schemas"] if item["id"] == "review_invocation")
+        assets.add(Path(review["path"]))
+    assets.add(Path(contracts["invocation"]["error_schema"]["path"]))
+    assets.update(Path(item["schema"]["path"]) for item in contracts["outputs"])
+    if any(path.is_absolute() or ".." in path.parts or path.parts[0] not in
+           {"SKILL.md", "interface.json", "references", "schemas", "scripts"} for path in assets):
+        raise ValueError("Intake package asset is outside declared contracts")
+    return assets
+
+
+def intake_read_inventory(projection: Path, repository: Path, evidence: list[Path]) -> dict[str, list[str]]:
+    from adapters.eval.intake_authoring import INTAKE_SKILLS
+
+    contracts = set()
+    for skill in INTAKE_SKILLS:
+        package = projection if skill == INTAKE_SKILLS[-1] else projection / "flow-packages" / skill
+        interface = json.loads((package / "interface.json").read_text())
+        contracts.update(package / path for path in intake_projection_assets(interface) | public_projection_shared_assets(interface))
+    return {
+        "skill_contract": sorted(str(path) for path in contracts),
+        "owner_file": sorted(str(repository / path) for path in intake_repository_assets(repository)),
+        "case_file": sorted(str(path) for path in evidence),
+    }
+
+
 def public_projection_assets(interface: dict[str, Any]) -> set[Path]:
     assets = {Path("SKILL.md"), Path("interface.json")}
     if interface.get("id") == QUALIFICATION_SKILL:
@@ -668,12 +730,11 @@ def stage_public_projection(request: dict[str, Any], execution_root: Path) -> tu
         raise ValueError("exact public Interface identity is unavailable")
     projection_root = execution_root / "public-packages" / str(request["skill_id"])
     projection_root.mkdir(parents=True, exist_ok=False)
-    public_assets = public_projection_assets(interface)
-    if request.get("native_execution_mode") == "semantic_authoring":
-        public_assets.update({
-            Path("references/contract.md"),
-            Path("schemas/phase2-check.schema.json" if request["skill_id"] == "guru-check-task" else "schemas/semantic-result.schema.json"),
-        })
+    intake_flow = request.get("native_authoring_flow") == "standard_intake"
+    public_assets = intake_projection_assets(interface) if intake_flow else public_projection_assets(interface)
+    if request.get("native_execution_mode") == "semantic_authoring" and not intake_flow:
+        public_assets.add(Path("references/contract.md"))
+        public_assets.add(Path("schemas/phase2-check.schema.json" if request["skill_id"] == "guru-check-task" else "schemas/semantic-result.schema.json"))
     for relative in sorted(public_assets, key=lambda item: item.as_posix()):
         source = canonical_root / relative
         if source.is_symlink() or not source.is_file():

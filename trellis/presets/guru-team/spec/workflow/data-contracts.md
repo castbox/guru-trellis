@@ -1624,6 +1624,39 @@ applicable set, with missing, duplicate, unknown, and unexpected ids rejected.
 Actual wrapper output selects the per-exit schema before the runner performs the
 independent expected-versus-actual assertion.
 
+`native_authoring_flow`, when present, is exactly `standard_intake` and requires
+`native_execution_mode=semantic_authoring`. Its direct consumers are the eval
+runner, native adapter, facts-only staging, and flow trace validator. It is not
+a production Skill input, output, owner state, or authorization field. Existing
+single-Skill authoring and post-owner cases retain their own trace contracts.
+
+The standard Intake flow records each declared command's actual input/output
+identity and the terminal public producer in eval-private trace evidence. The
+terminal producer's current interface, not the corpus-owning package, defines
+the schema for its unchanged output. The Agent-visible projection contains
+the participating public contracts, declared consumer projections, and source
+facts; it excludes expected exits, semantic verdicts, private runtime, and
+host-prepared owner or prerequisite results. Actual public outputs bind the
+next public inputs without a producer-private payload handoff. Flow case ids
+remain subject to the same declared-versus-actual aggregate completeness rule.
+
+For `standard_intake`, model-visible assets are an explicit minimal set, not a
+directory-copy policy. Schemas and command boundaries are distinct from sample
+answers: no Interface input/output/error example reference adds a visible
+artifact. The helper and trace use that same declared read set and reject
+examples, eval controls and private runtime.
+
+Intake transcript assertions consume the existing semantic-grading 1.0 rows
+by comparison side, case and assertion identity. Only a selection of declared
+`standard_intake` cases can use completed-run grading; non-flow cases keep their
+existing lifecycle, including when a saved run root exists. A completed Intake
+run root can be graded by the original runner after independent review of its actual
+transcript. No new public DTO, grading field, hidden summary token or long-lived
+ledger is introduced. The runner checks existing request/corpus/execution
+identity and preserves raw execution evidence while updating only semantic
+results and aggregate status. This associates grading with the selected
+completed execution; it does not claim a new grade-to-transcript byte digest.
+
 ## Branch Review Data Boundary
 
 Branch Review aggregate public input schema 4.0 dispatches two independent

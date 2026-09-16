@@ -5,6 +5,14 @@ description: Review whether a current change request is one independently delive
 
 # Guru Review Change Request
 
+The current executing AI is this Skill's semantic owner. Read the complete
+contract and perform its review yourself before authoring the current owner
+result and calling record, check, and invoke. `owner_not_yet_executed` is an
+internal state to continue this review, not a typed stop or a missing external
+owner. Do not wait for another agent, agent ID, subagent evidence, or a
+pre-existing owner result. Real missing authority or prerequisites still
+follow this Skill's declared routes; runtime cannot supply your judgment.
+
 Use this Skill after `guru-review-contract-wording:change_request:pass` and
 before task workspace creation. Load
 [references/contract.md](references/contract.md) before acting.

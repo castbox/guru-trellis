@@ -1088,6 +1088,45 @@ dispatch, reruns the owner checker, and returns the actual exit. Adapter and nat
 `--skip-git-repo-check`. Claude uses safe non-interactive input, and missing
 Cursor authentication returns deterministic `unsupported`.
 
+An explicit `native_authoring_flow=standard_intake` authoring case reuses this
+same runner/adapter with a facts-only installed fixture and sequential command
+trace. It must not call host owner recipes or stage checked predecessors. The
+native Agent performs each current Skill's semantic review, then calls its
+real recorder, checker, and public serializer; the boundary only forwards
+declared commands and validates actual public-output/input projection. Source
+fact queries and ordinary history/wording scans remain deterministic evidence,
+never semantic producers.
+
+This eval-only flow permits the participating packages' declared command
+sequence instead of requiring one terminal invocation for the entire run.
+Each actual wrapper receipt binds its output, and the terminal receipt selects
+that producer's output schema. Success stops at Readiness `ready`; a genuine
+semantic blocker stops at its owner with no downstream invocation or workspace
+mutation. The runner compares expectations only after native execution, keeps
+the native context free of expected decisions, and requires independent
+semantic assessment in addition to structural trace checks. Existing
+single-Skill and post-owner execution paths retain their validation duties;
+they do not substitute for this no-prewritten-result regression.
+
+Standard Intake projection is allowlist-based. Interface examples and whole
+asset directories must not enter the model projection; helper and trace reads
+are limited to declared contract/schema/command/source assets. The two cases
+must have transcript semantic assertions, so absent external grading leaves a
+structurally successful raw run at `evaluation_failed`.
+
+Only cases declaring `native_authoring_flow=standard_intake` may use the same
+`run-skill-evals` command with `--semantic-grading` and the completed `--run-root`
+to consume an independent post-execution review. Unmarked post-owner,
+Architecture and Phase 2 cases retain their original execution behavior;
+this branch does not introduce a shared saved-run lifecycle. Mixed selections
+must not regrade non-flow cases; select an explicit Intake case for this step.
+This branch validates existing execution identity before any staging or model
+dispatch and only recomputes semantic results and aggregate status. It never
+reconstructs missing execution, overwrites raw transcript/trace/receipts, or
+turns execution/deterministic failures into success. Existing case/side/
+assertion binding and same-run review apply without a new grading schema or
+an implicit protocol embedded in free-form summary text.
+
 ## Branch Review Recorder And Checker
 
 Aggregate public input schema 4.0 dispatches the full `branch_review` schema 2.0

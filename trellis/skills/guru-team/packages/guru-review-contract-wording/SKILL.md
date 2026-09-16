@@ -5,6 +5,14 @@ description: Review controlled contract wording through fixed change-request, pl
 
 # Guru Review Contract Wording
 
+The current executing AI is this Skill's semantic owner. Read the complete
+contract and perform its review yourself before authoring the current owner
+result and calling record, check, and invoke. `owner_not_yet_executed` is an
+internal state to continue this review, not a typed stop or a missing external
+owner. Do not wait for another agent, agent ID, subagent evidence, or a
+pre-existing owner result. Real missing authority or prerequisites still
+follow this Skill's declared routes; runtime cannot supply your judgment.
+
 Use this Skill after requirements clarification, before planning approval, or
 for an explicit standalone Markdown review. Load
 [references/contract.md](references/contract.md) before acting.
@@ -46,5 +54,10 @@ For change-request scan, record, and check, use the existing wrappers with
 `schemas/review-invocation.schema.json`: `profile`, `mode`, `change_request`,
 `owner_result`. Scan adds `--scan-only` and uses `owner_result={}`; record uses
 the flat AI authoring object; check uses the exact record output. Each reads
-stdin once. Pass the checker's actual `validation_receipt` to public invoke.
+stdin once. Keep the complete record and check outputs in current-owner memory.
+Set `invoke.validation_receipt = checker_response.validation_receipt` unchanged
+as an object, not the outer checker response, a string, a recomputed receipt,
+or an example. For an invoke-envelope-only error after a successful check with
+unchanged facts and owner result, correct the envelope and invoke again as
+defined in the contract; do not re-record, re-check, or wait for another owner.
 The migration and remaining unmixed legacy callers are defined in the contract.

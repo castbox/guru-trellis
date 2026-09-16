@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"注入会截断。开始实现前从原文件完整读取 Public Skill I/O And Private State、Package-Local Skill Evaluation Contract 两节及其后续子节，不将注入前缀当完整合同。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"注入会截断。开始实现前从原文件完整读取 Skill Eval Discovery And Runner 一节及其后续子节，核对 managed runtime 和确定性脚本边界。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"注入会截断。开始实现前从原文件完整读取 Skill Evaluation Data Contracts 一节，核对当前 schema/interface 指向，不依据截断前缀推断 eval 合同。"}
+{"file":".trellis/spec/workflow/subtraction-first-compatibility.md","reason":"直接修改与复用、无兼容 wrapper、3000 行边界"}
+{"file":".trellis/tasks/09-16-421-intake-semantic-owner/design.md","reason":"本任务四步 native authoring 实现设计"}
