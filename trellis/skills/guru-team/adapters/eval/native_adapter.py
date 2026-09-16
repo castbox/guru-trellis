@@ -56,6 +56,7 @@ from adapters.eval.eval_support import (
 from adapters.eval.owner_staging import (
     stage_owner_execution,
 )
+from adapters.eval import phase2_authoring
 
 
 def semantic_authoring_request(request: dict[str, Any]) -> bool:
@@ -272,6 +273,8 @@ def start_qualification_runtime_boundary(
 
     def serve() -> None:
         descriptor = os.open(request_fifo, os.O_RDONLY | os.O_NONBLOCK)
+        architecture_result = None
+        qualified = set()
         try:
             chunks: list[bytes] = []
             while not stop.is_set():
@@ -288,7 +291,12 @@ def start_qualification_runtime_boundary(
                     payload = json.loads(b"".join(chunks))
                     if (
                         not isinstance(payload, dict)
-                        or payload.get("arguments") != ["--invocation", "-"]
+                        or payload.get("arguments") not in (
+                            [["--invocation", "-"], ["--architecture-invocation", "-"],
+                             ["--qualifier", "normal-scenario"], ["--qualifier", "solution-mechanism"]]
+                            if package_root.name == phase2_authoring.SKILL
+                            else [["--invocation", "-"]]
+                        )
                         or not isinstance(payload.get("stdin"), str)
                     ):
                         raise ValueError("qualification invocation request is invalid")
@@ -308,16 +316,30 @@ def start_qualification_runtime_boundary(
                         cwd=owner_repository,
                         control=runtime_environment,
                     )
-                    process = subprocess.run(
-                        [str(installed_wrapper), "--invocation", "-"],
-                        cwd=owner_repository,
-                        input=payload["stdin"],
-                        text=True,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        check=False,
-                        env=environment,
-                    )
+                    upstream = payload["arguments"] == ["--architecture-invocation", "-"]
+                    qualifier = payload["arguments"][1] if payload["arguments"][0] == "--qualifier" else None
+                    if package_root.name == phase2_authoring.SKILL and not upstream and not qualifier:
+                        if architecture_result is None:
+                            raise ValueError("Phase 2 requires the actual upstream Architecture invocation first")
+                        if qualified != {"normal-scenario", "solution-mechanism"}:
+                            raise ValueError("Phase 2 requires both actual qualification invocations first")
+                        process = phase2_authoring.execute(package_root, owner_repository, envelope, environment)
+                    else:
+                        wrapper = (
+                            package_root.parent / ARCHITECTURE_SKILL / "scripts/invoke.sh"
+                            if upstream else installed_wrapper
+                        )
+                        if qualifier:
+                            wrapper = package_root.parent / ("guru-qualify-" + qualifier) / "scripts/invoke.sh"
+                        process = subprocess.run(
+                            [str(wrapper), "--invocation", "-"],
+                            cwd=owner_repository, input=payload["stdin"], text=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False, env=environment,
+                        )
+                        if upstream and process.returncode == 0:
+                            architecture_result = json.loads(process.stdout)
+                        if qualifier and process.returncode == 0:
+                            qualified.add(qualifier)
                     response = {
                         "returncode": process.returncode,
                         "stdout": process.stdout,
@@ -331,6 +353,13 @@ def start_qualification_runtime_boundary(
                     }
                 with response_fifo.open("w", encoding="utf-8") as handle:
                     json.dump(response, handle, separators=(",", ":"))
+                if (
+                    package_root.name == phase2_authoring.SKILL
+                    and payload.get("arguments", [None])[0] in {"--architecture-invocation", "--qualifier"}
+                    and response["returncode"] == 0
+                ):
+                    chunks = []
+                    continue
                 return
         finally:
             os.close(descriptor)
@@ -500,7 +529,7 @@ def build_context(
             "For this semantic invocation boundary, run only those traced reads and then the exact stdin public wrapper invocation command below.",
         ]
     elif semantic_authoring:
-        if request.get("skill_id") != ARCHITECTURE_SKILL:
+        if request.get("skill_id") not in {ARCHITECTURE_SKILL, phase2_authoring.SKILL}:
             raise ValueError("semantic authoring context is not declared for this Skill")
         context_lines[-3:] = [
             "This Skill has no staged owner result. The current executing AI is the semantic owner selected by the public contract.",
@@ -512,6 +541,20 @@ def build_context(
             "Execute every trace-helper read and invoke sequentially, one process at a time. Do not run helper commands concurrently, and do not repair or rewrite the trace receipt directly.",
             "For this semantic invocation boundary, run only those traced reads and then the exact stdin public wrapper invocation command below.",
         ]
+        if request["skill_id"] == phase2_authoring.SKILL:
+            context_lines[-8:] = [
+                "This Skill has no staged owner result. Execute the installed Skill as its current semantic owner.",
+                f"Read {model_repository_root / phase2_authoring.FACTS} and every required_reads file before judgment. These are facts, not conclusions.",
+                "First load the installed Architecture Skill/contract and author its phase2 owner_result from the provided architecture-input.json and live fixture evidence. Invoke the trace helper with invoke --stdin --upstream-architecture and the existing Architecture envelope {public_input, owner_result}. Consume the actual returned public DTO before Phase 2 authoring.",
+                "Then complete the full nine-dimension Phase 2 review and author exactly the recorder fields listed by the Phase 2 contract, without derived identity fields. Do not copy examples or search for expected exits.",
+                "Before Phase 2 findings/classifications, load both installed qualification contracts and invocation schemas from required_reads. Author and invoke their actual envelopes using invoke --stdin --qualifier normal-scenario and invoke --stdin --qualifier solution-mechanism. Use the fact sheet qualification_target and the task locator as target_locator, but author candidate refs, witnesses, decisions and gates yourself. Consume each returned route; do not replace these mandatory invocations with your own uninvoked assertion.",
+                "Qualification envelopes differ from Architecture: each is {schema_version: 1.0, semantic_result: <your authored result>}, with schema_version encoded as a JSON string. The qualifier public_input belongs inside semantic_result. Do not use the Architecture {public_input, owner_result} envelope for either qualifier.",
+                "Send {public_input, owner_result} through the trace helper invoke --stdin. For this eval transport only, owner_result is your recorder authoring form; the host writes it unchanged to a runtime-private file and executes the original recorder, checker, then wrapper in the real installed fixture.",
+                "Re-read every staged case file and required repository file through the trace helper. Never read eval corpus, examples, or private runtime.",
+                "Execute helper reads and all four invocations sequentially, one process at a time. Do not alter the trace or source files.",
+                "Return only the final Phase 2 wrapper DTO. The upstream Architecture DTO is evidence to consume, not the final result.",
+                "If any invocation returns a deterministic error, end this eval with that exact diagnostic. The failed boundary is closed; do not retry against its FIFO or invent a successful DTO. Fresh semantic re-entry requires a new eval run.",
+            ]
     context = "\n".join(context_lines)
     if qualification_codex:
         assert public_repository_identity is not None
@@ -602,10 +645,10 @@ def build_context(
                 "closed when any listed read is absent:\n"
                 f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'references/contract.md'}\n"
                 f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {public_interface_path}\n"
-                f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'schemas/semantic-result.schema.json'}\n"
+                f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / ('schemas/phase2-check.schema.json' if request['skill_id'] == phase2_authoring.SKILL else 'schemas/semantic-result.schema.json')}\n"
                 + (
                     f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'schemas/public-input.schema.json'}\n"
-                    if qualification_codex else
+                    if qualification_codex or request["skill_id"] == phase2_authoring.SKILL else
                     f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'schemas/public-input-aggregate.schema.json'}\n"
                 )
                 + "Then execute exactly one of the following profile-schema reads: choose the schema whose "
@@ -766,8 +809,27 @@ def validate_native_trace(
             raise ValueError("native trace event kind is invalid")
     if len(skill_reads) != 1 or events.index(skill_reads[0]) != 0:
         raise ValueError("native trace must begin with one exact Skill read")
-    if len(invocations) != 1 or events.index(invocations[0]) != len(events) - 1:
+    phase2 = semantic_authoring and request["skill_id"] == phase2_authoring.SKILL
+    if len(invocations) != (4 if phase2 else 1) or events.index(invocations[-1]) != len(events) - 1:
         raise ValueError("native trace must end with one public wrapper invocation")
+    if phase2:
+        upstream = invocations[0]
+        upstream_wrapper = owner_repository / ".trellis/guru-team/skills/packages" / ARCHITECTURE_SKILL / "scripts/invoke.sh"
+        if (
+            upstream.get("wrapper_path") != str(upstream_wrapper)
+            or upstream.get("argv") != [str(upstream_wrapper), "--invocation", "-"]
+            or upstream.get("returncode") != 0
+        ):
+            raise ValueError("Phase 2 trace lacks the actual upstream Architecture invocation")
+        qualifier_wrappers = {
+            str(owner_repository / ".trellis/guru-team/skills/packages" / skill / "scripts/invoke.sh")
+            for skill in phase2_authoring.QUALIFIERS
+        }
+        if {item.get("wrapper_path") for item in invocations[1:3]} != qualifier_wrappers or any(
+            item.get("returncode") != 0 or item.get("argv") != [item["wrapper_path"], "--invocation", "-"]
+            for item in invocations[1:3]
+        ):
+            raise ValueError("Phase 2 trace lacks the actual qualification invocations")
     if isolated_authoring and case_reads != declared_case_reads:
         raise ValueError("semantic authoring trace must re-read every staged case file")
     if semantic_authoring:
@@ -779,6 +841,8 @@ def validate_native_trace(
             projection_root / "schemas/public-input-aggregate.schema.json",
             projection_root / "schemas/public-input-impact.schema.json",
         }
+        if phase2:
+            required_public_reads = {projection_root / path for path in phase2_authoring.PUBLIC_READS}
         observed_public_reads = {
             Path(str(event["path"])).resolve()
             for event in events
@@ -787,7 +851,7 @@ def validate_native_trace(
         }
         if not required_public_reads.issubset(observed_public_reads):
             raise ValueError("semantic authoring trace omitted required public contract reads")
-        facts_path = owner_repository / ARCHITECTURE_PUBLIC_AUTHORING_FACTS
+        facts_path = owner_repository / (phase2_authoring.FACTS if phase2 else ARCHITECTURE_PUBLIC_AUTHORING_FACTS)
         try:
             facts = json.loads(facts_path.read_text(encoding="utf-8"))
             required_owner_reads = {
@@ -804,7 +868,7 @@ def validate_native_trace(
         }
         if not required_owner_reads.issubset(observed_owner_reads):
             raise ValueError("semantic authoring trace omitted required authority reads")
-    invocation = invocations[0]
+    invocation = invocations[-1]
     argv = invocation.get("argv")
     if (
         Path(str(invocation.get("wrapper_path"))).resolve() != wrapper_path.resolve()
@@ -1109,10 +1173,16 @@ def main() -> int:
     residue_error = None
     if repository_before is not None:
         repository_after = repository_file_inventory(owner_repository)
+        phase2 = semantic_authoring_codex and request["skill_id"] == phase2_authoring.SKILL
+        if phase2:
+            public = json.loads((owner_repository / phase2_authoring.FACTS).read_text())
+            task_refs = [p for p in public["required_reads"] if p.endswith("/task.json")]
+            checkpoint = f".trellis/.runtime/guru-team/owner-checkpoints/{Path(task_refs[0]).parent.name}/phase2-check.json"
+            repository_after.pop(checkpoint, None)
         if repository_after != repository_before:
             residue_error = "isolated Codex authoring changed repository file inventory"
         runtime_root = owner_repository / ".trellis/.runtime"
-        if runtime_root.exists():
+        if runtime_root.exists() and not phase2:
             residue_error = "isolated Codex authoring created ignored runtime residue"
     transcript.write_text(json.dumps({
         "adapter": args.adapter,

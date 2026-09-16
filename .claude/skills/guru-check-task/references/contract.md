@@ -23,6 +23,37 @@ upstream-owned.
 
 ## Public Entry
 
+### Execution Order
+
+The current AI executing this package is the contract-selected semantic owner.
+Do not wait for another owner, worker, subagent, agent ID, or pre-existing result.
+Workers may supply evidence but their absence does not remove your ownership.
+
+1. Load the complete package contract and the selected public input schema.
+2. Read the current task, approved `prd.md`, `design.md`, `implement.md`,
+   live Issue authority, complete diff and dirty paths, implementation, tests,
+   Docs SSOT, fresh Phase 2 Architecture result, and actual validation evidence.
+3. Execute the Semantic Loop below yourself, including qualification and all
+   nine adequacy dimensions. Judge the outcome from the evidence, not from a
+   desired exit.
+4. Author the minimal semantic content described under Recorder Authoring.
+5. Call the original recorder, checker, and public wrapper in that order.
+   These commands record and validate your completed judgment; they cannot
+   perform it or authorize it.
+6. Consume exactly the wrapper's declared typed exit. Only `passed` can enter
+   Task Commit; follow each other exit's existing unique consumer.
+
+The internal state `owner_not_yet_executed` means continue steps 2-4 here. It
+is not an external exit. A genuinely missing authority, Architecture result,
+or mandatory validation is a concrete evidence gap, not a missing AI owner;
+use the existing Architecture route or `blocked`, never invent a pass.
+Schema, identity, freshness, or path errors end that invocation with their
+original diagnostic. Reread current facts and perform a fresh semantic round
+before invoking again; do not relabel the error as missing external ownership.
+Only an observed failure of the platform's required read or formal execution
+capability can justify an execution blocker. Worker dispatch failure alone
+does not prove such a platform failure.
+
 Public input schema 2.0 is a minimal route DTO:
 
 - `initial_check` identifies the current implementation-complete entry;
@@ -143,6 +174,46 @@ recovery. Failed attempts retain it. Only schema 5.0 is valid; any older artifac
 shape is rejected and the owner must run again from the current public profile.
 
 ## Recorder And Validator
+
+### Recorder Authoring
+
+Author exactly these existing recorder-input fields in a temporary JSON file
+under the task's ignored owner-private runtime, with no authorization or worker
+metadata:
+
+- `mode` and `reviewed_paths`: the invocation mode and reviewed repository
+  locators covering all current dirty paths.
+- `validation`: actual command outcomes, summaries, and explicitly blocking
+  or nonblocking unverified items.
+- `docs_ssot`: strategy, durable paths, status, and evidence-based conclusion.
+- `candidate_classifications`: this owner's final decisions and six-part
+  normal-scenario witness for the Task Commit consumer.
+- `semantic_review`: status, summary, all nine named adequacy dimensions,
+  scope decisions, and findings linked to current candidates.
+- `typed_exit`, `route`, `reason`, and `consumer`: your justified result
+  and its existing unique consumer, as constrained by schema 5.0.
+
+Read `schemas/phase2-check.schema.json` for the exact nested field shapes.
+Do not copy example conclusions. Omit the schema/version, skill/task, captured
+commit, and content-token fields from this authoring form: the original
+recorder derives them from the real task worktree, not from a model projection.
+The public input 2.0 remains a separate routing DTO.
+
+From the task worktree, use the installed package's
+`scripts/record-phase2-check.sh --root . --task <task-ref> --input <authoring-file>`,
+then `scripts/check-phase2-check.sh --root . --task <task-ref>`, then
+`scripts/invoke.sh --input <public-input-file> --owner-result <artifact-path>`.
+The artifact path is returned by the recorder; its file is the schema-5.0
+result, not the recorder's stdout metadata. Recorder input is a file locator,
+not stdin. Keep all public schemas, wrapper arguments, and checkpoint
+lifecycle unchanged. Delete the temporary authoring file after consumption.
+Normal owner-private recording needs no additional user confirmation; separate
+Git/GitHub side effects still require their existing dialogue-local gate.
+
+Native `semantic_authoring` evals must supply facts without an owner result,
+let the current AI complete this same review, and forward its authoring unchanged
+to these original commands. `post_owner` evals prove deterministic routing
+only; neither their staged results nor fake-native traces prove semantic review.
 
 The recorder writes the completed semantic result and derives the one composite
 worktree-content token. The validator recomputes that token before public output

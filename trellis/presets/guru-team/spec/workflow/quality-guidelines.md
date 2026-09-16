@@ -265,6 +265,17 @@ from its repo-external isolated model root with `--skip-git-repo-check`.
 Claude uses its supported non-interactive protocol, and missing Cursor
 authentication returns `unsupported` without entering an interactive session.
 
+Phase 2 native authoring coverage requires both a clean case and a case with a
+reproducible current-scope finding. Review the actual Agent transcript for the
+complete nine-dimension judgment, authority and verification evidence, result
+authorship, and original recorder/checker/wrapper order. The finding case must
+return `implementation_required`; semantic authoring never means forcing
+`passed`. Host-staged Phase 2 results, example result copies, fake native CLIs,
+keyword assertions, or prefilled semantic grading cannot prove this behavior.
+Keep actual native execution, deterministic routing, source/installed parity,
+and release-matrix evidence separate. Missing native capability stays explicitly
+unverified and does not erase the required proof.
+
 Source validation must execute representative package wrappers and revalidate
 their single typed-exit stdout. Negative cases cover missing exit schema or
 example, missing or non-constant exit identity, unknown public I/O fields,

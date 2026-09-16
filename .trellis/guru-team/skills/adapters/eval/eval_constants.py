@@ -270,6 +270,8 @@ def main() -> int:
     read_parser.add_argument("--path", required=True)
     invoke_parser = subparsers.add_parser("invoke")
     invoke_parser.add_argument("--stdin", action="store_true")
+    invoke_parser.add_argument("--upstream-architecture", action="store_true")
+    invoke_parser.add_argument("--qualifier", choices=("normal-scenario", "solution-mechanism"))
     args = parser.parse_args()
     sandbox_root = Path(args.sandbox_root).resolve()
     projection_root = Path(args.projection_root).resolve()
@@ -301,7 +303,10 @@ def main() -> int:
     request_fifo = Path(args.request_fifo)
     response_fifo = Path(args.response_fifo)
     request_payload = {
-        "arguments": ["--invocation", "-"],
+        "arguments": (
+            ["--qualifier", args.qualifier] if args.qualifier
+            else ["--architecture-invocation" if args.upstream_architecture else "--invocation", "-"]
+        ),
         "stdin": sys.stdin.read(),
     }
     with request_fifo.open("w", encoding="utf-8") as handle:
@@ -310,9 +315,15 @@ def main() -> int:
         response = json.load(handle)
     if set(response) != {"returncode", "stdout", "stderr"}:
         raise ValueError("qualification invocation response is invalid")
+    wrapper = (
+        repository_root / ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/scripts/invoke.sh"
+        if args.upstream_architecture else projection_root / "scripts/invoke.sh"
+    )
+    if args.qualifier:
+        wrapper = repository_root / ".trellis/guru-team/skills/packages" / ("guru-qualify-" + args.qualifier) / "scripts/invoke.sh"
     append_event(trace_path, args.request_sha256, str(projection_root), args.skill_sha256, args.wrapper_sha256, {
-        "kind": "invoke", "wrapper_path": str(projection_root / "scripts/invoke.sh"),
-        "argv": [str(projection_root / "scripts/invoke.sh"), "--invocation", "-"],
+        "kind": "invoke", "wrapper_path": str(wrapper),
+        "argv": [str(wrapper), "--invocation", "-"],
         "returncode": response["returncode"], "stdout_sha256": stdout_digest(response["stdout"]),
         "stderr_sha256": digest(response["stderr"].encode("utf-8")),
     })

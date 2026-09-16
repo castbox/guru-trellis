@@ -1175,6 +1175,28 @@ ids 对照 actual ids，missing、duplicate、unknown 或 unexpected case 均 fa
 选择 output schema 后才比较 expected exit。Codex `post_owner` 使用 trusted Git root；Codex
 `semantic_authoring` 使用 repo 外 isolated model root 并传 `--skip-git-repo-check`。Claude 使用
 safe non-interactive 协议，Cursor 未登录直接返回 `unsupported`。
+
+Phase 2 `guru-check-task` 的 native authoring 回归区分无 finding 和真实当前范围
+finding 场景，分别验证 `passed` 与 `implementation_required`。当前执行 AI 负责完整
+九维判断，host 不预填 Phase 2 owner result；原 recorder/checker/wrapper 承接实际
+authoring，worker 或 agent ID 不构成前置。四个原 `post_owner` case 仍只证明确定性
+路由。实际 native、source/installed parity 与 Release 矩阵是不同证据，不能互相替代。
+
+完成 preset reapply 后，从安装目标根目录运行 focused native 回归；每次运行传入新的
+repo 外 `RUN_ROOT`，不得复用旧 candidate 的结果：
+
+```bash
+.trellis/guru-team/scripts/bash/run-skill-evals.sh --root . --mode installed \
+  --skill guru-check-task --adapter codex --case native-owner-clean \
+  --run-root "$RUN_ROOT/clean" --json
+.trellis/guru-team/scripts/bash/run-skill-evals.sh --root . --mode installed \
+  --skill guru-check-task --adapter codex --case native-owner-finding \
+  --run-root "$RUN_ROOT/finding" --json
+```
+
+运行前按既有 semantic-authoring runtime 合同准备独立 Codex home 和权限环境；
+命令执行成功后仍须审查实际 transcript 与每项语义断言，不预填 grading。
+
 Finalizer transaction 同时绑定 `reviewed_content_head` 与 `publication_head`。业务
 content push 后直接继续 Draft PR、archive 与 Ready transaction；installed manifest、
 README、docs、config、`.trellis/**` 或平台副本 changed path 都不会产生 verifier route。

@@ -386,6 +386,16 @@ def qualification_public_repository_identity(owner_repository: Path) -> dict[str
         raise ValueError("qualification public repository HEAD is invalid")
     return {"repo_locator": ".", "current_head": current_head}
 
+def qualification_planning_identity(owner_repository: Path, planning_paths: list[str]) -> str:
+    rows = [
+        {"path": relative, "content_sha256": hashlib.sha256((owner_repository / relative).read_bytes()).hexdigest()}
+        for relative in sorted(planning_paths)
+    ]
+    return hashlib.sha256(json.dumps(
+        rows, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+    ).encode()).hexdigest()
+
+
 def stage_qualification_public_authoring_fixture(owner_repository: Path) -> Path:
     task_root = owner_repository / ".trellis/tasks/current"
     task_root.mkdir(parents=True, exist_ok=True)
@@ -430,23 +440,7 @@ def stage_qualification_public_authoring_fixture(owner_repository: Path) -> Path
         ".trellis/tasks/current/design.md",
         ".trellis/tasks/current/implement.md",
     ]
-    planning_rows = [
-        {
-            "path": relative,
-            "content_sha256": hashlib.sha256(
-                (owner_repository / relative).read_bytes()
-            ).hexdigest(),
-        }
-        for relative in sorted(planning_paths)
-    ]
-    planning_identity = hashlib.sha256(
-        json.dumps(
-            planning_rows,
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode()
-    ).hexdigest()
+    planning_identity = qualification_planning_identity(owner_repository, planning_paths)
     request_path = "docs/qualification-eval/request.md"
     authority_path = "docs/qualification-eval/authority.md"
     publication_path = "docs/qualification-eval/publication-payload.json"
@@ -678,7 +672,7 @@ def stage_public_projection(request: dict[str, Any], execution_root: Path) -> tu
     if request.get("native_execution_mode") == "semantic_authoring":
         public_assets.update({
             Path("references/contract.md"),
-            Path("schemas/semantic-result.schema.json"),
+            Path("schemas/phase2-check.schema.json" if request["skill_id"] == "guru-check-task" else "schemas/semantic-result.schema.json"),
         })
     for relative in sorted(public_assets, key=lambda item: item.as_posix()):
         source = canonical_root / relative

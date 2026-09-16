@@ -8,6 +8,12 @@ description: Check the complete current task through one AI-owned semantic round
 Use this Skill after implementation reaches a reviewable state and before task
 commit. Load [references/contract.md](references/contract.md) before acting.
 
+You, the AI currently executing this Skill, are its semantic owner. Follow the
+contract's six-step execution order yourself. A worker is an optional evidence
+source, never a prerequisite owner: no dispatch, unavailable workers, or a
+missing agent ID does not suspend your review. `owner_not_yet_executed` means
+continue the review here, not a typed stop or a request for user authorization.
+
 Before searching Docs, code, tests, fixtures, consumers, or history, read
 `.trellis/spec/workflow/semantic-retrieval.md` and apply it in the complete
 nine-dimension semantic round. A negative coverage conclusion cannot rest on a
