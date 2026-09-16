@@ -3,7 +3,7 @@
   "schema_version": "1.4",
   "id": "guru-review-task-publication",
   "name": "guru-review-task-publication",
-  "description": "Review task publication readiness through ten semantic dimensions, metadata-only revision, one private gate, and three typed exits.",
+  "description": "Review task publication through ten semantic dimensions, with separate active and read-only archived profiles.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -131,6 +131,18 @@
     {
       "id": "reviewed_content_identity_output_example",
       "path": "examples/reviewed-content-identity-output.json"
+    },
+    {
+      "id": "archived_publication_review_input",
+      "path": "examples/public-archived-publication-review-input.json"
+    },
+    {
+      "id": "archived_publication_review_authoring",
+      "path": "examples/public-archived-publication-review-authoring.json"
+    },
+    {
+      "id": "public_archived_ready_output",
+      "path": "examples/public-archived-ready-output.json"
     }
   ],
   "schemas": [
@@ -169,6 +181,18 @@
     {
       "id": "reviewed_content_identity_output",
       "path": "schemas/reviewed-content-identity-output.schema.json"
+    },
+    {
+      "id": "archived_readiness_schema",
+      "path": "schemas/archived-pr-readiness.schema.json"
+    },
+    {
+      "id": "public_input_archived_publication_review",
+      "path": "schemas/public-archived-publication-review-input.schema.json"
+    },
+    {
+      "id": "public_archived_ready_output",
+      "path": "schemas/public-archived-ready-output.schema.json"
     }
   ],
   "validators": [
@@ -216,10 +240,18 @@
     },
     {
       "id": "blocked",
-      "evidence": "external decision, dependency or objective freshness prevents current completion",
+      "evidence": "external decision, dependency or objective freshness prevents current completion; archived profile also preserves truthful metadata_revision/task_work findings and stops read-only.",
       "consumer": {
         "kind": "stop",
         "id": "task-publication-review-blocked"
+      }
+    },
+    {
+      "id": "archived_ready",
+      "evidence": "Fresh ten-dimension review passes existing exact Ready PR payload at archive A and current base B with zero open findings.",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-finalize-task"
       }
     }
   ],
@@ -229,7 +261,8 @@
     "stale_behavior": "fail_closed"
   },
   "tests": [
-    "tests/test_contract.py"
+    "tests/test_contract.py",
+    "tests/test_archived.py"
   ],
   "platform_destinations": [
     "shared",
@@ -241,7 +274,7 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-production-review-task-publication-input-aggregate-4.0",
+        "schema_id": "guru-production-review-task-publication-input-aggregate-5.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
@@ -273,6 +306,21 @@
           "discriminator": {
             "field": "profile",
             "value": "publication_review_stale"
+          }
+        },
+        {
+          "id": "archived_publication_review",
+          "schema": {
+            "schema_id": "guru-production-review-task-publication-input-archived-publication-review-1.0",
+            "path": "schemas/public-archived-publication-review-input.schema.json"
+          },
+          "example": {
+            "id": "archived_publication_review_input",
+            "path": "examples/public-archived-publication-review-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "archived_publication_review"
           }
         }
       ]
@@ -342,6 +390,20 @@
         "consumer_use_ids": [
           "project_blocked"
         ]
+      },
+      {
+        "exit_id": "archived_ready",
+        "schema": {
+          "schema_id": "guru-production-review-task-publication-output-archived-ready-1.0",
+          "path": "schemas/public-archived-ready-output.schema.json"
+        },
+        "example": {
+          "id": "archived_ready_output",
+          "path": "examples/public-archived-ready-output.json"
+        },
+        "consumer_use_ids": [
+          "project_archived_ready"
+        ]
       }
     ],
     "consumer_inputs": [
@@ -398,6 +460,35 @@
           "schema_id": "guru-production-review-task-publication-stop-blocked-input-1.0",
           "path": "consumers/stop/production/review-task-publication-blocked.schema.json"
         }
+      },
+      {
+        "id": "archived_finalization_seed_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-finalize-task"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-finalize-task/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "archived_review_refresh",
+          "seed_fields": [
+            "task_ref",
+            "branch_review_commit",
+            "reviewed_base_head",
+            "pr_title",
+            "pr_body"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "archived_review_refresh_authoring",
+            "path": "examples/public-archived-review-refresh-authoring.json"
+          }
+        }
       }
     ],
     "projections": [
@@ -436,6 +527,34 @@
         "exit_id": "blocked",
         "consumer_input_id": "blocked_stop_input",
         "operation": "direct"
+      },
+      {
+        "id": "project_archived_ready",
+        "exit_id": "archived_ready",
+        "consumer_input_id": "archived_finalization_seed_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "branch_review_commit",
+            "target": "branch_review_commit"
+          },
+          {
+            "source": "reviewed_base_head",
+            "target": "reviewed_base_head"
+          },
+          {
+            "source": "pr_title",
+            "target": "pr_title"
+          },
+          {
+            "source": "pr_body",
+            "target": "pr_body"
+          }
+        ]
       }
     ],
     "private_artifacts": [
@@ -445,6 +564,15 @@
         "schema": {
           "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-5.0.json",
           "path": "schemas/pr-readiness.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "archived_publication_readiness",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-archived-task-publication-readiness-1.0.json",
+          "path": "schemas/archived-pr-readiness.schema.json"
         },
         "persistence": "ignored_runtime"
       }

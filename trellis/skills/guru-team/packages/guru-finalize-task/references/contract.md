@@ -3,9 +3,10 @@
 ## Current Boundary
 
 `guru-finalize-task` is the semantic owner of business-task closeout. Its
-current aggregate input is 6.0, gate is 5.0, and ignored transaction is 3.0.
-The four inputs are `publication_ready`, `same_plan_resume`,
-`reprepare_preview`, and `standalone_finalization`. The six exits are
+current aggregate input is 7.0, gate is 5.0, and ignored transaction is 3.0.
+The five inputs are `publication_ready`, `same_plan_resume`,
+`reprepare_preview`, `standalone_finalization`, and the independent read-only
+`archived_review_refresh`. The six exits are
 `base_reconciliation_required`, `publication_review_stale`, `resume_finalization`, `reprepare_required`,
 `ready_for_merge`, and `blocked`.
 
@@ -49,6 +50,28 @@ paths, installed extension manifests, documentation, configuration, `.trellis`
 files, and platform copies never create verifier applicability. Finalizer does
 not read or write `marketplace-verification.json`, verifier owner state,
 verification refs, or verifier recovery state.
+
+## Archive Task Mapping Convergence
+
+The archive transaction owns the active-to-archived task locator projection.
+Validate both existing source and target task/workspace mappings against the
+same task, branch and registered worktree before archive mutation. After the
+exact committed archive is validated, change only that task's existing
+`task_artifact_dir` to its archived locator on both ends. Workspace path,
+source checkout, branch, task slug and unrelated fields remain unchanged.
+
+Existing archived/Ready recovery accepts the same committed archive authority
+and only the exact old active or current archived projection for this task.
+Already-converged mappings require no write. Validate the complete pair before
+writing either mapping. Missing, conflicting or differently owned mappings
+remain explicit failures; recovery does not guess a source path, create a
+replacement task, or introduce a general mapping rebuild.
+
+Preview and boundary validators remain read-only. Local projection convergence
+belongs to the Finalizer executor and does not authorize a new Git commit,
+push, PR change, merge or Issue action. The source-side archive locator is a
+projection into the task workspace, not a request to copy archived task files
+into the source checkout.
 
 ## Provenance Source And Target Binding
 
@@ -246,3 +269,42 @@ missing plan or the current HEAD. The route is accepted only while Publication
 is `stale` and the current transaction state is `publication_review_stale`.
 Every plan-backed exit continues to bind the immutable plan commit,
 publication HEAD, plan ref, and its existing recovery-state contract.
+# Archived Review Refresh (Issue #418)
+
+`archived_review_refresh` is an independent semantic, read-only profile under
+the original wrappers, not a transaction resume. Its closed input is
+`profile/mode/task_ref/branch_review_commit/reviewed_base_head/pr_title/pr_body`;
+the caller projects Publication `archived_ready` only after the workflow-owned
+fresh Architecture `acceptance_finish` stage. Standalone mode retains those
+same preconditions. No producer-private checkpoint is consumed.
+
+The new aggregate input schema is 7.0 and retains the four original profile
+references. Original output schemas and six exits are unchanged; this profile
+may select only `ready_for_merge` or `blocked`. Preview uses the separate
+`archived-review-refresh-preview-1.0.schema.json` and never creates a mutation
+confirmation or a transaction plan. Original preview/confirmation contracts
+remain unchanged for all other profiles.
+
+Read the committed summary at current A and derive H as the unique commit
+dominating all original summary commits by Git ancestry, independent of array
+order. Empty/non-resolvable/ambiguous sets fail closed. Reuse the exact archive
+commit validator with H, then verify archive blob/mode continuity and only the
+official task status/completedAt transition. Require the exact completed task,
+clean checkout, existing converged source/target mappings, no in-flight
+Finalizer transaction, and A equal to local/remote/Open Ready PR HEAD.
+Resolve local selected base and live GitHub base to the same supplied B and
+require B ancestor of A; missing objects, base advancement and mismatches stop
+without fetch or ref updates. Existing PR title/body must equal the fresh
+Publication bytes without normalization. H is never replaced by A.
+
+AI review selects passed/ready_for_merge or blocked/blocked truthfully. The
+existing recorder/checker creates a fresh owner-private gate bound to the
+new input and H; no old terminal gate is projected for this profile. Public
+invoke checks current facts again, projects the original ready_for_merge DTO
+(including the exact body digest), and retires only that gate. It never calls
+the transaction engine, mutation confirmation, mapping reconciliation, task
+archive, PR mutation, Issue mutation, or another owner's private runtime.
+`execute-finalization-transition` rejects this profile. An incomplete old
+transaction or stale mapping returns an existing recovery diagnostic rather
+than silently taking a writable route. Missing semantic evidence remains a
+blocker; deterministic tests are not proof of native AI semantic approval.

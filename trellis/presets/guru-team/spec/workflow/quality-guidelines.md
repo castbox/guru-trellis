@@ -202,8 +202,8 @@ edges, private artifact ids, examples, the 160-case/5-invocation production
 control, and eval case bindings. Versioned v2/v3 files are immutable legacy
 assets and are not alternate current selectors, input projectors, or fixtures.
 Then validate the current package closure
-at twenty-three active Skills and 97 external exits, while the integrated business
-workflow projection is 22 invokes, 95 exits, 35 workflow targets, and 24 stop targets. Negative tests cover missing, extra,
+at twenty-three active Skills and 100 external exits, while the integrated business
+workflow projection is 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or non-current entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Intake/production
@@ -219,8 +219,9 @@ closed loop. Existing
 commit transaction tests remain mandatory because the new candidate builder is
 not authorization to replace or weaken the executor.
 
-The package graph contains thirteen target-owned `skill_input_authoring_seed`
-handoffs. These edges have positive partition/projection probes and negative
+The package graph's complete target-owned `skill_input_authoring_seed` handoff
+set is declared by `public_contracts.consumer_inputs` in each active registry
+package's `interface.json`. These edges have positive partition/projection probes and negative
 overlap, overwrite, missing, extra, unknown, private-lookup,
 runtime-semantic-reconstruction, and unsupported fifth-operation fixtures. Each positive
 probe independently validates seed and authoring example keys, proves disjoint
@@ -804,8 +805,10 @@ Python or shell.
   and recursive zero `.new`/`.bak` scans.
 + A normal public invocation trace proves no eval corpus/descriptor/evidence or
   private runtime source enters ordinary Skill context.
-+ Branch Review tests cover workflow and standalone input, all four actual
-  exits, finding-fix and fresh-final intent, qualification-before-severity, and
++ Branch Review tests cover all three profiles (`branch_review`, `base_continuity`,
+  and read-only `archived_review`), workflow and standalone modes, and all six
+  exits, including `continuity_passed` and `archived_review_passed`, alongside
+  finding-fix and fresh-final intent, qualification-before-severity, and
   planned-publication missing-Skill failure.
 + Negative coverage includes incomplete qualification, mutually inconsistent
   disposition, severity on a proposal/out-of-scope item, missing or
@@ -813,9 +816,9 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  twenty-three-Skill/97-exit current package closure while the production activation
+  twenty-three-Skill/100-exit current package closure while the production activation
   unit remains three Skills/11 exits and business markers remain integrated at
-  22 invokes, 95 exits, 35 workflow targets, and 24 stop targets. Update and preset reapply must reproduce
+  22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Update and preset reapply must reproduce
   that closure with zero unresolved `.new` or `.bak`.
 
 ## Normal Scenario Qualification Quality
@@ -901,14 +904,20 @@ must repeat implementation, Phase 2, task commit, Branch Review, and
 publication review. A current-scope defect cannot be downgraded to an
 observation or follow-up.
 
-Exit-quality tests exercise the complete semantic union in both schema and
+For the two ordinary Publication profiles, exit-quality tests exercise their
+complete semantic union in both schema and
 runtime: `ready` rejects any non-passed conclusion, `return_to_task_work`
 requires open task-work evidence bound to a finding dimension, and `blocked`
 requires blocked dimension/conclusion plus matching open external-blocker
 evidence. Normal AI-authored contradictory combinations must fail before the
 recorder writes and must remain invalid to the checker and public wrapper.
 
-Package/runtime/eval tests cover both profiles and modes, three exits, stale
+Package/runtime/eval tests cover all three profiles and both modes, with four
+exits in the complete Interface. The read-only `archived_publication_review`
+uses its independent union and only `archived_ready|blocked`: content or
+metadata findings remain truthful findings and stop, not ordinary revision or
+task-work routes; no PR payload mutation occurs. The two ordinary profiles
+retain their three original exits and cover stale
 re-entry, metadata correction to fresh pass, metadata correction that reveals
 durable drift, non-current readiness rejection, and the shared side-effect-free
 Finalizer preflight before `ready`. Finalization tests prove the ready DTO
@@ -1000,10 +1009,10 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert twenty-three active Skills and 97
+Source/installed/platform/throwaway checks assert twenty-three active Skills and 100
 package exits, exactly one selected `production-current-v4`
 four-Skill/15-exit current manifest, and business workflow markers of 22
-invokes, 95 exits, 35 workflow targets, and 24 stop targets.
+invokes, 98 exits, 35 workflow targets, and 24 stop targets.
 
 ## Extension Installation Verification Quality
 
@@ -1047,11 +1056,30 @@ independent evidence surfaces.
 
 ## Task Finalization Quality
 
-`guru-finalize-task` quality coverage exercises four current public input
-profiles, six outputs, the four finalization-family authoring handoffs, semantic
-Gate/confirmation ordering, and the owner-private recovery loop. Together with
-the five prior and four task-free execution handoffs, the active package graph contains thirteen target-owned
-`skill_input_authoring_seed` handoffs.
+Archive identity regressions must exercise the normal task/mapping producer
+and Finalizer archive or exact committed recovery path. Verify the same task's
+source and target locator projections, an already-converged retry, unchanged
+workspace/branch identity, and explicit mismatch rejection. Boundary validators
+remain read-only; a test must not repair its setup by editing live mapping files.
+
+Merge error propagation needs production-wrapper coverage, not only a direct
+Python exception assertion. Known missing-input, malformed-input, identity and
+provider failures preserve code/field/remediation without raw payload leakage;
+unexpected programming exceptions remain generic. Checkpoint retirement is a
+normal Branch Review behavior and cannot create a new Merge prerequisite.
+Fresh-review tests use the original producer/checker/public output, distinguish
+the actual failing owner, and must not claim an archived end-to-end recovery
+passed when an original owner still blocks it. Diagnostic success is not
+Publication, Finalizer or Merge success.
+
+`guru-finalize-task` quality coverage exercises five current public input
+profiles and six unchanged outputs. The four ordinary profiles retain semantic
+Gate/confirmation ordering and the owner-private recovery loop; the additional
+read-only `archived_review_refresh` validates the completed archive and returns
+the original `ready_for_merge` without entering the mutation transaction loop.
+The complete target-owned `skill_input_authoring_seed` handoff inventory is
+declared by `public_contracts.consumer_inputs` in each active registry package's
+`interface.json`, including the archived-review edges.
 
 Current gate 5.0 and transaction 3.0 regressions prove Publication input, exact
 pre-push authority, Draft/Ready identity, archive recovery, and terminal cleanup.
@@ -1108,8 +1136,8 @@ verifier hop and scans terminal task/runtime state for verifier residue.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes match after fresh install, update, and preset reapply. Package
-closure is twenty-three active Skills and 97 exits; business global markers remain 22
-invokes, 95 exits, 35 workflow targets, and 24 stop targets. Upstream Finish
+closure is twenty-three active Skills and 100 exits; business global markers remain 22
+invokes, 98 exits, 35 workflow targets, and 24 stop targets. Upstream Finish
 assets remain unchanged.
 
 Installed package tests must execute in a clean business repository that does

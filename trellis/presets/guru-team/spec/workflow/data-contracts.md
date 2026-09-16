@@ -475,9 +475,9 @@ contracts, and package-local corpora. Nineteen integrated rows select Interface
 1.4; normal-scenario qualification selects Interface 1.6; the standalone
 verifier selects Interface 1.5. Exact profile, exit,
 consumer, projection, current-case, and authoring-edge equality is required.
-Twenty-three Skills and 97 exits are the current package cardinality regression, not
+Twenty-three Skills and 100 exits are the current package cardinality regression, not
 a hard-coded future registry allowlist; the business workflow independently
-asserts 22 invokes, 95 exits, 35 workflow targets, and 24 stop targets.
+asserts 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets.
 
 The production manifest also binds the exact four
 `skill_input_authoring_seed` edges. Each binding names the target Interface and
@@ -567,6 +567,16 @@ Local-only reusable mappings live under the gitignored producer namespace:
 - `.trellis/.runtime/guru-team/tasks/<task-slug>.json`
 
 Runtime cache may contain absolute worktree paths and executor timestamps, but it is disposable, untracked, has no index/developer dimension, and must be reconstructable from current `task.json`, the checkout, `git worktree list`, or explicit parameters. Ordinary task commands read tracked shared config but do not rewrite it.
+
+Finalizer's archive executor must converge the same task's existing source and
+target `task_artifact_dir` projections to the exact committed archive locator.
+Validate both task/workspace mappings and registered owner identity before
+either write; preserve workspace/branch/source identities and unrelated
+fields. Same-transaction archived recovery accepts only the exact old active
+or already-current archived locator. Missing or conflicting mappings stay
+fail-closed; boundary validators remain read-only and cannot perform a repair.
+The source mapping points into the task workspace, so archive convergence does
+not create a second tracked archive in the source checkout.
 
 Query-only `prepare-task` writes neither task context nor runtime cache. Active
 `guru-create-task-workspace` is the only creator. On successful workspace/task
@@ -1626,13 +1636,15 @@ independent expected-versus-actual assertion.
 
 ## Branch Review Data Boundary
 
-Branch Review aggregate public input schema 4.0 dispatches two independent
-profiles. The `branch_review` schema 2.0 profile contains workflow/standalone
+Branch Review aggregate public input schema 5.0 dispatches three independent
+profiles, including read-only `archived_review` schema 1.0. The original
+`branch_review` schema 2.0 profile contains workflow/standalone
 mode, task/base/`branch_review_commit` identity, and one of
 `initial_review|fresh_final_review`. The current-only `base_continuity` schema
 2.0 profile separately binds the prior complete `branch_review_commit` and the
 current committed reconciled `task_head` to one bounded old-base/new-base
-candidate and the `base_continuity` intent. Its public outputs are the five minimal DTOs
+candidate and the `base_continuity` intent. The complete Interface's public
+outputs are the six minimal DTOs, including `archived_review_passed`,
 defined by the Skill package contract. `review_ref`, finding refs, proposal
 refs, and continuity identity are opaque consumer identities, not embedded
 artifact bodies.

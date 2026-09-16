@@ -6,7 +6,26 @@ description: Finalize a reviewed Trellis task through one semantic finalization 
 # Guru Finalize Task
 
 Use only after `guru-review-task-publication:ready`, or for one declared
-same-owner resume/reprepare profile. Read `references/contract.md` before use.
+same-owner resume/reprepare profile, or after `archived_ready` for the dedicated
+`archived_review_refresh` profile. Read `references/contract.md` before use.
+
+## Archived Review Refresh
+
+For this profile only, consume the workflow's fresh Architecture
+`acceptance_finish` result and Publication's `archived_ready` projection.
+Validate the completed committed archive, current A/B and exact existing Ready
+PR bytes. Derive original H from the summary commit set using ancestry, then
+validate original archive continuity with H, never A. Review these facts and
+the current Publication authority semantically. Record/check the current
+review through `invoke.sh --input ... --review-input ...`; do not supply
+`--confirmed-preview-sha256` or invoke the transaction executor.
+Return only original `ready_for_merge` or `blocked`. This path does not archive,
+push, edit PR/Issue, repair mappings, restore tasks, or reuse an old gate.
+Missing/stale mapping or an in-flight original transaction stops for the
+existing Finalizer recovery; it is not repaired by this profile. The invocation
+retires only its short-lived review checkpoint after terminal consumption.
+
+The remaining sections describe the unchanged original transaction profiles.
 
 The current business finalization graph never invokes
 `guru-verify-extension-installation`, never requests a `not_required` result,
@@ -90,6 +109,8 @@ For an explicit independent manual operation after an automatic stop, read
 `.trellis/workflow.md#manual-gitgithub-operations` (Manual Git/GitHub Operations).
 That global boundary does not relax this Skill's entry or completion contract.
 
-An already Ready same-plan transaction is a terminal read-only recovery: live
-facts are revalidated and the current Merge DTO is materialized without
-repeating any Git or GitHub mutation.
+An already Ready same-plan transaction revalidates live facts and materializes
+the current Merge DTO without repeating any Git or GitHub mutation. Finalizer
+alone converges the exact task's existing source/target mapping projections
+to the committed archive locator when needed; it never rebuilds an unknown
+mapping or lets a read-only boundary checker repair identity.

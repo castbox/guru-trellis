@@ -97,17 +97,19 @@ workflow/standalone preconditions before a package command can run.
 ### 0. Current Interface And Registry Contract
 
 Issue #180 activated the historical fifteen-package/57-exit graph. The current
-Registry 1.4 graph contains twenty-three active packages and 97 package exits while
+Registry 1.4 graph contains twenty-three active packages and 100 package exits while
 retaining older Interface/Registry assets as immutable legacy contracts.
 `guru-merge-task-pr` is a current semantic package with exactly
-`merged`, `merge_blocked`, `phase2_reentry_required`, and `closure_mismatch`.
+`merged`, `merge_blocked`, `phase2_reentry_required`, `closure_mismatch`, and
+`review_refresh_required`. The last exit belongs only to the dedicated archived
+read-only request and targets `guru-review-branch:archived_review`.
 `guru-restore-archived-task` consumes only `phase2_reentry_required`, restores
 the exact archived task identity, and returns `restored_to_phase2` or
 `restore_blocked`. Current Finalizer exposes
 `ready_for_merge` in place of `published`; the old published schema/example
 remain immutable legacy assets but are not selected by the Interface, registry,
 workflow or extension manifest. The integrated business graph has 22 invoke
-markers, 95 exit markers and 59 unique workflow/stop targets.
+markers, 98 exit markers and 59 unique workflow/stop targets.
 
 The Finalizer-to-Merge edge is target-authored. Finalizer returns canonical
 repository/PR identity, `expected_head_sha`, and expected base/head branch identity;
@@ -147,7 +149,7 @@ The validator selects the interface schema from the registry row. It must not
 guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes one `interface_schema_id`, the registry id,
 and exact public-input, typed-output, and private-artifact schema inventories
-for all twenty-three active packages and their 97 external exits. The
+for all twenty-three active packages and their 100 external exits. The
 `production-current-v4` is the sole current manifest and contains exactly four
 packages and 15 exits, including `guru-qualify-normal-scenario`; additive
 activation of other packages, including `guru-finalize-task`, does not rewrite
@@ -722,7 +724,7 @@ executor consumes only that private candidate.
 Caller-selected `expected_exit`, artifact bodies, digests, file metadata,
 absolute paths, and runtime snapshots are not public input.
 
-Exactly fourteen semantic handoffs use target-owned authoring seeds. The first
+Semantic handoffs use Interface-declared target-owned authoring seeds. The first
 five are
 `guru-approve-task-plan:revision_required -> revision_reentry`,
 `guru-check-task:passed -> guru-create-task-commit:initial_commit`, and
@@ -756,9 +758,9 @@ Active closure is derived from the live registry, the production current
 manifest, and every complete active Interface 1.4 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
-The current package cardinality assertion is twenty-three active Skills and 97
+The current package cardinality assertion is twenty-three active Skills and 100
 exits. The integrated business workflow projection contains 22 invoke markers,
-95 exit markers, 35 workflow-target markers, and 24 stop-target markers. Missing,
+98 exit markers, 35 workflow-target markers, and 24 stop-target markers. Missing,
 extra, duplicate, renamed, unknown, partially activated, or
 case-mismatched entries fail closed.
 
@@ -1559,8 +1561,9 @@ complete current activation unit.
 ## Branch Review Owner And Active Publication Bridge
 
 `guru-review-branch` is the semantic owner of the post-commit full-range review
-and bounded base-continuity review. Aggregate public input schema 4.0 dispatches
-two profiles. The `branch_review` schema 2.0 profile requires exactly `profile`,
+and bounded base-continuity review. Aggregate public input schema 5.0 also
+includes the independent `archived_review` profile. The two original profiles
+retain their contracts. The `branch_review` schema 2.0 profile requires exactly `profile`,
 `mode`, `task_ref`, `base_ref`, `branch_review_commit`, and `review_intent`; the
 committed producer supplies the three identity fields and the caller AI freshly
 authors `profile`, `mode`, and `review_intent`. The current-only
@@ -1577,7 +1580,7 @@ commit for continuity, `reviewed_content_algorithm`, and
 older remain legacy stale inventory, not current runtime authority; any
 non-7.0 gate fails closed.
 
-The five outputs are independent minimal DTOs:
+The six outputs are independent minimal DTOs:
 
 - `passed`: `exit_id`, `task_ref`, `branch_review_commit`;
 - `continuity_passed`: `exit_id`, `task_ref`, `branch_review_commit`,
@@ -1588,7 +1591,11 @@ The five outputs are independent minimal DTOs:
 - `implementation_required`: `exit_id`, `task_ref`, `branch_review_commit`,
   `finding_refs`;
 - `scope_confirmation_required`: `exit_id`, `task_ref`, `proposal_refs`;
-- `blocked`: `exit_id`.
+- `blocked`: `exit_id`;
+- `archived_review_passed`: `exit_id`, `task_ref`, `branch_review_commit`,
+  `pr_payload_snapshot_sha256`, and `reviewed_base_head`; only the read-only
+  `archived_review` profile emits this success to Publication's
+  `archived_publication_review`. Its only other exit is `blocked`.
 
 The Branch Review `passed` edge supplies only
 `task_ref/branch_review_commit` through `skill_input_authoring_seed`; the
@@ -1619,12 +1626,15 @@ dropping business data or inventing another projection operation.
 ## Task Publication Review Owner
 
 `guru-review-task-publication` is the active Interface 1.4 semantic owner
-between `guru-review-branch:passed` and finalization. Workflow and standalone
-use the same eight entry preconditions, ten-dimension AI Review Gate,
+between Branch Review and finalization. For the two ordinary profiles,
+workflow and standalone use the same eight entry preconditions, ten-dimension AI Review Gate,
 conditional confirmation, ignored-runtime recorder/checker, metadata revision
 loop, freshness rules, and typed-exit conditions.
 
-The package owns two closed structured profiles. `publication_review` requires
+The package owns three closed structured profiles. The independent
+`archived_publication_review` preserves completed status and uses its own
+read-only semantic-result union. The two original profiles remain unchanged:
+`publication_review` requires
 `profile/mode/task_ref/branch_review_commit/review_intent`; the Branch Review
 producer supplies only `task_ref/branch_review_commit`, and the target-owned
 authoring example supplies `profile/mode/review_intent`.
@@ -1641,7 +1651,7 @@ can resume only after reconcile plus bounded continuity has produced a current
 reviewed-content anchor, or after a full Branch Review for real task-content
 change.
 
-In workflow and standalone mode, the Publication AI authors the exact Chinese
+In the ordinary profiles' workflow and standalone modes, the Publication AI authors the exact Chinese
 PR title and Markdown body directly from live authority and reviews that payload
 inside the same semantic loop. Neither the caller nor another Skill creates a
 task-local PR body or finish-summary index candidate. Publication remains the
@@ -1649,15 +1659,19 @@ sole owner of payload sufficiency, Issue closure, all ten dimensions, finding
 routing, revision, and readiness; Finalizer may consume only the checked payload
 returned by `ready` and may not create or reinterpret it.
 
-The independent minimal outputs are
+The three original independent minimal outputs are
 `ready(exit_id,task_ref,branch_review_commit,pr_title,pr_body)` to active
 `guru-finalize-task`,
 `return_to_task_work(exit_id,task_ref,finding_refs,resume_target=phase-2)` to
 the task-work workflow router, and `blocked(exit_id,reason_code,remediation)` to
 an explicit stop. Review narrative, findings, artifact paths, live facts, and
-digest bundles remain private.
+digest bundles remain private. The fourth output is
+`archived_ready(exit_id,task_ref,branch_review_commit,pr_title,pr_body,reviewed_base_head)`
+to Finalizer's read-only `archived_review_refresh`. Only
+`archived_publication_review` emits this success; its other exit is `blocked`.
 
-The sole private gate is ignored-runtime `pr-readiness.json` under
+For the two ordinary profiles, the private gate is ignored-runtime
+`pr-readiness.json` under
 `guru-task-publication-readiness-5.0`. It contains only task,
 `branch_review_commit`, `reviewed_content_sha256`, the closed exact
 `pr_payload(title,body)`,
@@ -1672,8 +1686,9 @@ side-effect-free Finalizer closeout preflight before returning ready, so schema,
 length, duplicate, derived-field, archive, and plan constraints cannot produce
 a false-ready followed by an immediately stale first preview.
 
-`return_to_task_work` requires an open `task_work` finding bound to a `finding`
-dimension and cannot carry blocked evidence. `blocked` requires an open
+In that ordinary-profile union, `return_to_task_work` requires an open
+`task_work` finding bound to a `finding` dimension and cannot carry blocked
+evidence. `blocked` requires an open
 `external_blocker` finding bound to a `blocked` dimension and at least one
 blocked scope/Docs/safety conclusion. Open metadata-revision findings remain
 inside the Skill loop and cannot satisfy an external exit. Non-current input or
@@ -1724,7 +1739,7 @@ fresh Publication invocation. No alias, task-local fallback, compatibility
 reader, or migration executor is part of the current contract.
 
 The current additive activation set contributes to the live closure of twenty-three
-active Skills and 97 exits. The production current manifest contains exactly
+active Skills and 100 exits. The production current manifest contains exactly
 four Skills and 15 exits.
 
 ## Extension Installation Verification Owner
@@ -1738,7 +1753,7 @@ intent from a clean `castbox/guru-trellis` source checkout.
 
 `guru-execute-task-free-change` remains an active package and integrated
 business-workflow owner. Together with `guru-qualify-normal-scenario`, the
-current graph closes at 97 package exits and 95 workflow exits without changing
+current graph closes at 100 package exits and 98 workflow exits without changing
 the four-package production-current manifest. Its two post-write expansion exits
 require owner-private evidence for a real partial edit, the discovered
 scope/risk expansion, immediate stop, remaining target writes not performed,
@@ -1776,9 +1791,9 @@ ancestry remain independent verifier authorities.
 ## Task Finalization Owner
 
 `guru-finalize-task` is the active Interface 1.4 semantic owner of the complete
-business task closeout loop. Current aggregate input 6.0 has four profiles:
-`publication_ready`, `same_plan_resume`, `reprepare_preview`, and
-`standalone_finalization`. It has six outputs: `base_reconciliation_required`,
+business task closeout loop. Current aggregate input 7.0 has five profiles:
+`publication_ready`, `same_plan_resume`, `reprepare_preview`,
+`standalone_finalization`, and the independent read-only `archived_review_refresh`. It has six outputs: `base_reconciliation_required`,
 `publication_review_stale`, `resume_finalization`, `reprepare_required`,
 `ready_for_merge`, and `blocked`. The base-reconciliation exit owns only a
 base-only mismatch and remains distinct from stale Publication content.

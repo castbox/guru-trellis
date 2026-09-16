@@ -179,6 +179,7 @@ class FinalizeTaskRecoveryTests(unittest.TestCase):
             mock.patch.object(GTT, "finalization_public_input", return_value=(public_input, Path("/repo/input.json"))),
             mock.patch.object(GTT, "finalization_gate_input", return_value=(gate, Path("/repo/gate.json"))),
             mock.patch.object(GTT, "check_finalization_gate_result", return_value=(gate, context)),
+            mock.patch.object(GTT, "reconcile_closeout_task_mappings") as reconcile,
             mock.patch.object(GTT, "finalization_gate_with_ready_for_merge_output", return_value={"route": {"output": output}}) as materialize,
             mock.patch.object(GTT, "finalization_retire_current_state", return_value=["transaction", "gate"]) as retire,
             mock.patch.object(GTT, "cmd_finish_work") as finish_work,
@@ -189,6 +190,7 @@ class FinalizeTaskRecoveryTests(unittest.TestCase):
         self.assertEqual(result["output"], output)
         self.assertEqual(result["retired_owner_state"], ["transaction", "gate"])
         finish_work.assert_not_called()
+        reconcile.assert_called_once_with(Path("/repo"), task_dir, context["plan"])
         retire.assert_called_once_with(Path("/repo"), task_dir)
         materialize.assert_called_once_with(
             Path("/repo"), task_dir, gate, context["plan"], context["published_pr"]
@@ -2203,6 +2205,7 @@ class FinalizeTaskRecoveryTests(unittest.TestCase):
             mock.patch.object(GTT, "closeout_remote_branch_head", return_value="c" * 40),
             mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=pr),
             mock.patch.object(GTT, "validate_closeout_remote_pull_request_identity") as validate,
+            mock.patch.object(GTT, "reconcile_closeout_task_mappings") as reconcile,
             mock.patch.object(GTT, "ensure_closeout_pr_ready", return_value={"status": "ready", "pr": pr}) as ready,
         ):
             result = GTT.resume_archived_closeout(
@@ -2215,6 +2218,7 @@ class FinalizeTaskRecoveryTests(unittest.TestCase):
             )
         self.assertEqual(result["stage"], "ready")
         self.assertFalse(validate.call_args.kwargs["expected_draft"])
+        reconcile.assert_called_once_with(Path("/repo"), Path("/repo/archive"), plan)
         ready.assert_called_once()
 
     def test_archive_month_reprepare_preserves_adopted_pr_transaction(self) -> None:

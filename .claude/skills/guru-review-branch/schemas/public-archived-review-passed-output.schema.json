@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-production-review-branch-output-archived-review-passed-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_ref",
+    "branch_review_commit",
+    "pr_payload_snapshot_sha256",
+    "reviewed_base_head"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "archived_review_passed"
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/archive/[A-Za-z0-9._/-]+$"
+    },
+    "branch_review_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "pr_payload_snapshot_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reviewed_base_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    }
+  }
+}

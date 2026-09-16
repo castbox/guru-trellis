@@ -1,0 +1,650 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-archived-task-publication-readiness-1.0.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill_id",
+    "task_ref",
+    "branch_review_commit",
+    "pr_payload",
+    "candidate_classifications",
+    "dimensions",
+    "findings",
+    "conclusions",
+    "route",
+    "profile",
+    "mode",
+    "pr_payload_snapshot_sha256",
+    "reviewed_base_head"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "skill_id": {
+      "const": "guru-review-task-publication"
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/archive/[0-9]{4}-[0-9]{2}/[A-Za-z0-9._-]+$"
+    },
+    "branch_review_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "pr_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "body"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "candidate_classifications": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/candidateClassification"
+      }
+    },
+    "dimensions": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": {
+        "$ref": "#/$defs/dimension"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "conclusions": {
+      "$ref": "#/$defs/conclusions"
+    },
+    "route": {
+      "$ref": "#/$defs/route"
+    },
+    "profile": {
+      "const": "archived_publication_review"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "pr_payload_snapshot_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reviewed_base_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "route": {
+            "properties": {
+              "typed_exit": {
+                "const": "archived_ready"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "dimensions": {
+            "items": {
+              "properties": {
+                "status": {
+                  "const": "passed"
+                }
+              }
+            }
+          },
+          "findings": {
+            "items": {
+              "properties": {
+                "status": {
+                  "const": "closed"
+                }
+              }
+            }
+          },
+          "conclusions": {
+            "properties": {
+              "issue_scope": {
+                "properties": {
+                  "status": {
+                    "const": "passed"
+                  }
+                }
+              },
+              "docs_ssot": {
+                "properties": {
+                  "status": {
+                    "const": "passed"
+                  }
+                }
+              },
+              "safety_deployment": {
+                "properties": {
+                  "status": {
+                    "const": "passed"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "route": {
+            "properties": {
+              "typed_exit": {
+                "const": "blocked"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "dimensions": {
+            "contains": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "finding",
+                    "blocked"
+                  ]
+                }
+              }
+            }
+          },
+          "findings": {
+            "contains": {
+              "properties": {
+                "status": {
+                  "const": "open"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "non_empty_strings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "qualificationDecision": {
+      "enum": [
+        "qualified_current",
+        "qualified_explicit_nonstandard",
+        "qualified_approved_expansion",
+        "rejected_no_authority",
+        "rejected_unsupported_entry",
+        "rejected_not_reproduced",
+        "rejected_out_of_scope"
+      ]
+    },
+    "stringList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "normalScenarioWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requirement_refs",
+        "supported_entry_refs",
+        "existing_caller_refs",
+        "honest_action_sequence",
+        "defect_observation",
+        "excluded_assumptions"
+      ],
+      "properties": {
+        "requirement_refs": {
+          "$ref": "#/$defs/stringList"
+        },
+        "supported_entry_refs": {
+          "$ref": "#/$defs/stringList"
+        },
+        "existing_caller_refs": {
+          "$ref": "#/$defs/stringList"
+        },
+        "honest_action_sequence": {
+          "$ref": "#/$defs/non_empty_strings"
+        },
+        "defect_observation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "excluded_assumptions": {
+          "$ref": "#/$defs/stringList"
+        }
+      }
+    },
+    "candidateClassification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_ref",
+        "decision",
+        "witness",
+        "consumer_use"
+      ],
+      "properties": {
+        "candidate_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision": {
+          "$ref": "#/$defs/qualificationDecision"
+        },
+        "witness": {
+          "$ref": "#/$defs/normalScenarioWitness"
+        },
+        "consumer_use": {
+          "const": "publication_route_checker"
+        }
+      }
+    },
+    "dimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "status",
+        "summary",
+        "evidence_refs"
+      ],
+      "properties": {
+        "id": {
+          "enum": [
+            "diff_outcome_consistency",
+            "external_work_item_effect",
+            "pr_body_quality",
+            "validation_claims",
+            "branch_review_summary",
+            "docs_ssot_reconciliation",
+            "safety_deployment_impact",
+            "finish_summary_semantics",
+            "metadata_tail_integrity",
+            "artifact_binding_freshness"
+          ]
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "finding",
+            "blocked"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_refs": {
+          "$ref": "#/$defs/non_empty_strings"
+        }
+      }
+    },
+    "diff_outcome_consistency": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "diff_outcome_consistency"
+            }
+          }
+        }
+      ]
+    },
+    "external_work_item_effect": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "external_work_item_effect"
+            }
+          }
+        }
+      ]
+    },
+    "pr_body_quality": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "pr_body_quality"
+            }
+          }
+        }
+      ]
+    },
+    "validation_claims": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "validation_claims"
+            }
+          }
+        }
+      ]
+    },
+    "branch_review_summary": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "branch_review_summary"
+            }
+          }
+        }
+      ]
+    },
+    "docs_ssot_reconciliation": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "docs_ssot_reconciliation"
+            }
+          }
+        }
+      ]
+    },
+    "safety_deployment_impact": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "safety_deployment_impact"
+            }
+          }
+        }
+      ]
+    },
+    "finish_summary_semantics": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "finish_summary_semantics"
+            }
+          }
+        }
+      ]
+    },
+    "metadata_tail_integrity": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "metadata_tail_integrity"
+            }
+          }
+        }
+      ]
+    },
+    "artifact_binding_freshness": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/dimension"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "artifact_binding_freshness"
+            }
+          }
+        }
+      ]
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "finding_ref",
+        "candidate_ref",
+        "dimension",
+        "summary",
+        "scope_basis",
+        "evidence_refs",
+        "affected_artifacts",
+        "route_class",
+        "status",
+        "closure_evidence"
+      ],
+      "properties": {
+        "finding_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dimension": {
+          "enum": [
+            "diff_outcome_consistency",
+            "external_work_item_effect",
+            "pr_body_quality",
+            "validation_claims",
+            "branch_review_summary",
+            "docs_ssot_reconciliation",
+            "safety_deployment_impact",
+            "finish_summary_semantics",
+            "metadata_tail_integrity",
+            "artifact_binding_freshness"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope_basis": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_refs": {
+          "$ref": "#/$defs/non_empty_strings"
+        },
+        "affected_artifacts": {
+          "$ref": "#/$defs/non_empty_strings"
+        },
+        "route_class": {
+          "enum": [
+            "metadata_revision",
+            "task_work",
+            "external_blocker"
+          ]
+        },
+        "status": {
+          "enum": [
+            "open",
+            "closed"
+          ]
+        },
+        "closure_evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "closed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "closure_evidence": {
+                "minItems": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "closure_evidence": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "conclusion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "summary",
+        "evidence_refs"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "passed",
+            "finding",
+            "blocked"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_refs": {
+          "$ref": "#/$defs/non_empty_strings"
+        }
+      }
+    },
+    "conclusions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issue_scope",
+        "docs_ssot",
+        "safety_deployment"
+      ],
+      "properties": {
+        "issue_scope": {
+          "$ref": "#/$defs/conclusion"
+        },
+        "docs_ssot": {
+          "$ref": "#/$defs/conclusion"
+        },
+        "safety_deployment": {
+          "$ref": "#/$defs/conclusion"
+        }
+      }
+    },
+    "route": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "typed_exit"
+          ],
+          "properties": {
+            "typed_exit": {
+              "const": "archived_ready"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "typed_exit",
+            "reason_code",
+            "remediation"
+          ],
+          "properties": {
+            "typed_exit": {
+              "const": "blocked"
+            },
+            "reason_code": {
+              "type": "string",
+              "minLength": 1
+            },
+            "remediation": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -20,9 +20,9 @@
     {"id": "runtime_dependency", "evidence": "installed extension, dispatcher, active package, schemas and finalization commands", "binding": "complete current Guru Team preset", "freshness": "validated before each command"},
     {"id": "task_workspace", "evidence": "portable task worktree or archived locator identity", "binding": "actual repository and task locator", "freshness": "rebuilt before preview, record and check"},
     {"id": "task_identity", "evidence": "active, partially finalized or archived task identity", "binding": "task, branch, base, repository and branch_review_commit", "freshness": "current task and Git facts reread"},
-    {"id": "publication_review", "evidence": "guru-review-task-publication minimal ready DTO", "binding": "task, branch_review_commit and exact pr_title/pr_body", "freshness": "live reviewed-content continuity and Finalizer preview preflight; no producer-private checkpoint read"},
-    {"id": "transaction_inputs", "evidence": "Publication payload, immutable plan and live Git/GitHub facts", "binding": "one immutable finalization plan", "freshness": "existing finalization engine prevalidation"},
-    {"id": "archive_contract", "evidence": "official task.py archive contract, live archive month and hook preflight", "binding": "exact task metadata transaction", "freshness": "checked before official move"},
+    {"id": "publication_review", "evidence": "guru-review-task-publication ready or archived_ready DTO after its workflow-owned Architecture stage", "binding": "task, branch_review_commit, exact pr_title/pr_body and reviewed_base_head for archived refresh", "freshness": "live reviewed-content continuity and Finalizer preview preflight; no producer-private checkpoint read"},
+    {"id": "transaction_inputs", "evidence": "Original profiles: Publication payload and immutable plan; archived_review_refresh: current A/B, derived H and no in-flight transaction", "binding": "profile-specific live Git/GitHub facts", "freshness": "original engine prevalidation or independent read-only archive validation"},
+    {"id": "archive_contract", "evidence": "Original profiles: official archive contract and hook preflight; archived_review_refresh: committed move/blob/metadata continuity at H and converged mappings", "binding": "exact task archive identity", "freshness": "before the original move or on every read-only refresh"},
     {"id": "invocation_freshness", "evidence": "public profile, owner-private gate, objective plan identity, actual exit and consumer", "binding": "one current semantic finalization round", "freshness": "checker rereads objective transaction facts"}
   ],
   "runtime_dependency": {
@@ -35,6 +35,8 @@
   },
   "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
   "artifacts": [
+    {"id": "archived_refresh_authoring", "path": "examples/public-archived-review-refresh-authoring.json"},
+    {"id": "archived_review_refresh_input", "path": "examples/public-archived-review-refresh-input.json"},
     {"id": "gate_example", "path": "examples/task-finalization-gate.json"},
     {"id": "semantic_review_input", "path": "examples/semantic-review-input.json"},
     {"id": "publication_ready_input", "path": "examples/public-publication-ready-input.json"},
@@ -57,6 +59,8 @@
     ,{"id": "finalization_preview_example", "path": "examples/finalization-preview.json"}
   ],
   "schemas": [
+    {"id": "archived_review_refresh_input", "path": "schemas/public-archived-review-refresh-input-1.0.schema.json"},
+    {"id": "archived_review_refresh_preview", "path": "schemas/archived-review-refresh-preview-1.0.schema.json"},
     {"id": "current_gate_schema_alias", "path": "schemas/task-finalization-gate.schema.json"},
     {"id": "current_gate_schema_5_0", "path": "schemas/task-finalization-gate-5.0.schema.json"},
     {"id": "current_semantic_review_input_alias", "path": "schemas/semantic-review-input.schema.json"},
@@ -65,7 +69,7 @@
     {"id": "same_plan_resume_input", "path": "schemas/public-same-plan-resume-input.schema.json"},
     {"id": "reprepare_preview_input", "path": "schemas/public-reprepare-preview-input.schema.json"},
     {"id": "standalone_finalization_input", "path": "schemas/public-standalone-finalization-input.schema.json"},
-    {"id": "aggregate_input", "path": "schemas/public-input-6.0.schema.json"},
+    {"id": "aggregate_input", "path": "schemas/public-input-7.0.schema.json"},
     {"id": "publication_review_stale_output", "path": "schemas/public-publication-review-stale-output.schema.json"},
     {"id": "base_reconciliation_required_output", "path": "schemas/public-base-reconciliation-required-output.schema.json"},
     {"id": "resume_finalization_output", "path": "schemas/public-resume-finalization-output.schema.json"},
@@ -82,7 +86,7 @@
     {"id": "finalization_gate_recorder", "command": "scripts/record-finalization-gate.sh", "runtime_command": "record-finalization-gate", "objective_scope": "Record only the completed AI review, objective task/plan/content identity and selected route; user authorization remains conversation-only"},
     {"id": "finalization_gate_checker", "command": "scripts/check-finalization-gate.sh", "runtime_command": "check-finalization-gate", "objective_scope": "Validate the minimal gate against current task, plan, content, route, consumer and transaction facts"},
     {"id": "finalization_transition_executor", "command": "scripts/execute-finalization-transition.sh", "runtime_command": "execute-finalization-transition", "objective_scope": "Execute one checked deterministic transition through the existing finalization engine without choosing the external route"},
-    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-finalize-task", "objective_scope": "Select the confirmed-preview transaction path from --review-input and emit one minimal DTO"},
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-finalize-task", "objective_scope": "Select the original confirmed transaction or independent archived_review_refresh read-only path; record/check --review-input and emit one minimal DTO"},
     {"id": "reviewed_content_identity", "command": "scripts/reviewed-content-identity.sh", "runtime_command": "finalize-task-content-identity", "objective_scope": "Compute the canonical metadata-excluded reviewed-content identity for one Git commit"}
   ],
   "external_exits": [
@@ -102,17 +106,18 @@
     "freshness": "owner checkers rebuild live Git/GitHub/Trellis facts before every transition; same-owner recovery uses only the ignored minimal transaction",
     "stale_behavior": "fail_closed"
   },
-  "tests": ["tests/test_contract.py"],
+  "tests": ["tests/test_contract.py", "tests/test_archived_review_refresh.py"],
   "platform_destinations": ["shared", "codex", "cursor", "claude"],
   "public_contracts": {
     "input": {
       "kind": "structured_json",
-      "aggregate_schema": {"schema_id": "guru-finalize-task-input-aggregate-6.0", "path": "schemas/public-input-6.0.schema.json"},
+      "aggregate_schema": {"schema_id": "guru-finalize-task-input-aggregate-7.0", "path": "schemas/public-input-7.0.schema.json"},
       "profiles": [
         {"id": "publication_ready", "schema": {"schema_id": "guru-finalize-task-input-publication-ready-4.0", "path": "schemas/public-publication-ready-input-4.0.schema.json"}, "example": {"id": "publication_ready_input", "path": "examples/public-publication-ready-input.json"}, "discriminator": {"field": "profile", "value": "publication_ready"}},
         {"id": "same_plan_resume", "schema": {"schema_id": "guru-finalize-task-input-same-plan-resume-2.0", "path": "schemas/public-same-plan-resume-input.schema.json"}, "example": {"id": "same_plan_resume_input", "path": "examples/public-same-plan-resume-input.json"}, "discriminator": {"field": "profile", "value": "same_plan_resume"}},
         {"id": "reprepare_preview", "schema": {"schema_id": "guru-finalize-task-input-reprepare-preview-3.0", "path": "schemas/public-reprepare-preview-input.schema.json"}, "example": {"id": "reprepare_preview_input", "path": "examples/public-reprepare-preview-input.json"}, "discriminator": {"field": "profile", "value": "reprepare_preview"}},
-        {"id": "standalone_finalization", "schema": {"schema_id": "guru-finalize-task-input-standalone-finalization-2.0", "path": "schemas/public-standalone-finalization-input.schema.json"}, "example": {"id": "standalone_finalization_input", "path": "examples/public-standalone-finalization-input.json"}, "discriminator": {"field": "profile", "value": "standalone_finalization"}}
+        {"id": "standalone_finalization", "schema": {"schema_id": "guru-finalize-task-input-standalone-finalization-2.0", "path": "schemas/public-standalone-finalization-input.schema.json"}, "example": {"id": "standalone_finalization_input", "path": "examples/public-standalone-finalization-input.json"}, "discriminator": {"field": "profile", "value": "standalone_finalization"}},
+        {"id": "archived_review_refresh", "schema": {"schema_id": "guru-finalize-task-input-archived-review-refresh-1.0", "path": "schemas/public-archived-review-refresh-input-1.0.schema.json"}, "example": {"id": "archived_review_refresh_input", "path": "examples/public-archived-review-refresh-input.json"}, "discriminator": {"field": "profile", "value": "archived_review_refresh"}}
       ]
     },
     "invocation": {

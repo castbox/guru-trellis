@@ -44,10 +44,10 @@ one installation use the same immutable release tag; an unreleased reviewed
 checkout is identified as such and never described as tag-pinned release
 provenance. Unpinned or branch sources remain mutable latest/canary inputs.
 
-Current knowledge authority is `current-main-0.6.17-guru.52`, inheriting
-immutable `.51`; it is not a product release axis. Read the current
-`R410-01..07`, `D410-01..06`, and `T410-01..08` delta through the three layer
-READMEs. The inherited R408 source/session boundary and older pins remain
+Current knowledge authority is `current-main-0.6.17-guru.53`, inheriting
+immutable `.52`; it is not a product release axis. Read the current
+`R418-01..07`, `D418-01..06`, and `T418-01..14` delta through the three layer
+READMEs. The inherited R410 release axes, R408 source/session boundary and older pins remain
 historical authority. Do not rewrite history or claim post-promotion checks,
 remote mutation, tag, GitHub Release, or Issue closure from this knowledge
 snapshot. Existing developer/ledger retirement and old lifecycle stay in force.
@@ -455,9 +455,8 @@ approval/check/commit/review artifact bodies or present eval `expected_exit` as
 a production input.
 
 The docs also name target-owned `skill_input_authoring_seed` for the complete
-set of thirteen semantic handoffs: the five production/review/publication
-edges, the four finalization-family edges, and the four task-free execution
-edges. They
+Interface-declared semantic handoff set, including the production/review/publication,
+finalization-family, task-free execution, and archived read-only review edges. They
 explain that producer projection supplies only minimal seed fields, the caller
 AI authors every remaining required semantic field, validation proves a
 disjoint exact required-field partition and a no-overwrite full-schema merge,
@@ -473,7 +472,7 @@ serialization and terminal paths consume the owner material and remove empty
 owner directories. No Discovery artifact locator or supersession history is a
 public or durable contract.
 
-Public READMEs describe twenty-three active Skills and 97 external exits, identify
+Public READMEs describe twenty-three active Skills and 100 external exits, identify
 `guru-review-branch` as the Phase 3.5 semantic owner and
 `guru-review-task-publication` as the Phase 3.6 semantic owner, and show contract
 discovery, public wrapper, eval, fresh install, update and reapply commands.
@@ -486,22 +485,26 @@ Publication AI directly authors and reviews the exact Chinese PR title/body;
 its ready 4.0 output projects that payload to active `guru-finalize-task`
 through the integrated global invocation without a task-local body or summary
 index handoff. `production-current-v4` binds the current
-four-Skill/15-exit membership, and the current package graph contains thirteen
-target-owned `skill_input_authoring_seed` handoffs.
+four-Skill/15-exit membership; the complete package handoff set is derived from
+the current Interface-declared `skill_input_authoring_seed` edges.
 
 ## Task Publication Review Documentation
 
 All three public README files describe active Interface 1.4 semantic
-`guru-review-task-publication`, its two target-owned input profiles, runtime
+`guru-review-task-publication`, its three target-owned input profiles (two
+ordinary profiles plus `archived_publication_review`), runtime
 commands `record-task-publication-review` /
-`check-task-publication-review`, public dispatcher invocation, and three
+`check-task-publication-review`, public dispatcher invocation, and four
 minimal exits. They state that `ready` targets active, globally integrated
 `guru-finalize-task`;
 `return_to_task_work` repeats implementation through Branch Review, and
-`blocked` stops.
+`blocked` stops. `archived_ready` targets Finalizer's `archived_review_refresh`;
+the archived profile returns only `archived_ready|blocked` and never enters
+ordinary metadata revision or task-work mutation.
 
-Docs identify ignored-runtime `pr-readiness.json` as the sole semantic gate
-under schema `guru-task-publication-readiness-5.0`. It stores only the reviewed
+Docs identify ignored-runtime `pr-readiness.json` as the owner-local semantic
+gate, with the ordinary `guru-task-publication-readiness-5.0` schema and the
+separate `archived-pr-readiness.schema.json` variant. It stores only the reviewed
 content identity, exact PR payload, ten semantic dimensions, findings,
 conclusions, and route; objective live bindings are rebuilt transiently.
 Inputs outside the current schemas fail closed. They do not expose the private
@@ -516,8 +519,8 @@ owner-private transaction, derives current finish-summary schema 2 once, keeps
 schema 1 history readable, and rejects legacy Publication/Finalizer 3.0 shapes
 without fallback.
 
-README package closure numbers are twenty-three active Skills and 97 external exits;
-business workflow markers remain 22 invokes, 95 exits, 35 workflow targets, and
+README package closure numbers are twenty-three active Skills and 100 external exits;
+business workflow markers remain 22 invokes, 98 exits, 35 workflow targets, and
 24 stop targets.
 `production-current-v4` owns the current planning/check/commit/qualification
 contract; the live Intake contract remains six Skills/23 exits.
@@ -557,15 +560,18 @@ responsibility to a business repository.
 ## Task Finalization Documentation
 
 All three public README files name active Interface 1.4 semantic
-`guru-finalize-task`, its four current public input profiles, six outputs,
-current gate 5.0, transaction 2.0, owner-private recovery, dialogue-local
+`guru-finalize-task`, its five current public input profiles (four ordinary
+profiles plus `archived_review_refresh`), six outputs, ordinary gate/transaction
+and owner-private recovery, dialogue-local
 side-effect confirmation, and deterministic executor. Scripts execute, validate,
 and record facts after semantic review; they do not choose plan, scope,
-readiness, recovery route, or semantic pass.
+readiness, recovery route, or semantic pass. The archived profile validates
+current review and archive continuity without entering a mutation transaction;
+it returns only the existing `ready_for_merge|blocked` exits.
 
-The READMEs describe the current package graph as twenty-three active Skills and 97
-external exits with fourteen target-owned authoring handoffs. The integrated business
-workflow is 22 invokes, 95 exits, 35 workflow targets, and 24 stop targets. The three `guru-finish-work`
+The READMEs describe the current package graph as twenty-three active Skills and 100
+external exits with the Interface-declared target-owned authoring handoffs. The integrated business
+workflow is 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. The three `guru-finish-work`
 entries route Publication -> Finalizer -> Merge only. Publication
 `return_to_task_work` remains available for real content drift.
 
@@ -587,10 +593,13 @@ from source and receives the business checkout through `--repo`; neither the
 installed manifest nor this source checkout invokes or substitutes for the
 standalone verifier.
 
-The READMEs also name active semantic `guru-merge-task-pr`, its workflow and
-standalone inputs, three exits, repo-bound `gh` fact/merge operations,
+The READMEs also name active semantic `guru-merge-task-pr`, its ordinary workflow
+and standalone inputs plus read-only `archived_review_request`, five exits,
+repo-bound `gh` fact/merge operations,
 expected-head precondition, separate merge confirmation, and post-merge
 close-keyword verification. `merged` alone reaches the finish response;
-`merge_blocked` and `closure_mismatch` stop distinctly. No Finalizer or Merge
-path calls Issue-close APIs, updates the PR branch, synchronizes local `main`, or
-cleans resources.
+`merge_blocked` and `closure_mismatch` stop distinctly;
+`phase2_reentry_required` targets the existing archived-task restoration owner.
+`review_refresh_required` targets Branch Review's read-only `archived_review`
+without selecting a merge. The archived read-only route does not call
+Issue-close APIs, update the PR branch, synchronize local `main`, or clean resources.

@@ -16,8 +16,14 @@ fallback. Local Git and Git transport remain `git` operations.
 
 本目录维护 Guru 团队可复用的 Trellis workflow。
 
+归档只读复审使用原四个 closeout owners 的专用 profiles：
+`archived_review_request -> archived_review -> archived_publication_review -> archived_review_refresh`。
+三个新成功出口各有唯一 consumer；Branch Review、Publication、Finalizer 前仍分别
+消费当前 Architecture stage。它不修改 task、归档、PR 或 refs；普通 mutation
+流程不放宽。精确输入、A/H/B 与 payload 快照规则由各 Skill 独占，workflow 只编排。
+
 这个 workflow 的 marketplace id 固定为通用的 `guru-team`。它只承载 global
-phase/status route、22 个 mandatory Skill invocation、95 个 typed exit、35 个 workflow
+phase/status route、22 个 mandatory Skill invocation、98 个 typed exit、35 个 workflow
 target 与 24 个 stop target，以及 workspace、Docs SSOT、Publication-owned external work item effect、human artifact、
 interaction 和外部 side-effect boundary。具体 intake、planning、check、review、
 publication 与 finalization 判断由对应 active package 独占。
@@ -94,8 +100,8 @@ Workflow marketplace 只安装 global .trellis/workflow.md；完整 Guru Team ex
 installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed projection，
 不能反向成为语义来源。
 
-当前 registry 激活 23 Skills / 97 package exits；其中业务 global workflow closure
-为 22 个 invokes / 95 个 exits / 59 个 total targets。下列 22 个业务 active ids 参与
+当前 registry 激活 23 Skills / 100 package exits；其中业务 global workflow closure
+为 22 个 invokes / 98 个 exits / 59 个 total targets。下列 22 个业务 active ids 参与
 global workflow：
 
 - guru-bootstrap-repository-ssot
@@ -192,7 +198,8 @@ Finalizer stale DTO 只增加 Publication 唯一 consumer 直接使用的
 `branch_review_commit`；真实 descendant content
 drift 只能由 Publication 语义门禁返回现有 Phase 2 router，不能产生 `ready`。
 
-Interface 1.4 的十三条 semantic package handoff 使用 target-owned
+Active registry 所指各 package 的 `interface.json:public_contracts.consumer_inputs`
+声明完整 semantic package handoff 集合；其中 authoring-seed handoff 使用 target-owned
 skill_input_authoring_seed；producer 只给 minimal seed，target authoring 补齐其自己拥有
 的 fresh semantic input，projection 只允许 direct/select/rename/normalize。
 `production-current-v4` 是唯一 current manifest，固定绑定 planning/check/commit 与
@@ -215,8 +222,8 @@ framework source 为 `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`�
 `v0.6.16-guru.1` 是独立 released predecessor；`v0.6.17-guru.1` 仍需在 #410
 exact-candidate gate 后建立，不证明当前 source adoption 已发布。
 Source/installed package validation 必须同时验证
-registry、22 invokes / 95 exits / 59 combined targets（35 workflow + 24 stop）
-business marker graph、23-package/97-exit closure、consumer
+registry、22 invokes / 98 exits / 59 combined targets（35 workflow + 24 stop）
+business marker graph、23-package/100-exit closure、consumer
 uniqueness、projection、selected-platform
 byte identity 和 executable mode。
 
@@ -224,7 +231,7 @@ byte identity 和 executable mode。
 
 Canonical workflow 是 trellis/workflows/guru-team/workflow.md；dogfood
 .trellis/workflow.md 必须 byte-identical。Global Markdown 只拥有 phase order、
-current-task router、22 mandatory Skill markers、95 exits、35 workflow targets、
+current-task router、22 mandatory Skill markers、98 exits、35 workflow targets、
 24 stop targets、
 workspace/task activation、Docs SSOT、Publication-owned external work item effect、human artifact、
 interaction 与外部 side-effect boundary。Step-local 合同只存在于对应 active
@@ -1006,10 +1013,12 @@ agent-recovery checkpoint；普通 mapped exit、stale/re-entry/reprepare 由 AI
 承接，不向用户暴露为“确认继续”。
 
 Active `guru-review-branch` 是唯一的 Phase 3.5 semantic owner。Global workflow 与
-平台 `trellis-continue` entry 只用 `profile`、`mode`、`task_ref`、`base_ref`、
+平台 `trellis-continue` entry 在普通 `branch_review` profile 下使用 `profile`、`mode`、`task_ref`、`base_ref`、
 `branch_review_commit`、`review_intent` 六字段 public input mandatory invoke 该 package，
 并消费 `passed`、`implementation_required`、
-`scope_confirmation_required`、`blocked` 四个 typed exits。Reviewer lifecycle、
+`scope_confirmation_required`、`blocked` 四个 typed exits。完整 Interface 包含三个 profiles、
+六个 exits：`base_continuity` 另有 `continuity_passed`，只读 `archived_review` 另有
+`archived_review_passed`；两者各自按声明的输入合同调用并保留 `blocked` 停止出口。Reviewer lifecycle、
 finding qualification、Docs SSOT Gate、recovery checkpoint、private artifacts 与 re-entry
 规则均由 package 独占，入口不得复制。
 
@@ -1153,7 +1162,7 @@ label、exit code 与 bounded credential-safe tail；无法解析时显式记录
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的二十三个 packages 已维护 canonical corpora 并覆盖全部 97 package exits/profile；六个 Intake
+中的二十三个 packages 已维护 canonical corpora 并覆盖全部 100 package exits/profile；六个 Intake
 packages 的 23-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台

@@ -18,6 +18,11 @@ PROFILE_SCHEMAS = {
     "promotion": "public-input-promotion.schema.json",
     "repair": "public-input-repair.schema.json",
 }
+ARCHIVED_READONLY_STAGES = {
+    "review_refresh_required": "branch_review",
+    "archived_review_passed": "publication",
+    "archived_ready": "acceptance_finish",
+}
 EXITS = {
     "baseline_current": "public-baseline-current-output.schema.json",
     "sync_required": "public-sync-required-output.schema.json",
@@ -360,6 +365,25 @@ def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
             _bind_identity(public, recorded, field)
         _check_sync_route(public, "public_input")
     exit_id = recorded["typed_exit"]
+    readonly_stage = ARCHIVED_READONLY_STAGES.get(public["source_exit"])
+    if readonly_stage is not None:
+        if public["profile"] != "task_impact_sync" or public["stage"] != readonly_stage:
+            raise CommandError(
+                "semantic_result_invalid", "public_input.source_exit",
+                "Bind the archived read-only caller to its exact Architecture stage.", 3,
+            )
+        if exit_id not in {"baseline_current", "blocked"}:
+            raise CommandError(
+                "semantic_result_invalid", "owner_result.typed_exit",
+                "Archived read-only review cannot enter a writing continuation; the semantic owner must return current or blocked.", 3,
+            )
+        if exit_id == "baseline_current" and recorded.get("promotion_state") not in {
+            "no_change", "reviewed_promoted",
+        }:
+            raise CommandError(
+                "semantic_result_invalid", "owner_result.promotion_state",
+                "Archived read-only review requires current authority, not a contribution awaiting promotion.", 3,
+            )
     if recorded["consumer"] != CONSUMERS[exit_id]:
         raise CommandError("semantic_result_invalid", "owner_result.consumer", "Use the unique consumer declared for this exit.", 3)
     gate_status = recorded["ai_review_gate"]["status"]

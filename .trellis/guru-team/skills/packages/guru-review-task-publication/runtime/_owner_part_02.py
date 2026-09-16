@@ -249,7 +249,7 @@ class TaskPublicationInvocationContext:
     def create(cls, root: Path, task_ref: str | None) -> "TaskPublicationInvocationContext":
         config = load_config(root)
         task_dir = resolve_task_dir(root, task_ref)
-        task_context = load_task_runtime_identity(task_dir, config)
+        task_context = load_task_runtime_identity(task_dir, config, allow_rebuild=not task_dir_is_archived(root, task_dir))
         assert_workspace_boundary(root, config, task_context, task_dir)
         context = cls(
             root=root,
@@ -587,6 +587,7 @@ def task_publication_semantic_errors(
     authored: dict[str, Any],
     *,
     branch_review_commit: str,
+    archived: bool = False,
 ) -> list[str]:
     errors: list[str] = []
     pr_payload = authored.get("pr_payload")
@@ -712,7 +713,8 @@ def task_publication_semantic_errors(
 
     route = authored.get("route")
     typed_exit = route.get("typed_exit") if isinstance(route, dict) else None
-    if typed_exit not in TASK_PUBLICATION_CONSUMERS:
+    allowed_exits = {"archived_ready", "blocked"} if archived else TASK_PUBLICATION_CONSUMERS
+    if typed_exit not in allowed_exits:
         errors.append("publication route is invalid")
         return sorted(set(errors))
     expected_route_fields = (
@@ -749,7 +751,7 @@ def task_publication_semantic_errors(
             "every non-passed publication dimension requires open finding evidence"
         )
 
-    if typed_exit == "ready":
+    if typed_exit in {"ready", "archived_ready"}:
         if any(status != "passed" for status in dimension_statuses.values()):
             errors.append("ready requires every publication dimension to pass")
         if any(item.get("status") != "closed" for item in findings):
@@ -775,6 +777,16 @@ def task_publication_semantic_errors(
             errors.append(
                 "return_to_task_work cannot carry a blocked publication conclusion"
             )
+    elif archived:
+        if not all(isinstance(route.get(key), str) and route[key].strip()
+                   for key in ("reason_code", "remediation")):
+            errors.append("blocked requires non-empty reason_code and remediation")
+        if not open_findings or not any(status != "passed" for status in dimension_statuses.values()):
+            errors.append("archived blocked requires an open finding and a non-passed dimension")
+        for finding in open_findings:
+            expected_status = "blocked" if finding.get("route_class") == "external_blocker" else "finding"
+            if dimension_statuses.get(finding.get("dimension")) != expected_status:
+                errors.append("archived finding classification must match its dimension status")
     else:
         if (
             not isinstance(route.get("reason_code"), str)
@@ -942,7 +954,7 @@ def cmd_record_task_publication_review(
         root = repo_root(Path(args.root or os.getcwd()))
         config = load_config(root)
         task_dir = resolve_task_dir(root, args.task)
-        task_context = load_task_runtime_identity(task_dir, config)
+        task_context = load_task_runtime_identity(task_dir, config, allow_rebuild=not task_dir_is_archived(root, task_dir))
         assert_workspace_boundary(root, config, task_context, task_dir)
     else:
         invocation_context.assert_call(args.root, args.task)
@@ -954,6 +966,8 @@ def cmd_record_task_publication_review(
         args.input,
         "guru-review-task-publication recorder",
     )
+    if authored.get("profile") == "archived_publication_review":
+        return record_archived_publication(root, task_dir, args, authored, invocation_context)
     path = task_publication_path(root, task_dir)
     profile = authored.get("profile")
     mode = authored.get("mode")
@@ -1091,7 +1105,7 @@ def cmd_check_task_publication_review(
         root = repo_root(Path(args.root or os.getcwd()))
         config = load_config(root)
         task_dir = resolve_task_dir(root, args.task)
-        task_context = load_task_runtime_identity(task_dir, config)
+        task_context = load_task_runtime_identity(task_dir, config, allow_rebuild=not task_dir_is_archived(root, task_dir))
         assert_workspace_boundary(root, config, task_context, task_dir)
     else:
         invocation_context.assert_call(args.root, args.task)
@@ -1104,6 +1118,8 @@ def cmd_check_task_publication_review(
             exit_code=2,
         )
     payload = read_json(path)
+    if payload.get("profile") == "archived_publication_review":
+        return check_archived_publication(root, task_dir, args, payload, invocation_context)
     if (
         invocation_context is not None
         and invocation_context.checked_owner_result == payload

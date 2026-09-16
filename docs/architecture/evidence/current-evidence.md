@@ -81,8 +81,31 @@ source/dogfood/installed 投影与当前 23/97/78 图已核对。正常 authorin
 为 mock，不证明宿主自动 hook 分发或真实远端 mutation。它支撑 `ARCH-CUR-028`、`ARCH-INT-014/016`、
 `ARCH-DOM-015` 的 Guru/独立操作边界及 `.50 -> .51` 知识提升，不证明软件发布或完整升级矩阵。
 
-当前 Architecture knowledge successor 为 `.51`；`.50` 是 immutable superseded predecessor。
-旧 source pin 的证据保留历史用途，current pin/CI 由 `EVD-027` 承接；CLI/core、package manager、
+上述 #408 历史 promotion 的 knowledge successor 为 `.51`，predecessor 为 `.50`。
+旧 source pin 的证据保留历史用途，pin/CI 的来源证据由 `EVD-027` 承接；该历史范围的 CLI/core、package manager、
 23 Skills / 97 exits / 78 commands、extension `0.6.16-guru.41` 与 released `v0.6.16-guru.1` 保持独立版本轴。
 promotion-created combined diff 仍须 fresh Phase 2、
 task commit 与完整 Branch Review，后续远端动作由各 live owner 独立验证。
+
+## EVD-028: #418 Reviewed Promotion Source
+
+本证据支撑 `ARCH-CUR-030`、`ARCH-INT-018`、`ADR-010` 及 `.52 -> .53` 知识提升。
+提升前独立完整 Branch Review、正式 checker 和 public wrapper 已针对
+`78651e2068184e9e52a778fe33eda8b2bd7c8e0b...c30eadd6cf6fe4ba204c32c6e89f3f25f892e8f4`
+通过，四个已记录 finding 已关闭。该范围固定了当前 source contract，不是提升后新 diff 的通过证明。
+
+| 层级 | 提升前已验证事实 | 边界 |
+| --- | --- | --- |
+| package | Finalizer 108、Merge 65、Branch Review 35、Publication 67、Architecture 26，共 301 tests fresh 通过 | 包含恢复后的普通 4.0/7.0 与 additive 5.0/archived-1.0 合同测试，不以旧 pass 代替 |
+| focused installed | installed 合同 1、包/投影 14、archived fixtures 3、installed chain 3 通过 | 实际 wrappers/DTO、三段 Architecture、H/A/B、PR/base drift、checkpoint retirement 与零业务 mutation；post-owner fixtures 不证明 native 语义 |
+| distribution | 23 packages / 100 exits / 78 commands；4872 package files 与 3 overlays 的 source/hash/mode 一致，三平台投影及零 sidecar | 缓存不属于分发；不证明远端 tag-pinned 安装或完整升级矩阵 |
+| authority | source contribution `418-archived-review-refresh-v1` 与 R418/D418/T418 链完整 | shared successor 为 `.53`，不是新的软件版本 |
+
+独立检查还确认 39 份原 profile/output schema 与基线一致，普通 mutation 与旧 gate 拒绝行为不放宽。
+文档修复产生过真实合同测试失败，修复后重新执行上述测试；不能仅因 runtime 文件未变就跳过
+读取 Markdown 的合同测试。具体稳定测试入口位于 canonical package tests 和
+`trellis/skills/guru-team/tests/test_archived_review_integration.py`。
+
+Native 归档语义执行、原业务实例、完整多平台 upgrade/Release matrix 仍为 `unverified`。
+Promotion-created diff 的 fresh Phase 2、task commit、distinct complete Branch Review 以及后续
+Publication、push、PR、merge、tag、Release、Issue closure 均不由本提升前证据推定完成。

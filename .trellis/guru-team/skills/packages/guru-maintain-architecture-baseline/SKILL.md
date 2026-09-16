@@ -101,3 +101,13 @@ stage. Bootstrap and repair current results rerun that affected
 Public exits are `baseline_current`, `sync_required`, `baseline_incomplete`,
 `architecture_conflict`, `contract_incomplete`, `fitness_regression`, and
 `blocked`. Unknown, multiple, stale, or unmapped exits fail closed.
+
+Archived read-only callers still invoke this owner independently at each stage:
+`review_refresh_required` selects `branch_review`, `archived_review_passed`
+selects `publication`, and `archived_ready` selects `acceptance_finish` through
+the existing `source_exit` input. For these exact sources, judge within the
+read-only scope and return only `baseline_current` with current/no-change or
+already-promoted authority, or `blocked` with the actual missing prerequisite.
+Do not write a contribution, promote, repair, or start implementation to make
+this invocation pass. Runtime rejects an incompatible stage or writing route;
+it never changes an AI-selected route. Ordinary sources retain all seven exits.

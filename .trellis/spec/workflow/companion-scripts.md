@@ -1090,9 +1090,17 @@ Cursor authentication returns deterministic `unsupported`.
 
 ## Branch Review Recorder And Checker
 
-Aggregate public input schema 4.0 dispatches the full `branch_review` schema 2.0
-profile and the bounded `base_continuity`
-schema 2.0 profile. Both resolve current objective facts before recording.
+Aggregate public input schema 4.0 dispatches two ordinary profiles: the full
+`branch_review` schema 2.0 profile and the bounded `base_continuity`
+schema 2.0 profile. Both remain valid and unchanged. Aggregate public input
+schema 5.0 retains those two ordinary profiles unchanged and adds the independent
+read-only `archived_review` schema 1.0 profile. All resolve current objective
+facts before recording; archived review preserves completed archive state.
+
+### Ordinary Profiles
+
+The following recorder/checker rules apply only to `branch_review` and
+`base_continuity`; their existing behavior is unchanged.
 
 `review-branch` records only an already completed AI semantic review. It may
 rebuild task/worktree/base/HEAD/range, planning, Phase 2, requirement/source
@@ -1105,7 +1113,8 @@ pass.
 
 `check-review-gate` revalidates the same objective facts, finding lifecycle,
 `introduced_head`/`fix_head`/`closure_head`, final-review freshness and the selected
-typed exit. Only schema 7.0 is accepted; schema 6.0 or older fails closed as
+typed exit. Only schema 7.0 is accepted for these ordinary profiles;
+schema 6.0 or older fails closed as
 stale without projection, dual-read, rewrite, or migration. The checker
 resolves the exact checkpoint from task identity. The
 public package wrapper accepts only closed public input, reruns the checker,
@@ -1115,6 +1124,17 @@ caller-authored gate or checker result. Successful `passed`,
 checkpoint; active re-entry routes retain that one checkpoint for deterministic
 same-owner re-entry.
 `expected_exit` is never a wrapper input, owner-result field, or route selector.
+
+### Archived Review Profile
+
+For `archived_review`, the same recorder/checker/invocation commands use the
+separate `guru-archived-review-gate-1.0` schema (version `archived-1.0`), not
+ordinary gate schema 7.0. It binds the current base B, archive HEAD A, PR identity
+and title/body snapshot to the fresh AI semantic review. Its only exits are
+`archived_review_passed` and `blocked`; both retire the checkpoint after
+validated projection. This read-only profile does not restore the task or
+mutate the archive, PR, or Issue. It does not loosen ordinary gate schema 7.0
+validation, blocked semantics, or re-entry behavior.
 
 ## Task Publication Recorder, Checker, And Invocation
 
@@ -1151,8 +1171,9 @@ human-confirmation need, or `ready`. Empty findings, scanner success, changed
 file classification, a `--pass` flag, or tests passing cannot synthesize a
 semantic conclusion.
 
-Both commands validate the already AI-authored closed union without selecting
-it: `ready` binds passed conclusions/dimensions and closed findings;
+For the two ordinary Publication profiles, both commands validate the already
+AI-authored closed union without selecting it: `ready` binds passed
+conclusions/dimensions and closed findings;
 `return_to_task_work` binds open `task_work` findings to `finding` dimensions
 without blocked evidence; `blocked` binds open `external_blocker` findings to
 `blocked` dimensions and at least one blocked conclusion. Every open finding
@@ -1160,10 +1181,17 @@ references a non-passed dimension, and open metadata-revision findings cannot
 leave the internal rereview loop.
 
 The package `scripts/invoke.sh` remains the exact dispatcher-only wrapper. The
-shared public invocation validates one of the two target-owned inputs, reruns
+shared public invocation validates one of the three target-owned inputs, reruns
 the owner checker against a repo-local result, selects the output schema from
 the checker's actual `exit_id`, and emits one minimal DTO. `expected_exit` is
 available only to the eval grader after wrapper completion.
+
+The additional `archived_publication_review` input selects an independent
+read-only union with `archived_ready|blocked`. It retains content/metadata
+finding classifications on `blocked` rather than forcing external-blocker
+classification or entering the ordinary metadata revision loop. Its successful
+DTO carries the reviewed existing PR payload to Finalizer's
+`archived_review_refresh`; it does not call active closeout preparation.
 
 `ready` emits exactly `exit_id`, `task_ref`, `branch_review_commit`, `pr_title`,
 and `pr_body` after the
@@ -1343,6 +1371,19 @@ authorization. Current consumer completion removes the private result; failed
 validation retains it only for same-owner repair.
 
 ## Closeout Original Public Commands
+
+Merge package errors must reach the shared dispatcher as explicit classified
+diagnostics with safe code/field/remediation. Package-local input, identity,
+freshness and provider errors must not accidentally become `internal_error`
+because their exception type crossed the wrapper boundary. Unknown defects
+retain the generic fallback. Do not classify by exception-message text or
+project raw stderr, PR bodies, credentials, or absolute local paths.
+
+Preview diagnostics are not semantic typed exits. The existing complete-input
+`merge_blocked` route still requires a real failed review dimension or objective
+blocker and remains a stop. The package contract owns original-owner re-entry
+conditions; scripts do not re-review Branch Review or Publication, read their
+private checkpoints, or convert metadata problems into task-content findings.
 
 The Merge public command remains `invoke-task-pr-merge` through its existing
 `scripts/invoke.sh`. Its Happy Path owns exactly one pre-merge full snapshot,

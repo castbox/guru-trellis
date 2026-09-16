@@ -19,7 +19,7 @@ from runtime.reviewed_content import (
 from runtime.schema import validate_json
 
 
-RETIRED_EXITS = {"passed", "continuity_passed", "blocked"}
+RETIRED_EXITS = {"passed", "continuity_passed", "archived_review_passed", "blocked"}
 
 
 def parse(parser, argv):
@@ -434,8 +434,9 @@ def tree_identity(repo, commit):
 
 
 def validate_gate(package_root, repo, value, expected_exit=None):
+    archived = value.get("profile") == "archived_review"
     if (
-        value.get("schema_version") != "7.0"
+        value.get("schema_version") != ("archived-1.0" if archived else "7.0")
         or value.get("reviewed_content_algorithm") != REVIEWED_CONTENT_ALGORITHM
     ):
         raise CommandError(
@@ -444,7 +445,17 @@ def validate_gate(package_root, repo, value, expected_exit=None):
             "Run a fresh Branch Review for the current reviewed-content contract.",
             3,
         )
-    validate_json(value, package_root / "schemas/review-gate-7.0.schema.json", "gate")
+    schema = "archived-review-gate-1.0.schema.json" if archived else "review-gate-7.0.schema.json"
+    validate_json(value, package_root / "schemas" / schema, "gate")
+    if archived:
+        from archived import facts
+        current_facts = facts(package_root, repo, {
+            "task_ref": value["task_dir"],
+            "branch_review_commit": value["review_commit"],
+            "pr_payload_snapshot_sha256": value["pr_payload_snapshot_sha256"],
+        })
+        if any(value.get(key) != item for key, item in current_facts.items()):
+            raise CommandError("stale_identity", "archived_review", "Run a fresh review for the current base and PR identity.", 3)
     classifications = value.get("candidate_classifications")
     refs = [
         item.get("candidate_ref")
@@ -594,6 +605,7 @@ def validate_public_binding(package_root, repo, public, gate):
     schema = {
         "branch_review": "public-branch-review-input.schema.json",
         "base_continuity": "public-base-continuity-input-2.0.schema.json",
+        "archived_review": "public-archived-review-input.schema.json",
     }.get(profile)
     if schema is None:
         raise CommandError(
@@ -604,7 +616,7 @@ def validate_public_binding(package_root, repo, public, gate):
         "task_dir": public["task_ref"],
         "mode": public["mode"],
         "profile": profile,
-        "review_intent": public["review_intent"],
+        "review_intent": "archived_review" if profile == "archived_review" else public["review_intent"],
         "review_commit": (
             public["task_head"]
             if profile == "base_continuity"
@@ -616,6 +628,10 @@ def validate_public_binding(package_root, repo, public, gate):
             raise CommandError(
                 "stale_identity", field, "Use the exact public input for this checkpoint.", 3
             )
+    if profile == "archived_review":
+        if public["pr_payload_snapshot_sha256"] != gate["pr_payload_snapshot_sha256"]:
+            raise CommandError("stale_identity", "pr_payload_snapshot_sha256", "Use the exact current PR snapshot.", 3)
+        return gate
     base_ref = public["new_base_head"] if profile == "base_continuity" else public["base_ref"]
     base_head = git(repo, "rev-parse", base_ref)
     if gate.get("base_ref") != base_ref or gate.get("base_head") != base_head:

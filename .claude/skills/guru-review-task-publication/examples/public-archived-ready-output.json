@@ -1,0 +1,8 @@
+{
+  "exit_id": "archived_ready",
+  "task_ref": ".trellis/tasks/archive/2026-09/example",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "reviewed_base_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "pr_title": "当前归档任务发布复审",
+  "pr_body": "现有 PR 的完整已审查正文。"
+}

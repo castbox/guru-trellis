@@ -53,7 +53,16 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     owner = checked_gate(package_root, repo, task_dir)
     validate_public_binding(package_root, repo, public, owner)
     exit_id = owner["typed_exit"]
-    if exit_id == "passed":
+    if exit_id == "archived_review_passed":
+        output = {
+            "exit_id": exit_id,
+            "task_ref": owner["task_dir"],
+            "branch_review_commit": owner["review_commit"],
+            "pr_payload_snapshot_sha256": owner["pr_payload_snapshot_sha256"],
+            "reviewed_base_head": owner["base_head"],
+        }
+        schema = "public-archived-review-passed-output.schema.json"
+    elif exit_id == "passed":
         output = {
             "exit_id": exit_id,
             "task_ref": owner["task_dir"],

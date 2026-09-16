@@ -412,8 +412,8 @@ Closes #247
 
         self.assertIn("and six typed exits.", skill)
         self.assertIn("and six typed exits.", interface["description"])
-        self.assertIn("current aggregate input is 6.0, gate is 5.0, and ignored transaction is 3.0", contract)
-        self.assertIn("The four inputs are", contract)
+        self.assertIn("current aggregate input is 7.0, gate is 5.0, and ignored transaction is 3.0", contract)
+        self.assertIn("The five inputs are", contract)
         self.assertIn("The six exits are", contract)
         self.assertEqual(6, len(exits))
         self.assertEqual(exits, output_exits)
@@ -636,13 +636,13 @@ Closes #247
         self.assertEqual(
             contracts["input"]["aggregate_schema"],
             {
-                "schema_id": "guru-finalize-task-input-aggregate-6.0",
-                "path": "schemas/public-input-6.0.schema.json",
+                "schema_id": "guru-finalize-task-input-aggregate-7.0",
+                "path": "schemas/public-input-7.0.schema.json",
             },
         )
         self.assertEqual(
             [item["id"] for item in contracts["input"]["profiles"]],
-            ["publication_ready", "same_plan_resume", "reprepare_preview", "standalone_finalization"],
+            ["publication_ready", "same_plan_resume", "reprepare_preview", "standalone_finalization", "archived_review_refresh"],
         )
         self.assertEqual(
             [item["exit_id"] for item in contracts["outputs"]],

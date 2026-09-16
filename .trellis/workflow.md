@@ -78,8 +78,8 @@ invalid interface projections stop fail closed.
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"revision_required","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-planning-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"baseline_incomplete","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-bootstrap-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"blocked","consumer":{"kind":"stop","id":"requirements-design-test-ssot-blocked"}} -->
-The installed graph is exactly 23 active Skills and 97 package exits. The
-business-task workflow is exactly 22 mandatory invokes and 95 external exits.
+The installed graph is exactly 23 active Skills and 100 package exits. The
+business-task workflow is exactly 22 mandatory invokes and 98 external exits.
 ### Cross-phase normal-scenario qualification owner
 <!-- guru-skill-invoke: {"skill":"guru-qualify-normal-scenario","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"classified","consumer":{"kind":"workflow","id":"guru-normal-scenario-classified-router"}} -->
@@ -162,12 +162,14 @@ business-task workflow is exactly 22 mandatory invokes and 95 external exits.
 <!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"blocked","consumer":{"kind":"stop","id":"task-commit-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-review-branch","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"passed","consumer":{"kind":"skill","id":"guru-review-task-publication"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"archived_review_passed","consumer":{"kind":"skill","id":"guru-review-task-publication"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"continuity_passed","consumer":{"kind":"workflow","id":"guru-base-continuity-passed-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"implementation_required","consumer":{"kind":"workflow","id":"guru-branch-review-implementation-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"scope_confirmation_required","consumer":{"kind":"workflow","id":"guru-branch-review-scope-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"blocked","consumer":{"kind":"stop","id":"branch-review-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-review-task-publication","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"ready","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"archived_ready","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"return_to_task_work","consumer":{"kind":"workflow","id":"guru-task-publication-work-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"blocked","consumer":{"kind":"stop","id":"task-publication-review-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-finalize-task","required":true} -->
@@ -179,6 +181,7 @@ business-task workflow is exactly 22 mandatory invokes and 95 external exits.
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"blocked","consumer":{"kind":"stop","id":"task-finalization-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-merge-task-pr","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"merged","consumer":{"kind":"workflow","id":"guru-finalization-finish-response"}} -->
+<!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"review_refresh_required","consumer":{"kind":"skill","id":"guru-review-branch"}} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"merge_blocked","consumer":{"kind":"stop","id":"task-pr-merge-blocked"}} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"phase2_reentry_required","consumer":{"kind":"skill","id":"guru-restore-archived-task"}} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"closure_mismatch","consumer":{"kind":"stop","id":"task-pr-closure-mismatch"}} -->
@@ -300,6 +303,33 @@ independently requested operation under
 [Manual Git/GitHub Operations](#manual-gitgithub-operations).
 
 ### Mandatory Architecture stage routing
+
+The archived read-only route uses the same mandatory owners and new
+target-owned profiles, not an alternate lifecycle or a reinterpretation of
+`merge_blocked`:
+
+| Producer exit | Architecture stage/source_exit | Consumer profile |
+| --- | --- | --- |
+| Merge `review_refresh_required` | `branch_review` / `review_refresh_required` | Branch Review `archived_review` |
+| Branch Review `archived_review_passed` | `publication` / `archived_review_passed` | Publication `archived_publication_review` |
+| Publication `archived_ready` | `acceptance_finish` / `archived_ready` | Finalizer `archived_review_refresh` |
+
+Use each producer's actual public DTO and its Interface projection. At every
+row invoke Architecture freshly and consume only a matching
+`task_impact_sync:baseline_current` with current/no-change or already-promoted
+authority. The Architecture semantic owner selects `blocked` when the
+read-only scope lacks current evidence or would require a write. Its validator
+rejects writing continuations for those exact source/stage pairs; no caller
+converts a different exit into pass or starts promotion/repair. Ordinary
+Architecture sources below retain their original routes.
+
+Only Finalizer's fresh `ready_for_merge` rejoins the original Merge path, with
+its independent live gate and expected-head confirmation. New profiles never
+rewrite a completed task, archive, PR, Issue, branch or source mapping.
+Missing or stale required review may enter Merge `archived_review_request`
+through its own semantic contract; normal checkpoint retirement is not a
+reason to re-enter. Step-local input, findings and recovery rules remain owned
+by the corresponding Skill contracts.
 
 Every standard task invokes the one stable
 `guru-maintain-architecture-baseline` owner through `task_impact_sync` at each
