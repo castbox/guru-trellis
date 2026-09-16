@@ -1589,8 +1589,11 @@ Shared/Codex/Claude/Cursor 声明投影、preset reapply、dogfood drift、sidec
 分发检查与模型可见资产检查是两个边界：安装包仍完整，standard Intake 的模型投影只
 暴露声明的合同、Interface、必要 schema、命令边界和源事实，不能由整目录复制或
 Interface example 引用带入 owner/pass 样例。读取 examples/evals/private runtime 必须被拒绝。
-同次 completed-run 补评分仅允许声明 `standard_intake` 的 case；未声明 flow 的
-Architecture、Phase 2、post_owner 不进入此分支，已有 run-root 也保持原执行语义。
+同次 completed-run 补评分仅更新声明 `standard_intake` 的 case 行。
+执行时可使用 `--adapter codex --codex-model gpt-5.6-sol` 为未固定模型的 case 选择模型；
+固定的 corpus 模型保持不变，未传参数保持原默认行为，不改变评分或生命周期。
+完整 full/mixed run 先验证完整 case/side identity，仅接收 Intake assertions，non-flow 行及原始执行证据不变，
+最后重算 aggregate。纯 Architecture、Phase 2、post_owner、qualification 保持原执行语义。
 两个 case 的 semantic assertions 必须保留；缺少独立 transcript 评分的 raw run 为
 `evaluation_failed`。对同一次完成执行，原 runner 通过既有 `--semantic-grading` 做后续
 聚合，保持原始 transcript/trace/receipts 不变且不再次调用模型。不得预填评分或手改结果。

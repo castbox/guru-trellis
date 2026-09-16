@@ -1742,6 +1742,11 @@ def eval_request(args: argparse.Namespace, package: Path, interface: dict[str, A
     for field in ("native_execution_adapter", "model_id", "native_authoring_flow"):
         if field in case:
             request[field] = case[field]
+    if (args.adapter == "codex"
+            and request["native_execution_mode"] == "post_owner"
+            and "model_id" not in request
+            and getattr(args, "codex_model", None) is not None):
+        request["model_id"] = args.codex_model
     return request
 
 
@@ -1877,14 +1882,15 @@ def grade_completed_run(skills: Path, args: argparse.Namespace, run_root: Path,
     validate_eval_case_identity(expected_case_ids, [side for side, _ in sides], output["cases"])
     validate_eval_case_identity(expected_case_ids, ["current"], [
         {"case_id": case["id"], "comparison_side": "current"} for case in cases])
+    intake_cases = [case for case in cases if case.get("native_authoring_flow") == "standard_intake"]
     expected = {(side, case["id"], assertion["id"])
-                for side, _ in sides for case in cases
+                for side, _ in sides for case in intake_cases
                 for assertion in case.get("assertions", {}).get("semantic", [])}
     grades = {(item["comparison_side"], item["case_id"], item["assertion_id"]): item
               for item in semantic["results"]}
     if set(grades) != expected or len(grades) != len(semantic["results"]):
         raise error("semantic_grading_identity_mismatch", "semantic_grading",
-                    "Grade exactly the selected run's case/side/assertion set once each.")
+                    "Grade exactly the selected run's Intake case/side/assertion set once each.")
     results = {(item["comparison_side"], item["case_id"]): item for item in output["cases"]}
     for side, package in sides:
         interface = strict_json(package / "interface.json", f"comparison.{side}.interface")
@@ -1892,7 +1898,7 @@ def grade_completed_run(skills: Path, args: argparse.Namespace, run_root: Path,
         _, corpus_bytes = corpus(skills, package, interface)
         if hashlib.sha256(corpus_bytes).hexdigest() != discovery["corpus_sha256"]:
             raise error("eval_comparison_corpus_mismatch", side, "Use the same corpus on both sides.")
-        for case in cases:
+        for case in intake_cases:
             case_root = run_root / side / case["id"]
             request = eval_request(args, package, interface, row, case,
                                    case_root / "execution/workdir", discovery["corpus_sha256"], target)
@@ -1914,6 +1920,12 @@ def grade_completed_run(skills: Path, args: argparse.Namespace, run_root: Path,
 
 
 def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
+    codex_model = getattr(args, "codex_model", None)
+    if codex_model is not None:
+        if args.adapter != "codex":
+            raise error("eval_codex_model_adapter_invalid", "codex_model", "Use --codex-model only with --adapter codex.")
+        if not codex_model.strip():
+            raise error("eval_codex_model_invalid", "codex_model", "Provide a non-blank Codex model id or omit --codex-model.")
     discovery = discover(skills, args.skill)
     descriptor = descriptors(skills)[args.adapter]
     selected_package, selected_interface, row = package_context(skills, args.skill)
@@ -1945,9 +1957,6 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
     target = runtime_target(root)
     if intake_selected:
         if semantic is not None:
-            if not all(case.get("native_authoring_flow") == "standard_intake" for case in selected_cases):
-                raise error("eval_completed_mixed_flow", "case",
-                            "Select an explicit standard Intake case for grading; mixed sets cannot be regraded.")
             return grade_completed_run(skills, args, run_root, sides, selected_cases, expected_case_ids,
                                        row, discovery, target, descriptor, semantic)
         if any((run_root / side).exists() for side, _ in sides) or any(run_root.glob("*-run.json")):
@@ -2116,6 +2125,7 @@ def parser() -> argparse.ArgumentParser:
         child.add_argument("--skill", required=True)
         child.add_argument("--json", action="store_true")
     run_parser.add_argument("--adapter", required=True, choices=ADAPTERS)
+    run_parser.add_argument("--codex-model")
     run_parser.add_argument("--case")
     run_parser.add_argument("--run-root", required=True)
     run_parser.add_argument("--current-package")

@@ -18,6 +18,8 @@
 
 ### 3.1 声明与现有模式
 
+Codex eval 可选 `--codex-model` 为 corpus 未固定模型的 case 选择运行模型；省略时保持原默认行为。仅 Codex 接受此参数，空值拒绝；已有 semantic-authoring/qualification 的固定模型继续按原合同，不被此参数覆盖。使用现有 adapter request 的 model_id 传递运行身份，post_owner 仅在 Codex 显式选择时允许该字段；不修改 corpus schema 或生产 Skill I/O。原 codex exec 使用 --model 携带选择，不修改全局配置、工具或包装器，不改变 fresh/saved、评分和错误传播。
+
 在原 eval corpus 的 `semantic_authoring` case 内增加闭合的 `native_authoring_flow=standard_intake` 声明，由当前 eval runner/adapter 直接消费；未声明者保持既有 single-Skill 执行语义。该字段仅用于 eval 调度，不进入生产 Skill I/O。`post_owner` 携带此字段必须拒绝。
 
 两个 case 放在 Readiness package 的 eval corpus，分别使用清晰需求事实和未决范围冲突事实。case prompt 只描述输入任务，不透露 ready/blocked 期望，也不对某个 case 特判生产路径。单 Skill Architecture case 与现有 post_owner case 继续使用原路径；不创建兼容 wrapper。
@@ -40,6 +42,8 @@ host 不运行 `build_context_owner`、readiness owner recipe 或 record/check �
 
 成功 trace 必须证明所有四个 contract 与必要证据先读取，语义 authoring 的输入到达真实 recorder，再到 checker 和 invoke；最终输出是 Readiness 实际 public stdout。阻塞 trace 以实际 declared blocker 的 public stdout 结束，后续命令计数为零。不能强制错误路径穿过全部四个 owner。
 
+最终消息仍由 native Agent 返回，不能把工具中打印 stdout 当作最终消息已经交付。Intake 传输指引要求 Agent 在内存解析本次实际终态 stdout，用标准 JSON serializer 缩进呈现完整对象，并核对最终回复不增删字段或括号，不附说明、围栏或截断。仅使用既有合法 JSON 空白归一化，不改输出 parser、trace/receipt 一致性校验或失败传播；不新增结果通道，不由 host 取回执代答、清洗或修复模型输出。
+
 flow 的终止 owner 由最后一个真实 public wrapper 回执确定，runner 按该 owner 的 interface/exit schema 校验原样 stdout，不套用 corpus 所属 Readiness 的 schema，也不把 Clarification blocked 包装成 Readiness blocked。eval-only trace 绑定 terminal producer identity；生产 DTO 不增加字段。当前 Skill/consumer 图规定有序边与 stop，adapter 只校验这组事实，不另建决定 pass/block 的 router。该 flow 的声明 case-id 集合继续纳入 full-run aggregate 完整性检查。
 
 Wording 的 step-local 合同明确原 checker 响应与其 validation_receipt 字段的区别：保持完整 record/check 输出在当前 owner 内存，invoke 只原样取实际 checker_response.validation_receipt。若仅 invoke 封装错误且 review/source/result 仍 current，修正封装后再次调用原 invoke，不把已成功的 checker 当作失败步骤重跑。事实或 result 变化仍回原审查/record/check；不改 schema、runtime、harness 或错误门禁，不提供 owner/pass 样例。
@@ -48,9 +52,9 @@ expected-versus-actual exit 比较只在 runner 控制侧进行；语义充分�
 
 两个 Intake case 必须声明 `evidence_selector=transcript` 的 semantic assertions。首次在新 run-root 执行时不提供评分；即使结构项全通过，缺少 external semantic grading 仍必须是 evaluation_failed，不能把空 semantic_results 当作成功。
 
-只有声明 `native_authoring_flow=standard_intake` 的 case 可进入 completed-run 两阶段补评分。未声明 flow 的 Architecture、Phase 2、普通 post_owner 和 qualification 保持既有执行语义，不引入 saved-run 更新或 run-root 生命周期。混合集合不能将补评分扩张到非 flow case；使用显式 Intake case 选择完成补评分。
+只有声明 `native_authoring_flow=standard_intake` 的 case 行可进入 completed-run 两阶段补评分。focused 和包含 Intake 的完整 full/mixed run 均必须保持首次执行的完整 applicable case/side 集合；先严格验证完整 aggregate identity，再只更新 Intake 行的 semantic results/status。grading 恰好覆盖该运行的 Intake case/side/assertion 集合，non-flow assertion 或多余行一律拒绝。所有 non-flow 行的 execution、actual exit、deterministic/semantic results、status、timing、顺序及原始证据不变，仅重新计算整个 aggregate status。普通 post_owner、Architecture、Phase 2、qualification 的 fresh/saved 原行为不变，不新增通用 saved-run 生命周期。
 
-独立 AI 现场读取该次完成执行的 transcript、source facts 和原命令回执后，生成现有 schema 1.0 评分。使用同一原 run-skill-evals 入口、相同 run-root 与既有 --semantic-grading 参数消费评分，先核对 case/side/assertion、corpus、调用身份及保留的执行证据，不重跑模型，不改原始 transcript/trace/receipts，只更新 semantic_results 与派生聚合。缺失或不匹配的执行必须停止；execution_error、unsupported 或确定性失败不能被评分覆盖为通过。
+独立 AI 现场读取该次完成执行的 Intake transcript、source facts 和原命令回执后，生成现有 schema 1.0 评分。使用同一原 run-skill-evals 入口、相同 selection/run-root 与既有 --semantic-grading 参数消费评分，先核对完整 case/side identity、Intake assertion、corpus、调用身份及保留的执行证据，不重跑模型，不改原始 transcript/trace/receipts，只更新 Intake semantic_results/status 与派生聚合。缺失或不匹配的执行必须停止；execution_error、unsupported 或确定性失败不能被评分覆盖为通过。不得为完成 full aggregate 而伪造 non-flow 通过或丢弃其失败行。
 
 既有 grading schema 不含完整 transcript 字节身份；本任务不新增字段或解析 summary 中的隐藏协议。绑定来自同次执行定位、现有身份一致性检查和现场独立审查，不声称具有新增逐字节评分绑定。新执行必须使用新 run-root，不复用本轮之前的 native 或 Phase 2 结论。
 

@@ -170,6 +170,9 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
                 self.assertIn("nonzero command exit is an invocation error", context)
                 self.assertIn("call the same command again", context)
                 self.assertIn("Only a successful invoke command's declared typed output can be terminal", context)
+                self.assertIn("Printing stdout in a tool does not deliver your final message.", context)
+                self.assertIn("Parse this invocation's actual terminal stdout in memory with json.loads, then render the complete JSON object with json.dumps(..., ensure_ascii=False, indent=2) for your final reply.", context)
+                self.assertIn("Verify that your final reply is that same complete JSON object with only JSON whitespace changes; do not manually assemble braces, reconstruct fields, add fences or explanations, or truncate it.", context)
                 root = Path(protocol["projection_root"])
                 for skill in INTAKE_SKILLS:
                     projected = root if skill == INTAKE_SKILLS[-1] else root / "flow-packages" / skill

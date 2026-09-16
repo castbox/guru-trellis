@@ -9,13 +9,16 @@
       "if": {"properties": {"native_execution_mode": {"const": "semantic_authoring"}}, "required": ["native_execution_mode"]},
       "then": {"required": ["native_execution_adapter", "model_id"]},
       "else": {
-        "not": {
-          "anyOf": [
+        "allOf": [
+          {"not": {"anyOf": [
             {"required": ["native_execution_adapter"]},
-            {"required": ["native_authoring_flow"]},
-            {"required": ["model_id"]}
-          ]
-        }
+            {"required": ["native_authoring_flow"]}
+          ]}},
+          {
+            "if": {"properties": {"adapter_id": {"const": "codex"}}},
+            "else": {"not": {"required": ["model_id"]}}
+          }
+        ]
       }
     }
   ],

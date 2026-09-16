@@ -23,7 +23,7 @@ PACKAGE = SKILLS / "packages" / SKILL
 
 def write(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value), encoding="utf-8")
+    path.write_text(json.dumps(value, separators=(",", ":")), encoding="utf-8")
 
 
 def snapshot(root):
@@ -45,11 +45,16 @@ class SemanticGradingTests(unittest.TestCase):
         # Transport double only: these unit tests do not claim native semantics.
         request = json.loads(request_path.read_text())
         case = next(item for item in self.corpus["evals"] if item["id"] == request["case_id"])
+        package = Path(request["package_root"])
+        interface = json.loads((package / "interface.json").read_text())
+        output = next(item for item in interface["public_contracts"]["outputs"]
+                      if item["exit_id"] == case["expected_exit"])
+        public_stdout = (package / output["example"]["path"]).read_text()
         trace = request_path.parent / "native-trace.json"
-        write(trace, {"terminal_skill_id": "guru-clarify-requirements"})
+        write(trace, {"terminal_skill_id": request["skill_id"]})
         write(request_path.parent / "adapter-transcript.json", {"adapter": "codex", "text": "unit transport"})
         return {"corpus_sha256": request["corpus_sha256"], "capability_status": "executed",
-            "public_stdout": json.dumps({"exit_id": case["expected_exit"]}), "public_stderr": "",
+            "public_stdout": public_stdout, "public_stderr": "",
             "trace_events": ["public_invocation", "evals_not_loaded", "private_runtime_not_read"],
             "transcript_locator": str(request_path.parent / "adapter-transcript.json"),
             "native_trace_locator": str(trace), "timing_ms": 123}
@@ -64,6 +69,8 @@ class SemanticGradingTests(unittest.TestCase):
             {"case_id": case["case_id"], "comparison_side": case["comparison_side"],
              "assertion_id": assertion["id"], "passed": passed, "summary": "independent test grade"}
             for case in report["cases"]
+            if next(row for row in self.corpus["evals"] if row["id"] == case["case_id"])
+                .get("native_authoring_flow") == "standard_intake"
             for assertion in next(row for row in self.corpus["evals"] if row["id"] == case["case_id"])
                 .get("assertions", {}).get("semantic", [])]})
         self.args.semantic_grading = str(path)
@@ -210,11 +217,11 @@ class SemanticGradingTests(unittest.TestCase):
                 adapter.assert_not_called()
                 self.assertEqual(files, snapshot(self.run_root))
 
-    def test_mixed_selection_is_not_regraded(self):
+    def test_full_selection_requires_the_complete_saved_identity(self):
         focused = self.raw()
         self.grading(focused)
         self.args.case = None
-        with self.assertRaisesRegex(CommandError, "eval_completed_mixed_flow"):
+        with self.assertRaises(CommandError):
             runner.run(REPO, SKILLS, self.args)
         self.args.current_package = str(PACKAGE)
         self.args.comparison_package = str(PACKAGE)
@@ -223,15 +230,8 @@ class SemanticGradingTests(unittest.TestCase):
         full = self.raw()
         self.assertEqual(len(full["cases"]), 2 * len(self.corpus["evals"]))
         self.grading(full)
-        files = snapshot(Path(self.args.run_root))
-        with mock.patch.object(runner, "grade_completed_run") as regrade, \
-                mock.patch.object(runner, "call_adapter") as adapter, \
-                self.assertRaisesRegex(CommandError, "eval_completed_mixed_flow"):
-            runner.run(REPO, SKILLS, self.args)
-        adapter.assert_not_called()
-        regrade.assert_not_called()
-        self.assertEqual(files, snapshot(Path(self.args.run_root)))
-        for change in ("missing", "duplicate", "unknown", "focused"):
+        for change in ("missing", "duplicate", "unknown", "side", "focused"):
+            self.args.case = None
             report = copy.deepcopy(full)
             if change == "missing":
                 report["cases"].pop()
@@ -239,12 +239,16 @@ class SemanticGradingTests(unittest.TestCase):
                 report["cases"].append(report["cases"][0])
             elif change == "unknown":
                 report["cases"][0]["case_id"] = "unknown"
+            elif change == "side":
+                report["cases"][0]["comparison_side"] = "comparison"
             else:
                 self.args.case = self.corpus["evals"][0]["id"]
             write(Path(full["evidence_path"]), report)
+            files = snapshot(Path(self.args.run_root))
             with mock.patch.object(runner, "call_adapter") as adapter, self.assertRaises(CommandError):
                 runner.run(REPO, SKILLS, self.args)
             adapter.assert_not_called()
+            self.assertEqual(files, snapshot(Path(self.args.run_root)))
 
     def test_intake_comparison_identity_is_exact(self):
         self.args.current_package = self.args.comparison_package = str(PACKAGE)
@@ -267,86 +271,225 @@ class SemanticGradingTests(unittest.TestCase):
             with self.assertRaises(CommandError):
                 runner.run(REPO, SKILLS, self.args)
 
-    def test_intake_transport_scoring_preserves_execution_in_both_model_layouts(self):
+    def test_full_raw_requires_only_the_two_intake_grades(self):
+        self.args.case = None
+        report = self.raw()
+        self.assertEqual(report["status"], "evaluation_failed")
+        self.assertEqual([row["case_id"] for row in report["cases"]],
+                         [case["id"] for case in self.corpus["evals"]])
+        for row in report["cases"]:
+            self.assertTrue(all(check["passed"] for check in row["deterministic_results"]))
+            if row["case_id"].startswith("standard-intake-"):
+                self.assertEqual(row["status"], "evaluation_failed")
+                self.assertTrue(row["semantic_results"])
+                self.assertTrue(all(check["detail"] == "external semantic grading missing"
+                                    for check in row["semantic_results"]))
+            else:
+                self.assertEqual(row["status"], "passed")
+
+    def test_full_grading_requires_exact_filtered_case_side_assertion_set(self):
+        self.args.case = None
+        self.args.current_package = self.args.comparison_package = str(PACKAGE)
+        report = self.raw()
+        path = self.grading(report)
+        valid = json.loads(path.read_text())
+        self.assertEqual(len(valid["results"]), 4)
+        for change in ("missing", "duplicate", "case", "side", "assertion", "nonflow"):
+            with self.subTest(change=change):
+                grade = copy.deepcopy(valid)
+                if change == "missing":
+                    grade["results"].pop()
+                elif change == "duplicate":
+                    grade["results"].append({**grade["results"][0], "summary": "duplicate grade"})
+                elif change == "nonflow":
+                    grade["results"].append({**grade["results"][0], "case_id": "ready-route"})
+                else:
+                    field = {"case": "case_id", "side": "comparison_side", "assertion": "assertion_id"}[change]
+                    grade["results"][0][field] = "comparison" if change == "side" else "unknown"
+                write(path, grade)
+                before = snapshot(self.run_root)
+                with mock.patch.object(runner, "call_adapter") as adapter, \
+                        mock.patch.object(runner, "completed_execution") as validation, \
+                        self.assertRaises(CommandError):
+                    runner.run(REPO, SKILLS, self.args)
+                adapter.assert_not_called()
+                validation.assert_not_called()
+                self.assertEqual(before, snapshot(self.run_root))
+
+    def test_full_grading_preserves_nonflow_failures_and_row_bytes(self):
+        self.args.case = None
+        report = self.raw()
+        self.grading(report)
+        for status in ("execution_error", "unsupported", "evaluation_failed", "passed"):
+            with self.subTest(status=status):
+                saved = copy.deepcopy(report)
+                saved["cases"][-1]["status"] = status
+                write(Path(saved["evidence_path"]), saved)
+                before = snapshot(self.run_root)
+                with mock.patch.object(runner, "call_adapter") as adapter, \
+                        mock.patch.object(runner, "completed_execution") as validation:
+                    graded = runner.run(REPO, SKILLS, self.args)
+                self.assertEqual(graded["status"], status)
+                self.assertEqual([call.args[2]["case_id"] for call in validation.call_args_list],
+                                 [case["id"] for case in self.corpus["evals"][:2]])
+                adapter.assert_not_called()
+                self.assert_preserved(saved, graded, before)
+
+    def test_qualification_keeps_original_dispatch_on_fresh_and_saved_roots(self):
+        self.args.skill = runner.QUALIFICATION_SKILL
+        package, interface, _ = runner.package_context(SKILLS, self.args.skill)
+        corpus, _ = runner.corpus(SKILLS, package, interface)
+        grade = self.root / "qualification-grade.json"
+        write(grade, {"schema_version": "1.0", "results": []})
+        for selection in (corpus["evals"][0]["id"], None):
+            self.args.case = selection
+            self.args.run_root = str(self.root / "qualification" / (selection or "full"))
+            for grading in (str(grade), None, str(grade)):
+                self.args.semantic_grading = grading
+                with mock.patch.object(runner, "qualification_run", return_value={"status": "unsupported"}) as dispatch, \
+                        mock.patch.object(runner, "grade_completed_run") as regrade, \
+                        mock.patch.object(runner, "completed_execution") as validation:
+                    self.assertEqual(runner.run(REPO, SKILLS, self.args), {"status": "unsupported"})
+                dispatch.assert_called_once()
+                regrade.assert_not_called()
+                validation.assert_not_called()
+                write(Path(self.args.run_root) / f"{self.args.skill}-codex-run.json", {"status": "unsupported"})
+
+    def assert_preserved(self, before, after, files):
+        self.assertEqual([(row["case_id"], row["comparison_side"]) for row in before["cases"]],
+                         [(row["case_id"], row["comparison_side"]) for row in after["cases"]])
+        intake_ids = {case["id"] for case in self.corpus["evals"]
+                      if case.get("native_authoring_flow") == "standard_intake"}
+        for old, new in zip(before["cases"], after["cases"]):
+            if old["case_id"] not in intake_ids:
+                old_bytes = json.dumps(old, separators=(",", ":")).encode()
+                self.assertEqual(old_bytes, json.dumps(new, separators=(",", ":")).encode())
+                self.assertIn(old_bytes, files[Path(before["evidence_path"]).name])
+                self.assertIn(old_bytes, Path(after["evidence_path"]).read_bytes())
+            else:
+                for field in old.keys() - {"status", "semantic_results"}:
+                    self.assertEqual(old[field], new[field])
+        report_name = Path(after["evidence_path"]).name
+        self.assertEqual({key: value for key, value in files.items() if key != report_name},
+                         {key: value for key, value in snapshot(Path(self.args.run_root)).items() if key != report_name})
+
+    def transport_adapter(self, skills, descriptor, request_path, host_environment=None):
         from adapters.eval import native_adapter
-        from adapters.eval.intake_authoring import FACTS_PATH, INTAKE_SKILLS
+        from adapters.eval.intake_authoring import FACTS_PATH, INTAKE_SKILLS, stdout_digest
 
         # Real context/projection/helper/validator, with local transport receipts.
         # No installer, Git writes, native model, or semantic acceptance claim.
-        for external_model in (False, True):
-            with self.subTest(external_model=external_model):
-                self.run_root = self.root / str(external_model)
+        request = json.loads(request_path.read_text())
+        response = self.adapter(skills, descriptor, request_path, host_environment)
+        if request.get("native_authoring_flow") != "standard_intake":
+            return response
+        case_root = request_path.parent
+        fixture = json.loads((PACKAGE / request["files"][0]).read_text())
+        owner = case_root / "owner"
+        for relative, content in fixture["repository_files"].items():
+            path = owner / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content)
+        write(owner / FACTS_PATH, {"source": fixture["source"], "required_reads": list(fixture["repository_files"])})
+        target = owner / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+        model = (self.root / "external-model" / self.run_root.name / case_root.parent.name / case_root.name
+                 if self.external_model else case_root / "execution/model")
+        model.mkdir(parents=True)
+        with mock.patch.object(native_adapter, "stage_owner_execution", return_value=(PACKAGE, target, {})), \
+                mock.patch.object(native_adapter.tempfile, "mkdtemp", return_value=str(model)):
+            built = native_adapter.build_context(request, "codex")
+        context, context_path, wrapper, trace, protocol_path, native_path, digest, _, thread, stop, _ = built
+        try:
+            protocol = json.loads(protocol_path.read_text())
+            args = [sys.executable, "-B", protocol["helper_path"]]
+            for flag, field in (("trace", "trace_path"), ("request-sha256", "request_sha256"),
+                    ("projection-root", "projection_root"), ("repository-root", "repository_projection_root"),
+                    ("sandbox-root", "model_root"), ("request-fifo", "request_fifo"),
+                    ("response-fifo", "response_fifo"), ("skill-sha256", "skill_sha256"),
+                    ("wrapper-sha256", "wrapper_sha256")):
+                args.extend(["--" + flag, protocol[field]])
+            for kind, paths in protocol["intake_read_paths"].items():
+                for path in paths:
+                    read = subprocess.run([*args, "--flow", "standard_intake", "read", "--kind", kind, "--path", path],
+                                          capture_output=True, timeout=10)
+                    self.assertEqual(read.returncode, 0, read.stderr)
+            stdout = response["public_stdout"]
+            terminal = INTAKE_SKILLS[-1]
+            if json.loads(stdout)["exit_id"] == "blocked":
+                terminal, stdout = INTAKE_SKILLS[2], '{"exit_id":"blocked"}'
+            command = {"skill_id": terminal, "command": "invoke", "arguments": ["--invocation", "-"], "stdin": "{}"}
+            receipt = {"returncode": 0, "stdout": stdout, "stderr": ""}
+            write(Path(protocol["intake_receipts_path"]), [{"request": command, "response": receipt}])
+            payload = json.loads(trace.read_text())
+            payload["terminal_skill_id"] = terminal
+            payload["events"].append({"kind": "command", "skill_id": terminal, "command": "invoke",
+                "arguments": command["arguments"], "stdin_sha256": hashlib.sha256(b"{}").hexdigest(),
+                "returncode": 0, "stdout_sha256": stdout_digest(stdout),
+                "stderr_sha256": hashlib.sha256(b"").hexdigest(), "request_sha256": digest})
+            write(trace, payload)
+            output = model / "last-message.json"
+            output.write_text(stdout)
+            argv = ["codex", "--model", request["model_id"], "--output-last-message", str(output)]
+            write(case_root / "adapter-transcript.json", {"adapter": "codex", "native_command": "codex", "argv": argv,
+                "returncode": 0, "stdout": stdout, "context_path": str(context_path), "protocol_path": str(protocol_path),
+                "projection_root": protocol["projection_root"], "wrapper_path": str(wrapper), "native_request_path": str(native_path),
+                "native_trace_path": str(trace), "model_input_audit": {"argv": argv, "context": context,
+                    "native_request": json.loads(native_path.read_text())}})
+            events = native_adapter.validate_native_trace(trace, digest, request, wrapper, stdout, protocol_path)
+            return {**response, "public_stdout": stdout, "trace_events": events, "native_trace_locator": str(trace)}
+        finally:
+            stop.set()
+            thread.join(timeout=3)
+
+    def test_intake_transport_scoring_preserves_focused_and_full_execution(self):
+        for external_model, selection, comparison, codex_model in (
+                (False, self.args.case, False, None), (True, self.args.case, False, None),
+                (False, None, False, None), (True, None, True, None),
+                (False, None, False, "different-unpinned-model"),
+                (True, None, True, "different-unpinned-model")):
+            with self.subTest(external_model=external_model, selection=selection,
+                              comparison=comparison, codex_model=codex_model):
+                self.external_model = external_model
+                self.run_root = self.root / f"run-{external_model}-{selection}-{comparison}-{codex_model}"
                 self.args.run_root = str(self.run_root)
+                self.args.case = selection
+                self.args.codex_model = codex_model
+                self.args.current_package = self.args.comparison_package = str(PACKAGE) if comparison else None
                 self.args.semantic_grading = None
-                report = self.raw()
-                case_root = self.run_root / "current" / self.args.case
-                request = json.loads((case_root / "adapter-request.json").read_text())
-                fixture = json.loads((PACKAGE / request["files"][0]).read_text())
-                owner = self.root / f"owner-{external_model}"
-                for relative, content in fixture["repository_files"].items():
-                    path = owner / relative
-                    path.parent.mkdir(parents=True, exist_ok=True)
-                    path.write_text(content)
-                write(owner / FACTS_PATH, {"source": fixture["source"], "required_reads": list(fixture["repository_files"])})
-                target = owner / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
-                model = (self.root / "external-model" if external_model else case_root / "execution/model")
-                model.mkdir(parents=True)
-                with mock.patch.object(native_adapter, "stage_owner_execution", return_value=(PACKAGE, target, {})), \
-                        mock.patch.object(native_adapter.tempfile, "mkdtemp", return_value=str(model)):
-                    built = native_adapter.build_context(request, "codex")
-                context, context_path, wrapper, trace, protocol_path, native_path, digest, _, thread, stop, _ = built
-                try:
-                    protocol = json.loads(protocol_path.read_text())
-                    args = [sys.executable, "-B", protocol["helper_path"]]
-                    for flag, field in (("trace", "trace_path"), ("request-sha256", "request_sha256"),
-                            ("projection-root", "projection_root"), ("repository-root", "repository_projection_root"),
-                            ("sandbox-root", "model_root"), ("request-fifo", "request_fifo"),
-                            ("response-fifo", "response_fifo"), ("skill-sha256", "skill_sha256"),
-                            ("wrapper-sha256", "wrapper_sha256")):
-                        args.extend(["--" + flag, protocol[field]])
-                    for kind, paths in protocol["intake_read_paths"].items():
-                        for path in paths:
-                            read = subprocess.run([*args, "--flow", "standard_intake", "read", "--kind", kind, "--path", path],
-                                                  capture_output=True, timeout=10)
-                            self.assertEqual(read.returncode, 0, read.stderr)
-                    stdout = '{"exit_id":"blocked"}'
-                    command = {"skill_id": INTAKE_SKILLS[2], "command": "invoke", "arguments": ["--invocation", "-"], "stdin": "{}"}
-                    response = {"returncode": 0, "stdout": stdout, "stderr": ""}
-                    write(Path(protocol["intake_receipts_path"]), [{"request": command, "response": response}])
-                    payload = json.loads(trace.read_text())
-                    payload["terminal_skill_id"] = command["skill_id"]
-                    payload["events"].append({"kind": "command", "skill_id": command["skill_id"], "command": "invoke",
-                        "arguments": command["arguments"], "stdin_sha256": hashlib.sha256(b"{}").hexdigest(),
-                        "returncode": 0, "stdout_sha256": hashlib.sha256(stdout.encode()).hexdigest(),
-                        "stderr_sha256": hashlib.sha256(b"").hexdigest(), "request_sha256": digest})
-                    write(trace, payload)
-                    output = model / "last-message.json"
-                    output.write_text(stdout)
-                    argv = ["codex", "--model", request["model_id"], "--output-last-message", str(output)]
-                    write(case_root / "adapter-transcript.json", {"adapter": "codex", "native_command": "codex", "argv": argv,
-                        "returncode": 0, "stdout": stdout, "context_path": str(context_path), "protocol_path": str(protocol_path),
-                        "projection_root": protocol["projection_root"], "wrapper_path": str(wrapper), "native_request_path": str(native_path),
-                        "native_trace_path": str(trace), "model_input_audit": {"argv": argv, "context": context,
-                            "native_request": json.loads(native_path.read_text())}})
-                    self.grading(report)
-                    before, visible = snapshot(case_root), snapshot(model)
-                    with mock.patch.object(runner, "call_adapter") as adapter:
-                        graded = runner.run(REPO, SKILLS, self.args)
-                    self.assertEqual(graded["status"], "passed")
-                    adapter.assert_not_called()
-                    self.assertEqual(before, snapshot(case_root))
-                    self.assertEqual(visible, snapshot(model))
-                    for key in report["cases"][0].keys() - {"status", "semantic_results"}:
-                        self.assertEqual(report["cases"][0][key], graded["cases"][0][key])
-                    # Ordinary lost execution evidence must not be repaired by grading.
-                    trace.unlink()
-                    before = snapshot(case_root)
-                    with self.assertRaises(CommandError):
-                        runner.run(REPO, SKILLS, self.args)
-                    self.assertEqual(before, snapshot(case_root))
-                finally:
-                    stop.set()
-                    thread.join(timeout=3)
+                with mock.patch.object(runner, "call_adapter", side_effect=self.transport_adapter):
+                    report = runner.run(REPO, SKILLS, self.args)
+                self.assertEqual(report["status"], "evaluation_failed")
+                self.assertTrue(all(check["passed"] for row in report["cases"] for check in row["deterministic_results"]))
+                for row in report["cases"]:
+                    request = json.loads((self.run_root / row["comparison_side"] / row["case_id"]
+                                          / "adapter-request.json").read_text())
+                    case = next(case for case in self.corpus["evals"] if case["id"] == row["case_id"])
+                    self.assertEqual(request.get("model_id"), case.get("model_id", codex_model))
+                    self.assertEqual(row["status"], "evaluation_failed" if row["semantic_results"] else "passed")
+                    self.assertTrue(all(check["detail"] == "external semantic grading missing"
+                                        for check in row["semantic_results"]))
+                self.grading(report)
+                before, visible = snapshot(self.run_root), snapshot(self.root / "external-model")
+                with mock.patch.object(runner, "call_adapter") as adapter, \
+                        mock.patch.object(runner, "completed_execution", wraps=runner.completed_execution) as validation:
+                    graded = runner.run(REPO, SKILLS, self.args)
+                self.assertEqual(graded["status"], "passed")
+                self.assertTrue(all(row["status"] == "passed" for row in graded["cases"]))
+                self.assertEqual(validation.call_count, (1 if selection else 2) * (2 if comparison else 1))
+                self.assertTrue(all(call.args[2].get("native_authoring_flow") == "standard_intake"
+                                    for call in validation.call_args_list))
+                adapter.assert_not_called()
+                self.assert_preserved(report, graded, before)
+                self.assertEqual(visible, snapshot(self.root / "external-model"))
+                # Lost evidence on the last Intake must not partially save earlier grades.
+                last_intake = validation.call_args_list[-1].args[1]
+                transcript = json.loads((last_intake / "adapter-transcript.json").read_text())
+                Path(transcript["native_trace_path"]).unlink()
+                before = snapshot(self.run_root)
+                with mock.patch.object(runner, "call_adapter") as adapter, self.assertRaises(CommandError):
+                    runner.run(REPO, SKILLS, self.args)
+                adapter.assert_not_called()
+                self.assertEqual(before, snapshot(self.run_root))
 
 
 

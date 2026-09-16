@@ -1455,6 +1455,10 @@ and optional non-empty deterministic/semantic assertion groups. A case may also
 declare `native_execution_mode=post_owner|semantic_authoring`; omission is
 exactly `post_owner`. `native_execution_adapter` and `model_id` are required
 only for `semantic_authoring` and forbidden for omitted mode or `post_owner`.
+That restriction belongs to corpus authoring. The runner's optional
+`--codex-model` execution setting may supply `model_id` in a Codex post-owner
+adapter request, without changing the corpus. It never overrides corpus-pinned
+models or applies to other adapters; omitted selection keeps prior behavior.
 The optional closed `native_authoring_flow=standard_intake` is also restricted
 to `semantic_authoring`. Omission retains the existing single-Skill authoring
 contract; the field selects an eval-only execution flow, never a production
@@ -1602,10 +1606,13 @@ an empty semantic result list cannot establish this flow's success. After an
 independent AI reviews the actual completed transcript, source facts and
 receipts, the existing `run-skill-evals --semantic-grading` entry may grade that
 same completed run root without staging or dispatching the model again.
-This two-stage branch is exclusive to cases declaring
-`native_authoring_flow=standard_intake`. Non-flow post-owner, Architecture and
-Phase 2 cases keep their existing execution behavior even on a saved run root;
-mixed selections cannot use this branch to regrade their non-flow cases.
+This two-stage branch updates only cases declaring
+`native_authoring_flow=standard_intake`. A completed full/mixed run containing
+such cases must validate its complete applicable case/side identity before
+updating only those Intake rows and the derived aggregate. Every non-flow row
+and its execution evidence remain unchanged; non-flow assertions in grading
+are rejected. Non-flow-only post-owner, Architecture, Phase 2 and qualification
+runs keep their existing fresh/saved execution behavior.
 Validate the existing execution and case/side/assertion identities before
 updating semantic results and the derived aggregate. Preserve actual exits,
 deterministic results, timing and raw transcript/trace/receipt bytes. Missing or

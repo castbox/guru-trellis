@@ -1569,6 +1569,12 @@ python3 -m json.tool trellis/index.json
 
 ## Skill Evaluation Data Contracts
 
+The optional `run-skill-evals --codex-model` execution setting is Codex-only and
+applies only when the corpus does not pin a model. The existing `model_id` field
+may therefore occur on a Codex post-owner adapter request. Corpus schema rules
+and pinned semantic-authoring/qualification models do not change. The request
+and actual native argv record the selected model; it is not semantic evidence.
+
 `public_api.skill_evals` publishes schema id `guru-team-skill-evals-1.0`, native
 trace schema id `guru-team-skill-eval-native-trace-1.0`, the four adapter ids,
 the closed run-status set, and the repo-relative canonical
@@ -1647,10 +1653,13 @@ artifact. The helper and trace use that same declared read set and reject
 examples, eval controls and private runtime.
 
 Intake transcript assertions consume the existing semantic-grading 1.0 rows
-by comparison side, case and assertion identity. Only a selection of declared
-`standard_intake` cases can use completed-run grading; non-flow cases keep their
-existing lifecycle, including when a saved run root exists. A completed Intake
-run root can be graded by the original runner after independent review of its actual
+by comparison side, case and assertion identity. Completed focused or full/mixed
+runs containing declared `standard_intake` cases retain their entire original
+applicable case/side set. Grading must match exactly the Intake assertions only;
+non-flow grading rows are rejected. Only Intake semantic results/status and the
+derived aggregate may change; all non-flow fields and raw execution evidence
+remain unchanged. Runs with no Intake cases keep their existing lifecycle.
+The completed run root can be graded by the original runner after independent review of its actual
 transcript. No new public DTO, grading field, hidden summary token or long-lived
 ledger is introduced. The runner checks existing request/corpus/execution
 identity and preserves raw execution evidence while updating only semantic

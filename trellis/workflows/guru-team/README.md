@@ -1210,8 +1210,12 @@ Skill 的 declared blocker 停止。Runner 按最后真实 public producer 的 s
 Intake 模型投影只包含声明的 Skill/完整合同/Interface、必要 schema、原命令边界和
 源事实；examples、owner-result/output/pass 样例、eval controls 和 private runtime 均不进入
 投影，Interface 的 example 引用不构成例外。helper 与 trace 同时限制到该声明读集合。
-completed-run 补评分仅用于显式声明 `standard_intake` 的 case；其它 Skill 和未声明 flow
-的 case（包括已有 run-root）保持原执行语义，混合集合不得补评 non-flow case。
+completed-run 补评分只更新显式声明 `standard_intake` 的 case 行。
+可通过 `--adapter codex --codex-model gpt-5.6-sol` 为未固定模型的 Codex case 选择模型；
+corpus 已固定的模型不受覆盖，省略参数保留 CLI 默认，其它 adapter 不接受此参数。
+该选择不改变任何评分、输出校验或生命周期。
+完整 full/mixed run 先校验完整 case/side 集合，再仅更新 Intake 评分并重算 aggregate；non-flow 行和原始证据
+保持不变，grading 中 non-flow assertion 必须拒绝。没有 Intake 的运行保持原 fresh/saved 语义。
 两例必须声明 transcript semantic assertions：未提供独立评分时，即使 trace/exit/schema
 通过，raw run 仍为 `evaluation_failed`。独立 AI 现场审查该次 transcript 后，用相同
 run-root 和原 `--semantic-grading` 参数完成后续评分；不重跑模型、不修改原始执行证据，

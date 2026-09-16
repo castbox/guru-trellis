@@ -758,6 +758,9 @@ def build_context(
             "Discovery preview uses --query-json '<your current query object>' and empty stdin. Wording scan uses record-contract-wording-review --invocation - --scan-only before recording.",
             "A nonzero command exit is an invocation error, not a declared typed exit. Read that command's error, correct its input and call the same command again; do not skip the current owner or forward error JSON as a public output.",
             "Only a successful invoke command's declared typed output can be terminal. Return its actual stdout without changing its owner, schema or fields; recorder/checker output and invocation errors are not terminal public outputs.",
+            "Printing stdout in a tool does not deliver your final message.",
+            "Parse this invocation's actual terminal stdout in memory with json.loads, then render the complete JSON object with json.dumps(..., ensure_ascii=False, indent=2) for your final reply.",
+            "Verify that your final reply is that same complete JSON object with only JSON whitespace changes; do not manually assemble braces, reconstruct fields, add fences or explanations, or truncate it.",
         ])
     context_path = model_root / "native-context.txt"
     context_path.write_text(context, encoding="utf-8")
@@ -1044,6 +1047,8 @@ def native_argv(
             "--cd", trusted_root, "--add-dir", execution_root,
             "--add-dir", workdir, "--add-dir", str(projection_root),
         ]
+        if "model_id" in request:
+            argv.extend(["--model", str(request["model_id"])])
         argv.extend(["--output-last-message", str(output_path), context])
         return argv, output_path
     if adapter == "claude":
