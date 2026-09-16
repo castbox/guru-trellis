@@ -593,10 +593,13 @@ from source and receives the business checkout through `--repo`; neither the
 installed manifest nor this source checkout invokes or substitutes for the
 standalone verifier.
 
-The READMEs also name active semantic `guru-merge-task-pr`, its workflow and
-standalone inputs, three exits, repo-bound `gh` fact/merge operations,
+The READMEs also name active semantic `guru-merge-task-pr`, its ordinary workflow
+and standalone inputs plus read-only `archived_review_request`, five exits,
+repo-bound `gh` fact/merge operations,
 expected-head precondition, separate merge confirmation, and post-merge
 close-keyword verification. `merged` alone reaches the finish response;
-`merge_blocked` and `closure_mismatch` stop distinctly. No Finalizer or Merge
-path calls Issue-close APIs, updates the PR branch, synchronizes local `main`, or
-cleans resources.
+`merge_blocked` and `closure_mismatch` stop distinctly;
+`phase2_reentry_required` targets the existing archived-task restoration owner.
+`review_refresh_required` targets Branch Review's read-only `archived_review`
+without selecting a merge. The archived read-only route does not call
+Issue-close APIs, update the PR branch, synchronize local `main`, or clean resources.

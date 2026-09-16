@@ -452,11 +452,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-16T16:31:04Z",
+  "installed_at": "2026-09-16T16:56:54Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "774c8c84a2794ba317ac336097ea071aabc5c038",
-    "commit": "774c8c84a2794ba317ac336097ea071aabc5c038",
+    "ref": "bcdb0ebd2c9c0757b421fd6b0f1e658d5e5413b5",
+    "commit": "bcdb0ebd2c9c0757b421fd6b0f1e658d5e5413b5",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -653,7 +653,7 @@
       {
         "id": "guru-review-task-publication",
         "interface_sha256": "a9630ac156d995505aea906e89508895030b0e185f4c2758c0709448d4c7fc86",
-        "tree_sha256": "f9853bb02f3268392691701011ebe37b39a90dab17301169cbb25234b5f0312b"
+        "tree_sha256": "a352de0ff985b779872d2ee195412df15fb33d6f3dee4e9ce14f54f93fac8c67"
       },
       {
         "id": "guru-select-workflow-mode",
@@ -6128,7 +6128,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-publication/SKILL.md",
-        "sha256": "d38784d50c77f3d09c035927e2528a74224beaddb846a8cb3d0406fc67fd816a",
+        "sha256": "077a9d2b10506f94447a0afeeea08211524b5539cc622b3961978e06379f1461",
         "executable": false,
         "action": "unchanged"
       },
@@ -23698,7 +23698,7 @@
       {
         "path": ".agents/skills/guru-review-task-publication/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-publication/SKILL.md",
-        "sha256": "d38784d50c77f3d09c035927e2528a74224beaddb846a8cb3d0406fc67fd816a",
+        "sha256": "077a9d2b10506f94447a0afeeea08211524b5539cc622b3961978e06379f1461",
         "executable": false,
         "action": "unchanged"
       },
@@ -24027,7 +24027,7 @@
       {
         "path": ".codex/skills/guru-review-task-publication/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-publication/SKILL.md",
-        "sha256": "d38784d50c77f3d09c035927e2528a74224beaddb846a8cb3d0406fc67fd816a",
+        "sha256": "077a9d2b10506f94447a0afeeea08211524b5539cc622b3961978e06379f1461",
         "executable": false,
         "action": "unchanged"
       },
@@ -24356,7 +24356,7 @@
       {
         "path": ".claude/skills/guru-review-task-publication/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-publication/SKILL.md",
-        "sha256": "d38784d50c77f3d09c035927e2528a74224beaddb846a8cb3d0406fc67fd816a",
+        "sha256": "077a9d2b10506f94447a0afeeea08211524b5539cc622b3961978e06379f1461",
         "executable": false,
         "action": "unchanged"
       },
@@ -24685,7 +24685,7 @@
       {
         "path": ".cursor/skills/guru-review-task-publication/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-publication/SKILL.md",
-        "sha256": "d38784d50c77f3d09c035927e2528a74224beaddb846a8cb3d0406fc67fd816a",
+        "sha256": "077a9d2b10506f94447a0afeeea08211524b5539cc622b3961978e06379f1461",
         "executable": false,
         "action": "unchanged"
       },

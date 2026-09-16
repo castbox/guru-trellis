@@ -1013,10 +1013,12 @@ agent-recovery checkpoint；普通 mapped exit、stale/re-entry/reprepare 由 AI
 承接，不向用户暴露为“确认继续”。
 
 Active `guru-review-branch` 是唯一的 Phase 3.5 semantic owner。Global workflow 与
-平台 `trellis-continue` entry 只用 `profile`、`mode`、`task_ref`、`base_ref`、
+平台 `trellis-continue` entry 在普通 `branch_review` profile 下使用 `profile`、`mode`、`task_ref`、`base_ref`、
 `branch_review_commit`、`review_intent` 六字段 public input mandatory invoke 该 package，
 并消费 `passed`、`implementation_required`、
-`scope_confirmation_required`、`blocked` 四个 typed exits。Reviewer lifecycle、
+`scope_confirmation_required`、`blocked` 四个 typed exits。完整 Interface 包含三个 profiles、
+六个 exits：`base_continuity` 另有 `continuity_passed`，只读 `archived_review` 另有
+`archived_review_passed`；两者各自按声明的输入合同调用并保留 `blocked` 停止出口。Reviewer lifecycle、
 finding qualification、Docs SSOT Gate、recovery checkpoint、private artifacts 与 re-entry
 规则均由 package 独占，入口不得复制。
 

@@ -1,6 +1,6 @@
 ---
 name: guru-review-task-publication
-description: Review task publication readiness through ten semantic dimensions, metadata-only revision, one private gate, and three typed exits.
+description: Review task publication readiness through ten semantic dimensions, ordinary metadata revision or read-only archived review, and four typed exits.
 ---
 
 # Guru Review Task Publication
