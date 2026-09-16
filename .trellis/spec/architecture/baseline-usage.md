@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.52`
+- version：`current-main-0.6.17-guru.53`
 - status：`active`
-- source binding：reviewed #410 contribution + inherited immutable `.51` authority；current graph 23 Skills / 97 exits / 78 commands；framework source `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0` / CI `34838784963` / CLI/core `0.6.17` / `pnpm@10.32.1` / extension `0.6.17-guru.42` / target repository `v0.6.17-guru.1`；released `v0.6.16-guru.1` 与 extension `0.6.16-guru.41` 保持 immutable history；constitution、ADR/GAP 与 #305 target authority 不变（精确 revision 由包含本 authority 的 Git commit/tree identity 绑定；本知识 promotion 不证明 tag、GitHub Release、Issue closure 或其它远端动作完成）
+- source binding：reviewed #418 contribution + inherited immutable `.52` authority；current graph 23 Skills / 100 exits / 78 commands，current 增量见 `ARCH-CUR-030` / `ARCH-INT-018` / `ADR-010`。软件四轴与固定 Fork 来源继承 `.52`，见 Architecture current authority；constitution、GAP 与 #305 target 不变。本知识 promotion 不证明 post-promotion gates、tag、GitHub Release、Issue closure 或其它远端动作完成。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`
 - required concern set：`guru-trellis-architecture-change-concerns-v1`

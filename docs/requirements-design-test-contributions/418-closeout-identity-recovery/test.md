@@ -1,20 +1,15 @@
-# #418 Test Contribution
+# #418 Test Promotion Source
 
-状态：draft、unpromoted；证据分层沿用 TST-002/003/004/005/011/012/018。不能将局部unit通过声明为全链或release通过。
+状态：absorbed historical source；source / expected current 为 current-main-0.6.17-guru.52，
+target 为 current-main-0.6.17-guru.53。来源：[Issue #418](https://github.com/castbox/guru-trellis/issues/418)
+与本目录在 Git 历史中的 reviewed contribution；本文件不再维护第二份 current 正文。
 
-| Case | 证据与精确期望 |
-| --- | --- |
-| T418-01..03 | 正常producer/archive生成双端mapping；精确重入不重复Git/PR副作用，missing/conflict明确阻塞 |
-| T418-04 | 真实Merge wrappers保持known/provider/stale诊断与redaction；未知异常仍internal_error |
-| T418-05/08 | 正常archive fixture经实际四owner wrappers产生真实DTO，最终Merge preview成功；正常checkpoint退休不增加复审 |
-| T418-06/09 | H/A分离、完整archive continuity、真正内容或authority变化阻塞；task/archive/refs/PR零mutation |
-| T418-07 | source/installed/Shared/Codex/Claude/Cursor、reapply/drift、sidecar与executable mode一致 |
-| T418-10 | title/body snapshot不能冒充Publication；新完整语义审查后的实际bytes才进入Finalizer |
-| T418-11 | 原active profiles、status、锚点及旧成功/失败出口不回归 |
-| T418-12 | 三个独立Architecture阶段只能current/blocked；写入route和stage错配在边界拒绝 |
-| T418-13 | 只读Publication如实保留finding分类，不能将内容问题伪装为external blocker |
-| T418-14 | B正常推进到B'或PRtitle/body改变后，下游拒绝旧范围/快照；不后台更新ref |
+T418-01..14 已归入 [版本化 Test](../../test/versions/current-main-0.6.17-guru.53/test-strategy.md)。
+replacement locators 见 [manifest.yaml](./manifest.yaml)，完整继承 .52 而不是以 task delta 替换旧 authority。
+本历史 contribution 已由 .53/active successor 吸收，Architecture 与 RDT 共享 current identity。
+promotion-created combined diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review 后才能进入 Publication；本文不声明下游门禁已通过。
 
-本轮在 `78651e20` 基线复跑：Finalizer 108、Merge 65、Branch Review 35、Publication 67、Architecture 26项通过；`test_archived_review_integration.py` 3项通过；`test_archived_fixtures.py` 3项通过（8个recipe）。实际source/installed/reapply/drift验证通过，保留Claude/Codex/Cursor与Shared投影，sidecar为0。task implement.md记录精确命令和区分的历史结果。
-
-当前未证明：fresh native语义执行、原业务实例和Release Gate；尚无独立committed-diff review/promotion。Fake provider只隔离transport；fixture owner inputs不是native AI语义执行证据。完整release矩阵由专门owner负责。
+此前 package 301（F108/M65/B35/P67/A26）、focused package 14、installed contract 1、
+archived fixtures 3、installed chain 3 和完整 Branch Review 的结果仅为 pre-promotion evidence，
+统一由 [.53 Test 计划](../../test/versions/current-main-0.6.17-guru.53/test-plan.md) 维护。
+native 语义执行、原业务实例、完整 Release matrix 仍 unverified；本文件不声明后续验证完成。

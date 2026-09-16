@@ -20,6 +20,19 @@
 
 跨 domain 只使用 interface/schema/typed projection；不得读取对方 private checkpoint 作为 public contract。
 
+## #418 只读复审归属
+
+`ARCH-DOM-002/003/008/013/015` 的 owner 不变；[ADR-010](../adr/010-archived-review-authority.md)
+在这些既有边界内划分以下责任，不新增 domain writer：
+
+- Finalizer 原 executor 负责双端归档映射收敛；只读 reader 只验证，不修复映射。
+- Merge 只判断当前是否需要归档复审并捕获 PR 快照，不提前批准 merge。
+- Branch Review 独占当前完整范围 `B...A` 的独立复审；Publication 独占现有 PR payload 的新语义判断。
+- Finalizer 独占原 H 的归档连续性校验和原 `ready_for_merge` handoff；Merge 仍独占最终操作及结果验证。
+- Architecture 在三个原阶段分别独立判断 current/blocked；只读来源不进入 promotion/repair 写入。
+
+该链不替代 `ARCH-DOM-012` 的真实 task-work finding 恢复，也不增加 Issue closure owner。
+
 #408 的独立手动请求不进入上述 Guru lifecycle domain，由当前会话 AI 依
 [全局操作边界](../../../trellis/workflows/guru-team/workflow.md#manual-gitgithub-operations)
 执行已明确的 Git/GitHub 操作。它不新增 lifecycle owner，也不改写 task、Finalizer 或 archive 的完成状态。

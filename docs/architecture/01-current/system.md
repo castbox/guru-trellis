@@ -2,13 +2,17 @@
 
 以下事实只绑定 current source/release evidence，不推断未来能力。
 
+当前图及 #418 增量以 `ARCH-CUR-030` 为准；current release-facing 四轴继承
+`ARCH-CUR-029`。保留条目中带旧 Issue/版本身份的计数和验证只描述其历史范围，
+不覆盖 `.53` 的 current identity，也不充当本次重新执行的验证。
+
 - `ARCH-CUR-001`（`code_recovered`）：reviewed #332 original-entry correction contribution + inherited `.44` authority 包含 23 个 active Skill packages、97 个 external exits 与 77 个 commands；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD；registry 统一指向 interface/route/platform，22 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
 - `ARCH-CUR-002`（`code_recovered`）：global workflow 实现四 Phase，canonical package 位于 `trellis/**`，dogfood/installed 位于 `.trellis/**`，平台投影覆盖 Shared/Codex/Claude/Cursor。
 - `ARCH-CUR-003`（`code_recovered`）：RDT、Architecture Baseline、Repository Bootstrap 三个 semantic package 已 active，分别源自 #263/#264/#265。
 - `ARCH-CUR-004`（`source_confirmed` + `reviewed`）：current extension revision 为 `0.6.16-guru.41`，released repository axis 为 `v0.6.16-guru.1`；#392 对应的 release mapping 使用 Trellis CLI `0.6.16` 与 `ARCH-CUR-024` 固定来源，当前 framework source/CLI 由 `ARCH-CUR-026` 后继。各 identity 轴保持独立，release history 不覆盖 current framework authority。
 - `ARCH-CUR-005`（`source_confirmed`）：正式 predecessor 为 annotated tag / GitHub Release `v0.6.15-guru.6`；它是 immutable released history，不等于 current target，也不由本 knowledge promotion 重写。tag object、peeled commit 与 latest-stable live 属性仍由后续 exact-candidate release owner fresh 回读。
 - `ARCH-CUR-006`（`code_recovered`）：preset/overlay 管理 `.trellis/guru-team/`、Guru Skills、平台 skills 与 finish-work entries；unknown local changes 使用 `.new/.bak` 保护语义。
-- `ARCH-CUR-007`（`code_recovered`）：Finalizer terminal projection 以精确 retired locator、六文件 archive summary 与 current local/remote/Ready PR/scope facts 共同构成 authority；archive 不替代 live provider，任何真实 drift fail closed。
+- `ARCH-CUR-007`（`code_recovered`）：Finalizer terminal projection 以精确 retired locator、committed archive/finish-summary 与 current local/remote/Ready PR facts 共同构成 authority；archive 的 durable 文件集合由 canonical Finalizer 合同定义，不替代 live provider，任何真实 drift fail closed。
 - `ARCH-CUR-008`（`source_confirmed` + `reviewed`）：#392 `.48` release-facing projection 的 Trellis target/project version 为 `0.6.16`，canonical extension revision 为 `0.6.16-guru.41`，framework source 固定为 `castbox/Trellis@ad332e3fe5a19d7274cb03e7c2f3e2128f8de291`。该历史 authority 只承接其 reviewed preparation bytes，不把定向检查或历史矩阵晋升为 exact-candidate Release Gate 通过，也不声明 `.49` 的 current framework source。
 - `ARCH-CUR-009`（`verified`）：compatibility verifier 以 HEAD + tracked/untracked candidate
   bytes/modes + candidate tree 绑定 source state；capability-loss gate 只比较 `workflow`、
@@ -105,10 +109,12 @@
   手动结果不取得 Guru lifecycle 完成状态。此能力不新增 Skill、exit、owner 或恢复状态。
   需求/设计/测试承接为 `R408-01..08 -> D408-01..05 -> T408-01..08`，证据边界见 `EVD-027`。
 
-当前 Architecture knowledge identity 为 `.52`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
+当前 Architecture knowledge identity 为 `.53`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
 `0.6.17`，framework source/CI 由 `ARCH-CUR-028` 与 canonical source record 绑定，package manager 为
-`pnpm@10.32.1`。`.51` 是 immutable superseded predecessor；released `v0.6.16-guru.1` 不包含 #410 candidate。promotion-created diff
+`pnpm@10.32.1`。`.52` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。
 
 - `ARCH-CUR-029`（`source_confirmed` + `reviewed`）：#410 将 current release-facing mapping 提升为 `v0.6.17-guru.1` / extension `0.6.17-guru.42` / CLI-core `0.6.17` / fixed Fork source；Architecture/RDT successor 为 `current-main-0.6.17-guru.52`，前序 `.51` 与 released `v0.6.16-guru.1` 保持 immutable。该知识 promotion 不声明 preparation PR merge、tag、GitHub Release、业务 smoke 或 Issue closure 已完成。
+
+- `ARCH-CUR-030`（`source_confirmed` + `reviewed`）：#418 以 `target_native` 在原 Merge、Branch Review、Publication、Finalizer 内增加四个只读 profiles 和三个 success exits，当前图为 23 Skills / 100 exits / 78 commands，business workflow 为 22 invokes / 98 exits。Finalizer 原 executor 独占同一 task 双端映射的归档 locator 收敛；已知 Merge 错误从发生点保留脱敏诊断，正常 checkpoint 退休不强制复审。只读链区分原 H、当前 A、复审 base B 与 PR payload snapshot；Publication 重新判断现有 bytes，Finalizer 验证历史连续性后返回原 Merge handoff，不重复归档或发布。普通 aggregate 4.0/gate 7.0 合同保留，aggregate 5.0 加入的 archived review 使用独立 `archived-1.0` gate。`ADR-010` 与 `ARCH-INT-018` 定义边界，`EVD-028` 只提供提升前证据；本条不证明 post-promotion gate、native 归档语义链、原业务实例或 Release 完成。

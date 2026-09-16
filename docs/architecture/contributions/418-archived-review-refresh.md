@@ -1,10 +1,14 @@
 # #418 Architecture Contribution
 
-Identity：`418-archived-review-refresh-v1`；状态：`implementation_candidate`；change path：`target_native`。这是已实现且经过定向验证的task-owned candidate，不是shared current authority；独立committed-diff review与promotion尚未完成，不证明发布。
+Identity：`418-archived-review-refresh-v1`；状态：`promoted_source`；change path：`target_native`。
+本贡献已吸收到 `current-main-0.6.17-guru.53` 的 `ARCH-CUR-030`、`ARCH-INT-018` 和 `ADR-010`，
+仅保留提升来源，不与 shared current 形成第二 authority。提升前审查范围为
+`78651e2068184e9e52a778fe33eda8b2bd7c8e0b...c30eadd6cf6fe4ba204c32c6e89f3f25f892e8f4`。
+Promotion-created diff 的后续 gates 与发布仍需独立验证。
 
 ## Authority 与范围
 
-- 当前 baseline：`docs/architecture/README.md` / `current-main-0.6.17-guru.52` / active。
+- 提升时 expected predecessor：`current-main-0.6.17-guru.52`；当前 baseline：`docs/architecture/README.md` / `current-main-0.6.17-guru.53` / active。
 - 当前设计宪法：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / current。
 - 项目合同：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`。
 - Guru owner 合同：`guru-maintain-architecture-baseline:2.0`。
@@ -15,11 +19,11 @@ Identity：`418-archived-review-refresh-v1`；状态：`implementation_candidate
 
 Before：completed archive不能进入普通Publication；新archive-HEAD review不符合Finalizer原归档锚点。只有错误文案和mapping修复不能闭合复审链。
 
-Target：在Merge、Branch Review、Publication、Finalizer四个原owner内部增加专用只读profile。三个新的success exits显式连接唯一consumer；新PR snapshot不承担批准语义；新Publication审查后才生成可供Finalizer验证的payload。H与A分离，普通mutation路径不变。
+Promoted result：在Merge、Branch Review、Publication、Finalizer四个原owner内部增加专用只读profile。三个新的success exits显式连接唯一consumer；新PR snapshot不承担批准语义；新Publication审查后才生成可供Finalizer验证的payload。H与A分离，普通mutation路径不变。
 
 Branch Review实际base B作为最小范围身份传至Publication/Finalizer；title/body快照只服务复审内容一致性。Publication新增profile专属finding/blocked union，不把task_work或metadata问题伪装为external blocker。Architecture仍在三个原stage逐次调用，用既有source_exit的闭合集合识别只读范围，AI在需写入或证据不current时返回blocked，validator拒绝该来源下不符合边界的需写出口；普通来源路由不变。
 
-预期图增量：0 Skill、0 command、4 profile、3 external exit。实施时从live registry/interface派生总图与所有consumer；不将旧4个Merge exits的current陈述当作已经迁移。
+已审查图增量：0 Skill、0 command、4 profile、3 external exit。当前图为 23 Skills / 100 exits / 78 commands；旧四个 Merge 操作/恢复出口仍有效，新增只读出口不改变其语义。
 
 ## Required Concerns
 
@@ -31,26 +35,22 @@ Branch Review实际base B作为最小范围身份传至Publication/Finalizer；t
 | owner-and-single-writer | applicable | Branch Review独占复审，Publication独占payload语义，Finalizer独占archive continuity与handoff，Merge独占最终merge；只读profile零业务/远端writer |
 | compatibility-and-exit | applicable | 新profile/exit独立schema，原profile不放宽；旧gate不升级为pass，不保留legacy shim，原输入消费者继续按原合同工作 |
 | gap-and-deviation | applicable | 不关闭ARCH-GAP-006/008，不扩大#398/#419生命周期；修复#418归档复审缺口，无退出双写或scope ledger回潮则拒绝 |
-| parallel-scope | applicable | 只改当前task隔离范围；禁止普通分支写shared current、修改业务task状态或替其它task重建mapping |
+| parallel-scope | applicable | 实施限 task-isolated 范围；shared current 仅由 promotion owner 提升，禁止修改业务 task 状态或替其它 task 重建 mapping |
 | evidence-and-freshness | applicable | 规划内容、current authority、完整候选或committed range绑定；test证明A/H、snapshot和零mutation，未运行不得写verified |
-| review-and-promotion | applicable | 本贡献及ADR草案先经完整committed-diff review，Architecture owner按expected current串行promotion；promotion diff重复Phase2/Commit/Review |
+| review-and-promotion | applicable | 本贡献经上述完整 committed range 审查后由原 owner 提升；promotion diff 仍须重复 Phase 2/Commit/Review |
 
-## ADR-418 草案：归档复审与历史锚点分离
+## ADR 承接
 
-状态：`proposed`，不是accepted ADR。决策来源为本task完整设计；最终ADR identity及导航由Architecture promotion owner管理，避免修改shared ADR索引。
-
-选择专用只读profile：复用原owner判断能力和底层中立校验，但不复用active preparation状态门槛或可写transaction loop。新A证明当前独立复审；原H证明既有archive历史。PR快照仅绑定读期间内容，新Publication判断不能由快照digest代替。
-
-拒绝替代：放宽普通Publication status、A替换H、整体restore为active、手改旧gate、仅改善错误文案。前三者破坏原边界或引入额外写入，后两者不能证明当前复审和完整恢复。
-
-代价：增加四个profile和三条public边，必须同步schema/consumer/eval/distribution；收益：不重复归档或发布，不引入第二owner或回写历史。不存在长期兼容例外；旧gate仍走原stale语义，新增profile仅fresh authoring。
+原 task-local `ADR-418` 草案已由 [accepted ADR-010](../adr/010-archived-review-authority.md)
+承接。该文档独占决策、替代方案及代价，本贡献不保留第二份 current 决策正文。
 
 ## Project Check 与提升
 
-采用当前 `guru-trellis-architecture-convergence:repository:1` descriptor；entrypoint为项目change-contract，rule refs为ARCH-GOV-006..009、decision refs为ADR-005/009、gap refs为ARCH-GAP-006/008。当前candidate的实际四owner wrapper链、三个Architecture只读阶段、A/H/B与快照绑定、零mutation及全部目标平台投影已有定向验证；结果不等于独立committed review或promotion。
+沿用 `guru-trellis-architecture-convergence:repository:1` descriptor 与原项目 change contract；
+九项 concerns 均适用，原 `ARCH-GAP-006/008` 状态和 single-writer 不变。
+提升前完整审查和 fresh 301 package tests、installed/focused 证据见
+[EVD-028](../evidence/current-evidence.md#evd-028-418-reviewed-promotion-source)，不是新 diff 的重复验证声明。
+RDT 由其独立 owner 将 R418/D418/T418 纳入 `.53` 并保持双向 trace。
 
-Phase2验证完整candidate before/after与适用check；Branch Review在独立committed range重算。未经两阶段验证不得提升。Promotion将新的只读边写入CURRENT/DOMAIN/接口清单及ADR导航，同时更新旧“四个Merge exits”陈述，不改写其它旧profile语义。RDT贡献由其独立owner承接R418/D418/T418，两个authority的期望版本和状态必须一致。
-
-当前验证基于task HEAD与origin/main均为 `78651e2068184e9e52a778fe33eda8b2bd7c8e0b` 的未提交candidate：五个package共301项测试、真实installed wrapper链3项、post-owner staging3项通过。三平台reapply、installed和drift通过，sidecar为0。具体命令与边界见task implement.md及RDT test contribution。
-
-尚未验证：fresh native语义执行、原业务实例和Release矩阵；未完成独立committed review或shared-current promotion。post-owner/fixture通过不替代这些证明。
+Native 语义执行、原业务实例与 Release 矩阵仍未验证。新 authority 内容必须再经过 fresh
+Phase 2、task commit 和独立完整 Branch Review，之后才可进入 Publication/Acceptance。
