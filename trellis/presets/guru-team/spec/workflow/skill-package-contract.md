@@ -1492,7 +1492,16 @@ the native Agent exercises the deterministic public route. For
 the contract-designated native Agent performs the semantic judgment, authors
 the call-local owner-result envelope, and invokes the same formal public
 wrapper. Adapter/runtime code never generates, selects, or rewrites that
-judgment. Missing
+judgment. Phase 2 `guru-check-task` authoring additionally exercises the original
+recorder and checker before public projection: the Agent supplies the semantic
+fields, while the recorder alone derives fixture task/content identity. A host
+may transport that authoring unchanged, but must not fill dimensions, findings,
+reasons, or exits. The clean and finding cases must respectively demonstrate a
+real reviewed pass and a supported current-scope implementation finding. Existing
+four-route `post_owner` cases remain deterministic route coverage, not proof of
+native semantic authorship. Optional worker availability never supplies or
+withholds the current Skill's semantic ownership.
+Missing
 native capability returns `unsupported`. Comparison accepts only a pair of
 caller-resolved exact package paths, binds grading and feedback to each side
 independently, and never interprets floating refs. Before either side executes,

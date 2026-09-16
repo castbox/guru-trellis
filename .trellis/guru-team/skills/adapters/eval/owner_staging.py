@@ -66,6 +66,13 @@ def stage_owner_execution(
     )
     execution_mode = str(request.get("native_execution_mode") or "post_owner")
     if execution_mode == "semantic_authoring":
+        if skill_id == "guru-check-task":
+            from adapters.eval import phase2_authoring
+            package = fixture / ".trellis/guru-team/skills/packages" / skill_id
+            if package_tree_sha256(package) != package_tree_sha256(request_package):
+                raise ValueError("Phase 2 authoring installed package differs from source")
+            phase2_authoring.stage(request, fixture, package, runtime_target.parents[4])
+            return package, fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh", {}
         if skill_id != ARCHITECTURE_SKILL:
             raise ValueError("semantic authoring fixture is not declared for this Skill")
         package = fixture / ".trellis/guru-team/skills/packages" / skill_id

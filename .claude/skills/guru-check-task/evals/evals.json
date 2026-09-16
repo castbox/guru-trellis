@@ -5,6 +5,50 @@
   "skill_name": "guru-check-task",
   "evals": [
     {
+      "id": "native-owner-clean",
+      "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
+      "expected_exit": "passed",
+      "expected_output": "The current AI completes the nine dimensions from live fixture facts and the original wrapper returns passed.",
+      "input_profile_id": "initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": ["evals/files/native-owner-input.json", "evals/files/native-range-inclusive.py"],
+      "assertions": {
+        "deterministic": [
+          {"id": "actual-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "passed"},
+          {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
+          {"id": "no-eval-control", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+          {"id": "no-private-runtime", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+        ],
+        "semantic": [
+          {"id": "current-ai-owner", "criterion": "The current AI reads the installed contract, complete task facts and actual upstream Architecture result, reviews all nine dimensions, then authors its own Phase 2 result without waiting for workers. Recorder/checker/wrapper receipts reflect that authoring, not host conclusions.", "evidence_selector": "transcript"}
+        ]
+      }
+    },
+    {
+      "id": "native-owner-finding",
+      "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
+      "expected_exit": "implementation_required",
+      "expected_output": "The AI identifies the requirement violation using actual implementation and failing boundary tests; the original wrapper returns implementation_required.",
+      "input_profile_id": "initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": ["evals/files/native-owner-input.json", "evals/files/native-range-boundary.py"],
+      "assertions": {
+        "deterministic": [
+          {"id": "actual-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "implementation_required"},
+          {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
+          {"id": "no-eval-control", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+          {"id": "no-private-runtime", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+        ],
+        "semantic": [
+          {"id": "evidence-based-finding", "criterion": "The current AI reviews all nine dimensions and qualifies the upper-inclusive requirement violation from interval.py and actual failed tests. It authors a linked current-scope finding and implementation_required rather than forcing passed, without a staged Phase 2 result or external worker.", "evidence_selector": "transcript"}
+        ]
+      }
+    },
+    {
       "id": "passed-initial",
       "prompt": "Complete the initial_check semantic owner round and invoke guru-check-task through its public wrapper; return the checker-derived passed route.",
       "expected_exit": "passed",

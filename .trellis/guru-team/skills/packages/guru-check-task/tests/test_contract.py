@@ -139,6 +139,12 @@ class CheckTaskPackageContractTests(unittest.TestCase):
             "blocking": True,
         }]
         validator.validate(blocked)
+        for missing in ("authority", "architecture-phase2", "mandatory-validation"):
+            missing_pass = copy.deepcopy(self.example)
+            missing_pass["validation"]["unverified_items"] = [{
+                "id": missing, "summary": f"Required {missing} evidence is unavailable.", "blocking": True,
+            }]
+            self.assertFalse(validator.is_valid(missing_pass))
 
         invalid_pass = copy.deepcopy(self.example)
         invalid_pass["semantic_review"]["findings"] = implementation["semantic_review"]["findings"]
@@ -171,6 +177,41 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         for path in sorted((self.package / "schemas").glob("public-*input.schema.json")):
             properties = self.read(path.relative_to(self.package).as_posix()).get("properties", {})
             self.assertTrue(forbidden.isdisjoint(properties), path)
+
+    def test_current_ai_execution_order_and_recorder_authoring_are_explicit(self) -> None:
+        contract = (self.package / "references/contract.md").read_text()
+        for phrase in (
+            "current AI executing this package", "owner_not_yet_executed",
+            "missing agent ID", "Recorder Authoring", "not stdin",
+            "original diagnostic", "fresh semantic round",
+        ):
+            self.assertIn(phrase, contract if phrase != "missing agent ID" else (self.package / "SKILL.md").read_text())
+        positions = [contract.index(text) for text in (
+            "1. Load the complete package", "2. Read the current task",
+            "3. Execute the Semantic Loop", "4. Author the minimal",
+            "5. Call the original recorder", "6. Consume exactly",
+        )]
+        self.assertEqual(positions, sorted(positions))
+        for field in (
+            "reviewed_paths", "validation", "docs_ssot", "candidate_classifications",
+            "semantic_review", "typed_exit", "route", "reason", "consumer",
+        ):
+            self.assertIn(f"`{field}`", contract)
+
+    def test_native_cases_require_ai_authoring_without_host_owner_recipes(self) -> None:
+        cases = {item["id"]: item for item in self.read("evals/evals.json")["evals"]}
+        for case_id, expected in (("native-owner-clean", "passed"), ("native-owner-finding", "implementation_required")):
+            case = cases[case_id]
+            self.assertEqual(case["native_execution_mode"], "semantic_authoring")
+            self.assertEqual(case["native_execution_adapter"], "codex")
+            self.assertEqual(case["model_id"], "gpt-5.6-sol")
+            self.assertEqual(case["expected_exit"], expected)
+            self.assertNotIn(expected, case["prompt"])
+            for path in case["files"]:
+                text = (self.package / path).read_text()
+                self.assertNotIn("owner_staging", text)
+                self.assertNotIn("owner_result", text)
+                self.assertNotIn("expected_exit", text)
 
     def test_official_worker_dispatch_is_candidate_only_before_fresh_qualification(self) -> None:
         repo = self.package.parents[4]

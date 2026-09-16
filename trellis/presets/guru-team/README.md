@@ -1571,6 +1571,12 @@ author envelope 后调用正式 wrapper。Focused adapter mismatch 返回 `unsup
 installed full eval 的 aggregate 必须校验 declared applicable 与 actual case ids 完全一致，任何
 missing、duplicate、unknown 或 unexpected case 都失败。
 
+安装后的 `guru-check-task` 必须保持当前 AI owner 的执行合同和 native authoring
+资产。验证要区分真实 clean/finding authoring（`passed` / `implementation_required`）
+与原四类 `post_owner` 确定性路由；host 不预填 Phase 2 结果，原 recorder/checker/wrapper
+处理 AI 的实际内容。Shared/Codex/Claude/Cursor 投影 parity 不代表四个平台的 native
+模型均已运行通过；缺失模型或登录能力应明确标注未验证。
+
 当前入口使用已验证的固定 Fork checkout，直接运行其 Node CLI：clean initial
 workflow/preset install -> target throwaway project 的 `update --dry-run` ->
 仅当输出包含 `MIGRATION REQUIRED` 或 `Retirement conflicts:`、managed replacement 已审查且提供显式 assignee 时执行
