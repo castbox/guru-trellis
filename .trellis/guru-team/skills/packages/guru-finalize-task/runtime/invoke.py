@@ -54,6 +54,10 @@ def run(
                 "Finalization public invocation requires --review-input.",
                 exit_code=2,
             )
+        root = owner.repo_root(Path(args.root or "."))
+        public_input, _ = owner.finalization_public_input(root, args.input)
+        if public_input["profile"] == "archived_review_refresh":
+            return owner.invoke_archived_review_refresh(root, args, public_input)
         return _transaction(package_root).execute_confirmed_transaction(owner, args)
 
     return call_owner(owner, invoke_owner, public=True)

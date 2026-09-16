@@ -1,12 +1,48 @@
 ---
 name: guru-review-branch
-description: Review a committed task branch or bounded base delta through independent semantic review and five typed exits.
+description: Review committed task content, bounded base continuity, or a completed archive through independent semantic review.
 ---
 
 # Guru Review Branch
 
 Use this Skill after `guru-create-task-commit:committed` and before publication.
 Read [references/contract.md](references/contract.md) completely before acting.
+
+## Archived Read-Only Review
+
+Aggregate input schema 5.0 adds the independent `archived_review` profile.
+The existing aggregate schema 4.0 profiles and ordinary gate schema 7.0
+behavior below are unchanged. Enter this profile only after Merge's
+`review_refresh_required`, never because a successfully consumed checkpoint
+was normally retired. Its input is exactly profile, mode, task_ref,
+branch_review_commit (A), and pr_payload_snapshot_sha256.
+
+Resolve the task's already-existing selected-base ref and live GitHub base to
+the same commit B before reviewing. Do not fetch, synchronize, or update refs.
+The global workflow owns the fresh Architecture
+`task_impact_sync(stage=branch_review)` invocation with
+`source_exit=review_refresh_required` over exact B...A. Consume only its
+read-only accepted result; missing evidence, blocked, or a result requiring
+promotion/repair stops, never enters a writable consumer.
+
+Independently review the full current B...A diff, live requirement authority,
+archived planning and current test evidence. Neither the prior review nor a
+PR snapshot is a semantic pass. This profile overrides ordinary finding-fix
+and scope routes: content findings, scope insufficiency and missing authority
+return only `blocked`, retaining truthful current findings in the private
+semantic result. Do not restore tasks, fix content, rewrite archive history,
+promote Architecture, update PRs, or mutate Issues.
+
+After fresh AI review, use the same review-branch/check-review-gate/invoke
+commands. The dedicated closed `archived-1.0` gate admits only
+`archived_review_passed|blocked`; it is never synthesized from an ordinary
+checkpoint. Both exits retire the owner checkpoint after validated projection.
+The success output carries only task_ref, A, the exact title/body snapshot,
+and reviewed_base_head B. Publication owns the target authoring fields
+profile=archived_publication_review and mode. Stale A/B/PR payload, non-Ready
+state, dirty archive or missing/mismatched mappings fail closed without repair.
+
+## Ordinary Reviews
 
 Before searching the range, Docs, tests, fixtures, consumers, or relevant
 history, read `.trellis/spec/workflow/semantic-retrieval.md` and apply it in

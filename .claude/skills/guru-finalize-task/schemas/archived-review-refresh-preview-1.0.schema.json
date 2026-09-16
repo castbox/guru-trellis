@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-finalize-task-archived-review-refresh-preview-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "status", "side_effects", "profile", "task_ref", "branch_review_commit", "reviewed_base_head", "original_review_commit"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "status": {"const": "ok"},
+    "side_effects": {"const": false},
+    "profile": {"const": "archived_review_refresh"},
+    "task_ref": {"type": "string", "minLength": 1},
+    "branch_review_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "reviewed_base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "original_review_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+  }
+}

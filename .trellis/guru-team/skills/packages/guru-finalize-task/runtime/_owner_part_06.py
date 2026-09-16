@@ -5,6 +5,8 @@ def execute_finalization_transition_result(
     gate: dict[str, Any],
     context: dict[str, Any],
 ) -> dict[str, Any]:
+    if public_input.get("profile") == "archived_review_refresh":
+        raise WorkflowError("Archived review must use the read-only public invocation, not a transaction transition.", exit_code=2)
     exit_id = gate["route"]["typed_exit"]
     task_dir = context["task_dir"]
     if exit_id == "reprepare_required":
@@ -179,6 +181,8 @@ def execute_finalization_transition_result(
             "output": output,
         }
     if exit_id == "ready_for_merge":
+        if context["transaction_state"] in {"ready", "archived"}:
+            reconcile_closeout_task_mappings(root, task_dir, context["plan"])
         if context["transaction_state"] == "ready":
             pr = context.get("published_pr")
             if not isinstance(pr, dict):

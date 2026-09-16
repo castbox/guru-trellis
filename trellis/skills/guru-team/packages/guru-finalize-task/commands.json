@@ -35,7 +35,9 @@
       ],
       "side_effect": "git_read",
       "schema_bindings": [
-        "schemas/public-publication-ready-input.schema.json"
+        "schemas/public-publication-ready-input.schema.json",
+        "schemas/public-archived-review-refresh-input-1.0.schema.json",
+        "schemas/archived-review-refresh-preview-1.0.schema.json"
       ],
       "runtime_role": "preview"
     },
@@ -208,7 +210,7 @@
           "flag": "--review-input",
           "required": false,
           "kind": "json",
-          "description": "AI-authored semantic review for the confirmed plan.",
+          "description": "AI-authored semantic review for the current profile; archived_review_refresh is read-only.",
           "repeatable": false,
           "conflicts": []
         },
@@ -281,7 +283,8 @@
       "schema_bindings": [
         "schemas/finalization-preview-1.0.schema.json",
         "schemas/semantic-review-input-3.0.schema.json",
-        "schemas/public-invocation-error.schema.json"
+        "schemas/public-invocation-error.schema.json",
+        "schemas/public-archived-review-refresh-input-1.0.schema.json"
       ],
       "runtime_role": "invoke"
     },

@@ -1,0 +1,6 @@
+{
+  "exit_id": "review_refresh_required",
+  "task_ref": ".trellis/tasks/archive/2026-09/09-16-example",
+  "branch_review_commit": "1111111111111111111111111111111111111111",
+  "pr_payload_snapshot_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+}

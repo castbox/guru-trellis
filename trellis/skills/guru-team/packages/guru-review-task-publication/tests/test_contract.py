@@ -852,7 +852,7 @@ class TaskPublicationContractTest(unittest.TestCase):
     def test_publication_current_runtime_and_schema_remain_strict(self) -> None:
         self.assertEqual(
             self.interface["public_contracts"]["input"]["aggregate_schema"]["schema_id"],
-            "guru-production-review-task-publication-input-aggregate-4.0",
+            "guru-production-review-task-publication-input-aggregate-5.0",
         )
         self.assertEqual(
             self.interface["public_contracts"]["outputs"][0]["schema"]["schema_id"],
@@ -1322,7 +1322,7 @@ class TaskPublicationContractTest(unittest.TestCase):
             (PACKAGE / "examples/pr-readiness.json").read_text(encoding="utf-8")
         )
 
-    def test_two_profiles_and_semantic_stage_order(self) -> None:
+    def test_three_profiles_and_semantic_stage_order(self) -> None:
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         self.assertEqual(
             self.interface["ordered_stages"],
@@ -1337,13 +1337,13 @@ class TaskPublicationContractTest(unittest.TestCase):
         profiles = self.interface["public_contracts"]["input"]["profiles"]
         self.assertEqual(
             [item["id"] for item in profiles],
-            ["publication_review", "publication_review_stale"],
+            ["publication_review", "publication_review_stale", "archived_publication_review"],
         )
         self.assertEqual(
             self.interface["public_contracts"]["input"]["aggregate_schema"][
                 "schema_id"
             ],
-            "guru-production-review-task-publication-input-aggregate-4.0",
+            "guru-production-review-task-publication-input-aggregate-5.0",
         )
         self.assertEqual(
             profiles[1]["schema"]["schema_id"],
@@ -1569,11 +1569,11 @@ class TaskPublicationContractTest(unittest.TestCase):
             payload = json.loads((PACKAGE / relative).read_text(encoding="utf-8"))
             self.assertNotIn("reentry_context", payload, relative)
 
-    def test_three_minimal_exits_have_unique_consumers(self) -> None:
+    def test_four_minimal_exits_have_unique_consumers(self) -> None:
         exits = self.interface["external_exits"]
         self.assertEqual(
             [item["id"] for item in exits],
-            ["ready", "return_to_task_work", "blocked"],
+            ["ready", "return_to_task_work", "blocked", "archived_ready"],
         )
         self.assertEqual(
             len({(item["consumer"]["kind"], item["consumer"]["id"]) for item in exits}),
@@ -1615,9 +1615,9 @@ class TaskPublicationContractTest(unittest.TestCase):
             self.assertFalse(forbidden & set(schema["properties"]))
 
 
-    def test_pr_readiness_is_one_private_gate(self) -> None:
+    def test_pr_readiness_has_independent_active_and_archived_variants(self) -> None:
         private = self.interface["public_contracts"]["private_artifacts"]
-        self.assertEqual([item["id"] for item in private], ["publication_readiness"])
+        self.assertEqual([item["id"] for item in private], ["publication_readiness", "archived_publication_readiness"])
         self.assertEqual(private[0]["kind"], "gate_evidence")
         self.assertEqual(
             private[0]["persistence"],
@@ -2106,6 +2106,42 @@ class TaskPublicationContractTest(unittest.TestCase):
                             "owner: guru-review-task-publication",
                             result.stdout,
                         )
+
+    def test_real_public_wrapper_stdin_matches_file_input(self) -> None:
+        root = package_repo_root()
+        env = os.environ.copy()
+        env.pop("GURU_TEAM_DISPATCHER", None)
+        for example in (
+            "public-publication-review-input.json",
+            "public-publication-review-stale-input.json",
+            "public-archived-publication-review-input.json",
+        ):
+            with self.subTest(profile=example), tempfile.TemporaryDirectory() as temp:
+                public = json.loads((PACKAGE / "examples" / example).read_text())
+                # Stop at semantic binding before task access or checkpoint writes.
+                unreviewed = {**public, "mode": "standalone" if public["mode"] == "workflow" else "workflow"}
+                semantic_path = Path(temp) / "unreviewed-input.json"
+                semantic_path.write_text(json.dumps(unreviewed), encoding="utf-8")
+                public_path = Path(temp) / "public-input.json"
+                public_path.write_text(json.dumps(public), encoding="utf-8")
+                responses = []
+                for input_arg in (str(public_path), "-"):
+                    result = subprocess.run(
+                        [
+                            str(PACKAGE / "scripts/invoke.sh"),
+                            "--root", str(root), "--input", input_arg,
+                            "--semantic-result", str(semantic_path),
+                        ],
+                        cwd=root, env=env, input=json.dumps(public),
+                        text=True, capture_output=True, check=False,
+                    )
+                    self.assertEqual(result.returncode, 2, result.stderr)
+                    response = json.loads(result.stdout)
+                    self.assertEqual(response["code"], "publication_input_invalid", response)
+                    self.assertEqual(response["field_path"], "input.mode", response)
+                    self.assertNotIn("Traceback", result.stderr)
+                    responses.append(response)
+                self.assertEqual(responses[0], responses[1])
 
     def test_interface_validator_commands_reject_unsupported_package_layout(
         self,

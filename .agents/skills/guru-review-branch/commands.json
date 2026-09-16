@@ -27,7 +27,7 @@
           "flag": "--skill-input",
           "required": true,
           "kind": "string",
-          "description": "Current public Branch Review or base-continuity input.",
+          "description": "Current public Branch Review, base-continuity or archived-review input.",
           "repeatable": false,
           "conflicts": []
         },
@@ -48,7 +48,8 @@
             "continuity_passed",
             "implementation_required",
             "scope_confirmation_required",
-            "blocked"
+            "blocked",
+            "archived_review_passed"
           ],
           "description": "AI-selected typed exit.",
           "repeatable": false,
@@ -101,7 +102,8 @@
             "continuity_passed",
             "implementation_required",
             "scope_confirmation_required",
-            "blocked"
+            "blocked",
+            "archived_review_passed"
           ],
           "description": "Required typed exit.",
           "repeatable": false,

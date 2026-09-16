@@ -14,6 +14,14 @@ The preset installs companion assets, Guru Skill packages, and three additive
 Guru finish entries for the `guru-team` Trellis workflow into an existing
 Trellis project.
 
+The package graph includes archived read-only re-review through the existing
+Merge, Branch Review, Publication and Finalizer owners. Dedicated profiles and
+three direct typed edges keep completed tasks, archive history and remote PR
+state unchanged. Architecture is checked separately at all three stages; new
+review A, original archive review H, reviewed base B and the PR snapshot are
+not interchangeable. Install the complete compatible package set and reapply
+the preset; old released copies do not gain these profiles from documentation.
+
 Independent Git/GitHub requests after an automatic Guru failure follow
 [Manual Git/GitHub Operations](../../workflows/guru-team/workflow.md#manual-gitgithub-operations).
 The preset keeps those entry references aligned without adding a recovery
@@ -617,8 +625,8 @@ wrappers。新增 `guru-restore-archived-task` 安装 archive-to-active 恢复 r
 `restored_to_phase2|restore_blocked` 两个 exits 与四平台 discovery projection。
 Requirements/Design/Test SSOT package 另提供
 四个 semantic profiles、五个 typed exits 和 isolated contribution boundary。
-Source/installed package closure 为 23 Skills / 97 exits；business global workflow
-marker closure 为 22 invokes / 95 exits / 59 combined targets（35 workflow + 24 stop）。
+Source/installed package closure 为 23 Skills / 100 exits；business global workflow
+marker closure 为 22 invokes / 98 exits / 59 combined targets（35 workflow + 24 stop）。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -750,7 +758,7 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 `guru-reconcile-task-base`、`guru-maintain-architecture-baseline`、
 `guru-maintain-requirements-design-test-ssot`、
 `guru-verify-extension-installation`。二十二个 integrated business packages 加一个
-standalone-only verifier 共声明 97 个 external exits。
+standalone-only verifier 共声明 100 个 external exits。
 `guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
 invoke 与六个 exit marker。Current main/source checkout 的 canonical extension version 为
@@ -1581,7 +1589,7 @@ missing、duplicate、unknown 或 unexpected case 都失败。
 workflow/preset install -> target throwaway project 的 `update --dry-run` ->
 仅当输出包含 `MIGRATION REQUIRED` 或 `Retirement conflicts:`、managed replacement 已审查且提供显式 assignee 时执行
 `update --force --migrate --assignee <owner> --skip-all`，否则执行 `update --skip-all` -> marketplace `--create-new` preview/active switch -> canonical
-preset reapply。之后重新验证 23 Skills/97 package exits、22 invokes/95 workflow
+preset reapply。之后重新验证 23 Skills/100 package exits、22 invokes/98 workflow
 exits、35 workflow targets、24 stop targets、全部已声明 profile real installed entry、
 ownership、platform parity、dogfood drift 与 recursive zero `.new`/`.bak`。该流程不修改
 开发机 global npm，也不升级真实业务仓。

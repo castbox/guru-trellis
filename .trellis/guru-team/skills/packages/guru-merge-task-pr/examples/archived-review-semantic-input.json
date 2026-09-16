@@ -1,0 +1,39 @@
+{
+  "semantic_review": {
+    "dimensions": [
+      {
+        "id": "pr_ready",
+        "status": "passed",
+        "summary": "Current archived-review entry facts reviewed; this is not a merge approval."
+      },
+      {
+        "id": "repository_and_head",
+        "status": "passed",
+        "summary": "Current archived-review entry facts reviewed; this is not a merge approval."
+      },
+      {
+        "id": "checks_and_reviews",
+        "status": "passed",
+        "summary": "Current archived-review entry facts reviewed; this is not a merge approval."
+      },
+      {
+        "id": "mergeability",
+        "status": "passed",
+        "summary": "Current archived-review entry facts reviewed; this is not a merge approval."
+      },
+      {
+        "id": "repository_policy",
+        "status": "passed",
+        "summary": "Current archived-review entry facts reviewed; this is not a merge approval."
+      },
+      {
+        "id": "publication_effect",
+        "status": "passed",
+        "summary": "Current archived-review entry facts reviewed; this is not a merge approval."
+      }
+    ]
+  },
+  "route": {
+    "typed_exit": "review_refresh_required"
+  }
+}

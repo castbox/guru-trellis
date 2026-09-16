@@ -24,6 +24,55 @@
       "remediation": "Refresh live facts and repeat semantic review."
     },
     {
+      "code": "stale_identity",
+      "trigger": "Current input, publication body or Merge gate identity no longer matches live facts.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Re-enter the original semantic owner and rebuild the current handoff before retrying."
+    },
+    {
+      "code": "github_cli_missing",
+      "trigger": "GitHub CLI is unavailable.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Install GitHub CLI and retry the repo-bound operation."
+    },
+    {
+      "code": "github_auth_failed",
+      "trigger": "GitHub authentication is unavailable or expired.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Repair GitHub authentication and retry the repo-bound operation."
+    },
+    {
+      "code": "github_repo_access_denied",
+      "trigger": "The current repository cannot be accessed.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Verify repository access for the active GitHub account."
+    },
+    {
+      "code": "github_permission_denied",
+      "trigger": "The GitHub operation is not permitted.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Resolve the operation permission and repeat the current semantic review."
+    },
+    {
+      "code": "github_api_unavailable",
+      "trigger": "The GitHub provider is unavailable.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Restore provider availability and reread current facts."
+    },
+    {
+      "code": "github_response_incomplete",
+      "trigger": "A required GitHub response field is missing or invalid.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Repair the adapter/query contract and reread current facts."
+    },
+    {
       "code": "internal_error",
       "trigger": "Unexpected package-local runtime error.",
       "exit_status": 2,

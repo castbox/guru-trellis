@@ -743,11 +743,11 @@ class BranchReviewContractTest(unittest.TestCase):
         interface = json.loads((PACKAGE / "interface.json").read_text())
         public = interface["public_contracts"]
         self.assertEqual(
-            "guru-production-review-branch-input-aggregate-4.0",
+            "guru-production-review-branch-input-aggregate-5.0",
             public["input"]["aggregate_schema"]["schema_id"],
         )
         self.assertEqual(
-            ["branch_review", "base_continuity"],
+            ["branch_review", "base_continuity", "archived_review"],
             [profile["id"] for profile in public["input"]["profiles"]],
         )
         self.assertEqual(
@@ -761,6 +761,7 @@ class BranchReviewContractTest(unittest.TestCase):
                 "implementation_required",
                 "scope_confirmation_required",
                 "blocked",
+                "archived_review_passed",
             ],
             [output["exit_id"] for output in public["outputs"]],
         )

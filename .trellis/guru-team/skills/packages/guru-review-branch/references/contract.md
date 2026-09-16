@@ -6,6 +6,53 @@ remain evidence for, not substitutes for, this Skill's semantic judgment.
 
 ## Entry
 
+### Archived Review
+
+Aggregate input schema 5.0 adds `archived_review` without changing the two
+ordinary profiles selected by aggregate schema 4.0. The new input contains
+only profile, mode, task_ref, branch_review_commit A, and
+pr_payload_snapshot_sha256. A is the current completed archive HEAD, not the
+original closeout tip H. Finalizer alone validates H/archive continuity.
+
+The recorder, checker and invocation independently require a committed,
+completely clean completed archive, its planning and finish-summary identity,
+existing matching source/target mappings, a registered task branch/worktree,
+the configured GitHub publish remote, exact remote/PR HEAD A, and one Open
+non-Draft same-repository PR. Summary PR identity excludes replacement PRs.
+The current selected-base ref (origin tracking first, then the local branch)
+must already resolve to B and match the authenticated live GitHub base ref.
+B must be an ancestor of A. These readers never fetch or rebuild mappings.
+The PR snapshot is SHA-256 of UTF-8 JSON `{"title": title, "body": body}`,
+sorted keys, compact separators, no trailing newline and no string trimming.
+
+The global caller mandatory invokes the fresh Architecture
+`task_impact_sync(stage=branch_review)` with
+`source_exit=review_refresh_required` for exact B...A before this semantic
+review. Its read-only contract cannot enter promotion/repair. This owner then
+independently reviews the complete committed diff, live requirements,
+archived planning, Architecture and current test evidence. A missing result
+or result requiring a write blocks. No prior checkpoint or snapshot supplies
+semantic approval; no Architecture private state is read.
+
+The independent private schema `guru-archived-review-gate-1.0` (version
+`archived-1.0`) binds the current B, A, PR identity and snapshot to the freshly
+authored semantic result. Its only outcomes are `archived_review_passed` and
+`blocked`. A pass forbids open findings and scope proposals. A blocked result
+preserves actual open findings or proposals instead of relabeling them as
+external failures, and never routes to restoration or implementation.
+Existing recorder/check/invoke commands validate this new variant and retire
+it on either successfully projected exit. Ordinary schema 7.0 remains exact
+and does not accept this new variant or change its blocked semantics.
+
+The `archived_review_passed` DTO contains task_ref, branch_review_commit A,
+pr_payload_snapshot_sha256 and reviewed_base_head B, plus exit_id. Its sole
+consumer is Publication's target-owned `archived_publication_review` seed:
+select those four payload fields; target authoring adds only profile and mode.
+Publication must reject a changed B or title/body snapshot. Full current
+review bodies, findings, private checkpoint and the PR number remain private.
+
+### Ordinary Entry
+
 Aggregate public input schema 4.0 dispatches two independent profiles. The
 public `branch_review` schema 2.0 input contains only profile, mode, task/base
 refs, `branch_review_commit` and one of `initial_review|fresh_final_review`.

@@ -8,7 +8,8 @@ _OWNER_PARTS = [
     '_owner_part_03.py',
     '_owner_part_04.py',
     '_owner_part_05.py',
-    '_owner_part_06.py'
+    '_owner_part_06.py',
+    '_owner_archived_review.py'
 ]
 
 for _part_name in _OWNER_PARTS:

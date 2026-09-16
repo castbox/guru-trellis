@@ -1344,6 +1344,19 @@ validation retains it only for same-owner repair.
 
 ## Closeout Original Public Commands
 
+Merge package errors must reach the shared dispatcher as explicit classified
+diagnostics with safe code/field/remediation. Package-local input, identity,
+freshness and provider errors must not accidentally become `internal_error`
+because their exception type crossed the wrapper boundary. Unknown defects
+retain the generic fallback. Do not classify by exception-message text or
+project raw stderr, PR bodies, credentials, or absolute local paths.
+
+Preview diagnostics are not semantic typed exits. The existing complete-input
+`merge_blocked` route still requires a real failed review dimension or objective
+blocker and remains a stop. The package contract owns original-owner re-entry
+conditions; scripts do not re-review Branch Review or Publication, read their
+private checkpoints, or convert metadata problems into task-content findings.
+
 The Merge public command remains `invoke-task-pr-merge` through its existing
 `scripts/invoke.sh`. Its Happy Path owns exactly one pre-merge full snapshot,
 one expected-head merge mutation, one post-merge full snapshot, and

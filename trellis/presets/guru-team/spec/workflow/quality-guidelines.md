@@ -202,8 +202,8 @@ edges, private artifact ids, examples, the 160-case/5-invocation production
 control, and eval case bindings. Versioned v2/v3 files are immutable legacy
 assets and are not alternate current selectors, input projectors, or fixtures.
 Then validate the current package closure
-at twenty-three active Skills and 97 external exits, while the integrated business
-workflow projection is 22 invokes, 95 exits, 35 workflow targets, and 24 stop targets. Negative tests cover missing, extra,
+at twenty-three active Skills and 100 external exits, while the integrated business
+workflow projection is 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or non-current entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Intake/production
@@ -813,9 +813,9 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  twenty-three-Skill/97-exit current package closure while the production activation
+  twenty-three-Skill/100-exit current package closure while the production activation
   unit remains three Skills/11 exits and business markers remain integrated at
-  22 invokes, 95 exits, 35 workflow targets, and 24 stop targets. Update and preset reapply must reproduce
+  22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Update and preset reapply must reproduce
   that closure with zero unresolved `.new` or `.bak`.
 
 ## Normal Scenario Qualification Quality
@@ -1000,10 +1000,10 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert twenty-three active Skills and 97
+Source/installed/platform/throwaway checks assert twenty-three active Skills and 100
 package exits, exactly one selected `production-current-v4`
 four-Skill/15-exit current manifest, and business workflow markers of 22
-invokes, 95 exits, 35 workflow targets, and 24 stop targets.
+invokes, 98 exits, 35 workflow targets, and 24 stop targets.
 
 ## Extension Installation Verification Quality
 
@@ -1046,6 +1046,22 @@ private verification state. Remote-ref acceptance and production eval remain
 independent evidence surfaces.
 
 ## Task Finalization Quality
+
+Archive identity regressions must exercise the normal task/mapping producer
+and Finalizer archive or exact committed recovery path. Verify the same task's
+source and target locator projections, an already-converged retry, unchanged
+workspace/branch identity, and explicit mismatch rejection. Boundary validators
+remain read-only; a test must not repair its setup by editing live mapping files.
+
+Merge error propagation needs production-wrapper coverage, not only a direct
+Python exception assertion. Known missing-input, malformed-input, identity and
+provider failures preserve code/field/remediation without raw payload leakage;
+unexpected programming exceptions remain generic. Checkpoint retirement is a
+normal Branch Review behavior and cannot create a new Merge prerequisite.
+Fresh-review tests use the original producer/checker/public output, distinguish
+the actual failing owner, and must not claim an archived end-to-end recovery
+passed when an original owner still blocks it. Diagnostic success is not
+Publication, Finalizer or Merge success.
 
 `guru-finalize-task` quality coverage exercises four current public input
 profiles, six outputs, the four finalization-family authoring handoffs, semantic
@@ -1108,8 +1124,8 @@ verifier hop and scans terminal task/runtime state for verifier residue.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes match after fresh install, update, and preset reapply. Package
-closure is twenty-three active Skills and 97 exits; business global markers remain 22
-invokes, 95 exits, 35 workflow targets, and 24 stop targets. Upstream Finish
+closure is twenty-three active Skills and 100 exits; business global markers remain 22
+invokes, 98 exits, 35 workflow targets, and 24 stop targets. Upstream Finish
 assets remain unchanged.
 
 Installed package tests must execute in a clean business repository that does

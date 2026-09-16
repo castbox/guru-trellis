@@ -5,7 +5,8 @@ from pathlib import Path as _Path
 _OWNER_PARTS = [
     '_owner_part_01.py',
     '_owner_part_02.py',
-    '_owner_part_03.py'
+    '_owner_part_03.py',
+    'archived.py'
 ]
 
 for _part_name in _OWNER_PARTS:

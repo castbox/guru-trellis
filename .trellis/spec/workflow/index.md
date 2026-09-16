@@ -60,8 +60,8 @@ Before editing workflow behavior:
 - Registry 1.4 accepts integrated, deferred, and standalone-only active rows.
   Integrated packages select Interface 1.4, normal-scenario qualification selects
   Interface 1.6, and the source-only verifier selects Interface 1.5. The registry
-  contains twenty-three active packages and 97 exits; global business workflow markers
-  are 22 invokes, 95 exits, 35 workflow targets, and 24 stop targets. Registry,
+  contains twenty-three active packages and 100 exits; global business workflow markers
+  are 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Registry,
   discovery, invocation, installation, and validation read only the live
   current package graph. The planning/check/commit/qualification closure is
   defined only by `contracts/production-current.json` with contract id
@@ -167,8 +167,8 @@ The durable contracts for `guru-review-task-publication` are split across
 `companion-scripts.md`, and `quality-guidelines.md`. Together they own the two
 Interface 1.4 profiles, minimal exits, layered private gate, semantic/runtime
 boundary, thin routing, real-wrapper eval, participation in the current
-  twenty-three-Skill/97-exit package closure, and install/update checks. The global
-business workflow projection is 22 invokes, 95 exits, 35 workflow targets, and
+  twenty-three-Skill/100-exit package closure, and install/update checks. The global
+business workflow projection is 22 invokes, 98 exits, 35 workflow targets, and
 24 stop targets.
 
 ## Extension Installation Verification Closed-Loop Owner
@@ -191,9 +191,9 @@ and `docs/public-docs.md`. Together they own its four profiles, six external
 exits, dialogue-only side-effect confirmation, owner-private minimal transaction,
 six-core archive, real-wrapper eval, and additive distribution.
 
-The current package graph contains twenty-three active Skills and 97 external exits
+The current package graph contains twenty-three active Skills and 100 external exits
 with fourteen target-owned `skill_input_authoring_seed` handoffs. Global workflow
-markers are 22 invokes, 95 exits, 35 workflow targets, and 24 stop targets. Issue #119 combined acceptance
+markers are 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Issue #119 combined acceptance
 additionally requires the three Guru-owned daily entries, terminal
 `ready_for_merge` and Merge evals, current ownership
 validation, and installed integration coverage.

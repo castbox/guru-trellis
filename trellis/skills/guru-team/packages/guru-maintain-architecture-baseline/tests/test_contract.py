@@ -425,6 +425,60 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             self.assertEqual(result.returncode, 2)
             self.assertEqual(json.loads(result.stdout)["code"], "schema_mismatch")
 
+    def test_archived_readonly_sources_preserve_current_and_blocked_without_writes(self):
+        sources = {
+            "review_refresh_required": "branch_review",
+            "archived_review_passed": "publication",
+            "archived_ready": "acceptance_finish",
+        }
+        for source, stage in sources.items():
+            with self.subTest(source=source):
+                public = self.load("public-input-impact.json")
+                public.update(source_exit=source, stage=stage)
+                if stage == "branch_review":
+                    public["committed_range"] = self.committed_range()
+                selected = {
+                    "typed_exit": "baseline_current",
+                    "task_locator": public["task_locator"],
+                    "baseline_identity": public["baseline"]["identity"],
+                    "constitution_identity": public["constitution"]["identity"],
+                    "impact_kind": "no_architecture_impact",
+                    "impact_reason": "The archived task preserves current Architecture authority.",
+                    "promotion_state": "no_change",
+                }
+                before = {p.relative_to(self.repository): p.read_bytes()
+                          for p in self.repository.rglob("*") if p.is_file()}
+                current = self.invoke(public, selected)
+                self.assertEqual(current.returncode, 0, current.stdout + current.stderr)
+                self.assertEqual(json.loads(current.stdout)["exit_id"], "baseline_current")
+                blocked = self.invoke(public, {
+                    "typed_exit": "blocked", "reason_code": "readonly_authority_incomplete",
+                    "remediation": "Current evidence is incomplete; stop this read-only invocation.",
+                })
+                self.assertEqual(blocked.returncode, 0, blocked.stdout + blocked.stderr)
+                self.assertEqual(json.loads(blocked.stdout)["exit_id"], "blocked")
+                after = {p.relative_to(self.repository): p.read_bytes()
+                         for p in self.repository.rglob("*") if p.is_file()}
+                self.assertEqual(before, after)
+
+    def test_archived_readonly_rejects_writing_routes_and_pending_promotion(self):
+        public = self.load("public-input-impact.json")
+        public.update(source_exit="archived_review_passed", stage="publication")
+        for exit_id in ("sync_required", "baseline_incomplete", "architecture_conflict",
+                        "contract_incomplete", "fitness_regression"):
+            with self.subTest(exit_id=exit_id):
+                result = self.invoke(public, {"typed_exit": exit_id})
+                self.assertEqual(result.returncode, 3, result.stdout + result.stderr)
+                self.assertEqual(json.loads(result.stdout)["field_path"], "owner_result.typed_exit")
+        pending = self.invoke(public, self.architecture_selection(public))
+        self.assertEqual(pending.returncode, 3, pending.stdout + pending.stderr)
+        self.assertEqual(json.loads(pending.stdout)["field_path"], "owner_result.promotion_state")
+        public["stage"] = "acceptance_finish"
+        mismatch = self.invoke(public, {"typed_exit": "blocked", "reason_code": "missing",
+                                        "remediation": "Stop for current evidence."})
+        self.assertEqual(mismatch.returncode, 3, mismatch.stdout + mismatch.stderr)
+        self.assertEqual(json.loads(mismatch.stdout)["field_path"], "public_input.source_exit")
+
     def test_no_impact_is_lightweight_and_creates_no_contribution_or_adr(self):
         public_input = self.load("public-input-impact.json")
         self.assertNotIn("impact", public_input)
