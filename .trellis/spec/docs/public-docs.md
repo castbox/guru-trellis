@@ -391,10 +391,13 @@ that exposes eval/private runtime assets, is an `execution_error`; context
 construction or wrapper source scanning is not execution evidence.
 
 README eval guidance states that shared uses the preset-managed native executor,
-semantic cases reference repo-local checker-passed owner results, actual exit
-selects the output schema before expected-exit comparison, Codex uses a trusted
-Git root, Claude uses safe non-interactive input, and unauthenticated Cursor is
-`unsupported`.
+`post_owner` cases reference repo-local checker-passed owner results, while
+`semantic_authoring` cases require the Agent to author the call-local result.
+Actual exit selects the output schema before expected-exit comparison. Codex
+`post_owner` uses the installed runtime's trusted Git root; Codex
+`semantic_authoring` uses a repo-external isolated model root with
+`--skip-git-repo-check`. Claude uses safe non-interactive input, and
+unauthenticated Cursor is `unsupported`.
 
 ## Current Intake Contract Documentation
 

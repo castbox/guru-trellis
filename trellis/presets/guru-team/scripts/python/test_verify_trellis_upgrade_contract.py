@@ -205,6 +205,26 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             "ci_run_id": 34838784963}))
         return repo, source
 
+    def test_skill_eval_docs_distinguish_codex_execution_roots_by_mode(self) -> None:
+        docs = [
+            REPO / ".trellis/spec/workflow/quality-guidelines.md",
+            REPO / ".trellis/spec/workflow/companion-scripts.md",
+            REPO / ".trellis/spec/docs/public-docs.md",
+            REPO / "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+            REPO / "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+            REPO / "trellis/workflows/guru-team/README.md",
+        ]
+        for path in docs:
+            with self.subTest(path=path.relative_to(REPO)):
+                text = path.read_text(encoding="utf-8")
+                self.assertIn("post_owner", text)
+                self.assertIn("semantic_authoring", text)
+                self.assertIn("trusted Git root", text)
+                self.assertIn("isolated model root", text)
+                self.assertIn("--skip-git-repo-check", text)
+                self.assertNotIn("Codex uses a trusted Git root", text)
+                self.assertNotIn("Codex 使用 trusted Git root", text)
+
     def test_fork_source_uses_real_node_esm_entry_and_observed_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repo, source = self.fork_fixture(Path(directory))
@@ -1367,11 +1387,14 @@ exit 23
         target, source, work = Path("/fixture/target"), Path("/fixture/source"), Path("/fixture/work")
         def load(path):
             if path.name == "evals.json":
-                return {"evals": [{"input_profile_id": "normal"}]}
+                return {"evals": [{"id": "normal-case", "input_profile_id": "normal"}]}
             return {"public_contracts": {"input": {"profiles": [{"id": "normal"}]}}}
         def run(argv, **kwargs):
             if Path(argv[0]).name == "run-skill-evals.sh":
-                return json.dumps({"status": "passed", "cases": [{}]})
+                return json.dumps({
+                    "status": "passed",
+                    "cases": [{"case_id": "normal-case"}],
+                })
             if any(
                 Path(str(part)).name == "verify_installed_task_workspace.py"
                 for part in argv
@@ -1418,6 +1441,35 @@ exit 23
                                                str(target), str(target / ".trellis/guru-team/runtime")))
                 self.assertEqual(Path(calls[0][3]).name, "verify_installed_closeout.py")
                 self.assertEqual(calls[0][calls[0].index("--case") + 1], closeout_case)
+
+    def test_matrix_fails_when_shared_eval_omits_an_applicable_case(self) -> None:
+        declared = [
+            {"id": "post-owner-default"},
+            {"id": "post-owner-explicit", "native_execution_mode": "post_owner"},
+            {
+                "id": "codex-authoring",
+                "native_execution_mode": "semantic_authoring",
+                "native_execution_adapter": "codex",
+            },
+        ]
+        actual = [{"case_id": "post-owner-default"}]
+
+        with self.assertRaises(self.matrix.MatrixError) as raised:
+            self.matrix._assert_shared_eval_case_identity(
+                "guru-example", declared, actual
+            )
+        self.assertIn("shared eval case identity mismatch", str(raised.exception))
+
+    def test_matrix_shared_eval_identity_rejects_duplicate_or_unknown_cases(self) -> None:
+        declared = [{"id": "alpha"}, {"id": "beta"}]
+        for label, actual in (
+            ("duplicate", [{"case_id": "alpha"}, {"case_id": "alpha"}]),
+            ("unknown", [{"case_id": "alpha"}, {"case_id": "gamma"}]),
+        ):
+            with self.subTest(label=label), self.assertRaises(self.matrix.MatrixError):
+                self.matrix._assert_shared_eval_case_identity(
+                    "guru-example", declared, actual
+                )
 
     def test_capability_projection_is_compact_and_complete(self) -> None:
         projection = self.matrix.capability_projection(REPO)

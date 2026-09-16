@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import ast
+import argparse
+import copy
 import hashlib
 import json
 import os
@@ -17,6 +19,7 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from runtime.validate import _package_paths
+from runtime.io import CommandError
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -880,6 +883,857 @@ class SharedRuntimeTests(unittest.TestCase):
 
 
 class QualificationNativeIsolationTests(unittest.TestCase):
+    def architecture_semantic_request(self, root: Path) -> dict[str, object]:
+        package = SKILLS / "packages/guru-maintain-architecture-baseline"
+        interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+        workdir = root / "case/execution/workdir"
+        workdir.mkdir(parents=True)
+        files = [
+            "evals/files/impact-current-input.json",
+            "evals/files/planning-semantic-authoring-facts.json",
+        ]
+        for relative in files:
+            target = workdir / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((package / relative).read_bytes())
+        return {
+            "schema_version": "1.0",
+            "adapter_id": "codex",
+            "platform": "codex",
+            "skill_id": "guru-maintain-architecture-baseline",
+            "package_root": str(package),
+            "interface": {
+                "public_invocation": interface["public_contracts"]["invocation"],
+            },
+            "case_id": "planning-semantic-authoring",
+            "prompt": "Review the current Planning Architecture facts.",
+            "files": files,
+            "workdir": str(workdir),
+            "corpus_path": str(package / "evals/evals.json"),
+            "corpus_sha256": hashlib.sha256(
+                (package / "evals/evals.json").read_bytes()
+            ).hexdigest(),
+            "runtime_target": str(
+                Path(__file__).resolve().parents[5]
+                / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+            ),
+            "native_execution_mode": "semantic_authoring",
+            "native_execution_adapter": "codex",
+            "model_id": "gpt-5.6-sol",
+        }
+
+    def test_architecture_semantic_authoring_stages_facts_without_owner_result(self) -> None:
+        from adapters.eval import eval_constants, native_adapter, owner_staging
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            request = self.architecture_semantic_request(root)
+            package, target, _ = owner_staging.stage_owner_execution(
+                request,
+                Path(request["workdir"]).parent,
+                Path(request["runtime_target"]),
+            )
+            owner_repository = target.parents[4]
+            self.assertEqual(package.name, "guru-maintain-architecture-baseline")
+            self.assertFalse((owner_repository / eval_constants.OWNER_RESULT).exists())
+            self.assertFalse((owner_repository / ".trellis/.runtime").exists())
+            facts = json.loads(
+                (
+                    owner_repository
+                    / eval_constants.ARCHITECTURE_PUBLIC_AUTHORING_FACTS
+                ).read_text(encoding="utf-8")
+            )
+            self.assertEqual(facts["schema_version"], "1.0")
+            self.assertIn(".trellis/tasks/eval-task/prd.md", facts["required_reads"])
+            self.assertIn("docs/architecture/06-governance/change-contract.md", facts["required_reads"])
+            self.assertNotIn("expected", json.dumps(facts).lower())
+            self.assertNotIn("typed_exit", json.dumps(facts).lower())
+
+    def test_architecture_semantic_context_and_trace_fail_closed(self) -> None:
+        from adapters.eval import eval_constants, native_adapter
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            request = self.architecture_semantic_request(root)
+            values = native_adapter.build_context(request, "codex")
+            (
+                context, _, wrapper, trace, protocol_path, native_request_path,
+                request_sha256, _, boundary_thread, boundary_stop, _,
+            ) = values
+            try:
+                protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
+                native_request = json.loads(native_request_path.read_text(encoding="utf-8"))
+                self.assertEqual(native_request["native_execution_mode"], "semantic_authoring")
+                self.assertEqual(request["native_execution_adapter"], "codex")
+                self.assertEqual(request["model_id"], "gpt-5.6-sol")
+                self.assertNotIn("expected_exit", native_request)
+                self.assertNotIn("owner_result", json.dumps(native_request).lower())
+                self.assertIn("references/contract.md", context)
+                self.assertIn("schemas/semantic-result.schema.json", context)
+                self.assertIn("Every listed read is mandatory", context)
+                self.assertIn("Trace validation fails closed", context)
+                self.assertIn("one process at a time", context)
+                self.assertIn("do not repair or rewrite the trace receipt", context)
+                self.assertIn("Author the smallest owner_result valid", context)
+                self.assertIn("no_architecture_impact must omit", context)
+                owner_repository = Path(protocol["owner_repository"])
+                self.assertFalse((owner_repository / eval_constants.OWNER_RESULT).exists())
+
+                projection = Path(protocol["projection_root"])
+                repository = Path(protocol["repository_projection_root"])
+                case_root = Path(protocol["model_root"]) / "evidence/case"
+                facts_path = repository / eval_constants.ARCHITECTURE_PUBLIC_AUTHORING_FACTS
+                facts = json.loads(facts_path.read_text(encoding="utf-8"))
+                public_reads = [
+                    projection / "SKILL.md",
+                    projection / "references/contract.md",
+                    projection / "interface.json",
+                    projection / "schemas/semantic-result.schema.json",
+                    projection / "schemas/public-input-aggregate.schema.json",
+                    projection / "schemas/public-input-impact.schema.json",
+                ]
+                case_reads = sorted(path for path in case_root.iterdir() if path.is_file())
+                owner_reads = [
+                    facts_path,
+                    *(repository / relative for relative in facts["required_reads"]),
+                ]
+                events = []
+                for kind, paths in (
+                    ("skill_contract", public_reads),
+                    ("case_file", case_reads),
+                    ("owner_file", owner_reads),
+                ):
+                    for path in paths:
+                        events.append({
+                            "kind": "read",
+                            "target_kind": kind,
+                            "path": str(path.resolve()),
+                            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                            "request_sha256": request_sha256,
+                        })
+                public_stdout = '{"exit_id":"baseline_current"}'
+                events.append({
+                    "kind": "invoke",
+                    "wrapper_path": str(wrapper.resolve()),
+                    "argv": [str(wrapper.resolve()), "--invocation", "-"],
+                    "returncode": 0,
+                    "stdout_sha256": hashlib.sha256(public_stdout.encode()).hexdigest(),
+                    "stderr_sha256": hashlib.sha256(b"").hexdigest(),
+                    "request_sha256": request_sha256,
+                })
+                payload = {
+                    "schema_version": "1.0",
+                    "request_sha256": request_sha256,
+                    "projection_root": str(projection.resolve()),
+                    "skill_sha256": protocol["skill_sha256"],
+                    "wrapper_sha256": protocol["wrapper_sha256"],
+                    "events": events,
+                }
+                trace.write_text(json.dumps(payload), encoding="utf-8")
+                self.assertEqual(
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    ),
+                    ["public_invocation", "evals_not_loaded", "private_runtime_not_read"],
+                )
+                extra_authority = repository / ".trellis/workflow.md"
+                source_extra_authority = owner_repository / ".trellis/workflow.md"
+                self.assertTrue(extra_authority.is_file())
+                self.assertEqual(
+                    extra_authority.read_bytes(), source_extra_authority.read_bytes()
+                )
+                self.assertNotIn(
+                    extra_authority.relative_to(repository).as_posix(),
+                    facts["required_reads"],
+                )
+                extra_event = {
+                    "kind": "read",
+                    "target_kind": "owner_file",
+                    "path": str(extra_authority.resolve()),
+                    "sha256": hashlib.sha256(extra_authority.read_bytes()).hexdigest(),
+                    "request_sha256": request_sha256,
+                }
+                extra_evidence = copy.deepcopy(payload)
+                extra_evidence["events"].insert(-1, extra_event)
+                trace.write_text(json.dumps(extra_evidence), encoding="utf-8")
+                self.assertEqual(
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    ),
+                    ["public_invocation", "evals_not_loaded", "private_runtime_not_read"],
+                )
+                package_runtime = (
+                    repository
+                    / ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py"
+                )
+                package_runtime.parent.mkdir(parents=True, exist_ok=True)
+                package_runtime.write_text("raise SystemExit(0)\n", encoding="utf-8")
+                runtime_event = {
+                    "kind": "read",
+                    "target_kind": "owner_file",
+                    "path": str(package_runtime.resolve()),
+                    "sha256": hashlib.sha256(package_runtime.read_bytes()).hexdigest(),
+                    "request_sha256": request_sha256,
+                }
+                private_package_read = copy.deepcopy(payload)
+                private_package_read["events"].insert(-1, runtime_event)
+                trace.write_text(json.dumps(private_package_read), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "undeclared file read"):
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    )
+                missing_authority = copy.deepcopy(payload)
+                omitted = str((repository / facts["required_reads"][0]).resolve())
+                missing_authority["events"] = [
+                    event for event in missing_authority["events"]
+                    if event.get("path") != omitted
+                ]
+                trace.write_text(json.dumps(missing_authority), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "omitted required authority reads"):
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    )
+                missing_contract = copy.deepcopy(payload)
+                missing_contract["events"] = [
+                    event for event in missing_contract["events"]
+                    if event.get("path") != str((projection / "references/contract.md").resolve())
+                ]
+                trace.write_text(json.dumps(missing_contract), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "required public contract reads"):
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    )
+            finally:
+                boundary_stop.set()
+                boundary_thread.join(timeout=5)
+
+    def test_architecture_semantic_authoring_uses_case_model_identity(self) -> None:
+        from adapters.eval import native_adapter
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            model_root = root / "model-root"
+            model_root.mkdir()
+            request = self.architecture_semantic_request(root)
+            request["model_id"] = "architecture-eval-model"
+            request["_model_root"] = str(model_root)
+            argv, output = native_adapter.native_argv(
+                "codex",
+                "/usr/bin/codex",
+                request,
+                "model-visible-context",
+                model_root / "native-context.txt",
+                root / "private/native-request.json",
+                model_root / "public-package",
+            )
+
+        self.assertIn("--strict-config", argv)
+        self.assertNotIn("--ignore-user-config", argv)
+        self.assertNotIn("--sandbox", argv)
+        self.assertEqual(
+            argv[argv.index("--model") + 1],
+            "architecture-eval-model",
+        )
+        self.assertEqual(
+            output,
+            (model_root / "output/native-last-message.txt").resolve(),
+        )
+
+    def test_eval_runner_propagates_closed_native_execution_mode(self) -> None:
+        from runtime import eval_runner
+
+        repo_root = SKILLS.parents[2]
+        observed: dict[str, str] = {}
+        observed_environment: dict[str, dict[str, str] | None] = {}
+
+        def fake_adapter(
+            _skills: Path,
+            _descriptor: dict[str, object],
+            request_path: Path,
+            host_environment: dict[str, str] | None = None,
+        ) -> dict[str, object]:
+            request = json.loads(request_path.read_text(encoding="utf-8"))
+            observed[request["case_id"]] = request["native_execution_mode"]
+            observed_environment[request["case_id"]] = host_environment
+            transcript = request_path.parent / "adapter-transcript.json"
+            transcript.write_text("{}\n", encoding="utf-8")
+            return {
+                "corpus_sha256": request["corpus_sha256"],
+                "capability_status": "unsupported",
+                "public_stdout": "",
+                "public_stderr": "",
+                "trace_events": [],
+                "transcript_locator": str(transcript),
+                "native_trace_locator": str(request_path.parent / "native-trace.json"),
+                "timing_ms": 0,
+            }
+
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.object(
+            eval_runner, "call_adapter", side_effect=fake_adapter,
+        ):
+            for case_id in ("planning-semantic-authoring", "no-impact"):
+                args = argparse.Namespace(
+                    adapter="codex",
+                    case=case_id,
+                    comparison_package=None,
+                    current_package=None,
+                    human_feedback=None,
+                    mode="source",
+                    run_root=str(Path(temporary) / case_id),
+                    semantic_grading=None,
+                    skill="guru-maintain-architecture-baseline",
+                )
+                eval_runner.run(repo_root, SKILLS, args)
+
+        self.assertEqual(observed["planning-semantic-authoring"], "semantic_authoring")
+        self.assertEqual(observed["no-impact"], "post_owner")
+        self.assertEqual(
+            observed_environment["planning-semantic-authoring"],
+            {"GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE": str(repo_root.resolve())},
+        )
+        self.assertIsNone(observed_environment["no-impact"])
+
+    def test_semantic_authoring_is_codex_only_and_shared_skips_adapter(self) -> None:
+        from adapters.eval import native_adapter
+        from runtime import eval_runner
+
+        with tempfile.TemporaryDirectory() as request_root:
+            request = self.architecture_semantic_request(Path(request_root))
+            self.assertTrue(native_adapter.semantic_authoring_supported(request, "codex"))
+            for adapter in ("shared", "claude", "cursor"):
+                self.assertFalse(native_adapter.semantic_authoring_supported(request, adapter))
+
+        repo_root = SKILLS.parents[2]
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.object(
+            eval_runner, "call_adapter",
+        ) as call_adapter:
+            args = argparse.Namespace(
+                adapter="shared",
+                case="planning-semantic-authoring",
+                comparison_package=None,
+                current_package=None,
+                human_feedback=None,
+                mode="source",
+                run_root=str(Path(temporary) / "shared"),
+                semantic_grading=None,
+                skill="guru-maintain-architecture-baseline",
+            )
+            result = eval_runner.run(repo_root, SKILLS, args)
+        self.assertEqual(result["status"], "unsupported")
+        self.assertEqual(result["cases"][0]["status"], "unsupported")
+        call_adapter.assert_not_called()
+
+    def test_shared_full_eval_excludes_codex_only_semantic_authoring(self) -> None:
+        from runtime import eval_runner
+
+        repo_root = SKILLS.parents[2]
+        expected_case_ids = {
+            "bootstrap-foundation-current",
+            "no-impact",
+            "target-native",
+            "legacy-boundary-convergence",
+            "dedicated-refactor-slice",
+            "scope-expansion",
+            "fitness-regression",
+            "parallel-stale",
+            "unpromoted-contribution",
+            "next-task-consumption",
+            "missing-external-evidence",
+            "repair-current-contract",
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            args = argparse.Namespace(
+                adapter="shared",
+                case=None,
+                comparison_package=None,
+                current_package=None,
+                human_feedback=None,
+                mode="source",
+                run_root=str(Path(temporary) / "shared"),
+                semantic_grading=None,
+                skill="guru-maintain-architecture-baseline",
+            )
+            result = eval_runner.run(repo_root, SKILLS, args)
+
+        self.assertEqual(result["status"], "passed", result)
+        self.assertEqual(
+            {case["case_id"] for case in result["cases"]},
+            expected_case_ids,
+        )
+        self.assertNotIn(
+            "planning-semantic-authoring",
+            {case["case_id"] for case in result["cases"]},
+        )
+        self.assertTrue(all(case["status"] == "passed" for case in result["cases"]))
+
+    def test_shared_full_eval_runs_schema_valid_post_owner_case(self) -> None:
+        from runtime import eval_runner
+
+        repo_root = SKILLS.parents[2]
+        package = SKILLS / "packages/guru-maintain-architecture-baseline"
+        interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+        corpus = json.loads((package / "evals/evals.json").read_text(encoding="utf-8"))
+        post_owner = copy.deepcopy(
+            next(case for case in corpus["evals"] if case["id"] == "no-impact")
+        )
+        post_owner["native_execution_mode"] = "post_owner"
+        corpus["evals"] = [post_owner]
+        corpus_bytes = json.dumps(corpus, separators=(",", ":")).encode()
+
+        def fake_corpus(
+            _skills: Path,
+            _package: Path,
+            _interface: dict[str, object],
+        ) -> tuple[dict[str, object], bytes]:
+            return corpus, corpus_bytes
+
+        def fake_adapter(
+            _skills: Path,
+            _descriptor: dict[str, object],
+            request_path: Path,
+        ) -> dict[str, object]:
+            request = json.loads(request_path.read_text(encoding="utf-8"))
+            transcript = request_path.parent / "adapter-transcript.json"
+            transcript.write_text("{}\n", encoding="utf-8")
+            public_output = json.loads(
+                (package / "examples/public-output-current.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            return {
+                "corpus_sha256": request["corpus_sha256"],
+                "capability_status": "executed",
+                "public_stdout": json.dumps(public_output),
+                "public_stderr": "",
+                "trace_events": [],
+                "transcript_locator": str(transcript),
+                "native_trace_locator": str(request_path.parent / "native-trace.json"),
+                "timing_ms": 0,
+            }
+
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.object(
+            eval_runner, "corpus", side_effect=fake_corpus,
+        ), mock.patch.object(
+            eval_runner, "call_adapter", side_effect=fake_adapter,
+        ):
+            args = argparse.Namespace(
+                adapter="shared",
+                case=None,
+                comparison_package=None,
+                current_package=None,
+                human_feedback=None,
+                mode="source",
+                run_root=str(Path(temporary) / "shared"),
+                semantic_grading=None,
+                skill="guru-maintain-architecture-baseline",
+            )
+            result = eval_runner.run(repo_root, SKILLS, args)
+
+        self.assertEqual(result["status"], "passed", result)
+        self.assertEqual(
+            [case["case_id"] for case in result["cases"]],
+            ["no-impact"],
+        )
+
+    def test_eval_case_identity_fails_closed_for_incomplete_or_invalid_results(self) -> None:
+        from runtime import eval_runner
+
+        expected = ["alpha", "beta"]
+        valid = [
+            {"comparison_side": "current", "case_id": "alpha"},
+            {"comparison_side": "current", "case_id": "beta"},
+        ]
+        eval_runner.validate_eval_case_identity(expected, ["current"], valid)
+
+        invalid_results = {
+            "missing": valid[:1],
+            "duplicate": [valid[0], valid[0]],
+            "unknown": [valid[0], {"comparison_side": "current", "case_id": "gamma"}],
+            "unexpected-side": [
+                valid[0],
+                {"comparison_side": "comparison", "case_id": "beta"},
+            ],
+        }
+        for label, results in invalid_results.items():
+            with self.subTest(label=label), self.assertRaises(CommandError) as raised:
+                eval_runner.validate_eval_case_identity(expected, ["current"], results)
+            self.assertEqual(raised.exception.code, "eval_result_case_identity_mismatch")
+
+        with self.assertRaises(CommandError) as raised:
+            eval_runner.validate_eval_case_identity(
+                ["alpha", "alpha"], ["current"], valid
+            )
+        self.assertEqual(raised.exception.code, "eval_declared_case_identity_invalid")
+
+    def test_full_run_completeness_does_not_trust_execution_selection(self) -> None:
+        from runtime import eval_runner
+
+        repo_root = SKILLS.parents[2]
+        package = SKILLS / "packages/guru-maintain-architecture-baseline"
+        corpus = json.loads((package / "evals/evals.json").read_text(encoding="utf-8"))
+        first = copy.deepcopy(
+            next(case for case in corpus["evals"] if case["id"] == "no-impact")
+        )
+        second = copy.deepcopy(first)
+        second["id"] = "second-post-owner"
+        corpus["evals"] = [first, second]
+        corpus_bytes = json.dumps(corpus, separators=(",", ":")).encode()
+
+        def fake_corpus(
+            _skills: Path,
+            _package: Path,
+            _interface: dict[str, object],
+        ) -> tuple[dict[str, object], bytes]:
+            return corpus, corpus_bytes
+
+        def fake_adapter(
+            _skills: Path,
+            _descriptor: dict[str, object],
+            request_path: Path,
+        ) -> dict[str, object]:
+            request = json.loads(request_path.read_text(encoding="utf-8"))
+            transcript = request_path.parent / "adapter-transcript.json"
+            transcript.write_text("{}\n", encoding="utf-8")
+            public_output = json.loads(
+                (package / "examples/public-output-current.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            return {
+                "corpus_sha256": request["corpus_sha256"],
+                "capability_status": "executed",
+                "public_stdout": json.dumps(public_output),
+                "public_stderr": "",
+                "trace_events": [],
+                "transcript_locator": str(transcript),
+                "native_trace_locator": str(request_path.parent / "native-trace.json"),
+                "timing_ms": 0,
+            }
+
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.object(
+            eval_runner, "corpus", side_effect=fake_corpus,
+        ), mock.patch.object(
+            eval_runner, "applicable_eval_cases", return_value=[first],
+        ), mock.patch.object(
+            eval_runner, "call_adapter", side_effect=fake_adapter,
+        ):
+            args = argparse.Namespace(
+                adapter="shared",
+                case=None,
+                comparison_package=None,
+                current_package=None,
+                human_feedback=None,
+                mode="source",
+                run_root=str(Path(temporary) / "shared"),
+                semantic_grading=None,
+                skill="guru-maintain-architecture-baseline",
+            )
+            with self.assertRaises(CommandError) as raised:
+                eval_runner.run(repo_root, SKILLS, args)
+
+        self.assertEqual(raised.exception.code, "eval_result_case_identity_mismatch")
+
+    def test_architecture_semantic_authoring_uses_isolated_permissions_and_probe(self) -> None:
+        from adapters.eval import eval_constants, native_adapter
+
+        with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as auth_temporary:
+            root = Path(temporary)
+            auth_root = Path(auth_temporary)
+            codex_home = auth_root / "codex-home"
+            codex_home.mkdir(mode=0o700)
+            auth = codex_home / "auth.json"
+            auth.write_text("{}\n", encoding="utf-8")
+            auth.chmod(0o600)
+            fake_codex = auth_root / "fake-codex"
+            sentinel = auth_root / "model-called"
+            fake_codex.write_text(
+                "#!/bin/sh\n"
+                f"printf called > {str(sentinel)!r}\n"
+                "exit 1\n",
+                encoding="utf-8",
+            )
+            fake_codex.chmod(0o755)
+            request = self.architecture_semantic_request(root)
+            request_path = root / "current/planning-semantic-authoring/adapter-request.json"
+            request_path.parent.mkdir(parents=True)
+            request_path.write_text(json.dumps(request), encoding="utf-8")
+            emitted: list[dict[str, object]] = []
+            probe = {
+                "argv": [str(fake_codex), "sandbox"],
+                "returncode": 0,
+                "stdout": '{"positive":true,"denied":[]}',
+                "stderr": "",
+                "result": {"positive": True, "denied": []},
+            }
+            environment = {
+                "CODEX_HOME": str(codex_home),
+                "GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE": str(SKILLS.parents[2]),
+                "PATH": os.defpath,
+            }
+            with mock.patch.dict(os.environ, environment, clear=False), mock.patch.object(
+                native_adapter.sys,
+                "argv",
+                [
+                    "native_adapter.py",
+                    "--adapter", "codex",
+                    "--native-command", str(fake_codex),
+                    "--request", str(request_path),
+                ],
+            ), mock.patch.object(
+                native_adapter,
+                "run_codex_permission_probe",
+                return_value=probe,
+            ) as run_probe, mock.patch.object(
+                native_adapter,
+                "emit",
+                side_effect=lambda payload: emitted.append(payload) or 0,
+            ):
+                self.assertEqual(native_adapter.main(), 0)
+
+            self.assertEqual(len(emitted), 1)
+            self.assertEqual(emitted[0]["capability_status"], "execution_error")
+            self.assertTrue(sentinel.is_file())
+            run_probe.assert_called_once()
+            config = (codex_home / "config.toml").read_text(encoding="utf-8")
+            transcript = json.loads(
+                (request_path.parent / "adapter-transcript.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            protocol = json.loads(
+                Path(transcript["protocol_path"]).read_text(encoding="utf-8")
+            )
+            required_denied = {
+                codex_home.resolve(),
+                SKILLS.parents[2].resolve(),
+                Path(protocol["private_root"]).resolve(),
+                Path(protocol["owner_repository"]).resolve(),
+                Path(request["workdir"]).resolve(),
+                Path(request["package_root"]).resolve(),
+                (Path(request["package_root"]) / "evals/evals.json").resolve(),
+                Path("/tmp").resolve(),
+                Path("/private/tmp").resolve(),
+            }
+            self.assertEqual(
+                transcript["environment"]["CODEX_HOME"],
+                str(codex_home.resolve()),
+            )
+            self.assertEqual(transcript["permission_probe"], probe)
+            for denied in required_denied:
+                self.assertIn(json.dumps(str(denied)), config)
+            self.assertIn(
+                f'default_permissions = "{eval_constants.QUALIFICATION_PERMISSION_PROFILE}"',
+                config,
+            )
+
+    def test_architecture_semantic_authoring_permission_setup_and_probe_fail_closed(self) -> None:
+        from adapters.eval import native_adapter
+
+        def invoke(
+            root: Path,
+            auth_root: Path,
+            *,
+            include_codex_home: bool,
+            probe_result: object,
+        ) -> tuple[dict[str, object], Path, mock.Mock]:
+            codex_home = auth_root / f"codex-home-{root.name}"
+            codex_home.mkdir(mode=0o700)
+            auth = codex_home / "auth.json"
+            auth.write_text("{}\n", encoding="utf-8")
+            auth.chmod(0o600)
+            sentinel = auth_root / f"model-called-{root.name}"
+            fake_codex = auth_root / f"fake-codex-{root.name}"
+            fake_codex.write_text(
+                "#!/bin/sh\n"
+                f"printf called > {str(sentinel)!r}\n"
+                "exit 1\n",
+                encoding="utf-8",
+            )
+            fake_codex.chmod(0o755)
+            request = self.architecture_semantic_request(root)
+            request_path = root / "current/planning-semantic-authoring/adapter-request.json"
+            request_path.parent.mkdir(parents=True)
+            request_path.write_text(json.dumps(request), encoding="utf-8")
+            emitted: list[dict[str, object]] = []
+            environment = {
+                "GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE": str(SKILLS.parents[2]),
+                "PATH": os.defpath,
+            }
+            if include_codex_home:
+                environment["CODEX_HOME"] = str(codex_home)
+            probe_patch = mock.patch.object(
+                native_adapter,
+                "run_codex_permission_probe",
+                return_value=probe_result,
+            )
+            with mock.patch.dict(os.environ, environment, clear=False):
+                if not include_codex_home:
+                    os.environ.pop("CODEX_HOME", None)
+                with mock.patch.object(
+                    native_adapter.sys,
+                    "argv",
+                    [
+                        "native_adapter.py",
+                        "--adapter", "codex",
+                        "--native-command", str(fake_codex),
+                        "--request", str(request_path),
+                    ],
+                ), probe_patch as run_probe, mock.patch.object(
+                    native_adapter,
+                    "emit",
+                    side_effect=lambda payload: emitted.append(payload) or 0,
+                ):
+                    self.assertEqual(native_adapter.main(), 0)
+            self.assertEqual(len(emitted), 1)
+            self.assertFalse(sentinel.exists())
+            return emitted[0], request_path, run_probe
+
+        with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as auth_temporary:
+            root = Path(temporary)
+            auth_root = Path(auth_temporary)
+            missing_home, missing_home_request, missing_home_probe = invoke(
+                root / "missing-home",
+                auth_root,
+                include_codex_home=False,
+                probe_result={"returncode": 0},
+            )
+            self.assertEqual(missing_home["capability_status"], "execution_error")
+            self.assertIn("isolated Codex authoring setup failed", missing_home["public_stderr"])
+            self.assertIn(
+                "requires one external isolated CODEX_HOME",
+                json.loads(
+                    (missing_home_request.parent / "adapter-transcript.json").read_text(
+                        encoding="utf-8"
+                    )
+                )["error"],
+            )
+            missing_home_probe.assert_not_called()
+
+            for name, probe_result in (
+                ("missing-probe", {}),
+                ("failed-probe", {"returncode": 1, "result": {"positive": False}}),
+            ):
+                response, request_path, run_probe = invoke(
+                    root / name,
+                    auth_root,
+                    include_codex_home=True,
+                    probe_result=probe_result,
+                )
+                self.assertEqual(response["capability_status"], "execution_error")
+                self.assertEqual(
+                    response["public_stderr"],
+                    "isolated Codex authoring permission probe failed",
+                )
+                run_probe.assert_called_once()
+                transcript = json.loads(
+                    (request_path.parent / "adapter-transcript.json").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                self.assertEqual(transcript["permission_probe"], probe_result)
+
+    def test_semantic_authoring_adapter_guard_rejects_shared_direct_call(self) -> None:
+        from adapters.eval import native_adapter
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            request = self.architecture_semantic_request(root)
+            request["adapter_id"] = "shared"
+            request["platform"] = "shared"
+            request_path = root / "adapter-request.json"
+            request_path.write_text(json.dumps(request), encoding="utf-8")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(Path(native_adapter.__file__).resolve()),
+                    "--adapter",
+                    "shared",
+                    "--native-command",
+                    "guru-team-shared-eval",
+                    "--request",
+                    str(request_path),
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        response = json.loads(result.stdout)
+        self.assertEqual(response["capability_status"], "unsupported")
+        self.assertEqual(response["public_stderr"], "")
+
+    def test_semantic_authoring_schema_requires_adapter_and_model(self) -> None:
+        from jsonschema import Draft202012Validator
+
+        case_schema = json.loads(
+            (SKILLS / "schemas/skill-evals.schema.json").read_text(encoding="utf-8")
+        )
+        request_schema = json.loads(
+            (SKILLS / "schemas/skill-eval-adapter-request.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        corpus = json.loads(
+            (
+                SKILLS
+                / "packages/guru-maintain-architecture-baseline/evals/evals.json"
+            ).read_text(encoding="utf-8")
+        )
+        semantic_case = next(
+            case for case in corpus["evals"]
+            if case["id"] == "planning-semantic-authoring"
+        )
+        self.assertEqual(
+            list(Draft202012Validator(case_schema).iter_errors(corpus)), []
+        )
+        for field in ("native_execution_adapter", "model_id"):
+            invalid = copy.deepcopy(corpus)
+            target = next(
+                case for case in invalid["evals"]
+                if case["id"] == "planning-semantic-authoring"
+            )
+            target.pop(field)
+            self.assertTrue(list(Draft202012Validator(case_schema).iter_errors(invalid)))
+
+        for mode in (None, "post_owner"):
+            invalid = copy.deepcopy(corpus)
+            target = next(case for case in invalid["evals"] if case["id"] == "no-impact")
+            if mode is not None:
+                target["native_execution_mode"] = mode
+            target["native_execution_adapter"] = "codex"
+            target["model_id"] = "gpt-5.6-sol"
+            self.assertTrue(
+                list(Draft202012Validator(case_schema).iter_errors(invalid))
+            )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            request = self.architecture_semantic_request(Path(temporary))
+            self.assertEqual(
+                list(Draft202012Validator(request_schema).iter_errors(request)), []
+            )
+            for field in ("native_execution_adapter", "model_id"):
+                invalid = dict(request)
+                invalid.pop(field)
+                self.assertTrue(
+                    list(Draft202012Validator(request_schema).iter_errors(invalid))
+                )
+
+            for mode in (None, "post_owner"):
+                invalid = dict(request)
+                if mode is None:
+                    invalid.pop("native_execution_mode")
+                else:
+                    invalid["native_execution_mode"] = mode
+                self.assertTrue(
+                    list(Draft202012Validator(request_schema).iter_errors(invalid))
+                )
+
     def test_production_phase2_inputs_close_schema_5_for_every_exit(self) -> None:
         from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
         from jsonschema import Draft202012Validator
@@ -1938,6 +2792,8 @@ print(json.dumps(payload,sort_keys=True));raise SystemExit(0 if result["returnco
             (source / ".trellis/guru-team/runtime").mkdir(parents=True)
             (source / ".trellis/guru-team/skills/adapters/eval").mkdir(parents=True)
             (source / ".trellis/guru-team/skills/packages/guru-qualify-normal-scenario/runtime").mkdir(parents=True)
+            (source / ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime").mkdir(parents=True)
+            (source / "trellis/skills/guru-team/packages/guru-example-action/runtime").mkdir(parents=True)
             (source / "package/evals").mkdir(parents=True)
             (source / "package/tests").mkdir(parents=True)
             (source / ".git/config").write_text("private", encoding="utf-8")
@@ -1945,6 +2801,8 @@ print(json.dumps(payload,sort_keys=True));raise SystemExit(0 if result["returnco
             (source / ".trellis/guru-team/runtime/private.py").write_text("pass\n", encoding="utf-8")
             (source / ".trellis/guru-team/skills/adapters/eval/native.py").write_text("pass\n", encoding="utf-8")
             (source / ".trellis/guru-team/skills/packages/guru-qualify-normal-scenario/runtime/private.py").write_text("pass\n", encoding="utf-8")
+            (source / ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py").write_text("pass\n", encoding="utf-8")
+            (source / "trellis/skills/guru-team/packages/guru-example-action/runtime/private.py").write_text("pass\n", encoding="utf-8")
             (source / "package/evals/evals.json").write_text("{}", encoding="utf-8")
             (source / "package/tests/test_contract.py").write_text("pass\n", encoding="utf-8")
             (source / "auth.json").write_text("{}", encoding="utf-8")

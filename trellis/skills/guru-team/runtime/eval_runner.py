@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+from collections import Counter
 import hashlib
 import hmac
 import json
@@ -1012,6 +1013,92 @@ def comparison_sides(args: argparse.Namespace, package: Path) -> list[tuple[str,
     return result
 
 
+def applicable_eval_cases(
+    cases: list[dict[str, Any]], adapter: str, focused_case: str | None
+) -> list[dict[str, Any]]:
+    matched = [
+        case for case in cases if focused_case is None or case["id"] == focused_case
+    ]
+    if not matched:
+        raise error(
+            "eval_case_unknown",
+            "case",
+            "Choose one case id returned by discovery.",
+        )
+    if focused_case is not None:
+        return matched
+    return [
+        case
+        for case in matched
+        if case.get("native_execution_mode", "post_owner") != "semantic_authoring"
+        or case["native_execution_adapter"] == adapter
+    ]
+
+
+def declared_applicable_case_ids(
+    cases: list[dict[str, Any]], adapter: str, focused_case: str | None
+) -> list[str]:
+    expected: list[str] = []
+    for case in cases:
+        if focused_case is not None:
+            if case["id"] == focused_case:
+                expected.append(case["id"])
+            continue
+        if case.get("native_execution_mode", "post_owner") == "post_owner":
+            expected.append(case["id"])
+            continue
+        if case["native_execution_adapter"] == adapter:
+            expected.append(case["id"])
+    if focused_case is not None and not expected:
+        raise error(
+            "eval_case_unknown",
+            "case",
+            "Choose one case id returned by discovery.",
+        )
+    return expected
+
+
+def validate_eval_case_identity(
+    expected_case_ids: list[str],
+    comparison_sides: list[str],
+    results: list[dict[str, Any]],
+) -> None:
+    declared_counts = Counter(expected_case_ids)
+    duplicate_declared = sorted(
+        case_id for case_id, count in declared_counts.items() if count != 1
+    )
+    if duplicate_declared:
+        raise error(
+            "eval_declared_case_identity_invalid",
+            "evals",
+            "Give every declared applicable eval case one unique id.",
+        )
+
+    expected = Counter(
+        (side, case_id)
+        for side in comparison_sides
+        for case_id in expected_case_ids
+    )
+    actual_rows: list[tuple[str, str]] = []
+    for index, result in enumerate(results):
+        side = result.get("comparison_side")
+        case_id = result.get("case_id")
+        if not isinstance(side, str) or not isinstance(case_id, str):
+            raise error(
+                "eval_result_case_identity_invalid",
+                f"cases.{index}",
+                "Return one valid comparison-side and case-id identity for every result.",
+            )
+        actual_rows.append((side, case_id))
+    actual = Counter(actual_rows)
+    if actual != expected:
+        raise error(
+            "eval_result_case_identity_mismatch",
+            "cases",
+            "Rerun every declared case applicable to this adapter exactly once per comparison side.",
+        )
+
+
 def decision_projection(output: dict[str, Any]) -> list[dict[str, str]]:
     rows = output.get("candidate_results")
     if not isinstance(rows, list):
@@ -1638,9 +1725,10 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
     descriptor = descriptors(skills)[args.adapter]
     selected_package, selected_interface, row = package_context(skills, args.skill)
     evals, _ = corpus(skills, selected_package, selected_interface)
-    selected_cases = [case for case in evals["evals"] if args.case is None or case["id"] == args.case]
-    if not selected_cases:
-        raise error("eval_case_unknown", "case", "Choose one case id returned by discovery.")
+    expected_case_ids = declared_applicable_case_ids(
+        evals["evals"], args.adapter, args.case
+    )
+    selected_cases = applicable_eval_cases(evals["evals"], args.adapter, args.case)
     run_root = Path(args.run_root)
     if not run_root.is_absolute():
         raise error("eval_run_root_invalid", "run_root", "Use an absolute temporary directory outside the repository.")
@@ -1708,11 +1796,58 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
                 "case_id": case["id"], "prompt": case["prompt"], "files": staged,
                 "workdir": str(workdir), "corpus_path": str(package / "evals/evals.json"),
                 "corpus_sha256": discovery["corpus_sha256"], "runtime_target": str(target),
+                "native_execution_mode": case.get("native_execution_mode", "post_owner"),
             }
+            for field in ("native_execution_adapter", "model_id"):
+                if field in case:
+                    request[field] = case[field]
             validate_instance(request, skills / "schemas/skill-eval-adapter-request.schema.json", "adapter_request")
             request_path = case_root / "adapter-request.json"
             request_path.write_text(json.dumps(request, separators=(",", ":")), encoding="utf-8")
-            response = call_adapter(skills, descriptor, request_path)
+            if (
+                request["native_execution_mode"] == "semantic_authoring"
+                and request["native_execution_adapter"] != args.adapter
+            ):
+                transcript = case_root / "adapter-transcript.json"
+                transcript.write_text(json.dumps({
+                    "adapter": args.adapter,
+                    "status": "unsupported",
+                    "reason": (
+                        "semantic_authoring is declared for the "
+                        f"{request['native_execution_adapter']} adapter only"
+                    ),
+                }), encoding="utf-8")
+                response = {
+                    "schema_version": "1.0",
+                    "capability_status": "unsupported",
+                    "corpus_sha256": request["corpus_sha256"],
+                    "public_stdout": "",
+                    "public_stderr": "",
+                    "trace_events": [],
+                    "transcript_locator": str(transcript),
+                    "native_trace_locator": str(case_root / "native-trace.json"),
+                    "timing_ms": 0,
+                }
+            else:
+                adapter_environment = (
+                    {
+                        "GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE": str(
+                            root.resolve()
+                        ),
+                    }
+                    if request["native_execution_mode"] == "semantic_authoring"
+                    else None
+                )
+                response = (
+                    call_adapter(
+                        skills,
+                        descriptor,
+                        request_path,
+                        adapter_environment,
+                    )
+                    if adapter_environment is not None
+                    else call_adapter(skills, descriptor, request_path)
+                )
             result: dict[str, Any] = {
                 "case_id": case["id"], "comparison_side": side, "status": "execution_error",
                 "deterministic_results": [], "semantic_results": [],
@@ -1750,6 +1885,11 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
                     result["semantic_results"] = semantic_results
                     result["status"] = "passed" if all(item["passed"] for item in checks + semantic_results) else "evaluation_failed"
             results.append(result)
+    validate_eval_case_identity(
+        expected_case_ids,
+        [side for side, _ in sides],
+        results,
+    )
     status = "passed"
     for candidate in ("execution_error", "evaluation_failed", "unsupported"):
         if any(item["status"] == candidate for item in results):

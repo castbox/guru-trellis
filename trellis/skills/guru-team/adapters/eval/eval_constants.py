@@ -14,6 +14,14 @@ OWNER_PLAN = ".trellis/.runtime/guru-team/evals/owner-plan.json"
 
 OWNER_INVOCATION = ".trellis/.runtime/guru-team/evals/invocation.json"
 
+ARCHITECTURE_SKILL = "guru-maintain-architecture-baseline"
+
+ARCHITECTURE_PUBLIC_AUTHORING_FACTS = (
+    "docs/architecture-eval/public-authoring-facts.json"
+)
+
+SEMANTIC_AUTHORING_ADAPTER = "codex"
+
 WORKSPACE_CALL_LOCAL_STATE: dict[str, tuple[dict[str, Any], dict[str, Any]]] = {}
 
 PRODUCTION_SKILLS = {

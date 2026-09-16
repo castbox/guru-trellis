@@ -245,16 +245,25 @@ archived artifact bytes are read-only.
 
 Normal Agent transcript and eval trace assertions are separate evidence. Both
 must show public-wrapper-only invocation, no Agent read/import of private runtime,
-and no normal-package load of `evals/**`. Eval coverage uses the existing #147
-schema, runner, grader policy, adapter protocol, and evidence contract unchanged.
+and no normal-package load of `evals/**`. Eval coverage extends the existing #147
+schema, runner, adapter protocol, and evidence contract only through the closed
+execution-mode and exact applicable-case identity rules below; grader policy is
+unchanged.
 
-Production semantic eval probes require an explicit repo-local owner-result
-locator whose existing checker passes current facts. They assert that neither
-adapter request nor native request contains `expected_exit`, that actual exit
-selects the output schema, shared executes the packaged native runtime, Codex
-uses a trusted Git root, Claude uses its supported non-interactive protocol,
-and missing Cursor authentication returns `unsupported` without entering an
-interactive session.
+Production `post_owner` semantic eval probes require an explicit repo-local
+owner-result locator whose existing checker passes current facts.
+`semantic_authoring` probes instead stage public input and permitted evidence,
+then require the contract-designated Agent to author the call-local owner-result
+envelope and invoke the formal wrapper without a host-prepared result. Full runs
+execute every adapter-neutral `post_owner` case and only adapter-matching
+`semantic_authoring` cases, with exact declared-applicable/actual case identity
+before aggregation. Both modes assert that neither adapter request nor native
+request contains `expected_exit`, that actual exit selects the output schema,
+and that shared executes the packaged native runtime. Codex `post_owner` runs
+from the installed runtime's trusted Git root; Codex `semantic_authoring` runs
+from its repo-external isolated model root with `--skip-git-repo-check`.
+Claude uses its supported non-interactive protocol, and missing Cursor
+authentication returns `unsupported` without entering an interactive session.
 
 Source validation must execute representative package wrappers and revalidate
 their single typed-exit stdout. Negative cases cover missing exit schema or

@@ -1599,18 +1599,30 @@ a semantic verdict.
 The corpus schema, semantic grading input, human feedback input, adapter
 request/response, native trace, and run evidence are separate closed contracts. The corpus
 contains references and expectations but no output-schema/private-artifact
-locator. Semantic grading contains exact comparison-side/case/assertion identity
+locator. Its optional `native_execution_mode` is closed to
+`post_owner|semantic_authoring`, with omission equal to `post_owner`.
+`native_execution_adapter` and `model_id` are mandatory for
+`semantic_authoring` and schema-invalid in every `post_owner` case. Semantic
+grading contains exact comparison-side/case/assertion identity
 plus an external verdict; human feedback uses comparison-side/case identity and
 cannot carry a grader verdict. Run evidence
 contains only corpus/interface/package/platform/adapter/comparison identity,
 actual exit, assertion results, status, transcript locator, timing, and
 feedback. It forbids gate/checkpoint/audit/release/provenance fields.
 
-Neither adapter request nor native request carries `expected_exit`. Semantic
-case files may carry exact wrapper arguments referencing a repo-local,
-checker-passed owner result, but never a caller-selected route. Actual wrapper
-output selects the per-exit schema before the runner performs the independent
-expected-versus-actual assertion.
+Neither adapter request nor native request carries `expected_exit`.
+`post_owner` case files may carry exact wrapper arguments referencing a
+repo-local checker-passed owner result, but never a caller-selected route.
+`semantic_authoring` instead exposes only the public input and permitted
+repository evidence to the contract-designated Agent, which authors the
+owner-result envelope and calls the formal wrapper without a host-prepared
+semantic result. Full runs execute every `post_owner` case for every adapter and
+only the `semantic_authoring` cases declared for that adapter; focused adapter
+mismatch remains an explicit `unsupported` result. Aggregate evidence is valid
+only when actual case ids exactly equal the independently derived declared
+applicable set, with missing, duplicate, unknown, and unexpected ids rejected.
+Actual wrapper output selects the per-exit schema before the runner performs the
+independent expected-versus-actual assertion.
 
 ## Branch Review Data Boundary
 

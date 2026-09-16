@@ -1,0 +1,9 @@
+{
+  "scenario": "The current Planning task changes only package-local execution wording and native eval coverage. It preserves Architecture 2.0 public input, output schemas, exits, consumers, freshness, owner boundaries, persistence, integration boundaries, decisions, and GAP lifecycle.",
+  "public_invocation": {
+    "arguments": [
+      "--invocation",
+      "-"
+    ]
+  }
+}

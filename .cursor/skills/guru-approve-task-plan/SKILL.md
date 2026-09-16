@@ -27,8 +27,12 @@ decoupling review trigger.
 
 Before that review may return `approved`, consume a fresh
 `guru-maintain-architecture-baseline:task_impact_sync(stage=planning)`
-`baseline_current` result and reread its project-owned Architecture Baseline,
+`baseline_current` result from the adjacent upstream invocation and reread its project-owned Architecture Baseline,
 design-constitution authority, and Architecture change-contract authority.
+That current result proves the contract-selected Architecture AI owner already
+completed its semantic authoring and formal invocation. Do not search for a
+second external owner, reconstruct the Architecture private result, or repeat
+its impact/path/contribution/ADR judgment inside Planning approval.
 Planning cannot approve a missing or stale Architecture result, a missing
 constitution or change contract, or an unresolved conflict, incomplete
 contract, regression, or sync route. Bind the current impact/change-path result

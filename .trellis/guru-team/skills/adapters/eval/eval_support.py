@@ -333,6 +333,19 @@ def model_projection_copy(source: Path, destination: Path) -> None:
 
     shutil.copytree(source, destination, copy_function=copy_file)
 
+def guru_package_runtime_path(relative: Path) -> bool:
+    parts = relative.parts
+    package_prefixes = (
+        (".trellis", "guru-team", "skills", "packages"),
+        ("trellis", "skills", "guru-team", "packages"),
+    )
+    return any(
+        parts[:len(prefix)] == prefix
+        and len(parts) > len(prefix) + 1
+        and parts[len(prefix) + 1] == "runtime"
+        for prefix in package_prefixes
+    )
+
 def repository_projection_allowed(relative: Path) -> bool:
     if any(part in {".git", ".runtime", "__pycache__", "evals", "node_modules"} for part in relative.parts):
         return False
@@ -345,7 +358,7 @@ def repository_projection_allowed(relative: Path) -> bool:
     )
     if value.startswith(private_prefixes):
         return False
-    if f"/packages/{QUALIFICATION_SKILL}/runtime/" in f"/{value}":
+    if guru_package_runtime_path(relative):
         return False
     if relative.name == "auth.json" or relative.name.startswith(".env"):
         return False
@@ -661,7 +674,13 @@ def stage_public_projection(request: dict[str, Any], execution_root: Path) -> tu
         raise ValueError("exact public Interface identity is unavailable")
     projection_root = execution_root / "public-packages" / str(request["skill_id"])
     projection_root.mkdir(parents=True, exist_ok=False)
-    for relative in sorted(public_projection_assets(interface), key=lambda item: item.as_posix()):
+    public_assets = public_projection_assets(interface)
+    if request.get("native_execution_mode") == "semantic_authoring":
+        public_assets.update({
+            Path("references/contract.md"),
+            Path("schemas/semantic-result.schema.json"),
+        })
+    for relative in sorted(public_assets, key=lambda item: item.as_posix()):
         source = canonical_root / relative
         if source.is_symlink() or not source.is_file():
             raise ValueError(f"public projection asset is unavailable: {relative.as_posix()}")

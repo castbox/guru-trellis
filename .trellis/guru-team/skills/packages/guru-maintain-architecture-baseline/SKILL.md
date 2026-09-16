@@ -9,6 +9,39 @@ description: Maintain a repository Architecture Baseline through semantic bootst
 owner for exactly four profiles: `bootstrap_foundation`, `task_impact_sync`,
 `promotion`, and `repair`.
 
+Load [references/contract.md](references/contract.md) completely before acting.
+The AI executing this Skill is the semantic owner selected by this contract; it
+must not wait for or invent a second external Architecture owner merely because
+the deterministic runtime cannot make semantic decisions.
+
+Execute one profile in this order:
+
+1. validate the caller/profile and read the exact public input;
+2. reread the complete contract, live task and planning scope, Architecture
+   Baseline, design constitution, project change contract, and current project-
+   check descriptors and evidence;
+3. run or inspect every applicable project check and judge its applicability,
+   blocking effect, and before/after meaning;
+4. make the Architecture impact, change-path, contribution/ADR, finding, and
+   route judgments as the current AI owner;
+5. author one complete result matching `schemas/semantic-result.schema.json`;
+6. submit `public_input` plus that `owner_result` once through the formal
+   `scripts/invoke.sh --invocation -` boundary; and
+7. consume exactly one declared typed exit.
+
+`owner_not_yet_executed` is an internal prompt to finish steps 2-6, not a typed
+stop and not a reason to ask for routine confirmation. Map genuinely missing
+authority or project-check facts to the existing incomplete or blocked routes.
+On deterministic schema, identity, freshness, consumer, or route validation
+failure, report the exact error and stop the current invocation. Any correction
+requires fresh Skill re-entry with reread facts and a newly authored envelope;
+it is not a retry within the same semantic round. Report execution capability
+as missing only when the platform truly cannot provide the contract-required
+AI review, reads, result authoring, or formal invocation. User confirmation is
+required only for a real choice or side effect; it never supplies the semantic
+result and is never recorded in the owner result or another authorization
+artifact.
+
 Every standard task enters `task_impact_sync` at Planning. The AI rereads the
 project Architecture Baseline, design-constitution authority, project
 change-contract identity, task scope, and applicable project-check protocol.
@@ -39,6 +72,12 @@ ADR, promotion, and route judgment. The deterministic runtime validates only
 the closed 2.0 input/result/output contracts, exact identity/freshness binding,
 project-check shape, unique consumer, and minimal typed projection. Missing or
 1.0 input is rejected; it is never upgraded or dual-read.
+
+Author the smallest result valid for the selected branch. In particular, a
+`no_architecture_impact` owner result uses `promotion_state=no_change` and omits
+`change_path`, contribution fields, project-check descriptor/result fields,
+and `review`; optional schema properties are not universally valid across
+semantic branches.
 
 The public input carries only caller route and live authority identities, plus
 the exact committed range when the stage needs one. The AI rereads the project

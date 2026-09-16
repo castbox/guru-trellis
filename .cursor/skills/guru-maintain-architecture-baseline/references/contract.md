@@ -46,12 +46,29 @@ profile and `constitution_status=current`; the current authority locator must
 resolve component-by-component to an existing regular repository file without
 a symlink-backed component.
 
+The AI currently executing this Skill is the contract-selected semantic owner.
+It rereads the public contract and live repository authority, performs the
+semantic review, authors the complete 2.0 result, and then invokes the formal
+deterministic wrapper once. The runtime's refusal to generate an impact, route,
+or pass judgment never implies that another external owner must be found.
+
+The owner execution sequence is public input validation, complete contract and
+live-authority reads, applicable project-check execution/evidence review,
+semantic Architecture judgment, complete result authoring against
+`schemas/semantic-result.schema.json`, one `scripts/invoke.sh --invocation -`
+call, and consumption of its single typed exit. Routine confirmation is not an
+authoring prerequisite and no confirmation wording or state belongs in the
+result.
+
 ## Task-local change contract
 
 Every standard task binds the Guru public contract identity and the project's
 baseline/change-contract identities. `no_architecture_impact` is a lightweight
-reviewed result and creates neither contribution nor ADR. An architecture
-impact selects exactly one path: `target_native`,
+reviewed result and creates neither contribution nor ADR. Its owner result uses
+`promotion_state=no_change` and omits `change_path`, contribution fields,
+`project_check_descriptors`, `project_checks`, and `review`; those optional
+schema properties belong only to the architecture-impact branches that require
+them. An architecture impact selects exactly one path: `target_native`,
 `legacy_boundary_convergence`, or `dedicated_refactor_slice`.
 
 The project task-local contract owns requirement/behavior authority, boundary,
@@ -133,3 +150,16 @@ architecture completion.
 The deterministic invocation records no authorization and makes no semantic
 decision. It validates the AI-authored result and serializes exactly one closed
 typed output.
+
+`owner_not_yet_executed` is only an internal execution state: the current AI
+owner continues the sequence above. Missing authority, constitution, project
+contract, descriptor, or required check evidence uses the existing
+`contract_incomplete`, `baseline_incomplete`, or `blocked` route as applicable.
+A deterministic validation error is repaired by correcting the authored result
+or freshly rereading stale identity/freshness facts only after the current
+invocation reports the exact error and stops. That correction starts a new
+semantic owner round with a newly authored envelope; it is not a retry within
+the prior round and the failed invocation is never converted into an
+Architecture judgment. Only a platform that cannot perform the required AI
+review, public/live reads, result authoring, or formal invocation may report a
+true execution-capability gap.
