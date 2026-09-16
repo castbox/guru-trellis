@@ -1,5 +1,0 @@
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"注入会截断。开始检查前从原文件完整读取 Validation Scope Ownership、Required Checks 及 Skill Eval 验证条款；明确 native、installed、声明投影与 release matrix 各自证明边界。"}
-{"file":".trellis/spec/workflow/semantic-retrieval.md","reason":"审查事实检索与不存在结论证据要求"}
-{"file":".trellis/spec/workflow/subtraction-first-compatibility.md","reason":"代码与 Docs 收敛、维护性与范围边界"}
-{"file":".trellis/tasks/09-16-421-intake-semantic-owner/prd.md","reason":"完整 A1-A5 验收与唯一 Docs SSOT Plan"}
-{"file":".trellis/tasks/09-16-421-intake-semantic-owner/implement.md","reason":"V1-V6 验证矩阵与未验证边界"}
