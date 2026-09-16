@@ -1,3 +1,0 @@
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Deterministic executor/validator boundaries and package-owned errors."}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"Task mapping, archive identity and public/private owner boundaries."}
-{"file":".trellis/spec/workflow/subtraction-first-compatibility.md","reason":"Direct evolution and source-file maintainability."}
