@@ -24,6 +24,7 @@
             "not": {
               "anyOf": [
                 {"required": ["native_execution_adapter"]},
+                {"required": ["native_authoring_flow"]},
                 {"required": ["model_id"]}
               ]
             }
@@ -36,6 +37,7 @@
         "expected_exit": {"type": "string", "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$"},
         "expected_output": {"type": "string", "minLength": 1},
         "native_execution_mode": {"enum": ["post_owner", "semantic_authoring"]},
+        "native_authoring_flow": {"const": "standard_intake"},
         "native_execution_adapter": {"const": "codex"},
         "model_id": {"type": "string", "minLength": 1},
         "input_profile_id": {"type": "string", "minLength": 1},

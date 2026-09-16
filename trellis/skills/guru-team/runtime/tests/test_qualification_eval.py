@@ -677,6 +677,18 @@ class QualificationEvalTests(unittest.TestCase):
                 forbidden_values={"private-case-id"},
             )
 
+    def test_codex_model_option_does_not_override_qualification_requests(self) -> None:
+        self.args.codex_model = "different-unpinned-model"
+        _, requests = self._run()
+        self.assertEqual(len(requests), 5)
+        for request in requests:
+            self.assertEqual(request["model_id"], eval_runner.QUALIFICATION_MODEL)
+            argv, _ = native_adapter.native_argv(
+                "codex", "codex", request, "context", self.root / "context.txt",
+                self.root / "adapter-request.json", self.root / "projection",
+            )
+            self.assertEqual(argv[argv.index("--model") + 1], eval_runner.QUALIFICATION_MODEL)
+
     def test_codex_native_argv_pins_exact_model(self) -> None:
         request = {
             "schema_version": "3.0",

@@ -5,6 +5,42 @@
   "skill_name": "guru-review-change-request",
   "evals": [
     {
+      "id": "standard-intake-authoring-complete",
+      "prompt": "Review the issue in the supplied source evidence through the current standard Intake owners. Use the current repository authority and the formal installed commands, and return the resulting public output without creating a workspace.",
+      "native_execution_mode": "semantic_authoring",
+      "native_authoring_flow": "standard_intake",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "expected_exit": "ready",
+      "expected_output": "The same native Agent authors all four semantic owners and the actual Readiness wrapper returns ready, using real predecessor outputs.",
+      "files": ["evals/files/standard-intake-source.json"],
+      "assertions": {"deterministic": [
+        {"id": "public-invocation-only", "kind": "trace", "invariant": "public_invocation_only"},
+        {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+        {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+      ], "semantic": [
+        {"id": "native-four-owner-review", "evidence_selector": "transcript", "criterion": "Independently read this run's full native transcript, source facts and command receipts. The same native AI actually performs Discovery, Clarification, Wording and Readiness semantic review from the authority before authoring each result; it neither waits for an external owner nor refuses or defers its own responsibility. Actual public outputs are consumed in sequence as context_ready, clear, pass and ready, without invented predecessors or workspace execution. Command order alone is not semantic evidence."}
+      ]}
+    },
+    {
+      "id": "standard-intake-authoring-scope-conflict",
+      "prompt": "Review the issue in the supplied source evidence through the current standard Intake owners. Use the current repository authority and the formal installed commands, and return the resulting public output without creating a workspace.",
+      "native_execution_mode": "semantic_authoring",
+      "native_authoring_flow": "standard_intake",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "expected_exit": "blocked",
+      "expected_output": "Clarification identifies the unresolved mutually exclusive delivery scope, emits its actual blocked DTO, and no downstream owner or workspace command runs.",
+      "files": ["evals/files/standard-intake-conflicting-source.json"],
+      "assertions": {"deterministic": [
+        {"id": "public-invocation-only", "kind": "trace", "invariant": "public_invocation_only"},
+        {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+        {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+      ], "semantic": [
+        {"id": "native-conflict-review", "evidence_selector": "transcript", "criterion": "Independently read this run's full native transcript, source facts and command receipts. The native AI identifies the actual mutually exclusive delivery requirements and unresolved product choice, authors the Clarification blocker and returns its actual blocked public output. It does not invent a user answer, refuse or defer its own review, wait for an external owner, or execute Wording, Readiness or workspace after the blocker. A blocked DTO or command order alone is not semantic evidence."}
+      ]}
+    },
+    {
       "id": "ready-route",
       "prompt": "Review the staged current issue whose ten readiness dimensions are current, complete this Skill's semantic owner result, and invoke guru-review-change-request through scripts/invoke.sh --invocation - with the staged call-local envelope. Use the same --invocation envelope for record and check, then add the checker receipt only for invoke. Return the AI-selected, objectively checked route.",
       "expected_exit": "ready",

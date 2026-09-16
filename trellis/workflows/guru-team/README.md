@@ -1206,6 +1206,31 @@ repo 外 `RUN_ROOT`，不得复用旧 candidate 的结果：
 运行前按既有 semantic-authoring runtime 合同准备独立 Codex home 和权限环境；
 命令执行成功后仍须审查实际 transcript 与每项语义断言，不预填 grading。
 
+`semantic_authoring` 的 `native_authoring_flow=standard_intake` 声明在原 eval adapter
+中执行完整 Intake；未声明该 flow 的 case 保留原有 owner-specific authoring 语义。host 只准备真实 installed
+包与去敏事实，不预填 owner result 或 predecessor pass。当前 native Agent 读取四个
+Skill/contract、自行判断，再执行各自 record/check/invoke，并以真实 public output 投影
+下一步 input。成功链到 Readiness `ready` 即停，不创建 workspace；真实需求冲突在 owning
+Skill 的 declared blocker 停止。Runner 按最后真实 public producer 的 schema 校验原样输出，
+不将 Clarification blocked 改写成 Readiness blocked。expected exit 不进入模型输入；trace
+只证明执行和绑定，仍须独立审查 native transcript 的语义充分性。本定向验证不替代 #410
+的 exact-candidate 多平台 Release Gate。
+
+Intake 模型投影只包含声明的 Skill/完整合同/Interface、必要 schema、原命令边界和
+源事实；examples、owner-result/output/pass 样例、eval controls 和 private runtime 均不进入
+投影，Interface 的 example 引用不构成例外。helper 与 trace 同时限制到该声明读集合。
+completed-run 补评分只更新显式声明 `standard_intake` 的 case 行。
+可通过 `--adapter codex --codex-model gpt-5.6-sol` 为未固定模型的 Codex case 选择模型；
+corpus 已固定的模型不受覆盖，省略参数保留 CLI 默认，其它 adapter 不接受此参数。
+该选择不改变任何评分、输出校验或生命周期。
+完整 full/mixed run 先校验完整 case/side 集合，再仅更新 Intake 评分并重算 aggregate；non-flow 行和原始证据
+保持不变，grading 中 non-flow assertion 必须拒绝。没有 Intake 的运行保持原 fresh/saved 语义。
+两例必须声明 transcript semantic assertions：未提供独立评分时，即使 trace/exit/schema
+通过，raw run 仍为 `evaluation_failed`。独立 AI 现场审查该次 transcript 后，用相同
+run-root 和原 `--semantic-grading` 参数完成后续评分；不重跑模型、不修改原始执行证据，
+不允许评分覆盖确定性失败。沿用既有 schema 的 case/side/assertion 关联，不增加隐式
+summary 协议或声称新的 transcript 字节签名。
+
 Finalizer transaction 同时绑定 `reviewed_content_head` 与 `publication_head`。业务
 content push 后直接继续 Draft PR、archive 与 Ready transaction；installed manifest、
 README、docs、config、`.trellis/**` 或平台副本 changed path 都不会产生 verifier route。

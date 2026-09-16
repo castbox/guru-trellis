@@ -1457,6 +1457,14 @@ and optional non-empty deterministic/semantic assertion groups. A case may also
 declare `native_execution_mode=post_owner|semantic_authoring`; omission is
 exactly `post_owner`. `native_execution_adapter` and `model_id` are required
 only for `semantic_authoring` and forbidden for omitted mode or `post_owner`.
+That restriction belongs to corpus authoring. The runner's optional
+`--codex-model` execution setting may supply `model_id` in a Codex post-owner
+adapter request, without changing the corpus. It never overrides corpus-pinned
+models or applies to other adapters; omitted selection keeps prior behavior.
+The optional closed `native_authoring_flow=standard_intake` is also restricted
+to `semantic_authoring`. Omission retains the existing single-Skill authoring
+contract; the field selects an eval-only execution flow, never a production
+Skill profile, semantic route, or compatibility wrapper.
 Unknown fields, including `expectations`, `null`, unsafe paths, symlinks, and
 unknown profile/exit/assertion references fail closed. Adapters accept only this
 current corpus shape and never translate or rewrite another input contract.
@@ -1557,6 +1565,62 @@ or release proof. Normal workflow and standalone invocation never read eval
 corpus, fixtures, adapter descriptors, or runner evidence. The six Intake
 packages and the three planning/check/commit packages are each validated as a
 complete current activation unit.
+
+### Standard Intake Native Authoring
+
+For the declared `standard_intake` flow, one native Agent reads the installed
+Discovery, Clarification, Wording, and Readiness Skill contracts and necessary
+live fixture facts. It executes the real Sync and owner-specific preview/scan,
+record, check, and invoke commands in their declared order. The host stages no
+owner result, prerequisite semantic result, or expected decision. The Agent
+authors each owner result before recording it and projects the actual public
+output to the next public input; producer-private results never cross that
+edge. The native prompt must not require a corrective owner-authoring hint to
+complete the ordinary flow.
+
+This flow has a minimal model-visible asset allowlist: the participating Skill
+files, complete contracts, Interfaces, necessary current schemas and original
+command boundaries, plus declared source facts. Interface example references
+do not grant projection permission. Do not copy whole asset directories or
+expose examples, owner-result/output/pass samples, eval controls, or private
+runtime. The helper and trace validator close reads over the declared assets;
+mere presence below a model directory is not a read declaration.
+
+The flow trace extends the existing eval boundary to the declared sequence of
+commands rather than the single-Skill one-invoke shape. It binds actual reads,
+wrapper execution, stdout, and public projections. The terminal producer is
+the last real public wrapper, and its interface selects the terminal output
+schema. A Clarification blocker is not rewritten into a Readiness result.
+The successful chain stops at Readiness `ready`, before workspace mutation;
+a semantic blocker stops at its real owner without invoking downstream steps.
+
+Expectations and grading remain runner-side. A valid command trace proves
+execution and identity, not semantic adequacy: the native transcript and
+authority require independent AI review. Both success and a real requirement-
+conflict route must be exercised without staged/fake results, expected-exit
+leakage, or keyword assertions substituting for judgment. Missing native
+capability remains unsupported, and this focused evidence is not a cumulative
+multi-platform release matrix.
+
+Both Intake cases declare transcript semantic assertions. Missing external
+grading remains `evaluation_failed` even when all structural assertions pass;
+an empty semantic result list cannot establish this flow's success. After an
+independent AI reviews the actual completed transcript, source facts and
+receipts, the existing `run-skill-evals --semantic-grading` entry may grade that
+same completed run root without staging or dispatching the model again.
+This two-stage branch updates only cases declaring
+`native_authoring_flow=standard_intake`. A completed full/mixed run containing
+such cases must validate its complete applicable case/side identity before
+updating only those Intake rows and the derived aggregate. Every non-flow row
+and its execution evidence remain unchanged; non-flow assertions in grading
+are rejected. Non-flow-only post-owner, Architecture, Phase 2 and qualification
+runs keep their existing fresh/saved execution behavior.
+Validate the existing execution and case/side/assertion identities before
+updating semantic results and the derived aggregate. Preserve actual exits,
+deterministic results, timing and raw transcript/trace/receipt bytes. Missing or
+mismatched execution fails closed; a grade cannot override execution errors,
+unsupported capability, or deterministic failures. The existing grading schema
+is unchanged: same-run workflow binding is not a new transcript-byte signature.
 
 ## Branch Review Owner And Active Publication Bridge
 

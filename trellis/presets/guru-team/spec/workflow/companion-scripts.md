@@ -1003,6 +1003,14 @@ Finalizer projection, or task-work route is permitted.
 
 `discover-skill-evals.sh` and `run-skill-evals.sh` are thin wrappers for the
 deterministic `discover-skill-evals` and `run-skill-evals` subcommands.
+
+`run-skill-evals --adapter codex --codex-model <model>` optionally selects the
+native model for cases without a corpus-pinned model. It passes the existing
+adapter-request `model_id` to Codex `exec --model`; omission retains the CLI
+default. Other adapters and blank values are rejected before staging.
+Corpus-pinned semantic-authoring and qualification models remain authoritative.
+This execution option changes no owner, prompt, grading, output validation or
+fresh/saved lifecycle and does not modify user/global Codex configuration.
 Discovery validates source/installed registry and the row-selected Interface
 1.4, 1.5, or 1.6 state before it
 loads the fixed package-local corpus, then validates corpus identity, profile
@@ -1087,6 +1095,49 @@ dispatch, reruns the owner checker, and returns the actual exit. Adapter and nat
 `semantic_authoring` runs from its repo-external isolated model root with
 `--skip-git-repo-check`. Claude uses safe non-interactive input, and missing
 Cursor authentication returns deterministic `unsupported`.
+
+An explicit `native_authoring_flow=standard_intake` authoring case reuses this
+same runner/adapter with a facts-only installed fixture and sequential command
+trace. It must not call host owner recipes or stage checked predecessors. The
+native Agent performs each current Skill's semantic review, then calls its
+real recorder, checker, and public serializer; the boundary only forwards
+declared commands and validates actual public-output/input projection. Source
+fact queries and ordinary history/wording scans remain deterministic evidence,
+never semantic producers.
+
+This eval-only flow permits the participating packages' declared command
+sequence instead of requiring one terminal invocation for the entire run.
+Each actual wrapper receipt binds its output, and the terminal receipt selects
+that producer's output schema. Success stops at Readiness `ready`; a genuine
+semantic blocker stops at its owner with no downstream invocation or workspace
+mutation. The runner compares expectations only after native execution, keeps
+the native context free of expected decisions, and requires independent
+semantic assessment in addition to structural trace checks. Existing
+single-Skill and post-owner execution paths retain their validation duties;
+they do not substitute for this no-prewritten-result regression.
+
+Standard Intake projection is allowlist-based. Interface examples and whole
+asset directories must not enter the model projection; helper and trace reads
+are limited to declared contract/schema/command/source assets. The two cases
+must have transcript semantic assertions, so absent external grading leaves a
+structurally successful raw run at `evaluation_failed`.
+
+Only cases declaring `native_authoring_flow=standard_intake` may use the same
+`run-skill-evals` command with `--semantic-grading` and the completed `--run-root`
+to consume an independent post-execution review. Unmarked post-owner,
+Architecture and Phase 2 cases retain their original execution behavior;
+this branch does not introduce a shared saved-run lifecycle. A completed full
+or mixed run containing Intake cases retains its complete applicable case/side
+identity. After validating that entire identity, grade only its Intake rows;
+reject any non-flow assertion in the grading input. Preserve every non-flow
+row, field, order, timing and execution artifact unchanged, then recompute the
+whole aggregate status. Focused runs retain their exact focused identity.
+This branch validates existing execution identity before any staging or model
+dispatch and only updates Intake semantic results/status and aggregate status. It never
+reconstructs missing execution, overwrites raw transcript/trace/receipts, or
+turns execution/deterministic failures into success. Existing case/side/
+assertion binding and same-run review apply without a new grading schema or
+an implicit protocol embedded in free-form summary text.
 
 ## Branch Review Recorder And Checker
 

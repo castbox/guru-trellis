@@ -37,6 +37,31 @@ choice, this owner updates live authority through its existing rules and returns
 to the exact closed `resume_target`; changed authority or candidates require the
 original owner to run fresh qualification.
 
+## Current Executing Owner
+
+The current executing AI is this Skill's semantic owner in both workflow and
+standalone modes. `owner_not_yet_executed` means continue the current review;
+it is not a typed exit and does not require an external owner, agent ID,
+subagent evidence, or pre-existing owner result. The restriction on runtime
+semantic judgment does not restrict the current AI from authoring that judgment.
+
+Read the complete contract, real Discovery public output, and current authority.
+You resolve repository-answerable questions from evidence, review duplicate
+disposition and scope, and ask only the real product choices required by this
+contract. Author the current clarification result and Gate before running
+record-requirements-clarification.sh, check-requirements-clarification.sh, and
+invoke.sh with their declared inputs. Never invent an answer to an unresolved
+load-bearing question merely to obtain clear.
+
+Keep this owner's authoring and recorded result in call-local memory for its
+own record/check/invoke sequence. Pass only actual public invoke stdout through
+the declared thin projection to the next consumer; never read or reconstruct
+producer-private results. This responsibility does not waive missing authority,
+freshness, schema, prerequisite, or unresolved-choice checks: use the existing
+declared blocker or re-entry route when a real gap remains. Do not bypass the
+workspace gate or ask for a corrective Prompt merely because your review has
+not run yet.
+
 ## Forward Behavior
 
 For repository-answerable questions, duplicate evidence, and recalled
@@ -78,6 +103,26 @@ perform those judgments.
 
 ## Questions And Convergence
 
+Record only clarification rounds and answers that actually occurred. Unknown,
+unasked, or unanswered choices are not refused, deferred, or answered. In
+particular, `answer_status=refused` requires an actual user refusal; absence of
+a response is not that evidence. Never invent a question, reply, refusal, or
+deferral to satisfy required schema fields, and never claim the user explicitly
+declined a choice without that actual response.
+
+When current authority contains an unresolved load-bearing conflict and no real
+choice can be obtained, return the existing `blocked` exit with
+`ai_review_gate.status=blocked`. Describe the conflicting requirements, missing
+choice, and actual evidence in the Gate finding, summary, and result `reason`.
+If no clarification round with an actual answer occurred, use
+`clarification_rounds=[]`; do not synthesize a round to express the conflict.
+Keep `open_questions` consistent with the recorded lifecycle (empty when there
+are no recorded rounds), and do not treat that empty array as semantic clarity.
+An asked but unanswered question can be described truthfully in the blocked
+Gate without assigning it a fictional answer status. Preserve actual prior
+rounds and partial answers when present; do not erase them to use the empty
+shape. The existing blocker requires no new schema field or runtime judgment.
+
 Every clarification round contains one `question_id` that must be opened in
 that round or already belong to the current open set. The reducer enforces
 `open_questions = opened - closed`, rejects close-before-open and
@@ -115,8 +160,23 @@ state and never performs the normal initial search again.
 - `block_target_complete`: record evidence that the target is complete and no
   independently deliverable gap remains.
 
-`needs_context` or a blocked incomplete decision may carry no disposition only
-because it cannot advance downstream. Every progressing `clear`,
+Scope/product conflict and target disposition are independent judgments. A
+conflict does not make a known issue identity or Discovery duplicate facts
+unknown. When current target facts suffice, complete the target disposition
+even with a blocked semantic Gate: for example, retain the known open issue
+when the reviewed duplicate evidence supports it, while recording the unresolved
+product choice as the blocker. This is a fresh AI judgment, not a default keep
+decision or a default pass. Preserve the actual Discovery `duplicate_snapshot`,
+including its candidate facts and opaque tokens.
+
+`target_disposition=null` is not a blocked shortcut. `needs_context` or a
+blocked incomplete target decision may carry no disposition only when the target
+decision itself is genuinely missing and the selected invocation permits it.
+In particular, initial `source_exit=context_ready` still requires a disposition
+matching its snapshot, including on blocked; null does not satisfy that public
+invocation. Do not drop the snapshot, change the source exit, or invent a target
+decision to bypass the binding. Handle genuine missing target evidence through
+the existing context/error route. Every progressing `clear`,
 `refresh_context`, `retarget_context`, or `new_task` result requires one current
 disposition. In particular, an issue comment/body edit or proposed-draft update
 cannot use `target_disposition=null` while returning `refresh_context`.
@@ -347,3 +407,12 @@ declared continuation; clarification evidence remains private and is never
 imported by the next Skill. The envelope has no top-level `typed_output` input:
 callers cannot provide or select the route. Locator arguments remain only for
 explicitly documented compatibility consumers and are not the normal route.
+
+Only successful public invoke stdout is the final DTO. A record/check
+`typed_exit` is owner-private evidence, not a public exit. If invoke returns
+an error, preserve and report that actual failure, correct ordinary authoring
+omissions from already reviewed facts or follow the declared context re-entry,
+then rerun the affected record/check/invoke sequence. Never hand-write a blocked
+DTO, copy an example output, or present a planned semantic exit as successfully
+emitted. An unresolved invocation error remains an execution failure, even when
+the AI correctly judged that the product conflict should block.

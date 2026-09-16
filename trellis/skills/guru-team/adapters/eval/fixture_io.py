@@ -381,7 +381,8 @@ def stage_clean_installed_owner_repo(
             raise ValueError("installed managed runtime bootstrap failed during owner staging")
     return fixture, source_repo
 
-def write_fake_gh(execution_root: Path, recipe: str) -> Path:
+def write_fake_gh(execution_root: Path, recipe: str, source: dict[str, Any] | None = None,
+                  local_remote: Path | None = None) -> Path:
     binary = execution_root / "owner-bin"
     binary.mkdir(parents=True, exist_ok=True)
     target = binary / "gh"
@@ -396,6 +397,8 @@ def write_fake_gh(execution_root: Path, recipe: str) -> Path:
         if workspace_recipe else "Issue 145 owner staging body"
     )
     issue_assignees = [{"login": "stage0-eval"}] if workspace_recipe else []
+    if source is not None:
+        issue_title, issue_body = source["title"], source["body"]
     target.write_text(
         MANAGED_PYTHON_SHEBANG
         +
@@ -405,6 +408,8 @@ def write_fake_gh(execution_root: Path, recipe: str) -> Path:
         f"bodies={{145:{issue_body!r},146:'Issue 146 owner staging body'}}\n"
         f"assignees={{145:{issue_assignees!r},146:[]}}\n"
         "args=sys.argv[1:]\n"
+        "if args[:2]==['issue','list']:\n"
+        " print('[]'); raise SystemExit(0)\n"
         "if args[:2]==['auth','status']:\n"
         " raise SystemExit(0)\n"
         "if args[:2]==['api','user']:\n"
@@ -430,7 +435,10 @@ def write_fake_gh(execution_root: Path, recipe: str) -> Path:
         "import os,subprocess,sys\n"
         f"real_git={real_git!r}\n"
         f"workspace_recipe={workspace_recipe!r}\n"
+        f"local_remote={str(local_remote) if local_remote else None!r}\n"
         "args=sys.argv[1:]\n"
+        "if args and args[0] in ('fetch','ls-remote') and local_remote:\n"
+        " os.execv(real_git,[real_git,'-c',f'url.{local_remote}.insteadOf=https://github.com/example/guru-extension.git',*args])\n"
         "if args and args[0]=='fetch': raise SystemExit(0)\n"
         "if workspace_recipe and args==['ls-remote','--heads','origin','main']:\n"
         " head=subprocess.run([real_git,'rev-parse','--verify','refs/remotes/origin/main'],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)\n"

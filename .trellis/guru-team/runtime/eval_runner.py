@@ -776,6 +776,8 @@ def corpus(skills: Path, package: Path, interface: dict[str, Any]) -> tuple[dict
     output_exits = {item.get("exit_id") for item in contracts.get("outputs", []) if isinstance(item, dict)}
     seen_cases: set[str] = set()
     for index, case in enumerate(payload.get("evals", [])):
+        if case.get("native_authoring_flow") and interface.get("id") != "guru-review-change-request":
+            raise error("eval_flow_owner_invalid", f"evals[{index}].native_authoring_flow", "Declare standard_intake only in Readiness.")
         case_id = case["id"]
         if case_id in seen_cases:
             raise error("eval_case_duplicate", f"evals[{index}].id", "Use one unique stable case id.")
@@ -1720,7 +1722,210 @@ def qualification_run(
     return output
 
 
+def eval_request(args: argparse.Namespace, package: Path, interface: dict[str, Any],
+                 row: dict[str, Any], case: dict[str, Any], workdir: Path,
+                 corpus_sha256: str, target: Path) -> dict[str, Any]:
+    request = {
+        "schema_version": "1.0", "adapter_id": args.adapter, "platform": args.adapter,
+        "skill_id": args.skill, "package_root": str(package),
+        "interface": {
+            "interface_schema_id": row["interface_schema_id"],
+            "interface_version": interface["schema_version"],
+            "public_invocation": interface["public_contracts"]["invocation"],
+            "output_schemas": {item["exit_id"]: item["schema"] for item in interface["public_contracts"]["outputs"]},
+        },
+        "case_id": case["id"], "prompt": case["prompt"], "files": case.get("files", []),
+        "workdir": str(workdir), "corpus_path": str(package / "evals/evals.json"),
+        "corpus_sha256": corpus_sha256, "runtime_target": str(target),
+        "native_execution_mode": case.get("native_execution_mode", "post_owner"),
+    }
+    for field in ("native_execution_adapter", "model_id", "native_authoring_flow"):
+        if field in case:
+            request[field] = case[field]
+    if (args.adapter == "codex"
+            and request["native_execution_mode"] == "post_owner"
+            and "model_id" not in request
+            and getattr(args, "codex_model", None) is not None):
+        request["model_id"] = args.codex_model
+    return request
+
+
+def completed_execution(skills: Path, case_root: Path, request: dict[str, Any],
+                        result: dict[str, Any], descriptor: dict[str, Any]) -> None:
+    """Recheck only a completed standard Intake execution without rerunning it."""
+    if request.get("native_authoring_flow") != "standard_intake":
+        raise error("eval_completed_flow_required", "native_authoring_flow", "Select a standard Intake case.")
+    try:
+        if strict_json(case_root / "adapter-request.json", "adapter_request") != request:
+            raise ValueError("saved adapter request differs from current selection")
+        transcript_path = Path(result["transcript_locator"])
+        if transcript_path.resolve() != (case_root / "adapter-transcript.json").resolve():
+            raise ValueError("transcript is not from this run/case/side")
+        transcript = strict_json(transcript_path, "transcript")
+        if transcript["adapter"] != request["adapter_id"]:
+            raise ValueError("transcript adapter mismatch")
+        # Failed capability/execution can never be promoted by a semantic grade.
+        if result["status"] in {"execution_error", "unsupported"}:
+            return
+        if transcript["returncode"] != 0 or transcript["native_command"] != descriptor["native_command"]:
+            raise ValueError("native execution identity mismatch")
+        protocol_path = Path(transcript["protocol_path"])
+        protocol_path.resolve().relative_to(case_root.resolve())
+        protocol = strict_json(protocol_path, "native_protocol")
+        for key in ("native_request_path", "projection_root", "wrapper_path"):
+            if transcript[key] != protocol[key]:
+                raise ValueError(f"transcript/protocol {key} mismatch")
+        native_path = Path(protocol["native_request_path"])
+        native = strict_json(native_path, "native_request")
+        if file_sha256(native_path, "native_request") != protocol["request_sha256"]:
+            raise ValueError("saved native request is stale")
+        for key in ("skill_id", "prompt"):
+            if native[key] != request[key]:
+                raise ValueError(f"native request {key} mismatch")
+        if "case_id" in native and native["case_id"] != request["case_id"]:
+            raise ValueError("native case mismatch")
+        if native["public_invocation"] != request["interface"]["public_invocation"]:
+            raise ValueError("native invocation mismatch")
+        if native.get("native_authoring_flow") != request.get("native_authoring_flow"):
+            raise ValueError("native flow mismatch")
+        if (not protocol.get("semantic_authoring")
+                or protocol.get("native_authoring_flow") != request.get("native_authoring_flow")
+                or native.get("native_execution_mode", "post_owner") != request["native_execution_mode"]):
+            raise ValueError("saved execution mode mismatch")
+        argv = transcript["argv"]
+        if request.get("model_id") is not None:
+            if "--model" not in argv or argv[argv.index("--model") + 1] != request["model_id"]:
+                raise ValueError("native model mismatch")
+        audit = transcript["model_input_audit"]
+        if (audit["native_request"] != native or audit["argv"] != argv
+                or audit["context"] != Path(transcript["context_path"]).read_text(encoding="utf-8")):
+            raise ValueError("saved model-visible input mismatch")
+        package = Path(request["package_root"])
+        projection = Path(protocol["projection_root"])
+        model_root = Path(protocol["model_root"])
+        projection.resolve().relative_to(model_root.resolve())
+        Path(protocol["wrapper_path"]).resolve().relative_to(projection.resolve())
+        # Compare the saved visible package assets with their current sources,
+        # including shared projections and all participating Intake packages.
+        for projected in projection.rglob("*"):
+            if not projected.is_file():
+                continue
+            relative = projected.relative_to(projection)
+            source_package = package
+            if relative.parts[0] == "flow-packages":
+                source_package = package.parent / relative.parts[1]
+                relative = Path(*relative.parts[2:])
+            source = source_package / relative
+            if not source.is_file():
+                source = source_package.parents[1] / relative
+            if projected.read_bytes() != source.read_bytes():
+                raise ValueError(f"package projection is stale: {relative}")
+        workdir = Path(request["workdir"])
+        for fixture in request["files"]:
+            staged_bytes = (workdir / fixture).read_bytes()
+            if staged_bytes != (package / fixture).read_bytes():
+                raise ValueError("saved fixture differs from corpus source")
+        if len(native["files"]) != len(request["files"]):
+            raise ValueError("saved model-visible fixture set mismatch")
+        for visible, fixture in zip(native["files"], request["files"]):
+            if (model_root / visible).read_bytes() != (workdir / fixture).read_bytes():
+                raise ValueError("saved model-visible fixture bytes mismatch")
+        output_path = None
+        if "--output-last-message" in argv:
+            output_path = Path(argv[argv.index("--output-last-message") + 1])
+            output_path.resolve().relative_to(model_root.resolve())
+            if not output_path.is_file():
+                raise ValueError("saved native output missing")
+        trace_path = Path(transcript["native_trace_path"])
+        if str(trace_path) != protocol["trace_path"]:
+            raise ValueError("saved trace locator mismatch")
+        trace_path.resolve().relative_to(model_root.resolve())
+        # Reuse the adapter's read-only validators in an isolated interpreter:
+        # installed/source adapters use the same module names but different roots.
+        validation = subprocess.run(
+            [sys.executable, "-B", "-c", """
+import json, sys
+from pathlib import Path
+skills, request, transcript, protocol, output_path = json.load(sys.stdin)
+sys.path.insert(0, skills)
+from adapters.eval.native_adapter import unwrap_native_output, validate_native_trace
+stdout = unwrap_native_output(request['adapter_id'], transcript['stdout'], Path(output_path) if output_path else None)
+validate_native_trace(Path(transcript['native_trace_path']), protocol['request_sha256'], request,
+                      Path(protocol['wrapper_path']), stdout, Path(transcript['protocol_path']))
+sys.stdout.write(stdout)
+"""],
+            input=json.dumps([str(skills), request, transcript, protocol, str(output_path) if output_path else None]),
+            text=True, capture_output=True, check=False,
+            env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+        )
+        if validation.returncode != 0:
+            raise ValueError("saved native output/trace/receipts failed the existing adapter validator")
+        if json.loads(validation.stdout).get("exit_id") != result.get("actual_exit"):
+            raise ValueError("saved actual exit mismatch")
+    except (OSError, ValueError, KeyError, IndexError, TypeError) as exc:
+        raise error("eval_completed_execution_mismatch", str(case_root),
+                    f"Use the unchanged completed execution in this run root: {exc}") from exc
+
+
+def grade_completed_run(skills: Path, args: argparse.Namespace, run_root: Path,
+                        sides: list[tuple[str, Path]], cases: list[dict[str, Any]],
+                        expected_case_ids: list[str],
+                        row: dict[str, Any], discovery: dict[str, Any], target: Path,
+                        descriptor: dict[str, Any], semantic: dict[str, Any]) -> dict[str, Any]:
+    evidence = run_root / f"{args.skill}-{args.adapter}-run.json"
+    output = strict_json(evidence, "completed_run")
+    validate_instance(output, skills / "schemas/skill-eval-run-2.0.schema.json", "completed_run")
+    for key, value in {"skill_id": args.skill, "adapter": args.adapter, "platform": args.adapter,
+                       "interface_schema_id": row["interface_schema_id"], "evidence_path": str(evidence)}.items():
+        if output[key] != value:
+            raise error("eval_completed_run_mismatch", key, "Select the same completed run and identity.")
+    validate_eval_case_identity(expected_case_ids, [side for side, _ in sides], output["cases"])
+    validate_eval_case_identity(expected_case_ids, ["current"], [
+        {"case_id": case["id"], "comparison_side": "current"} for case in cases])
+    intake_cases = [case for case in cases if case.get("native_authoring_flow") == "standard_intake"]
+    expected = {(side, case["id"], assertion["id"])
+                for side, _ in sides for case in intake_cases
+                for assertion in case.get("assertions", {}).get("semantic", [])}
+    grades = {(item["comparison_side"], item["case_id"], item["assertion_id"]): item
+              for item in semantic["results"]}
+    if set(grades) != expected or len(grades) != len(semantic["results"]):
+        raise error("semantic_grading_identity_mismatch", "semantic_grading",
+                    "Grade exactly the selected run's Intake case/side/assertion set once each.")
+    results = {(item["comparison_side"], item["case_id"]): item for item in output["cases"]}
+    for side, package in sides:
+        interface = strict_json(package / "interface.json", f"comparison.{side}.interface")
+        validate_instance(interface, skills / f"schemas/skill-interface-{interface['schema_version']}.schema.json", "interface")
+        _, corpus_bytes = corpus(skills, package, interface)
+        if hashlib.sha256(corpus_bytes).hexdigest() != discovery["corpus_sha256"]:
+            raise error("eval_comparison_corpus_mismatch", side, "Use the same corpus on both sides.")
+        for case in intake_cases:
+            case_root = run_root / side / case["id"]
+            request = eval_request(args, package, interface, row, case,
+                                   case_root / "execution/workdir", discovery["corpus_sha256"], target)
+            result = results[side, case["id"]]
+            completed_execution(skills, case_root, request, result, descriptor)
+            result["semantic_results"] = [
+                {"id": assertion["id"], "passed": grades[side, case["id"], assertion["id"]]["passed"],
+                 "detail": grades[side, case["id"], assertion["id"]]["summary"]}
+                for assertion in case.get("assertions", {}).get("semantic", [])]
+            if result["status"] not in {"execution_error", "unsupported"}:
+                result["status"] = "passed" if (result["deterministic_results"] and all(
+                    item["passed"] for item in result["deterministic_results"] + result["semantic_results"]
+                )) else "evaluation_failed"
+    output["status"] = next((status for status in ("execution_error", "evaluation_failed", "unsupported")
+                             if any(item["status"] == status for item in output["cases"])), "passed")
+    validate_instance(output, skills / "schemas/skill-eval-run-2.0.schema.json", "evidence")
+    evidence.write_text(json.dumps(output, separators=(",", ":")), encoding="utf-8")
+    return output
+
+
 def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
+    codex_model = getattr(args, "codex_model", None)
+    if codex_model is not None:
+        if args.adapter != "codex":
+            raise error("eval_codex_model_adapter_invalid", "codex_model", "Use --codex-model only with --adapter codex.")
+        if not codex_model.strip():
+            raise error("eval_codex_model_invalid", "codex_model", "Provide a non-blank Codex model id or omit --codex-model.")
     discovery = discover(skills, args.skill)
     descriptor = descriptors(skills)[args.adapter]
     selected_package, selected_interface, row = package_context(skills, args.skill)
@@ -1740,14 +1945,24 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
         except ValueError:
             continue
         raise error("eval_run_root_inside_repo", "run_root", "Use an isolated directory outside repository and package roots.")
-    run_root.mkdir(parents=True, exist_ok=True)
-    if run_root.is_symlink() or not run_root.is_dir():
+    intake_selected = any(case.get("native_authoring_flow") == "standard_intake" for case in selected_cases)
+    if not intake_selected:
+        run_root.mkdir(parents=True, exist_ok=True)
+    if run_root.is_symlink() or (run_root.exists() and not run_root.is_dir()):
         raise error("eval_run_root_invalid", "run_root", "Use a regular external directory.")
     semantic = external(args.semantic_grading, skills / "schemas/skill-eval-semantic-grading.schema.json", "semantic_grading")
     feedback = external(args.human_feedback, skills / "schemas/skill-eval-human-feedback.schema.json", "human_feedback")
     semantic_index = {(item["comparison_side"], item["case_id"], item["assertion_id"]): item for item in semantic.get("results", [])} if semantic else {}
     feedback_index = {(item["comparison_side"], item["case_id"]): [item["feedback"]] for item in feedback.get("items", [])} if feedback else {}
     target = runtime_target(root)
+    if intake_selected:
+        if semantic is not None:
+            return grade_completed_run(skills, args, run_root, sides, selected_cases, expected_case_ids,
+                                       row, discovery, target, descriptor, semantic)
+        if any((run_root / side).exists() for side, _ in sides) or any(run_root.glob("*-run.json")):
+            raise error("eval_run_root_not_fresh", "run_root",
+                        "Use a new empty run root for Intake execution, or grade the completed Intake case in place.")
+    run_root.mkdir(parents=True, exist_ok=True)
     if args.skill == QUALIFICATION_SKILL:
         return qualification_run(
             root,
@@ -1778,29 +1993,12 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
             case_root = run_root / side / case["id"]
             workdir = case_root / "execution/workdir"
             workdir.mkdir(parents=True, exist_ok=True)
-            staged = []
             for fixture in case.get("files", []):
                 destination = workdir / fixture
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(package / fixture, destination)
-                staged.append(fixture)
-            request = {
-                "schema_version": "1.0", "adapter_id": args.adapter, "platform": args.adapter,
-                "skill_id": args.skill, "package_root": str(package),
-                "interface": {
-                    "interface_schema_id": row["interface_schema_id"],
-                    "interface_version": interface["schema_version"],
-                    "public_invocation": interface["public_contracts"]["invocation"],
-                    "output_schemas": outputs,
-                },
-                "case_id": case["id"], "prompt": case["prompt"], "files": staged,
-                "workdir": str(workdir), "corpus_path": str(package / "evals/evals.json"),
-                "corpus_sha256": discovery["corpus_sha256"], "runtime_target": str(target),
-                "native_execution_mode": case.get("native_execution_mode", "post_owner"),
-            }
-            for field in ("native_execution_adapter", "model_id"):
-                if field in case:
-                    request[field] = case[field]
+            request = eval_request(args, package, interface, row, case, workdir,
+                                   discovery["corpus_sha256"], target)
             validate_instance(request, skills / "schemas/skill-eval-adapter-request.schema.json", "adapter_request")
             request_path = case_root / "adapter-request.json"
             request_path.write_text(json.dumps(request, separators=(",", ":")), encoding="utf-8")
@@ -1868,9 +2066,17 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
                     result["actual_exit"] = actual_exit
                     checks = deterministic_results(case.get("assertions", {}).get("deterministic", []), public_output, response["trace_events"], workdir, package)
                     schema_passed = False
-                    if actual_exit in outputs:
+                    output_package, actual_outputs = package, outputs
+                    if case.get("native_authoring_flow") == "standard_intake":
+                        trace = strict_json(Path(response["native_trace_locator"]), "native_trace")
+                        terminal = trace.get("terminal_skill_id")
+                        if not isinstance(terminal, str) or not terminal:
+                            raise error("eval_terminal_owner_invalid", "native_trace", "Use actual Intake terminal producer.")
+                        output_package, terminal_interface, _ = package_context(package.parents[1], terminal)
+                        actual_outputs = {item["exit_id"]: item["schema"] for item in terminal_interface["public_contracts"]["outputs"]}
+                    if actual_exit in actual_outputs:
                         try:
-                            validate_instance(public_output, package / outputs[actual_exit]["path"], f"output.{actual_exit}")
+                            validate_instance(public_output, output_package / actual_outputs[actual_exit]["path"], f"output.{actual_exit}")
                             schema_passed = True
                         except CommandError:
                             pass
@@ -1919,6 +2125,7 @@ def parser() -> argparse.ArgumentParser:
         child.add_argument("--skill", required=True)
         child.add_argument("--json", action="store_true")
     run_parser.add_argument("--adapter", required=True, choices=ADAPTERS)
+    run_parser.add_argument("--codex-model")
     run_parser.add_argument("--case")
     run_parser.add_argument("--run-root", required=True)
     run_parser.add_argument("--current-package")

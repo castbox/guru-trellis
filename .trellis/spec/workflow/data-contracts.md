@@ -1579,6 +1579,12 @@ python3 -m json.tool trellis/index.json
 
 ## Skill Evaluation Data Contracts
 
+The optional `run-skill-evals --codex-model` execution setting is Codex-only and
+applies only when the corpus does not pin a model. The existing `model_id` field
+may therefore occur on a Codex post-owner adapter request. Corpus schema rules
+and pinned semantic-authoring/qualification models do not change. The request
+and actual native argv record the selected model; it is not semantic evidence.
+
 `public_api.skill_evals` publishes schema id `guru-team-skill-evals-1.0`, native
 trace schema id `guru-team-skill-eval-native-trace-1.0`, the four adapter ids,
 the closed run-status set, and the repo-relative canonical
@@ -1633,6 +1639,42 @@ only when actual case ids exactly equal the independently derived declared
 applicable set, with missing, duplicate, unknown, and unexpected ids rejected.
 Actual wrapper output selects the per-exit schema before the runner performs the
 independent expected-versus-actual assertion.
+
+`native_authoring_flow`, when present, is exactly `standard_intake` and requires
+`native_execution_mode=semantic_authoring`. Its direct consumers are the eval
+runner, native adapter, facts-only staging, and flow trace validator. It is not
+a production Skill input, output, owner state, or authorization field. Existing
+single-Skill authoring and post-owner cases retain their own trace contracts.
+
+The standard Intake flow records each declared command's actual input/output
+identity and the terminal public producer in eval-private trace evidence. The
+terminal producer's current interface, not the corpus-owning package, defines
+the schema for its unchanged output. The Agent-visible projection contains
+the participating public contracts, declared consumer projections, and source
+facts; it excludes expected exits, semantic verdicts, private runtime, and
+host-prepared owner or prerequisite results. Actual public outputs bind the
+next public inputs without a producer-private payload handoff. Flow case ids
+remain subject to the same declared-versus-actual aggregate completeness rule.
+
+For `standard_intake`, model-visible assets are an explicit minimal set, not a
+directory-copy policy. Schemas and command boundaries are distinct from sample
+answers: no Interface input/output/error example reference adds a visible
+artifact. The helper and trace use that same declared read set and reject
+examples, eval controls and private runtime.
+
+Intake transcript assertions consume the existing semantic-grading 1.0 rows
+by comparison side, case and assertion identity. Completed focused or full/mixed
+runs containing declared `standard_intake` cases retain their entire original
+applicable case/side set. Grading must match exactly the Intake assertions only;
+non-flow grading rows are rejected. Only Intake semantic results/status and the
+derived aggregate may change; all non-flow fields and raw execution evidence
+remain unchanged. Runs with no Intake cases keep their existing lifecycle.
+The completed run root can be graded by the original runner after independent review of its actual
+transcript. No new public DTO, grading field, hidden summary token or long-lived
+ledger is introduced. The runner checks existing request/corpus/execution
+identity and preserves raw execution evidence while updating only semantic
+results and aggregate status. This associates grading with the selected
+completed execution; it does not claim a new grade-to-transcript byte digest.
 
 ## Branch Review Data Boundary
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -37,6 +38,26 @@ DIMENSIONS = (
 
 
 class ContractWordingPackageTest(unittest.TestCase):
+    def test_current_ai_owns_unexecuted_review_without_external_handoff(self) -> None:
+        package = Path(__file__).resolve().parents[1]
+        for path in ("SKILL.md", "references/contract.md"):
+            with self.subTest(path=path):
+                text = " ".join((package / path).read_text(encoding="utf-8").split())
+                self.assertIn("The current executing AI is this Skill's semantic owner", text)
+                self.assertIn("`owner_not_yet_executed`", text)
+                self.assertIn("not a typed", text)
+                self.assertIn("agent ID", text)
+                self.assertIn("subagent evidence", text)
+                self.assertIn("pre-existing owner result", text)
+        contract = " ".join((package / "references/contract.md").read_text(encoding="utf-8").split())
+        self.assertIn("after any mutation, rebuild the complete scope and rescan current content", contract)
+        self.assertIn("Pass only actual public invoke stdout", contract)
+        self.assertIn("never read or reconstruct producer-private results", contract)
+        self.assertIn("declared blocker or re-entry route when a real gap remains", contract)
+        interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+        self.assertEqual(interface["judgment_mode"], "semantic")
+        self.assertNotIn("owner_not_yet_executed", [row["id"] for row in interface["external_exits"]])
+
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
@@ -205,6 +226,55 @@ class ContractWordingPackageTest(unittest.TestCase):
             "wording_current:" + wording_common.digest(transition["wording"])[:24],
             transition["transition_id"],
         )
+
+    def test_real_wrappers_correct_only_receipt_envelope_and_preserve_gate(self) -> None:
+        def command(name, value, *args, expected=0):
+            proc = subprocess.run(
+                [str(PACKAGE_ROOT / "scripts" / name), "--root", str(self.root),
+                 "--invocation", "-", *args],
+                input=json.dumps(value, ensure_ascii=False), text=True, capture_output=True,
+            )
+            self.assertEqual(expected, proc.returncode, proc.stdout + proc.stderr)
+            return json.loads(proc.stdout)
+
+        before = sorted(self.root.rglob("*"))
+        for exit_id in ("pass", "blocked"):
+            with self.subTest(exit_id=exit_id):
+                review = json.loads((PACKAGE_ROOT / "examples/review-scan-invocation.json").read_text())
+                review["change_request"]["body"] = "Term definition: 建议."
+                scan = command("record-contract-wording-review.sh", review, "--scan-only")
+                review["owner_result"] = self.authoring(
+                    scan, typed_exit=exit_id,
+                    classification="contract_violation" if exit_id == "blocked" else "term_definition",
+                )
+                owner = command("record-contract-wording-review.sh", review)
+                review["owner_result"] = owner
+                checked = command("check-contract-wording-review.sh", review)
+                self.assertEqual("passed", checked["status"])
+                original_owner, original_checked = copy.deepcopy(owner), copy.deepcopy(checked)
+                transition = json.loads((PACKAGE_ROOT / "examples/public-pass-output-2.0.json").read_text())["transition"]
+                transition.update(stage="clarity_current", transition_id="clarity_current:" + "3" * 24)
+                for key in ("wording", "wording_facts_sha256", "target_content_sha256"):
+                    transition.pop(key, None)
+                public = json.loads((PACKAGE_ROOT / "examples/public-change-request-input.json").read_text())
+                public["continuation_id"] = transition["continuation_id"]
+                invocation = {
+                    "public_input": public, "transition": transition,
+                    "owner_result": owner, "validation_receipt": checked,
+                }
+                error = command("invoke.sh", invocation, expected=3)
+                self.assertEqual("stale_identity", error["code"])
+                self.assertEqual("validation_receipt", error["field_path"])
+                invocation["validation_receipt"] = checked["validation_receipt"]
+                output = command("invoke.sh", invocation)
+                self.assertEqual(exit_id, output["exit_id"])
+                if exit_id == "pass":
+                    self.assertEqual("wording_current", output["transition"]["stage"])
+                else:
+                    self.assertEqual({"exit_id": "blocked"}, output)
+                self.assertEqual(original_owner, owner)
+                self.assertEqual(original_checked, checked)
+        self.assertEqual(before, sorted(self.root.rglob("*")))
 
     def test_change_request_pass_rejects_missing_or_duplicate_title_body(self) -> None:
         owner, _ = self.change_request_owner()

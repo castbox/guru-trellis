@@ -11,6 +11,26 @@ from pathlib import Path
 
 
 class RequirementsClarificationPackageContractTests(unittest.TestCase):
+    def test_current_ai_owns_unexecuted_review_without_external_handoff(self) -> None:
+        package = Path(__file__).resolve().parents[1]
+        for path in ("SKILL.md", "references/contract.md"):
+            with self.subTest(path=path):
+                text = " ".join((package / path).read_text(encoding="utf-8").split())
+                self.assertIn("The current executing AI is this Skill's semantic owner", text)
+                self.assertIn("`owner_not_yet_executed`", text)
+                self.assertIn("not a typed", text)
+                self.assertIn("agent ID", text)
+                self.assertIn("subagent evidence", text)
+                self.assertIn("pre-existing owner result", text)
+        contract = " ".join((package / "references/contract.md").read_text(encoding="utf-8").split())
+        self.assertIn("ask exactly one highest-value user question per round", contract)
+        self.assertIn("Pass only actual public invoke stdout", contract)
+        self.assertIn("never read or reconstruct producer-private results", contract)
+        self.assertIn("declared blocker or re-entry route when a real gap remains", contract)
+        interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+        self.assertEqual(interface["judgment_mode"], "semantic")
+        self.assertNotIn("owner_not_yet_executed", [row["id"] for row in interface["external_exits"]])
+
     def command(self, script, payload, *args):
         return subprocess.run(
             [str(self.package / "scripts" / script), "--json", *args],
@@ -351,6 +371,78 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertNotEqual(invalid.returncode, 0)
         self.assertEqual(json.loads(invalid.stdout)["code"], "invalid_json")
         self.assertNotIn("Traceback", invalid.stdout + invalid.stderr)
+
+    def test_current_issue_blocked_conflict_retains_target_through_public_wrapper(self) -> None:
+        # Shape/transport evidence only; native semantic fidelity is reviewed separately.
+        for path in ("SKILL.md", "references/contract.md"):
+            text = " ".join((self.package / path).read_text(encoding="utf-8").split())
+            self.assertIn("Record only clarification rounds and answers that actually occurred", text)
+            self.assertIn("unasked, or unanswered choices are not refused, deferred, or answered", text)
+        contract = " ".join((self.package / "references/contract.md").read_text(encoding="utf-8").split())
+        self.assertIn("`answer_status=refused` requires an actual user refusal", contract)
+        self.assertIn("`clarification_rounds=[]`", contract)
+        self.assertIn("`target_disposition=null` is not a blocked shortcut", contract)
+        self.assertIn("Only successful public invoke stdout is the final DTO", contract)
+        self.assertIn("Never hand-write a blocked DTO", contract)
+        public = json.loads((self.package / "examples/public-initial-change-request-input-2.0.json").read_text())
+        public["source_exit"] = "context_ready"
+        snapshot = copy.deepcopy(public["duplicate_snapshot"])
+        owner = copy.deepcopy(self.example)
+        owner["mode"] = public["mode"]
+        owner["invocation_context"]["kind"] = "initial_issue"
+        owner["review_target"].update(
+            kind="issue", issue_number=145, url=public["target_locator"], state="open",
+            updated_at=snapshot["checked_at"], body_sha256=snapshot["authority_content_sha256"],
+        )
+        owner["target_disposition"].update(
+            disposition="keep_current_open_issue",
+            duplicate_query=snapshot["query"], duplicate_checked_at=snapshot["checked_at"],
+            duplicate_facts_sha256=snapshot["facts_sha256"],
+            decision_summary="The known open issue remains the target; the empty duplicate search does not resolve its scope conflict.",
+        )
+        reason = "The source requires incompatible delivery scopes; no priority choice or user answer is available."
+        owner.update(
+            typed_exit="blocked",
+            consumer={"kind": "stop", "id": "requirements-clarification-blocked"},
+            reason=reason,
+            error={"codes": ["semantic_gate_blocked"], "summary": reason},
+            confirmed_facts=[{
+                "fact_id": "scope_conflict", "summary": reason,
+                "evidence_refs": ["review_target.body_sha256"],
+                "affected_contracts": ["requirements"],
+            }],
+            repository_answerable_questions=[],
+            clarification_rounds=[],
+            open_questions=[],
+        )
+        owner["ai_review_gate"].update(
+            status="blocked", summary=reason, load_bearing_conclusions=[reason],
+            findings=[{
+                "finding_id": "scope_conflict", "severity": "P2", "status": "open",
+                "summary": reason, "evidence_refs": ["review_target.body_sha256"],
+            }],
+        )
+        recorded = self.record_owner(owner)
+        self.assertEqual(recorded["clarification_rounds"], [])
+        self.assertEqual(recorded["open_questions"], [])
+        self.assertEqual(recorded["reason"], reason)
+        self.assertEqual(recorded["ai_review_gate"], owner["ai_review_gate"])
+        checked = self.command("check-requirements-clarification.sh", recorded, "--input", "-")
+        self.assertEqual(checked.returncode, 0, checked.stdout + checked.stderr)
+        self.assertEqual(json.loads(checked.stdout)["typed_exit"], "blocked")
+        self.assertEqual(recorded["target_disposition"]["disposition"], "keep_current_open_issue")
+        self.assertEqual(recorded["target_disposition"]["duplicate_facts_sha256"], snapshot["facts_sha256"])
+        transition = json.loads((self.package / "examples/public-clear-output-2.0.json").read_text())["transition"]
+        for field in ("clarity_result_sha256", "target_content_sha256", "clarity", "target_disposition"):
+            transition.pop(field)
+        transition.update(stage="context_current", target_locator=public["target_locator"],
+                          authority_content_sha256=snapshot["authority_content_sha256"])
+        envelope = {"schema_version": "1.0", "public_input": public, "transition": transition,
+                    "owner_context": {}, "owner_result": recorded}
+        invoked = self.command("invoke.sh", envelope, "--invocation", "-")
+        self.assertEqual(invoked.returncode, 0, invoked.stdout + invoked.stderr)
+        self.assertEqual(json.loads(invoked.stdout), {"exit_id": "blocked"})
+        self.assertEqual(public["duplicate_snapshot"], snapshot)
 
     def test_public_invoke_validates_checked_semantic_owner_output(self) -> None:
         from jsonschema import Draft202012Validator

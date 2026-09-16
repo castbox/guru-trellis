@@ -194,6 +194,8 @@ import os
 import sys
 from pathlib import Path
 
+INTAKE_READ_PATHS = {}
+
 
 def digest(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
@@ -260,6 +262,7 @@ def main() -> int:
     parser.add_argument("--response-fifo", required=True)
     parser.add_argument("--skill-sha256", required=True)
     parser.add_argument("--wrapper-sha256", required=True)
+    parser.add_argument("--flow", choices=("standard_intake",))
     subparsers = parser.add_subparsers(dest="operation", required=True)
     read_parser = subparsers.add_parser("read")
     read_parser.add_argument(
@@ -272,6 +275,11 @@ def main() -> int:
     invoke_parser.add_argument("--stdin", action="store_true")
     invoke_parser.add_argument("--upstream-architecture", action="store_true")
     invoke_parser.add_argument("--qualifier", choices=("normal-scenario", "solution-mechanism"))
+    command_parser = subparsers.add_parser("command")
+    command_parser.add_argument("--skill-id", required=True)
+    command_parser.add_argument("--command", required=True)
+    command_parser.add_argument("--stdin", action="store_true")
+    command_parser.add_argument("arguments", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     sandbox_root = Path(args.sandbox_root).resolve()
     projection_root = Path(args.projection_root).resolve()
@@ -292,29 +300,55 @@ def main() -> int:
             raise ValueError("qualification read target escapes its projected root")
         if "evals" in target.parts or ".runtime" in target.parts:
             raise ValueError("qualification read target is private")
+        if INTAKE_READ_PATHS or args.flow == "standard_intake":
+            if (any(part in {"examples", "evals", ".runtime", ".git"} for part in target.parts)
+                    or str(target) not in INTAKE_READ_PATHS.get(args.kind, [])):
+                raise ValueError("Intake read target is not a declared asset")
         content = target.read_bytes()
         append_event(trace_path, args.request_sha256, str(projection_root), args.skill_sha256, args.wrapper_sha256, {
             "kind": "read", "target_kind": args.kind, "path": str(target), "sha256": digest(content),
         })
         sys.stdout.buffer.write(content)
         return 0
-    if not args.stdin:
+    if not args.stdin and args.operation != "command":
         raise ValueError("qualification invocation requires stdin")
     request_fifo = Path(args.request_fifo)
     response_fifo = Path(args.response_fifo)
-    request_payload = {
-        "arguments": (
-            ["--qualifier", args.qualifier] if args.qualifier
-            else ["--architecture-invocation" if args.upstream_architecture else "--invocation", "-"]
-        ),
-        "stdin": sys.stdin.read(),
-    }
+    stdin_text = sys.stdin.read()
+    if args.operation == "command":
+        if args.flow != "standard_intake":
+            raise ValueError("command forwarding requires standard_intake")
+        arguments = args.arguments[1:] if args.arguments[:1] == ["--"] else args.arguments
+        request_payload = {"skill_id": args.skill_id, "command": args.command,
+                           "arguments": arguments, "stdin": stdin_text}
+    else:
+        request_payload = {
+            "arguments": (
+                ["--qualifier", args.qualifier] if args.qualifier
+                else ["--architecture-invocation" if args.upstream_architecture else "--invocation", "-"]
+            ),
+            "stdin": stdin_text,
+        }
     with request_fifo.open("w", encoding="utf-8") as handle:
         json.dump(request_payload, handle, separators=(",", ":"))
     with response_fifo.open("r", encoding="utf-8") as handle:
         response = json.load(handle)
     if set(response) != {"returncode", "stdout", "stderr"}:
         raise ValueError("qualification invocation response is invalid")
+    if args.operation == "command":
+        append_event(trace_path, args.request_sha256, str(projection_root), args.skill_sha256, args.wrapper_sha256, {
+            "kind": "command", "skill_id": args.skill_id, "command": args.command,
+            "arguments": arguments, "stdin_sha256": digest(request_payload["stdin"].encode()),
+            "returncode": response["returncode"], "stdout_sha256": stdout_digest(response["stdout"]),
+            "stderr_sha256": digest(response["stderr"].encode()),
+        })
+        if args.command == "invoke" and response["returncode"] == 0:
+            trace = json.loads(trace_path.read_text())
+            trace["terminal_skill_id"] = args.skill_id
+            trace_path.write_text(json.dumps(trace, separators=(",", ":")))
+        sys.stdout.write(response["stdout"])
+        sys.stderr.write(response["stderr"])
+        return int(response["returncode"])
     wrapper = (
         repository_root / ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/scripts/invoke.sh"
         if args.upstream_architecture else projection_root / "scripts/invoke.sh"

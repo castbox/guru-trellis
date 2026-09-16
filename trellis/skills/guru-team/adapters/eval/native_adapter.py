@@ -39,6 +39,7 @@ from adapters.eval.eval_support import (
     guru_package_runtime_path,
     minimal_native_environment,
     model_projection_copy,
+    intake_read_inventory,
     public_runtime_target,
     qualification_model_request,
     qualification_prompt_sha256,
@@ -57,6 +58,9 @@ from adapters.eval.owner_staging import (
     stage_owner_execution,
 )
 from adapters.eval import phase2_authoring
+from adapters.eval.intake_authoring import (
+    COMMANDS, FACTS_PATH, INTAKE_SKILLS, IntakeCommands, standard_intake, validate_intake_trace,
+)
 
 
 def semantic_authoring_request(request: dict[str, Any]) -> bool:
@@ -262,6 +266,7 @@ def start_qualification_runtime_boundary(
     package_root: Path,
     runtime_environment: dict[str, str],
     public_input_binding: dict[str, str],
+    intake_commands: IntakeCommands | None = None,
 ) -> threading.Thread:
     installed_wrapper = package_root / "scripts/invoke.sh"
     if installed_wrapper.is_symlink() or not os.access(installed_wrapper, os.X_OK):
@@ -287,8 +292,21 @@ def start_qualification_runtime_boundary(
                     continue
                 if not chunks:
                     continue
+                request_bytes = b"".join(chunks)
+                chunks = []
+                payload = None
                 try:
-                    payload = json.loads(b"".join(chunks))
+                    payload = json.loads(request_bytes)
+                    if intake_commands is not None:
+                        try:
+                            response = intake_commands.forward(payload)
+                        except (ValueError, KeyError, TypeError) as exc:
+                            response = {"returncode": 2, "stdout": "",
+                                        "stderr": f"Intake invocation boundary failed: {exc}"}
+                            intake_commands.record_response(payload, response)
+                        with response_fifo.open("w", encoding="utf-8") as handle:
+                            json.dump(response, handle, separators=(",", ":"))
+                        continue
                     if (
                         not isinstance(payload, dict)
                         or payload.get("arguments") not in (
@@ -351,10 +369,15 @@ def start_qualification_runtime_boundary(
                         "stdout": "",
                         "stderr": f"qualification invocation boundary failed: {exc}",
                     }
+                    if intake_commands is not None:
+                        intake_commands.record_response(payload, response)
                 with response_fifo.open("w", encoding="utf-8") as handle:
                     json.dump(response, handle, separators=(",", ":"))
+                if intake_commands is not None:
+                    continue
                 if (
                     package_root.name == phase2_authoring.SKILL
+                    and isinstance(payload, dict)
                     and payload.get("arguments", [None])[0] in {"--architecture-invocation", "--qualifier"}
                     and response["returncode"] == 0
                 ):
@@ -391,6 +414,16 @@ def build_context(
     workdir = Path(request["workdir"]).resolve()
     execution_root = workdir.parent
     projection_root, skill_path, wrapper_path, skill_sha256, wrapper_sha256 = stage_public_projection(request, execution_root)
+    intake_flow = standard_intake(request)
+    if intake_flow:
+        for skill in INTAKE_SKILLS[:-1]:
+            package = Path(request["package_root"]).parent / skill
+            interface = json.loads((package / "interface.json").read_text())
+            projected, *_ = stage_public_projection({**request, "skill_id": skill,
+                "package_root": str(package), "interface": {"public_invocation": interface["public_contracts"]["invocation"]}}, execution_root)
+            destination = projection_root / "flow-packages" / skill
+            destination.parent.mkdir(exist_ok=True)
+            shutil.move(str(projected), destination)
     runtime_target = public_runtime_target(request)
     runtime_package_root, execution_runtime_target, runtime_environment = stage_owner_execution(
         request, execution_root, runtime_target
@@ -409,6 +442,9 @@ def build_context(
         else None
     )
     public_input_binding: dict[str, str] | None = None
+    private_root = execution_root / "private-control"
+    private_root.mkdir(exist_ok=True)
+    intake_receipts_path = private_root / "intake-command-receipts.json"
     if not isolated_authoring:
         boundary_path, boundary_thread, boundary_stop = start_public_runtime_boundary(
             execution_root,
@@ -437,7 +473,7 @@ def build_context(
         model_output_root.mkdir()
         model_bin_root.mkdir()
         model_projection_copy(projection_root, model_projection_root)
-        stage_repository_projection(owner_repository, model_repository_root)
+        stage_repository_projection(owner_repository, model_repository_root, intake_flow=intake_flow)
         evidence_paths: list[Path] = []
         for index, relative in enumerate(request["files"], 1):
             staged = workdir / relative
@@ -461,13 +497,15 @@ def build_context(
             runtime_package_root,
             runtime_environment,
             public_input_binding,
+            IntakeCommands(owner_repository, runtime_environment, intake_receipts_path) if intake_flow else None,
         )
         boundary_path = request_fifo
         projection_root = model_projection_root
         skill_path = projection_root / "SKILL.md"
         wrapper_path = projection_root / "scripts/invoke.sh"
         workdir = model_evidence_root
-        helper_source = qualification_trace_helper_source()
+        inventory = intake_read_inventory(projection_root, model_repository_root, evidence_paths) if intake_flow else None
+        helper_source = qualification_trace_helper_source(inventory)
     else:
         model_root = execution_root
         model_repository_root = owner_repository
@@ -528,7 +566,7 @@ def build_context(
             "Re-read every staged case file through the trace helper before deciding. Use the helper's owner_file read operation for any necessary read-only inspection of the repository evidence projection; never read eval corpus files or .trellis/.runtime.",
             "For this semantic invocation boundary, run only those traced reads and then the exact stdin public wrapper invocation command below.",
         ]
-    elif semantic_authoring:
+    elif semantic_authoring and not intake_flow:
         if request.get("skill_id") not in {ARCHITECTURE_SKILL, phase2_authoring.SKILL}:
             raise ValueError("semantic authoring context is not declared for this Skill")
         context_lines[-3:] = [
@@ -579,6 +617,9 @@ def build_context(
             "repository_evidence_root": model_repository_root.relative_to(model_root).as_posix(),
             "public_invocation": request["interface"]["public_invocation"],
         }
+        if intake_flow:
+            native_request.pop("case_id")
+            native_request["native_authoring_flow"] = "standard_intake"
     else:
         native_request = {
             "schema_version": "1.0",
@@ -622,6 +663,8 @@ def build_context(
             f"{helper_arguments} --repository-root {model_repository_root} "
             f"--sandbox-root {model_root} --request-fifo {request_fifo} --response-fifo {response_fifo}"
         )
+        if intake_flow:
+            qualification_helper_arguments += " --flow standard_intake"
         public_interface_path = projection_root / "interface.json"
         public_interface = json.loads(public_interface_path.read_text(encoding="utf-8"))
         profile_schema_paths = [
@@ -673,6 +716,52 @@ def build_context(
                 skill_sha256,
                 request["model_id"],
             )
+    if intake_flow:
+        helper_command = f"{helper_path} {qualification_helper_arguments}"
+        package_navigation = []
+        for skill in INTAKE_SKILLS:
+            package = projection_root if skill == INTAKE_SKILLS[-1] else projection_root / "flow-packages" / skill
+            schema_paths = sorted(Path(path).relative_to(package).as_posix()
+                                  for path in inventory["skill_contract"]
+                                  if Path(path).parent == package / "schemas")
+            package_navigation.extend([
+                f"{skill}: {package}; commands={','.join(COMMANDS[skill])}",
+                "Exact contract paths: " + ", ".join(str(package / name) for name in ("SKILL.md", "references/contract.md", "interface.json")),
+                "Schema files relative to this package root: " + ", ".join(schema_paths),
+            ])
+        context = "\n".join([
+            "Execute the current standard Intake workflow for the supplied request.",
+            "Use only the traced reads and command forwarding below, sequentially in this invocation.",
+            "Read each complete Skill, contract, Interface and needed current schemas before running its commands.",
+            "First read Sync's Skill, contract and Interface, and invoke Sync. Then read repository/source authority before Discovery preview and authoring.",
+            "Use actual record stdout unchanged in that owner's check/invoke and the actual check receipt where declared. Keep these objects in memory; do not write owner-result files.",
+            "The helper emits complete stdout, but the command tool's display may truncate it. Set an adequate tool output limit or capture helper stdout in a subprocess variable before displaying it. A truncated display is not a missing recorder result.",
+            "One process may retain this owner's record/check/invoke JSON in memory and call the traced helper sequentially, forwarding the actual parsed outputs unchanged and printing only the final public stdout. This is transport only: author the review first, and stop on any nonzero command result. Do not read trace receipts as replacement owner data or reconstruct omitted output fields.",
+            "Only actual public invoke outputs cross owners, through their declared public projections. Stop at the first exit not leading to the next Intake owner, or after Readiness. Never invoke workspace creation.",
+            f"Case prompt: {request['prompt']}",
+            f"Repository evidence root: {model_repository_root}",
+            f"Required source facts: {model_repository_root / FACTS_PATH}; read every required_reads entry there.",
+            "Read all case evidence: " + ", ".join(str(path) for path in evidence_paths),
+            f"Read command: {helper_command} read --kind <skill_contract|owner_file|case_file> --path <absolute projected path>",
+            "Package roots and allowed original commands:",
+            *package_navigation,
+            "Only the declared assets below are readable. Interface links do not grant additional reads; examples, evals, legacy assets and private runtime are not projected.",
+            "For Wording and Readiness review commands, use the package-local schemas/review-invocation.schema.json, including Wording's captured source structure. The shared semantic-owner envelope describes the final public invoke, not those review commands.",
+            "Declared read inventory: " + json.dumps(inventory, sort_keys=True),
+            f"Forward command: {helper_command} command --skill-id <skill> --command <original basename without .sh> --stdin -- <original stdin arguments>",
+            "Send one JSON input on stdin. All commands run at the real installed repository root; use repo_root='.' for Sync. No extra --root or --json is needed.",
+            "--stdin reads the actual process stdin; it does not construct or supply a payload. Use a non-interactive command with a quoted heredoc or a pipe, not an interactive terminal waiting for input. The following is shell transport syntax only; replace the placeholders with the current command and input:",
+            "```bash\n"
+            f"{helper_command} command --skill-id <skill> --command <command> --stdin -- <original stdin arguments> <<'GURU_COMMAND_JSON'\n"
+            "<current-command-input-json>\n"
+            "GURU_COMMAND_JSON\n```",
+            "Discovery preview uses --query-json '<your current query object>' and empty stdin. Wording scan uses record-contract-wording-review --invocation - --scan-only before recording.",
+            "A nonzero command exit is an invocation error, not a declared typed exit. Read that command's error, correct its input and call the same command again; do not skip the current owner or forward error JSON as a public output.",
+            "Only a successful invoke command's declared typed output can be terminal. Return its actual stdout without changing its owner, schema or fields; recorder/checker output and invocation errors are not terminal public outputs.",
+            "Printing stdout in a tool does not deliver your final message.",
+            "Parse this invocation's actual terminal stdout in memory with json.loads, then render the complete JSON object with json.dumps(..., ensure_ascii=False, indent=2) for your final reply.",
+            "Verify that your final reply is that same complete JSON object with only JSON whitespace changes; do not manually assemble braces, reconstruct fields, add fences or explanations, or truncate it.",
+        ])
     context_path = model_root / "native-context.txt"
     context_path.write_text(context, encoding="utf-8")
     private_root = execution_root / "private-control"
@@ -690,6 +779,9 @@ def build_context(
         "response_fifo": str(response_fifo),
         "private_root": str(private_root),
         "semantic_authoring": semantic_authoring,
+        "native_authoring_flow": "standard_intake" if intake_flow else None,
+        "intake_receipts_path": str(intake_receipts_path),
+        "intake_read_paths": inventory if intake_flow else None,
         "projection_root": str(projection_root),
         "skill_sha256": skill_sha256, "wrapper_sha256": wrapper_sha256,
     }, separators=(",", ":")), encoding="utf-8")
@@ -713,6 +805,8 @@ def validate_native_trace(
         raise ValueError("native trace receipt is missing or malformed")
     protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
     expected_top = {"schema_version", "request_sha256", "projection_root", "skill_sha256", "wrapper_sha256", "events"}
+    if standard_intake(request):
+        expected_top.add("terminal_skill_id")
     if set(payload) != expected_top or payload.get("schema_version") != "1.0" or payload.get("request_sha256") != request_sha256:
         raise ValueError("native trace receipt request binding is invalid")
     events = payload.get("events")
@@ -728,6 +822,8 @@ def validate_native_trace(
         or any(path.name == "guru_team_trellis.py" for path in projection_root.rglob("*"))
     ):
         raise ValueError("native trace public projection binding is invalid")
+    if standard_intake(request):
+        return validate_intake_trace(payload, protocol, public_stdout)
     qualification_codex = (
         request.get("skill_id") == QUALIFICATION_SKILL
         and protocol.get("model_root") != str(Path(request["workdir"]).resolve().parent)
@@ -951,6 +1047,8 @@ def native_argv(
             "--cd", trusted_root, "--add-dir", execution_root,
             "--add-dir", workdir, "--add-dir", str(projection_root),
         ]
+        if "model_id" in request:
+            argv.extend(["--model", str(request["model_id"])])
         argv.extend(["--output-last-message", str(output_path), context])
         return argv, output_path
     if adapter == "claude":

@@ -1593,6 +1593,27 @@ missing、duplicate、unknown 或 unexpected case 都失败。
 处理 AI 的实际内容。Shared/Codex/Claude/Cursor 投影 parity 不代表四个平台的 native
 模型均已运行通过；缺失模型或登录能力应明确标注未验证。
 
+`semantic_authoring` 的闭合 `native_authoring_flow=standard_intake` 扩展同一 installed
+eval 路径，不新增生产 wrapper。必须分发四个 Intake Skill 的完整公共合同与现有命令，
+并验证同一 native Agent 从无 owner result 的事实 fixture 完成 author/record/check/invoke。
+成功链在 workspace mutation 前停止；需求冲突按真实 terminal producer 的 schema 验证，
+不伪装成另一个 Skill 的输出。模型输入不含 expected result，不能用 post_owner fixture、
+静态词句断言或缺失 native capability 代替真实 authoring 证明。安装验证覆盖 source/installed、
+Shared/Codex/Claude/Cursor 声明投影、preset reapply、dogfood drift、sidecar 和 bytecode residue；
+这些定向证据不是完整多平台升级或 Release Gate。
+
+分发检查与模型可见资产检查是两个边界：安装包仍完整，standard Intake 的模型投影只
+暴露声明的合同、Interface、必要 schema、命令边界和源事实，不能由整目录复制或
+Interface example 引用带入 owner/pass 样例。读取 examples/evals/private runtime 必须被拒绝。
+同次 completed-run 补评分仅更新声明 `standard_intake` 的 case 行。
+执行时可使用 `--adapter codex --codex-model gpt-5.6-sol` 为未固定模型的 case 选择模型；
+固定的 corpus 模型保持不变，未传参数保持原默认行为，不改变评分或生命周期。
+完整 full/mixed run 先验证完整 case/side identity，仅接收 Intake assertions，non-flow 行及原始执行证据不变，
+最后重算 aggregate。纯 Architecture、Phase 2、post_owner、qualification 保持原执行语义。
+两个 case 的 semantic assertions 必须保留；缺少独立 transcript 评分的 raw run 为
+`evaluation_failed`。对同一次完成执行，原 runner 通过既有 `--semantic-grading` 做后续
+聚合，保持原始 transcript/trace/receipts 不变且不再次调用模型。不得预填评分或手改结果。
+
 当前入口使用已验证的固定 Fork checkout，直接运行其 Node CLI：clean initial
 workflow/preset install -> target throwaway project 的 `update --dry-run` ->
 仅当输出包含 `MIGRATION REQUIRED` 或 `Retirement conflicts:`、managed replacement 已审查且提供显式 assignee 时执行

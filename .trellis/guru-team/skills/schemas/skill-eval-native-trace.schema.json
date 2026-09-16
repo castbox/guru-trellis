@@ -5,6 +5,7 @@
   "additionalProperties": false,
   "required": ["schema_version", "request_sha256", "projection_root", "skill_sha256", "wrapper_sha256", "events"],
   "properties": {
+    "terminal_skill_id": {"type": "string", "pattern": "^guru-[a-z-]+$"},
     "schema_version": {"const": "1.0"},
     "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "projection_root": {"type": "string", "minLength": 1},
@@ -15,6 +16,21 @@
       "minItems": 2,
       "items": {
         "oneOf": [
+          {
+            "type": "object", "additionalProperties": false,
+            "required": ["kind", "skill_id", "command", "arguments", "stdin_sha256", "returncode", "stdout_sha256", "stderr_sha256", "request_sha256"],
+            "properties": {
+              "kind": {"const": "command"},
+              "skill_id": {"type": "string", "pattern": "^guru-[a-z-]+$"},
+              "command": {"type": "string", "minLength": 1},
+              "arguments": {"type": "array", "items": {"type": "string"}},
+              "stdin_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "returncode": {"type": "integer"},
+              "stdout_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "stderr_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            }
+          },
           {
             "type": "object",
             "additionalProperties": false,
