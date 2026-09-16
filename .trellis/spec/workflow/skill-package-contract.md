@@ -1580,7 +1580,7 @@ commit for continuity, `reviewed_content_algorithm`, and
 older remain legacy stale inventory, not current runtime authority; any
 non-7.0 gate fails closed.
 
-The five outputs are independent minimal DTOs:
+The six outputs are independent minimal DTOs:
 
 - `passed`: `exit_id`, `task_ref`, `branch_review_commit`;
 - `continuity_passed`: `exit_id`, `task_ref`, `branch_review_commit`,
@@ -1591,7 +1591,11 @@ The five outputs are independent minimal DTOs:
 - `implementation_required`: `exit_id`, `task_ref`, `branch_review_commit`,
   `finding_refs`;
 - `scope_confirmation_required`: `exit_id`, `task_ref`, `proposal_refs`;
-- `blocked`: `exit_id`.
+- `blocked`: `exit_id`;
+- `archived_review_passed`: `exit_id`, `task_ref`, `branch_review_commit`,
+  `pr_payload_snapshot_sha256`, and `reviewed_base_head`; only the read-only
+  `archived_review` profile emits this success to Publication's
+  `archived_publication_review`. Its only other exit is `blocked`.
 
 The Branch Review `passed` edge supplies only
 `task_ref/branch_review_commit` through `skill_input_authoring_seed`; the
@@ -1622,8 +1626,8 @@ dropping business data or inventing another projection operation.
 ## Task Publication Review Owner
 
 `guru-review-task-publication` is the active Interface 1.4 semantic owner
-between `guru-review-branch:passed` and finalization. Workflow and standalone
-use the same eight entry preconditions, ten-dimension AI Review Gate,
+between Branch Review and finalization. For the two ordinary profiles,
+workflow and standalone use the same eight entry preconditions, ten-dimension AI Review Gate,
 conditional confirmation, ignored-runtime recorder/checker, metadata revision
 loop, freshness rules, and typed-exit conditions.
 
@@ -1647,7 +1651,7 @@ can resume only after reconcile plus bounded continuity has produced a current
 reviewed-content anchor, or after a full Branch Review for real task-content
 change.
 
-In workflow and standalone mode, the Publication AI authors the exact Chinese
+In the ordinary profiles' workflow and standalone modes, the Publication AI authors the exact Chinese
 PR title and Markdown body directly from live authority and reviews that payload
 inside the same semantic loop. Neither the caller nor another Skill creates a
 task-local PR body or finish-summary index candidate. Publication remains the
@@ -1655,15 +1659,19 @@ sole owner of payload sufficiency, Issue closure, all ten dimensions, finding
 routing, revision, and readiness; Finalizer may consume only the checked payload
 returned by `ready` and may not create or reinterpret it.
 
-The independent minimal outputs are
+The three original independent minimal outputs are
 `ready(exit_id,task_ref,branch_review_commit,pr_title,pr_body)` to active
 `guru-finalize-task`,
 `return_to_task_work(exit_id,task_ref,finding_refs,resume_target=phase-2)` to
 the task-work workflow router, and `blocked(exit_id,reason_code,remediation)` to
 an explicit stop. Review narrative, findings, artifact paths, live facts, and
-digest bundles remain private.
+digest bundles remain private. The fourth output is
+`archived_ready(exit_id,task_ref,branch_review_commit,pr_title,pr_body,reviewed_base_head)`
+to Finalizer's read-only `archived_review_refresh`. Only
+`archived_publication_review` emits this success; its other exit is `blocked`.
 
-The sole private gate is ignored-runtime `pr-readiness.json` under
+For the two ordinary profiles, the private gate is ignored-runtime
+`pr-readiness.json` under
 `guru-task-publication-readiness-5.0`. It contains only task,
 `branch_review_commit`, `reviewed_content_sha256`, the closed exact
 `pr_payload(title,body)`,
@@ -1678,8 +1686,9 @@ side-effect-free Finalizer closeout preflight before returning ready, so schema,
 length, duplicate, derived-field, archive, and plan constraints cannot produce
 a false-ready followed by an immediately stale first preview.
 
-`return_to_task_work` requires an open `task_work` finding bound to a `finding`
-dimension and cannot carry blocked evidence. `blocked` requires an open
+In that ordinary-profile union, `return_to_task_work` requires an open
+`task_work` finding bound to a `finding` dimension and cannot carry blocked
+evidence. `blocked` requires an open
 `external_blocker` finding bound to a `blocked` dimension and at least one
 blocked scope/Docs/safety conclusion. Open metadata-revision findings remain
 inside the Skill loop and cannot satisfy an external exit. Non-current input or

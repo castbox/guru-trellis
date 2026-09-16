@@ -90,11 +90,11 @@ caller-owned stop targets and never appear in the business workflow.
 | `guru-approve-task-plan` | `approved -> phase-1-task-activation`; `revision_required -> guru-approve-task-plan`; `clarify_scope -> guru-task-plan-clarify-scope-router`; `blocked -> task-plan-approval-blocked` |
 | `guru-check-task` | `passed -> guru-create-task-commit`; `implementation_required -> guru-resume-implementation`; `planning_stale -> guru-task-check-planning-router`; `blocked -> task-check-blocked` |
 | `guru-create-task-commit` | `committed -> guru-review-branch`; `revision-required -> guru-create-task-commit`; `blocked -> task-commit-blocked` |
-| `guru-review-branch` | `passed -> guru-review-task-publication`; `continuity_passed -> guru-base-continuity-passed-router`; `implementation_required -> guru-branch-review-implementation-router`; `scope_confirmation_required -> guru-branch-review-scope-router`; `blocked -> branch-review-blocked` |
-| `guru-review-task-publication` | `ready -> guru-finalize-task`; `return_to_task_work -> guru-task-publication-work-router`; `blocked -> task-publication-review-blocked` |
+| `guru-review-branch` | `passed -> guru-review-task-publication`; `continuity_passed -> guru-base-continuity-passed-router`; `implementation_required -> guru-branch-review-implementation-router`; `scope_confirmation_required -> guru-branch-review-scope-router`; `blocked -> branch-review-blocked`; `archived_review_passed -> guru-review-task-publication` |
+| `guru-review-task-publication` | `ready -> guru-finalize-task`; `return_to_task_work -> guru-task-publication-work-router`; `blocked -> task-publication-review-blocked`; `archived_ready -> guru-finalize-task` |
 | `guru-verify-extension-installation` (standalone only) | `verified -> extension-installation-verification-verified`; `blocked -> extension-installation-verification-blocked` |
 | `guru-finalize-task` | `publication_review_stale -> guru-review-task-publication`; `resume_finalization -> guru-finalize-task`; `reprepare_required -> guru-finalize-task`; `ready_for_merge -> guru-merge-task-pr`; `blocked -> task-finalization-blocked` |
-| `guru-merge-task-pr` | `merged -> guru-finalization-finish-response`; `merge_blocked -> task-pr-merge-blocked`; `phase2_reentry_required -> guru-restore-archived-task`; `closure_mismatch -> task-pr-closure-mismatch` |
+| `guru-merge-task-pr` | `merged -> guru-finalization-finish-response`; `merge_blocked -> task-pr-merge-blocked`; `phase2_reentry_required -> guru-restore-archived-task`; `closure_mismatch -> task-pr-closure-mismatch`; `review_refresh_required -> guru-review-branch` |
 | `guru-restore-archived-task` | `restored_to_phase2 -> guru-resume-implementation`; `restore_blocked -> task-pr-phase2-reentry-blocked` |
 
 Missing Skill packages, missing or duplicate markers, unknown/multiple/unmapped

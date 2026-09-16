@@ -219,8 +219,9 @@ closed loop. Existing
 commit transaction tests remain mandatory because the new candidate builder is
 not authorization to replace or weaken the executor.
 
-The package graph contains thirteen target-owned `skill_input_authoring_seed`
-handoffs. These edges have positive partition/projection probes and negative
+The package graph's complete target-owned `skill_input_authoring_seed` handoff
+set is declared by `public_contracts.consumer_inputs` in each active registry
+package's `interface.json`. These edges have positive partition/projection probes and negative
 overlap, overwrite, missing, extra, unknown, private-lookup,
 runtime-semantic-reconstruction, and unsupported fifth-operation fixtures. Each positive
 probe independently validates seed and authoring example keys, proves disjoint
@@ -804,8 +805,10 @@ Python or shell.
   and recursive zero `.new`/`.bak` scans.
 + A normal public invocation trace proves no eval corpus/descriptor/evidence or
   private runtime source enters ordinary Skill context.
-+ Branch Review tests cover workflow and standalone input, all four actual
-  exits, finding-fix and fresh-final intent, qualification-before-severity, and
++ Branch Review tests cover all three profiles (`branch_review`, `base_continuity`,
+  and read-only `archived_review`), workflow and standalone modes, and all six
+  exits, including `continuity_passed` and `archived_review_passed`, alongside
+  finding-fix and fresh-final intent, qualification-before-severity, and
   planned-publication missing-Skill failure.
 + Negative coverage includes incomplete qualification, mutually inconsistent
   disposition, severity on a proposal/out-of-scope item, missing or
@@ -901,14 +904,20 @@ must repeat implementation, Phase 2, task commit, Branch Review, and
 publication review. A current-scope defect cannot be downgraded to an
 observation or follow-up.
 
-Exit-quality tests exercise the complete semantic union in both schema and
+For the two ordinary Publication profiles, exit-quality tests exercise their
+complete semantic union in both schema and
 runtime: `ready` rejects any non-passed conclusion, `return_to_task_work`
 requires open task-work evidence bound to a finding dimension, and `blocked`
 requires blocked dimension/conclusion plus matching open external-blocker
 evidence. Normal AI-authored contradictory combinations must fail before the
 recorder writes and must remain invalid to the checker and public wrapper.
 
-Package/runtime/eval tests cover both profiles and modes, three exits, stale
+Package/runtime/eval tests cover all three profiles and both modes, with four
+exits in the complete Interface. The read-only `archived_publication_review`
+uses its independent union and only `archived_ready|blocked`: content or
+metadata findings remain truthful findings and stop, not ordinary revision or
+task-work routes; no PR payload mutation occurs. The two ordinary profiles
+retain their three original exits and cover stale
 re-entry, metadata correction to fresh pass, metadata correction that reveals
 durable drift, non-current readiness rejection, and the shared side-effect-free
 Finalizer preflight before `ready`. Finalization tests prove the ready DTO
@@ -1063,11 +1072,14 @@ the actual failing owner, and must not claim an archived end-to-end recovery
 passed when an original owner still blocks it. Diagnostic success is not
 Publication, Finalizer or Merge success.
 
-`guru-finalize-task` quality coverage exercises four current public input
-profiles, six outputs, the four finalization-family authoring handoffs, semantic
-Gate/confirmation ordering, and the owner-private recovery loop. Together with
-the five prior and four task-free execution handoffs, the active package graph contains thirteen target-owned
-`skill_input_authoring_seed` handoffs.
+`guru-finalize-task` quality coverage exercises five current public input
+profiles and six unchanged outputs. The four ordinary profiles retain semantic
+Gate/confirmation ordering and the owner-private recovery loop; the additional
+read-only `archived_review_refresh` validates the completed archive and returns
+the original `ready_for_merge` without entering the mutation transaction loop.
+The complete target-owned `skill_input_authoring_seed` handoff inventory is
+declared by `public_contracts.consumer_inputs` in each active registry package's
+`interface.json`, including the archived-review edges.
 
 Current gate 5.0 and transaction 3.0 regressions prove Publication input, exact
 pre-push authority, Draft/Ready identity, archive recovery, and terminal cleanup.

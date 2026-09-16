@@ -455,9 +455,8 @@ approval/check/commit/review artifact bodies or present eval `expected_exit` as
 a production input.
 
 The docs also name target-owned `skill_input_authoring_seed` for the complete
-set of thirteen semantic handoffs: the five production/review/publication
-edges, the four finalization-family edges, and the four task-free execution
-edges. They
+Interface-declared semantic handoff set, including the production/review/publication,
+finalization-family, task-free execution, and archived read-only review edges. They
 explain that producer projection supplies only minimal seed fields, the caller
 AI authors every remaining required semantic field, validation proves a
 disjoint exact required-field partition and a no-overwrite full-schema merge,
@@ -486,22 +485,26 @@ Publication AI directly authors and reviews the exact Chinese PR title/body;
 its ready 4.0 output projects that payload to active `guru-finalize-task`
 through the integrated global invocation without a task-local body or summary
 index handoff. `production-current-v4` binds the current
-four-Skill/15-exit membership, and the current package graph contains thirteen
-target-owned `skill_input_authoring_seed` handoffs.
+four-Skill/15-exit membership; the complete package handoff set is derived from
+the current Interface-declared `skill_input_authoring_seed` edges.
 
 ## Task Publication Review Documentation
 
 All three public README files describe active Interface 1.4 semantic
-`guru-review-task-publication`, its two target-owned input profiles, runtime
+`guru-review-task-publication`, its three target-owned input profiles (two
+ordinary profiles plus `archived_publication_review`), runtime
 commands `record-task-publication-review` /
-`check-task-publication-review`, public dispatcher invocation, and three
+`check-task-publication-review`, public dispatcher invocation, and four
 minimal exits. They state that `ready` targets active, globally integrated
 `guru-finalize-task`;
 `return_to_task_work` repeats implementation through Branch Review, and
-`blocked` stops.
+`blocked` stops. `archived_ready` targets Finalizer's `archived_review_refresh`;
+the archived profile returns only `archived_ready|blocked` and never enters
+ordinary metadata revision or task-work mutation.
 
-Docs identify ignored-runtime `pr-readiness.json` as the sole semantic gate
-under schema `guru-task-publication-readiness-5.0`. It stores only the reviewed
+Docs identify ignored-runtime `pr-readiness.json` as the owner-local semantic
+gate, with the ordinary `guru-task-publication-readiness-5.0` schema and the
+separate `archived-pr-readiness.schema.json` variant. It stores only the reviewed
 content identity, exact PR payload, ten semantic dimensions, findings,
 conclusions, and route; objective live bindings are rebuilt transiently.
 Inputs outside the current schemas fail closed. They do not expose the private
@@ -557,14 +560,17 @@ responsibility to a business repository.
 ## Task Finalization Documentation
 
 All three public README files name active Interface 1.4 semantic
-`guru-finalize-task`, its four current public input profiles, six outputs,
-current gate 5.0, transaction 2.0, owner-private recovery, dialogue-local
+`guru-finalize-task`, its five current public input profiles (four ordinary
+profiles plus `archived_review_refresh`), six outputs, ordinary gate/transaction
+and owner-private recovery, dialogue-local
 side-effect confirmation, and deterministic executor. Scripts execute, validate,
 and record facts after semantic review; they do not choose plan, scope,
-readiness, recovery route, or semantic pass.
+readiness, recovery route, or semantic pass. The archived profile validates
+current review and archive continuity without entering a mutation transaction;
+it returns only the existing `ready_for_merge|blocked` exits.
 
 The READMEs describe the current package graph as twenty-three active Skills and 100
-external exits with fourteen target-owned authoring handoffs. The integrated business
+external exits with the Interface-declared target-owned authoring handoffs. The integrated business
 workflow is 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. The three `guru-finish-work`
 entries route Publication -> Finalizer -> Merge only. Publication
 `return_to_task_work` remains available for real content drift.

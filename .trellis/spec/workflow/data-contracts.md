@@ -1636,13 +1636,15 @@ independent expected-versus-actual assertion.
 
 ## Branch Review Data Boundary
 
-Branch Review aggregate public input schema 4.0 dispatches two independent
-profiles. The `branch_review` schema 2.0 profile contains workflow/standalone
+Branch Review aggregate public input schema 5.0 dispatches three independent
+profiles, including read-only `archived_review` schema 1.0. The original
+`branch_review` schema 2.0 profile contains workflow/standalone
 mode, task/base/`branch_review_commit` identity, and one of
 `initial_review|fresh_final_review`. The current-only `base_continuity` schema
 2.0 profile separately binds the prior complete `branch_review_commit` and the
 current committed reconciled `task_head` to one bounded old-base/new-base
-candidate and the `base_continuity` intent. Its public outputs are the five minimal DTOs
+candidate and the `base_continuity` intent. The complete Interface's public
+outputs are the six minimal DTOs, including `archived_review_passed`,
 defined by the Skill package contract. `review_ref`, finding refs, proposal
 refs, and continuity identity are opaque consumer identities, not embedded
 artifact bodies.

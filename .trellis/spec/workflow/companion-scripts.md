@@ -1090,9 +1090,10 @@ Cursor authentication returns deterministic `unsupported`.
 
 ## Branch Review Recorder And Checker
 
-Aggregate public input schema 4.0 dispatches the full `branch_review` schema 2.0
-profile and the bounded `base_continuity`
-schema 2.0 profile. Both resolve current objective facts before recording.
+Aggregate public input schema 5.0 dispatches three profiles: the full
+`branch_review` schema 2.0, bounded `base_continuity` schema 2.0, and independent
+read-only `archived_review` schema 1.0. All resolve current objective facts
+before recording; archived review preserves completed archive state.
 
 `review-branch` records only an already completed AI semantic review. It may
 rebuild task/worktree/base/HEAD/range, planning, Phase 2, requirement/source
@@ -1151,8 +1152,9 @@ human-confirmation need, or `ready`. Empty findings, scanner success, changed
 file classification, a `--pass` flag, or tests passing cannot synthesize a
 semantic conclusion.
 
-Both commands validate the already AI-authored closed union without selecting
-it: `ready` binds passed conclusions/dimensions and closed findings;
+For the two ordinary Publication profiles, both commands validate the already
+AI-authored closed union without selecting it: `ready` binds passed
+conclusions/dimensions and closed findings;
 `return_to_task_work` binds open `task_work` findings to `finding` dimensions
 without blocked evidence; `blocked` binds open `external_blocker` findings to
 `blocked` dimensions and at least one blocked conclusion. Every open finding
@@ -1160,10 +1162,17 @@ references a non-passed dimension, and open metadata-revision findings cannot
 leave the internal rereview loop.
 
 The package `scripts/invoke.sh` remains the exact dispatcher-only wrapper. The
-shared public invocation validates one of the two target-owned inputs, reruns
+shared public invocation validates one of the three target-owned inputs, reruns
 the owner checker against a repo-local result, selects the output schema from
 the checker's actual `exit_id`, and emits one minimal DTO. `expected_exit` is
 available only to the eval grader after wrapper completion.
+
+The additional `archived_publication_review` input selects an independent
+read-only union with `archived_ready|blocked`. It retains content/metadata
+finding classifications on `blocked` rather than forcing external-blocker
+classification or entering the ordinary metadata revision loop. Its successful
+DTO carries the reviewed existing PR payload to Finalizer's
+`archived_review_refresh`; it does not call active closeout preparation.
 
 `ready` emits exactly `exit_id`, `task_ref`, `branch_review_commit`, `pr_title`,
 and `pr_body` after the

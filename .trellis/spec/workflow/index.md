@@ -88,25 +88,31 @@ Before editing workflow behavior:
   exits, and the ignored current schema 5.0 `phase2-check.json` owner checkpoint;
   unchanged official `trellis-check` workers provide ephemeral evidence only.
 - `guru-review-branch` is the sole Phase 3.5 semantic owner. Global workflow
-  and platform entries only invoke its six-field public input and consume its
-  four typed exits; review scripts are package-owned deterministic
+  and platform entries only invoke its profile-specific public inputs and consume
+  its six typed exits, including bounded continuity and archived review;
+  review scripts are package-owned deterministic
   recorder/validator implementation details.
 - `guru-review-task-publication` is the sole publication semantic owner after
   Branch Review. The owner reads approved scope, the complete current diff,
   validation results, and live issue state, then authors and reviews the current
   PR title/body in memory. Its checked `ready` DTO carries that exact payload
   directly to Finalizer without task-local publication content artifacts. The
-  Skill owns two target-authored profiles, the single layered ignored schema 3.0
-  `pr-readiness.json` checkpoint, metadata-only internal revision, shared
-  Finalizer preflight, ten-dimension review, and `ready` /
-  `return_to_task_work` / `blocked`; workflow owns only routes.
+  Skill owns three target-authored profiles: two ordinary profiles and
+  `archived_publication_review`. Its ignored `pr-readiness.json` checkpoint has
+  separate ordinary and archived schema variants. Ordinary profiles retain
+  metadata-only internal revision and Finalizer preflight; the archived profile
+  uses read-only preflight. Ten-dimension review returns `ready` /
+  `return_to_task_work` / `blocked` for ordinary profiles and
+  `archived_ready|blocked` for archived review; workflow owns only routes.
 - `guru-verify-extension-installation` is the source-repository-owned semantic
   verifier for clean throwaway installation adequacy. It is standalone-only,
   accepts `source_repository_verification`, returns `verified|blocked`, and is
   unreachable from business tasks, Publication, Finalizer, and finish-work.
 - `guru-finalize-task` is the active semantic owner of exact Publication payload
-  readiness, current-conversation Finalizer confirmation, four distinct input
+  readiness, current-conversation Finalizer confirmation, five distinct input
   profiles, six public exits, and the owner-private transaction/recovery loop.
+  Four ordinary profiles retain their contracts; `archived_review_refresh`
+  validates current review and archive continuity without transaction mutation.
   Current re-entry uses ignored `finalization-transaction.json`; no retired
   task-local aggregate participates in current preparation or archive selection.
   Package discovery, global invocation after publication `ready`, three Guru-owned
@@ -164,8 +170,8 @@ The durable contracts for `guru-review-branch` are split across:
 
 The durable contracts for `guru-review-task-publication` are split across
 `skill-package-contract.md`, `workflow-contract.md`, `data-contracts.md`,
-`companion-scripts.md`, and `quality-guidelines.md`. Together they own the two
-Interface 1.4 profiles, minimal exits, layered private gate, semantic/runtime
+`companion-scripts.md`, and `quality-guidelines.md`. Together they own the three
+Interface 1.4 profiles, four minimal exits, ordinary/archived private gate variants, semantic/runtime
 boundary, thin routing, real-wrapper eval, participation in the current
   twenty-three-Skill/100-exit package closure, and install/update checks. The global
 business workflow projection is 22 invokes, 98 exits, 35 workflow targets, and
@@ -187,12 +193,13 @@ Finalizer do not consume this Skill.
 The durable contracts for active `guru-finalize-task` are split across
 `skill-package-contract.md`, `workflow-contract.md`, `companion-scripts.md`,
 `quality-guidelines.md`, `preset/installer.md`, `preset/upstream-ownership.md`,
-and `docs/public-docs.md`. Together they own its four profiles, six external
+and `docs/public-docs.md`. Together they own its five profiles, six external
 exits, dialogue-only side-effect confirmation, owner-private minimal transaction,
-six-core archive, real-wrapper eval, and additive distribution.
+archive contract, real-wrapper eval, and additive distribution. The dedicated
+archived profile remains read-only and does not enter the ordinary transaction.
 
 The current package graph contains twenty-three active Skills and 100 external exits
-with fourteen target-owned `skill_input_authoring_seed` handoffs. Global workflow
+with Interface-declared target-owned `skill_input_authoring_seed` handoffs. Global workflow
 markers are 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Issue #119 combined acceptance
 additionally requires the three Guru-owned daily entries, terminal
 `ready_for_merge` and Merge evals, current ownership

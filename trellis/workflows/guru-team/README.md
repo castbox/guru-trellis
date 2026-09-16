@@ -198,7 +198,8 @@ Finalizer stale DTO 只增加 Publication 唯一 consumer 直接使用的
 `branch_review_commit`；真实 descendant content
 drift 只能由 Publication 语义门禁返回现有 Phase 2 router，不能产生 `ready`。
 
-Interface 1.4 的十三条 semantic package handoff 使用 target-owned
+Active registry 所指各 package 的 `interface.json:public_contracts.consumer_inputs`
+声明完整 semantic package handoff 集合；其中 authoring-seed handoff 使用 target-owned
 skill_input_authoring_seed；producer 只给 minimal seed，target authoring 补齐其自己拥有
 的 fresh semantic input，projection 只允许 direct/select/rename/normalize。
 `production-current-v4` 是唯一 current manifest，固定绑定 planning/check/commit 与

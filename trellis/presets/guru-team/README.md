@@ -593,9 +593,11 @@ legacy bytes；只有 `production-current.json` / v4 参与 current membership �
 同一 transaction 还安装 Interface 1.4 additive
 `skill_input_authoring_seed` shape、planning self-reentry、check passed 到 initial commit、
 commit self-reentry、commit-to-Branch-Review、Branch-Review-to-publication 与
-finalization family 与 task-free execution family 共十三条声明 edge 的 target-owned
+finalization family、归档只读复审与 task-free execution family 的 target-owned
 authoring examples 与 partition/no-overwrite/full-target-schema probes。该 kind 不增加第五种
-projection operation；部分 edge、缺失 authoring example 或 canonical/installed/platform
+projection operation；完整 handoff 集合以 active registry 所指各 package 的
+`interface.json:public_contracts.consumer_inputs` 中声明的
+`skill_input_authoring_seed` 为准。部分 edge、缺失 authoring example 或 canonical/installed/platform
 字节不一致均视为 mixed production graph。
 Interface 1.4 scalar `required` 为显式 boolean；preset 安装的 `guru-sync-base` 将
 `base_branch` 标为 optional，省略调用继续复用 formal resolver。
@@ -617,10 +619,12 @@ semantic 结论。
 `source_repository_verification` standalone input、`verified|blocked` 两个 per-exit
 contracts、source-session private result schema、两例 production corpus 与 thin wrappers。
 它不修改 live Intake 6/23 或 production-current-v4 4/15 合同。Active
-`guru-finalize-task` 另行安装四个 distinct profiles、六个 `exit_id` outputs、
-private gate、七条 production eval cases 与 finalization runtime wrappers。独立
-`guru-merge-task-pr` 再安装 active 2.0 workflow/standalone inputs、private gate、
-保留 immutable 1.0 compatibility assets，并安装四个 exits 与五个 merge runtime
+`guru-finalize-task` 另行安装五个 distinct profiles：原四个普通 profiles 加只读
+`archived_review_refresh`；六个 `exit_id` outputs 保持不变，并安装 private gate、
+Interface 声明的 production eval cases 与 finalization runtime wrappers。独立
+`guru-merge-task-pr` 安装三个 profiles：原 active 2.0 workflow/standalone inputs 加
+只读 `archived_review_request`、private gate，保留 immutable 1.0 compatibility assets，
+并安装五个 exits（原四个加 `review_refresh_required`）与五个 merge runtime
 wrappers。新增 `guru-restore-archived-task` 安装 archive-to-active 恢复 runtime、
 `restored_to_phase2|restore_blocked` 两个 exits 与四平台 discovery projection。
 Requirements/Design/Test SSOT package 另提供
@@ -1124,8 +1128,12 @@ the task tree, public DTO, commit, or archive.
 Active `guru-review-branch` is the sole Phase 3.5 semantic owner. The global
 workflow mandatory-invokes its
 six-field public input (`profile`, `mode`, `task_ref`, `base_ref`,
-`branch_review_commit`, `review_intent`) and consumes its four typed exits (`passed`,
+`branch_review_commit`, `review_intent`) for `branch_review` and consumes that profile's
+four typed exits (`passed`,
 `implementation_required`, `scope_confirmation_required`, `blocked`).
+The complete Interface has three profiles and six exits: `base_continuity` adds
+`continuity_passed`, and read-only `archived_review` adds `archived_review_passed`;
+both retain `blocked` as their stop.
 Reviewer lifecycle, finding qualification, Docs SSOT Gate, recovery checkpoint,
 private artifacts and re-entry remain package-owned step-local contracts.
 
