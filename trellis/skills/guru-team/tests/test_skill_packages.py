@@ -15,6 +15,7 @@ SKILLS = REPO / "trellis/skills/guru-team"
 sys.path.insert(0, str(SKILLS))
 from runtime.io import CommandError  # noqa: E402
 from runtime.installed import validate_skill_installed  # noqa: E402
+from runtime.schema import validate_json  # noqa: E402
 from runtime.validate import validate  # noqa: E402
 
 
@@ -30,6 +31,86 @@ preset = load_module(
     "guru_team_preset_integration",
     REPO / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
 )
+
+
+class SkillEvalAdapterRequestSchemaTests(unittest.TestCase):
+    schemas = (
+        SKILLS / "schemas/skill-eval-adapter-request.schema.json",
+        SKILLS / "tests/fixtures/representative-active/schemas/skill-eval-adapter-request.schema.json",
+    )
+
+    def setUp(self) -> None:
+        self.request = {
+            "schema_version": "1.0",
+            "adapter_id": "codex",
+            "platform": "codex",
+            "skill_id": "guru-maintain-architecture-baseline",
+            "package_root": "packages/guru-maintain-architecture-baseline",
+            "interface": {},
+            "case_id": "planning-semantic-authoring",
+            "prompt": "Review the planning Architecture impact.",
+            "files": [],
+            "workdir": ".",
+            "corpus_path": "evals/evals.json",
+            "corpus_sha256": "a" * 64,
+            "runtime_target": "scripts/invoke.sh",
+        }
+        self.authoring_fields = {
+            "native_execution_adapter": "codex",
+            "model_id": "gpt-5.6-sol",
+        }
+
+    def test_representative_adapter_request_schema_matches_canonical(self) -> None:
+        self.assertEqual(self.schemas[0].read_bytes(), self.schemas[1].read_bytes())
+
+    def test_semantic_authoring_request_accepts_adapter_and_model(self) -> None:
+        request = {
+            **self.request,
+            "native_execution_mode": "semantic_authoring",
+            **self.authoring_fields,
+        }
+        for schema in self.schemas:
+            with self.subTest(schema=schema):
+                validate_json(request, schema, "adapter_request")
+
+    def test_semantic_authoring_request_requires_each_adapter_and_model_field(self) -> None:
+        for schema in self.schemas:
+            for missing in self.authoring_fields:
+                request = {
+                    **self.request,
+                    "native_execution_mode": "semantic_authoring",
+                    **self.authoring_fields,
+                }
+                del request[missing]
+                with self.subTest(schema=schema, missing=missing):
+                    with self.assertRaises(CommandError) as raised:
+                        validate_json(request, schema, "adapter_request")
+                    self.assertEqual(raised.exception.code, "schema_mismatch")
+
+    def test_post_owner_request_accepts_omitted_or_explicit_mode(self) -> None:
+        for schema in self.schemas:
+            for mode in (None, "post_owner"):
+                request = dict(self.request)
+                if mode is not None:
+                    request["native_execution_mode"] = mode
+                with self.subTest(schema=schema, mode=mode):
+                    validate_json(request, schema, "adapter_request")
+
+    def test_post_owner_request_rejects_either_or_both_authoring_fields(self) -> None:
+        for schema in self.schemas:
+            for mode in (None, "post_owner"):
+                for fields in (
+                    {"native_execution_adapter": "codex"},
+                    {"model_id": "gpt-5.6-sol"},
+                    self.authoring_fields,
+                ):
+                    request = {**self.request, **fields}
+                    if mode is not None:
+                        request["native_execution_mode"] = mode
+                    with self.subTest(schema=schema, mode=mode, fields=fields):
+                        with self.assertRaises(CommandError) as raised:
+                            validate_json(request, schema, "adapter_request")
+                        self.assertEqual(raised.exception.code, "schema_mismatch")
 
 
 class SkillPackageIntegrationTests(unittest.TestCase):
