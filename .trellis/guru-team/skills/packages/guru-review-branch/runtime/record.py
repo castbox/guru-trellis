@@ -37,6 +37,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         choices=(
             "passed",
             "continuity_passed",
+            "archived_review_passed",
             "implementation_required",
             "scope_confirmation_required",
             "blocked",
@@ -52,6 +53,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     schema = {
         "branch_review": "public-branch-review-input.schema.json",
         "base_continuity": "public-base-continuity-input-2.0.schema.json",
+        "archived_review": "public-archived-review-input.schema.json",
     }.get(profile)
     if schema is None:
         raise CommandError(
@@ -67,7 +69,17 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         raise CommandError(
             "stale_identity", "branch_review_commit", "Review current HEAD.", 3
         )
-    base_ref = public["new_base_head"] if profile == "base_continuity" else public["base_ref"]
+    archived_facts = None
+    if profile == "archived_review":
+        from archived import facts
+        if args.typed_exit not in {"archived_review_passed", "blocked"}:
+            raise CommandError("schema_mismatch", "typed_exit", "Archived review only passes or stops; never restore or mutate task work.")
+        archived_facts = facts(package_root, repo, public)
+        base_ref = archived_facts["base_ref"]
+    else:
+        if args.typed_exit == "archived_review_passed":
+            raise CommandError("schema_mismatch", "typed_exit", "Archived pass requires its dedicated profile.")
+        base_ref = public["new_base_head"] if profile == "base_continuity" else public["base_ref"]
     base_head = git(repo, "rev-parse", base_ref)
     if profile == "branch_review" and not ancestor(repo, base_head, head):
         raise CommandError(
@@ -116,7 +128,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         raise CommandError(
             "schema_mismatch", "ai_review_gate.status", "Bind the exact typed exit."
         )
-    if args.typed_exit in {"passed", "continuity_passed"} and (
+    if args.typed_exit in {"passed", "continuity_passed", "archived_review_passed"} and (
         any(item.get("status") == "open" for item in findings) or proposals
     ):
         raise CommandError(
@@ -156,7 +168,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         )
     pair = (
         None
-        if profile == "branch_review"
+        if profile != "base_continuity"
         else {
             **{
                 key: public[key]
@@ -173,13 +185,13 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         }
     )
     value = {
-        "schema_version": "7.0",
+        "schema_version": "archived-1.0" if archived_facts else "7.0",
         "skill_id": "guru-review-branch",
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "task_dir": task_ref,
         "mode": public["mode"],
         "profile": profile,
-        "review_intent": public["review_intent"],
+        "review_intent": "archived_review" if archived_facts else public["review_intent"],
         "typed_exit": args.typed_exit,
         "review_commit": head,
         "reviewed_content_algorithm": REVIEWED_CONTENT_ALGORITHM,
@@ -191,6 +203,9 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         "semantic_review": semantic,
         "verification_evidence": auth.get("verification_evidence"),
     }
+    if archived_facts:
+        value.update(archived_facts)
+        value["pr_payload_snapshot_sha256"] = public["pr_payload_snapshot_sha256"]
     value["facts_sha256"] = digest(
         {
             key: copy.deepcopy(item)

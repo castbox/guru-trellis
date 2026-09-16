@@ -288,6 +288,98 @@
         "evals/files/workflow-initial-ready-input.json",
         "evals/files/non-default-branch-reference-facts.json"
       ]
+    },
+    {
+      "id": "archived-existing-payload-ready",
+      "prompt": "Consume the already reviewed archived fixture through the original public wrapper and declared current profile. Preserve its exact task, payload and range bindings, truthful findings and read-only boundary. This case checks post-owner transport/projection, not fresh native semantic authoring.",
+      "expected_exit": "archived_ready",
+      "expected_output": "The declared typed result from the checked fixture owner state, with zero business or remote mutation; no fresh-AI claim.",
+      "input_profile_id": "archived_publication_review",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "archived_ready"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/archived-existing-payload-ready-input.json",
+        "evals/files/archived-existing-payload-ready-post-owner-facts.json"
+      ],
+      "native_execution_mode": "post_owner"
+    },
+    {
+      "id": "archived-metadata-finding-blocked",
+      "prompt": "Consume the already reviewed archived fixture through the original public wrapper and declared current profile. Preserve its exact task, payload and range bindings, truthful findings and read-only boundary. This case checks post-owner transport/projection, not fresh native semantic authoring.",
+      "expected_exit": "blocked",
+      "expected_output": "The declared typed result from the checked fixture owner state, with zero business or remote mutation; no fresh-AI claim.",
+      "input_profile_id": "archived_publication_review",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/archived-metadata-finding-blocked-input.json",
+        "evals/files/archived-metadata-finding-blocked-post-owner-facts.json"
+      ],
+      "native_execution_mode": "post_owner"
+    },
+    {
+      "id": "archived-task-work-finding-blocked",
+      "prompt": "Consume the already reviewed archived fixture through the original public wrapper and declared current profile. Preserve its exact task, payload and range bindings, truthful findings and read-only boundary. This case checks post-owner transport/projection, not fresh native semantic authoring.",
+      "expected_exit": "blocked",
+      "expected_output": "The declared typed result from the checked fixture owner state, with zero business or remote mutation; no fresh-AI claim.",
+      "input_profile_id": "archived_publication_review",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/archived-task-work-finding-blocked-input.json",
+        "evals/files/archived-task-work-finding-blocked-post-owner-facts.json"
+      ],
+      "native_execution_mode": "post_owner"
+    },
+    {
+      "id": "archived-external-evidence-blocked",
+      "prompt": "Consume the already reviewed archived fixture through the original public wrapper and declared current profile. Preserve its exact task, payload and range bindings, truthful findings and read-only boundary. This case checks post-owner transport/projection, not fresh native semantic authoring.",
+      "expected_exit": "blocked",
+      "expected_output": "The declared typed result from the checked fixture owner state, with zero business or remote mutation; no fresh-AI claim.",
+      "input_profile_id": "archived_publication_review",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/archived-external-evidence-blocked-input.json",
+        "evals/files/archived-external-evidence-blocked-post-owner-facts.json"
+      ],
+      "native_execution_mode": "post_owner"
     }
   ]
 }

@@ -1770,7 +1770,7 @@ def read_optional_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
         return None, "invalid: JSON root is not an object"
     return payload, None
 
-def load_task_runtime_identity(task_dir: Path, config: dict[str, Any]) -> dict[str, Any]:
+def load_task_runtime_identity(task_dir: Path, config: dict[str, Any], *, allow_rebuild: bool = True) -> dict[str, Any]:
     task_path = task_dir / "task.json"
     if not task_path.is_file() or task_path.is_symlink():
         return {}
@@ -1788,7 +1788,7 @@ def load_task_runtime_identity(task_dir: Path, config: dict[str, Any]) -> dict[s
 
     task_mapping_path = runtime_task_path(root, config, task_slug)
     task_mapping, task_mapping_error = read_optional_json(task_mapping_path)
-    if task_mapping is None and task_mapping_error == "missing":
+    if task_mapping is None and task_mapping_error == "missing" and allow_rebuild:
         rebuild_runtime_mappings(
             root,
             config,

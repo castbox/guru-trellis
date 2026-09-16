@@ -150,6 +150,39 @@
         "evals/files/closure-mismatch-input.json",
         "evals/files/closure-mismatch-facts.json"
       ]
+    },
+    {
+      "id": "archived-readonly-review-request",
+      "prompt": "Consume the already reviewed archived fixture through the original public wrapper and declared current profile. Preserve its exact task, payload and range bindings, truthful findings and read-only boundary. This case checks post-owner transport/projection, not fresh native semantic authoring.",
+      "expected_exit": "review_refresh_required",
+      "expected_output": "The declared typed result from the checked fixture owner state, with zero business or remote mutation; no fresh-AI claim.",
+      "input_profile_id": "archived_review_request",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "review_refresh_required"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/archived-review-input.json",
+        "evals/files/archived-readonly-review-request-post-owner-facts.json"
+      ],
+      "native_execution_mode": "post_owner"
     }
   ]
 }

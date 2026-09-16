@@ -1,0 +1,14 @@
+{
+  "scenario": "Deterministic post-owner fixture; actual normal archive and preceding formal DTOs are produced by staging. This is not fresh native semantic-authoring evidence.",
+  "owner_staging": {
+    "recipe": "publication-archived-task-work-blocked"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--input",
+      ".trellis/.runtime/guru-team/evals/public-input.json",
+      "--semantic-result",
+      ".trellis/.runtime/guru-team/evals/publication-owner-input.json"
+    ]
+  }
+}

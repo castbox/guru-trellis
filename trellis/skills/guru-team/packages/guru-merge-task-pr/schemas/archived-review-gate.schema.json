@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-merge-task-pr-archived-review-gate-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill_id",
+    "input",
+    "facts_sha256",
+    "semantic_review",
+    "route"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "skill_id": {
+      "const": "guru-merge-task-pr"
+    },
+    "input": {
+      "$ref": "public-archived-review-request-input.schema.json"
+    },
+    "facts_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "semantic_review": {
+      "type": "object"
+    },
+    "route": {
+      "oneOf": [
+        {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "guru-merge-task-pr-archived-review-success-route-1.0",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "typed_exit"
+          ],
+          "properties": {
+            "typed_exit": {
+              "const": "review_refresh_required"
+            }
+          }
+        },
+        {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "guru-merge-task-pr-archived-review-blocked-route-1.0",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "typed_exit",
+            "reason_code",
+            "remediation"
+          ],
+          "properties": {
+            "typed_exit": {
+              "const": "merge_blocked"
+            },
+            "reason_code": {
+              "type": "string",
+              "minLength": 1
+            },
+            "remediation": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    }
+  }
+}

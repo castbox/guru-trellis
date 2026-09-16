@@ -6,7 +6,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.52` | [requirement-main.md](./versions/current-main-0.6.17-guru.52/requirement-main.md) | #410 release-facing 四轴映射；完整继承 immutable `.51`，不构成后续 gate 或发布证明 |
+| `active` | `current-main-0.6.17-guru.53` | [requirement-main.md](./versions/current-main-0.6.17-guru.53/requirement-main.md) | #418 归档身份与只读复审；完整继承 immutable `.52`，不是后续 gate 或发布证明 |
+| `superseded` | `current-main-0.6.17-guru.52` | [requirement-main.md](./versions/current-main-0.6.17-guru.52/requirement-main.md) | #410 release-facing 四轴映射；完整继承 immutable `.51`，不构成后续 gate 或发布证明 |
 | `superseded` | `current-main-0.6.5-guru.51` | [requirement-main.md](./versions/current-main-0.6.5-guru.51/requirement-main.md) | #408 Nightly/session/独立手动操作；immutable history |
 | `superseded` | `current-main-0.6.5-guru.50` | [requirement-main.md](./versions/current-main-0.6.5-guru.50/requirement-main.md) | #247 reviewed ledger retirement与Issue closure ownership；immutable history |
 | `superseded` | `current-main-0.6.5-guru.49` | [requirement-main.md](./versions/current-main-0.6.5-guru.49/requirement-main.md) | #329 reviewed developer-free source/lifecycle；immutable history |
@@ -27,9 +28,9 @@
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
 当前框架源码固定为 `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`，CI `34838784963`，CLI/core `0.6.17`，package manager `pnpm@10.32.1`；Guru current extension revision 为 `0.6.17-guru.42`，target repository axis 为 `v0.6.17-guru.1`。released `v0.6.16-guru.1` 与 extension `0.6.16-guru.41` 保持 immutable history。
-Docs `.52` 承接 #410 并完整继承 `.51` 的 #408 source/session 边界、旧 lifecycle、developer/ledger retired-zero 与 23/97/78；`.51` 及更早版本保持 immutable。知识提升不证明 promotion-created diff 之后的 Phase 2/commit/Branch Review、Publication、push、PR、merge、tag、Release 或 Issue closure 已完成。
+Docs `.53` 完整继承 immutable `.52` 并承接 #418；current graph 为 23 Skills / 100 exits / 78 commands，业务 workflow 为 22 invokes / 98 exits。四条软件版本轴不变。知识提升不证明 post-promotion Phase 2/commit/完整 Branch Review、Publication 或发布已完成。
 
-`R410-01..07 -> D410-01..06 -> T410-01..08` 见 [current trace](./versions/current-main-0.6.17-guru.52/traceability.md)。`R408-01..08 -> D408-01..05 -> T408-01..08` 作为 inherited `.51` authority 保留；R408-01 对 R329-01 的旧 pin 替代及 R378 历史 pin 不变。实际证明边界由同版本 Test 层维护。
+`R418-01..07 -> D418-01..06 -> T418-01..14` 与继承的 `R410-01..07 -> D410-01..06 -> T410-01..08` 见 [current trace](./versions/current-main-0.6.17-guru.53/traceability.md)。`R408-01..08 -> D408-01..05 -> T408-01..08` 作为 inherited `.51` authority 保留；R408-01 对 R329-01 的旧 pin 替代及 R378 历史 pin 不变。实际证明边界由同版本 Test 层维护。
 
 `R378-01..04 -> D378-01..04 -> T378-01..05` 承接固定来源、会话隔离、installed 投影与原 verifier 入口；#388/#389 保留为关联前置，既有 #240/#348/#332/#376 与 Evolution authority 不扩张。
 
@@ -61,7 +62,7 @@ Evolution target delta 或 fixture；current capability 增加为 `CUR-CAP-024`�
 也不表示任何版本已发布。`.44` 新增 `REQ-063..073`、`BEH-013..015`，把 #332 `.5/.40/CLI 0.6.15`
 exact-candidate Release Gate、merged prerequisite consumption 与独立 release transaction authority 投影为
 current facts，并把 #240/#348 已审查的 solution-mechanism 与 archived-task recovery owner/RDT/ADR
-authority 提升为 current；public graph 现为 23 Skills / 97 exits / 81 commands，但不新增 Evolution target
+authority 提升为 current；该 `.44` 历史 public graph 为 23 Skills / 97 exits / 81 commands，但不新增 Evolution target
 delta、capability 或 fixture。`.45` 新增 `REQ-074..083`，把四阶段原 public entry、Interface-driven
 wrapper selection、23/97/77 graph、promotion freshness 与 fresh candidate reset 提升为 current；这些
 变化仍由既有 Evolution capability/delta/fixture 承接。`.46` 新增 `REQ-087..092` 与 `BEH-016`，把
@@ -89,3 +90,5 @@ inventory 只承接 current-to-target trace，不替代前两份 Requirements �
 普通 task 不直接修改 shared current authority；先由 `guru-maintain-requirements-design-test-ssot:task_impact_sync` 判定 contribution/direct sync，再通过 `promotion` 激活。结构冲突或过期状态走 `repair`。
 
 旧路径 `requirement-main.md` 与 `guru-team-trellis-flow.md` 仅保留迁移导航，不定义 current。
+
+`.53/active` 完整继承 `.52` 并吸收 reviewed #418 contribution，与 Architecture 共享 current identity。promotion-created combined diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review，随后才进入 Publication；本文不声明下游门禁已通过。四个新只读 profile 与 Architecture 三个既有 source/stage 配对不改变原 mutation path、#247 ledger-free/Restore 或独立 #305 Evolution target。

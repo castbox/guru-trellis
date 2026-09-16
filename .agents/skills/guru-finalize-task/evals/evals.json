@@ -5,6 +5,34 @@
   "skill_name": "guru-finalize-task",
   "evals": [
     {
+      "id": "archived-review-refresh",
+      "prompt": "Consume the already reviewed archived fixture through the original public wrapper and declared current profile. Preserve its exact task, payload and range bindings, truthful findings and read-only boundary. This case checks post-owner transport/projection, not fresh native semantic authoring.",
+      "expected_exit": "ready_for_merge",
+      "expected_output": "The declared typed result from the checked fixture owner state, with zero business or remote mutation; no fresh-AI claim.",
+      "input_profile_id": "archived_review_refresh",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready_for_merge"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          }
+        ]
+      },
+      "files": [
+        "examples/public-archived-review-refresh-input.json",
+        "evals/files/archived-review-refresh-post-owner-facts.json"
+      ],
+      "native_execution_mode": "post_owner"
+    },
+    {
       "id": "publication-review-stale",
       "prompt": "Invoke the finalizer from stale publication evidence and return the checked publication-review re-entry.",
       "expected_exit": "publication_review_stale",
@@ -12,7 +40,13 @@
       "input_profile_id": "publication_ready",
       "assertions": {
         "deterministic": [
-          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "publication_review_stale"}
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "publication_review_stale"
+          }
         ]
       },
       "files": [
@@ -28,7 +62,13 @@
       "input_profile_id": "same_plan_resume",
       "assertions": {
         "deterministic": [
-          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "resume_finalization"}
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "resume_finalization"
+          }
         ]
       },
       "files": [
@@ -44,7 +84,13 @@
       "input_profile_id": "reprepare_preview",
       "assertions": {
         "deterministic": [
-          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "reprepare_required"}
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "reprepare_required"
+          }
         ]
       },
       "files": [
@@ -60,7 +106,13 @@
       "input_profile_id": "standalone_finalization",
       "assertions": {
         "deterministic": [
-          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready_for_merge"}
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready_for_merge"
+          }
         ]
       },
       "files": [
@@ -135,7 +187,13 @@
       "input_profile_id": "standalone_finalization",
       "assertions": {
         "deterministic": [
-          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "blocked"}
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
         ]
       },
       "files": [

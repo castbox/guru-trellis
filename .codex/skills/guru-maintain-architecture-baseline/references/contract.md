@@ -113,6 +113,25 @@ cannot relabel a draft or superseded baseline as current.
 
 ## Project architecture checks
 
+### Archived Read-Only Sources
+
+The existing `task_impact_sync` input binds three additional closed
+source/stage pairs: `review_refresh_required/branch_review`,
+`archived_review_passed/publication`, and `archived_ready/acceptance_finish`.
+Each is a fresh semantic invocation; an earlier stage result is not reused.
+The caller supplies the exact current range or A/B identity for that stage.
+
+For these sources the AI reviews only the existing current project authority
+and evidence. It selects `baseline_current` only with `no_change` or
+`reviewed_promoted` state. If a prerequisite is missing/stale or satisfying it
+needs a contribution, promotion, repair, implementation or other write, the
+AI selects the existing `blocked` exit and explains the actual limitation.
+It does not relabel that need as fulfilled. No writing recovery is executed
+inside this invocation. The validator checks source/stage and exit/state
+compatibility without choosing, converting or repairing an owner result.
+An invalid writable result fails before projection. Other source exits and
+profiles retain their current behavior and consumers.
+
 Projects declare their own check descriptor, command, and semantics. The AI
 owner rereads current descriptor authority and records one `descriptor_identity`, check
 identity/version, entrypoint, applicable scope,

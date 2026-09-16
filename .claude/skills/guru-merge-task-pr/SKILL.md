@@ -1,6 +1,6 @@
 ---
 name: guru-merge-task-pr
-description: Merge one Ready task PR through a semantic live gate, expected-head mutation, and post-merge closure verification.
+description: Merge one Ready task PR through a semantic live gate, or request an independent read-only review of an exact completed archive.
 ---
 
 # Guru Merge Task PR
@@ -10,6 +10,20 @@ mode consume `guru-finalize-task:ready_for_merge`; in standalone mode accept one
 repo-bound PR identity plus the expected base/head branches. Before invocation,
 author and review the exact PR-native Chinese `chore(merge)` subject/body plus a concrete Chinese summary,
 then rebuild the same live evidence.
+
+For a genuinely missing current review result on a completed archive, use the
+independent `archived_review_request` profile described in the contract. First
+decide whether a fresh review is necessary: a normally retired Branch Review
+checkpoint alone never triggers it. This profile accepts only archive task_ref,
+repo_ref, pr_number and expected_head_sha plus schema_version/profile/mode.
+It does not accept a Publication hash or merge message and cannot merge.
+Preview the exact committed archive/Ready PR facts, review the six dimensions
+as archived-entry prerequisites, and invoke the same public wrapper with
+`route.typed_exit=review_refresh_required` or `merge_blocked`. No merge
+confirmation is requested for this read-only operation. Successful output
+contains only task_ref, the current archive HEAD as branch_review_commit, and
+the exact title/body snapshot digest. Workflow runs its distinct Architecture
+branch_review stage before Branch Review consumes that seed as archived_review.
 
 Read [references/contract.md](references/contract.md), run the preview, and
 perform the semantic gate. A current task-work content finding returns
@@ -52,6 +66,19 @@ local `main`, or clean task resources.
 For an explicit independent manual operation after an automatic stop, read
 `.trellis/workflow.md#manual-gitgithub-operations` (Manual Git/GitHub Operations).
 That global boundary does not relax this Skill's entry or completion contract.
+
+Known preview and invocation errors retain a package-owned error code, field,
+and credential-safe remediation. An input diagnostic is not a Skill exit or a
+review result. When the current complete input and semantic review support a
+blocked route, use the existing `merge_blocked` exit with its concrete reason;
+never relabel a metadata-only problem as `phase2_reentry_required`.
+
+Do not require a Branch Review checkpoint on the normal `ready_for_merge`
+path: its owner retires it after a successful public projection. For a genuine
+missing or stale required review result, follow the original-owner re-entry
+conditions in [references/contract.md](references/contract.md#closeout-identity-and-review-re-entry).
+Neither checkpoint absence nor an old diagnostic authorizes a new pass,
+private-state lookup, unconditional review request, or merge mutation.
 
 Workflow-mode `ready_for_merge` requires Finalizer's
 `publication_body_sha256`. Merge compares it with the exact bytes from its first

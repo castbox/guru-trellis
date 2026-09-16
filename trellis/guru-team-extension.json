@@ -141,7 +141,15 @@
         "guru-reconcile-task-base-input-post-publication-1.0",
         "guru-task-free-change-input-interaction-resume-1.0",
         "guru-task-free-change-input-selected-route-1.0",
-        "guru-workflow-mode-input-initial-1.0"
+        "guru-workflow-mode-input-initial-1.0",
+        "guru-merge-task-pr-input-aggregate-3.0",
+        "guru-merge-task-pr-input-archived-review-request-1.0",
+        "guru-production-review-branch-input-aggregate-5.0",
+        "guru-production-review-branch-input-archived-review-1.0",
+        "guru-production-review-task-publication-input-aggregate-5.0",
+        "guru-production-review-task-publication-input-archived-publication-review-1.0",
+        "guru-finalize-task-input-aggregate-7.0",
+        "guru-finalize-task-input-archived-review-refresh-1.0"
       ],
       "typed_output_schema_ids": [
         "guru-architecture-baseline-output-current-2.0",
@@ -235,7 +243,10 @@
         "guru-task-free-change-output-scope-change-1.0",
         "guru-workflow-mode-output-blocked-1.0",
         "guru-workflow-mode-output-standard-intake-1.0",
-        "guru-workflow-mode-output-task-free-1.0"
+        "guru-workflow-mode-output-task-free-1.0",
+        "guru-merge-task-pr-output-review-refresh-required-1.0",
+        "guru-production-review-branch-output-archived-review-passed-1.0",
+        "guru-production-review-task-publication-output-archived-ready-1.0"
       ],
       "legacy_typed_output_schema_ids": [
         "guru-stage0-clarify-requirements-output-clear-1.0",
@@ -263,7 +274,10 @@
         "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-5.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-4.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-2.0.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-3.0.json"
+        "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-3.0.json",
+        "guru-merge-task-pr-archived-review-gate-1.0",
+        "https://github.com/castbox/guru-trellis/schemas/guru-archived-review-gate-1.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-archived-task-publication-readiness-1.0.json"
       ],
       "artifact_schema_ids": [
         "guru-base-sync-result-1.0",

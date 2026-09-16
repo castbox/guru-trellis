@@ -19,7 +19,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Ready-for-merge input.",
+          "description": "Current merge input or independent archived_review_request.",
           "repeatable": false,
           "conflicts": []
         }
@@ -30,11 +30,19 @@
         "invalid_arguments",
         "conflicting_arguments",
         "merge_precondition_failed",
+        "stale_identity",
+        "github_cli_missing",
+        "github_auth_failed",
+        "github_repo_access_denied",
+        "github_permission_denied",
+        "github_api_unavailable",
+        "github_response_incomplete",
         "internal_error"
       ],
       "side_effect": "github_read",
       "schema_bindings": [
-        "schemas/public-ready-for-merge-input-2.0.schema.json"
+        "schemas/public-ready-for-merge-input-2.0.schema.json",
+        "schemas/public-archived-review-request-input.schema.json"
       ],
       "validator_id": "merge_previewer",
       "runtime_role": "preview"
@@ -56,7 +64,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Ready-for-merge input.",
+          "description": "Current merge input or independent archived_review_request.",
           "repeatable": false,
           "conflicts": []
         },
@@ -75,12 +83,21 @@
         "invalid_arguments",
         "conflicting_arguments",
         "merge_precondition_failed",
+        "stale_identity",
+        "github_cli_missing",
+        "github_auth_failed",
+        "github_repo_access_denied",
+        "github_permission_denied",
+        "github_api_unavailable",
+        "github_response_incomplete",
         "internal_error"
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [
         "schemas/public-ready-for-merge-input-2.0.schema.json",
-        "schemas/task-pr-merge-gate-2.0.schema.json"
+        "schemas/task-pr-merge-gate-2.0.schema.json",
+        "schemas/public-archived-review-request-input.schema.json",
+        "schemas/archived-review-gate.schema.json"
       ],
       "validator_id": "merge_recorder",
       "runtime_role": "record"
@@ -102,7 +119,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Ready-for-merge input.",
+          "description": "Current merge input or independent archived_review_request.",
           "repeatable": false,
           "conflicts": []
         },
@@ -121,11 +138,20 @@
         "invalid_arguments",
         "conflicting_arguments",
         "merge_precondition_failed",
+        "stale_identity",
+        "github_cli_missing",
+        "github_auth_failed",
+        "github_repo_access_denied",
+        "github_permission_denied",
+        "github_api_unavailable",
+        "github_response_incomplete",
         "internal_error"
       ],
       "side_effect": "github_read",
       "schema_bindings": [
-        "schemas/task-pr-merge-gate-2.0.schema.json"
+        "schemas/task-pr-merge-gate-2.0.schema.json",
+        "schemas/public-archived-review-request-input.schema.json",
+        "schemas/archived-review-gate.schema.json"
       ],
       "validator_id": "merge_checker",
       "runtime_role": "check"
@@ -147,7 +173,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Ready-for-merge input.",
+          "description": "Current merge input or independent archived_review_request.",
           "repeatable": false,
           "conflicts": []
         },
@@ -166,11 +192,20 @@
         "invalid_arguments",
         "conflicting_arguments",
         "merge_precondition_failed",
+        "stale_identity",
+        "github_cli_missing",
+        "github_auth_failed",
+        "github_repo_access_denied",
+        "github_permission_denied",
+        "github_api_unavailable",
+        "github_response_incomplete",
         "internal_error"
       ],
       "side_effect": "github_write",
       "schema_bindings": [
-        "schemas/task-pr-merge-gate-2.0.schema.json"
+        "schemas/task-pr-merge-gate-2.0.schema.json",
+        "schemas/public-archived-review-request-input.schema.json",
+        "schemas/archived-review-gate.schema.json"
       ],
       "validator_id": "merge_executor",
       "runtime_role": "execute"
@@ -235,6 +270,12 @@
         "invalid_arguments",
         "conflicting_arguments",
         "merge_precondition_failed",
+        "github_cli_missing",
+        "github_auth_failed",
+        "github_repo_access_denied",
+        "github_permission_denied",
+        "github_api_unavailable",
+        "github_response_incomplete",
         "internal_error"
       ],
       "side_effect": "github_read",
@@ -261,7 +302,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Ready-for-merge input.",
+          "description": "Current merge input or independent archived_review_request.",
           "repeatable": false,
           "conflicts": []
         },
@@ -280,11 +321,19 @@
         "invalid_arguments",
         "conflicting_arguments",
         "merge_precondition_failed",
+        "stale_identity",
+        "github_cli_missing",
+        "github_auth_failed",
+        "github_repo_access_denied",
+        "github_permission_denied",
+        "github_api_unavailable",
+        "github_response_incomplete",
         "internal_error"
       ],
       "side_effect": "github_write",
       "schema_bindings": [
-        "schemas/public-ready-for-merge-input-2.0.schema.json"
+        "schemas/public-ready-for-merge-input-2.0.schema.json",
+        "schemas/public-archived-review-request-input.schema.json"
       ],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"

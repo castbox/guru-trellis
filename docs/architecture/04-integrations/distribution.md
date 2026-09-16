@@ -64,6 +64,14 @@
   验证结果；non-default-base 当前只引用并由后续进入默认分支的
   Publication fresh判断。no-Issue不制造 Issue identity，remain-open 必须绑定具体 current-authority原因。
 
+- `ARCH-INT-018`：#418 的 `review_refresh_required -> archived_review_passed -> archived_ready`
+  经各原 owner 的 Interface projection 连接只读复审，最终由 Finalizer 返回原 `ready_for_merge`。
+  原 H 只由 Finalizer 从 committed summary 推导；当前 A、复审 B 与 title/body 快照各服务其直接
+  consumer，快照不等于 Publication 批准。三个 consumer 前分别 fresh 调用 Architecture 的
+  `branch_review`、`publication`、`acceptance_finish` stage；缺 authority 或需写入时只读链停止。
+  普通 profiles、gate 和 Merge expected-head 操作保持原合同；接口正文归 canonical packages，
+  决策与证明边界见 `ADR-010` / `EVD-028`。成功退休的 checkpoint 不构成额外复审前置条件。
+
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。
 - `skill_api` 与 interface/schema/command projection、distribution、managed/installed file

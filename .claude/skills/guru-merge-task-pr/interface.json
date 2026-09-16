@@ -3,7 +3,7 @@
   "schema_version": "1.4",
   "id": "guru-merge-task-pr",
   "name": "guru-merge-task-pr",
-  "description": "Merge one Ready task PR through a semantic live gate, expected-head mutation, and post-merge closure verification.",
+  "description": "Merge one Ready task PR through a semantic live gate, expected-head mutation, and post-merge closure verification. Supports a separate read-only archived review request.",
   "state": "active",
   "modes": {
     "workflow": {
@@ -13,7 +13,8 @@
         "repo_bound_pr",
         "expected_head",
         "live_merge_readiness",
-        "invocation_freshness"
+        "invocation_freshness",
+        "archived_review_identity"
       ]
     },
     "standalone": {
@@ -23,7 +24,8 @@
         "repo_bound_pr",
         "expected_head",
         "live_merge_readiness",
-        "invocation_freshness"
+        "invocation_freshness",
+        "archived_review_identity"
       ]
     }
   },
@@ -57,6 +59,12 @@
       "evidence": "current input identity and owner-private gate",
       "binding": "one repository, PR and expected head",
       "freshness": "checker recomputes live facts"
+    },
+    {
+      "id": "archived_review_identity",
+      "evidence": "archived_review_request only: committed clean completed archive, dual mappings, origin, worktree, branch/base, local/remote/PR HEAD and Ready Open PR",
+      "binding": "one task_ref and current immutable archive HEAD; snapshot is not Publication approval",
+      "freshness": "recomputed read-only on each archived request command"
     }
   ],
   "judgment_mode": "semantic",
@@ -115,6 +123,22 @@
     {
       "id": "private_gate",
       "path": "examples/task-pr-merge-gate-2.0.json"
+    },
+    {
+      "id": "archived_review_input",
+      "path": "examples/public-archived-review-request-input.json"
+    },
+    {
+      "id": "review_refresh_required_output",
+      "path": "examples/public-review-refresh-required-output.json"
+    },
+    {
+      "id": "archived_review_authoring",
+      "path": "examples/public-archived-review-authoring.json"
+    },
+    {
+      "id": "archived_review_semantic",
+      "path": "examples/archived-review-semantic-input.json"
     }
   ],
   "schemas": [
@@ -128,7 +152,7 @@
     },
     {
       "id": "aggregate_input",
-      "path": "schemas/public-input-2.0.schema.json"
+      "path": "schemas/public-input-3.0.schema.json"
     },
     {
       "id": "merged_output",
@@ -157,6 +181,18 @@
     {
       "id": "check_watcher_result",
       "path": "schemas/check-watcher-result.schema.json"
+    },
+    {
+      "id": "archived_review_input",
+      "path": "schemas/public-archived-review-request-input.schema.json"
+    },
+    {
+      "id": "review_refresh_required_output",
+      "path": "schemas/public-review-refresh-required-output.schema.json"
+    },
+    {
+      "id": "archived_review_gate",
+      "path": "schemas/archived-review-gate.schema.json"
     }
   ],
   "validators": [
@@ -201,8 +237,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-merge-task-pr-input-aggregate-2.0",
-        "path": "schemas/public-input-2.0.schema.json"
+        "schema_id": "guru-merge-task-pr-input-aggregate-3.0",
+        "path": "schemas/public-input-3.0.schema.json"
       },
       "profiles": [
         {
@@ -233,6 +269,21 @@
           "discriminator": {
             "field": "profile",
             "value": "standalone_merge"
+          }
+        },
+        {
+          "id": "archived_review_request",
+          "schema": {
+            "schema_id": "guru-merge-task-pr-input-archived-review-request-1.0",
+            "path": "schemas/public-archived-review-request-input.schema.json"
+          },
+          "example": {
+            "id": "archived_review_request_input",
+            "path": "examples/public-archived-review-request-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "archived_review_request"
           }
         }
       ]
@@ -316,6 +367,20 @@
         "consumer_use_ids": [
           "project_closure_mismatch"
         ]
+      },
+      {
+        "exit_id": "review_refresh_required",
+        "schema": {
+          "schema_id": "guru-merge-task-pr-output-review-refresh-required-1.0",
+          "path": "schemas/public-review-refresh-required-output.schema.json"
+        },
+        "example": {
+          "id": "review_refresh_required_output",
+          "path": "examples/public-review-refresh-required-output.json"
+        },
+        "consumer_use_ids": [
+          "project_review_refresh_required"
+        ]
       }
     ],
     "consumer_inputs": [
@@ -394,6 +459,33 @@
           "kind": "json_schema",
           "schema_id": "guru-merge-task-pr-stop-closure-mismatch-input-1.0",
           "path": "consumers/stop/production/merge-task-pr-closure-mismatch.schema.json"
+        }
+      },
+      {
+        "id": "archived_review_seed_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-review-branch"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-review-branch/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "archived_review",
+          "seed_fields": [
+            "task_ref",
+            "branch_review_commit",
+            "pr_payload_snapshot_sha256"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "archived_review_authoring",
+            "path": "examples/public-archived-review-authoring.json"
+          }
         }
       }
     ],
@@ -475,6 +567,26 @@
         "exit_id": "closure_mismatch",
         "consumer_input_id": "closure_mismatch_stop_input",
         "operation": "direct"
+      },
+      {
+        "id": "project_review_refresh_required",
+        "exit_id": "review_refresh_required",
+        "consumer_input_id": "archived_review_seed_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "branch_review_commit",
+            "target": "branch_review_commit"
+          },
+          {
+            "source": "pr_payload_snapshot_sha256",
+            "target": "pr_payload_snapshot_sha256"
+          }
+        ]
       }
     ],
     "private_artifacts": [
@@ -484,6 +596,15 @@
         "schema": {
           "schema_id": "guru-task-pr-merge-gate-2.0",
           "path": "schemas/task-pr-merge-gate-2.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "archived_review_gate",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "guru-merge-task-pr-archived-review-gate-1.0",
+          "path": "schemas/archived-review-gate.schema.json"
         },
         "persistence": "ignored_runtime"
       }
@@ -521,6 +642,14 @@
         "kind": "stop",
         "id": "task-pr-closure-mismatch"
       }
+    },
+    {
+      "id": "review_refresh_required",
+      "evidence": "Current completed archive and Ready PR identity checked, six entry dimensions reviewed, and exact PR payload snapshot captured without merge authority.",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-review-branch"
+      }
     }
   ],
   "reentry": {
@@ -529,7 +658,9 @@
     "stale_behavior": "fail_closed"
   },
   "tests": [
-    "tests/test_contract.py"
+    "tests/test_contract.py",
+    "tests/test_errors.py",
+    "tests/test_archived_review.py"
   ],
   "platform_destinations": [
     "shared",

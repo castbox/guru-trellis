@@ -2,13 +2,13 @@
 
 ## Current identity
 
-- version：`current-main-0.6.17-guru.52`
+- version：`current-main-0.6.17-guru.53`
 - status：`active`
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
-- Architecture inheritance：`docs/architecture/README.md`，`current-main-0.6.17-guru.52` / `active`
-- source binding：reviewed #410 contribution + inherited immutable `current-main-0.6.5-guru.51` authority；current graph 23 Skills / 97 exits / 78 commands；framework source `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0` / CI `34838784963` / CLI/core `0.6.17` / `pnpm@10.32.1` / extension `0.6.17-guru.42` / target repository `v0.6.17-guru.1`；released `v0.6.16-guru.1` 与 extension `0.6.16-guru.41` 保持 immutable history；developer/ledger retired-zero、旧 lifecycle、Constitution/GAP/ADR/#305 target 不变（精确 revision 由包含本 authority 的 Git object/tree identity 绑定；本 projection 不记录远端动作、Gate 或授权状态）
+- Architecture inheritance：`docs/architecture/README.md`，`current-main-0.6.17-guru.53` / `active`
+- source binding：reviewed #418 contribution + inherited immutable `current-main-0.6.17-guru.52` authority；current graph 23 Skills / 100 exits / 78 commands。当前四轴与固定 Fork 来源继承 `.52`，见三个 README 与 Architecture `ARCH-CUR-029/030`；新增只读复审决策为 `ADR-010`。developer/ledger retired-zero、普通 lifecycle、Constitution/GAP/#305 target 不变。本 projection 不记录远端动作或动态 Gate 状态。
 
 ## 读取与更新
 
@@ -18,4 +18,4 @@
 
 ## Freshness
 
-每次 gate 必须重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 和 source binding。locator 不存在、版本不一致、traceability 断裂或 projection 落后时，不得沿用本页，进入 owner `repair`。target repository `v0.6.17-guru.1`、extension `0.6.17-guru.42`、CLI/core 与 current knowledge identity 是独立版本轴；`.52` snapshot 不证明 promotion-created diff 之后的 Phase 2/commit/Branch Review、Publication、push、PR、merge、tag、Release 或 Issue closure。R410-01..07 / D410-01..06 / T410-01..08 的 current delta 与双向 trace 在三层 `.52` authority 定义；R408/D408/T408 与旧 pin 作为 inherited `.51` history 保留。
+每次 gate 必须重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 和 source binding。locator 不存在、版本不一致、traceability 断裂或 projection 落后时，不得沿用本页，进入 owner `repair`。软件四轴与 current knowledge identity 独立；`.53` snapshot 不证明 promotion-created diff 之后的 Phase 2/commit/Branch Review、Publication、push、PR、merge、tag、Release 或 Issue closure。R418/D418/T418 的 current delta 与双向 trace 在三层 `.53` authority 定义；R410/R408 及更早证据作为 inherited `.52` history 保留。

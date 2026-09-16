@@ -231,7 +231,68 @@ Freshness failures alone map to `publication_stale`. Missing or invalid
 classification maps to `internal_error` with the generic owner locator and
 remediation.
 
-## Entry
+## Archived Entry And Independent Semantic Variant
+
+The additive `archived_publication_review` profile has exactly `profile`,
+`mode`, `task_ref`, `branch_review_commit` (A),
+`pr_payload_snapshot_sha256`, and `reviewed_base_head` (B). Consume the fresh
+Branch Review `archived_review_passed` seed and author only profile/mode.
+The original two input schemas and schema 5.0 active semantic union are
+unchanged. Aggregate 5.0 adds this independent profile, not optional active
+fields or a conversion of an old checkpoint.
+
+This entry accepts only a completed, committed and completely clean archive
+whose current local HEAD, remote branch and exact same-repository Ready Open
+PR are A. The summary must identify this archive, branch/base and PR. Both
+runtime mappings must match their producer-owned identities: the task mapping
+owns this archive locator, while the workspace mapping owns workspace and
+branch identity. Missing/stale mapping stops without rebuild. Selected local
+base ref and live GitHub base ref must
+both still equal B, and B must be an ancestor of A. No fetch or ref update is
+performed. Title and body are read from the existing PR without trimming or
+newline normalization. SHA-256 of their UTF-8 sorted-key compact JSON object,
+without a trailing newline, must match the input snapshot. That snapshot is
+only a local freshness binding, never a prior pass or authorization.
+
+Consume fresh Architecture `task_impact_sync(stage=publication,
+source_exit=archived_review_passed)` and re-review all ten dimensions against
+current authority and existing PR bytes. Only `baseline_current` permits this
+review to continue. Evidence insufficiency or a result requiring writes stops;
+never omit Architecture, promote, repair, or route to a writing consumer.
+
+The semantic authoring object contains the exact six public input fields plus
+`pr_payload`, `candidate_classifications`, `dimensions`, `findings`,
+`conclusions`, and `route`. It has no `review_intent` or `stale_reason`.
+The independent `archived-pr-readiness.schema.json` adds only schema identity
+to that object when recorded in the same owner-private short-lived checkpoint.
+The recorder/checker validate the fresh authoring, not a transformed active
+result. Both record and check perform the read-only preflight; check does not
+skip live rereads because the invocation has an earlier cached result.
+
+- `archived_ready` requires all ten dimensions and all three conclusions
+  passed, and zero open findings. Existing exact PR bytes must already be
+  sufficient; do not author a replacement payload.
+- `blocked` requires a concrete reason/remediation, at least one open finding
+  and a non-passed dimension. Every open finding binds its corresponding
+  dimension. `metadata_revision` and `task_work` retain `finding` dimensions;
+  `external_blocker` retains `blocked` dimensions. Every non-passed dimension
+  has an open finding. The stop does not relabel content as external failure.
+
+There is no archived metadata-revision loop or `return_to_task_work`. Do not
+write tasks, archives, history, branches, PRs or Issues; do not call active
+`prepare_closeout`. Recorder/checker may create and retire only their own
+short-lived private result. A current identity/snapshot mismatch returns the
+existing explicit diagnostic and stops the round.
+
+`archived_ready` contains exactly `exit_id`, `task_ref`,
+`branch_review_commit`, `reviewed_base_head`, `pr_title`, and `pr_body`.
+Select the five payload fields into Finalizer's target-owned
+`archived_review_refresh` authoring seed; its caller adds profile/mode.
+Publication consumes the snapshot hash and never emits it downstream.
+The checker-passed output retires the checkpoint using the existing lifecycle.
+Finalizer receives current bytes and A/B, not Publication's internal schema.
+
+## Active Entry
 
 `publication_review` consumes the target-owned merge of Branch Review seed
 `task_ref`, `branch_review_commit` and caller-authored `profile`, `mode`,

@@ -1337,6 +1337,8 @@ def finalization_preview_context(
     args: argparse.Namespace,
     public_input: dict[str, Any],
 ) -> dict[str, Any]:
+    if public_input.get("profile") == "archived_review_refresh":
+        return archived_review_refresh_context(root, public_input)
     official_after_archive_hook_state(root)
     eval_context = finalization_eval_preview_context(root, public_input)
     if eval_context is not None:
@@ -1573,6 +1575,8 @@ def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     public_input, input_locator = finalization_public_input(root, args.input)
     context = finalization_preview_context(root, args, public_input)
+    if public_input.get("profile") == "archived_review_refresh":
+        return archived_review_refresh_preview(root, public_input, context)
     return finalization_preview_receipt(root, public_input, input_locator, context)
 
 
@@ -1792,6 +1796,8 @@ def finalization_validate_route(
     allow_pending_transition: bool = False,
 ) -> None:
     exit_id = str(route.get("typed_exit") or "")
+    if public_input.get("profile") == "archived_review_refresh" and exit_id not in {"ready_for_merge", "blocked"}:
+        raise WorkflowError("Archived review permits only ready_for_merge or blocked.", exit_code=2)
     if route.get("consumer") != FINALIZATION_CONSUMERS.get(exit_id):
         raise WorkflowError(
             "Task finalization selected consumer does not match the typed exit.",
@@ -1960,7 +1966,7 @@ def finalization_validate_route(
             "reprepare_required reason does not match the current recovery state.",
             exit_code=2,
         )
-    if exit_id == "ready_for_merge" and state not in FINALIZATION_COMMITTED_RECOVERY_STATES:
+    if exit_id == "ready_for_merge" and state not in FINALIZATION_COMMITTED_RECOVERY_STATES and state != "archived_review_refresh":
         if not allow_pending_transition or not executor_materialized:
             raise WorkflowError(
                 "ready_for_merge requires the exact private marker before its executor transition.",
@@ -2018,6 +2024,10 @@ def finalization_record_gate_result(
     dry_run: bool,
     include_private: bool,
 ) -> dict[str, Any]:
+    if public_input.get("profile") == "archived_review_refresh":
+        expected_status = "passed" if reviewed["route"]["typed_exit"] == "ready_for_merge" else "blocked"
+        if reviewed["review"]["status"] != expected_status:
+            raise WorkflowError("Archived review conclusion does not match its route.", exit_code=2)
     finalization_validate_route(
         root,
         public_input,
@@ -2079,6 +2089,11 @@ def finalization_gate_input(
 ) -> tuple[dict[str, Any], Path]:
     task_dir = finalization_task_dir(root, public_input)
     expected = task_finalization_path(root, task_dir)
+    if public_input.get("profile") == "archived_review_refresh":
+        path = stage0_owner_path(root, value, "arguments.owner_result") if value else expected
+        if path.resolve() != expected.resolve() or not path.is_file() or path.is_symlink():
+            raise WorkflowError("Archived review requires its fresh owner-private gate.", exit_code=2)
+        return finalization_normalize_gate(root, read_json(path)), path
     if task_dir_is_archived(root, task_dir):
         transaction_match = finalization_find_transaction_by_task_ref(
             root,

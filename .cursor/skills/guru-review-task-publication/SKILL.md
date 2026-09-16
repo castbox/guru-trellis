@@ -1,9 +1,33 @@
 ---
 name: guru-review-task-publication
-description: Review task publication readiness through ten semantic dimensions, metadata-only revision, one private gate, and three typed exits.
+description: Review task publication readiness through ten semantic dimensions, ordinary metadata revision or read-only archived review, and four typed exits.
 ---
 
 # Guru Review Task Publication
+
+## Completed Archive Profile
+
+`archived_publication_review` is a separate read-only entry. Its exact input is
+`profile`, `mode`, `task_ref`, `branch_review_commit` (A),
+`pr_payload_snapshot_sha256`, and `reviewed_base_head` (B), from fresh
+`guru-review-branch:archived_review_passed`. Consume current Architecture
+`task_impact_sync(stage=publication, source_exit=archived_review_passed)` before
+the ten-dimension review. Only `baseline_current` resumes; insufficient evidence
+or a result requiring writes stops read-only. Do not promote, repair, restore,
+or enter active `prepare_closeout`.
+
+Reread the completed committed/clean archive, current local/remote/Ready Open PR
+A, selected local and live base B, current requirement authority, and existing
+PR title/body bytes. Re-review all ten dimensions; the snapshot is identity,
+not semantic approval. Do not reuse a retired checkpoint or earlier pass.
+Author the independent archived semantic variant described in the contract.
+When existing bytes are sufficient, return `archived_ready`; otherwise return
+`blocked` with truthful findings. Metadata/content findings retain
+`metadata_revision`/`task_work` and `finding` dimensions; external evidence
+blockers retain `external_blocker` and `blocked` dimensions. Never relabel
+content findings, revise metadata, return active task work, or edit PR/task/
+archive/history/Issue. Only owner-private recorder/checker output and retirement
+are permitted. The two active profiles below retain their original rules.
 
 Use after `guru-review-branch:passed`, or for a checker-declared stale
 finalization handback. Read `references/contract.md`, author the selected public

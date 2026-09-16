@@ -1651,6 +1651,11 @@ def stage_production_owner_execution(
     fixture_runtime_target = fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
     if fixture_runtime_target.is_symlink() or not os.access(fixture_runtime_target, os.X_OK):
         raise ValueError("fixture public invocation runtime is unavailable")
+    from adapters.eval.archived_fixtures import RECIPES, stage_archived_owner_execution
+    if recipe in RECIPES:
+        return stage_archived_owner_execution(
+            request, fixture, fixture_runtime_target, request_package, recipe, public_input_path,
+        )
     runtime = (
         None
         if skill_id in {"guru-maintain-architecture-baseline", "guru-restore-archived-task"}

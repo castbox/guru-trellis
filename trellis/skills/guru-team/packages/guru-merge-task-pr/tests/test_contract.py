@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import hashlib
 import json
+import sys
 import tempfile
 import unittest
 from argparse import Namespace
@@ -12,6 +13,7 @@ from unittest import mock
 
 PACKAGE = Path(__file__).resolve().parents[1]
 PUBLICATION_PACKAGE = PACKAGE.parent / "guru-review-task-publication"
+sys.path.insert(0, str(PACKAGE.parents[1]))
 
 
 def load_runtime():
@@ -145,7 +147,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
 
-    def test_semantic_package_has_exact_four_exits(self) -> None:
+    def test_semantic_package_preserves_four_exits_and_adds_distinct_review_exit(self) -> None:
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         self.assertEqual(
             self.interface["ordered_stages"],
@@ -160,11 +162,11 @@ class MergeTaskPrContractTest(unittest.TestCase):
         exits = self.interface["external_exits"]
         self.assertEqual(
             [item["id"] for item in exits],
-            ["merged", "merge_blocked", "phase2_reentry_required", "closure_mismatch"],
+            ["merged", "merge_blocked", "phase2_reentry_required", "closure_mismatch", "review_refresh_required"],
         )
         self.assertEqual(
             len({(item["consumer"]["kind"], item["consumer"]["id"]) for item in exits}),
-            4,
+            5,
         )
 
     def test_phase2_reentry_route_is_bound_and_requires_no_merge_mutation(self) -> None:
@@ -232,14 +234,14 @@ class MergeTaskPrContractTest(unittest.TestCase):
 
     def test_workflow_and_standalone_profiles_are_closed_and_minimal(self) -> None:
         profiles = self.interface["public_contracts"]["input"]["profiles"]
-        self.assertEqual([item["id"] for item in profiles], ["ready_for_merge", "standalone_merge"])
+        self.assertEqual([item["id"] for item in profiles], ["ready_for_merge", "standalone_merge", "archived_review_request"])
         common = {
             "schema_version", "profile", "mode", "repo_ref", "pr_number",
             "pr_url", "expected_head_sha", "expected_base_branch",
             "expected_head_branch",
             "reviewed_merge_message",
         }
-        for profile in profiles:
+        for profile in profiles[:2]:
             schema = json.loads((PACKAGE / profile["schema"]["path"]).read_text(encoding="utf-8"))
             expected = common | (
                 {"publication_body_sha256"}
@@ -328,7 +330,8 @@ class MergeTaskPrContractTest(unittest.TestCase):
         }
         for output in self.interface["public_contracts"]["outputs"]:
             schema = json.loads((PACKAGE / output["schema"]["path"]).read_text(encoding="utf-8"))
-            self.assertFalse(forbidden & set(schema["properties"]))
+            excluded = forbidden - {"task_ref"} if output["exit_id"] == "review_refresh_required" else forbidden
+            self.assertFalse(excluded & set(schema["properties"]))
 
     def test_examples_validate_against_independent_schemas(self) -> None:
         import jsonschema
@@ -1279,7 +1282,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
     def test_evals_cover_all_exits_and_primary_blockers(self) -> None:
         corpus = json.loads((PACKAGE / "evals/evals.json").read_text(encoding="utf-8"))
         exits = {item["expected_exit"] for item in corpus["evals"]}
-        self.assertEqual(exits, {"merged", "merge_blocked", "phase2_reentry_required", "closure_mismatch"})
+        self.assertEqual(exits, {"merged", "merge_blocked", "phase2_reentry_required", "closure_mismatch", "review_refresh_required"})
         ids = {item["id"] for item in corpus["evals"]}
         self.assertTrue({
             "standalone-draft-blocked",

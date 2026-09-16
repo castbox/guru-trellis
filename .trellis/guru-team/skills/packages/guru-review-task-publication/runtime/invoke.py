@@ -11,10 +11,12 @@ from runtime.schema import validate_json
 
 
 PUBLIC_INPUT_SCHEMAS = {
+    "archived_publication_review": "public-archived-publication-review-input.schema.json",
     "publication_review": "public-publication-review-input.schema.json",
     "publication_review_stale": "public-publication-review-stale-input.schema.json",
 }
 PUBLIC_OUTPUT_SCHEMAS = {
+    "archived_ready": "public-archived-ready-output.schema.json",
     "ready": "public-ready-output-4.0.schema.json",
     "return_to_task_work": "public-return-to-task-work-output.schema.json",
     "blocked": "public-blocked-output.schema.json",
@@ -34,7 +36,7 @@ def _owner(root: Path):
 
 def _read_public_input(owner, value: str) -> dict:
     if value == "-":
-        return owner.skill_json_loads(sys.stdin.read(), "public input")
+        return owner.skill_json_loads(sys.stdin.read())
     return owner.read_json(Path(value))
 
 
@@ -53,15 +55,18 @@ def _validate_public_input(package_root: Path, public: dict) -> None:
 def _project_output(owner_result: dict) -> dict:
     route = owner_result.get("route")
     exit_id = str(route.get("typed_exit") if isinstance(route, dict) else "")
-    if exit_id == "ready":
+    if exit_id in {"ready", "archived_ready"}:
         pr_payload = owner_result["pr_payload"]
-        return {
+        output = {
             "exit_id": exit_id,
             "task_ref": owner_result["task_ref"],
             "branch_review_commit": owner_result["branch_review_commit"],
             "pr_title": pr_payload["title"],
             "pr_body": pr_payload["body"],
         }
+        if exit_id == "archived_ready":
+            output["reviewed_base_head"] = owner_result["reviewed_base_head"]
+        return output
     if exit_id == "return_to_task_work":
         return {
             "exit_id": exit_id,
@@ -103,6 +108,8 @@ def _retire_checkpoint(owner, root: Path, task: Path) -> None:
 
 def _validate_semantic_binding(public: dict, semantic: dict) -> None:
     fields = {"profile", "mode", "review_intent"}
+    if public["profile"] == "archived_publication_review":
+        fields = set(public)
     if public["profile"] == "publication_review_stale":
         fields.add("stale_reason")
     mismatches = [field for field in sorted(fields) if semantic.get(field) != public.get(field)]
@@ -141,6 +148,9 @@ def _run_compatibility(package_root: Path, args) -> dict:
             )
         )
         checked_owner_result = checked.get("owner_result")
+        if (public["profile"] == "archived_publication_review"
+                or checked_owner_result.get("profile") == "archived_publication_review"):
+            _validate_semantic_binding(public, checked_owner_result)
         if supplied_owner_result != checked_owner_result:
             raise owner.WorkflowError(
                 "Publication owner result is not the exact checker-passed result.",

@@ -1646,6 +1646,101 @@ def restore_current_archive_move_for_reentry(
         write_json(task_path, task)
     return active
 
+def closeout_task_mapping_updates(
+    root: Path, task_dir: Path, plan: dict[str, Any]
+) -> list[tuple[Path, dict[str, Any]]]:
+    """Read both existing projections without rebuilding or guessing their owner."""
+    root = root.resolve()
+    config = load_config(root)
+    task = read_json(task_dir / "task.json")
+    slug = str(task.get("id") or task.get("name") or "").strip()
+    active = plan["task"]["active_locator"]
+    archived = plan["task"]["archive_locator"]
+    locator = repo_relative(root, task_dir)
+    if (
+        not slug
+        or locator not in {active, archived}
+        or task.get("branch") != plan["git"]["head_branch"]
+        or task.get("base_branch") != plan["git"]["base_branch"]
+    ):
+        raise WorkflowError("Archive task mapping identity does not match the plan.", exit_code=2)
+    target_mapping = read_json(runtime_task_path(root, config, slug))
+    workspace_slug = str(target_mapping.get("workspace_slug") or "").strip()
+    if not workspace_slug:
+        raise WorkflowError("Archive task mapping is missing workspace identity.", exit_code=2)
+    workspace_mapping = read_json(runtime_workspace_path(root, config, workspace_slug))
+    source_value = str(workspace_mapping.get("source_checkout") or "").strip()
+    if not source_value or not Path(source_value).is_absolute():
+        raise WorkflowError("Archive workspace mapping is missing its exact source checkout.", exit_code=2)
+    source = Path(source_value).resolve()
+    records = worktree_records(root)
+    owners = [
+        record for record in records
+        if record.get("branch") == f"refs/heads/{task['branch']}"
+    ]
+    if (
+        len(owners) != 1
+        or Path(owners[0]["worktree"]).resolve() != root
+        or source not in {Path(record["worktree"]).resolve() for record in records}
+    ):
+        raise WorkflowError("Archive mappings do not identify the current Git worktree and source.", exit_code=2)
+    expected_workspace = {
+        "schema_version": "1.0",
+        "workspace_slug": workspace_slug,
+        "workspace_path": str(root),
+        "source_checkout": str(source),
+        "branch_name": task["branch"],
+    }
+    expected_task = {
+        "schema_version": "1.0",
+        "task_slug": slug,
+        "workspace_slug": workspace_slug,
+        "workspace_path": str(root),
+    }
+    allowed_locators = {active, archived} if locator == archived else {active}
+    updates = []
+    # Validate the complete pair before either projection can be written.
+    for checkout in sorted({root, source}):
+        workspace = read_json(runtime_workspace_path(checkout, config, workspace_slug))
+        path = runtime_task_path(checkout, config, slug)
+        mapping = read_json(path)
+        if (
+            any(workspace.get(key) != value for key, value in expected_workspace.items())
+            or any(mapping.get(key) != value for key, value in expected_task.items())
+            or mapping.get("task_artifact_dir") not in allowed_locators
+        ):
+            raise WorkflowError("Archive source/target runtime mapping identity conflicts.", exit_code=2)
+        if mapping["task_artifact_dir"] != archived:
+            updates.append((path, {**mapping, "task_artifact_dir": archived}))
+    return updates
+
+
+def reconcile_closeout_task_mappings(
+    root: Path, task_dir: Path, plan: dict[str, Any]
+) -> None:
+    """Converge the exact archive transaction before subsequent boundary checks."""
+    archived = plan["task"]["archive_locator"]
+    active = plan["task"]["active_locator"]
+    if repo_relative(root, task_dir) != archived or (root / active).exists():
+        raise WorkflowError("Archive mapping convergence requires the completed move.", exit_code=2)
+    commit = finalization_terminal_archive_commit(
+        root, active, archived, plan["git"]["branch_review_commit"]
+    )
+    committed_task = closeout_commit_blob_bytes(root, commit, f"{archived}/task.json")
+    if (task_dir / "task.json").read_bytes() != committed_task:
+        raise WorkflowError("Archive mapping convergence requires current committed task identity.", exit_code=2)
+    parent_task = json.loads(closeout_commit_blob_bytes(
+        root, closeout_commit_parent(root, commit), f"{active}/task.json"
+    ))
+    task = json.loads(committed_task)
+    if task.get("status") != "completed" or any(
+        task.get(key) != parent_task.get(key) for key in ("id", "name", "branch", "base_branch")
+    ):
+        raise WorkflowError("Archive mapping convergence requires the same committed task.", exit_code=2)
+    for path, payload in closeout_task_mapping_updates(root, task_dir, plan):
+        write_json(path, payload)
+
+
 def execute_archive_metadata_transaction(
     root: Path,
     task_dir: Path,
@@ -1656,6 +1751,7 @@ def execute_archive_metadata_transaction(
     archive_script = root / ".trellis/scripts/task.py"
     if not archive_script.is_file():
         raise WorkflowError(f"Trellis task.py not found: {archive_script}")
+    closeout_task_mapping_updates(root, task_dir, plan)
     transaction_parent = current_head(root)
     validate_closeout_reviewed_content(
         root,
@@ -1718,6 +1814,7 @@ def execute_archive_metadata_transaction(
     )
     if git_status_paths(root):
         raise WorkflowError("Archive metadata commit left repository paths dirty.", exit_code=2)
+    reconcile_closeout_task_mappings(root, archived, plan)
     run_stdout(["git", "push", plan["git"]["remote"], plan["git"]["head_branch"]], cwd=root)
     return archived, {"commit": archive_commit, "parent": transaction_parent, "paths": sorted(committed)}
 
@@ -1832,6 +1929,7 @@ def resume_archive_metadata_transaction(
     *,
     bound_pr: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    closeout_task_mapping_updates(root, task_dir, plan)
     compact_closeout_archive(task_dir, plan)
     validate_closeout_archive_move_layout(root, task_dir, plan)
     dirty = set(git_status_paths(root))
@@ -1898,6 +1996,7 @@ def resume_archive_metadata_transaction(
             archive_commit=archive_commit,
             expected_summary_pr=bound_pr,
         )
+    reconcile_closeout_task_mappings(root, task_dir, plan)
     local_head = current_head(root)
     remote_proc = run(
         ["git", "ls-remote", "--heads", plan["git"]["remote"], plan["git"]["head_branch"]],
@@ -1995,6 +2094,7 @@ def resume_archived_closeout(
             bound_pr=pr,
         )
     else:
+        reconcile_closeout_task_mappings(root, task_dir, plan)
         if not finalizer_recovery:
             push_closeout_branch_if_needed(root, plan)
     result = ensure_closeout_pr_ready(root, plan, bound_pr=bound_pr or pr)

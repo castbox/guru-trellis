@@ -13,6 +13,16 @@ Guru Trellis 是 Guru Team 面向业务研发仓库提供的 Trellis 团队扩�
 
 [https://github.com/castbox/guru-trellis](https://github.com/castbox/guru-trellis)
 
+## 已归档任务复审
+
+已归档任务的只读复审由原 Merge、Branch Review、Publication、Finalizer owners
+依次完成，入口为 Merge 的 `archived_review_request`。它重新审查现有 PR 与归档，
+不恢复 task 状态、不改写 history/PR，也不把已退休的 checkpoint 当作额外门禁。
+复审成功才产生新的 `ready_for_merge`；实际合并仍需独立审核与确认。
+输入和失败条件以所安装的
+[Skill 合同](trellis/skills/guru-team/packages/guru-merge-task-pr/SKILL.md) 为准；
+源码能力不代表历史 release 已包含它。
+
 ## 当前框架来源
 
 Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
