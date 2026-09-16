@@ -790,11 +790,51 @@ class BranchReviewContractTest(unittest.TestCase):
             REPO / "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
         ):
             text = path.read_text()
-            self.assertIn("records only current gate schema 7.0", text)
-            self.assertIn("Aggregate public input schema 4.0 dispatches", text)
-            self.assertIn("`base_continuity`\nschema 2.0 profile", text)
-            self.assertIn("Only schema 7.0 is accepted", text)
-            self.assertNotIn("records only current gate schema 6.0", text)
+            section = text.split("## Branch Review Recorder And Checker\n", 1)[1]
+            section = section.split("\n## ", 1)[0]
+            profiles, ordinary = section.split("### Ordinary Profiles\n", 1)
+            ordinary, archived = ordinary.split("### Archived Review Profile\n", 1)
+            profiles = " ".join(profiles.split())
+            ordinary = " ".join(ordinary.split())
+            archived = " ".join(archived.split())
+            with self.subTest(path=path):
+                self.assertIn(
+                    "Aggregate public input schema 4.0 dispatches two ordinary profiles: "
+                    "the full `branch_review` schema 2.0 profile and the bounded "
+                    "`base_continuity` schema 2.0 profile. Both remain valid and unchanged.",
+                    profiles,
+                )
+                self.assertIn(
+                    "Aggregate public input schema 5.0 retains those two ordinary "
+                    "profiles unchanged and adds the independent read-only "
+                    "`archived_review` schema 1.0 profile.",
+                    profiles,
+                )
+                for phrase in (
+                    "rules apply only to `branch_review` and `base_continuity`; "
+                    "their existing behavior is unchanged",
+                    "records only current gate schema 7.0",
+                    "Only schema 7.0 is accepted for these ordinary profiles",
+                    "schema 6.0 or older fails closed as stale without projection, "
+                    "dual-read, rewrite, or migration",
+                    "Successful `passed`, `continuity_passed`, and zero-payload stop "
+                    "`blocked` projection retires the checkpoint",
+                    "active re-entry routes retain that one checkpoint",
+                ):
+                    self.assertIn(phrase, ordinary)
+                for phrase in (
+                    "For `archived_review`, the same recorder/checker/invocation commands "
+                    "use the separate `guru-archived-review-gate-1.0` schema "
+                    "(version `archived-1.0`), not ordinary gate schema 7.0",
+                    "Its only exits are `archived_review_passed` and `blocked`; "
+                    "both retire the checkpoint after validated projection",
+                    "does not restore the task or mutate the archive, PR, or Issue",
+                    "does not loosen ordinary gate schema 7.0 validation, blocked "
+                    "semantics, or re-entry behavior",
+                ):
+                    self.assertIn(phrase, archived)
+                self.assertNotIn("records only current gate schema 6.0", section)
+                self.assertNotIn("Only schema 7.0 is accepted;", section)
 
     def test_subtraction_review_is_independent_and_not_phase2_checkpoint_reuse(self):
         repo = PACKAGE.parents[4]

@@ -452,11 +452,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-16T16:56:54Z",
+  "installed_at": "2026-09-16T17:33:44Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "bcdb0ebd2c9c0757b421fd6b0f1e658d5e5413b5",
-    "commit": "bcdb0ebd2c9c0757b421fd6b0f1e658d5e5413b5",
+    "ref": "a3f4b3ac3ee18454f6dcaa53691b33a185b1e2dd",
+    "commit": "a3f4b3ac3ee18454f6dcaa53691b33a185b1e2dd",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -545,7 +545,7 @@
       ".trellis/spec/workflow/workflow-contract.md": "cdc041fc11a7a5bbac4d2ee8a0fc8e19f81d4a0260f47051d1ab2927cd0e0b18",
       ".trellis/spec/workflow/skill-package-contract.md": "9d5f1a158a235c2c6ac73aa769021abea75628af21495b8d7dd3b04b215e94f3",
       ".trellis/spec/workflow/data-contracts.md": "90010aa5206b5653bb9343444fb49c90e707d25e97246cb2426c0c6b73e9a208",
-      ".trellis/spec/workflow/companion-scripts.md": "fa4f94d7680e8df0477e669802665a026c622d6967031931b4e00c6f692e2f53",
+      ".trellis/spec/workflow/companion-scripts.md": "062fafce2c8cb7ee1f8877a63c4bf9f413fcc07e9fba914e725acf8ad2ba31d7",
       ".trellis/spec/workflow/quality-guidelines.md": "0ae623f35076d4f2ebbdf110fc182873b8310129c16a3580d09de62a2038dd36",
       ".trellis/guru-team/trellis-source.json": "27c84a6ced044be619a8054a6e20518323bd9628a8a4313af2fb273574a55b83"
     },
@@ -648,7 +648,7 @@
       {
         "id": "guru-review-branch",
         "interface_sha256": "751e2a530d856591156bc4f3fb481837e0a50805180f0c31b06eecdf698db014",
-        "tree_sha256": "4ae6420276ddc28927e3a02001dca815be8d1ebbdf40a1588c0bb60566a6d49d"
+        "tree_sha256": "5c90d2cc391a132a82ae3d3f2d0ff5e3284035c01eaa790b0979f2011872f54e"
       },
       {
         "id": "guru-review-task-publication",
@@ -6114,7 +6114,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
-        "sha256": "aa1e0a2aa351f90d49e6bb0c7cd8693c7321c80925bd06e99acc081bbba689be",
+        "sha256": "956ac71c26133f9ecf0c8bb4ed54668375d53200dbabe1ed150f3f53c511930c",
         "executable": false,
         "action": "unchanged"
       },

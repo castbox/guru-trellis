@@ -1090,10 +1090,17 @@ Cursor authentication returns deterministic `unsupported`.
 
 ## Branch Review Recorder And Checker
 
-Aggregate public input schema 5.0 dispatches three profiles: the full
-`branch_review` schema 2.0, bounded `base_continuity` schema 2.0, and independent
-read-only `archived_review` schema 1.0. All resolve current objective facts
-before recording; archived review preserves completed archive state.
+Aggregate public input schema 4.0 dispatches two ordinary profiles: the full
+`branch_review` schema 2.0 profile and the bounded `base_continuity`
+schema 2.0 profile. Both remain valid and unchanged. Aggregate public input
+schema 5.0 retains those two ordinary profiles unchanged and adds the independent
+read-only `archived_review` schema 1.0 profile. All resolve current objective
+facts before recording; archived review preserves completed archive state.
+
+### Ordinary Profiles
+
+The following recorder/checker rules apply only to `branch_review` and
+`base_continuity`; their existing behavior is unchanged.
 
 `review-branch` records only an already completed AI semantic review. It may
 rebuild task/worktree/base/HEAD/range, planning, Phase 2, requirement/source
@@ -1106,7 +1113,8 @@ pass.
 
 `check-review-gate` revalidates the same objective facts, finding lifecycle,
 `introduced_head`/`fix_head`/`closure_head`, final-review freshness and the selected
-typed exit. Only schema 7.0 is accepted; schema 6.0 or older fails closed as
+typed exit. Only schema 7.0 is accepted for these ordinary profiles;
+schema 6.0 or older fails closed as
 stale without projection, dual-read, rewrite, or migration. The checker
 resolves the exact checkpoint from task identity. The
 public package wrapper accepts only closed public input, reruns the checker,
@@ -1116,6 +1124,17 @@ caller-authored gate or checker result. Successful `passed`,
 checkpoint; active re-entry routes retain that one checkpoint for deterministic
 same-owner re-entry.
 `expected_exit` is never a wrapper input, owner-result field, or route selector.
+
+### Archived Review Profile
+
+For `archived_review`, the same recorder/checker/invocation commands use the
+separate `guru-archived-review-gate-1.0` schema (version `archived-1.0`), not
+ordinary gate schema 7.0. It binds the current base B, archive HEAD A, PR identity
+and title/body snapshot to the fresh AI semantic review. Its only exits are
+`archived_review_passed` and `blocked`; both retire the checkpoint after
+validated projection. This read-only profile does not restore the task or
+mutate the archive, PR, or Issue. It does not loosen ordinary gate schema 7.0
+validation, blocked semantics, or re-entry behavior.
 
 ## Task Publication Recorder, Checker, And Invocation
 
