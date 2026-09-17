@@ -1,0 +1,3 @@
+{"file": ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/prd.md", "reason": "Task acceptance authority"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "Verify exact confirmation matrix"}
+{"file": ".agents/skills/release-guru-trellis-version/tests/test_contract.py", "reason": "Run focused regression"}

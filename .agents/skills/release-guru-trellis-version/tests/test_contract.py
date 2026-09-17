@@ -201,9 +201,7 @@ class SkillContractTest(unittest.TestCase):
 
         for boundary in (
             "task commit",
-            "branch push",
-            "PR creation",
-            "Finalizer archive and Ready mutations",
+            "complete Finalizer transaction",
             "preparation PR merge",
             "annotated tag creation/push",
             "tag-pinned smoke",
@@ -214,6 +212,16 @@ class SkillContractTest(unittest.TestCase):
             with self.subTest(boundary=boundary):
                 self.assertIn(f"| {boundary} |", contract)
         self.assertIn("cannot authorize, pre-authorize, or be reused", contract)
+        self.assertIn("MUST be displayed once", contract)
+        self.assertIn("one current-dialogue answer", contract)
+        self.assertRegex(
+            contract,
+            r"does not\s+authorize the later preparation PR merge",
+        )
+        self.assertIn("MUST NOT require a pause or additional confirmation", contract)
+        self.assertNotIn("| branch push |", contract)
+        self.assertNotIn("| PR creation |", contract)
+        self.assertNotIn("| Finalizer archive and Ready mutations |", contract)
 
     def test_contract_forbids_tracked_release_state_and_fail_open_routing(self) -> None:
         root = ROOTS["shared"]
@@ -693,19 +701,19 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         self.assertEqual("ready_for_merge", checked["typed_exit"])
         self.assertEqual("prepared", checked["transaction_state"])
 
-        for relative in (
-            "task.json",
-            "prd.md",
-            "design.md",
-            "implement.md",
-        ):
-            self.write(
-                f"{archive_ref}/{relative}",
-                (self.repo / TASK_REF / relative).read_text(encoding="utf-8"),
-            )
+        archive_path = self.repo / archive_ref
+        archive_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(self.repo / TASK_REF), str(archive_path))
+        archived_task = json.loads((archive_path / "task.json").read_text())
+        archived_task["status"] = "completed"
+        self.write(
+            f"{archive_ref}/task.json",
+            json.dumps(archived_task) + "\n",
+        )
         self.write(f"{archive_ref}/finish-summary.json", "{}\n")
         self.assertEqual(reviewed, self.identity(include_worktree=True)["sha256"])
-        self.commit_paths("archive lifecycle metadata", archive_ref)
+        self.git("add", "-A", TASK_REF, archive_ref)
+        self.git("commit", "-qm", "archive lifecycle metadata")
         archive_head = self.git("rev-parse", "HEAD")
         self.assertEqual(delivery_head, self.git("rev-parse", f"{archive_head}^"))
         self.assertEqual("1", self.git("rev-list", "--count", f"{delivery_head}..HEAD"))

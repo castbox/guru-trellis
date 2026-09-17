@@ -1,0 +1,3 @@
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "Canonical release confirmation contract to modify"}
+{"file": ".agents/skills/release-guru-trellis-version/tests/test_contract.py", "reason": "Focused regression for release confirmation boundaries"}
+{"file": ".agents/skills/guru-finalize-task/references/contract.md", "reason": "Current atomic Finalizer transaction authority; read-only"}
