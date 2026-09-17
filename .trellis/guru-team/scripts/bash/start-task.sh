@@ -78,7 +78,16 @@ if not isinstance(task_id, str) or not task_id.strip():
 if not isinstance(recorded_worktree, str) or not recorded_worktree.strip():
     print("Error: task.json worktree_path is required before task activation", file=sys.stderr)
     raise SystemExit(1)
-if Path(recorded_worktree).expanduser().resolve() != repo_root:
+recorded_worktree_path = Path(recorded_worktree).expanduser()
+if not recorded_worktree_path.is_absolute():
+    print("Error: task.json worktree_path must be absolute before task activation", file=sys.stderr)
+    raise SystemExit(1)
+try:
+    resolved_worktree = recorded_worktree_path.resolve()
+except (OSError, RuntimeError, ValueError) as exc:
+    print(f"Error: task.json worktree_path cannot be resolved: {exc}", file=sys.stderr)
+    raise SystemExit(1)
+if resolved_worktree != repo_root:
     print("Error: task.json worktree_path does not match the current checkout", file=sys.stderr)
     print(f"Expected: {repo_root}", file=sys.stderr)
     print(f"Recorded: {recorded_worktree}", file=sys.stderr)

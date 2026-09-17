@@ -100,11 +100,20 @@ class StartTaskWrapperTests(unittest.TestCase):
             self.assertEqual(result.returncode, 7)
             self.assertFalse(counter.exists())
 
-    def test_wrapper_blocks_incomplete_task_identity_after_boundary_passes(self):
-        for worktree_path in (None, ""):
-            with self.subTest(worktree_path=worktree_path):
+    def test_wrapper_blocks_invalid_task_worktree_identity_before_mutation(self):
+        cases = (
+            ("missing", None),
+            ("empty", ""),
+            ("relative", "relative-worktree"),
+            ("unresolvable", "/invalid\0worktree"),
+            ("foreign", "foreign-worktree"),
+        )
+        for case, worktree_path in cases:
+            with self.subTest(case=case):
                 with tempfile.TemporaryDirectory(prefix="guru-start-task-identity-") as tmp:
                     root = Path(tmp)
+                    if case == "foreign":
+                        worktree_path = str((root / "foreign-worktree").resolve())
                     wrapper, _, counter = self.fixture(
                         root, worktree_path=worktree_path
                     )
@@ -116,6 +125,10 @@ class StartTaskWrapperTests(unittest.TestCase):
                     self.assertNotEqual(result.returncode, 0)
                     self.assertIn("worktree_path", result.stderr)
                     self.assertFalse(counter.exists())
+                    task = json.loads(
+                        (root / ".trellis/tasks/identity/task.json").read_text()
+                    )
+                    self.assertEqual(task["status"], "planning")
 
     def test_initial_returns_structured_success_and_executes_upstream_once(self):
         with tempfile.TemporaryDirectory(prefix="guru-start-task-initial-") as tmp:
