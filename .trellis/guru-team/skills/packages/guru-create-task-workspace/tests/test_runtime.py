@@ -81,6 +81,20 @@ class PackageLocalRuntimeTest(unittest.TestCase):
      recover.run(PACKAGE,{},["--root",str(repo),"--task",task_ref])
     self.assertEqual(("stale_identity",field),(raised.exception.code,raised.exception.field_path))
 
+ def test_created_result_recovery_rejects_invalid_task_worktree_path(self):
+  cases=(("missing",None),("empty",""),("relative","relative-worktree"),("unresolvable","/invalid\0worktree"),("foreign",None))
+  for case,value in cases:
+   with self.subTest(case=case),tempfile.TemporaryDirectory() as tmp:
+    repo,task_ref,task_dir,task,_=self.create_recovery_fixture(tmp)
+    if case=="missing":task.pop("worktree_path")
+    elif case=="foreign":task["worktree_path"]=str((Path(tmp)/"foreign-worktree").resolve())
+    else:task["worktree_path"]=value
+    (task_dir/"task.json").write_text(json.dumps(task))
+    with self.assertRaises(CommandError) as raised:
+     recover.run(PACKAGE,{},["--root",str(repo),"--task",task_ref])
+    self.assertEqual(("stale_identity","task.worktree_path"),(raised.exception.code,raised.exception.field_path))
+    self.assertEqual("Task worktree does not match the current checkout.",raised.exception.remediation)
+
  def test_created_result_recovery_uses_managed_interpreter_without_python3_on_path(self):
   with tempfile.TemporaryDirectory() as tmp:
    repo,task_ref,_,_,_=self.create_recovery_fixture(tmp)

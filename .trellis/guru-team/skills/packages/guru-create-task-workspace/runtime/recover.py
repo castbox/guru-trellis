@@ -139,7 +139,12 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     branch = task.get("branch")
     if not isinstance(task_id, str) or not task_id or not isinstance(branch, str) or not branch:
         raise CommandError("stale_identity", "task identity", "Task id and branch are required for recovery.", 3)
-    if Path(str(task.get("worktree_path", ""))).expanduser().resolve() != repo:
+    task_worktree_path = _resolved_identity_path(
+        task.get("worktree_path"),
+        "task.worktree_path",
+        "Task worktree does not match the current checkout.",
+    )
+    if task_worktree_path != repo:
         raise CommandError("stale_identity", "task.worktree_path", "Task worktree does not match the current checkout.", 3)
     if git(repo, "branch", "--show-current").stdout.strip() != branch:
         raise CommandError("stale_identity", "task.branch", "Task branch does not match the current checkout.", 3)
