@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -55,6 +57,11 @@ FORMAL_WRAPPER_CASES = (
         "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
         "test_public_wrapper_keeps_checkpoint_when_checker_or_projection_fails",
     ),
+    (
+        "confirmation is consumed once and mapped transitions stop at the next side effect",
+        "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+        "test_confirm_continue_drives_actual_loaded_closeout_once",
+    ),
 )
 
 
@@ -92,6 +99,32 @@ def run_formal_wrapper_case(test_path: str, test_name: str) -> subprocess.Comple
         check=False,
         env=environment,
     )
+
+
+def run_upstream_prompt_hook(fixture: Path, prompt: str) -> str:
+    hook = fixture / ".codex/hooks/inject-workflow-state.py"
+    process = subprocess.run(
+        [sys.executable, str(hook)],
+        cwd=fixture,
+        input=json.dumps(
+            {
+                "cwd": str(fixture),
+                "session_id": "continuation-fixture",
+                "prompt": prompt,
+            }
+        ),
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+    )
+    if process.returncode != 0:
+        raise AssertionError(
+            f"upstream prompt hook failed\nstdout:\n{process.stdout}\nstderr:\n{process.stderr}"
+        )
+    output = json.loads(process.stdout)
+    return output["hookSpecificOutput"]["additionalContext"]
 
 
 def markdown_table(body: str, heading: str) -> list[tuple[str, str]]:
@@ -220,6 +253,49 @@ class ActiveTaskContinuationIntegrationTests(unittest.TestCase):
             self.assertNotIn("guru-check-task", body)
             self.assertNotIn("guru-review-branch", body)
             self.assertNotIn("guru-review-task-publication", body)
+
+    def test_natural_language_prompts_converge_through_real_active_task_hook(self):
+        with tempfile.TemporaryDirectory(prefix="guru-continuation-prompt-") as temporary:
+            fixture = Path(temporary)
+            scripts = fixture / ".trellis/scripts"
+            scripts.mkdir(parents=True)
+            shutil.copytree(REPO / ".trellis/scripts/common", scripts / "common")
+            shutil.copy2(WORKFLOW, fixture / ".trellis/workflow.md")
+
+            task = fixture / ".trellis/tasks/active-continuation"
+            task.mkdir(parents=True)
+            (task / "task.json").write_text(
+                json.dumps(
+                    {
+                        "id": "active-continuation",
+                        "status": "in_progress",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            sessions = fixture / ".trellis/.runtime/sessions"
+            sessions.mkdir(parents=True)
+            (sessions / "codex_continuation-fixture.json").write_text(
+                json.dumps({"current_task": ".trellis/tasks/active-continuation"}),
+                encoding="utf-8",
+            )
+
+            hook = fixture / ".codex/hooks/inject-workflow-state.py"
+            hook.parent.mkdir(parents=True)
+            hook.write_text(
+                git_show(
+                    f"{UPSTREAM_CANDIDATE}:.codex/hooks/inject-workflow-state.py"
+                ),
+                encoding="utf-8",
+            )
+
+            continue_context = run_upstream_prompt_hook(fixture, "继续")
+            confirm_context = run_upstream_prompt_hook(fixture, "确认继续")
+
+        self.assertEqual(continue_context, confirm_context)
+        self.assertIn("Task: active-continuation (in_progress)", continue_context)
+        self.assertIn("Load the current `[trellis-continuation]` block", continue_context)
+        self.assertNotIn("[workflow-state:no_task]", continue_context)
 
     def test_formal_wrappers_execute_real_transition_and_recovery_fixtures(self):
         for label, test_path, test_name in FORMAL_WRAPPER_CASES:
