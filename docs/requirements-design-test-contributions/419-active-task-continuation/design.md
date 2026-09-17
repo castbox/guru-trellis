@@ -12,8 +12,9 @@ Design，也不声明实现、测试、review、promotion 或 release 已完成�
 - `D419-03`：Phase 1 recovery 按 task-created attach -> partial planning -> wording -> Planning
   Architecture -> Approval -> plan presentation/confirmation -> activation 有序判断最早 current owner。
   Lost `created` output 只走 `guru-create-task-workspace:recover_created_result` 的 read-only checker；
-  Activation wrapper 只拥有 `initial|recovery`；recovery 验证 current task/worktree/branch/mapping/status
-  后重物化 success，不重复 official start，也不保存确认。
+  Activation wrapper 只拥有 `initial|recovery`；两者先验证 current task/worktree/branch/mapping/status，
+  `initial` 才可调用一次 official start 并 post-check `in_progress`，`recovery` 直接重物化 success，
+  不重复 official start，也不保存确认。
 - `D419-04`：Phase 2 current retained `passed` checkpoint 使用现有 checker 和
   `invoke-guru-check-task` 重投影原 DTO；不增加 input profile/schema/exit/checkpoint。缺失或 stale
   时执行 fresh Architecture phase2 + semantic check。
@@ -34,6 +35,10 @@ Design，也不声明实现、测试、review、promotion 或 release 已完成�
   sidecar/residue hygiene 与 `git diff --check`。
 - `D419-10`：#410 独占发布安装、更新、workflow switch 与 preset reapply 的 Release Gate。它必须在 #419
   合并后的最新 `main` 上重新冻结 Guru release candidate，并从零产生证据，不消费 #419 的部分结果。
+- `D419-11`：ledger 使用 direct subtraction。Architecture/RDT serialized promotion 从 current successor
+  删除 `guru-ledger-free-runtime@1.0.0` capability 与 `.53` 中对应的 current compatibility claims；immutable
+  `.53`、accepted ADR、archive/release evidence 保持 historical，不增加 exemption、alias、adapter、fallback、
+  dual-read 或 compatibility path。
 
 Architecture decision candidate 见
 [`ADR-011`](../../architecture/adr/011-active-task-continuation-authority.md)，状态保持 `draft`。

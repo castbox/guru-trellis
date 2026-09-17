@@ -45,9 +45,11 @@ authoring, wording, Planning Architecture, approval, plan presentation, and
 activation. Lost task/workspace `created` output uses the original
 `guru-create-task-workspace:recover_created_result` read-only checker and cannot
 create or repair another workspace/task. Activation uses a workflow-owned
-`initial|recovery` contract so an
-already successful official status transition can rematerialize its result
-without running twice. Confirmation remains dialogue-local.
+`initial|recovery` contract. Both modes bind the exact current task, worktree,
+branch, mapping, and expected status before any mutation; `initial` then runs
+the official transition once and verifies `in_progress`, while an already
+successful transition uses `recovery` to rematerialize its result without
+running twice. Confirmation remains dialogue-local.
 
 Phase 2 uses the existing checker-to-public-invoker path to rematerialize a
 current retained `passed` result; it does not add a public recovery profile.
@@ -86,6 +88,22 @@ current closeout packages.
 | `parallel-scope` | `applicable` | This task writes isolated code/docs/spec/tests only; shared current and unrelated worktrees remain untouched. |
 | `evidence-and-freshness` | `applicable` | Bind real workflow/package wrappers and exact upstream candidate evidence; old candidate, old gate, or old confirmation is stale. |
 | `review-and-promotion` | `applicable` | Independent full-diff review must precede any serialized Architecture/RDT promotion; promotion-created diff re-enters fresh Phase 2, commit, and review. |
+
+## Ledger Docs SSOT Subtraction
+
+The approved target removes ledger from the current product and architecture
+contract rather than retaining a compatibility identity. Serialized promotion
+of this contribution and its matching RDT delta must therefore remove the
+current successor declarations inherited from `.53` that name or require
+`guru-ledger-free-runtime@1.0.0`, including the active capability statement in
+`ARCH-CUR-027`, `R247-10`, the matching non-functional projection-parity
+requirement, and `RDEC-024`'s current successor claim.
+
+This subtraction does not rewrite immutable `.53`, accepted ADR history, or
+archived/released evidence. Those sources remain historical facts only; they
+must not be copied into the promoted current successor, used as a manifest
+capability, or preserved through an exemption, alias, adapter, fallback,
+dual-read, or compatibility layer.
 
 ## Exact-upstream Validation Contract
 

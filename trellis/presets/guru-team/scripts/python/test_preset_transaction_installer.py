@@ -59,15 +59,30 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             snapshot[relative] = (path.read_bytes(), path.stat().st_mode & 0o777)
         return snapshot
 
-    def assert_stage0_contract_state(
-        self,
-        interface_schema_id: str,
-        interface_version: str,
-    ) -> None:
+    def assert_stage0_contract_state(self) -> None:
         registry = json.loads((self.install_dst / "skills/registry.json").read_text(encoding="utf-8"))
         entries = {str(entry["id"]): entry for entry in registry["skills"]}
+        canonical_registry = json.loads(
+            (self.guru_root / "trellis/skills/guru-team/registry.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        canonical_entries = {
+            str(entry["id"]): entry for entry in canonical_registry["skills"]
+        }
         for skill_id in STAGE0_SKILL_IDS:
-            self.assertEqual(entries[skill_id]["interface_schema_id"], interface_schema_id)
+            canonical_interface = json.loads(
+                (
+                    self.guru_root
+                    / "trellis/skills/guru-team/packages"
+                    / skill_id
+                    / "interface.json"
+                ).read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                entries[skill_id]["interface_schema_id"],
+                canonical_entries[skill_id]["interface_schema_id"],
+            )
             for root in (
                 self.install_dst / "skills/packages",
                 self.repo / ".agents/skills",
@@ -76,7 +91,10 @@ class PresetTransactionInstallerTest(unittest.TestCase):
                 self.repo / ".claude/skills",
             ):
                 interface = json.loads((root / skill_id / "interface.json").read_text(encoding="utf-8"))
-                self.assertEqual(interface["schema_version"], interface_version)
+                self.assertEqual(
+                    interface["schema_version"],
+                    canonical_interface["schema_version"],
+                )
 
     def test_transaction_staging_excludes_existing_developer_identity(self) -> None:
         developer_identity = self.repo / ".trellis/.developer/identity.json"
@@ -220,7 +238,7 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         )
         self.assertEqual(completed["skill_packages"]["sidecars"], [])
         self.assertEqual(completed["skill_installed_validation"]["returncode"], 0)
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
+        self.assert_stage0_contract_state()
         self.assertTrue(
             (self.install_dst / "skills/schemas/skill-interface-1.5.schema.json").is_file()
         )
@@ -297,7 +315,7 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         self.assertNotEqual(result["skill_installed_validation"]["returncode"], 0)
         self.assertEqual(self.managed_graph_snapshot(), before)
         self.assertEqual((self.install_dst / "extension.json").read_bytes(), extension_before)
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
+        self.assert_stage0_contract_state()
         sidecar = target.with_name("SKILL.md.new")
         self.assertEqual(
             sidecar.read_bytes(),
@@ -315,7 +333,7 @@ class PresetTransactionInstallerTest(unittest.TestCase):
 
         recovered = self.install_current()
         self.assertEqual(recovered["skill_packages"]["status"], "ok")
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
+        self.assert_stage0_contract_state()
         self.assertEqual(recovered["skill_installed_validation"]["returncode"], 0)
 
     def test_forced_installed_validation_failure_preserves_current_graph(self) -> None:
@@ -352,7 +370,7 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             [False],
         )
         self.assertEqual(self.managed_graph_snapshot(), before)
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
+        self.assert_stage0_contract_state()
 
 
 if __name__ == "__main__":

@@ -63,7 +63,7 @@ class StartTaskWrapperTests(unittest.TestCase):
             "task=json.loads(task_file.read_text())\n"
             "command=sys.argv[1]\n"
             "if command=='current':\n"
-            " active=task.get('status')=='in_progress'\n"
+            " active=task.get('status') in {'planning','in_progress'}\n"
             f" payload={{'current_task':({{'dir':task_ref,'id':{current_task_id!r},'status':task.get('status'),'branch':task.get('branch')}} if active else None),'source':('session:test' if active else 'none'),'stale':False,'invocation_root':str(root),'repository_common_dir':str(root/'.git'),'task_workspace_root':(str(root.resolve()) if active else None),'resolved_task_path':(str(task_dir) if active else None)}}\n"
             " print(json.dumps(payload))\n"
             "elif command=='start':\n"
@@ -137,6 +137,25 @@ class StartTaskWrapperTests(unittest.TestCase):
             self.assertEqual(
                 json.loads((task_dir / "task.json").read_text())["status"],
                 "in_progress",
+            )
+
+    def test_initial_rejects_mismatched_current_identity_before_mutation(self):
+        with tempfile.TemporaryDirectory(prefix="guru-start-task-current-") as tmp:
+            root = Path(tmp)
+            wrapper, task_dir, counter = self.fixture(
+                root, current_task_id="other-task"
+            )
+
+            result = self.run_wrapper(
+                wrapper, "--mode", "initial", ".trellis/tasks/identity"
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("current active-task identity mismatch", result.stderr)
+            self.assertFalse(counter.exists())
+            self.assertEqual(
+                json.loads((task_dir / "task.json").read_text())["status"],
+                "planning",
             )
 
     def test_recovery_rematerializes_success_without_repeating_upstream_start(self):

@@ -7,7 +7,8 @@ Phase 2、independent full Branch Review 与 exact-upstream targeted validators 
   candidate extractor 返回相同 Guru body。六类 state/invalid state 进入声明 owner/stop，零 inventory fallback。
 - `T419-02`（R419-02）：真实 task/worktree fixture 覆盖 current created DTO direct consume、created output
   loss same-owner recovery、partial planning、wording stale、Planning Architecture stale、Approval loss、
-  confirmation loss、activation initial 与 activation output-loss recovery；断言零第二 workspace/branch/task/start。
+  confirmation loss、activation initial 与 activation output-loss recovery；initial current identity mismatch
+  必须在 task status/counter 变化前失败，断言零第二 workspace/branch/task/start。
 - `T419-03`（R419-03/04）：Phase 2 adjacent DTO 直达 Task Commit；lost DTO 只通过 current retained
   checkpoint 的 existing checker -> invoker rematerialization。Missing/stale/consumed checkpoint 必须 fresh
   rerun，测试不得声明或注册新 Phase 2 recovery profile。
@@ -31,6 +32,10 @@ Phase 2、independent full Branch Review 与 exact-upstream targeted validators 
 - `T419-10`（全部）：测试使用正式 production wrappers 与真实 fixtures，不预填 semantic pass、不手写
   downstream DTO、不复用旧 candidate/evidence、不保留成功 retired checkpoint、不以静态关键词命中代替
   route/mutation/consumer 行为。
+- `T419-11`（R419-08/D419-11）：promotion candidate review 必须证明 current successor 不再声明
+  `guru-ledger-free-runtime@1.0.0`、`R247-10`、matching non-functional projection requirement 或 `RDEC-024`
+  current capability；同时 immutable `.53` 与 historical ADR/archive/release bytes 不被原地修改，且无
+  exemption、alias、adapter、fallback、dual-read 或 compatibility path。
 
 发布安装、更新、workflow switch 与 preset reapply 的验收完全由 #410 拥有。#419 合并后 #410 必须从新的
 live `origin/main` 重新冻结 Guru release candidate 并从零执行其 Release Gate；#419 的部分或中断结果不是

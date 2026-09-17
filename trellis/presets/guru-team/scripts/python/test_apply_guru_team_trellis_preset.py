@@ -2142,7 +2142,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         for field, expected_count in (
-            ("public_input_schema_ids", 82),
+            ("public_input_schema_ids", 83),
             ("typed_output_schema_ids", 95),
             ("private_artifact_schema_ids", 22),
         ):

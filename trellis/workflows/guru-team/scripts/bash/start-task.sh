@@ -158,6 +158,8 @@ PY
 
 if [[ "$MODE" == "recovery" ]]; then
   verify_current_identity in_progress
+else
+  verify_current_identity planning
 fi
 
 UPSTREAM_EXECUTED=false

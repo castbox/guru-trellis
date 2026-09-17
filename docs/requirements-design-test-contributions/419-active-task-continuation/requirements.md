@@ -10,7 +10,9 @@
   workflow-state、hooks、entries 和 task status 不得保留第二张 detailed route table。
 - `R419-02`：Phase 1 continuation 必须保持 task-created attachment、planning author、wording、
   Planning Architecture、Approval、plan presentation/confirmation 与 activation 的原 owner。
-  Activation 必须区分 `initial|recovery`，并在已成功 transition 时零重复 mutation。
+  Activation 必须区分 `initial|recovery`；两种模式都必须在任何 mutation 前绑定 exact current
+  task/worktree/branch/mapping/status，`initial` 只执行一次 transition，已成功 transition 使用
+  `recovery` 零重复 mutation。
 - `R419-03`：current adjacent public DTO 必须直接交给唯一 consumer。DTO 丢失时，
   deterministic output loss 只由原 producer 正式恢复；semantic output 必须 fresh 重跑原 owner。
   Status、Git shape、旧摘要、旧确认或 checkpoint 缺失不得重建 pass。
@@ -32,6 +34,11 @@
   workflow-neutral start/continue、Guru continuation 与 producer-owned recovery；使用 source/installed
   runtime、eval 和真实 Git/task fixture，并验证 Guru-owned projection parity、upstream ownership、dogfood
   drift、当前工作树 sidecar/residue hygiene 与 `git diff --check`。
+- `R419-08`：本任务已批准的 ledger subtraction 必须由 task-local successor delta 明确删除 current
+  `guru-ledger-free-runtime@1.0.0` capability/compatibility 声明。Promotion 后的 current successor 不得继承
+  `.53` 的 `ARCH-CUR-027` capability、`R247-10`、matching non-functional projection requirement 或
+  `RDEC-024` current claim；immutable `.53`、accepted ADR 与 archive/release evidence 仅保留历史事实，
+  不得形成 exemption、alias、adapter、fallback、dual-read 或兼容层。
 
 本 contribution 不实现 Phase 0 exact identity 建立前恢复、#398 全 lifecycle、Finalizer transaction、
 Merge、archived recovery 或 #410 Release Gate。安装、更新、workflow switch 与 preset reapply 的发布证据
