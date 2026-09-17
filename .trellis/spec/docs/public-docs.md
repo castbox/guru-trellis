@@ -37,14 +37,14 @@ opt-in user choice, not as the team default or automated validation path.
 Stable install and upgrade docs must keep four version axes explicit. The current
 target Guru repo tag is `v0.6.17-guru.1`; the target extension revision is
 `0.6.17-guru.42`; the current main/source framework lock is
-`castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`, CI `34838784963`, CLI/core `0.6.17`, package
+`castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b`, CI `35190729418`, CLI/core `0.6.17`, package
 manager `pnpm@10.32.1`. The released tag does not prove or contain the current
 framework-source adoption. Stable workflow marketplace and preset sources for
 one installation use the same immutable release tag; an unreleased reviewed
 checkout is identified as such and never described as tag-pinned release
 provenance. Unpinned or branch sources remain mutable latest/canary inputs.
 
-Current knowledge authority is `current-main-0.6.17-guru.53`, inheriting
+Current knowledge authority is `current-main-0.6.17-guru.54`, inheriting
 immutable `.52`; it is not a product release axis. Read the current
 `R418-01..07`, `D418-01..06`, and `T418-01..14` delta through the three layer
 READMEs. The inherited R410 release axes, R408 source/session boundary and older pins remain

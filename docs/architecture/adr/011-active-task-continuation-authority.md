@@ -1,10 +1,10 @@
 # ADR-011: Active-task continuation authority
 
-状态：`draft`，尚未 accepted、promoted 或 current。来源：Issue #419
+状态：`accepted`，由 `current-main-0.6.17-guru.54` promotion 接受。来源：Issue #419
 `2026-09-17-r7` 与 task-isolated
 [Architecture contribution](../contributions/419-active-task-continuation.md)。
-Expected current 为 `current-main-0.6.17-guru.53`；任何 successor 只能由现有
-Architecture promotion owner 在 independent committed review 后建立。
+promotion predecessor 为 `current-main-0.6.17-guru.53`；current successor 为
+`current-main-0.6.17-guru.54`。
 
 ## Context
 
@@ -68,5 +68,5 @@ workflow-neutral start/continue、Guru continuation、producer-owned recovery、
 当前工作树 sidecar/residue hygiene 和 `git diff --check`。发布安装、更新、workflow switch 与 preset
 reapply 证据由 live #410 在 #419 合并后的 fresh Guru release candidate 上独立建立，不属于本文采纳门禁。
 
-只有 independent committed full-diff review 与 expected-current-bound serialized promotion
-完成后，本 ADR 才能改为 `accepted`。普通 task、本文创建或文件存在本身都不构成接受。
+本 ADR 的接受只说明 reviewed continuation authority已进入`.54`。promotion-created diff仍须fresh Phase 2、
+Task Commit与independent full Branch Review；Publication及#410 Release Gate未由接受动作完成。

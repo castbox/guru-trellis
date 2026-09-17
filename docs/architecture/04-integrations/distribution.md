@@ -57,7 +57,7 @@
   result 与 recorder response metadata 不混用。source facts 来自实际读取，owner-local 派生值归原
   recorder，opaque 上游 token 原样承接；任务创建仍由原 executor 写双端 mapping，不增加补写路径。
 
-- `ARCH-INT-017`：Issue-backed task 不通过 task-local ledger 或 Issue arrays 交换 closure authority。
+- `ARCH-INT-017`：Issue-backed task 的 closure authority不通过task-local aggregate交换。
   Publication 基于 current requirement authority、reviewed diff、target/default branch 与 live Git/GitHub facts
   形成唯一 reviewed reference/closure intent；Finalizer 只绑定该 payload并投影 exact body SHA-256。默认
   分支 closing keyword由 GitHub执行，Merge mutation前验证 live body identity，再读取 live PR/Issue facts
@@ -71,6 +71,11 @@
   `branch_review`、`publication`、`acceptance_finish` stage；缺 authority 或需写入时只读链停止。
   普通 profiles、gate 和 Merge expected-head 操作保持原合同；接口正文归 canonical packages，
   决策与证明边界见 `ADR-010` / `EVD-028`。成功退休的 checkpoint 不构成额外复审前置条件。
+
+- `ARCH-INT-019`：#419 continuation通过唯一workflow block连接existing Interface consumers与producer-owned
+  recovery。SessionStart、UserPromptSubmit、显式start/continue和自然语言续接加载同一block；upstream
+  candidate提供extractor和thin entry，Guru只提供workflow内容与Guru-owned package projection。#410在#419
+  merge后的fresh main独立执行install/update/switch/reapply Release Gate，不消费#419定向证据。
 
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。

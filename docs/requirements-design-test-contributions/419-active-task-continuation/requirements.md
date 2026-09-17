@@ -1,8 +1,7 @@
 # #419 Active-task continuation Requirements contribution
 
-状态：`task_isolated_candidate`，未 review/promote，不是 shared current。本文继承 active
-`current-main-0.6.17-guru.53` Requirements authority，只记录 Issue #419
-`2026-09-17-r7` 的 task-local delta；不得覆盖或改写 `.53`。
+状态：`absorbed_historical_source`。本 contribution 已由 serialized RDT promotion 吸收到
+`current-main-0.6.17-guru.54`；predecessor `.53` 保持 immutable。
 
 - `R419-01`：Guru canonical workflow 必须且只能包含一个非空
   `[trellis-continuation]` 区块，完整分发 `planning`、`planning-inline`、
@@ -34,12 +33,6 @@
   workflow-neutral start/continue、Guru continuation 与 producer-owned recovery；使用 source/installed
   runtime、eval 和真实 Git/task fixture，并验证 Guru-owned projection parity、upstream ownership、dogfood
   drift、当前工作树 sidecar/residue hygiene 与 `git diff --check`。
-- `R419-08`：本任务已批准的 ledger subtraction 必须由 task-local successor delta 明确删除 current
-  `guru-ledger-free-runtime@1.0.0` capability/compatibility 声明。Promotion 后的 current successor 不得继承
-  `.53` 的 `ARCH-CUR-027` capability、`R247-10`、matching non-functional projection requirement 或
-  `RDEC-024` current claim；immutable `.53`、accepted ADR 与 archive/release evidence 仅保留历史事实，
-  不得形成 exemption、alias、adapter、fallback、dual-read 或兼容层。
-
 本 contribution 不实现 Phase 0 exact identity 建立前恢复、#398 全 lifecycle、Finalizer transaction、
 Merge、archived recovery 或 #410 Release Gate。安装、更新、workflow switch 与 preset reapply 的发布证据
 由 #410 在 #419 合并后的 fresh Guru release candidate 上独立建立，不得复用 #419 的部分结果。任何

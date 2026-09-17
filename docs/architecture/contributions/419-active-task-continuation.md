@@ -3,27 +3,26 @@
 ## Identity And Authority Boundary
 
 - candidate identity: `architecture-contribution-419-active-task-continuation-v1`.
-- lifecycle state: `task_isolated_candidate`; not reviewed, promoted, accepted,
-  or current.
+- lifecycle state: `reviewed_promoted`; absorbed by `current-main-0.6.17-guru.54`.
 - source authority: [Issue #419](https://github.com/castbox/guru-trellis/issues/419)
   contract `2026-09-17-r7`.
 - task locator: `.trellis/tasks/09-17-419-active-task-continuation`.
 - RDT contribution:
   `docs/requirements-design-test-contributions/419-active-task-continuation/`.
 - source/expected baseline: `docs/architecture/README.md` /
-  `current-main-0.6.17-guru.53` / `active`.
+  predecessor `current-main-0.6.17-guru.53`; current successor
+  `current-main-0.6.17-guru.54` / `active`.
 - design constitution: `docs/architecture/00-foundation/design-constitution.md` /
   `guru-trellis-design-constitution-v1` / `current`.
 - project change contract: `docs/architecture/06-governance/change-contract.md` /
   `guru-trellis-architecture-change-contract-v1`.
-- change path: `target_native`; proposed ADR:
-  [ADR-011](../adr/011-active-task-continuation-authority.md), status `draft`.
+- change path: `target_native`; accepted ADR:
+  [ADR-011](../adr/011-active-task-continuation-authority.md).
 
-This contribution records the stable target boundary only. It does not record
-task progress, Gate results, user authorization, release
-readiness, or a shared-current update. The existing `.53` Requirements,
-Design, Test, and Architecture authorities remain unchanged until their
-independent owners review and serialize any promotion.
+This contribution records the stable target boundary and promotion provenance
+only. It does not record task progress, Gate results, user authorization, or
+release readiness. Independent Architecture and RDT owners serialized the
+reviewed `.53 -> .54` promotion; `.53` remains immutable history.
 
 ## Before And Target
 
@@ -72,8 +71,8 @@ current closeout packages.
   and additive `guru-finish-work` entries. Reapply does not own or modify the
   active workflow or upstream entries.
 - Architecture and RDT shared current remain owned by their existing
-  expected-current-bound promotion profiles. This task writes only isolated
-  contributions and a draft ADR.
+  expected-current-bound promotion profiles. The promoted contribution and
+  accepted ADR record provenance without becoming another current authority.
 
 ## Required Concerns
 
@@ -88,22 +87,6 @@ current closeout packages.
 | `parallel-scope` | `applicable` | This task writes isolated code/docs/spec/tests only; shared current and unrelated worktrees remain untouched. |
 | `evidence-and-freshness` | `applicable` | Bind real workflow/package wrappers and exact upstream candidate evidence; old candidate, old gate, or old confirmation is stale. |
 | `review-and-promotion` | `applicable` | Independent full-diff review must precede any serialized Architecture/RDT promotion; promotion-created diff re-enters fresh Phase 2, commit, and review. |
-
-## Ledger Docs SSOT Subtraction
-
-The approved target removes ledger from the current product and architecture
-contract rather than retaining a compatibility identity. Serialized promotion
-of this contribution and its matching RDT delta must therefore remove the
-current successor declarations inherited from `.53` that name or require
-`guru-ledger-free-runtime@1.0.0`, including the active capability statement in
-`ARCH-CUR-027`, `R247-10`, the matching non-functional projection-parity
-requirement, and `RDEC-024`'s current successor claim.
-
-This subtraction does not rewrite immutable `.53`, accepted ADR history, or
-archived/released evidence. Those sources remain historical facts only; they
-must not be copied into the promoted current successor, used as a manifest
-capability, or preserved through an exemption, alias, adapter, fallback,
-dual-read, or compatibility layer.
 
 ## Exact-upstream Validation Contract
 
@@ -132,11 +115,9 @@ contribution and cannot be reused.
 
 ## Review, ADR, And Promotion
 
-[ADR-011](../adr/011-active-task-continuation-authority.md) remains a draft
-candidate decision. It may become accepted only after the implementation and
-exact-upstream targeted evidence receive independent committed full-diff review and the
-Architecture owner performs expected-`.53` serialized promotion. The RDT owner
-must independently review and promote the matching R419/D419/T419 contribution.
+[ADR-011](../adr/011-active-task-continuation-authority.md) is accepted by the
+expected-`.53` serialized promotion to `.54`. The RDT owner promoted the matching
+R419/D419/T419 contribution into the same current identity.
 
 Any promotion-created combined diff must then repeat fresh Phase 2, Task Commit,
 and complete Branch Review before Publication. #410 must freeze a new release

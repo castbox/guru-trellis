@@ -109,3 +109,17 @@ task commit 与完整 Branch Review，后续远端动作由各 live owner 独立
 Native 归档语义执行、原业务实例、完整多平台 upgrade/Release matrix 仍为 `unverified`。
 Promotion-created diff 的 fresh Phase 2、task commit、distinct complete Branch Review 以及后续
 Publication、push、PR、merge、tag、Release、Issue closure 均不由本提升前证据推定完成。
+
+## EVD-029: #419 Reviewed Promotion Source
+
+本证据支撑 `ARCH-CUR-031`、`ARCH-DOM-016`、`ARCH-INT-019`、`ARCH-GOV-010`、`ADR-011` 与
+`.53 -> .54` knowledge promotion。提升前独立完整Branch Review绑定
+`f5ebf9f92b0f174b48f6c8ed04038eb32a5f054e...0b46f0b0f7ae0e9a76dca22053a29d1835c09812`
+并通过正式Architecture与review wrappers；activation pre-validation、完整successor subtraction和bytecode
+residue三个findings已在同一current candidate闭合。
+
+定向证据包括 continuation/activation 13、workspace recovery 8、Phase 2 package 16、Finalizer contract 27、
+preset/ownership 158，以及exact upstream candidate identity、extractor/continuation/thin-entry tests、source/
+installed runtime、真实Git/task fixture、projection parity、ownership、dogfood drift、sidecar/residue与diff检查。
+这些结果不包含throwaway、install/update/workflow-switch/preset-reapply Release Gate matrix；该完整证明由#410
+在#419 merge后的fresh main独立建立。Promotion-created diff仍须fresh Phase 2、Task Commit和完整Branch Review。

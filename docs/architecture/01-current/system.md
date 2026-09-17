@@ -2,9 +2,9 @@
 
 以下事实只绑定 current source/release evidence，不推断未来能力。
 
-当前图及 #418 增量以 `ARCH-CUR-030` 为准；current release-facing 四轴继承
+当前图及 #419 增量以 `ARCH-CUR-031` 为准；current release-facing 四轴继承
 `ARCH-CUR-029`。保留条目中带旧 Issue/版本身份的计数和验证只描述其历史范围，
-不覆盖 `.53` 的 current identity，也不充当本次重新执行的验证。
+不覆盖 `.54` 的 current identity，也不充当本次重新执行的验证。
 
 - `ARCH-CUR-001`（`code_recovered`）：reviewed #332 original-entry correction contribution + inherited `.44` authority 包含 23 个 active Skill packages、97 个 external exits 与 77 个 commands；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD；registry 统一指向 interface/route/platform，22 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
 - `ARCH-CUR-002`（`code_recovered`）：global workflow 实现四 Phase，canonical package 位于 `trellis/**`，dogfood/installed 位于 `.trellis/**`，平台投影覆盖 Shared/Codex/Claude/Cursor。
@@ -90,16 +90,6 @@
   legacy 数据原 path/mode/bytes 保留。public graph、extension `0.6.16-guru.41` 与 released
   `v0.6.16-guru.1` 不变，后者不包含本 candidate。
 
-- `ARCH-CUR-027`（`source_confirmed` + `reviewed`，r24 修订）：#247 以 `dedicated_refactor_slice` 从 current graph 删除
-  task-local `issue-scope-ledger.json`、Issue classification aggregate、writer/reader/schema registration 与
-  ledger-era public DTO。requirement/source reference 回到 current authority；Publication 独占 Issue reference
-  与 closure intent，Finalizer 保留 push/PR/archive/Ready/recovery 并投影 exact body SHA-256，GitHub 按默认分支 closing
-  keyword 执行关闭，Merge 保留独立 readiness、expected-head、四 exits 与 live result verification；
-  archived Restore route保持。no-Issue、reference-only empty close set 与 non-default-base
-  路径保持显式；legacy ledger 不迁移、不 dual-read，也不进入 managed inventory。public graph保持
-  23 Skills / 97 exits / 78 commands，accepted `ADR-009` 固化 ledger-free old-flow compatibility；manifest
-  声明 `guru-ledger-free-runtime@1.0.0`，不宣称新 lifecycle 已实现。
-
 - `ARCH-CUR-028`（`source_confirmed` + `reviewed`）：#408 直接采用固定 Nightly
   `castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0` / CI `34838784963`，不依赖 `0.6.18`。
   正常 Guru authoring 通过原 recorder/checker 和 workspace executor 建立双端 mapping，受控激活后
@@ -109,12 +99,14 @@
   手动结果不取得 Guru lifecycle 完成状态。此能力不新增 Skill、exit、owner 或恢复状态。
   需求/设计/测试承接为 `R408-01..08 -> D408-01..05 -> T408-01..08`，证据边界见 `EVD-027`。
 
-当前 Architecture knowledge identity 为 `.53`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
+当前 Architecture knowledge identity 为 `.54`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
 `0.6.17`，framework source/CI 由 `ARCH-CUR-028` 与 canonical source record 绑定，package manager 为
-`pnpm@10.32.1`。`.52` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
+`pnpm@10.32.1`。`.53` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。
 
 - `ARCH-CUR-029`（`source_confirmed` + `reviewed`）：#410 将 current release-facing mapping 提升为 `v0.6.17-guru.1` / extension `0.6.17-guru.42` / CLI-core `0.6.17` / fixed Fork source；Architecture/RDT successor 为 `current-main-0.6.17-guru.52`，前序 `.51` 与 released `v0.6.16-guru.1` 保持 immutable。该知识 promotion 不声明 preparation PR merge、tag、GitHub Release、业务 smoke 或 Issue closure 已完成。
 
 - `ARCH-CUR-030`（`source_confirmed` + `reviewed`）：#418 以 `target_native` 在原 Merge、Branch Review、Publication、Finalizer 内增加四个只读 profiles 和三个 success exits，当前图为 23 Skills / 100 exits / 78 commands，business workflow 为 22 invokes / 98 exits。Finalizer 原 executor 独占同一 task 双端映射的归档 locator 收敛；已知 Merge 错误从发生点保留脱敏诊断，正常 checkpoint 退休不强制复审。只读链区分原 H、当前 A、复审 base B 与 PR payload snapshot；Publication 重新判断现有 bytes，Finalizer 验证历史连续性后返回原 Merge handoff，不重复归档或发布。普通 aggregate 4.0/gate 7.0 合同保留，aggregate 5.0 加入的 archived review 使用独立 `archived-1.0` gate。`ADR-010` 与 `ARCH-INT-018` 定义边界，`EVD-028` 只提供提升前证据；本条不证明 post-promotion gate、native 归档语义链、原业务实例或 Release 完成。
+
+- `ARCH-CUR-031`（`source_confirmed` + `reviewed`）：#419 以 `target_native` 在 Guru canonical workflow 建立唯一 active-task continuation authority。Adjacent public DTO 直接进入唯一 consumer；deterministic output loss 回原 producer正式恢复，semantic output loss fresh重跑原owner。Phase 1 activation使用exact-pair-first `initial|recovery`；Phase 2、Task Commit、Branch Review、Publication继续复用既有public contracts。upstream merge candidate `43fffc170927c85d9f7fc106cc5a059e80d4530b` / CI `35190729418` 是 current fixed Fork source，独占 extractor与thin entries；Guru不patch upstream-owned paths。current graph为23 Skills / 100 exits / 79 commands。`ADR-011`、`ARCH-DOM-016`、`ARCH-INT-019`和`EVD-029`定义边界；#410独占Release Gate matrix。

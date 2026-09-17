@@ -1,7 +1,7 @@
 # #419 Active-task continuation Test contribution
 
-状态：`task_isolated_candidate`。以下为 R419/D419 的验收设计，不是 PASS 记录；实际 evidence 必须由
-Phase 2、independent full Branch Review 与 exact-upstream targeted validators 从当前 bytes 重新产生。
+状态：`absorbed_historical_source`。以下为 R419/D419 promotion来源；实际current策略位于`.54`。
+Promotion-created diff仍须fresh Phase 2、Task Commit与independent full Branch Review。
 
 - `T419-01`（R419-01）：canonical 与 dogfood workflow 各恰有一个非空 continuation block；上游
   candidate extractor 返回相同 Guru body。六类 state/invalid state 进入声明 owner/stop，零 inventory fallback。
@@ -32,11 +32,6 @@ Phase 2、independent full Branch Review 与 exact-upstream targeted validators 
 - `T419-10`（全部）：测试使用正式 production wrappers 与真实 fixtures，不预填 semantic pass、不手写
   downstream DTO、不复用旧 candidate/evidence、不保留成功 retired checkpoint、不以静态关键词命中代替
   route/mutation/consumer 行为。
-- `T419-11`（R419-08/D419-11）：promotion candidate review 必须证明 current successor 不再声明
-  `guru-ledger-free-runtime@1.0.0`、`R247-10`、matching non-functional projection requirement 或 `RDEC-024`
-  current capability；同时 immutable `.53` 与 historical ADR/archive/release bytes 不被原地修改，且无
-  exemption、alias、adapter、fallback、dual-read 或 compatibility path。
-
 发布安装、更新、workflow switch 与 preset reapply 的验收完全由 #410 拥有。#419 合并后 #410 必须从新的
 live `origin/main` 重新冻结 Guru release candidate 并从零执行其 Release Gate；#419 的部分或中断结果不是
 #410 evidence。

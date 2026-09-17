@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.53`
+- version：`current-main-0.6.17-guru.54`
 - status：`active`
-- source binding：reviewed #418 contribution + inherited immutable `.52` authority；current graph 23 Skills / 100 exits / 78 commands，current 增量见 `ARCH-CUR-030` / `ARCH-INT-018` / `ADR-010`。软件四轴与固定 Fork 来源继承 `.52`，见 Architecture current authority；constitution、GAP 与 #305 target 不变。本知识 promotion 不证明 post-promotion gates、tag、GitHub Release、Issue closure 或其它远端动作完成。
+- source binding：reviewed #419 contribution + inherited immutable `.53` authority；current graph 23 Skills / 100 exits / 79 commands，current 增量见 `ARCH-CUR-031` / `ARCH-DOM-016` / `ARCH-INT-019` / `ARCH-GOV-010` / `ADR-011`。repository/extension/CLI axes 继承 `.53`，固定 Fork 来源更新为 `43fffc170927c85d9f7fc106cc5a059e80d4530b`；#410独占post-merge Release Gate matrix。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`
 - required concern set：`guru-trellis-architecture-change-concerns-v1`

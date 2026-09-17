@@ -1,8 +1,8 @@
 # #419 Active-task continuation Design contribution
 
-状态：`task_isolated_candidate`；expected current 为
-`current-main-0.6.17-guru.53`。本文只承接 R419 的 stable design delta，不成为第二份 current
-Design，也不声明实现、测试、review、promotion 或 release 已完成。
+状态：`absorbed_historical_source`；predecessor 为
+`current-main-0.6.17-guru.53`，successor 为 `current-main-0.6.17-guru.54`。current Design正文位于
+versioned `.54` authority；本文只保留promotion来源。
 
 - `D419-01`：采用 `target_native`。上游 Trellis 提供结构化 continuation protocol 与薄入口；Guru
   workflow 独占 Guru continuation body。Detailed routes 只存在于唯一 block，breadcrumbs 只提示加载。
@@ -35,12 +35,7 @@ Design，也不声明实现、测试、review、promotion 或 release 已完成�
   sidecar/residue hygiene 与 `git diff --check`。
 - `D419-10`：#410 独占发布安装、更新、workflow switch 与 preset reapply 的 Release Gate。它必须在 #419
   合并后的最新 `main` 上重新冻结 Guru release candidate，并从零产生证据，不消费 #419 的部分结果。
-- `D419-11`：ledger 使用 direct subtraction。Architecture/RDT serialized promotion 从 current successor
-  删除 `guru-ledger-free-runtime@1.0.0` capability 与 `.53` 中对应的 current compatibility claims；immutable
-  `.53`、accepted ADR、archive/release evidence 保持 historical，不增加 exemption、alias、adapter、fallback、
-  dual-read 或 compatibility path。
-
 Architecture decision candidate 见
-[`ADR-011`](../../architecture/adr/011-active-task-continuation-authority.md)，状态保持 `draft`。
+[`ADR-011`](../../architecture/adr/011-active-task-continuation-authority.md)，状态 `accepted`。
 Exact-upstream 定向验证必须绑定 candidate 的 full SHA、ordered parents 与 tree；当前 source lock、
 release mapping 和 shared `.53` 不由本 contribution 改写。
