@@ -384,6 +384,15 @@
       "ordinal": 1
     },
     {
+      "id": "helper-python_subprocess_second_hop-949df3e71a56",
+      "owner": "trellis/skills/guru-team/adapters/eval/stage0_fixtures.py",
+      "kind": "python_subprocess_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "sys.executable",
+      "anchor_sha256": "949df3e71a5636b4b67e645a29e9e89a81bcad41f9b8684b03a4798436d717e2",
+      "ordinal": 1
+    },
+    {
       "id": "helper-python_subprocess_second_hop-da3dbbd9e438",
       "owner": "trellis/skills/guru-team/adapters/eval/guru-team-shared-eval",
       "kind": "python_subprocess_second_hop",
@@ -543,7 +552,7 @@
       "expected_launcher": "owner_staging.py explicit module import under installed managed Python",
       "launch_owner": "trellis/skills/guru-team/adapters/eval/owner_staging.py",
       "launch_token": "from adapters.eval.stage0_fixtures import (",
-      "sys_executable_subprocesses": 0,
+      "sys_executable_subprocesses": 1,
       "managed_shebang_bindings": 0
     },
     {

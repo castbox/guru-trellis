@@ -115,35 +115,6 @@ its own accepted scope. Validation ownership is split as follows:
   deferred matrix coverage belongs to its dedicated owner and is reported as an
   explicit unverified boundary rather than an ordinary-task failure.
 
-### Active-task continuation compatibility gate
-
-The current continuation adoption gate is bound to the immutable upstream
-candidate `43fffc170927c85d9f7fc106cc5a059e80d4530b`, with ordered parents
-`db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0` then
-`df12903220ce22b2c84782968ed5c93406b5738b`, and tree
-`02fc0922f535200f67de7f6ba7920e3c763d7e95`. A branch name, PR head,
-predecessor, short SHA, different parent order, or later upstream commit is not
-equivalent evidence.
-
-Acceptance uses clean disposable targets and records the exact candidate for
-every cell. It must prove: clean installation; supported existing-project
-update; immediate native-to-Guru and Guru-to-native workflow switching where
-each entry reads the newly selected continuation; and Guru preset reapply.
-Reapply must preserve byte-for-byte every upstream-owned start/continue/hook/
-platform/meta entry and the active workflow continuation. The final target must
-also prove canonical/installed/dogfood/declared-platform Guru projection
-parity, zero unresolved `.new`/`.bak`, and zero `__pycache__`, `.pyc`, or `.pyo`
-residue.
-
-Native continuation content remains upstream evidence; Guru continuation
-content comes from the Guru marketplace workflow. Tests must use the real
-candidate extractor/entries, real Git/task/worktree fixtures, and production
-Guru wrappers. Adjacent DTO consumption and cross-session output loss are
-separate cases. Fixtures may not prefill semantic pass, hand-write downstream
-DTOs, preserve a retired checkpoint, or use keyword assertions as behavioral
-proof. Until all cells pass against the exact candidate, docs and release text
-must describe compatibility as required or unverified, not complete.
-
 ### Reviewed Content Cross-Package Acceptance
 
 Changes to the reviewed-content identity contract require one real Git fixture

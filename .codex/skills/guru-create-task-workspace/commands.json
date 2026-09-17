@@ -166,7 +166,7 @@
     {
       "id": "recover-task-workspace-result",
       "owner": "guru-create-task-workspace",
-      "entrypoint": "runtime/check.py",
+      "entrypoint": "runtime/recover.py",
       "arguments": [
         {
           "flag": "--root",
@@ -200,7 +200,7 @@
         "schemas/task-workspace-recovery-result.schema.json"
       ],
       "validator_id": "task_workspace_created_result_recovery",
-      "runtime_role": "check"
+      "runtime_role": "recover"
     },
     {
       "id": "invoke-guru-create-task-workspace",

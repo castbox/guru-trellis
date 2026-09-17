@@ -285,6 +285,9 @@ def compose_task_workspace_eval_runtime(runtime_target: Path, module: Any) -> No
     check = load_package_runtime_module(
         runtime_target, "guru-create-task-workspace", "check"
     )
+    recover = load_package_runtime_module(
+        runtime_target, "guru-create-task-workspace", "recover"
+    )
     package_root = (
         runtime_target.parent.parent.parent
         / "skills/packages/guru-create-task-workspace"
@@ -332,6 +335,11 @@ def compose_task_workspace_eval_runtime(runtime_target: Path, module: Any) -> No
     module.cmd_record_task_workspace_plan = lambda args: invoke(record, args)
     module.cmd_create_task_workspace = lambda args: invoke(execute, args)
     module.cmd_check_task_workspace_result = lambda args: invoke(check, args)
+    module.cmd_recover_task_workspace_result = lambda args: recover.run(
+        package_root,
+        {},
+        ["--root", str(args.root), "--task", str(args.task)],
+    )
 
 def load_package_runtime_module(
     runtime_target: Path, skill_id: str, module_name: str,

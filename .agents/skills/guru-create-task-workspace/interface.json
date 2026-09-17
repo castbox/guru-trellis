@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.4.schema.json",
-  "schema_version": "1.4",
+  "$schema": "../../schemas/skill-interface-1.6.schema.json",
+  "schema_version": "1.6",
   "id": "guru-create-task-workspace",
   "name": "guru-create-task-workspace",
   "description": "Create or exactly reuse a reviewed issue workspace and Trellis task through an AI-owned semantic gate, ephemeral scoped confirmation, deterministic execution, and four typed exits.",
@@ -323,7 +323,10 @@
       "wrapper": "scripts/invoke.sh",
       "input_binding": {
         "kind": "structured_json",
-        "profile_id": "execute_reviewed_plan"
+        "profile_selector": {
+          "source": "aggregate_public_input",
+          "field": "profile"
+        }
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {

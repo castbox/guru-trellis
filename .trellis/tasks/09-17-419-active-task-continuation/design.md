@@ -1,6 +1,6 @@
 # #419 技术设计：workflow-owned active-task continuation
 
-状态：实现与定向验证进行中。Architecture/RDT contribution 与 draft ADR 已建立；Phase 2、exact-candidate throwaway matrix 和 shared-current promotion 尚未完成。
+状态：实现与定向验证进行中。Architecture/RDT contribution 与 draft ADR 已建立；Phase 2 和 shared-current promotion 尚未完成。Release Gate 验证由 #410 独立拥有。
 
 ## 1. 设计原则与边界
 
@@ -87,7 +87,7 @@ SessionStart/UserPromptSubmit hooks 继续只提供 facts/breadcrumb；不让 ho
 - canonical/dogfood workflow 与 workflow README；
 - continuation/recovery 直接涉及的 Guru Skill package contracts/runtime/schema/tests；
 - Guru workflow integration/native tests；
-- preset ownership/update/reapply validator 与 exact-candidate matrix tests；
+- preset ownership、dogfood drift validator 与 current projection 定向测试；
 - `.trellis/spec` canonical source、dogfood copy、public docs；
 - task-owned Architecture contribution、必要 ADR、RDT contribution。
 
@@ -110,31 +110,18 @@ Canonical 先改 `trellis/**`，再运行 preset apply 同步 dogfood/selected-p
 
 测试使用 canonical 或 installed workflow、真实临时 Git repo/task/mapping、正式 package wrappers。语义 owner 的 fresh judgment由测试外 AI gate证明；deterministic fixture只验证 I/O、恢复与副作用，不用预填 pass、fake checkpoint、关键词断言或手写 DTO冒充 end-to-end semantic success。
 
-## 8. D419-07 exact-candidate 集成矩阵
+## 8. D419-07 exact-upstream 定向验证
 
-扩展现有 compatibility matrix，以 immutable Fork checkout `43fffc170927c85d9f7fc106cc5a059e80d4530b` 运行：
+以 immutable Fork checkout `43fffc170927c85d9f7fc106cc5a059e80d4530b` 作为唯一直接依赖身份，执行直接证明 continuation 缺陷的验证：
 
-1. clean target init/install Guru workflow + preset；
-2. predecessor existing target 使用 candidate CLI 执行 dry-run 与唯一 preserve-mode update；
-3. switch 到 native workflow，确认读取 upstream native continuation；
-4. switch 回 local exact Guru candidate，确认读取 Guru continuation且无 cache/旧 route；
-5. reapply preset，比较 upstream-owned start/continue/hooks/meta bytes 与 reapply 前完全相同；
-6. 比较 Guru workflow continuation bytes与 canonical完全相同；
-7. 运行 source/installed package、ownership、platform discovery、dogfood drift、mode与recursive sidecar检查；
-8. 扫描并拒绝 `.new/.bak`、`__pycache__`、`.pyc`、`.pyo`。
+1. 校验 candidate full SHA、tree、ordered parents、source lock 与构建 identity；
+2. 运行 upstream continuation extractor、`get_context.py --mode continuation`、`trellis-start` 与 `trellis-continue` 定向测试；
+3. 运行 Guru source/installed package、runtime、eval 与真实 Git/task fixture，覆盖 adjacent consumption 和 lost-output recovery；
+4. 校验 source、installed、dogfood 与声明平台 Guru-owned projection parity；
+5. 运行 upstream ownership、dogfood drift、当前工作树 recursive sidecar/residue scan 与 `git diff --check`；
+6. 确认本任务 diff 不修改 upstream-owned start/continue/hooks/platform/`trellis-meta`。
 
-Matrix 不再比较 predecessor 与 current 的内部 API 集合，也不声明 migration capability 或 removed-API
-allowlist。Predecessor projection 只记录安装前 evidence identity；update、workflow switch 与 preset reapply
-完成后，matrix 对 current canonical source 与 current installed runtime contract（extension/workflow/task-data）
-执行 exact parity gate；repository-only Docs authority 继续由独立 snapshot/validator 验证，同时由
-真实 update 行为、package validator、ownership validator 和 residue scan 证明迁移结果。
-
-删除范围覆盖 current source、installed、dogfood、声明平台、active package tests 以及 promotion 后的
-shared-current Architecture/RDT authority。不得把已退役 marker、旧 Issue fixture 名、专项 allowlist、兼容
-reader 或 migration capability 留作“已删除证明”。Immutable superseded/history 只保留历史事实，不进入
-current projection、validator、matrix comparator、安装合同或支持承诺。
-
-Matrix 输出必须绑定 candidate full SHA，不接受 branch name、PR head、short SHA 或旧 result。
+#419 不运行 throwaway 或 compatibility matrix，也不产生 clean install、existing update、workflow switch、preset reapply 或升级兼容性结论。上述 Release Gate 由 #410 在包含 #419 的最新 `main` 上重新冻结 Guru release candidate 后独立完成；任何 #419 已开始、失败、中断或未完整完成的 matrix 结果均不可复用。
 
 ## 9. Architecture change contract
 
@@ -147,10 +134,10 @@ Matrix 输出必须绑定 candidate full SHA，不接受 branch name、PR head�
 策略：`delta_first`。
 
 - durable docs：canonical workflow/README、preset README、workflow/preset specs、Architecture/RDT contribution 与必要 ADR；
-- evidence paths：package tests、workflow integration tests、compatibility matrix output、source/installed validators、dogfood drift、recursive sidecar/residue scans；
+- evidence paths：exact-upstream thin-entry tests、package/runtime/eval、workflow integration tests、真实 Git/task fixture、source/installed validators、ownership、dogfood drift、当前工作树 recursive sidecar/residue scans 与 `git diff --check`；
 - task artifacts：`prd.md` / `design.md` / `implement.md` 只保留本任务需求、设计、执行与验证映射，不成为 shared authority；
 - merge checkpoint：Phase 2 前收敛 durable docs，Branch Review 后按 expected-current serialized promotion，再对 promotion-created diff fresh 重跑 Phase 2/commit/review；
-- follow-up：#410 重新冻结自己的 exact release candidate，本任务不提供跨 SHA release proof。
+- follow-up：#410 在 #419 合并后的最新 `main` 上重新冻结自己的 Guru release candidate，并独立生成全部 Release Gate evidence；本任务不提供 install/update/switch/reapply 或跨 SHA release proof。
 
 ## 11. 替代方案与回滚
 

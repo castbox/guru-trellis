@@ -2,7 +2,7 @@
 
 状态：`task_isolated_candidate`，未 review/promote，不是 shared current。本文继承 active
 `current-main-0.6.17-guru.53` Requirements authority，只记录 Issue #419
-`2026-09-17-r6` 的 task-local delta；不得覆盖或改写 `.53`。
+`2026-09-17-r7` 的 task-local delta；不得覆盖或改写 `.53`。
 
 - `R419-01`：Guru canonical workflow 必须且只能包含一个非空
   `[trellis-continuation]` 区块，完整分发 `planning`、`planning-inline`、
@@ -22,22 +22,19 @@
   plan 时的“确认继续”，在 exact active task 上必须加载同一 continuation。存在 current side-effect
   plan 时，确认只授权该计划；成功 typed exit 自动续接到新副作用、真实选择或 stop。确认不持久化。
 - `R419-06`：upstream extractor/start/continue/hooks/platform/meta 保持 upstream-owned；Guru preset
-  不安装、patch、删除、managed-upgrade 或 reapply 修改这些路径或 active workflow。选择 Guru
+  不安装、patch、删除或 managed-upgrade 这些路径或 active workflow。选择 Guru
   workflow 但 preset 缺失时必须明确阻塞依赖不完整。
-- `R419-07`：兼容性证据必须绑定 immutable candidate
+- `R419-07`：定向集成证据必须绑定 immutable candidate
   `43fffc170927c85d9f7fc106cc5a059e80d4530b`、ordered parents
   `db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0` /
   `df12903220ce22b2c84782968ed5c93406b5738b` 与 tree
-  `02fc0922f535200f67de7f6ba7920e3c763d7e95`，覆盖 clean install、existing update、
-  native/Guru 双向 switch、preset reapply、projection parity、零 sidecar 与零 bytecode residue。
-- `R419-08`：current extension manifest、installer、installed validator 与 matrix projection 不得声明
-  removed-API migration capability、专项 allowlist、compatibility reader 或对应 fixture。Existing update
-  只使用 predecessor 作为安装种子；更新后 current source 与 installed runtime contract 必须 exact parity。
-- `R419-09`：current source、installed、dogfood、声明平台、active package tests 与 promotion 后的
-  shared-current Architecture/RDT authority 必须删除已退役内部 API capability、专用命名、fixture、例外
-  分支、compatibility reader 与 migration path。Immutable superseded/history 只保留历史事实，不得成为
-  current projection、validator、matrix、安装或兼容合同的 consumer。
+  `02fc0922f535200f67de7f6ba7920e3c763d7e95`，覆盖 upstream extractor、continuation mode、
+  workflow-neutral start/continue、Guru continuation 与 producer-owned recovery；使用 source/installed
+  runtime、eval 和真实 Git/task fixture，并验证 Guru-owned projection parity、upstream ownership、dogfood
+  drift、当前工作树 sidecar/residue hygiene 与 `git diff --check`。
 
 本 contribution 不实现 Phase 0 exact identity 建立前恢复、#398 全 lifecycle、Finalizer transaction、
-Merge、archived recovery 或 #410 release proof。任何 shared-current successor 必须由 RDT owner 在
-independent review 后 serialized promotion，并对 promotion-created diff fresh 重跑下游 gates。
+Merge、archived recovery 或 #410 Release Gate。安装、更新、workflow switch 与 preset reapply 的发布证据
+由 #410 在 #419 合并后的 fresh Guru release candidate 上独立建立，不得复用 #419 的部分结果。任何
+shared-current successor 必须由 RDT owner 在 independent review 后 serialized promotion，并对
+promotion-created diff fresh 重跑下游 gates。

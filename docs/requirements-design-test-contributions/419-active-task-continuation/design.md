@@ -24,19 +24,18 @@ Design，也不声明实现、测试、review、promotion 或 release 已完成�
   success 后才能返回 exit；payload/target/authority 改变使旧确认失效；failure 不产生 success exit。
 - `D419-07`：Guru preset 只分发 Guru packages/runtime/schema/projections。Marketplace workflow 负责
   continuation bytes；upstream entries 与 native continuation 由 exact upstream candidate 提供。
-  Reapply 验证不变性，不取得这些路径 ownership。
+  Guru task diff 与 managed inventory 不取得这些路径 ownership。
 - `D419-08`：真实回归使用 canonical/installed workflow、真实 Git/task/worktree fixtures 与正式 wrappers，
   分开覆盖 adjacent consumption 和 cross-session recovery。Semantic owner 必须真实运行，测试不得
   预填 pass、手写 DTO、保留 retired checkpoint 或用关键词断言替代行为。
-- `D419-09`：移除 current manifest/validator/projection 中的 migration capability surface。Matrix 保留
-  predecessor source/installed digest 作为 update evidence，但不执行 predecessor-to-current internal API
-  preservation；update 后只接受 current source/installed runtime contract exact parity，repository-only Docs
-  locators 由独立 snapshot gate 验证，再运行 package/ownership/residue gates。
-- `D419-10`：删除范围包含 active package test fixtures 与 serialized promotion 产生的 shared-current
-  successor；不得保留已退役 marker、专项命名或 allowlist 作为“退役证明”。Immutable historical
-  authorities 不改写，但从 current consumer graph、projection、validator、matrix 与支持合同中完全隔离。
+- `D419-09`：exact upstream 定向验证先绑定 candidate full SHA、ordered parents 与 tree，再运行 extractor、
+  continuation mode、start/continue contract tests。Guru 验证运行 source/installed package runtime、eval、
+  正式 wrappers 与真实 Git/task fixture；最后检查 projection parity、ownership、dogfood drift、当前工作树
+  sidecar/residue hygiene 与 `git diff --check`。
+- `D419-10`：#410 独占发布安装、更新、workflow switch 与 preset reapply 的 Release Gate。它必须在 #419
+  合并后的最新 `main` 上重新冻结 Guru release candidate，并从零产生证据，不消费 #419 的部分结果。
 
 Architecture decision candidate 见
 [`ADR-011`](../../architecture/adr/011-active-task-continuation-authority.md)，状态保持 `draft`。
-Compatibility matrix 必须绑定 exact candidate 的 full SHA、ordered parents 与 tree；当前 source lock、
+Exact-upstream 定向验证必须绑定 candidate 的 full SHA、ordered parents 与 tree；当前 source lock、
 release mapping 和 shared `.53` 不由本 contribution 改写。

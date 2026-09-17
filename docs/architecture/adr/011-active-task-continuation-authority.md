@@ -1,7 +1,7 @@
 # ADR-011: Active-task continuation authority
 
 状态：`draft`，尚未 accepted、promoted 或 current。来源：Issue #419
-`2026-09-17-r6` 与 task-isolated
+`2026-09-17-r7` 与 task-isolated
 [Architecture contribution](../contributions/419-active-task-continuation.md)。
 Expected current 为 `current-main-0.6.17-guru.53`；任何 successor 只能由现有
 Architecture promotion owner 在 independent committed review 后建立。
@@ -37,7 +37,7 @@ start/continue loading。Guru Team 只需要定义自己的 active-task semantic
 6. “确认继续”只授权当前对话中唯一、完整、仍 current 的已展示副作用。正式成功 typed exit
    自动消费 mapped transitions；新的副作用、真实选择或 stop 再暂停。授权不持久化。
 7. Upstream Trellis 继续独占 extractor、start/continue、hooks、generated platform entries 与
-   `trellis-meta`。Guru preset reapply 不修改 upstream bytes 或 active workflow。
+   `trellis-meta`。Guru preset 不安装、patch 或管理这些路径和 active workflow。
 
 ## Rejected Alternatives
 
@@ -62,9 +62,11 @@ start/continue loading。Guru Team 只需要定义自己的 active-task semantic
 `43fffc170927c85d9f7fc106cc5a059e80d4530b`，ordered parents
 `db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0`,
 `df12903220ce22b2c84782968ed5c93406b5738b`，tree
-`02fc0922f535200f67de7f6ba7920e3c763d7e95`，并通过 clean install、existing update、
-native/Guru 双向 switch、preset reapply、ownership/parity、零 sidecar 与零 bytecode residue
-证明。本文不声明这些 gate 已通过。
+`02fc0922f535200f67de7f6ba7920e3c763d7e95`。采纳证据只覆盖 extractor、continuation mode、
+workflow-neutral start/continue、Guru continuation、producer-owned recovery、source/installed runtime
+与真实 Git/task fixture，以及 Guru-owned projection parity、upstream ownership、dogfood drift、
+当前工作树 sidecar/residue hygiene 和 `git diff --check`。发布安装、更新、workflow switch 与 preset
+reapply 证据由 live #410 在 #419 合并后的 fresh Guru release candidate 上独立建立，不属于本文采纳门禁。
 
 只有 independent committed full-diff review 与 expected-current-bound serialized promotion
 完成后，本 ADR 才能改为 `accepted`。普通 task、本文创建或文件存在本身都不构成接受。

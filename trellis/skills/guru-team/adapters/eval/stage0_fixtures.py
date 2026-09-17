@@ -237,6 +237,18 @@ def bind_stage0_call_local_invocation(
             public_input["target_locator"] = target["url"]
         elif isinstance(target.get("draft_id"), str) and target.get("draft_id"):
             public_input["target_locator"] = f"draft:{target['draft_id']}"
+    if (
+        skill_id == "guru-create-task-workspace"
+        and public_input.get("profile") == "recover_created_result"
+    ):
+        envelope = {
+            "schema_version": "1.0",
+            "public_input": public_input,
+            "recovery_result": owner_result,
+        }
+        invocation_path = fixture / OWNER_INVOCATION
+        invocation_path.write_text(json.dumps(envelope) + "\n", encoding="utf-8")
+        return
     envelope: dict[str, Any] = {
         "schema_version": "1.0",
         "public_input": public_input,
@@ -1266,3 +1278,79 @@ def build_workspace_owner(
         argparse.Namespace(root=str(fixture), input=None, invocation="-", plan_input=None),
         {**common, "result": result},
     )
+
+def build_workspace_recovery_owner(
+    runtime: Any, fixture: Path, public_input: dict[str, Any], recipe: str,
+) -> dict[str, Any]:
+    if recipe != "workspace-recover-created":
+        raise ValueError(f"unsupported task workspace recovery recipe: {recipe}")
+    task_ref = Path(str(public_input["task_ref"]))
+    task_dir = fixture / task_ref
+    task_dir.mkdir(parents=True, exist_ok=True)
+    task_id = task_dir.name
+    branch = run_git(fixture, "branch", "--show-current")
+    task = {
+        "id": task_id,
+        "name": task_id,
+        "title": "Stage 0 workspace recovery fixture",
+        "status": "planning",
+        "scope": "issue #145",
+        "branch": branch,
+        "base_branch": "main",
+        "worktree_path": str(fixture.resolve()),
+    }
+    (task_dir / "task.json").write_text(
+        json.dumps(task) + "\n", encoding="utf-8"
+    )
+    runtime_root = fixture / ".trellis/.runtime/guru-team"
+    task_mapping = runtime_root / "tasks" / f"{task_id}.json"
+    workspace_mapping = runtime_root / "workspaces" / f"{task_id}.json"
+    task_mapping.parent.mkdir(parents=True, exist_ok=True)
+    workspace_mapping.parent.mkdir(parents=True, exist_ok=True)
+    task_mapping.write_text(json.dumps({
+        "schema_version": "1.0",
+        "task_slug": task_id,
+        "workspace_slug": task_id,
+        "workspace_path": str(fixture.resolve()),
+        "task_artifact_dir": task_ref.as_posix(),
+        "updated_at": "2026-09-17T00:00:00Z",
+    }) + "\n", encoding="utf-8")
+    workspace_mapping.write_text(json.dumps({
+        "schema_version": "1.0",
+        "workspace_slug": task_id,
+        "workspace_path": str(fixture.resolve()),
+        "source_checkout": str(fixture.resolve()),
+        "branch_name": branch,
+        "updated_at": "2026-09-17T00:00:00Z",
+    }) + "\n", encoding="utf-8")
+    context_id = "workspace-recovery-eval"
+    bind = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            (
+                "import sys; from pathlib import Path; "
+                "sys.path.insert(0, '.trellis/scripts'); "
+                "from common.active_task import set_active_task; "
+                f"assert set_active_task({task_ref.as_posix()!r}, Path('.').resolve()) is not None"
+            ),
+        ],
+        cwd=fixture,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env={**os.environ, "TRELLIS_CONTEXT_ID": context_id},
+    )
+    if bind.returncode:
+        raise ValueError(f"workspace recovery session binding failed: {bind.stderr.strip()}")
+    previous_context = os.environ.get("TRELLIS_CONTEXT_ID")
+    os.environ["TRELLIS_CONTEXT_ID"] = context_id
+    try:
+        return runtime.cmd_recover_task_workspace_result(
+            argparse.Namespace(root=str(fixture), task=task_ref.as_posix())
+        )
+    finally:
+        if previous_context is None:
+            os.environ.pop("TRELLIS_CONTEXT_ID", None)
+        else:
+            os.environ["TRELLIS_CONTEXT_ID"] = previous_context

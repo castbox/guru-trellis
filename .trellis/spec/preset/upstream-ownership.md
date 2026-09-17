@@ -130,13 +130,6 @@ For a current installation:
 5. rerun source/installed package validation, ownership validation, platform
    discovery checks, dogfood drift, and a recursive zero-sidecar scan.
 
-For continuation-capable Trellis versions, the same sequence additionally
-proves that workflow switching changes the loaded continuation immediately and
-that preset reapply leaves both upstream entries and the selected workflow
-bytes unchanged. A missing Guru preset for a selected Guru workflow is reported
-as an incomplete dependency; ownership is not widened to repair it by patching
-upstream paths.
-
 A non-current installed or ownership manifest is invalid input and stops this
 flow. Continuing requires a fresh target or a complete current manifest; the
 validator has no schema-version-specific branch.

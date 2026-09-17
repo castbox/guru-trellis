@@ -28,8 +28,22 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    invocation=Path(tmp)/"invoke.json";before=subprocess.run(["git","status","--porcelain=v1","-z","--untracked-files=all"],cwd=repo,stdout=subprocess.PIPE).stdout
    result=recover.run(PACKAGE,{},["--root",str(repo),"--task",task_ref])
    self.assertEqual(("passed","created",task_ref),(result["status"],result["typed_exit"],result["task_ref"]))
+   recovered=subprocess.run(
+    [str(PACKAGE/"scripts/recover-task-workspace-result.sh"),"--root",str(repo),"--task",task_ref],
+    cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+    env={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"},
+   )
+   self.assertEqual(0,recovered.returncode,recovered.stderr)
+   self.assertEqual(result,json.loads(recovered.stdout))
    public={"profile":"recover_created_result","mode":"workflow","task_ref":task_ref};invocation.write_text(json.dumps({"public_input":public,"recovery_result":result}))
    self.assertEqual({"exit_id":"created"},invoke.run(PACKAGE,{},["--root",str(repo),"--invocation",str(invocation)]))
+   invoked=subprocess.run(
+    [str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation",str(invocation)],
+    cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+    env={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"},
+   )
+   self.assertEqual(0,invoked.returncode,invoked.stderr)
+   self.assertEqual({"exit_id":"created"},json.loads(invoked.stdout))
    after=subprocess.run(["git","status","--porcelain=v1","-z","--untracked-files=all"],cwd=repo,stdout=subprocess.PIPE).stdout
    self.assertEqual(before,after)
    task["status"]="in_progress";(task_dir/"task.json").write_text(json.dumps(task))
@@ -87,6 +101,18 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    self.assertEqual(PACKAGE.name,command["owner"])
    self.assertTrue((PACKAGE/command["entrypoint"]).is_file())
    self.assertLessEqual(set(command["errors"]),codes)
+
+ def test_recovery_profile_is_publicly_selectable(self):
+  interface=json.loads((PACKAGE/"interface.json").read_text())
+  self.assertEqual("1.6",interface["schema_version"])
+  self.assertEqual(
+   {"kind":"structured_json","profile_selector":{"source":"aggregate_public_input","field":"profile"}},
+   interface["public_contracts"]["invocation"]["input_binding"],
+  )
+  commands={row["id"]:row for row in json.loads((PACKAGE/"commands.json").read_text())["commands"]}
+  self.assertEqual("runtime/recover.py",commands["recover-task-workspace-result"]["entrypoint"])
+  evals=json.loads((PACKAGE/"evals/evals.json").read_text())["evals"]
+  self.assertIn("recover_created_result",{row["input_profile_id"] for row in evals})
 
  def test_every_command_help_is_side_effect_free(self):
   commands=json.loads((PACKAGE/"commands.json").read_text())

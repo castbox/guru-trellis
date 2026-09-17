@@ -6,7 +6,7 @@
 - lifecycle state: `task_isolated_candidate`; not reviewed, promoted, accepted,
   or current.
 - source authority: [Issue #419](https://github.com/castbox/guru-trellis/issues/419)
-  contract `2026-09-17-r6`.
+  contract `2026-09-17-r7`.
 - task locator: `.trellis/tasks/09-17-419-active-task-continuation`.
 - RDT contribution:
   `docs/requirements-design-test-contributions/419-active-task-continuation/`.
@@ -20,7 +20,7 @@
   [ADR-011](../adr/011-active-task-continuation-authority.md), status `draft`.
 
 This contribution records the stable target boundary only. It does not record
-task progress, Gate results, user authorization, matrix success, release
+task progress, Gate results, user authorization, release
 readiness, or a shared-current update. The existing `.53` Requirements,
 Design, Test, and Architecture authorities remain unchanged until their
 independent owners review and serialize any promotion.
@@ -77,51 +77,46 @@ current closeout packages.
 
 | Concern | Applicability | Candidate contract |
 | --- | --- | --- |
-| `authority-binding` | `applicable` | Bind live #419 r6, current `.53`, the exact task, current workflow, and producer Interfaces; drift returns to the earliest affected owner. |
+| `authority-binding` | `applicable` | Bind live #419 r7, current `.53`, the exact task, current workflow, and producer Interfaces; drift returns to the earliest affected owner. |
 | `constitution-binding` | `applicable` | Preserve semantic completeness, cohesion/change isolation, minimum necessary complexity, and one-way debt convergence without copying constitution prose. |
 | `boundary-and-decision` | `applicable` | One workflow continuation block owns detailed routes; breadcrumbs and entries remain fact/loading layers. |
 | `owner-and-single-writer` | `applicable` | Adjacent DTOs go to unique consumers; output-loss recovery and semantic reruns stay with original producers/owners. |
-| `compatibility-and-exit` | `applicable` | Existing Phase 2 and Task Commit public contracts are reused; no global persistent stage state, semantic resolver, dual route table, migration capability, or compatibility reader is added. |
+| `compatibility-and-exit` | `applicable` | Existing Phase 2 and Task Commit public contracts are reused; no global persistent stage state, semantic resolver, or dual route table is added. |
 | `gap-and-deviation` | `applicable` | Close the active pre-Finalizer cross-session gap without expanding #398 or #418 archived/merge ownership. |
 | `parallel-scope` | `applicable` | This task writes isolated code/docs/spec/tests only; shared current and unrelated worktrees remain untouched. |
 | `evidence-and-freshness` | `applicable` | Bind real workflow/package wrappers and exact upstream candidate evidence; old candidate, old gate, or old confirmation is stale. |
 | `review-and-promotion` | `applicable` | Independent full-diff review must precede any serialized Architecture/RDT promotion; promotion-created diff re-enters fresh Phase 2, commit, and review. |
 
-## Exact-candidate Compatibility Contract
+## Exact-upstream Validation Contract
 
 The only accepted upstream integration candidate is
 `43fffc170927c85d9f7fc106cc5a059e80d4530b`. Its ordered parents are
 `db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0` and
 `df12903220ce22b2c84782968ed5c93406b5738b`; its tree is
 `02fc0922f535200f67de7f6ba7920e3c763d7e95`. Evidence using a branch, PR head,
-short SHA, predecessor, different parent order, or later upstream revision is
-not evidence for this contribution.
+short SHA, different parent order, or later upstream revision is not evidence
+for this contribution.
 
-The acceptance proof must use clean disposable targets and cover clean install,
-supported existing install update, native -> Guru -> native workflow switches,
-and preset reapply. Every switch must immediately load the selected workflow's
-continuation. Reapply must preserve upstream entry bytes and active workflow
-bytes, while canonical/installed/dogfood/declared-platform Guru assets stay in
-parity. The predecessor is only an installation seed; after update, current
-canonical source and current installed runtime contracts must match exactly;
-repository-only Docs locators remain under the independent Docs snapshot gate. The
-current chain does not publish a removed-API migration marker or special
-compatibility allowlist. The final scan requires zero unresolved `.new`/`.bak` and zero Python
-bytecode residue. These checks are required evidence and are not declared
-passed by this document.
+The acceptance proof is limited to the continuation defect: verify the upstream
+extractor, `get_context.py --mode continuation`, workflow-neutral
+`trellis-start` / `trellis-continue`, Guru continuation and producer-owned
+recovery through source/installed package runtime, evals, and real Git/task
+fixtures. Canonical, installed, dogfood, and declared-platform Guru projections
+must agree. Upstream ownership, dogfood drift, current-worktree sidecar/residue
+hygiene, and `git diff --check` must pass, and the task diff must not modify
+upstream-owned start/continue/hooks/platform/`trellis-meta` paths.
 
-The retirement boundary covers current source, installed and dogfood copies,
-declared platform projections, active package tests, and the promoted shared-current
-Architecture/RDT successor. A retired-API capability, dedicated name, fixture,
-exception branch, reader, or migration path cannot remain as proof of retirement.
-Immutable superseded and historical records retain only their original facts and are
-not current consumers, compatibility promises, or matrix inputs.
+#419 does not own disposable installation, update, workflow-switch, or release
+compatibility evidence. Live #410 owns those Release Gate checks and must create
+them independently from a fresh Guru release candidate after #419 merges. Any
+partial or interrupted #419 release-validation output is outside this
+contribution and cannot be reused.
 
 ## Review, ADR, And Promotion
 
 [ADR-011](../adr/011-active-task-continuation-authority.md) remains a draft
 candidate decision. It may become accepted only after the implementation and
-exact-candidate evidence receive independent committed full-diff review and the
+exact-upstream targeted evidence receive independent committed full-diff review and the
 Architecture owner performs expected-`.53` serialized promotion. The RDT owner
 must independently review and promote the matching R419/D419/T419 contribution.
 

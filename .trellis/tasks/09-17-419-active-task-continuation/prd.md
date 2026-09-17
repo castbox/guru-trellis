@@ -1,12 +1,12 @@
 # #419 Guru active task continuation 恢复合同
 
-合同版本：`2026-09-17-r6`。本任务处于 `in_progress`；实现、验证、提交与发布状态以当前 live task、Git 与 runtime gate 为准，不在本文持久化。
+合同版本：`2026-09-17-r7`。本任务处于 `in_progress`；实现、验证、提交与发布状态以当前 live task、Git 与 runtime gate 为准，不在本文持久化。
 
 ## 1. 目标与权威
 
 修复 Guru Team active task 在中断、上下文压缩或新会话后的粗粒度错误路由，使当前 AI 只从当前 workflow 的唯一 continuation 合同进入合法 owner，并在 public DTO 丢失时回原 producer 恢复或 fresh 重算。
 
-需求权威：[`castbox/guru-trellis#419`](https://github.com/castbox/guru-trellis/issues/419)，状态 `OPEN`，正文合同 `2026-09-17-r6`。
+需求权威：[`castbox/guru-trellis#419`](https://github.com/castbox/guru-trellis/issues/419)，状态 `OPEN`，正文合同 `2026-09-17-r7`。
 
 直接上游依赖：`castbox/Trellis#6` 合同 `2026-09-17-r3` 已关闭，PR #7 已合并。唯一可接受的本任务集成候选为：
 
@@ -20,8 +20,8 @@
 
 - 当前任务 identity 为 `.trellis/tasks/09-17-419-active-task-continuation`，branch 为 `codex/419-active-task-continuation`，worktree 为本任务 worktree，status 为 `in_progress`。
 - 当前任务基线 HEAD 为 `f5ebf9f92b0f174b48f6c8ed04038eb32a5f054e`；worktree 包含本任务实现、测试、文档、task artifact 与同步后的安装投影改动。
-- 上游 candidate 已重新 fetch，并验证为 `upstream/main` 可达的 PR #7 merge commit；不能用 PR head 或 predecessor 代替。
-- 上游 candidate 已提供结构化 `[trellis-continuation]` 提取、`get_context.py --mode continuation`、workflow-neutral `trellis-start` / `trellis-continue`、native continuation 与 workflow switch 回归。
+- 上游 candidate 已重新 fetch，并验证为 `upstream/main` 可达的 PR #7 merge commit；不能用 PR head 或其他 revision 代替。
+- 上游 candidate 已提供结构化 `[trellis-continuation]` 提取、`get_context.py --mode continuation`、workflow-neutral `trellis-start` / `trellis-continue` 与 native continuation 定向回归。
 - Guru canonical workflow 已增加唯一 `[trellis-continuation]` 区块；Phase Index 与 `[workflow-state:*]` 仅保留 broad breadcrumb。
 - 当前 `guru-create-task-commit` 已通过 package-owned candidate/receipt 支持同一 commit 的 stdout-loss recovery；不得另建全局 commit resolver。
 - 当前 `guru-check-task` 的 `passed` checkpoint 只服务 Task Commit，并由 Task Commit 成功消费后退休；缺失时不得从 Git 或旧文本重建 pass。
@@ -69,28 +69,18 @@ SessionStart、UserPromptSubmit、显式 `trellis-start`、显式 `trellis-conti
 - 如现有 producer 缺少正常 output-loss recovery，只在该 producer 内增加最小 recovery profile/command/schema；不得建立 global lifecycle state store、semantic resolver 或第二 authority。
 - Canonical 修改后必须通过 preset apply 同步 dogfood 与选择的平台 Guru-owned copies。
 
-### R419-06 exact-candidate 集成验证
+### R419-06 exact-upstream 定向验证与发布边界
 
-必须基于 exact candidate `43fffc170927c85d9f7fc106cc5a059e80d4530b`，从 clean throwaway target 验证：
+必须绑定 exact upstream candidate `43fffc170927c85d9f7fc106cc5a059e80d4530b`，但 #419 只执行 continuation 缺陷直接需要的定向验证：
 
-1. clean install；
-2. existing install update；
-3. native 与 Guru workflow 双向 switch 后立即读取当前 continuation；
-4. Guru preset reapply；
-5. preset reapply 不修改 upstream-owned entries 或 Guru workflow continuation；
-6. source/installed/dogfood/声明平台 projection 一致；
-7. 零 unresolved `.new` / `.bak`；
-8. 零 `__pycache__` / `.pyc` / `.pyo` residue。
+1. candidate commit、tree、ordered parents 与 source lock identity 精确匹配；
+2. upstream continuation extractor、`get_context.py --mode continuation`、`trellis-start` 与 `trellis-continue` 薄入口合同通过；
+3. Guru continuation、adjacent DTO consumption 与 producer-owned recovery 通过 current package/runtime/eval 和真实 Git/task fixture 验证；
+4. current source、installed、dogfood 与声明平台 Guru-owned projection 一致；
+5. upstream ownership、dogfood drift、当前工作树 `.new` / `.bak` 与 bytecode residue hygiene、`git diff --check` 通过；
+6. 不修改 upstream-owned start/continue/hooks/platform/`trellis-meta`。
 
-Current extension manifest、installer、installed validator 与 matrix projection 不得保留已退役内部 API 的
-migration capability、专项 allowlist、兼容 reader 或测试 fixture。Existing-update cell 只把 predecessor
-作为安装种子；更新后必须比较 current source 与 current installed runtime contract 完全一致，不能要求当前版本
-继续发布 predecessor 已退役的内部 artifact/command。
-
-当前 source、installed、dogfood、声明平台、active package tests 与 shared-current successor 均不得保留
-上述已退役内部 API 的 capability、专用命名、fixture、例外分支、兼容 reader 或 migration path。后续
-Architecture/RDT serialized promotion 必须从 active current authority 删除这些旧声明；仅 immutable
-superseded/history 继续记录当时事实，且不作为当前运行时、安装、更新、验证或兼容合同的 consumer。
+#419 不执行或要求 throwaway、clean install、existing-install update、固定 predecessor、多平台 workflow-switch 或 release-grade preset-reapply matrix。完整发布兼容性验证由 #410 独占；#410 必须在 #419 合并后的最新 `main` 上重新冻结 Guru release candidate，并独立执行其 live Release Gate，不能复用 #419 中任何已开始、失败、中断或未完整完成的结果。
 
 ## 4. 验收标准
 
@@ -101,9 +91,10 @@ superseded/history 继续记录当时事实，且不作为当前运行时、安�
 - [ ] Task Commit output-loss 不产生第二 commit、空 commit、amend 或同内容 commit。
 - [ ] 自然语言与显式入口在 exact active task 上收敛到同一 current owner；无 exact task 时不从 project inventory 选择。
 - [ ] 当前副作用确认只授权展示计划，成功 typed exit 自动继续，新的副作用/选择/stop 再暂停。
-- [ ] native workflow 使用上游 native continuation，Guru workflow 使用 Guru continuation，switch 后无旧 route 残留。
-- [ ] Guru preset 缺失时明确报告合同依赖不完整；reapply 不取得 upstream entry 或 workflow ownership。
-- [ ] exact candidate 的 clean install、update、workflow switch、preset reapply 全部通过，且无 drift、sidecar 或 bytecode residue。
+- [ ] Exact candidate 的 extractor、`trellis-start` 与 `trellis-continue` 定向合同测试通过。
+- [ ] Guru continuation 与 owner-preserving recovery 通过 current source/installed runtime、eval 和真实 Git/task fixture 验证。
+- [ ] Source、installed、dogfood 和声明平台 Guru-owned projection 一致。
+- [ ] Upstream ownership、dogfood drift、当前工作树 sidecar/residue hygiene 与 `git diff --check` 通过。
 - [ ] 真实 canonical/installed workflow、真实 Git fixture 与正式 wrappers 覆盖 adjacent consumption 和 cross-session recovery；测试不预填 semantic pass、不手写 DTO、不用关键词断言代替行为。
 
 ## 5. 非目标
@@ -113,8 +104,8 @@ superseded/history 继续记录当时事实，且不作为当前运行时、安�
 - 不修改 archived task、Finalizer transaction、Merge 或 #418 已拥有的 archived recovery。
 - 不在 Guru 仓库 patch upstream-owned start/continue/hooks/platform/`trellis-meta`。
 - 不增加长期 continuation checkpoint、全局 task-stage store、授权 artifact、锁、TOCTOU、攻击模型或对抗性测试。
-- 不把本任务集成证据声明为 #410 release candidate evidence；#410 合并后必须重新冻结自己的 exact candidate。
+- 不执行 throwaway、clean install、existing-install update、固定 predecessor、跨平台 workflow-switch 或 release-grade preset-reapply matrix；#410 在 #419 合并后重新冻结自己的 Guru release candidate，并从零生成 Release Gate evidence。
 
 ## 6. Open Questions
 
-无。live Issue r6、上游 r3 candidate 与当前 repository authority 已关闭本任务的产品、scope、compatibility 和验收选择。
+无。live Issue r7、上游 r3 candidate 与当前 repository authority 已关闭本任务的产品、scope 和定向验收选择；发布兼容性验证由 #410 独立拥有。

@@ -115,6 +115,7 @@
         "guru-stage0-clarify-requirements-input-initial-change-request-2.0",
         "guru-stage0-clarify-requirements-input-standalone-review-1.0",
         "guru-stage0-create-task-workspace-input-execute-reviewed-plan-2.0",
+        "guru-stage0-create-task-workspace-input-recover-created-result-1.0",
         "guru-stage0-discover-change-context-input-pre-task-2.0",
         "guru-stage0-review-change-request-input-current-issue-1.0",
         "guru-stage0-review-change-request-input-proposed-draft-1.0",

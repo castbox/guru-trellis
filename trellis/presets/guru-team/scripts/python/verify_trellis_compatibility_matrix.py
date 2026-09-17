@@ -30,8 +30,6 @@ SCRIPT_ROOT = Path(__file__).resolve().parent
 if str(SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPT_ROOT))
 
-import trellis_compatibility_continuation as continuation_helpers
-
 
 SCHEMA_VERSION = "1.0"
 SCENARIOS = ("clean", "existing")
@@ -45,28 +43,6 @@ PLATFORM_INIT_FLAGS = {
     "claude": "--claude",
     "codex": "--codex",
     "cursor": "--cursor",
-}
-PLATFORM_UPSTREAM_PATHS = {
-    "claude": (
-        Path(".claude/commands/trellis"),
-        Path(".claude/hooks"),
-        Path(".claude/settings.json"),
-        Path(".claude/skills/trellis-meta"),
-    ),
-    "codex": (
-        Path(".codex/hooks"),
-        Path(".codex/hooks.json"),
-        Path(".codex/prompts/trellis-start.md"),
-        Path(".codex/prompts/trellis-continue.md"),
-        Path(".codex/skills/trellis-meta"),
-    ),
-    "cursor": (
-        Path(".cursor/commands/trellis-start.md"),
-        Path(".cursor/commands/trellis-continue.md"),
-        Path(".cursor/hooks"),
-        Path(".cursor/hooks.json"),
-        Path(".cursor/skills/trellis-meta"),
-    ),
 }
 PLATFORM_PATH_RE = re.compile(r"^\.(claude|codex|cursor)/")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
@@ -1041,7 +1017,6 @@ def _run(
     input_text: str | None = None,
 ) -> str:
     merged_env = os.environ.copy()
-    merged_env.setdefault("PYTHONDONTWRITEBYTECODE", "1")
     if env:
         merged_env.update(env)
     timeout = command_timeout_seconds()
@@ -1565,7 +1540,6 @@ def _apply_preset(
     def invoke() -> tuple[int, str, dict[str, Any]]:
         completed = subprocess.run(
             argv,
-            env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -1813,8 +1787,6 @@ def _preview_and_switch_workflow(
     previous_source_root: Path,
     local_sample: bool,
     work_root: Path,
-    *,
-    expected_current: bytes | None = None,
 ) -> None:
     workflow = target / ".trellis/workflow.md"
     sidecar = target / ".trellis/workflow.md.new"
@@ -1829,16 +1801,12 @@ def _preview_and_switch_workflow(
     if not workflow.is_file() or workflow.is_symlink():
         raise MatrixError("managed workflow is missing or not a regular file")
     previous_candidate = previous_source_root / "trellis/workflows/guru-team/workflow.md"
-    managed_before = workflow.read_bytes()
-    expected_before = (
-        expected_current
-        if expected_current is not None
-        else previous_candidate.read_bytes()
-        if previous_candidate.is_file()
-        else None
-    )
-    if expected_before is None or managed_before != expected_before:
+    if (
+        not previous_candidate.is_file()
+        or workflow.read_bytes() != previous_candidate.read_bytes()
+    ):
         raise MatrixError("current workflow is not the expected managed before-candidate")
+    managed_before = workflow.read_bytes()
     if local_sample:
         shutil.copyfile(
             repo_root / "trellis/workflows/guru-team/workflow.md",
@@ -1905,96 +1873,6 @@ def _sidecars(target: Path) -> list[str]:
         path.relative_to(target).as_posix()
         for path in target.rglob("*")
         if path.is_file() and path.suffix in SIDECAR_SUFFIXES
-    )
-
-
-def _python_residue(root: Path) -> list[str]:
-    return continuation_helpers.python_residue(root, _sorted_strings)
-
-
-def _assert_no_python_residue(root: Path) -> None:
-    continuation_helpers.assert_no_python_residue(
-        root,
-        residue_reader=_python_residue,
-        error_type=MatrixError,
-    )
-
-
-def _read_installed_continuation(
-    target: Path, log: Path, *, label: str
-) -> str:
-    return continuation_helpers.read_installed_continuation(
-        target,
-        log,
-        label=label,
-        run=_run,
-        error_type=MatrixError,
-    )
-
-
-def _snapshot_regular_files(target: Path, roots: Sequence[Path]) -> dict[str, str]:
-    return continuation_helpers.snapshot_regular_files(
-        target,
-        roots,
-        error_type=MatrixError,
-    )
-
-
-def _upstream_owned_snapshot(target: Path, platform: str) -> dict[str, str]:
-    return continuation_helpers.upstream_owned_snapshot(
-        target,
-        platform,
-        platform_upstream_paths=PLATFORM_UPSTREAM_PATHS,
-        snapshot_reader=_snapshot_regular_files,
-        error_type=MatrixError,
-    )
-
-
-def _round_trip_workflow_continuation(
-    target: Path,
-    binary: Sequence[str],
-    env: Mapping[str, str],
-    workflow_source: str,
-    repo_root: Path,
-    local_sample: bool,
-    work_root: Path,
-) -> dict[str, Any]:
-    return continuation_helpers.round_trip_workflow_continuation(
-        target,
-        binary,
-        env,
-        workflow_source,
-        repo_root,
-        local_sample,
-        work_root,
-        sidecars=_sidecars,
-        run=_run,
-        preview_and_switch_workflow=_preview_and_switch_workflow,
-        read_continuation=_read_installed_continuation,
-        error_type=MatrixError,
-    )
-
-
-def _reapply_preset_with_preservation(
-    source_root: Path,
-    target: Path,
-    platform: str,
-    log: Path,
-    continuation_log_root: Path,
-    *,
-    previous_root: Path | None = None,
-) -> dict[str, Any]:
-    return continuation_helpers.reapply_preset_with_preservation(
-        source_root,
-        target,
-        platform,
-        log,
-        continuation_log_root,
-        previous_root=previous_root,
-        read_continuation=_read_installed_continuation,
-        upstream_snapshot=_upstream_owned_snapshot,
-        apply_preset=_apply_preset,
-        error_type=MatrixError,
     )
 
 
@@ -2488,7 +2366,6 @@ def validate_cell(
     sidecars = _sidecars(target)
     if sidecars:
         raise MatrixError(f"installed smokes left cell sidecars: {sidecars}")
-    _assert_no_python_residue(work_root)
     return {
         "platform": platform,
         "scenario": scenario,
@@ -2618,28 +2495,16 @@ def _run_cell(
             local_sample,
             cell_root,
         )
+        reapplied_preset = _apply_preset(
+            repo_root,
+            target,
+            platform,
+            cell_root / "preset-reapply.log",
+            previous_root=source_root,
+        )
     else:
         actual_after_upgrade = actual_before
-
-    round_trip = _round_trip_workflow_continuation(
-        target,
-        binary,
-        env,
-        workflow_source,
-        repo_root,
-        local_sample,
-        cell_root / "workflow-round-trip",
-    )
-    preservation_logs = cell_root / "preset-preservation"
-    preservation_logs.mkdir(parents=True)
-    reapplied_preset = _reapply_preset_with_preservation(
-        repo_root,
-        target,
-        platform,
-        cell_root / "preset-reapply.log",
-        preservation_logs,
-        previous_root=source_root if scenario == "existing" else repo_root,
-    )
+        reapplied_preset = {"status": "not_applicable", "reconciled_backups": []}
 
     _assert_docs_authority(target, before_docs)
 
@@ -2680,7 +2545,6 @@ def _run_cell(
             ],
             "preset_initial": initial_preset,
             "preset_reapply": reapplied_preset,
-            "workflow_round_trip": round_trip,
         }
     )
     return result
@@ -2721,29 +2585,7 @@ def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, A
     initial = _apply_preset(root, target, args.platform, work / "preset-initial.log")
     assert_installed_lock()
     _assert_template_hashes(target, root)
-    round_trips = [
-        _round_trip_workflow_continuation(
-            target,
-            command,
-            env,
-            args.workflow_source,
-            root,
-            sample,
-            work / "workflow-round-trip-initial",
-        )
-    ]
-    initial_preservation = work / "preset-preservation-initial"
-    initial_preservation.mkdir()
-    reapplied = [
-        _reapply_preset_with_preservation(
-            root,
-            target,
-            args.platform,
-            work / "preset-reapply-initial.log",
-            initial_preservation,
-            previous_root=root,
-        )
-    ]
+    reapplied = []
     for iteration in (1, 2):
         iteration_root = work / f"update-{iteration}"
         iteration_root.mkdir()
@@ -2751,22 +2593,9 @@ def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, A
              log=iteration_root / "update.log")
         _preview_and_switch_workflow(target, command, env, args.workflow_source,
                                     root, root, sample, iteration_root)
-        round_trips.append(
-            _round_trip_workflow_continuation(
-                target,
-                command,
-                env,
-                args.workflow_source,
-                root,
-                sample,
-                iteration_root / "workflow-round-trip",
-            )
-        )
-        preservation_logs = iteration_root / "preset-preservation"
-        preservation_logs.mkdir()
-        reapplied.append(_reapply_preset_with_preservation(
+        reapplied.append(_apply_preset(
             root, target, args.platform, iteration_root / "preset-reapply.log",
-            preservation_logs, previous_root=root))
+            previous_root=root))
         assert_installed_lock()
         hashes = _assert_template_hashes(target, root)
     _assert_docs_authority(target, before_docs)
@@ -2777,16 +2606,13 @@ def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, A
     if validate_fork_source(root, args.fork_source) != source:
         raise MatrixError("fork source changed during focused verification")
     sessions = _verify_focused_sessions(target, args.platform, work)
-    _assert_no_python_residue(work)
     result = {"schema_version": SCHEMA_VERSION, "status": "passed",
               "mode": "focused", "source": source, "platform": args.platform,
               "scenario": "current-source-clean-update-reapply",
-              "same_candidate_update_count": 2,
-              "preset_reapply_count": len(reapplied),
+              "same_candidate_update_count": len(reapplied),
               "predecessor_upgrade_verified": False, "full_matrix_verified": False,
               "local_workflow_sample": sample, "preset_initial": initial,
-              "preset_reapply": reapplied, "workflow_round_trip": round_trips,
-              "template_hashes": hashes, "python_residue_count": 0}
+              "preset_reapply": reapplied, "template_hashes": hashes}
     result["session_binding"] = sessions
     (work / "focused-summary.json").write_bytes(_canonical_json(result))
     return result
@@ -2880,8 +2706,6 @@ def _run_historical_matrix(
         )
         if parallel_finish.get("status") != "passed":
             raise MatrixError("parallel Finish compatibility fixture did not pass")
-
-        _assert_no_python_residue(work_root)
 
         source_after = source_state(repo_root)
         if source_after["identity_sha256"] != source_before["identity_sha256"]:
