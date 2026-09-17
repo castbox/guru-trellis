@@ -158,6 +158,16 @@ same owner. After Planning's existing gates and dialogue boundary, use the
 workflow's `start-task.sh` entry so workspace identity is checked before task
 activation; this does not add a second approval or a recovery step.
 
+If the checked `created` public DTO is lost before task-created attach, enter
+the owner's `recover_created_result` profile with the exact repository-relative
+planning task path. Run `recover-task-workspace-result` and then project its
+checked recovery result through `invoke-guru-create-task-workspace`. Recovery
+is read-only and requires `task.py current --json`, `task.json`, the live branch
+and worktree, `check-workspace-boundary`, and both task/workspace runtime
+mappings to agree. It returns the same minimal `created` DTO and never reruns
+the recorder, executor, task creation, or any mutation. A non-planning task or
+any missing, stale, ambiguous, or conflicting identity stops at the owner.
+
 `authoring` is accepted only by record. Supplying both `plan` and `authoring`
 is an error. Full-plan record envelopes and existing `--input`/`--plan-input`
 locator calls remain compatible; no existing plan schema or digest meaning is
@@ -311,14 +321,18 @@ enter this Skill.
 
 ## Interface 1.4 Public Handoff
 
-The single `execute_reviewed_plan` public profile carries only `profile` and
-`mode`; target, naming, and recovery remain owner-private, while authorization
-exists only in the current dialogue. Any input outside that current profile is
-rejected by the declared schema. After the owner mutation/check loop,
+The `execute_reviewed_plan` public profile carries only `profile` and `mode`;
+target, naming, and mutation recovery remain owner-private, while authorization
+exists only in the current dialogue. The additive `recover_created_result`
+profile carries only `profile`, `mode`, and the exact `task_ref`; it has no
+confirmation because it performs no write. Any input outside these profiles is
+rejected by the declared aggregate schema. After the owner mutation/check loop,
 `scripts/invoke.sh --invocation -` validates the result schema and embedded
 checker status and serializes the result's typed exit. It does not rerun the
 checker, validate the entire envelope, or revalidate transition/plan identity;
-the preceding explicit checker call remains required. Its current refresh route
+the preceding explicit checker call remains required. For created-result
+recovery, the same invoker instead validates the public recovery input and the
+recovery command result before projecting `created`. Its current refresh route
 uses a top-level `base_branch` when supplied and otherwise `main`; this change
 does not alter that pre-existing behavior. Normal plan/result transport is
 in-memory; only compatibility locators and genuine interrupted same-owner

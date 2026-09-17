@@ -15,6 +15,13 @@ Official Trellis owns every `trellis-*` Skill, command, prompt, hook, agent,
 runtime agent, bundled reference, and meta entry. Guru Team must not install,
 claim, patch, delete, or managed-upgrade those paths.
 
+This includes the continuation extractor/loading protocol, `trellis-start`,
+`trellis-continue`, SessionStart/UserPromptSubmit hooks, generated platform
+entries, and `trellis-meta`. Guru owns the continuation semantics only inside
+its marketplace workflow. Preset apply/reapply must preserve upstream-owned
+entry bytes and must not modify the active `.trellis/workflow.md`, whether the
+selected workflow is native or Guru Team.
+
 Retired historical roots `.trellis/.developer`, `.trellis/workspace/**`, and
 `.trellis/agent-traces/**` are outside the active ownership graph. Installer,
 update, reapply, context, task-owner, and recovery paths preserve their bytes
@@ -123,6 +130,13 @@ For a current installation:
 5. rerun source/installed package validation, ownership validation, platform
    discovery checks, dogfood drift, and a recursive zero-sidecar scan.
 
+For continuation-capable Trellis versions, the same sequence additionally
+proves that workflow switching changes the loaded continuation immediately and
+that preset reapply leaves both upstream entries and the selected workflow
+bytes unchanged. A missing Guru preset for a selected Guru workflow is reported
+as an incomplete dependency; ownership is not widened to repair it by patching
+upstream paths.
+
 A non-current installed or ownership manifest is invalid input and stops this
 flow. Continuing requires a fresh target or a complete current manifest; the
 validator has no schema-version-specific branch.
@@ -144,5 +158,5 @@ current-contract failure before activation.
 Schema migrations inside those existing Guru namespaces do not expand path
 ownership or managed claims. Publication/Finalizer 4.0 and finish-summary 2.0
 replace current managed bytes in place; retired closeout-plan, Issue scope
-ledger, and other task-local publication artifacts are not installed or claimed,
+classification aggregate and other task-local publication artifacts are not installed or claimed,
 and no compatibility asset may be added outside the declared inventories.

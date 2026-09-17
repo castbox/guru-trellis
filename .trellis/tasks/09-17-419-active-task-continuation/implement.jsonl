@@ -1,0 +1,6 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"定义global workflow、active-task lifecycle、typed exit consumer、confirmation与fail-closed边界。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"约束producer-owned recovery、最小public DTO、private checkpoint退休与唯一consumer。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"定义native regression、exact-candidate integration、Docs SSOT与验证范围。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"证明Guru preset不得管理upstream-owned start/continue/hooks/platform/meta。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"定义canonical-first、preset reapply、dogfood drift与sidecar规则。"}
+{"file":".trellis/spec/architecture/baseline-usage.md","reason":"绑定current Architecture baseline、constitution、change contract与task contribution流程。"}

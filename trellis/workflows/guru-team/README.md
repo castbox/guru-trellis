@@ -298,7 +298,7 @@ Guru caller 只把 worker 结果投影为 invocation-local candidate refs、行�
 candidate 在资格完成前不 edit、不补 test、不 self-fix、不赋 severity，也不形成
 finding/route。官方 `trellis-*` agent bytes 保持 upstream-owned。Skill decision 与 typed
 result 只存在当前 process memory/stdout，不生成 tracked/ignored qualification
-result、report、checkpoint、candidate ledger、handoff 或跨进程 locator。Phase 2、Branch
+result、report、checkpoint、candidate state store、handoff 或跨进程 locator。Phase 2、Branch
 Review、Publication 只在各自既有 owner-private gate 中直接记录其 direct consumer 所需
 的最终 terminal classification/witness，不引用 Skill artifact。
 
@@ -333,7 +333,7 @@ Owner，与 `guru-qualify-normal-scenario` 分离：前者只判断机制是否�
 输出单一 typed exit。`record-solution-mechanism-qualification` 与
 `check-solution-mechanism-qualification` 只校验 shape、identity、freshness、candidate 覆盖和
 consumer binding，不判断机制语义。结果保持 invocation-local，不创建 qualification report、
-ledger、handoff、checkpoint 或其他持久化资格 artifact。
+state store、handoff、checkpoint 或其他持久化资格 artifact。
 
 OS/kernel/process/descriptor primitive 不得承接业务 authority；命中此类机制只能返回
 `mechanism_revision_required`，不能降级为 scope confirmation。普通文件和目录仅用于普通
@@ -941,6 +941,42 @@ prompt、`/guru:finish-work`、`/guru-finish-work`。三个 launcher 都只加�
 `.trellis/workflow.md` 和 active public graph，不读取 package-private runtime/artifact，
 不复制任何 step-local 合同。
 
+## Active-task continuation
+
+Exact active task 的具体续接只由当前 `.trellis/workflow.md` 中唯一、非空的
+`[trellis-continuation]` 区块决定。官方 SessionStart、UserPromptSubmit、
+`trellis-start` 与 `trellis-continue` 只解析 exact task facts 并加载该区块；Phase Index、
+`[workflow-state:*]`、task status 和平台入口只保留 broad breadcrumb，不维护第二张 route
+table。`planning|planning-inline` 共用 Phase 1 recovery matrix，
+`in_progress|in_progress-inline` 共用 Phase 2 至 Finalizer 前 recovery matrix，
+`completed` 进入 canonical `guru-finish-work`，identity/state 非法时停在
+`invalid-task-state`。没有 exact current task 时不得从 project inventory 选择替代 task。
+
+相邻调用仍持有 current public DTO 时，按 Interface 声明直接交给唯一 consumer。DTO
+跨会话丢失时只回原 producer：deterministic mutation/output loss 使用 producer-owned
+recovery/rematerialization；semantic result fresh 重跑原 owner。Task/workspace create
+结果丢失只走 `guru-create-task-workspace:recover_created_result` 的 read-only
+`recover-task-workspace-result`，验证 exact planning task、branch/worktree/boundary 与两份
+runtime mapping 后重投影 `created`，不得第二次创建或修复 mapping。Phase 2 只复用既有
+schema-5.0 checkpoint 的 checker -> 原 `invoke-guru-check-task` 投影，不新增 public
+recovery profile；checkpoint 缺失或 stale 时 fresh 重跑 Architecture + `guru-check-task`。
+Task Commit 只使用现有同一 candidate 的 `recovery_resume`，不得创建重复、空或 amend
+commit。Branch Review 和 Publication 成功 checkpoint 已退休时必须分别 fresh 重跑当前完整
+committed range 与 current publication payload；不能从 clean Git、旧摘要、task status 或
+checkpoint 缺失推断 pass。
+
+Phase 1 activation 使用 workflow-owned `initial|recovery`：`initial` 在 current approval、
+plan presentation 和 dialogue-local 确认后执行一次 official start；`recovery` 只在同一
+task/worktree/branch/mapping 已 current 且 status 已为 `in_progress` 时重新物化成功，不重复
+mutation。用户的“确认继续”只授权当前对话中唯一、完整、仍 current 的已展示副作用；成功
+typed exit 自动进入 mapped consumer，直到新的副作用、真实选择或 stop。确认不写入 task、
+runtime、checkpoint、DTO、schema 或 archive。
+
+该协议依赖 upstream continuation framework。Guru preset 不安装、patch、删除或
+managed-upgrade `trellis-start`、`trellis-continue`、hooks、平台入口、`trellis-meta`，也不在
+reapply 时修改 `.trellis/workflow.md`。选择 Guru workflow 但缺少 Guru preset 时明确阻塞为
+依赖不完整，不回退 native route。
+
 Planning start gate 和 Phase 2 check gate 都需要 current task facts 与 owner-private
 短生命周期 evidence。进入实现前主会话在三份 planning artifact 与 `Docs SSOT Plan`
 就绪后 mandatory invoke `guru-approve-task-plan`。该 Skill 负责全部 entry precondition、
@@ -970,8 +1006,10 @@ dirty-path coverage、finding/scope linkage 和 route facts；reviewed-content i
 全链 authority。几个验证命令、worker 输出或脚本通过不等于 semantic pass。
 `phase2-check.json` 是 commit 前的 owner-private 短生命周期 checkpoint，不是 Trellis
 原生步骤本身，也不是脚本替代 AI check 的入口。`passed` 只向 Task Commit 投影
-`task_ref + phase2_commit_anchor`；public wrapper 在 DTO schema 校验成功后删除自己的 checkpoint。
-Task Commit 和 Branch Review 只消费 DTO 与 live Git，不读取、删除或重开 Phase 2 私有状态。
+`task_ref + phase2_commit_anchor`；public wrapper 在 DTO schema 校验成功后仅保留
+`passed` checkpoint 给 Task Commit，其它三个 exit 立即退休。Task Commit 读取 current
+checkpoint 并在成功 commit 或 same-candidate recovery 后退休它；Branch Review 只消费
+committed DTO 与 live Git，不读取、删除或重开 Phase 2 私有状态。
 
 Schema 4.0 只保留 current commit anchor、reviewed-content identity、reviewed paths、实际
 validation、Docs SSOT、九个 adequacy 维度、finding lifecycle 与 typed route。Routine

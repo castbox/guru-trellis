@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-create-task-workspace-input-recover-created-result-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profile", "mode", "task_ref"],
+  "properties": {
+    "profile": {"const": "recover_created_result"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/(?!.*(?:^|/)\\.\\.(?:/|$))[^/]+$"
+    }
+  }
+}

@@ -5,6 +5,7 @@ from common import digest,finalize,git,load,parse,resolve_workspace,root,stage,v
 from execute import expected_mapping,issue_record,label_identity,mapping_payloads,parse_utc_timestamp,task_matches_expected,workspace_payload
 from runtime.io import CommandError
 from plan_input import load_plan_envelope,object_field
+import recover
 def github(repo,number):
  p=subprocess.run(["gh","issue","view",str(number),"--repo",repo,"--json","number,url,state,title,body,updatedAt,labels"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
  if p.returncode:raise CommandError("stale_identity","created_issue",p.stderr.strip() or "Reread the created issue.",3)
@@ -13,6 +14,7 @@ def github(repo,number):
  if not isinstance(value,dict):raise CommandError("invalid_json","created_issue","GitHub issue view did not return a JSON object.")
  return value
 def run(package_root:Path,command:dict,argv:list[str])->dict:
+ if command.get("id")=="recover-task-workspace-result":return recover.run(package_root,command,argv)
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--input");p.add_argument("--plan-input");p.add_argument("--invocation");a=parse(p,argv);repo=root(package_root,a.root)
  if a.invocation:e=load(repo,package_root,a.invocation,"invocation");plan=load_plan_envelope(package_root,e);result=object_field(e,"result")
  else:plan=load(repo,package_root,a.plan_input,"plan_input");result=load(repo,package_root,a.input,"input")

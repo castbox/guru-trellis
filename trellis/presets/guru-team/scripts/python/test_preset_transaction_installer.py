@@ -156,10 +156,13 @@ class PresetTransactionInstallerTest(unittest.TestCase):
                 and not (self.repo / relative).is_symlink()
             }
             self.assertEqual(preimage["file_count"], len(regular_files))
-            self.assertEqual(
-                missing,
-                set(preset.RETIRED_TRELLIS_PLATFORM_ASSET_HASHES),
-            )
+            self.assertEqual(missing, set())
+            for platform_root in (".agents", ".claude", ".cursor"):
+                self.assertNotIn(
+                    Path(platform_root)
+                    / "skills/trellis-meta/references/local-architecture/workspace-memory.md",
+                    inventory,
+                )
 
     def test_space_preflight_counts_target_projections_and_fails_before_materialization(self) -> None:
         source_projections = preset.managed_source_projections(

@@ -272,19 +272,6 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
     facts: dict[str, Any] = {"schema_version": registry.get("schema_version"), "planned_ids": sorted(planned), "active_ids": sorted(active), **marker_facts}
     manifest = read_json(root, manifest_path, "installed extension manifest", errors) or {}
     extension = manifest.get("extension") if isinstance(manifest.get("extension"), dict) else {}
-    public_api = extension.get("public_api") if isinstance(extension.get("public_api"), dict) else {}
-    capabilities = public_api.get("migration_capabilities") if isinstance(public_api.get("migration_capabilities"), dict) else {}
-    expected_capability = {
-        "capability_id": "guru-ledger-free-runtime",
-        "version": "1.0.0",
-        "projection_identity": {
-            "extension_id": extension.get("extension_id"),
-            "extension_version": extension.get("version"),
-            "workflow_template_id": extension.get("workflow_template_id"),
-        },
-    }
-    if capabilities.get("guru-ledger-free-runtime") != expected_capability:
-        errors.append("installed extension manifest has invalid guru-ledger-free-runtime capability")
     provenance = manifest.get("skill_packages") if isinstance(manifest.get("skill_packages"), dict) else {}
     required = {"schema_version","status","canonical_registry_sha256","registry_schema_version","active_ids","selected_platforms","packages","files","removals","conflicts","sidecars"}
     if set(provenance) != required: errors.append("installed skill package provenance has invalid fields")

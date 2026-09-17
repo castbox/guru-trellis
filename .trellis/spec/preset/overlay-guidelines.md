@@ -18,6 +18,12 @@ Do not add or restore overlays for `trellis-start`, `trellis-continue`,
 or `trellis-meta` references. Official Trellis init/update/upgrade owns those
 paths and bytes.
 
+Do not add an overlay for `[trellis-continuation]` extraction, start/continue
+loading, workflow switch behavior, or any native route. The Guru continuation
+body belongs only to the canonical Guru marketplace workflow; preset reapply
+does not rewrite `.trellis/workflow.md` and cannot use an overlay to repair a
+missing or invalid continuation contract.
+
 ## Entry Contract
 
 Each of the three files must:
@@ -138,6 +144,9 @@ trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 
 The drift checker compares only the three canonical Guru entries and managed
 Guru assets. It never compares, replaces, or deletes upstream-owned files.
+It also never treats the active workflow as a preset-managed overlay. Workflow
+selection and continuation bytes are verified by the marketplace/workflow gate;
+preset reapply must leave them unchanged.
 
 ## Validation
 

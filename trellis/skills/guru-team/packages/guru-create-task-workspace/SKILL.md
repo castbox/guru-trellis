@@ -24,6 +24,14 @@ mutation are mutually exclusive invocations. A created issue always returns
 Retry recovery reuses one exact post-plan open issue, and mutation execution
 reruns the shared base sync once before the first business write.
 
+When a previously returned `created` DTO is lost before task-created attach,
+use the `recover_created_result` profile for the exact planning task. Run
+`scripts/recover-task-workspace-result.sh --task <task-ref>` and pass its
+stdout with the same public input to `scripts/invoke.sh`. This path is
+read-only: it requires the current task, branch, worktree, workspace boundary,
+and both ignored runtime mappings to close into one identity, and it never
+replays issue, branch, worktree, task, or mapping mutation.
+
 The package wrappers require the complete installed Guru Team preset and route
 through `run-skill-command`. They are not standalone implementations. Missing,
 stale, mismatched, ambiguous, or unconsumed evidence fails closed.

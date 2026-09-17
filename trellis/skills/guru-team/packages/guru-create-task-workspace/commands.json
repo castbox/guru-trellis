@@ -164,6 +164,45 @@
       "runtime_role": "check"
     },
     {
+      "id": "recover-task-workspace-result",
+      "owner": "guru-create-task-workspace",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--task",
+          "required": true,
+          "kind": "string",
+          "description": "Exact repository-relative planning task path.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/task-workspace-recovery-result.schema.json"
+      ],
+      "validator_id": "task_workspace_created_result_recovery",
+      "runtime_role": "check"
+    },
+    {
       "id": "invoke-guru-create-task-workspace",
       "owner": "guru-create-task-workspace",
       "entrypoint": "runtime/invoke.py",

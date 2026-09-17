@@ -63,7 +63,7 @@ Author the members as follows:
     state that this PR has no closing effect, and leave the later default-branch
     Publication owner to make a fresh decision.
   The reviewed PR body is the only projection of this decision. Do not create a
-  closure DTO, ledger replacement, hidden aggregate, or Issue-close API plan.
+  closure DTO, replacement closure aggregate, hidden aggregate, or Issue-close API plan.
 - `candidate_classifications` contains every candidate that participated in
   the final route. Each item has exactly `candidate_ref`, `decision`, `witness`,
   and `consumer_use=publication_route_checker`. `decision` is one of

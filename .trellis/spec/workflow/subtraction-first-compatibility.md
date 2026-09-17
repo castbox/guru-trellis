@@ -1,7 +1,7 @@
 # Subtraction-First Compatibility Contract
 
 This is the durable policy source for Issue #108. It extends existing semantic
-owners; it does not create a Skill, phase, approval system, audit ledger, or
+owners; it does not create a Skill, phase, approval system, audit store, or
 static call-graph analyzer.
 
 ## Default Mechanism

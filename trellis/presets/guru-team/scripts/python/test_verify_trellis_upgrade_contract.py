@@ -122,12 +122,22 @@ class NormalPhase0AuthoringTests(unittest.TestCase):
 
                 def run(argv, **kwargs):
                     nonlocal started
-                    returncode, stdout = 0, ""
+                    returncode, stdout, stderr = 0, "", ""
                     if Path(argv[0]).name == "start-task.sh":
                         if not kwargs.get("check", True):
-                            returncode, stdout = 1, "no curated entries"
+                            returncode, stderr = 1, "no curated entries"
                         else:
-                            started = True
+                            mode = argv[argv.index("--mode") + 1]
+                            if mode == "initial":
+                                started = True
+                            stdout = json.dumps({
+                                "status": "ok",
+                                "exit_id": "activated",
+                                "mode": mode,
+                                "task_ref": task_ref,
+                                "task_status": "in_progress",
+                                "upstream_start_executed": mode == "initial",
+                            })
                     elif "current" in argv:
                         if kwargs["env"].get("TRELLIS_CONTEXT_ID") == "codex_phase0_unmatched":
                             foreign_callers.append(kwargs["cwd"])
@@ -142,7 +152,7 @@ class NormalPhase0AuthoringTests(unittest.TestCase):
                         stdout = f"Resolved task: {task_dir}\n"
                     if kwargs.get("check", True) and returncode:
                         raise RuntimeError(f"command failed ({returncode})")
-                    return subprocess.CompletedProcess(argv, returncode, stdout, "")
+                    return subprocess.CompletedProcess(argv, returncode, stdout, stderr)
 
                 with mock.patch.object(self.helper, "load_json", side_effect=load), \
                      mock.patch.object(self.helper, "run", side_effect=run):
@@ -192,15 +202,31 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             return subprocess.run(("git", *args), cwd=source, check=True,
                                   text=True, capture_output=True).stdout.strip()
         git("init", "-q")
+        base_branch = git("branch", "--show-current")
         git("add", ".")
         git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
-            "commit", "-qm", "source fixture")
+            "commit", "-qm", "source fixture base")
+        git("branch", "feature")
+        (source / "main.txt").write_text("main\n")
+        git("add", "main.txt")
+        git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+            "commit", "-qm", "main parent")
+        git("checkout", "-q", "feature")
+        (source / "feature.txt").write_text("feature\n")
+        git("add", "feature.txt")
+        git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+            "commit", "-qm", "feature parent")
+        git("checkout", "-q", base_branch)
+        git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+            "merge", "--no-ff", "-qm", "merge source fixture", "feature")
         (source / "packages/cli/dist/.guru-source-commit").write_text(git("rev-parse", "HEAD") + "\n")
         git("remote", "add", "upstream", "https://github.com/castbox/Trellis.git")
         lock = repo / "trellis/presets/guru-team/source/trellis-source.json"
         lock.parent.mkdir(parents=True)
         lock.write_text(json.dumps({"schema_version": "1.0",
             "repository": "https://github.com/castbox/Trellis.git", "commit": git("rev-parse", "HEAD"),
+            "parents": git("show", "-s", "--format=%P", "HEAD").split(),
+            "tree": git("rev-parse", "HEAD^{tree}"),
             "cli_version": "0.6.17", "package_manager": "pnpm@10.32.1",
             "ci_run_id": 34838784963}))
         return repo, source
@@ -235,6 +261,10 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             self.assertEqual(result["template_count"], 1)
             self.assertEqual(result["commit"], json.loads((repo /
                 "trellis/presets/guru-team/source/trellis-source.json").read_text())["commit"])
+            self.assertEqual(result["parents"], json.loads((repo /
+                "trellis/presets/guru-team/source/trellis-source.json").read_text())["parents"])
+            self.assertEqual(result["tree"], json.loads((repo /
+                "trellis/presets/guru-team/source/trellis-source.json").read_text())["tree"])
 
     def test_current_source_requires_positive_integer_ci_identity(self):
         for value in (None, 0, -1, True, "34838784963"):
@@ -243,6 +273,24 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                 path = repo / "trellis/presets/guru-team/source/trellis-source.json"
                 lock = json.loads(path.read_text())
                 lock["ci_run_id"] = value
+                path.write_text(json.dumps(lock))
+                with self.assertRaisesRegex(self.matrix.MatrixError, "invalid Trellis source lock"):
+                    self.matrix.validate_fork_source(repo, source)
+
+    def test_current_source_requires_full_parent_and_tree_identity(self):
+        mutations = (
+            ("parents", None),
+            ("parents", []),
+            ("parents", ["short"]),
+            ("tree", None),
+            ("tree", "short"),
+        )
+        for key, value in mutations:
+            with self.subTest(key=key, value=value), tempfile.TemporaryDirectory() as directory:
+                repo, source = self.fork_fixture(Path(directory))
+                path = repo / "trellis/presets/guru-team/source/trellis-source.json"
+                lock = json.loads(path.read_text())
+                lock[key] = value
                 path.write_text(json.dumps(lock))
                 with self.assertRaisesRegex(self.matrix.MatrixError, "invalid Trellis source lock"):
                     self.matrix.validate_fork_source(repo, source)
@@ -266,7 +314,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                 self.matrix.validate_fork_source(repo, source)
 
     def test_fork_source_rejects_wrong_stale_missing_and_dirty_inputs(self) -> None:
-        cases = ("head", "schema", "manager", "version", "remote", "dirty", "missing", "template", "runtime")
+        cases = ("head", "parents", "tree", "schema", "manager", "version", "remote", "dirty", "missing", "template", "runtime")
         for case in cases:
             with self.subTest(case=case), tempfile.TemporaryDirectory() as directory:
                 repo, source = self.fork_fixture(Path(directory))
@@ -277,6 +325,12 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                                   "manager": ("package_manager", "pnpm@9.0.0"),
                                   "version": ("cli_version", "0.6.15")}[case]
                     lock[key] = value
+                    lock_path.write_text(json.dumps(lock))
+                elif case == "parents":
+                    lock["parents"] = list(reversed(lock["parents"]))
+                    lock_path.write_text(json.dumps(lock))
+                elif case == "tree":
+                    lock["tree"] = "0" * 40
                     lock_path.write_text(json.dumps(lock))
                 elif case == "remote":
                     subprocess.run(("git", "remote", "set-url", "upstream",
@@ -389,7 +443,20 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             root = Path(directory).resolve()
             before = ("node", "/before/bin/trellis.js")
             target = ("node", "/target/packages/cli/bin/trellis.js")
-            projection = {"projection_sha256": "projection"}
+            projection = {
+                "projection_sha256": "projection",
+                "schema_version": "1.0",
+                "extension": {
+                    "extension_id": "guru-team",
+                    "version": "0.6.17-guru.test",
+                    "target_trellis_cli": "0.6.17",
+                    "requires_trellis_cli": "0.6.17",
+                    "tested_trellis_cli": ["0.6.17"],
+                },
+                "workflow": {},
+                "task_data": {},
+                "docs_authority": {},
+            }
             with mock.patch.object(self.matrix, "validate_fork_source", return_value={"command": target}), \
                  mock.patch.object(self.matrix, "_init_git_repo"), \
                  mock.patch.object(self.matrix, "_assert_version", side_effect=["0.6.5", "0.6.17"]), \
@@ -397,6 +464,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                  mock.patch.object(self.matrix, "_install_workflow", return_value=False) as init, \
                  mock.patch.object(self.matrix, "_docs_authority_snapshot", return_value={}), \
                  mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
+                 mock.patch.object(self.matrix, "_round_trip_workflow_continuation", return_value={}), \
+                 mock.patch.object(self.matrix, "_reapply_preset_with_preservation", return_value={}), \
                  mock.patch.object(self.matrix, "capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "installed_capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "_load_json", return_value={"extension": {"version": "0.6.5-guru.36"}}), \
@@ -541,6 +610,143 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             self.assertFalse((target / ".trellis/workflow.md.new").exists())
             self.assertFalse((target / ".trellis/workflow.md.bak").exists())
 
+    def test_installed_continuation_uses_upstream_get_context_without_bytecode(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "project"
+            script = target / ".trellis/scripts/get_context.py"
+            script.parent.mkdir(parents=True)
+            script.write_text("# fixture\n")
+            with mock.patch.object(self.matrix, "_run", return_value="continuation\n") as run:
+                output = self.matrix._read_installed_continuation(
+                    target, Path(directory) / "continuation.log", label="fixture"
+                )
+            self.assertEqual(output, "continuation\n")
+            self.assertEqual(run.call_args.args[0], (
+                sys.executable,
+                "-B",
+                str(script),
+                "--mode",
+                "continuation",
+            ))
+            self.assertEqual(run.call_args.kwargs["cwd"], target)
+            self.assertEqual(run.call_args.kwargs["env"]["PYTHONDONTWRITEBYTECODE"], "1")
+
+    def test_workflow_round_trip_reads_native_and_guru_without_stale_route(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "target"
+            workflow = target / ".trellis/workflow.md"
+            canonical = root / "trellis/workflows/guru-team/workflow.md"
+            for path in (workflow, canonical):
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("guru workflow\n")
+            native = b"native workflow\n"
+            switches = []
+
+            def run(argv, **kwargs):
+                self.assertEqual(argv[-3:], ("--template", "native", "--force"))
+                workflow.write_bytes(native)
+                return ""
+
+            def read(*args, **kwargs):
+                return "native continuation\n" if workflow.read_bytes() == native else "guru continuation\n"
+
+            def switch(*args, **kwargs):
+                switches.append(kwargs["expected_current"])
+                workflow.write_text("guru workflow\n")
+
+            with mock.patch.object(self.matrix, "_run", side_effect=run), \
+                 mock.patch.object(self.matrix, "_read_installed_continuation", side_effect=read), \
+                 mock.patch.object(self.matrix, "_preview_and_switch_workflow", side_effect=switch):
+                result = self.matrix._round_trip_workflow_continuation(
+                    target, ("node", "trellis.js"), {}, "source", root, False,
+                    root / "logs",
+                )
+
+            self.assertEqual(result["sequence"], ["native", "guru-team", "native", "guru-team"])
+            self.assertEqual(switches, [native, native])
+            self.assertEqual(workflow.read_text(), "guru workflow\n")
+
+    def test_preset_reapply_preserves_upstream_helpers_and_guru_continuation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "target"
+            source = root / "source"
+            workflow = target / ".trellis/workflow.md"
+            required = (
+                ".trellis/scripts/get_context.py",
+                ".trellis/scripts/common/continuation_contract.py",
+                ".trellis/scripts/common/git_context.py",
+                ".claude/commands/trellis/continue.md",
+                ".claude/hooks/inject-workflow-state.py",
+                ".claude/skills/trellis-meta/SKILL.md",
+            )
+            for relative in required:
+                path = target / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(relative + "\n")
+            workflow.parent.mkdir(parents=True, exist_ok=True)
+            workflow.write_text("guru workflow\n")
+            logs = root / "logs"
+            logs.mkdir()
+
+            with mock.patch.object(self.matrix, "_read_installed_continuation", return_value="guru continuation\n"), \
+                 mock.patch.object(self.matrix, "_apply_preset", return_value={"status": "passed"}):
+                result = self.matrix._reapply_preset_with_preservation(
+                    source, target, "claude", root / "preset.log", logs
+                )
+            self.assertEqual(result["status"], "passed")
+            self.assertGreaterEqual(result["upstream_file_count"], len(required))
+
+            for relative in required[3:]:
+                (target / relative).unlink()
+            with mock.patch.object(
+                self.matrix,
+                "_read_installed_continuation",
+                return_value="guru continuation\n",
+            ), self.assertRaisesRegex(
+                self.matrix.MatrixError,
+                "missing upstream-owned claude platform projection",
+            ):
+                self.matrix._reapply_preset_with_preservation(
+                    source, target, "claude", root / "preset-missing.log", logs
+                )
+
+            for relative in required[3:]:
+                path = target / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(relative + "\n")
+
+            def mutate(*args, **kwargs):
+                (target / ".trellis/scripts/get_context.py").write_text("changed\n")
+                return {"status": "passed"}
+
+            with mock.patch.object(self.matrix, "_read_installed_continuation", return_value="guru continuation\n"), \
+                 mock.patch.object(self.matrix, "_apply_preset", side_effect=mutate), \
+                 self.assertRaisesRegex(self.matrix.MatrixError, "upstream-owned"):
+                self.matrix._reapply_preset_with_preservation(
+                    source, target, "claude", root / "preset-2.log", logs
+                )
+
+    def test_recursive_python_residue_gate_rejects_all_supported_forms(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.matrix._assert_no_python_residue(root)
+            for relative in ("nested/__pycache__", "other/value.pyc", "third/value.pyo"):
+                path = root / relative
+                if path.name == "__pycache__":
+                    path.mkdir(parents=True)
+                else:
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(b"bytecode")
+            residue = self.matrix._python_residue(root)
+            self.assertEqual(
+                residue,
+                ["nested/__pycache__", "other/value.pyc", "third/value.pyo"],
+            )
+            with self.assertRaisesRegex(self.matrix.MatrixError, "bytecode residue"):
+                self.matrix._assert_no_python_residue(root)
+
     def test_standalone_shell_env_forwards_full_and_explicit_focused(self) -> None:
         import shutil
         import sys
@@ -595,6 +801,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                 return False
             with mock.patch.object(self.matrix, "_install_workflow", side_effect=init), \
                  mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
+                 mock.patch.object(self.matrix, "_round_trip_workflow_continuation", return_value={}), \
+                 mock.patch.object(self.matrix, "_reapply_preset_with_preservation", return_value={}), \
                  mock.patch.object(self.matrix, "_assert_template_hashes", return_value={}), \
                  mock.patch.object(self.matrix, "_verify_focused_sessions", return_value={"status": "passed"}) as sessions, \
                  mock.patch.object(self.matrix, "_run", wraps=self.matrix._run) as runner, \
@@ -1108,8 +1316,11 @@ exit 23
         workflow_call = self.matrix_text.index(
             "_preview_and_switch_workflow(", normal
         )
+        round_trip = self.matrix_text.index(
+            "round_trip = _round_trip_workflow_continuation(", workflow_call
+        )
         reapply = self.matrix_text.index(
-            "reapplied_preset = _apply_preset(", workflow_call
+            "reapplied_preset = _reapply_preset_with_preservation(", round_trip
         )
         reapply_call = self.matrix_text[
             reapply : self.matrix_text.index("\n        )", reapply) + len("\n        )")
@@ -1119,6 +1330,8 @@ exit 23
         self.assertLess(conditional, migrate)
         self.assertLess(migrate, normal)
         self.assertLess(normal, workflow_call)
+        self.assertLess(workflow_call, round_trip)
+        self.assertLess(round_trip, reapply)
         self.assertLess(workflow_call, reapply)
         self.assertIn("previous_root=source_root", reapply_call)
         workflow_function = self.matrix_text[
@@ -1477,26 +1690,12 @@ exit 23
         self.assertRegex(projection["projection_sha256"], r"^[0-9a-f]{64}$")
         self.assertEqual(len(projection["skill_api"]["interfaces"]), 23)
         self.assertEqual(len(projection["workflow"]["skill_invokes"]), 22)
-        self.assertEqual(len(projection["workflow"]["skill_exits"]), 95)
+        self.assertEqual(len(projection["workflow"]["skill_exits"]), 98)
         self.assertEqual(len(projection["workflow"]["workflow_targets"]), 35)
         self.assertEqual(len(projection["workflow"]["stop_targets"]), 24)
         self.assertEqual(
             projection["distribution"]["platforms"],
             ["claude", "codex", "cursor"],
-        )
-        self.assertEqual(
-            projection["migration_capabilities"],
-            {
-                "guru-ledger-free-runtime": {
-                    "capability_id": "guru-ledger-free-runtime",
-                    "version": "1.0.0",
-                    "projection_identity": {
-                        "extension_id": "guru-team",
-                        "extension_version": "0.6.17-guru.42",
-                        "workflow_template_id": "guru-team",
-                    },
-                }
-            },
         )
         self.assertGreater(
             len(projection["distribution"]["skill_package_files_and_modes"]),
@@ -1642,15 +1841,6 @@ exit 23
         )
 
         after = json.loads(json.dumps(before))
-        del after["migration_capabilities"]["guru-ledger-free-runtime"]
-        lost_capability = self.matrix.compare_capabilities(before, after)
-        self.assertFalse(lost_capability["capabilities_preserved"])
-        self.assertEqual(
-            [difference["group"] for difference in lost_capability["blocking_differences"]],
-            ["migration_capabilities"],
-        )
-
-        after = json.loads(json.dumps(before))
         after["workflow"]["skill_invokes"] = after["workflow"]["skill_invokes"][1:]
         lost = self.matrix.compare_capabilities(before, after)
         self.assertFalse(lost["capabilities_preserved"])
@@ -1705,12 +1895,24 @@ exit 23
                 )
 
         self.assertIn(
-            '_assert_projection_consistency(comparison, "source")',
+            '_assert_projection_consistency(\n        current_projection_comparison,',
             self.matrix_text,
         )
-        self.assertIn(
-            '_assert_projection_consistency(installed_comparison, "installed")',
-            self.matrix_text,
+        self.assertIn('"current source/installed",', self.matrix_text)
+        self.assertIn("require_exact=True", self.matrix_text)
+
+    def test_runtime_contract_projection_excludes_repository_only_docs(self) -> None:
+        source = self.matrix.capability_projection(REPO)
+        installed = self.matrix.installed_capability_projection(REPO)
+        source["docs_authority"]["locators"].append("docs/source-only.md")
+
+        comparison = self.matrix.compare_capabilities(
+            self.matrix.runtime_contract_projection(source),
+            self.matrix.runtime_contract_projection(installed),
+        )
+
+        self.matrix._assert_projection_consistency(
+            comparison, "current source/installed", require_exact=True
         )
 
     def test_installed_projection_and_template_hash_classification_are_current(self) -> None:
@@ -1721,9 +1923,13 @@ exit 23
         self.assertTrue(comparison["capabilities_preserved"])
         self.assertEqual(len(installed["skill_api"]["interfaces"]), 23)
         self.assertEqual(installed["distribution"]["platforms"], ["claude", "codex", "cursor"])
-        self.assertEqual(
-            installed["migration_capabilities"],
-            self.matrix.capability_projection(REPO)["migration_capabilities"],
+        source = self.matrix.capability_projection(REPO)
+        current = self.matrix.compare_capabilities(
+            self.matrix.runtime_contract_projection(source),
+            self.matrix.runtime_contract_projection(installed),
+        )
+        self.matrix._assert_projection_consistency(
+            current, "current source/installed", require_exact=True
         )
         self.assertEqual(template_hashes["unknown_drift_count"], 0)
         self.assertGreater(template_hashes["entry_count"], 0)

@@ -339,21 +339,21 @@
       "ordinal": 1
     },
     {
-      "id": "helper-generated_shebang-a9bda1e179d1",
+      "id": "helper-generated_shebang-59310c797e82",
       "owner": "trellis/skills/guru-team/adapters/eval/fixture_io.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
       "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "a9bda1e179d16a526dc38760d047bccb5f8f11cc540d3ea2251df2b0bd57715f",
+      "anchor_sha256": "59310c797e822095bdf0a25c613e86726d2664b5c519492d5d3c8324f979c0f7",
       "ordinal": 1
     },
     {
-      "id": "helper-generated_shebang-9b8bcb82bee7",
+      "id": "helper-generated_shebang-751f9192fcc5",
       "owner": "trellis/skills/guru-team/adapters/eval/fixture_io.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
       "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "9b8bcb82bee7546db3351624c9c2f47470724ef2b6c21f4889715e8709ba3dd3",
+      "anchor_sha256": "751f9192fcc5d6356256adf15a5c31517d8755a80902ca6b16ccccc33cdb95fc",
       "ordinal": 1
     },
     {

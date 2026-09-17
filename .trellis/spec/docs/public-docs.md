@@ -50,7 +50,7 @@ immutable `.52`; it is not a product release axis. Read the current
 READMEs. The inherited R410 release axes, R408 source/session boundary and older pins remain
 historical authority. Do not rewrite history or claim post-promotion checks,
 remote mutation, tag, GitHub Release, or Issue closure from this knowledge
-snapshot. Existing developer/ledger retirement and old lifecycle stay in force.
+snapshot. Existing retired internal API cleanup and old lifecycle stay in force.
 Automatic failure reporting and independently requested manual Git/gh operations
 reference the canonical workflow boundary; manual results never backfill Guru
 gates, Finalizer, or archive state. Native, mock, installed, and unverified

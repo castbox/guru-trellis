@@ -30,6 +30,8 @@ SCRIPT_ROOT = Path(__file__).resolve().parent
 if str(SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPT_ROOT))
 
+import trellis_compatibility_continuation as continuation_helpers
+
 
 SCHEMA_VERSION = "1.0"
 SCENARIOS = ("clean", "existing")
@@ -43,6 +45,28 @@ PLATFORM_INIT_FLAGS = {
     "claude": "--claude",
     "codex": "--codex",
     "cursor": "--cursor",
+}
+PLATFORM_UPSTREAM_PATHS = {
+    "claude": (
+        Path(".claude/commands/trellis"),
+        Path(".claude/hooks"),
+        Path(".claude/settings.json"),
+        Path(".claude/skills/trellis-meta"),
+    ),
+    "codex": (
+        Path(".codex/hooks"),
+        Path(".codex/hooks.json"),
+        Path(".codex/prompts/trellis-start.md"),
+        Path(".codex/prompts/trellis-continue.md"),
+        Path(".codex/skills/trellis-meta"),
+    ),
+    "cursor": (
+        Path(".cursor/commands/trellis-start.md"),
+        Path(".cursor/commands/trellis-continue.md"),
+        Path(".cursor/hooks"),
+        Path(".cursor/hooks.json"),
+        Path(".cursor/skills/trellis-meta"),
+    ),
 }
 PLATFORM_PATH_RE = re.compile(r"^\.(claude|codex|cursor)/")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
@@ -579,35 +603,6 @@ def _interface_projection(repo_root: Path, row: Mapping[str, Any]) -> dict[str, 
     return _interface_projection_from(repo_root / "trellis/skills/guru-team", row)
 
 
-def _migration_capabilities_projection(
-    extension: Mapping[str, Any], public_api: Mapping[str, Any], label: str
-) -> dict[str, Any]:
-    raw = public_api.get("migration_capabilities")
-    if raw is None:
-        return {}
-    capabilities = _require_dict(raw, f"{label} migration_capabilities")
-    result: dict[str, Any] = {}
-    for capability_id, value in capabilities.items():
-        capability = _require_dict(value, f"{label} capability {capability_id}")
-        projection_identity = _require_dict(
-            capability.get("projection_identity"),
-            f"{label} capability {capability_id}.projection_identity",
-        )
-        expected = {
-            "capability_id": capability_id,
-            "version": capability.get("version"),
-            "projection_identity": {
-                "extension_id": extension.get("extension_id"),
-                "extension_version": extension.get("version"),
-                "workflow_template_id": extension.get("workflow_template_id"),
-            },
-        }
-        if capability != expected or projection_identity != expected["projection_identity"]:
-            raise MatrixError(f"{label} capability {capability_id} has invalid projection identity")
-        result[capability_id] = capability
-    return result
-
-
 def capability_projection(repo_root: Path) -> dict[str, Any]:
     """Build a compact complete projection from current canonical authorities."""
 
@@ -763,9 +758,6 @@ def capability_projection(repo_root: Path) -> dict[str, Any]:
             "companion_commands": _sorted_strings(commands),
         },
         "docs_authority": {"locators": docs_locators},
-        "migration_capabilities": _migration_capabilities_projection(
-            canonical, public_api, "canonical"
-        ),
     }
     projection["projection_sha256"] = _digest(projection)
     return projection
@@ -912,9 +904,6 @@ def installed_capability_projection(target: Path) -> dict[str, Any]:
             "companion_commands": command_ids,
         },
         "docs_authority": {"locators": docs_locators},
-        "migration_capabilities": _migration_capabilities_projection(
-            extension, public_api, "installed"
-        ),
     }
     projection["projection_sha256"] = _digest(projection)
     return projection
@@ -953,7 +942,7 @@ def compare_capabilities(before: Mapping[str, Any], after: Mapping[str, Any]) ->
         "after": after_identity,
         "consistent": before_identity == after_identity,
     }
-    for group in ("workflow", "task_data", "docs_authority", "migration_capabilities"):
+    for group in ("workflow", "task_data", "docs_authority"):
         before_group = _require_dict(before.get(group), f"before {group}")
         after_group = _require_dict(after.get(group), f"after {group}")
         missing: dict[str, Any] = {}
@@ -973,8 +962,13 @@ def compare_capabilities(before: Mapping[str, Any], after: Mapping[str, Any]) ->
                 if added_values:
                     added[field] = added_values
             elif before_value != after_value:
-                missing[field] = before_value
-                added[field] = after_value
+                if field not in before_group:
+                    added[field] = after_value
+                elif field not in after_group:
+                    missing[field] = before_value
+                else:
+                    missing[field] = before_value
+                    added[field] = after_value
         if missing:
             differences.append({"group": group, "missing": missing})
         if added:
@@ -991,8 +985,20 @@ def compare_capabilities(before: Mapping[str, Any], after: Mapping[str, Any]) ->
     return result
 
 
+def runtime_contract_projection(projection: Mapping[str, Any]) -> dict[str, Any]:
+    """Select the contract that must be identical in source and installation."""
+
+    return {
+        "schema_version": projection.get("schema_version"),
+        "extension": _require_dict(projection.get("extension"), "projection extension"),
+        "workflow": _require_dict(projection.get("workflow"), "projection workflow"),
+        "task_data": _require_dict(projection.get("task_data"), "projection task_data"),
+        "docs_authority": {},
+    }
+
+
 def _assert_projection_consistency(
-    comparison: Mapping[str, Any], projection_name: str
+    comparison: Mapping[str, Any], projection_name: str, *, require_exact: bool = False
 ) -> None:
     if not comparison.get("capabilities_preserved"):
         raise MatrixError(
@@ -1008,6 +1014,21 @@ def _assert_projection_consistency(
             f"{projection_name} extension identity changed: "
             + json.dumps(extension_identity, ensure_ascii=False)
         )
+    if require_exact and comparison.get("additive_differences"):
+        raise MatrixError(
+            f"{projection_name} projection contains unmatched current entries: "
+            + json.dumps(comparison.get("additive_differences"), ensure_ascii=False)
+        )
+    if require_exact:
+        version_binding = _require_dict(
+            comparison.get("version_binding"),
+            f"{projection_name} version binding",
+        )
+        if version_binding.get("before") != version_binding.get("after"):
+            raise MatrixError(
+                f"{projection_name} version binding changed: "
+                + json.dumps(version_binding, ensure_ascii=False)
+            )
 
 
 def _run(
@@ -1020,6 +1041,7 @@ def _run(
     input_text: str | None = None,
 ) -> str:
     merged_env = os.environ.copy()
+    merged_env.setdefault("PYTHONDONTWRITEBYTECODE", "1")
     if env:
         merged_env.update(env)
     timeout = command_timeout_seconds()
@@ -1313,10 +1335,22 @@ def validate_fork_source(repo_root: Path, source: Path) -> dict[str, Any]:
     lock = _require_dict(_load_json(
         repo_root / "trellis/presets/guru-team/source/trellis-source.json"
     ), "Trellis source lock")
+    parents = lock.get("parents")
     if lock.get("schema_version") != "1.0" or any(
         not isinstance(lock.get(key), str) or not lock[key]
-        for key in ("repository", "commit", "cli_version", "package_manager")
+        for key in (
+            "repository",
+            "commit",
+            "tree",
+            "cli_version",
+            "package_manager",
+        )
     ) or not re.fullmatch(r"[0-9a-f]{40}", lock["commit"]) or (
+        not re.fullmatch(r"[0-9a-f]{40}", lock["tree"])
+    ) or not isinstance(parents, list) or not parents or not all(
+        isinstance(parent, str) and re.fullmatch(r"[0-9a-f]{40}", parent)
+        for parent in parents
+    ) or (
         type(lock.get("ci_run_id")) is not int or lock["ci_run_id"] <= 0
     ):
         raise MatrixError("invalid Trellis source lock")
@@ -1372,6 +1406,16 @@ def _validate_source_build(
     head = _run(("git", "rev-parse", "HEAD"), cwd=source, capture=True).strip()
     if head != lock["commit"]:
         raise MatrixError("fork source HEAD does not match source lock")
+    parents = _run(
+        ("git", "show", "-s", "--format=%P", "HEAD"), cwd=source, capture=True
+    ).strip().split()
+    tree = _run(
+        ("git", "rev-parse", "HEAD^{tree}"), cwd=source, capture=True
+    ).strip()
+    if "parents" in lock and parents != lock["parents"]:
+        raise MatrixError("fork source ordered parents do not match source lock")
+    if "tree" in lock and tree != lock["tree"]:
+        raise MatrixError("fork source tree does not match source lock")
     if _run(("git", "status", "--porcelain", "--untracked-files=no"),
             cwd=source, capture=True).strip():
         raise MatrixError("fork source has dirty tracked files")
@@ -1434,6 +1478,7 @@ def _validate_source_build(
     command = (node, str(package / "bin/trellis.js"))
     actual = _assert_version(command, version, {})
     return {"schema_version": "1.0", "repository": f"https://{repository_id(matches[0])}.git", "commit": head,
+            "parents": parents, "tree": tree,
             "cli_version": actual, "package_manager": manager,
             "command": list(command), "template_count": len(assets)}
 
@@ -1520,6 +1565,7 @@ def _apply_preset(
     def invoke() -> tuple[int, str, dict[str, Any]]:
         completed = subprocess.run(
             argv,
+            env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -1767,6 +1813,8 @@ def _preview_and_switch_workflow(
     previous_source_root: Path,
     local_sample: bool,
     work_root: Path,
+    *,
+    expected_current: bytes | None = None,
 ) -> None:
     workflow = target / ".trellis/workflow.md"
     sidecar = target / ".trellis/workflow.md.new"
@@ -1781,12 +1829,16 @@ def _preview_and_switch_workflow(
     if not workflow.is_file() or workflow.is_symlink():
         raise MatrixError("managed workflow is missing or not a regular file")
     previous_candidate = previous_source_root / "trellis/workflows/guru-team/workflow.md"
-    if (
-        not previous_candidate.is_file()
-        or workflow.read_bytes() != previous_candidate.read_bytes()
-    ):
-        raise MatrixError("current workflow is not the expected managed before-candidate")
     managed_before = workflow.read_bytes()
+    expected_before = (
+        expected_current
+        if expected_current is not None
+        else previous_candidate.read_bytes()
+        if previous_candidate.is_file()
+        else None
+    )
+    if expected_before is None or managed_before != expected_before:
+        raise MatrixError("current workflow is not the expected managed before-candidate")
     if local_sample:
         shutil.copyfile(
             repo_root / "trellis/workflows/guru-team/workflow.md",
@@ -1853,6 +1905,96 @@ def _sidecars(target: Path) -> list[str]:
         path.relative_to(target).as_posix()
         for path in target.rglob("*")
         if path.is_file() and path.suffix in SIDECAR_SUFFIXES
+    )
+
+
+def _python_residue(root: Path) -> list[str]:
+    return continuation_helpers.python_residue(root, _sorted_strings)
+
+
+def _assert_no_python_residue(root: Path) -> None:
+    continuation_helpers.assert_no_python_residue(
+        root,
+        residue_reader=_python_residue,
+        error_type=MatrixError,
+    )
+
+
+def _read_installed_continuation(
+    target: Path, log: Path, *, label: str
+) -> str:
+    return continuation_helpers.read_installed_continuation(
+        target,
+        log,
+        label=label,
+        run=_run,
+        error_type=MatrixError,
+    )
+
+
+def _snapshot_regular_files(target: Path, roots: Sequence[Path]) -> dict[str, str]:
+    return continuation_helpers.snapshot_regular_files(
+        target,
+        roots,
+        error_type=MatrixError,
+    )
+
+
+def _upstream_owned_snapshot(target: Path, platform: str) -> dict[str, str]:
+    return continuation_helpers.upstream_owned_snapshot(
+        target,
+        platform,
+        platform_upstream_paths=PLATFORM_UPSTREAM_PATHS,
+        snapshot_reader=_snapshot_regular_files,
+        error_type=MatrixError,
+    )
+
+
+def _round_trip_workflow_continuation(
+    target: Path,
+    binary: Sequence[str],
+    env: Mapping[str, str],
+    workflow_source: str,
+    repo_root: Path,
+    local_sample: bool,
+    work_root: Path,
+) -> dict[str, Any]:
+    return continuation_helpers.round_trip_workflow_continuation(
+        target,
+        binary,
+        env,
+        workflow_source,
+        repo_root,
+        local_sample,
+        work_root,
+        sidecars=_sidecars,
+        run=_run,
+        preview_and_switch_workflow=_preview_and_switch_workflow,
+        read_continuation=_read_installed_continuation,
+        error_type=MatrixError,
+    )
+
+
+def _reapply_preset_with_preservation(
+    source_root: Path,
+    target: Path,
+    platform: str,
+    log: Path,
+    continuation_log_root: Path,
+    *,
+    previous_root: Path | None = None,
+) -> dict[str, Any]:
+    return continuation_helpers.reapply_preset_with_preservation(
+        source_root,
+        target,
+        platform,
+        log,
+        continuation_log_root,
+        previous_root=previous_root,
+        read_continuation=_read_installed_continuation,
+        upstream_snapshot=_upstream_owned_snapshot,
+        apply_preset=_apply_preset,
+        error_type=MatrixError,
     )
 
 
@@ -2346,6 +2488,7 @@ def validate_cell(
     sidecars = _sidecars(target)
     if sidecars:
         raise MatrixError(f"installed smokes left cell sidecars: {sidecars}")
+    _assert_no_python_residue(work_root)
     return {
         "platform": platform,
         "scenario": scenario,
@@ -2475,27 +2618,42 @@ def _run_cell(
             local_sample,
             cell_root,
         )
-        reapplied_preset = _apply_preset(
-            repo_root,
-            target,
-            platform,
-            cell_root / "preset-reapply.log",
-            previous_root=source_root,
-        )
     else:
         actual_after_upgrade = actual_before
-        reapplied_preset = {"status": "not_applicable", "reconciled_backups": []}
+
+    round_trip = _round_trip_workflow_continuation(
+        target,
+        binary,
+        env,
+        workflow_source,
+        repo_root,
+        local_sample,
+        cell_root / "workflow-round-trip",
+    )
+    preservation_logs = cell_root / "preset-preservation"
+    preservation_logs.mkdir(parents=True)
+    reapplied_preset = _reapply_preset_with_preservation(
+        repo_root,
+        target,
+        platform,
+        cell_root / "preset-reapply.log",
+        preservation_logs,
+        previous_root=source_root if scenario == "existing" else repo_root,
+    )
 
     _assert_docs_authority(target, before_docs)
 
     after_projection = capability_projection(repo_root)
-    comparison = compare_capabilities(before_projection, after_projection)
-    _assert_projection_consistency(comparison, "source")
     after_installed_projection = installed_capability_projection(target)
-    installed_comparison = compare_capabilities(
-        before_installed_projection, after_installed_projection
+    current_projection_comparison = compare_capabilities(
+        runtime_contract_projection(after_projection),
+        runtime_contract_projection(after_installed_projection),
     )
-    _assert_projection_consistency(installed_comparison, "installed")
+    _assert_projection_consistency(
+        current_projection_comparison,
+        "current source/installed",
+        require_exact=True,
+    )
     result = validate_cell(
         target,
         platform,
@@ -2511,18 +2669,18 @@ def _run_cell(
             "workflow_sample": "public_plus_local_candidate" if local_sample else "exact_marketplace",
             "before_projection_sha256": before_projection["projection_sha256"],
             "after_projection_sha256": after_projection["projection_sha256"],
-            "comparison_sha256": comparison["comparison_sha256"],
+            "current_projection_comparison_sha256": current_projection_comparison[
+                "comparison_sha256"
+            ],
             "before_installed_projection_sha256": before_installed_projection[
                 "projection_sha256"
             ],
             "after_installed_projection_sha256": after_installed_projection[
                 "projection_sha256"
             ],
-            "installed_comparison_sha256": installed_comparison[
-                "comparison_sha256"
-            ],
             "preset_initial": initial_preset,
             "preset_reapply": reapplied_preset,
+            "workflow_round_trip": round_trip,
         }
     )
     return result
@@ -2563,7 +2721,29 @@ def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, A
     initial = _apply_preset(root, target, args.platform, work / "preset-initial.log")
     assert_installed_lock()
     _assert_template_hashes(target, root)
-    reapplied = []
+    round_trips = [
+        _round_trip_workflow_continuation(
+            target,
+            command,
+            env,
+            args.workflow_source,
+            root,
+            sample,
+            work / "workflow-round-trip-initial",
+        )
+    ]
+    initial_preservation = work / "preset-preservation-initial"
+    initial_preservation.mkdir()
+    reapplied = [
+        _reapply_preset_with_preservation(
+            root,
+            target,
+            args.platform,
+            work / "preset-reapply-initial.log",
+            initial_preservation,
+            previous_root=root,
+        )
+    ]
     for iteration in (1, 2):
         iteration_root = work / f"update-{iteration}"
         iteration_root.mkdir()
@@ -2571,9 +2751,22 @@ def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, A
              log=iteration_root / "update.log")
         _preview_and_switch_workflow(target, command, env, args.workflow_source,
                                     root, root, sample, iteration_root)
-        reapplied.append(_apply_preset(
+        round_trips.append(
+            _round_trip_workflow_continuation(
+                target,
+                command,
+                env,
+                args.workflow_source,
+                root,
+                sample,
+                iteration_root / "workflow-round-trip",
+            )
+        )
+        preservation_logs = iteration_root / "preset-preservation"
+        preservation_logs.mkdir()
+        reapplied.append(_reapply_preset_with_preservation(
             root, target, args.platform, iteration_root / "preset-reapply.log",
-            previous_root=root))
+            preservation_logs, previous_root=root))
         assert_installed_lock()
         hashes = _assert_template_hashes(target, root)
     _assert_docs_authority(target, before_docs)
@@ -2584,13 +2777,16 @@ def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, A
     if validate_fork_source(root, args.fork_source) != source:
         raise MatrixError("fork source changed during focused verification")
     sessions = _verify_focused_sessions(target, args.platform, work)
+    _assert_no_python_residue(work)
     result = {"schema_version": SCHEMA_VERSION, "status": "passed",
               "mode": "focused", "source": source, "platform": args.platform,
               "scenario": "current-source-clean-update-reapply",
-              "same_candidate_update_count": len(reapplied),
+              "same_candidate_update_count": 2,
+              "preset_reapply_count": len(reapplied),
               "predecessor_upgrade_verified": False, "full_matrix_verified": False,
               "local_workflow_sample": sample, "preset_initial": initial,
-              "preset_reapply": reapplied, "template_hashes": hashes}
+              "preset_reapply": reapplied, "workflow_round_trip": round_trips,
+              "template_hashes": hashes, "python_residue_count": 0}
     result["session_binding"] = sessions
     (work / "focused-summary.json").write_bytes(_canonical_json(result))
     return result
@@ -2684,6 +2880,8 @@ def _run_historical_matrix(
         )
         if parallel_finish.get("status") != "passed":
             raise MatrixError("parallel Finish compatibility fixture did not pass")
+
+        _assert_no_python_residue(work_root)
 
         source_after = source_state(repo_root)
         if source_after["identity_sha256"] != source_before["identity_sha256"]:

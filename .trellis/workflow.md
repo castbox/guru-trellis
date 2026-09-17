@@ -425,10 +425,63 @@ Phase 3: Finish  -> docs reconciliation, commit, Architecture full-diff review, 
 | State | Route |
 | --- | --- |
 | no relevant active task and no bound incomplete closeout | Invoke guru-select-workflow-mode; consume task_free or standard_intake. |
-| planning | Produce the three planning documents and Docs SSOT Plan, run wording review, obtain current Planning Architecture impact, then invoke guru-approve-task-plan. |
-| in_progress | Validate the task worktree, re-enter Architecture on qualifying expansion, implement the approved scope, then run the Phase 2 Architecture/check route. |
-| completed | Enter Phase 3 through the canonical guru-finish-work route. |
-| invalid task state | Stop at `invalid-task-state`; do not enter Intake, restore, migration, mapping rebuild, cleanup, or confirmation retry. |
+| planning / planning-inline | Load the single continuation contract below and resume its Phase 1 owner. |
+| in_progress / in_progress-inline | Load the single continuation contract below and resume its Phase 2-to-Finalizer owner. |
+| completed | Load the single continuation contract below and enter canonical guru-finish-work. |
+| invalid task identity or state | Load the single continuation contract below and stop at `invalid-task-state`. |
+
+## Active Task Continuation
+
+[trellis-continuation]
+### Guru active-task continuation
+
+Use only the exact current-session task binding supplied by the upstream active-task resolver. Re-read its task identity, task workspace, repository identity, current workflow, and `task.json.status` before choosing an owner. Project inventory, task counts, assignee, invocation checkout, filenames, old summaries, missing checkpoints, and previous dialogue must not select a task or prove a semantic result. A stale, conflicting, corrupt, ambiguous, missing, or unsupported identity/state stops at `invalid-task-state`; do not enter Intake, select another task, rebuild mappings, migrate state, or infer a route.
+
+The active workflow must contain exactly this one non-empty continuation block. SessionStart, UserPromptSubmit, explicit `trellis-start`, explicit `trellis-continue`, natural-language continuation, and `确认继续` with no current side-effect plan all load this block for the exact bound task. `planning-inline` follows the same Phase 1 owners as `planning`; `in_progress-inline` follows the same Phase 2-to-Finalizer owners as `in_progress`. Inline/sub-agent execution changes only the execution carrier.
+
+#### Closed state dispatch
+
+| Bound status | Continuation owner family |
+| --- | --- |
+| `planning` or `planning-inline` | Apply the Phase 1 recovery matrix below. |
+| `in_progress` or `in_progress-inline` | Apply the Phase 2-to-Finalizer recovery matrix below. |
+| `completed` | Enter canonical `guru-finish-work`; upstream `trellis-finish-work` is not a Guru consumer. |
+| anything else | Stop at `invalid-task-state`. |
+
+#### Phase 1 recovery matrix
+
+Apply the first matching row from current live evidence. Artifact presence is evidence to inspect, not proof that a gate passed.
+
+| Current fact | Required owner/action |
+| --- | --- |
+| The adjacent checked `guru-create-task-workspace:created` DTO is still current | Consume it through `guru-task-workspace-created`. |
+| The created DTO was lost across a turn/session | Return to the original `guru-create-task-workspace` recovery/rematerialization path for the exact workspace/task; never create a second Issue, branch, worktree, or task. |
+| Any required planning artifact or Docs SSOT Plan is incomplete | Return to the current planning author, reread live Issue/task authority, and complete `prd.md`, `design.md`, and `implement.md`; do not infer a gate from file existence. |
+| Planning wording is absent or stale | Freshly invoke `guru-review-contract-wording:planning_artifacts`. |
+| Planning Architecture is absent or stale | Freshly invoke `guru-maintain-architecture-baseline:task_impact_sync(stage=planning)`. |
+| Plan approval output is absent, stale, or lost | Freshly invoke `guru-approve-task-plan`; never reconstruct `approved` from task status, files, prior prose, or an old presentation. |
+| The current approved plan has not been accepted in this dialogue, including lost confirmation after presentation | Present the current approved plan and activation side effect again and obtain a fresh dialogue-local confirmation. Never persist or reuse confirmation. |
+| The exact task is still `planning` after current approval and confirmation | Invoke `start-task.sh --mode initial <task-path>` once. Its checked `activated` result enters Phase 2. |
+| Activation mutation succeeded but its result was lost and the exact task is already `in_progress` | Invoke `start-task.sh --mode recovery <task-path>`. Recovery verifies the boundary/current binding and rematerializes `activated` without calling `task.py start` again. |
+
+#### Phase 2-to-Finalizer recovery matrix
+
+An adjacent current public DTO goes directly to its declared unique consumer. If it is absent, stale, tied to another identity, or lost across a turn/session, return to the original producer as follows. Never hand-author a typed exit from task status, Git history, checkpoint names, artifact presence, or old prose.
+
+| Stage/output state | Required owner/action |
+| --- | --- |
+| Phase 2 has no current semantic result/checkpoint | Freshly invoke `guru-maintain-architecture-baseline:task_impact_sync(stage=phase2)`, then freshly invoke `guru-check-task`. |
+| The adjacent current `guru-check-task:passed` DTO is still held | Pass it directly to `guru-create-task-commit`. |
+| The `passed` DTO was lost but the producer checkpoint may still be current | Run the producer's `check-phase2-check` first. Only after that checker succeeds may `invoke-guru-check-task` consume the checked checkpoint and current public input to rematerialize the formal DTO. If the checker or invocation fails, discard the attempted transition and freshly rerun Phase 2 Architecture followed by `guru-check-task`; failure never becomes `passed`. |
+| Task Commit output was lost after its mutation | Re-enter the existing `guru-create-task-commit` same-candidate/receipt recovery. It must recover the same commit and must not create a second, empty, amended, or same-content commit. |
+| The adjacent current `guru-create-task-commit:committed` DTO is still held | Pass it through the task-commit pair guard, then invoke fresh Branch Review Architecture and `guru-review-branch`. |
+| Branch Review DTO is absent/stale/lost or its producer checkpoint retired | Freshly invoke `task_impact_sync(stage=branch_review)` over the complete current committed `origin/<base>...HEAD` range, then freshly invoke `guru-review-branch`. Do not reuse Phase 2. |
+| The adjacent current `guru-review-branch:passed` DTO is still held | Pass it through the pair guard to `guru-review-task-publication`. |
+| Publication DTO is absent/stale/lost or its producer checkpoint retired | Freshly invoke `task_impact_sync(stage=publication)`, then freshly invoke `guru-review-task-publication` against live Issue/PR/payload authority. |
+| The adjacent current Publication `ready` DTO is still held | Enter the existing `guru-finalize-task` formal entry. Continuation stops delegating recovery once that package owns the active Finalizer transaction. |
+
+When a unique, complete, current side-effect plan is already displayed, `确认继续` authorizes only that exact plan. Run its original executor, verify live results, and emit the formal typed exit only on success. The workflow automatically consumes mapped transitions until a new independent side effect, material choice, or fail-closed stop appears. A changed target, payload, authority, or scope invalidates the old confirmation and requires a new display/confirmation. Authorization remains dialogue-local and never enters tracked files, ignored runtime, checkpoints, DTOs, schemas, or archives.
+[/trellis-continuation]
 
 [workflow-state:no_task]
 For an explicit independent Git/GitHub request, read Manual Git/GitHub Operations
@@ -457,34 +510,31 @@ suitability before bounded writes and never authorizes Git/GitHub publication.
 [/workflow-state:no_task]
 
 [workflow-state:planning]
-Complete prd.md, design.md, implement.md, and the Docs SSOT Plan. Run the
-planning wording route, current Architecture Planning stage, and
-guru-approve-task-plan. Automatically consume mapped non-approved exits. A checked approved exit enters the workflow-owned plan
-presentation and dialogue-local review pause before task activation.
+Lifecycle breadcrumb only. Load the current `[trellis-continuation]` block and
+resume its Phase 1 owner for the exact bound task.
 [/workflow-state:planning]
 
 [workflow-state:planning-inline]
-Use the same planning route. Inline execution does not weaken mandatory Skill
-invocation or task activation.
+Lifecycle breadcrumb only. Load the current `[trellis-continuation]` block and
+resume the same Phase 1 owner as `planning`; inline execution changes only the
+execution carrier.
 [/workflow-state:planning-inline]
 
 [workflow-state:in_progress]
-Validate the task worktree, implement the approved scope, collect configured
-Trellis implementation/check evidence, consume the fresh Phase 2 Architecture
-stage, and invoke guru-check-task. Do not create
+Lifecycle breadcrumb only. Load the current `[trellis-continuation]` block and
+resume its Phase 2-to-Finalizer owner for the exact bound task. Do not create
 implementation-handoff.md.
 [/workflow-state:in_progress]
 
 [workflow-state:in_progress-inline]
-Use the same approved plans, specs, implementation boundary, and mandatory
-guru-check-task route.
+Lifecycle breadcrumb only. Load the current `[trellis-continuation]` block and
+resume the same Phase 2-to-Finalizer owner as `in_progress`; inline execution
+changes only the execution carrier.
 [/workflow-state:in_progress-inline]
 
 [workflow-state:completed]
-Use canonical guru-finish-work as the exclusive Guru task finish entry. The
-upstream-owned trellis-finish-work Skill is not an applicable consumer for a
-Guru task. Automatically consume the declared publication, verification,
-resume, and reprepare exits.
+Lifecycle breadcrumb only. Load the current `[trellis-continuation]` block and
+enter its canonical Guru completion owner.
 [/workflow-state:completed]
 
 #### 0.0 Base synchronization
@@ -588,8 +638,15 @@ invokes guru-reconcile-task-base and follows only its declared exit.
 After the checked pair route resolves, require workspace-boundary success,
 validate the approved DTO, and run:
 
-    ./.trellis/guru-team/scripts/bash/start-task.sh <task-path>
+    ./.trellis/guru-team/scripts/bash/start-task.sh --mode initial <task-path>
 
+If the activation mutation succeeded but its stdout was lost, use the same
+owner's recovery entry exactly once:
+
+    ./.trellis/guru-team/scripts/bash/start-task.sh --mode recovery <task-path>
+
+Recovery verifies the current boundary/task/session identity and rematerializes
+the structured `activated` result without calling upstream `task.py start`.
 The status write is not a second planning judgment. Revision and scope exits
 return only to their declared consumers.
 

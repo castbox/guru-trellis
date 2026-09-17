@@ -1614,9 +1614,12 @@ def verify_created_activation(
     if boundary.get("status") != "ok":
         raise RuntimeError(f"created workspace boundary failed: {boundary}")
 
-    incomplete = run([wrappers / "start-task.sh", task_ref],
+    incomplete = run([wrappers / "start-task.sh", "--mode", "initial", task_ref],
                      cwd=workspace, env=env, check=False)
-    if incomplete.returncode == 0 or "no curated entries" not in incomplete.stdout:
+    incomplete_diagnostics = "\n".join(
+        value for value in (incomplete.stdout, incomplete.stderr) if value
+    )
+    if incomplete.returncode == 0 or "no curated entries" not in incomplete_diagnostics:
         raise RuntimeError("new task activation did not stop at the existing JSONL gate")
     if load_json(task_dir / "task.json").get("status") != "planning":
         raise RuntimeError("incomplete Planning fixture changed task status")
@@ -1635,9 +1638,41 @@ def verify_created_activation(
         (task_dir / name).write_text(json.dumps(entry) + "\n", encoding="utf-8")
     run([sys.executable, workspace / ".trellis/scripts/task.py", "validate", task_ref],
         cwd=workspace, env=env)
-    run([wrappers / "start-task.sh", planning_output["task_ref"]], cwd=workspace, env=env)
+    # Treat the successful initial call's stdout as lost, then require the
+    # activation owner to rematerialize the same formal result without a
+    # second task.py start mutation.
+    run(
+        [
+            wrappers / "start-task.sh",
+            "--mode",
+            "initial",
+            planning_output["task_ref"],
+        ],
+        cwd=workspace,
+        env=env,
+    )
     if load_json(task_dir / "task.json").get("status") != "in_progress":
         raise RuntimeError("controlled activation did not enter in_progress")
+    recovered_activation = json_stdout(
+        run(
+            [wrappers / "start-task.sh", "--mode", "recovery", task_ref],
+            cwd=workspace,
+            env=env,
+        ),
+        "activation lost-output recovery",
+    )
+    if (
+        recovered_activation.get("status") != "ok"
+        or recovered_activation.get("exit_id") != "activated"
+        or recovered_activation.get("mode") != "recovery"
+        or recovered_activation.get("task_ref") != task_ref
+        or recovered_activation.get("task_status") != "in_progress"
+        or recovered_activation.get("upstream_start_executed") is not False
+    ):
+        raise RuntimeError(
+            "activation lost-output recovery did not rematerialize the exact result: "
+            f"{recovered_activation}"
+        )
     session_checks = []
     hook_checks = []
     for caller in (workspace, root):
@@ -1685,6 +1720,14 @@ def verify_created_activation(
         "workspace_boundary_status": boundary["status"],
         "activation_status": "in_progress",
         "empty_context_activation": "blocked",
+        "lost_output_recovery": {
+            "status": recovered_activation["status"],
+            "exit_id": recovered_activation["exit_id"],
+            "mode": recovered_activation["mode"],
+            "upstream_start_executed": recovered_activation[
+                "upstream_start_executed"
+            ],
+        },
         "planning_evidence": "preset semantic fixture; not an AI review",
         "same_session_callers": session_checks,
         "hook_checks": hook_checks,

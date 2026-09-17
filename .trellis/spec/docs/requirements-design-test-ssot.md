@@ -8,7 +8,7 @@
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
 - Architecture inheritance：`docs/architecture/README.md`，`current-main-0.6.17-guru.53` / `active`
-- source binding：reviewed #418 contribution + inherited immutable `current-main-0.6.17-guru.52` authority；current graph 23 Skills / 100 exits / 78 commands。当前四轴与固定 Fork 来源继承 `.52`，见三个 README 与 Architecture `ARCH-CUR-029/030`；新增只读复审决策为 `ADR-010`。developer/ledger retired-zero、普通 lifecycle、Constitution/GAP/#305 target 不变。本 projection 不记录远端动作或动态 Gate 状态。
+- source binding：reviewed #418 contribution + inherited immutable `current-main-0.6.17-guru.52` authority；current graph 23 Skills / 100 exits / 78 commands。当前四轴与固定 Fork 来源继承 `.52`，见三个 README 与 Architecture `ARCH-CUR-029/030`；新增只读复审决策为 `ADR-010`。retired internal API active-zero、普通 lifecycle、Constitution/GAP/#305 target 不变。本 projection 不记录远端动作或动态 Gate 状态。
 
 ## 读取与更新
 

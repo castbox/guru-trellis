@@ -162,6 +162,40 @@ class UpstreamOwnershipTest(unittest.TestCase):
             ownership.path_set_sha256(sorted(ownership.EXPECTED_FINISH_OVERLAY_CLAIMS)),
         )
 
+    def test_upstream_start_continue_hooks_platform_and_meta_are_not_guru_owned(self) -> None:
+        inventory = json.loads(
+            (self.repo / ownership.INVENTORY_RELATIVE).read_text(encoding="utf-8")
+        )
+        extension = json.loads(
+            (self.repo / ownership.EXTENSION_RELATIVE).read_text(encoding="utf-8")
+        )
+        upstream_paths = (
+            ".trellis/scripts/get_context.py",
+            ".trellis/scripts/common/continuation_contract.py",
+            ".agents/skills/trellis-start/SKILL.md",
+            ".agents/skills/trellis-continue/SKILL.md",
+            ".agents/skills/trellis-meta/SKILL.md",
+            ".codex/prompts/trellis-start.md",
+            ".codex/prompts/trellis-continue.md",
+            ".codex/hooks/session-start.py",
+            ".claude/commands/trellis/continue.md",
+            ".claude/hooks/inject-workflow-state.py",
+            ".cursor/commands/trellis-continue.md",
+            ".cursor/hooks/session-start.py",
+        )
+        managed_paths = set(extension["public_api"]["managed_paths"])
+        overlay_root = self.repo / ownership.OVERLAY_ROOT_RELATIVE
+        for path in upstream_paths:
+            with self.subTest(path=path):
+                self.assertEqual(
+                    ownership.classify_guru_path(
+                        path, inventory["guru_owned_rules"]
+                    ),
+                    [],
+                )
+                self.assertNotIn(path, managed_paths)
+                self.assertFalse((overlay_root / path).exists())
+
     def test_schema_is_valid_draft_2020_12_and_accepts_inventory(self) -> None:
         from jsonschema import Draft202012Validator
 

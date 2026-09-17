@@ -1,0 +1,6 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"审核r5验收、native wrapper证据、exact-candidate矩阵与未验证边界。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"审核continuation唯一authority、state分发、自然语言与确认语义。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"审核adjacent DTO、lost DTO、same-owner recovery与semantic fresh rerun。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"审核reapply不修改upstream-owned入口及managed claim闭包。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"审核source/installed/dogfood/platform一致性、sidecar与residue hygiene。"}
+{"file":"docs/architecture/06-governance/change-contract.md","reason":"审核target_native contribution、single-writer、ADR与promotion freshness。"}

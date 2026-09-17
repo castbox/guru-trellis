@@ -28,7 +28,7 @@ normal path. `classified` returns to this owner;
 `mechanism_revision_required` returns here for remove/replace and full fresh
 review; `blocked` stops. Rejected candidates do not become findings, tests,
 clarification, or follow-up work. This review stores no qualification artifact,
-checkpoint, result locator, or cross-round ledger.
+checkpoint, result locator, or cross-round state store.
 
 Workflow and standalone modes have identical entry preconditions. Both require
 the complete compatible Guru Team preset, extension manifest, dispatcher,

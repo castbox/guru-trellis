@@ -126,7 +126,7 @@ The package exposes three declared commands: `record-solution-mechanism-qualific
 `check-solution-mechanism-qualification`, and
 `invoke-guru-qualify-solution-mechanism`. The first two are deterministic
 recorder/checker commands; the public invocation emits one call-local typed exit.
-The package has no qualification artifact, report, ledger, handoff, checkpoint,
+The package has no qualification artifact, report, persistent state, handoff, checkpoint,
 or cross-process result locator. A forbidden OS/kernel/process/descriptor
 mechanism returns `mechanism_revision_required` and never enters scope
 confirmation.
@@ -134,7 +134,7 @@ confirmation.
 Qualification decisions and the typed result remain current-process
 memory/stdout only. The installer must not create or claim a tracked, ignored,
 or temporary qualification result/report/checkpoint, candidate/rejection
-ledger, handoff, or cross-process result locator. Installed package tests scan
+persistent decision store, handoff, or cross-process result locator. Installed package tests scan
 the complete target inventory before and after all ten profiles and require
 zero qualification residue. The only persistent related data is the terminal
 classification/witness directly authored into the existing schema 5.0 Phase 2,
@@ -237,6 +237,36 @@ not the current framework source contract. Issue #332 established predecessor
 `v0.6.15-guru.6`, and Issue #392 released `v0.6.16-guru.1`. Issue #410 is the
 current release candidate for `v0.6.17-guru.1`; until its exact-candidate gate,
 tag-pinned smoke, and GitHub Release complete, the target is not a released fact.
+
+## Active-task continuation compatibility
+
+Guru Team active-task continuation is authored only in the canonical
+marketplace workflow. The current adoption proof is pinned to upstream merge
+candidate `43fffc170927c85d9f7fc106cc5a059e80d4530b`, ordered parents
+`db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0` then
+`df12903220ce22b2c84782968ed5c93406b5738b`, and tree
+`02fc0922f535200f67de7f6ba7920e3c763d7e95`. This identity is an integration
+candidate for #419, not a released source-lock or #410 release proof; a branch,
+PR head, predecessor, short SHA, or later upstream commit cannot substitute.
+
+The acceptance matrix must start from clean disposable targets and bind every
+result to that full SHA. It covers clean install, supported existing-install
+update, immediate native -> Guru -> native workflow switching, and Guru preset
+reapply. Each switch must read the newly selected workflow's continuation with
+no cached route. Reapply must preserve the active workflow bytes and every
+upstream-owned start/continue/hook/platform/meta entry byte-for-byte, while
+source/installed/dogfood/declared-platform Guru assets remain consistent. A
+successful result also requires zero unresolved `.new`/`.bak` and zero
+`__pycache__`/`.pyc`/`.pyo` residue.
+
+Preset ownership does not expand to satisfy this compatibility gate. The preset
+installs Guru packages and Guru-owned projections referenced by the workflow;
+it never installs or patches the upstream continuation extractor, official
+entries, hooks, generated platform files, or `trellis-meta`, and never rewrites
+`.trellis/workflow.md` during reapply. If the Guru workflow is selected without
+the required preset, validation reports an incomplete contract instead of
+falling back to native behavior. Until the exact-candidate matrix passes, this
+README does not claim continuation compatibility or release readiness.
 
 ## Current Ownership Contract
 
