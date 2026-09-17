@@ -4,6 +4,9 @@
   "oneOf": [
     {
       "$ref": "public-execute-reviewed-plan-input.schema.json"
+    },
+    {
+      "$ref": "public-recover-created-result-input.schema.json"
     }
   ]
 }

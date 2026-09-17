@@ -65,7 +65,7 @@
       "name": "guru-create-task-workspace",
       "package": "packages/guru-create-task-workspace",
       "interface": "packages/guru-create-task-workspace/interface.json",
-      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "interface_schema_id": "guru-team-skill-interface-1.6",
       "supported_platforms": [
         "shared",
         "codex",

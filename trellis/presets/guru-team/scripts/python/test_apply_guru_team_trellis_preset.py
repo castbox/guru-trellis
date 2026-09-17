@@ -826,7 +826,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         target = self.repo / relative
         canonical = self.guru_root / "trellis/presets/guru-team/source/trellis-source.json"
         self.assertEqual(target.read_bytes(), canonical.read_bytes())
-        self.assertEqual(json.loads(target.read_text())["ci_run_id"], 34838784963)
+        self.assertEqual(json.loads(target.read_text())["ci_run_id"], 35190729418)
         manifest = json.loads((self.install_dst / "extension.json").read_text())
         self.assertIn(relative, manifest["install"]["managed_assets"])
         self.assertEqual(manifest["install"]["managed_asset_hashes"][relative], hashlib.sha256(target.read_bytes()).hexdigest())
@@ -873,15 +873,30 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
 
     def test_legacy_finalizer_wrappers_import_shared_runtime_from_canonical_and_installed_roots(self) -> None:
         self.install({"codex", "cursor"})
-        env = os.environ.copy()
-        env.pop("PYTHONPATH", None)
+        canonical_root = self.repo / "trellis"
+        canonical_wrappers = canonical_root / "workflows/guru-team/scripts/bash"
+        canonical_wrappers.mkdir(parents=True)
         wrappers = (
             "check-workspace-boundary.sh",
             "check-agent-recovery.sh",
             "record-agent-recovery.sh",
         )
+        for wrapper in wrappers:
+            shutil.copy2(self.workflow_src / "scripts/bash" / wrapper, canonical_wrappers)
+        shutil.copytree(
+            self.guru_root / "trellis/skills/guru-team/runtime",
+            canonical_root / "skills/guru-team/runtime",
+        )
+        shutil.copytree(
+            self.guru_root
+            / "trellis/skills/guru-team/packages/guru-finalize-task",
+            canonical_root / "skills/guru-team/packages/guru-finalize-task",
+        )
+        _ensure_managed_python_runtime(self.repo, self.guru_root, activate=True)
+        env = os.environ.copy()
+        env.pop("PYTHONPATH", None)
         roots = (
-            self.workflow_src / "scripts/bash",
+            canonical_wrappers,
             self.install_dst / "scripts/bash",
         )
         for root in roots:
@@ -1099,39 +1114,27 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertEqual(conflicts[0]["reason"], "legacy_unknown_local_edit")
         self.assertIn("package-local", sidecar.read_text(encoding="utf-8"))
 
-    def test_retired_trellis_workspace_memory_is_removed_or_preserved_as_conflict(self) -> None:
-        managed = self.repo / ".agents/skills/trellis-meta/references/local-architecture/workspace-memory.md"
-        managed.parent.mkdir(parents=True, exist_ok=True)
-        managed.write_bytes(
-            subprocess.run(
-                [
-                    "git",
-                    "show",
-                    "v0.6.16-guru.1:.agents/skills/trellis-meta/references/local-architecture/workspace-memory.md",
-                ],
-                cwd=self.guru_root,
-                check=True,
-                stdout=subprocess.PIPE,
-            ).stdout
+    def test_preset_ignores_retired_upstream_trellis_platform_assets(self) -> None:
+        upstream = self.repo / ".agents/skills/trellis-meta/references/local-architecture/workspace-memory.md"
+        upstream.parent.mkdir(parents=True, exist_ok=True)
+        upstream.write_text("upstream-managed workspace memory\n", encoding="utf-8")
+
+        result = preset.install_assets(
+            self.workflow_src,
+            self.install_dst,
+            self.repo,
+            platforms={"codex"},
         )
 
-        removals, conflicts, sidecars = preset.remove_retired_trellis_platform_assets(self.repo)
-
-        self.assertFalse(managed.exists())
-        self.assertEqual(conflicts, [])
-        self.assertEqual(sidecars, [])
-        self.assertEqual(removals[0]["path"], managed.relative_to(self.repo).as_posix())
-
-        managed.parent.mkdir(parents=True, exist_ok=True)
-        managed.write_text("local workspace notes\n", encoding="utf-8")
-        removals, conflicts, sidecars = preset.remove_retired_trellis_platform_assets(self.repo)
-
-        self.assertEqual(removals, [])
-        self.assertEqual(managed.read_text(encoding="utf-8"), "local workspace notes\n")
-        self.assertEqual(conflicts[0]["reason"], "legacy_unknown_local_edit")
-        self.assertEqual(sidecars, [
-            ".agents/skills/trellis-meta/references/local-architecture/workspace-memory.md.new"
-        ])
+        self.assertEqual(
+            upstream.read_text(encoding="utf-8"),
+            "upstream-managed workspace memory\n",
+        )
+        self.assertFalse(upstream.with_name("workspace-memory.md.new").exists())
+        self.assertNotIn(
+            upstream.relative_to(self.repo).as_posix(),
+            {row["path"] for row in result["skill_packages"]["removals"]},
+        )
 
     def test_skill_manifest_file_order_is_stable_across_hash_seeds_and_reapply(self) -> None:
         module_path = Path(preset.__file__).resolve()
@@ -1262,7 +1265,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn(Path("scripts/bash/record-subagent-liveness-event.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertNotIn(Path("scripts/bash/check-subagent-liveness.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-commit-messages.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertNotIn(Path("scripts/bash/format-merge-commit.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("schemas/finish-summary.schema.json"), preset.MANAGED_ASSET_PATHS)
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh").is_file())
         start_task = self.repo / ".trellis/guru-team/scripts/bash/start-task.sh"
@@ -1328,7 +1330,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             self.assertFalse((self.repo / ".trellis/guru-team/scripts/bash" / obsolete).exists())
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-commit-messages.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-commit-messages.sh", os.X_OK))
-        self.assertFalse((self.repo / ".trellis/guru-team/scripts/bash/format-merge-commit.sh").exists())
         self.assertTrue((self.repo / ".trellis/guru-team/schemas/finish-summary.schema.json").is_file())
         self.assertNotIn("session_auto_commit", (self.repo / ".trellis/config.yaml").read_text(encoding="utf-8"))
         self.assertNotIn(".trellis/workspace/", (self.repo / ".gitignore").read_text(encoding="utf-8"))
@@ -2044,23 +2045,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         canonical = json.loads(
             (self.guru_root / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
         )
-        expected_capability = {
-            "capability_id": "guru-ledger-free-runtime",
-            "version": "1.0.0",
-            "projection_identity": {
-                "extension_id": "guru-team",
-                "extension_version": "0.6.17-guru.42",
-                "workflow_template_id": "guru-team",
-            },
-        }
-        self.assertEqual(
-            canonical["public_api"]["migration_capabilities"],
-            {"guru-ledger-free-runtime": expected_capability},
-        )
-        self.assertEqual(
-            public_api["migration_capabilities"],
-            {"guru-ledger-free-runtime": expected_capability},
-        )
         self.assertIn(
             "contract-wording-review.json",
             canonical["public_api"]["artifact_contracts"],
@@ -2173,9 +2157,9 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         for field, expected_count in (
-            ("public_input_schema_ids", 74),
-            ("typed_output_schema_ids", 92),
-            ("private_artifact_schema_ids", 19),
+            ("public_input_schema_ids", 83),
+            ("typed_output_schema_ids", 95),
+            ("private_artifact_schema_ids", 22),
         ):
             self.assertEqual(
                 public_api["skill_contracts"][field],
@@ -2525,7 +2509,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "guru-team-skill-interface-1.6",
             ],
         )
-        self.assertNotIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("check-skill-packages", public_api["companion_scripts"])
         self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")
         self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.17")

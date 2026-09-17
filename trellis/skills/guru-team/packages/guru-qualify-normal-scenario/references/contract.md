@@ -142,7 +142,7 @@ the sorted `prd.md`, `design.md`, and `implement.md` path/content-SHA rows used
 by the planning owner. The checker recomputes that identity from current regular,
 non-symlink repository files before emitting a typed result.
 
-Never create or request an output path, result locator, checkpoint path, temporary result file, tracked file, ignored `.trellis/.runtime/**` qualification state, cross-process locator, report, candidate or rejection ledger, approval, signoff, assignment, handoff, or transcript. `artifacts` and `private_artifacts` are empty. This Skill and its runtime never write a Phase 2, Branch Review, or Publication gate. After consuming the process-local stdout, the corresponding stage Owner performs its own direct review and directly authors only the minimal classification and witness required by that stage's existing owner-private gate. The stage Owner does not copy, cite, or reread a Skill result or artifact.
+Never create or request an output path, result locator, checkpoint path, temporary result file, tracked file, ignored `.trellis/.runtime/**` qualification state, cross-process locator, report, candidate or rejection state store, approval, signoff, assignment, handoff, or transcript. `artifacts` and `private_artifacts` are empty. This Skill and its runtime never write a Phase 2, Branch Review, or Publication gate. After consuming the process-local stdout, the corresponding stage Owner performs its own direct review and directly authors only the minimal classification and witness required by that stage's existing owner-private gate. The stage Owner does not copy, cite, or reread a Skill result or artifact.
 
 ## 7. Re-entry And Callers
 

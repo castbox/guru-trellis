@@ -208,7 +208,7 @@ upstream-owned，不由 Guru preset 修改。
 Skill 只返回 `classified`、`scope_confirmation_required`、
 `mechanism_revision_required`、`blocked` 四个 typed exits，并由 workflow 交给唯一
 consumer。资格 decision/result 只存在当前 invocation 的 memory/stdout，不生成 tracked
-或 ignored qualification report/checkpoint、共享 candidate ledger、handoff 或跨进程
+或 ignored qualification report/checkpoint、共享 candidate state、handoff 或跨进程
 result locator。Phase 2、Branch Review、Publication 只在各自现有 owner-private gate 中
 直接记录本阶段 consumer 必需的最终 classification/witness。
 
@@ -258,7 +258,7 @@ Task-free 只授权限定编辑、保留无关改动和 targeted checks；Issue/
 
 Guru Team preset 提供面向规划、实现检查、任务提交、分支审查、发布审核和最终收口的协作能力，使每个阶段都能读取前序结果，同时保持职责清晰。
 
-发布审核由 Publication 在同一个语义循环中生成并审查准确的中文 PR 标题与正文，随后以包含任务、分支审查提交和标题正文的五字段 4.0 结果直接交给 Finalizer，不再创建 task-local PR body、Issue scope ledger 或索引交接文件。Publication 基于 current requirement authority、reviewed diff 与目标分支独占判断 Issue 引用和关闭意图；Finalizer 只把该 PR payload 与实时仓库事实绑定为当前 finalization transaction，并在草稿 PR 建立后一次生成 finish summary 2。历史归档中的旧 closeout、ledger 与 finish summary 1 只作为不可变历史保留，不提供 current runtime 兼容或迁移。
+发布审核由 Publication 在同一个语义循环中生成并审查准确的中文 PR 标题与正文，随后以包含任务、分支审查提交和标题正文的五字段 4.0 结果直接交给 Finalizer，不再创建 task-local PR body 或索引交接文件。Publication 基于 current requirement authority、reviewed diff 与目标分支独占判断 Issue 引用和关闭意图；Finalizer 只把该 PR payload 与实时仓库事实绑定为当前 finalization transaction，并在草稿 PR 建立后一次生成 finish summary 2。历史归档中的旧 closeout 与 finish summary 1 只作为不可变历史保留，不提供 current runtime 兼容或迁移。
 
 安装到业务仓库后的 Finalizer 在需要刷新 provenance metadata tail 时，会把业务目标与
 Guru Trellis 扩展源码作为两个独立 checkout：业务 checkout 只接收 manifest tail，扩展源码

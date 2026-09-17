@@ -17,17 +17,6 @@
   "public_api": {
     "workflow_template_id": "guru-team",
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
-    "migration_capabilities": {
-      "guru-ledger-free-runtime": {
-        "capability_id": "guru-ledger-free-runtime",
-        "version": "1.0.0",
-        "projection_identity": {
-          "extension_id": "guru-team",
-          "extension_version": "0.6.17-guru.42",
-          "workflow_template_id": "guru-team"
-        }
-      }
-    },
     "managed_paths": [
       ".trellis/guru-team/",
       ".trellis/guru-team/skills/",
@@ -126,6 +115,7 @@
         "guru-stage0-clarify-requirements-input-initial-change-request-2.0",
         "guru-stage0-clarify-requirements-input-standalone-review-1.0",
         "guru-stage0-create-task-workspace-input-execute-reviewed-plan-2.0",
+        "guru-stage0-create-task-workspace-input-recover-created-result-1.0",
         "guru-stage0-discover-change-context-input-pre-task-2.0",
         "guru-stage0-review-change-request-input-current-issue-1.0",
         "guru-stage0-review-change-request-input-proposed-draft-1.0",

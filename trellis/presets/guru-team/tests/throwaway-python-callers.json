@@ -78,6 +78,17 @@
       ]
     },
     {
+      "id": "shell-helper-installed-check-workspace-boundary",
+      "owner": "trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh",
+      "kind": "shell_wrapper_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "installed resolve-python.sh",
+      "route": [
+        "trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh",
+        "trellis/skills/guru-team/runtime/resolve-python.sh"
+      ]
+    },
+    {
       "id": "shell-helper-installed-discover-skill-contract",
       "owner": "trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh",
       "kind": "shell_wrapper_second_hop",
@@ -96,6 +107,17 @@
       "expected_launcher": "installed resolve-python.sh",
       "route": [
         "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+        "trellis/skills/guru-team/runtime/resolve-python.sh"
+      ]
+    },
+    {
+      "id": "shell-helper-installed-start-task",
+      "owner": "trellis/workflows/guru-team/scripts/bash/start-task.sh",
+      "kind": "shell_wrapper_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "installed resolve-python.sh",
+      "route": [
+        "trellis/workflows/guru-team/scripts/bash/start-task.sh",
         "trellis/skills/guru-team/runtime/resolve-python.sh"
       ]
     }
@@ -339,21 +361,21 @@
       "ordinal": 1
     },
     {
-      "id": "helper-generated_shebang-a9bda1e179d1",
+      "id": "helper-generated_shebang-59310c797e82",
       "owner": "trellis/skills/guru-team/adapters/eval/fixture_io.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
       "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "a9bda1e179d16a526dc38760d047bccb5f8f11cc540d3ea2251df2b0bd57715f",
+      "anchor_sha256": "59310c797e822095bdf0a25c613e86726d2664b5c519492d5d3c8324f979c0f7",
       "ordinal": 1
     },
     {
-      "id": "helper-generated_shebang-9b8bcb82bee7",
+      "id": "helper-generated_shebang-751f9192fcc5",
       "owner": "trellis/skills/guru-team/adapters/eval/fixture_io.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
       "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "9b8bcb82bee7546db3351624c9c2f47470724ef2b6c21f4889715e8709ba3dd3",
+      "anchor_sha256": "751f9192fcc5d6356256adf15a5c31517d8755a80902ca6b16ccccc33cdb95fc",
       "ordinal": 1
     },
     {
@@ -384,6 +406,15 @@
       "ordinal": 1
     },
     {
+      "id": "helper-python_subprocess_second_hop-949df3e71a56",
+      "owner": "trellis/skills/guru-team/adapters/eval/stage0_fixtures.py",
+      "kind": "python_subprocess_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "sys.executable",
+      "anchor_sha256": "949df3e71a5636b4b67e645a29e9e89a81bcad41f9b8684b03a4798436d717e2",
+      "ordinal": 1
+    },
+    {
       "id": "helper-python_subprocess_second_hop-da3dbbd9e438",
       "owner": "trellis/skills/guru-team/adapters/eval/guru-team-shared-eval",
       "kind": "python_subprocess_second_hop",
@@ -399,6 +430,15 @@
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
       "anchor_sha256": "79e14821d376845536a5d874add8068c001a207524b8eb8e9fdbff01dac50196",
+      "ordinal": 1
+    },
+    {
+      "id": "package-runtime-python_subprocess_second_hop-4c31592d6758",
+      "owner": "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/recover.py",
+      "kind": "python_subprocess_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "sys.executable",
+      "anchor_sha256": "4c31592d6758646c6b024864977da17d5f2b10a5b9eb22758f39efcb47b3b6c3",
       "ordinal": 1
     },
     {
@@ -543,7 +583,7 @@
       "expected_launcher": "owner_staging.py explicit module import under installed managed Python",
       "launch_owner": "trellis/skills/guru-team/adapters/eval/owner_staging.py",
       "launch_token": "from adapters.eval.stage0_fixtures import (",
-      "sys_executable_subprocesses": 0,
+      "sys_executable_subprocesses": 1,
       "managed_shebang_bindings": 0
     },
     {

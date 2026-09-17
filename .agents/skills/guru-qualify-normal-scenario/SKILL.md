@@ -9,6 +9,6 @@ Read [references/contract.md](references/contract.md) completely before judging 
 
 Use the exact profile supplied by the caller, reread the live locators, complete the semantic AI gate, and invoke `scripts/invoke.sh --invocation -` with one call-local JSON envelope on stdin. Return exactly one declared typed exit.
 
-Keep every decision and typed result inside the current invocation. Do not write a tracked file, ignored runtime artifact, result locator, checkpoint, report, ledger, transcript, assignment, handoff, approval, or signoff.
+Keep every decision and typed result inside the current invocation. Do not write a tracked file, ignored runtime artifact, result locator, checkpoint, report, persistent decision state, transcript, assignment, handoff, approval, or signoff.
 
 Fail closed on missing live evidence, stale identity, an unknown or mismatched caller/profile/consumer, an empty candidate set, or any candidate without exactly one current decision.

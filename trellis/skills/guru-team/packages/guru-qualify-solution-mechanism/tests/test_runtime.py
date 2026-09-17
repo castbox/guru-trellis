@@ -175,7 +175,7 @@ class SolutionMechanismQualificationRuntimeTest(unittest.TestCase):
         self.invoke(self.semantic())
         after = self.inventory()
         self.assertEqual(before, after)
-        residue = [path for path in self.repo.rglob("*") if any(token in path.name.lower() for token in ("qualification-result", "qualification-report", "candidate-ledger", "rejection-ledger", "checkpoint", ".new", ".bak"))]
+        residue = [path for path in self.repo.rglob("*") if any(token in path.name.lower() for token in ("qualification-result", "qualification-report", "candidate-state", "rejection-state", "checkpoint", ".new", ".bak"))]
         self.assertEqual([], residue)
         self.assertFalse((self.repo / ".trellis/.runtime").exists())
 

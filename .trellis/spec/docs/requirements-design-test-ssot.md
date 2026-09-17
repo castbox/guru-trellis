@@ -2,13 +2,13 @@
 
 ## Current identity
 
-- version：`current-main-0.6.17-guru.53`
+- version：`current-main-0.6.17-guru.54`
 - status：`active`
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
-- Architecture inheritance：`docs/architecture/README.md`，`current-main-0.6.17-guru.53` / `active`
-- source binding：reviewed #418 contribution + inherited immutable `current-main-0.6.17-guru.52` authority；current graph 23 Skills / 100 exits / 78 commands。当前四轴与固定 Fork 来源继承 `.52`，见三个 README 与 Architecture `ARCH-CUR-029/030`；新增只读复审决策为 `ADR-010`。developer/ledger retired-zero、普通 lifecycle、Constitution/GAP/#305 target 不变。本 projection 不记录远端动作或动态 Gate 状态。
+- Architecture inheritance：`docs/architecture/README.md`，`current-main-0.6.17-guru.54` / `active`
+- source binding：reviewed #419 contribution + inherited immutable `current-main-0.6.17-guru.53` authority；current graph 23 Skills / 100 exits / 79 commands，fixed Fork source 为 `43fffc170927c85d9f7fc106cc5a059e80d4530b`。唯一 continuation authority、producer-owned recovery与upstream thin-entry boundary见R419/D419/T419与`ADR-011`；#410独占Release Gate matrix。
 
 ## 读取与更新
 

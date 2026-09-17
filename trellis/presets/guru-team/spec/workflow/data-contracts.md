@@ -427,16 +427,6 @@ expectations independently.
 Do not use `.trellis/guru-team/extension.json` as the canonical source of the
 team extension version. The canonical source is `trellis/guru-team-extension.json`.
 
-`public_api.migration_capabilities.guru-ledger-free-runtime` is the closed
-capability declaration for the ledger-free current runtime. Version `1.0.0`
-contains only `capability_id`, `version`, and a `projection_identity` bound to
-the current extension id/version and workflow template id. The preset copies
-this declaration unchanged into the installed manifest. It does not include
-apply-time source provenance, selected platforms, a manifest digest, or any
-claim that a future Task lifecycle, Release, or migration owner is active.
-Current source and installed validators require the exact shape and fail closed
-on a missing, extra, or mismatched identity field.
-
 ### Public Skill I/O Current Fields
 
 The canonical and installed extension manifests publish one closed current
@@ -595,6 +585,38 @@ read, copy, initialize, restore, or require `.trellis/.developer` or
 `.trellis/workspace/**`; existing official identity bytes remain untouched.
 The `workspace_slug` and workspace mappings above identify the isolated task
 checkout/worktree only; they have no journal/index/developer dimension.
+
+### Active-task continuation data boundary
+
+The continuation block is Markdown workflow authority, not a persisted data
+model. No global lifecycle state store, continuation checkpoint, route-classification
+artifact, authorization record, or cross-Skill result digest is added. Exact
+task identity comes from current task/worktree/branch/runtime mapping facts;
+`task.json.status` remains only a coarse lifecycle fact.
+
+An adjacent current public DTO remains call-local and is consumed directly by
+its unique Interface-declared consumer. If output is lost, only the producer may
+rematerialize it from producer-owned current facts. Phase 2 reuses the existing
+schema-5.0 `phase2-check.json` retained for Task Commit: the existing checker
+revalidates it and the existing public invoker projects
+`task_ref + phase2_commit_anchor`. This does not define a new Phase 2 input
+profile or recovery artifact. Task Commit continues to use its existing
+private candidate and `recovery_resume` transaction facts for same-commit
+stdout loss.
+
+Workflow-owned activation accepts `initial` or `recovery` at invocation time.
+`initial` requires the current approved DTO, current planning/live facts, the
+current exact pair, and dialogue-local confirmation before the official status
+transition. `recovery` accepts only the same exact task already current as
+`in_progress` and rematerializes the activation success without a second
+mutation. The mode and confirmation are not stored in `task.json`, runtime
+mappings, owner checkpoints, public DTOs, schemas, or archives.
+
+Branch Review and Publication public outputs remain call-local. Their successful
+private checkpoints retire after output validation; a later missing DTO causes
+a fresh semantic run and never causes a data reconstruction. Old conversation
+text, commit messages, clean state, PR text, task status, or checkpoint absence
+is not result evidence.
 
 ## Finish Summary
 
@@ -1671,7 +1693,7 @@ derived aggregate may change; all non-flow fields and raw execution evidence
 remain unchanged. Runs with no Intake cases keep their existing lifecycle.
 The completed run root can be graded by the original runner after independent review of its actual
 transcript. No new public DTO, grading field, hidden summary token or long-lived
-ledger is introduced. The runner checks existing request/corpus/execution
+persistent grading store is introduced. The runner checks existing request/corpus/execution
 identity and preserves raw execution evidence while updating only semantic
 results and aggregate status. This associates grading with the selected
 completed execution; it does not claim a new grade-to-transcript byte digest.

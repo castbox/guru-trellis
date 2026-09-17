@@ -257,17 +257,6 @@ LEGACY_MANAGED_ASSET_HASHES = {
         "78fb34e209c7b87eecdb515929b726dab160399001f3deed582eaaa9bcb90377",
     }),
 }
-RETIRED_TRELLIS_PLATFORM_ASSET_HASHES = {
-    Path(".agents/skills/trellis-meta/references/local-architecture/workspace-memory.md"): frozenset({
-        "e6427b46aba744563c2444b30df4043cd856561b7709ec2dece26095416421fd",
-    }),
-    Path(".claude/skills/trellis-meta/references/local-architecture/workspace-memory.md"): frozenset({
-        "e6427b46aba744563c2444b30df4043cd856561b7709ec2dece26095416421fd",
-    }),
-    Path(".cursor/skills/trellis-meta/references/local-architecture/workspace-memory.md"): frozenset({
-        "e6427b46aba744563c2444b30df4043cd856561b7709ec2dece26095416421fd",
-    }),
-}
 LEGACY_MANAGED_ASSET_REMOVAL_SIDECAR = (
     "This former Guru Team managed runtime is obsolete after the package-local "
     "Skill runtime migration. The installed bytes do not match a known managed "
@@ -359,21 +348,6 @@ def load_extension_manifest(guru_root: Path) -> dict[str, Any]:
     for key in ["schema_version", "extension_id", "version", "workflow_template_id"]:
         if not str(payload.get(key) or "").strip():
             raise SystemExit(f"Guru Team extension manifest missing required field: {key}")
-    public_api = payload.get("public_api")
-    capabilities = public_api.get("migration_capabilities") if isinstance(public_api, dict) else None
-    expected_capability = {
-        "capability_id": "guru-ledger-free-runtime",
-        "version": "1.0.0",
-        "projection_identity": {
-            "extension_id": payload["extension_id"],
-            "extension_version": payload["version"],
-            "workflow_template_id": payload["workflow_template_id"],
-        },
-    }
-    if not isinstance(capabilities, dict) or capabilities.get("guru-ledger-free-runtime") != expected_capability:
-        raise SystemExit(
-            "Guru Team extension manifest has invalid guru-ledger-free-runtime capability"
-        )
     return payload
 
 
@@ -1578,50 +1552,6 @@ def remove_legacy_managed_assets(
     return removals, conflicts, sidecars
 
 
-def remove_retired_trellis_platform_assets(
-    repo: Path,
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str]]:
-    removals: list[dict[str, Any]] = []
-    conflicts: list[dict[str, Any]] = []
-    sidecars: list[str] = []
-    for relative, known_hashes in RETIRED_TRELLIS_PLATFORM_ASSET_HASHES.items():
-        target = Path(os.path.abspath(repo)) / relative
-        checked_relative, target_stat, error = lstat_repo_path(repo, target)
-        if error or checked_relative != relative:
-            conflicts.append(skill_conflict(relative.as_posix(), "unsafe_legacy_path_boundary"))
-            continue
-        if target_stat is None:
-            continue
-        if not stat.S_ISREG(target_stat.st_mode):
-            conflicts.append(skill_conflict(relative.as_posix(), "legacy_target_not_regular_file"))
-            continue
-        digest = hashlib.sha256(target.read_bytes()).hexdigest()
-        if digest in known_hashes:
-            target.unlink()
-            prune_empty_managed_skill_parents(repo, target)
-            removals.append({
-                "path": relative.as_posix(),
-                "action": "removed_managed",
-                "previous_managed_sha256": digest,
-            })
-            continue
-        sidecar = target.with_name(f"{target.name}.new")
-        try:
-            write_safe_repo_file(repo, sidecar, LEGACY_MANAGED_ASSET_REMOVAL_SIDECAR, 0o644)
-            sidecar_relative = lexical_repo_relative(repo, sidecar).as_posix()
-        except ValueError:
-            sidecar_relative = None
-        conflicts.append(skill_conflict(
-            relative.as_posix(),
-            "legacy_unknown_local_edit",
-            sidecar=sidecar_relative,
-            previous_managed_sha256=digest,
-        ))
-        if sidecar_relative:
-            sidecars.append(sidecar_relative)
-    return removals, conflicts, sidecars
-
-
 def prune_empty_overlay_parents(repo: Path, path: Path) -> None:
     relative = lexical_repo_relative(repo, path)
     platform_root = next(
@@ -1832,7 +1762,6 @@ def managed_transaction_paths(
     )
     paths.update(projections)
     paths.update(_manifest_paths(previous_manifest))
-    paths.update(RETIRED_TRELLIS_PLATFORM_ASSET_HASHES)
     # Preserve the existing bounded language-guidance behavior without opening
     # the transaction to arbitrary repository documentation.
     paths.update(
@@ -2359,10 +2288,6 @@ def _install_assets_in_place(
     legacy_removals, legacy_conflicts, legacy_sidecars = remove_legacy_managed_assets(
         repo, dst
     )
-    retired_removals, retired_conflicts, retired_sidecars = (
-        remove_retired_trellis_platform_assets(repo)
-    )
-
     installed: list[str] = []
     unchanged: list[str] = []
     new_copies: list[str] = []
@@ -2482,10 +2407,10 @@ def _install_assets_in_place(
     skill_packages = install_skill_packages(repo, guru_root, dst, selected, previous_manifest)
     skill_packages["conflicts"].extend(managed_spec_conflicts)
     skill_packages["sidecars"] = sorted(set(skill_packages["sidecars"] + managed_spec_sidecars))
-    skill_packages["removals"].extend(legacy_removals + retired_removals)
-    skill_packages["conflicts"].extend(legacy_conflicts + retired_conflicts)
+    skill_packages["removals"].extend(legacy_removals)
+    skill_packages["conflicts"].extend(legacy_conflicts)
     skill_packages["sidecars"] = sorted(set(
-        skill_packages["sidecars"] + legacy_sidecars + retired_sidecars
+        skill_packages["sidecars"] + legacy_sidecars
     ))
     if skill_packages["conflicts"] or skill_packages["sidecars"]:
         skill_packages["status"] = "conflict"

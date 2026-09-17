@@ -579,35 +579,6 @@ def _interface_projection(repo_root: Path, row: Mapping[str, Any]) -> dict[str, 
     return _interface_projection_from(repo_root / "trellis/skills/guru-team", row)
 
 
-def _migration_capabilities_projection(
-    extension: Mapping[str, Any], public_api: Mapping[str, Any], label: str
-) -> dict[str, Any]:
-    raw = public_api.get("migration_capabilities")
-    if raw is None:
-        return {}
-    capabilities = _require_dict(raw, f"{label} migration_capabilities")
-    result: dict[str, Any] = {}
-    for capability_id, value in capabilities.items():
-        capability = _require_dict(value, f"{label} capability {capability_id}")
-        projection_identity = _require_dict(
-            capability.get("projection_identity"),
-            f"{label} capability {capability_id}.projection_identity",
-        )
-        expected = {
-            "capability_id": capability_id,
-            "version": capability.get("version"),
-            "projection_identity": {
-                "extension_id": extension.get("extension_id"),
-                "extension_version": extension.get("version"),
-                "workflow_template_id": extension.get("workflow_template_id"),
-            },
-        }
-        if capability != expected or projection_identity != expected["projection_identity"]:
-            raise MatrixError(f"{label} capability {capability_id} has invalid projection identity")
-        result[capability_id] = capability
-    return result
-
-
 def capability_projection(repo_root: Path) -> dict[str, Any]:
     """Build a compact complete projection from current canonical authorities."""
 
@@ -763,9 +734,6 @@ def capability_projection(repo_root: Path) -> dict[str, Any]:
             "companion_commands": _sorted_strings(commands),
         },
         "docs_authority": {"locators": docs_locators},
-        "migration_capabilities": _migration_capabilities_projection(
-            canonical, public_api, "canonical"
-        ),
     }
     projection["projection_sha256"] = _digest(projection)
     return projection
@@ -912,9 +880,6 @@ def installed_capability_projection(target: Path) -> dict[str, Any]:
             "companion_commands": command_ids,
         },
         "docs_authority": {"locators": docs_locators},
-        "migration_capabilities": _migration_capabilities_projection(
-            extension, public_api, "installed"
-        ),
     }
     projection["projection_sha256"] = _digest(projection)
     return projection
@@ -953,7 +918,7 @@ def compare_capabilities(before: Mapping[str, Any], after: Mapping[str, Any]) ->
         "after": after_identity,
         "consistent": before_identity == after_identity,
     }
-    for group in ("workflow", "task_data", "docs_authority", "migration_capabilities"):
+    for group in ("workflow", "task_data", "docs_authority"):
         before_group = _require_dict(before.get(group), f"before {group}")
         after_group = _require_dict(after.get(group), f"after {group}")
         missing: dict[str, Any] = {}
@@ -973,8 +938,13 @@ def compare_capabilities(before: Mapping[str, Any], after: Mapping[str, Any]) ->
                 if added_values:
                     added[field] = added_values
             elif before_value != after_value:
-                missing[field] = before_value
-                added[field] = after_value
+                if field not in before_group:
+                    added[field] = after_value
+                elif field not in after_group:
+                    missing[field] = before_value
+                else:
+                    missing[field] = before_value
+                    added[field] = after_value
         if missing:
             differences.append({"group": group, "missing": missing})
         if added:
@@ -991,8 +961,20 @@ def compare_capabilities(before: Mapping[str, Any], after: Mapping[str, Any]) ->
     return result
 
 
+def runtime_contract_projection(projection: Mapping[str, Any]) -> dict[str, Any]:
+    """Select the contract that must be identical in source and installation."""
+
+    return {
+        "schema_version": projection.get("schema_version"),
+        "extension": _require_dict(projection.get("extension"), "projection extension"),
+        "workflow": _require_dict(projection.get("workflow"), "projection workflow"),
+        "task_data": _require_dict(projection.get("task_data"), "projection task_data"),
+        "docs_authority": {},
+    }
+
+
 def _assert_projection_consistency(
-    comparison: Mapping[str, Any], projection_name: str
+    comparison: Mapping[str, Any], projection_name: str, *, require_exact: bool = False
 ) -> None:
     if not comparison.get("capabilities_preserved"):
         raise MatrixError(
@@ -1008,6 +990,21 @@ def _assert_projection_consistency(
             f"{projection_name} extension identity changed: "
             + json.dumps(extension_identity, ensure_ascii=False)
         )
+    if require_exact and comparison.get("additive_differences"):
+        raise MatrixError(
+            f"{projection_name} projection contains unmatched current entries: "
+            + json.dumps(comparison.get("additive_differences"), ensure_ascii=False)
+        )
+    if require_exact:
+        version_binding = _require_dict(
+            comparison.get("version_binding"),
+            f"{projection_name} version binding",
+        )
+        if version_binding.get("before") != version_binding.get("after"):
+            raise MatrixError(
+                f"{projection_name} version binding changed: "
+                + json.dumps(version_binding, ensure_ascii=False)
+            )
 
 
 def _run(
@@ -1313,10 +1310,22 @@ def validate_fork_source(repo_root: Path, source: Path) -> dict[str, Any]:
     lock = _require_dict(_load_json(
         repo_root / "trellis/presets/guru-team/source/trellis-source.json"
     ), "Trellis source lock")
+    parents = lock.get("parents")
     if lock.get("schema_version") != "1.0" or any(
         not isinstance(lock.get(key), str) or not lock[key]
-        for key in ("repository", "commit", "cli_version", "package_manager")
+        for key in (
+            "repository",
+            "commit",
+            "tree",
+            "cli_version",
+            "package_manager",
+        )
     ) or not re.fullmatch(r"[0-9a-f]{40}", lock["commit"]) or (
+        not re.fullmatch(r"[0-9a-f]{40}", lock["tree"])
+    ) or not isinstance(parents, list) or not parents or not all(
+        isinstance(parent, str) and re.fullmatch(r"[0-9a-f]{40}", parent)
+        for parent in parents
+    ) or (
         type(lock.get("ci_run_id")) is not int or lock["ci_run_id"] <= 0
     ):
         raise MatrixError("invalid Trellis source lock")
@@ -1372,6 +1381,16 @@ def _validate_source_build(
     head = _run(("git", "rev-parse", "HEAD"), cwd=source, capture=True).strip()
     if head != lock["commit"]:
         raise MatrixError("fork source HEAD does not match source lock")
+    parents = _run(
+        ("git", "show", "-s", "--format=%P", "HEAD"), cwd=source, capture=True
+    ).strip().split()
+    tree = _run(
+        ("git", "rev-parse", "HEAD^{tree}"), cwd=source, capture=True
+    ).strip()
+    if "parents" in lock and parents != lock["parents"]:
+        raise MatrixError("fork source ordered parents do not match source lock")
+    if "tree" in lock and tree != lock["tree"]:
+        raise MatrixError("fork source tree does not match source lock")
     if _run(("git", "status", "--porcelain", "--untracked-files=no"),
             cwd=source, capture=True).strip():
         raise MatrixError("fork source has dirty tracked files")
@@ -1434,6 +1453,7 @@ def _validate_source_build(
     command = (node, str(package / "bin/trellis.js"))
     actual = _assert_version(command, version, {})
     return {"schema_version": "1.0", "repository": f"https://{repository_id(matches[0])}.git", "commit": head,
+            "parents": parents, "tree": tree,
             "cli_version": actual, "package_manager": manager,
             "command": list(command), "template_count": len(assets)}
 
@@ -2489,13 +2509,16 @@ def _run_cell(
     _assert_docs_authority(target, before_docs)
 
     after_projection = capability_projection(repo_root)
-    comparison = compare_capabilities(before_projection, after_projection)
-    _assert_projection_consistency(comparison, "source")
     after_installed_projection = installed_capability_projection(target)
-    installed_comparison = compare_capabilities(
-        before_installed_projection, after_installed_projection
+    current_projection_comparison = compare_capabilities(
+        runtime_contract_projection(after_projection),
+        runtime_contract_projection(after_installed_projection),
     )
-    _assert_projection_consistency(installed_comparison, "installed")
+    _assert_projection_consistency(
+        current_projection_comparison,
+        "current source/installed",
+        require_exact=True,
+    )
     result = validate_cell(
         target,
         platform,
@@ -2511,15 +2534,14 @@ def _run_cell(
             "workflow_sample": "public_plus_local_candidate" if local_sample else "exact_marketplace",
             "before_projection_sha256": before_projection["projection_sha256"],
             "after_projection_sha256": after_projection["projection_sha256"],
-            "comparison_sha256": comparison["comparison_sha256"],
+            "current_projection_comparison_sha256": current_projection_comparison[
+                "comparison_sha256"
+            ],
             "before_installed_projection_sha256": before_installed_projection[
                 "projection_sha256"
             ],
             "after_installed_projection_sha256": after_installed_projection[
                 "projection_sha256"
-            ],
-            "installed_comparison_sha256": installed_comparison[
-                "comparison_sha256"
             ],
             "preset_initial": initial_preset,
             "preset_reapply": reapplied_preset,

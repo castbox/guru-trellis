@@ -363,6 +363,7 @@ def discover_referenced_shell_helpers(verifier_text: str) -> list[dict[str, str]
 
 MATRIX_OWNER = "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
 PARALLEL_OWNER = "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py"
+TRANSCRIPT_OWNER = "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py"
 
 
 def matrix_shell_references(repo_root: Path) -> list[dict[str, str]]:
@@ -390,6 +391,46 @@ def matrix_shell_references(repo_root: Path) -> list[dict[str, str]]:
             references.add("trellis/workflows/guru-team/scripts/bash/" + path.right.value)
     return [{"owner": path, "classification": "installed_managed"}
             for path in sorted(references)]
+
+
+def transcript_activation_shell_references(repo_root: Path) -> list[dict[str, str]]:
+    """Read the installed transcript's bounded activation-wrapper calls."""
+    tree = ast.parse((repo_root / TRANSCRIPT_OWNER).read_text(encoding="utf-8"))
+    activation = next((
+        node for node in tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and node.name == "verify_created_activation"
+    ), None)
+    if activation is None:
+        raise RoutingError("installed transcript activation entry is missing")
+    references = set()
+    for node in ast.walk(activation):
+        if not (
+            isinstance(node, ast.BinOp)
+            and isinstance(node.op, ast.Div)
+            and isinstance(node.left, ast.Name)
+            and node.left.id == "wrappers"
+            and isinstance(node.right, ast.Constant)
+            and isinstance(node.right.value, str)
+            and node.right.value.endswith(".sh")
+        ):
+            continue
+        references.add(
+            "trellis/workflows/guru-team/scripts/bash/" + node.right.value
+        )
+    expected = {
+        "trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh",
+        "trellis/workflows/guru-team/scripts/bash/start-task.sh",
+    }
+    if references != expected:
+        raise RoutingError(
+            "installed transcript activation wrapper drift: "
+            f"expected={sorted(expected)} discovered={sorted(references)}"
+        )
+    return [
+        {"owner": path, "classification": "installed_managed"}
+        for path in sorted(references)
+    ]
 
 
 def matrix_parallel_source(repo_root: Path) -> str:
@@ -424,7 +465,13 @@ def discover_shell_python_helpers(
             raise RoutingError(f"bare PATH Python in shell helper: {owner}")
         route = [owner]
         if "resolve-python.sh" in source:
-            if not re.search(r'exec "\$[^"\n]+/resolve-python\.sh"', source):
+            direct_exec = re.search(r'exec "\$[^"\n]+/resolve-python\.sh"', source)
+            managed_function = all(token in source for token in (
+                'PYTHON_RESOLVER="$RUNTIME_ASSETS/resolve-python.sh"',
+                'managed_python() {',
+                '"$PYTHON_RESOLVER" "$REPO_ROOT" "$RUNTIME_ASSETS" "$@"',
+            ))
+            if direct_exec is None and not managed_function:
                 raise RoutingError(f"shell helper managed launcher drift: {owner}")
             return route + ["trellis/skills/guru-team/runtime/resolve-python.sh"]
 
@@ -479,8 +526,11 @@ def discover_shell_python_helpers(
         return route + route_for(nested[0], seen | {owner})
 
     discovered: dict[tuple[str, str], dict[str, Any]] = {}
-    for reference in [*discover_referenced_shell_helpers(verifier_text),
-                      *matrix_shell_references(repo_root)]:
+    for reference in [
+        *discover_referenced_shell_helpers(verifier_text),
+        *matrix_shell_references(repo_root),
+        *transcript_activation_shell_references(repo_root),
+    ]:
         owner = reference["owner"]
         classification = reference["classification"]
         name = Path(owner).name

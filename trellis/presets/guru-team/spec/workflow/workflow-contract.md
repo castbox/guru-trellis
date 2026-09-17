@@ -163,7 +163,7 @@ recorder/validator components only. They validate shape, identity, freshness,
 candidate coverage, and consumer binding; they do not judge mechanism,
 architecture, sufficiency, severity, decision, or route. The public invocation
 emits one call-local typed exit and creates no qualification artifact,
-checkpoint, ledger, handoff, or result locator.
+checkpoint, persistent state store, handoff, or result locator.
 
 ## Phase Route
 
@@ -388,6 +388,64 @@ branch and HEAD: `headRepository.nameWithOwner` must match the selected repo,
 Missing or inconsistent repository identity fails closed before a PR candidate
 can be reused or published.
 
+### Active-task continuation authority
+
+For an exact current task, the active workflow's single non-empty
+`[trellis-continuation]` block is the only detailed continuation authority.
+`task.json.status`, Phase Index text, `[workflow-state:*]` breadcrumbs, platform
+entries, hooks, prior conversation text, and private checkpoint names provide
+facts or broad lifecycle guidance only. They must not maintain another route
+table or infer a semantic pass. `planning` and `planning-inline` share one Phase
+1 matrix; `in_progress` and `in_progress-inline` share one Phase 2-to-Finalizer
+matrix; `completed` enters canonical `guru-finish-work`; invalid identity or an
+unsupported task state stops at `invalid-task-state`. Without an exact current
+task, continuation never selects a replacement from project inventory.
+
+Continuation first distinguishes a current adjacent public DTO from lost
+output. A still-current adjacent DTO goes directly through its Interface-
+declared projection to the unique consumer. A lost DTO returns to the original
+producer: deterministic mutation/output loss uses only that producer's formal
+recovery or rematerialization, while a semantic result is rerun fresh by its
+semantic owner. Missing checkpoints, clean Git state, commit messages, task
+status, old summaries, and earlier confirmation are never substitutes.
+
+The Phase 1 matrix preserves the current owner for task-created attachment,
+partial planning, planning wording, Planning Architecture, plan approval,
+dialogue-local plan acceptance, and activation. Activation has one
+workflow-owned `initial|recovery` contract: `initial` performs the official
+status transition once after current approval and confirmation; `recovery`
+requires the same exact task/worktree/branch/mapping pair already to be
+`in_progress` and rematerializes the same success without invoking activation
+again. Neither path persists confirmation.
+
+When the task/workspace mutation succeeded but its `created` output was lost,
+the original `guru-create-task-workspace:recover_created_result` profile invokes
+its read-only `recover-task-workspace-result` checker for the exact planning
+task. It may rematerialize only the normal `created` exit after current task,
+branch, worktree, boundary, and both runtime mappings agree; it never creates or
+repairs another Issue, branch, worktree, task, or mapping.
+
+For Phase 2, a current retained `passed` checkpoint may be checked again and
+projected through the existing checker-to-`invoke-guru-check-task` path. This is
+rematerialization through the existing public invocation, not a new public
+recovery profile, exit, schema, or semantic judgment. If that checkpoint is
+missing or stale, fresh Phase 2 Architecture and `guru-check-task` are required.
+Task Commit output loss uses the existing `guru-create-task-commit` same-
+candidate `recovery_resume` contract and may not create a second candidate,
+empty commit, amend, or duplicate commit. Lost Branch Review or Publication
+DTOs require fresh Architecture at the matching stage and a fresh semantic
+owner run because their successful checkpoints retire after output validation.
+This continuation stops at the existing `guru-finalize-task` entry; Finalizer,
+archive, Merge, and archived-task recovery retain their existing owners.
+
+`确认继续` authorizes only one unique, fully displayed, still-current side-effect
+plan in the current dialogue. A verified successful executor result returns the
+formal typed exit, and mapped transitions continue automatically until a new
+side effect, real choice, or fail-closed stop appears. If no plan is pending and
+an exact active task exists, the phrase expresses continuation intent and loads
+the same workflow block. Authorization is never written to task, runtime,
+checkpoint, gate, DTO, schema, or archive state.
+
 ## Consumer Projection
 
 - Producer output is the selected exit's independent public schema.
@@ -465,6 +523,14 @@ Official Trellis owns `trellis-start`, `trellis-continue`,
 `trellis-finish-work`, official hooks, sub-agents, runtime agents, bundled
 skills, and meta references. The Guru preset neither installs nor
 managed-upgrades those paths.
+
+The continuation extraction/loading protocol and all official platform entry
+bytes are likewise upstream-owned. Guru Team owns only the semantic body in its
+canonical marketplace workflow and the Guru packages that body names. Preset
+apply or reapply must not create, patch, replace, delete, or claim upstream
+entries, and must not modify the selected `.trellis/workflow.md` continuation
+body. A target with the Guru workflow but without the required Guru preset is
+an incomplete contract and stops instead of falling back to native routes.
 
 Mandatory Guru routing is guaranteed by the active workflow markers and
 installed `guru-*` packages. Platform discovery copies are generated only under

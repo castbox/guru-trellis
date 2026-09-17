@@ -53,6 +53,7 @@ from adapters.eval.stage0_fixtures import (
     build_wording_owner,
     build_workflow_mode_owner,
     build_workspace_owner,
+    build_workspace_recovery_owner,
 )
 
 
@@ -401,7 +402,12 @@ def stage_owner_execution(
             readiness_invocation = readiness_state["invocation"]
             owner_context = {"change_request": change_request}
         elif skill_id == "guru-create-task-workspace":
-            owner = build_workspace_owner(runtime, fixture, recipe, public_mode)
+            if public_payload.get("profile") == "recover_created_result":
+                owner = build_workspace_recovery_owner(
+                    runtime, fixture, public_payload, recipe
+                )
+            else:
+                owner = build_workspace_owner(runtime, fixture, recipe, public_mode)
         elif skill_id == "guru-maintain-architecture-baseline":
             if recipe in {
                 "architecture-no-impact",

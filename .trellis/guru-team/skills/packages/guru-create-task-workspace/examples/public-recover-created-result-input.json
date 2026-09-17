@@ -1,0 +1,5 @@
+{
+  "profile": "recover_created_result",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/09-17-419-active-task-continuation"
+}

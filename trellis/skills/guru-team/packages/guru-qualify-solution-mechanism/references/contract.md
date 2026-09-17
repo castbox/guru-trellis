@@ -101,6 +101,6 @@ Recorder/checker commands are stdin/stdout only. They may verify schema shape,
 fixed profile/caller identity, current Git and planning identities, safe
 locators, exact candidate coverage, digests, and consumer binding. They may not
 inspect mechanism meaning, select a route, persist authorization, or create a
-qualification report, ledger, checkpoint, handoff, or result file. Any material
+qualification report, persistent decision state, checkpoint, handoff, or result file. Any material
 authority, dependency graph, mechanism, candidate, diff, test, or target change
 requires a complete fresh invocation.

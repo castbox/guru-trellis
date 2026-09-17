@@ -475,7 +475,7 @@ consumer binding; the invoker projects exactly one checked typed exit.
 These commands accept no output path, result locator, checkpoint locator,
 approval, signoff, handoff, or prior qualification reference. They do not write
 repository tracked files, `.trellis/.runtime/**`, repo-local temporary files,
-candidate/rejection ledgers, reports, or cross-process checkpoints. A complete
+candidate/rejection state stores, reports, or cross-process checkpoints. A complete
 before/after repository inventory must therefore be identical for success,
 failure, re-entry, and all ten profiles.
 

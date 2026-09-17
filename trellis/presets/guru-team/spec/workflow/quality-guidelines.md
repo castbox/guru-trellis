@@ -375,7 +375,7 @@ one-question and atomic-group rounds; partial/refused answers, empty lifecycle,
 close-before-open and reopen rejection;
 comment/body/draft/new-task/select-existing/reopen/active-task actions; current-
 dialogue scope and side-effect choices; static/runtime rejection of any
-authorization state, text, ref, timestamp, digest, or process in result, ledger,
+authorization state, text, ref, timestamp, digest, or process in result, persistent state,
 checkpoint, runtime, archive, schema, example, or public DTO; rejection of an
 ambiguous continuation when multiple actions or proposals remain (while any
 clear affirmative response accepts one fully displayed unchanged action);
@@ -584,7 +584,7 @@ checkpoint under `.trellis/.runtime/guru-team/agent-recovery/` records the task,
 role, predecessor/replacement agents, HEADs, reasons, and handoff summary needed
 by that recovery consumer. Tests must reject replacement without a matching
 unfinished event and prove the checkpoint is never tracked or required after
-the recovery closes. Assignment/liveness ledgers have no current reader,
+the recovery closes. Assignment/liveness state stores have no current reader,
 recorder, checker, fixture, or re-entry route.
 
 ### Phase 0 Public Transition Gate
@@ -828,7 +828,7 @@ standalone mode for all ten mandatory profiles. Every invocation compares the
 complete repository inventory before and after execution. Success, rejection,
 scope confirmation, mechanism revision, blocked, stale re-entry, invalid input,
 and wrapper failure must all leave zero tracked or ignored qualification
-result/report/checkpoint, zero candidate/rejection ledger, zero cross-process
+result/report/checkpoint, zero candidate/rejection state store, zero cross-process
 result locator, and zero repository-local temporary residue.
 
 The production semantic corpus pairs the Issue #113 F-001 forgery-only family

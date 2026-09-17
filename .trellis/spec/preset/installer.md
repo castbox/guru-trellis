@@ -4,7 +4,7 @@ The managed Guru Team assets install only current Finalizer and Publication
 contracts. Fresh install, workflow switch/update, and preset reapply must
 preserve the current transaction, Draft-to-Ready handshake, `ready_for_merge`
 route and Merge entry across shared, Codex, Claude, and Cursor. Retired
-closeout-plan and Issue scope ledger schemas are not installed, registered,
+closeout-plan and retired Issue classification schemas are not installed, registered,
 read, migrated, or retained as compatibility assets. Recursive `.new`/`.bak`
 scans and canonical/dogfood equality cover only current managed assets.
 
@@ -699,7 +699,7 @@ owned by the Publication package, marketplace workflow, and active public
 package graph. The installed asset inventory contains no task-local body/index
 template, reader, writer, fixture, or CLI compatibility flag. It distributes
 the current readiness/ready/Finalizer input 4.0 schemas, transaction 1.0,
-and finish-summary 2.0 without a closeout-plan or Issue scope ledger asset.
+and finish-summary 2.0 without a closeout-plan or retired Issue classification asset.
 
 Clean throwaway install and post-`trellis update` preset reapply both run
 source/installed validation, workflow marker and consumer uniqueness checks,
@@ -755,7 +755,7 @@ with four current public input profiles, six output contracts, current gate
 5.0, transaction 2.0, real-wrapper eval corpus, and deterministic runtime
 wrappers. Canonical, installed shared, Codex, Cursor, and Claude package/corpus
 bytes remain identical and wrappers retain executable mode. Retired aggregate,
-gate, transaction, verification re-entry, closeout-plan, and Issue scope ledger
+gate, transaction, verification re-entry, closeout-plan, and retired Issue classification
 assets are absent from current inventories and routes; the current package does
 not provide compatibility or migration for them.
 

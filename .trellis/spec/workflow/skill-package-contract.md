@@ -1346,6 +1346,52 @@ review rounds, repository snapshots, per-file or artifact digest bundles, and
 `implementation_handoff` are absent. The checker rereads live entry facts and
 validates this compact result without creating another artifact.
 
+When an already validated `passed` DTO is lost before Task Commit but the
+producer-retained schema-5.0 checkpoint is still current, continuation reruns
+the existing `check-phase2-check` and original `invoke-guru-check-task` path to
+project the same minimal `passed` output. This checker-to-invoker path is the
+only deterministic rematerialization contract. It adds no public recovery
+profile, output schema, exit, semantic shortcut, or second checkpoint. Missing,
+stale, consumed, non-current, or mismatched checkpoints require a complete
+fresh `guru-check-task` semantic round.
+
+The adjacent-output rule remains primary: when the current `passed` DTO is
+still held by the invocation chain, Task Commit consumes it directly and no
+rematerialization runs. The workflow, platform entries, and other Skills may
+not read the private checkpoint or manufacture the DTO themselves.
+
+## Active-task producer recovery boundary
+
+Continuation recovery remains inside the producer that owns the interrupted
+result. `guru-create-task-workspace` owns `recover_created_result` and its
+read-only `recover-task-workspace-result` checker. That profile accepts only the
+exact current planning task and current branch/worktree/boundary/runtime
+mappings, then projects the existing `created` exit; mismatch stops without a
+second create or a mapping repair.
+
+Workflow-owned Phase 1 activation exposes one closed
+`initial|recovery` invocation contract: `initial` performs the official task
+status mutation once, while `recovery` accepts only the same exact task already
+verified as `in_progress` with current branch/worktree/runtime mappings and
+returns the same activation success without repeating the mutation. It is not
+a new public Guru Skill, persisted approval, lifecycle state store, or generic task
+resolver.
+
+`guru-create-task-commit` keeps its existing `recovery_resume` public input and
+same-candidate transaction recovery. The producer validates the retained
+candidate, Phase 2 anchor, current ref, transaction stage, created commit, tree,
+message, and path facts. A uniquely proven already-published commit returns the
+normal `committed` DTO and retires the candidate/checkpoint; ambiguity or drift
+stops in the commit owner. No continuation caller may prepare a replacement
+candidate, create an empty or duplicate commit, amend history, or synthesize
+`committed` from Git shape alone.
+
+Semantic producers do not gain equivalent readers. Lost Planning wording,
+Planning Architecture, Approval, Branch Review, or Publication output reruns
+the original semantic owner against current authority. Successful Branch
+Review and Publication checkpoints remain retired after selected DTO
+validation, so their absence is normal and never authorizes reconstruction.
+
 ## Distribution And Managed Hashes
 
 The preset installs an audited canonical registry/schema/package copy under

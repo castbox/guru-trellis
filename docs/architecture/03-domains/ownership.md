@@ -17,6 +17,7 @@
 | `ARCH-DOM-013` | public wrapper and closeout transaction | 每个 Skill 的原 command 独占 Happy/compatibility mode；Interface 独占 public wrapper path；preset/validator/matrix/eval 只消费 Interface，shared scripts 不承接 package-private facade |
 | `ARCH-DOM-014` | post-review base continuity | Reconcile 独占 compatible base advance 的 semantic classification 与确认后的 local reconciliation commit；Review Branch 独占 bounded continuity judgment；Publication 独占 current reviewed-content acceptance；Finalizer 只投影 prior review identity，不复制任一 owner 的判断或写入 |
 | `ARCH-DOM-015` | Issue reference and closure ownership | Guru lifecycle 内，current user/live external authority 与 lifecycle owner持有 requirement/source reference；Publication 独占 Issue reference/closure intent；Finalizer 执行 reviewed payload并投影 exact body SHA-256；GitHub 执行默认分支 closing keyword；Merge mutation前验证 live body identity且只验证 live result；无 task-local classification aggregate 或第二 closure owner |
+| `ARCH-DOM-016` | active-task continuation | Guru workflow独占detailed continuation；adjacent DTO的consumer、deterministic producer recovery、semantic owner fresh rerun与activation owner各保持单写；upstream独占extractor和thin entries |
 
 跨 domain 只使用 interface/schema/typed projection；不得读取对方 private checkpoint 作为 public contract。
 
@@ -32,6 +33,13 @@
 - Architecture 在三个原阶段分别独立判断 current/blocked；只读来源不进入 promotion/repair 写入。
 
 该链不替代 `ARCH-DOM-012` 的真实 task-work finding 恢复，也不增加 Issue closure owner。
+
+## #419 Active-task continuation 归属
+
+- workflow只分类并调用原owner，不生成semantic pass或mutation success。
+- workspace created-result、activation、Phase 2与Task Commit的恢复分别留在原producer。
+- Branch Review与Publication成功checkpoint退休后，跨会话只允许fresh semantic review。
+- upstream start/continue/hooks/platform/meta不进入Guru preset或managed inventory。
 
 #408 的独立手动请求不进入上述 Guru lifecycle domain，由当前会话 AI 依
 [全局操作边界](../../../trellis/workflows/guru-team/workflow.md#manual-gitgithub-operations)

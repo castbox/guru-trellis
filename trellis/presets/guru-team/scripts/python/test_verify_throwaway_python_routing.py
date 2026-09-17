@@ -265,10 +265,48 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
     def test_matrix_wrappers_and_parallel_helper_are_registered(self) -> None:
         result = self.check()
         self.assertEqual({Path(row["owner"]).name for row in result["shell_python_helpers"]},
-                         {"check-skill-packages.sh", "discover-skill-contract.sh", "run-skill-evals.sh"})
+                         {"check-skill-packages.sh", "check-workspace-boundary.sh",
+                          "discover-skill-contract.sh", "run-skill-evals.sh", "start-task.sh"})
         self.assertIn(ROUTING.PARALLEL_OWNER, {row["path"] for row in result["python_helpers"]})
         self.assertTrue(any(row["invocation_path"].endswith("/preview-change-context-history.sh")
                             for row in result["package_platform_wrappers"]))
+
+    def test_transcript_activation_wrappers_require_inventory(self) -> None:
+        for owner in (
+            "trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh",
+            "trellis/workflows/guru-team/scripts/bash/start-task.sh",
+        ):
+            with self.subTest(owner=owner):
+                inventory = self.load_inventory()
+                inventory["shell_python_helpers"] = [
+                    row for row in inventory["shell_python_helpers"]
+                    if row["owner"] != owner
+                ]
+                self.write_inventory(inventory)
+                with self.assertRaisesRegex(
+                    ROUTING.RoutingError, "shell helper inventory drift"
+                ):
+                    self.check()
+                self.write_inventory(self.load_source_inventory())
+
+    def load_source_inventory(self) -> dict[str, object]:
+        source_root = MODULE_PATH.parents[5]
+        return json.loads(
+            (source_root / "trellis/presets/guru-team/tests/throwaway-python-callers.json")
+            .read_text(encoding="utf-8")
+        )
+
+    def test_transcript_activation_wrappers_reject_path_python(self) -> None:
+        for name in ("check-workspace-boundary.sh", "start-task.sh"):
+            with self.subTest(name=name):
+                path = self.root / "trellis/workflows/guru-team/scripts/bash" / name
+                original = path.read_text(encoding="utf-8")
+                path.write_text(original + "\npython3 -V\n", encoding="utf-8")
+                with self.assertRaisesRegex(
+                    ROUTING.RoutingError, "bare PATH Python in shell helper"
+                ):
+                    self.check()
+                path.write_text(original, encoding="utf-8")
 
     def test_shared_runtime_launcher_drift_fails_with_python_matrix(self) -> None:
         path = self.root / "trellis/skills/guru-team/runtime/launch.sh"

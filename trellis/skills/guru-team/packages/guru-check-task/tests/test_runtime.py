@@ -222,4 +222,37 @@ class PackageLocalRuntimeTest(unittest.TestCase):
      self.assertEqual(expected[exit_id],json.loads(result.stdout))
      self.assertEqual(exit_id=="passed",checkpoint_path.exists())
 
+ def test_passed_output_can_be_rematerialized_only_after_fresh_checker_success(self):
+  example=json.loads((PACKAGE/"examples/phase2-check.json").read_text())
+  with tempfile.TemporaryDirectory() as temporary:
+   repo=Path(temporary);self.git(repo,"init","-q");self.git(repo,"config","user.name","Test");self.git(repo,"config","user.email","test@example.com")
+   task_ref=".trellis/tasks/test-task";task_dir=repo/task_ref;task_dir.mkdir(parents=True)
+   (task_dir/"task.json").write_text(json.dumps({"id":"test-task","status":"in_progress","branch":"main","base_branch":"main","worktree_path":str(repo)}))
+   for name in ("prd.md","design.md","implement.md"):(task_dir/name).write_text(f"# {name}\n\nCurrent Phase 2 authority.\n")
+   (repo/".gitignore").write_text(".trellis/.runtime/\n")
+   tracked=repo/"tracked.txt";tracked.write_text("reviewed\n")
+   self.git(repo,"add",".");self.git(repo,"commit","-qm","fixture")
+   tracked.write_text("reviewed current candidate\n")
+
+   fields={"mode","reviewed_paths","validation","docs_ssot","candidate_classifications","semantic_review","typed_exit","route","reason","consumer"}
+   authoring={key:copy.deepcopy(value) for key,value in example.items() if key in fields};authoring["reviewed_paths"]=["tracked.txt"]
+   input_path=repo/".trellis/.runtime/phase2-authoring.json";input_path.parent.mkdir(parents=True);input_path.write_text(json.dumps(authoring))
+   environment={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"}
+   recorded=subprocess.run([str(PACKAGE/"scripts/record-phase2-check.sh"),"--root",str(repo),"--task",task_ref,"--input",str(input_path),"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
+   artifact_path=Path(json.loads(recorded.stdout)["artifact_path"])
+   public={"profile":"initial_check","mode":"workflow","task_ref":task_ref,"source_exit":"implementation_complete"}
+
+   first_check=subprocess.run([str(PACKAGE/"scripts/check-phase2-check.sh"),"--root",str(repo),"--task",task_ref,"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
+   self.assertEqual("ok",json.loads(first_check.stdout)["status"])
+   envelope=json.dumps({"public_input":public,"owner_result":json.loads(artifact_path.read_text())},separators=(",",":"))
+   first=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],input=envelope,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
+   discarded_output=json.loads(first.stdout)
+
+   second_check=subprocess.run([str(PACKAGE/"scripts/check-phase2-check.sh"),"--root",str(repo),"--task",task_ref,"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
+   self.assertEqual("ok",json.loads(second_check.stdout)["status"])
+   rematerialized=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],input=envelope,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
+   self.assertEqual(discarded_output,json.loads(rematerialized.stdout))
+   self.assertEqual("passed",discarded_output["exit_id"])
+   self.assertTrue(artifact_path.exists())
+
 if __name__=="__main__": unittest.main()

@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.4.schema.json",
-  "schema_version": "1.4",
+  "$schema": "../../schemas/skill-interface-1.6.schema.json",
+  "schema_version": "1.6",
   "id": "guru-create-task-workspace",
   "name": "guru-create-task-workspace",
   "description": "Create or exactly reuse a reviewed issue workspace and Trellis task through an AI-owned semantic gate, ephemeral scoped confirmation, deterministic execution, and four typed exits.",
@@ -129,6 +129,10 @@
       "path": "examples/public-execute-reviewed-plan-input.json"
     },
     {
+      "id": "public_input_recover_created_result_example",
+      "path": "examples/public-recover-created-result-input.json"
+    },
+    {
       "id": "public_invocation_error_example",
       "path": "examples/public-invocation-error.json"
     },
@@ -159,8 +163,16 @@
       "path": "schemas/task-workspace-result.schema.json"
     },
     {
+      "id": "task_workspace_recovery_result_schema",
+      "path": "schemas/task-workspace-recovery-result.schema.json"
+    },
+    {
       "id": "public_input_execute_reviewed_plan",
       "path": "schemas/public-execute-reviewed-plan-input.schema.json"
+    },
+    {
+      "id": "public_input_recover_created_result",
+      "path": "schemas/public-recover-created-result-input.schema.json"
     },
     {
       "id": "public_input_aggregate",
@@ -207,6 +219,12 @@
       "objective_scope": "published result schema, live issue binding or branch/worktree/task identity, ignored runtime, workspace boundary and typed consumer"
     },
     {
+      "id": "task_workspace_created_result_recovery",
+      "command": "scripts/recover-task-workspace-result.sh",
+      "runtime_command": "recover-task-workspace-result",
+      "objective_scope": "Read-only rematerialization of created for one exact planning task after current task, branch, worktree, boundary and both ignored runtime mappings close into one identity"
+    },
+    {
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-create-task-workspace",
@@ -245,13 +263,14 @@
     }
   ],
   "reentry": {
-    "identity": "five prerequisite result digests, final target/disposition, complete created-issue provenance when applicable, post-sync base identity, naming, assignee, side-effect scope and plan digest",
-    "freshness": "draft retry recovers one exact post-plan issue; complete Intake replay validates the checker-passed created-issue result; first mutation reruns shared base sync; workspace recovery only reuses identity-exact live objects",
+    "identity": "five prerequisite result digests, final target/disposition, complete created-issue provenance when applicable, post-sync base identity, naming, assignee, side-effect scope and plan digest; or one exact current planning task for created-result rematerialization",
+    "freshness": "draft retry recovers one exact post-plan issue; complete Intake replay validates the checker-passed created-issue result; first mutation reruns shared base sync; created-result recovery rereads current task, branch, worktree, workspace boundary and both runtime mappings",
     "stale_behavior": "fail_closed"
   },
   "tests": [
     "tests/test_contract.py",
-    "tests/test_record_authoring.py"
+    "tests/test_record_authoring.py",
+    "tests/test_runtime.py"
   ],
   "platform_destinations": [
     "shared",
@@ -281,6 +300,21 @@
             "field": "profile",
             "value": "execute_reviewed_plan"
           }
+        },
+        {
+          "id": "recover_created_result",
+          "schema": {
+            "schema_id": "guru-stage0-create-task-workspace-input-recover-created-result-1.0",
+            "path": "schemas/public-recover-created-result-input.schema.json"
+          },
+          "example": {
+            "id": "recover_created_result_input",
+            "path": "examples/public-recover-created-result-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "recover_created_result"
+          }
         }
       ]
     },
@@ -289,7 +323,10 @@
       "wrapper": "scripts/invoke.sh",
       "input_binding": {
         "kind": "structured_json",
-        "profile_id": "execute_reviewed_plan"
+        "profile_selector": {
+          "source": "aggregate_public_input",
+          "field": "profile"
+        }
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {

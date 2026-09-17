@@ -94,6 +94,30 @@
       },
       "files": ["evals/files/eval-invalid-task-state-input.json", "evals/files/eval-invalid-task-state-facts.json"],
       "input_profile_id": "execute_reviewed_plan"
+    },
+    {
+      "id": "recover-created-result-route",
+      "prompt": "Recover the exact current planning task's already-created workspace result through the owner read-only recovery command, then invoke guru-create-task-workspace with the closed stdin envelope. Return the rematerialized created route.",
+      "expected_exit": "created",
+      "expected_output": "The public DTO is the declared created route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "created"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-recover-created-result-input.json", "evals/files/eval-recover-created-result-facts.json"],
+      "input_profile_id": "recover_created_result"
     }
   ]
 }

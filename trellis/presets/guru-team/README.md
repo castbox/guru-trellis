@@ -126,7 +126,7 @@ The package exposes three declared commands: `record-solution-mechanism-qualific
 `check-solution-mechanism-qualification`, and
 `invoke-guru-qualify-solution-mechanism`. The first two are deterministic
 recorder/checker commands; the public invocation emits one call-local typed exit.
-The package has no qualification artifact, report, ledger, handoff, checkpoint,
+The package has no qualification artifact, report, persistent state, handoff, checkpoint,
 or cross-process result locator. A forbidden OS/kernel/process/descriptor
 mechanism returns `mechanism_revision_required` and never enters scope
 confirmation.
@@ -134,7 +134,7 @@ confirmation.
 Qualification decisions and the typed result remain current-process
 memory/stdout only. The installer must not create or claim a tracked, ignored,
 or temporary qualification result/report/checkpoint, candidate/rejection
-ledger, handoff, or cross-process result locator. Installed package tests scan
+persistent decision store, handoff, or cross-process result locator. Installed package tests scan
 the complete target inventory before and after all ten profiles and require
 zero qualification residue. The only persistent related data is the terminal
 classification/witness directly authored into the existing schema 5.0 Phase 2,

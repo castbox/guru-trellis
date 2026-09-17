@@ -922,7 +922,7 @@ class CloseoutHappyPathIntegrationTests(unittest.TestCase):
                 "git": {
                     "repo": "castbox/guru-trellis",
                     "base_branch": "main",
-                    "head_branch": "codex/247-remove-issue-scope-ledger",
+                    "head_branch": "codex/closeout-happy-path-fixture",
                 },
                 "publish": {"body": body},
             }

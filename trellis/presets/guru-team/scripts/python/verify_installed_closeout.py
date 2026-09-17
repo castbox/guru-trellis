@@ -720,7 +720,7 @@ def write_full_fixture(
     task_dir = root / str(workspace["task_artifact_dir"])
     task = read_json(task_dir / "task.json")
     if (
-        task.get("status") != "planning"
+        task.get("status") != "in_progress"
         or task.get("branch") != branch
         or task.get("scope") != f"GitHub issue: https://github.com/{repo_ref}/issues/{issue}"
     ):
@@ -762,7 +762,7 @@ def write_full_fixture(
         "workspace_exit": workspace["actual_exit"],
         "workspace_path": str(root),
         "remote_path": str(remote),
-        "task_status_after_creation": "planning",
+        "task_status_after_creation": "in_progress",
     }
 
 
