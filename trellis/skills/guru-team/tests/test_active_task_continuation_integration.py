@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,6 +13,49 @@ REPO = Path(__file__).resolve().parents[4]
 WORKFLOW = REPO / "trellis/workflows/guru-team/workflow.md"
 UPSTREAM_CANDIDATE = "43fffc170927c85d9f7fc106cc5a059e80d4530b"
 EXTRACTOR_PATH = ".trellis/scripts/common/continuation_contract.py"
+
+FORMAL_WRAPPER_CASES = (
+    (
+        "activation failure stops before mutation",
+        "trellis/presets/guru-team/scripts/python/test_start_task_wrapper.py",
+        "test_wrapper_blocks_before_upstream_task_start_when_boundary_fails",
+    ),
+    (
+        "activation output loss rematerializes without repeating mutation",
+        "trellis/presets/guru-team/scripts/python/test_start_task_wrapper.py",
+        "test_recovery_rematerializes_success_without_repeating_upstream_start",
+    ),
+    (
+        "Phase 2 lost output rematerializes only after the checker passes",
+        "trellis/skills/guru-team/packages/guru-check-task/tests/test_runtime.py",
+        "test_passed_output_can_be_rematerialized_only_after_fresh_checker_success",
+    ),
+    (
+        "Task Commit stdout loss recovers the same commit once",
+        "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_happy_path.py",
+        "test_success_and_stdout_loss_recovery_execute_once",
+    ),
+    (
+        "Branch Review adjacent output retires and cannot be reconstructed",
+        "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
+        "test_passed_record_check_invoke_retires_and_rejects_repeat",
+    ),
+    (
+        "Branch Review implementation route remains recoverable",
+        "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
+        "test_nonterminal_record_and_invoke_are_idempotent_and_retain",
+    ),
+    (
+        "Task Commit and Publication use their formal public invocation paths",
+        "trellis/skills/guru-team/tests/test_closeout_happy_path_integration.py",
+        "test_supported_internal_and_wrapper_routes_are_equivalent",
+    ),
+    (
+        "Publication failure retains its current owner checkpoint",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+        "test_public_wrapper_keeps_checkpoint_when_checker_or_projection_fails",
+    ),
+)
 
 
 def git_show(spec: str) -> str:
@@ -34,6 +79,19 @@ def load_upstream_extractor(directory: Path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def run_formal_wrapper_case(test_path: str, test_name: str) -> subprocess.CompletedProcess[str]:
+    environment = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+    return subprocess.run(
+        [sys.executable, "-m", "unittest", test_path, "-k", test_name],
+        cwd=REPO,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        env=environment,
+    )
 
 
 def markdown_table(body: str, heading: str) -> list[tuple[str, str]]:
@@ -162,6 +220,18 @@ class ActiveTaskContinuationIntegrationTests(unittest.TestCase):
             self.assertNotIn("guru-check-task", body)
             self.assertNotIn("guru-review-branch", body)
             self.assertNotIn("guru-review-task-publication", body)
+
+    def test_formal_wrappers_execute_real_transition_and_recovery_fixtures(self):
+        for label, test_path, test_name in FORMAL_WRAPPER_CASES:
+            with self.subTest(case=label):
+                result = run_formal_wrapper_case(test_path, test_name)
+                self.assertEqual(
+                    result.returncode,
+                    0,
+                    f"{label} failed\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}",
+                )
+                self.assertIn("Ran 1 test", result.stderr)
+                self.assertIn("OK", result.stderr)
 
 
 if __name__ == "__main__":
