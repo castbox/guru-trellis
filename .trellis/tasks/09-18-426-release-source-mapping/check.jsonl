@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "核对公开文档四条版本轴和 release-facing current source 一致性"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "核对修复未扩张 Guru/Trellis ownership 边界"}
+{"file": "trellis/presets/guru-team/scripts/python/test_fork_preparation.py", "reason": "运行并审查 release-facing Fork source 映射回归测试"}
