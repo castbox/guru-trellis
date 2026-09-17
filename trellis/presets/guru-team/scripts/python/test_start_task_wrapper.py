@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import json
+import os
+import shlex
+import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -27,6 +31,17 @@ class StartTaskWrapperTests(unittest.TestCase):
             (SOURCE / "trellis/workflows/guru-team/scripts/bash/start-task.sh").read_bytes()
         )
         wrapper.chmod(0o755)
+
+        resolver = root / ".trellis/guru-team/runtime/resolve-python.sh"
+        resolver.parent.mkdir(parents=True)
+        resolver.write_text(
+            "#!/usr/bin/env bash\n"
+            "set -euo pipefail\n"
+            "shift 2\n"
+            f"exec {shlex.quote(sys.executable)} \"$@\"\n",
+            encoding="utf-8",
+        )
+        resolver.chmod(0o755)
 
         boundary = wrapper.parent / "check-workspace-boundary.sh"
         boundary.write_text(
@@ -79,14 +94,26 @@ class StartTaskWrapperTests(unittest.TestCase):
         )
         return wrapper, task_dir, counter
 
-    def run_wrapper(self, wrapper: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    def run_wrapper(
+        self, wrapper: Path, *args: str, env: dict[str, str] | None = None
+    ) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [str(wrapper), *args],
             cwd=wrapper.parents[4],
             text=True,
             capture_output=True,
             check=False,
+            env=env,
         )
+
+    def path_without_python(self, root: Path) -> str:
+        path_bin = root / "path-bin"
+        path_bin.mkdir()
+        for command in ("bash", "cat", "dirname", "git", "mktemp", "rm"):
+            target = shutil.which(command)
+            self.assertIsNotNone(target, command)
+            (path_bin / command).symlink_to(target)
+        return str(path_bin)
 
     def test_wrapper_blocks_before_upstream_task_start_when_boundary_fails(self):
         with tempfile.TemporaryDirectory(prefix="guru-start-task-") as tmp:
@@ -190,6 +217,80 @@ class StartTaskWrapperTests(unittest.TestCase):
             self.assertEqual(output["mode"], "recovery")
             self.assertFalse(output["upstream_start_executed"])
             self.assertEqual(counter.read_text(encoding="utf-8"), "1")
+
+    def test_initial_and_recovery_use_managed_python_without_path_python(self):
+        with tempfile.TemporaryDirectory(prefix="guru-start-task-managed-") as tmp:
+            root = Path(tmp)
+            wrapper, _, counter = self.fixture(root)
+            env = {**os.environ, "PATH": self.path_without_python(root)}
+
+            initial = self.run_wrapper(
+                wrapper,
+                "--mode",
+                "initial",
+                ".trellis/tasks/identity",
+                env=env,
+            )
+            recovered = self.run_wrapper(
+                wrapper,
+                "--mode",
+                "recovery",
+                ".trellis/tasks/identity",
+                env=env,
+            )
+
+            self.assertEqual(initial.returncode, 0, initial.stderr)
+            self.assertEqual(recovered.returncode, 0, recovered.stderr)
+            self.assertEqual(counter.read_text(encoding="utf-8"), "1")
+
+    def test_workspace_boundary_uses_managed_python_without_path_python(self):
+        with tempfile.TemporaryDirectory(prefix="guru-boundary-managed-") as tmp:
+            root = Path(tmp)
+            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
+            script_dir = root / ".trellis/guru-team/scripts/bash"
+            script_dir.mkdir(parents=True)
+            boundary = script_dir / "check-workspace-boundary.sh"
+            boundary.write_bytes(
+                (
+                    SOURCE
+                    / "trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh"
+                ).read_bytes()
+            )
+            boundary.chmod(0o755)
+            resolver = root / ".trellis/guru-team/runtime/resolve-python.sh"
+            resolver.parent.mkdir(parents=True)
+            resolver.write_text(
+                "#!/usr/bin/env bash\n"
+                "set -euo pipefail\n"
+                "shift 2\n"
+                f"exec {shlex.quote(sys.executable)} \"$@\"\n",
+                encoding="utf-8",
+            )
+            resolver.chmod(0o755)
+            lifecycle = (
+                root
+                / ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/lifecycle.py"
+            )
+            lifecycle.parent.mkdir(parents=True)
+            lifecycle.write_text(
+                "import json,sys\n"
+                "assert sys.argv[1] == 'check-workspace-boundary'\n"
+                "print(json.dumps({'status':'ok'}))\n",
+                encoding="utf-8",
+            )
+            env = {**os.environ, "PATH": self.path_without_python(root)}
+
+            result = subprocess.run(
+                [str(boundary), "--json"],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=False,
+                env=env,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout), {"status": "ok"})
 
     def test_modes_are_closed_over_task_status(self):
         cases = (("initial", "in_progress"), ("recovery", "planning"))

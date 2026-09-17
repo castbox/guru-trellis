@@ -36,10 +36,24 @@ fi
 
 REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 TASK_PY="$REPO_ROOT/.trellis/scripts/task.py"
+if [[ -x "$SCRIPT_DIR/../../../../skills/guru-team/runtime/resolve-python.sh" ]]; then
+  RUNTIME_ASSETS="$REPO_ROOT/trellis/skills/guru-team/runtime"
+else
+  RUNTIME_ASSETS="$REPO_ROOT/.trellis/guru-team/runtime"
+fi
+PYTHON_RESOLVER="$RUNTIME_ASSETS/resolve-python.sh"
+if [[ ! -x "$PYTHON_RESOLVER" ]]; then
+  echo "Error: Guru Team managed Python runtime is unavailable" >&2
+  exit 2
+fi
+
+managed_python() {
+  "$PYTHON_RESOLVER" "$REPO_ROOT" "$RUNTIME_ASSETS" "$@"
+}
 
 "$SCRIPT_DIR/check-workspace-boundary.sh" --json --task "$TASK_PATH" >/dev/null
 
-IDENTITY_JSON="$(python3 - "$REPO_ROOT" "$TASK_PATH" "$MODE" <<'PY'
+IDENTITY_JSON="$(managed_python - "$REPO_ROOT" "$TASK_PATH" "$MODE" <<'PY'
 import json
 import subprocess
 import sys
@@ -126,12 +140,12 @@ PY
 verify_current_identity() {
   local expected_status="$1"
   local current_json
-  if ! current_json="$(python3 "$TASK_PY" current --json)"; then
+  if ! current_json="$(managed_python "$TASK_PY" current --json)"; then
     printf '%s\n' "$current_json" >&2
     echo "Error: current active-task identity is unavailable" >&2
     return 1
   fi
-  python3 - "$IDENTITY_JSON" "$current_json" "$expected_status" <<'PY'
+  managed_python - "$IDENTITY_JSON" "$current_json" "$expected_status" <<'PY'
 import json
 import sys
 
@@ -176,7 +190,7 @@ if [[ "$MODE" == "initial" ]]; then
   stdout_file="$(mktemp)"
   stderr_file="$(mktemp)"
   trap 'rm -f "$stdout_file" "$stderr_file"' EXIT
-  if ! python3 "$TASK_PY" start "$TASK_PATH" "$@" >"$stdout_file" 2>"$stderr_file"; then
+  if ! managed_python "$TASK_PY" start "$TASK_PATH" "$@" >"$stdout_file" 2>"$stderr_file"; then
     cat "$stdout_file"
     cat "$stderr_file" >&2
     exit 1
@@ -186,7 +200,7 @@ if [[ "$MODE" == "initial" ]]; then
   verify_current_identity in_progress
 fi
 
-python3 - "$IDENTITY_JSON" "$MODE" "$UPSTREAM_EXECUTED" <<'PY'
+managed_python - "$IDENTITY_JSON" "$MODE" "$UPSTREAM_EXECUTED" <<'PY'
 import json
 import sys
 

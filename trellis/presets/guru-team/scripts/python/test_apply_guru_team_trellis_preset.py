@@ -873,15 +873,30 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
 
     def test_legacy_finalizer_wrappers_import_shared_runtime_from_canonical_and_installed_roots(self) -> None:
         self.install({"codex", "cursor"})
-        env = os.environ.copy()
-        env.pop("PYTHONPATH", None)
+        canonical_root = self.repo / "trellis"
+        canonical_wrappers = canonical_root / "workflows/guru-team/scripts/bash"
+        canonical_wrappers.mkdir(parents=True)
         wrappers = (
             "check-workspace-boundary.sh",
             "check-agent-recovery.sh",
             "record-agent-recovery.sh",
         )
+        for wrapper in wrappers:
+            shutil.copy2(self.workflow_src / "scripts/bash" / wrapper, canonical_wrappers)
+        shutil.copytree(
+            self.guru_root / "trellis/skills/guru-team/runtime",
+            canonical_root / "skills/guru-team/runtime",
+        )
+        shutil.copytree(
+            self.guru_root
+            / "trellis/skills/guru-team/packages/guru-finalize-task",
+            canonical_root / "skills/guru-team/packages/guru-finalize-task",
+        )
+        _ensure_managed_python_runtime(self.repo, self.guru_root, activate=True)
+        env = os.environ.copy()
+        env.pop("PYTHONPATH", None)
         roots = (
-            self.workflow_src / "scripts/bash",
+            canonical_wrappers,
             self.install_dst / "scripts/bash",
         )
         for root in roots:

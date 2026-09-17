@@ -78,6 +78,17 @@
       ]
     },
     {
+      "id": "shell-helper-installed-check-workspace-boundary",
+      "owner": "trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh",
+      "kind": "shell_wrapper_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "installed resolve-python.sh",
+      "route": [
+        "trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh",
+        "trellis/skills/guru-team/runtime/resolve-python.sh"
+      ]
+    },
+    {
       "id": "shell-helper-installed-discover-skill-contract",
       "owner": "trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh",
       "kind": "shell_wrapper_second_hop",
@@ -96,6 +107,17 @@
       "expected_launcher": "installed resolve-python.sh",
       "route": [
         "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
+        "trellis/skills/guru-team/runtime/resolve-python.sh"
+      ]
+    },
+    {
+      "id": "shell-helper-installed-start-task",
+      "owner": "trellis/workflows/guru-team/scripts/bash/start-task.sh",
+      "kind": "shell_wrapper_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "installed resolve-python.sh",
+      "route": [
+        "trellis/workflows/guru-team/scripts/bash/start-task.sh",
         "trellis/skills/guru-team/runtime/resolve-python.sh"
       ]
     }
