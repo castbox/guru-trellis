@@ -86,7 +86,8 @@ TOCTOU、进程/FD authority、自动恢复或对抗性测试。
 
 R418-01..07 复用 NFR-001..008，不增加锁、并发压力、TOCTOU、crash consistency 或对抗性机制。
 仅 Finalizer 原 executor 拥有既有映射的精确归档收敛；四个新 profile 都保持零业务 mutation。
-当前 23/100/78 与业务 22 invokes/98 exits 是 additive graph，不替换普通 Merge 四出口、Branch Review
+在 #418 增量完成时，23/100/78 与业务 22 invokes/98 exits 是 additive graph；本 `.54` 吸收 #419
+producer recovery command 后，current graph 为 23/100/79。该增量不替换普通 Merge 四出口、Branch Review
 input 4.0/gate 7.0、原 mutation path、closure ownership 或 Restore。新增 input 5.0/archived-1.0
 的实际定义由 canonical package 持有，见同版本 Design。
 

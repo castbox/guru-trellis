@@ -429,7 +429,8 @@ task commit 与完整 Branch Review；Publication、Finalizer、push、PR、merg
 | R418-06 | 验证双端身份、全链 public wrapper、H/A/B、title/body/Ready/head/base drift、真实 finding 与零业务 mutation，普通 checkpoint 退休不触发多余复审 |
 | R418-07 | canonical、installed、Shared/Codex/Claude/Cursor、preset reapply/drift、mode 与 sidecar 保持同一增量合同 |
 
-当前图为 23 Skills / 100 exits / 78 commands，业务 workflow 为 22 invokes / 98 exits。
+在 #418 增量完成时，图为 23 Skills / 100 exits / 78 commands，业务 workflow 为 22 invokes / 98 exits；
+本 `.54` 吸收 #419 producer recovery command 后，current graph 为 23 Skills / 100 exits / 79 commands。
 #418 只增加四个 owner-local profile 和三个 success exits；Architecture 只增加三个只读 source/stage 配对。
 既有 closure ownership、原 Merge 四出口和 Restore 行为继续有效，新增复审出口不改变它们。
 R408-04 等继承条目中的 23/97/78 是其 .51 before-state，不限制本次 additive graph；旧版本正文不改写。
