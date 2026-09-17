@@ -1,7 +1,8 @@
 from __future__ import annotations
-import json, os, subprocess, sys, tempfile, unittest
+import json, os, shutil, subprocess, sys, tempfile, unittest
 from pathlib import Path
 from jsonschema import Draft202012Validator
+from unittest import mock
 
 PACKAGE=Path(__file__).resolve().parents[1]
 SKILLS=PACKAGE.parents[1]
@@ -10,21 +11,28 @@ if str(SKILLS) not in sys.path: sys.path.insert(0,str(SKILLS))
 from runtime.command import main
 sys.path.insert(0,str(PACKAGE/"runtime"))
 import invoke, prepare, recover
+from runtime.io import CommandError
 
 class PackageLocalRuntimeTest(unittest.TestCase):
+ def create_recovery_fixture(self, tmp):
+  repo=Path(tmp)/"repo";subprocess.run(["git","init","-q","-b","codex/recovery",str(repo)],check=True)
+  subprocess.run(["git","config","user.name","Workspace Test"],cwd=repo,check=True);subprocess.run(["git","config","user.email","workspace@example.invalid"],cwd=repo,check=True)
+  (repo/"README.md").write_text("base\n");subprocess.run(["git","add","README.md"],cwd=repo,check=True);subprocess.run(["git","commit","-q","-m","test: base"],cwd=repo,check=True)
+  task_ref=".trellis/tasks/09-17-recovery";task_dir=repo/task_ref;task_dir.mkdir(parents=True)
+  resolved_repo=repo.resolve();resolved_task_dir=task_dir.resolve();task={"id":"recovery","status":"planning","branch":"codex/recovery","base_branch":"main","worktree_path":str(resolved_repo)}
+  (task_dir/"task.json").write_text(json.dumps(task))
+  runtime=repo/".trellis/.runtime/guru-team";(runtime/"tasks").mkdir(parents=True);(runtime/"workspaces").mkdir(parents=True)
+  (runtime/"tasks/recovery.json").write_text(json.dumps({"schema_version":"1.0","task_slug":"recovery","workspace_slug":"recovery","workspace_path":str(resolved_repo),"task_artifact_dir":task_ref,"updated_at":"2026-09-17T00:00:00Z"}))
+  (runtime/"workspaces/recovery.json").write_text(json.dumps({"schema_version":"1.0","workspace_slug":"recovery","workspace_path":str(resolved_repo),"source_checkout":str(repo.parent/"source"),"branch_name":"codex/recovery","updated_at":"2026-09-17T00:00:00Z"}))
+  boundary=repo/".trellis/guru-team/scripts/bash/check-workspace-boundary.sh";boundary.parent.mkdir(parents=True);boundary.write_text("#!/bin/bash\nprintf '%s\\n' '{\"status\":\"ok\"}'\n");boundary.chmod(0o755)
+  task_cli=repo/".trellis/scripts/task.py";task_cli.parent.mkdir(parents=True,exist_ok=True)
+  resolver={"current_task":{"dir":task_ref},"stale":False,"task_workspace_root":str(resolved_repo),"resolved_task_path":str(resolved_task_dir)}
+  task_cli.write_text("import json\nprint(json.dumps("+repr(resolver)+"))\n")
+  return repo,task_ref,task_dir,task,task_cli
+
  def test_created_result_recovery_is_read_only_and_identity_bound(self):
   with tempfile.TemporaryDirectory() as tmp:
-   repo=Path(tmp)/"repo";subprocess.run(["git","init","-q","-b","codex/recovery",str(repo)],check=True)
-   subprocess.run(["git","config","user.name","Workspace Test"],cwd=repo,check=True);subprocess.run(["git","config","user.email","workspace@example.invalid"],cwd=repo,check=True)
-   (repo/"README.md").write_text("base\n");subprocess.run(["git","add","README.md"],cwd=repo,check=True);subprocess.run(["git","commit","-q","-m","test: base"],cwd=repo,check=True)
-   task_ref=".trellis/tasks/09-17-recovery";task_dir=repo/task_ref;task_dir.mkdir(parents=True)
-   resolved_repo=repo.resolve();task={"id":"recovery","status":"planning","branch":"codex/recovery","base_branch":"main","worktree_path":str(resolved_repo)}
-   (task_dir/"task.json").write_text(json.dumps(task))
-   runtime=repo/".trellis/.runtime/guru-team";(runtime/"tasks").mkdir(parents=True);(runtime/"workspaces").mkdir(parents=True)
-   (runtime/"tasks/recovery.json").write_text(json.dumps({"schema_version":"1.0","task_slug":"recovery","workspace_slug":"recovery","workspace_path":str(resolved_repo),"task_artifact_dir":task_ref,"updated_at":"2026-09-17T00:00:00Z"}))
-   (runtime/"workspaces/recovery.json").write_text(json.dumps({"schema_version":"1.0","workspace_slug":"recovery","workspace_path":str(resolved_repo),"source_checkout":str(repo.parent/"source"),"branch_name":"codex/recovery","updated_at":"2026-09-17T00:00:00Z"}))
-   boundary=repo/".trellis/guru-team/scripts/bash/check-workspace-boundary.sh";boundary.parent.mkdir(parents=True);boundary.write_text("#!/usr/bin/env bash\nprintf '%s\\n' '{\"status\":\"ok\"}'\n");boundary.chmod(0o755)
-   task_cli=repo/".trellis/scripts/task.py";task_cli.parent.mkdir(parents=True,exist_ok=True);task_cli.write_text("import json\nprint(json.dumps({'current_task': {'dir': '.trellis/tasks/09-17-recovery'}, 'stale': False}))\n")
+   repo,task_ref,task_dir,task,_=self.create_recovery_fixture(tmp)
    invocation=Path(tmp)/"invoke.json";before=subprocess.run(["git","status","--porcelain=v1","-z","--untracked-files=all"],cwd=repo,stdout=subprocess.PIPE).stdout
    result=recover.run(PACKAGE,{},["--root",str(repo),"--task",task_ref])
    self.assertEqual(("passed","created",task_ref),(result["status"],result["typed_exit"],result["task_ref"]))
@@ -48,6 +56,41 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    self.assertEqual(before,after)
    task["status"]="in_progress";(task_dir/"task.json").write_text(json.dumps(task))
    with self.assertRaisesRegex(Exception,"planning task"):recover.run(PACKAGE,{},["--root",str(repo),"--task",task_ref])
+
+ def test_created_result_recovery_rejects_foreign_resolver_identity(self):
+  for field,value_name in (("task_workspace_root","foreign-workspace"),("resolved_task_path","foreign-task")):
+   with self.subTest(field=field),tempfile.TemporaryDirectory() as tmp:
+    repo,task_ref,_,_,task_cli=self.create_recovery_fixture(tmp)
+    resolver={"current_task":{"dir":task_ref},"stale":False,"task_workspace_root":str(repo.resolve()),"resolved_task_path":str((repo/task_ref).resolve())}
+    resolver[field]=str((Path(tmp)/value_name).resolve())
+    task_cli.write_text("import json\nprint(json.dumps("+repr(resolver)+"))\n")
+    with self.assertRaises(CommandError) as raised:
+     recover.run(PACKAGE,{},["--root",str(repo),"--task",task_ref])
+    self.assertEqual(("stale_identity",field),(raised.exception.code,raised.exception.field_path))
+
+ def test_created_result_recovery_rejects_missing_or_malformed_resolver_identity(self):
+  cases=(("task_workspace_root",None),("task_workspace_root","relative-workspace"),("resolved_task_path",None),("resolved_task_path","relative-task"))
+  for field,value in cases:
+   with self.subTest(field=field,value=value),tempfile.TemporaryDirectory() as tmp:
+    repo,task_ref,_,_,task_cli=self.create_recovery_fixture(tmp)
+    resolver={"current_task":{"dir":task_ref},"stale":False,"task_workspace_root":str(repo.resolve()),"resolved_task_path":str((repo/task_ref).resolve())}
+    if value is None:resolver.pop(field)
+    else:resolver[field]=value
+    task_cli.write_text("import json\nprint(json.dumps("+repr(resolver)+"))\n")
+    with self.assertRaises(CommandError) as raised:
+     recover.run(PACKAGE,{},["--root",str(repo),"--task",task_ref])
+    self.assertEqual(("stale_identity",field),(raised.exception.code,raised.exception.field_path))
+
+ def test_created_result_recovery_uses_managed_interpreter_without_python3_on_path(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   repo,task_ref,_,_,_=self.create_recovery_fixture(tmp)
+   path_bin=Path(tmp)/"path-bin";path_bin.mkdir()
+   git_path=shutil.which("git");self.assertIsNotNone(git_path)
+   (path_bin/"git").symlink_to(git_path)
+   self.assertIsNone(shutil.which("python3",path=str(path_bin)))
+   with mock.patch.dict(os.environ,{"PATH":str(path_bin)}):
+    result=recover.run(PACKAGE,{},["--root",str(repo),"--task",task_ref])
+   self.assertEqual(("passed","created"),(result["status"],result["typed_exit"]))
 
  def test_prepare_base_freshness_revalidates_reviewed_provenance(self):
   with tempfile.TemporaryDirectory() as tmp:

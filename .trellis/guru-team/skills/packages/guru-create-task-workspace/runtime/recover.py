@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 from common import git, parse, root
@@ -10,14 +11,7 @@ from runtime.io import CommandError
 from runtime.schema import validate_json
 
 
-def _json_command(argv: list[str], cwd: Path, field: str) -> dict:
-    completed = subprocess.run(
-        argv,
-        cwd=cwd,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
+def _json_result(completed: subprocess.CompletedProcess[str], field: str) -> dict:
     if completed.returncode:
         raise CommandError(
             "stale_identity",
@@ -34,6 +28,28 @@ def _json_command(argv: list[str], cwd: Path, field: str) -> dict:
     return value
 
 
+def _json_command(argv: list[str], cwd: Path, field: str) -> dict:
+    completed = subprocess.run(
+        argv,
+        cwd=cwd,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return _json_result(completed, field)
+
+
+def _current_task(task_cli: Path, cwd: Path) -> dict:
+    completed = subprocess.run(
+        [sys.executable, str(task_cli), "current", "--json"],
+        cwd=cwd,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return _json_result(completed, "current_task")
+
+
 def _read_json(path: Path, field: str) -> dict:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
@@ -42,6 +58,15 @@ def _read_json(path: Path, field: str) -> dict:
     if not isinstance(value, dict):
         raise CommandError("stale_identity", field, f"Reread the exact {field}.", 3)
     return value
+
+
+def _resolved_identity_path(value: object, field: str, remediation: str) -> Path:
+    if not isinstance(value, str) or not value or not Path(value).is_absolute():
+        raise CommandError("stale_identity", field, remediation, 3)
+    try:
+        return Path(value).expanduser().resolve()
+    except (ValueError, OSError, RuntimeError) as exc:
+        raise CommandError("stale_identity", field, remediation, 3) from exc
 
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
@@ -76,16 +101,36 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if boundary_result.get("status") != "ok":
         raise CommandError("stale_identity", "workspace_boundary", "Workspace boundary is not current.", 3)
 
-    current = _json_command(
-        ["python3", str(task_cli), "current", "--json"],
-        repo,
-        "current_task",
-    )
+    current = _current_task(task_cli, repo)
     current_task = current.get("current_task")
     if current.get("stale") is not False or not isinstance(current_task, dict):
         raise CommandError("stale_identity", "current_task", "Resolve one exact current-session task.", 3)
     if current_task.get("dir") != task_ref.as_posix():
         raise CommandError("stale_identity", "current_task", "The current-session task does not match the recovery input.", 3)
+    task_workspace_root = _resolved_identity_path(
+        current.get("task_workspace_root"),
+        "task_workspace_root",
+        "Resolve the exact current-session task workspace.",
+    )
+    if task_workspace_root != repo:
+        raise CommandError(
+            "stale_identity",
+            "task_workspace_root",
+            "The current-session task workspace does not match the current repository.",
+            3,
+        )
+    resolved_task_path = _resolved_identity_path(
+        current.get("resolved_task_path"),
+        "resolved_task_path",
+        "Resolve the exact current-session task path.",
+    )
+    if resolved_task_path != task_dir:
+        raise CommandError(
+            "stale_identity",
+            "resolved_task_path",
+            "The current-session resolved task path does not match the recovery input.",
+            3,
+        )
 
     task = _read_json(task_dir / "task.json", "task identity")
     if task.get("status") != "planning":

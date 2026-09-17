@@ -442,11 +442,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-17T15:18:48Z",
+  "installed_at": "2026-09-17T18:30:27Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "df52561cebf3d52824f4a6ba0ddf05985c922e4e",
-    "commit": "df52561cebf3d52824f4a6ba0ddf05985c922e4e",
+    "ref": "c8149af7bb9284ffd29677675376ee7ded0618d0",
+    "commit": "c8149af7bb9284ffd29677675376ee7ded0618d0",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -603,7 +603,7 @@
       {
         "id": "guru-create-task-workspace",
         "interface_sha256": "59f840772de2873e30ec2cd1d19107a0505e982176ca8663b84ada475b8d46c6",
-        "tree_sha256": "77bdc1fa653c1376c8398419301fd2bf3667466030c56a43824f6275abec9646"
+        "tree_sha256": "a97ceeaa027d919dc913da800a911bee9e124086c5b4281e661224665abf7145"
       },
       {
         "id": "guru-create-task-commit",
@@ -3150,7 +3150,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/recover.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/recover.py",
-        "sha256": "6245ccf99ae15f73a0263239380175a2f430fee63d87f3b85c3a5d4d4adeec16",
+        "sha256": "0e204550f9ee50ca44c37ed5019562671ab5231a63107063accead2230c57c4a",
         "executable": false,
         "action": "unchanged"
       },
@@ -3290,7 +3290,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_runtime.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_runtime.py",
-        "sha256": "f6c016bbd5f938a7e6f10218d6076e9c27e976d725e1d5f511ef39c0bfdabb13",
+        "sha256": "b9ca30132385db47a13d0b36de35f7c61ba361980d840a4c0bfa4fa31ea3ca40",
         "executable": false,
         "action": "unchanged"
       },

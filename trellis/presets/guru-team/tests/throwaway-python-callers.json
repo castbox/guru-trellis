@@ -411,6 +411,15 @@
       "ordinal": 1
     },
     {
+      "id": "package-runtime-python_subprocess_second_hop-4c31592d6758",
+      "owner": "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/recover.py",
+      "kind": "python_subprocess_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "sys.executable",
+      "anchor_sha256": "4c31592d6758646c6b024864977da17d5f2b10a5b9eb22758f39efcb47b3b6c3",
+      "ordinal": 1
+    },
+    {
       "id": "package-runtime-python_subprocess_second_hop-5417c9bc88d7",
       "owner": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/_owner_part_01.py",
       "kind": "python_subprocess_second_hop",
