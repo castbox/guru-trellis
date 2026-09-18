@@ -66,6 +66,19 @@ def invalidate_finish_receipts(root: Path, task_ref: str) -> None:
             receipt.unlink()
 
 
+def validate_task_identity(public: dict, plan: dict) -> None:
+    task_id = public["task_id"]
+    locators = {
+        "task_ref": Path(public["task_ref"]).name,
+        "archive_ref": Path(public["archive_ref"]).name,
+        "workspace.workspace_mapping": Path(plan["workspace_mapping"]).stem,
+        "workspace.task_mapping": Path(plan["task_mapping"]).stem,
+    }
+    for field, locator_id in locators.items():
+        if locator_id != task_id:
+            raise CommandError("stale_identity", field, "Reactivate locators must bind the exact task id.", 3)
+
+
 def prepare_workspace(root: Path, plan: dict) -> tuple[Path, bool, bool]:
     workspace = Path(plan["workspace_path"]).resolve()
     branch = plan["branch_name"]
@@ -89,10 +102,21 @@ def prepare_workspace(root: Path, plan: dict) -> tuple[Path, bool, bool]:
         created_branch = True
         created_worktree = True
     else:
-        if branch_probe.returncode or git(root, "rev-parse", branch_ref).stdout.strip() != base_head:
-            raise CommandError("stale_identity", "workspace.branch_name", "The reusable branch is not bound to the reviewed target baseline.", 3)
+        if branch_probe.returncode:
+            raise CommandError("stale_identity", "workspace.branch_name", "The reviewed reusable branch does not exist.", 3)
         if not workspace.is_dir() or row is None or row.get("branch") != branch_ref:
             raise CommandError("stale_identity", "workspace.workspace_path", "The reviewed reusable worktree is not registered for the exact branch.", 3)
+        if git(workspace, "branch", "--show-current").stdout.strip() != branch:
+            raise CommandError("stale_identity", "workspace.branch_name", "The selected worktree is not on the reviewed branch.", 3)
+        if git(workspace, "status", "--porcelain=v1", "--untracked-files=all").stdout:
+            raise CommandError("stale_identity", "workspace.workspace_path", "The selected worktree is not clean before reactivation.", 3)
+        branch_head = git(workspace, "rev-parse", "HEAD").stdout.strip()
+        if branch_head != base_head:
+            if git(workspace, "merge-base", "--is-ancestor", branch_head, base_head, check=False).returncode:
+                raise CommandError("stale_identity", "workspace.branch_name", "The reusable branch cannot fast-forward to the reviewed target baseline.", 3)
+            git(workspace, "merge", "--ff-only", base_head)
+            if git(workspace, "rev-parse", "HEAD").stdout.strip() != base_head:
+                raise CommandError("stale_identity", "workspace.branch_name", "The reusable branch did not reach the reviewed target baseline.", 3)
     if git(workspace, "branch", "--show-current").stdout.strip() != branch:
         raise CommandError("stale_identity", "workspace.branch_name", "The selected worktree is not on the reviewed branch.", 3)
     if git(workspace, "status", "--porcelain=v1", "--untracked-files=all").stdout:
@@ -109,14 +133,13 @@ def rollback_workspace(root: Path, workspace: Path, branch: str, created_branch:
 
 def reactivate(root: Path, public: dict, semantic: dict) -> None:
     plan = semantic["workspace"]
+    validate_task_identity(public, plan)
     workspace, created_branch, created_worktree = prepare_workspace(root, plan)
     archive = workspace / public["archive_ref"]
     active = workspace / public["task_ref"]
     try:
         if not archive.is_dir() or archive.is_symlink() or active.exists():
             raise CommandError("stale_identity", "archive_ref", "Archive identity or active target is not unique on the selected baseline.", 3)
-        if archive.name != public["task_id"]:
-            raise CommandError("stale_identity", "task_id", "Archive basename does not match task identity.", 3)
         task_path = archive / "task.json"
         if not task_path.is_file() or task_path.is_symlink():
             raise CommandError("stale_identity", "archive_ref", "Archived task metadata is missing or unsafe.", 3)
@@ -161,14 +184,12 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if public["profile"] != semantic["profile"] or public["mode"] != semantic["mode"]:
         raise CommandError("stale_identity", "semantic_result", "Reactivate identity differs.", 3)
     route = semantic["route"]
-    out = {"exit_id": route["typed_exit"], "task_ref": public["task_ref"], "task_id": public["task_id"]}
+    out = {"exit_id": route["typed_exit"]}
     if route["typed_exit"] != "reactivate_blocked":
         if not args.confirmed_reactivation:
             raise CommandError("confirmation_required", "confirmed_reactivation", "Confirm the reviewed archive, target baseline, branch, worktree, binding and file plan.", 4)
         reactivate(root, public, semantic)
-        out["resume_target"] = {"reactivated_to_requirements": "requirements", "reactivated_to_planning": "planning", "reactivated_to_implementation": "phase-2", "reactivated_to_evidence_refresh": "evidence-refresh"}[route["typed_exit"]]
-    else:
-        out.update({"resume_target": "blocked", "reason_code": route["reason_code"], "remediation": route["remediation"]})
+        out.update({"task_ref":public["task_ref"], "resume_target":{"reactivated_to_requirements": "requirements", "reactivated_to_planning": "planning", "reactivated_to_implementation": "phase-2", "reactivated_to_evidence_refresh": "evidence-refresh"}[route["typed_exit"]]})
     validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
     return out
 

@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-review-task-completion-output-evidence-pending-1.0","type":"object","additionalProperties":false,"required":["exit_id","task_ref","resume_target"],"properties":{"exit_id":{"const":"evidence_pending"},"task_ref":{"type":"string","pattern":"^\\.trellis/tasks/"},"resume_target":{"const":"evidence-refresh"}}}

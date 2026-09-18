@@ -12,6 +12,13 @@ import sys
 
 REPO = Path(__file__).resolve().parents[4]
 SKILLS = REPO / "trellis/skills/guru-team"
+POST_DELIVERY_PACKAGES = (
+    "guru-review-task-completion",
+    "guru-complete-task-closure",
+    "guru-finish-task",
+    "guru-cleanup-task-resources",
+    "guru-reactivate-task",
+)
 sys.path.insert(0, str(SKILLS))
 from runtime.io import CommandError  # noqa: E402
 from runtime.installed import validate_skill_installed, workflow_facts  # noqa: E402
@@ -186,6 +193,79 @@ class SkillPackageIntegrationTests(unittest.TestCase):
         self.assertEqual(payload["active_packages"], 31)
         self.assertEqual(payload["complete_package_commands"], 31)
         self.assertGreater(payload["commands"], 0)
+
+    def test_post_delivery_public_contract_projections_are_closed(self) -> None:
+        for package_id in POST_DELIVERY_PACKAGES:
+            with self.subTest(package=package_id):
+                package = SKILLS / "packages" / package_id
+                interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+                contracts = interface["public_contracts"]
+                artifacts = {item["path"] for item in interface["artifacts"]}
+                schemas = {item["path"] for item in interface["schemas"]}
+                outputs = {item["exit_id"]: item for item in contracts["outputs"]}
+                consumers = {item["id"]: item for item in contracts["consumer_inputs"]}
+                projections = {item["id"]: item for item in contracts["projections"]}
+
+                self.assertNotIn("planned_skill_input_seed", (package / "interface.json").read_text(encoding="utf-8"))
+                self.assertEqual(len(outputs), len(contracts["outputs"]))
+                self.assertEqual(len(projections), len(contracts["projections"]))
+                self.assertEqual(
+                    {use_id for output in outputs.values() for use_id in output["consumer_use_ids"]},
+                    set(projections),
+                )
+                self.assertEqual(
+                    len({output["schema"]["path"] for output in outputs.values()}),
+                    len(outputs),
+                )
+                self.assertEqual(
+                    len({output["example"]["path"] for output in outputs.values()}),
+                    len(outputs),
+                )
+
+                for output in outputs.values():
+                    self.assertIn(output["schema"]["path"], schemas)
+                    self.assertIn(output["example"]["path"], artifacts)
+                    example = json.loads((package / output["example"]["path"]).read_text(encoding="utf-8"))
+                    validate_json(example, package / output["schema"]["path"], f"{package_id}.{output['exit_id']}.example")
+                    validate_json(example, package / "schemas/public-output.schema.json", f"{package_id}.{output['exit_id']}.aggregate")
+
+                for projection in projections.values():
+                    output = outputs[projection["exit_id"]]
+                    example = json.loads((package / output["example"]["path"]).read_text(encoding="utf-8"))
+                    consumer = consumers[projection["consumer_input_id"]]
+                    projected = {
+                        mapping["target"]: example[mapping["source"]]
+                        for mapping in projection.get("mappings", [])
+                    }
+                    if consumer["payload_kind"] == "zero_payload":
+                        self.assertEqual(projection["operation"], "select")
+                        self.assertEqual(projected, {})
+                        self.assertEqual(example, {"exit_id": projection["exit_id"]})
+                        continue
+
+                    contract = consumer["contract"]
+                    if contract["kind"] == "json_schema":
+                        self.assertIn("exit_id", projected)
+                        validate_json(projected, package / contract["path"], f"{package_id}.{projection['id']}.workflow")
+                        continue
+
+                    self.assertEqual(contract["kind"], "skill_input_authoring_seed")
+                    self.assertEqual(set(projected), set(contract["seed_fields"]))
+                    self.assertFalse(set(contract["seed_fields"]) & set(contract["authoring_fields"]))
+                    authoring = json.loads((package / contract["authoring_example"]["path"]).read_text(encoding="utf-8"))
+                    self.assertEqual(set(authoring), set(contract["authoring_fields"]))
+                    target_interface_path = SKILLS / contract["interface_path"]
+                    target_interface = json.loads(target_interface_path.read_text(encoding="utf-8"))
+                    profile = next(
+                        item for item in target_interface["public_contracts"]["input"]["profiles"]
+                        if item["id"] == contract["profile_id"]
+                    )
+                    target_package = target_interface_path.parent
+                    validate_json(
+                        {**authoring, **projected},
+                        target_package / profile["schema"]["path"],
+                        f"{package_id}.{projection['id']}.skill_input",
+                    )
 
     def test_source_validator_rejects_duplicate_command_owner(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

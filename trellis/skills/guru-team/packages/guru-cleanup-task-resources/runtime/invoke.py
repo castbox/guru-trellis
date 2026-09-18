@@ -73,11 +73,11 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   if not receipt.is_file() or receipt.is_symlink(): raise CommandError("stale_identity","finish_ref","Current Finish success receipt is missing or stale.",3)
  receipt_value=json.loads(receipt.read_text())
  validate_json(receipt_value,package_root.parent/"guru-finish-task/schemas/finish-transaction.schema.json","finish_receipt")
- if receipt_value.get("stage")!="success" or receipt_value.get("task_ref")!=public["task_ref"] or receipt_value.get("finish_ref")!=public["finish_ref"]: raise CommandError("stale_identity","finish_ref","Finish receipt is not the current terminal transaction for this cleanup call.",3)
+ if receipt_value.get("stage")!="success" or receipt_value.get("task_ref")!=public["task_ref"] or receipt_value.get("archive_ref")!=public["archive_ref"] or receipt_value.get("finish_ref")!=public["finish_ref"]: raise CommandError("stale_identity","finish_ref","Finish receipt is not the current terminal transaction for this cleanup call.",3)
  resources=semantic["owned_resources"]
  if public.get("resources") is not None and public["resources"]!=resources: raise CommandError("stale_identity","owned_resources","Cleanup resource discovery changed after review.",3)
  if route["typed_exit"]=="cleaned": validate_resources(root,public,resources,receipt_value,receipt)
- if route["typed_exit"]=="cleaned" and not a.confirmed_cleanup: return {"exit_id":"remaining_resources","task_ref":public["task_ref"],"finish_ref":public["finish_ref"],"remaining":[x["locator"] for x in resources]}
+ if route["typed_exit"]=="cleaned" and not a.confirmed_cleanup: return {"exit_id":"remaining_resources","task_ref":public["task_ref"],"archive_ref":public["archive_ref"],"finish_ref":public["finish_ref"]}
  if route["typed_exit"]=="cleaned":
   remaining=[]
   for item in sorted(resources,key=lambda value:{"worktree":0,"branch":1,"runtime":2}[value["kind"]]):
@@ -93,10 +93,9 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
    elif kind=="branch":
     proc=subprocess.run(["git","branch","-d",locator],cwd=root,text=True,capture_output=True)
     if proc.returncode!=0 and "not found" not in proc.stderr.lower(): remaining.append(locator)
-  if remaining: return {"exit_id":"remaining_resources","task_ref":public["task_ref"],"finish_ref":public["finish_ref"],"remaining":remaining}
+  if remaining: return {"exit_id":"remaining_resources","task_ref":public["task_ref"],"archive_ref":public["archive_ref"],"finish_ref":public["finish_ref"]}
   receipt.unlink(missing_ok=True)
- out={"exit_id":route["typed_exit"],"task_ref":public["task_ref"],"finish_ref":public["finish_ref"]}
- if route["typed_exit"]!="cleaned": out.update({"reason_code":route["reason_code"],"remediation":route["remediation"]})
+ out={"exit_id":route["typed_exit"]}
  validate_json(out,package_root/"schemas/public-output.schema.json","stdout"); return out
 if __name__=="__main__":
  try:print(json.dumps(run(Path(__file__).parents[1],{},sys.argv[1:]),ensure_ascii=False))

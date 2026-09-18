@@ -1,1 +1,1 @@
-{"profile":"closure_completed","mode":"workflow","task_ref":".trellis/tasks/example-task","closure_exit":"no_mutation","closure_ref":"closure:v1:current"}
+{"profile":"closure_completed","source_exit":"no_mutation","mode":"workflow","task_ref":".trellis/tasks/example-task","closure_exit":"no_mutation","closure_ref":"closure:v1:current"}

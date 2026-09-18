@@ -26,16 +26,27 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if public["profile"] != semantic["profile"] or public["mode"] != semantic["mode"]: raise CommandError("stale_identity", "semantic_result", "Input and semantic result identity differ.", 3)
     exit_id = semantic["route"]["typed_exit"]
     if exit_id not in EXITS: raise CommandError("schema_mismatch", "semantic_result.route", "Unknown completion exit.")
-    if public["profile"] == "evidence_refresh" and exit_id == "completed" and not semantic["evidence_refs"]: raise CommandError("schema_mismatch", "semantic_result.evidence_refs", "Evidence refresh cannot complete without evidence.")
-    declared={str(item["delivery_cycle_ref"]) for item in public.get("delivery_facts",[]) if isinstance(item,dict)}
-    reviewed=set(str(item) for item in semantic.get("delivery_refs",[]))
-    if not declared.issubset(reviewed): raise CommandError("stale_identity","delivery_refs","Completion did not review every supplied Delivery fact.",3)
-    output = {"exit_id": exit_id, "task_ref": public["task_ref"]}
+    declared={str(item["delivery_cycle_ref"]) for item in public["delivery_facts"]}
+    reviewed=set(str(item) for item in semantic["delivery_refs"])
+    declared_authority=set(str(item) for item in public["authority_refs"])
+    reviewed_authority=set(str(item) for item in semantic["authority_refs"])
+    declared_evidence=set(str(item) for item in public["evidence_refs"])
+    reviewed_evidence=set(str(item) for item in semantic["evidence_refs"])
+    if exit_id == "completed":
+        bindings = (
+            (declared, reviewed, "delivery_refs", "Completion requires a non-empty, exact review of every current Delivery fact."),
+            (declared_authority, reviewed_authority, "authority_refs", "Completion requires a non-empty, exact review of current authority."),
+            (declared_evidence, reviewed_evidence, "evidence_refs", "Completion requires a non-empty, exact review of current evidence."),
+        )
+        for declared_refs, reviewed_refs, field, remediation in bindings:
+            if not declared_refs or declared_refs != reviewed_refs:
+                raise CommandError("stale_identity", field, remediation, 3)
+    output = {"exit_id": exit_id}
     if exit_id == "completed":
         identity=hashlib.sha256(json.dumps({"input":public,"semantic_result":semantic},sort_keys=True,separators=(",",":")).encode()).hexdigest()[:24]
-        output.update({"completion_ref":"completion:v1:" + identity, "closure_input_ref":public["task_ref"]})
-    elif exit_id == "blocked": output.update({"reason_code":semantic["route"]["reason_code"],"remediation":semantic["route"]["remediation"]})
-    else: output["resume_target"] = {"remaining_work":"active-task","evidence_pending":"evidence-refresh","additional_delivery_required":"delivery-planning","requirements_revision_required":"requirements","implementation_revision_required":"phase-2"}[exit_id]
+        output.update({"task_ref":public["task_ref"], "completion_ref":"completion:v1:" + identity})
+    elif exit_id != "blocked":
+        output.update({"task_ref":public["task_ref"], "resume_target":{"remaining_work":"active-task","evidence_pending":"evidence-refresh","additional_delivery_required":"delivery-planning","requirements_revision_required":"requirements","implementation_revision_required":"phase-2"}[exit_id]})
     validate_json(output, package_root / "schemas/public-output.schema.json", "stdout")
     return output
 

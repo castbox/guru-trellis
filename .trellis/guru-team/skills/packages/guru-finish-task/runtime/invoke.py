@@ -84,7 +84,10 @@ def lifecycle_roots(public: dict, semantic: dict) -> tuple[Path, str, Path, tupl
     archive_ref = semantic["bookkeeping"]["archive_ref"]
     if archive_ref not in semantic["allowlist"] or archive_ref.count("/") != 4 or Path(archive_ref).name != task_dir.name or public["task_ref"] not in semantic["allowlist"]:
         raise CommandError("stale_identity", "semantic_result.allowlist", "Finish requires one exact active path and one exact final archive root.", 3)
-    permitted = tuple(sorted({public["task_ref"], *[entry for entry in semantic["allowlist"] if entry.startswith(".trellis/tasks/archive/")]}))
+    archive_roots = [entry for entry in semantic["allowlist"] if entry.startswith(".trellis/tasks/archive/")]
+    if any(entry.count("/") != 4 or Path(entry).name != task_dir.name for entry in archive_roots):
+        raise CommandError("stale_identity", "semantic_result.allowlist", "Every archive root must belong to the current task identity.", 3)
+    permitted = tuple(sorted({public["task_ref"], *archive_roots}))
     if any(not (entry == public["task_ref"] or entry.startswith(public["task_ref"] + "/") or entry.startswith(".trellis/tasks/archive/")) for entry in semantic["allowlist"]):
         raise CommandError("stale_identity", "semantic_result.allowlist", "Finish allowlist contains paths outside task lifecycle storage.", 3)
     return task_dir, archive_ref, Path(archive_ref), permitted
@@ -103,7 +106,7 @@ def path_allowed(path: str, allowlist: tuple[str, ...]) -> bool:
 
 def verify_payload(bookkeeping: dict) -> None:
     text = "\n".join([bookkeeping["commit_subject"], bookkeeping["commit_body"], bookkeeping["pr_title"], bookkeeping["pr_body"], bookkeeping["merge_subject"], bookkeeping["merge_body"]])
-    if re.search(r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?[ \t]*#[0-9]+", text):
+    if re.search(r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?[ \t]*(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#[1-9][0-9]*\b", text):
         raise CommandError("stale_identity", "semantic_result.bookkeeping", "Bookkeeping payload must not close an Issue.", 3)
     if "Guru-Delivery-Task:" in text or "Guru-Delivery-Cycle:" in text:
         raise CommandError("stale_identity", "semantic_result.bookkeeping", "Bookkeeping payload must not publish a business Delivery identity.", 3)
@@ -233,6 +236,8 @@ def verify_target(root: Path, transaction: dict, public: dict) -> str:
 def merge(root: Path, public: dict, bookkeeping: dict, transaction: dict, transaction_file: Path, package_root: Path) -> dict:
     pr = exact_pr(bookkeeping["repo_ref"], transaction["pr_number"], bookkeeping, transaction["commit"])
     if str(pr["state"]).upper() != "MERGED":
+        if current_remote_head(root, bookkeeping["base_branch"]) != transaction["expected_base_head"]:
+            raise CommandError("stale_identity", "bookkeeping.expected_base_head", "The target baseline changed before bookkeeping merge.", 3)
         gh(bookkeeping["repo_ref"], "pr", "merge", str(transaction["pr_number"]), "--merge", "--match-head-commit", transaction["commit"], "--subject", bookkeeping["merge_subject"], "--body", bookkeeping["merge_body"])
         pr = exact_pr(bookkeeping["repo_ref"], transaction["pr_number"], bookkeeping, transaction["commit"])
     if str(pr["state"]).upper() != "MERGED" or not pr.get("mergedAt") or not isinstance(pr.get("mergeCommit"), dict) or not pr["mergeCommit"].get("oid"):
@@ -246,7 +251,7 @@ def merge(root: Path, public: dict, bookkeeping: dict, transaction: dict, transa
 
 
 def resume(public: dict, reason_code: str, remediation: str) -> dict:
-    return {"exit_id": "resume_finish", "task_ref": public["task_ref"], "finish_ref": finish_ref(public), "reason_code": reason_code, "remediation": remediation}
+    return {"exit_id": "resume_finish", "task_ref": public["task_ref"], "closure_exit": public["closure_exit"], "closure_ref": public["closure_ref"]}
 
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
@@ -270,7 +275,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         raise CommandError("stale_identity", "semantic_result", "Finish identity differs from Closure.", 3)
     route = semantic["route"]
     if route["typed_exit"] != "success":
-        out = {"exit_id": route["typed_exit"], "task_ref": public["task_ref"], "reason_code": route["reason_code"], "remediation": route["remediation"]}
+        out = {"exit_id": route["typed_exit"]}
         validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
         return out
     bookkeeping = semantic["bookkeeping"]

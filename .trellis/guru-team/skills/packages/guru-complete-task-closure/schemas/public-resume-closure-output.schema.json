@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-complete-task-closure-output-resume-closure-1.0","type":"object","additionalProperties":false,"required":["exit_id","task_ref","completion_ref"],"properties":{"exit_id":{"const":"resume_closure"},"task_ref":{"type":"string","pattern":"^\\.trellis/tasks/"},"completion_ref":{"type":"string","minLength":1}}}

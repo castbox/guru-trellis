@@ -1,1 +1,1 @@
-{"profile":"completion","mode":"workflow","task_ref":".trellis/tasks/example-task","delivery_facts":[],"evidence_refs":["phase2:current"]}
+{"profile":"completion","mode":"workflow","task_ref":".trellis/tasks/example-task","authority_refs":["requirements:current"],"delivery_facts":[{"delivery_cycle_ref":"delivery-cycle:v1:current","merge_commit_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}],"evidence_refs":["phase2:current"]}

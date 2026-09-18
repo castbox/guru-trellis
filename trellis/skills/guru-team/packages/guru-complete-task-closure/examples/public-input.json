@@ -1,1 +1,1 @@
-{"profile":"completion_approved","mode":"workflow","task_ref":".trellis/tasks/example-task","completion_ref":"completion:v1:current","source_issue":{"repo_ref":"castbox/guru-trellis","number":436,"disposition":"reference_only"}}
+{"profile":"completion_approved","source_exit":"completed","mode":"workflow","task_ref":".trellis/tasks/example-task","completion_ref":"completion:v1:current","source_issue":{"repo_ref":"castbox/guru-trellis","number":436,"disposition":"exact_source"}}

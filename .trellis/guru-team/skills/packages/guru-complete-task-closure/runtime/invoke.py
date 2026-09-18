@@ -23,30 +23,33 @@ def run(package_root:Path, command:dict, argv:list[str])->dict:
     route=semantic["route"]; exit_id=route["typed_exit"]; issue=public.get("source_issue") or {}
     if exit_id=="close_issue" and issue.get("disposition")!="exact_source": raise CommandError("stale_identity","source_issue.disposition","Only the exact source Issue may be closed.",3)
     if exit_id=="close_issue":
-        if not a.confirmed_close: return {"exit_id":"resume_closure","task_ref":public["task_ref"],"transaction_ref":"closure:v1:"+public["completion_ref"]}
+        if not a.confirmed_close: return {"exit_id":"resume_closure","task_ref":public["task_ref"],"completion_ref":public["completion_ref"]}
         facts=None; state=""
         if a.facts:
             facts=load(root,package_root,a.facts,"facts")
-            state=str(facts.get("issue",{}).get("state") or "").upper()
+            validate_json(facts,package_root/"schemas/live-facts.schema.json","facts")
+            fact_issue=facts["issue"]
+            if fact_issue["repo_ref"]!=issue["repo_ref"]: raise CommandError("stale_identity","facts.issue.repo_ref","Recovery facts must describe the exact source Issue repository.",3)
+            if fact_issue["number"]!=issue["number"]: raise CommandError("stale_identity","facts.issue.number","Recovery facts must describe the exact source Issue number.",3)
+            state=fact_issue["state"]
             if state=="CLOSED":
-                out={"exit_id":"closed","task_ref":public["task_ref"],"issue_ref":f'{issue["repo_ref"]}#{issue["number"]}',"closure_ref":"closure:v1:"+public["completion_ref"]}
+                out={"exit_id":"closed","task_ref":public["task_ref"],"issue_ref":f'{issue["repo_ref"]}#{issue["number"]}',"closure_exit":"closed","closure_ref":"closure:v1:"+public["completion_ref"]}
                 validate_json(out,package_root/"schemas/public-output.schema.json","stdout"); return out
             if state!="OPEN": raise CommandError("stale_identity","facts.issue.state","Issue state is not a recoverable close boundary.",3)
-        if not facts:
-            observed=subprocess.run(["gh","issue","view",str(issue["number"]),"--repo",issue["repo_ref"],"--json","state","--jq",".state"],cwd=root,text=True,capture_output=True)
-            if observed.returncode!=0: return {"exit_id":"resume_closure","task_ref":public["task_ref"],"transaction_ref":"closure:v1:"+public["completion_ref"]}
-            state=observed.stdout.strip().upper()
-            if state=="CLOSED":
-                out={"exit_id":"closed","task_ref":public["task_ref"],"issue_ref":f'{issue["repo_ref"]}#{issue["number"]}',"closure_ref":"closure:v1:"+public["completion_ref"]}
-                validate_json(out,package_root/"schemas/public-output.schema.json","stdout"); return out
-            if state!="OPEN": raise CommandError("stale_identity","source_issue","Issue state is not a recoverable close boundary.",3)
+        observed=subprocess.run(["gh","issue","view",str(issue["number"]),"--repo",issue["repo_ref"],"--json","state","--jq",".state"],cwd=root,text=True,capture_output=True)
+        if observed.returncode!=0: return {"exit_id":"resume_closure","task_ref":public["task_ref"],"completion_ref":public["completion_ref"]}
+        state=observed.stdout.strip().upper()
+        if state=="CLOSED":
+            out={"exit_id":"closed","task_ref":public["task_ref"],"issue_ref":f'{issue["repo_ref"]}#{issue["number"]}',"closure_exit":"closed","closure_ref":"closure:v1:"+public["completion_ref"]}
+            validate_json(out,package_root/"schemas/public-output.schema.json","stdout"); return out
+        if state!="OPEN": raise CommandError("stale_identity","source_issue","Issue state is not a recoverable close boundary.",3)
         proc=subprocess.run(["gh","issue","close",str(issue["number"]),"--repo",issue["repo_ref"],"--reason","completed"],cwd=root,text=True,capture_output=True)
-        if proc.returncode!=0: return {"exit_id":"resume_closure","task_ref":public["task_ref"],"transaction_ref":"closure:v1:"+public["completion_ref"]}
+        if proc.returncode!=0: return {"exit_id":"resume_closure","task_ref":public["task_ref"],"completion_ref":public["completion_ref"]}
         verify=subprocess.run(["gh","issue","view",str(issue["number"]),"--repo",issue["repo_ref"],"--json","state","--jq",".state"],cwd=root,text=True,capture_output=True)
         if verify.returncode!=0 or verify.stdout.strip().upper()!="CLOSED": raise CommandError("external_command_failed","source_issue","Issue close result could not be verified; resume the same closure transaction.",4)
-        out={"exit_id":"closed","task_ref":public["task_ref"],"issue_ref":f'{issue["repo_ref"]}#{issue["number"]}',"closure_ref":"closure:v1:"+public["completion_ref"]}
-    elif exit_id=="no_mutation": out={"exit_id":"no_mutation","task_ref":public["task_ref"],"closure_ref":"closure:v1:"+public["completion_ref"]}
-    else: out={"exit_id":"blocked","task_ref":public["task_ref"],"reason_code":route["reason_code"],"remediation":route["remediation"]}
+        out={"exit_id":"closed","task_ref":public["task_ref"],"issue_ref":f'{issue["repo_ref"]}#{issue["number"]}',"closure_exit":"closed","closure_ref":"closure:v1:"+public["completion_ref"]}
+    elif exit_id=="no_mutation": out={"exit_id":"no_mutation","task_ref":public["task_ref"],"closure_exit":"no_mutation","closure_ref":"closure:v1:"+public["completion_ref"]}
+    else: out={"exit_id":"blocked"}
     validate_json(out,package_root/"schemas/public-output.schema.json","stdout"); return out
 
 if __name__=="__main__":

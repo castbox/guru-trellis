@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import os
 import shutil
@@ -5,11 +6,18 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from runtime.io import CommandError
 from runtime.schema import validate_json
 
 PACKAGE = Path(__file__).resolve().parents[1]
 ROOT = PACKAGE.parents[1]
+SPEC = importlib.util.spec_from_file_location("guru_finish_task_invoke", PACKAGE / "runtime/invoke.py")
+assert SPEC and SPEC.loader
+FINISH = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(FINISH)
 
 
 def git(root, *args):
@@ -57,6 +65,65 @@ def test_contract_assets():
     validate_json(json.loads((PACKAGE / "interface.json").read_text()), ROOT / "schemas/skill-interface-1.4.schema.json", "interface")
 
 
+def test_allowlist_rejects_archive_root_for_another_task():
+    public = {"task_ref": ".trellis/tasks/demo"}
+    semantic = {
+        "allowlist": [
+            ".trellis/tasks/demo",
+            ".trellis/tasks/archive/2026-08/other-task",
+            ".trellis/tasks/archive/2026-09/demo",
+        ],
+        "bookkeeping": {"archive_ref": ".trellis/tasks/archive/2026-09/demo"},
+    }
+
+    with pytest.raises(CommandError) as caught:
+        FINISH.lifecycle_roots(public, semantic)
+
+    assert caught.value.field_path == "semantic_result.allowlist"
+
+
+@pytest.mark.parametrize("closing_reference", ["Closes #7", "Fixes example/repo#7", "Resolved: owner.repo/repo-name#42"])
+def test_payload_rejects_bare_and_repo_qualified_closing_keywords(closing_reference):
+    bookkeeping = {
+        "commit_subject": "chore(trellis): persist finish",
+        "commit_body": "Refs #7",
+        "pr_title": "Persist task finish",
+        "pr_body": closing_reference,
+        "merge_subject": "chore(merge): persist task finish",
+        "merge_body": "Refs example/repo#7",
+    }
+
+    with pytest.raises(CommandError) as caught:
+        FINISH.verify_payload(bookkeeping)
+
+    assert caught.value.field_path == "semantic_result.bookkeeping"
+
+
+def test_merge_rechecks_expected_base_before_github_mutation(tmp_path, monkeypatch):
+    expected_base_head = "1" * 40
+    transaction = {
+        "pr_number": 7,
+        "commit": "2" * 40,
+        "expected_base_head": expected_base_head,
+    }
+    bookkeeping = {
+        "repo_ref": "example/repo",
+        "base_branch": "main",
+        "merge_subject": "chore(merge): persist finish",
+        "merge_body": "Refs #7",
+    }
+    mutations = []
+    monkeypatch.setattr(FINISH, "exact_pr", lambda *_args: {"state": "OPEN"})
+    monkeypatch.setattr(FINISH, "current_remote_head", lambda *_args: "3" * 40)
+    monkeypatch.setattr(FINISH, "gh", lambda *_args: mutations.append(_args))
+
+    with pytest.raises(CommandError) as caught:
+        FINISH.merge(tmp_path, {"task_ref": ".trellis/tasks/demo"}, bookkeeping, transaction, tmp_path / "transaction.json", PACKAGE)
+
+    assert caught.value.field_path == "bookkeeping.expected_base_head"
+    assert mutations == []
+
+
 def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path):
     repo = tmp_path / "repo"
     remote = tmp_path / "remote.git"
@@ -84,7 +151,7 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path):
     shutil.rmtree(old_archive)
 
     archive_ref = ".trellis/tasks/archive/2026-09/demo"
-    public = {"profile": "closure_completed", "mode": "standalone", "task_ref": ".trellis/tasks/demo", "closure_exit": "no_mutation", "closure_ref": "closure:v1:demo"}
+    public = {"profile": "closure_completed", "source_exit": "no_mutation", "mode": "standalone", "task_ref": ".trellis/tasks/demo", "closure_exit": "no_mutation", "closure_ref": "closure:v1:demo"}
     semantic = {
         "profile": "closure_completed",
         "mode": "standalone",
@@ -114,13 +181,15 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path):
     env = os.environ.copy()
     env.update({"PYTHONPATH": str(ROOT), "PATH": str(fake_bin) + os.pathsep + env["PATH"], "FAKE_GH_STATE": str(tmp_path / "gh-state.json"), "FAKE_GH_LOG": str(tmp_path / "gh.log"), "FAKE_REPO_PATH": str(repo), "FAKE_REMOTE_PATH": str(remote)})
     command = [sys.executable, str(PACKAGE / "runtime/invoke.py"), "--root", str(repo), "--input", str(input_path), "--semantic-result", str(semantic_path)]
+    resume = {"exit_id": "resume_finish", "task_ref": ".trellis/tasks/demo", "closure_exit": "no_mutation", "closure_ref": "closure:v1:demo"}
 
-    assert json.loads(subprocess.run(command, text=True, capture_output=True, env=env, check=True).stdout)["reason_code"] == "confirmation_required"
+    assert json.loads(subprocess.run(command, text=True, capture_output=True, env=env, check=True).stdout) == resume
+    assert task.exists()
     projected = json.loads(subprocess.run(command + ["--confirmed-finish"], text=True, capture_output=True, env=env, check=True).stdout)
-    assert projected["reason_code"] == "bookkeeping_publication_required" and not task.exists()
-    assert json.loads(subprocess.run(command, text=True, capture_output=True, env=env, check=True).stdout)["reason_code"] == "bookkeeping_publication_confirmation_required"
+    assert projected == resume and not task.exists() and (repo / archive_ref).is_dir()
+    assert json.loads(subprocess.run(command, text=True, capture_output=True, env=env, check=True).stdout) == resume
     published = json.loads(subprocess.run(command + ["--confirmed-bookkeeping-publish"], text=True, capture_output=True, env=env, check=True).stdout)
-    assert published["reason_code"] == "bookkeeping_merge_confirmation_required"
+    assert published == resume
     finished = json.loads(subprocess.run(command + ["--confirmed-bookkeeping-merge"], text=True, capture_output=True, env=env, check=True).stdout)
     assert finished == {"exit_id": "success", "task_ref": ".trellis/tasks/demo", "archive_ref": archive_ref, "finish_ref": finished["finish_ref"]}
     repeated = json.loads(subprocess.run(command, text=True, capture_output=True, env=env, check=True).stdout)
