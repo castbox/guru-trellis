@@ -1,0 +1,4 @@
+{"file": ".trellis/tasks/09-18-430-release-candidate-clean-reapply/prd.md", "reason": "验收范围与阻断条件"}
+{"file": ".trellis/tasks/09-18-430-release-candidate-clean-reapply/design.md", "reason": "no-op provenance 与 bytecode 设计"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "#410 Stage 2 clean candidate release gate"}
+{"file": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py", "reason": "回归覆盖与 repository clean assertions"}

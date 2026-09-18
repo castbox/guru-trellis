@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/preset/installer.md", "reason": "Preset apply/reapply、provenance 与 residue 的 durable contract"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "Installed manifest provenance 数据合同"}
+{"file": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py", "reason": "Installer 实现与 manifest 写入路径"}
+{"file": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py", "reason": "Installer 回归测试"}

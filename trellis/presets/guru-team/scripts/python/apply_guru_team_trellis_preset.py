@@ -540,6 +540,31 @@ def build_installed_extension_manifest(
     }
 
 
+def retain_previous_manifest_for_noop(
+    previous: dict[str, Any] | None,
+    candidate: dict[str, Any],
+) -> dict[str, Any]:
+    if previous is None:
+        return candidate
+
+    def stable_install_state(payload: dict[str, Any]) -> dict[str, Any]:
+        stable = json.loads(json.dumps(payload))
+        stable.pop("installed_at", None)
+        stable.pop("source", None)
+        for section_name in ("skill_packages", "overlays"):
+            section = stable.get(section_name)
+            if not isinstance(section, dict):
+                continue
+            files = section.get("files")
+            if isinstance(files, list):
+                for item in files:
+                    if isinstance(item, dict):
+                        item.pop("action", None)
+        return stable
+
+    return previous if stable_install_state(candidate) == stable_install_state(previous) else candidate
+
+
 def write_installed_extension_manifest(dst: Path, payload: dict[str, Any]) -> str:
     path = dst / "extension.json"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -2448,6 +2473,10 @@ def _install_assets_in_place(
     manifest = load_extension_manifest(guru_root)
     source = source_provenance(guru_root)
     installed_manifest = build_installed_extension_manifest(manifest, source, result)
+    installed_manifest = retain_previous_manifest_for_noop(
+        previous_manifest,
+        installed_manifest,
+    )
     write_installed_extension_manifest(dst, installed_manifest)
     rel_extension = (dst / "extension.json").relative_to(repo).as_posix()
     result["extension_manifest"] = rel_extension

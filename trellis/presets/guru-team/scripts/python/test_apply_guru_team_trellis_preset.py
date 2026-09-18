@@ -2529,6 +2529,63 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(payload["runtime_gitignore"]["rule"], ".trellis/.runtime/")
         self.assertIn(".trellis/.runtime/", (self.repo / ".gitignore").read_text(encoding="utf-8"))
 
+    def test_equivalent_reapply_preserves_previous_manifest_bytes_across_source_heads(self) -> None:
+        first_source = {
+            "repo": "https://github.com/castbox/guru-trellis.git",
+            "ref": "a" * 40,
+            "commit": "a" * 40,
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+        second_source = {**first_source, "ref": "b" * 40, "commit": "b" * 40}
+        with mock.patch.object(preset, "source_provenance", return_value=first_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T00:00:00Z"},
+        ):
+            preset.install_assets(
+                self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+            )
+        manifest_path = self.install_dst / "extension.json"
+        before = manifest_path.read_bytes()
+
+        with mock.patch.object(preset, "source_provenance", return_value=second_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T01:00:00Z"},
+        ):
+            preset.install_assets(
+                self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+            )
+
+        self.assertEqual(manifest_path.read_bytes(), before)
+
+    def test_changed_platform_projection_refreshes_manifest_provenance(self) -> None:
+        first_source = {
+            "repo": "https://github.com/castbox/guru-trellis.git",
+            "ref": "a" * 40,
+            "commit": "a" * 40,
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+        second_source = {**first_source, "ref": "b" * 40, "commit": "b" * 40}
+        with mock.patch.object(preset, "source_provenance", return_value=first_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T00:00:00Z"},
+        ):
+            preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex"})
+
+        with mock.patch.object(preset, "source_provenance", return_value=second_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T01:00:00Z"},
+        ):
+            preset.install_assets(
+                self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+            )
+
+        installed = json.loads((self.install_dst / "extension.json").read_text(encoding="utf-8"))
+        self.assertEqual(installed["installed_at"], "2026-09-18T01:00:00Z")
+        self.assertEqual(installed["source"], second_source)
+        self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
+
     def test_install_timestamp_override_requires_timezone(self) -> None:
         with mock.patch.dict(
             os.environ,
@@ -2543,6 +2600,16 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(first["action"], "installed")
         self.assertEqual(second["action"], "unchanged")
         self.assertEqual((self.repo / ".gitignore").read_text().count(".trellis/.runtime/"), 1)
+
+    def test_python_entrypoints_disable_bytecode_writes(self) -> None:
+        apply_entry = (
+            self.guru_root / "trellis/presets/guru-team/scripts/bash/apply.sh"
+        ).read_text(encoding="utf-8")
+        resolver = (
+            self.guru_root / "trellis/skills/guru-team/runtime/resolve-python.sh"
+        ).read_text(encoding="utf-8")
+        self.assertIn("export PYTHONDONTWRITEBYTECODE=1", apply_entry)
+        self.assertIn("export PYTHONDONTWRITEBYTECODE=1", resolver)
 
     def test_main_version_prints_canonical_extension_version(self) -> None:
         with mock.patch("sys.argv", ["apply_guru_team_trellis_preset.py", "--version"]):
