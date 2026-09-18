@@ -706,10 +706,12 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         shutil.move(str(self.repo / TASK_REF), str(archive_path))
         archived_task = json.loads((archive_path / "task.json").read_text())
         archived_task["status"] = "completed"
+        archived_task["completedAt"] = "2026-09-18"
         self.write(
             f"{archive_ref}/task.json",
             json.dumps(archived_task) + "\n",
         )
+        self.assertRegex(archived_task["completedAt"], r"^\d{4}-\d{2}-\d{2}$")
         self.write(f"{archive_ref}/finish-summary.json", "{}\n")
         self.assertEqual(reviewed, self.identity(include_worktree=True)["sha256"])
         self.git("add", "-A", TASK_REF, archive_ref)
