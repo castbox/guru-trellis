@@ -35,7 +35,8 @@ OUTPUT_SCHEMAS = {
     "blocked": "public-blocked-output.schema.json",
 }
 _CLOSING_KEYWORD = re.compile(
-    r"(?im)^\s*(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*(?:[:：]?\s*)#\d+\b"
+    r"(?im)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s*"
+    r"(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#[1-9][0-9]*\b"
 )
 _ISSUE_URL = re.compile(r"github\.com/[^/]+/[^/]+/issues/(\d+)")
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -98,6 +99,69 @@ class TransactionTests(unittest.TestCase):
             OWNER.mark_ready(Path("/repo"), state)
         run.assert_not_called()
         self.assertEqual(state["stage"], "ready")
+
+    def test_reprepare_selects_only_active_cycle_when_old_cycle_is_ready(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            old = transaction("ready")
+            old["transaction_ref"] = "d" * 64
+            old["input"]["delivery_cycle_ref"] = "delivery-cycle:v1:" + "d" * 64
+            current = transaction("bind_pr")
+            OWNER.save_transaction(root, old)
+            OWNER.save_transaction(root, current)
+            reprepare = {
+                "profile": "reprepare_publication",
+                "mode": "workflow",
+                "task_ref": TASK,
+                "reason_code": "private_state_invalid",
+            }
+            with mock.patch.object(
+                OWNER,
+                "task_context",
+                return_value=(root / TASK, {"branch":"codex/435","base_branch":"main"}),
+            ), mock.patch.object(
+                OWNER, "git_text", return_value=HEAD
+            ), mock.patch.object(
+                OWNER, "repository_identity", return_value="castbox/guru-trellis"
+            ), mock.patch.object(
+                OWNER, "remote_head", return_value=None
+            ), mock.patch.object(
+                OWNER, "list_open_prs", return_value=[]
+            ):
+                plan = OWNER.plan_from_input(root, reprepare)
+        self.assertEqual(plan["typed_exit"], "preview")
+        self.assertEqual(plan["transaction_ref"], current["transaction_ref"])
+        self.assertEqual(plan["input"]["delivery_cycle_ref"], CYCLE)
+
+    def test_invoke_maps_plan_stage_reprepare_errors_to_typed_exit(self) -> None:
+        review = {
+            "schema_version": "1.0",
+            "skill_id": OWNER.SKILL_ID,
+            "review": {"status": "passed", "summary": "Current publication plan is reviewed."},
+            "route": {"typed_exit": "ready_for_merge"},
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            review_path = root / "review.json"
+            review_path.write_text(json.dumps(review))
+            profiles = (
+                {"profile":"same_plan_resume","mode":"workflow","task_ref":TASK,"transaction_ref":"c"*64},
+                {"profile":"reprepare_publication","mode":"workflow","task_ref":TASK,"reason_code":"private_state_invalid"},
+            )
+            for public_input in profiles:
+                input_path = root / f"{public_input['profile']}.json"
+                input_path.write_text(json.dumps(public_input))
+                for code in OWNER.REPREPARE_REQUIRED_CODES:
+                    with self.subTest(profile=public_input["profile"], code=code), mock.patch.object(
+                        OWNER,
+                        "plan_from_input",
+                        side_effect=OWNER.WorkflowError("plan failed", code=code),
+                    ):
+                        output = OWNER.invoke(root, str(input_path), str(review_path), None)
+                    self.assertEqual(
+                        output,
+                        {"exit_id": "reprepare_required", "task_ref": TASK, "reason_code": code},
+                    )
 
 
 if __name__ == "__main__":

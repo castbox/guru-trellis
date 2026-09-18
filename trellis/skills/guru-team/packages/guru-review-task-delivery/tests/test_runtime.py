@@ -143,13 +143,19 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
                 self.assertTrue(fields.issubset(output))
                 self.assertFalse(self.checkpoint().exists())
 
-    def test_closing_keyword_fails_before_checkpoint_write(self):
-        semantic = self.semantic()
-        semantic["pr_payload"]["body"] += "\nCloses #435\n"
-        with self.assertRaises(CommandError) as raised:
-            self.invoke(semantic)
-        self.assertEqual("schema_mismatch", raised.exception.code)
-        self.assertFalse(self.checkpoint().exists())
+    def test_closing_keyword_forms_fail_before_checkpoint_write(self):
+        for closing_text in (
+            "- Closes #435",
+            "Text: fixes #435",
+            "Closes castbox/guru-trellis#435",
+        ):
+            with self.subTest(closing_text=closing_text):
+                semantic = self.semantic()
+                semantic["pr_payload"]["body"] += f"\n{closing_text}\n"
+                with self.assertRaises(CommandError) as raised:
+                    self.invoke(semantic)
+                self.assertEqual("schema_mismatch", raised.exception.code)
+                self.assertFalse(self.checkpoint().exists())
 
     def test_publish_review_stale_reentry_uses_ordinary_fresh_review_input(self):
         public = self.public()

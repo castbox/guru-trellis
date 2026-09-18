@@ -16,6 +16,9 @@ SHA40 = re.compile(r"^[0-9a-f]{40}$")
 SHA64 = re.compile(r"^[0-9a-f]{64}$")
 TASK_REF = re.compile(r"^\.trellis/tasks/[A-Za-z0-9._/-]+$")
 REPO_REF = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+REPREPARE_REQUIRED_CODES = frozenset(
+    {"private_state_invalid", "private_state_missing", "task_identity_stale", "repository_identity_stale"}
+)
 CLOSING = re.compile(
     r"(?im)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s*"
     r"(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#[1-9][0-9]*\b"
@@ -238,10 +241,12 @@ def unique_task_transaction(root: Path, task_ref: str) -> dict[str, Any]:
                 continue
             value = read_json(path)
             if isinstance(value.get("input"), dict) and value["input"].get("task_ref") == task_ref:
+                if value.get("stage") == "ready":
+                    continue
                 validate_transaction(value)
                 matches.append(value)
     if len(matches) != 1:
-        raise WorkflowError("Reprepare requires exactly one current task publication transaction.", code="private_state_invalid")
+        raise WorkflowError("Reprepare requires exactly one active task publication transaction.", code="private_state_invalid")
     return matches[0]
 
 
@@ -579,7 +584,12 @@ def preview(root: Path, input_path: str) -> dict[str, Any]:
 def invoke(root: Path, input_path: str, review_path: str, confirmed: str | None) -> dict[str, Any]:
     public_input = validate_public_input(read_json(input_path))
     review = validate_review(read_json(review_path))
-    context = plan_from_input(root, public_input)
+    try:
+        context = plan_from_input(root, public_input)
+    except WorkflowError as exc:
+        if exc.code in REPREPARE_REQUIRED_CODES:
+            return {"exit_id": "reprepare_required", "task_ref": public_input["task_ref"], "reason_code": exc.code}
+        raise
     if context.get("typed_exit") != "preview":
         return context["output"]
     if not context["terminal_recovery"]:
@@ -593,7 +603,7 @@ def invoke(root: Path, input_path: str, review_path: str, confirmed: str | None)
         transaction = load_transaction(root, context["transaction_ref"])
         if transaction is not None and exc.code in {"external_command_failed"}:
             return {"exit_id": "resume_publication", "task_ref": context["input"]["task_ref"], "transaction_ref": context["transaction_ref"]}
-        if exc.code in {"private_state_invalid", "private_state_missing", "task_identity_stale", "repository_identity_stale"}:
+        if exc.code in REPREPARE_REQUIRED_CODES:
             return {"exit_id": "reprepare_required", "task_ref": context["input"]["task_ref"], "reason_code": exc.code}
         raise
 
