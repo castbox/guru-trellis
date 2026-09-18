@@ -6,7 +6,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.54` | [requirement-main.md](./versions/current-main-0.6.17-guru.54/requirement-main.md) | #419 active-task continuation；完整继承 immutable `.53`，不是后续 gate 或发布证明 |
+| `active` | `current-main-0.6.17-guru.55` | [requirement-main.md](./versions/current-main-0.6.17-guru.55/requirement-main.md) | #435 Active Task Delivery；完整继承 immutable `.54`，Architecture 为 `.55/active` |
+| `superseded` | `current-main-0.6.17-guru.54` | [requirement-main.md](./versions/current-main-0.6.17-guru.54/requirement-main.md) | #419 active-task continuation；immutable history |
 | `superseded` | `current-main-0.6.17-guru.53` | [requirement-main.md](./versions/current-main-0.6.17-guru.53/requirement-main.md) | #418 归档身份与只读复审；immutable history |
 | `superseded` | `current-main-0.6.17-guru.52` | [requirement-main.md](./versions/current-main-0.6.17-guru.52/requirement-main.md) | #410 release-facing 四轴映射；完整继承 immutable `.51`，不构成后续 gate 或发布证明 |
 | `superseded` | `current-main-0.6.5-guru.51` | [requirement-main.md](./versions/current-main-0.6.5-guru.51/requirement-main.md) | #408 Nightly/session/独立手动操作；immutable history |
@@ -29,9 +30,9 @@
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
 当前框架源码固定为 `castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b`，CI `35190729418`，CLI/core `0.6.17`，package manager `pnpm@10.32.1`；Guru current extension revision 为 `0.6.17-guru.42`，target repository axis 为 `v0.6.17-guru.1`。released `v0.6.16-guru.1` 与 extension `0.6.16-guru.41` 保持 immutable history。
-Docs `.54` 完整继承 immutable `.53` 并承接 #419；current graph 为 23 Skills / 100 exits / 79 commands。唯一 continuation block、producer-owned recovery 与 upstream thin-entry boundary 成为 current；repository、extension 与 CLI axes 不变，fixed Fork source 更新为 exact upstream merge candidate。知识提升不证明 post-promotion Phase 2/commit/完整 Branch Review、Publication 或发布完成。
+Docs `.55` 完整继承 immutable `.54` 并承接 #435；current registry 为 26 packages / 114 exits / 96 commands，三个 Delivery packages 保持 `deferred`，production workflow 仍为 22 mandatory invokes / 98 exits。#434 独占 production graph activation；#436 独占 Completion、Closure、Finish、Cleanup 与 Reactivate。repository、extension、CLI 与 Architecture `.55/active` axes 不变。知识提升不证明 post-promotion Phase 2/commit/完整 Branch Review、Publication 或发布完成；完整 Release matrix 仍 `unverified`。
 
-`R419-01..07 -> D419-01..10 -> T419-01..10` 与继承的 R418/R410/R408 链见 [current trace](./versions/current-main-0.6.17-guru.54/traceability.md)。实际证明边界由同版本 Test 层维护。
+`R435-01..08 -> D435-01..09 -> T435-01..45` 与继承的 R419/R418/R410/R408 链见 [current trace](./versions/current-main-0.6.17-guru.55/traceability.md)。实际证明边界由同版本 Test 层维护。
 
 `R378-01..04 -> D378-01..04 -> T378-01..05` 承接固定来源、会话隔离、installed 投影与原 verifier 入口；#388/#389 保留为关联前置，既有 #240/#348/#332/#376 与 Evolution authority 不扩张。
 
@@ -89,4 +90,4 @@ inventory 只承接 current-to-target trace，不替代前两份 Requirements �
 
 旧路径 `requirement-main.md` 与 `guru-team-trellis-flow.md` 仅保留迁移导航，不定义 current。
 
-`.54/active` 完整继承 `.53` 并吸收 reviewed #419 contribution，与 Architecture 共享 current identity。promotion-created combined diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review，随后才进入 Publication；#410独占post-merge Release Gate matrix。
+`.55/active` 完整继承 `.54` 并吸收 reviewed #435 contribution；Architecture 为 `.55/active`。promotion-created diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review，随后才进入 Publication；#410独占post-merge Release Gate matrix且当前仍未验证。

@@ -123,3 +123,22 @@ preset/ownership 158，以及exact upstream candidate identity、extractor/conti
 installed runtime、真实Git/task fixture、projection parity、ownership、dogfood drift、sidecar/residue与diff检查。
 这些结果不包含throwaway、install/update/workflow-switch/preset-reapply Release Gate matrix；该完整证明由#410
 在#419 merge后的fresh main独立建立。Promotion-created diff仍须fresh Phase 2、Task Commit和完整Branch Review。
+
+## EVD-030: #435 Reviewed Promotion Source
+
+本证据支撑`ARCH-CUR-032`、`ARCH-DOM-017`、`ARCH-INT-020`、`ARCH-GAP-009`、`ARCH-GOV-011`、
+`ADR-012`与`.54 -> .55` knowledge promotion。提升前独立完整Branch Review绑定
+`a410a97fad127b9cc9bce1680666f6149d3ba616...83909737ebb67fdc505d68e6bcb39acf759101c1`；
+review发现的Publish recovery、closing keyword、terminal recovery、closed public schema、resolved-tree
+first-parent tree与active command count问题均已在同一committed candidate闭合。
+
+定向证据包括canonical/installed Delivery Review、Publish、Merge与Reconcile package tests，重复Delivery、
+deleted-head-branch、Reactivate-style binding、bookkeeping exclusion、identity drift、#405 equal-head recovery、
+#407 resolved-tree commit及cross-package integration；preset apply/reapply、upgrade contract、ownership、package
+closure、source/installed/platform parity、dogfood drift、task validation与diff checks通过。active registry聚合为
+26 packages / 114 package exits / 96 commands；production workflow保持22 mandatory invokes / 98 exits。
+
+上述证据不激活production graph，不实现或验证#436 Completion、Closure、Finish、Cleanup、Reactivate，也不把
+继承的Finish-family失败声明为通过。完整多平台Release matrix仍为`unverified`。Promotion-created diff仍须
+fresh Phase 2、Task Commit与independent complete Branch Review；后续Publication、push、PR、merge、Release与
+Issue closure均不由本提升前证据推定完成。

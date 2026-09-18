@@ -1,8 +1,7 @@
 # #435 Active Task Delivery Loop Requirements contribution
 
-状态：`candidate`。本文是 task-owned delta，不是 shared current authority；只有 independent committed
-full-diff review 通过后，serialized RDT promotion 才能把它吸收到 expected
-`current-main-0.6.17-guru.54` successor。
+状态：`absorbed_historical_source`。本 contribution 已由 serialized RDT promotion 吸收到
+`current-main-0.6.17-guru.55`；predecessor `.54` 保持 immutable，Architecture 为 `.55/active`。
 
 - `R435-01`：新增 Delivery Review semantic owner，按 approved current slice 审查 requirement、Delivery
   policy、remaining work、independent delivery conditions、validation、RDT/Architecture、base 与 Branch
@@ -13,20 +12,22 @@ full-diff review 通过后，serialized RDT promotion 才能把它吸收到 expe
 - `R435-03`：新增 Delivery Merge owner，只允许 merge commit，以 expected head、checks、base、method 与
   exact subject/body 执行一次 mutation；merge body 必须携带 stable task、schema 1、reviewed head trailers，
   output loss 必须由 terminal live facts恢复同一 Delivery result。
-- `R435-04`：同一 active task 必须支持多个顺序 Delivery cycles。每次 merge 后 task 保持 active，remaining
-  work 不得被声明完成；Delivery packages 不拥有 Completion、Issue Closure、archive、Finish、Cleanup 或
-  Reactivate。
-- `R435-05`：Delivery history 必须跨 branch/worktree 重建，交叉验证 GitHub PR/merge、merge commit、parents、
-  repository/base 与 exact trailers；PR body、current branch、remote branch存活和 task creation facts 不得替代
-  identity authority。
-- `R435-06`：Planning/Approval、Check、Task Commit、Branch Review 与 Reconcile 保持既有 owner。Sliced
-  delivery 只改变 current satisfaction boundary，不弱化完整 candidate impact review；#407 resolved tree
-  commit 必须绑定 fresh Phase 2 与 exact merge tree，并支持 same-commit recovery。
-- `R435-07`：三个新 package 必须注册、安装并投影到 Shared/Codex/Cursor/Claude，但在 #434 前保持
-  `deferred`；existing Publication/Finalizer/Merge/Restore production graph与mandatory markers不变。
-- `R435-08`：验证必须覆盖 package contract/runtime/eval、两个顺序 Delivery、#405、#407、trailer parse、
-  cross-branch discovery、Refs-only、bookkeeping exclusion、projection parity、representative clean install/reapply、
-  ownership、dogfood drift与repository checks。
+- `R435-04`：Planning/Approval 必须区分 task scope、current delivery slice、remaining work 与 independent
+  delivery conditions。Check、Task Commit 与 Branch Review 仍审查完整 current candidate，但只按 approved
+  current slice 判断满足性；remaining work 不得被误判为当前遗漏或标记完成，也不新增第二组既有 gate owner。
+- `R435-05`：同一 active task 必须支持多个顺序 Delivery cycles。Delivery history 通过 closed merge trailers
+  与 GitHub PR/merge、merge commit、parents、repository/base 交叉验证后跨 branch/worktree 重建；禁止 ledger、
+  PR-body identity、current-branch 推断或覆盖 immutable task creation facts。
+- `R435-06`：#436 完成 Reactivate 与 current workspace binding 后，本闭环只消费新的 current active binding；
+  historical merged PR 保持 immutable，新业务变更进入新 PR，tracked archive-to-active move随业务 Delivery
+  提交，validation-only Reactivate 不产生空 Delivery，旧 Completion/Finish success 不得证明当前 cycle。
+- `R435-07`：#407 base conflict 经 implementation route 与 fresh Phase 2 后，由 Reconcile 消费 exact resolved
+  tree，绑定 prior task head、new base、tree object、index digest、ordered parents 与 semantic review，只创建或
+  恢复同一个 local merge commit；该路径不 push、不修改 PR/Issue、不绕过完整 Branch Review。
+- `R435-08`：三个新 package、closed schemas、consumer declarations、canonical/installed/platform projection、
+  preset 与 package-local eval 必须 additive 完整分发并保持 `deferred`。#434 前 production graph、mandatory
+  markers 与旧 lifecycle assets不变；禁止 adapter、dual graph 与提前 retirement。代表性验证不等于完整
+  Release matrix。
 
 #434 独占 production graph原子切换与旧edge retirement；#436 独占 Completion、Closure、Finish、Cleanup与
 Reactivate。本文不授权 commit、push、PR、merge、release 或 cleanup。

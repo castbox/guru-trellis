@@ -1,6 +1,6 @@
 # ADR-012: Active Task Delivery Loop ownership and identity
 
-状态：`proposed`。来源：Issue #435 `2026-09-18-r3`、task planning 与 task-owned [Architecture contribution](../contributions/435-active-task-delivery-loop.md)。只有 independent committed full-diff review 和 expected-`current-main-0.6.17-guru.54` serialized promotion 能把本 ADR 变为 accepted。
+状态：`accepted`，由 `current-main-0.6.17-guru.55` promotion 接受。来源：Issue #435 `2026-09-18-r3`、task planning 与 task-owned [Architecture contribution](../contributions/435-active-task-delivery-loop.md)。promotion predecessor 为 `current-main-0.6.17-guru.54`；current successor 为 `current-main-0.6.17-guru.55`。
 
 ## Context
 
@@ -33,4 +33,4 @@ Current lifecycle把 Publication、remote publication、task archive、Ready、M
 
 新设计增加三个public Skill IDs及其closed schemas/consumers，并直接演进少量existing owner contracts。实现必须提供两个顺序Delivery、#405、#407、Reactivate new binding、bookkeeping exclusion、Refs-only、merge output loss、zero duplicate side effects与source/installed/projection evidence。
 
-Task-local Architecture/RDT contributions必须先通过independent committed review，再由serialized owners按expected `.54` promotion。Promotion-created diff必须fresh重跑Phase 2、Task Commit与完整Branch Review。#434 cutover与#436 Completion/Finish E2E不由本ADR adoption证明；Release matrix也不由本任务证明。
+Task-local Architecture contribution已通过independent committed review，并由Architecture owner按expected `.54` promotion为`.55`。本ADR接受只说明reviewed additive Delivery capability进入current authority；promotion-created diff仍须fresh重跑Phase 2、Task Commit与完整Branch Review。#434 cutover与#436 Completion/Finish E2E不由本ADR adoption证明；Release matrix仍为`unverified`。

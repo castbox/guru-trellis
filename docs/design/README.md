@@ -1,12 +1,13 @@
 # Design SSOT
 
-唯一 current Design authority：[`versions/current-main-0.6.17-guru.54/design-main.md`](./versions/current-main-0.6.17-guru.54/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；#419 continuation current graph（23 Skills / 100 exits / 79 commands）见 [`capability-inventory.md`](./versions/current-main-0.6.17-guru.54/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。Architecture 继承 `.54` / `active`；`.53` 及更早版本保持 immutable。
+唯一 current Design authority：[`versions/current-main-0.6.17-guru.55/design-main.md`](./versions/current-main-0.6.17-guru.55/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；#435 current registry（26 packages / 114 exits / 96 commands）见 [`capability-inventory.md`](./versions/current-main-0.6.17-guru.55/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。三个 Delivery packages 保持 `deferred`，production workflow 为 22 mandatory invokes / 98 exits。Architecture 继承 `.55` / `active`；`.54` 及更早版本保持 immutable。
 
 Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Architecture。普通 task 通过 RDT `task_impact_sync` / contribution / `promotion` 更新 current。
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.54` | [`design-main.md`](./versions/current-main-0.6.17-guru.54/design-main.md) |
+| `active` | `current-main-0.6.17-guru.55` | [`design-main.md`](./versions/current-main-0.6.17-guru.55/design-main.md) |
+| `superseded` | `current-main-0.6.17-guru.54` | [`design-main.md`](./versions/current-main-0.6.17-guru.54/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.53` | [`design-main.md`](./versions/current-main-0.6.17-guru.53/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.52` | [`design-main.md`](./versions/current-main-0.6.17-guru.52/design-main.md) |
 | `superseded` | `current-main-0.6.5-guru.51` | [`design-main.md`](./versions/current-main-0.6.5-guru.51/design-main.md) |
@@ -30,4 +31,4 @@ Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Archi
 
 Released history 只固定 release identity；未从 tag 恢复的设计内容保持 `unverified`，不能用 current 设计倒填。
 
-`.54/active` 完整继承 `.53` 并吸收 reviewed #419 contribution，与 Architecture 共享 current identity。promotion-created combined diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review；#410独占post-merge Release Gate matrix。
+`.55/active` 完整继承 `.54` 并吸收 reviewed #435 contribution；Architecture 为 `.55/active`。#434 独占 production graph activation，#436 独占 terminal lifecycle；promotion-created combined diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review；完整 Release matrix 保持 `unverified`。
