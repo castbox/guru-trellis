@@ -1,0 +1,149 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-18T00:01:50Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-18-427-release-finalizer-confirmation-contract",
+    "title": "#427 修复正式发布 Finalizer 分段确认与原子事务合同冲突",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/427-release-finalizer-confirmation-contract",
+    "commits": [
+      "c61aec468712e7cf43425fb841e2acba85a09497",
+      "ae38a687b1c7bed1a2bb5e069137b6672dba3655"
+    ],
+    "changed_paths": [
+      ".agents/skills/release-guru-trellis-version/references/contract.md",
+      ".agents/skills/release-guru-trellis-version/tests/test_contract.py",
+      ".claude/skills/release-guru-trellis-version/references/contract.md",
+      ".codex/skills/release-guru-trellis-version/references/contract.md",
+      ".cursor/skills/release-guru-trellis-version/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/check.jsonl",
+      ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/design.md",
+      ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/implement.jsonl",
+      ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/implement.md",
+      ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/prd.md",
+      ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/task.json",
+      ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/design.md",
+      ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/implement.md",
+      ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/prd.md",
+      ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/task.json"
+    ]
+  },
+  "github": {
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/428"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#427 修复正式发布 Finalizer 分段确认与原子事务合同冲突",
+    "outcome": "将正式发布编排收敛为一次完整 Finalizer transaction 确认，覆盖 provenance reprepare、content push、Draft PR、archive、archive push 与 Ready。",
+    "changed_behavior": [
+      "将正式发布编排收敛为一次完整 Finalizer transaction 确认，覆盖 provenance reprepare、content push、Draft PR、archive、archive push 与 Ready。",
+      "保持 preparation PR merge、annotated tag、tag-pinned smoke、GitHub Release、#410 closure 与 cleanup 为独立发布边界。",
+      "修正 release contract regression fixture，使其模拟 current Finalizer 的正式 archive move，并写入 `status=completed` 与 `completedAt`。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/design.md",
+          ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/implement.md",
+          ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/prd.md",
+          ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/design.md",
+          ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/implement.md",
+          ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/prd.md"
+        ],
+        "change": "将正式发布编排收敛为一次完整 Finalizer transaction 确认，覆盖 provenance reprepare、content push、Draft PR、archive、archive push 与 Ready。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "将正式发布编排收敛为一次完整 Finalizer transaction 确认，覆盖 provenance reprepare、content push、Draft PR、archive、archive push 与 Ready。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".agents/skills/release-guru-trellis-version/tests/test_contract.py"
+        ],
+        "change": "将正式发布编排收敛为一次完整 Finalizer transaction 确认，覆盖 provenance reprepare、content push、Draft PR、archive、archive push 与 Ready。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/release-guru-trellis-version/references/contract.md",
+          ".claude/skills/release-guru-trellis-version/references/contract.md",
+          ".codex/skills/release-guru-trellis-version/references/contract.md",
+          ".cursor/skills/release-guru-trellis-version/references/contract.md"
+        ],
+        "change": "将正式发布编排收敛为一次完整 Finalizer transaction 确认，覆盖 provenance reprepare、content push、Draft PR、archive、archive push 与 Ready。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/check.jsonl",
+          ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/implement.jsonl",
+          ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/task.json",
+          ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/task.json"
+        ],
+        "change": "将正式发布编排收敛为一次完整 Finalizer transaction 确认，覆盖 provenance reprepare、content push、Draft PR、archive、archive push 与 Ready。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [],
+      "pr_refs": [
+        "PR #428"
+      ],
+      "branches": [
+        "fix/427-release-finalizer-confirmation-contract"
+      ],
+      "paths": [
+        ".agents/skills/release-guru-trellis-version/references/contract.md",
+        ".agents/skills/release-guru-trellis-version/tests/test_contract.py",
+        ".claude/skills/release-guru-trellis-version/references/contract.md",
+        ".codex/skills/release-guru-trellis-version/references/contract.md",
+        ".cursor/skills/release-guru-trellis-version/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/check.jsonl",
+        ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/design.md",
+        ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/implement.jsonl",
+        ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/implement.md",
+        ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/prd.md",
+        ".trellis/tasks/09-18-427-release-finalizer-confirmation-contract/task.json",
+        ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/design.md",
+        ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/implement.md",
+        ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/prd.md",
+        ".trellis/tasks/archive/2026-09/09-18-427-release-finalizer-confirmation-contract/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#427 修复正式发布 Finalizer 分段确认与原子事务合同冲突",
+        "将正式发布编排收敛为一次完整 Finalizer transaction 确认，覆盖 provenance reprep",
+        "完成 contract.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#427 修复正式发布 Finalizer 分段确认与原子事务合同冲突\n将正式发布编排收敛为一次完整 Finalizer transaction 确认，覆盖 provenance reprepare、content push、Draft PR、archive、archive push 与 Ready。\n保持 preparation PR merge、annotated tag、tag-pinned smoke、GitHub Release、#410 closure 与 cleanup 为独立发布边界。\n修正 release contract regression fixture，使其模拟 current Finalizer 的正式 archive move，并写入 `status=completed` 与 `completedAt`。\n将正式发布编排收敛为一次完整 Finalizer transaction 确认，覆盖 provenance reprep\n完成 contract.md 相关变更"
+  }
+}
