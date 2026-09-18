@@ -8,12 +8,18 @@ FORK_SOURCE="${TRELLIS_FORK_SOURCE:-}"
 PREDECESSOR_SOURCE="${TRELLIS_PREDECESSOR_SOURCE:-}"
 PREDECESSOR_COMMIT="${TRELLIS_PREDECESSOR_COMMIT:-}"
 VERIFY_MODE="full"
+BEFORE_TAG="${TRELLIS_BEFORE_TAG:-v0.6.5-guru.10}"
+BEFORE_CLI="${TRELLIS_BEFORE_CLI:-0.6.5}"
+VERIFY_PLATFORM="${TRELLIS_VERIFY_PLATFORM:-codex}"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --fork-source) FORK_SOURCE="${2:?--fork-source requires a checkout}"; shift 2 ;;
     --predecessor-source) PREDECESSOR_SOURCE="${2:?--predecessor-source requires a checkout}"; shift 2 ;;
     --predecessor-commit) PREDECESSOR_COMMIT="${2:?--predecessor-commit requires a SHA}"; shift 2 ;;
-    --mode) VERIFY_MODE="${2:?--mode requires full or focused}"; shift 2 ;;
+    --before-tag) BEFORE_TAG="${2:?--before-tag requires a tag}"; shift 2 ;;
+    --before-cli) BEFORE_CLI="${2:?--before-cli requires a version}"; shift 2 ;;
+    --platform) VERIFY_PLATFORM="${2:?--platform requires claude, codex, or cursor}"; shift 2 ;;
+    --mode) VERIFY_MODE="${2:?--mode requires full, focused, or existing}"; shift 2 ;;
     *) echo "Unknown verifier option: $1" >&2; exit 2 ;;
   esac
 done
@@ -63,7 +69,7 @@ if [[ -e "$TARGET" ]]; then
 fi
 
 [[ -n "$FORK_SOURCE" ]] || { echo "--fork-source is required; no npm fallback" >&2; exit 2; }
-[[ "$VERIFY_MODE" == full || "$VERIFY_MODE" == focused ]] || {
+[[ "$VERIFY_MODE" == full || "$VERIFY_MODE" == focused || "$VERIFY_MODE" == existing ]] || {
   echo "Unknown verifier mode: $VERIFY_MODE" >&2
   exit 2
 }
@@ -116,8 +122,8 @@ source_python "$PYTHON_ROUTING_HELPER" check-inventory \
   --inventory "$PYTHON_CALLER_INVENTORY" \
   --json
 
-# Full preserves the standalone catalog; focused is an explicit bounded run.
-if [[ "$VERIFY_MODE" == full || "$VERIFY_MODE" == focused ]]; then
+# Full preserves the standalone catalog; focused and existing are bounded runs.
+if [[ "$VERIFY_MODE" == full || "$VERIFY_MODE" == focused || "$VERIFY_MODE" == existing ]]; then
   MATRIX_ARGS=(
     run
     --repo-root "$REPO_ROOT"
@@ -125,6 +131,9 @@ if [[ "$VERIFY_MODE" == full || "$VERIFY_MODE" == focused ]]; then
     --workflow-source "$WORKFLOW_SOURCE"
     --fork-source "$FORK_SOURCE"
     --mode "$VERIFY_MODE"
+    --before-tag "$BEFORE_TAG"
+    --before-cli "$BEFORE_CLI"
+    --platform "$VERIFY_PLATFORM"
   )
   if [[ -n "$PREDECESSOR_SOURCE" ]]; then
     MATRIX_ARGS+=(--predecessor-source "$PREDECESSOR_SOURCE")
