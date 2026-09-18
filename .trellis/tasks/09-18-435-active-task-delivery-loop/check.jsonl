@@ -1,8 +1,0 @@
-{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Sliced Delivery、Publication/Finalizer/Merge、回归与验证范围标准"}
-{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "当前 active graph、owner routes 与 #434 未激活边界"}
-{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "三新 package 的 closed I/O、唯一 consumer 与 private state 审核"}
-{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "跨分支 identity、transaction recovery 与 current-only schema 审核"}
-{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "无 ledger、adapter、dual graph 与冗余持久化审核"}
-{"file": "docs/architecture/06-governance/change-contract.md", "reason": "Architecture required concerns 与 project-check 审核"}
-{"file": "docs/architecture/contributions/435-active-task-delivery-loop.md", "reason": "本任务 architecture before/target、owner 与 promotion boundary"}
-{"file": "docs/architecture/adr/012-active-task-delivery-loop.md", "reason": "Delivery owner topology、identity 与 cutover decision candidate"}
