@@ -622,3 +622,47 @@ invalidate the previous confirmation. The Happy Path must not execute the
 compatibility branch first or publish a second wrapper/command authority. Every
 Merge exit is terminal for that Skill; its consumer or stop target runs next,
 with no post-exit polling or work.
+
+## Post-Delivery Task Lifecycle
+
+The additive Post-Delivery lifecycle consists of five independent semantic
+owners. Their packages may be installed before activation, but the production
+workflow does not route into them until the lifecycle graph owner performs one
+atomic cutover. A Delivery merge, PR readiness, deployment, passing test, closed
+Issue, or archived directory never implies Task Completion.
+
+`guru-review-task-completion` is the only Completion owner. It rereads accepted
+scope, every applicable Delivery fact, current requirement authority, validation
+and external evidence. Any remaining work, evidence gap, requirement revision,
+implementation revision, or additional Delivery keeps the same task active and
+returns the earliest affected owner. Only `completed` enters Closure.
+
+`guru-complete-task-closure` owns the source Issue disposition after Completion.
+No-Issue, reference-only, follow-up and parent-only relationships produce
+`no_mutation`. Closing one exact source Issue is a separate confirmed provider
+mutation with same-transaction recovery and post-read verification. Delivery
+and bookkeeping PRs contain no Issue-closing keyword.
+
+`guru-finish-task` owns terminal archive persistence after Closure. It reviews a
+lifecycle-only allowlist, then uses three separate mutation boundaries: local
+archive projection, bookkeeping commit/push/PR publication, and expected-head
+merge. The bookkeeping PR is administrative: it creates no task or Delivery
+result and never re-enters Completion. Finish returns `success` only after the
+remote target baseline contains the unique final archive, the active task is
+absent, and terminal metadata is readable there. Local movement, commit, push,
+or PR creation alone returns `resume_finish`.
+
+`guru-cleanup-task-resources` consumes only the current Finish success. It
+freshly reviews the exact owned branch, worktree and ignored runtime resources,
+requires an independent confirmation, and preserves every previous lifecycle
+result when cleanup is partial. A Reactivate invalidates the prior Finish
+receipt, so old success cannot delete current resources.
+
+`guru-reactivate-task` handles only a normally finished original task and is
+distinct from merge-time `guru-restore-archived-task`. It preserves task and
+Issue identity, verifies current archive/scope/base facts, and either reuses one
+exact clean branch/worktree or creates a new branch/worktree from the reviewed
+target baseline. It moves the single archive copy back to active, refreshes task
+metadata and ignored mappings, and routes explicitly to requirements, planning,
+implementation, or evidence refresh. It never creates a replacement task,
+reopens an Issue, or treats prior Completion/Closure/Finish as current approval.

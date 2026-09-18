@@ -1882,3 +1882,41 @@ watcher polls, and post-terminal operations. It is test evidence rather than a
 public Skill DTO or durable audit artifact. Wall-clock samples are observational
 and must separate Agent orchestration, deterministic command, GitHub API, and
 external CI wait.
+
+## Post-Delivery Lifecycle Contracts
+
+Completion public input locates one task, current scope/requirement/evidence and
+all Delivery facts. Its seven outputs are minimal route DTOs; only `completed`
+carries a fresh `completion_ref` and Closure seed. Full findings, scans and live
+facts remain transient or owner-private. Evidence refresh is a fresh input
+profile and cannot prefill a successful judgment or fabricate a Delivery.
+
+Closure consumes the current Completion approval. Both `closed` and
+`no_mutation` carry a real `closure_ref`; the latter is not synthesized from
+`task_ref`. Provider transaction details are private and recover only the exact
+repo/Issue/action identity. Authorization is never persisted.
+
+Finish consumes `task_ref`, Closure disposition and `closure_ref`. Its semantic
+result owns the exact lifecycle allowlist, explicit final `archive_ref`, and
+reviewed bookkeeping payload. Old archive locators may appear only as reviewed
+deletion roots and never select the final archive by ordering. The
+private ignored transaction may retain only task/closure identity, repo/base/
+head branch, expected base head, archive locator, local commit, PR identity and
+verified target head needed by the next same-owner invocation. `resume_finish`
+carries only `task_ref`, `finish_ref`, reason and remediation. `success` carries
+only `task_ref`, final `archive_ref` and current `finish_ref` for Cleanup.
+
+Finish stages only paths under the reviewed active task and exact archive
+locators. Its commit, PR and merge payloads contain neither Issue-closing
+keywords nor Delivery trailers. The remote target branch, not the invoking
+worktree HEAD, is the post-merge authority: active `task.json` must be absent,
+archive `task.json` and `finish-summary.json` must exist, and the target head
+must equal the verified bookkeeping merge commit.
+
+Reactivate public input identifies the original active/archive locators and
+stable task id. The semantic result adds one reviewed workspace plan: current
+base branch/head, branch name, absolute worktree path, reuse-or-create
+disposition, and the two ignored mapping locators. Its output intentionally
+omits branch/worktree internals because the selected downstream owner consumes
+the refreshed task binding. Prior Finish receipts are deleted during the
+reactivation mutation and cannot seed Cleanup.
