@@ -2586,6 +2586,95 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(installed["source"], second_source)
         self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
 
+    def test_restored_managed_file_refreshes_manifest_provenance(self) -> None:
+        first_source = {
+            "repo": "https://github.com/castbox/guru-trellis.git",
+            "ref": "a" * 40,
+            "commit": "a" * 40,
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+        second_source = {**first_source, "ref": "b" * 40, "commit": "b" * 40}
+        with mock.patch.object(preset, "source_provenance", return_value=first_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T00:00:00Z"},
+        ):
+            preset.install_assets(
+                self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+            )
+        restored_path = self.repo / ".trellis/guru-team/skills/registry.json"
+        restored_path.unlink()
+
+        with mock.patch.object(preset, "source_provenance", return_value=second_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T02:00:00Z"},
+        ):
+            preset.install_assets(
+                self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+            )
+
+        installed = json.loads((self.install_dst / "extension.json").read_text(encoding="utf-8"))
+        self.assertTrue(restored_path.is_file())
+        self.assertEqual(installed["installed_at"], "2026-09-18T02:00:00Z")
+        self.assertEqual(installed["source"], second_source)
+        registry = next(
+            item
+            for item in installed["skill_packages"]["files"]
+            if item["path"] == ".trellis/guru-team/skills/registry.json"
+        )
+        self.assertEqual(registry["action"], "installed")
+
+    def test_raw_apply_keeps_fresh_git_fixture_clean_without_residue(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            repo = Path(temporary) / "repo"
+            shutil.copytree(
+                self.guru_root,
+                repo,
+                ignore=shutil.ignore_patterns(
+                    ".git", ".runtime", "__pycache__", "*.pyc", "*.pyo", ".DS_Store"
+                ),
+            )
+            for command in (
+                ["git", "init", "-b", "main"],
+                ["git", "config", "user.name", "Guru Release Fixture"],
+                ["git", "config", "user.email", "fixture@example.invalid"],
+                ["git", "add", "-A"],
+                ["git", "commit", "-m", "test: stage clean reapply fixture"],
+            ):
+                subprocess.run(command, cwd=repo, check=True, capture_output=True, text=True)
+            environment = os.environ.copy()
+            environment.pop("PYTHONDONTWRITEBYTECODE", None)
+            completed = subprocess.run(
+                [
+                    str(repo / "trellis/presets/guru-team/scripts/bash/apply.sh"),
+                    "--repo",
+                    str(repo),
+                    "--all-platforms",
+                ],
+                cwd=repo,
+                env=environment,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(json.loads(completed.stdout)["status"], "ok")
+            status = subprocess.run(
+                ["git", "status", "--short", "--untracked-files=all"],
+                cwd=repo,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(status.stdout, "")
+            subprocess.run(["git", "diff", "--check"], cwd=repo, check=True)
+            residue = sorted(
+                path.relative_to(repo).as_posix()
+                for path in repo.rglob("*")
+                if path.name == "__pycache__"
+                or (path.is_file() and path.suffix in {".pyc", ".pyo", ".new", ".bak"})
+            )
+            self.assertEqual(residue, [])
+
     def test_install_timestamp_override_requires_timezone(self) -> None:
         with mock.patch.dict(
             os.environ,

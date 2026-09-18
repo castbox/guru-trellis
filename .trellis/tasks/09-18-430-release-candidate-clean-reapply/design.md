@@ -21,9 +21,11 @@ candidate manifest
   -> differs: write candidate manifest with current timestamp/source
 ```
 
-比较覆盖除这两个 provenance 字段之外的完整 manifest。因此 extension version、managed
-hash、platform selection、package inventory、overlay/removal/conflict/sidecar 等任何实际变化
-仍会刷新 provenance。旧 manifest 缺失、结构无效或字段不完整继续由现有 validator 阻断。
+进入比较前，本次执行必须没有 managed install、restore、update、removal、sidecar、配置或
+guidance mutation。比较覆盖其余稳定 manifest 状态。因此缺失 managed file 被恢复、extension
+version、managed hash、platform selection、package inventory、overlay/removal/conflict/sidecar
+等任何实际变化仍会刷新 provenance。旧 manifest 缺失、结构无效或字段不完整继续由现有
+validator 阻断。
 
 ## 3. Bytecode 边界
 

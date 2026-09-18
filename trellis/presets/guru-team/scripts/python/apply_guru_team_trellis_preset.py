@@ -543,8 +543,45 @@ def build_installed_extension_manifest(
 def retain_previous_manifest_for_noop(
     previous: dict[str, Any] | None,
     candidate: dict[str, Any],
+    result: dict[str, Any],
 ) -> dict[str, Any]:
     if previous is None:
+        return candidate
+
+    mutating_actions = {
+        "installed",
+        "updated_managed",
+        "replaced_overlay",
+        "removed_managed",
+    }
+    if any(
+        result.get(key)
+        for key in (
+            "installed",
+            "updated_managed",
+            "replaced_overlays",
+            "new_copies",
+            "managed_backups",
+        )
+    ):
+        return candidate
+    for section_name in ("skill_packages", "overlays"):
+        section = result.get(section_name)
+        if not isinstance(section, dict):
+            return candidate
+        if any(section.get(key) for key in ("removals", "conflicts", "sidecars")):
+            return candidate
+        if any(
+            isinstance(item, dict) and item.get("action") in mutating_actions
+            for item in section.get("files", [])
+        ):
+            return candidate
+    for key in ("agents_principles", "codex_dispatch", "runtime_gitignore"):
+        item = result.get(key)
+        if isinstance(item, dict) and item.get("action") not in {"unchanged", "checked"}:
+            return candidate
+    language_guidance = result.get("language_guidance")
+    if isinstance(language_guidance, dict) and language_guidance.get("updated_paths"):
         return candidate
 
     def stable_install_state(payload: dict[str, Any]) -> dict[str, Any]:
@@ -2476,6 +2513,7 @@ def _install_assets_in_place(
     installed_manifest = retain_previous_manifest_for_noop(
         previous_manifest,
         installed_manifest,
+        result,
     )
     write_installed_extension_manifest(dst, installed_manifest)
     rel_extension = (dst / "extension.json").relative_to(repo).as_posix()

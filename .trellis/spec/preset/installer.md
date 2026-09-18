@@ -323,8 +323,10 @@ record, not user configuration:
 
 - overwrite it with the current deterministic install facts instead of writing
   `.new`;
-- when the stable installed state is identical to the valid previous manifest,
-  preserve the complete previous manifest bytes. Stable-state comparison omits
+- only when the current invocation performs no managed install, restore,
+  update, removal, sidecar, configuration, or guidance mutation and the stable
+  installed state is identical to the valid previous manifest, preserve the
+  complete previous manifest bytes. Stable-state comparison then omits
   top-level `installed_at` and `source` plus per-file `installed` / `unchanged`
   action labels in `skill_packages.files` and `overlays.files`; those labels
   describe this invocation, not different installed bytes. This is an effective
@@ -332,8 +334,9 @@ record, not user configuration:
   that produced the current managed bytes, even when validation runs from a
   later Git commit;
 - when any extension, managed asset/hash, selected platform, package, overlay,
-  removal, conflict, sidecar, or other install fact changes, write the newly
-  constructed manifest with the current apply timestamp and source provenance;
+  removal, conflict, sidecar, configuration, guidance, restored missing file,
+  or other install fact/action changes, write the newly constructed manifest
+  with the current apply timestamp and source provenance;
 - include extension id, SemVer version, workflow template id, source repo/ref,
   target Trellis CLI, source commit when available, source tree state, selected
   platforms, and install timestamp;
