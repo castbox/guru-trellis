@@ -2624,6 +2624,94 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertEqual(registry["action"], "installed")
 
+    def test_repaired_managed_executable_mode_refreshes_manifest_provenance(self) -> None:
+        first_source = {
+            "repo": "https://github.com/castbox/guru-trellis.git",
+            "ref": "a" * 40,
+            "commit": "a" * 40,
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+        second_source = {**first_source, "ref": "b" * 40, "commit": "b" * 40}
+        with mock.patch.object(preset, "source_provenance", return_value=first_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T00:00:00Z"},
+        ):
+            preset.install_assets(
+                self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+            )
+        manifest_path = self.install_dst / "extension.json"
+        installed_before = json.loads(manifest_path.read_text(encoding="utf-8"))
+        executable_record = next(
+            item for item in installed_before["skill_packages"]["files"] if item["executable"]
+        )
+        target = self.repo / executable_record["path"]
+        target.chmod(0o644)
+
+        with mock.patch.object(preset, "source_provenance", return_value=second_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T03:00:00Z"},
+        ):
+            result = preset.install_assets(
+                self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+            )
+
+        installed = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertEqual(target.stat().st_mode & 0o777, 0o755)
+        self.assertEqual(installed["installed_at"], "2026-09-18T03:00:00Z")
+        self.assertEqual(installed["source"], second_source)
+        repaired = next(
+            item for item in result["skill_packages"]["files"]
+            if item["path"] == executable_record["path"]
+        )
+        self.assertEqual(repaired["action"], "updated_managed")
+
+    def test_changed_canonical_managed_bytes_refresh_manifest_provenance(self) -> None:
+        with tempfile.TemporaryDirectory() as source_tmp:
+            source_root = Path(source_tmp) / "source"
+            shutil.copytree(
+                self.guru_root,
+                source_root,
+                ignore=shutil.ignore_patterns(
+                    ".git", ".runtime", "__pycache__", "*.pyc", "*.pyo", ".DS_Store"
+                ),
+            )
+            workflow_src = source_root / "trellis/workflows/guru-team"
+            first_source = {
+                "repo": "https://github.com/castbox/guru-trellis.git",
+                "ref": "a" * 40,
+                "commit": "a" * 40,
+                "tree_state": "clean",
+                "is_mutable_ref": False,
+            }
+            second_source = {**first_source, "ref": "b" * 40, "commit": "b" * 40}
+            with mock.patch.object(preset, "guru_root_from_script", return_value=source_root), mock.patch.object(
+                preset, "source_provenance", return_value=first_source
+            ), mock.patch.dict(os.environ, {"GURU_TEAM_INSTALLED_AT": "2026-09-18T00:00:00Z"}):
+                preset.install_assets(
+                    workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+                )
+
+            canonical = source_root / "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md"
+            canonical.write_bytes(canonical.read_bytes() + b"\n<!-- canonical fixture change -->\n")
+            with mock.patch.object(preset, "guru_root_from_script", return_value=source_root), mock.patch.object(
+                preset, "source_provenance", return_value=second_source
+            ), mock.patch.dict(os.environ, {"GURU_TEAM_INSTALLED_AT": "2026-09-18T04:00:00Z"}):
+                result = preset.install_assets(
+                    workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+                )
+
+            installed = json.loads((self.install_dst / "extension.json").read_text(encoding="utf-8"))
+            self.assertEqual(installed["installed_at"], "2026-09-18T04:00:00Z")
+            self.assertEqual(installed["source"], second_source)
+            self.assertIn(".codex/prompts/guru-finish-work.md", result["updated_managed"])
+            changed = next(
+                item
+                for item in installed["overlays"]["files"]
+                if item["path"] == ".codex/prompts/guru-finish-work.md"
+            )
+            self.assertEqual(changed["action"], "updated_managed")
+
     def test_raw_apply_keeps_fresh_git_fixture_clean_without_residue(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             repo = Path(temporary) / "repo"
@@ -2640,8 +2728,17 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 ["git", "config", "user.email", "fixture@example.invalid"],
                 ["git", "add", "-A"],
                 ["git", "commit", "-m", "test: stage clean reapply fixture"],
+                ["git", "checkout", "--detach"],
             ):
                 subprocess.run(command, cwd=repo, check=True, capture_output=True, text=True)
+            symbolic_head = subprocess.run(
+                ["git", "symbolic-ref", "-q", "HEAD"],
+                cwd=repo,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertNotEqual(symbolic_head.returncode, 0)
             environment = os.environ.copy()
             environment.pop("PYTHONDONTWRITEBYTECODE", None)
             completed = subprocess.run(

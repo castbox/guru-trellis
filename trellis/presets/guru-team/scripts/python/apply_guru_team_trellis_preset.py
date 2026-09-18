@@ -941,6 +941,10 @@ def copy_provenance_managed(
     if current_hash == canonical_hash:
         if stat.S_IMODE(target_stat.st_mode) != target_mode:
             target.chmod(target_mode)
+            return {
+                "action": "updated_managed", "path": relative,
+                "sha256": canonical_hash, "executable": executable,
+            }
         return {"action": "unchanged", "path": relative, "sha256": canonical_hash, "executable": executable}
     previous_hash = previous_hashes.get(relative)
     if provenance_valid and previous_hash and current_hash == previous_hash:
