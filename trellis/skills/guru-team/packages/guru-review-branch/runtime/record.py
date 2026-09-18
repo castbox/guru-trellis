@@ -203,6 +203,12 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         "semantic_review": semantic,
         "verification_evidence": auth.get("verification_evidence"),
     }
+    if not archived_facts:
+        value["delivery_review"] = (
+            copy.deepcopy(auth.get("delivery_review"))
+            if profile == "branch_review"
+            else None
+        )
     if archived_facts:
         value.update(archived_facts)
         value["pr_payload_snapshot_sha256"] = public["pr_payload_snapshot_sha256"]

@@ -205,6 +205,23 @@
       "workflow_route_id": "phase-3-6-task-publication-review"
     },
     {
+      "id": "guru-review-task-delivery",
+      "state": "active",
+      "name": "guru-review-task-delivery",
+      "package": "packages/guru-review-task-delivery",
+      "interface": "packages/guru-review-task-delivery/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "workflow_integration_state": "deferred",
+      "supported_platforms": [
+        "shared",
+        "codex",
+        "cursor",
+        "claude"
+      ],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "task-delivery-review"
+    },
+    {
       "id": "guru-select-workflow-mode",
       "state": "active",
       "name": "guru-select-workflow-mode",
@@ -250,6 +267,23 @@
       "workflow_route_id": "task-finalization"
     },
     {
+      "id": "guru-publish-task-delivery",
+      "state": "active",
+      "name": "guru-publish-task-delivery",
+      "package": "packages/guru-publish-task-delivery",
+      "interface": "packages/guru-publish-task-delivery/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "workflow_integration_state": "deferred",
+      "supported_platforms": [
+        "shared",
+        "codex",
+        "cursor",
+        "claude"
+      ],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "task-delivery-publication"
+    },
+    {
       "id": "guru-merge-task-pr",
       "state": "active",
       "name": "guru-merge-task-pr",
@@ -265,6 +299,23 @@
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-pr-merge"
+    },
+    {
+      "id": "guru-merge-task-delivery",
+      "state": "active",
+      "name": "guru-merge-task-delivery",
+      "package": "packages/guru-merge-task-delivery",
+      "interface": "packages/guru-merge-task-delivery/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "workflow_integration_state": "deferred",
+      "supported_platforms": [
+        "shared",
+        "codex",
+        "cursor",
+        "claude"
+      ],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "task-delivery-merge"
     },
     {
       "id": "guru-restore-archived-task",

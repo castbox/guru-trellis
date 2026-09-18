@@ -60,6 +60,7 @@ SKILL_DESTINATION_PLATFORM_ORDER = ("shared", "codex", "claude", "cursor")
 SKILL_INTEGRATION_TEST_PATHS = (
     Path("tests/test_finish_family_integration.py"),
     Path("tests/test_base_continuity_integration.py"),
+    Path("tests/test_delivery_family_integration.py"),
 )
 PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS = {
     "guru-review-branch": frozenset({Path("schemas/review-gate-7.0.schema.json")}),
@@ -1167,6 +1168,14 @@ def skill_platform_public_files(package_root: Path) -> list[Path]:
             if isinstance(ref, dict) and isinstance(ref.get("example"), dict)
         }
     }
+    public_authoring_paths = {
+        str(item["contract"]["authoring_example"]["path"])
+        for item in interface.get("public_contracts", {}).get("consumer_inputs", [])
+        if isinstance(item, dict)
+        and isinstance(item.get("contract"), dict)
+        and isinstance(item["contract"].get("authoring_example"), dict)
+        and isinstance(item["contract"]["authoring_example"].get("path"), str)
+    }
     public_wrapper = str(
         interface.get("public_contracts", {})
         .get("invocation", {})
@@ -1182,6 +1191,9 @@ def skill_platform_public_files(package_root: Path) -> list[Path]:
         if relative.parts[0] == "scripts" and relative_text != public_wrapper:
             continue
         if relative in required_schema_paths or relative in required_public_paths:
+            result.append(path)
+            continue
+        if relative_text in public_authoring_paths:
             result.append(path)
             continue
         if relative_text in private_paths or relative_text in private_artifact_paths:

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-publish-task-delivery",
+  "evals": [
+    {
+      "id": "review-ready-first-publication",
+      "prompt": "Publish the exact reviewed Delivery once, create or bind one same-repository PR, converge metadata, and mark it Ready without lifecycle completion behavior.",
+      "expected_exit": "ready_for_merge",
+      "expected_output": "The minimal merge seed for the exact Ready PR and reviewed head.",
+      "input_profile_id": "review_ready",
+      "files": ["evals/files/review-ready-input.json"],
+      "assertions": {
+        "deterministic": [
+          {"id": "route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready_for_merge"},
+          {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"}
+        ],
+        "semantic": [
+          {"id": "delivery-only", "criterion": "The action publishes one Delivery and does not archive, complete, close, Finish, clean up, or merge the task.", "evidence_selector": "transcript"}
+        ]
+      }
+    },
+    {
+      "id": "same-plan-terminal-recovery",
+      "prompt": "Recover the exact terminal publication transaction and rematerialize the same ready_for_merge output without another mutation.",
+      "expected_exit": "ready_for_merge",
+      "expected_output": "The same minimal merge seed with zero repeated push, create, edit, or Ready mutation.",
+      "input_profile_id": "same_plan_resume",
+      "files": ["evals/files/same-plan-resume-input.json"],
+      "assertions": {
+        "deterministic": [
+          {"id": "route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready_for_merge"}
+        ]
+      }
+    },
+    {
+      "id": "equal-head-bind-recovery",
+      "prompt": "Recover #405 after PR creation output loss at bind_pr when remote HEAD, PR HEAD, and reviewed HEAD are equal; adopt the unique PR and do not create a second PR.",
+      "expected_exit": "ready_for_merge",
+      "expected_output": "The original PR identity and exact reviewed head with zero duplicate remote mutation.",
+      "input_profile_id": "same_plan_resume",
+      "files": ["evals/files/equal-head-bind-resume-input.json"],
+      "assertions": {
+        "deterministic": [
+          {"id": "route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready_for_merge"},
+          {"id": "private-runtime", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+        ]
+      }
+    }
+  ]
+}

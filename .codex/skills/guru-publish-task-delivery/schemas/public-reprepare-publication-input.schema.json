@@ -1,0 +1,5 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-publish-task-delivery-input-reprepare-publication-1.0",
+  "type":"object","additionalProperties":false,"required":["profile","mode","task_ref","reason_code"],
+  "properties":{"profile":{"const":"reprepare_publication"},"mode":{"enum":["workflow","standalone"]},"task_ref":{"type":"string","pattern":"^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},"reason_code":{"type":"string","minLength":1}}
+}

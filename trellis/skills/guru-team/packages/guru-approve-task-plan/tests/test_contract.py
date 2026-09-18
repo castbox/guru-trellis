@@ -26,6 +26,12 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
     def read(self, relative: str) -> dict:
         return json.loads((self.package / relative).read_text(encoding="utf-8"))
 
+    def add_delivery_policy(self, path: Path) -> Path:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload["delivery_policy"] = copy.deepcopy(self.example["delivery_policy"])
+        path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+        return path
+
     def test_architecture_stage_consumes_adjacent_completed_owner_result(self) -> None:
         skill = (self.package / "SKILL.md").read_text(encoding="utf-8")
         contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
@@ -164,6 +170,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             staged = production_fixtures.production_planning_input(
                 common, fixture, task, "approved",
             )
+            self.add_delivery_policy(staged)
             payload = json.loads(staged.read_text(encoding="utf-8"))
             self.assertEqual(payload["typed_exit"], "approved")
             self.assertEqual(
@@ -202,9 +209,39 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
                 check=True,
             )
             task, _ = production_fixtures.production_task_fixture(common, fixture)
-            checked = production_fixtures.production_record_planning(
+            owner_input = production_fixtures.production_planning_input(
                 common, fixture, task, "approved",
             )
+            self.add_delivery_policy(owner_input)
+            task_ref = task.relative_to(fixture).as_posix()
+            recorded = subprocess.run(
+                [
+                    str(self.package / "scripts/record-planning-approval.sh"),
+                    "--root", str(fixture),
+                    "--task", task_ref,
+                    "--input", owner_input.relative_to(fixture).as_posix(),
+                    "--json",
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(recorded.returncode, 0, recorded.stderr)
+            checked_process = subprocess.run(
+                [
+                    str(self.package / "scripts/check-planning-approval.sh"),
+                    "--root", str(fixture),
+                    "--task", task_ref,
+                    "--json",
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(checked_process.returncode, 0, checked_process.stderr)
+            checked = json.loads(checked_process.stdout)
             self.assertEqual(checked["typed_exit"], "approved")
             self.assertEqual(
                 checked["consumer"],
@@ -239,6 +276,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             owner_input = production_fixtures.production_planning_input(
                 common, fixture, task, "clarify_scope",
             )
+            self.add_delivery_policy(owner_input)
 
             recorded = subprocess.run(
                 [
@@ -758,6 +796,17 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         )
         self.assertIn("subtraction-first-compatibility.md", package_text)
         self.assertNotIn("human_authorization", json.dumps(self.interface))
+
+    def test_delivery_policy_is_private_semantic_evidence_not_public_dto(self) -> None:
+        policy = self.example["delivery_policy"]
+        self.assertTrue(policy["task_scope"])
+        self.assertTrue(policy["delivery_slice"])
+        self.assertTrue(policy["independent_delivery_conditions"])
+        self.assertTrue(policy["validation_boundaries"])
+        self.assertIn("remaining_work_owner", policy)
+        approved = self.read("examples/public-approved-output.json")
+        self.assertEqual({"exit_id", "task_ref"}, set(approved))
+        self.assertNotIn("delivery_policy", approved)
 
     def test_wrappers_are_dispatcher_only_and_package_is_not_portable(self) -> None:
         for name, validator in (

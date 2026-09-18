@@ -49,3 +49,9 @@ Mapped exits and stale re-entry are automatic. Ask the user only when the
 semantic result is `scope_confirmation_required`; never persist that
 confirmation. Missing, stale, ambiguous, non-ancestor, or unmapped evidence
 fails closed.
+
+For the conflict-resolved path, run the resolved executor and then
+`project-resolved-full-review`. That deterministic package command emits the
+complete existing `guru-review-branch:branch_review` input directly; it is not
+an additional Reconcile typed exit and never enters Task Commit or bounded
+base continuity.

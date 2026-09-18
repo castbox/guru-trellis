@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Public Skill I/O、typed exits、private state 与 consumer projection 主合同"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "现有 Publication、Finalizer、Merge、Task Commit 与 base continuity 数据合同"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "旧链保留、直接演进、无 adapter 与 deprecated asset 退出约束"}
+{"file": ".trellis/guru-team/skills/packages/guru-review-task-publication/SKILL.md", "reason": "Delivery Review 从 current Publication owner 收敛职责的现状证据"}
+{"file": ".trellis/guru-team/skills/packages/guru-finalize-task/SKILL.md", "reason": "Publish 抽取、#405 recovery 与禁止 archive/finish responsibility 的现状证据"}
+{"file": ".trellis/guru-team/skills/packages/guru-merge-task-pr/SKILL.md", "reason": "Delivery Merge expected-head、merge commit message 与 terminal recovery 现状证据"}
+{"file": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/SKILL.md", "reason": "#407 resolved-tree recovery 必须归属既有 Reconcile owner"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "Architecture concerns、target_native 与 serialized promotion 项目合同"}

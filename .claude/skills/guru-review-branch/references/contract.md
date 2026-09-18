@@ -130,6 +130,20 @@ severity. Candidate input carries no decision, scenario class, severity,
 expected route, or caller assertion of a normal path. Only candidates returned
 eligible through `classified` may become a P0-P3 finding.
 
+For a full `branch_review`, independently bind the approved Delivery slice,
+explicit remaining work, observable independent-delivery conditions, and
+validation boundary to the complete committed range. Remaining work outside
+the current slice is not a current omission, but hidden remaining work, a
+current-slice defect, or a slice that depends on the remaining work already
+being complete prevents `passed`. This compact semantic evidence remains in
+the private gate and does not expand the existing `passed` DTO.
+
+A resolved-tree reconciliation that returned through fresh Phase 2 requires
+this complete full-range review after Reconcile creates or recovers the exact
+merge commit. The `base_continuity` profile cannot replace that review: bounded
+base continuity is not used for a conflict-resolved tree containing task
+adaptations.
+
 For delete, replace, merge, or compatibility-impacting ranges, independently
 recompute `code_subtraction` and `docs_ssot_subtraction` using the durable
 subtraction-first policy. Check direct evolution, affected deprecated-asset

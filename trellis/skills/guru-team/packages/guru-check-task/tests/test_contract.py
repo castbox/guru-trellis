@@ -58,7 +58,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         Draft202012Validator.check_schema(self.schema)
         Draft202012Validator(self.schema).validate(self.example)
 
-        for name in ("initial-check", "finding-fix-rerun", "planning-reentry"):
+        for name in ("initial-check", "finding-fix-rerun", "planning-reentry", "resolved-reconciliation"):
             Draft202012Validator(self.read(f"schemas/public-{name}-input.schema.json")).validate(
                 self.read(f"examples/public-{name}-input.json")
             )
@@ -66,6 +66,12 @@ class CheckTaskPackageContractTests(unittest.TestCase):
             Draft202012Validator(self.read(f"schemas/public-{name}-output.schema.json")).validate(
                 self.read(f"examples/public-{name}-output.json")
             )
+        Draft202012Validator(self.read("schemas/resolved-reconciliation-authoring.schema.json")).validate(
+            self.read("examples/public-resolved-reconciliation-authoring.json")
+        )
+        commands = self.read("commands.json")["commands"]
+        projection = next(item for item in commands if item["id"] == "project-resolved-reconciliation")
+        self.assertEqual("resolved_reconciliation_projection", projection["validator_id"])
 
     def test_compact_gate_has_four_closed_semantic_routes(self) -> None:
         from jsonschema import Draft202012Validator
@@ -149,6 +155,14 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         invalid_pass = copy.deepcopy(self.example)
         invalid_pass["semantic_review"]["findings"] = implementation["semantic_review"]["findings"]
         self.assertFalse(validator.is_valid(invalid_pass))
+
+        resolved = copy.deepcopy(self.example)
+        resolved["typed_exit"] = "resolved_reconciliation_passed"
+        resolved["consumer"] = {"kind": "skill", "id": "guru-reconcile-task-base"}
+        validator.validate(resolved)
+        public_passed = self.read("examples/public-passed-output.json")
+        self.assertEqual({"exit_id", "task_ref", "phase2_commit_anchor"}, set(public_passed))
+        self.assertNotIn("delivery_policy", public_passed)
 
         qualification_artifact = copy.deepcopy(self.example)
         qualification_artifact["candidate_classifications"] = [{

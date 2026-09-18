@@ -21,7 +21,7 @@ class ContractTest(unittest.TestCase):
         interface=json.loads((PACKAGE/'interface.json').read_text()); commands=json.loads((PACKAGE/'commands.json').read_text()); catalog=json.loads((PACKAGE/'errors/catalog.json').read_text())
         self.assertEqual([],validate(SKILLS/'schemas/skill-interface-1.4.schema.json',interface)); self.assertEqual([],validate(SKILLS/'schemas/skill-commands.schema.json',commands)); self.assertEqual([],validate(SKILLS/'schemas/skill-error-catalog.schema.json',catalog))
         self.assertEqual([],validate(SKILLS/'schemas/skill-evals.schema.json',json.loads((PACKAGE/'evals/evals.json').read_text())))
-        self.assertEqual(6,len(interface['external_exits'])); self.assertEqual(6,len(commands['commands']))
+        self.assertEqual(6,len(interface['external_exits'])); self.assertEqual(8,len(commands['commands']))
         eval_ids={item['id'] for item in json.loads((PACKAGE/'evals/evals.json').read_text())['evals']}
         self.assertIn('unrelated-base-delta-reconciled',eval_ids)
         for profile in interface['public_contracts']['input']['profiles']:
@@ -30,9 +30,20 @@ class ContractTest(unittest.TestCase):
             self.assertEqual([],validate(PACKAGE/output['schema']['path'],json.loads((PACKAGE/output['example']['path']).read_text())))
         self.assertEqual([],validate(PACKAGE/'schemas/reconciliation-request.schema.json',json.loads((PACKAGE/'examples/reconciliation-request.json').read_text())))
         self.assertEqual([],validate(PACKAGE/'schemas/reconciliation-result.schema.json',json.loads((PACKAGE/'examples/reconciliation-result.json').read_text())))
+        self.assertEqual([],validate(PACKAGE/'schemas/resolved-reconciliation-result.schema.json',json.loads((PACKAGE/'examples/resolved-reconciliation-result.json').read_text())))
         self.assertEqual([],validate(PACKAGE/'schemas/base-reconciliation.schema.json',json.loads((PACKAGE/'examples/base-reconciliation.json').read_text())))
         self.assertEqual('guru-reconcile-task-base-output-review-continuity-required-2.0',next(item for item in interface['public_contracts']['outputs'] if item['exit_id']=='review_continuity_required')['schema']['schema_id'])
         self.assertEqual('guru-reconcile-task-base-private-result-2.0',interface['public_contracts']['private_artifacts'][0]['schema']['schema_id'])
+        resolved=next(item for item in interface['public_contracts']['input']['profiles'] if item['id']=='resolved_candidate')
+        self.assertEqual([],validate(PACKAGE/resolved['schema']['path'],json.loads((PACKAGE/resolved['example']['path']).read_text())))
+        self.assertEqual([],validate(PACKAGE/'schemas/resolved-full-review-authoring.schema.json',json.loads((PACKAGE/'examples/public-full-review-authoring.json').read_text())))
+        self.assertEqual(
+            ['reconciled','review_continuity_required','implementation_required','planning_stale','scope_confirmation_required','blocked'],
+            [item['id'] for item in interface['external_exits']],
+        )
+        self.assertNotIn('full_review_required',{item['exit_id'] for item in interface['public_contracts']['outputs']})
+        projection=next(item for item in commands['commands'] if item['id']=='project-resolved-full-review')
+        self.assertEqual('resolved_full_review_projection',projection['validator_id'])
     def test_profiles_are_closed_and_not_interchangeable(self):
         post=json.loads((PACKAGE/'examples/public-post-plan-input.json').read_text())
         self.assertTrue(validate(PACKAGE/'schemas/public-post-check-input.schema.json',post))
@@ -76,6 +87,8 @@ class ContractTest(unittest.TestCase):
         contract=(PACKAGE/'references/contract.md').read_text()
         self.assertIn('Current-dialogue confirmation',contract)
         self.assertIn('never pushes or records user authorization',contract)
+        self.assertIn('never consumes the ordinary Task Commit path',contract)
+        self.assertIn('bounded base continuity is not used',contract)
     def test_help_is_side_effect_free(self):
         for command in json.loads((PACKAGE/'commands.json').read_text())['commands']:
             with self.subTest(command=command['id']): self.assertEqual(0,main(PACKAGE,[command['id'],'--help']))

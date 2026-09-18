@@ -1,0 +1,22 @@
+{
+  "profile":"delivery_review","mode":"workflow",
+  "delivery_policy":{"task_scope_refs":["R435-01","R435-02"],"delivery_slice_refs":["R435-01"],"remaining_work_refs":["R435-02"],"independent_delivery_conditions":["The review package is independently installable after registry projection."],"validation_boundaries":["Package contract and runtime tests are current."],"followup_owner":"guru-publish-task-delivery"},
+  "pr_payload":{"title":"交付：新增 Active Task Delivery Review owner","body":"## 变更摘要\n\n- 交付当前 Review slice。\n\n## 验证结果\n\n- Package contract and runtime tests passed.\n\n## Remaining Work\n\n- Publish and Merge remain active work.\n\n## 安全与部署影响\n\n- No deployment mutation in this slice.\n\nRefs #435\n"},
+  "remaining_work_state":"remaining",
+  "candidate_classifications":[{"candidate_ref":"candidate:delivery:no-defect","decision":"rejected_not_reproduced","witness":{"requirement_refs":["R435-01"],"supported_entry_refs":["entry:delivery-review"],"existing_caller_refs":["caller:guru-review-task-delivery"],"honest_action_sequence":["Review the current slice and complete candidate."],"defect_observation":"Current evidence does not reproduce a Delivery Review defect.","excluded_assumptions":[]},"consumer_use":"delivery_review_route_checker"}],
+  "dimensions":[
+    {"id":"requirement_authority","status":"passed","summary":"Current authority is explicit.","evidence_refs":["issue:#435"]},
+    {"id":"delivery_policy","status":"passed","summary":"The approved policy is complete.","evidence_refs":["planning:delivery-policy"]},
+    {"id":"slice_completeness","status":"passed","summary":"The current slice is complete.","evidence_refs":["diff:reviewed-head"]},
+    {"id":"independent_delivery","status":"passed","summary":"The slice is independently deliverable.","evidence_refs":["condition:package-closure"]},
+    {"id":"implementation_quality","status":"passed","summary":"No current-slice defect remains.","evidence_refs":["branch-review:passed"]},
+    {"id":"validation_truthfulness","status":"passed","summary":"Claims match current tests.","evidence_refs":["test:package"]},
+    {"id":"docs_rdt_architecture","status":"passed","summary":"Durable authorities are reconciled.","evidence_refs":["docs:rdt","docs:architecture"]},
+    {"id":"branch_review_freshness","status":"passed","summary":"The complete Branch Review is current.","evidence_refs":["git:branch-review-commit"]},
+    {"id":"pr_payload_truthfulness","status":"passed","summary":"The payload is specific and Refs-only.","evidence_refs":["pr-payload"]},
+    {"id":"base_and_live_facts","status":"passed","summary":"Base and live facts are current.","evidence_refs":["git:base","github:issue"]}
+  ],
+  "findings":[],"scope_proposals":[],
+  "conclusions":{"delivery_readiness":{"id":"delivery_readiness","status":"passed","summary":"The slice is ready.","evidence_refs":["dimensions"]},"docs_rdt_architecture":{"id":"docs_rdt_architecture","status":"passed","summary":"Docs are current.","evidence_refs":["docs:current"]},"safety_deployment":{"id":"safety_deployment","status":"passed","summary":"Impact is truthful.","evidence_refs":["pr-payload:safety"]}},
+  "route":{"typed_exit":"ready"}
+}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 import copy, hashlib, importlib.util, json, os, shutil, subprocess, sys, tempfile, unittest
 from pathlib import Path
+from unittest.mock import patch
 from jsonschema import Draft202012Validator
 
 PACKAGE=Path(__file__).resolve().parents[1]
@@ -11,6 +12,7 @@ if str(PACKAGE/"runtime") not in sys.path: sys.path.insert(0,str(PACKAGE/"runtim
 from runtime.command import main
 from common import PHASE2_WORKTREE_CONTENT_ALGORITHM, content_identity, dirty_paths
 from runtime.io import CommandError
+import project as project_runtime
 
 class PackageLocalRuntimeTest(unittest.TestCase):
  def git(self,repo,*args,input=None):
@@ -163,7 +165,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    repo,_=self.gitlink_fixture(temporary);self.git(repo,"submodule","deinit","-f","--","module")
    task_dir=repo/".trellis/tasks/test-task";task_dir.mkdir(parents=True)
    example=json.loads((PACKAGE/"examples/phase2-check.json").read_text())
-   fields={"mode","reviewed_paths","validation","docs_ssot","candidate_classifications","semantic_review","typed_exit","route","reason","consumer"}
+   fields={"mode","reviewed_paths","validation","docs_ssot","delivery_policy","candidate_classifications","semantic_review","typed_exit","route","reason","consumer"}
    authoring={key:copy.deepcopy(value) for key,value in example.items() if key in fields};authoring["reviewed_paths"]=["module"]
    input_path=repo/".trellis/.runtime/phase2-authoring.json";input_path.parent.mkdir(parents=True);input_path.write_text(json.dumps(authoring))
    environment={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"}
@@ -222,6 +224,29 @@ class PackageLocalRuntimeTest(unittest.TestCase):
      self.assertEqual(expected[exit_id],json.loads(result.stdout))
      self.assertEqual(exit_id=="passed",checkpoint_path.exists())
 
+ def test_resolved_phase2_private_result_projects_reconcile_input_without_external_exit(self):
+  with tempfile.TemporaryDirectory() as temporary:
+   repo=Path(temporary).resolve();self.git(repo,"init","-q")
+   task_ref=".trellis/tasks/test-task";task_dir=repo/task_ref;task_dir.mkdir(parents=True)
+   public={"profile":"resolved_reconciliation","mode":"workflow","task_ref":task_ref,"source_exit":"resolved_tree_ready"}
+   owner=json.loads((PACKAGE/"examples/phase2-check.json").read_text())
+   owner.update({"task_ref":task_ref,"mode":"workflow","typed_exit":"resolved_reconciliation_passed","consumer":{"kind":"skill","id":"guru-reconcile-task-base"}})
+   authoring=json.loads((PACKAGE/"examples/public-resolved-reconciliation-authoring.json").read_text())
+   authoring["parent_order"][0]=owner["phase2_capture_commit"]
+   runtime=repo/".trellis/.runtime";runtime.mkdir(parents=True)
+   public_path=runtime/"resolved-public.json";public_path.write_text(json.dumps(public))
+   owner_path=runtime/"resolved-owner.json";owner_path.write_text(json.dumps(owner))
+   authoring_path=runtime/"resolved-authoring.json";authoring_path.write_text(json.dumps(authoring))
+   checkpoint_path=repo/".trellis/.runtime/guru-team/owner-checkpoints/test-task/phase2-check.json"
+   checkpoint_path.parent.mkdir(parents=True);checkpoint_path.write_text(json.dumps(owner))
+   checked={"artifact_path":str(checkpoint_path)}
+   with patch.object(project_runtime,"check_phase2",return_value=checked):
+    output=project_runtime.run(PACKAGE,{"id":"project-resolved-reconciliation"},["--root",str(repo),"--input",str(public_path),"--owner-result",str(owner_path),"--authoring",str(authoring_path)])
+   self.assertEqual("resolved_candidate",output["profile"])
+   self.assertEqual("resolved_reconciliation_passed",output["source_exit"])
+   self.assertEqual(owner["phase2_capture_commit"],output["phase2_commit_anchor"])
+   self.assertNotIn("exit_id",output)
+
  def test_passed_output_can_be_rematerialized_only_after_fresh_checker_success(self):
   example=json.loads((PACKAGE/"examples/phase2-check.json").read_text())
   with tempfile.TemporaryDirectory() as temporary:
@@ -234,7 +259,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    self.git(repo,"add",".");self.git(repo,"commit","-qm","fixture")
    tracked.write_text("reviewed current candidate\n")
 
-   fields={"mode","reviewed_paths","validation","docs_ssot","candidate_classifications","semantic_review","typed_exit","route","reason","consumer"}
+   fields={"mode","reviewed_paths","validation","docs_ssot","delivery_policy","candidate_classifications","semantic_review","typed_exit","route","reason","consumer"}
    authoring={key:copy.deepcopy(value) for key,value in example.items() if key in fields};authoring["reviewed_paths"]=["tracked.txt"]
    input_path=repo/".trellis/.runtime/phase2-authoring.json";input_path.parent.mkdir(parents=True);input_path.write_text(json.dumps(authoring))
    environment={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"}

@@ -4,6 +4,7 @@
   "oneOf": [
     {"$ref": "public-initial-check-input.schema.json"},
     {"$ref": "public-finding-fix-rerun-input.schema.json"},
-    {"$ref": "public-planning-reentry-input.schema.json"}
+    {"$ref": "public-planning-reentry-input.schema.json"},
+    {"$ref": "public-resolved-reconciliation-input.schema.json"}
   ]
 }

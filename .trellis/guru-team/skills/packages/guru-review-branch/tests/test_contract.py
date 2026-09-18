@@ -259,6 +259,23 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
 
     def auth(self, exit_id="passed"):
         return {
+            "delivery_review": {
+                "task_scope": ["R1", "R2"],
+                "delivery_slice": ["R1"],
+                "remaining_work": ["R2"],
+                "independent_delivery_conditions": [
+                    "R1 is independently usable and verifiable."
+                ],
+                "validation_boundaries": [
+                    "R1 checks passed; R2 remains disclosed future work."
+                ],
+                "current_slice_status": "passed",
+                "remaining_work_status": "disclosed",
+                "summary": (
+                    "The complete committed range satisfies the current slice "
+                    "without claiming remaining work complete."
+                ),
+            },
             "candidate_classifications": [{
                 "candidate_ref": "candidate-no-defect",
                 "decision": "rejected_not_reproduced",
@@ -320,6 +337,10 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         gate = self.checkpoint()
         self.assertTrue(gate.is_file())
         self.assertEqual("7.0", json.loads(gate.read_text())["schema_version"])
+        self.assertEqual(
+            self.auth()["delivery_review"],
+            json.loads(gate.read_text())["delivery_review"],
+        )
         checked = self.run_wrapper(
             "check-review-gate.sh",
             "--task",

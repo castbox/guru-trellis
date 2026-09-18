@@ -8,7 +8,7 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  a=parse(p,argv);repo=root(package_root,a.root);td=task(repo,a.task);auth=load(repo,package_root,a.input,"input")
  if auth.get("schema_version")=="3.0":value=auth
  else:
-  expected={"mode","authority_refs","docs_ssot_plan","semantic_review","typed_exit","consumer","reason"}
+  expected={"mode","authority_refs","delivery_policy","docs_ssot_plan","semantic_review","typed_exit","consumer","reason"}
   if set(auth)!=expected:raise __import__("runtime.io",fromlist=["CommandError"]).CommandError("schema_mismatch","input","Provide the exact planning semantic result.")
   paths=[rel(repo,td/name) for name in ("prd.md","design.md","implement.md")]
   if any(not (repo/x).is_file() or (repo/x).is_symlink() or not (repo/x).read_text().strip() for x in paths):raise __import__("runtime.io",fromlist=["CommandError"]).CommandError("stale_identity","planning_paths","Restore all nonempty planning files.",3)

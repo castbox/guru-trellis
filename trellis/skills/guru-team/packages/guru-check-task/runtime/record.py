@@ -9,7 +9,7 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  a=parse(p,argv);repo=root(package_root,a.root);td=task(repo,a.task);auth=load(repo,package_root,a.input,"input")
  if auth.get("schema_version")=="5.0":value=auth
  else:
-  expected={"mode","reviewed_paths","validation","docs_ssot","candidate_classifications","semantic_review","typed_exit","route","reason","consumer"}
+  expected={"mode","reviewed_paths","validation","docs_ssot","delivery_policy","candidate_classifications","semantic_review","typed_exit","route","reason","consumer"}
   if set(auth)!=expected:raise CommandError("schema_mismatch","input","Provide the exact Phase 2 semantic result.")
   paths=sorted(auth["reviewed_paths"])
   dirty=dirty_paths(repo)

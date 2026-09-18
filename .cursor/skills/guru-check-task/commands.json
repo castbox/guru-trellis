@@ -146,6 +146,24 @@
       "schema_bindings": [],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"
+    },
+    {
+      "id": "project-resolved-reconciliation",
+      "owner": "guru-check-task",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {"flag": "--root", "required": false, "kind": "string", "description": "Repository root.", "repeatable": false, "conflicts": []},
+        {"flag": "--input", "required": true, "kind": "json", "description": "Resolved-tree Phase 2 public input.", "repeatable": false, "conflicts": []},
+        {"flag": "--owner-result", "required": true, "kind": "json", "description": "Checked private Phase 2 result.", "repeatable": false, "conflicts": []},
+        {"flag": "--authoring", "required": true, "kind": "json", "description": "Caller-authored resolved reconciliation facts.", "repeatable": false, "conflicts": []}
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": ["invalid_arguments", "conflicting_arguments", "invalid_json", "schema_mismatch", "unsafe_path", "stale_identity", "internal_error"],
+      "side_effect": "git_read",
+      "schema_bindings": ["schemas/public-resolved-reconciliation-input.schema.json", "schemas/phase2-check.schema.json", "schemas/resolved-reconciliation-authoring.schema.json"],
+      "validator_id": "resolved_reconciliation_projection",
+      "runtime_role": "invoke"
     }
   ]
 }

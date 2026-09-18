@@ -137,6 +137,16 @@ def production_planning_input(
     payload = {
         "mode": "workflow",
         "authority_refs": ["issue:146"],
+        "delivery_policy": {
+            "task_scope": ["R1. Production eval"],
+            "delivery_slice": ["R1. Production eval"],
+            "remaining_work": [],
+            "independent_delivery_conditions": [
+                "The production eval boundary is validated by the package recorder and checker."
+            ],
+            "validation_boundaries": ["Production fixture and package contract tests."],
+            "remaining_work_owner": "The active task remains responsible for any future scope.",
+        },
         "docs_ssot_plan": {
             "strategy": "ssot_first",
             "durable_paths": ["docs/requirements.md"],

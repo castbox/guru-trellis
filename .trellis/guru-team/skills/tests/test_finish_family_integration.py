@@ -354,6 +354,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             entry["id"]
             for entry in registry["skills"]
             if entry.get("state") == "active"
+            and entry.get("workflow_integration_state", "integrated") == "integrated"
             and entry["id"] != "guru-verify-extension-installation"
         }
         expected_exits = {

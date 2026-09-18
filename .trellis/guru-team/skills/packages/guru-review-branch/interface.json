@@ -37,7 +37,7 @@
     {"id": "workspace_boundary", "evidence": "task-local context and worktree mapping", "binding": "actual root equals expected task worktree", "freshness": "rebuilt before record and check"},
     {"id": "task_identity", "evidence": "task.json and exact locator", "binding": "task, branch and in_progress status for ordinary review; completed archive for archived_review", "freshness": "current task reread"},
     {"id": "commit_identity", "evidence": "guru-create-task-commit minimal committed DTO plus live Git", "binding": "task, base and branch_review_commit", "freshness": "commit, parent and changed paths reread; message format is not downstream freshness authority"},
-    {"id": "review_range", "evidence": "origin base, branch_review_commit and complete diff", "binding": "origin/<base>...<branch_review_commit>", "freshness": "rebuilt for every round"},
+    {"id": "review_range", "evidence": "origin base, branch_review_commit, complete diff, approved Delivery slice, remaining work, and independent-delivery conditions", "binding": "origin/<base>...<branch_review_commit> plus the current closed Delivery policy", "freshness": "rebuilt for every round"},
     {"id": "working_tree", "evidence": "complete status snapshot and reviewed-content identity", "binding": "ordinary review excludes task/runtime metadata; archived_review requires completely clean status", "freshness": "checked before record and check"},
     {"id": "invocation_freshness", "evidence": "public input, AI Gate, artifact and actual exit", "binding": "one complete owner invocation", "freshness": "checker rejects drift or ambiguity"}
   ],

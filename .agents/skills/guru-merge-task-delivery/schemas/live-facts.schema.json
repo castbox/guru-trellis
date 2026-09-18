@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-merge-task-delivery-live-facts-1.0",
+  "type":"object","additionalProperties":false,
+  "required":["task","pr","repository_policy","base_ref","merge_commit","objective_blockers","facts_sha256"],
+  "properties":{
+    "task":{"type":"object","additionalProperties":false,"required":["task_ref","stable_task_id","status","branch","base_branch","head_sha"],"properties":{"task_ref":{"type":"string"},"stable_task_id":{"type":"string","minLength":1},"status":{"type":"string"},"branch":{"type":"string","minLength":1},"base_branch":{"type":"string","minLength":1},"head_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"}}},
+    "pr":{"type":"object","additionalProperties":false,"required":["number","url","state","is_draft","head_sha","head_branch","base_branch","body","merged_at","merge_commit_sha","mergeable","merge_state_status","review_decision","checks"],"properties":{"number":{"type":"integer","minimum":1},"url":{"type":"string"},"state":{"enum":["OPEN","CLOSED","MERGED"]},"is_draft":{"type":"boolean"},"head_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},"head_branch":{"type":"string","minLength":1},"base_branch":{"type":"string","minLength":1},"body":{"type":"string"},"merged_at":{"type":["string","null"]},"merge_commit_sha":{"type":["string","null"],"pattern":"^[0-9a-f]{40}$"},"mergeable":{"type":"string"},"merge_state_status":{"type":"string"},"review_decision":{"type":"string"},"checks":{"type":"array","items":{"type":"object"}}}},
+    "repository_policy":{"type":"object","additionalProperties":false,"required":["allow_merge_commit","allow_squash_merge","allow_rebase_merge"],"properties":{"allow_merge_commit":{"type":"boolean"},"allow_squash_merge":{"type":"boolean"},"allow_rebase_merge":{"type":"boolean"}}},
+    "base_ref":{"type":"object","additionalProperties":false,"required":["name","head_sha"],"properties":{"name":{"type":"string","minLength":1},"head_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"}}},
+    "merge_commit":{"oneOf":[{"type":"null"},{"type":"object","additionalProperties":false,"required":["sha","message","parents"],"properties":{"sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},"message":{"type":"string"},"parents":{"type":"array","minItems":2,"maxItems":2,"items":{"type":"string","pattern":"^[0-9a-f]{40}$"}}}}]},
+    "objective_blockers":{"type":"array","uniqueItems":true,"items":{"type":"string","pattern":"^[a-z0-9]+(?:_[a-z0-9]+)*$"}},
+    "facts_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}
+  }
+}
