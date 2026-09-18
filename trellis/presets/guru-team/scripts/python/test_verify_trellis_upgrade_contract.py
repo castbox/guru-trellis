@@ -516,6 +516,87 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             )
             self.assertEqual(result["update_mode"], "migrate")
 
+    def test_existing_cell_ordinary_update_uses_predecessor_workflow_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            before = ("node", "/before/bin/trellis.js")
+            target = ("node", "/target/packages/cli/bin/trellis.js")
+            projection = {
+                "projection_sha256": "projection",
+                "schema_version": "1.0",
+                "extension": {
+                    "extension_id": "guru-team",
+                    "version": "0.6.17-guru.test",
+                    "target_trellis_cli": "0.6.17",
+                    "requires_trellis_cli": "0.6.17",
+                    "tested_trellis_cli": ["0.6.17"],
+                },
+                "workflow": {},
+                "task_data": {},
+                "docs_authority": {},
+            }
+            predecessor_extension = {
+                "version": "0.6.16-guru.41",
+                "target_trellis_cli": "0.6.16",
+            }
+            workflow_bytes = b"before workflow\n"
+
+            def export_tree(_repo, _tag, destination, _archive):
+                workflow = destination / "trellis/workflows/guru-team/workflow.md"
+                workflow.parent.mkdir(parents=True)
+                workflow.write_bytes(workflow_bytes)
+
+            def install_workflow(project, *unused):
+                workflow = project / ".trellis/workflow.md"
+                workflow.parent.mkdir(parents=True)
+                workflow.write_bytes(workflow_bytes)
+                return False
+
+            def load_json(path):
+                if path.name == "guru-team-extension.json":
+                    return predecessor_extension
+                return {"extension": predecessor_extension}
+
+            with mock.patch.object(self.matrix, "validate_fork_source", return_value={"command": target}), \
+                 mock.patch.object(self.matrix, "_init_git_repo"), \
+                 mock.patch.object(self.matrix, "_assert_version", side_effect=["0.6.5", "0.6.17"]), \
+                 mock.patch.object(self.matrix, "_export_git_tree", side_effect=export_tree), \
+                 mock.patch.object(self.matrix, "_install_workflow", side_effect=install_workflow), \
+                 mock.patch.object(self.matrix, "_docs_authority_snapshot", return_value={}), \
+                 mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
+                 mock.patch.object(self.matrix, "capability_projection", return_value=projection), \
+                 mock.patch.object(self.matrix, "installed_capability_projection", return_value=projection), \
+                 mock.patch.object(self.matrix, "_load_json", side_effect=load_json), \
+                 mock.patch.object(self.matrix, "_run", side_effect=["This will UPGRADE", ""]) as run, \
+                 mock.patch.object(self.matrix, "_workflow_source_requires_local_sample", return_value=False), \
+                 mock.patch.object(self.matrix, "_preview_and_switch_workflow") as switch, \
+                 mock.patch.object(self.matrix, "_assert_docs_authority"), \
+                 mock.patch.object(self.matrix, "compare_capabilities", return_value={"comparison_sha256": "comparison"}), \
+                 mock.patch.object(self.matrix, "_assert_projection_consistency"), \
+                 mock.patch.object(self.matrix, "validate_cell", return_value={}):
+                result = self.matrix._run_cell(
+                    repo_root=root,
+                    cell_root=root / "cell",
+                    platform="codex",
+                    scenario="existing",
+                    workflow_source="fixture",
+                    before_tag="before",
+                    before_cli="0.6.16",
+                    target_cli="0.6.17",
+                    allow_local_sample=False,
+                    fork_source=root / "fork",
+                    predecessor={"command": before},
+                )
+            self.assertEqual([call.args[0] for call in run.call_args_list], [
+                (*target, "update", "--dry-run"),
+                (*target, "update", "--skip-all"),
+            ])
+            self.assertEqual(
+                switch.call_args.args[5],
+                root / "cell/before-source/trellis/workflows/guru-team/workflow.md",
+            )
+            self.assertEqual(result["update_mode"], "update")
+
     def test_dry_run_retirement_migration_markers(self) -> None:
         for output in (
             "MIGRATION REQUIRED",
