@@ -42,6 +42,18 @@ class TransactionTests(unittest.TestCase):
         with self.assertRaises(OWNER.WorkflowError):
             OWNER.validate_public_input(invalid)
 
+    def test_review_ready_rejects_values_outside_closed_schema(self) -> None:
+        for field, value in (
+            ("delivery_cycle_ref", "not-a-cycle"),
+            ("remaining_work_state", "completed"),
+        ):
+            with self.subTest(field=field):
+                invalid = source_input()
+                invalid[field] = value
+                with self.assertRaises(OWNER.WorkflowError) as raised:
+                    OWNER.validate_public_input(invalid)
+                self.assertEqual(raised.exception.code, "schema_mismatch")
+
     def test_equal_head_unbound_bind_recovery_does_not_create_pr(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -133,7 +145,7 @@ class TransactionTests(unittest.TestCase):
         self.assertEqual(plan["transaction_ref"], current["transaction_ref"])
         self.assertEqual(plan["input"]["delivery_cycle_ref"], CYCLE)
 
-    def test_invoke_maps_plan_stage_reprepare_errors_to_typed_exit(self) -> None:
+    def test_invoke_maps_plan_stage_recovery_errors_to_progressing_exits(self) -> None:
         review = {
             "schema_version": "1.0",
             "skill_id": OWNER.SKILL_ID,
@@ -158,10 +170,40 @@ class TransactionTests(unittest.TestCase):
                         side_effect=OWNER.WorkflowError("plan failed", code=code),
                     ):
                         output = OWNER.invoke(root, str(input_path), str(review_path), None)
-                    self.assertEqual(
-                        output,
-                        {"exit_id": "reprepare_required", "task_ref": TASK, "reason_code": code},
-                    )
+                    if code in {"private_state_invalid", "private_state_missing"}:
+                        self.assertEqual(
+                            output,
+                            {"exit_id": "review_stale", "task_ref": TASK, "stale_reason": code},
+                        )
+                    else:
+                        self.assertEqual(
+                            output,
+                            {"exit_id": "reprepare_required", "task_ref": TASK, "reason_code": code},
+                        )
+
+    def test_missing_transaction_returns_to_delivery_review(self) -> None:
+        review = {
+            "schema_version": "1.0",
+            "skill_id": OWNER.SKILL_ID,
+            "review": {"status": "passed", "summary": "Current publication plan is reviewed."},
+            "route": {"typed_exit": "ready_for_merge"},
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            input_path = root / "reprepare.json"
+            review_path = root / "review.json"
+            input_path.write_text(json.dumps({
+                "profile": "reprepare_publication",
+                "mode": "workflow",
+                "task_ref": TASK,
+                "reason_code": "private_state_missing",
+            }))
+            review_path.write_text(json.dumps(review))
+            output = OWNER.invoke(root, str(input_path), str(review_path), None)
+        self.assertEqual(
+            output,
+            {"exit_id": "review_stale", "task_ref": TASK, "stale_reason": "private_state_invalid"},
+        )
 
 
 if __name__ == "__main__":

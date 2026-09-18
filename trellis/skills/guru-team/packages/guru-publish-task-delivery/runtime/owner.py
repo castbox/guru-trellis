@@ -14,6 +14,7 @@ SKILL_ID = "guru-publish-task-delivery"
 STAGES = ("push_content", "bind_pr", "converge_metadata", "mark_ready", "ready")
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
 SHA64 = re.compile(r"^[0-9a-f]{64}$")
+CYCLE_REF = re.compile(r"^delivery-cycle:v1:[0-9a-f]{64}$")
 TASK_REF = re.compile(r"^\.trellis/tasks/[A-Za-z0-9._/-]+$")
 REPO_REF = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 REPREPARE_REQUIRED_CODES = frozenset(
@@ -108,13 +109,15 @@ def validate_public_input(value: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(value.get("task_ref"), str) or TASK_REF.fullmatch(value["task_ref"]) is None:
         raise WorkflowError("Invalid task_ref.", code="schema_mismatch")
     if profile == "review_ready":
-        if not isinstance(value["delivery_cycle_ref"], str) or not value["delivery_cycle_ref"].strip():
-            raise WorkflowError("delivery_cycle_ref is required.", code="schema_mismatch")
+        if not isinstance(value["delivery_cycle_ref"], str) or CYCLE_REF.fullmatch(value["delivery_cycle_ref"]) is None:
+            raise WorkflowError("delivery_cycle_ref must use the current closed identity.", code="schema_mismatch")
         if not isinstance(value["reviewed_head"], str) or SHA40.fullmatch(value["reviewed_head"]) is None:
             raise WorkflowError("reviewed_head must be a full lowercase commit id.", code="schema_mismatch")
         for field in ("pr_title", "pr_body", "remaining_work_state"):
             if not isinstance(value[field], str) or not value[field].strip():
                 raise WorkflowError(f"{field} is required.", code="schema_mismatch")
+        if value["remaining_work_state"] not in {"none", "remaining"}:
+            raise WorkflowError("remaining_work_state must be none or remaining.", code="schema_mismatch")
         if CLOSING.search(value["pr_body"]):
             raise WorkflowError("Delivery PR body contains a closing keyword.", code="closing_keyword_forbidden")
     elif profile == "same_plan_resume":
@@ -587,6 +590,8 @@ def invoke(root: Path, input_path: str, review_path: str, confirmed: str | None)
     try:
         context = plan_from_input(root, public_input)
     except WorkflowError as exc:
+        if exc.code in {"private_state_invalid", "private_state_missing"}:
+            return {"exit_id": "review_stale", "task_ref": public_input["task_ref"], "stale_reason": exc.code}
         if exc.code in REPREPARE_REQUIRED_CODES:
             return {"exit_id": "reprepare_required", "task_ref": public_input["task_ref"], "reason_code": exc.code}
         raise

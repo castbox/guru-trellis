@@ -131,6 +131,7 @@ class RuntimeTest(unittest.TestCase):
         closing = json.loads(json.dumps(facts))
         closing["pr"]["body"] = "Closes #27"
         self.assertIsNotNone(OWNER.CLOSING_KEYWORD.search(closing["pr"]["body"]))
+        self.assertIsNone(OWNER.CLOSING_KEYWORD.search("Fix the validation described in #27"))
 
     def test_unsupported_policy_blocks_before_mutation(self) -> None:
         facts = self.facts(merged=False)
@@ -139,6 +140,21 @@ class RuntimeTest(unittest.TestCase):
         facts["facts_sha256"] = OWNER.digest({k: v for k, v in facts.items() if k != "facts_sha256"})
         with self.assertRaises(OWNER.CommandError):
             OWNER.validate_route(self.public, facts, self.review)
+
+    def test_terminal_recovery_ignores_current_merge_method_policy(self) -> None:
+        terminal = self.facts(merged=True)
+        terminal["repository_policy"]["allow_merge_commit"] = False
+        terminal["objective_blockers"] = OWNER.objective_blockers(
+            terminal["pr"], terminal["repository_policy"]
+        )
+        terminal["facts_sha256"] = OWNER.digest(
+            {key: value for key, value in terminal.items() if key != "facts_sha256"}
+        )
+        self.assertEqual(terminal["objective_blockers"], [])
+        with mock.patch.object(OWNER, "live_facts", return_value=terminal), mock.patch.object(OWNER, "run_merge") as mutation:
+            output = OWNER.cmd_invoke(PACKAGE, self.args())
+        self.assertEqual(output["exit_id"], "delivered")
+        mutation.assert_not_called()
 
 
 if __name__ == "__main__":

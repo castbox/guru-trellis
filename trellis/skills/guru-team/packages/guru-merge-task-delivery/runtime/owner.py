@@ -30,9 +30,32 @@ TRAILER_KEYS = (
     "Guru-Delivery-Head",
 )
 CLOSING_KEYWORD = re.compile(
-    r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\b[^\r\n#]{0,160}#\d+",
-    re.IGNORECASE,
+    r"(?im)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s*"
+    r"(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#[1-9][0-9]*\b"
 )
+
+
+def objective_blockers(pr: dict[str, Any], policy: dict[str, bool]) -> list[str]:
+    blockers: list[str] = []
+    if pr["state"] == "OPEN":
+        if not policy["allow_merge_commit"]:
+            blockers.append("unsupported_delivery_merge_policy")
+        if pr["is_draft"]:
+            blockers.append("pr_is_draft")
+        if pr["mergeable"] != "MERGEABLE":
+            blockers.append("pr_not_mergeable")
+        if pr["merge_state_status"] in {"BEHIND", "BLOCKED", "DIRTY", "DRAFT", "UNKNOWN"}:
+            blockers.append("merge_state_not_ready")
+        states = {_check_state(item) for item in pr["checks"] if isinstance(item, dict)}
+        if "failed" in states:
+            blockers.append("required_checks_failed")
+        elif "pending" in states:
+            blockers.append("required_checks_pending")
+        if pr["review_decision"] in {"CHANGES_REQUESTED", "REVIEW_REQUIRED"}:
+            blockers.append("review_not_ready")
+    elif pr["state"] != "MERGED":
+        blockers.append("pr_not_open_or_merged")
+    return sorted(set(blockers))
 
 
 def canonical_json(value: Any) -> str:
@@ -280,33 +303,13 @@ def live_facts(root: Path, package_root: Path, public: dict[str, Any]) -> dict[s
                 "github_response_incomplete", "github.merge_commit", "Repair the merge-commit query and reread live facts."
             ) from exc
 
-    blockers: list[str] = []
-    if not policy["allow_merge_commit"]:
-        blockers.append("unsupported_delivery_merge_policy")
-    if pr["state"] == "OPEN":
-        if pr["is_draft"]:
-            blockers.append("pr_is_draft")
-        if pr["mergeable"] != "MERGEABLE":
-            blockers.append("pr_not_mergeable")
-        if pr["merge_state_status"] in {"BEHIND", "BLOCKED", "DIRTY", "DRAFT", "UNKNOWN"}:
-            blockers.append("merge_state_not_ready")
-        states = {_check_state(item) for item in pr["checks"] if isinstance(item, dict)}
-        if "failed" in states:
-            blockers.append("required_checks_failed")
-        elif "pending" in states:
-            blockers.append("required_checks_pending")
-        if pr["review_decision"] in {"CHANGES_REQUESTED", "REVIEW_REQUIRED"}:
-            blockers.append("review_not_ready")
-    elif pr["state"] != "MERGED":
-        blockers.append("pr_not_open_or_merged")
-
     facts: dict[str, Any] = {
         "task": task,
         "pr": pr,
         "repository_policy": policy,
         "base_ref": base_ref,
         "merge_commit": merge_commit,
-        "objective_blockers": sorted(set(blockers)),
+        "objective_blockers": objective_blockers(pr, policy),
     }
     facts["facts_sha256"] = digest(facts)
     validate_json(facts, package_root / "schemas/live-facts.schema.json", "live_facts")
