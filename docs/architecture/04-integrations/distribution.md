@@ -77,6 +77,12 @@
   candidate提供extractor和thin entry，Guru只提供workflow内容与Guru-owned package projection。#410在#419
   merge后的fresh main独立执行install/update/switch/reapply Release Gate，不消费#419定向证据。
 
+- `ARCH-INT-020`：#435 将Delivery Review的reviewed payload投影给Delivery Publish，再将exact reviewed head、
+  PR identity与publication state投影给Delivery Merge；Merge通过受控two-parent merge commit trailers记录stable
+  task identity、schema version与reviewed head，并从target-base first-parent history结合GitHub PR/merge identity、
+  repository/base和parents重建Delivery fact。三个packages已进入canonical、installed与平台投影，但workflow edge
+  保持deferred；#434 activation前不得把package存在解释为production route可达，#436也不由该投影实现。
+
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。
 - `skill_api` 与 interface/schema/command projection、distribution、managed/installed file

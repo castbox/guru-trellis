@@ -12,6 +12,7 @@
     "planning_paths",
     "reviewed_content_sha256",
     "authority_refs",
+    "delivery_policy",
     "docs_ssot_plan",
     "semantic_review",
     "typed_exit",
@@ -47,6 +48,7 @@
       "uniqueItems": true,
       "items": {"type": "string", "minLength": 1}
     },
+    "delivery_policy": {"$ref": "#/$defs/deliveryPolicy"},
     "docs_ssot_plan": {"$ref": "#/$defs/docsSsotPlan"},
     "semantic_review": {"$ref": "#/$defs/semanticReview"},
     "typed_exit": {
@@ -123,6 +125,32 @@
       "type": "array",
       "uniqueItems": true,
       "items": {"type": "string", "minLength": 1}
+    },
+    "nonEmptyStringList": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "deliveryPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_scope",
+        "delivery_slice",
+        "remaining_work",
+        "independent_delivery_conditions",
+        "validation_boundaries",
+        "remaining_work_owner"
+      ],
+      "properties": {
+        "task_scope": {"$ref": "#/$defs/nonEmptyStringList"},
+        "delivery_slice": {"$ref": "#/$defs/nonEmptyStringList"},
+        "remaining_work": {"$ref": "#/$defs/stringList"},
+        "independent_delivery_conditions": {"$ref": "#/$defs/nonEmptyStringList"},
+        "validation_boundaries": {"$ref": "#/$defs/nonEmptyStringList"},
+        "remaining_work_owner": {"type": "string", "minLength": 1}
+      }
     },
     "docsSsotPlan": {
       "type": "object",

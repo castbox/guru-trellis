@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-merge-task-delivery",
+  "errors": [
+    {"code":"invalid_arguments","trigger":"Declared arguments or JSON are missing or invalid.","exit_status":2,"locator":"field_path","remediation":"Use the declared command and current package schemas."},
+    {"code":"conflicting_arguments","trigger":"A scalar flag is repeated or conflicts with another flag.","exit_status":2,"locator":"field_path","remediation":"Provide each declared scalar flag at most once."},
+    {"code":"schema_mismatch","trigger":"Input, semantic review, private gate, or typed output violates its closed schema.","exit_status":2,"locator":"field_path","remediation":"Rebuild the value from the current owner contract."},
+    {"code":"unsafe_path","trigger":"A repository or JSON locator is outside the declared boundary.","exit_status":2,"locator":"field_path","remediation":"Use the exact repository and package-owned locator."},
+    {"code":"stale_identity","trigger":"Task, PR, head, body, base, message, gate, or terminal facts changed.","exit_status":3,"locator":"field_path","remediation":"Re-enter the owning semantic step and rebuild current evidence."},
+    {"code":"merge_precondition_failed","trigger":"Current readiness, checks, mergeability, or merge policy blocks the reviewed action.","exit_status":2,"locator":"field_path","remediation":"Resolve the current blocker and repeat the semantic merge review."},
+    {"code":"github_cli_missing","trigger":"GitHub CLI is unavailable.","exit_status":2,"locator":"field_path","remediation":"Install GitHub CLI and retry."},
+    {"code":"github_auth_failed","trigger":"GitHub authentication is unavailable or expired.","exit_status":2,"locator":"field_path","remediation":"Repair GitHub authentication and retry."},
+    {"code":"github_repo_access_denied","trigger":"The selected repository is inaccessible.","exit_status":2,"locator":"field_path","remediation":"Verify repository identity and access."},
+    {"code":"github_permission_denied","trigger":"The requested GitHub operation is not permitted.","exit_status":2,"locator":"field_path","remediation":"Resolve repository permission and repeat the current review."},
+    {"code":"github_api_unavailable","trigger":"The GitHub provider is unavailable.","exit_status":2,"locator":"field_path","remediation":"Retry after provider or network recovery."},
+    {"code":"github_response_incomplete","trigger":"A required GitHub response field is missing or invalid.","exit_status":2,"locator":"field_path","remediation":"Repair the adapter/query contract and reread live facts."},
+    {"code":"internal_error","trigger":"Unexpected package-local runtime failure.","exit_status":2,"locator":"field_path","remediation":"Inspect the package runtime and retry."}
+  ]
+}

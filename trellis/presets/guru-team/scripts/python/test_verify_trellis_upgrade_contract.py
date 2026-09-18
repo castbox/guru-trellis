@@ -1782,7 +1782,7 @@ exit 23
         projection = self.matrix.capability_projection(REPO)
 
         self.assertRegex(projection["projection_sha256"], r"^[0-9a-f]{64}$")
-        self.assertEqual(len(projection["skill_api"]["interfaces"]), 23)
+        self.assertEqual(len(projection["skill_api"]["interfaces"]), 26)
         self.assertEqual(len(projection["workflow"]["skill_invokes"]), 22)
         self.assertEqual(len(projection["workflow"]["skill_exits"]), 98)
         self.assertEqual(len(projection["workflow"]["workflow_targets"]), 35)
@@ -2015,7 +2015,7 @@ exit 23
         template_hashes = self.matrix._assert_template_hashes(REPO, REPO)
 
         self.assertTrue(comparison["capabilities_preserved"])
-        self.assertEqual(len(installed["skill_api"]["interfaces"]), 23)
+        self.assertEqual(len(installed["skill_api"]["interfaces"]), 26)
         self.assertEqual(installed["distribution"]["platforms"], ["claude", "codex", "cursor"])
         source = self.matrix.capability_projection(REPO)
         current = self.matrix.compare_capabilities(

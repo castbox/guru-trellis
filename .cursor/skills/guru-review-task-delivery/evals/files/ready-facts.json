@@ -1,0 +1,1 @@
+{"current_authority":"Issue #435","delivery_slice":["R435-01"],"remaining_work":["R435-02","R435-03"],"independent_condition":"Review package closes its declared source contract without Publish or Merge activation.","branch_review":"fresh passed","live_issue_state":"OPEN","pr_effect":"Refs #435 only","expected_exit":"ready"}

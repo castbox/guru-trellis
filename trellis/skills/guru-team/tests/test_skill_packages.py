@@ -14,7 +14,7 @@ REPO = Path(__file__).resolve().parents[4]
 SKILLS = REPO / "trellis/skills/guru-team"
 sys.path.insert(0, str(SKILLS))
 from runtime.io import CommandError  # noqa: E402
-from runtime.installed import validate_skill_installed  # noqa: E402
+from runtime.installed import validate_skill_installed, workflow_facts  # noqa: E402
 from runtime.schema import validate_json  # noqa: E402
 from runtime.validate import validate  # noqa: E402
 
@@ -31,6 +31,54 @@ preset = load_module(
     "guru_team_preset_integration",
     REPO / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
 )
+
+
+class InstalledWorkflowIntegrationStateTests(unittest.TestCase):
+    def test_deferred_package_does_not_require_workflow_markers(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workflow = root / ".trellis/workflow.md"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text("# Empty production graph\n", encoding="utf-8")
+            errors: list[str] = []
+            facts = workflow_facts(
+                root,
+                workflow,
+                {
+                    "guru-example-deferred": {
+                        "workflow_integration_state": "deferred",
+                        "interface_data": {"external_exits": []},
+                    }
+                },
+                True,
+                errors,
+            )
+        self.assertEqual(errors, [])
+        self.assertEqual(facts["invoke_markers"], 0)
+
+    def test_integrated_package_still_requires_one_invoke_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workflow = root / ".trellis/workflow.md"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text("# Empty production graph\n", encoding="utf-8")
+            errors: list[str] = []
+            workflow_facts(
+                root,
+                workflow,
+                {
+                    "guru-example-integrated": {
+                        "workflow_integration_state": "integrated",
+                        "interface_data": {"external_exits": []},
+                    }
+                },
+                True,
+                errors,
+            )
+        self.assertEqual(
+            errors,
+            ["active skill guru-example-integrated has 0 mandatory invoke markers"],
+        )
 
 
 class SkillEvalAdapterRequestSchemaTests(unittest.TestCase):
@@ -96,12 +144,11 @@ class SkillEvalAdapterRequestSchemaTests(unittest.TestCase):
                 with self.subTest(schema=schema, mode=mode):
                     validate_json(request, schema, "adapter_request")
 
-    def test_post_owner_request_rejects_either_or_both_authoring_fields(self) -> None:
+    def test_post_owner_request_rejects_native_authoring_fields(self) -> None:
         for schema in self.schemas:
             for mode in (None, "post_owner"):
                 for fields in (
                     {"native_execution_adapter": "codex"},
-                    {"model_id": "gpt-5.6-sol"},
                     self.authoring_fields,
                 ):
                     request = {**self.request, **fields}
@@ -111,6 +158,12 @@ class SkillEvalAdapterRequestSchemaTests(unittest.TestCase):
                         with self.assertRaises(CommandError) as raised:
                             validate_json(request, schema, "adapter_request")
                         self.assertEqual(raised.exception.code, "schema_mismatch")
+
+    def test_codex_post_owner_request_accepts_model_identity(self) -> None:
+        request = {**self.request, "model_id": "gpt-5.6-sol"}
+        for schema in self.schemas:
+            with self.subTest(schema=schema):
+                validate_json(request, schema, "adapter_request")
 
 
 class SkillPackageIntegrationTests(unittest.TestCase):
@@ -130,8 +183,8 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             "--root", str(REPO), "--mode", "source", "--json",
         )
         self.assertEqual(payload["status"], "passed")
-        self.assertEqual(payload["active_packages"], 23)
-        self.assertEqual(payload["complete_package_commands"], 23)
+        self.assertEqual(payload["active_packages"], 26)
+        self.assertEqual(payload["complete_package_commands"], 26)
         self.assertGreater(payload["commands"], 0)
 
     def test_source_validator_rejects_duplicate_command_owner(self) -> None:
@@ -192,7 +245,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 cwd=target,
             )
             self.assertEqual(installed["status"], "passed")
-            self.assertEqual(len(installed["facts"]["active_ids"]), 23)
+            self.assertEqual(len(installed["facts"]["active_ids"]), 26)
             source_commands = sum(
                 len(json.loads(path.read_text(encoding="utf-8"))["commands"])
                 for path in (SKILLS / "packages").glob("guru-*/commands.json")

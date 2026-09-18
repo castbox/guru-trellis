@@ -5,6 +5,9 @@ from common import checkpoint_path, parse, read_json, repo_root, validate_json, 
 from runtime.io import CommandError
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
+    if command.get("id") == "project-resolved-full-review":
+        from project import run as project_resolved_full_review
+        return project_resolved_full_review(package_root, command, argv)
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--invocation",required=True)
     args=parse(parser,argv); repo=repo_root(args.root); envelope=read_json(repo,package_root,args.invocation,"invocation"); validate_json(envelope,package_root/"schemas/invocation-envelope.schema.json","invocation")
     public=envelope["public_input"]; result=envelope["owner_result"]; validate_result(package_root,repo,result,public); output=result["typed_output"]

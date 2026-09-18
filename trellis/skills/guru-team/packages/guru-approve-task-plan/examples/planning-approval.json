@@ -10,6 +10,14 @@
   ],
   "reviewed_content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "authority_refs": ["issue:27"],
+  "delivery_policy": {
+    "task_scope": ["R1", "R2"],
+    "delivery_slice": ["R1"],
+    "remaining_work": ["R2"],
+    "independent_delivery_conditions": ["R1 can be validated and used without R2 being complete."],
+    "validation_boundaries": ["Targeted R1 checks are required; R2 validation remains future work."],
+    "remaining_work_owner": "The active task remains responsible for R2 after this delivery."
+  },
   "docs_ssot_plan": {
     "strategy": "ssot_first",
     "durable_paths": [

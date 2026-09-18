@@ -1,0 +1,180 @@
+{
+  "base_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "base_ref": "refs/remotes/origin/main",
+  "branch_review_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "delivery_cycle_ref": "delivery-cycle:v1:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "facts_sha256": "35e250f08399b9aaeb3ac8b945dbf40d151e480137b53d147ecbe08577f03435",
+  "generated_at": "2026-09-18T00:00:00Z",
+  "mode": "workflow",
+  "profile": "delivery_review",
+  "reviewed_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "schema_version": "1.0",
+  "semantic_result": {
+    "candidate_classifications": [
+      {
+        "candidate_ref": "candidate:delivery:no-defect",
+        "consumer_use": "delivery_review_route_checker",
+        "decision": "rejected_not_reproduced",
+        "witness": {
+          "defect_observation": "Current evidence does not reproduce a Delivery Review defect.",
+          "excluded_assumptions": [],
+          "existing_caller_refs": [
+            "caller:guru-review-task-delivery"
+          ],
+          "honest_action_sequence": [
+            "Review the current slice and complete candidate."
+          ],
+          "requirement_refs": [
+            "R435-01"
+          ],
+          "supported_entry_refs": [
+            "entry:delivery-review"
+          ]
+        }
+      }
+    ],
+    "conclusions": {
+      "delivery_readiness": {
+        "evidence_refs": [
+          "dimensions"
+        ],
+        "id": "delivery_readiness",
+        "status": "passed",
+        "summary": "The slice is ready."
+      },
+      "docs_rdt_architecture": {
+        "evidence_refs": [
+          "docs:current"
+        ],
+        "id": "docs_rdt_architecture",
+        "status": "passed",
+        "summary": "Docs are current."
+      },
+      "safety_deployment": {
+        "evidence_refs": [
+          "pr-payload:safety"
+        ],
+        "id": "safety_deployment",
+        "status": "passed",
+        "summary": "Impact is truthful."
+      }
+    },
+    "delivery_policy": {
+      "delivery_slice_refs": [
+        "R435-01"
+      ],
+      "followup_owner": "guru-publish-task-delivery",
+      "independent_delivery_conditions": [
+        "The review package is independently installable after registry projection."
+      ],
+      "remaining_work_refs": [
+        "R435-02"
+      ],
+      "task_scope_refs": [
+        "R435-01",
+        "R435-02"
+      ],
+      "validation_boundaries": [
+        "Package contract and runtime tests are current."
+      ]
+    },
+    "dimensions": [
+      {
+        "evidence_refs": [
+          "issue:#435"
+        ],
+        "id": "requirement_authority",
+        "status": "passed",
+        "summary": "Current authority is explicit."
+      },
+      {
+        "evidence_refs": [
+          "planning:delivery-policy"
+        ],
+        "id": "delivery_policy",
+        "status": "passed",
+        "summary": "The approved policy is complete."
+      },
+      {
+        "evidence_refs": [
+          "diff:reviewed-head"
+        ],
+        "id": "slice_completeness",
+        "status": "passed",
+        "summary": "The current slice is complete."
+      },
+      {
+        "evidence_refs": [
+          "condition:package-closure"
+        ],
+        "id": "independent_delivery",
+        "status": "passed",
+        "summary": "The slice is independently deliverable."
+      },
+      {
+        "evidence_refs": [
+          "branch-review:passed"
+        ],
+        "id": "implementation_quality",
+        "status": "passed",
+        "summary": "No current-slice defect remains."
+      },
+      {
+        "evidence_refs": [
+          "test:package"
+        ],
+        "id": "validation_truthfulness",
+        "status": "passed",
+        "summary": "Claims match current tests."
+      },
+      {
+        "evidence_refs": [
+          "docs:rdt",
+          "docs:architecture"
+        ],
+        "id": "docs_rdt_architecture",
+        "status": "passed",
+        "summary": "Durable authorities are reconciled."
+      },
+      {
+        "evidence_refs": [
+          "git:branch-review-commit"
+        ],
+        "id": "branch_review_freshness",
+        "status": "passed",
+        "summary": "The complete Branch Review is current."
+      },
+      {
+        "evidence_refs": [
+          "pr-payload"
+        ],
+        "id": "pr_payload_truthfulness",
+        "status": "passed",
+        "summary": "The payload is specific and Refs-only."
+      },
+      {
+        "evidence_refs": [
+          "git:base",
+          "github:issue"
+        ],
+        "id": "base_and_live_facts",
+        "status": "passed",
+        "summary": "Base and live facts are current."
+      }
+    ],
+    "findings": [],
+    "mode": "workflow",
+    "pr_payload": {
+      "body": "## 变更摘要\n\n- 交付当前 Review slice。\n\n## 验证结果\n\n- Package contract and runtime tests passed.\n\n## Remaining Work\n\n- Publish and Merge remain active work.\n\n## 安全与部署影响\n\n- No deployment mutation in this slice.\n\nRefs #435\n",
+      "title": "交付：新增 Active Task Delivery Review owner"
+    },
+    "profile": "delivery_review",
+    "remaining_work_state": "remaining",
+    "route": {
+      "typed_exit": "ready"
+    },
+    "scope_proposals": []
+  },
+  "skill_id": "guru-review-task-delivery",
+  "task_ref": ".trellis/tasks/09-18-435-active-task-delivery-loop"
+}

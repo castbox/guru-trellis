@@ -19,6 +19,16 @@
     "durable_paths": ["docs/requirements/example.md"],
     "summary": "The durable requirement SSOT reflects the implementation."
   },
+  "delivery_policy": {
+    "task_scope": ["R1", "R2"],
+    "delivery_slice": ["R1"],
+    "remaining_work": ["R2"],
+    "independent_delivery_conditions": ["R1 is usable and verifiable without R2."],
+    "validation_boundaries": ["R1 targeted checks passed; R2 remains explicitly unverified future work."],
+    "current_slice_status": "passed",
+    "remaining_work_status": "disclosed",
+    "summary": "The current slice is complete and independent; remaining work is not claimed complete."
+  },
   "candidate_classifications": [
     {
       "candidate_ref": "candidate:phase2:no-defect",

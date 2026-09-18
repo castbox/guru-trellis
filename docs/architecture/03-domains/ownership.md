@@ -18,6 +18,7 @@
 | `ARCH-DOM-014` | post-review base continuity | Reconcile 独占 compatible base advance 的 semantic classification 与确认后的 local reconciliation commit；Review Branch 独占 bounded continuity judgment；Publication 独占 current reviewed-content acceptance；Finalizer 只投影 prior review identity，不复制任一 owner 的判断或写入 |
 | `ARCH-DOM-015` | Issue reference and closure ownership | Guru lifecycle 内，current user/live external authority 与 lifecycle owner持有 requirement/source reference；Publication 独占 Issue reference/closure intent；Finalizer 执行 reviewed payload并投影 exact body SHA-256；GitHub 执行默认分支 closing keyword；Merge mutation前验证 live body identity且只验证 live result；无 task-local classification aggregate 或第二 closure owner |
 | `ARCH-DOM-016` | active-task continuation | Guru workflow独占detailed continuation；adjacent DTO的consumer、deterministic producer recovery、semantic owner fresh rerun与activation owner各保持单写；upstream独占extractor和thin entries |
+| `ARCH-DOM-017` | active-task Delivery capability | Delivery Review独占slice readiness与PR payload truth；Delivery Publish独占push/PR/Draft/Ready及同计划恢复；Delivery Merge独占merge readiness、受控merge commit与Delivery result；Reconcile独占resolved-tree commit；#434独占production graph activation，#436独占Completion及其后续lifecycle |
 
 跨 domain 只使用 interface/schema/typed projection；不得读取对方 private checkpoint 作为 public contract。
 
@@ -40,6 +41,13 @@
 - workspace created-result、activation、Phase 2与Task Commit的恢复分别留在原producer。
 - Branch Review与Publication成功checkpoint退休后，跨会话只允许fresh semantic review。
 - upstream start/continue/hooks/platform/meta不进入Guru preset或managed inventory。
+
+## #435 Active-task Delivery 归属
+
+- 三个Delivery packages只提供additive capability；当前production workflow仍使用原22 invokes / 98 exits图。
+- `delivered`只表达一个业务Delivery完成并保持task active；它不是task completion、Issue closure、archive、Finish或Cleanup。
+- Merge owner写受控merge commit trailer；历史发现只读GitHub/Git immutable facts，不读取PR body、当前branch存活或task-local ledger作为identity authority。
+- #434在#435与#436 capability均ready后原子激活新图并退休旧edges；#436单独拥有Completion、Closure、Finish、Cleanup与Reactivate。
 
 #408 的独立手动请求不进入上述 Guru lifecycle domain，由当前会话 AI 依
 [全局操作边界](../../../trellis/workflows/guru-team/workflow.md#manual-gitgithub-operations)

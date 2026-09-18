@@ -53,8 +53,8 @@
     },
     {
       "id": "planning_documents",
-      "evidence": "current non-empty prd.md, design.md, and implement.md",
-      "binding": "the three planning documents reviewed by this owner",
+      "evidence": "current non-empty prd.md, design.md, and implement.md plus their closed Delivery slice policy",
+      "binding": "the three planning documents and their task scope, current Delivery slice, remaining work, independent conditions, validation boundaries, and remaining-work owner",
       "freshness": "the AI rereads current files and the validator recomputes one owner-private composite token over the three planning paths"
     },
     {

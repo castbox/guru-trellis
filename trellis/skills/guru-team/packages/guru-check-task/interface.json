@@ -96,8 +96,10 @@
     {"id": "public_input_initial_check_example", "path": "examples/public-initial-check-input.json"},
     {"id": "public_input_finding_fix_rerun_example", "path": "examples/public-finding-fix-rerun-input.json"},
     {"id": "public_input_planning_reentry_example", "path": "examples/public-planning-reentry-input.json"},
+    {"id": "public_input_resolved_reconciliation_example", "path": "examples/public-resolved-reconciliation-input.json"},
     {"id": "public_invocation_error_example", "path": "examples/public-invocation-error.json"},
     {"id": "public_output_passed_example", "path": "examples/public-passed-output.json"},
+    {"id": "resolved_reconciliation_authoring_example", "path": "examples/public-resolved-reconciliation-authoring.json"},
     {"id": "public_output_implementation_required_example", "path": "examples/public-implementation-required-output.json"},
     {"id": "public_output_planning_stale_example", "path": "examples/public-planning-stale-output.json"},
     {"id": "public_output_blocked_example", "path": "examples/public-blocked-output.json"}
@@ -108,9 +110,11 @@
     {"id": "public_input_initial_check", "path": "schemas/public-initial-check-input.schema.json"},
     {"id": "public_input_finding_fix_rerun", "path": "schemas/public-finding-fix-rerun-input.schema.json"},
     {"id": "public_input_planning_reentry", "path": "schemas/public-planning-reentry-input.schema.json"},
+    {"id": "public_input_resolved_reconciliation", "path": "schemas/public-resolved-reconciliation-input.schema.json"},
     {"id": "public_input_aggregate", "path": "schemas/public-input.schema.json"},
     {"id": "public_invocation_error", "path": "schemas/public-invocation-error.schema.json"},
     {"id": "public_output_passed", "path": "schemas/public-passed-output.schema.json"},
+    {"id": "resolved_reconciliation_authoring", "path": "schemas/resolved-reconciliation-authoring.schema.json"},
     {"id": "public_output_implementation_required", "path": "schemas/public-implementation-required-output.schema.json"},
     {"id": "public_output_planning_stale", "path": "schemas/public-planning-stale-output.schema.json"},
     {"id": "public_output_blocked", "path": "schemas/public-blocked-output.schema.json"}
@@ -133,6 +137,12 @@
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-check-task",
       "objective_scope": "validate the minimal route input, check the owner-private result, and serialize one minimal typed exit"
+    },
+    {
+      "id": "resolved_reconciliation_projection",
+      "command": "scripts/project-resolved-reconciliation.sh",
+      "runtime_command": "project-resolved-reconciliation",
+      "objective_scope": "validate one checked private resolved-tree Phase 2 result and emit the target-owned Reconcile input without a workflow exit"
     }
   ],
   "external_exits": [
@@ -189,6 +199,12 @@
           "schema": {"schema_id": "guru-production-check-task-input-planning-reentry-2.0", "path": "schemas/public-planning-reentry-input.schema.json"},
           "example": {"id": "planning_reentry_input", "path": "examples/public-planning-reentry-input.json"},
           "discriminator": {"field": "profile", "value": "planning_reentry"}
+        },
+        {
+          "id": "resolved_reconciliation",
+          "schema": {"schema_id": "guru-production-check-task-input-resolved-reconciliation-1.0", "path": "schemas/public-resolved-reconciliation-input.schema.json"},
+          "example": {"id": "resolved_reconciliation_input", "path": "examples/public-resolved-reconciliation-input.json"},
+          "discriminator": {"field": "profile", "value": "resolved_reconciliation"}
         }
       ]
     },

@@ -177,6 +177,14 @@ def public_files(package: Path, interface: dict[str, Any], files: list[Path]) ->
         str(item.get("path")) for item in interface.get("artifacts", [])
         if isinstance(item, dict) and isinstance(item.get("path"), str) and str(item.get("path")) not in output_examples
     }
+    public_authoring_paths = {
+        str(item.get("contract", {}).get("authoring_example", {}).get("path"))
+        for item in interface.get("public_contracts", {}).get("consumer_inputs", [])
+        if isinstance(item, dict)
+        and isinstance(item.get("contract"), dict)
+        and isinstance(item["contract"].get("authoring_example"), dict)
+        and isinstance(item["contract"]["authoring_example"].get("path"), str)
+    }
     wrapper = str(interface.get("public_contracts", {}).get("invocation", {}).get("wrapper", ""))
     result = []
     for path in files:
@@ -187,6 +195,9 @@ def public_files(package: Path, interface: dict[str, Any], files: list[Path]) ->
         if inner.parts[0] == "scripts" and text != wrapper:
             continue
         if inner in required_schema_paths or inner in required_public_paths:
+            result.append(path)
+            continue
+        if text in public_authoring_paths:
             result.append(path)
             continue
         if text in private_paths or text in private_artifacts:
@@ -219,7 +230,7 @@ def workflow_facts(root: Path, workflow: Path, active: dict[str, dict[str, Any]]
     if required:
         integrated = {
             skill_id: entry for skill_id, entry in active.items()
-            if entry.get("workflow_integration_state", "integrated") != "standalone_only"
+            if entry.get("workflow_integration_state", "integrated") == "integrated"
         }
         for skill_id in integrated:
             count = sum(item.get("skill") == skill_id and item.get("required") is True for item in invokes)
@@ -292,6 +303,7 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
     integration_tests = (
         ("test_finish_family_integration.py", "Finish family"),
         ("test_base_continuity_integration.py", "base continuity"),
+        ("test_delivery_family_integration.py", "Delivery family"),
     )
     for filename, label in integration_tests:
         integration_test = skills_root / "tests" / filename

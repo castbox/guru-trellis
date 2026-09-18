@@ -94,6 +94,13 @@ dimensions:
 7. provenance;
 8. supported unusual scenarios.
 
+The planning result also records one closed Delivery policy as semantic
+evidence: the complete task scope, current Delivery slice, explicit remaining
+work, observable conditions that make the slice independently deliverable,
+the slice validation boundary, and the owner that retains the remaining work.
+An empty or ambiguous slice, hidden remaining work, or a condition that depends
+on the remaining work already being complete cannot produce `approved`.
+
 Formatting, spelling, link, derived-text, and workflow-metadata deltas are
 classified by the AI against their actual semantic effect. A proven equivalent
 delta refreshes only the directly dependent owner identity. A requirement,
@@ -116,6 +123,7 @@ It retains only:
 - one composite `reviewed_content_sha256` freshness token over those three
   planning files;
 - the compact Docs SSOT decision;
+- the closed Delivery policy used by later Check and Branch Review owners;
 - the final eight-dimension semantic result;
 - typed exit, reason, and consumer.
 
@@ -146,9 +154,9 @@ scope, sufficiency, findings, revisions, authorization, semantic pass, or route.
 Keep cwd at the task repository root. The installed package is
 `.trellis/guru-team/skills/packages/guru-approve-task-plan`; its
 `examples/planning-approval.json` describes the complete recorded result, not
-the normal recorder input. Normal authoring contains exactly these seven
-top-level fields: `mode`, `authority_refs`, `docs_ssot_plan`, `semantic_review`,
-`typed_exit`, `consumer`, and `reason`. Populate their semantic content using
+the normal recorder input. Normal authoring contains exactly these eight
+top-level fields: `mode`, `authority_refs`, `delivery_policy`, `docs_ssot_plan`,
+`semantic_review`, `typed_exit`, `consumer`, and `reason`. Populate their semantic content using
 the corresponding definitions in `schemas/planning-approval.schema.json`.
 Omit `schema_version`, `skill_id`, `task_ref`, `planning_paths`, and
 `reviewed_content_sha256`: the recorder supplies those from the exact task and
@@ -165,7 +173,7 @@ GURU_SKILL_PACKAGE=.trellis/guru-team/skills/packages/guru-approve-task-plan
 "$GURU_SKILL_PACKAGE/scripts/invoke.sh" --root . --input - --owner-result "$CHECKPOINT"
 ```
 
-The recorder receives the seven-field semantic input. Retain its returned
+The recorder receives the eight-field semantic input. Retain its returned
 `artifact_path` as `CHECKPOINT`; the checker reads that task-owned checkpoint.
 Invoke receives the minimal public route DTO on stdin and the checked owner
 result from that path. Do not pass recorder response metadata (`artifact_path`,

@@ -1,12 +1,13 @@
 # Test Strategy / Test Plan SSOT
 
-当前 authority：[`versions/current-main-0.6.17-guru.54/test-strategy.md`](./versions/current-main-0.6.17-guru.54/test-strategy.md) 与 [`test-plan.md`](./versions/current-main-0.6.17-guru.54/test-plan.md)。`traceability.md` 连接 Requirements、Design、Architecture `.54/active` 和 evidence；`.53` 及更早版本保持 immutable。
+当前 authority：[`versions/current-main-0.6.17-guru.55/test-strategy.md`](./versions/current-main-0.6.17-guru.55/test-strategy.md) 与 [`test-plan.md`](./versions/current-main-0.6.17-guru.55/test-plan.md)。`traceability.md` 连接 Requirements、Design、Architecture `.55/active` 和 evidence；`.54` 及更早版本保持 immutable。
 
-状态：`active`。`.54` 完整继承 `.53` 并承接 #419；定向package/runtime/upstream/fixture结果仅为pre-promotion evidence。promotion-created diff仍须fresh gates；#410 Release Gate matrix未由本提升执行。
+状态：`active`。`.55` 完整继承 `.54` 并承接 #435；26 packages / 114 exits / 96 commands 的 registry closure 与 22 mandatory invokes / 98 exits 的 production workflow 分开验证。定向 package/runtime/fixture/representative clean 结果仅为 pre-promotion evidence；#434/#436 ownership boundary不变，完整 Release Gate matrix仍 `unverified`。
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.54` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.54/test-strategy.md) |
+| `active` | `current-main-0.6.17-guru.55` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.55/test-strategy.md) |
+| `superseded` | `current-main-0.6.17-guru.54` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.54/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.53` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.53/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.52` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.52/test-strategy.md) |
 | `superseded` | `current-main-0.6.5-guru.51` | [`test-strategy.md`](./versions/current-main-0.6.5-guru.51/test-strategy.md) |
@@ -28,4 +29,4 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [`test-strategy.md`](./versions/current-main-0.6.5-guru.35/test-strategy.md) |
 | `released-history` | `v0.6.5-guru.9` | [`README.md`](./versions/v0.6.5-guru.9/README.md) |
 
-`.54/active` 完整继承 `.53` 并吸收 reviewed #419 contribution，与 Architecture 共享 current identity。promotion-created combined diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review；发布矩阵由#410独立执行。
+`.55/active` 完整继承 `.54` 并吸收 reviewed #435 contribution；Architecture 为 `.55/active`。promotion-created combined diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review；发布矩阵由 #410 独立执行且当前未验证。

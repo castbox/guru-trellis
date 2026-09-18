@@ -13,6 +13,16 @@
   "base_ref": "origin/main",
   "base_head": "dddddddddddddddddddddddddddddddddddddddd",
   "integration_pair": null,
+  "delivery_review": {
+    "task_scope": ["R1", "R2"],
+    "delivery_slice": ["R1"],
+    "remaining_work": ["R2"],
+    "independent_delivery_conditions": ["R1 is independently usable and verifiable."],
+    "validation_boundaries": ["R1 checks passed; R2 remains disclosed future work."],
+    "current_slice_status": "passed",
+    "remaining_work_status": "disclosed",
+    "summary": "The full committed range satisfies the current slice without claiming remaining work complete."
+  },
   "candidate_classifications": [
     {
       "candidate_ref": "candidate-normal-no-defect",

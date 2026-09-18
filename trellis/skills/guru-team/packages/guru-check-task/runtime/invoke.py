@@ -5,6 +5,9 @@ from common import checkpoint,load,parse,root,task
 from runtime.io import CommandError
 from runtime.schema import validate_json
 def run(package_root:Path,command:dict,argv:list[str])->dict:
+ if command.get("id")=="project-resolved-reconciliation":
+  from project import run as project_resolved_reconciliation
+  return project_resolved_reconciliation(package_root,command,argv)
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation");p.add_argument("--input");p.add_argument("--owner-result")
  a=parse(p,argv);repo=root(package_root,a.root)
  if a.invocation:

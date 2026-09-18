@@ -1,0 +1,13 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-merge-task-delivery-private-gate-1.0",
+  "type":"object","additionalProperties":false,
+  "required":["schema_version","skill_id","public_input","semantic_review","pre_merge_facts","pre_merge_base_head","action_sha256"],
+  "properties":{
+    "schema_version":{"const":"1.0"},"skill_id":{"const":"guru-merge-task-delivery"},
+    "public_input":{"$ref":"public-ready-for-merge-input.schema.json"},
+    "semantic_review":{"$ref":"semantic-review.schema.json"},
+    "pre_merge_facts":{"$ref":"live-facts.schema.json"},
+    "pre_merge_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "action_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}
+  }
+}

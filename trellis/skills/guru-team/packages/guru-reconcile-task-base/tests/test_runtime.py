@@ -317,6 +317,71 @@ class RuntimeTest(unittest.TestCase):
         self.assertEqual(owner['typed_output'],guarded['typed_output'])
         self.assertEqual(receipt['reconciled_task_head'],guarded['typed_output']['task_head'])
         self.assertEqual('blocked',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('recovery-second-guard.json',public))])['status'])
+    def resolved_merge(self):
+        (self.repo/'conflict.txt').write_text('task\n'); self.git('add','conflict.txt'); self.git('commit','-qm','task conflict'); phase2=self.git('rev-parse','HEAD')
+        self.git('switch','main'); (self.repo/'conflict.txt').write_text('base\n'); self.git('add','conflict.txt'); self.git('commit','-qm','base conflict'); new=self.git('rev-parse','HEAD'); self.git('switch','feature')
+        merge=subprocess.run(['git','merge','--no-commit','--no-ff',new],cwd=self.repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        self.assertNotEqual(0,merge.returncode); (self.repo/'conflict.txt').write_text('resolved\n'); self.git('add','conflict.txt')
+        tree=self.git('write-tree'); digest=index_tree_digest(self.repo)
+        request={'profile':'resolved_candidate','mode':'workflow','source_exit':'resolved_reconciliation_passed','task_ref':self.task_ref,'phase2_commit_anchor':phase2,'branch':'feature','selected_base_ref':new,'old_base_head':self.new,'new_base_head':new,'merge_head':new,'stage0_tree':tree,'index_tree_sha256':digest,'parent_order':[phase2,new],'commit_message':'chore(base): record resolved reconciliation','resume_target':'branch_review'}
+        return request
+    def test_resolved_candidate_commits_once_and_recovers_same_commit(self):
+        request=self.resolved_merge(); path=self.write('resolved-input.json',request)
+        first=execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(path)])
+        self.assertEqual('committed',first['status']); commit=first['reconciled_task_head']
+        self.assertEqual(request['parent_order'],self.git('show','-s','--format=%P',commit).split())
+        second=execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(path)])
+        self.assertEqual('recovered',second['status']); self.assertEqual(commit,second['reconciled_task_head'])
+        result_path=self.write('resolved-result.json',second)
+        authoring_path=self.write('resolved-review-authoring.json',{'profile':'branch_review','mode':'workflow','base_ref':request['selected_base_ref'],'review_intent':'initial_review'})
+        import project
+        output=project.run(PACKAGE,{'id':'project-resolved-full-review'},['--root',str(self.repo),'--input',str(path),'--result',str(result_path),'--authoring',str(authoring_path)])
+        self.assertEqual({'profile':'branch_review','mode':'workflow','task_ref':self.task_ref,'base_ref':request['selected_base_ref'],'branch_review_commit':commit,'review_intent':'initial_review'},output)
+
+    def test_resolved_candidate_accepts_task_head_tree_after_conflict_resolution(self):
+        (self.repo/'base.txt').write_text('new\n')
+        (self.repo/'conflict.txt').write_text('task\n')
+        self.git('add','base.txt','conflict.txt'); self.git('commit','-qm','task conflict')
+        phase2=self.git('rev-parse','HEAD')
+        self.git('switch','main')
+        (self.repo/'conflict.txt').write_text('base\n')
+        self.git('add','conflict.txt'); self.git('commit','-qm','base conflict')
+        new=self.git('rev-parse','HEAD')
+        self.git('switch','feature')
+        merge=subprocess.run(['git','merge','--no-commit','--no-ff',new],cwd=self.repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        self.assertNotEqual(0,merge.returncode)
+        self.git('checkout','--ours','--','conflict.txt'); self.git('add','conflict.txt')
+        tree=self.git('write-tree'); digest=index_tree_digest(self.repo)
+        self.assertEqual(self.git('show','-s','--format=%T',phase2),tree)
+        self.assertEqual('',self.git('diff','--cached'))
+        request={'profile':'resolved_candidate','mode':'workflow','source_exit':'resolved_reconciliation_passed','task_ref':self.task_ref,'phase2_commit_anchor':phase2,'branch':'feature','selected_base_ref':new,'old_base_head':self.new,'new_base_head':new,'merge_head':new,'stage0_tree':tree,'index_tree_sha256':digest,'parent_order':[phase2,new],'commit_message':'chore(base): record resolved reconciliation','resume_target':'branch_review'}
+        path=self.write('task-head-tree-resolved-input.json',request)
+
+        first=execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(path)])
+        commit=first['reconciled_task_head']
+        self.assertEqual('committed',first['status'])
+        self.assertEqual([phase2,new],self.git('show','-s','--format=%P',commit).split())
+        self.assertEqual(tree,self.git('show','-s','--format=%T',commit))
+        self.assertEqual('',self.git('status','--short'))
+
+        second=execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(path)])
+        self.assertEqual('recovered',second['status'])
+        self.assertEqual(commit,second['reconciled_task_head'])
+
+    def test_resolved_candidate_rejects_unresolved_unstaged_untracked_and_other_sequencer(self):
+        cases=('unresolved','unstaged','untracked','sequencer')
+        for case in cases:
+            with self.subTest(case=case):
+                if case!='unresolved':
+                    request=self.resolved_merge()
+                else:
+                    request=self.resolved_merge(); self.git('reset','conflict.txt')
+                if case=='unstaged': (self.repo/'conflict.txt').write_text('unstaged\n')
+                if case=='untracked': (self.repo/'extra.txt').write_text('extra\n')
+                if case=='sequencer':
+                    path=Path(self.git('rev-parse','--git-path','sequencer')); path=path if path.is_absolute() else self.repo/path; path.mkdir(parents=True)
+                with self.assertRaises(CommandError): execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(self.write(case+'-resolved.json',request))])
+                self.tmp.cleanup(); self.setUp()
     def test_reconciliation_stale_dirty_and_candidate_mismatch_fail_without_commit(self):
         candidate_tree=self.candidate_tree(); base={'task_ref':self.task_ref,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'branch_review_commit':self.head,'candidate_tree_sha256':candidate_tree,'commit_message':'chore(base): reconcile reviewed task'}
         cases=[('stale-head',{**base,'prior_task_head':self.old},None),('candidate',{**base,'candidate_tree_sha256':'f'*64},None),('dirty',base,lambda:(self.repo/'dirty.txt').write_text('dirty\n'))]

@@ -100,7 +100,8 @@ Workflow marketplace 只安装 global .trellis/workflow.md；完整 Guru Team ex
 installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed projection，
 不能反向成为语义来源。
 
-当前 registry 激活 23 Skills / 100 package exits；其中业务 global workflow closure
+当前 registry 激活 26 Skills / 114 package exits；其中三个 Delivery packages 在 #434
+cutover 前保持 `deferred`，业务 global workflow closure
 为 22 个 invokes / 98 个 exits / 59 个 total targets。下列 22 个业务 active ids 参与
 global workflow：
 
@@ -1200,7 +1201,8 @@ label、exit code 与 bounded credential-safe tail；无法解析时显式记录
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的二十三个 packages 已维护 canonical corpora 并覆盖全部 100 package exits/profile；六个 Intake
+中的二十六个 packages 已维护 canonical corpora；三个 Delivery packages 在 #434 cutover 前保持
+`deferred`，不进入 production workflow mandatory invoke/exit 图；六个 Intake
 packages 的 23-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台

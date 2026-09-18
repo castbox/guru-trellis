@@ -60,6 +60,9 @@ Public input schema 2.0 is a minimal route DTO:
 - `finding_fix_rerun` carries only the finding references whose fixes require a
   complete current-scope rerun;
 - `planning_reentry` identifies a refreshed planning route.
+- `resolved_reconciliation` identifies a conflict-resolved merge tree that has
+  returned from implementation and must pass fresh Phase 2 before Reconcile may
+  create the local merge commit.
 
 The caller does not submit semantic conclusions, findings, raw evidence, an AI
 gate, or an exit. Eval cases likewise choose a staged semantic case outside the
@@ -133,6 +136,10 @@ private result or public DTO.
    exit unless a real supported consumer remains, and non-server compatibility
    added, widened, or extended without concrete current-dialogue approval is a
    finding. Explain growth by asset category instead of a numeric ratio.
+   Independently bind the approved Delivery slice, remaining work, observable
+   independent-delivery conditions, and validation boundary. Remaining work is
+   not a current omission, while any defect or false claim inside the current
+   slice remains a finding.
 5. After a finding fix, perform one current complete semantic round. Do not
    persist each worker round or require historical HEAD equality.
 
@@ -231,6 +238,12 @@ planning routes project only their direct consumer references.
 - `passed`: all nine dimensions pass with no open finding or blocking
   unverified item, and the Phase 2 Architecture result and mandatory project
   checks are current and passing.
+- An exact conflict-resolved tree records the private
+  `resolved_reconciliation_passed` result after the same semantic bar passes.
+  It is not an external exit. The package-local deterministic
+  `project-resolved-reconciliation` command checks that private result and
+  emits the target-owned `resolved_candidate` input directly; it never enters
+  ordinary Task Commit or adds a workflow marker.
 - `implementation_required`: A current-scope finding returns to implementation.
 - `planning_stale`: a current scope or authority change returns to planning.
 - `blocked`: a concrete evidence or dependency gap prevents a reliable result.

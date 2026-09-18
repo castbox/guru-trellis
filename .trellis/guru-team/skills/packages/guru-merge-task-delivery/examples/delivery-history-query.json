@@ -1,0 +1,6 @@
+{
+  "schema_version": "1.0",
+  "task_identity": "435-active-task-delivery-loop",
+  "repo_ref": "castbox/guru-trellis",
+  "base_ref": "main"
+}

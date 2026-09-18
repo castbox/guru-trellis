@@ -2,9 +2,9 @@
 
 以下事实只绑定 current source/release evidence，不推断未来能力。
 
-当前图及 #419 增量以 `ARCH-CUR-031` 为准；current release-facing 四轴继承
+当前图及 #435 增量以 `ARCH-CUR-032` 为准；current release-facing 四轴继承
 `ARCH-CUR-029`。保留条目中带旧 Issue/版本身份的计数和验证只描述其历史范围，
-不覆盖 `.54` 的 current identity，也不充当本次重新执行的验证。
+不覆盖 `.55` 的 current identity，也不充当本次重新执行的验证。
 
 - `ARCH-CUR-001`（`code_recovered`）：reviewed #332 original-entry correction contribution + inherited `.44` authority 包含 23 个 active Skill packages、97 个 external exits 与 77 个 commands；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD；registry 统一指向 interface/route/platform，22 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
 - `ARCH-CUR-002`（`code_recovered`）：global workflow 实现四 Phase，canonical package 位于 `trellis/**`，dogfood/installed 位于 `.trellis/**`，平台投影覆盖 Shared/Codex/Claude/Cursor。
@@ -99,9 +99,9 @@
   手动结果不取得 Guru lifecycle 完成状态。此能力不新增 Skill、exit、owner 或恢复状态。
   需求/设计/测试承接为 `R408-01..08 -> D408-01..05 -> T408-01..08`，证据边界见 `EVD-027`。
 
-当前 Architecture knowledge identity 为 `.54`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
+当前 Architecture knowledge identity 为 `.55`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
 `0.6.17`，framework source/CI 由 `ARCH-CUR-028` 与 canonical source record 绑定，package manager 为
-`pnpm@10.32.1`。`.53` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
+`pnpm@10.32.1`。`.54` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。
 
@@ -110,3 +110,5 @@ push、PR、merge、tag、Release 或 Issue closure。
 - `ARCH-CUR-030`（`source_confirmed` + `reviewed`）：#418 以 `target_native` 在原 Merge、Branch Review、Publication、Finalizer 内增加四个只读 profiles 和三个 success exits，当前图为 23 Skills / 100 exits / 78 commands，business workflow 为 22 invokes / 98 exits。Finalizer 原 executor 独占同一 task 双端映射的归档 locator 收敛；已知 Merge 错误从发生点保留脱敏诊断，正常 checkpoint 退休不强制复审。只读链区分原 H、当前 A、复审 base B 与 PR payload snapshot；Publication 重新判断现有 bytes，Finalizer 验证历史连续性后返回原 Merge handoff，不重复归档或发布。普通 aggregate 4.0/gate 7.0 合同保留，aggregate 5.0 加入的 archived review 使用独立 `archived-1.0` gate。`ADR-010` 与 `ARCH-INT-018` 定义边界，`EVD-028` 只提供提升前证据；本条不证明 post-promotion gate、native 归档语义链、原业务实例或 Release 完成。
 
 - `ARCH-CUR-031`（`source_confirmed` + `reviewed`）：#419 以 `target_native` 在 Guru canonical workflow 建立唯一 active-task continuation authority。Adjacent public DTO 直接进入唯一 consumer；deterministic output loss 回原 producer正式恢复，semantic output loss fresh重跑原owner。Phase 1 activation使用exact-pair-first `initial|recovery`；Phase 2、Task Commit、Branch Review、Publication继续复用既有public contracts。upstream merge candidate `43fffc170927c85d9f7fc106cc5a059e80d4530b` / CI `35190729418` 是 current fixed Fork source，独占 extractor与thin entries；Guru不patch upstream-owned paths。current graph为23 Skills / 100 exits / 79 commands。`ADR-011`、`ARCH-DOM-016`、`ARCH-INT-019`和`EVD-029`定义边界；#410独占Release Gate matrix。
+
+- `ARCH-CUR-032`（`source_confirmed` + `reviewed`）：#435 以 `target_native` 增加 `guru-review-task-delivery`、`guru-publish-task-delivery` 与 `guru-merge-task-delivery` 三个 active/deferred semantic packages，并窄化演进 Planning/Check/Task Commit/Branch Review/Reconcile 合同。每次 Delivery 以受控 merge-commit trailer、GitHub PR/merge identity、repository/base 与 parents 重建跨分支事实，merge 后 task 仍 active；#405 equal-head recovery 归 Publish owner，#407 resolved-tree commit 归 Reconcile owner。active registry 为 26 Skills / 114 package exits / 96 commands，production workflow 保持 22 mandatory invokes / 98 exits。`ADR-012`、`ARCH-DOM-017`、`ARCH-INT-020`、`ARCH-GAP-009`、`ARCH-GOV-011` 与 `EVD-030` 定义边界；#434 独占 production graph 激活，#436 独占 Completion/Closure/Finish/Cleanup/Reactivate，Release matrix 未验证。

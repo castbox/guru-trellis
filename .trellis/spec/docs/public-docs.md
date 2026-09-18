@@ -44,9 +44,9 @@ one installation use the same immutable release tag; an unreleased reviewed
 checkout is identified as such and never described as tag-pinned release
 provenance. Unpinned or branch sources remain mutable latest/canary inputs.
 
-Current knowledge authority is `current-main-0.6.17-guru.54`, inheriting
-immutable `.52`; it is not a product release axis. Read the current
-`R418-01..07`, `D418-01..06`, and `T418-01..14` delta through the three layer
+Current knowledge authority is `current-main-0.6.17-guru.55`, inheriting
+immutable `.54`; it is not a product release axis. Read the current
+`R435-01..08`, `D435-01..09`, and `T435-01..45` delta through the three layer
 READMEs. The inherited R410 release axes, R408 source/session boundary and older pins remain
 historical authority. Do not rewrite history or claim post-promotion checks,
 remote mutation, tag, GitHub Release, or Issue closure from this knowledge
@@ -472,12 +472,12 @@ serialization and terminal paths consume the owner material and remove empty
 owner directories. No Discovery artifact locator or supersession history is a
 public or durable contract.
 
-Public READMEs describe twenty-three active Skills and 100 external exits, identify
+Public READMEs describe twenty-six active Skills and 114 external exits, identify
 `guru-review-branch` as the Phase 3.5 semantic owner and
 `guru-review-task-publication` as the Phase 3.6 semantic owner, and show contract
 discovery, public wrapper, eval, fresh install, update and reapply commands.
 They show only minimal `exit_id` DTOs and explain that review artifacts remain
-private.
+private. The three Delivery packages remain workflow-deferred until #434.
 
 They also state that Branch Review `passed` points to active
 `guru-review-task-publication` through the target-owned authoring seed. The
@@ -519,9 +519,11 @@ owner-private transaction, derives current finish-summary schema 2 once, keeps
 schema 1 history readable, and rejects legacy Publication/Finalizer 3.0 shapes
 without fallback.
 
-README package closure numbers are twenty-three active Skills and 100 external exits;
+README package closure numbers are twenty-six active Skills and 114 external exits;
 business workflow markers remain 22 invokes, 98 exits, 35 workflow targets, and
-24 stop targets.
+24 stop targets. The three Delivery packages remain workflow-deferred until #434;
+#436 owns Completion, Closure, Finish, Cleanup, and Reactivate, and the complete
+Release matrix remains unverified.
 `production-current-v4` owns the current planning/check/commit/qualification
 contract; the live Intake contract remains six Skills/23 exits.
 
@@ -569,7 +571,7 @@ readiness, recovery route, or semantic pass. The archived profile validates
 current review and archive continuity without entering a mutation transaction;
 it returns only the existing `ready_for_merge|blocked` exits.
 
-The READMEs describe the current package graph as twenty-three active Skills and 100
+The READMEs describe the current package graph as twenty-six active Skills and 114
 external exits with the Interface-declared target-owned authoring handoffs. The integrated business
 workflow is 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. The three `guru-finish-work`
 entries route Publication -> Finalizer -> Merge only. Publication

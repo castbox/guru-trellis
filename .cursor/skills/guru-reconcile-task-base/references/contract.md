@@ -117,6 +117,29 @@ selected exit, minimal consumer fields, and local digest. It is deleted after a
 successful same-owner public invocation; stale state is removed before a fresh
 review rather than chained.
 
+## Conflict-Resolved Candidate
+
+The `resolved_candidate` profile is entered only from
+`guru-check-task:resolved_reconciliation_passed`. Its public input binds the
+fresh Phase 2 commit anchor, active `MERGE_HEAD`, selected new base, stage-0
+tree object, index-tree digest, exact parent order, branch, and commit message.
+It never consumes the ordinary Task Commit path.
+
+`execute-resolved-base-reconciliation` accepts only the exact branch-bound task
+worktree with `HEAD == phase2_commit_anchor`, one `MERGE_HEAD == new_base_head`,
+zero unresolved entries, zero unstaged or untracked paths, and no other Git
+sequencer. The stage-0 tree and index digest must equal the reviewed input
+before one local merge commit is created. It performs no push or remote
+mutation.
+
+If stdout is lost after that commit, the same request may recover only when
+current `HEAD` has the exact reviewed parents, tree, and message in a clean
+terminal Git state. Recovery returns the existing commit and never creates a
+second commit. `project-resolved-full-review` combines that checked result with
+explicit Branch Review authoring and emits the complete existing
+`branch_review` input. This marker-free deterministic projection is not a
+Reconcile external exit; bounded base continuity is not used for this path.
+
 ## Exits
 
 - `reconciled`: the workflow router receives task/current-base identity and the

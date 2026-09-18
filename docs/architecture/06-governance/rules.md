@@ -10,5 +10,6 @@
 - `ARCH-GOV-008`：普通 task 只写 task-owned contribution；shared current 仅由 Architecture owner 在 independent committed-diff review 后按 expected current identity 串行 promotion。live current 推进使旧 task 返回 `sync_required`，promotion diff 必须重新通过 Phase 2、task commit 与独立 Branch Review。
 - `ARCH-GOV-009`：Issue reference 与 closure intent 由 Publication 唯一语义判断；Finalizer保留current push/PR/archive/Ready/handoff/recovery但不重判closure，GitHub按进入默认分支的closing keyword执行关闭。Merge 保留原四个操作/恢复出口与独立 readiness/expected-head/live result 验证，并增加只读 `review_refresh_required`，完整出口集合以 current Interface 为准。新增只读复审不改变任何关闭责任。no-Issue不制造Issue identity，reference-only与non-default-base路径绑定current authority，其它owner不得补偿调用Issue close API。
 - `ARCH-GOV-010`：active-task continuation先消费current adjacent DTO；output丢失时回最近合法原owner。任何status、Git shape、旧摘要、旧确认或retired checkpoint都不能重建semantic pass。确认仅存在于当前对话，新的副作用或authority变化必须重新展示。
+- `ARCH-GOV-011`：一个active task可以产生多个独立Delivery；每次Delivery只使用`Refs`并在merge后保持task active。`delivered`唯一交给#436 Completion，不得表达或触发task completion、Issue closure、archive、Finish、Cleanup或Reactivate。#435只建立additive packages，#434之前不得形成第二个active production graph或兼容adapter。
 
 完整项目 change contract 与 project-check descriptor 见 [`change-contract.md`](./change-contract.md)。
