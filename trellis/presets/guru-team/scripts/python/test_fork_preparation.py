@@ -14,6 +14,19 @@ ROOT = Path(__file__).resolve().parents[5]
 
 
 class ForkPreparationTests(unittest.TestCase):
+    def test_release_readmes_match_canonical_source_identity(self):
+        lock = json.loads((ROOT / "trellis/presets/guru-team/source/trellis-source.json").read_text())
+        for relative_path in (
+            "README.md",
+            "trellis/workflows/guru-team/README.md",
+            "trellis/presets/guru-team/README.md",
+        ):
+            with self.subTest(path=relative_path):
+                content = (ROOT / relative_path).read_text()
+                self.assertIn(lock["commit"], content)
+                self.assertIn(str(lock["ci_run_id"]), content)
+                self.assertNotIn("34838784963", content)
+
     def test_readme_stops_on_each_preparation_failure(self):
         snippet = (ROOT / "README.md").read_text().split("```bash\n", 1)[1].split("```", 1)[0]
         lock = json.loads((ROOT / "trellis/presets/guru-team/source/trellis-source.json").read_text())
@@ -80,6 +93,12 @@ exit 0
             lock_path = repo / "trellis/presets/guru-team/source/trellis-source.json"
             lock = json.loads(lock_path.read_text())
             lock["commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=fork, text=True).strip()
+            lock["parents"] = subprocess.check_output(
+                ["git", "show", "-s", "--format=%P", "HEAD"], cwd=fork, text=True
+            ).strip().split()
+            lock["tree"] = subprocess.check_output(
+                ["git", "rev-parse", "HEAD^{tree}"], cwd=fork, text=True
+            ).strip()
             lock_path.write_text(json.dumps(lock))
             # A normal checkout/lock advance left the prior successful build.
             with self.assertRaisesRegex(matrix.MatrixError, "stale fork build origin"):
