@@ -445,11 +445,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-18T14:18:35Z",
+  "installed_at": "2026-09-18T14:58:14Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "b2bfc267307c34f469417e75b78615aba73a249d",
-    "commit": "b2bfc267307c34f469417e75b78615aba73a249d",
+    "ref": "ae8851bd0f4bed55a70645027bdad3f5d1f2351b",
+    "commit": "ae8851bd0f4bed55a70645027bdad3f5d1f2351b",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -629,7 +629,7 @@
       {
         "id": "guru-reconcile-task-base",
         "interface_sha256": "ec1496b32a107dfcc2548a840fc5b32cf3658d27950ef590b0acd53434573fba",
-        "tree_sha256": "cb72da553f0a5d8e1ee12a77de582e4cf306ae21a484f9be1b94b9cfa5b6d639"
+        "tree_sha256": "e6ae4b1fea581c49f9f171d4106171e27809280962ff81dc51fcd73d0d48c494"
       },
       {
         "id": "guru-review-contract-wording",
@@ -674,7 +674,7 @@
       {
         "id": "guru-publish-task-delivery",
         "interface_sha256": "693a9dcd99eede3d051b9d40564bcc9ef3351fdbad96777bfcedab19974a0702",
-        "tree_sha256": "85a3097bb9dfdaf2ce0cbe5494606c755eed582ca0042ee119c07a0c90e3e869"
+        "tree_sha256": "72902cf6f7d10bfdfd13beb475c24b5dc42765c249a2e904e0c769fdebd4cc05"
       },
       {
         "id": "guru-merge-task-pr",
@@ -4781,7 +4781,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/execute.py",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/execute.py",
-        "sha256": "090c87d96d0eae5613bc2f7f334c1d28407156bd30a93847afcee2051cce7691",
+        "sha256": "5bb03ac8e436d1ddf339576dfb440824d6641e2fd53bef90250410114c4a1c68",
         "executable": false,
         "action": "unchanged"
       },
@@ -5047,7 +5047,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/tests/test_runtime.py",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_runtime.py",
-        "sha256": "550247024b51a321c8b79a0d73bd4d1ab088ea6316eeed2b08388dd7ed46b1d9",
+        "sha256": "c1baa1445b32c24debbdd02576286a46447834b3a25ed2765015e074c8dff439",
         "executable": false,
         "action": "unchanged"
       },
@@ -8715,7 +8715,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/owner.py",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/owner.py",
-        "sha256": "1b19e8f9bb832b38e3ed3fe548d0002ef4a971b477f6899ccca10d25629a32ce",
+        "sha256": "1d17fbac846128731a726d19a32352e2998a515a5d8d6edef1e1ca924add500a",
         "executable": false,
         "action": "unchanged"
       },
@@ -8869,7 +8869,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/tests/test_transaction.py",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/tests/test_transaction.py",
-        "sha256": "1a8402b1b079c565f42a2fef5a19550f36f84456ef35c8a3cb78bc1be45519b6",
+        "sha256": "230b3854c23e85bfbc21a508618654d9e583dbeb7a7177438cc32ed6b15ffd5b",
         "executable": false,
         "action": "unchanged"
       },

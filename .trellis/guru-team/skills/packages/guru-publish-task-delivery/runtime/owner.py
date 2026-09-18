@@ -295,7 +295,12 @@ def plan_from_input(root: Path, public_input: dict[str, Any]) -> dict[str, Any]:
     else:
         source = public_input
         if existing is not None:
-            validate_transaction(existing)
+            try:
+                validate_transaction(existing)
+            except WorkflowError as exc:
+                if exc.code == "private_state_invalid":
+                    exc.payload["retire_transaction_ref"] = ref
+                raise
             if existing.get("input") != source:
                 raise WorkflowError("Publication transaction input drifted.", code="private_state_invalid")
 
@@ -591,6 +596,11 @@ def invoke(root: Path, input_path: str, review_path: str, confirmed: str | None)
         context = plan_from_input(root, public_input)
     except WorkflowError as exc:
         if exc.code in {"private_state_invalid", "private_state_missing"}:
+            if (
+                public_input["profile"] == "review_ready"
+                and exc.payload.get("retire_transaction_ref") == transaction_ref(public_input)
+            ):
+                transaction_path(root, exc.payload["retire_transaction_ref"]).unlink(missing_ok=True)
             return {"exit_id": "review_stale", "task_ref": public_input["task_ref"], "stale_reason": exc.code}
         if exc.code in REPREPARE_REQUIRED_CODES:
             return {"exit_id": "reprepare_required", "task_ref": public_input["task_ref"], "reason_code": exc.code}

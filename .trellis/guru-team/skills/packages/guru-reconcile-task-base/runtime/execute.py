@@ -156,8 +156,6 @@ def resolved_reconcile(package_root: Path, argv: list[str]) -> dict:
         untracked=git(repo,"ls-files","--others","--exclude-standard")
         if untracked:
             raise CommandError("stale_identity","worktree","Remove untracked files before reconciliation.",3)
-        if subprocess.run(["git","diff","--cached","--quiet"],cwd=repo).returncode == 0:
-            raise CommandError("stale_identity","repository.index","The resolved merge must contain a staged candidate.",3)
         tree=git(repo,"write-tree")
         if tree != request["stage0_tree"] or index_tree_digest(repo) != request["index_tree_sha256"]:
             raise CommandError("stale_identity","stage0_tree","Use the exact Phase 2 reviewed stage-0 tree and index digest.",3)

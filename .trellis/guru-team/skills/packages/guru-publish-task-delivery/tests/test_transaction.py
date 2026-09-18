@@ -205,6 +205,57 @@ class TransactionTests(unittest.TestCase):
             {"exit_id": "review_stale", "task_ref": TASK, "stale_reason": "private_state_invalid"},
         )
 
+    def test_invalid_current_transaction_is_retired_before_fresh_review_reconstructs(self) -> None:
+        review = {
+            "schema_version": "1.0",
+            "skill_id": OWNER.SKILL_ID,
+            "review": {"status": "passed", "summary": "Fresh publication plan is reviewed."},
+            "route": {"typed_exit": "ready_for_merge"},
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            input_path = root / "review-ready.json"
+            review_path = root / "review.json"
+            input_path.write_text(json.dumps(source_input()))
+            review_path.write_text(json.dumps(review))
+            transaction_file = OWNER.transaction_path(root, OWNER.transaction_ref(source_input()))
+            invalid = transaction()
+            invalid["transaction_ref"] = OWNER.transaction_ref(source_input())
+            invalid["transaction_sha256"] = "0" * 64
+            OWNER.write_json(transaction_file, invalid)
+
+            with mock.patch.object(OWNER, "_run") as run:
+                stale = OWNER.invoke(root, str(input_path), str(review_path), None)
+
+            self.assertEqual(
+                stale,
+                {"exit_id": "review_stale", "task_ref": TASK, "stale_reason": "private_state_invalid"},
+            )
+            self.assertFalse(transaction_file.exists())
+            run.assert_not_called()
+
+            with mock.patch.object(
+                OWNER,
+                "task_context",
+                return_value=(root / TASK, {"branch": "codex/435", "base_branch": "main"}),
+            ), mock.patch.object(
+                OWNER, "git_text", return_value=HEAD
+            ), mock.patch.object(
+                OWNER, "repository_identity", return_value="castbox/guru-trellis"
+            ), mock.patch.object(
+                OWNER, "remote_head", return_value=None
+            ), mock.patch.object(
+                OWNER, "list_open_prs", return_value=[]
+            ), mock.patch.object(
+                OWNER, "execute", return_value={"exit_id": "reconstructed"}
+            ) as execute:
+                preview = OWNER.plan_from_input(root, source_input())
+                output = OWNER.invoke(root, str(input_path), str(review_path), preview["confirmation_identity"])
+
+            self.assertEqual(output, {"exit_id": "reconstructed"})
+            self.assertEqual(preview["transaction_stage"], "push_content")
+            execute.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()

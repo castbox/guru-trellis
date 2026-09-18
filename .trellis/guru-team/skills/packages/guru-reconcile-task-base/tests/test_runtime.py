@@ -337,6 +337,37 @@ class RuntimeTest(unittest.TestCase):
         import project
         output=project.run(PACKAGE,{'id':'project-resolved-full-review'},['--root',str(self.repo),'--input',str(path),'--result',str(result_path),'--authoring',str(authoring_path)])
         self.assertEqual({'profile':'branch_review','mode':'workflow','task_ref':self.task_ref,'base_ref':request['selected_base_ref'],'branch_review_commit':commit,'review_intent':'initial_review'},output)
+
+    def test_resolved_candidate_accepts_task_head_tree_after_conflict_resolution(self):
+        (self.repo/'base.txt').write_text('new\n')
+        (self.repo/'conflict.txt').write_text('task\n')
+        self.git('add','base.txt','conflict.txt'); self.git('commit','-qm','task conflict')
+        phase2=self.git('rev-parse','HEAD')
+        self.git('switch','main')
+        (self.repo/'conflict.txt').write_text('base\n')
+        self.git('add','conflict.txt'); self.git('commit','-qm','base conflict')
+        new=self.git('rev-parse','HEAD')
+        self.git('switch','feature')
+        merge=subprocess.run(['git','merge','--no-commit','--no-ff',new],cwd=self.repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        self.assertNotEqual(0,merge.returncode)
+        self.git('checkout','--ours','--','conflict.txt'); self.git('add','conflict.txt')
+        tree=self.git('write-tree'); digest=index_tree_digest(self.repo)
+        self.assertEqual(self.git('show','-s','--format=%T',phase2),tree)
+        self.assertEqual('',self.git('diff','--cached'))
+        request={'profile':'resolved_candidate','mode':'workflow','source_exit':'resolved_reconciliation_passed','task_ref':self.task_ref,'phase2_commit_anchor':phase2,'branch':'feature','selected_base_ref':new,'old_base_head':self.new,'new_base_head':new,'merge_head':new,'stage0_tree':tree,'index_tree_sha256':digest,'parent_order':[phase2,new],'commit_message':'chore(base): record resolved reconciliation','resume_target':'branch_review'}
+        path=self.write('task-head-tree-resolved-input.json',request)
+
+        first=execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(path)])
+        commit=first['reconciled_task_head']
+        self.assertEqual('committed',first['status'])
+        self.assertEqual([phase2,new],self.git('show','-s','--format=%P',commit).split())
+        self.assertEqual(tree,self.git('show','-s','--format=%T',commit))
+        self.assertEqual('',self.git('status','--short'))
+
+        second=execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(path)])
+        self.assertEqual('recovered',second['status'])
+        self.assertEqual(commit,second['reconciled_task_head'])
+
     def test_resolved_candidate_rejects_unresolved_unstaged_untracked_and_other_sequencer(self):
         cases=('unresolved','unstaged','untracked','sequencer')
         for case in cases:
