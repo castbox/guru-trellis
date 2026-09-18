@@ -1,0 +1,143 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-18T00:20:20Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-18-426-release-source-mapping",
+    "title": "#426 修正 v0.6.17-guru.1 release-facing Fork source 映射",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-18-426-release-source-mapping",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/426-release-source-mapping",
+    "commits": [
+      "c3e1736907255d18f5a1f45f6b66cc964b8eb379",
+      "9bbad19b994c100b4d31dd5cc9d3285da63975bd"
+    ],
+    "changed_paths": [
+      ".trellis/tasks/09-18-426-release-source-mapping/check.jsonl",
+      ".trellis/tasks/09-18-426-release-source-mapping/design.md",
+      ".trellis/tasks/09-18-426-release-source-mapping/implement.jsonl",
+      ".trellis/tasks/09-18-426-release-source-mapping/implement.md",
+      ".trellis/tasks/09-18-426-release-source-mapping/prd.md",
+      ".trellis/tasks/09-18-426-release-source-mapping/task.json",
+      ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/design.md",
+      ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/implement.md",
+      ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/prd.md",
+      ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/task.json",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/python/test_fork_preparation.py",
+      "trellis/workflows/guru-team/README.md"
+    ]
+  },
+  "github": {
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/429"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#426 修正 v0.6.17-guru.1 release-facing Fork source 映射",
+    "outcome": "将三个 release-facing README 的当前 Fork source commit 更新为 `43fffc170927c85d9f7fc106cc5a059e80d4530b`，Nightly CI 更新为 `35190729418`。",
+    "changed_behavior": [
+      "将三个 release-facing README 的当前 Fork source commit 更新为 `43fffc170927c85d9f7fc106cc5a059e80d4530b`，Nightly CI 更新为 `35190729418`。",
+      "增加三份 README 与 canonical source lock 的映射回归断言。",
+      "修正 stale-build fixture 的 commit、ordered parents 与 tree，使测试继续验证旧 build marker 拒绝路径。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-18-426-release-source-mapping/design.md",
+          ".trellis/tasks/09-18-426-release-source-mapping/implement.md",
+          ".trellis/tasks/09-18-426-release-source-mapping/prd.md",
+          ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/design.md",
+          ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/implement.md",
+          ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/prd.md",
+          "README.md"
+        ],
+        "change": "将三个 release-facing README 的当前 Fork source commit 更新为 `43fffc170927c85d9f7fc106cc5a059e80d4530b`，Nightly CI 更新为 `35190729418`。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md"
+        ],
+        "change": "将三个 release-facing README 的当前 Fork source commit 更新为 `43fffc170927c85d9f7fc106cc5a059e80d4530b`，Nightly CI 更新为 `35190729418`。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/test_fork_preparation.py"
+        ],
+        "change": "将三个 release-facing README 的当前 Fork source commit 更新为 `43fffc170927c85d9f7fc106cc5a059e80d4530b`，Nightly CI 更新为 `35190729418`。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-18-426-release-source-mapping/check.jsonl",
+          ".trellis/tasks/09-18-426-release-source-mapping/implement.jsonl",
+          ".trellis/tasks/09-18-426-release-source-mapping/task.json",
+          ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/task.json"
+        ],
+        "change": "将三个 release-facing README 的当前 Fork source commit 更新为 `43fffc170927c85d9f7fc106cc5a059e80d4530b`，Nightly CI 更新为 `35190729418`。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "change": "将三个 release-facing README 的当前 Fork source commit 更新为 `43fffc170927c85d9f7fc106cc5a059e80d4530b`，Nightly CI 更新为 `35190729418`。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [],
+      "pr_refs": [
+        "PR #429"
+      ],
+      "branches": [
+        "fix/426-release-source-mapping"
+      ],
+      "paths": [
+        ".trellis/tasks/09-18-426-release-source-mapping/check.jsonl",
+        ".trellis/tasks/09-18-426-release-source-mapping/design.md",
+        ".trellis/tasks/09-18-426-release-source-mapping/implement.jsonl",
+        ".trellis/tasks/09-18-426-release-source-mapping/implement.md",
+        ".trellis/tasks/09-18-426-release-source-mapping/prd.md",
+        ".trellis/tasks/09-18-426-release-source-mapping/task.json",
+        ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/design.md",
+        ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/implement.md",
+        ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/prd.md",
+        ".trellis/tasks/archive/2026-09/09-18-426-release-source-mapping/task.json",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/python/test_fork_preparation.py",
+        "trellis/workflows/guru-team/README.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#426 修正 v0.6.17-guru.1 release-facing Fork source 映射",
+        "将三个 release-facing README 的当前 Fork source commit 更新为 `43fffc",
+        "完成 check.jsonl 相关变更"
+      ]
+    },
+    "retrieval_text": "#426 修正 v0.6.17-guru.1 release-facing Fork source 映射\n将三个 release-facing README 的当前 Fork source commit 更新为 `43fffc170927c85d9f7fc106cc5a059e80d4530b`，Nightly CI 更新为 `35190729418`。\n增加三份 README 与 canonical source lock 的映射回归断言。\n修正 stale-build fixture 的 commit、ordered parents 与 tree，使测试继续验证旧 build marker 拒绝路径。\n将三个 release-facing README 的当前 Fork source commit 更新为 `43fffc\n完成 check.jsonl 相关变更"
+  }
+}
