@@ -540,6 +540,68 @@ def build_installed_extension_manifest(
     }
 
 
+def retain_previous_manifest_for_noop(
+    previous: dict[str, Any] | None,
+    candidate: dict[str, Any],
+    result: dict[str, Any],
+) -> dict[str, Any]:
+    if previous is None:
+        return candidate
+
+    mutating_actions = {
+        "installed",
+        "updated_managed",
+        "replaced_overlay",
+        "removed_managed",
+    }
+    if any(
+        result.get(key)
+        for key in (
+            "installed",
+            "updated_managed",
+            "replaced_overlays",
+            "new_copies",
+            "managed_backups",
+        )
+    ):
+        return candidate
+    for section_name in ("skill_packages", "overlays"):
+        section = result.get(section_name)
+        if not isinstance(section, dict):
+            return candidate
+        if any(section.get(key) for key in ("removals", "conflicts", "sidecars")):
+            return candidate
+        if any(
+            isinstance(item, dict) and item.get("action") in mutating_actions
+            for item in section.get("files", [])
+        ):
+            return candidate
+    for key in ("agents_principles", "codex_dispatch", "runtime_gitignore"):
+        item = result.get(key)
+        if isinstance(item, dict) and item.get("action") not in {"unchanged", "checked"}:
+            return candidate
+    language_guidance = result.get("language_guidance")
+    if isinstance(language_guidance, dict) and language_guidance.get("updated_paths"):
+        return candidate
+
+    def stable_install_state(payload: dict[str, Any]) -> dict[str, Any]:
+        stable = json.loads(json.dumps(payload))
+        stable.pop("installed_at", None)
+        stable.pop("source", None)
+        for section_name in ("skill_packages", "overlays"):
+            section = stable.get(section_name)
+            if not isinstance(section, dict):
+                continue
+            files = section.get("files")
+            if isinstance(files, list):
+                for item in files:
+                    if isinstance(item, dict):
+                        item.pop("action", None)
+        return stable
+
+    return previous if stable_install_state(candidate) == stable_install_state(previous) else candidate
+
+
 def write_installed_extension_manifest(dst: Path, payload: dict[str, Any]) -> str:
     path = dst / "extension.json"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -879,6 +941,10 @@ def copy_provenance_managed(
     if current_hash == canonical_hash:
         if stat.S_IMODE(target_stat.st_mode) != target_mode:
             target.chmod(target_mode)
+            return {
+                "action": "updated_managed", "path": relative,
+                "sha256": canonical_hash, "executable": executable,
+            }
         return {"action": "unchanged", "path": relative, "sha256": canonical_hash, "executable": executable}
     previous_hash = previous_hashes.get(relative)
     if provenance_valid and previous_hash and current_hash == previous_hash:
@@ -2448,6 +2514,11 @@ def _install_assets_in_place(
     manifest = load_extension_manifest(guru_root)
     source = source_provenance(guru_root)
     installed_manifest = build_installed_extension_manifest(manifest, source, result)
+    installed_manifest = retain_previous_manifest_for_noop(
+        previous_manifest,
+        installed_manifest,
+        result,
+    )
     write_installed_extension_manifest(dst, installed_manifest)
     rel_extension = (dst / "extension.json").relative_to(repo).as_posix()
     result["extension_manifest"] = rel_extension

@@ -211,6 +211,15 @@ official Trellis CLI version and from the marketplace index schema version in
 Normal apply records the current UTC install time. A deterministic recovery or
 fixture may set `GURU_TEAM_INSTALLED_AT` to one timezone-aware ISO-8601 value;
 the installer validates it and normalizes it to UTC before writing provenance.
+If a reapply performs no managed install, restore, update, removal, sidecar,
+configuration, or guidance mutation and reconstructs the same stable installed
+state after omitting top-level `installed_at` / `source` and per-file
+`installed` / `unchanged` action labels, it preserves the previous manifest
+bytes. Any other managed install fact or action change records the current
+timestamp and source. The raw `apply.sh`
+entrypoint and shared managed-Python resolver also disable Python bytecode
+writes for themselves and inherited validators, so a clean source/target
+checkout does not gain `__pycache__`, `.pyc`, or `.pyo` residue.
 
 The preset also normalizes known Trellis-generated English documentation
 language rules in target business repositories. It deterministically replaces

@@ -9,6 +9,7 @@ REPO_ROOT="$1"
 RUNTIME_ASSETS="$2"
 shift 2
 REMEDIATION="trellis/presets/guru-team/scripts/bash/apply.sh --repo ."
+export PYTHONDONTWRITEBYTECODE=1
 
 runtime_error() {
   local code="$1"

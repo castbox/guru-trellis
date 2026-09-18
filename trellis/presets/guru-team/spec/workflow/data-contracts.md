@@ -401,6 +401,12 @@ The installed manifest is one closed current contract:
 - Git worktree apply records the full current commit in both `source.ref` and
   `source.commit`, with `source.is_mutable_ref=false`; a later
   manifest-bearing target commit does not change this source identity;
+- an effective no-op reapply first proves the invocation performed no managed
+  install, restore, update, removal, sidecar, configuration, or guidance
+  mutation, then compares stable installed state while omitting top-level
+  `installed_at` / `source` and per-file `installed` / `unchanged` action labels.
+  Only that path preserves previous manifest bytes; any other install-fact or
+  action change writes current timestamp/source provenance;
 - `selected_platforms` records installer input and should not be inferred from
   directory presence alone.
 

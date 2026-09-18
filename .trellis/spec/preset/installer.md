@@ -323,6 +323,20 @@ record, not user configuration:
 
 - overwrite it with the current deterministic install facts instead of writing
   `.new`;
+- only when the current invocation performs no managed install, restore,
+  update, removal, sidecar, configuration, or guidance mutation and the stable
+  installed state is identical to the valid previous manifest, preserve the
+  complete previous manifest bytes. Stable-state comparison then omits
+  top-level `installed_at` and `source` plus per-file `installed` / `unchanged`
+  action labels in `skill_packages.files` and `overlays.files`; those labels
+  describe this invocation, not different installed bytes. This is an effective
+  no-op reapply: the previous provenance continues to identify the installation
+  that produced the current managed bytes, even when validation runs from a
+  later Git commit;
+- when any extension, managed asset/hash, selected platform, package, overlay,
+  removal, conflict, sidecar, configuration, guidance, restored missing file,
+  or other install fact/action changes, write the newly constructed manifest
+  with the current apply timestamp and source provenance;
 - include extension id, SemVer version, workflow template id, source repo/ref,
   target Trellis CLI, source commit when available, source tree state, selected
   platforms, and install timestamp;
@@ -335,6 +349,13 @@ A fresh target may omit this file. Once present, only the complete current
 installed-manifest schema 2.0 is accepted. Non-current schema versions,
 missing/extra top-level fields, or malformed current provenance fail closed
 before target mutation.
+
+The canonical `apply.sh` entrypoint and shared managed-Python resolver must
+disable Python bytecode writes before starting Python. The setting is inherited
+by installer validators, standalone source/installed validators, and their
+subprocesses; source and target checkouts must not gain `__pycache__`, `.pyc`,
+or `.pyo` residue. Post-run cleanup is not a substitute for this entrypoint
+property.
 
 The business Finalizer may consume this current manifest only as immutable
 extension-source provenance for its own pre-PR reprepare. It must validate a

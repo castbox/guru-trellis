@@ -1,0 +1,162 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-18T02:00:15Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-18-430-release-candidate-clean-reapply",
+    "title": "#430 修复 release candidate 幂等重投影与 bytecode residue",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-18-430-release-candidate-clean-reapply",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/430-release-candidate-clean-reapply",
+    "commits": [
+      "a07989dabea705086d044842bc4993c101d9cfce",
+      "e6dbfd7640c116621772f07ff556f41c53337312",
+      "825dd52a6989b7fda9b2d84e21e424262c8cedc4"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/runtime/resolve-python.sh",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/tasks/09-18-430-release-candidate-clean-reapply/check.jsonl",
+      ".trellis/tasks/09-18-430-release-candidate-clean-reapply/design.md",
+      ".trellis/tasks/09-18-430-release-candidate-clean-reapply/implement.jsonl",
+      ".trellis/tasks/09-18-430-release-candidate-clean-reapply/implement.md",
+      ".trellis/tasks/09-18-430-release-candidate-clean-reapply/prd.md",
+      ".trellis/tasks/09-18-430-release-candidate-clean-reapply/task.json",
+      ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/design.md",
+      ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/implement.md",
+      ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/prd.md",
+      ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/task.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/apply.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+      "trellis/skills/guru-team/runtime/resolve-python.sh"
+    ]
+  },
+  "github": {
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/431"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#430 修复 release candidate 幂等重投影与 bytecode residue",
+    "outcome": "让 no-op preset reapply 保留原 installed provenance。",
+    "changed_behavior": [
+      "让 no-op preset reapply 保留原 installed provenance。",
+      "真实 managed install、restore、content/mode update、removal、sidecar、配置或 guidance 变化继续刷新当前 provenance。",
+      "raw apply 与 managed Python resolver 禁止写入 bytecode，并补齐 detached candidate 回归。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/installer.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/tasks/09-18-430-release-candidate-clean-reapply/design.md",
+          ".trellis/tasks/09-18-430-release-candidate-clean-reapply/implement.md",
+          ".trellis/tasks/09-18-430-release-candidate-clean-reapply/prd.md",
+          ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/design.md",
+          ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/implement.md",
+          ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/prd.md"
+        ],
+        "change": "让 no-op preset reapply 保留原 installed provenance。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "让 no-op preset reapply 保留原 installed provenance。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/spec/workflow/data-contracts.md"
+        ],
+        "change": "让 no-op preset reapply 保留原 installed provenance。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/runtime/resolve-python.sh",
+          "trellis/presets/guru-team/scripts/bash/apply.sh",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/skills/guru-team/runtime/resolve-python.sh"
+        ],
+        "change": "让 no-op preset reapply 保留原 installed provenance。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-18-430-release-candidate-clean-reapply/check.jsonl",
+          ".trellis/tasks/09-18-430-release-candidate-clean-reapply/implement.jsonl",
+          ".trellis/tasks/09-18-430-release-candidate-clean-reapply/task.json",
+          ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/task.json"
+        ],
+        "change": "让 no-op preset reapply 保留原 installed provenance。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [],
+      "pr_refs": [
+        "PR #431"
+      ],
+      "branches": [
+        "fix/430-release-candidate-clean-reapply"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/runtime/resolve-python.sh",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/tasks/09-18-430-release-candidate-clean-reapply/check.jsonl",
+        ".trellis/tasks/09-18-430-release-candidate-clean-reapply/design.md",
+        ".trellis/tasks/09-18-430-release-candidate-clean-reapply/implement.jsonl",
+        ".trellis/tasks/09-18-430-release-candidate-clean-reapply/implement.md",
+        ".trellis/tasks/09-18-430-release-candidate-clean-reapply/prd.md",
+        ".trellis/tasks/09-18-430-release-candidate-clean-reapply/task.json",
+        ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/design.md",
+        ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/implement.md",
+        ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/prd.md",
+        ".trellis/tasks/archive/2026-09/09-18-430-release-candidate-clean-reapply/task.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/apply.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+        "trellis/skills/guru-team/runtime/resolve-python.sh"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#430 修复 release candidate 幂等重投影与 bytecode residue",
+        "让 no-op preset reapply 保留原 installed provenance。",
+        "完成 extension.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#430 修复 release candidate 幂等重投影与 bytecode residue\n让 no-op preset reapply 保留原 installed provenance。\n真实 managed install、restore、content/mode update、removal、sidecar、配置或 guidance 变化继续刷新当前 provenance。\nraw apply 与 managed Python resolver 禁止写入 bytecode，并补齐 detached candidate 回归。\n完成 extension.json 相关变更"
+  }
+}
