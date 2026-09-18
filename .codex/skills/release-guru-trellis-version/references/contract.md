@@ -158,9 +158,7 @@ that authorizes only that displayed action:
 | Mutation | Exclusive owner or boundary |
 | --- | --- |
 | task commit | `guru-create-task-commit` |
-| branch push | `guru-finalize-task` exact transaction boundary |
-| PR creation | `guru-finalize-task` exact transaction boundary |
-| Finalizer archive and Ready mutations | `guru-finalize-task` |
+| complete Finalizer transaction | `guru-finalize-task` exact transaction boundary |
 | preparation PR merge | `guru-merge-task-pr` |
 | annotated tag creation/push | post-merge tag boundary |
 | tag-pinned smoke | post-tag smoke boundary |
@@ -169,18 +167,24 @@ that authorizes only that displayed action:
 | branch/worktree/task cleanup | cleanup boundary |
 
 Confirmation for one row cannot authorize, pre-authorize, or be reused for any
-other row. In this repository-private release route, branch push, PR creation,
-and the Finalizer archive/Ready mutation MUST each be displayed in a separate
-confirmation request and MUST each receive its own current-dialogue answer
-immediately before that row executes. An atomic or bundled Finalizer preview or
-answer MUST NOT authorize actions from more than one table row, even when the
-underlying owner can execute them as one transaction. Keep `guru-finalize-task`
-as the unchanged semantic and mutation owner, use only its existing public I/O
-and same-owner recovery, and add no public Finalizer field, exit, consumer, or
-owner; this private orchestrator only imposes the stricter per-row interaction
-boundary before allowing the owner to continue. A failed action does not
-authorize a retry. Tag, smoke, Release, Issue closure, merge, and cleanup remain
-independently reviewable even when the same user performs them consecutively.
+other row. The complete Finalizer transaction row MUST be displayed once with
+its exact repository, branch, reviewed/publication identity, PR target and the
+fixed action set that current `guru-finalize-task` may execute: provenance
+reprepare when required, content push, Draft PR binding or creation, archive,
+archive push, and Ready transition. It MUST receive one current-dialogue answer
+immediately before the public Finalizer transaction executes. That answer
+authorizes only the displayed complete Finalizer transaction; it does not
+authorize the later preparation PR merge or any post-merge release row.
+
+Keep `guru-finalize-task` as the unchanged semantic and mutation owner, use only
+its existing public I/O, atomic Happy Path, and same-owner recovery, and add no
+public Finalizer field, exit, consumer, or owner. The repository-private release
+orchestrator MUST NOT require a pause or additional confirmation between
+Finalizer-owned push, PR binding/creation, archive, archive push, and Ready
+steps, because the current public transaction exposes no such intermediate
+boundary. A failed transaction does not authorize a retry. Tag, smoke, Release,
+Issue closure, merge, and cleanup remain independently reviewable even when the
+same user performs them consecutively.
 
 ## Fail-Closed Stops
 
