@@ -408,6 +408,24 @@ Maintainers can verify the current extension's non-interactive install path with
 ./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh
 ```
 
+For one release-scoped historical predecessor, run one independent existing
+target with an explicit immutable tag, CLI, predecessor checkout, and commit:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh \
+  --mode existing \
+  --before-tag v0.6.16-guru.1 \
+  --before-cli 0.6.16 \
+  --platform codex \
+  --predecessor-source /path/to/pinned/predecessor-trellis \
+  --predecessor-commit <exact-commit> \
+  --fork-source /path/to/pinned-candidate-trellis
+```
+
+Each predecessor requires a separate work root and invocation. This bounded
+mode proves only that exact existing-install path; it does not claim the full
+six-cell matrix or arbitrary historical-version support.
+
 That command has exactly one direct PATH Python bootstrap seed. It consumes the
 seed result through the canonical source managed runner, then routes every
 source or installed Python subprocess through the corresponding

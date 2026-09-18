@@ -1823,7 +1823,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             with mock.patch.object(matrix, "_run", side_effect=run):
                 matrix._preview_and_switch_workflow(
                     target, ("node", "trellis.js"), {}, "fixture-source",
-                    source, before, False, root,
+                    source, before / relative, False, root,
                 )
             self.assertEqual(operations, ["preview", "switch"])
             self.assertEqual(workflow.read_text(), "candidate\n")

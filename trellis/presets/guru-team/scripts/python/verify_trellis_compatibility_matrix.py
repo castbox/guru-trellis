@@ -1784,7 +1784,7 @@ def _preview_and_switch_workflow(
     env: Mapping[str, str],
     workflow_source: str,
     repo_root: Path,
-    previous_source_root: Path,
+    expected_managed_workflow: Path,
     local_sample: bool,
     work_root: Path,
 ) -> None:
@@ -1800,10 +1800,10 @@ def _preview_and_switch_workflow(
         raise MatrixError("workflow switch found an unresolved .new/.bak sidecar")
     if not workflow.is_file() or workflow.is_symlink():
         raise MatrixError("managed workflow is missing or not a regular file")
-    previous_candidate = previous_source_root / "trellis/workflows/guru-team/workflow.md"
     if (
-        not previous_candidate.is_file()
-        or workflow.read_bytes() != previous_candidate.read_bytes()
+        not expected_managed_workflow.is_file()
+        or expected_managed_workflow.is_symlink()
+        or workflow.read_bytes() != expected_managed_workflow.read_bytes()
     ):
         raise MatrixError("current workflow is not the expected managed before-candidate")
     managed_before = workflow.read_bytes()
@@ -2143,12 +2143,19 @@ def _run_installed_smokes(
     work_root: Path,
     scenario: str,
     platform: str,
+    run_cumulative_smokes: bool = True,
 ) -> dict[str, Any]:
     wrappers = target / ".trellis/guru-team/scripts/bash"
     _run(
         (str(wrappers / "check-skill-packages.sh"), "--root", str(target), "--json", "--mode", "installed"),
         log=work_root / "check-skill-packages.log",
     )
+    if not run_cumulative_smokes:
+        return {
+            "package_validator": "passed",
+            "cumulative_runtime_smokes": False,
+            "runtime_smokes": [],
+        }
     installed_profile_evals = []
     for skill_id in (
         "guru-maintain-requirements-design-test-ssot",
@@ -2313,6 +2320,8 @@ def _run_installed_smokes(
     if len(set(workspace_outcomes)) != 1:
         raise MatrixError("legacy absent/present task workspace outcomes differ")
     return {
+        "package_validator": "passed",
+        "cumulative_runtime_smokes": True,
         "installed_profiles": installed_profile_evals,
         "runtime_smokes": smoke_results,
         "legacy_workspace_outcome_sha256": workspace_outcomes[0],
@@ -2327,6 +2336,8 @@ def validate_cell(
     cli_version: str,
     source_root: Path,
     work_root: Path,
+    before_cli: str = DEFAULT_BEFORE_CLI,
+    run_cumulative_smokes: bool = True,
 ) -> dict[str, Any]:
     if platform not in PLATFORM_ROOTS or scenario not in SCENARIOS:
         raise MatrixError(f"invalid cell identity: {platform}/{scenario}")
@@ -2361,15 +2372,20 @@ def validate_cell(
     if sidecars:
         raise MatrixError(f"unresolved cell sidecars: {sidecars}")
     smokes = _run_installed_smokes(
-        target, source_root, work_root, scenario, platform
+        target,
+        source_root,
+        work_root,
+        scenario,
+        platform,
+        run_cumulative_smokes,
     )
     sidecars = _sidecars(target)
     if sidecars:
         raise MatrixError(f"installed smokes left cell sidecars: {sidecars}")
-    return {
+    result = {
         "platform": platform,
         "scenario": scenario,
-        "cli_before": DEFAULT_BEFORE_CLI if scenario == "existing" else expected_cli,
+        "cli_before": before_cli if scenario == "existing" else expected_cli,
         "cli_after": cli_version,
         "project_version": project_version,
         "extension_version": extension.get("version"),
@@ -2381,6 +2397,7 @@ def validate_cell(
         "installed_smokes": smokes,
         "status": "passed",
     }
+    return result
 
 
 def _run_cell(
@@ -2396,6 +2413,7 @@ def _run_cell(
     allow_local_sample: bool,
     fork_source: Path,
     predecessor: Mapping[str, Any] | None = None,
+    run_cumulative_smokes: bool = True,
 ) -> dict[str, Any]:
     source = validate_fork_source(repo_root, fork_source)
     if scenario == "existing" and predecessor is None:
@@ -2410,9 +2428,18 @@ def _run_cell(
     if scenario == "existing":
         source_root = cell_root / "before-source"
         _export_git_tree(repo_root, before_tag, source_root, cell_root / "before-source.tar")
+        predecessor_extension = _require_dict(
+            _load_json(source_root / "trellis/guru-team-extension.json"),
+            "predecessor extension manifest",
+        )
+        if predecessor_extension.get("target_trellis_cli") != before_cli:
+            raise MatrixError(
+                "predecessor extension target_trellis_cli does not match --before-cli"
+            )
         initial_workflow_source = f"gh:castbox/guru-trellis/trellis#{before_tag}"
     else:
         source_root = repo_root
+        predecessor_extension = None
         initial_workflow_source = workflow_source
 
     local_sample = _install_workflow(
@@ -2426,6 +2453,18 @@ def _run_cell(
         initial_cli,
         cell_root / "trellis-init.log",
     )
+    if scenario == "existing":
+        installed_workflow = target / ".trellis/workflow.md"
+        predecessor_workflow = source_root / "trellis/workflows/guru-team/workflow.md"
+        if (
+            not installed_workflow.is_file()
+            or installed_workflow.is_symlink()
+            or not predecessor_workflow.is_file()
+            or installed_workflow.read_bytes() != predecessor_workflow.read_bytes()
+        ):
+            raise MatrixError(
+                "existing cell did not install the immutable before-tag workflow"
+            )
     before_docs = _docs_authority_snapshot(target)
     initial_preset = _apply_preset(
         source_root, target, platform, cell_root / "preset-initial.log"
@@ -2442,9 +2481,9 @@ def _run_cell(
         before_extension = _require_dict(
             before_manifest.get("extension"), "before installed extension"
         )
-        if before_extension.get("version") != "0.6.5-guru.36":
+        if before_extension != predecessor_extension:
             raise MatrixError(
-                "existing cell did not start from replacement release extension 0.6.5-guru.36"
+                "existing cell installed extension does not match immutable before tag"
             )
         # No CLI self-upgrade: a separately validated predecessor is required.
         binary = tuple(source["command"])
@@ -2472,6 +2511,10 @@ def _run_cell(
                 log=cell_root / "trellis-update.log",
             )
             update_mode = "migrate"
+            expected_managed_workflow = (
+                fork_source.resolve()
+                / "packages/cli/src/templates/trellis/workflow.md"
+            )
         else:
             _run(
                 (*binary, "update", "--skip-all"),
@@ -2480,6 +2523,9 @@ def _run_cell(
                 log=cell_root / "trellis-update.log",
             )
             update_mode = "update"
+            expected_managed_workflow = (
+                source_root / "trellis/workflows/guru-team/workflow.md"
+            )
         local_sample = _workflow_source_requires_local_sample(repo_root, workflow_source)
         if local_sample and not allow_local_sample:
             raise MatrixError(
@@ -2491,7 +2537,7 @@ def _run_cell(
             env,
             workflow_source,
             repo_root,
-            source_root,
+            expected_managed_workflow,
             local_sample,
             cell_root,
         )
@@ -2527,6 +2573,8 @@ def _run_cell(
         actual_after_upgrade,
         repo_root,
         cell_root,
+        before_cli,
+        run_cumulative_smokes,
     )
     result.update(
         {
@@ -2547,6 +2595,12 @@ def _run_cell(
             "preset_reapply": reapplied_preset,
         }
     )
+    if predecessor_extension is not None:
+        result["predecessor"] = {
+            "tag": before_tag,
+            "extension_version": predecessor_extension["version"],
+            "trellis_cli": predecessor_extension["target_trellis_cli"],
+        }
     return result
 
 
@@ -2592,7 +2646,9 @@ def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, A
         _run((*command, "update", "--skip-all"), cwd=target, env=env,
              log=iteration_root / "update.log")
         _preview_and_switch_workflow(target, command, env, args.workflow_source,
-                                    root, root, sample, iteration_root)
+                                    root,
+                                    root / "trellis/workflows/guru-team/workflow.md",
+                                    sample, iteration_root)
         reapplied.append(_apply_preset(
             root, target, args.platform, iteration_root / "preset-reapply.log",
             previous_root=root))
@@ -2627,7 +2683,81 @@ def run_matrix(args: argparse.Namespace) -> dict[str, Any]:
         return run_focused(args, source)
     predecessor = validate_predecessor_source(args)
     args.target_cli = source["cli_version"]
+    if args.mode == "existing":
+        return run_existing(args, source=source, predecessor=predecessor)
     return _run_historical_matrix(args, source=source, predecessor=predecessor)
+
+
+def run_existing(
+    args: argparse.Namespace,
+    *,
+    source: Mapping[str, Any],
+    predecessor: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Run one exact historical existing-install cell."""
+    stage = "pre-matrix"
+    cell_id = f"{args.platform}-existing"
+    try:
+        repo_root = args.repo_root.resolve()
+        work_root = args.work_root.resolve()
+        if work_root.exists() and any(work_root.iterdir()):
+            raise MatrixError(f"matrix work root must be empty: {work_root}")
+        work_root.mkdir(parents=True, exist_ok=True)
+        source_before = source_state(repo_root)
+        before_identity = resolve_before_tag(repo_root, args.before_tag)
+        stage = "matrix-cell"
+        cell_root = work_root / cell_id
+        cell_root.mkdir()
+        cell = _run_cell(
+            repo_root=repo_root,
+            cell_root=cell_root,
+            platform=args.platform,
+            scenario="existing",
+            workflow_source=args.workflow_source,
+            before_tag=str(before_identity["before_tag"]),
+            before_cli=args.before_cli,
+            target_cli=args.target_cli,
+            allow_local_sample=args.allow_local_sample,
+            fork_source=args.fork_source,
+            predecessor=predecessor,
+            run_cumulative_smokes=False,
+        )
+        cell["cell_id"] = cell_id
+        (cell_root / "cell-summary.json").write_bytes(_canonical_json(cell))
+        stage = "post-matrix"
+        if source_state(repo_root)["identity_sha256"] != source_before["identity_sha256"]:
+            raise MatrixError("source repository changed while existing verification was running")
+        if validate_fork_source(repo_root, args.fork_source) != source:
+            raise MatrixError("fork source changed during existing verification")
+        if validate_predecessor_source(args) != predecessor:
+            raise MatrixError("predecessor source changed during existing verification")
+        summary = {
+            "schema_version": SCHEMA_VERSION,
+            "status": "passed",
+            "mode": "existing",
+            "fork_source": source,
+            "predecessor_source": predecessor,
+            "source_commit": source_before["head"],
+            "source_identity_sha256": source_before["identity_sha256"],
+            "before_tag": before_identity["before_tag"],
+            "before_tag_object": before_identity["before_tag_object"],
+            "before_commit": before_identity["before_commit"],
+            "before_cli": args.before_cli,
+            "target_cli": args.target_cli,
+            "workflow_source": args.workflow_source,
+            "platform": args.platform,
+            "cell_count": 1,
+            "cell": cell,
+            "predecessor_upgrade_verified": True,
+            "full_matrix_verified": False,
+        }
+        summary["summary_sha256"] = _digest(summary)
+        (work_root / "existing-summary.json").write_bytes(_canonical_json(summary))
+        return summary
+    except MatrixError as exc:
+        raise exc.with_context(stage, cell_id if stage == "matrix-cell" else None) from exc
+    except (OSError, json.JSONDecodeError) as exc:
+        raise MatrixError(str(exc), stage=stage, cell_id=cell_id) from exc
 
 
 def _run_historical_matrix(
@@ -2710,6 +2840,10 @@ def _run_historical_matrix(
         source_after = source_state(repo_root)
         if source_after["identity_sha256"] != source_before["identity_sha256"]:
             raise MatrixError("source repository changed while compatibility matrix was running")
+        if source is not None and validate_fork_source(repo_root, args.fork_source) != source:
+            raise MatrixError("fork source changed during compatibility matrix")
+        if predecessor is not None and validate_predecessor_source(args) != predecessor:
+            raise MatrixError("predecessor source changed during compatibility matrix")
 
         legacy_representative = work_root.parent / "project"
         if legacy_representative.exists():
@@ -2781,7 +2915,7 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--fork-source", type=Path, required=True)
     run.add_argument("--predecessor-source", type=Path)
     run.add_argument("--predecessor-commit")
-    run.add_argument("--mode", choices=("full", "focused"), default="full")
+    run.add_argument("--mode", choices=("full", "focused", "existing"), default="full")
     run.add_argument("--platform", choices=tuple(PLATFORM_ROOTS), default="codex")
     validate = sub.add_parser("validate-source")
     validate.add_argument("--repo-root", type=Path, required=True)
