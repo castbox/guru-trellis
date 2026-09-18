@@ -53,24 +53,32 @@ def invocation(tmp_path: Path, disposition: str = "exact_source") -> tuple[list[
     return command, env, semantic_path
 
 
-def install_fake_gh(tmp_path: Path, terminal_state: str) -> tuple[dict, Path]:
+def install_fake_gh(tmp_path: Path, view_states: list[str]) -> tuple[dict, Path]:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log_path = tmp_path / "gh.log"
+    count_path = tmp_path / "gh-view-count"
     script = bin_dir / "gh"
     script.write_text(
         "#!/usr/bin/env python3\n"
-        "import os, pathlib, sys\n"
-        "pathlib.Path(os.environ['GH_LOG']).write_text(' '.join(sys.argv[1:]) + '\\n')\n"
-        "if 'close' in sys.argv:\n"
-        "    raise SystemExit(99)\n"
-        f"print({terminal_state!r})\n"
+        "import json, os, pathlib, sys\n"
+        "log = pathlib.Path(os.environ['GH_LOG'])\n"
+        "with log.open('a') as stream:\n"
+        "    stream.write(' '.join(sys.argv[1:]) + '\\n')\n"
+        "if 'view' in sys.argv:\n"
+        "    count_path = pathlib.Path(os.environ['GH_VIEW_COUNT'])\n"
+        "    count = int(count_path.read_text()) if count_path.exists() else 0\n"
+        "    states = json.loads(os.environ['GH_VIEW_STATES'])\n"
+        "    print(states[min(count, len(states) - 1)])\n"
+        "    count_path.write_text(str(count + 1))\n"
     )
     script.chmod(0o755)
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT)
     env["PATH"] = f"{bin_dir}{os.pathsep}{env['PATH']}"
     env["GH_LOG"] = str(log_path)
+    env["GH_VIEW_COUNT"] = str(count_path)
+    env["GH_VIEW_STATES"] = json.dumps(view_states)
     return env, log_path
 
 
@@ -113,11 +121,12 @@ def test_no_mutation_and_exact_closed_recovery(tmp_path):
     assert output["exit_id"] == "no_mutation"
     assert output["closure_exit"] == "no_mutation"
 
-    command, env, _ = invocation(tmp_path)
+    command, _, _ = invocation(tmp_path)
     facts_path = write_json(
         tmp_path / "facts.json",
         {"issue": {"repo_ref": "castbox/guru-trellis", "number": 436, "state": "CLOSED"}},
     )
+    env, log_path = install_fake_gh(tmp_path, ["CLOSED"])
     recovered = json.loads(
         subprocess.run(
             command + ["--confirmed-close", "--facts", str(facts_path)],
@@ -130,6 +139,28 @@ def test_no_mutation_and_exact_closed_recovery(tmp_path):
     assert recovered["exit_id"] == "closed"
     assert recovered["closure_exit"] == "closed"
     assert recovered["issue_ref"] == "castbox/guru-trellis#436"
+    assert log_path.read_text().splitlines() == [
+        "issue view 436 --repo castbox/guru-trellis --json state --jq .state"
+    ]
+
+
+def test_exact_source_rejects_no_mutation(tmp_path):
+    command, env, semantic_path = invocation(tmp_path)
+    write_json(
+        semantic_path,
+        {
+            "profile": "completion_approved",
+            "mode": "standalone",
+            "route": {"typed_exit": "no_mutation", "reason": "skip source closure"},
+        },
+    )
+
+    result = subprocess.run(command, text=True, capture_output=True, env=env, check=False)
+
+    assert result.returncode == 3
+    error = json.loads(result.stderr)
+    assert error["code"] == "stale_identity"
+    assert error["field_path"] == "semantic_result.route.typed_exit"
 
 
 @pytest.mark.parametrize(
@@ -165,7 +196,7 @@ def test_stale_open_recovery_fact_rereads_exact_issue_without_reclosing(tmp_path
         tmp_path / "facts.json",
         {"issue": {"repo_ref": "castbox/guru-trellis", "number": 436, "state": "OPEN"}},
     )
-    env, log_path = install_fake_gh(tmp_path, "CLOSED")
+    env, log_path = install_fake_gh(tmp_path, ["CLOSED"])
 
     recovered = json.loads(
         subprocess.run(
@@ -179,6 +210,32 @@ def test_stale_open_recovery_fact_rereads_exact_issue_without_reclosing(tmp_path
 
     assert recovered["exit_id"] == "closed"
     assert recovered["closure_exit"] == "closed"
-    call = log_path.read_text()
-    assert call.startswith("issue view 436 --repo castbox/guru-trellis")
-    assert "close" not in call
+    calls = log_path.read_text().splitlines()
+    assert calls == ["issue view 436 --repo castbox/guru-trellis --json state --jq .state"]
+
+
+def test_stale_closed_recovery_fact_uses_live_open_state_and_closes(tmp_path):
+    command, _, _ = invocation(tmp_path)
+    facts_path = write_json(
+        tmp_path / "facts.json",
+        {"issue": {"repo_ref": "castbox/guru-trellis", "number": 436, "state": "CLOSED"}},
+    )
+    env, log_path = install_fake_gh(tmp_path, ["OPEN", "CLOSED"])
+
+    closed = json.loads(
+        subprocess.run(
+            command + ["--confirmed-close", "--facts", str(facts_path)],
+            text=True,
+            capture_output=True,
+            env=env,
+            check=True,
+        ).stdout
+    )
+
+    assert closed["exit_id"] == "closed"
+    assert closed["closure_exit"] == "closed"
+    assert log_path.read_text().splitlines() == [
+        "issue view 436 --repo castbox/guru-trellis --json state --jq .state",
+        "issue close 436 --repo castbox/guru-trellis --reason completed",
+        "issue view 436 --repo castbox/guru-trellis --json state --jq .state",
+    ]

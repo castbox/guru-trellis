@@ -275,7 +275,11 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         raise CommandError("stale_identity", "semantic_result", "Finish identity differs from Closure.", 3)
     route = semantic["route"]
     if route["typed_exit"] != "success":
-        out = {"exit_id": route["typed_exit"]}
+        out = (
+            resume(public, route["reason_code"], route["remediation"])
+            if route["typed_exit"] == "resume_finish"
+            else {"exit_id": "blocked"}
+        )
         validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
         return out
     bookkeeping = semantic["bookkeeping"]

@@ -66,6 +66,41 @@ def invalidate_finish_receipts(root: Path, task_ref: str) -> None:
             receipt.unlink()
 
 
+def has_finish_receipt(root: Path, task_ref: str) -> bool:
+    receipts = root / ".trellis/.runtime/guru-team/finish"
+    if not receipts.is_dir():
+        return False
+    for receipt in receipts.glob("*.json"):
+        try:
+            data = json.loads(receipt.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        if data.get("task_ref") == task_ref:
+            return True
+    return False
+
+
+def read_runtime_json(path: Path, field: str) -> dict:
+    if not path.is_file() or path.is_symlink():
+        raise CommandError("stale_identity", field, "The completed reactivation state is incomplete.", 3)
+    try:
+        payload = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise CommandError("stale_identity", field, "The completed reactivation state is invalid.", 3) from exc
+    if not isinstance(payload, dict):
+        raise CommandError("stale_identity", field, "The completed reactivation state is invalid.", 3)
+    return payload
+
+
+def validate_recovery_mapping(path: Path, expected: dict, field: str) -> dict:
+    payload = read_runtime_json(path, field)
+    if set(payload) != {*expected, "updated_at"} or any(payload.get(key) != value for key, value in expected.items()):
+        raise CommandError("stale_identity", field, "The completed reactivation mapping no longer matches this input.", 3)
+    if not isinstance(payload.get("updated_at"), str) or not payload["updated_at"]:
+        raise CommandError("stale_identity", field, "The completed reactivation mapping is missing its update time.", 3)
+    return payload
+
+
 def validate_task_identity(public: dict, plan: dict) -> None:
     task_id = public["task_id"]
     locators = {
@@ -77,6 +112,76 @@ def validate_task_identity(public: dict, plan: dict) -> None:
     for field, locator_id in locators.items():
         if locator_id != task_id:
             raise CommandError("stale_identity", field, "Reactivate locators must bind the exact task id.", 3)
+
+
+def recover_completed_reactivation(root: Path, public: dict, plan: dict) -> bool:
+    workspace = Path(plan["workspace_path"]).resolve()
+    branch_ref = f"refs/heads/{plan['branch_name']}"
+    listed = worktrees(root)
+    row = listed.get(workspace)
+    branch_probe = git(root, "show-ref", "--verify", "--quiet", branch_ref, check=False)
+    if plan["disposition"] == "create_new" and branch_probe.returncode and not workspace.exists() and row is None:
+        return False
+    if not workspace.is_dir() or row is None or row.get("branch") != branch_ref or branch_probe.returncode:
+        if plan["disposition"] == "reuse_exact":
+            return False
+        raise CommandError("stale_identity", "workspace", "The completed reactivation workspace no longer matches this input.", 3)
+
+    archive = workspace / public["archive_ref"]
+    active = workspace / public["task_ref"]
+    if archive.is_dir() and not archive.is_symlink() and not active.exists():
+        return False
+    if archive.exists() or not active.is_dir() or active.is_symlink():
+        raise CommandError("stale_identity", "archive_ref", "The completed reactivation task state is incomplete or conflicting.", 3)
+    if git(workspace, "branch", "--show-current").stdout.strip() != plan["branch_name"]:
+        raise CommandError("stale_identity", "workspace.branch_name", "The completed reactivation branch changed.", 3)
+    if git(workspace, "rev-parse", "HEAD").stdout.strip() != plan["base_head"]:
+        raise CommandError("stale_identity", "workspace.base_head", "The completed reactivation workspace moved from the reviewed base.", 3)
+
+    task = read_runtime_json(active / "task.json", "task_ref")
+    expected_task = {
+        "id": public["task_id"],
+        "status": "in_progress",
+        "completedAt": None,
+        "branch": plan["branch_name"],
+        "base_branch": plan["base_branch"],
+        "worktree_path": str(workspace),
+    }
+    if any(task.get(key) != value for key, value in expected_task.items()) or "archive_dir" in task:
+        raise CommandError("stale_identity", "task_ref", "The completed reactivation task metadata no longer matches this input.", 3)
+
+    workspace_expected = {
+        "schema_version": "1.0",
+        "workspace_slug": public["task_id"],
+        "workspace_path": str(workspace),
+        "source_checkout": str(root),
+        "branch_name": plan["branch_name"],
+    }
+    task_expected = {
+        "schema_version": "1.0",
+        "task_slug": public["task_id"],
+        "workspace_slug": public["task_id"],
+        "workspace_path": str(workspace),
+        "task_artifact_dir": public["task_ref"],
+    }
+    mapping_roots = {root.resolve(), workspace.resolve()}
+    workspace_mappings = [
+        validate_recovery_mapping(mapping_root / plan["workspace_mapping"], workspace_expected, "workspace.workspace_mapping")
+        for mapping_root in mapping_roots
+    ]
+    task_mappings = [
+        validate_recovery_mapping(mapping_root / plan["task_mapping"], task_expected, "workspace.task_mapping")
+        for mapping_root in mapping_roots
+    ]
+    if any(payload != workspace_mappings[0] for payload in workspace_mappings[1:]) or any(
+        payload != task_mappings[0] for payload in task_mappings[1:]
+    ):
+        raise CommandError("stale_identity", "workspace", "The completed reactivation mappings disagree.", 3)
+    if workspace_mappings[0]["updated_at"] != task_mappings[0]["updated_at"]:
+        raise CommandError("stale_identity", "workspace", "The completed reactivation mappings come from different writes.", 3)
+    if any(has_finish_receipt(mapping_root, public["task_ref"]) for mapping_root in mapping_roots):
+        raise CommandError("stale_identity", "task_ref", "The prior Finish receipt was not fully invalidated.", 3)
+    return True
 
 
 def prepare_workspace(root: Path, plan: dict) -> tuple[Path, bool, bool]:
@@ -134,6 +239,10 @@ def rollback_workspace(root: Path, workspace: Path, branch: str, created_branch:
 def reactivate(root: Path, public: dict, semantic: dict) -> None:
     plan = semantic["workspace"]
     validate_task_identity(public, plan)
+    if plan["branch_name"] == plan["base_branch"]:
+        raise CommandError("stale_identity", "workspace.branch_name", "Reactivate must not bind the task to the target base branch.", 3)
+    if recover_completed_reactivation(root, public, plan):
+        return
     workspace, created_branch, created_worktree = prepare_workspace(root, plan)
     archive = workspace / public["archive_ref"]
     active = workspace / public["task_ref"]

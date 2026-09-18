@@ -4,11 +4,11 @@
 
 ## 当前自动化覆盖
 
-- Completion package：11 tests。覆盖 `completed` 对 authority、全部 Delivery 与 evidence 的非空、精确双向绑定，以及 `completed -> Closure` authoring-seed 投影；未把其余六条 semantic route 都声明为 runtime 场景覆盖。
-- Closure package：5 tests。覆盖 no-mutation、exact source 已关闭恢复、错误 repo/Issue recovery facts fail-closed、OPEN stale fact 对 exact Issue 的 live reread，以及 Closure -> Finish 投影；provider 使用 fake `gh`，不构成 live GitHub 证据。
-- Finish package：7 tests。覆盖其它 task archive allowlist 拒绝、bare/qualified closing keyword 拒绝、merge 前 base-head 复核，以及 fake remote/provider 下单一 bookkeeping commit/PR/merge、目标分支 archive post-check 与 output-loss re-entry。
-- Cleanup package：3 tests。覆盖 current Finish receipt、独立确认前保留资源、成功后只返回 exit-only DTO，以及当前执行 checkout/unbound worktree 拒绝。
-- Reactivate package：9 tests。覆盖 source/consumer projection、exact workspace reuse、新 workspace 创建、task/archive/mapping locator identity、旧 Finish receipt 失效，以及 bookkeeping merge 后 branch fast-forward ancestry。
+- Completion package：12 tests。覆盖 `completed` 对 authority、全部 Delivery 与 evidence 的非空、精确双向绑定、非空 `remaining_work_refs` 拒绝，以及 `completed -> Closure` authoring-seed 投影；未把其余六条 semantic route 都声明为 runtime 场景覆盖。
+- Closure package：7 tests。覆盖 no-mutation、`exact_source + no_mutation` fail-closed、错误 repo/Issue recovery facts fail-closed，以及 OPEN/CLOSED recovery fact 都重新读取 exact live Issue 后决定是否关闭；provider 使用 fake `gh`，不构成 live GitHub 证据。
+- Finish package：8 tests。覆盖 `resume_finish` 返回完整 `task_ref`、`closure_exit`、`closure_ref` 自投影，其它 task archive allowlist 拒绝、bare/qualified closing keyword 拒绝、merge 前 base-head 复核，以及 fake remote/provider 下单一 bookkeeping commit/PR/merge、目标分支 archive post-check 与 output-loss re-entry。
+- Cleanup package：7 tests。覆盖 empty/already-absent owned set、缺失 Finish receipt 时 `remaining_resources` continuation identity、独立确认前保留资源、exact Finish-owned remote branch 与 remote-tracking ref 删除、成功后最小 ignored terminal receipt 的 stdout-loss recovery，以及当前执行 checkout/unbound worktree 拒绝。
+- Reactivate package：11 tests。覆盖 source/consumer projection、exact workspace reuse、新 workspace 创建、`reuse_exact`/`create_new` complete transaction post-state 的 stdout-loss recovery、task/archive/mapping locator identity、旧 Finish receipt 失效，以及 bookkeeping merge 后 branch fast-forward ancestry。
 - Cross-package contract：`test_post_delivery_public_contract_projections_are_closed` 验证五个 package 的每个 exit 使用独立 schema/example，所有 artifact/schema 已声明，skill authoring seed 与目标 input required fields 闭合，workflow projection 含 `exit_id`，zero-payload stop 只有 `exit_id`。
 
 ## 分发与边界证据

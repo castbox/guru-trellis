@@ -65,6 +65,45 @@ def test_contract_assets():
     validate_json(json.loads((PACKAGE / "interface.json").read_text()), ROOT / "schemas/skill-interface-1.4.schema.json", "interface")
 
 
+def test_semantic_resume_finish_returns_complete_self_projection(tmp_path):
+    public = json.loads((PACKAGE / "examples/public-input.json").read_text())
+    semantic = {
+        "profile": "closure_completed",
+        "mode": public["mode"],
+        "allowlist": [public["task_ref"]],
+        "route": {
+            "typed_exit": "resume_finish",
+            "reason_code": "bookkeeping_requires_revision",
+            "remediation": "Revise the reviewed bookkeeping route.",
+        },
+    }
+    input_path = tmp_path / "input.json"
+    semantic_path = tmp_path / "semantic.json"
+    input_path.write_text(json.dumps(public))
+    semantic_path.write_text(json.dumps(semantic))
+
+    output = FINISH.run(
+        PACKAGE,
+        {},
+        ["--root", str(tmp_path), "--input", str(input_path), "--semantic-result", str(semantic_path)],
+    )
+
+    expected = {
+        "exit_id": "resume_finish",
+        "task_ref": public["task_ref"],
+        "closure_exit": public["closure_exit"],
+        "closure_ref": public["closure_ref"],
+    }
+    assert output == expected
+    validate_json(output, PACKAGE / "schemas/public-resume-finish-output.schema.json", "resume_finish")
+
+    interface = json.loads((PACKAGE / "interface.json").read_text())
+    projection = next(item for item in interface["public_contracts"]["projections"] if item["id"] == "self")
+    authored = json.loads((PACKAGE / "examples/self-authoring.json").read_text())
+    projected = {mapping["target"]: output[mapping["source"]] for mapping in projection["mappings"]}
+    validate_json({**authored, **projected}, PACKAGE / "schemas/public-input.schema.json", "self_projection")
+
+
 def test_allowlist_rejects_archive_root_for_another_task():
     public = {"task_ref": ".trellis/tasks/demo"}
     semantic = {

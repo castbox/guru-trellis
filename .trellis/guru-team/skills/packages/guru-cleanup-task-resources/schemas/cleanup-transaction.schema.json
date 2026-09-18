@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-cleanup-task-resources-transaction-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "stage", "task_ref", "archive_ref", "finish_ref", "owned_resources"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "stage": {"const": "cleaned"},
+    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/"},
+    "archive_ref": {"type": "string", "pattern": "^\\.trellis/tasks/archive/"},
+    "finish_ref": {"type": "string", "minLength": 1},
+    "owned_resources": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "locator"],
+        "properties": {
+          "kind": {"enum": ["branch", "worktree", "remote_branch", "remote_tracking", "runtime"]},
+          "locator": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

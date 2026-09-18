@@ -22,20 +22,15 @@ def run(package_root:Path, command:dict, argv:list[str])->dict:
     if public["profile"]!=semantic["profile"] or public["mode"]!=semantic["mode"]: raise CommandError("stale_identity","semantic_result","Completion and closure identity differ.",3)
     route=semantic["route"]; exit_id=route["typed_exit"]; issue=public.get("source_issue") or {}
     if exit_id=="close_issue" and issue.get("disposition")!="exact_source": raise CommandError("stale_identity","source_issue.disposition","Only the exact source Issue may be closed.",3)
+    if exit_id=="no_mutation" and issue.get("disposition")=="exact_source": raise CommandError("stale_identity","semantic_result.route.typed_exit","The exact source Issue must use the live close path.",3)
     if exit_id=="close_issue":
         if not a.confirmed_close: return {"exit_id":"resume_closure","task_ref":public["task_ref"],"completion_ref":public["completion_ref"]}
-        facts=None; state=""
         if a.facts:
             facts=load(root,package_root,a.facts,"facts")
             validate_json(facts,package_root/"schemas/live-facts.schema.json","facts")
             fact_issue=facts["issue"]
             if fact_issue["repo_ref"]!=issue["repo_ref"]: raise CommandError("stale_identity","facts.issue.repo_ref","Recovery facts must describe the exact source Issue repository.",3)
             if fact_issue["number"]!=issue["number"]: raise CommandError("stale_identity","facts.issue.number","Recovery facts must describe the exact source Issue number.",3)
-            state=fact_issue["state"]
-            if state=="CLOSED":
-                out={"exit_id":"closed","task_ref":public["task_ref"],"issue_ref":f'{issue["repo_ref"]}#{issue["number"]}',"closure_exit":"closed","closure_ref":"closure:v1:"+public["completion_ref"]}
-                validate_json(out,package_root/"schemas/public-output.schema.json","stdout"); return out
-            if state!="OPEN": raise CommandError("stale_identity","facts.issue.state","Issue state is not a recoverable close boundary.",3)
         observed=subprocess.run(["gh","issue","view",str(issue["number"]),"--repo",issue["repo_ref"],"--json","state","--jq",".state"],cwd=root,text=True,capture_output=True)
         if observed.returncode!=0: return {"exit_id":"resume_closure","task_ref":public["task_ref"],"completion_ref":public["completion_ref"]}
         state=observed.stdout.strip().upper()

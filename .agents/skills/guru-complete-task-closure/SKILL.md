@@ -7,5 +7,6 @@ description: Apply the exact source Issue disposition after Completion approval 
 
 This owner consumes only Completion `completed`. No-Issue, reference-only,
 follow-up and parent dispositions return `no_mutation`. An exact source Issue
-may return `closed` only after the current conversation has confirmed the
-displayed repository, Issue, action and reason.
+never uses `no_mutation`; after confirmation, its CLOSED/OPEN decision comes
+from a live read of that exact repository and Issue rather than a supplied
+snapshot. An OPEN Issue is closed and post-checked against the same identity.

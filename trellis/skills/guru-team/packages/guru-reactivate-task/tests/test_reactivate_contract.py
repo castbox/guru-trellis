@@ -135,6 +135,45 @@ def test_reactivate_creates_new_workspace_from_current_base(tmp_path):
     assert (repo / ".trellis/.runtime/guru-team/tasks/demo.json").is_file()
 
 
+@pytest.mark.parametrize("disposition", ["reuse_exact", "create_new"])
+def test_reactivate_recovers_same_output_after_stdout_loss_without_duplicate_mutation(tmp_path, disposition):
+    repo, head = repository(tmp_path)
+    if disposition == "reuse_exact":
+        workspace = repo
+        branch = "codex/demo-existing"
+    else:
+        workspace = tmp_path / "worktrees" / "demo"
+        branch = "codex/demo-reactivated"
+    reviewed = semantic(workspace, branch, head, disposition)
+    receipt = repo / ".trellis/.runtime/guru-team/finish/old.json"
+    receipt.parent.mkdir(parents=True)
+    receipt.write_text(json.dumps({"task_ref": ".trellis/tasks/demo", "finish_ref": "finish:v1:old"}))
+
+    first = invocation(repo, reviewed)
+    assert first.returncode == 0
+    expected_output = json.loads(first.stdout)
+    worktrees_before = git(repo, "worktree", "list", "--porcelain")
+    task_before = (workspace / ".trellis/tasks/demo/task.json").read_text()
+    mappings_before = {
+        path: path.read_text()
+        for path in {
+            repo / ".trellis/.runtime/guru-team/workspaces/demo.json",
+            repo / ".trellis/.runtime/guru-team/tasks/demo.json",
+            workspace / ".trellis/.runtime/guru-team/workspaces/demo.json",
+            workspace / ".trellis/.runtime/guru-team/tasks/demo.json",
+        }
+    }
+
+    recovered = invocation(repo, reviewed)
+
+    assert recovered.returncode == 0 and json.loads(recovered.stdout) == expected_output
+    assert git(repo, "worktree", "list", "--porcelain") == worktrees_before
+    assert (workspace / ".trellis/tasks/demo/task.json").read_text() == task_before
+    assert all(path.read_text() == content for path, content in mappings_before.items())
+    assert not (workspace / ".trellis/tasks/archive/2026-09/demo").exists()
+    assert not receipt.exists()
+
+
 @pytest.mark.parametrize(
     ("public_change", "semantic_change", "field_path"),
     [

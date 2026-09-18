@@ -33,6 +33,13 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     declared_evidence=set(str(item) for item in public["evidence_refs"])
     reviewed_evidence=set(str(item) for item in semantic["evidence_refs"])
     if exit_id == "completed":
+        if semantic.get("remaining_work_refs"):
+            raise CommandError(
+                "stale_identity",
+                "remaining_work_refs",
+                "Completion cannot emit completed while accepted work remains.",
+                3,
+            )
         bindings = (
             (declared, reviewed, "delivery_refs", "Completion requires a non-empty, exact review of every current Delivery fact."),
             (declared_authority, reviewed_authority, "authority_refs", "Completion requires a non-empty, exact review of current authority."),

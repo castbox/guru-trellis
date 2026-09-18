@@ -112,6 +112,15 @@ def test_completed_rejects_unbound_semantic_facts(tmp_path, semantic_field):
     assert failed.returncode == 3
     assert json.loads(failed.stderr)["field_path"] == semantic_field
 
+def test_completed_rejects_remaining_work(tmp_path):
+    public, semantic = _facts()
+    semantic["remaining_work_refs"] = ["work:follow-up-required"]
+    failed = _invoke(tmp_path, public, semantic)
+    assert failed.returncode == 3
+    error = json.loads(failed.stderr)
+    assert error["code"] == "stale_identity"
+    assert error["field_path"] == "remaining_work_refs"
+
 def test_completed_projects_valid_closure_input(tmp_path):
     public, semantic = _facts()
     passed = _invoke(tmp_path, public, semantic)
