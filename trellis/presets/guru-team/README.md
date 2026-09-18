@@ -610,7 +610,7 @@ manifest，精确绑定 planning/check/commit 与 normal-scenario qualification 
 profiles、15 exits、current output schemas、四条 authoring-seed edges、private
 artifact ids、examples、160 x 5 production control 与 eval cases；不存在 alternate
 production projector 或 fixture。当前 active closure 为 26 packages / 114 exits /
-95 commands；
+96 commands；
 live Intake 合同为 6/23。Preset 在一次 staging
 transaction 中安装 current registry、
 Interface 1.4/1.5/1.6、production-current manifest/schema、二十六包 public
