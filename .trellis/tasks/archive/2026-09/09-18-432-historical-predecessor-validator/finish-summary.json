@@ -1,0 +1,139 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-18T04:25:19Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-18-432-historical-predecessor-validator",
+    "title": "#432 修复 historical predecessor validator",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-18-432-historical-predecessor-validator",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/432-historical-predecessor-validator",
+    "commits": [
+      "5e745d4a547bdfa6f9fa8bc2fd2244ff7afde651",
+      "9694d7afd5384342100031556829a6b367016919"
+    ],
+    "changed_paths": [
+      ".trellis/tasks/09-18-432-historical-predecessor-validator/check.jsonl",
+      ".trellis/tasks/09-18-432-historical-predecessor-validator/design.md",
+      ".trellis/tasks/09-18-432-historical-predecessor-validator/implement.jsonl",
+      ".trellis/tasks/09-18-432-historical-predecessor-validator/implement.md",
+      ".trellis/tasks/09-18-432-historical-predecessor-validator/prd.md",
+      ".trellis/tasks/09-18-432-historical-predecessor-validator/task.json",
+      ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/design.md",
+      ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/implement.md",
+      ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/prd.md",
+      ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/task.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+      "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+    ]
+  },
+  "github": {
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/433"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#432 修复 historical predecessor validator",
+    "outcome": "新增 bounded `existing` 验证模式，从 immutable `--before-tag` 派生前序 extension 与 CLI identity，并绑定独立 predecessor/candidate source。",
+    "changed_behavior": [
+      "新增 bounded `existing` 验证模式，从 immutable `--before-tag` 派生前序 extension 与 CLI identity，并绑定独立 predecessor/candidate source。",
+      "在 Trellis update 后、marketplace preview/force 前，分别校验 migration 的 candidate native workflow 与普通 update 的 immutable predecessor workflow。",
+      "保持 `full` / `focused` 既有语义，补齐 wrapper、maintainer 文档以及两个合法 managed workflow identity 的回归覆盖。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-18-432-historical-predecessor-validator/design.md",
+          ".trellis/tasks/09-18-432-historical-predecessor-validator/implement.md",
+          ".trellis/tasks/09-18-432-historical-predecessor-validator/prd.md",
+          ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/design.md",
+          ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/implement.md",
+          ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/prd.md"
+        ],
+        "change": "新增 bounded `existing` 验证模式，从 immutable `--before-tag` 派生前序 extension 与 CLI identity，并绑定独立 predecessor/candidate source。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md"
+        ],
+        "change": "新增 bounded `existing` 验证模式，从 immutable `--before-tag` 派生前序 extension 与 CLI identity，并绑定独立 predecessor/candidate source。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+          "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+        ],
+        "change": "新增 bounded `existing` 验证模式，从 immutable `--before-tag` 派生前序 extension 与 CLI identity，并绑定独立 predecessor/candidate source。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-18-432-historical-predecessor-validator/check.jsonl",
+          ".trellis/tasks/09-18-432-historical-predecessor-validator/implement.jsonl",
+          ".trellis/tasks/09-18-432-historical-predecessor-validator/task.json",
+          ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/task.json"
+        ],
+        "change": "新增 bounded `existing` 验证模式，从 immutable `--before-tag` 派生前序 extension 与 CLI identity，并绑定独立 predecessor/candidate source。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [],
+      "pr_refs": [
+        "PR #433"
+      ],
+      "branches": [
+        "fix/432-historical-predecessor-validator"
+      ],
+      "paths": [
+        ".trellis/tasks/09-18-432-historical-predecessor-validator/check.jsonl",
+        ".trellis/tasks/09-18-432-historical-predecessor-validator/design.md",
+        ".trellis/tasks/09-18-432-historical-predecessor-validator/implement.jsonl",
+        ".trellis/tasks/09-18-432-historical-predecessor-validator/implement.md",
+        ".trellis/tasks/09-18-432-historical-predecessor-validator/prd.md",
+        ".trellis/tasks/09-18-432-historical-predecessor-validator/task.json",
+        ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/design.md",
+        ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/implement.md",
+        ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/prd.md",
+        ".trellis/tasks/archive/2026-09/09-18-432-historical-predecessor-validator/task.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+        "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#432 修复 historical predecessor validator",
+        "新增 bounded `existing` 验证模式，从 immutable `--before-tag` 派生前序 e",
+        "完成 check.jsonl 相关变更"
+      ]
+    },
+    "retrieval_text": "#432 修复 historical predecessor validator\n新增 bounded `existing` 验证模式，从 immutable `--before-tag` 派生前序 extension 与 CLI identity，并绑定独立 predecessor/candidate source。\n在 Trellis update 后、marketplace preview/force 前，分别校验 migration 的 candidate native workflow 与普通 update 的 immutable predecessor workflow。\n保持 `full` / `focused` 既有语义，补齐 wrapper、maintainer 文档以及两个合法 managed workflow identity 的回归覆盖。\n新增 bounded `existing` 验证模式，从 immutable `--before-tag` 派生前序 e\n完成 check.jsonl 相关变更"
+  }
+}

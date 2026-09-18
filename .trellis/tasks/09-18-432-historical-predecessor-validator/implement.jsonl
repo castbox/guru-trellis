@@ -1,3 +1,0 @@
-{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "Validator and managed runtime script boundary"}
-{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Focused versus release-matrix validation ownership"}
-{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "Direct evolution and compatibility boundary"}
