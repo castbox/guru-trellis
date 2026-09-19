@@ -1921,8 +1921,9 @@ omits branch/worktree internals because the selected downstream owner consumes
 the refreshed task binding. Prior Finish receipts are deleted during the
 reactivation mutation and cannot seed Cleanup.
 
+
 ### Task identity session binding (#443)
 
-`task.json`、task artifact locator、live Git/worktree、repository common dir 与既有 task/workspace mappings 继续构成 task/workspace identity authority。`guru-bind-task-session` 只能在这些 facts 与当前 Trellis session context 完全一致时，写入 ignored `.trellis/.runtime/guru-team/session-bindings/<binding-id>.json`；该 projection 绑定 task/session/workspace/branch/base/HEAD/lifecycle generation/current route，不进入 tracked task artifact、Issue ledger、授权记录或 public DTO。
+`task.json`、task artifact locator、live Git/worktree、repository common dir 与既有 task/workspace mappings 继续构成 task/workspace identity authority。`guru-bind-task-session` 只能在这些 facts 与当前 Trellis session context 完全一致时，通过官方 `active_task`/`session_storage` writer 建立当前 session binding；它不写入重复的 `.trellis/.runtime/guru-team/session-bindings/` projection，不进入 tracked task artifact、Issue ledger、授权记录或 public DTO。
 
 binding 丢失时，`rebind_missing_session` 重新读取同一 task identity；同一合法 binding 重试幂等，任一 task、repository、workspace、branch、mapping、base、session 或 lifecycle mismatch zero-write fail closed。Reactivate 的新 `lifecycle_generation` 使旧 binding 失效；Finish/Cleanup receipt 仍由各自 owner 校验。创建期 attach 继续由 `guru-create-task-workspace` owner 负责，#434 后续消费 binding typed exits，不复制 resolver/store。

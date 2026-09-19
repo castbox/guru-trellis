@@ -86,3 +86,10 @@ canonical source 位于 `trellis/skills/guru-team/packages/guru-bind-task-sessio
 新增 `manual_recovery` semantic profile 与 `session_manually_recovered` typed exit。它只在用户明确授权的当前对话中进入；runtime 先从 task artifact 与 live workspace/branch/HEAD/base 重建最小 identity，再写 task/workspace mapping 与 current session binding。该 profile 不能消费或生成 semantic pass、task activation、Completion/Finish/Closure/PR/Issue 事实。
 
 当 mappings 缺失时，resolver 允许一个显式的 `allow_missing_mappings` preflight 分支，但仍要求 task artifact、worktree、branch、base、repository common directory 和 session context 全部可验证；普通 resume/rebind 继续要求现有 mapping 完整。manual recovery 完成后必须重新运行同一 boundary validator，任一 post-write mismatch 进入 blocked。
+
+
+## Corrective review: base provenance and profile contracts
+
+缺少任一 runtime mapping 时，base HEAD 必须来自当前 task 顶层/metadata 或仍存在的 mapping 的既有 `base_head`，并与 fresh live base ref 一致；没有 provenance 时在任何恢复写入前以 `stale_identity/base_head` 停止，不从当前 base HEAD 反推历史边界，不新增 checkpoint 恢复机制。
+
+profile→route 为闭集：`resume_current_task→resume`、`rebind_missing_session→rebind`、`switch_task→switch`、`reactivate_rebind→reactivate`、`manual_recovery→manual_recovery`。schema 和 runtime 均拒绝其它组合。每个 profile 指向独立、schema-valid 且 discriminator 一致的 input example；switch example 明确 source 与 target。该修订不接入 #434 production graph。
