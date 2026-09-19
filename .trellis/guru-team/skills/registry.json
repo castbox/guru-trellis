@@ -335,6 +335,66 @@
       "workflow_route_id": "task-pr-phase2-reentry"
     },
     {
+      "id": "guru-review-task-completion",
+      "state": "active",
+      "name": "guru-review-task-completion",
+      "package": "packages/guru-review-task-completion",
+      "interface": "packages/guru-review-task-completion/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "workflow_integration_state": "deferred",
+      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "task-completion-review"
+    },
+    {
+      "id": "guru-complete-task-closure",
+      "state": "active",
+      "name": "guru-complete-task-closure",
+      "package": "packages/guru-complete-task-closure",
+      "interface": "packages/guru-complete-task-closure/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "workflow_integration_state": "deferred",
+      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "task-closure"
+    },
+    {
+      "id": "guru-finish-task",
+      "state": "active",
+      "name": "guru-finish-task",
+      "package": "packages/guru-finish-task",
+      "interface": "packages/guru-finish-task/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "workflow_integration_state": "deferred",
+      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "task-finish"
+    },
+    {
+      "id": "guru-cleanup-task-resources",
+      "state": "active",
+      "name": "guru-cleanup-task-resources",
+      "package": "packages/guru-cleanup-task-resources",
+      "interface": "packages/guru-cleanup-task-resources/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "workflow_integration_state": "deferred",
+      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "task-resource-cleanup"
+    },
+    {
+      "id": "guru-reactivate-task",
+      "state": "active",
+      "name": "guru-reactivate-task",
+      "package": "packages/guru-reactivate-task",
+      "interface": "packages/guru-reactivate-task/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "workflow_integration_state": "deferred",
+      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "task-reactivation"
+    },
+    {
       "id": "guru-sync-base",
       "state": "active",
       "name": "guru-sync-base",

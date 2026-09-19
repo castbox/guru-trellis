@@ -1,0 +1,22 @@
+{
+  "profile": "closure_completed",
+  "mode": "workflow",
+  "allowlist": [
+    ".trellis/tasks/example-task",
+    ".trellis/tasks/archive/2026-09/example-task"
+  ],
+  "bookkeeping": {
+    "repo_ref": "example/repo",
+    "base_branch": "main",
+    "expected_base_head": "1111111111111111111111111111111111111111",
+    "head_branch": "codex/example-task",
+    "archive_ref": ".trellis/tasks/archive/2026-09/example-task",
+    "commit_subject": "chore(trellis): persist example task finish",
+    "commit_body": "Persist the reviewed terminal task archive.\n\nRefs #1",
+    "pr_title": "持久化 example task 收尾归档",
+    "pr_body": "仅包含 task lifecycle bookkeeping。\n\nRefs #1",
+    "merge_subject": "chore(merge): 持久化 example task 收尾归档",
+    "merge_body": "Merge the reviewed bookkeeping candidate.\n\nRefs #1"
+  },
+  "route": {"typed_exit": "success"}
+}

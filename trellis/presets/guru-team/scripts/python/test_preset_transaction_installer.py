@@ -246,6 +246,49 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             (self.install_dst / "skills/schemas/skill-interface-1.6.schema.json").is_file()
         )
 
+    def test_reapply_consumes_exact_managed_backup_after_upgrade(self) -> None:
+        target = self.install_dst / "skills/registry.json"
+        backup = target.with_name("registry.json.bak")
+        backup.write_bytes(target.read_bytes())
+        manifest_path = self.install_dst / "extension.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["skill_packages"]["status"] = "conflict"
+        manifest["skill_packages"]["sidecars"] = [
+            ".trellis/guru-team/skills/registry.json.bak"
+        ]
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+        completed = self.install_current()
+
+        self.assertEqual(completed["skill_packages"]["status"], "ok")
+        self.assertEqual(completed["skill_packages"]["sidecars"], [])
+        self.assertEqual(completed["skill_installed_validation"]["returncode"], 0)
+        self.assertFalse(backup.exists())
+
+    def test_reapply_consumes_exact_managed_spec_backup_after_upgrade(self) -> None:
+        target = self.repo / ".trellis/spec/workflow/workflow-contract.md"
+        backup = target.with_name("workflow-contract.md.bak")
+        backup.write_bytes(target.read_bytes())
+        manifest_path = self.install_dst / "extension.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["install"]["managed_backups"] = [
+            ".trellis/spec/workflow/workflow-contract.md.bak"
+        ]
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+        completed = self.install_current()
+
+        self.assertEqual(completed["skill_packages"]["status"], "ok")
+        self.assertEqual(completed["managed_backups"], [])
+        self.assertEqual(completed["skill_installed_validation"]["returncode"], 0)
+        self.assertFalse(backup.exists())
+
     def test_installs_only_declared_runtime_kernel_files(self) -> None:
         completed = self.install_current()
 

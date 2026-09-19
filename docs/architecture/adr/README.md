@@ -14,6 +14,7 @@
 | `ADR-010` | accepted | 归档复审在原四个 owner 内保持只读；原 H、当前 A、复审 B 与 PR 快照/新 payload 判断独立，普通 profiles 不放宽 |
 | `ADR-011` | accepted | 唯一workflow continuation block拥有active-task detailed route；lost result回原producer或fresh semantic owner，upstream保持thin-entry ownership |
 | `ADR-012` | accepted | Active Task Delivery由Review/Publish/Merge三个单写owner承接；merge trailer与GitHub/Git identity形成跨分支事实，task在Delivery后保持active，#434/#436边界不前移 |
+| `ADR-013` | accepted | Post-Delivery Completion、Closure、Finish、Cleanup与Reactivate由五个独立owner承接；#436提供终态能力但不提前激活production graph，#434仍独占graph cutover |
 
 后续 supersede 时保留 predecessor/successor identity 与历史边界，不改写旧决策为 current evidence。
 
@@ -25,3 +26,4 @@
 `ADR-010` 正文见 [`010-archived-review-authority.md`](./010-archived-review-authority.md)。
 `ADR-011` 正文见 [`011-active-task-continuation-authority.md`](./011-active-task-continuation-authority.md)。
 `ADR-012` 正文见 [`012-active-task-delivery-loop.md`](./012-active-task-delivery-loop.md)。
+`ADR-013` 正文见 [`013-post-delivery-completion-finish.md`](./013-post-delivery-completion-finish.md)。

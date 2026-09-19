@@ -142,3 +142,18 @@ closure、source/installed/platform parity、dogfood drift、task validation与d
 继承的Finish-family失败声明为通过。完整多平台Release matrix仍为`unverified`。Promotion-created diff仍须
 fresh Phase 2、Task Commit与independent complete Branch Review；后续Publication、push、PR、merge、Release与
 Issue closure均不由本提升前证据推定完成。
+
+## EVD-031: #436 Reviewed Promotion Source
+
+本证据支撑 `ARCH-CUR-033`、`ARCH-DOM-018`、`ARCH-INT-021`、`ARCH-GAP-009`、`ADR-013`
+以及 `.55 -> .56` knowledge promotion。#436 contribution
+`architecture-contribution-436-post-delivery-completion-finish-v1` 已完成独立 committed full-diff
+review，RDT/Architecture promotion 绑定 expected `.55` 与 successor `.56`。
+
+candidate 的五个 lifecycle packages、closed public contracts、owner-private recovery、canonical/
+installed/platform projections、task/lifecycle SSOT 与定向 tests 已通过；live registry 为 31 packages /
+136 external exits / 101 commands，production workflow 保持 22 mandatory invokes / 98 exits。
+
+本证据不证明 #434 production graph activation、真实 Issue close、bookkeeping PR/merge、生产 Cleanup、
+完整 Release/upgrade matrix、push、PR、远端 merge、tag、Release 或 Issue closure。promotion-created
+diff 仍须 fresh Phase 2、Task Commit 与 independent complete Branch Review 后才能进入 Publication。

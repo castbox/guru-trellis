@@ -19,6 +19,7 @@
 | `ARCH-DOM-015` | Issue reference and closure ownership | Guru lifecycle 内，current user/live external authority 与 lifecycle owner持有 requirement/source reference；Publication 独占 Issue reference/closure intent；Finalizer 执行 reviewed payload并投影 exact body SHA-256；GitHub 执行默认分支 closing keyword；Merge mutation前验证 live body identity且只验证 live result；无 task-local classification aggregate 或第二 closure owner |
 | `ARCH-DOM-016` | active-task continuation | Guru workflow独占detailed continuation；adjacent DTO的consumer、deterministic producer recovery、semantic owner fresh rerun与activation owner各保持单写；upstream独占extractor和thin entries |
 | `ARCH-DOM-017` | active-task Delivery capability | Delivery Review独占slice readiness与PR payload truth；Delivery Publish独占push/PR/Draft/Ready及同计划恢复；Delivery Merge独占merge readiness、受控merge commit与Delivery result；Reconcile独占resolved-tree commit；#434独占production graph activation，#436独占Completion及其后续lifecycle |
+| `ARCH-DOM-018` | post-delivery terminal lifecycle | Completion、Closure、Finish、Cleanup与Reactivate各自拥有独立semantic judgment、最小DTO与owner-private recovery；#434独占production graph activation，shared authority promotion仍由Architecture/RDT owners串行完成 |
 
 跨 domain 只使用 interface/schema/typed projection；不得读取对方 private checkpoint 作为 public contract。
 

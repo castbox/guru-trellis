@@ -7,4 +7,3 @@
 5. 执行 targeted tests、Python 编译、`git diff --check`，并检查 canonical/dogfood 漂移。
 
 不修改 session binding、Issue #438 资源、GitHub 状态或发布流程。
-

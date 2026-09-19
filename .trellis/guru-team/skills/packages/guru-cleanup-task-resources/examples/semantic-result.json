@@ -1,0 +1,1 @@
+{"profile":"finish_success","mode":"workflow","owned_resources":[{"kind":"remote_branch","locator":"origin/codex/example-task"},{"kind":"remote_tracking","locator":"refs/remotes/origin/codex/example-task"},{"kind":"runtime","locator":".trellis/.runtime/guru-team/example.json"}],"route":{"typed_exit":"cleaned"}}

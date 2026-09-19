@@ -1346,6 +1346,27 @@ def install_skill_packages(
         lexical_repo_relative(repo, target).as_posix()
         for _, target in desired_files
     }
+    source_by_target = {
+        lexical_repo_relative(repo, target).as_posix(): source
+        for source, target in desired_files
+    }
+    recovered_sidecars: set[str] = set()
+    for sidecar_text in pending_recovery_sidecars:
+        target_text = sidecar_text[:-4]
+        source = source_by_target.get(target_text)
+        target = repo / target_text
+        sidecar = repo / sidecar_text
+        if (
+            source is not None
+            and target.is_file()
+            and not target.is_symlink()
+            and sidecar.is_file()
+            and not sidecar.is_symlink()
+            and target.read_bytes() == source.read_bytes()
+        ):
+            sidecar.unlink()
+            recovered_sidecars.add(sidecar_text)
+    sidecars = [path for path in sidecars if path not in recovered_sidecars]
     for source, target in desired_files:
         install_one(source, target)
     for stale_path in sorted(previous_paths - desired_paths):
@@ -1569,11 +1590,26 @@ def copy_managed_spec(
 ) -> dict[str, str]:
     relative = target.relative_to(repo).as_posix()
     previous_hashes = {}
+    previous_backups: set[str] = set()
     if isinstance(previous_manifest, dict):
         install = previous_manifest.get("install")
         if isinstance(install, dict) and isinstance(install.get("managed_asset_hashes"), dict):
             previous_hashes = install["managed_asset_hashes"]
-    if not target.exists() or filecmp.cmp(source, target, shallow=False):
+        if isinstance(install, dict) and isinstance(install.get("managed_backups"), list):
+            previous_backups = {
+                value for value in install["managed_backups"] if isinstance(value, str)
+            }
+    if target.exists() and filecmp.cmp(source, target, shallow=False):
+        backup = target.with_name(f"{target.name}.bak")
+        backup_relative = backup.relative_to(repo).as_posix()
+        if backup_relative in previous_backups:
+            if backup.exists():
+                if backup.is_symlink() or not backup.is_file():
+                    return {"path": str(target), "action": "conflict", "sidecar": str(backup)}
+                backup.unlink()
+            return {"path": str(target), "action": "updated_managed"}
+        return copy_managed(source, target)
+    if not target.exists():
         return copy_managed(source, target)
     previous_hash = previous_hashes.get(relative)
     current_hash = hashlib.sha256(target.read_bytes()).hexdigest()

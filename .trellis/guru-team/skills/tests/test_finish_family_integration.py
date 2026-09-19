@@ -4,6 +4,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -258,6 +259,84 @@ def package(skill_id: str) -> Path:
 def markers(kind: str) -> list[dict[str, Any]]:
     pattern = re.compile(rf"<!-- guru-{kind}: (\{{.*?\}}) -->")
     return [json.loads(value) for value in pattern.findall(WORKFLOW.read_text(encoding="utf-8"))]
+
+
+def run_skill(
+    skill_id: str,
+    root: Path,
+    run_root: Path,
+    label: str,
+    public: dict[str, Any],
+    semantic: dict[str, Any],
+    *extra_args: str,
+    env: dict[str, str] | None = None,
+    check: bool = True,
+) -> subprocess.CompletedProcess[str]:
+    input_path = run_root / f"{label}-input.json"
+    semantic_path = run_root / f"{label}-semantic.json"
+    input_path.write_text(json.dumps(public), encoding="utf-8")
+    semantic_path.write_text(json.dumps(semantic), encoding="utf-8")
+    runtime_pythonpath = SKILLS_ROOT.parent if EXECUTION_MODE == "installed" else SKILLS_ROOT
+    runtime_env = {
+        **os.environ,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPATH": str(runtime_pythonpath),
+    }
+    if env:
+        runtime_env.update(env)
+    return subprocess.run(
+        [
+            sys.executable,
+            str(package(skill_id) / "runtime/invoke.py"),
+            "--root",
+            str(root),
+            "--input",
+            str(input_path),
+            "--semantic-result",
+            str(semantic_path),
+            *extra_args,
+        ],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=runtime_env,
+        check=check,
+    )
+
+
+def write_finish_fake_gh(path: Path) -> None:
+    path.write_text(
+        """#!/usr/bin/env python3
+import json, os, subprocess, sys
+from pathlib import Path
+
+args = sys.argv[1:]
+state_path = Path(os.environ["FAKE_GH_STATE"])
+repo = Path(os.environ["FAKE_REPO_PATH"])
+remote = Path(os.environ["FAKE_REMOTE_PATH"])
+state = json.loads(state_path.read_text()) if state_path.exists() else {}
+
+if args[:2] == ["pr", "list"]:
+    print(json.dumps([state["pr"]] if state.get("pr") and state["pr"]["state"] == "OPEN" else []))
+elif args[:2] == ["pr", "create"]:
+    def value(flag): return args[args.index(flag) + 1]
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, text=True, capture_output=True, check=True).stdout.strip()
+    state["pr"] = {"number": 7, "url": "https://github.com/example/repo/pull/7", "state": "OPEN", "isDraft": False, "title": value("--title"), "body": value("--body"), "headRefName": value("--head"), "headRefOid": head, "baseRefName": value("--base"), "mergedAt": None, "mergeCommit": None}
+    state_path.write_text(json.dumps(state))
+    print(state["pr"]["url"])
+elif args[:2] == ["pr", "view"]:
+    print(json.dumps(state["pr"]))
+elif args[:2] == ["pr", "merge"]:
+    expected = args[args.index("--match-head-commit") + 1]
+    subprocess.run(["git", "--git-dir", str(remote), "update-ref", "refs/heads/main", expected], check=True)
+    state["pr"].update({"state": "MERGED", "mergedAt": "2026-09-19T00:00:00Z", "mergeCommit": {"oid": expected}})
+    state_path.write_text(json.dumps(state))
+else:
+    raise SystemExit("unsupported fake gh invocation: " + repr(args))
+""",
+        encoding="utf-8",
+    )
+    path.chmod(0o755)
 
 
 class NoTaskBreadcrumbStaticContractTests(unittest.TestCase):
@@ -543,6 +622,242 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
         self.assertEqual(harness.archive_mutations, 0)
         self.assertEqual(harness.journal_mutations, 0)
         self.assertEqual(harness.transcript[-1]["mutations"], [])
+
+    def test_finish_cleanup_reactivate_two_cycles_reject_old_cleanup_receipt(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="guru-finish-two-cycles-") as directory:
+            run_root = Path(directory)
+            repo = run_root / "repo"
+            remote = run_root / "remote.git"
+            fake_bin = run_root / "bin"
+            repo.mkdir()
+            fake_bin.mkdir()
+            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+            subprocess.run(["git", "init", "-q", "--bare", remote], check=True)
+
+            def git(*args: str) -> str:
+                return subprocess.run(
+                    ["git", *args],
+                    cwd=repo,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=True,
+                ).stdout.strip()
+
+            git("config", "user.email", "test@example.com")
+            git("config", "user.name", "Test")
+            git("remote", "add", "origin", str(remote))
+            (repo / ".gitignore").write_text(".trellis/.runtime/\n", encoding="utf-8")
+            task_ref = ".trellis/tasks/demo"
+            archive_ref = ".trellis/tasks/archive/2026-09/demo"
+            task = repo / task_ref
+            task.mkdir(parents=True)
+            (task / "task.json").write_text(
+                json.dumps(
+                    {
+                        "id": "demo",
+                        "title": "Demo",
+                        "status": "in_progress",
+                        "base_branch": "main",
+                        "lifecycle_generation": 0,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            for name in ("prd.md", "design.md", "implement.md"):
+                (task / name).write_text("fixture\n", encoding="utf-8")
+            git("add", ".")
+            git("commit", "-qm", "initial task")
+            git("push", "-q", "-u", "origin", "main")
+            git("switch", "-qc", "codex/demo")
+
+            write_finish_fake_gh(fake_bin / "gh")
+            runtime_env = {
+                "PATH": str(fake_bin) + os.pathsep + os.environ["PATH"],
+                "FAKE_GH_STATE": str(run_root / "gh-state.json"),
+                "FAKE_REPO_PATH": str(repo),
+                "FAKE_REMOTE_PATH": str(remote),
+            }
+
+            def finish_cycle(cycle: int) -> dict[str, Any]:
+                closure_ref = f"closure:v2:cycle-{cycle}"
+                public = {
+                    "profile": "closure_completed",
+                    "source_exit": "no_mutation",
+                    "mode": "standalone",
+                    "task_ref": task_ref,
+                    "closure_exit": "no_mutation",
+                    "closure_ref": closure_ref,
+                }
+                semantic = {
+                    "profile": "closure_completed",
+                    "mode": "standalone",
+                    "allowlist": [task_ref, archive_ref],
+                    "bookkeeping": {
+                        "repo_ref": "example/repo",
+                        "base_branch": "main",
+                        "expected_base_head": git("rev-parse", "refs/remotes/origin/main"),
+                        "head_branch": "codex/demo",
+                        "archive_ref": archive_ref,
+                        "commit_subject": f"chore(trellis): finish demo cycle {cycle}",
+                        "commit_body": "Persist terminal task metadata.\n\nRefs #436",
+                        "pr_title": f"持久化 demo 第 {cycle} 周期收尾归档",
+                        "pr_body": "仅包含 task lifecycle bookkeeping。\n\nRefs #436",
+                        "merge_subject": f"chore(merge): finish demo cycle {cycle}",
+                        "merge_body": "Merge reviewed bookkeeping.\n\nRefs #436",
+                    },
+                    "route": {"typed_exit": "success"},
+                }
+                resume = {
+                    "exit_id": "resume_finish",
+                    "task_ref": task_ref,
+                    "closure_exit": "no_mutation",
+                    "closure_ref": closure_ref,
+                }
+                for stage, args in (
+                    ("pending", ()),
+                    ("project", ("--confirmed-finish",)),
+                    ("publish", ("--confirmed-bookkeeping-publish",)),
+                ):
+                    process = run_skill(
+                        "guru-finish-task",
+                        repo,
+                        run_root,
+                        f"finish-{cycle}-{stage}",
+                        public,
+                        semantic,
+                        *args,
+                        env=runtime_env,
+                        check=False,
+                    )
+                    self.assertEqual(process.returncode, 0, process.stderr)
+                    self.assertEqual(json.loads(process.stdout), resume)
+                finished = run_skill(
+                    "guru-finish-task",
+                    repo,
+                    run_root,
+                    f"finish-{cycle}-merge",
+                    public,
+                    semantic,
+                    "--confirmed-bookkeeping-merge",
+                    env=runtime_env,
+                    check=False,
+                )
+                self.assertEqual(finished.returncode, 0, finished.stderr)
+                output = json.loads(finished.stdout)
+                self.assertEqual(output["exit_id"], "success")
+                return output
+
+            def cleanup_cycle(cycle: int, finish_output: dict[str, Any]) -> Path:
+                public = {
+                    "profile": "finish_success",
+                    "source_exit": "success",
+                    "mode": "standalone",
+                    "task_ref": task_ref,
+                    "archive_ref": archive_ref,
+                    "finish_ref": finish_output["finish_ref"],
+                    "resources": [],
+                }
+                semantic = {
+                    "profile": "finish_success",
+                    "mode": "standalone",
+                    "owned_resources": [],
+                    "route": {"typed_exit": "cleaned"},
+                }
+                cleaned = run_skill(
+                    "guru-cleanup-task-resources",
+                    repo,
+                    run_root,
+                    f"cleanup-{cycle}",
+                    public,
+                    semantic,
+                )
+                self.assertEqual(json.loads(cleaned.stdout), {"exit_id": "cleaned"})
+                suffix = finish_output["finish_ref"].rsplit(":", 1)[-1]
+                receipt = repo / ".trellis/.runtime/guru-team/cleanup" / f"{suffix}.json"
+                self.assertTrue(receipt.is_file())
+                return receipt
+
+            finish_zero = finish_cycle(0)
+            cleanup_zero = cleanup_cycle(0, finish_zero)
+            cleanup_zero_payload = cleanup_zero.read_text(encoding="utf-8")
+            base_head = git("rev-parse", "refs/remotes/origin/main")
+            reactivate_public = {
+                "profile": "reactivate_completed_task",
+                "mode": "standalone",
+                "task_ref": task_ref,
+                "archive_ref": archive_ref,
+                "task_id": "demo",
+            }
+            reactivate_semantic = {
+                "profile": "reactivate_completed_task",
+                "mode": "standalone",
+                "reason_refs": ["new evidence"],
+                "workspace": {
+                    "disposition": "reuse_exact",
+                    "workspace_path": str(repo),
+                    "branch_name": "codex/demo",
+                    "base_branch": "main",
+                    "base_head": base_head,
+                    "workspace_mapping": ".trellis/.runtime/guru-team/workspaces/demo.json",
+                    "task_mapping": ".trellis/.runtime/guru-team/tasks/demo.json",
+                },
+                "route": {"typed_exit": "reactivated_to_evidence_refresh"},
+            }
+            reactivated = run_skill(
+                "guru-reactivate-task",
+                repo,
+                run_root,
+                "reactivate",
+                reactivate_public,
+                reactivate_semantic,
+                "--confirmed-reactivation",
+            )
+            self.assertEqual(json.loads(reactivated.stdout)["exit_id"], "reactivated_to_evidence_refresh")
+            self.assertFalse(cleanup_zero.exists())
+            active_task = read_json(repo / task_ref / "task.json")
+            self.assertEqual(active_task["lifecycle_generation"], 1)
+
+            finish_one = finish_cycle(1)
+            self.assertNotEqual(finish_one["finish_ref"], finish_zero["finish_ref"])
+            cleanup_zero.parent.mkdir(parents=True, exist_ok=True)
+            cleanup_zero.write_text(cleanup_zero_payload, encoding="utf-8")
+            stale_public = {
+                "profile": "finish_success",
+                "source_exit": "success",
+                "mode": "standalone",
+                "task_ref": task_ref,
+                "archive_ref": archive_ref,
+                "finish_ref": finish_zero["finish_ref"],
+                "resources": [],
+            }
+            cleanup_semantic = {
+                "profile": "finish_success",
+                "mode": "standalone",
+                "owned_resources": [],
+                "route": {"typed_exit": "cleaned"},
+            }
+            stale = run_skill(
+                "guru-cleanup-task-resources",
+                repo,
+                run_root,
+                "cleanup-stale-cycle-zero",
+                stale_public,
+                cleanup_semantic,
+                check=False,
+            )
+            self.assertEqual(stale.returncode, 3)
+            self.assertEqual(
+                json.loads(stale.stderr),
+                {
+                    "code": "stale_identity",
+                    "field_path": "cleanup_receipt",
+                    "remediation": "Cleanup recovery receipt belongs to another reviewed cleanup call.",
+                },
+            )
+            cleanup_zero.unlink()
+            cleanup_one = cleanup_cycle(1, finish_one)
+            self.assertEqual(read_json(cleanup_one)["lifecycle_generation"], 1)
 
     def test_terminal_corpus_matches_public_discovery(self) -> None:
         corpus = read_json(package("guru-finalize-task") / "evals/evals.json")

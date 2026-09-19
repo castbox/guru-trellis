@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-finish-task-semantic-result-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profile", "mode", "allowlist", "route"],
+  "properties": {
+    "profile": {"const": "closure_completed"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "allowlist": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "bookkeeping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo_ref", "base_branch", "expected_base_head", "head_branch", "archive_ref", "commit_subject", "commit_body", "pr_title", "pr_body", "merge_subject", "merge_body"],
+      "properties": {
+        "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "base_branch": {"type": "string", "minLength": 1},
+        "expected_base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "head_branch": {"type": "string", "minLength": 1},
+        "archive_ref": {"type": "string", "pattern": "^\\.trellis/tasks/archive/"},
+        "commit_subject": {"type": "string", "minLength": 1},
+        "commit_body": {"type": "string"},
+        "pr_title": {"type": "string", "minLength": 1},
+        "pr_body": {"type": "string", "minLength": 1},
+        "merge_subject": {"type": "string", "minLength": 1},
+        "merge_body": {"type": "string", "minLength": 1}
+      }
+    },
+    "route": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["typed_exit"], "properties": {"typed_exit": {"const": "success"}}},
+        {"type": "object", "additionalProperties": false, "required": ["typed_exit", "reason_code", "remediation"], "properties": {"typed_exit": {"enum": ["resume_finish", "blocked"]}, "reason_code": {"type": "string", "minLength": 1}, "remediation": {"type": "string", "minLength": 1}}}
+      ]
+    }
+  },
+  "allOf": [
+    {"if": {"properties": {"route": {"properties": {"typed_exit": {"const": "success"}}}}}, "then": {"required": ["bookkeeping"]}, "else": {"not": {"required": ["bookkeeping"]}}}
+  ]
+}
