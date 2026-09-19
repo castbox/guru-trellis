@@ -1,3 +1,0 @@
-{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "规划新 lifecycle Skill 的全局边界、typed exit 与 production graph cutover 约束"}
-{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "规划 public I/O、private state、semantic/deterministic stage 与 consumer projection 合同"}
-{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "规划 source/installed/projection/reapply 与定向验证范围"}

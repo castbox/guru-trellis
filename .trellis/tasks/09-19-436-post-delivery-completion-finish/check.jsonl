@@ -1,3 +1,0 @@
-{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查新增 lifecycle route、唯一 consumer 与 #434 前旧 graph 不变"}
-{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "检查各 Skill 的 typed I/O、private checkpoint 与 owner boundary"}
-{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查验证范围、projection parity、preset reapply 与 drift 门禁"}
