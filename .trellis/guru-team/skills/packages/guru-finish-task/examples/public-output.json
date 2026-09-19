@@ -1,1 +1,1 @@
-{"exit_id":"success","task_ref":".trellis/tasks/example-task","archive_ref":".trellis/tasks/archive/2026-09/example-task","finish_ref":"finish:v1:current"}
+{"exit_id":"success","task_ref":".trellis/tasks/example-task","archive_ref":".trellis/tasks/archive/2026-09/example-task","finish_ref":"finish:v1:current","lifecycle_generation":1}

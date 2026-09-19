@@ -12,6 +12,7 @@ from runtime.schema import validate_json
 PACKAGE = Path(__file__).resolve().parents[1]
 ROOT = PACKAGE.parents[1]
 FINISH_REF = "finish:v1:0123456789abcdef"
+LIFECYCLE_GENERATION = 0
 TASK_REF = ".trellis/tasks/demo"
 ARCHIVE_REF = ".trellis/tasks/archive/2026-09/demo"
 
@@ -44,7 +45,7 @@ def write_finish_receipt(root: Path, head: str, head_branch: str = "codex/demo")
                 "task_ref": TASK_REF,
                 "closure_ref": "closure:v1:demo",
                 "finish_ref": FINISH_REF,
-                "lifecycle_generation": 0,
+                "lifecycle_generation": LIFECYCLE_GENERATION,
                 "repo_ref": "example/repo",
                 "base_branch": "main",
                 "head_branch": head_branch,
@@ -93,6 +94,7 @@ def public_input(resources: list[dict], source_exit: str = "success") -> dict:
         "task_ref": TASK_REF,
         "archive_ref": ARCHIVE_REF,
         "finish_ref": FINISH_REF,
+        "lifecycle_generation": LIFECYCLE_GENERATION,
         "resources": resources,
     }
 
@@ -145,6 +147,7 @@ def test_cleanup_requires_confirmation_and_recovers_cleaned_stdout_loss(tmp_path
         "task_ref": TASK_REF,
         "archive_ref": ARCHIVE_REF,
         "finish_ref": FINISH_REF,
+        "lifecycle_generation": LIFECYCLE_GENERATION,
     }
     assert runtime.exists()
 
@@ -158,6 +161,31 @@ def test_cleanup_requires_confirmation_and_recovers_cleaned_stdout_loss(tmp_path
 
     recovered = json.loads(run(command + ["--confirmed-cleanup"]).stdout)
     assert recovered == {"exit_id": "cleaned"}
+
+
+def test_cleanup_rejects_terminal_receipt_from_previous_lifecycle_generation(tmp_path):
+    repo = tmp_path / "repo"
+    head = init_repo(repo)
+    archive = repo / ARCHIVE_REF
+    archive.mkdir(parents=True)
+    (archive / "task.json").write_text(json.dumps({"id": "demo", "status": "completed", "lifecycle_generation": 0}) + "\n")
+    finish_receipt = write_finish_receipt(repo, head)
+    resources: list[dict] = []
+    command = invocation(tmp_path, repo, public_input(resources), semantic_result(resources))
+    assert json.loads(run(command).stdout) == {"exit_id": "cleaned"}
+    cleanup_receipt = repo / ".trellis/.runtime/guru-team/cleanup/0123456789abcdef.json"
+    assert cleanup_receipt.is_file()
+
+    (archive / "task.json").write_text(json.dumps({"id": "demo", "status": "completed", "lifecycle_generation": 1}) + "\n")
+    stale_input = public_input(resources)
+    stale_input["lifecycle_generation"] = 1
+    stale_command = invocation(tmp_path, repo, stale_input, semantic_result(resources))
+    result = run(stale_command, check=False)
+    assert result.returncode == 3
+    error = json.loads(result.stderr)
+    assert error["code"] == "stale_identity"
+    assert error["field_path"] == "cleanup_receipt"
+    assert cleanup_receipt.is_file()
 
 
 def test_cleanup_accepts_empty_or_already_absent_owned_set(tmp_path):
@@ -203,6 +231,7 @@ def test_remaining_resources_route_survives_missing_finish_receipt(tmp_path):
         "task_ref": TASK_REF,
         "archive_ref": ARCHIVE_REF,
         "finish_ref": FINISH_REF,
+        "lifecycle_generation": LIFECYCLE_GENERATION,
     }
 
 

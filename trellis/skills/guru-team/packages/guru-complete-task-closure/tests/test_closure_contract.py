@@ -94,7 +94,7 @@ def test_contract_assets_and_finish_projection():
     finish = next(item for item in interface["public_contracts"]["consumer_inputs"] if item["id"] == "finish")
     assert finish["contract"]["kind"] == "skill_input_authoring_seed"
     assert finish["contract"]["interface_path"] == "packages/guru-finish-task/interface.json"
-    assert finish["contract"]["seed_fields"] == ["source_exit", "task_ref", "closure_exit", "closure_ref"]
+    assert finish["contract"]["seed_fields"] == ["source_exit", "task_ref", "closure_exit", "closure_ref", "source_issue"]
 
     finish_schema = ROOT / "packages/guru-finish-task/schemas/public-input.schema.json"
     authored = json.loads((PACKAGE / "examples/public-finish-authoring.json").read_text())
@@ -176,6 +176,28 @@ def test_resume_closure_rejects_wrong_issue_after_stdout_loss(tmp_path):
         "source_issue": {"repo_ref": "castbox/other", "number": 99, "disposition": "exact_source"},
     }
     input_path = write_json(tmp_path / "wrong-resume.json", resumed)
+    wrong_command = command[:]
+    wrong_command[wrong_command.index("--input") + 1] = str(input_path)
+    result = subprocess.run(wrong_command + ["--confirmed-close"], text=True, capture_output=True, env=env, check=False)
+    assert result.returncode == 3
+    error = json.loads(result.stderr)
+    assert error["code"] == "stale_identity"
+    assert error["field_path"] == "closure_ref"
+
+
+def test_resume_closure_rejects_wrong_disposition_after_stdout_loss(tmp_path):
+    command, env, _ = invocation(tmp_path)
+    pending = json.loads(subprocess.run(command, text=True, capture_output=True, env=env, check=True).stdout)
+    resumed = {
+        "profile": "completion_approved",
+        "source_exit": "resume_closure",
+        "mode": "standalone",
+        "task_ref": ".trellis/tasks/demo",
+        "completion_ref": "completion:v1:demo",
+        "closure_ref": pending["closure_ref"],
+        "source_issue": {"disposition": "reference_only"},
+    }
+    input_path = write_json(tmp_path / "wrong-disposition.json", resumed)
     wrong_command = command[:]
     wrong_command[wrong_command.index("--input") + 1] = str(input_path)
     result = subprocess.run(wrong_command + ["--confirmed-close"], text=True, capture_output=True, env=env, check=False)

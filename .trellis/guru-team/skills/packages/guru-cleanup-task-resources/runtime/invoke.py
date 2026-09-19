@@ -77,6 +77,7 @@ def continuation(public: dict) -> dict:
         "task_ref": public["task_ref"],
         "archive_ref": public["archive_ref"],
         "finish_ref": public["finish_ref"],
+        "lifecycle_generation": public["lifecycle_generation"],
     }
 
 
@@ -108,6 +109,7 @@ def read_finish_receipt(root: Path, package_root: Path, public: dict) -> tuple[P
         "task_ref": public["task_ref"],
         "archive_ref": public["archive_ref"],
         "finish_ref": public["finish_ref"],
+        "lifecycle_generation": public["lifecycle_generation"],
     }
     if any(value.get(key) != expected_value for key, expected_value in expected.items()):
         raise CommandError(
@@ -129,6 +131,8 @@ def archive_generation(root: Path, public: dict) -> int:
         raise CommandError("stale_identity", "archive_ref.task.json.lifecycle_generation", "The terminal archive generation is invalid.", 3) from exc
     if not isinstance(generation, int) or generation < 0:
         raise CommandError("stale_identity", "archive_ref.task.json.lifecycle_generation", "The terminal archive generation is invalid.", 3)
+    if generation != public["lifecycle_generation"]:
+        raise CommandError("stale_identity", "lifecycle_generation", "Cleanup input is bound to a different lifecycle cycle.", 3)
     return generation
 
 
@@ -419,6 +423,8 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     validate_json(semantic, package_root / "schemas/semantic-result.schema.json", "semantic_result")
     if public["profile"] != semantic["profile"] or public["mode"] != semantic["mode"]:
         raise CommandError("stale_identity", "semantic_result", "Cleanup identity differs from Finish.", 3)
+    if not isinstance(public.get("lifecycle_generation"), int) or public["lifecycle_generation"] < 0:
+        raise CommandError("stale_identity", "lifecycle_generation", "Cleanup requires the current Finish lifecycle cycle.", 3)
 
     route = semantic["route"]
     resources = semantic["owned_resources"]
@@ -443,6 +449,8 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if finish_path.is_file() and not finish_path.is_symlink():
         finish_receipt, receipt = read_finish_receipt(root, package_root, public)
         lifecycle_generation = receipt["lifecycle_generation"]
+        if lifecycle_generation != public["lifecycle_generation"]:
+            raise CommandError("stale_identity", "lifecycle_generation", "Finish receipt belongs to another lifecycle cycle.", 3)
     else:
         lifecycle_generation = archive_generation(root, public)
         recovered = read_cleanup_receipt(root, package_root, public, resources, lifecycle_generation)

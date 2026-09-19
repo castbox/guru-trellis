@@ -66,7 +66,7 @@ def test_contract_assets():
 
 
 def test_finish_identity_changes_between_lifecycle_generations():
-    public = {"task_ref": ".trellis/tasks/demo", "closure_ref": "closure:v2:demo"}
+    public = {"task_ref": ".trellis/tasks/demo", "closure_ref": "closure:v3:68459a04b284c0b1:4a136e9436490268"}
     assert FINISH.finish_ref(public, 0) != FINISH.finish_ref(public, 1)
 
 
@@ -98,6 +98,7 @@ def test_semantic_resume_finish_returns_complete_self_projection(tmp_path):
         "task_ref": public["task_ref"],
         "closure_exit": public["closure_exit"],
         "closure_ref": public["closure_ref"],
+        "source_issue": public["source_issue"],
     }
     assert output == expected
     validate_json(output, PACKAGE / "schemas/public-resume-finish-output.schema.json", "resume_finish")
@@ -221,7 +222,7 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path):
     shutil.rmtree(old_archive)
 
     archive_ref = ".trellis/tasks/archive/2026-09/demo"
-    public = {"profile": "closure_completed", "source_exit": "no_mutation", "mode": "standalone", "task_ref": ".trellis/tasks/demo", "closure_exit": "no_mutation", "closure_ref": "closure:v1:demo"}
+    public = {"profile": "closure_completed", "source_exit": "no_mutation", "mode": "standalone", "task_ref": ".trellis/tasks/demo", "closure_exit": "no_mutation", "closure_ref": "closure:v3:68459a04b284c0b1:4a136e9436490268", "source_issue": {"disposition": "reference_only"}}
     semantic = {
         "profile": "closure_completed",
         "mode": "standalone",
@@ -251,7 +252,7 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path):
     env = os.environ.copy()
     env.update({"PYTHONPATH": str(ROOT), "PATH": str(fake_bin) + os.pathsep + env["PATH"], "FAKE_GH_STATE": str(tmp_path / "gh-state.json"), "FAKE_GH_LOG": str(tmp_path / "gh.log"), "FAKE_REPO_PATH": str(repo), "FAKE_REMOTE_PATH": str(remote)})
     command = [sys.executable, str(PACKAGE / "runtime/invoke.py"), "--root", str(repo), "--input", str(input_path), "--semantic-result", str(semantic_path)]
-    resume = {"exit_id": "resume_finish", "task_ref": ".trellis/tasks/demo", "closure_exit": "no_mutation", "closure_ref": "closure:v1:demo"}
+    resume = {"exit_id": "resume_finish", "task_ref": ".trellis/tasks/demo", "closure_exit": "no_mutation", "closure_ref": "closure:v3:68459a04b284c0b1:4a136e9436490268", "source_issue": {"disposition": "reference_only"}}
 
     assert json.loads(subprocess.run(command, text=True, capture_output=True, env=env, check=True).stdout) == resume
     assert task.exists()
@@ -261,7 +262,7 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path):
     published = json.loads(subprocess.run(command + ["--confirmed-bookkeeping-publish"], text=True, capture_output=True, env=env, check=True).stdout)
     assert published == resume
     finished = json.loads(subprocess.run(command + ["--confirmed-bookkeeping-merge"], text=True, capture_output=True, env=env, check=True).stdout)
-    assert finished == {"exit_id": "success", "task_ref": ".trellis/tasks/demo", "archive_ref": archive_ref, "finish_ref": finished["finish_ref"]}
+    assert finished == {"exit_id": "success", "task_ref": ".trellis/tasks/demo", "archive_ref": archive_ref, "finish_ref": finished["finish_ref"], "lifecycle_generation": 0}
     repeated = json.loads(subprocess.run(command, text=True, capture_output=True, env=env, check=True).stdout)
     assert repeated["exit_id"] == "success"
     log = (tmp_path / "gh.log").read_text()

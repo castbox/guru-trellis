@@ -134,6 +134,7 @@ def test_reactivate_creates_new_workspace_from_current_base(tmp_path):
         "exit_id": "reactivated_to_evidence_refresh",
         "task_ref": ".trellis/tasks/demo",
         "resume_target": "evidence-refresh",
+        "lifecycle_generation": 1,
     }
     assert git(workspace, "branch", "--show-current") == "codex/demo-reactivated"
     assert task["branch"] == "codex/demo-reactivated" and task["worktree_path"] == str(workspace)

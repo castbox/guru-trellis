@@ -141,14 +141,14 @@ def validate_task_identity(public: dict, plan: dict) -> None:
             raise CommandError("stale_identity", field, "Reactivate locators must bind the exact task id.", 3)
 
 
-def recover_completed_reactivation(root: Path, public: dict, plan: dict) -> bool:
+def recover_completed_reactivation(root: Path, public: dict, plan: dict) -> int | None:
     workspace = Path(plan["workspace_path"]).resolve()
     branch_ref = f"refs/heads/{plan['branch_name']}"
     listed = worktrees(root)
     row = listed.get(workspace)
     branch_probe = git(root, "show-ref", "--verify", "--quiet", branch_ref, check=False)
     if plan["disposition"] == "create_new" and branch_probe.returncode and not workspace.exists() and row is None:
-        return False
+        return None
     if not workspace.is_dir() or row is None or row.get("branch") != branch_ref or branch_probe.returncode:
         if plan["disposition"] == "reuse_exact":
             return False
@@ -157,7 +157,7 @@ def recover_completed_reactivation(root: Path, public: dict, plan: dict) -> bool
     archive = workspace / public["archive_ref"]
     active = workspace / public["task_ref"]
     if archive.is_dir() and not archive.is_symlink() and not active.exists():
-        return False
+        return None
     if archive.exists() or not active.is_dir() or active.is_symlink():
         raise CommandError("stale_identity", "archive_ref", "The completed reactivation task state is incomplete or conflicting.", 3)
     if git(workspace, "branch", "--show-current").stdout.strip() != plan["branch_name"]:
@@ -216,7 +216,7 @@ def recover_completed_reactivation(root: Path, public: dict, plan: dict) -> bool
         raise CommandError("stale_identity", "task_ref", "The prior Finish receipt was not fully invalidated.", 3)
     if any(has_cleanup_receipt(mapping_root, public["task_ref"]) for mapping_root in mapping_roots):
         raise CommandError("stale_identity", "task_ref", "The prior Cleanup receipt was not fully invalidated.", 3)
-    return True
+    return generation
 
 
 def prepare_workspace(root: Path, plan: dict) -> tuple[Path, bool, bool]:
@@ -271,13 +271,14 @@ def rollback_workspace(root: Path, workspace: Path, branch: str, created_branch:
         git(root, "branch", "-D", branch, check=False)
 
 
-def reactivate(root: Path, public: dict, semantic: dict) -> None:
+def reactivate(root: Path, public: dict, semantic: dict) -> int:
     plan = semantic["workspace"]
     validate_task_identity(public, plan)
     if plan["branch_name"] == plan["base_branch"]:
         raise CommandError("stale_identity", "workspace.branch_name", "Reactivate must not bind the task to the target base branch.", 3)
-    if recover_completed_reactivation(root, public, plan):
-        return
+    recovered_generation = recover_completed_reactivation(root, public, plan)
+    if recovered_generation is not None:
+        return recovered_generation
     workspace, created_branch, created_worktree = prepare_workspace(root, plan)
     archive = workspace / public["archive_ref"]
     active = workspace / public["task_ref"]
@@ -310,6 +311,7 @@ def reactivate(root: Path, public: dict, semantic: dict) -> None:
         if workspace != root:
             invalidate_finish_receipts(workspace, public["task_ref"])
             invalidate_cleanup_receipts(workspace, public["task_ref"])
+        return task["lifecycle_generation"]
     except Exception:
         rollback_workspace(root, workspace, plan["branch_name"], created_branch, created_worktree)
         raise
@@ -337,8 +339,8 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if route["typed_exit"] != "reactivate_blocked":
         if not args.confirmed_reactivation:
             raise CommandError("confirmation_required", "confirmed_reactivation", "Confirm the reviewed archive, target baseline, branch, worktree, binding and file plan.", 4)
-        reactivate(root, public, semantic)
-        out.update({"task_ref":public["task_ref"], "resume_target":{"reactivated_to_requirements": "requirements", "reactivated_to_planning": "planning", "reactivated_to_implementation": "phase-2", "reactivated_to_evidence_refresh": "evidence-refresh"}[route["typed_exit"]]})
+        generation = reactivate(root, public, semantic)
+        out.update({"task_ref":public["task_ref"], "resume_target":{"reactivated_to_requirements": "requirements", "reactivated_to_planning": "planning", "reactivated_to_implementation": "phase-2", "reactivated_to_evidence_refresh": "evidence-refresh"}[route["typed_exit"]], "lifecycle_generation": generation})
     validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
     return out
 

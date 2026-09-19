@@ -55,6 +55,24 @@ def finish_ref(public: dict, lifecycle_generation: int = 0) -> str:
     return "finish:v1:" + suffix
 
 
+def closure_binding_digest(source_issue: dict, closure_exit: str) -> str:
+    action = "close_issue" if closure_exit == "closed" else "no_mutation"
+    return hashlib.sha256(json.dumps({"source_issue": source_issue, "action": action}, sort_keys=True, separators=(",", ":")).encode()).hexdigest()[:16]
+
+
+def validate_closure_binding(public: dict) -> None:
+    closure_ref = public["closure_ref"]
+    match = re.fullmatch(r"closure:v3:([0-9a-f]{16}):[0-9a-f]{16}", closure_ref)
+    if not match:
+        raise CommandError("stale_identity", "closure_ref", "Finish requires a Closure result bound to its source Issue and disposition.", 3)
+    if match.group(1) != closure_binding_digest(public["source_issue"], public["closure_exit"]):
+        raise CommandError("stale_identity", "closure_ref", "Closure result belongs to another source Issue or disposition.", 3)
+    if public["closure_exit"] == "closed" and public["source_issue"].get("disposition") != "exact_source":
+        raise CommandError("stale_identity", "source_issue.disposition", "Closed Finish input must bind the exact source Issue.", 3)
+    if public["closure_exit"] == "no_mutation" and public["source_issue"].get("disposition") == "exact_source":
+        raise CommandError("stale_identity", "source_issue.disposition", "No-mutation Finish input cannot bind an exact source Issue.", 3)
+
+
 def lifecycle_generation(root: Path, public: dict, archive_ref: str) -> int:
     candidates = [root / public["task_ref"] / "task.json", root / archive_ref / "task.json"]
     for path in candidates:
@@ -277,7 +295,13 @@ def merge(root: Path, public: dict, bookkeeping: dict, transaction: dict, transa
 
 
 def resume(public: dict, reason_code: str, remediation: str) -> dict:
-    return {"exit_id": "resume_finish", "task_ref": public["task_ref"], "closure_exit": public["closure_exit"], "closure_ref": public["closure_ref"]}
+    return {
+        "exit_id": "resume_finish",
+        "task_ref": public["task_ref"],
+        "closure_exit": public["closure_exit"],
+        "closure_ref": public["closure_ref"],
+        "source_issue": public["source_issue"],
+    }
 
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
@@ -299,6 +323,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     validate_json(semantic, package_root / "schemas/semantic-result.schema.json", "semantic_result")
     if public["profile"] != semantic["profile"] or public["mode"] != semantic["mode"]:
         raise CommandError("stale_identity", "semantic_result", "Finish identity differs from Closure.", 3)
+    validate_closure_binding(public)
     route = semantic["route"]
     if route["typed_exit"] != "success":
         out = (
@@ -335,7 +360,13 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     target_head = verify_target(root, transaction, public)
     if target_head != transaction["target_head"]:
         raise CommandError("stale_identity", "bookkeeping.target", "The verified target baseline changed after Finish success.", 3)
-    out = {"exit_id": "success", "task_ref": public["task_ref"], "archive_ref": archive_ref, "finish_ref": finish_ref(public, generation)}
+    out = {
+        "exit_id": "success",
+        "task_ref": public["task_ref"],
+        "archive_ref": archive_ref,
+        "finish_ref": finish_ref(public, generation),
+        "lifecycle_generation": generation,
+    }
     validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
     return out
 

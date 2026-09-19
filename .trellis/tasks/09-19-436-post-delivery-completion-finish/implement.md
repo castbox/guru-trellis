@@ -95,7 +95,22 @@ parity 与 task checks；不把本任务扩张为专门 Release Issue 的完整�
 provider access 或环境依赖均记录为 blocked/unverified，不得当作通过。规划通过前不运行 `task.py start`；规划
 批准后仍须由 Phase 2 semantic check、Task Commit 与 independent committed full-diff Branch Review 放行。
 
-## 5. 预期变更位置
+## 5. 新增 P1 修复与回归证据
+
+本轮重新审核发现并修复两个直接阻塞 Finish 的 P1：
+
+1. Closure output-loss 身份绑定：`closure_ref` 使用 `closure:v3`，同时绑定原始 source Issue、closure
+   disposition 与 action；Closure resume/closed/no-mutation 输出保留 `source_issue`，Finish 对该绑定做
+   fail-closed 校验，避免在其它 Issue 或其它 disposition 上恢复并继续 Finish。覆盖 `T436-15`、`T436-16`
+   的错误 Issue/disposition 恢复回归。
+2. Cleanup lifecycle 隔离：Reactivate、Finish success、Cleanup continuation/receipt 均携带
+   `lifecycle_generation`；Cleanup 还交叉校验 terminal archive generation，拒绝 Reactivate 前的旧 Finish
+   success 或旧 terminal receipt 驱动当前周期。覆盖 `T436-34`、`T436-46` 的跨 lifecycle receipt 复用回归。
+
+当前 canonical package tests：Closure `9 passed`、Finish `10 passed`、Cleanup `8 passed`、Reactivate
+`11 passed`。四个 package 必须逐包运行，避免 pytest 将同名的 package-local `tests` 模块错误合并。
+
+## 6. 预期变更位置
 
 canonical 优先：`trellis/skills/guru-team/`、`trellis/workflows/guru-team/`、`trellis/presets/guru-team/` 与
 对应 `schemas/consumers/tests`。`.trellis/**`、`.agents/**`、`.codex/**`、`.claude/**`、`.cursor/**` 仅由 preset

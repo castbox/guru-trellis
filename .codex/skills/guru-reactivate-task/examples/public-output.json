@@ -1,1 +1,1 @@
-{"exit_id":"reactivated_to_evidence_refresh","task_ref":".trellis/tasks/example-task","resume_target":"evidence-refresh"}
+{"exit_id":"reactivated_to_evidence_refresh","task_ref":".trellis/tasks/example-task","resume_target":"evidence-refresh","lifecycle_generation":1}
