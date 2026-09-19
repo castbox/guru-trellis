@@ -1,6 +1,0 @@
-{"file": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py", "reason": "Review installer projection and removal changes"}
-{"file": "trellis/skills/guru-team/runtime/validate.py", "reason": "Review installed validator changes"}
-{"file": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py", "reason": "Review installer regression coverage"}
-{"file": "trellis/presets/guru-team/scripts/python/test_preset_transaction_installer.py", "reason": "Review transaction regression coverage"}
-{"file": "trellis/presets/guru-team/spec/workflow/skill-package-contract.md", "reason": "Review contract alignment"}
-{"file": "trellis/presets/guru-team/spec/workflow/quality-guidelines.md", "reason": "Review validation and release boundary"}

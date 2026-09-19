@@ -1,6 +1,0 @@
-{"file": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py", "reason": "Installer projection and managed removal implementation target"}
-{"file": "trellis/skills/guru-team/runtime/validate.py", "reason": "Installed package inventory validation target"}
-{"file": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py", "reason": "Installer regression tests"}
-{"file": "trellis/presets/guru-team/scripts/python/test_preset_transaction_installer.py", "reason": "Managed transaction and manifest regression tests"}
-{"file": "trellis/presets/guru-team/spec/workflow/skill-package-contract.md", "reason": "Package-private/public projection contract"}
-{"file": "trellis/presets/guru-team/spec/workflow/quality-guidelines.md", "reason": "Validation ownership and source/installed boundary"}
