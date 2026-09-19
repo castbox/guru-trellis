@@ -1,0 +1,129 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-19T02:43:58Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-19-438-session-binding-attach",
+    "title": "#438 修复 task workspace 创建后的 Codex session binding attach",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-19-438-session-binding-attach",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/438-session-binding-attach",
+    "commits": [
+      "901d6b9f3822a9011ff94ddd59c2f2d2445ac67d"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/execute.py",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
+      ".trellis/tasks/09-19-438-session-binding-attach/check.jsonl",
+      ".trellis/tasks/09-19-438-session-binding-attach/design.md",
+      ".trellis/tasks/09-19-438-session-binding-attach/implement.jsonl",
+      ".trellis/tasks/09-19-438-session-binding-attach/implement.md",
+      ".trellis/tasks/09-19-438-session-binding-attach/prd.md",
+      ".trellis/tasks/09-19-438-session-binding-attach/task.json",
+      ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/design.md",
+      ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/implement.md",
+      ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/prd.md",
+      ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/task.json",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/execute.py",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/440"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#438 修复 task workspace 创建后的 Codex session binding attach",
+    "outcome": "修复 `guru-create-task-workspace` 在使用 `task.py create --no-start` 后未绑定当前 Codex session 的根因。",
+    "changed_behavior": [
+      "修复 `guru-create-task-workspace` 在使用 `task.py create --no-start` 后未绑定当前 Codex session 的根因。",
+      "在 task identity 复核后复用官方 `active_task` 逻辑完成精确 attach，保持 task 状态为 `planning`，不调用 `task.py start`。",
+      "attach、runtime mapping 或 boundary 校验失败时回滚 session binding 及本次新建的 task、worktree、branch 和 mapping，避免半成功状态。",
+      "增加成功 attach、缺失 context、attach 失败回滚、错误 binding 清理和跨 session 隔离回归覆盖。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-19-438-session-binding-attach/design.md",
+          ".trellis/tasks/09-19-438-session-binding-attach/implement.md",
+          ".trellis/tasks/09-19-438-session-binding-attach/prd.md",
+          ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/design.md",
+          ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/implement.md",
+          ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/prd.md"
+        ],
+        "change": "修复 `guru-create-task-workspace` 在使用 `task.py create --no-start` 后未绑定当前 Codex session 的根因。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/execute.py",
+          ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/execute.py",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py"
+        ],
+        "change": "修复 `guru-create-task-workspace` 在使用 `task.py create --no-start` 后未绑定当前 Codex session 的根因。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-19-438-session-binding-attach/check.jsonl",
+          ".trellis/tasks/09-19-438-session-binding-attach/implement.jsonl",
+          ".trellis/tasks/09-19-438-session-binding-attach/task.json",
+          ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/task.json"
+        ],
+        "change": "修复 `guru-create-task-workspace` 在使用 `task.py create --no-start` 后未绑定当前 Codex session 的根因。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [],
+      "pr_refs": [
+        "PR #440"
+      ],
+      "branches": [
+        "codex/438-session-binding-attach"
+      ],
+      "paths": [
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/execute.py",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
+        ".trellis/tasks/09-19-438-session-binding-attach/check.jsonl",
+        ".trellis/tasks/09-19-438-session-binding-attach/design.md",
+        ".trellis/tasks/09-19-438-session-binding-attach/implement.jsonl",
+        ".trellis/tasks/09-19-438-session-binding-attach/implement.md",
+        ".trellis/tasks/09-19-438-session-binding-attach/prd.md",
+        ".trellis/tasks/09-19-438-session-binding-attach/task.json",
+        ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/design.md",
+        ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/implement.md",
+        ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/prd.md",
+        ".trellis/tasks/archive/2026-09/09-19-438-session-binding-attach/task.json",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/execute.py",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#438 修复 task workspace 创建后的 Codex session binding attach",
+        "修复 `guru-create-task-workspace` 在使用 `task.py create --no-sta",
+        "完成 execute.py 相关变更"
+      ]
+    },
+    "retrieval_text": "#438 修复 task workspace 创建后的 Codex session binding attach\n修复 `guru-create-task-workspace` 在使用 `task.py create --no-start` 后未绑定当前 Codex session 的根因。\n在 task identity 复核后复用官方 `active_task` 逻辑完成精确 attach，保持 task 状态为 `planning`，不调用 `task.py start`。\nattach、runtime mapping 或 boundary 校验失败时回滚 session binding 及本次新建的 task、worktree、branch 和 mapping，避免半成功状态。\n增加成功 attach、缺失 context、attach 失败回滚、错误 binding 清理和跨 session 隔离回归覆盖。\n修复 `guru-create-task-workspace` 在使用 `task.py create --no-sta\n完成 execute.py 相关变更"
+  }
+}
