@@ -168,7 +168,7 @@ def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, 
     if not task_path.is_file() or task_path.is_symlink():
         raise CommandError("stale_identity", "task_ref", "Active task metadata is missing or unsafe.", 3)
     task = json.loads(task_path.read_text())
-    if task.get("id") and task.get("id") != task_dir.name:
+    if task.get("id") and task.get("id") != task_dir.name and not task_dir.name.endswith(str(task.get("id"))):
         raise CommandError("stale_identity", "task.json.id", "Task identity does not match the active locator.", 3)
     task["status"] = "completed"
     task["lifecycle_generation"] = task.get("lifecycle_generation", 0)

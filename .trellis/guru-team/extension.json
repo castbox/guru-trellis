@@ -461,11 +461,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-19T13:31:52Z",
+  "installed_at": "2026-09-19T13:45:44Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "31c8b462ec3a3342ee40036198d224adb700bb12",
-    "commit": "31c8b462ec3a3342ee40036198d224adb700bb12",
+    "ref": "93fc8f9df2fb40dff51a34ea3340a68ffe85de8b",
+    "commit": "93fc8f9df2fb40dff51a34ea3340a68ffe85de8b",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -726,7 +726,7 @@
       {
         "id": "guru-finish-task",
         "interface_sha256": "a906349cbceaa2f4a170ff9b8cabd10ccb8baeb2442d76716eecc19d4e73dc57",
-        "tree_sha256": "de6ad1a35094c518b9ca36f7ee62b94be063289ba69de1ccf5be8af8b70593f5"
+        "tree_sha256": "dd9791272331d0b512ce8e649a3a0f0f633bfae2a55bb7b6d668e8661cd43f7f"
       },
       {
         "id": "guru-cleanup-task-resources",
@@ -736,7 +736,7 @@
       {
         "id": "guru-bind-task-session",
         "interface_sha256": "2da8d8661adc489889abdb98811da81c7c1ea7cd47d5986059dd095fb4f32132",
-        "tree_sha256": "bd3e3dbf9350129f78eb2079b5f60114ac314aa9d6cf9de3d1704466b212e320"
+        "tree_sha256": "3c38ad6b3f48f7cf9a216c9d2c9dc348d1cb6a3321f2fa11d55aa61479a4acb3"
       },
       {
         "id": "guru-reactivate-task",
@@ -10573,7 +10573,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finish-task/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/runtime/invoke.py",
-        "sha256": "3e81af6c20fe21e6ba019256402164a80569675435b35f85be783425b35fb9ef",
+        "sha256": "8da9cfd0e58a95557d7739333acb019183dba0d3e6f14e2926842a1b0d3c7b36",
         "executable": false,
         "action": "unchanged"
       },
@@ -10643,7 +10643,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finish-task/tests/test_finish_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/tests/test_finish_contract.py",
-        "sha256": "6ba40da5d19a1ffba9913888ac904712519e58fb334eafcb665a6be8e0d9c24d",
+        "sha256": "0dd89417c81353d4752ee39a1c8a09e7cfb79bcbf95db1639a2833cff0c7ecec",
         "executable": false,
         "action": "unchanged"
       },
@@ -10902,7 +10902,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-bind-task-session/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-bind-task-session/runtime/invoke.py",
-        "sha256": "f72dab8fbee088bb94bce79166916d8c203ca96d90c0129f0c11d39d342f298d",
+        "sha256": "520a74feddfcc641da93a5972394ddd3062172fd1fe99d4679b948e5210421b7",
         "executable": false,
         "action": "unchanged"
       },
@@ -10958,7 +10958,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-bind-task-session/tests/test_runtime.py",
         "source": "trellis/skills/guru-team/packages/guru-bind-task-session/tests/test_runtime.py",
-        "sha256": "42d09c39d412ea81393bd5356075f490f46e42324eaa0b95e21dd4cfb7596cfe",
+        "sha256": "dcbd8ec24ab17c0a6986c7ac56ce85060cb04ae75eb9620338e1f19d75dedce6",
         "executable": false,
         "action": "unchanged"
       },
