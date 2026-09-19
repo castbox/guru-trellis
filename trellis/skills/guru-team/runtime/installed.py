@@ -382,6 +382,16 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
                 errors.append(f"installed command validator coverage is incomplete for {skill_id}")
         files = collect_files(root, package, f"installed package {skill_id}", errors)
         tree_hash = hashlib.sha256()
+        for directory in package.rglob("*"):
+            if (
+                directory.is_dir()
+                and not directory.is_symlink()
+                and "tests" in directory.relative_to(package).parts
+            ):
+                errors.append(
+                    f"installed package {skill_id} contains package-private tests directory: "
+                    f"{directory.relative_to(package).as_posix()}"
+                )
         for path in files:
             inner = path.relative_to(package); expect(path, entry["package_rel"] / inner, path)
             if "tests" in inner.parts:

@@ -378,6 +378,45 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 any("contains package-private tests" in error for error in payload["errors"])
             )
 
+    def test_installed_validator_rejects_empty_package_private_tests_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            target = Path(temporary) / "repo"
+            (target / ".trellis").mkdir(parents=True)
+            (target / ".trellis/workflow.md").write_bytes(
+                (REPO / "trellis/workflows/guru-team/workflow.md").read_bytes()
+            )
+            preset.install_assets(
+                REPO / "trellis/workflows/guru-team",
+                target / ".trellis/guru-team",
+                target,
+                {"codex", "cursor", "claude"},
+            )
+            empty_tests = (
+                target
+                / ".trellis/guru-team/skills/packages/guru-bind-task-session/tests"
+            )
+            empty_tests.mkdir()
+
+            process = subprocess.run(
+                [
+                    str(target / ".trellis/guru-team/scripts/bash/check-skill-packages.sh"),
+                    "--root", str(target), "--mode", "installed", "--json",
+                ],
+                cwd=target,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+            self.assertEqual(process.returncode, 2, process.stderr)
+            payload = json.loads(process.stdout)
+            self.assertEqual(payload["status"], "failed")
+            self.assertEqual(payload["facts"]["package_private_test_count"], 0)
+            self.assertTrue(
+                any("contains package-private tests directory" in error for error in payload["errors"])
+            )
+
     def test_interface_declared_non_invoke_wrapper_is_projected_and_invocable(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             target = Path(temporary) / "repo"

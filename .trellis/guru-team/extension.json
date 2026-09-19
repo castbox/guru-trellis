@@ -461,11 +461,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-19T14:48:46Z",
+  "installed_at": "2026-09-19T15:41:37Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "d579af778c3504893461475b113ace8f308887f4",
-    "commit": "d579af778c3504893461475b113ace8f308887f4",
+    "ref": "7e8da318bd974efb452fba845e4592a462d451b9",
+    "commit": "7e8da318bd974efb452fba845e4592a462d451b9",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -12316,9 +12316,9 @@
       {
         "path": ".trellis/guru-team/runtime/installed.py",
         "source": "trellis/skills/guru-team/runtime/installed.py",
-        "sha256": "33cf4f422ced8ff7eb776db36a67d04eb18353bdbbad1cb7451a0fd32147beeb",
+        "sha256": "466d03d4ca3c09a3a8fd64d230330e78291cbc3220f05e752d0d423a31b32eda",
         "executable": false,
-        "action": "unchanged"
+        "action": "updated_managed"
       },
       {
         "path": ".trellis/guru-team/runtime/io.py",
@@ -43170,7 +43170,348 @@
         "action": "unchanged"
       }
     ],
-    "removals": [],
+    "removals": [
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "7de0f62a83c5ac1558dc517d622627bfa772ba8e3ad00fc1afccf4e230a738f7"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "7c518b45321ba412aa471515230a96870290c304c43f6ab17d9a713b693070ae"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bind-task-session/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "1f67a3a484419d744c450d250aa79b73eb655627fb8efe9f34f4d3ca3a8b6242"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bind-task-session/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "3cb0ff5591d2a67c3f1ace8a451ac461e49be67e9f1d6c29bbb6c40d7da881f8"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "f8e7bc3531f6d9bd9aa85c19801e93573c7e3c745ca3c4d366670c2207a2dc83"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "91de8884e2f879164824f98bd79ed5ae879a9b07fd5798862f829ec8892952fa"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "0d6b5575c6606a5a7cc47782196d1e931d14c6f13196d54a2edb4d96cd283f02"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "f2e9e91b3c4e979ef7a4a4990bda980fccb22840bd707eda5cd7805c9cea0174"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/tests/__init__.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/tests/test_cleanup_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "7ef198d37f5a9669accbf352ba6533e7f00371b9251f2b8636e9bd425c6712ef"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-complete-task-closure/tests/__init__.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-complete-task-closure/tests/test_closure_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "f0196372d2c889c6e375973584df910be822d10fa3bb311c06c7bdc512b447c9"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "8e7460bf68df28dc2cf3e290cb4b72f15c6d82edb4d2f7fadb2137c79f31e852"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_happy_path.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "1562d7ac816dc66e2bba17980195eeb46fa077a9562f3de27f70d348d9168c0d"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "a59539780519fcc7e60e436797fdd78b4ac711706873f3055313999db1c98000"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "06d30d57a89956af56908bf6a953d2296c7711d96e3cc56373a1486cd514b8d1"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_record_authoring.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "9b67385856924e0f9e68c0350763bfe21fd7260e25d3d0f1e1ba27b4af20df16"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "1ed75fdb303caeafd88ec575c1e4d6d718ec1cf38b6317639d13dc75dcadf6b7"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "81f2016cb3f1acbf155bf002691b30caca1458afa8cb87a16147762dda72c26c"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "83f4ec25f43e8bd47df1e53cb0161d6ba7a3b6483a9eab01d9921d6a5d23e058"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-execute-task-free-change/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "e4258e35fb86762f7a209082abf9959a32ecbda8782ef0901396753b1c645eea"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-execute-task-free-change/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "0a14866b733747696e1adcbf3f75c312027872b54d1205f25c9d488d5558f550"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/support.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "c70472732f486a8fe515f73d5c2763808da3f6ebb6342eaaeb8114ebe03bd30f"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_archive_mappings.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "af22927f49aee684949bf6a0bb8e0999f6f38934b684bd60181975a085fd4b3a"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_archived_review_refresh.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "857496a2d1affa748cf72bc3fd7f9751eab4e56e7280d029174f0bcc02842d0c"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "5fa7667a3327ce0b9d343e54e979b370bada725486a4fbf6d529a059169adf80"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_provenance.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "b7414966d36819a2e8f23d0fe43859510f2f7b6f152edf82fc64a68cbf5a2ae2"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_recovery.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "a9373fbaa02d2464a6155d1649f5b5da7320e17574557954275310e50b16812b"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finish-task/tests/__init__.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-finish-task/tests/test_finish_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "0dd89417c81353d4752ee39a1c8a09e7cfb79bcbf95db1639a2833cff0c7ecec"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "fb3408f344c27cff2d5e8119b8f3336583bd5377949699c072d1b180cdb4e2c9"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "582d189e295ff984df93366ff398ff228626c1a0243e8f0c24e91cde4d4bb524"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "a47b71943d2126cd69fc4387c9672f670902fee8ddfdcd52e1f25c90e0948b80"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/tests/test_history.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "8376aa28d6b2ab45738daa9a26f33cfd426fc35c0a339e944d676fb30ff009b7"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "2a2abcc1152ef5aad3f5961bcbd65fe8a352be7735a504d3f9b881009f2f8977"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-merge-task-pr/tests/test_archived_review.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "7a6f444dfeb8d4645598a8014eaef7690ab1144e5eca7b3ed20fc9c4b320d921"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-merge-task-pr/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "9bb18aa20c8fccd8327d71e9723d5cdd768a8d350b8077c8135a7e7ff949beb6"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-merge-task-pr/tests/test_errors.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "eadf8e589be8179b5aeedbe686995ce56087ae0da9a88fcbee2b631b33523d6c"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "61aad08c8a9fd62505551831a097c4b889ea915ea44735f9850496a1e4783738"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/tests/test_transaction.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "230b3854c23e85bfbc21a508618654d9e583dbeb7a7177438cc32ed6b15ffd5b"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-qualify-normal-scenario/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "fa088cf574d7584f90dd1ce475659104c8ad78fc473bcc692506d6c91b9a1bb3"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-qualify-normal-scenario/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "79354e4916b4e7f75740705e498b1562fa3e0cc789aa8975800d256f5772b591"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-qualify-solution-mechanism/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "41e53e145ea0bf51c57a344a94acefabb8d2bd1c7106c0fcaa40fd9df859ef09"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-qualify-solution-mechanism/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "c1ff20345edc9159f92292b9476d3f20eb860e8743e87057413233647eff19f2"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-reactivate-task/tests/__init__.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-reactivate-task/tests/test_reactivate_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "7cb3d656abbb62d64cbe660834c90eeecc102349b2ff86657cf56de2e9c24bad"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "5ab7317585ccf62952256359f7ddfc756c75bbb0aeeb04b77097bf0defcb9eb6"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "c1baa1445b32c24debbdd02576286a46447834b3a25ed2765015e074c8dff439"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "e1ca8d28a519e6a4e9f8c7250e7eed228787a3533735a3a1f68bdc146be07ac6"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-restore-archived-task/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "09a201485f9ecb8ab123e11980fee60bca5794d2723f31c76ebcdd5f52a7acd2"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/tests/test_archived.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "1f5a0440008daa6057e69312b28e4d24ef9f41a38d93a5b48b80bbc89ce27460"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "30b29ca9d2c603497f0a20b2585f253bcdc37a377497095f5aa7c2cafdc7f8ce"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "7c518b45321ba412aa471515230a96870290c304c43f6ab17d9a713b693070ae"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-change-request/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "3a59d8ff0e73bb69a0f05268d5cfb5abdf955fe6fbe24bf38513cbe8322cf9ad"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-change-request/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "c5690ca436eb21a4e366764ecd51895a726fa0204cdfb7444c6349b2ab4436cd"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "4f45fd68402bb253d53b097233d7c4725de3cbf58a04675ce05e208734fb3786"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_invocation.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "62aca1ceab032a56dabc370655a07f00c50cf21cbebf60a276618166190379a2"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "7c518b45321ba412aa471515230a96870290c304c43f6ab17d9a713b693070ae"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-task-completion/tests/__init__.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-task-completion/tests/test_completion_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "bfe97615f4d5cd64c3c71046b8ccc28d7ea74345af70b64d6112a0470cf7117f"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-task-delivery/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "e8032b9aa3da4d96c45d13f141565c8d66693df7691ba5b659cfb3eb13a14a0c"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-task-delivery/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "f469052065135c8b086420a24bdc62d44d0ec1936a06ae3bd7ddb225804ad3a2"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_archived.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "676aabebf3b8dd7da783b4c13fd4ff2fd59e09af89ac9039d7ad425fd34d95e6"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "a350d219ba4c223a1ca148cb3b699f3e7826716b75a6ad71a95db883f0ff66c9"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-select-workflow-mode/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "6bc0d8974856cb88de9322b131b4fdcaa2c0de8694d279e53ec2a323b138616d"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-select-workflow-mode/tests/test_runtime.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "7c518b45321ba412aa471515230a96870290c304c43f6ab17d9a713b693070ae"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-sync-base/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "68cc53bfd5974b931ec5ec48393766add77893659d9b7aaf104bd7c8f12c88cc"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "action": "removed_managed",
+        "previous_managed_sha256": "d36ac5482744678a7483b34be1ebe8eb1b5dc3bd7df5ffdd8cdf17a3565e8461"
+      }
+    ],
     "conflicts": [],
     "sidecars": []
   },

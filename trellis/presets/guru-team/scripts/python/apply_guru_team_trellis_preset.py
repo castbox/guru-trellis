@@ -598,6 +598,7 @@ def retain_previous_manifest_for_noop(
                 for item in files:
                     if isinstance(item, dict):
                         item.pop("action", None)
+            section.pop("removals", None)
         return stable
 
     return previous if stable_install_state(candidate) == stable_install_state(previous) else candidate

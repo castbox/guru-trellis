@@ -314,6 +314,15 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             }],
         )
 
+        self.install_current()
+        manifest = json.loads(
+            (self.install_dst / "extension.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            manifest["skill_packages"]["removals"],
+            result["skill_packages"]["removals"],
+        )
+
     def test_reapply_preserves_edited_historical_package_test_with_sidecar(self) -> None:
         target, _ = self._seed_historical_package_test_copy(local_edit=True)
         local = target.read_bytes()
