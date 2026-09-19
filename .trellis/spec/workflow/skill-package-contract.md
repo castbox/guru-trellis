@@ -66,8 +66,17 @@ Every `tests[]` entry is a package-relative `tests/<file>` path. It must be
 unique, lexically safe, resolve to an existing regular file below that active
 package's `tests/` root, and pass the same component-by-component `lstat`
 boundary as other package assets. Labels, missing paths, paths outside
-`tests/`, and symlink-backed evidence are invalid. Package tests are part of the
-installed/package/platform inventories rather than an untracked assertion.
+`tests/`, and symlink-backed evidence are invalid. Package tests remain
+canonical source-validation assets, but they are package-private and are not
+part of the installed runtime package projection. Installed
+`.trellis/guru-team/skills/packages/<skill>/` trees contain the declared public
+package files and runtime entrypoints only; platform projections continue to
+apply their stricter public allowlist. Reapply derives the installed path set
+from this projection, so unchanged historical managed `tests/` copies are
+removed with `skill_packages.removals` provenance while locally edited copies
+remain preserved through the normal conflict/sidecar path. Source validation
+reports canonical package tests separately from installed validation, and
+installed validation rejects any package-local `tests/` path.
 
 Workflow and standalone execution use the same preconditions and may reuse
 evidence only when its identity and freshness still match. Missing, stale, or

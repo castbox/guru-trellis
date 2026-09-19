@@ -549,6 +549,37 @@ def retain_previous_manifest_for_noop(
     if previous is None:
         return candidate
 
+    # Removal provenance is durable install history, not a no-op marker. Keep
+    # it when another managed asset changes during the same reapply.
+    candidate = json.loads(json.dumps(candidate))
+    for section_name in ("skill_packages", "overlays"):
+        previous_section = previous.get(section_name)
+        candidate_section = candidate.get(section_name)
+        if not isinstance(previous_section, dict) or not isinstance(candidate_section, dict):
+            continue
+        previous_removals = previous_section.get("removals")
+        candidate_removals = candidate_section.get("removals")
+        if not isinstance(previous_removals, list) or not isinstance(candidate_removals, list):
+            continue
+        known_paths = {
+            item.get("path")
+            for item in candidate_removals
+            if isinstance(item, dict) and isinstance(item.get("path"), str)
+        }
+        current_paths = {
+            item.get("path")
+            for item in candidate_section.get("files", [])
+            if isinstance(item, dict) and isinstance(item.get("path"), str)
+        }
+        candidate_section["removals"] = candidate_removals + [
+            item
+            for item in previous_removals
+            if isinstance(item, dict)
+            and isinstance(item.get("path"), str)
+            and item["path"] not in known_paths
+            and item["path"] not in current_paths
+        ]
+
     mutating_actions = {
         "installed",
         "updated_managed",
@@ -598,6 +629,7 @@ def retain_previous_manifest_for_noop(
                 for item in files:
                     if isinstance(item, dict):
                         item.pop("action", None)
+            section.pop("removals", None)
         return stable
 
     return previous if stable_install_state(candidate) == stable_install_state(previous) else candidate
@@ -1112,6 +1144,15 @@ def skill_package_source_files(package_root: Path) -> list[Path]:
     )
 
 
+def skill_package_installed_files(package_root: Path) -> list[Path]:
+    """Return package files that belong in the installed runtime projection."""
+    return [
+        path
+        for path in skill_package_source_files(package_root)
+        if "tests" not in path.relative_to(package_root).parts
+    ]
+
+
 def skill_platform_public_files(package_root: Path) -> list[Path]:
     """Return the Agent-readable projection without package-private runtime assets."""
     interface = json.loads((package_root / "interface.json").read_text(encoding="utf-8"))
@@ -1259,7 +1300,7 @@ def install_skill_packages(
     for entry in active_entries:
         skill_id = str(entry["id"])
         package_root = canonical_root / str(entry["package"])
-        package_files = skill_package_source_files(package_root)
+        package_files = skill_package_installed_files(package_root)
         for source in package_files:
             source_files.append((source, source.relative_to(canonical_root)))
         interface_path = canonical_root / str(entry["interface"])
@@ -1932,7 +1973,7 @@ def managed_source_projections(
     active_entries = [entry for entry in entries if entry.get("state") == "active"]
     for entry in active_entries:
         package_root = canonical_root / str(entry["package"])
-        installed_sources.extend(skill_package_source_files(package_root))
+        installed_sources.extend(skill_package_installed_files(package_root))
     for source in installed_sources:
         add(source, dst / "skills" / source.relative_to(canonical_root))
     for relative in SKILL_RUNTIME_KERNEL_PATHS:

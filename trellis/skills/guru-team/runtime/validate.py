@@ -209,6 +209,7 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
     commands_seen: dict[str, str] = {}
     complete = 0
     public_only = 0
+    package_test_count = 0
     for row in active:
         package_id = row["id"]
         package = packages / package_id
@@ -221,6 +222,14 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
         if not metadata_path.is_file():
             raise CommandError("missing_contract", str(metadata_path), "Restore commands.json for every active package.")
         complete += 1
+        if mode == "source":
+            package_test_count += sum(
+                1
+                for path in package.rglob("*")
+                if path.is_file()
+                and not path.is_symlink()
+                and "tests" in path.relative_to(package).parts
+            )
         metadata = read_json_file(metadata_path, f"{package_id}.commands")
         catalog = read_json_file(package / "errors/catalog.json", f"{package_id}.errors")
         validate_json(metadata, command_schema, f"{package_id}.commands")
@@ -344,7 +353,15 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
                     str(wrapper),
                     "Route every package compatibility wrapper to a declared active validator wrapper.",
                 )
-    return {"status": "passed", "mode": mode, "active_packages": len(active), "complete_package_commands": complete, "public_projections": public_only, "commands": len(commands_seen)}
+    return {
+        "status": "passed",
+        "mode": mode,
+        "active_packages": len(active),
+        "complete_package_commands": complete,
+        "public_projections": public_only,
+        "commands": len(commands_seen),
+        "package_test_count": package_test_count,
+    }
 
 
 def main(argv: list[str]) -> int:

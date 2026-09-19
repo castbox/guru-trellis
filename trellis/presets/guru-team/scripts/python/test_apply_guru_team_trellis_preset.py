@@ -70,6 +70,34 @@ class InstalledCloseoutFixtureTest(unittest.TestCase):
             fake_gh = fake_bin / "gh"
             compile(fake_gh.read_text(encoding="utf-8"), str(fake_gh), "exec")
 
+    def test_manifest_update_preserves_historical_removal_provenance(self) -> None:
+        removal = {
+            "path": ".trellis/guru-team/skills/packages/guru-example-action/tests/test_contract.py",
+            "action": "removed_managed",
+            "previous_managed_sha256": "a" * 64,
+        }
+        previous = {
+            "skill_packages": {"removals": [removal]},
+            "overlays": {"removals": []},
+        }
+        candidate = {
+            "skill_packages": {"removals": [], "files": []},
+            "overlays": {"removals": [], "files": []},
+        }
+        result = {
+            "updated_managed": [".trellis/spec/workflow/quality-guidelines.md"],
+            "skill_packages": {"removals": [], "conflicts": [], "sidecars": [], "files": []},
+            "overlays": {"removals": [], "conflicts": [], "sidecars": [], "files": []},
+            "agents_principles": {"action": "unchanged"},
+            "codex_dispatch": {"action": "unchanged"},
+            "runtime_gitignore": {"action": "unchanged"},
+            "language_guidance": {"updated_paths": []},
+        }
+
+        retained = preset.retain_previous_manifest_for_noop(previous, candidate, result)
+
+        self.assertEqual(retained["skill_packages"]["removals"], [removal])
+
     def test_preflight_uses_each_entrypoints_error_contract(self) -> None:
         public_payload = {
             "code": "finalization_stale",
@@ -1703,6 +1731,23 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             ".claude/commands/guru/finish-work.md",
             installed_manifest["install"]["managed_assets"],
         )
+
+    def test_reselecting_removed_platform_clears_restored_removal_provenance(self) -> None:
+        platforms, all_platforms = preset.selected_platforms(None, True)
+        self.install(platforms, all_platforms=all_platforms)
+        self.install({"codex", "cursor"})
+
+        payload = self.install(platforms, all_platforms=all_platforms)
+
+        self.assertEqual(payload["skill_installed_validation"]["returncode"], 0)
+        manifest = json.loads((self.install_dst / "extension.json").read_text(encoding="utf-8"))
+        for section_name in ("skill_packages", "overlays"):
+            with self.subTest(section=section_name):
+                section = manifest[section_name]
+                restored = {item["path"] for item in section["files"] if item["path"].startswith(".claude/")}
+                self.assertTrue(restored)
+                self.assertTrue(all((self.repo / path).is_file() for path in restored))
+                self.assertFalse(restored & {item["path"] for item in section["removals"]})
 
     def test_all_platforms_to_subset_preserves_edited_overlay_and_blocks_activation(self) -> None:
         platforms, all_platforms = preset.selected_platforms(None, True)

@@ -193,6 +193,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
         self.assertEqual(payload["active_packages"], 32)
         self.assertEqual(payload["complete_package_commands"], 32)
         self.assertGreater(payload["commands"], 0)
+        self.assertGreater(payload["package_test_count"], 0)
 
     def test_post_delivery_public_contract_projections_are_closed(self) -> None:
         for package_id in POST_DELIVERY_PACKAGES:
@@ -331,10 +332,95 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 for path in (SKILLS / "packages").glob("guru-*/commands.json")
             )
             self.assertEqual(installed["facts"]["command_count"], source_commands)
+            self.assertEqual(installed["facts"]["package_private_test_count"], 0)
             self.assertFalse((target / ".trellis/guru-team/scripts/python/guru_team_trellis.py").exists())
-            for projection in (target / ".agents/skills", target / ".codex/skills", target / ".cursor/skills"):
+            for projection in (
+                target / ".agents/skills",
+                target / ".codex/skills",
+                target / ".cursor/skills",
+                target / ".claude/skills",
+            ):
                 for path in projection.rglob("*"):
                     self.assertNotIn(path.name, {"runtime", "tests", "errors"})
+
+    def test_installed_validator_rejects_package_private_tests(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            target = Path(temporary) / "repo"
+            (target / ".trellis").mkdir(parents=True)
+            (target / ".trellis/workflow.md").write_bytes(
+                (REPO / "trellis/workflows/guru-team/workflow.md").read_bytes()
+            )
+            preset.install_assets(
+                REPO / "trellis/workflows/guru-team",
+                target / ".trellis/guru-team",
+                target,
+                {"codex", "cursor", "claude"},
+            )
+            injected = (
+                target
+                / ".trellis/guru-team/skills/packages/guru-bind-task-session/tests/injected.py"
+            )
+            injected.parent.mkdir(parents=True)
+            injected.write_text("# package-private fixture\n", encoding="utf-8")
+
+            process = subprocess.run(
+                [
+                    str(target / ".trellis/guru-team/scripts/bash/check-skill-packages.sh"),
+                    "--root", str(target), "--mode", "installed", "--json",
+                ],
+                cwd=target,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+            self.assertEqual(process.returncode, 2, process.stderr)
+            payload = json.loads(process.stdout)
+            self.assertEqual(payload["status"], "failed")
+            self.assertEqual(payload["facts"]["package_private_test_count"], 1)
+            self.assertTrue(
+                any("contains package-private tests" in error for error in payload["errors"])
+            )
+
+    def test_installed_validator_rejects_empty_package_private_tests_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            target = Path(temporary) / "repo"
+            (target / ".trellis").mkdir(parents=True)
+            (target / ".trellis/workflow.md").write_bytes(
+                (REPO / "trellis/workflows/guru-team/workflow.md").read_bytes()
+            )
+            preset.install_assets(
+                REPO / "trellis/workflows/guru-team",
+                target / ".trellis/guru-team",
+                target,
+                {"codex", "cursor", "claude"},
+            )
+            empty_tests = (
+                target
+                / ".trellis/guru-team/skills/packages/guru-bind-task-session/tests"
+            )
+            empty_tests.mkdir()
+
+            process = subprocess.run(
+                [
+                    str(target / ".trellis/guru-team/scripts/bash/check-skill-packages.sh"),
+                    "--root", str(target), "--mode", "installed", "--json",
+                ],
+                cwd=target,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+            self.assertEqual(process.returncode, 2, process.stderr)
+            payload = json.loads(process.stdout)
+            self.assertEqual(payload["status"], "failed")
+            self.assertEqual(payload["facts"]["package_private_test_count"], 0)
+            self.assertTrue(
+                any("contains package-private tests directory" in error for error in payload["errors"])
+            )
 
     def test_interface_declared_non_invoke_wrapper_is_projected_and_invocable(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

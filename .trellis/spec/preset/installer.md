@@ -162,9 +162,9 @@ including dangling, internal, external, and multilevel chains, fails closed.
 The atomic current package inventory includes the Interface 1.4 additive
 `skill_input_authoring_seed` schema shape, thirteen target-owned authoring
 examples, the production manifest bindings, the four finalization-family
-bindings, and their validator/probe tests. Canonical, installed, shared, Codex,
-Cursor, and Claude copies must carry byte-identical contracts; a graph that has
-only part of those thirteen handoffs is a mixed package activation and must fail
+bindings, and their canonical-source validator/probe tests. Installed, shared,
+Codex, Cursor, and Claude copies must carry byte-identical public contracts;
+a graph that has only part of those thirteen handoffs is a mixed package activation and must fail
 before target mutation.
 
 Installed package validation parses the installed workflow target declarations
@@ -178,37 +178,39 @@ kind-mismatched, or dangling targets block installation/runtime use.
 
 The production registry installs the active `guru-create-task-commit` package
 to the audited runtime root and selected shared/Codex/Cursor/Claude discovery
-roots. Its artifact schema,
-package thin wrappers and package tests are part of the managed tree. The
-companion `scripts/bash/create-task-commit.sh` is a managed executable asset;
-source/installed validation and the manifest inventory must prove its bytes and
-mode.
+roots. Its artifact schema and package thin wrappers are part of the installed
+managed tree. Its package tests remain canonical source-validation assets and
+are not installed into the runtime or platform projections. The companion
+`scripts/bash/create-task-commit.sh` is a managed executable asset; source
+validation must prove the package test bytes, while installed validation and
+the manifest inventory must prove only the public projection bytes and mode.
 
 The production registry also installs active `guru-sync-base` to the audited
 runtime root and selected shared/Codex/Cursor/Claude discovery roots. Managed
 inventory includes its `SKILL.md`, interface, contract, example, result schema,
-tests, and executable thin wrappers. Companion managed assets include
-executable `sync-base.sh` and `check-base-sync.sh`; the extension manifest
+executable thin wrappers, and excludes its package-private `tests/` tree.
+Companion managed assets include executable `sync-base.sh` and `check-base-sync.sh`; the extension manifest
 publishes active id `guru-sync-base`, schema id
 `guru-base-sync-result-1.0`, and runtime command ids `sync-base` and
 `check-base-sync`.
 
 The registry also installs active semantic `guru-discover-change-context` to
 the audited runtime root and selected shared/Codex/Cursor/Claude discovery
-roots. Its managed tree includes `SKILL.md`, interface, contract, the
+roots. Its installed managed tree includes `SKILL.md`, interface, contract, the
 active `guru-stage0-discover-change-context-input-pre-task-2.0` and
 `guru-change-context-owner-result-3.0` schemas/examples, retained immutable
-legacy input 1.0 / owner-result 2.0 assets, public schemas/examples, tests, and
-executable dispatcher-only wrappers. Managed companion assets include
+legacy input 1.0 / owner-result 2.0 assets, public schemas/examples, executable
+dispatcher-only wrappers, and excludes package-private tests. Managed companion assets include
 `preview-change-context-history.sh`, `record-context-discovery.sh`, and
 `check-context-discovery.sh`; the extension manifest publishes the active id,
 owner-result schema id, and all three runtime command ids. Installed validation
 must prove exact bytes, executable modes, package/interface/tree digests and
 selected-platform inventory before direct discovery may run.
-Managed schema/runtime/tests must move together when duplicate candidate facts
+Managed schema/runtime assets must move together when duplicate candidate facts
 gain canonical repo/number/identity/URL/open-state/update-time digest and live
-freshness checks, or when the `blocked` exit/Gate state matrix changes; a mixed
-old-schema/new-runtime installation is drift and fails installed validation.
+freshness checks, or when the `blocked` exit/Gate state matrix changes. Package
+tests remain source-only validation assets; a mixed old-schema/new-runtime
+installation is drift and fails installed validation.
 The active graph supplies Discovery public input independently from actual Sync
 `base_current`; no installer fixture may reconstruct or expose the Sync private
 result or its facts digest.
@@ -584,9 +586,10 @@ or disposable copy and verify:
 ## Skill Evaluation Assets
 
 Canonical eval schemas, adapter descriptors/wrappers, public command wrappers,
-and the package-local kernel live under `trellis/`. The preset installs the
-complete active package tree below `.trellis/guru-team/skills/packages/` and
-the shared kernel below `.trellis/guru-team/runtime/`. Shared/Codex/Claude/
+package-private tests, and the package-local kernel live under `trellis/`.
+The preset installs the active package's public runtime projection, excluding
+its `tests/` tree, below `.trellis/guru-team/skills/packages/` and the shared
+kernel below `.trellis/guru-team/runtime/`. Shared/Codex/Claude/
 Cursor discovery roots receive only the public projection: `SKILL.md`,
 interface, references, public schemas/examples/evals and the public invocation
 wrapper. They never receive package `runtime/`, `tests/`, `errors/`, private
@@ -670,7 +673,7 @@ Python dependency imports are not product-runtime evidence.
 ## Production Skill Atomic Activation
 
 `production-current-v4` is the sole current planning/check/commit/qualification
-contract. The preset stages its schema, manifest, four complete package trees, consumer
+contract. The preset stages its schema, manifest, four public package projections, consumer
 schemas, registry, extension inventory, installed provenance, and selected
 platform copies in one transaction. The transaction validates the complete
 current package graph before publishing any destination; only the current
@@ -705,8 +708,10 @@ package together with its registry row, active `guru-finalize-task` consumer
 identity, consumer schemas, runtime commands, extension inventories, canonical
 workflow markers, installed shared package, and selected Codex/Cursor/Claude copies.
 Fresh install, update, and reapply require byte- and executable-mode identity
-for the package's Skill, Interface, references, schemas, examples, wrapper,
-tests, and canonical eval corpus.
+for the package's installed Skill, Interface, references, schemas, examples,
+wrapper, and canonical eval corpus. Package-private tests are checked in the
+canonical source package and are validated there, but are excluded from the
+installed package projection.
 
 The activation contributes to the current package closure of twenty-three active
 Skills and 97 external exits.

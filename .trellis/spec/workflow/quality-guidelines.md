@@ -341,7 +341,11 @@ production registry/extension inventories contain the exact thirteen current
 ids and no fixture ids/schema ids. Fresh throwaway install and the post-`trellis update`
 workflow/preset reapply phase each run source/installed validation, production
 discovery smoke, current-only fixture invocation tests, and a final recursive zero
-`.new`/`.bak` scan.
+`.new`/`.bak` scan. Canonical package tests remain available to source
+validation, while installed package inventories exclude package-private `tests/`
+trees; reapply tests cover unchanged managed removal provenance and edited-copy
+conflict/sidecar preservation. Source and installed validation results must
+report those boundaries separately.
 For `guru-discover-change-context`, tests must cover mode-precondition parity,
 active pre-task input 2.0 and owner-result 3.0 selection with immutable legacy
 input 1.0 / owner-result 2.0 bytes, independent `public_input` plus
@@ -1140,13 +1144,12 @@ closure is twenty-three active Skills and 100 exits; business global markers rem
 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Upstream Finish
 assets remain unchanged.
 
-Installed package tests must execute in a clean business repository that does
-not contain the canonical `trellis/**` source tree. In a source repository, the
-Finalizer schema regression asserts the package-local current schema, canonical
-workflow schema, and dogfood installed shared schema. In an installed business
-repository, it asserts the package-local and target installed shared schemas and
-also proves the canonical workflow schema path is absent; installed tests must
-not read or otherwise depend on that source-only path.
+Canonical package tests must execute in the source repository, where the
+canonical `trellis/**` package tree is available. A clean installed business
+repository does not execute package-private tests; it validates the installed
+public package projection, manifest/provenance and package-private path
+rejection, while also proving the canonical workflow schema path is absent.
+Installed validation must not read or otherwise depend on that source-only path.
 
 ## Base Evolution Gate Quality
 
