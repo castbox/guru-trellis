@@ -1,2 +1,0 @@
-{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Use targeted runtime, canonical/dogfood and drift validation."}
-{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Preserve session binding and workflow boundaries."}
