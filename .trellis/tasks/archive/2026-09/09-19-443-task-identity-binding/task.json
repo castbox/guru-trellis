@@ -3,7 +3,7 @@
   "name": "443-task-identity-binding",
   "title": "#443 Task identity-centered multi-session binding",
   "description": "Names bind Issue #443 to the task identity and multi-session binding capability.",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/443",
   "package": null,
@@ -11,7 +11,7 @@
   "creator": "wesleywu",
   "assignee": "wesleywu",
   "createdAt": "2026-09-19",
-  "completedAt": null,
+  "completedAt": "2026-09-19",
   "branch": "codex/443-task-identity-binding",
   "base_branch": "main",
   "worktree_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/443-task-identity-binding",
@@ -23,7 +23,9 @@
   "relatedFiles": [],
   "notes": "",
   "meta": {
-    "base_head": "8ff1562cafca7e2833a1dd0af84f0ecd2ff5f71e",
+    "base_head": "443a5ea3f25113c790704706f0f1f7c891fec6be",
     "base_branch": "main"
-  }
+  },
+  "lifecycle_generation": 0,
+  "archive_dir": ".trellis/tasks/archive/2026-09/09-19-443-task-identity-binding"
 }

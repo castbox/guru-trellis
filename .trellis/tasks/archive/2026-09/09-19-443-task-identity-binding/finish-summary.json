@@ -1,0 +1,62 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-19T13:47:43Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-19-443-task-identity-binding",
+    "title": "#443 Task identity-centered multi-session binding",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-19-443-task-identity-binding",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-19-443-task-identity-binding"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/443-task-identity-binding",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#443 Task identity-centered multi-session binding",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-09/09-19-443-task-identity-binding"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [],
+      "pr_refs": [],
+      "branches": [
+        "codex/443-task-identity-binding"
+      ],
+      "paths": [],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "#443 Task identity-centered multi-session binding；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
