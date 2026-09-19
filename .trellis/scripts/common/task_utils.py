@@ -15,11 +15,10 @@ from __future__ import annotations
 
 import shutil
 import sys
-from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .paths import FILE_TASK_JSON, get_repo_root, get_tasks_dir
+from .paths import FILE_TASK_JSON, generate_task_archive_month, get_repo_root, get_tasks_dir
 from .history_paths import RetiredDataPathError, require_active_path
 
 if TYPE_CHECKING:
@@ -121,7 +120,7 @@ def find_task_by_name(task_name: str, tasks_dir: Path, repo_root: Path | None = 
 def archive_destination_for(task_dir_abs: Path) -> Path:
     """Path a task would be archived to: <tasks>/archive/<YYYY-MM>/<name>."""
     tasks_dir = task_dir_abs.parent
-    year_month = datetime.now().strftime("%Y-%m")
+    year_month = generate_task_archive_month()
     return tasks_dir / "archive" / year_month / task_dir_abs.name
 
 

@@ -1,0 +1,29 @@
+{
+  "id": "439-task-date-asia-shanghai",
+  "name": "439-task-date-asia-shanghai",
+  "title": "统一 Trellis task 日期生成的 Asia/Shanghai 时区语义",
+  "description": "Issue #439：统一 task 目录日期前缀、task.json.createdAt、workspace executor 与官方 task store 的日期计算为 Asia/Shanghai，并补充 TZ 与跨午夜回归测试。",
+  "status": "completed",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "createdAt": "2026-09-19",
+  "completedAt": "2026-09-19",
+  "branch": "codex/439-task-date-asia-shanghai",
+  "base_branch": "main",
+  "worktree_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/439-task-date-asia-shanghai",
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "issue": "439",
+    "issue_url": "https://github.com/castbox/guru-trellis/issues/439"
+  }
+}

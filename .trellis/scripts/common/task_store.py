@@ -21,7 +21,6 @@ import argparse
 import re
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime
 from pathlib import Path
 
 from .config import (
@@ -52,6 +51,7 @@ from .paths import (
     DIR_WORKFLOW,
     FILE_TASK_JSON,
     generate_task_date_prefix,
+    generate_task_date,
     get_repo_root,
     get_tasks_dir,
 )
@@ -497,7 +497,7 @@ def cmd_create(args: argparse.Namespace) -> int:
         task_dir.mkdir(parents=True)
         created_dir = True
 
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = generate_task_date()
 
     # Record the PR target branch. Prefer the repo's actual default branch
     # (origin/HEAD) so creating a task from a feature branch doesn't
@@ -1356,7 +1356,7 @@ def cmd_archive(args: argparse.Namespace) -> int:
     task_json_path = task_dir / FILE_TASK_JSON
 
     # Update status before archiving
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = generate_task_date()
     # Names of child task dirs whose task.json gets modified below; passed
     # into safe_archive_paths_to_add so they're staged in this commit.
     modified_children: list[str] = []
