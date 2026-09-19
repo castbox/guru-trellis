@@ -3,7 +3,7 @@ import argparse,hashlib,importlib.util,json,os,re,subprocess,sys
 from datetime import datetime,timedelta,timezone
 from pathlib import Path
 from urllib.parse import urlsplit
-from common import CONSUMERS,digest,finalize,git,load,now,parse,require_directory_ancestors,resolve_workspace,root,snapshot,stage,validate_plan,worktrees
+from common import CONSUMERS,digest,finalize,git,load,now,parse,require_directory_ancestors,resolve_workspace,root,snapshot,stage,task_date_prefix,validate_plan,worktrees
 from runtime.io import CommandError
 from plan_input import load_plan_envelope
 def run_gh(repo,*args):
@@ -183,8 +183,8 @@ def mapping_payloads(repo,plan,workspace,task_dir_rel):
 def expected_mapping(rel,workspace_mapping,task_mapping):
  return workspace_mapping if "/workspaces/" in rel else task_mapping
 def preflight(repo,plan,workspace):
- n=plan["naming"];branch=n["branch_name"];task_dir_rel=Path(".trellis/tasks")/f"{datetime.now().strftime('%m-%d')}-{n['task_slug']}";task_dir=workspace.path/task_dir_rel
- expected_dir=f"{datetime.now().strftime('%m-%d')}-{n['task_slug']}"
+ n=plan["naming"];branch=n["branch_name"];date_prefix=task_date_prefix();task_dir_rel=Path(".trellis/tasks")/f"{date_prefix}-{n['task_slug']}";task_dir=workspace.path/task_dir_rel
+ expected_dir=f"{date_prefix}-{n['task_slug']}"
  if task_dir_rel.name!=expected_dir:raise CommandError("stale_identity","created_workspace.task_artifact_dir","Task path does not match the official task-store date and slug.",3)
  if not (repo/".trellis/scripts/task.py").is_file():raise CommandError("stale_identity","created_workspace.task","Official Trellis task store is unavailable in the source checkout.",3)
  require_directory_ancestors(workspace.path,"worktree_root");require_directory_ancestors(task_dir,"task_dir")
@@ -272,7 +272,7 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   if not mutation_boundary_current(repo,plan):
    result={"schema_version":"3.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The authoritative base or target changed at the mutation boundary."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"prerequisite_refresh","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":"refresh_review","reason":"Current authority changed before the first business write.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
   created=create_issue(plan);result={"schema_version":"3.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"created_issue","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("passed",["Created and immediately reread the exact reviewed GitHub issue."]),"checker":stage("not_run",[]),"created_issue":created,"created_workspace":None,"no_side_effect":None,"typed_exit":"refresh_review","reason":"The reviewed issue was created and now requires a complete Intake refresh.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
- n=plan["naming"];workspace_config=resolve_workspace(repo,n["workspace_slug"]);workspace=workspace_config.path;branch=n["branch_name"];task_dir_rel=Path(".trellis/tasks")/f"{datetime.now().strftime('%m-%d')}-{n['task_slug']}";task_dir=workspace/task_dir_rel
+ n=plan["naming"];workspace_config=resolve_workspace(repo,n["workspace_slug"]);workspace=workspace_config.path;branch=n["branch_name"];task_dir_rel=Path(".trellis/tasks")/f"{task_date_prefix()}-{n['task_slug']}";task_dir=workspace/task_dir_rel
  before=snapshot(repo,plan)
  try:
   task_dir_rel,task_dir,task=preflight(repo,plan,workspace_config)

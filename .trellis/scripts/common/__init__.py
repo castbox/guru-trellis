@@ -73,6 +73,8 @@ from .paths import (
     clear_current_task,
     has_current_task,
     generate_task_date_prefix,
+    generate_task_date,
+    generate_task_archive_month,
 )
 
 from .active_task import (

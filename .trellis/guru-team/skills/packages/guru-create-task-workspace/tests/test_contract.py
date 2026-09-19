@@ -34,10 +34,10 @@ class WorkspaceTest(unittest.TestCase):
  def assert_no_workspace_writes(self,workspace):
   self.assertFalse(workspace.exists());self.assertNotEqual(0,subprocess.run(["git","show-ref","--verify","--quiet",f"refs/heads/{self.plan['naming']['branch_name']}"],cwd=self.repo).returncode);self.assertFalse((self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json").exists())
  def workspace_state(self,workspace):
-  paths=[workspace/".trellis/tasks"/(datetime.now().strftime("%m-%d-")+"027-workspace")/"task.json",self.repo/".trellis/.runtime/guru-team/workspaces/027-workspace.json",self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json",workspace/".trellis/.runtime/guru-team/workspaces/027-workspace.json",workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json"]
+  paths=[workspace/".trellis/tasks"/(common.task_date_prefix()+"-"+"027-workspace")/"task.json",self.repo/".trellis/.runtime/guru-team/workspaces/027-workspace.json",self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json",workspace/".trellis/.runtime/guru-team/workspaces/027-workspace.json",workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json"]
   return {"refs":self.git("show-ref"),"worktrees":self.git("worktree","list","--porcelain"),"repo_status":common.git(self.repo,"status","--porcelain=v1","-z","--untracked-files=all").stdout,"workspace_status":common.git(workspace,"status","--porcelain=v1","-z","--untracked-files=all").stdout,"files":{str(path):path.read_bytes() for path in paths}}
  def mutation_state(self,workspace):
-  paths=[workspace/".trellis/tasks"/(datetime.now().strftime("%m-%d-")+"027-workspace")/"task.json",self.repo/".trellis/.runtime/guru-team/workspaces/027-workspace.json",self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json",workspace/".trellis/.runtime/guru-team/workspaces/027-workspace.json",workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json"]
+  paths=[workspace/".trellis/tasks"/(common.task_date_prefix()+"-"+"027-workspace")/"task.json",self.repo/".trellis/.runtime/guru-team/workspaces/027-workspace.json",self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json",workspace/".trellis/.runtime/guru-team/workspaces/027-workspace.json",workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json"]
   target_status=common.git(workspace,"status","--porcelain=v1","-z","--untracked-files=all").stdout if (workspace/".git").exists() else None
   return {"refs":self.git("show-ref"),"worktrees":self.git("worktree","list","--porcelain"),"source_status":common.git(self.repo,"status","--porcelain=v1","-z","--untracked-files=all").stdout,"target_status":target_status,"files":{str(path):path.read_bytes() if path.is_file() else None for path in paths}}
  def test_prepare_file_entrypoint_loads_package_runtime(self):
@@ -109,7 +109,7 @@ class WorkspaceTest(unittest.TestCase):
  def test_current_mode_reuse_branch_occupied_elsewhere_fails_before_writes(self):
   self.configure(mode="current");occupied=self.parent/"occupied";self.git("worktree","add","-q","-b","feat/027-workspace",str(occupied),"HEAD");plan=copy.deepcopy(self.plan);plan["naming"].update({"branch_disposition":"reuse_exact","workspace_disposition":"reuse_exact"});plan["side_effects"]["operations"].remove("create_branch");plan["side_effects"]["operations"].remove("create_worktree");self.refresh(plan);pp=self.write("occupied.json",plan)
   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
-  self.assertEqual("main",self.git("branch","--show-current"));self.assertFalse((self.repo/".trellis/tasks"/(datetime.now().strftime("%m-%d-")+"027-workspace")).exists())
+  self.assertEqual("main",self.git("branch","--show-current"));self.assertFalse((self.repo/".trellis/tasks"/(common.task_date_prefix()+"-"+"027-workspace")).exists())
  def test_invalid_mode_and_conflict_fail_before_business_writes(self):
   self.configure(mode="pool");pp=self.write("invalid.json",self.plan)
   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
@@ -184,7 +184,7 @@ class WorkspaceTest(unittest.TestCase):
   with mock.patch.object(execute,"verify_created_boundary",side_effect=CommandError("stale_identity","created_workspace","boundary drift",3)):
    with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
   self.assertEqual("main",self.git("branch","--show-current"));self.assertNotEqual(0,subprocess.run(["git","show-ref","--verify","--quiet","refs/heads/feat/027-workspace"],cwd=self.repo).returncode)
-  self.assertEqual(before,self.mutation_state(self.repo));self.assertFalse((self.repo/".trellis/tasks"/(datetime.now().strftime("%m-%d-")+"027-workspace")).exists());self.assertFalse((self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json").exists())
+  self.assertEqual(before,self.mutation_state(self.repo));self.assertFalse((self.repo/".trellis/tasks"/(common.task_date_prefix()+"-"+"027-workspace")).exists());self.assertFalse((self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json").exists())
 
  def test_existing_objects_are_not_removed_when_later_boundary_fails(self):
   result,_=self.execute_and_check();workspace=self.parent/"repo-worktrees/027-workspace";plan=copy.deepcopy(self.plan);plan["naming"].update({"branch_disposition":"reuse_exact","workspace_disposition":"reuse_exact","task_disposition":"reuse_exact"});self.refresh(plan);pp=self.write("reuse-boundary-failure.json",plan);before=self.mutation_state(workspace)

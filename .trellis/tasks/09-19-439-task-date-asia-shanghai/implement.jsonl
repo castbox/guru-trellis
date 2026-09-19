@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Use the existing shared date utility instead of duplicating timezone logic."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Keep official task store and workspace executor date semantics aligned."}
