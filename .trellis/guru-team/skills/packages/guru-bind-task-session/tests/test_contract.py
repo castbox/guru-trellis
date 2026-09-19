@@ -47,3 +47,15 @@ class ProfileContractTest(unittest.TestCase):
             for route in routes.values():
                 with self.subTest(profile=profile, route=route):
                     self.assertEqual(validator.is_valid({**value, 'profile': profile, 'route': route}), route == expected)
+
+
+class PublicOutputContractTest(unittest.TestCase):
+    def test_public_output_excludes_runtime_binding_identity(self):
+        package = Path(__file__).resolve().parents[1]
+        schema = json.loads((package / 'schemas/public-output.schema.json').read_text())
+        route = json.loads((package / 'consumers/workflow/production/session-binding-route.schema.json').read_text())
+        for value in (schema, route):
+            self.assertNotIn('session_id', value.get('properties', {}))
+            self.assertNotIn('binding_id', value.get('properties', {}))
+            self.assertNotIn('session_id', value.get('required', []))
+            self.assertNotIn('binding_id', value.get('required', []))

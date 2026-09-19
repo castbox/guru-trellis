@@ -15,7 +15,7 @@ session_binding = session_id + task_identity + workspace_identity + lifecycle_ge
 ```
 
 - task identity 长期稳定；branch/worktree/session 可替换。
-- `session_binding` 只写入 `.trellis/.runtime/guru-team/session-bindings/` 下的 ignored owner-private 文件，完成 direct consumer 后删除或标记过期。
+- `session_binding` 由官方 Trellis `active_task`/`session_storage` authority 管理；本 capability 不写入重复的 `.trellis/.runtime/guru-team/session-bindings/` projection。
 - `lifecycle_generation` 来自 current task/re-activate facts；generation 变化自动使旧 binding、Finish/Cleanup receipt 失效。
 - session context 缺失、binding owner 不匹配或 current route 不唯一时，validator 返回 fail-closed stop，不做修复猜测。
 

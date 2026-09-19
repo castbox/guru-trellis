@@ -209,8 +209,9 @@ class BindingBoundaryCoverageTest(unittest.TestCase):
         fake = FakeModule(repo)
         with patch.object(mod, "active_module", return_value=fake), patch.object(mod, "session_id", return_value="codex_session_2"):
             output = mod.execute(repo, json.dumps(public), json.dumps(owner))
-        self.assertEqual(output["session_id"], "codex_session_2")
         self.assertEqual(output["task_ref"], task_ref)
+        self.assertNotIn("session_id", output)
+        self.assertNotIn("binding_id", output)
 
     def test_old_cleanup_receipt_generation_is_rejected_by_owner_boundary(self):
         import importlib.util
@@ -296,6 +297,22 @@ class BindingBoundaryCoverageTest(unittest.TestCase):
         mod.write_recovery_mappings(repo, facts, task_ref)
         mapping = json.loads((repo / '.trellis/.runtime/guru-team/tasks/demo.json').read_text())
         self.assertEqual(mapping['base_branch'], 'main')
+
+    def test_resume_or_rebind_cannot_replace_a_different_active_task(self):
+        mod = self.load()
+        for profile, route in (("resume_current_task", "resume"), ("rebind_missing_session", "rebind")):
+            with self.subTest(profile=profile):
+                repo = make_repo(); add_task(repo, 'a', branch='main', meta_workspace=False); add_task(repo, 'b', branch='main', meta_workspace=False)
+                for ref in ('.trellis/tasks/a', '.trellis/tasks/b'):
+                    facts = mod.task_facts(repo, ref, allow_missing_mappings=True); mod.write_recovery_mappings(repo, facts, ref)
+                fake = FakeModule(repo); fake.set_active_task('.trellis/tasks/b', repo)
+                public = {'profile': profile, 'mode': 'standalone', 'task_ref': '.trellis/tasks/a', 'continuation_id': f'{profile}-wrong-active'}
+                owner = {**public, 'route': route, 'lifecycle_generation': 1, 'resume_target': 'phase-2', 'ai_review_gate': {'status': 'passed', 'summary': 'fixture'}}
+                with patch.object(mod, 'active_module', return_value=fake), patch.object(mod, 'session_id', return_value='codex_fixture'):
+                    with self.assertRaises(mod.CommandError) as caught:
+                        mod.execute(repo, json.dumps(public), json.dumps(owner))
+                self.assertEqual(caught.exception.field_path, 'current_task_ref')
+                self.assertEqual(fake.active.task_path, (repo / '.trellis/tasks/b').resolve())
 
 if __name__ == '__main__':
     unittest.main()

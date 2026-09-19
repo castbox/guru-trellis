@@ -276,12 +276,6 @@ def _assert_post_write(module, root: Path, facts: dict[str, Any], task_ref: str)
     return post
 
 
-def _binding_id(session_key: str, task_id: str) -> str:
-    # The official Trellis session resolver owns the actual binding record.
-    # This stable value is only a public handoff reference; no duplicate
-    # session-bindings file is written by this package.
-    return f"{session_key}--{task_id}"
-
 def execute(root: Path, input_value: str, owner_value: str) -> dict[str, Any]:
     public = load_json(input_value, "input")
     owner = load_json(owner_value, "owner_result")
@@ -318,6 +312,18 @@ def execute(root: Path, input_value: str, owner_value: str) -> dict[str, Any]:
             raise CommandError("stale_identity", "current_task_ref", "Current session is bound to another source task.", 3)
     manual = profile == "manual_recovery"
     facts = task_facts(root, target_ref, allow_missing_mappings=manual)
+    previous = module.resolve_active_task()
+    previous_path = getattr(previous, "task_path", None)
+    previous_error = getattr(previous, "error", None)
+    target_path = (facts["workspace"] / target_ref).resolve()
+    if profile == "resume_current_task":
+        if previous_error or previous_path is None or Path(previous_path).resolve() != target_path:
+            raise CommandError("stale_identity", "current_task_ref", "Resume requires the current session to already target the requested task.", 3)
+    elif profile in {"rebind_missing_session", "reactivate_rebind"}:
+        if previous_error:
+            raise CommandError("stale_identity", "current_task_ref", "Current session route is invalid; rebind cannot replace an unknown active task.", 3)
+        if previous_path is not None and Path(previous_path).resolve() != target_path:
+            raise CommandError("stale_identity", "current_task_ref", "A different active task requires an explicit switch route.", 3)
     if facts["generation"] != int(owner["lifecycle_generation"]):
         raise CommandError("stale_identity", "lifecycle_generation", "Requested lifecycle generation is stale.", 3)
     created: list[Path] = []
@@ -328,7 +334,7 @@ def execute(root: Path, input_value: str, owner_value: str) -> dict[str, Any]:
         if result is None:
             raise CommandError("stale_identity", "session_identity", "Official session binding could not be established.", 3)
         facts = _assert_post_write(module, root, facts, target_ref)
-        output = {"exit_id": EXITS[owner["route"]], "task_ref": target_ref, "session_id": sid, "binding_id": _binding_id(sid, facts["task"]["id"]), "lifecycle_generation": facts["generation"], "resume_target": owner["resume_target"]}
+        output = {"exit_id": EXITS[owner["route"]], "task_ref": target_ref, "lifecycle_generation": facts["generation"], "resume_target": owner["resume_target"]}
         validate_json(output, package_root / "schemas/public-output.schema.json", "stdout")
         return output
     except CommandError:
