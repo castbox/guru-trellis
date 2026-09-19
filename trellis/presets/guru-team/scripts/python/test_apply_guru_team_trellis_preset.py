@@ -70,6 +70,34 @@ class InstalledCloseoutFixtureTest(unittest.TestCase):
             fake_gh = fake_bin / "gh"
             compile(fake_gh.read_text(encoding="utf-8"), str(fake_gh), "exec")
 
+    def test_manifest_update_preserves_historical_removal_provenance(self) -> None:
+        removal = {
+            "path": ".trellis/guru-team/skills/packages/guru-example-action/tests/test_contract.py",
+            "action": "removed_managed",
+            "previous_managed_sha256": "a" * 64,
+        }
+        previous = {
+            "skill_packages": {"removals": [removal]},
+            "overlays": {"removals": []},
+        }
+        candidate = {
+            "skill_packages": {"removals": [], "files": []},
+            "overlays": {"removals": [], "files": []},
+        }
+        result = {
+            "updated_managed": [".trellis/spec/workflow/quality-guidelines.md"],
+            "skill_packages": {"removals": [], "conflicts": [], "sidecars": [], "files": []},
+            "overlays": {"removals": [], "conflicts": [], "sidecars": [], "files": []},
+            "agents_principles": {"action": "unchanged"},
+            "codex_dispatch": {"action": "unchanged"},
+            "runtime_gitignore": {"action": "unchanged"},
+            "language_guidance": {"updated_paths": []},
+        }
+
+        retained = preset.retain_previous_manifest_for_noop(previous, candidate, result)
+
+        self.assertEqual(retained["skill_packages"]["removals"], [removal])
+
     def test_preflight_uses_each_entrypoints_error_contract(self) -> None:
         public_payload = {
             "code": "finalization_stale",

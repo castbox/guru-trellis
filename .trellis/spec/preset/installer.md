@@ -206,10 +206,11 @@ dispatcher-only wrappers, and excludes package-private tests. Managed companion 
 owner-result schema id, and all three runtime command ids. Installed validation
 must prove exact bytes, executable modes, package/interface/tree digests and
 selected-platform inventory before direct discovery may run.
-Managed schema/runtime/tests must move together when duplicate candidate facts
+Managed schema/runtime assets must move together when duplicate candidate facts
 gain canonical repo/number/identity/URL/open-state/update-time digest and live
-freshness checks, or when the `blocked` exit/Gate state matrix changes; a mixed
-old-schema/new-runtime installation is drift and fails installed validation.
+freshness checks, or when the `blocked` exit/Gate state matrix changes. Package
+tests remain source-only validation assets; a mixed old-schema/new-runtime
+installation is drift and fails installed validation.
 The active graph supplies Discovery public input independently from actual Sync
 `base_current`; no installer fixture may reconstruct or expose the Sync private
 result or its facts digest.
@@ -706,8 +707,10 @@ package together with its registry row, active `guru-finalize-task` consumer
 identity, consumer schemas, runtime commands, extension inventories, canonical
 workflow markers, installed shared package, and selected Codex/Cursor/Claude copies.
 Fresh install, update, and reapply require byte- and executable-mode identity
-for the package's Skill, Interface, references, schemas, examples, wrapper,
-tests, and canonical eval corpus.
+for the package's installed Skill, Interface, references, schemas, examples,
+wrapper, and canonical eval corpus. Package-private tests are checked in the
+canonical source package and are validated there, but are excluded from the
+installed package projection.
 
 The activation contributes to the current package closure of twenty-three active
 Skills and 97 external exits.

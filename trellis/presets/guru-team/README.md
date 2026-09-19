@@ -685,8 +685,9 @@ Guru-owned additive content，不扩展当前三文件
 
 每个 active package 的 `SKILL.md` 必须有与 stable id/interface 一致的唯一
 `name`/`description` frontmatter；`tests[]` 必须定位 package-local
-`tests/<file>` regular file。Test evidence 属于 package tree，因此随 installed
-copy 和所选平台副本进入 manifest inventory；标签、虚构、越界、重复或
+`tests/<file>` regular file。Test evidence 属于 canonical source package，随
+source validation 执行，但不进入 installed package 或所选平台副本；installed
+validation 会拒绝 package-local `tests/` 文件和空目录。标签、虚构、越界、重复或
 symlink-backed test evidence 会在 mutation 前被 source validator 阻断。
 
 Skill 文件按 installed manifest 中的 previous managed hash 更新：missing
@@ -1012,8 +1013,9 @@ existing-issue identity一致；该 context使用`kind=issue`与 null `issue_bin
 
 Guru Skill packages are distributed independently of overlays:
 
-- canonical registry/schema/packages/tests are installed under
-  `.trellis/guru-team/skills/`;
+- canonical registry/schema/packages are installed under `.trellis/guru-team/skills/`;
+- package-private tests remain in the canonical source tree and are used only by
+  source validation;
 - active packages are always copied to `.agents/skills/guru-*/`;
 - selected Codex, Cursor, and Claude platforms receive matching
   `.codex/skills/guru-*/`, `.cursor/skills/guru-*/`, and
