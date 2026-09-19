@@ -105,6 +105,9 @@ def test_reactivate_reuses_exact_workspace_and_invalidates_old_finish(tmp_path):
     receipt = repo / ".trellis/.runtime/guru-team/finish/old.json"
     receipt.parent.mkdir(parents=True)
     receipt.write_text(json.dumps({"task_ref": ".trellis/tasks/demo", "finish_ref": "finish:v1:old"}))
+    cleanup_receipt = repo / ".trellis/.runtime/guru-team/cleanup/old.json"
+    cleanup_receipt.parent.mkdir(parents=True, exist_ok=True)
+    cleanup_receipt.write_text(json.dumps({"task_ref": ".trellis/tasks/demo", "finish_ref": "finish:v1:old"}))
     blocked = invocation(repo, semantic(repo, "codex/demo-existing", head), confirmed=False)
     assert blocked.returncode == 4 and (repo / ".trellis/tasks/archive/2026-09/demo").exists()
     completed = invocation(repo, semantic(repo, "codex/demo-existing", head))
@@ -112,7 +115,9 @@ def test_reactivate_reuses_exact_workspace_and_invalidates_old_finish(tmp_path):
     task = json.loads((repo / ".trellis/tasks/demo/task.json").read_text())
     assert completed.returncode == 0 and output["exit_id"] == "reactivated_to_evidence_refresh"
     assert task["status"] == "in_progress" and task["completedAt"] is None and task["worktree_path"] == str(repo)
+    assert task["lifecycle_generation"] == 1
     assert not (repo / ".trellis/tasks/archive/2026-09/demo").exists() and not receipt.exists()
+    assert not cleanup_receipt.exists()
     workspace_mapping = json.loads((repo / ".trellis/.runtime/guru-team/workspaces/demo.json").read_text())
     task_mapping = json.loads((repo / ".trellis/.runtime/guru-team/tasks/demo.json").read_text())
     assert workspace_mapping["workspace_slug"] == "demo"

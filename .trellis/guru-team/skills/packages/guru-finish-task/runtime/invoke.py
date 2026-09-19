@@ -50,13 +50,27 @@ def gh_json(repo_ref: str, *args: str):
         raise CommandError("invalid_json", "bookkeeping.github", "GitHub returned invalid JSON.") from exc
 
 
-def finish_ref(public: dict) -> str:
-    suffix = hashlib.sha256((public["task_ref"] + public["closure_ref"]).encode()).hexdigest()[:16]
+def finish_ref(public: dict, lifecycle_generation: int = 0) -> str:
+    suffix = hashlib.sha256((public["task_ref"] + public["closure_ref"] + str(lifecycle_generation)).encode()).hexdigest()[:16]
     return "finish:v1:" + suffix
 
 
-def transaction_path(root: Path, public: dict) -> Path:
-    return root / ".trellis/.runtime/guru-team/finish" / (finish_ref(public).split(":")[-1] + ".json")
+def lifecycle_generation(root: Path, public: dict, archive_ref: str) -> int:
+    candidates = [root / public["task_ref"] / "task.json", root / archive_ref / "task.json"]
+    for path in candidates:
+        if path.is_file() and not path.is_symlink():
+            try:
+                value = json.loads(path.read_text()).get("lifecycle_generation", 0)
+            except (OSError, json.JSONDecodeError) as exc:
+                raise CommandError("stale_identity", "task.json.lifecycle_generation", "Task lifecycle generation is invalid.", 3) from exc
+            if not isinstance(value, int) or value < 0:
+                raise CommandError("stale_identity", "task.json.lifecycle_generation", "Task lifecycle generation is invalid.", 3)
+            return value
+    raise CommandError("stale_identity", "task_ref", "Active task or its current archive is missing.", 3)
+
+
+def transaction_path(root: Path, public: dict, generation: int) -> Path:
+    return root / ".trellis/.runtime/guru-team/finish" / (finish_ref(public, generation).split(":")[-1] + ".json")
 
 
 def write_transaction(path: Path, payload: dict, package_root: Path) -> None:
@@ -65,7 +79,7 @@ def write_transaction(path: Path, payload: dict, package_root: Path) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
 
 
-def read_transaction(path: Path, public: dict, bookkeeping: dict, package_root: Path) -> dict | None:
+def read_transaction(path: Path, public: dict, bookkeeping: dict, package_root: Path, generation: int) -> dict | None:
     if not path.is_file():
         return None
     try:
@@ -73,7 +87,7 @@ def read_transaction(path: Path, public: dict, bookkeeping: dict, package_root: 
     except json.JSONDecodeError as exc:
         raise CommandError("stale_identity", "finish_transaction", "Discard the invalid private Finish transaction before retry.", 3) from exc
     validate_json(payload, package_root / "schemas/finish-transaction.schema.json", "finish_transaction")
-    expected = {"task_ref": public["task_ref"], "closure_ref": public["closure_ref"], "finish_ref": finish_ref(public), "repo_ref": bookkeeping["repo_ref"], "base_branch": bookkeeping["base_branch"], "head_branch": bookkeeping["head_branch"]}
+    expected = {"task_ref": public["task_ref"], "closure_ref": public["closure_ref"], "finish_ref": finish_ref(public, generation), "lifecycle_generation": generation, "repo_ref": bookkeeping["repo_ref"], "base_branch": bookkeeping["base_branch"], "head_branch": bookkeeping["head_branch"]}
     if any(payload.get(key) != value for key, value in expected.items()):
         raise CommandError("stale_identity", "finish_transaction", "The private Finish transaction belongs to another identity.", 3)
     return payload
@@ -95,13 +109,28 @@ def lifecycle_roots(public: dict, semantic: dict) -> tuple[Path, str, Path, tupl
 
 def changed_paths(root: Path) -> set[str]:
     paths = set(git(root, "diff", "--name-only", "HEAD").stdout.splitlines())
-    paths.update(git(root, "diff", "--cached", "--name-only").stdout.splitlines())
+    paths.update(git(root, "diff", "--cached", "--name-only", "--no-renames").stdout.splitlines())
     paths.update(git(root, "ls-files", "--others", "--exclude-standard").stdout.splitlines())
     return {path for path in paths if path}
 
 
 def path_allowed(path: str, allowlist: tuple[str, ...]) -> bool:
     return any(path == allowed or path.startswith(allowed + "/") for allowed in allowlist)
+
+
+def reviewed_changed_paths(root: Path, allowlist: tuple[str, ...]) -> set[str]:
+    paths = changed_paths(root)
+    if not paths or any(not path_allowed(path, allowlist) for path in paths):
+        raise CommandError("stale_identity", "semantic_result.allowlist", "The bookkeeping diff is empty or contains a path outside the reviewed lifecycle allowlist.", 3)
+    return paths
+
+
+def stage_reviewed_changes(root: Path, allowlist: tuple[str, ...]) -> None:
+    paths = reviewed_changed_paths(root, allowlist)
+    git(root, "add", "-A", "--", *sorted(paths))
+    staged = set(git(root, "diff", "--cached", "--name-only", "--no-renames").stdout.splitlines())
+    if staged != paths:
+        raise CommandError("stale_identity", "semantic_result.allowlist", "Staging did not preserve the exact reviewed bookkeeping path set.", 3)
 
 
 def verify_payload(bookkeeping: dict) -> None:
@@ -124,6 +153,7 @@ def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, 
     if task.get("id") and task.get("id") != task_dir.name:
         raise CommandError("stale_identity", "task.json.id", "Task identity does not match the active locator.", 3)
     task["status"] = "completed"
+    task["lifecycle_generation"] = task.get("lifecycle_generation", 0)
     task["completedAt"] = datetime.now(timezone.utc).date().isoformat()
     task["archive_dir"] = archive_ref
     archive_dir.parent.mkdir(parents=True, exist_ok=True)
@@ -161,7 +191,7 @@ def exact_pr(repo_ref: str, number: int, bookkeeping: dict, expected_head: str) 
     return pr
 
 
-def publish(root: Path, public: dict, bookkeeping: dict, allowlist: tuple[str, ...], transaction_file: Path, transaction: dict | None, package_root: Path) -> dict:
+def publish(root: Path, public: dict, bookkeeping: dict, allowlist: tuple[str, ...], transaction_file: Path, transaction: dict | None, package_root: Path, generation: int) -> dict:
     verify_payload(bookkeeping)
     if git(root, "branch", "--show-current").stdout.strip() != bookkeeping["head_branch"]:
         raise CommandError("stale_identity", "bookkeeping.head_branch", "Run Finish only in the reviewed task worktree and branch.", 3)
@@ -170,21 +200,17 @@ def publish(root: Path, public: dict, bookkeeping: dict, allowlist: tuple[str, .
     if current_remote_head(root, bookkeeping["base_branch"]) != bookkeeping["expected_base_head"]:
         raise CommandError("stale_identity", "bookkeeping.expected_base_head", "The target baseline changed before bookkeeping publication.", 3)
     if transaction is None:
-        paths = changed_paths(root)
-        if not paths or any(not path_allowed(path, allowlist) for path in paths):
-            raise CommandError("stale_identity", "semantic_result.allowlist", "The bookkeeping diff is empty or contains a path outside the reviewed lifecycle allowlist.", 3)
+        reviewed_changed_paths(root, allowlist)
         parent_head = git(root, "rev-parse", "HEAD").stdout.strip()
         if git(root, "merge-base", "--is-ancestor", parent_head, bookkeeping["expected_base_head"], check=False).returncode:
             raise CommandError("stale_identity", "bookkeeping.expected_base_head", "The business branch is not contained in the reviewed target baseline.", 3)
-        transaction = {"schema_version": "1.0", "stage": "publish_prepared", "task_ref": public["task_ref"], "closure_ref": public["closure_ref"], "finish_ref": finish_ref(public), "repo_ref": bookkeeping["repo_ref"], "base_branch": bookkeeping["base_branch"], "head_branch": bookkeeping["head_branch"], "expected_base_head": bookkeeping["expected_base_head"], "archive_ref": bookkeeping["archive_ref"], "parent_head": parent_head}
+        transaction = {"schema_version": "1.0", "stage": "publish_prepared", "task_ref": public["task_ref"], "closure_ref": public["closure_ref"], "finish_ref": finish_ref(public, generation), "lifecycle_generation": generation, "repo_ref": bookkeeping["repo_ref"], "base_branch": bookkeeping["base_branch"], "head_branch": bookkeeping["head_branch"], "expected_base_head": bookkeeping["expected_base_head"], "archive_ref": bookkeeping["archive_ref"], "parent_head": parent_head}
         write_transaction(transaction_file, transaction, package_root)
     parent_head = transaction["parent_head"]
     if transaction["stage"] == "publish_prepared":
         live_head = git(root, "rev-parse", "HEAD").stdout.strip()
         if live_head == parent_head:
-            git(root, "add", "-A", "--", *allowlist)
-            if any(not path_allowed(path, allowlist) for path in set(git(root, "diff", "--cached", "--name-only").stdout.splitlines())):
-                raise CommandError("stale_identity", "semantic_result.allowlist", "Staging escaped the reviewed bookkeeping allowlist.", 3)
+            stage_reviewed_changes(root, allowlist)
             message = bookkeeping["commit_subject"] + ("\n\n" + bookkeeping["commit_body"] if bookkeeping["commit_body"] else "")
             git(root, "commit", "-m", message)
             live_head = git(root, "rev-parse", "HEAD").stdout.strip()
@@ -293,12 +319,13 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         return resume(public, "bookkeeping_publication_required", "Review and confirm the exact bookkeeping commit, push and PR payload.")
     if not archive_dir.is_dir():
         raise CommandError("stale_identity", "task_ref", "Active task or its current archive is missing.", 3)
-    transaction_file = transaction_path(root, public)
-    transaction = read_transaction(transaction_file, public, bookkeeping, package_root)
+    generation = lifecycle_generation(root, public, archive_ref)
+    transaction_file = transaction_path(root, public, generation)
+    transaction = read_transaction(transaction_file, public, bookkeeping, package_root, generation)
     if transaction is None or transaction.get("stage") in {"projected", "publish_prepared", "committed"}:
         if not args.confirmed_bookkeeping_publish:
             return resume(public, "bookkeeping_publication_confirmation_required", "Confirm the reviewed bookkeeping commit, push and PR creation.")
-        transaction = publish(root, public, bookkeeping, allowlist, transaction_file, transaction, package_root)
+        transaction = publish(root, public, bookkeeping, allowlist, transaction_file, transaction, package_root, generation)
     if transaction.get("stage") == "pr_open":
         if not args.confirmed_bookkeeping_merge:
             return resume(public, "bookkeeping_merge_confirmation_required", "Confirm the exact expected-head bookkeeping PR merge.")
@@ -308,7 +335,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     target_head = verify_target(root, transaction, public)
     if target_head != transaction["target_head"]:
         raise CommandError("stale_identity", "bookkeeping.target", "The verified target baseline changed after Finish success.", 3)
-    out = {"exit_id": "success", "task_ref": public["task_ref"], "archive_ref": archive_ref, "finish_ref": finish_ref(public)}
+    out = {"exit_id": "success", "task_ref": public["task_ref"], "archive_ref": archive_ref, "finish_ref": finish_ref(public, generation)}
     validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
     return out
 

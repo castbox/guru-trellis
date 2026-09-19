@@ -22,4 +22,6 @@ After successful deletion, Cleanup records one ignored-runtime terminal
 receipt before retiring the Finish receipt. An exact same-input retry can
 therefore recover `cleaned` after stdout loss. A pending `remaining_resources`
 route emits only task/archive/Finish continuation identity and does not require
-the Finish receipt to remain readable.
+the Finish receipt to remain readable. The terminal receipt also binds the
+Finish lifecycle generation, and Reactivate invalidates all prior Cleanup
+receipts for the task.

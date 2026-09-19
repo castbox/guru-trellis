@@ -119,7 +119,20 @@ def read_finish_receipt(root: Path, package_root: Path, public: dict) -> tuple[P
     return path, value
 
 
-def read_cleanup_receipt(root: Path, package_root: Path, public: dict, resources: list[dict]) -> Path | None:
+def archive_generation(root: Path, public: dict) -> int:
+    path = root / public["archive_ref"] / "task.json"
+    if not path.is_file() or path.is_symlink():
+        raise CommandError("stale_identity", "archive_ref", "The terminal archive generation is missing.", 3)
+    try:
+        generation = json.loads(path.read_text()).get("lifecycle_generation", 0)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise CommandError("stale_identity", "archive_ref.task.json.lifecycle_generation", "The terminal archive generation is invalid.", 3) from exc
+    if not isinstance(generation, int) or generation < 0:
+        raise CommandError("stale_identity", "archive_ref.task.json.lifecycle_generation", "The terminal archive generation is invalid.", 3)
+    return generation
+
+
+def read_cleanup_receipt(root: Path, package_root: Path, public: dict, resources: list[dict], lifecycle_generation: int) -> Path | None:
     path = cleanup_receipt_path(root, public["finish_ref"])
     if not path.exists():
         return None
@@ -135,6 +148,7 @@ def read_cleanup_receipt(root: Path, package_root: Path, public: dict, resources
         "task_ref": public["task_ref"],
         "archive_ref": public["archive_ref"],
         "finish_ref": public["finish_ref"],
+        "lifecycle_generation": lifecycle_generation,
         "owned_resources": resources,
     }
     if any(value.get(key) != expected_value for key, expected_value in expected.items()):
@@ -156,7 +170,7 @@ def read_cleanup_receipt(root: Path, package_root: Path, public: dict, resources
     return path
 
 
-def write_cleanup_receipt(root: Path, package_root: Path, public: dict, resources: list[dict]) -> Path:
+def write_cleanup_receipt(root: Path, package_root: Path, public: dict, resources: list[dict], lifecycle_generation: int) -> Path:
     path = cleanup_receipt_path(root, public["finish_ref"])
     if path.is_symlink() or (path.exists() and not path.is_file()):
         raise CommandError("stale_identity", "cleanup_receipt", "Cleanup recovery receipt is unsafe.", 3)
@@ -166,6 +180,7 @@ def write_cleanup_receipt(root: Path, package_root: Path, public: dict, resource
         "task_ref": public["task_ref"],
         "archive_ref": public["archive_ref"],
         "finish_ref": public["finish_ref"],
+        "lifecycle_generation": lifecycle_generation,
         "owned_resources": resources,
     }
     validate_json(value, package_root / "schemas/cleanup-transaction.schema.json", "cleanup_receipt")
@@ -424,14 +439,18 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
         return out
 
-    recovered = read_cleanup_receipt(root, package_root, public, resources)
-    if recovered is not None:
-        finish_receipt_path(root, public["finish_ref"]).unlink(missing_ok=True)
-        out = {"exit_id": "cleaned"}
-        validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
-        return out
-
-    finish_receipt, receipt = read_finish_receipt(root, package_root, public)
+    finish_path = finish_receipt_path(root, public["finish_ref"])
+    if finish_path.is_file() and not finish_path.is_symlink():
+        finish_receipt, receipt = read_finish_receipt(root, package_root, public)
+        lifecycle_generation = receipt["lifecycle_generation"]
+    else:
+        lifecycle_generation = archive_generation(root, public)
+        recovered = read_cleanup_receipt(root, package_root, public, resources, lifecycle_generation)
+        if recovered is not None:
+            out = {"exit_id": "cleaned"}
+            validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
+            return out
+        finish_receipt, receipt = read_finish_receipt(root, package_root, public)
     present = validate_resources(root, public, resources, receipt, finish_receipt)
     if present and not args.confirmed_cleanup:
         out = continuation(public)
@@ -449,7 +468,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
         return out
 
-    write_cleanup_receipt(root, package_root, public, resources)
+    write_cleanup_receipt(root, package_root, public, resources, lifecycle_generation)
     finish_receipt.unlink(missing_ok=True)
     out = {"exit_id": "cleaned"}
     validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")

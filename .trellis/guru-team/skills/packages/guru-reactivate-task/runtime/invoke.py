@@ -66,8 +66,35 @@ def invalidate_finish_receipts(root: Path, task_ref: str) -> None:
             receipt.unlink()
 
 
+def invalidate_cleanup_receipts(root: Path, task_ref: str) -> None:
+    receipts = root / ".trellis/.runtime/guru-team/cleanup"
+    if not receipts.is_dir():
+        return
+    for receipt in receipts.glob("*.json"):
+        try:
+            data = json.loads(receipt.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        if data.get("task_ref") == task_ref:
+            receipt.unlink()
+
+
 def has_finish_receipt(root: Path, task_ref: str) -> bool:
     receipts = root / ".trellis/.runtime/guru-team/finish"
+    if not receipts.is_dir():
+        return False
+    for receipt in receipts.glob("*.json"):
+        try:
+            data = json.loads(receipt.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        if data.get("task_ref") == task_ref:
+            return True
+    return False
+
+
+def has_cleanup_receipt(root: Path, task_ref: str) -> bool:
+    receipts = root / ".trellis/.runtime/guru-team/cleanup"
     if not receipts.is_dir():
         return False
     for receipt in receipts.glob("*.json"):
@@ -139,6 +166,9 @@ def recover_completed_reactivation(root: Path, public: dict, plan: dict) -> bool
         raise CommandError("stale_identity", "workspace.base_head", "The completed reactivation workspace moved from the reviewed base.", 3)
 
     task = read_runtime_json(active / "task.json", "task_ref")
+    generation = task.get("lifecycle_generation")
+    if not isinstance(generation, int) or generation < 1:
+        raise CommandError("stale_identity", "task_ref.lifecycle_generation", "The completed reactivation cycle identity is missing.", 3)
     expected_task = {
         "id": public["task_id"],
         "status": "in_progress",
@@ -146,6 +176,7 @@ def recover_completed_reactivation(root: Path, public: dict, plan: dict) -> bool
         "branch": plan["branch_name"],
         "base_branch": plan["base_branch"],
         "worktree_path": str(workspace),
+        "lifecycle_generation": generation,
     }
     if any(task.get(key) != value for key, value in expected_task.items()) or "archive_dir" in task:
         raise CommandError("stale_identity", "task_ref", "The completed reactivation task metadata no longer matches this input.", 3)
@@ -156,6 +187,7 @@ def recover_completed_reactivation(root: Path, public: dict, plan: dict) -> bool
         "workspace_path": str(workspace),
         "source_checkout": str(root),
         "branch_name": plan["branch_name"],
+        "lifecycle_generation": generation,
     }
     task_expected = {
         "schema_version": "1.0",
@@ -163,6 +195,7 @@ def recover_completed_reactivation(root: Path, public: dict, plan: dict) -> bool
         "workspace_slug": public["task_id"],
         "workspace_path": str(workspace),
         "task_artifact_dir": public["task_ref"],
+        "lifecycle_generation": generation,
     }
     mapping_roots = {root.resolve(), workspace.resolve()}
     workspace_mappings = [
@@ -181,6 +214,8 @@ def recover_completed_reactivation(root: Path, public: dict, plan: dict) -> bool
         raise CommandError("stale_identity", "workspace", "The completed reactivation mappings come from different writes.", 3)
     if any(has_finish_receipt(mapping_root, public["task_ref"]) for mapping_root in mapping_roots):
         raise CommandError("stale_identity", "task_ref", "The prior Finish receipt was not fully invalidated.", 3)
+    if any(has_cleanup_receipt(mapping_root, public["task_ref"]) for mapping_root in mapping_roots):
+        raise CommandError("stale_identity", "task_ref", "The prior Cleanup receipt was not fully invalidated.", 3)
     return True
 
 
@@ -258,18 +293,23 @@ def reactivate(root: Path, public: dict, semantic: dict) -> None:
         active.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(archive), str(active))
         task_path = active / "task.json"
-        task.update({"status": "in_progress", "completedAt": None, "branch": plan["branch_name"], "base_branch": plan["base_branch"], "worktree_path": str(workspace)})
+        generation = task.get("lifecycle_generation", 0)
+        if not isinstance(generation, int) or generation < 0:
+            raise CommandError("stale_identity", "archive_ref.task.json.lifecycle_generation", "Archived task lifecycle generation is invalid.", 3)
+        task.update({"status": "in_progress", "completedAt": None, "branch": plan["branch_name"], "base_branch": plan["base_branch"], "worktree_path": str(workspace), "lifecycle_generation": generation + 1})
         task.pop("archive_dir", None)
         task_path.write_text(json.dumps(task, ensure_ascii=False, indent=2) + "\n")
         now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-        workspace_payload = {"schema_version": "1.0", "workspace_slug": public["task_id"], "workspace_path": str(workspace), "source_checkout": str(root), "branch_name": plan["branch_name"], "updated_at": now}
-        task_payload = {"schema_version": "1.0", "task_slug": public["task_id"], "workspace_slug": public["task_id"], "workspace_path": str(workspace), "task_artifact_dir": public["task_ref"], "updated_at": now}
+        workspace_payload = {"schema_version": "1.0", "workspace_slug": public["task_id"], "workspace_path": str(workspace), "source_checkout": str(root), "branch_name": plan["branch_name"], "lifecycle_generation": task["lifecycle_generation"], "updated_at": now}
+        task_payload = {"schema_version": "1.0", "task_slug": public["task_id"], "workspace_slug": public["task_id"], "workspace_path": str(workspace), "task_artifact_dir": public["task_ref"], "lifecycle_generation": task["lifecycle_generation"], "updated_at": now}
         for mapping_root in {root.resolve(), workspace.resolve()}:
             write_mapping(mapping_root / plan["workspace_mapping"], workspace_payload)
             write_mapping(mapping_root / plan["task_mapping"], task_payload)
         invalidate_finish_receipts(root, public["task_ref"])
+        invalidate_cleanup_receipts(root, public["task_ref"])
         if workspace != root:
             invalidate_finish_receipts(workspace, public["task_ref"])
+            invalidate_cleanup_receipts(workspace, public["task_ref"])
     except Exception:
         rollback_workspace(root, workspace, plan["branch_name"], created_branch, created_worktree)
         raise

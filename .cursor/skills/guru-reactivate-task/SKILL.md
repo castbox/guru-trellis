@@ -14,10 +14,11 @@ Before mutation, the AI reviews one exact target baseline and either an exact
 reusable clean branch/worktree or a new branch/worktree plan. The deterministic
 executor prepares that workspace, moves the original archive to the single
 active locator, refreshes task metadata and ignored runtime mappings, and
-invalidates prior Finish receipts. It never creates a replacement task.
+invalidates prior Finish and Cleanup receipts while incrementing the task
+lifecycle generation. It never creates a replacement task.
 
 If stdout is lost after that transaction, retry the exact same public and
 semantic input. The executor rematerializes the same typed result only when the
 active task, reviewed workspace/branch/base, both mappings, and invalidated
-Finish receipt state still form the complete transaction post-state. It creates
+Finish and Cleanup receipt state still form the complete transaction post-state. It creates
 no recovery artifact; partial or mismatched state fails closed.

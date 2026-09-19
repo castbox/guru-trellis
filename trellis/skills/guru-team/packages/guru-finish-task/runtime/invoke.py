@@ -109,13 +109,28 @@ def lifecycle_roots(public: dict, semantic: dict) -> tuple[Path, str, Path, tupl
 
 def changed_paths(root: Path) -> set[str]:
     paths = set(git(root, "diff", "--name-only", "HEAD").stdout.splitlines())
-    paths.update(git(root, "diff", "--cached", "--name-only").stdout.splitlines())
+    paths.update(git(root, "diff", "--cached", "--name-only", "--no-renames").stdout.splitlines())
     paths.update(git(root, "ls-files", "--others", "--exclude-standard").stdout.splitlines())
     return {path for path in paths if path}
 
 
 def path_allowed(path: str, allowlist: tuple[str, ...]) -> bool:
     return any(path == allowed or path.startswith(allowed + "/") for allowed in allowlist)
+
+
+def reviewed_changed_paths(root: Path, allowlist: tuple[str, ...]) -> set[str]:
+    paths = changed_paths(root)
+    if not paths or any(not path_allowed(path, allowlist) for path in paths):
+        raise CommandError("stale_identity", "semantic_result.allowlist", "The bookkeeping diff is empty or contains a path outside the reviewed lifecycle allowlist.", 3)
+    return paths
+
+
+def stage_reviewed_changes(root: Path, allowlist: tuple[str, ...]) -> None:
+    paths = reviewed_changed_paths(root, allowlist)
+    git(root, "add", "-A", "--", *sorted(paths))
+    staged = set(git(root, "diff", "--cached", "--name-only", "--no-renames").stdout.splitlines())
+    if staged != paths:
+        raise CommandError("stale_identity", "semantic_result.allowlist", "Staging did not preserve the exact reviewed bookkeeping path set.", 3)
 
 
 def verify_payload(bookkeeping: dict) -> None:
@@ -185,9 +200,7 @@ def publish(root: Path, public: dict, bookkeeping: dict, allowlist: tuple[str, .
     if current_remote_head(root, bookkeeping["base_branch"]) != bookkeeping["expected_base_head"]:
         raise CommandError("stale_identity", "bookkeeping.expected_base_head", "The target baseline changed before bookkeeping publication.", 3)
     if transaction is None:
-        paths = changed_paths(root)
-        if not paths or any(not path_allowed(path, allowlist) for path in paths):
-            raise CommandError("stale_identity", "semantic_result.allowlist", "The bookkeeping diff is empty or contains a path outside the reviewed lifecycle allowlist.", 3)
+        reviewed_changed_paths(root, allowlist)
         parent_head = git(root, "rev-parse", "HEAD").stdout.strip()
         if git(root, "merge-base", "--is-ancestor", parent_head, bookkeeping["expected_base_head"], check=False).returncode:
             raise CommandError("stale_identity", "bookkeeping.expected_base_head", "The business branch is not contained in the reviewed target baseline.", 3)
@@ -197,9 +210,7 @@ def publish(root: Path, public: dict, bookkeeping: dict, allowlist: tuple[str, .
     if transaction["stage"] == "publish_prepared":
         live_head = git(root, "rev-parse", "HEAD").stdout.strip()
         if live_head == parent_head:
-            git(root, "add", "-A", "--", *allowlist)
-            if any(not path_allowed(path, allowlist) for path in set(git(root, "diff", "--cached", "--name-only").stdout.splitlines())):
-                raise CommandError("stale_identity", "semantic_result.allowlist", "Staging escaped the reviewed bookkeeping allowlist.", 3)
+            stage_reviewed_changes(root, allowlist)
             message = bookkeeping["commit_subject"] + ("\n\n" + bookkeeping["commit_body"] if bookkeeping["commit_body"] else "")
             git(root, "commit", "-m", message)
             live_head = git(root, "rev-parse", "HEAD").stdout.strip()

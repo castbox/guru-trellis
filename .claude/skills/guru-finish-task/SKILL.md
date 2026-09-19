@@ -14,3 +14,6 @@ archive projection, bookkeeping commit/push/PR publication, and expected-head
 merge. The executor recovers only that exact transaction and returns `success`
 only after the remote target baseline contains the final archive and no active
 copy. The reviewed payload forbids Issue-closing keywords and Delivery trailers.
+Each archived task carries a lifecycle generation; Finish binds it into the
+private transaction and `finish_ref` so a later Reactivate cycle cannot reuse a
+previous terminal identity.

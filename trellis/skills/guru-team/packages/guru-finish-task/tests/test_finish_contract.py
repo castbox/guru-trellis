@@ -126,6 +126,32 @@ def test_allowlist_rejects_archive_root_for_another_task():
     assert caught.value.field_path == "semantic_result.allowlist"
 
 
+def test_staging_uses_existing_reviewed_paths_and_rejects_outside_changes(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+    git(repo, "config", "user.email", "test@example.com")
+    git(repo, "config", "user.name", "Test")
+    archive = repo / ".trellis/tasks/archive/2026-09/demo/task.json"
+    archive.parent.mkdir(parents=True)
+    archive.write_text('{"lifecycle_generation": 0}\n')
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "archive cycle zero")
+
+    archive.write_text('{"lifecycle_generation": 1}\n')
+    allowlist = (".trellis/tasks/demo", ".trellis/tasks/archive/2026-09/demo")
+    FINISH.stage_reviewed_changes(repo, allowlist)
+    assert git(repo, "diff", "--cached", "--name-only") == ".trellis/tasks/archive/2026-09/demo/task.json"
+
+    git(repo, "reset", "-q")
+    (repo / "outside.txt").write_text("not reviewed\n")
+    with pytest.raises(CommandError) as caught:
+        FINISH.stage_reviewed_changes(repo, allowlist)
+
+    assert caught.value.field_path == "semantic_result.allowlist"
+    assert git(repo, "diff", "--cached", "--name-only") == ""
+
+
 @pytest.mark.parametrize("closing_reference", ["Closes #7", "Fixes example/repo#7", "Resolved: owner.repo/repo-name#42"])
 def test_payload_rejects_bare_and_repo_qualified_closing_keywords(closing_reference):
     bookkeeping = {
