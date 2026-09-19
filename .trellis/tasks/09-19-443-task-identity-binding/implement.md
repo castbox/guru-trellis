@@ -59,3 +59,7 @@ git diff --check
 ## Corrective review validation scope
 
 补充缺失 mapping/base provenance（含 base 正常推进）的恢复零写入测试；外部 worktree 正例在 fixture 创建时记录 base provenance，禁止从调用时 live base 补齐。验证五个合法 profile/route 对、二十个非法组合的 schema/runtime 拒绝，以及五个 input examples 的 schema/discriminator 一致性。沿用全平台 preset apply、source/installed package、ownership、projection、drift 与 task validation。当前仍是本地未发布修订，不能作为 #443 closeout 或 #434 已发布交付证据。
+
+## Corrective review follow-up validation
+
+新增旧 mapping 缺失 `base_head` 且 base branch 推进后的拒绝测试，以及仅有 `meta.base_branch` 时 recovery mapping 使用解析值的测试；本修订仍不改变 #434/#436 生命周期 owner，不发布、不关闭 Issue。

@@ -93,3 +93,7 @@ canonical source 位于 `trellis/skills/guru-team/packages/guru-bind-task-sessio
 缺少任一 runtime mapping 时，base HEAD 必须来自当前 task 顶层/metadata 或仍存在的 mapping 的既有 `base_head`，并与 fresh live base ref 一致；没有 provenance 时在任何恢复写入前以 `stale_identity/base_head` 停止，不从当前 base HEAD 反推历史边界，不新增 checkpoint 恢复机制。
 
 profile→route 为闭集：`resume_current_task→resume`、`rebind_missing_session→rebind`、`switch_task→switch`、`reactivate_rebind→reactivate`、`manual_recovery→manual_recovery`。schema 和 runtime 均拒绝其它组合。每个 profile 指向独立、schema-valid 且 discriminator 一致的 input example；switch example 明确 source 与 target。该修订不接入 #434 production graph。
+
+## Corrective review follow-up: legacy mapping provenance
+
+无论 mapping 是否存在，只要当前 task identity、metadata 与现有 mapping 集合无法提供可信 `base_head`，identity validator 都必须在任何 session/mapping 写入前停止；不能将 live base ref 的当前 HEAD 反推为历史边界。`base_branch` 的顶层字段和 `meta.base_branch` fallback 先统一解析为 `facts.base_branch`，recovery writer 只消费该解析结果。

@@ -267,5 +267,35 @@ class BindingBoundaryCoverageTest(unittest.TestCase):
                         discovery.assert_not_called()
                     self.assertEqual(caught.exception.field_path, 'owner_result.route')
 
+    def test_existing_legacy_mappings_without_base_provenance_are_rejected_after_base_advance(self):
+        mod = self.load()
+        repo = make_repo()
+        task_ref, data = add_task(repo, 'demo', branch='main', meta_workspace=False)
+        facts = mod.task_facts(repo, task_ref, allow_missing_mappings=True)
+        mod.write_recovery_mappings(repo, facts, task_ref)
+        data['meta'].pop('base_head', None)
+        (repo / task_ref / 'task.json').write_text(json.dumps(data) + '\n')
+        for path in repo.glob('.trellis/.runtime/guru-team/tasks/demo.json'):
+            payload = json.loads(path.read_text()); payload.pop('base_head', None); path.write_text(json.dumps(payload) + '\n')
+        for path in repo.glob('.trellis/.runtime/guru-team/workspaces/demo.json'):
+            payload = json.loads(path.read_text()); payload.pop('base_head', None); path.write_text(json.dumps(payload) + '\n')
+        git(repo, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '--allow-empty', '-qm', 'base advances')
+        with self.assertRaises(mod.CommandError) as caught:
+            mod.task_facts(repo, task_ref, allow_missing_mappings=False)
+        self.assertEqual(caught.exception.field_path, 'base_head')
+
+    def test_metadata_base_branch_fallback_is_used_by_recovery_writer(self):
+        mod = self.load()
+        repo = make_repo()
+        task_ref, data = add_task(repo, 'demo', branch='main', meta_workspace=False)
+        data['base_branch'] = None
+        data['meta']['base_branch'] = 'main'
+        (repo / task_ref / 'task.json').write_text(json.dumps(data) + '\n')
+        facts = mod.task_facts(repo, task_ref, allow_missing_mappings=True)
+        self.assertEqual(facts['base_branch'], 'main')
+        mod.write_recovery_mappings(repo, facts, task_ref)
+        mapping = json.loads((repo / '.trellis/.runtime/guru-team/tasks/demo.json').read_text())
+        self.assertEqual(mapping['base_branch'], 'main')
+
 if __name__ == '__main__':
     unittest.main()

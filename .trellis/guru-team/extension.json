@@ -461,11 +461,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-19T12:24:30Z",
+  "installed_at": "2026-09-19T12:34:23Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "e90406d7c622ffa5ad41db7bb06793f4c1dc6083",
-    "commit": "e90406d7c622ffa5ad41db7bb06793f4c1dc6083",
+    "ref": "00c91e13b8235f5590732cb9eb88e31628952c11",
+    "commit": "00c91e13b8235f5590732cb9eb88e31628952c11",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -736,7 +736,7 @@
       {
         "id": "guru-bind-task-session",
         "interface_sha256": "2da8d8661adc489889abdb98811da81c7c1ea7cd47d5986059dd095fb4f32132",
-        "tree_sha256": "a20556b38ea2b152966920b3788e1a1c81123dbbd72e43271de26b527cf4d841"
+        "tree_sha256": "2594a6d5da4fe721485d0c46f7c401ad6c612d02a95bc9efc1015c12ab997dba"
       },
       {
         "id": "guru-reactivate-task",
@@ -10902,7 +10902,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-bind-task-session/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-bind-task-session/runtime/invoke.py",
-        "sha256": "35de66994cad91a999ae1a6c9f458b8bcbbf0eed900223430f80ad18e796c477",
+        "sha256": "c1c9205ec86efaadc4b540fc296a72c772d0565f29826cc58dd262245bc00cd5",
         "executable": false,
         "action": "unchanged"
       },
@@ -10937,7 +10937,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-bind-task-session/schemas/semantic-result.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-bind-task-session/schemas/semantic-result.schema.json",
-        "sha256": "858f56d93bd251cca9f2d71426d76c8b3375df207f1138fe003ccc371c1deddf",
+        "sha256": "0cdffe75c359e679ca428cee2db426c1317564428a3c4ab1468b9c43551f97f0",
         "executable": false,
         "action": "unchanged"
       },
@@ -10958,7 +10958,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-bind-task-session/tests/test_runtime.py",
         "source": "trellis/skills/guru-team/packages/guru-bind-task-session/tests/test_runtime.py",
-        "sha256": "8f739a393f102c8aabb5e1c253ea4ac0a4e8be673d9864b945851ccd7bd4e5ae",
+        "sha256": "ab4cb1570a4e227d98c12e62c0283f8dd350ea2a512ee5197674673ff456cb12",
         "executable": false,
         "action": "unchanged"
       },
@@ -38034,7 +38034,7 @@
       {
         "path": ".agents/skills/guru-bind-task-session/schemas/semantic-result.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-bind-task-session/schemas/semantic-result.schema.json",
-        "sha256": "858f56d93bd251cca9f2d71426d76c8b3375df207f1138fe003ccc371c1deddf",
+        "sha256": "0cdffe75c359e679ca428cee2db426c1317564428a3c4ab1468b9c43551f97f0",
         "executable": false,
         "action": "unchanged"
       },
@@ -38146,7 +38146,7 @@
       {
         "path": ".codex/skills/guru-bind-task-session/schemas/semantic-result.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-bind-task-session/schemas/semantic-result.schema.json",
-        "sha256": "858f56d93bd251cca9f2d71426d76c8b3375df207f1138fe003ccc371c1deddf",
+        "sha256": "0cdffe75c359e679ca428cee2db426c1317564428a3c4ab1468b9c43551f97f0",
         "executable": false,
         "action": "unchanged"
       },
@@ -38258,7 +38258,7 @@
       {
         "path": ".claude/skills/guru-bind-task-session/schemas/semantic-result.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-bind-task-session/schemas/semantic-result.schema.json",
-        "sha256": "858f56d93bd251cca9f2d71426d76c8b3375df207f1138fe003ccc371c1deddf",
+        "sha256": "0cdffe75c359e679ca428cee2db426c1317564428a3c4ab1468b9c43551f97f0",
         "executable": false,
         "action": "unchanged"
       },
@@ -38370,7 +38370,7 @@
       {
         "path": ".cursor/skills/guru-bind-task-session/schemas/semantic-result.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-bind-task-session/schemas/semantic-result.schema.json",
-        "sha256": "858f56d93bd251cca9f2d71426d76c8b3375df207f1138fe003ccc371c1deddf",
+        "sha256": "0cdffe75c359e679ca428cee2db426c1317564428a3c4ab1468b9c43551f97f0",
         "executable": false,
         "action": "unchanged"
       },
