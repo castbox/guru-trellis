@@ -59,7 +59,7 @@ caller intent
 
 ## 6. Public contracts and migration
 
-新增 package 使用 `judgment_mode=semantic`、Interface 1.4、独立 input/output schemas、四个正向 exits 与一个 blocked exit；consumer projections 在 interface.json 中声明。旧 `guru-create-task-workspace`、`guru-reactivate-task` 与现有 workflow contract 保持兼容，只增加 additive handoff 字段或 package-local bridge；不改变旧 exit/schema 的语义。
+新增 package 使用 `judgment_mode=semantic`、Interface 1.4、独立 input/output schemas、五个正向 exits 与一个 blocked exit；consumer projections 在 interface.json 中声明。旧 `guru-create-task-workspace`、`guru-reactivate-task` 与现有 workflow contract 保持兼容，只增加 additive handoff 字段或 package-local bridge；不改变旧 exit/schema 的语义。
 
 canonical source 位于 `trellis/skills/guru-team/packages/guru-bind-task-session/**`，通过现有 registry、manifest、preset apply 分发到 `.trellis/guru-team/`、`.agents/skills/`、`.codex/skills/`、`.cursor/skills/`、`.claude/skills/`。任何旧 session binding reader 若与新 owner 重叠，必须在实现阶段删除或改为薄 projection，并更新 ownership inventory。
 
