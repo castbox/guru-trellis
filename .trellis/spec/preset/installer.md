@@ -178,28 +178,29 @@ kind-mismatched, or dangling targets block installation/runtime use.
 
 The production registry installs the active `guru-create-task-commit` package
 to the audited runtime root and selected shared/Codex/Cursor/Claude discovery
-roots. Its artifact schema,
-package thin wrappers and package tests are part of the managed tree. The
-companion `scripts/bash/create-task-commit.sh` is a managed executable asset;
-source/installed validation and the manifest inventory must prove its bytes and
-mode.
+roots. Its artifact schema and package thin wrappers are part of the installed
+managed tree. Its package tests remain canonical source-validation assets and
+are not installed into the runtime or platform projections. The companion
+`scripts/bash/create-task-commit.sh` is a managed executable asset; source
+validation must prove the package test bytes, while installed validation and
+the manifest inventory must prove only the public projection bytes and mode.
 
 The production registry also installs active `guru-sync-base` to the audited
 runtime root and selected shared/Codex/Cursor/Claude discovery roots. Managed
 inventory includes its `SKILL.md`, interface, contract, example, result schema,
-tests, and executable thin wrappers. Companion managed assets include
-executable `sync-base.sh` and `check-base-sync.sh`; the extension manifest
+executable thin wrappers, and excludes its package-private `tests/` tree.
+Companion managed assets include executable `sync-base.sh` and `check-base-sync.sh`; the extension manifest
 publishes active id `guru-sync-base`, schema id
 `guru-base-sync-result-1.0`, and runtime command ids `sync-base` and
 `check-base-sync`.
 
 The registry also installs active semantic `guru-discover-change-context` to
 the audited runtime root and selected shared/Codex/Cursor/Claude discovery
-roots. Its managed tree includes `SKILL.md`, interface, contract, the
+roots. Its installed managed tree includes `SKILL.md`, interface, contract, the
 active `guru-stage0-discover-change-context-input-pre-task-2.0` and
 `guru-change-context-owner-result-3.0` schemas/examples, retained immutable
-legacy input 1.0 / owner-result 2.0 assets, public schemas/examples, tests, and
-executable dispatcher-only wrappers. Managed companion assets include
+legacy input 1.0 / owner-result 2.0 assets, public schemas/examples, executable
+dispatcher-only wrappers, and excludes package-private tests. Managed companion assets include
 `preview-change-context-history.sh`, `record-context-discovery.sh`, and
 `check-context-discovery.sh`; the extension manifest publishes the active id,
 owner-result schema id, and all three runtime command ids. Installed validation
