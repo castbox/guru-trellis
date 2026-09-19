@@ -461,11 +461,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-19T13:45:44Z",
+  "installed_at": "2026-09-19T14:08:56Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "93fc8f9df2fb40dff51a34ea3340a68ffe85de8b",
-    "commit": "93fc8f9df2fb40dff51a34ea3340a68ffe85de8b",
+    "ref": "4dd9f7b7d4df2167819745565225001355adb5ee",
+    "commit": "4dd9f7b7d4df2167819745565225001355adb5ee",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -736,7 +736,7 @@
       {
         "id": "guru-bind-task-session",
         "interface_sha256": "2da8d8661adc489889abdb98811da81c7c1ea7cd47d5986059dd095fb4f32132",
-        "tree_sha256": "3c38ad6b3f48f7cf9a216c9d2c9dc348d1cb6a3321f2fa11d55aa61479a4acb3"
+        "tree_sha256": "9cfc72a6fa00fe65d3c3531c3fb0fe525e4afda5e83abbb88efbd65f8e07d936"
       },
       {
         "id": "guru-reactivate-task",
@@ -10902,7 +10902,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-bind-task-session/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-bind-task-session/runtime/invoke.py",
-        "sha256": "520a74feddfcc641da93a5972394ddd3062172fd1fe99d4679b948e5210421b7",
+        "sha256": "3dc44992f29de73381477d8335624a4e1bd1a916d8f85090ab04c8108a76a5e5",
         "executable": false,
         "action": "unchanged"
       },
@@ -10958,7 +10958,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-bind-task-session/tests/test_runtime.py",
         "source": "trellis/skills/guru-team/packages/guru-bind-task-session/tests/test_runtime.py",
-        "sha256": "dcbd8ec24ab17c0a6986c7ac56ce85060cb04ae75eb9620338e1f19d75dedce6",
+        "sha256": "3cb0ff5591d2a67c3f1ace8a451ac461e49be67e9f1d6c29bbb6c40d7da881f8",
         "executable": false,
         "action": "unchanged"
       },

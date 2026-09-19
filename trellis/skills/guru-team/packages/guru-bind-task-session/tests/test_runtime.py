@@ -44,11 +44,15 @@ class FakeModule:
     def __init__(self, root):
         self.active = None
         self.root = root
+        self.resolve_roots = []
 
     def resolve_context_key(self):
         return "codex_fixture"
 
-    def resolve_active_task(self):
+    def resolve_active_task(self, repo_root):
+        self.resolve_roots.append(Path(repo_root).resolve())
+        if self.resolve_roots[-1] != self.root.resolve():
+            raise AssertionError(f"unexpected repository root: {repo_root}")
         if self.active is None:
             return SimpleNamespace(task_path=None, task_workspace_root=None, repository_common_dir=None, error=None)
         return self.active
@@ -122,7 +126,7 @@ class BindingRuntimeTest(unittest.TestCase):
         facts = mod.task_facts(repo, task_ref, allow_missing_mappings=True)
         wrong = SimpleNamespace(task_path=repo / ".trellis/tasks/other", task_workspace_root=repo, repository_common_dir=facts["common_dir"], error=None)
         with self.assertRaises(Exception):
-            mod._assert_post_write(SimpleNamespace(resolve_active_task=lambda: wrong), repo, facts, task_ref)
+            mod._assert_post_write(SimpleNamespace(resolve_active_task=lambda repo_root: wrong), repo, facts, task_ref)
 
     def test_switch_requires_source_and_binds_target(self):
         repo = make_repo(); add_task(repo, "a", branch="main", meta_workspace=False); add_task(repo, "b", branch="main", meta_workspace=False)
@@ -139,6 +143,7 @@ class BindingRuntimeTest(unittest.TestCase):
             output = mod.execute(repo, json.dumps(public), json.dumps(owner))
         self.assertEqual(output["task_ref"], ".trellis/tasks/b")
         self.assertEqual(str(fake.active.task_path), str((repo / ".trellis/tasks/b").resolve()))
+        self.assertEqual(fake.resolve_roots, [repo.resolve(), repo.resolve(), repo.resolve()])
 
     def test_missing_mapping_without_base_provenance_is_blocked(self):
         mod = self.load(); repo = make_repo(); task_ref, data = add_task(repo, "demo", branch="main", meta_workspace=False)

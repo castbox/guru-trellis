@@ -273,7 +273,7 @@ def write_recovery_mappings(root: Path, facts: dict[str, Any], task_ref: str) ->
 
 def _assert_post_write(module, root: Path, facts: dict[str, Any], task_ref: str) -> dict[str, Any]:
     post = task_facts(root, task_ref, allow_missing_mappings=False)
-    active = module.resolve_active_task()
+    active = module.resolve_active_task(root)
     if getattr(active, "error", None) or getattr(active, "task_path", None) is None:
         raise CommandError("stale_identity", "session_identity", "Post-write session boundary validation failed.", 3)
     expected_path = str((post["workspace"] / task_ref).resolve())
@@ -313,7 +313,7 @@ def execute(root: Path, input_value: str, owner_value: str) -> dict[str, Any]:
     module = active_module(root)
     sid = session_id(module)
     if profile == "switch_task":
-        previous = module.resolve_active_task()
+        previous = module.resolve_active_task(root)
         if getattr(previous, "error", None) or str(getattr(previous, "task_path", "")) == "":
             raise CommandError("stale_identity", "current_task_ref", "Switch source task is not currently bound.", 3)
         source_facts = task_facts(root, current_ref, allow_missing_mappings=False)
@@ -321,7 +321,7 @@ def execute(root: Path, input_value: str, owner_value: str) -> dict[str, Any]:
             raise CommandError("stale_identity", "current_task_ref", "Current session is bound to another source task.", 3)
     manual = profile == "manual_recovery"
     facts = task_facts(root, target_ref, allow_missing_mappings=manual)
-    previous = module.resolve_active_task()
+    previous = module.resolve_active_task(root)
     previous_path = getattr(previous, "task_path", None)
     previous_error = getattr(previous, "error", None)
     target_path = (facts["workspace"] / target_ref).resolve()
