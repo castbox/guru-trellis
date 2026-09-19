@@ -190,8 +190,8 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             "--root", str(REPO), "--mode", "source", "--json",
         )
         self.assertEqual(payload["status"], "passed")
-        self.assertEqual(payload["active_packages"], 31)
-        self.assertEqual(payload["complete_package_commands"], 31)
+        self.assertEqual(payload["active_packages"], 32)
+        self.assertEqual(payload["complete_package_commands"], 32)
         self.assertGreater(payload["commands"], 0)
 
     def test_post_delivery_public_contract_projections_are_closed(self) -> None:
@@ -325,7 +325,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 cwd=target,
             )
             self.assertEqual(installed["status"], "passed")
-            self.assertEqual(len(installed["facts"]["active_ids"]), 31)
+            self.assertEqual(len(installed["facts"]["active_ids"]), 32)
             source_commands = sum(
                 len(json.loads(path.read_text(encoding="utf-8"))["commands"])
                 for path in (SKILLS / "packages").glob("guru-*/commands.json")

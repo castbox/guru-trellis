@@ -296,6 +296,7 @@
       ],
       "active_skill_ids": [
         "guru-approve-task-plan",
+        "guru-bind-task-session",
         "guru-bootstrap-repository-ssot",
         "guru-check-task",
         "guru-clarify-requirements",

@@ -2036,3 +2036,7 @@ public entry. Generic consumers select the exact safe relative wrapper path from
 second public entry, multiple recommended command authorities, a public wrapper
 outside the supported package runtime command surface, or any platform
 projection of package-private helpers.
+
+### Session binding capability boundary (#443)
+
+`guru-bind-task-session` 是 deferred public capability package，拥有 session binding/rebind/switch/resume 的 semantic route、deterministic identity validation、ignored binding projection 与五个 typed exits。它复用官方 Trellis `active_task`/`session_storage` authority，不创建 alternate task resolver、global lifecycle store、Issue ledger 或 workspace/developer state。#434 只消费其最小 route projection，并在独立 cutover 中决定 global graph activation。
