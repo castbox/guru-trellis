@@ -334,7 +334,12 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             self.assertEqual(installed["facts"]["command_count"], source_commands)
             self.assertEqual(installed["facts"]["package_private_test_count"], 0)
             self.assertFalse((target / ".trellis/guru-team/scripts/python/guru_team_trellis.py").exists())
-            for projection in (target / ".agents/skills", target / ".codex/skills", target / ".cursor/skills"):
+            for projection in (
+                target / ".agents/skills",
+                target / ".codex/skills",
+                target / ".cursor/skills",
+                target / ".claude/skills",
+            ):
                 for path in projection.rglob("*"):
                     self.assertNotIn(path.name, {"runtime", "tests", "errors"})
 
