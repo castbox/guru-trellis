@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import shutil
 import tempfile
 import unittest
@@ -244,6 +245,87 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         )
         self.assertTrue(
             (self.install_dst / "skills/schemas/skill-interface-1.6.schema.json").is_file()
+        )
+
+    def test_installed_packages_keep_canonical_tests_private(self) -> None:
+        canonical_test = (
+            self.guru_root
+            / "trellis/skills/guru-team/packages/guru-bind-task-session/tests/test_contract.py"
+        )
+        installed_package = (
+            self.install_dst / "skills/packages/guru-bind-task-session"
+        )
+
+        self.assertTrue(canonical_test.is_file())
+        self.assertFalse((installed_package / "tests").exists())
+        self.assertFalse(
+            any(
+                "/skills/packages/" in record["path"]
+                and "/tests/" in record["path"]
+                for record in json.loads(
+                    (self.install_dst / "extension.json").read_text(encoding="utf-8")
+                )["skill_packages"]["files"]
+            )
+        )
+
+    def _seed_historical_package_test_copy(self, *, local_edit: bool = False) -> tuple[Path, dict[str, object]]:
+        canonical_test = (
+            self.guru_root
+            / "trellis/skills/guru-team/packages/guru-bind-task-session/tests/test_contract.py"
+        )
+        target = self.install_dst / "skills/packages/guru-bind-task-session/tests/test_contract.py"
+        target.parent.mkdir(parents=True)
+        content = canonical_test.read_bytes()
+        if local_edit:
+            content += b"\n# local edit\n"
+        target.write_bytes(content)
+        manifest_path = self.install_dst / "extension.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["skill_packages"]["files"].append({
+            "path": target.relative_to(self.repo).as_posix(),
+            "source": "trellis/skills/guru-team/packages/guru-bind-task-session/tests/test_contract.py",
+            "sha256": hashlib.sha256(canonical_test.read_bytes()).hexdigest(),
+            "executable": False,
+            "action": "installed",
+        })
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        return target, manifest
+
+    def test_reapply_removes_unchanged_historical_package_test_with_provenance(self) -> None:
+        target, _ = self._seed_historical_package_test_copy()
+
+        result = self.install_current()
+
+        self.assertFalse(target.exists())
+        self.assertEqual(
+            [item for item in result["skill_packages"]["removals"] if item["path"] == target.relative_to(self.repo).as_posix()],
+            [{
+                "path": target.relative_to(self.repo).as_posix(),
+                "action": "removed_managed",
+                "previous_managed_sha256": hashlib.sha256(
+                    (
+                        self.guru_root
+                        / "trellis/skills/guru-team/packages/guru-bind-task-session/tests/test_contract.py"
+                    ).read_bytes()
+                ).hexdigest(),
+            }],
+        )
+
+    def test_reapply_preserves_edited_historical_package_test_with_sidecar(self) -> None:
+        target, _ = self._seed_historical_package_test_copy(local_edit=True)
+        local = target.read_bytes()
+
+        result = self.install_current()
+
+        self.assertEqual(result["skill_packages"]["status"], "conflict")
+        self.assertEqual(target.read_bytes(), local)
+        self.assertTrue(target.with_name("test_contract.py.new").is_file())
+        self.assertIn(
+            target.with_name("test_contract.py.new").relative_to(self.repo).as_posix(),
+            result["skill_packages"]["sidecars"],
         )
 
     def test_reapply_consumes_exact_managed_backup_after_upgrade(self) -> None:

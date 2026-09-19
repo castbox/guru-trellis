@@ -1112,6 +1112,15 @@ def skill_package_source_files(package_root: Path) -> list[Path]:
     )
 
 
+def skill_package_installed_files(package_root: Path) -> list[Path]:
+    """Return package files that belong in the installed runtime projection."""
+    return [
+        path
+        for path in skill_package_source_files(package_root)
+        if "tests" not in path.relative_to(package_root).parts
+    ]
+
+
 def skill_platform_public_files(package_root: Path) -> list[Path]:
     """Return the Agent-readable projection without package-private runtime assets."""
     interface = json.loads((package_root / "interface.json").read_text(encoding="utf-8"))
@@ -1259,7 +1268,7 @@ def install_skill_packages(
     for entry in active_entries:
         skill_id = str(entry["id"])
         package_root = canonical_root / str(entry["package"])
-        package_files = skill_package_source_files(package_root)
+        package_files = skill_package_installed_files(package_root)
         for source in package_files:
             source_files.append((source, source.relative_to(canonical_root)))
         interface_path = canonical_root / str(entry["interface"])
@@ -1932,7 +1941,7 @@ def managed_source_projections(
     active_entries = [entry for entry in entries if entry.get("state") == "active"]
     for entry in active_entries:
         package_root = canonical_root / str(entry["package"])
-        installed_sources.extend(skill_package_source_files(package_root))
+        installed_sources.extend(skill_package_installed_files(package_root))
     for source in installed_sources:
         add(source, dst / "skills" / source.relative_to(canonical_root))
     for relative in SKILL_RUNTIME_KERNEL_PATHS:

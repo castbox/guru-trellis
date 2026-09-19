@@ -351,6 +351,7 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
     expected_packages: dict[str, dict[str, str]] = {}
     expected_ids_by_platform: dict[str, set[str]] = {key:set() for key in PLATFORM_ROOTS}
     command_owners: dict[str, str] = {}
+    package_private_test_count = 0
     for skill_id, entry in active.items():
         package = skills_root / entry["package_rel"]
         commands = read_json(root, package / "commands.json", f"installed commands for {skill_id}", errors) or {}
@@ -383,6 +384,9 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
         tree_hash = hashlib.sha256()
         for path in files:
             inner = path.relative_to(package); expect(path, entry["package_rel"] / inner, path)
+            if "tests" in inner.parts:
+                package_private_test_count += 1
+                errors.append(f"installed package {skill_id} contains package-private tests: {inner.as_posix()}")
             tree_hash.update(inner.as_posix().encode()+b"\0"+path.read_bytes()+b"\0")
         interface = skills_root / entry["interface_rel"]
         expected_packages[skill_id] = {"id":skill_id,"interface_sha256":sha256(interface) if interface.is_file() else "","tree_sha256":tree_hash.hexdigest()}
@@ -442,7 +446,33 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
         rel=lexical_relative(root,candidate)
         if rel and rel.as_posix() not in allowed and any(child.name.startswith("guru-") for child in candidate.iterdir()): errors.append(f"workflow skill copy exists in unknown platform root: {rel.as_posix()}")
     overlay=manifest.get("overlays") if isinstance(manifest.get("overlays"),dict) else {}
-    return {"status":"passed" if not errors else "failed","mode":"installed","facts":{**facts,"selected_platforms":selected,"command_count":len(command_owners),"managed_file_count":len(files),"sidecar_count":len(sidecars),"removal_count":len(removals),"conflict_count":len(conflicts),"overlay_managed_file_count":len(overlay.get("files",[])) if isinstance(overlay.get("files"),list) else 0,"overlay_sidecar_count":len(overlay.get("sidecars",[])) if isinstance(overlay.get("sidecars"),list) else 0,"overlay_removal_count":len(overlay.get("removals",[])) if isinstance(overlay.get("removals"),list) else 0,"overlay_conflict_count":len(overlay.get("conflicts",[])) if isinstance(overlay.get("conflicts"),list) else 0},"errors":errors}
+    return {
+        "status": "passed" if not errors else "failed",
+        "mode": "installed",
+        "facts": {
+            **facts,
+            "selected_platforms": selected,
+            "command_count": len(command_owners),
+            "managed_file_count": len(files),
+            "package_private_test_count": package_private_test_count,
+            "sidecar_count": len(sidecars),
+            "removal_count": len(removals),
+            "conflict_count": len(conflicts),
+            "overlay_managed_file_count": len(overlay.get("files", []))
+            if isinstance(overlay.get("files"), list)
+            else 0,
+            "overlay_sidecar_count": len(overlay.get("sidecars", []))
+            if isinstance(overlay.get("sidecars"), list)
+            else 0,
+            "overlay_removal_count": len(overlay.get("removals", []))
+            if isinstance(overlay.get("removals"), list)
+            else 0,
+            "overlay_conflict_count": len(overlay.get("conflicts", []))
+            if isinstance(overlay.get("conflicts"), list)
+            else 0,
+        },
+        "errors": errors,
+    }
 
 
 def _validate_removals(root:Path,value:Any,label:str,allowed_paths:set[str]|None,errors:list[str])->list[Any]:
