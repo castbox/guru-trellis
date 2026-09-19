@@ -1,0 +1,5 @@
+{"file":"trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/execute.py","reason":"Review attach ordering, failure semantics, and rollback correctness."}
+{"file":"trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_runtime.py","reason":"Review recovery/current-task identity regression coverage."}
+{"file":"trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py","reason":"Review canonical creation, checker, and projection tests."}
+{"file":"trellis/presets/guru-team/scripts/python/test_workspace_invocation_integration.py","reason":"Review installed integration projection and same-session behavior."}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Apply validation scope and quality gate requirements."}
