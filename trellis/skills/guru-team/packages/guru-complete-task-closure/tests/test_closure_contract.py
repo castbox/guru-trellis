@@ -163,6 +163,28 @@ def test_exact_source_rejects_no_mutation(tmp_path):
     assert error["field_path"] == "semantic_result.route.typed_exit"
 
 
+def test_resume_closure_rejects_wrong_issue_after_stdout_loss(tmp_path):
+    command, env, _ = invocation(tmp_path)
+    pending = json.loads(subprocess.run(command, text=True, capture_output=True, env=env, check=True).stdout)
+    resumed = {
+        "profile": "completion_approved",
+        "source_exit": "resume_closure",
+        "mode": "standalone",
+        "task_ref": ".trellis/tasks/demo",
+        "completion_ref": "completion:v1:demo",
+        "closure_ref": pending["closure_ref"],
+        "source_issue": {"repo_ref": "castbox/other", "number": 99, "disposition": "exact_source"},
+    }
+    input_path = write_json(tmp_path / "wrong-resume.json", resumed)
+    wrong_command = command[:]
+    wrong_command[wrong_command.index("--input") + 1] = str(input_path)
+    result = subprocess.run(wrong_command + ["--confirmed-close"], text=True, capture_output=True, env=env, check=False)
+    assert result.returncode == 3
+    error = json.loads(result.stderr)
+    assert error["code"] == "stale_identity"
+    assert error["field_path"] == "closure_ref"
+
+
 @pytest.mark.parametrize(
     ("issue_patch", "field_path"),
     [

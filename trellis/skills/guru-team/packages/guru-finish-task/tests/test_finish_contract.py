@@ -65,6 +65,11 @@ def test_contract_assets():
     validate_json(json.loads((PACKAGE / "interface.json").read_text()), ROOT / "schemas/skill-interface-1.4.schema.json", "interface")
 
 
+def test_finish_identity_changes_between_lifecycle_generations():
+    public = {"task_ref": ".trellis/tasks/demo", "closure_ref": "closure:v2:demo"}
+    assert FINISH.finish_ref(public, 0) != FINISH.finish_ref(public, 1)
+
+
 def test_semantic_resume_finish_returns_complete_self_projection(tmp_path):
     public = json.loads((PACKAGE / "examples/public-input.json").read_text())
     semantic = {

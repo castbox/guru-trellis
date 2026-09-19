@@ -3,13 +3,14 @@
   "$id": "guru-cleanup-task-resources-transaction-1.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "stage", "task_ref", "archive_ref", "finish_ref", "owned_resources"],
+  "required": ["schema_version", "stage", "task_ref", "archive_ref", "finish_ref", "lifecycle_generation", "owned_resources"],
   "properties": {
     "schema_version": {"const": "1.0"},
     "stage": {"const": "cleaned"},
     "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/"},
     "archive_ref": {"type": "string", "pattern": "^\\.trellis/tasks/archive/"},
     "finish_ref": {"type": "string", "minLength": 1},
+    "lifecycle_generation": {"type": "integer", "minimum": 0},
     "owned_resources": {
       "type": "array",
       "uniqueItems": true,

@@ -1,5 +1,5 @@
 from __future__ import annotations
-import argparse,json,sys,subprocess
+import argparse,hashlib,json,sys,subprocess
 from pathlib import Path
 from runtime.io import CommandError
 from runtime.schema import validate_json
@@ -13,6 +13,12 @@ def load(root, package, value, field):
     if not isinstance(v,dict): raise CommandError("invalid_json",field,"Provide one JSON object.")
     return v
 
+def closure_ref(public, action):
+    issue=public.get("source_issue") or {}
+    identity={"task_ref":public["task_ref"],"completion_ref":public["completion_ref"],"source_issue":issue,"action":action}
+    digest=hashlib.sha256(json.dumps(identity,sort_keys=True,separators=(",",":")).encode()).hexdigest()[:16]
+    return "closure:v2:"+digest
+
 def run(package_root:Path, command:dict, argv:list[str])->dict:
     p=argparse.ArgumentParser(add_help=False); p.add_argument("--root"); p.add_argument("--input",required=True); p.add_argument("--semantic-result",required=True); p.add_argument("--facts"); p.add_argument("--confirmed-close",action="store_true")
     try:a=p.parse_args(argv)
@@ -21,10 +27,15 @@ def run(package_root:Path, command:dict, argv:list[str])->dict:
     validate_json(public,package_root/"schemas/public-input.schema.json","input"); validate_json(semantic,package_root/"schemas/semantic-result.schema.json","semantic_result")
     if public["profile"]!=semantic["profile"] or public["mode"]!=semantic["mode"]: raise CommandError("stale_identity","semantic_result","Completion and closure identity differ.",3)
     route=semantic["route"]; exit_id=route["typed_exit"]; issue=public.get("source_issue") or {}
+    action="close_issue" if exit_id=="close_issue" else "no_mutation" if exit_id=="no_mutation" else exit_id
+    expected_closure_ref=closure_ref(public,action)
+    if public.get("source_exit")=="resume_closure":
+        if public.get("closure_ref")!=expected_closure_ref:
+            raise CommandError("stale_identity","closure_ref","Resume must carry the exact original closure transaction identity.",3)
     if exit_id=="close_issue" and issue.get("disposition")!="exact_source": raise CommandError("stale_identity","source_issue.disposition","Only the exact source Issue may be closed.",3)
     if exit_id=="no_mutation" and issue.get("disposition")=="exact_source": raise CommandError("stale_identity","semantic_result.route.typed_exit","The exact source Issue must use the live close path.",3)
     if exit_id=="close_issue":
-        if not a.confirmed_close: return {"exit_id":"resume_closure","task_ref":public["task_ref"],"completion_ref":public["completion_ref"]}
+        if not a.confirmed_close: return {"exit_id":"resume_closure","task_ref":public["task_ref"],"completion_ref":public["completion_ref"],"closure_ref":expected_closure_ref}
         if a.facts:
             facts=load(root,package_root,a.facts,"facts")
             validate_json(facts,package_root/"schemas/live-facts.schema.json","facts")
@@ -32,18 +43,18 @@ def run(package_root:Path, command:dict, argv:list[str])->dict:
             if fact_issue["repo_ref"]!=issue["repo_ref"]: raise CommandError("stale_identity","facts.issue.repo_ref","Recovery facts must describe the exact source Issue repository.",3)
             if fact_issue["number"]!=issue["number"]: raise CommandError("stale_identity","facts.issue.number","Recovery facts must describe the exact source Issue number.",3)
         observed=subprocess.run(["gh","issue","view",str(issue["number"]),"--repo",issue["repo_ref"],"--json","state","--jq",".state"],cwd=root,text=True,capture_output=True)
-        if observed.returncode!=0: return {"exit_id":"resume_closure","task_ref":public["task_ref"],"completion_ref":public["completion_ref"]}
+        if observed.returncode!=0: return {"exit_id":"resume_closure","task_ref":public["task_ref"],"completion_ref":public["completion_ref"],"closure_ref":expected_closure_ref}
         state=observed.stdout.strip().upper()
         if state=="CLOSED":
-            out={"exit_id":"closed","task_ref":public["task_ref"],"issue_ref":f'{issue["repo_ref"]}#{issue["number"]}',"closure_exit":"closed","closure_ref":"closure:v1:"+public["completion_ref"]}
+            out={"exit_id":"closed","task_ref":public["task_ref"],"issue_ref":f'{issue["repo_ref"]}#{issue["number"]}',"closure_exit":"closed","closure_ref":expected_closure_ref}
             validate_json(out,package_root/"schemas/public-output.schema.json","stdout"); return out
         if state!="OPEN": raise CommandError("stale_identity","source_issue","Issue state is not a recoverable close boundary.",3)
         proc=subprocess.run(["gh","issue","close",str(issue["number"]),"--repo",issue["repo_ref"],"--reason","completed"],cwd=root,text=True,capture_output=True)
-        if proc.returncode!=0: return {"exit_id":"resume_closure","task_ref":public["task_ref"],"completion_ref":public["completion_ref"]}
+        if proc.returncode!=0: return {"exit_id":"resume_closure","task_ref":public["task_ref"],"completion_ref":public["completion_ref"],"closure_ref":expected_closure_ref}
         verify=subprocess.run(["gh","issue","view",str(issue["number"]),"--repo",issue["repo_ref"],"--json","state","--jq",".state"],cwd=root,text=True,capture_output=True)
         if verify.returncode!=0 or verify.stdout.strip().upper()!="CLOSED": raise CommandError("external_command_failed","source_issue","Issue close result could not be verified; resume the same closure transaction.",4)
-        out={"exit_id":"closed","task_ref":public["task_ref"],"issue_ref":f'{issue["repo_ref"]}#{issue["number"]}',"closure_exit":"closed","closure_ref":"closure:v1:"+public["completion_ref"]}
-    elif exit_id=="no_mutation": out={"exit_id":"no_mutation","task_ref":public["task_ref"],"closure_exit":"no_mutation","closure_ref":"closure:v1:"+public["completion_ref"]}
+        out={"exit_id":"closed","task_ref":public["task_ref"],"issue_ref":f'{issue["repo_ref"]}#{issue["number"]}',"closure_exit":"closed","closure_ref":expected_closure_ref}
+    elif exit_id=="no_mutation": out={"exit_id":"no_mutation","task_ref":public["task_ref"],"closure_exit":"no_mutation","closure_ref":expected_closure_ref}
     else: out={"exit_id":"blocked"}
     validate_json(out,package_root/"schemas/public-output.schema.json","stdout"); return out
 

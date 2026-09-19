@@ -1,1 +1,1 @@
-{"exit_id":"no_mutation","task_ref":".trellis/tasks/example-task","closure_exit":"no_mutation","closure_ref":"closure:v1:completion:v1:current"}
+{"exit_id":"no_mutation","task_ref":".trellis/tasks/example-task","closure_exit":"no_mutation","closure_ref":"closure:v2:example-no-mutation"}

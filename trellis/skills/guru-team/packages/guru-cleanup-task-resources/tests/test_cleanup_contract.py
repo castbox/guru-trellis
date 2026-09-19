@@ -44,6 +44,7 @@ def write_finish_receipt(root: Path, head: str, head_branch: str = "codex/demo")
                 "task_ref": TASK_REF,
                 "closure_ref": "closure:v1:demo",
                 "finish_ref": FINISH_REF,
+                "lifecycle_generation": 0,
                 "repo_ref": "example/repo",
                 "base_branch": "main",
                 "head_branch": head_branch,
@@ -130,6 +131,7 @@ def test_cleanup_requires_confirmation_and_recovers_cleaned_stdout_loss(tmp_path
     repo = tmp_path / "repo"
     head = init_repo(repo)
     (repo / ARCHIVE_REF).mkdir(parents=True)
+    (repo / ARCHIVE_REF / "task.json").write_text(json.dumps({"id": "demo", "status": "completed", "lifecycle_generation": 0}) + "\n")
     runtime = repo / ".trellis/.runtime/guru-team/demo.json"
     runtime.parent.mkdir(parents=True, exist_ok=True)
     runtime.write_text(json.dumps({"task_ref": TASK_REF}) + "\n")
@@ -150,7 +152,9 @@ def test_cleanup_requires_confirmation_and_recovers_cleaned_stdout_loss(tmp_path
     assert cleaned == {"exit_id": "cleaned"}
     assert not runtime.exists()
     assert not finish_receipt.exists()
-    assert (repo / ".trellis/.runtime/guru-team/cleanup/0123456789abcdef.json").is_file()
+    cleanup_receipt = repo / ".trellis/.runtime/guru-team/cleanup/0123456789abcdef.json"
+    assert cleanup_receipt.is_file()
+    assert json.loads(cleanup_receipt.read_text())["lifecycle_generation"] == 0
 
     recovered = json.loads(run(command + ["--confirmed-cleanup"]).stdout)
     assert recovered == {"exit_id": "cleaned"}
