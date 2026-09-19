@@ -15,7 +15,7 @@ session_binding = session_id + task_identity + workspace_identity + lifecycle_ge
 ```
 
 - task identity 长期稳定；branch/worktree/session 可替换。
-- `session_binding` 只写入 `.trellis/.runtime/guru-team/session-bindings/` 下的 ignored owner-private 文件，完成 direct consumer 后删除或标记过期。
+- `session_binding` 由官方 Trellis `active_task`/`session_storage` authority 管理；本 capability 不写入重复的 `.trellis/.runtime/guru-team/session-bindings/` projection。
 - `lifecycle_generation` 来自 current task/re-activate facts；generation 变化自动使旧 binding、Finish/Cleanup receipt 失效。
 - session context 缺失、binding owner 不匹配或 current route 不唯一时，validator 返回 fail-closed stop，不做修复猜测。
 
@@ -59,7 +59,7 @@ caller intent
 
 ## 6. Public contracts and migration
 
-新增 package 使用 `judgment_mode=semantic`、Interface 1.4、独立 input/output schemas、四个正向 exits 与一个 blocked exit；consumer projections 在 interface.json 中声明。旧 `guru-create-task-workspace`、`guru-reactivate-task` 与现有 workflow contract 保持兼容，只增加 additive handoff 字段或 package-local bridge；不改变旧 exit/schema 的语义。
+新增 package 使用 `judgment_mode=semantic`、Interface 1.4、独立 input/output schemas、五个正向 exits 与一个 blocked exit；consumer projections 在 interface.json 中声明。旧 `guru-create-task-workspace`、`guru-reactivate-task` 与现有 workflow contract 保持兼容，只增加 additive handoff 字段或 package-local bridge；不改变旧 exit/schema 的语义。
 
 canonical source 位于 `trellis/skills/guru-team/packages/guru-bind-task-session/**`，通过现有 registry、manifest、preset apply 分发到 `.trellis/guru-team/`、`.agents/skills/`、`.codex/skills/`、`.cursor/skills/`、`.claude/skills/`。任何旧 session binding reader 若与新 owner 重叠，必须在实现阶段删除或改为薄 projection，并更新 ownership inventory。
 
@@ -86,3 +86,14 @@ canonical source 位于 `trellis/skills/guru-team/packages/guru-bind-task-sessio
 新增 `manual_recovery` semantic profile 与 `session_manually_recovered` typed exit。它只在用户明确授权的当前对话中进入；runtime 先从 task artifact 与 live workspace/branch/HEAD/base 重建最小 identity，再写 task/workspace mapping 与 current session binding。该 profile 不能消费或生成 semantic pass、task activation、Completion/Finish/Closure/PR/Issue 事实。
 
 当 mappings 缺失时，resolver 允许一个显式的 `allow_missing_mappings` preflight 分支，但仍要求 task artifact、worktree、branch、base、repository common directory 和 session context 全部可验证；普通 resume/rebind 继续要求现有 mapping 完整。manual recovery 完成后必须重新运行同一 boundary validator，任一 post-write mismatch 进入 blocked。
+
+
+## Corrective review: base provenance and profile contracts
+
+缺少任一 runtime mapping 时，base HEAD 必须来自当前 task 顶层/metadata 或仍存在的 mapping 的既有 `base_head`，并与 fresh live base ref 一致；没有 provenance 时在任何恢复写入前以 `stale_identity/base_head` 停止，不从当前 base HEAD 反推历史边界，不新增 checkpoint 恢复机制。
+
+profile→route 为闭集：`resume_current_task→resume`、`rebind_missing_session→rebind`、`switch_task→switch`、`reactivate_rebind→reactivate`、`manual_recovery→manual_recovery`。schema 和 runtime 均拒绝其它组合。每个 profile 指向独立、schema-valid 且 discriminator 一致的 input example；switch example 明确 source 与 target。该修订不接入 #434 production graph。
+
+## Corrective review follow-up: legacy mapping provenance
+
+无论 mapping 是否存在，只要当前 task identity、metadata 与现有 mapping 集合无法提供可信 `base_head`，identity validator 都必须在任何 session/mapping 写入前停止；不能将 live base ref 的当前 HEAD 反推为历史边界。`base_branch` 的顶层字段和 `meta.base_branch` fallback 先统一解析为 `facts.base_branch`，recovery writer 只消费该解析结果。
