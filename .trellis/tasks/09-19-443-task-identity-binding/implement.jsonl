@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "task identity、runtime mapping、session binding 与 private-state 数据边界"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "public Skill I/O、typed exits、consumer projection 与 single-writer 合同"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "package、projection、ownership、安装更新与验证范围"}
