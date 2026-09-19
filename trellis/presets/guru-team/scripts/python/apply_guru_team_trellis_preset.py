@@ -566,12 +566,18 @@ def retain_previous_manifest_for_noop(
             for item in candidate_removals
             if isinstance(item, dict) and isinstance(item.get("path"), str)
         }
+        current_paths = {
+            item.get("path")
+            for item in candidate_section.get("files", [])
+            if isinstance(item, dict) and isinstance(item.get("path"), str)
+        }
         candidate_section["removals"] = candidate_removals + [
             item
             for item in previous_removals
             if isinstance(item, dict)
             and isinstance(item.get("path"), str)
             and item["path"] not in known_paths
+            and item["path"] not in current_paths
         ]
 
     mutating_actions = {

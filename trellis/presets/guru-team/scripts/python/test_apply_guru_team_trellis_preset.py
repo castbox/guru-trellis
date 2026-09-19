@@ -1732,6 +1732,23 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             installed_manifest["install"]["managed_assets"],
         )
 
+    def test_reselecting_removed_platform_clears_restored_removal_provenance(self) -> None:
+        platforms, all_platforms = preset.selected_platforms(None, True)
+        self.install(platforms, all_platforms=all_platforms)
+        self.install({"codex", "cursor"})
+
+        payload = self.install(platforms, all_platforms=all_platforms)
+
+        self.assertEqual(payload["skill_installed_validation"]["returncode"], 0)
+        manifest = json.loads((self.install_dst / "extension.json").read_text(encoding="utf-8"))
+        for section_name in ("skill_packages", "overlays"):
+            with self.subTest(section=section_name):
+                section = manifest[section_name]
+                restored = {item["path"] for item in section["files"] if item["path"].startswith(".claude/")}
+                self.assertTrue(restored)
+                self.assertTrue(all((self.repo / path).is_file() for path in restored))
+                self.assertFalse(restored & {item["path"] for item in section["removals"]})
+
     def test_all_platforms_to_subset_preserves_edited_overlay_and_blocks_activation(self) -> None:
         platforms, all_platforms = preset.selected_platforms(None, True)
         self.install(platforms, all_platforms=all_platforms)
