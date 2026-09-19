@@ -29,7 +29,10 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     task_dir = task(repo, args.task)
     value = checked_gate(package_root, repo, task_dir, args.expected_exit)
     return {
-        "status": "ok",
+        # This command validates an owner-private checkpoint only. It is not
+        # the public Skill exit and cannot establish Branch Review by itself.
+        "status": "owner_checkpoint_validated",
+        "formal_exit": False,
         "task_ref": rel(repo, task_dir),
         "head": git(repo, "rev-parse", "HEAD"),
         "review_commit": value["review_commit"],

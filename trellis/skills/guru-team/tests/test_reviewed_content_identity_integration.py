@@ -256,7 +256,8 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
         fresh = self.run_branch_wrapper(
             "check-review-gate.sh", "--task", TASK_REF, "--expected-exit", "passed"
         )
-        self.assertEqual("ok", fresh["status"])
+        self.assertEqual("owner_checkpoint_validated", fresh["status"])
+        self.assertFalse(fresh["formal_exit"])
         current_gate = json.loads(checkpoint.read_text())
         self.assertEqual("7.0", current_gate["schema_version"])
         self.assertEqual(

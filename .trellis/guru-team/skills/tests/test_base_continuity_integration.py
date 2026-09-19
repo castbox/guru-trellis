@@ -411,6 +411,8 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
             "--task", TASK_REF,
             "--expected-exit", "continuity_passed",
         )
+        self.assertEqual("owner_checkpoint_validated", checked["status"])
+        self.assertFalse(checked["formal_exit"])
         self.assertEqual("continuity_passed", checked["typed_exit"])
         self.assertEqual(reconciled_head, checked["head"])
         self.assertEqual(reconciled_head, checked["review_commit"])
