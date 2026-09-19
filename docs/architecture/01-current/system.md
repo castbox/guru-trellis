@@ -99,7 +99,16 @@
   手动结果不取得 Guru lifecycle 完成状态。此能力不新增 Skill、exit、owner 或恢复状态。
   需求/设计/测试承接为 `R408-01..08 -> D408-01..05 -> T408-01..08`，证据边界见 `EVD-027`。
 
-当前 Architecture knowledge identity 为 `.55`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
+`ARCH-CUR-033`（`source_confirmed` + `reviewed`）：#436 以 `target_native` 在 `.55` current 上增加
+Completion、Closure、Finish、Cleanup 与 Reactivate 五个 additive/deferred semantic packages。
+Completion 只决定 accepted scope 是否完成；Closure 只拥有 exact Issue disposition；Finish 只拥有
+terminal archive/bookkeeping/expected-head merge；Cleanup 只消费当前 Finish receipt；Reactivate 保留
+stable task/Issue identity 并使旧 Finish receipt 失效。canonical registry 为 31 packages / 136 exits /
+101 commands，production workflow 仍为 22 mandatory invokes / 98 exits；#434 仍独占 production graph
+activation 与旧 edge retirement。`ADR-013`、`EVD-031` 与 #436 contribution 定义边界；完整 Release
+matrix 仍 `unverified`。
+
+当前 Architecture knowledge identity 为 `.56`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
 `0.6.17`，framework source/CI 由 `ARCH-CUR-028` 与 canonical source record 绑定，package manager 为
 `pnpm@10.32.1`。`.54` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、

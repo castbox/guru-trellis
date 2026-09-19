@@ -1,6 +1,6 @@
 # #436 Post-Delivery Completion And Finish Requirements contribution
 
-状态：`reviewed_candidate`。本 contribution 尚未提升到 shared current；source/expected RDT 与 Architecture 均为 `current-main-0.6.17-guru.55` / `active`。
+状态：`reviewed_promoted`。本 contribution 已提升到 `current-main-0.6.17-guru.56`；`.55` 为 immutable predecessor。
 
 - `R436-01`：`guru-review-task-completion` fresh 汇总 accepted scope、全部 Delivery facts、current authority、remaining work 与 evidence；只在全部完成时返回 `completed`，其余六个 closed exits 保持同一 task active 或明确阻塞。
 - `R436-02`：`guru-complete-task-closure` 只消费 current Completion approval。no-Issue/reference-only/follow-up/parent 返回 `no_mutation`；exact source Issue 的关闭必须展示精确动作、独立确认并支持同一 transaction recovery。

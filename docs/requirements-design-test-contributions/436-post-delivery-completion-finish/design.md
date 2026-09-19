@@ -1,6 +1,6 @@
 # #436 Post-Delivery Completion And Finish Design contribution
 
-状态：`reviewed_candidate`。采用 `target_native`，关联 Architecture contribution `architecture-contribution-436-post-delivery-completion-finish-v1`。
+状态：`reviewed_promoted`。采用 `target_native`，关联 Architecture contribution `architecture-contribution-436-post-delivery-completion-finish-v1`，successor 为 `.56`。
 
 - `D436-01`：Completion 使用 semantic owner authoring 和 closed public projection。`completed` 才携带 fresh `completion_ref`/Closure seed；evidence refresh 是 fresh profile，不能预填 pass 或伪造 Delivery。
 - `D436-02`：Closure 将 source disposition 与 provider mutation 分离。`no_mutation` 和 `closed` 都产生真实 `closure_ref`；exact close transaction 只保存恢复同一 repo/Issue/action 所需的 owner-private state。

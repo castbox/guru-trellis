@@ -83,6 +83,11 @@
   repository/base和parents重建Delivery fact。三个packages已进入canonical、installed与平台投影，但workflow edge
   保持deferred；#434 activation前不得把package存在解释为production route可达，#436也不由该投影实现。
 
+- `ARCH-INT-021`：#436 将 Completion -> Closure -> Finish -> Cleanup/Reactivate 组织为五个独立
+  package-level projections；各边只传递 task/receipt/route 所需的最小字段，owner-private recovery 不跨包读取。
+  五个 packages 进入 canonical、installed 与 Shared/Codex/Cursor/Claude projections，但 workflow edges 保持
+  deferred，#434 activation 前不得把 package 存在解释为 production route 可达。
+
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。
 - `skill_api` 与 interface/schema/command projection、distribution、managed/installed file

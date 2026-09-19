@@ -3,11 +3,11 @@
 ## Identity And Authority Boundary
 
 - candidate identity: `architecture-contribution-436-post-delivery-completion-finish-v1`.
-- lifecycle state: `reviewed_candidate`; not promoted to shared current.
+- lifecycle state: `reviewed_promoted`; absorbed by `current-main-0.6.17-guru.56`.
 - source authority: Issue #436 contract `2026-09-18-r3`.
 - task locator: `.trellis/tasks/09-19-436-post-delivery-completion-finish`.
 - related RDT contribution: `docs/requirements-design-test-contributions/436-post-delivery-completion-finish/`.
-- source/expected baseline: `docs/architecture/README.md` / `current-main-0.6.17-guru.55` / `active`.
+- source/expected baseline: `docs/architecture/README.md` / predecessor `current-main-0.6.17-guru.55`; current successor `current-main-0.6.17-guru.56` / `active`.
 - design constitution: `docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`.
 - project change contract: `docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`.
 - change path: `target_native`.
@@ -57,10 +57,10 @@ The design deliberately excludes a Delivery ledger, old-output adapter, dual run
 - check identity/version: `guru-trellis-architecture-convergence@1`.
 - refs: `ARCH-GOV-006..011`, `ADR-005`, `ADR-009`, `ADR-012`, `ARCH-GAP-009`.
 - before: `.55` contains 26 packages / 114 exits / 96 commands and a 22-invoke / 98-exit production graph, with #436 capability absent.
-- after candidate: canonical and managed projections contain 31 packages / 101 commands; the production graph remains 22 invokes / 98 exits. Five deferred lifecycle owners, closed schemas, package tests, transaction recovery and lifecycle SSOT are present.
+- after candidate: canonical and managed projections contain 31 packages / 136 external exits / 101 commands; the production graph remains 22 invokes / 98 exits. Five deferred lifecycle owners, closed schemas, package tests, transaction recovery and lifecycle SSOT are present.
 - current result: targeted package, registry, installed/projection, preset recovery, task and drift checks pass. The existing Finish-family suite retains three base failures unrelated to #436: an old expected-exit set and two existing Finalizer eval-schema mismatches.
-- promotion state: `reviewed_candidate`; shared current remains `current-main-0.6.17-guru.55`.
-- expected current identity: `current-main-0.6.17-guru.55`.
+- promotion state: `reviewed_promoted`; shared current is `current-main-0.6.17-guru.56`.
+- expected current identity: predecessor `current-main-0.6.17-guru.55`; promoted successor `current-main-0.6.17-guru.56`.
 - ADR: required at promotion because this task establishes terminal lifecycle owner topology, transaction persistence, Issue-close ownership and normal Reactivate semantics.
 
 ## Review Boundary

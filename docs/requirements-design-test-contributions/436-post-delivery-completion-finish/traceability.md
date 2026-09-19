@@ -1,6 +1,6 @@
 # #436 Contribution Traceability
 
-状态：`reviewed_candidate`。Current shared RDT 与 Architecture authority 均为 `current-main-0.6.17-guru.55` / `active`；本 contribution 不修改 shared current。
+状态：`reviewed_promoted`。Current shared RDT 与 Architecture authority 均为 `current-main-0.6.17-guru.56` / `active`；`.55` 保持 immutable predecessor。
 
 | Requirements | Design | Test |
 | --- | --- | --- |
@@ -11,4 +11,4 @@
 | `R436-05` | `D436-05`, `D436-08` | `T436-36..48` |
 | `R436-06` | `D436-06`, `D436-07` | `T436-49..56` |
 
-Architecture source reference：`architecture-contribution-436-post-delivery-completion-finish-v1`；expected current为 `.55`。独立 committed full-diff review后，RDT/Architecture promotion owners分别决定是否提升 shared current。任何 promotion-created diff必须重新进入fresh Phase 2、Task Commit与Branch Review；#434 production activation仍是独立边界。
+Architecture source reference：`architecture-contribution-436-post-delivery-completion-finish-v1`；promoted current为 `.56`。任何 promotion-created diff必须重新进入fresh Phase 2、Task Commit与Branch Review；#434 production activation仍是独立边界。

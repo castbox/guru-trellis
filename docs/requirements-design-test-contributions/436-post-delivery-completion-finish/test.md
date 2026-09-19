@@ -1,6 +1,6 @@
 # #436 Post-Delivery Completion And Finish Test contribution
 
-状态：`finding_fix_candidate`。`T436-01..56` 是需求阶段的验收矩阵，不等同于每个编号已有一条自动化测试。当前只声明下列已执行证据；semantic 判断仍由 AI owner 完成，脚本与 fixture 不替代 live authority review。
+状态：`reviewed_promoted`。`T436-01..56` 是需求阶段的验收矩阵，不等同于每个编号已有一条自动化测试。当前只声明下列已执行证据；semantic 判断仍由 AI owner 完成，脚本与 fixture 不替代 live authority review。
 
 ## 当前自动化覆盖
 
