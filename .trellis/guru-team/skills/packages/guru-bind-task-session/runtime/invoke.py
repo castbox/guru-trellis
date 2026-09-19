@@ -133,19 +133,23 @@ def _candidate_task_paths(root: Path, task_ref: str, manual: bool) -> list[tuple
         pass
     mapped_workspaces: set[Path] = set()
     for candidate_root in list(roots):
-        for category in ("tasks", "workspaces"):
-            mapping = _read_mapping(_mapping_path(candidate_root, category, task_id))
-            if mapping and mapping.get("workspace_path"):
-                mapped_workspaces.add(Path(str(mapping["workspace_path"])).expanduser().resolve())
+        metadata_id = None
         meta_locator = candidate_root / task_ref / "task.json"
         if meta_locator.is_file():
             try:
                 metadata = json.loads(meta_locator.read_text())
             except Exception as exc:
                 raise CommandError("stale_identity", "task.json", "Task metadata is not valid JSON.", 3) from exc
+            metadata_id = str(metadata.get("id") or "") or None
             workspace = metadata.get("worktree_path") or (metadata.get("meta") or {}).get("worktree_path")
             if workspace:
                 roots.add(Path(str(workspace)).expanduser().resolve())
+        mapping_ids = [task_id] if metadata_id is None else [task_id, metadata_id]
+        for mapping_id in dict.fromkeys(mapping_ids):
+            for category in ("tasks", "workspaces"):
+                mapping = _read_mapping(_mapping_path(candidate_root, category, mapping_id))
+                if mapping and mapping.get("workspace_path"):
+                    mapped_workspaces.add(Path(str(mapping["workspace_path"])).expanduser().resolve())
     if len(mapped_workspaces) > 1:
         raise CommandError("stale_identity", "runtime_mapping", "Multiple runtime mappings point at different task workspaces.", 3)
     if mapped_workspaces:

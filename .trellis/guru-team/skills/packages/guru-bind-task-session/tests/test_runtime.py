@@ -330,5 +330,19 @@ class BindingBoundaryCoverageTest(unittest.TestCase):
         self.assertEqual(facts['workspace'], workspace.resolve())
         self.assertEqual(facts['branch'], 'codex/demo')
 
+    def test_date_prefixed_task_ref_uses_task_json_id_for_mapping_locator(self):
+        mod = self.load(); repo = make_repo(); workspace = repo.parent / ("task-worktree-date-" + next(tempfile._get_candidate_names()))
+        subprocess.check_call(["git", "worktree", "add", "-qb", "codex/demo", str(workspace), "main"], cwd=repo)
+        task_ref = '.trellis/tasks/09-19-demo'; task_path = workspace / task_ref; task_path.mkdir(parents=True)
+        base_head = git(workspace, 'rev-parse', 'refs/heads/main')
+        task = {'id':'demo','status':'in_progress','branch':'codex/demo','base_branch':'main','worktree_path':None,'lifecycle_generation':1,'meta':{'worktree_path':str(workspace.resolve()),'base_head':base_head}}
+        (task_path/'task.json').write_text(json.dumps(task)+'\n')
+        mapping_root = workspace/'.trellis/.runtime/guru-team'; (mapping_root/'tasks').mkdir(parents=True); (mapping_root/'workspaces').mkdir(parents=True)
+        common = str((repo/'.git').resolve())
+        (mapping_root/'tasks/demo.json').write_text(json.dumps({'workspace_path':str(workspace.resolve()),'task_artifact_dir':task_ref,'repository_common_dir':common,'base_head':base_head})+'\n')
+        (mapping_root/'workspaces/demo.json').write_text(json.dumps({'workspace_path':str(workspace.resolve()),'branch_name':'codex/demo','repository_common_dir':common,'base_head':base_head})+'\n')
+        facts = mod.task_facts(repo, task_ref, allow_missing_mappings=True)
+        self.assertEqual(facts['workspace'], workspace.resolve())
+
 if __name__ == '__main__':
     unittest.main()

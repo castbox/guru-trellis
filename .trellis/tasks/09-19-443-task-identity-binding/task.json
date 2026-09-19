@@ -22,5 +22,8 @@
   "parent": null,
   "relatedFiles": [],
   "notes": "",
-  "meta": {}
+  "meta": {
+    "base_head": "8ff1562cafca7e2833a1dd0af84f0ecd2ff5f71e",
+    "base_branch": "main"
+  }
 }

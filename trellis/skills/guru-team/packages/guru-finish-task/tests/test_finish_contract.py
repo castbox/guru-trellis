@@ -270,3 +270,15 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path):
     target = git(repo, "rev-parse", "refs/remotes/origin/main")
     assert subprocess.run(["git", "cat-file", "-e", f"{target}:{archive_ref}/finish-summary.json"], cwd=repo).returncode == 0
     assert subprocess.run(["git", "cat-file", "-e", f"{target}:.trellis/tasks/demo/task.json"], cwd=repo).returncode != 0
+
+
+def test_finish_accepts_date_prefixed_task_directory_with_stable_task_id(tmp_path):
+    repo = tmp_path / "repo"; repo.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+    subprocess.run(["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "--allow-empty", "-qm", "seed"], cwd=repo, check=True)
+    task_ref = ".trellis/tasks/09-19-demo"; task_dir = repo / task_ref; task_dir.mkdir(parents=True)
+    (task_dir / "task.json").write_text(json.dumps({"id":"demo","status":"in_progress","lifecycle_generation":1}) + "\n")
+    archive_ref = ".trellis/tasks/archive/2026-09/09-19-demo"
+    FINISH.project_archive(repo, {"task_ref": task_ref}, Path(task_ref), archive_ref, Path(archive_ref))
+    assert not task_dir.exists()
+    assert (repo / archive_ref / "task.json").is_file()
