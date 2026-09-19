@@ -162,9 +162,9 @@ including dangling, internal, external, and multilevel chains, fails closed.
 The atomic current package inventory includes the Interface 1.4 additive
 `skill_input_authoring_seed` schema shape, thirteen target-owned authoring
 examples, the production manifest bindings, the four finalization-family
-bindings, and their validator/probe tests. Canonical, installed, shared, Codex,
-Cursor, and Claude copies must carry byte-identical contracts; a graph that has
-only part of those thirteen handoffs is a mixed package activation and must fail
+bindings, and their canonical-source validator/probe tests. Installed, shared,
+Codex, Cursor, and Claude copies must carry byte-identical public contracts;
+a graph that has only part of those thirteen handoffs is a mixed package activation and must fail
 before target mutation.
 
 Installed package validation parses the installed workflow target declarations
@@ -586,9 +586,10 @@ or disposable copy and verify:
 ## Skill Evaluation Assets
 
 Canonical eval schemas, adapter descriptors/wrappers, public command wrappers,
-and the package-local kernel live under `trellis/`. The preset installs the
-complete active package tree below `.trellis/guru-team/skills/packages/` and
-the shared kernel below `.trellis/guru-team/runtime/`. Shared/Codex/Claude/
+package-private tests, and the package-local kernel live under `trellis/`.
+The preset installs the active package's public runtime projection, excluding
+its `tests/` tree, below `.trellis/guru-team/skills/packages/` and the shared
+kernel below `.trellis/guru-team/runtime/`. Shared/Codex/Claude/
 Cursor discovery roots receive only the public projection: `SKILL.md`,
 interface, references, public schemas/examples/evals and the public invocation
 wrapper. They never receive package `runtime/`, `tests/`, `errors/`, private
@@ -672,7 +673,7 @@ Python dependency imports are not product-runtime evidence.
 ## Production Skill Atomic Activation
 
 `production-current-v4` is the sole current planning/check/commit/qualification
-contract. The preset stages its schema, manifest, four complete package trees, consumer
+contract. The preset stages its schema, manifest, four public package projections, consumer
 schemas, registry, extension inventory, installed provenance, and selected
 platform copies in one transaction. The transaction validates the complete
 current package graph before publishing any destination; only the current

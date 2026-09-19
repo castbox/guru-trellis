@@ -134,7 +134,7 @@ confirmation.
 Qualification decisions and the typed result remain current-process
 memory/stdout only. The installer must not create or claim a tracked, ignored,
 or temporary qualification result/report/checkpoint, candidate/rejection
-persistent decision store, handoff, or cross-process result locator. Installed package tests scan
+persistent decision store, handoff, or cross-process result locator. Canonical installer tests scan
 the complete target inventory before and after all ten profiles and require
 zero qualification residue. The only persistent related data is the terminal
 classification/witness directly authored into the existing schema 5.0 Phase 2,
@@ -152,7 +152,8 @@ an adjacent `.new`, and either unresolved sidecar blocks activation.
 
 The active-task base evolution capability is installed as the
 `guru-reconcile-task-base` package plus its declared package-local commands,
-schemas, tests, examples, and selected-platform public projections. The
+schemas, examples, and selected-platform public projections. Its tests remain
+in the canonical source package for source validation. The
 installer derives that inventory from the active registry and package tree; it
 does not reconstruct semantic routes or maintain a second command list. The
 marketplace workflow supplies the guarded boundaries and single router, while

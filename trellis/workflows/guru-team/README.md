@@ -161,8 +161,9 @@ baseline advance 固定返回 `sync_required`。Global workflow 只拥有这些 
 Publication 与 Finalizer 的业务语义仍由各自 package 独占。
 
 新 Skill 必须引用 installed `.trellis/spec/workflow/semantic-retrieval.md`，不得在 workflow、
-README、平台 entry 或 package 中复制中英文概念族。完整 runtime、schema、commands、tests 与
-Shared/Codex/Claude/Cursor discovery copies 由 preset 根据 current registry 原子安装。升级顺序
+README、平台 entry 或 package 中复制中英文概念族。`tests/` 保留在 canonical source 用于
+source validation；preset 根据 current registry 原子安装不含 package-private tests 的
+runtime/schema/commands 公开投影及 Shared/Codex/Claude/Cursor discovery copies。升级顺序
 仍是 official update/upgrade、workflow re-selection、same-ref preset reapply、sidecar 处理和
 完整 source/installed/platform/drift 验证。
 
