@@ -131,11 +131,12 @@ def _candidate_task_paths(root: Path, task_ref: str, manual: bool) -> list[tuple
         roots.update(_worktree_paths(root))
     except CommandError:
         pass
+    mapped_workspaces: set[Path] = set()
     for candidate_root in list(roots):
         for category in ("tasks", "workspaces"):
             mapping = _read_mapping(_mapping_path(candidate_root, category, task_id))
             if mapping and mapping.get("workspace_path"):
-                roots.add(Path(str(mapping["workspace_path"])).expanduser().resolve())
+                mapped_workspaces.add(Path(str(mapping["workspace_path"])).expanduser().resolve())
         meta_locator = candidate_root / task_ref / "task.json"
         if meta_locator.is_file():
             try:
@@ -145,6 +146,10 @@ def _candidate_task_paths(root: Path, task_ref: str, manual: bool) -> list[tuple
             workspace = metadata.get("worktree_path") or (metadata.get("meta") or {}).get("worktree_path")
             if workspace:
                 roots.add(Path(str(workspace)).expanduser().resolve())
+    if len(mapped_workspaces) > 1:
+        raise CommandError("stale_identity", "runtime_mapping", "Multiple runtime mappings point at different task workspaces.", 3)
+    if mapped_workspaces:
+        roots = set(mapped_workspaces)
     candidates: list[tuple[Path, Path]] = []
     for candidate_root in roots:
         task_path = (candidate_root / task_ref).resolve()
