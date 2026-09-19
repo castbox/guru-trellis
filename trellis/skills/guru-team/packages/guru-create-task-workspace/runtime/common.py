@@ -1,9 +1,11 @@
 from __future__ import annotations
 import argparse,copy,hashlib,json,subprocess,sys
 from datetime import datetime,timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from typing import NamedTuple
 SHARED_ROOT=next((p for p in Path(__file__).resolve().parents if (p/"runtime/io.py").is_file() and (p/"runtime/schema.py").is_file()),None)
+TASK_DATE_TIMEZONE=ZoneInfo("Asia/Shanghai")
 if SHARED_ROOT is not None and str(SHARED_ROOT) not in sys.path:sys.path.insert(0,str(SHARED_ROOT))
 from runtime.io import CommandError
 CONSUMERS={"created":{"kind":"workflow","id":"guru-task-workspace-created"},"refresh_review":{"kind":"skill","id":"guru-sync-base"},"blocked":{"kind":"stop","id":"task-workspace-blocked"},"invalid_task_state":{"kind":"stop","id":"invalid-task-state"}}
@@ -98,6 +100,10 @@ def load(repo,package_root,value,field):
  return v
 def digest(v):return hashlib.sha256(json.dumps(v,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
 def now():return datetime.now(timezone.utc).isoformat().replace("+00:00","Z")
+def task_date_prefix(value=None):
+ if value is None:value=datetime.now(TASK_DATE_TIMEZONE)
+ elif value.tzinfo is None:value=value.replace(tzinfo=TASK_DATE_TIMEZONE)
+ return value.astimezone(TASK_DATE_TIMEZONE).strftime("%m-%d")
 def git(repo,*args,check=True):
  p=subprocess.run(["git",*args],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
  if check and p.returncode:raise CommandError("stale_identity","repository",p.stderr.strip() or "Repair Git state.",3)

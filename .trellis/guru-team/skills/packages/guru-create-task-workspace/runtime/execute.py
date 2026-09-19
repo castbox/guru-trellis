@@ -1,9 +1,9 @@
 from __future__ import annotations
-import argparse,hashlib,json,os,re,subprocess
+import argparse,hashlib,importlib.util,json,os,re,subprocess,sys
 from datetime import datetime,timedelta,timezone
 from pathlib import Path
 from urllib.parse import urlsplit
-from common import CONSUMERS,digest,finalize,git,load,now,parse,require_directory_ancestors,resolve_workspace,root,snapshot,stage,validate_plan,worktrees
+from common import CONSUMERS,digest,finalize,git,load,now,parse,require_directory_ancestors,resolve_workspace,root,snapshot,stage,task_date_prefix,validate_plan,worktrees
 from runtime.io import CommandError
 from plan_input import load_plan_envelope
 def run_gh(repo,*args):
@@ -117,6 +117,64 @@ def create_official_task(workspace,plan):
  argv=[os.environ.get("GURU_TRELLIS_PYTHON") or os.environ.get("TRELLIS_PYTHON") or "python3",str(script),"create",n["task_title"],"--description",n["reason"],"--slug",n["task_slug"],"--creator",owner,"--assignee",owner,"--base-branch",plan["base"]["selected_base"],"--no-start"]
  completed=subprocess.run(argv,cwd=workspace,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
  if completed.returncode:raise CommandError("stale_identity","created_workspace.task",completed.stderr.strip() or "Official Trellis task creation failed.",3)
+def _load_active_task_module(workspace):
+ common_dir=(workspace/".trellis/scripts/common").resolve();init=common_dir/"__init__.py"
+ if not init.is_file():raise CommandError("stale_identity","session_binding","Official Trellis session binding is unavailable in the target workspace.",3)
+ name="guru_target_common_"+hashlib.sha256(str(common_dir).encode()).hexdigest()[:16]
+ loaded=sys.modules.get(name)
+ if loaded is not None:return loaded
+ spec=importlib.util.spec_from_file_location(name,init,submodule_search_locations=[str(common_dir)])
+ if spec is None or spec.loader is None:raise CommandError("stale_identity","session_binding","Official Trellis session binding is unavailable in the target workspace.",3)
+ module=importlib.util.module_from_spec(spec);sys.modules[name]=module
+ try:spec.loader.exec_module(module)
+ except Exception:
+  sys.modules.pop(name,None);raise
+ return module
+def _force_clear_session_binding(module,workspace,context_key):
+ facts=module.repository_facts(workspace)
+ path=module.session_path(workspace,context_key,facts)
+ try:path.unlink(missing_ok=True)
+ except OSError as exc:raise RuntimeError(f"failed to clear the session binding: {exc}") from exc
+def _restore_session_binding(module,workspace,previous,context_key,expected_task=None):
+ try:current=module.resolve_active_task(workspace)
+ except Exception:
+  _force_clear_session_binding(module,workspace,context_key)
+  current=None
+ if current is not None and current.error:
+  _force_clear_session_binding(module,workspace,context_key)
+  current=None
+ current_context=current.context_key if current is not None else context_key
+ if current is not None and (current.context_key==context_key or current.task_path==expected_task):
+  try:module.clear_active_task(workspace)
+  except Exception:_force_clear_session_binding(module,workspace,current.context_key or context_key)
+  current=None
+ if previous.task_path and previous.task_workspace_root and current_context==context_key:
+  restored=module.set_active_task(previous.task_path,previous.task_workspace_root)
+  if restored is None:raise RuntimeError("failed to restore the previous session binding")
+def attach_session_task(workspace,task_ref):
+ module=_load_active_task_module(workspace)
+ try:context_key=module.resolve_context_key()
+ except Exception as exc:raise CommandError("stale_identity","session_binding",f"Current session context could not be resolved: {exc}",3) from exc
+ if not context_key:raise CommandError("stale_identity","session_binding","Current session context is unavailable; task creation cannot be completed safely.",3)
+ try:previous=module.resolve_active_task(workspace)
+ except Exception as exc:raise CommandError("stale_identity","session_binding",f"Current session binding could not be read: {exc}",3) from exc
+ if previous.error:raise CommandError("stale_identity","session_binding",f"Current session binding is invalid: {previous.error}",3)
+ try:
+  active=module.set_active_task(task_ref,workspace)
+  if active is None:raise RuntimeError("official session binding returned no active task")
+  expected_workspace=workspace.resolve();expected_path=(workspace/task_ref).resolve()
+  if active.context_key!=context_key or active.task_path!=task_ref or active.task_workspace_root!=expected_workspace or active.resolved_task_path!=expected_path:
+   raise RuntimeError("official session binding does not match the created task identity")
+ except Exception as exc:
+  try:_restore_session_binding(module,workspace,previous,context_key,task_ref)
+  except Exception as restore_exc:raise CommandError("stale_identity","rollback",f"Session binding failed and could not be restored: {restore_exc}",3) from restore_exc
+  if isinstance(exc,CommandError):raise
+  raise CommandError("stale_identity","session_binding",f"Session task attach failed: {exc}",3) from exc
+ return {"module":module,"workspace":workspace,"previous":previous,"context_key":context_key,"task_ref":task_ref}
+def rollback_session_binding(binding):
+ if not binding:return
+ try:_restore_session_binding(binding["module"],binding["workspace"],binding["previous"],binding["context_key"],binding["task_ref"])
+ except Exception as exc:raise RuntimeError(str(exc)) from exc
 def mapping_payloads(repo,plan,workspace,task_dir_rel):
  n=plan["naming"]
  workspace_mapping={"schema_version":"1.0","workspace_slug":n["workspace_slug"],"workspace_path":str(workspace),"source_checkout":str(repo),"branch_name":n["branch_name"],"updated_at":now()}
@@ -125,8 +183,8 @@ def mapping_payloads(repo,plan,workspace,task_dir_rel):
 def expected_mapping(rel,workspace_mapping,task_mapping):
  return workspace_mapping if "/workspaces/" in rel else task_mapping
 def preflight(repo,plan,workspace):
- n=plan["naming"];branch=n["branch_name"];task_dir_rel=Path(".trellis/tasks")/f"{datetime.now().strftime('%m-%d')}-{n['task_slug']}";task_dir=workspace.path/task_dir_rel
- expected_dir=f"{datetime.now().strftime('%m-%d')}-{n['task_slug']}"
+ n=plan["naming"];branch=n["branch_name"];date_prefix=task_date_prefix();task_dir_rel=Path(".trellis/tasks")/f"{date_prefix}-{n['task_slug']}";task_dir=workspace.path/task_dir_rel
+ expected_dir=f"{date_prefix}-{n['task_slug']}"
  if task_dir_rel.name!=expected_dir:raise CommandError("stale_identity","created_workspace.task_artifact_dir","Task path does not match the official task-store date and slug.",3)
  if not (repo/".trellis/scripts/task.py").is_file():raise CommandError("stale_identity","created_workspace.task","Official Trellis task store is unavailable in the source checkout.",3)
  require_directory_ancestors(workspace.path,"worktree_root");require_directory_ancestors(task_dir,"task_dir")
@@ -185,8 +243,10 @@ def verify_created_boundary(repo,plan,workspace,workspace_mode,task_dir_rel,task
    if any(value.get(key)!=expected_value for key,expected_value in expected.items() if key!="updated_at"):
     raise CommandError("stale_identity","created_workspace.runtime_mappings","Created runtime mapping identity drifted.",3)
 
-def rollback_created(repo,workspace,branch,original_branch,created_worktree,created_branch,created_files,created_dirs):
+def rollback_created(repo,workspace,branch,original_branch,created_worktree,created_branch,created_files,created_dirs,session_binding=None):
  errors=[]
+ try:rollback_session_binding(session_binding)
+ except Exception as exc:errors.append(str(exc))
  for path in reversed(created_files):
   try:path.unlink(missing_ok=True)
   except OSError as exc:errors.append(str(exc))
@@ -212,7 +272,7 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   if not mutation_boundary_current(repo,plan):
    result={"schema_version":"3.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The authoritative base or target changed at the mutation boundary."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"prerequisite_refresh","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":"refresh_review","reason":"Current authority changed before the first business write.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
   created=create_issue(plan);result={"schema_version":"3.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"created_issue","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("passed",["Created and immediately reread the exact reviewed GitHub issue."]),"checker":stage("not_run",[]),"created_issue":created,"created_workspace":None,"no_side_effect":None,"typed_exit":"refresh_review","reason":"The reviewed issue was created and now requires a complete Intake refresh.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
- n=plan["naming"];workspace_config=resolve_workspace(repo,n["workspace_slug"]);workspace=workspace_config.path;branch=n["branch_name"];task_dir_rel=Path(".trellis/tasks")/f"{datetime.now().strftime('%m-%d')}-{n['task_slug']}";task_dir=workspace/task_dir_rel
+ n=plan["naming"];workspace_config=resolve_workspace(repo,n["workspace_slug"]);workspace=workspace_config.path;branch=n["branch_name"];task_dir_rel=Path(".trellis/tasks")/f"{task_date_prefix()}-{n['task_slug']}";task_dir=workspace/task_dir_rel
  before=snapshot(repo,plan)
  try:
   task_dir_rel,task_dir,task=preflight(repo,plan,workspace_config)
@@ -229,7 +289,7 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   raise
  if not mutation_boundary_current(repo,plan):
   result={"schema_version":"3.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The authoritative base or target changed at the mutation boundary."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"prerequisite_refresh","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":"refresh_review","reason":"Current authority changed before the first business write.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
- created_files=[];created_dirs=[];created_worktree=False;created_branch=False;original_branch=git(repo,"branch","--show-current").stdout.strip()
+ created_files=[];created_dirs=[];created_worktree=False;created_branch=False;session_binding=None;original_branch=git(repo,"branch","--show-current").stdout.strip()
  try:
   if n["branch_disposition"]=="create_new":
    if workspace_config.mode=="current":git(repo,"switch","-c",branch,plan["base"]["base_ref"])
@@ -250,6 +310,7 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
    try:official_task=json.loads(task_path.read_text(encoding="utf-8"))
    except Exception as exc:raise CommandError("stale_identity","created_workspace.task","Official Trellis task creation returned an invalid task.",3) from exc
    official_task.update(task);task_path.write_text(json.dumps(official_task,ensure_ascii=False,indent=2)+"\n")
+  session_binding=attach_session_task(workspace,task_dir_rel.as_posix())
   mappings=[];workspace_mapping,task_mapping=mapping_payloads(repo,plan,workspace,task_dir_rel)
   for rel in plan["side_effects"]["runtime_mappings"]:
    payload=expected_mapping(rel,workspace_mapping,task_mapping)
@@ -261,6 +322,6 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   verify_created_boundary(repo,plan,workspace,workspace_config.mode,task_dir_rel,task_dir)
   created={"repo":plan["target"]["repo"],"issue_number":plan["target"]["issue_number"],"branch_name":branch,"base_ref":plan["base"]["base_ref"],"base_head":plan["base"]["decision_head"],"workspace_slug":n["workspace_slug"],"task_slug":n["task_slug"],"task_artifact_dir":task_dir_rel.as_posix(),"assignee":plan["assignee"]["login"],"task_status":"planning","runtime_mappings":mappings,"workspace_boundary_match":True}
  except Exception:
-  rollback_created(repo,workspace,branch,original_branch,created_worktree,created_branch,created_files,created_dirs)
+  rollback_created(repo,workspace,branch,original_branch,created_worktree,created_branch,created_files,created_dirs,session_binding)
   raise
  result={"schema_version":"3.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"created_workspace","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("passed",["Created the exact reviewed branch, worktree, task, and runtime mappings."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":created,"no_side_effect":None,"typed_exit":"created","reason":"The reviewed task workspace was created.","consumer":CONSUMERS["created"],"facts_sha256":""};return finalize(package_root,result)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 import copy,hashlib,importlib.util,json,os,shutil,subprocess,sys,tempfile,unittest
+from types import SimpleNamespace
 from unittest import mock
 from datetime import datetime,timezone
 from pathlib import Path
@@ -33,10 +34,10 @@ class WorkspaceTest(unittest.TestCase):
  def assert_no_workspace_writes(self,workspace):
   self.assertFalse(workspace.exists());self.assertNotEqual(0,subprocess.run(["git","show-ref","--verify","--quiet",f"refs/heads/{self.plan['naming']['branch_name']}"],cwd=self.repo).returncode);self.assertFalse((self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json").exists())
  def workspace_state(self,workspace):
-  paths=[workspace/".trellis/tasks"/(datetime.now().strftime("%m-%d-")+"027-workspace")/"task.json",self.repo/".trellis/.runtime/guru-team/workspaces/027-workspace.json",self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json",workspace/".trellis/.runtime/guru-team/workspaces/027-workspace.json",workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json"]
+  paths=[workspace/".trellis/tasks"/(common.task_date_prefix()+"-"+"027-workspace")/"task.json",self.repo/".trellis/.runtime/guru-team/workspaces/027-workspace.json",self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json",workspace/".trellis/.runtime/guru-team/workspaces/027-workspace.json",workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json"]
   return {"refs":self.git("show-ref"),"worktrees":self.git("worktree","list","--porcelain"),"repo_status":common.git(self.repo,"status","--porcelain=v1","-z","--untracked-files=all").stdout,"workspace_status":common.git(workspace,"status","--porcelain=v1","-z","--untracked-files=all").stdout,"files":{str(path):path.read_bytes() for path in paths}}
  def mutation_state(self,workspace):
-  paths=[workspace/".trellis/tasks"/(datetime.now().strftime("%m-%d-")+"027-workspace")/"task.json",self.repo/".trellis/.runtime/guru-team/workspaces/027-workspace.json",self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json",workspace/".trellis/.runtime/guru-team/workspaces/027-workspace.json",workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json"]
+  paths=[workspace/".trellis/tasks"/(common.task_date_prefix()+"-"+"027-workspace")/"task.json",self.repo/".trellis/.runtime/guru-team/workspaces/027-workspace.json",self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json",workspace/".trellis/.runtime/guru-team/workspaces/027-workspace.json",workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json"]
   target_status=common.git(workspace,"status","--porcelain=v1","-z","--untracked-files=all").stdout if (workspace/".git").exists() else None
   return {"refs":self.git("show-ref"),"worktrees":self.git("worktree","list","--porcelain"),"source_status":common.git(self.repo,"status","--porcelain=v1","-z","--untracked-files=all").stdout,"target_status":target_status,"files":{str(path):path.read_bytes() if path.is_file() else None for path in paths}}
  def test_prepare_file_entrypoint_loads_package_runtime(self):
@@ -52,6 +53,51 @@ class WorkspaceTest(unittest.TestCase):
   self.assertEqual(("worktree",self.parent,self.repo),tuple(resolved))
  def test_real_workspace_mutation_check_and_invoke(self):
   pp=self.write("plan.json",self.plan);self.assertEqual(self.plan,record.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]));result,checked=self.execute_and_check();workspace=(self.parent/"repo-worktrees/027-workspace").resolve();self.assertTrue(workspace.is_dir());task_dir=result["created_workspace"]["task_artifact_dir"];mapping=json.loads((self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json").read_text());self.assertEqual({"schema_version":"1.0","workspace_slug":"027-workspace","workspace_path":str(workspace),"task_artifact_dir":task_dir},{key:mapping[key] for key in ("schema_version","workspace_slug","workspace_path","task_artifact_dir")});self.assertTrue((workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json").is_file());boundary=PACKAGE.parents[0]/"guru-finalize-task/runtime/lifecycle.py";boundary_result=subprocess.run([sys.executable,str(boundary),"check-workspace-boundary","--root",str(workspace),"--task",task_dir,"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE);self.assertEqual(0,boundary_result.returncode,boundary_result.stderr);self.assertEqual("ok",json.loads(boundary_result.stdout)["status"]);self.assertNotIn(str(self.parent.resolve()),json.dumps(result));env=self.write("invoke.json",{"result":checked});self.assertEqual({"exit_id":"created"},invoke.run(PACKAGE,{},["--root",str(self.repo),"--invocation",str(env)]))
+ def test_workspace_creation_attaches_same_session_without_starting_planning_task(self):
+  context="codex_attach_fixture"
+  with mock.patch.dict(os.environ,{"TRELLIS_CONTEXT_ID":context,"CODEX_THREAD_ID":""},clear=False):
+   result,checked=self.execute_and_check()
+  self.assertEqual(("created","passed"),(result["typed_exit"],checked["checker"]["status"]))
+  workspace=(self.parent/"repo-worktrees/027-workspace").resolve()
+  task_ref=result["created_workspace"]["task_artifact_dir"]
+  current=json.loads(subprocess.run([sys.executable,".trellis/scripts/task.py","current","--json"],cwd=workspace,env={**os.environ,"TRELLIS_CONTEXT_ID":context,"CODEX_THREAD_ID":""},text=True,stdout=subprocess.PIPE,check=True).stdout)
+  self.assertEqual(task_ref,current["current_task"]["dir"])
+  self.assertEqual("planning",current["current_task"]["status"])
+  self.assertEqual(str(workspace),current["task_workspace_root"])
+  self.assertEqual(str(workspace/task_ref),current["resolved_task_path"])
+  foreign_process=subprocess.run([sys.executable,".trellis/scripts/task.py","current","--json"],cwd=workspace,env={**os.environ,"TRELLIS_CONTEXT_ID":"codex_other_fixture","CODEX_THREAD_ID":""},text=True,stdout=subprocess.PIPE,check=False)
+  foreign=json.loads(foreign_process.stdout)
+  self.assertEqual(1,foreign_process.returncode)
+  self.assertIsNone(foreign["current_task"])
+  self.assertEqual("none",foreign["source"])
+ def test_workspace_creation_without_session_context_rolls_back_all_new_objects(self):
+  with mock.patch.dict(os.environ,{"TRELLIS_CONTEXT_ID":"","CODEX_THREAD_ID":""},clear=False):
+   pp=self.write("missing-session.json",self.plan)
+   live={"number":27,"url":"https://github.com/example/repo/issues/27","state":"OPEN","title":"Create a reviewed task workspace","body":"","updatedAt":"2026-01-01T00:00:00Z"}
+   with mock.patch.object(execute,"github",return_value=live),self.assertRaises(CommandError) as raised:
+    execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  self.assertEqual(("stale_identity","session_binding"),(raised.exception.code,raised.exception.field_path))
+  self.assert_no_workspace_writes(self.parent/"repo-worktrees/027-workspace")
+ def test_workspace_creation_attach_failure_rolls_back_all_new_objects(self):
+  pp=self.write("attach-failure.json",self.plan)
+  failure=CommandError("stale_identity","session_binding","fixture attach failure",3)
+  live={"number":27,"url":"https://github.com/example/repo/issues/27","state":"OPEN","title":"Create a reviewed task workspace","body":"","updatedAt":"2026-01-01T00:00:00Z"}
+  with mock.patch.object(execute,"github",return_value=live),mock.patch.object(execute,"attach_session_task",side_effect=failure):
+   with self.assertRaises(CommandError) as raised:
+    execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  self.assertIs(raised.exception,failure)
+  self.assert_no_workspace_writes(self.parent/"repo-worktrees/027-workspace")
+ def test_attach_failure_clears_wrong_same_session_binding_before_restore(self):
+  context="codex_attach_fixture";workspace=self.repo.resolve();previous=SimpleNamespace(task_path=".trellis/tasks/old-task",task_workspace_root=workspace,error=None,context_key=context);wrong=SimpleNamespace(task_path=".trellis/tasks/wrong-task",task_workspace_root=workspace,error=None,context_key=context);calls=[]
+  class FakeActiveTask:
+   def resolve_context_key(self):return context
+   def resolve_active_task(self,_):return previous if len(calls)==0 else wrong
+   def set_active_task(self,task,root):calls.append(("set",task,root));return SimpleNamespace(task_path=task,task_workspace_root=root,error=None,context_key=context)
+   def clear_active_task(self,_):calls.append(("clear",))
+  with mock.patch.object(execute,"_load_active_task_module",return_value=FakeActiveTask()),self.assertRaises(CommandError) as raised:
+   execute.attach_session_task(workspace,".trellis/tasks/new-task")
+  self.assertEqual(("stale_identity","session_binding"),(raised.exception.code,raised.exception.field_path))
+  self.assertEqual([("set",".trellis/tasks/new-task",workspace),("clear",),("set",".trellis/tasks/old-task",workspace)],calls)
  def test_absolute_root_create_exact_reuse_and_checker(self):
   absolute=self.parent/"absolute";self.configure(root=str(absolute));result,checked=self.execute_and_check();self.assertEqual("passed",checked["checker"]["status"]);workspace=absolute/"027-workspace";self.assertTrue(workspace.is_dir());plan=copy.deepcopy(self.plan);plan["naming"].update({"branch_disposition":"reuse_exact","workspace_disposition":"reuse_exact","task_disposition":"reuse_exact"});self.refresh(plan);reused,rechecked=self.execute_and_check(plan);self.assertEqual(("created","passed"),(reused["typed_exit"],rechecked["checker"]["status"]));self.assertNotIn(str(absolute),json.dumps(reused))
  def test_relative_root_is_repository_relative(self):
@@ -63,7 +109,7 @@ class WorkspaceTest(unittest.TestCase):
  def test_current_mode_reuse_branch_occupied_elsewhere_fails_before_writes(self):
   self.configure(mode="current");occupied=self.parent/"occupied";self.git("worktree","add","-q","-b","feat/027-workspace",str(occupied),"HEAD");plan=copy.deepcopy(self.plan);plan["naming"].update({"branch_disposition":"reuse_exact","workspace_disposition":"reuse_exact"});plan["side_effects"]["operations"].remove("create_branch");plan["side_effects"]["operations"].remove("create_worktree");self.refresh(plan);pp=self.write("occupied.json",plan)
   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
-  self.assertEqual("main",self.git("branch","--show-current"));self.assertFalse((self.repo/".trellis/tasks"/(datetime.now().strftime("%m-%d-")+"027-workspace")).exists())
+  self.assertEqual("main",self.git("branch","--show-current"));self.assertFalse((self.repo/".trellis/tasks"/(common.task_date_prefix()+"-"+"027-workspace")).exists())
  def test_invalid_mode_and_conflict_fail_before_business_writes(self):
   self.configure(mode="pool");pp=self.write("invalid.json",self.plan)
   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
@@ -138,7 +184,7 @@ class WorkspaceTest(unittest.TestCase):
   with mock.patch.object(execute,"verify_created_boundary",side_effect=CommandError("stale_identity","created_workspace","boundary drift",3)):
    with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
   self.assertEqual("main",self.git("branch","--show-current"));self.assertNotEqual(0,subprocess.run(["git","show-ref","--verify","--quiet","refs/heads/feat/027-workspace"],cwd=self.repo).returncode)
-  self.assertEqual(before,self.mutation_state(self.repo));self.assertFalse((self.repo/".trellis/tasks"/(datetime.now().strftime("%m-%d-")+"027-workspace")).exists());self.assertFalse((self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json").exists())
+  self.assertEqual(before,self.mutation_state(self.repo));self.assertFalse((self.repo/".trellis/tasks"/(common.task_date_prefix()+"-"+"027-workspace")).exists());self.assertFalse((self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json").exists())
 
  def test_existing_objects_are_not_removed_when_later_boundary_fails(self):
   result,_=self.execute_and_check();workspace=self.parent/"repo-worktrees/027-workspace";plan=copy.deepcopy(self.plan);plan["naming"].update({"branch_disposition":"reuse_exact","workspace_disposition":"reuse_exact","task_disposition":"reuse_exact"});self.refresh(plan);pp=self.write("reuse-boundary-failure.json",plan);before=self.mutation_state(workspace)
