@@ -598,9 +598,89 @@ def provenance_source_binding(
         )
     return binding
 
+def _provenance_platform_inventory(manifest: Any) -> tuple[str, ...]:
+    extension = manifest.get("extension") if isinstance(manifest, dict) else None
+    public_api = extension.get("public_api") if isinstance(extension, dict) else None
+    capabilities = (
+        public_api.get("platform_capabilities")
+        if isinstance(public_api, dict)
+        else None
+    )
+    if not isinstance(capabilities, dict):
+        raise WorkflowError(
+            "Installed platform inventory is missing from Finalizer provenance.",
+            exit_code=2,
+            payload={"reason_code": "provenance_platform_inventory_missing"},
+        )
+
+    upstream = capabilities.get("upstream_platforms")
+    descriptors = capabilities.get("projection_descriptors")
+    if not isinstance(upstream, list) or not upstream:
+        raise WorkflowError(
+            "Installed upstream platform inventory is invalid.",
+            exit_code=2,
+            payload={"reason_code": "provenance_platform_inventory_invalid"},
+        )
+    if not isinstance(descriptors, list) or not descriptors:
+        raise WorkflowError(
+            "Installed platform projection descriptors are invalid.",
+            exit_code=2,
+            payload={"reason_code": "provenance_platform_descriptors_invalid"},
+        )
+
+    def rows_by_id(rows: list[Any], label: str) -> dict[str, str]:
+        result: dict[str, str] = {}
+        flags: set[str] = set()
+        for index, row in enumerate(rows):
+            if not isinstance(row, dict):
+                raise WorkflowError(
+                    "Installed platform inventory row is invalid.",
+                    exit_code=2,
+                    payload={
+                        "reason_code": "provenance_platform_inventory_invalid",
+                        "row": f"{label}[{index}]",
+                    },
+                )
+            platform_id = row.get("id")
+            cli_flag = row.get("cli_flag")
+            if (
+                not isinstance(platform_id, str)
+                or not platform_id
+                or not isinstance(cli_flag, str)
+                or not cli_flag
+                or platform_id in result
+                or cli_flag in flags
+            ):
+                raise WorkflowError(
+                    "Installed platform inventory has duplicate or invalid identity.",
+                    exit_code=2,
+                    payload={
+                        "reason_code": "provenance_platform_inventory_invalid",
+                        "row": f"{label}[{index}]",
+                    },
+                )
+            result[platform_id] = cli_flag
+            flags.add(cli_flag)
+        return result
+
+    upstream_by_id = rows_by_id(upstream, "upstream_platforms")
+    descriptor_by_id = rows_by_id(descriptors, "projection_descriptors")
+    if upstream_by_id != descriptor_by_id:
+        raise WorkflowError(
+            "Installed platform inventory and projection descriptors disagree.",
+            exit_code=2,
+            payload={"reason_code": "provenance_platform_inventory_mismatch"},
+        )
+    return tuple(sorted(upstream_by_id.values()))
+
+
 def provenance_apply_platform_args(manifest: Any) -> list[str]:
     """Project one reviewed installed platform identity into preset apply argv."""
     errors: list[str] = []
+    try:
+        available_platforms = set(_provenance_platform_inventory(manifest))
+    except WorkflowError:
+        raise
     selected_by_locator: dict[str, list[str]] = {}
     for object_name in ("install", "skill_packages", "overlays"):
         container = manifest.get(object_name) if isinstance(manifest, dict) else None
@@ -629,7 +709,7 @@ def provenance_apply_platform_args(manifest: Any) -> list[str]:
             errors.append(
                 f"provenance_platform_selection_{object_name}_not_sorted"
             )
-        if any(platform not in PROVENANCE_APPLY_PLATFORMS for platform in selected):
+        if any(platform not in available_platforms for platform in selected):
             errors.append(
                 f"provenance_platform_selection_{object_name}_unknown"
             )

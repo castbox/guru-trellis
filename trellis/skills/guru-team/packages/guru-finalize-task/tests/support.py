@@ -25,6 +25,14 @@ def load(relative: str):
     return json.loads((PACKAGE / relative).read_text(encoding="utf-8"))
 
 
+def platform_capabilities() -> dict:
+    repo_root = PACKAGE.parents[4]
+    extension = json.loads(
+        (repo_root / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
+    )
+    return extension["public_api"]["platform_capabilities"]
+
+
 def load_runtime():
     runtime_path = PACKAGE / "runtime/owner.py"
     spec = importlib.util.spec_from_file_location("finalize_task_package_runtime", runtime_path)
@@ -111,7 +119,10 @@ def provenance_manifest(
         selected_platforms = ["claude", "codex", "cursor"]
     return {
         "schema_version": "2.0",
-        "extension": {"extension_id": "guru-team"},
+        "extension": {
+            "extension_id": "guru-team",
+            "public_api": {"platform_capabilities": platform_capabilities()},
+        },
         "installed_at": installed_at,
         "source": {
             "repo": f"https://github.com/{source_repo}.git",

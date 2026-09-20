@@ -370,6 +370,31 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
                 ["opencode"],
                 ["--platform", "opencode"],
             ),
+            "gemini": (
+                ["gemini"],
+                ["--platform", "gemini"],
+            ),
+            "snow": (
+                ["snow"],
+                ["--platform", "snow"],
+            ),
+            "full_inventory": (
+                [
+                    row["cli_flag"]
+                    for row in sorted(
+                        platform_capabilities()["upstream_platforms"],
+                        key=lambda row: row["cli_flag"],
+                    )
+                ],
+                [
+                    item
+                    for row in sorted(
+                        platform_capabilities()["upstream_platforms"],
+                        key=lambda row: row["cli_flag"],
+                    )
+                    for item in ("--platform", row["cli_flag"])
+                ],
+            ),
         }
         for name, (selected, expected) in cases.items():
             with self.subTest(name=name):
@@ -406,7 +431,7 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
                 {"selected_platforms": ["cursor", "codex"]}
             ),
             "unknown": lambda payload: payload["install"].update(
-                {"selected_platforms": ["gemini"]}
+                {"selected_platforms": ["unknown-agent"]}
             ),
             "locator_mismatch": lambda payload: payload["overlays"].update(
                 {"selected_platforms": ["codex"]}
@@ -421,9 +446,51 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
                 mutate(manifest)
                 with self.assertRaises(GTT.WorkflowError) as raised:
                     GTT.provenance_apply_platform_args(manifest)
-                self.assertEqual(
+                expected_reason = (
+                    "provenance_platform_inventory_missing"
+                    if name == "manifest_missing"
+                    else "provenance_platform_selection_invalid"
+                )
+                self.assertEqual(raised.exception.payload["reason_code"], expected_reason)
+
+    def test_provenance_apply_platform_args_reject_inventory_drift(self) -> None:
+        cases = {
+            "missing_inventory": lambda payload: payload["extension"]["public_api"][
+                "platform_capabilities"
+            ].pop("upstream_platforms"),
+            "duplicate_cli_flag": lambda payload: payload["extension"]["public_api"][
+                "platform_capabilities"
+            ]["upstream_platforms"].__setitem__(
+                1,
+                {
+                    **payload["extension"]["public_api"]["platform_capabilities"][
+                        "upstream_platforms"
+                    ][1],
+                    "cli_flag": "claude",
+                },
+            ),
+            "descriptor_mismatch": lambda payload: payload["extension"]["public_api"][
+                "platform_capabilities"
+            ]["projection_descriptors"].pop(),
+        }
+        for name, mutate in cases.items():
+            with self.subTest(name=name):
+                manifest = provenance_manifest(
+                    "castbox/guru-trellis",
+                    "b" * 40,
+                    selected_platforms=["gemini"],
+                )
+                mutate(manifest)
+                with self.assertRaises(GTT.WorkflowError) as raised:
+                    GTT.provenance_apply_platform_args(manifest)
+                self.assertIn(
                     raised.exception.payload["reason_code"],
-                    "provenance_platform_selection_invalid",
+                    {
+                        "provenance_platform_inventory_missing",
+                        "provenance_platform_inventory_invalid",
+                        "provenance_platform_descriptors_invalid",
+                        "provenance_platform_inventory_mismatch",
+                    },
                 )
 
     def test_invalid_provenance_platform_selection_stops_before_source_or_apply(self) -> None:
