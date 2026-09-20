@@ -1,11 +1,9 @@
 # #452 All Platform Support Test contribution
 
 状态：`reviewed_promoted`。`T452-01..12` 已成为 `.58` current acceptance authority。
-截至 2026-09-21，fresh implementation evidence 已使 `T452-01..11` 通过；当前
-promotion-created dirty diff 的 Architecture/RDT 与 Phase 2 已 fresh 通过。上一轮
-实现 HEAD 的 Branch Review 只作为 targeted evidence 保留，不能替代本次 Task Commit
-后的完整 committed-range Branch Review；Task Commit 尚未执行。脚本结果不替代
-Architecture/RDT semantic gate。
+截至 2026-09-20，当前 Task Commit `b75279ec305deb26dc3fa4a33fe6530d9450b2d7`
+已完成；fresh Architecture/RDT、Phase 2、task check 与完整 committed-range Branch
+Review 均已重新绑定并通过。脚本结果不替代 Architecture/RDT semantic gate。
 
 | Test | 场景与计划通过条件 |
 | --- | --- |
@@ -26,18 +24,21 @@ Architecture/RDT semantic gate。
 
 - 本文件创建和 promotion 时只完成 task planning 与 contribution authoring；当时
   `T452-01..12` 均为 `not_executed`。该状态是历史快照，不能覆盖下面的当前执行事实。
-- 当前 shared RDT authority 为 `current-main-0.6.17-guru.58/active`；`.57` 是 immutable predecessor，Architecture shared current 为 `.58/active`。
+- 当前 Requirements/Design/Test authority 为 `current-main-0.6.17-guru.58/active`；`.57` 是 immutable predecessor，Architecture shared current 保持 `current-main-0.6.17-guru.57/active`，#452 Architecture contribution 仍按 reviewed-candidate 边界管理。
 - `T452-01..11 = passed`：managed-runtime installer `83`、upgrade contract `73`、
   transaction `14`、native-load `5`、throwaway Python routing `44`、platform inventory
   `11`、upstream ownership `8` 项测试通过；Finalizer provenance `21/21` 通过；dogfood
   drift、manifest/ownership parity、package-private `tests/` 排除、默认
   `claude,codex,cursor` selection、显式 OpenCode `1.18.30` actual-load 与 focused
   clean/update/reapply 均通过。
-- `T452-12 = in_progress`：fresh Architecture/RDT、Phase 2 与 task validation 已通过；
-  上一轮实现 HEAD 的 targeted Branch Review 及原 `BR452-FINALIZER-PLATFORM-INVENTORY`
-  finding closure 作为现有证据保留，但 Task Commit 和 promotion-created diff 的独立
-  完整 committed-range Branch Review 尚未执行。Publication、Finalizer、push/PR、merge
-  属于后续 owner，不在本次测试 evidence 中宣称已执行。#434 graph 未激活，
+- `T452-12 = passed`：fresh Architecture/RDT、Phase 2、task validation、Task Commit
+  和独立完整 committed-range Branch Review 均已通过。Branch Review 的正式三层结果为
+  Architecture `baseline_current`、review gate `owner_checkpoint_validated/passed`、
+  public wrapper `passed`，范围为
+  `origin/main@361da96327824503ffb4fb4189291b3b9b4e23ae...HEAD@b75279ec305deb26dc3fa4a33fe6530d9450b2d7`。
+  原 `BR452-FINALIZER-PLATFORM-INVENTORY` finding 已闭合；上一轮实现 HEAD 的
+  targeted evidence 不再作为当前 Branch Review 通过依据。Publication、Finalizer、
+  push/PR、merge 属于后续 owner，不在本次测试 evidence 中宣称已执行。#434 graph 未激活，
   release/tag/GitHub Release 与业务生产验证未宣称通过。
 
 ## 未验证边界
