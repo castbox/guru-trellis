@@ -1,8 +1,9 @@
 # #452 All Platform Support Test contribution
 
 状态：`reviewed_promoted`。`T452-01..12` 已成为 `.58` current acceptance authority。
-2026-09-20 fresh implementation evidence 已使 `T452-01..11` 通过；`T452-12` 仍为
-`in_progress`，等待 Task Commit 与完整 Branch Review。脚本结果不替代 Architecture/RDT
+2026-09-20 fresh implementation evidence 已使 `T452-01..11` 通过；最终的
+Architecture/RDT、Phase 2、Task Commit 与完整 Branch Review 也已重新绑定最终
+`d3c656feb7e627d15eb03352718e9b7da3f2da25`。脚本结果不替代 Architecture/RDT
 semantic gate。
 
 | Test | 场景与计划通过条件 |
@@ -23,18 +24,24 @@ semantic gate。
 ## 当前证据状态
 
 - 本文件创建和 promotion 时只完成 task planning 与 contribution authoring；当时
-  `T452-01..12` 均为 `not_executed`。该状态是历史快照，不再代表当前执行结果。
+  `T452-01..12` 均为 `not_executed`。该状态是历史快照，不能覆盖下面的当前执行事实。
 - 当前 shared RDT authority 为 `current-main-0.6.17-guru.58/active`；`.57` 是 immutable predecessor，Architecture shared current 仍为 `.57/active`。
-- `T452-01..11 = passed`：核心 inventory/installer/ownership/native/upgrade 测试
-  `180 passed`；Finalizer provenance `20 passed`；workflow mode 与 extension verification
-  `22 passed`；throwaway Python routing `44 passed`；ownership、dogfood drift、显式
-  OpenCode 1.18.30 actual-load，以及单个 Codex focused clean/update/reapply 均通过。
-- `T452-12 = in_progress`：fresh RDT 已重绑定当前候选；Task Commit、完整 committed-range
-  Branch Review、Publication 与 Finalizer 尚未执行。#434 graph 未激活，release/tag/GitHub
-  Release 与业务生产验证未宣称通过。
+- `T452-01..11 = passed`：managed-runtime installer `83`、upgrade contract `73`、
+  transaction `14`、native-load `5`、throwaway Python routing `44`、platform inventory
+  `11`、upstream ownership `8` 项测试通过；Finalizer provenance `21/21` 通过；dogfood
+  drift、manifest/ownership parity、package-private `tests/` 排除、默认
+  `claude,codex,cursor` selection、显式 OpenCode `1.18.30` actual-load 与 focused
+  clean/update/reapply 均通过。
+- `T452-12 = passed`：fresh Architecture/RDT、Phase 2、task validation、Task Commit
+  和独立完整 committed-range Branch Review 均已通过；原
+  `BR452-FINALIZER-PLATFORM-INVENTORY` finding 已由最终 provenance parity 修复关闭。
+  Publication、Finalizer、push/PR、merge 属于后续 owner，不在本次测试 evidence 中宣称
+  已执行。#434 graph 未激活，release/tag/GitHub Release 与业务生产验证未宣称通过。
 
 ## 未验证边界
 
 - 正式 release/tag/GitHub Release、发布后 tag-pinned smoke 与业务仓库生产升级不属于 Issue #452 本轮验证。
 - #434 Delivery/Completion/Closure/Finish production graph activation 不属于本 contribution，不得由平台测试间接激活。
+- `verify-managed-python-runtime.sh` 的 source fixture 在尚未安装 extension manifest 时提前执行 ownership validation，属于验证脚本 fixture boundary；managed resolver 与相关 package tests 已通过。
+- pinned upstream 22 个客户端的 native compatibility matrix 不在本仓重复执行；本轮只保留完整 inventory/selection/projection 与 OpenCode representative actual-load evidence。
 - 当前环境缺少某个平台 CLI 时，只能记录该 native actual-load 的环境边界；不能把静态目录存在或文件相等写成 actual-load PASS。
