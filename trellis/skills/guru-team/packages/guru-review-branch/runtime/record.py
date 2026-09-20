@@ -223,6 +223,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     _, duplicate = store_checkpoint(repo, task_dir, value)
     return {
         "status": "duplicate" if duplicate else "recorded",
+        "formal_exit": False,
         "task_ref": task_ref,
         "typed_exit": args.typed_exit,
         "checkpoint_id": "review-gate",

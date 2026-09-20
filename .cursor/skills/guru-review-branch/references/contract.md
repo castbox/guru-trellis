@@ -233,6 +233,9 @@ Review passed" only after both the official checker and the public wrapper
 return `passed` for the same current task, committed range, review commit, and
 reviewed-content identity. A recorder receipt, provisional owner conclusion,
 or checker result without the wrapper result cannot support that announcement.
+The checker returns `status=owner_checkpoint_validated` and
+`formal_exit=false`; it is objective checkpoint evidence only, never a Branch
+Review result.
 Successful `passed`,
 `continuity_passed`, and zero-payload stop `blocked` projection deletes the
 checkpoint and empty owner directory. `implementation_required` and

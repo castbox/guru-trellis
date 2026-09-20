@@ -1175,6 +1175,11 @@ caller-authored gate or checker result. Successful `passed`,
 checkpoint; active re-entry routes retain that one checkpoint for deterministic
 same-owner re-entry.
 `expected_exit` is never a wrapper input, owner-result field, or route selector.
+The checker output is deliberately non-formal: it returns
+`status=owner_checkpoint_validated` and `formal_exit=false`. This proves only
+that the owner-private checkpoint is structurally and objectively current; it
+must never be reported as Branch Review passing. Only the public
+`scripts/invoke.sh` output is a formal Branch Review exit.
 
 ### Archived Review Profile
 

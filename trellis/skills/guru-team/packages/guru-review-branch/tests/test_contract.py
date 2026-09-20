@@ -151,6 +151,8 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             "--expected-exit",
             "passed",
         )
+        self.assertEqual("owner_checkpoint_validated", checked["status"])
+        self.assertFalse(checked["formal_exit"])
         self.assertEqual("passed", checked["typed_exit"])
         output = self.run_wrapper(
             "invoke.sh", "--task", TASK_REF,
@@ -328,6 +330,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         self.assertEqual(
             {
                 "status": "recorded",
+                "formal_exit": False,
                 "task_ref": TASK_REF,
                 "typed_exit": "passed",
                 "checkpoint_id": "review-gate",
@@ -348,6 +351,8 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             "--expected-exit",
             "passed",
         )
+        self.assertEqual("owner_checkpoint_validated", checked["status"])
+        self.assertFalse(checked["formal_exit"])
         self.assertEqual("passed", checked["typed_exit"])
         public_path = self.inputs / "public.json"
         output = self.run_wrapper(
