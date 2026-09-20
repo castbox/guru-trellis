@@ -632,9 +632,9 @@ rerun, exceptional unfinished/replacement recovery, dirty/reviewed-path and
 post-commit freshness, the current schema 5.0 checkpoint, and the single compact
 artifact owner. Routine implementation/check identity remains live semantic
 context and must not become persisted assignment or liveness evidence.
-Distribution validation must compare canonical/shared/Codex/Claude/Cursor
+Distribution validation must compare canonical/shared/Codex/Claude/Cursor/OpenCode
 package bytes and validate the current-only ownership schema 3.0 with exactly
-11 Guru-owned rules, nine managed claims, and three Guru-owned overlay entries.
+13 Guru-owned rules, 11 managed claims, and four Guru-owned overlay entries.
 Non-current ownership or installed manifests, unknown claims, and unexpected
 overlay paths must fail current-contract validation. Validation must run dogfood
 apply/drift and sidecar checks and exercise clean

@@ -27,17 +27,19 @@ from validate_upstream_ownership import validate_repository as validate_upstream
 EXTENSION_MANIFEST = Path("trellis/guru-team-extension.json")
 WORKFLOW_MARKETPLACE = "gh:castbox/guru-trellis/trellis"
 WORKFLOW_TEMPLATE = "guru-team"
-DEFAULT_PLATFORMS = ("codex", "cursor")
+DEFAULT_DOGFOOD_PLATFORMS = ("codex", "cursor")
 PLATFORM_OVERLAY_PREFIXES = {
     "codex": (Path(".codex"),),
     "cursor": (Path(".cursor"),),
     "claude": (Path(".claude"),),
+    "opencode": (Path(".opencode"),),
 }
-ALL_PLATFORMS = tuple(PLATFORM_OVERLAY_PREFIXES)
+GURU_SUPPORTED_PLATFORMS = tuple(PLATFORM_OVERLAY_PREFIXES)
 GURU_OVERLAY_ENTRY_PATHS = {
     "codex": Path(".codex/prompts/guru-finish-work.md"),
     "cursor": Path(".cursor/commands/guru-finish-work.md"),
     "claude": Path(".claude/commands/guru/finish-work.md"),
+    "opencode": Path(".opencode/commands/guru-finish-work.md"),
 }
 GURU_OVERLAY_SCHEMA_VERSION = "1.0"
 INSTALLED_EXTENSION_SCHEMA_VERSION = "2.0"
@@ -56,7 +58,7 @@ GURU_OVERLAY_REMOVAL_SIDECAR = (
     "preserved local file, remove it or migrate its content, then delete this "
     "sidecar and reapply the preset.\n"
 ).encode("utf-8")
-SKILL_DESTINATION_PLATFORM_ORDER = ("shared", "codex", "claude", "cursor")
+SKILL_DESTINATION_PLATFORM_ORDER = ("shared", "codex", "claude", "cursor", "opencode")
 SKILL_INTEGRATION_TEST_PATHS = (
     Path("tests/test_finish_family_integration.py"),
     Path("tests/test_base_continuity_integration.py"),
@@ -775,7 +777,7 @@ def previous_overlay_hashes(
     selected = overlays.get("selected_platforms")
     if (
         not isinstance(selected, list)
-        or any(not isinstance(item, str) or item not in ALL_PLATFORMS for item in selected)
+        or any(not isinstance(item, str) or item not in GURU_SUPPORTED_PLATFORMS for item in selected)
         or selected != sorted(set(selected))
     ):
         valid = False
@@ -1025,6 +1027,7 @@ SKILL_MANAGED_ROOTS = (
     Path(".codex/skills"),
     Path(".cursor/skills"),
     Path(".claude/skills"),
+    Path(".opencode/skills"),
 )
 
 
@@ -1048,6 +1051,37 @@ def prune_empty_managed_skill_parents(repo: Path, path: Path) -> None:
         except OSError:
             return
         current = current.parent
+
+
+def prune_empty_unselected_skill_projections(
+    repo: Path, platforms: set[str]
+) -> None:
+    selected_roots = {
+        Path(".agents/skills"),
+        *(
+            PLATFORM_OVERLAY_PREFIXES[platform][0] / "skills"
+            for platform in platforms
+        ),
+    }
+    for root in SKILL_MANAGED_ROOTS:
+        if root in selected_roots or root == Path(".trellis/guru-team/skills"):
+            continue
+        absolute_root = Path(os.path.abspath(repo)) / root
+        for skill_root in sorted(
+            absolute_root.glob("guru-*"),
+            key=lambda path: len(path.parts),
+            reverse=True,
+        ):
+            directories = sorted(
+                (path for path in skill_root.rglob("*") if path.is_dir()),
+                key=lambda path: len(path.parts),
+                reverse=True,
+            )
+            for directory in (*directories, skill_root):
+                try:
+                    directory.rmdir()
+                except OSError:
+                    pass
 
 
 def remove_stale_skill_path(
@@ -1423,6 +1457,7 @@ def install_skill_packages(
             conflicts.append(conflict)
         if sidecar:
             sidecars.append(sidecar)
+    prune_empty_unselected_skill_projections(repo, platforms)
 
     status = "ok" if provenance_valid and not conflicts and not sidecars else "conflict"
     return {
@@ -1521,12 +1556,49 @@ def overlay_selected(relative: Path, platforms: set[str]) -> bool:
     return any(path_has_prefix(relative, prefix) for prefix in selected_prefixes)
 
 
-def selected_platforms(platforms: list[str] | None, all_platforms: bool) -> tuple[set[str], bool]:
+def platform_capability_sets(
+    manifest: dict[str, Any],
+) -> tuple[tuple[str, ...], tuple[str, ...], dict[str, str]]:
+    public_api = manifest.get("public_api")
+    capabilities = public_api.get("platform_capabilities") if isinstance(public_api, dict) else None
+    supported_rows = capabilities.get("guru_supported_platforms") if isinstance(capabilities, dict) else None
+    default_rows = capabilities.get("default_dogfood_platforms") if isinstance(capabilities, dict) else None
+    deferred_rows = capabilities.get("deferred_platforms") if isinstance(capabilities, dict) else None
+    if not isinstance(supported_rows, list) or not all(isinstance(row, dict) and isinstance(row.get("id"), str) for row in supported_rows):
+        raise SystemExit("Guru Team extension manifest has invalid Guru-supported platform inventory")
+    if not isinstance(default_rows, list) or not all(isinstance(item, str) for item in default_rows):
+        raise SystemExit("Guru Team extension manifest has invalid default dogfood platform inventory")
+    if not isinstance(deferred_rows, list) or not all(
+        isinstance(row, dict)
+        and isinstance(row.get("id"), str)
+        and isinstance(row.get("reason"), str)
+        and row["reason"]
+        for row in deferred_rows
+    ):
+        raise SystemExit("Guru Team extension manifest has invalid deferred platform inventory")
+    supported = tuple(row["id"] for row in supported_rows)
+    default = tuple(default_rows)
+    deferred = {row["id"]: row["reason"] for row in deferred_rows}
+    if set(default) - set(supported):
+        raise SystemExit("Default dogfood platforms must be Guru-supported")
+    if set(supported) & set(deferred):
+        raise SystemExit("Guru-supported and deferred platform inventories must be disjoint")
+    if set(supported) != set(GURU_SUPPORTED_PLATFORMS) or default != DEFAULT_DOGFOOD_PLATFORMS:
+        raise SystemExit("Installer platform constants drift from the canonical capability inventory")
+    return supported, default, deferred
+
+
+def selected_platforms(
+    platforms: list[str] | None,
+    all_platforms: bool,
+    supported: tuple[str, ...] = GURU_SUPPORTED_PLATFORMS,
+    default: tuple[str, ...] = DEFAULT_DOGFOOD_PLATFORMS,
+) -> tuple[set[str], bool]:
     if all_platforms:
-        return set(ALL_PLATFORMS), True
+        return set(supported), True
     if platforms:
         return set(platforms), False
-    return set(DEFAULT_PLATFORMS), False
+    return set(default), False
 
 
 def leading_spaces(value: str) -> int:
@@ -2323,12 +2395,12 @@ def install_assets(
         source_projections = managed_source_projections(
             repo,
             dst,
-            platforms or set(DEFAULT_PLATFORMS),
+            platforms or set(DEFAULT_DOGFOOD_PLATFORMS),
         )
         managed_paths = managed_transaction_paths(
             repo,
             dst,
-            platforms or set(DEFAULT_PLATFORMS),
+            platforms or set(DEFAULT_DOGFOOD_PLATFORMS),
             all_platforms,
             previous_manifest,
             source_projections,
@@ -2417,6 +2489,9 @@ def install_assets(
                 if isinstance(item, dict) and isinstance(item.get("path"), str)
             )
             activate_staged_repository(staging_repo, repo, activation_paths)
+            prune_empty_unselected_skill_projections(
+                repo, platforms or set(DEFAULT_DOGFOOD_PLATFORMS)
+            )
             activated_runtime = ensure_managed_python_runtime(repo, guru_root, activate=True)
             if activated_runtime.get("runtime_identity") != python_runtime.get("runtime_identity"):
                 raise_managed_runtime_error(str(python_runtime.get("runtime_identity") or "") or None)
@@ -2558,7 +2633,7 @@ def _install_assets_in_place(
         if script.exists():
             ensure_executable(script)
 
-    selected = platforms or set(DEFAULT_PLATFORMS)
+    selected = platforms or set(DEFAULT_DOGFOOD_PLATFORMS)
     skill_packages = install_skill_packages(repo, guru_root, dst, selected, previous_manifest)
     skill_packages["conflicts"].extend(managed_spec_conflicts)
     skill_packages["sidecars"] = sorted(set(skill_packages["sidecars"] + managed_spec_sidecars))
@@ -2654,7 +2729,7 @@ def install_overlays(
     }
     if set(canonical_by_path) != expected_paths:
         raise SystemExit(
-            "Canonical Guru Team overlay inventory must contain exactly the three Guru finish entries."
+            "Canonical Guru Team overlay inventory must contain exactly the four Guru finish entries."
         )
     canonical_hashes = {
         relative: hashlib.sha256(source.read_bytes()).hexdigest()
@@ -2783,6 +2858,9 @@ def install_overlays(
 
 
 def main() -> int:
+    guru_root = guru_root_from_script()
+    manifest = load_extension_manifest(guru_root)
+    supported_platforms, default_platforms, deferred_platforms = platform_capability_sets(manifest)
     parser = argparse.ArgumentParser(description="Apply Guru team Trellis preset")
     parser.add_argument("--repo", help="Target repository root. Defaults to current directory.")
     parser.add_argument("--json", action="store_true")
@@ -2791,7 +2869,7 @@ def main() -> int:
     platform_group.add_argument(
         "--platform",
         action="append",
-        choices=ALL_PLATFORMS,
+        choices=(*supported_platforms, *deferred_platforms),
         help="Platform overlay to install. Repeat to select multiple platforms. Defaults to codex + cursor.",
     )
     platform_group.add_argument(
@@ -2801,14 +2879,31 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    guru_root = guru_root_from_script()
     if args.version:
-        manifest = load_extension_manifest(guru_root)
         print(str(manifest["version"]))
         return 0
 
+    requested_deferred = sorted(set(args.platform or ()) & set(deferred_platforms))
+    if requested_deferred:
+        print(json.dumps({
+            "status": "deferred",
+            "reason": "Guru Team public projection and actual-load verification are not implemented",
+            "requested_platforms": sorted(set(args.platform or ())),
+            "deferred_platforms": [
+                {"id": platform, "reason": deferred_platforms[platform]}
+                for platform in requested_deferred
+            ],
+            "guru_supported_platforms": list(supported_platforms),
+        }, ensure_ascii=False, indent=2))
+        return 2
+
     repo = repo_root_from_args(args.repo)
-    platforms, all_platforms = selected_platforms(args.platform, args.all_platforms)
+    platforms, all_platforms = selected_platforms(
+        args.platform,
+        args.all_platforms,
+        supported_platforms,
+        default_platforms,
+    )
     src = guru_root / "trellis/workflows/guru-team"
     dst = repo / ".trellis/guru-team"
     result = install_assets(src, dst, repo, platforms, all_platforms=all_platforms)

@@ -1,0 +1,1 @@
+{"scenario":"A precisely located Markdown typo is bounded, reversible, and has no runtime or public-contract impact.","owner_staging":{"recipe":"workflow-mode-automatic-high-confidence"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-finalize-task-output-base-reconciliation-required-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "task_ref", "task_head", "publication_head", "selected_base_ref", "old_base_head", "new_base_head", "branch_review_commit", "resume_target"],
+  "properties": {
+    "exit_id": {"const": "base_reconciliation_required"},
+    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "task_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "publication_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "selected_base_ref": {"type": "string", "minLength": 1},
+    "old_base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "new_base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "branch_review_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "resume_target": {"const": "finalization_resume"}
+  }
+}

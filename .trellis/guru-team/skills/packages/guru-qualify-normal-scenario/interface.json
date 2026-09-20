@@ -52,7 +52,7 @@
   ],
   "reentry": {"identity":"profile, fixed caller, mode, current target, candidate refs and locators, current semantic decisions and witnesses, AI gate, typed exit, and unique consumer","freshness":"all qualification values are invocation-local; any relevant live change or downstream scope, mechanism, or finding revision requires a complete fresh call","stale_behavior":"fail_closed"},
   "tests": ["tests/test_contract.py","tests/test_runtime.py"],
-  "platform_destinations": ["shared","codex","cursor","claude"],
+  "platform_destinations": ["shared","codex","cursor","claude","opencode"],
   "public_contracts": {
     "input": {
       "kind":"structured_json",

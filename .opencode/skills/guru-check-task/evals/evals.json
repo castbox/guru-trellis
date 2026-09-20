@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-check-task",
+  "evals": [
+    {
+      "id": "native-owner-clean",
+      "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
+      "expected_exit": "passed",
+      "expected_output": "The current AI completes the nine dimensions from live fixture facts and the original wrapper returns passed.",
+      "input_profile_id": "initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": ["evals/files/native-owner-input.json", "evals/files/native-range-inclusive.py"],
+      "assertions": {
+        "deterministic": [
+          {"id": "actual-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "passed"},
+          {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
+          {"id": "no-eval-control", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+          {"id": "no-private-runtime", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+        ],
+        "semantic": [
+          {"id": "current-ai-owner", "criterion": "The current AI reads the installed contract, complete task facts and actual upstream Architecture result, reviews all nine dimensions, then authors its own Phase 2 result without waiting for workers. Recorder/checker/wrapper receipts reflect that authoring, not host conclusions.", "evidence_selector": "transcript"}
+        ]
+      }
+    },
+    {
+      "id": "native-owner-finding",
+      "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
+      "expected_exit": "implementation_required",
+      "expected_output": "The AI identifies the requirement violation using actual implementation and failing boundary tests; the original wrapper returns implementation_required.",
+      "input_profile_id": "initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": ["evals/files/native-owner-input.json", "evals/files/native-range-boundary.py"],
+      "assertions": {
+        "deterministic": [
+          {"id": "actual-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "implementation_required"},
+          {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
+          {"id": "no-eval-control", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+          {"id": "no-private-runtime", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+        ],
+        "semantic": [
+          {"id": "evidence-based-finding", "criterion": "The current AI reviews all nine dimensions and qualifies the upper-inclusive requirement violation from interval.py and actual failed tests. It authors a linked current-scope finding and implementation_required rather than forcing passed, without a staged Phase 2 result or external worker.", "evidence_selector": "transcript"}
+        ]
+      }
+    },
+    {
+      "id": "passed-initial",
+      "prompt": "Complete the initial_check semantic owner round and invoke guru-check-task through its public wrapper; return the checker-derived passed route.",
+      "expected_exit": "passed",
+      "expected_output": "The public DTO is the declared passed route.",
+      "input_profile_id": "initial_check",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "passed"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "legacy-alias-consumer-coverage",
+            "criterion": "The semantic round treats workspace mapping, legacy handoff map, and exact workspace_ref as one concept family when checking consumers.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "exact-symbol-preserved",
+            "criterion": "Exact symbol reviewed_content_sha256 is searched unchanged and is not translated or paraphrased for exact lookup.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "independent-subtraction-dimensions",
+            "criterion": "The Phase 2 review independently concludes code_subtraction and docs_ssot_subtraction applicability, scope, and result instead of deriving one from the other.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "deprecated-assets-and-growth",
+            "criterion": "The review checks affected deprecated assets and explains production, test, generated/managed, and documentation growth without using a fixed net-line threshold.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "unsupported-compatibility-finding",
+            "criterion": "The review treats unsupported compatibility or redundant state as a current finding rather than future cleanup when no concrete support contract exists.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "complexity-restraint",
+            "criterion": "The review rejects fields, persistence, retries, locks, fallbacks, or formal-idempotency mechanisms without a named direct consumer, while preserving the existing normal stale, mismatch, permission, and side-effect contracts.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "touched-file-size-trigger",
+            "criterion": "The review applies the 3000-line trigger to touched non-generated code files and requires mechanical splitting or small decoupling, without importing untouched historical large files into scope.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      },
+      "files": ["evals/files/passed-initial-input.json", "evals/files/passed-initial-facts.json"]
+    },
+    {
+      "id": "implementation-required",
+      "prompt": "Complete the finding_fix_rerun semantic owner round and invoke guru-check-task through its public wrapper; return the checker-derived implementation_required route.",
+      "expected_exit": "implementation_required",
+      "expected_output": "The public DTO is the declared implementation_required route.",
+      "input_profile_id": "finding_fix_rerun",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "implementation_required"
+          }
+        ]
+      },
+      "files": ["evals/files/implementation-required-input.json", "evals/files/implementation-required-facts.json"]
+    },
+    {
+      "id": "planning-stale",
+      "prompt": "Complete the planning_reentry semantic owner round and invoke guru-check-task through its public wrapper; return the checker-derived planning_stale route.",
+      "expected_exit": "planning_stale",
+      "expected_output": "The public DTO is the declared planning_stale route.",
+      "input_profile_id": "planning_reentry",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "planning_stale"
+          }
+        ]
+      },
+      "files": ["evals/files/planning-stale-input.json", "evals/files/planning-stale-facts.json"]
+    },
+    {
+      "id": "blocked-initial",
+      "prompt": "Complete the initial_check semantic owner round and invoke guru-check-task through its public wrapper; return the checker-derived blocked route.",
+      "expected_exit": "blocked",
+      "expected_output": "The public DTO is the declared blocked route.",
+      "input_profile_id": "initial_check",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": ["evals/files/blocked-initial-input.json", "evals/files/blocked-initial-facts.json"]
+    }
+  ]
+}

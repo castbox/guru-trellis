@@ -1,0 +1,7 @@
+{
+  "profile": "pre_task",
+  "source_exit": "synced",
+  "mode": "workflow",
+  "change_input": {"issue_refs": [], "pr_refs": [], "branches": [], "paths": ["docs/requirements.md"], "commands": [], "config_keys": [], "schema_fields": [], "symbols": [], "terms": ["change context"], "queries": []},
+  "continuation_id": "stage0-current"
+}

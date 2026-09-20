@@ -118,7 +118,7 @@
     "stale_behavior": "fail_closed"
   },
   "tests": ["tests/test_contract.py", "tests/test_runtime.py", "tests/test_archived.py"],
-  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude", "opencode"],
   "public_contracts": {
     "input": {
       "kind": "structured_json",

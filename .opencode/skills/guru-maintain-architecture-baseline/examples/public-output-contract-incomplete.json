@@ -1,0 +1,1 @@
+{"exit_id":"contract_incomplete","task_locator":".trellis/tasks/example","stage":"phase2","missing_refs":["project-check-result"],"return_route":"repair"}

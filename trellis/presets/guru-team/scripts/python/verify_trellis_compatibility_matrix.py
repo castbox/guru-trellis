@@ -2,7 +2,7 @@
 """Run and validate the live-manifest-derived Trellis compatibility matrix.
 
 The matrix runner deliberately keeps semantic release judgment outside this
-module.  It executes the six deterministic platform/scenario cells and emits a
+module.  It executes the deterministic platform/scenario cells and emits a
 compact capability projection that the owning AI can review for migration
 losses.  Full command logs and temporary checkout paths stay below the caller's
 explicit work root and never become repository artifacts.
@@ -30,6 +30,22 @@ SCRIPT_ROOT = Path(__file__).resolve().parent
 if str(SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPT_ROOT))
 
+from compatibility_matrix_errors import (
+    MatrixError,
+    _stable_command_label,
+    command_timeout_seconds,
+    matrix_failure_payload,
+)
+from compatibility_matrix_support import (
+    _canonical_json,
+    _digest,
+    _executable_projection,
+    _installed_mode_declarations,
+    _managed_asset_executable,
+    _sorted_strings,
+)
+from verify_native_platform_load import NativeLoadError, verify_native_platform_load
+
 
 SCHEMA_VERSION = "1.0"
 SCENARIOS = ("clean", "existing")
@@ -38,13 +54,15 @@ PLATFORM_ROOTS = {
     "claude": Path(".claude/skills"),
     "codex": Path(".codex/skills"),
     "cursor": Path(".cursor/skills"),
+    "opencode": Path(".opencode/skills"),
 }
 PLATFORM_INIT_FLAGS = {
     "claude": "--claude",
     "codex": "--codex",
     "cursor": "--cursor",
+    "opencode": "--opencode",
 }
-PLATFORM_PATH_RE = re.compile(r"^\.(claude|codex|cursor)/")
+PLATFORM_PATH_RE = re.compile(r"^\.(claude|codex|cursor|opencode)/")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 VERSION_RE = re.compile(r"(?<![0-9])([0-9]+\.[0-9]+\.[0-9]+)(?![0-9])")
 SIDECAR_SUFFIXES = (".new", ".bak")
@@ -59,189 +77,11 @@ EXCLUDED_BUILT_TEMPLATE_NAMES = {
     "add_session.py",
 }
 EXCLUDED_BUILT_TEMPLATE_SUFFIXES = {".pyc", ".pyo", ".ts"}
-FAILURE_TAIL_LIMIT = 2000
-FAILURE_STAGES = {"pre-matrix", "matrix-cell", "post-matrix"}
-DEFAULT_COMMAND_TIMEOUT_SECONDS = 600.0
-
-
-class MatrixError(RuntimeError):
-    """A deterministic matrix precondition or cell check failed."""
-
-    def __init__(
-        self,
-        message: str,
-        *,
-        stage: str = "pre-matrix",
-        cell_id: str | None = None,
-        command_label: str = "matrix-validation",
-        exit_code: int = 2,
-        error_tail: str | None = None,
-    ) -> None:
-        super().__init__(message)
-        self.stage = stage
-        self.cell_id = cell_id
-        self.command_label = command_label
-        self.exit_code = exit_code
-        self.error_tail = error_tail if error_tail is not None else message
-
-    def with_context(self, stage: str, cell_id: str | None) -> "MatrixError":
-        return MatrixError(
-            str(self),
-            stage=stage,
-            cell_id=cell_id,
-            command_label=self.command_label,
-            exit_code=self.exit_code,
-            error_tail=self.error_tail,
-        )
-
-
-def command_timeout_seconds() -> float:
-    raw = os.environ.get("GURU_MATRIX_COMMAND_TIMEOUT_SECONDS", "")
-    if not raw:
-        return DEFAULT_COMMAND_TIMEOUT_SECONDS
-    try:
-        value = float(raw)
-    except ValueError:
-        return DEFAULT_COMMAND_TIMEOUT_SECONDS
-    return value if value > 0 else DEFAULT_COMMAND_TIMEOUT_SECONDS
-
-
-def _sanitize_failure_tail(value: str) -> str:
-    text = value.replace("\x00", "")
-    text = re.sub(
-        r"(?is)-----BEGIN [^-\r\n]*PRIVATE KEY-----.*?(?:-----END [^-\r\n]*PRIVATE KEY-----|$)",
-        "<redacted-private-key>",
-        text,
-    )
-    text = re.sub(r"(?i)(https?://)[^/\s@]+@", r"\1<redacted>@", text)
-    text = re.sub(
-        r"(?i)(github_pat_|ghp_|gho_|ghu_|ghs_|ghr_)[A-Za-z0-9_]+",
-        "<redacted-token>",
-        text,
-    )
-    text = re.sub(
-        r"(?i)(x-access-token:)[^@\s]+",
-        r"\1<redacted>",
-        text,
-    )
-    text = re.sub(
-        r"(?i)(authorization:\s*(?:bearer|basic)\s+)[^\s]+",
-        r"\1<redacted>",
-        text,
-    )
-    text = re.sub(
-        r"(?i)(\b[A-Z0-9_]*(?:TOKEN|PASSWORD|SECRET|API[_-]?KEY|ACCESS[_-]?KEY)[A-Z0-9_]*\b\s*[=:]\s*)[^\s&]+",
-        r"\1<redacted>",
-        text,
-    )
-    text = re.sub(
-        r"(?i)([?&](?:token|access_token|api[_-]?key|awsaccesskeyid|x-amz-(?:credential|signature)|x-goog-(?:credential|signature))=)[^&\s]+",
-        r"\1<redacted>",
-        text,
-    )
-    return text[-FAILURE_TAIL_LIMIT:]
-
-
-def _stable_command_label(argv: Sequence[str]) -> str:
-    executable = Path(str(argv[0])).name if argv else "unknown-command"
-    if (executable.startswith("python") or executable == "resolve-python.sh") and len(argv) > 1:
-        for value in argv[1:]:
-            candidate = Path(str(value)).name
-            if candidate.endswith((".py", ".sh")):
-                return candidate
-    return executable
-
-
-def matrix_failure_payload(exc: MatrixError) -> dict[str, Any]:
-    stage = exc.stage if exc.stage in FAILURE_STAGES else "pre-matrix"
-    return {
-        "schema_version": SCHEMA_VERSION,
-        "status": "failed",
-        "failure": {
-            "kind": "matrix_failure",
-            "stage": stage,
-            "cell_id": exc.cell_id if stage == "matrix-cell" else None,
-            "command_label": exc.command_label,
-            "exit_code": exc.exit_code,
-            "error_tail": _sanitize_failure_tail(exc.error_tail),
-        },
-    }
-
-
 def _load_json(path: Path) -> Any:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise MatrixError(f"cannot read JSON {path}: {exc}") from exc
-
-
-def _canonical_json(value: Any) -> bytes:
-    return (
-        json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-        + "\n"
-    ).encode("utf-8")
-
-
-def _digest(value: Any) -> str:
-    return hashlib.sha256(_canonical_json(value)).hexdigest()
-
-
-def _sorted_strings(values: Iterable[str]) -> list[str]:
-    return sorted(set(values), key=lambda item: item.encode("utf-8"))
-
-
-def _executable_projection(path: Path) -> int:
-    """Project the installer-owned executable bit, not archive/umask permissions."""
-
-    return 1 if path.stat().st_mode & stat.S_IXUSR else 0
-
-
-def _managed_asset_executable(relative: str) -> bool:
-    return relative.startswith(".trellis/guru-team/scripts/bash/")
-
-
-def _installed_mode_declarations(installed: Mapping[str, Any]) -> dict[str, list[str]]:
-    skill_packages = _require_dict(installed.get("skill_packages"), "skill_packages")
-    package_rows = skill_packages.get("files")
-    if not isinstance(package_rows, list) or not package_rows:
-        raise MatrixError("installed skill package file inventory is empty")
-    package_modes = _sorted_strings(
-        f"{row.get('path')}:{1 if row.get('executable') else 0}"
-        for row in package_rows
-        if isinstance(row, dict)
-        and isinstance(row.get("path"), str)
-        and isinstance(row.get("executable"), bool)
-    )
-    if len(package_modes) != len(package_rows):
-        raise MatrixError("installed skill package mode inventory is incomplete")
-
-    overlays = _require_dict(installed.get("overlays"), "overlays")
-    overlay_rows = overlays.get("files")
-    if not isinstance(overlay_rows, list) or not overlay_rows:
-        raise MatrixError("installed overlay file inventory is empty")
-    overlay_modes = _sorted_strings(
-        f"{row.get('path')}:{1 if row.get('executable') else 0}"
-        for row in overlay_rows
-        if isinstance(row, dict)
-        and isinstance(row.get("path"), str)
-        and isinstance(row.get("executable"), bool)
-    )
-    if len(overlay_modes) != len(overlay_rows):
-        raise MatrixError("installed overlay mode inventory is incomplete")
-
-    install = _require_dict(installed.get("install"), "install")
-    managed_assets = _require_string_list(
-        install.get("managed_assets"), "install.managed_assets"
-    )
-    managed_modes = _sorted_strings(
-        f"{relative}:{1 if _managed_asset_executable(relative) else 0}"
-        for relative in managed_assets
-    )
-    return {
-        "skill_package_files_and_modes": package_modes,
-        "overlay_files_and_modes": overlay_modes,
-        "managed_asset_files_and_modes": managed_modes,
-    }
 
 
 def _require_dict(value: Any, label: str) -> dict[str, Any]:
@@ -305,6 +145,26 @@ def _platforms_from_paths(values: Iterable[str]) -> set[str]:
     return platforms
 
 
+def _predecessor_seed_platform(
+    predecessor_extension: Mapping[str, Any], target_platform: str
+) -> str:
+    public_api = _require_dict(
+        predecessor_extension.get("public_api"), "predecessor public_api"
+    )
+    managed_paths = _require_string_list(
+        public_api.get("managed_paths"), "predecessor public_api.managed_paths"
+    )
+    supported = _platforms_from_paths(managed_paths)
+    if target_platform in supported:
+        return target_platform
+    for fallback in ("codex", "cursor", "claude"):
+        if fallback in supported:
+            return fallback
+    raise MatrixError(
+        f"predecessor has no supported seed platform for target {target_platform}"
+    )
+
+
 def _active_registry_rows_from(skill_root: Path) -> list[dict[str, Any]]:
     registry = _require_dict(
         _load_json(skill_root / "registry.json"),
@@ -335,6 +195,42 @@ def derive_platform_inventory(repo_root: Path) -> dict[str, Any]:
         "canonical extension manifest",
     )
     public_api = _require_dict(canonical.get("public_api"), "public_api")
+    capabilities = _require_dict(
+        public_api.get("platform_capabilities"), "public_api.platform_capabilities"
+    )
+    supported_rows = capabilities.get("guru_supported_platforms")
+    if not isinstance(supported_rows, list):
+        raise MatrixError("guru_supported_platforms must be an array")
+    capability_platforms = _sorted_strings(
+        str(_require_dict(row, "guru_supported_platform").get("id", ""))
+        for row in supported_rows
+    )
+    default_dogfood = _sorted_strings(
+        _require_string_list(
+            capabilities.get("default_dogfood_platforms"),
+            "public_api.platform_capabilities.default_dogfood_platforms",
+        )
+    )
+    if not set(default_dogfood).issubset(set(capability_platforms)):
+        raise MatrixError("default dogfood platforms are not Guru-supported")
+    upstream_rows = capabilities.get("upstream_platforms")
+    deferred_rows = capabilities.get("deferred_platforms")
+    if not isinstance(upstream_rows, list) or not isinstance(deferred_rows, list):
+        raise MatrixError("upstream/deferred platform inventories must be arrays")
+    upstream_ids = {
+        str(_require_dict(row, "upstream_platform").get("id", ""))
+        for row in upstream_rows
+    }
+    supported_upstream_ids = {
+        str(_require_dict(row, "guru_supported_platform").get("upstream_id", ""))
+        for row in supported_rows
+    }
+    deferred_ids = {
+        str(_require_dict(row, "deferred_platform").get("id", ""))
+        for row in deferred_rows
+    }
+    if upstream_ids != supported_upstream_ids | deferred_ids:
+        raise MatrixError("upstream platform inventory is not fully partitioned")
     manifest_paths = _require_string_list(
         public_api.get("managed_paths"), "public_api.managed_paths"
     )
@@ -429,6 +325,7 @@ def derive_platform_inventory(repo_root: Path) -> dict[str, Any]:
     }
 
     authorities: dict[str, list[str]] = {
+        "capability_inventory": capability_platforms,
         "canonical_manifest": _sorted_strings(_platforms_from_paths(manifest_paths)),
         "upstream_ownership": _sorted_strings(_platforms_from_paths(ownership_paths)),
         "overlay_tree": _sorted_strings(overlay_platforms),
@@ -456,6 +353,9 @@ def derive_platform_inventory(repo_root: Path) -> dict[str, Any]:
     result = {
         "schema_version": SCHEMA_VERSION,
         "platforms": list(platforms),
+        "default_dogfood_platforms": default_dogfood,
+        "upstream_platform_count": len(upstream_ids),
+        "deferred_platforms": sorted(deferred_ids),
         "authorities": authorities,
     }
     result["identity_sha256"] = _digest(result)
@@ -577,6 +477,116 @@ def _interface_projection_from(
 
 def _interface_projection(repo_root: Path, row: Mapping[str, Any]) -> dict[str, Any]:
     return _interface_projection_from(repo_root / "trellis/skills/guru-team", row)
+
+
+def predecessor_capability_projection(repo_root: Path) -> dict[str, Any]:
+    """Snapshot the immutable legacy authority without requiring current fields."""
+    canonical = _require_dict(
+        _load_json(repo_root / "trellis/guru-team-extension.json"),
+        "predecessor extension manifest",
+    )
+    public_api = _require_dict(
+        canonical.get("public_api"), "predecessor public_api"
+    )
+    managed_paths = _sorted_strings(
+        _require_string_list(
+            public_api.get("managed_paths"), "predecessor public_api.managed_paths"
+        )
+    )
+    rows = _active_registry_rows(repo_root)
+    projection = {
+        "schema_version": SCHEMA_VERSION,
+        "projection_kind": "legacy_predecessor_source",
+        "extension": {
+            "extension_id": canonical.get("extension_id"),
+            "version": canonical.get("version"),
+            "target_trellis_cli": canonical.get("target_trellis_cli"),
+        },
+        "distribution": {
+            "platforms": sorted(_platforms_from_paths(managed_paths)),
+            "managed_paths": managed_paths,
+        },
+        "skill_api": {
+            "active_ids": sorted(str(row["id"]) for row in rows),
+        },
+        "workflow": _workflow_markers(
+            repo_root / "trellis/workflows/guru-team/workflow.md"
+        ),
+        "task_data": {
+            "artifact_contracts": _sorted_strings(
+                _require_string_list(
+                    public_api.get("artifact_contracts"),
+                    "predecessor public_api.artifact_contracts",
+                )
+            )
+        },
+    }
+    projection["projection_sha256"] = _digest(projection)
+    return projection
+
+
+def predecessor_installed_capability_projection(target: Path) -> dict[str, Any]:
+    """Snapshot the matching installed legacy state before current update."""
+    installed = _require_dict(
+        _load_json(target / ".trellis/guru-team/extension.json"),
+        "predecessor installed manifest",
+    )
+    extension = _require_dict(
+        installed.get("extension"), "predecessor installed extension"
+    )
+    public_api = _require_dict(
+        extension.get("public_api"), "predecessor installed public_api"
+    )
+    selected_sets = [
+        _sorted_strings(
+            _require_string_list(
+                _require_dict(installed.get(section), f"predecessor installed {section}").get(
+                    "selected_platforms"
+                ),
+                f"predecessor installed {section}.selected_platforms",
+            )
+        )
+        for section in ("install", "skill_packages", "overlays")
+    ]
+    if not selected_sets[0] or any(
+        selected != selected_sets[0] for selected in selected_sets[1:]
+    ):
+        raise MatrixError(
+            f"predecessor installed platform declaration drift: {selected_sets}"
+        )
+    rows = _active_registry_rows_from(target / ".trellis/guru-team/skills")
+    managed_paths = _sorted_strings(
+        _require_string_list(
+            public_api.get("managed_paths"),
+            "predecessor installed public_api.managed_paths",
+        )
+    )
+    projection = {
+        "schema_version": SCHEMA_VERSION,
+        "projection_kind": "legacy_predecessor_installed",
+        "extension": {
+            "extension_id": extension.get("extension_id"),
+            "version": extension.get("version"),
+            "target_trellis_cli": extension.get("target_trellis_cli"),
+        },
+        "distribution": {
+            "platforms": selected_sets[0],
+            "managed_paths": managed_paths,
+        },
+        "skill_api": {
+            "active_ids": sorted(str(row["id"]) for row in rows),
+        },
+        "task_data": {
+            "artifact_contracts": _sorted_strings(
+                _require_string_list(
+                    public_api.get("artifact_contracts"),
+                    "predecessor installed public_api.artifact_contracts",
+                )
+            )
+        },
+    }
+    projection["projection_sha256"] = _digest(projection)
+    return projection
 
 
 def capability_projection(repo_root: Path) -> dict[str, Any]:
@@ -2150,9 +2160,14 @@ def _run_installed_smokes(
         (str(wrappers / "check-skill-packages.sh"), "--root", str(target), "--json", "--mode", "installed"),
         log=work_root / "check-skill-packages.log",
     )
+    try:
+        native_load = verify_native_platform_load(target, platform, work_root / "native-load")
+    except NativeLoadError as exc:
+        raise MatrixError(str(exc), command_label="native-platform-load") from exc
     if not run_cumulative_smokes:
         return {
             "package_validator": "passed",
+            "native_load": native_load,
             "cumulative_runtime_smokes": False,
             "runtime_smokes": [],
         }
@@ -2321,6 +2336,7 @@ def _run_installed_smokes(
         raise MatrixError("legacy absent/present task workspace outcomes differ")
     return {
         "package_validator": "passed",
+        "native_load": native_load,
         "cumulative_runtime_smokes": True,
         "installed_profiles": installed_profile_evals,
         "runtime_smokes": smoke_results,
@@ -2437,10 +2453,14 @@ def _run_cell(
                 "predecessor extension target_trellis_cli does not match --before-cli"
             )
         initial_workflow_source = f"gh:castbox/guru-trellis/trellis#{before_tag}"
+        predecessor_seed_platform = _predecessor_seed_platform(
+            predecessor_extension, platform
+        )
     else:
         source_root = repo_root
         predecessor_extension = None
         initial_workflow_source = workflow_source
+        predecessor_seed_platform = platform
 
     local_sample = _install_workflow(
         target,
@@ -2467,11 +2487,20 @@ def _run_cell(
             )
     before_docs = _docs_authority_snapshot(target)
     initial_preset = _apply_preset(
-        source_root, target, platform, cell_root / "preset-initial.log"
+        source_root,
+        target,
+        predecessor_seed_platform,
+        cell_root / "preset-initial.log",
     )
 
-    before_projection = capability_projection(source_root)
-    before_installed_projection = installed_capability_projection(target)
+    if scenario == "existing":
+        before_projection = predecessor_capability_projection(source_root)
+        before_installed_projection = predecessor_installed_capability_projection(
+            target
+        )
+    else:
+        before_projection = capability_projection(source_root)
+        before_installed_projection = installed_capability_projection(target)
     update_mode = "not_applicable"
     if scenario == "existing":
         before_manifest = _require_dict(
@@ -2600,13 +2629,15 @@ def _run_cell(
             "tag": before_tag,
             "extension_version": predecessor_extension["version"],
             "trellis_cli": predecessor_extension["target_trellis_cli"],
+            "seed_platform": predecessor_seed_platform,
+            "target_platform": platform,
         }
     return result
 
 
 def _verify_focused_sessions(target: Path, platform: str, work: Path) -> dict[str, str]:
     if platform != "codex":
-        return {"status": "UNVERIFIED", "reason": "Codex hooks not installed for selected platform"}
+        return {"status": "UNVERIFIED", "reason": "Codex hooks are outside the selected platform contract"}
     _run((str(target / ".trellis/guru-team/runtime/resolve-python.sh"),
           str(target), str(target / ".trellis/guru-team/runtime"),
           str(SCRIPT_ROOT / "fork_session_probe.py"),
@@ -2661,6 +2692,10 @@ def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, A
         raise MatrixError("focused project version does not match supplied source")
     if validate_fork_source(root, args.fork_source) != source:
         raise MatrixError("fork source changed during focused verification")
+    try:
+        native_load = verify_native_platform_load(target, args.platform, work / "native-load")
+    except NativeLoadError as exc:
+        raise MatrixError(str(exc), command_label="native-platform-load") from exc
     sessions = _verify_focused_sessions(target, args.platform, work)
     result = {"schema_version": SCHEMA_VERSION, "status": "passed",
               "mode": "focused", "source": source, "platform": args.platform,
@@ -2668,7 +2703,8 @@ def run_focused(args: argparse.Namespace, source: dict[str, Any]) -> dict[str, A
               "same_candidate_update_count": len(reapplied),
               "predecessor_upgrade_verified": False, "full_matrix_verified": False,
               "local_workflow_sample": sample, "preset_initial": initial,
-              "preset_reapply": reapplied, "template_hashes": hashes}
+              "preset_reapply": reapplied, "template_hashes": hashes,
+              "native_load": native_load}
     result["session_binding"] = sessions
     (work / "focused-summary.json").write_bytes(_canonical_json(result))
     return result

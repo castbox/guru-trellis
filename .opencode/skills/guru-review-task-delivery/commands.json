@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-review-task-delivery",
+  "commands": [
+    {
+      "id": "record-task-delivery-review",
+      "owner": "guru-review-task-delivery",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {"flag":"--root","required":false,"kind":"string","description":"Repository root.","repeatable":false,"conflicts":[]},
+        {"flag":"--input","required":true,"kind":"json","description":"Public Delivery Review input.","repeatable":false,"conflicts":[]},
+        {"flag":"--semantic-result","required":true,"kind":"json","description":"AI-completed Delivery Review semantic result.","repeatable":false,"conflicts":[]},
+        {"flag":"--dry-run","required":false,"kind":"boolean","description":"Validate without writing the private gate.","repeatable":false,"conflicts":[]}
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": ["invalid_arguments","invalid_json","schema_mismatch","unsafe_path","stale_identity","internal_error"],
+      "side_effect": "runtime_write",
+      "schema_bindings": ["schemas/public-delivery-review-input.schema.json","schemas/semantic-result.schema.json","schemas/delivery-review-gate.schema.json"],
+      "validator_id": "delivery_review_recorder",
+      "runtime_role": "record"
+    },
+    {
+      "id": "check-task-delivery-review",
+      "owner": "guru-review-task-delivery",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {"flag":"--root","required":false,"kind":"string","description":"Repository root.","repeatable":false,"conflicts":[]},
+        {"flag":"--task","required":true,"kind":"string","description":"Active task locator.","repeatable":false,"conflicts":[]},
+        {"flag":"--expected-exit","required":false,"kind":"string","description":"Expected typed exit.","repeatable":false,"conflicts":[]}
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": ["invalid_arguments","invalid_json","schema_mismatch","unsafe_path","stale_identity","internal_error"],
+      "side_effect": "git_read",
+      "schema_bindings": ["schemas/delivery-review-gate.schema.json"],
+      "validator_id": "delivery_review_checker",
+      "runtime_role": "check"
+    },
+    {
+      "id": "invoke-guru-review-task-delivery",
+      "owner": "guru-review-task-delivery",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {"flag":"--root","required":false,"kind":"string","description":"Repository root.","repeatable":false,"conflicts":[]},
+        {"flag":"--input","required":true,"kind":"json","description":"Public Delivery Review input.","repeatable":false,"conflicts":[]},
+        {"flag":"--semantic-result","required":true,"kind":"json","description":"AI-completed Delivery Review semantic result.","repeatable":false,"conflicts":[]}
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": ["invalid_arguments","invalid_json","schema_mismatch","unsafe_path","stale_identity","internal_error"],
+      "side_effect": "runtime_write",
+      "schema_bindings": ["schemas/public-input.schema.json","schemas/semantic-result.schema.json","schemas/public-invocation-error.schema.json"],
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    }
+  ]
+}

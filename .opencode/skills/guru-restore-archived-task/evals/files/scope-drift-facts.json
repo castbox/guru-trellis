@@ -1,0 +1,1 @@
+{"scenario":"scope-drift","owner_staging":{"recipe":"restore-scope-drift"},"public_invocation":{"arguments":["--root",".","--input","placeholder","--semantic-result","placeholder","--facts","placeholder"]}}

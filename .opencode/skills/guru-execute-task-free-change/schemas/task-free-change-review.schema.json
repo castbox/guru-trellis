@@ -1,0 +1,542 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-task-free-change-review-1.0",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/completed"
+    },
+    {
+      "$ref": "#/$defs/resume"
+    },
+    {
+      "$ref": "#/$defs/scope"
+    },
+    {
+      "$ref": "#/$defs/location"
+    },
+    {
+      "$ref": "#/$defs/reselect"
+    },
+    {
+      "$ref": "#/$defs/choice"
+    },
+    {
+      "$ref": "#/$defs/blocked"
+    }
+  ],
+  "$defs": {
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "summary"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "passed",
+            "blocked"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "summary"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "suitable",
+            "resume_active_task",
+            "scope_change",
+            "location_required",
+            "blocked"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "command",
+        "summary",
+        "status"
+      ],
+      "properties": {
+        "command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "skipped"
+          ]
+        }
+      }
+    },
+    "evolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "write_state",
+        "edited_paths",
+        "expansion",
+        "stop_after_detection",
+        "remaining_writes_not_performed",
+        "targeted_checks"
+      ],
+      "properties": {
+        "write_state": {
+          "const": "partial_edit"
+        },
+        "edited_paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "expansion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "summary"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "scope",
+                "risk",
+                "scope_and_risk"
+              ]
+            },
+            "summary": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "stop_after_detection": {
+          "const": true
+        },
+      "remaining_writes_not_performed": {
+        "type": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "target_path",
+            "summary"
+          ],
+          "properties": {
+            "target_path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "summary": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      },
+        "targeted_checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/check"
+          }
+        }
+      }
+    },
+    "common": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "mode": {
+          "enum": [
+            "workflow",
+            "standalone"
+          ]
+        },
+        "continuation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "selection_origin": {
+          "enum": [
+            "automatic",
+            "explicit"
+          ]
+        },
+        "request_summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "pre_write_review": {
+          "$ref": "#/$defs/review"
+        },
+        "ai_review_gate": {
+          "$ref": "#/$defs/gate"
+        }
+      }
+    },
+    "completed": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "typed_exit",
+            "mode",
+            "continuation_id",
+            "selection_origin",
+            "request_summary",
+            "target_paths",
+            "pre_write_review",
+            "completion_evidence",
+            "ai_review_gate"
+          ],
+          "properties": {
+            "schema_version": {},
+            "typed_exit": {
+              "const": "completed"
+            },
+            "mode": {},
+            "continuation_id": {},
+            "selection_origin": {},
+            "request_summary": {},
+            "target_paths": {},
+            "pre_write_review": {},
+            "completion_evidence": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "edited_paths",
+                "targeted_checks",
+                "post_write_review",
+                "unverified_boundaries"
+              ],
+              "properties": {
+                "edited_paths": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "targeted_checks": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "$ref": "#/$defs/check"
+                  }
+                },
+                "post_write_review": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "status",
+                    "summary"
+                  ],
+                  "properties": {
+                    "status": {
+                      "const": "passed"
+                    },
+                    "summary": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "unverified_boundaries": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "ai_review_gate": {}
+          }
+        }
+      ]
+    },
+    "resume": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "typed_exit",
+            "mode",
+            "continuation_id",
+            "selection_origin",
+            "request_summary",
+            "target_paths",
+            "task_ref",
+            "pre_write_review",
+            "ai_review_gate"
+          ],
+          "properties": {
+            "schema_version": {},
+            "typed_exit": {
+              "const": "resume_active_task"
+            },
+            "mode": {},
+            "continuation_id": {},
+            "selection_origin": {},
+            "request_summary": {},
+            "target_paths": {},
+            "task_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "pre_write_review": {},
+            "ai_review_gate": {}
+          }
+        }
+      ]
+    },
+    "scope": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "typed_exit",
+            "mode",
+            "continuation_id",
+            "selection_origin",
+            "request_summary",
+            "target_paths",
+            "task_ref",
+            "pre_write_review",
+            "ai_review_gate"
+          ],
+          "properties": {
+            "schema_version": {},
+            "typed_exit": {
+              "const": "scope_change"
+            },
+            "mode": {},
+            "continuation_id": {},
+            "selection_origin": {},
+            "request_summary": {},
+            "target_paths": {},
+            "task_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "pre_write_review": {},
+            "ai_review_gate": {}
+          }
+        }
+      ]
+    },
+    "location": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "typed_exit",
+            "mode",
+            "continuation_id",
+            "selection_origin",
+            "request_summary",
+            "target_paths",
+            "pre_write_review",
+            "ai_review_gate"
+          ],
+          "properties": {
+            "schema_version": {},
+            "typed_exit": {
+              "const": "location_required"
+            },
+            "mode": {},
+            "continuation_id": {},
+            "selection_origin": {},
+            "request_summary": {},
+            "target_paths": {},
+            "pre_write_review": {},
+            "ai_review_gate": {}
+          }
+        }
+      ]
+    },
+    "reselect": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "typed_exit",
+            "mode",
+            "continuation_id",
+            "selection_origin",
+            "request_summary",
+            "target_paths",
+            "pre_write_review",
+            "evolution_evidence",
+            "ai_review_gate"
+          ],
+          "properties": {
+            "schema_version": {},
+            "typed_exit": {
+              "const": "reselect_mode"
+            },
+            "mode": {},
+            "continuation_id": {},
+            "selection_origin": {
+              "const": "automatic"
+            },
+            "request_summary": {},
+            "target_paths": {},
+            "pre_write_review": {},
+            "evolution_evidence": {
+              "$ref": "#/$defs/evolution"
+            },
+            "ai_review_gate": {}
+          }
+        }
+      ]
+    },
+    "choice": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "typed_exit",
+            "mode",
+            "continuation_id",
+            "selection_origin",
+            "request_summary",
+            "target_paths",
+            "pre_write_review",
+            "evolution_evidence",
+            "ai_review_gate"
+          ],
+          "properties": {
+            "schema_version": {},
+            "typed_exit": {
+              "const": "explicit_choice_required"
+            },
+            "mode": {},
+            "continuation_id": {},
+            "selection_origin": {
+              "const": "explicit"
+            },
+            "request_summary": {},
+            "target_paths": {},
+            "pre_write_review": {},
+            "evolution_evidence": {
+              "$ref": "#/$defs/evolution"
+            },
+            "ai_review_gate": {}
+          }
+        }
+      ]
+    },
+    "blocked": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "typed_exit",
+            "mode",
+            "continuation_id",
+            "selection_origin",
+            "request_summary",
+            "target_paths",
+            "pre_write_review",
+            "ai_review_gate"
+          ],
+          "properties": {
+            "schema_version": {},
+            "typed_exit": {
+              "const": "blocked"
+            },
+            "mode": {},
+            "continuation_id": {},
+            "selection_origin": {},
+            "request_summary": {},
+            "target_paths": {},
+            "pre_write_review": {},
+            "ai_review_gate": {}
+          }
+        }
+      ]
+    }
+  }
+}

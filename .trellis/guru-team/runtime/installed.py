@@ -13,12 +13,15 @@ PLATFORM_ROOTS = {
     "codex": Path(".codex/skills"),
     "cursor": Path(".cursor/skills"),
     "claude": Path(".claude/skills"),
+    "opencode": Path(".opencode/skills"),
 }
 OVERLAY_PATHS = {
     "codex": Path(".codex/prompts/guru-finish-work.md"),
     "cursor": Path(".cursor/commands/guru-finish-work.md"),
     "claude": Path(".claude/commands/guru/finish-work.md"),
+    "opencode": Path(".opencode/commands/guru-finish-work.md"),
 }
+EXPECTED_DEFAULT_DOGFOOD_PLATFORMS = ["codex", "cursor"]
 PRIVATE_PROJECTION_ROOTS = {"runtime", "tests", "errors"}
 PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS = {
     "guru-review-branch": frozenset({Path("schemas/review-gate-7.0.schema.json")}),
@@ -283,6 +286,23 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
     facts: dict[str, Any] = {"schema_version": registry.get("schema_version"), "planned_ids": sorted(planned), "active_ids": sorted(active), **marker_facts}
     manifest = read_json(root, manifest_path, "installed extension manifest", errors) or {}
     extension = manifest.get("extension") if isinstance(manifest.get("extension"), dict) else {}
+    public_api = extension.get("public_api") if isinstance(extension.get("public_api"), dict) else {}
+    capabilities = public_api.get("platform_capabilities") if isinstance(public_api.get("platform_capabilities"), dict) else {}
+    upstream = capabilities.get("upstream_platforms")
+    supported = capabilities.get("guru_supported_platforms")
+    deferred = capabilities.get("deferred_platforms")
+    supported_ids = [row.get("id") for row in supported] if isinstance(supported, list) and all(isinstance(row, dict) for row in supported) else []
+    upstream_ids = [row.get("id") for row in upstream] if isinstance(upstream, list) and all(isinstance(row, dict) for row in upstream) else []
+    deferred_ids = [row.get("id") for row in deferred] if isinstance(deferred, list) and all(isinstance(row, dict) for row in deferred) else []
+    supported_upstream_ids = [row.get("upstream_id") for row in supported] if isinstance(supported, list) and all(isinstance(row, dict) for row in supported) else []
+    if capabilities.get("schema_version") != "1.0": errors.append("installed platform capability inventory schema is invalid")
+    if not isinstance(capabilities.get("inventory_source"), str) or not capabilities.get("inventory_source"): errors.append("installed platform capability inventory source is missing")
+    if not isinstance(capabilities.get("inventory_version"), str) or not capabilities.get("inventory_version"): errors.append("installed platform capability inventory version is missing")
+    if not isinstance(capabilities.get("inventory_sha256"), str) or not re.fullmatch(r"[0-9a-f]{64}", capabilities.get("inventory_sha256", "")): errors.append("installed platform capability inventory digest is invalid")
+    if sorted(supported_ids) != sorted(OVERLAY_PATHS) or sorted(supported_ids) != sorted(platform for platform in PLATFORM_ROOTS if platform != "shared"): errors.append("installed Guru-supported platform inventory disagrees with runtime roots")
+    if capabilities.get("default_dogfood_platforms") != EXPECTED_DEFAULT_DOGFOOD_PLATFORMS: errors.append("installed default dogfood platform inventory is invalid")
+    if not set(supported_upstream_ids).issubset(set(upstream_ids)): errors.append("installed supported platforms are not bound to upstream inventory")
+    if set(upstream_ids) != set(supported_upstream_ids) | set(deferred_ids): errors.append("installed upstream supported/deferred partition is incomplete")
     provenance = manifest.get("skill_packages") if isinstance(manifest.get("skill_packages"), dict) else {}
     required = {"schema_version","status","canonical_registry_sha256","registry_schema_version","active_ids","selected_platforms","packages","files","removals","conflicts","sidecars"}
     if set(provenance) != required: errors.append("installed skill package provenance has invalid fields")
@@ -292,7 +312,7 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
     if provenance.get("registry_schema_version") != facts["schema_version"]: errors.append("installed registry schema version does not match provenance")
     if provenance.get("active_ids") != facts["active_ids"]: errors.append("installed registry lifecycle ids do not match provenance")
     selected = provenance.get("selected_platforms")
-    if not isinstance(selected, list) or len(selected) != len(set(selected)) or any(item not in {"codex","cursor","claude"} for item in selected):
+    if not isinstance(selected, list) or len(selected) != len(set(selected)) or any(item not in set(supported_ids) for item in selected):
         errors.append("installed selected platform provenance is invalid"); selected = []
     expected: dict[str, tuple[str, Path]] = {}
     def expect(target: Path, source_relative: Path, source: Path):

@@ -157,3 +157,21 @@ installed/platform projections、task/lifecycle SSOT 与定向 tests 已通过�
 本证据不证明 #434 production graph activation、真实 Issue close、bookkeeping PR/merge、生产 Cleanup、
 完整 Release/upgrade matrix、push、PR、远端 merge、tag、Release 或 Issue closure。promotion-created
 diff 仍须 fresh Phase 2、Task Commit 与 independent complete Branch Review 后才能进入 Publication。
+
+## EVD-032: #443 Reviewed Promotion Source
+
+本证据支撑 `ARCH-CUR-034`、`ARCH-DOM-019`、`ARCH-INT-022`、`ARCH-GAP-009`、`ADR-014`
+以及 `.56 -> .57` knowledge promotion。#443 integrated committed range为
+`a74d729ed84449ce603d112e277fa567e87a7bf3..4dd9f7b7d4df2167819745565225001355adb5ee`；
+Issue #443已于2026-09-19关闭，range已进入main历史。contribution
+`architecture-contribution-443-task-identity-session-binding-v1`以该闭合capability和live package authority为promotion输入。
+
+当前fresh执行canonical package contract/runtime 26 tests，覆盖profile/route闭集、A→B→A、跨session、
+mapping locator、base provenance、manual recovery、generation/receipt invalidation与zero-write；live registry/
+interface/commands聚合为32 packages / 142 external exits / 102 commands，production workflow保持22 mandatory
+invokes / 98 exits。installed interface/runtime与canonical bytes一致；package-private tests按当前安装合同不分发。
+
+本证据不证明当前#452 OpenCode/platform combined diff的完整source/installed/platform、preset reapply、ownership、
+dogfood或representative throwaway gate，也不证明#434 production graph activation、完整Release matrix、生产binding、
+push、PR、远端merge、tag、Release或Issue closure mutation。promotion-created diff仍须fresh Phase 2、Task Commit与
+independent complete Branch Review后才能进入Publication。

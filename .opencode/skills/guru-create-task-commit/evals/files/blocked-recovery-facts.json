@@ -1,0 +1,1 @@
+{"scenario":"The prepared private recovery candidate is objectively blocked before any Git side effect.","owner_evidence":{"semantic_gate":"blocked","checker_required":false},"owner_staging":{"recipe":"commit-blocked-recovery"},"public_invocation":{"arguments":["--candidate-artifact",".trellis/.runtime/guru-team/task-commit-plans/current/001.json"]}}

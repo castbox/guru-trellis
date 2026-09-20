@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-finalize-task",
+  "evals": [
+    {
+      "id": "archived-review-refresh",
+      "prompt": "Consume the already reviewed archived fixture through the original public wrapper and declared current profile. Preserve its exact task, payload and range bindings, truthful findings and read-only boundary. This case checks post-owner transport/projection, not fresh native semantic authoring.",
+      "expected_exit": "ready_for_merge",
+      "expected_output": "The declared typed result from the checked fixture owner state, with zero business or remote mutation; no fresh-AI claim.",
+      "input_profile_id": "archived_review_refresh",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready_for_merge"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          }
+        ]
+      },
+      "files": [
+        "examples/public-archived-review-refresh-input.json",
+        "evals/files/archived-review-refresh-post-owner-facts.json"
+      ],
+      "native_execution_mode": "post_owner"
+    },
+    {
+      "id": "publication-review-stale",
+      "prompt": "Invoke the finalizer from stale publication evidence and return the checked publication-review re-entry.",
+      "expected_exit": "publication_review_stale",
+      "expected_output": "The minimal DTO contains the task identity, branch_review_commit and stable stale reason required by Publication re-entry.",
+      "input_profile_id": "publication_ready",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "publication_review_stale"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/publication-ready-input.json",
+        "evals/files/publication-review-stale-facts.json"
+      ]
+    },
+    {
+      "id": "same-plan-resume",
+      "prompt": "Invoke the finalizer for an unchanged plan after a normal interrupted transition.",
+      "expected_exit": "resume_finalization",
+      "expected_output": "The minimal DTO retains only the task and unchanged plan reference.",
+      "input_profile_id": "same_plan_resume",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "resume_finalization"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/same-plan-resume-input.json",
+        "evals/files/same-plan-resume-facts.json"
+      ]
+    },
+    {
+      "id": "cross-month-reprepare",
+      "prompt": "Invoke the finalizer after the official archive month changed while the task remains active.",
+      "expected_exit": "reprepare_required",
+      "expected_output": "The minimal DTO identifies the task and the stable archive-month reason.",
+      "input_profile_id": "reprepare_preview",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "reprepare_required"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/reprepare-preview-input.json",
+        "evals/files/cross-month-reprepare-facts.json"
+      ]
+    },
+    {
+      "id": "ready-for-merge-recovery",
+      "prompt": "Invoke standalone finalization for an already completed ready recovery state.",
+      "expected_exit": "ready_for_merge",
+      "expected_output": "The terminal DTO contains the exact task and canonical pull request identity.",
+      "input_profile_id": "standalone_finalization",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready_for_merge"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/standalone-finalization-input.json",
+        "evals/files/ready-for-merge-recovery-facts.json"
+      ]
+    },
+    {
+      "id": "publication-ready-ready-for-merge",
+      "prompt": "Invoke workflow finalization for a normal non-extension task whose exact transaction is already ready.",
+      "expected_exit": "ready_for_merge",
+      "expected_output": "The terminal DTO contains the exact task and canonical pull request identity.",
+      "input_profile_id": "publication_ready",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready_for_merge"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/publication-ready-input.json",
+        "evals/files/publication-ready-ready-for-merge-facts.json"
+      ]
+    },
+    {
+      "id": "same-plan-ready-for-merge",
+      "prompt": "Invoke workflow finalization after the unchanged plan has reached its terminal ready state.",
+      "expected_exit": "ready_for_merge",
+      "expected_output": "The terminal DTO contains the exact task and canonical pull request identity.",
+      "input_profile_id": "same_plan_resume",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready_for_merge"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/same-plan-resume-input.json",
+        "evals/files/same-plan-ready-for-merge-facts.json"
+      ]
+    },
+    {
+      "id": "blocked-private-state",
+      "prompt": "Invoke standalone finalization for an invalid objective state with no unique continuation.",
+      "expected_exit": "blocked",
+      "expected_output": "The terminal DTO contains only the stable blocker code and remediation.",
+      "input_profile_id": "standalone_finalization",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/standalone-finalization-input.json",
+        "evals/files/blocked-private-state-facts.json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "scenario": "Exactly one current duplicate was selected and the retarget action was validated.",
+  "owner_evidence": {
+    "semantic_gate": "passed",
+    "checker_required": true,
+    "duplicate_candidates": 1
+  },
+  "owner_staging": {
+    "recipe": "clarity-retarget"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--invocation",
+      "-"
+    ]
+  }
+}

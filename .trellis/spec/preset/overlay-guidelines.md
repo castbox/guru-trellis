@@ -2,12 +2,13 @@
 
 ## Final Overlay Boundary
 
-The preset overlay tree contains exactly three Guru-owned explicit finish
+The preset overlay tree contains exactly four Guru-owned explicit finish
 entries:
 
 - `.codex/prompts/guru-finish-work.md`;
 - `.claude/commands/guru/finish-work.md`;
 - `.cursor/commands/guru-finish-work.md`.
+- `.opencode/commands/guru-finish-work.md`.
 
 They are additive platform launchers, not replacements for Trellis upstream
 files. The current ownership inventory describes only Guru-owned rules, claims,
@@ -70,9 +71,10 @@ Preset apply installs byte-identical active package copies to:
 - Codex: `.codex/skills/guru-*/**`;
 - Claude: `.claude/skills/guru-*/**`;
 - Cursor: `.cursor/skills/guru-*/**`.
+- OpenCode: `.opencode/skills/guru-*/**`.
 
 These package projections are managed-hash installation, not overlay files.
-Shared/Codex/Claude/Cursor may differ only in discovery root or native adapter
+Shared/Codex/Claude/Cursor/OpenCode may differ only in discovery root or native adapter
 protocol; public Interface, exits, projections, eval corpus, and behavior remain
 identical.
 
@@ -91,7 +93,9 @@ only the corresponding platform package root and explicit Guru finish entry:
 
 - default: Shared + Codex + Cursor;
 - `--platform <name>`: Shared + exactly the selected platforms;
-- `--all-platforms`: Shared + Codex + Claude + Cursor;
+- `--all-platforms`: Shared + Codex + Claude + Cursor + OpenCode;
+- upstream-known deferred platforms: return a structured `deferred` result
+  before mutating the target;
 - unknown platforms or `--platform` combined with `--all-platforms`: fail
   closed.
 

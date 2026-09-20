@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-create-task-workspace",
+  "evals": [
+    {
+      "id": "created-route",
+      "prompt": "Review the staged workspace plan after its exact call-local executor and checker completed, then invoke guru-create-task-workspace with the closed stdin envelope. Return the checker-derived route.",
+      "expected_exit": "created",
+      "expected_output": "The public DTO is the declared created route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "created"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-created-input.json", "evals/files/eval-created-facts.json"],
+      "input_profile_id": "execute_reviewed_plan"
+    },
+    {
+      "id": "refresh-review-route",
+      "prompt": "Review the staged recovery plan whose target changed before mutation, complete its call-local no-side-effect executor/checker result, then invoke guru-create-task-workspace with the closed stdin envelope. Return the checker-derived route.",
+      "expected_exit": "refresh_review",
+      "expected_output": "The public DTO is the declared refresh_review route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "refresh_review"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-refresh-review-input.json", "evals/files/eval-refresh-review-facts.json"],
+      "input_profile_id": "execute_reviewed_plan"
+    },
+    {
+      "id": "blocked-route",
+      "prompt": "Review the staged recovery plan with a current object conflict, complete its call-local no-side-effect executor/checker result, then invoke guru-create-task-workspace with the closed stdin envelope. Return the checker-derived route.",
+      "expected_exit": "blocked",
+      "expected_output": "The public DTO is the declared blocked route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-blocked-input.json", "evals/files/eval-blocked-facts.json"],
+      "input_profile_id": "execute_reviewed_plan"
+    },
+    {
+      "id": "invalid-task-state-route",
+      "prompt": "Review the staged workspace plan whose task identity is already active with conflicting state, complete its call-local no-side-effect executor/checker result, then invoke guru-create-task-workspace with the closed stdin envelope. Return the checker-derived route.",
+      "expected_exit": "invalid_task_state",
+      "expected_output": "The public DTO is the declared invalid_task_state route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "invalid_task_state"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-invalid-task-state-input.json", "evals/files/eval-invalid-task-state-facts.json"],
+      "input_profile_id": "execute_reviewed_plan"
+    },
+    {
+      "id": "recover-created-result-route",
+      "prompt": "Recover the exact current planning task's already-created workspace result through the owner read-only recovery command, then invoke guru-create-task-workspace with the closed stdin envelope. Return the rematerialized created route.",
+      "expected_exit": "created",
+      "expected_output": "The public DTO is the declared created route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "created"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-recover-created-result-input.json", "evals/files/eval-recover-created-result-facts.json"],
+      "input_profile_id": "recover_created_result"
+    }
+  ]
+}

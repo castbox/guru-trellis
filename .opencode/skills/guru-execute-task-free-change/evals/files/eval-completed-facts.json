@@ -1,0 +1,1 @@
+{"scenario":"The checkout is suitable, the bounded edit is complete, targeted checks pass, and post-write risk remains bounded.","owner_staging":{"recipe":"task-free-completed"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

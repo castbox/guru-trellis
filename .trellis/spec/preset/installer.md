@@ -31,8 +31,8 @@ performs any other target mutation, it must run the source ownership validator
 defined in [upstream-ownership.md](./upstream-ownership.md). The validator is
 read-only and source-repository scoped; it is not installed into business
 repositories or exposed as a workflow/Skill runtime command. It validates the
-current-only ownership schema 3.0, exactly 11 Guru-owned rules, nine managed
-claims, three additive overlay files, and the live registry/package identities
+current-only ownership schema 3.0, exactly 13 Guru-owned rules, 11 managed
+claims, four additive overlay files, and the live registry/package identities
 before installer staging. A non-current ownership contract fails closed.
 
 ## Managed Assets
@@ -101,10 +101,21 @@ JSON result. `AGENTS.md` remains user-owned and is deliberately absent from
 Public workflow skill packages are a separate managed-hash domain. The preset
 validates `trellis/skills/guru-team/`, installs its registry/schema/active
 packages under `.trellis/guru-team/skills/`, and distributes active package
-bytes to `.agents/skills/<id>/` plus only the selected Codex/Cursor/Claude
+bytes to `.agents/skills/<id>/` plus only the selected Codex/Cursor/Claude/OpenCode
 roots. Planned ids and test fixtures are never installed.
 
-The three additive platform entries use their own top-level `overlays`
+The canonical extension manifest owns one closed
+`public_api.platform_capabilities` inventory. It binds the pinned upstream
+`AI_TOOLS` registry source/version/digest, all upstream rows, the complete
+Guru-supported projection set, the default dogfood set, and the explicitly
+deferred remainder. Installer selection, source validation, installed
+validation, and the compatibility matrix consume that authority and fail
+closed when their roots, flags, ownership claims, or platform declarations
+drift. A requested upstream-known deferred platform returns a structured
+`deferred` result before target mutation; a truly unknown name fails argument
+validation. Directory presence is never platform-support authority.
+
+The four additive platform entries use their own top-level `overlays`
 provenance domain in `.trellis/guru-team/extension.json`. Its closed fields are
 `schema_version`, `status`, `selected_platforms`, `files`, `removals`,
 `conflicts`, and `sidecars`. `files[]` is the complete current selected-entry
@@ -177,7 +188,7 @@ Every `workflow` / `stop` consumer must resolve to one matching-kind
 kind-mismatched, or dangling targets block installation/runtime use.
 
 The production registry installs the active `guru-create-task-commit` package
-to the audited runtime root and selected shared/Codex/Cursor/Claude discovery
+to the audited runtime root and selected shared/Codex/Cursor/Claude/OpenCode discovery
 roots. Its artifact schema and package thin wrappers are part of the installed
 managed tree. Its package tests remain canonical source-validation assets and
 are not installed into the runtime or platform projections. The companion
@@ -186,7 +197,7 @@ validation must prove the package test bytes, while installed validation and
 the manifest inventory must prove only the public projection bytes and mode.
 
 The production registry also installs active `guru-sync-base` to the audited
-runtime root and selected shared/Codex/Cursor/Claude discovery roots. Managed
+runtime root and selected shared/Codex/Cursor/Claude/OpenCode discovery roots. Managed
 inventory includes its `SKILL.md`, interface, contract, example, result schema,
 executable thin wrappers, and excludes its package-private `tests/` tree.
 Companion managed assets include executable `sync-base.sh` and `check-base-sync.sh`; the extension manifest
@@ -195,7 +206,7 @@ publishes active id `guru-sync-base`, schema id
 `check-base-sync`.
 
 The registry also installs active semantic `guru-discover-change-context` to
-the audited runtime root and selected shared/Codex/Cursor/Claude discovery
+the audited runtime root and selected shared/Codex/Cursor/Claude/OpenCode discovery
 roots. Its installed managed tree includes `SKILL.md`, interface, contract, the
 active `guru-stage0-discover-change-context-input-pre-task-2.0` and
 `guru-change-context-owner-result-3.0` schemas/examples, retained immutable
@@ -421,12 +432,12 @@ unknown document should be translated.
 ## Current Ownership Gate
 
 The overlay tree is a Guru-only extension surface. It contains exactly the
-three `guru-finish-work` entries. The current schema 3.0 inventory contains
-exactly 11 anchored Guru-owned rules and nine managed claims. Official
+four `guru-finish-work` entries. The current schema 3.0 inventory contains
+exactly 13 anchored Guru-owned rules and 11 managed claims. Official
 `trellis-*` paths are outside both the overlay tree and the managed inventory.
 
 Before installing Guru-owned assets, the installer validates that exact
-current inventory, the extension manifest claims, the three overlay paths, and
+current inventory, the extension manifest claims, the four overlay paths, and
 the live registry/package graph. A fresh target may have no installed manifest;
 an existing target must provide the complete current installed-manifest schema
 2.0. Any non-current ownership or installed manifest, unknown claim, broad
@@ -462,7 +473,7 @@ The supported installer platform flags are:
 
 ```bash
 trellis/presets/guru-team/scripts/bash/apply.sh --repo <repo> \
-  [--platform codex] [--platform cursor] [--platform claude]
+  [--platform codex] [--platform cursor] [--platform claude] [--platform opencode]
 
 trellis/presets/guru-team/scripts/bash/apply.sh --repo <repo> --all-platforms
 ```
@@ -473,7 +484,8 @@ trellis/presets/guru-team/scripts/bash/apply.sh --repo <repo> --all-platforms
   overlays plus Codex and Cursor overlays.
 - `--platform <name>` is repeatable and installs shared overlays plus exactly
   the selected platform overlay groups.
-- `--all-platforms` installs shared overlays plus every known platform overlay.
+- `--all-platforms` installs shared overlays plus every platform in the
+  canonical `guru_supported_platforms` inventory.
 - `--platform` and `--all-platforms` are mutually exclusive.
 - Unknown platform names fail closed; do not silently ignore them.
 - Shared `.agents/skills` overlays are always installed because Codex and some
@@ -486,7 +498,8 @@ trellis/presets/guru-team/scripts/bash/apply.sh --repo <repo> --all-platforms
 | no platform flags | install `.agents/`, `.codex/`, `.cursor/`; do not create `.claude/` |
 | repeated `--platform codex --platform cursor` | install `.agents/`, `.codex/`, `.cursor/`; do not create `.claude/` |
 | `--platform claude` | install `.agents/` and `.claude/`; do not create `.codex/` or `.cursor/` |
-| `--all-platforms` | install `.agents/`, `.codex/`, `.cursor/`, `.claude/` |
+| `--platform opencode` | install `.agents/` and `.opencode/`; do not create `.codex/`, `.cursor/`, or `.claude/` |
+| `--all-platforms` | install `.agents/`, `.codex/`, `.cursor/`, `.claude/`, `.opencode/` |
 | `--platform codex --all-platforms` | argparse exits non-zero |
 | `--platform unknown` | argparse exits non-zero |
 
@@ -502,10 +515,21 @@ trellis/presets/guru-team/scripts/bash/apply.sh --repo <repo> --all-platforms
 ### 6. Tests Required
 
 - Unit tests for default platform selection, repeated platform flags,
-  `--platform claude`, `--all-platforms`, mutual exclusion, and invalid
+  `--platform claude`, `--platform opencode`, `--all-platforms`, mutual exclusion, and invalid
   platform names.
 - Temporary repo behavior test or throwaway install validation that asserts the
   default Codex + Cursor path does not create `.claude/`.
+- OpenCode actual-load validation must use a fresh isolated HOME/XDG state for
+  each probe. The default probe may resolve byte-identical Guru Skills through
+  OpenCode's native, shared, or Claude-compatible discovery roots; a second
+  probe disables external Skill discovery and must resolve every active Skill
+  from `.opencode/skills/`. Both probes must discover the exact active registry
+  and the installed `guru-finish-work` command bytes.
+- Existing-install validation may seed an immutable predecessor with a
+  predecessor-supported platform when that predecessor predates the requested
+  target platform. The result must record distinct `seed_platform` and
+  `target_platform` identities, then validate the current target projection
+  with the current strict contract after update/reapply.
 - README/preset README command review whenever platform flags change.
 
 ### 7. Wrong vs Correct
@@ -553,8 +577,8 @@ or disposable copy and verify:
   markers; root `AGENTS.md` never enters `install.managed_assets`
 - managed companion assets update and produce `.bak`
 - unknown Guru-owned entry edits produce `.new`
-- ownership schema 3.0 has exactly 11 Guru-owned rules, nine managed claims,
-  and three additive overlays; a non-current ownership or installed manifest
+- ownership schema 3.0 has exactly 13 Guru-owned rules, 11 managed claims,
+  and four additive overlays; a non-current ownership or installed manifest
   fails current-contract validation before mutation
 - scripts remain executable
 - `.codex/prompts/guru-finish-work.md`,
@@ -706,7 +730,7 @@ changing any package-local public contract.
 `guru-review-task-publication` is installed as an additive active Interface 1.4
 package together with its registry row, active `guru-finalize-task` consumer
 identity, consumer schemas, runtime commands, extension inventories, canonical
-workflow markers, installed shared package, and selected Codex/Cursor/Claude copies.
+workflow markers, installed shared package, and selected Codex/Cursor/Claude/OpenCode copies.
 Fresh install, update, and reapply require byte- and executable-mode identity
 for the package's installed Skill, Interface, references, schemas, examples,
 wrapper, and canonical eval corpus. Package-private tests are checked in the
@@ -767,11 +791,11 @@ mutation. No target installed manifest, task path, business changed path, or
 Finalizer plan can satisfy this entry contract.
 
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
-installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
+installed, shared, Codex, Cursor, Claude, and OpenCode package/corpus byte identity,
   wrapper executable modes, the twenty-three-Skill/97-exit package closure, the
 integrated business closure of 22 invokes, 95 exits, 35 workflow targets, and
 24 stop targets, and current
-ownership schema 3.0 with 11 rules, nine managed claims, and three overlays.
+ownership schema 3.0 with 13 rules, 11 managed claims, and four overlays.
 Unknown edits and sidecars retain the existing managed-hash remediation.
 
 ## Task Finalization Package Activation
@@ -801,7 +825,7 @@ managed claim, public profile, exit, transaction state, or verifier route.
 
 The complete source/installed package graph contains twenty-three active Skills and
 97 exits. The global business workflow projection is 22 invokes, 95 exits,
-35 workflow targets, and 24 stop targets. The preset additionally installs the three Guru-owned
+35 workflow targets, and 24 stop targets. The preset additionally installs the four Guru-owned
 `guru-finish-work` entries and combined integration suite; those entries route
 only Publication, Finalizer, and Merge. Upstream `trellis-finish-work` assets
 remain under official Trellis ownership.

@@ -1,0 +1,9 @@
+{
+  "profile": "explicit_paths",
+  "source_exit": "start",
+  "mode": "standalone",
+  "paths": [
+    "docs/requirements/requirement-main.md"
+  ],
+  "continuation_id": "stage0-current"
+}

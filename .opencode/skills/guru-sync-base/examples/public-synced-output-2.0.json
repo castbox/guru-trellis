@@ -1,0 +1,25 @@
+{
+  "exit_id": "synced",
+  "handoff_profile": "pre_task",
+  "handoff_mode": "workflow",
+  "handoff_repo_locator": "stage0-handoff-repo-locator",
+  "handoff_base_branch": "stage0-handoff-base-branch",
+  "handoff_continuation_id": "stage0-handoff-continuation-id",
+  "transition": {
+    "schema_version": "1.0",
+    "transition_id": "base_current:111111111111111111111111",
+    "stage": "base_current",
+    "mode": "workflow",
+    "repo_locator": ".",
+    "base": {
+      "source": "explicit",
+      "selected_base": "main",
+      "remote": "origin",
+      "ordered_candidates": ["main"],
+      "decision_head": "1111111111111111111111111111111111111111",
+      "local_base_head": "1111111111111111111111111111111111111111",
+      "remote_base_head": "1111111111111111111111111111111111111111",
+      "post_sync_resolution_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    }
+  }
+}

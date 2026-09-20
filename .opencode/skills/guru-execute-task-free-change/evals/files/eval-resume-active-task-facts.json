@@ -1,0 +1,1 @@
+{"scenario":"Local active-task scope matches the request, so task-free execution returns to that exact task.","owner_staging":{"recipe":"task-free-resume-active-task"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

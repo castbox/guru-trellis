@@ -37,7 +37,7 @@
     {"id":"blocked","evidence":"identity, ancestry, candidate, semantic coverage or objective freshness is unavailable","consumer":{"kind":"stop","id":"task-base-reconciliation-blocked"}}
   ],
   "reentry":{"identity":"profile, task ref, task-content HEAD, selected base, old/new base pair, resume target, caller continuity, semantic result and output","freshness":"task-content or selected-base changes create a new pair; an exact current result is consumable once","stale_behavior":"fail_closed"},
-  "tests":["tests/test_contract.py","tests/test_runtime.py"],"platform_destinations":["shared","codex","cursor","claude"],
+  "tests":["tests/test_contract.py","tests/test_runtime.py"],"platform_destinations":["shared","codex","cursor","claude","opencode"],
   "public_contracts":{
     "input":{"kind":"structured_json","aggregate_schema":{"schema_id":"guru-reconcile-task-base-input-aggregate-2.0","path":"schemas/public-input.schema.json"},"profiles":[
       {"id":"post_plan","schema":{"schema_id":"guru-reconcile-task-base-input-post-plan-1.0","path":"schemas/public-post-plan-input.schema.json"},"example":{"id":"post_plan_input","path":"examples/public-post-plan-input.json"},"discriminator":{"field":"profile","value":"post_plan"}},

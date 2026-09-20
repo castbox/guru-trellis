@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-create-task-commit",
+  "evals": [
+    {
+      "id": "committed-initial",
+      "prompt": "Complete the initial_commit semantic owner round and invoke guru-create-task-commit through its public wrapper; return the checker-derived committed route.",
+      "expected_exit": "committed",
+      "expected_output": "The public DTO is the declared committed route.",
+      "input_profile_id": "initial_commit",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "committed"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      },
+      "files": ["evals/files/committed-initial-input.json", "evals/files/committed-initial-facts.json"]
+    },
+    {
+      "id": "revision-required",
+      "prompt": "Complete the revision_reentry semantic owner round and invoke guru-create-task-commit through its public wrapper; return the checker-derived revision-required route.",
+      "expected_exit": "revision-required",
+      "expected_output": "The public DTO is the declared revision-required route.",
+      "input_profile_id": "revision_reentry",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "revision-required"
+          }
+        ]
+      },
+      "files": ["evals/files/revision-required-input.json", "evals/files/revision-required-facts.json"]
+    },
+    {
+      "id": "committed-finding-fix",
+      "prompt": "Complete the finding_fix_commit semantic owner round and invoke guru-create-task-commit through its public wrapper; return the checker-derived committed route.",
+      "expected_exit": "committed",
+      "expected_output": "The public DTO is the declared committed route.",
+      "input_profile_id": "finding_fix_commit",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "committed"
+          }
+        ]
+      },
+      "files": ["evals/files/committed-finding-fix-input.json", "evals/files/committed-finding-fix-facts.json"]
+    },
+    {
+      "id": "blocked-recovery",
+      "prompt": "Complete the recovery_resume semantic owner round and invoke guru-create-task-commit through its public wrapper; return the checker-derived blocked route.",
+      "expected_exit": "blocked",
+      "expected_output": "The public DTO is the declared blocked route.",
+      "input_profile_id": "recovery_resume",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": ["evals/files/blocked-recovery-input.json", "evals/files/blocked-recovery-facts.json"]
+    }
+  ]
+}

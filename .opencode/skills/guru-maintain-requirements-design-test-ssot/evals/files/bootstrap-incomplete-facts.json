@@ -1,0 +1,1 @@
+{"scenario":"Requirements exist but the Test layer is absent.","owner_staging":{"recipe":"rdt-bootstrap-incomplete"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

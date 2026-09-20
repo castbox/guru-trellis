@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-review-change-request-output-ready-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "profile",
+    "mode"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "ready"
+    },
+    "profile": {
+      "const": "execute_reviewed_plan"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    }
+  }
+}

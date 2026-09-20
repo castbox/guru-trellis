@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-project-architecture-check-result-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "descriptor_identity", "check_id", "check_version", "applicability", "blocking", "applicable_scope", "rule_refs", "decision_refs", "gap_refs", "before", "after", "status", "freshness_identity"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "descriptor_identity": {"type": "string", "minLength": 1},
+    "check_id": {"type": "string", "minLength": 1},
+    "check_version": {"type": "string", "minLength": 1},
+    "applicability": {"enum": ["applicable", "not_applicable"]},
+    "blocking": {"type": "boolean"},
+    "applicable_scope": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "rule_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "decision_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "gap_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "before": {"type": "object", "additionalProperties": false, "required": ["state"], "properties": {"state": {"type": "string", "minLength": 1}}},
+    "after": {"type": "object", "additionalProperties": false, "required": ["state"], "properties": {"state": {"type": "string", "minLength": 1}}},
+    "status": {"enum": ["pass", "fail", "unverified"]},
+    "evidence_locator": {"type": "string", "minLength": 1},
+    "unavailable_reason": {"type": "string", "minLength": 1},
+    "freshness_identity": {"type": "string", "minLength": 1}
+  },
+  "anyOf": [
+    {"properties": {"rule_refs": {"minItems": 1}}},
+    {"properties": {"decision_refs": {"minItems": 1}}},
+    {"properties": {"gap_refs": {"minItems": 1}}}
+  ],
+  "allOf": [
+    {"if": {"properties": {"status": {"enum": ["pass", "fail"]}}}, "then": {"required": ["evidence_locator"], "not": {"required": ["unavailable_reason"]}}},
+    {"if": {"properties": {"status": {"const": "unverified"}}}, "then": {"required": ["unavailable_reason"], "not": {"required": ["evidence_locator"]}}},
+    {"if": {"properties": {"applicability": {"const": "not_applicable"}}}, "then": {"properties": {"blocking": {"const": false}, "status": {"const": "pass"}}}}
+  ]
+}

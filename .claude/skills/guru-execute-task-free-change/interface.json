@@ -61,7 +61,7 @@
   ],
   "reentry": {"identity": "current continuation, selection origin, bounded request, and target paths", "freshness": "location and explicit-choice re-entry reuse only unchanged identity; material request change starts a new selection", "stale_behavior": "fail_closed"},
   "tests": ["tests/test_contract.py", "tests/test_runtime.py"],
-  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude", "opencode"],
   "public_contracts": {
     "input": {
       "kind": "structured_json",

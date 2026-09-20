@@ -1,0 +1,1 @@
+{"scenario":"The isolated contribution is complete and ready for promotion.","owner_staging":{"recipe":"rdt-promotion-sync"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

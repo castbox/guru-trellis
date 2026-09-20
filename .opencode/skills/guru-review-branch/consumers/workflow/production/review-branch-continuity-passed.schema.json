@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-production-review-branch-workflow-continuity-passed-input-1.0",
+  "$ref": "../../../../schemas/public-continuity-passed-output.schema.json"
+}

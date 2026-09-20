@@ -1,0 +1,10 @@
+{
+  "exit_id": "ready_for_merge",
+  "repo_ref": "castbox/guru-trellis",
+  "pr_number": 176,
+  "pr_url": "https://github.com/castbox/guru-trellis/pull/176",
+  "expected_head_sha": "1111111111111111111111111111111111111111",
+  "expected_base_branch": "main",
+  "expected_head_branch": "codex/180-minimal-finalizer-replay-174",
+  "publication_body_sha256": "bde3310f347bcb69b76f642f8581b0d901b08df13ff1956a8e96428da46940d2"
+}

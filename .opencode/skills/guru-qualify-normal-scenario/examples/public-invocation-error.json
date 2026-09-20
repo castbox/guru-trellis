@@ -1,0 +1,1 @@
+{"code":"schema_mismatch","field_path":"public_input.profile","remediation":"Use exactly one declared qualification profile."}

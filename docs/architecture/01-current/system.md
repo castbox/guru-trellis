@@ -108,9 +108,17 @@ stable task/Issue identity 并使旧 Finish receipt 失效。canonical registry 
 activation 与旧 edge retirement。`ADR-013`、`EVD-031` 与 #436 contribution 定义边界；完整 Release
 matrix 仍 `unverified`。
 
-当前 Architecture knowledge identity 为 `.56`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
+`ARCH-CUR-034`（`source_confirmed` + `reviewed`）：#443 以 `target_native` 在 `.56` current 上增加
+`guru-bind-task-session` additive/deferred semantic package。task identity保持唯一长期主身份，official Trellis
+`active_task` / `session_storage`保持resolver/store authority；新package独占lifecycle-aware resume、rebind、
+switch、reactivate rebind与manual recovery的semantic judgment和boundary write。五个success exits与一个blocked
+exit进入closed package contract；canonical registry为32 packages / 142 exits / 102 commands，production workflow
+仍为22 mandatory invokes / 98 exits。#434独占global route activation与旧edge retirement；`ADR-014`、
+`EVD-032`与#443 contribution定义边界，完整Release matrix仍`unverified`。
+
+当前 Architecture knowledge identity 为 `.57`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
 `0.6.17`，framework source/CI 由 `ARCH-CUR-028` 与 canonical source record 绑定，package manager 为
-`pnpm@10.32.1`。`.54` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
+`pnpm@10.32.1`。`.56` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。
 

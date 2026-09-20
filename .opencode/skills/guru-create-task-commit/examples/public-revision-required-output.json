@@ -1,0 +1,4 @@
+{
+  "exit_id": "revision-required",
+  "task_ref": ".trellis/tasks/example-task"
+}

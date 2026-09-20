@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-clarify-requirements-input-solution-mechanism-scope-confirmation-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_exit",
+    "mode",
+    "target_locator",
+    "resume_target",
+    "continuation_id",
+    "candidate_refs"
+  ],
+  "properties": {
+    "profile": {"const": "solution_mechanism_scope_confirmation"},
+    "source_exit": {"const": "scope_confirmation_required"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "target_locator": {"type": "string", "minLength": 1},
+    "resume_target": {
+      "enum": [
+        "guru-execute-task-free-change",
+        "guru-clarify-requirements",
+        "guru-review-change-request",
+        "guru-approve-task-plan",
+        "guru-resume-implementation",
+        "guru-reconcile-task-base",
+        "guru-check-task",
+        "guru-review-branch",
+        "guru-review-task-publication"
+      ]
+    },
+    "continuation_id": {"type": "string", "minLength": 1},
+    "candidate_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    }
+  }
+}

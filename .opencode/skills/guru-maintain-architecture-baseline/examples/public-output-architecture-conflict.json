@@ -1,0 +1,1 @@
+{"exit_id":"architecture_conflict","task_locator":".trellis/tasks/example","stage":"planning","conflict_refs":["ADR-conflict"],"return_route":"planning"}

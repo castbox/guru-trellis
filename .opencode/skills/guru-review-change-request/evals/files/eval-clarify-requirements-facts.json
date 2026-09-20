@@ -1,0 +1,17 @@
+{
+  "scenario": "The proposed draft has one unresolved load-bearing requirement.",
+  "owner_evidence": {
+    "semantic_gate": "passed",
+    "checker_required": true,
+    "missing_requirement_facts": 1
+  },
+  "owner_staging": {
+    "recipe": "readiness-clarify"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--invocation",
+      "-"
+    ]
+  }
+}

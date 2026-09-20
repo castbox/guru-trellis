@@ -94,7 +94,8 @@
     "shared",
     "codex",
     "cursor",
-    "claude"
+    "claude",
+    "opencode"
   ],
   "external_exits": [
     {

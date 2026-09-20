@@ -93,7 +93,7 @@ assert task.is_dir() and len(commit) == 40
 assert intake["intake_steps"] == 6
 assert intake["workspace_exit"] == "created"
 assert intake["workspace_path"] == str(task.parents[2])
-assert intake["task_status_after_creation"] == "planning"
+assert intake["task_status_after_creation"] == "in_progress"
 assert Path(intake["remote_path"]).is_dir()
 print(json.dumps({"task": task.name, "branch": branch, "reviewed_commit": commit, "fixture_prepared": True, "intake": intake}))
 '''

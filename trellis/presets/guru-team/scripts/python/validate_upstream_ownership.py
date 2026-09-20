@@ -88,6 +88,12 @@ EXPECTED_GURU_RULES = [
         "category": "guru_owned",
     },
     {
+        "id": "opencode-skill-discovery",
+        "match_type": "path_glob",
+        "pattern": ".opencode/skills/guru-*/**",
+        "category": "guru_owned",
+    },
+    {
         "id": "codex-finish-entry",
         "match_type": "path_prefix",
         "pattern": ".codex/prompts/guru-finish-work.md",
@@ -103,6 +109,12 @@ EXPECTED_GURU_RULES = [
         "id": "cursor-finish-entry",
         "match_type": "path_prefix",
         "pattern": ".cursor/commands/guru-finish-work.md",
+        "category": "guru_owned",
+    },
+    {
+        "id": "opencode-finish-entry",
+        "match_type": "path_prefix",
+        "pattern": ".opencode/commands/guru-finish-work.md",
         "category": "guru_owned",
     },
 ]
@@ -138,6 +150,11 @@ EXPECTED_MANAGED_PATH_CLAIMS = [
         "classification_rule": "claude-skill-discovery",
     },
     {
+        "path": ".opencode/skills/guru-*/",
+        "category": "guru_owned",
+        "classification_rule": "opencode-skill-discovery",
+    },
+    {
         "path": ".codex/prompts/guru-finish-work.md",
         "category": "guru_owned",
         "classification_rule": "codex-finish-entry",
@@ -152,14 +169,39 @@ EXPECTED_MANAGED_PATH_CLAIMS = [
         "category": "guru_owned",
         "classification_rule": "cursor-finish-entry",
     },
+    {
+        "path": ".opencode/commands/guru-finish-work.md",
+        "category": "guru_owned",
+        "classification_rule": "opencode-finish-entry",
+    },
 ]
 EXPECTED_MANAGED_PATHS = [claim["path"] for claim in EXPECTED_MANAGED_PATH_CLAIMS]
 EXPECTED_FINISH_OVERLAY_CLAIMS = {
     ".codex/prompts/guru-finish-work.md": "codex-finish-entry",
     ".claude/commands/guru/finish-work.md": "claude-finish-entry",
     ".cursor/commands/guru-finish-work.md": "cursor-finish-entry",
+    ".opencode/commands/guru-finish-work.md": "opencode-finish-entry",
 }
-EXPECTED_SKILL_PLATFORMS = ["shared", "codex", "cursor", "claude"]
+EXPECTED_SKILL_PLATFORMS = ["shared", "codex", "cursor", "claude", "opencode"]
+EXPECTED_UPSTREAM_PLATFORM_IDS = [
+    "claude-code", "cursor", "opencode", "codex", "kilo", "kiro", "gemini",
+    "antigravity", "devin", "qoder", "codebuddy", "copilot", "droid", "dsh",
+    "pi", "reasonix", "zcode", "trae", "omp", "grok", "kimi", "snow",
+]
+EXPECTED_GURU_SUPPORTED_PLATFORMS = ["claude", "codex", "cursor", "opencode"]
+EXPECTED_DEFAULT_DOGFOOD_PLATFORMS = ["codex", "cursor"]
+EXPECTED_DEFERRED_PLATFORM_IDS = [
+    platform
+    for platform in EXPECTED_UPSTREAM_PLATFORM_IDS
+    if platform not in {"claude-code", "codex", "cursor", "opencode"}
+]
+EXPECTED_PLATFORM_INVENTORY_SOURCE = (
+    "castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b:"
+    "packages/cli/src/types/ai-tools.ts#AI_TOOLS"
+)
+EXPECTED_PLATFORM_INVENTORY_SHA256 = (
+    "bceda2df084a5f649f7661615588c33dc43221e7cce6c196673a9bc0bfa34171"
+)
 VALID_SCHEMA_KEYWORDS = {
     "$schema",
     "$id",
@@ -519,6 +561,7 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
     manifest_paths: list[str] = []
     manifest_active_ids: list[str] = []
     manifest_planned_ids: list[str] = []
+    platform_capability_facts: dict[str, Any] = {}
     if isinstance(extension, dict):
         public_api = extension.get("public_api")
         if not isinstance(public_api, dict):
@@ -531,6 +574,49 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
                 manifest_paths = managed_paths
                 if managed_paths != EXPECTED_MANAGED_PATHS:
                     errors.append(ownership_error("extension_managed_path_set_mismatch", "public_api.managed_paths", "expected the exact current Guru managed paths"))
+            capabilities = public_api.get("platform_capabilities")
+            if not isinstance(capabilities, dict):
+                errors.append(ownership_error("platform_capability_inventory_invalid", "public_api.platform_capabilities", "expected object"))
+            else:
+                upstream = capabilities.get("upstream_platforms")
+                supported = capabilities.get("guru_supported_platforms")
+                deferred = capabilities.get("deferred_platforms")
+                default_dogfood = capabilities.get("default_dogfood_platforms")
+                upstream_ids = [row.get("id") for row in upstream] if isinstance(upstream, list) and all(isinstance(row, dict) for row in upstream) else []
+                supported_ids = [row.get("id") for row in supported] if isinstance(supported, list) and all(isinstance(row, dict) for row in supported) else []
+                deferred_ids = [row.get("id") for row in deferred] if isinstance(deferred, list) and all(isinstance(row, dict) for row in deferred) else []
+                required_upstream_fields = {"id", "template_dir", "config_dir", "cli_flag"}
+                required_supported_fields = {"id", "upstream_id", "skill_root", "finish_entry", "native_init_flag", "actual_load"}
+                if capabilities.get("schema_version") != "1.0":
+                    errors.append(ownership_error("platform_capability_inventory_invalid", "public_api.platform_capabilities.schema_version", "expected 1.0"))
+                if capabilities.get("inventory_source") != EXPECTED_PLATFORM_INVENTORY_SOURCE:
+                    errors.append(ownership_error("platform_capability_inventory_invalid", "public_api.platform_capabilities.inventory_source", "unexpected upstream registry source"))
+                if capabilities.get("inventory_sha256") != EXPECTED_PLATFORM_INVENTORY_SHA256:
+                    errors.append(ownership_error("platform_capability_inventory_invalid", "public_api.platform_capabilities.inventory_sha256", "unexpected upstream registry digest"))
+                if not isinstance(capabilities.get("inventory_version"), str) or not capabilities.get("inventory_version"):
+                    errors.append(ownership_error("platform_capability_inventory_invalid", "public_api.platform_capabilities.inventory_version", "expected non-empty version"))
+                if upstream_ids != EXPECTED_UPSTREAM_PLATFORM_IDS or any(set(row) != required_upstream_fields for row in upstream or [] if isinstance(row, dict)):
+                    errors.append(ownership_error("platform_capability_inventory_invalid", "public_api.platform_capabilities.upstream_platforms", "expected exact pinned AI_TOOLS rows"))
+                if supported_ids != EXPECTED_GURU_SUPPORTED_PLATFORMS or any(set(row) != required_supported_fields for row in supported or [] if isinstance(row, dict)):
+                    errors.append(ownership_error("platform_capability_inventory_invalid", "public_api.platform_capabilities.guru_supported_platforms", "expected exact Guru-supported platform rows"))
+                if default_dogfood != EXPECTED_DEFAULT_DOGFOOD_PLATFORMS:
+                    errors.append(ownership_error("platform_capability_inventory_invalid", "public_api.platform_capabilities.default_dogfood_platforms", "expected current Codex/Cursor default"))
+                if deferred_ids != EXPECTED_DEFERRED_PLATFORM_IDS or any(set(row) != {"id", "reason"} or not row.get("reason") for row in deferred or [] if isinstance(row, dict)):
+                    errors.append(ownership_error("platform_capability_inventory_invalid", "public_api.platform_capabilities.deferred_platforms", "expected exact unsupported upstream remainder"))
+                upstream_by_id = {row.get("id"): row for row in upstream or [] if isinstance(row, dict)}
+                if any(row.get("upstream_id") not in upstream_by_id for row in supported or [] if isinstance(row, dict)):
+                    errors.append(ownership_error("platform_capability_inventory_invalid", "public_api.platform_capabilities.guru_supported_platforms", "supported platform is not bound to upstream AI_TOOLS"))
+                if not set(default_dogfood or []).issubset(set(supported_ids)):
+                    errors.append(ownership_error("platform_capability_inventory_invalid", "public_api.platform_capabilities.default_dogfood_platforms", "default platforms must be Guru-supported"))
+                platform_capability_facts = {
+                    "inventory_source": capabilities.get("inventory_source"),
+                    "inventory_version": capabilities.get("inventory_version"),
+                    "inventory_sha256": capabilities.get("inventory_sha256"),
+                    "upstream_platform_ids": upstream_ids,
+                    "guru_supported_platform_ids": supported_ids,
+                    "default_dogfood_platform_ids": default_dogfood,
+                    "deferred_platform_ids": deferred_ids,
+                }
             contracts = public_api.get("skill_contracts")
             if not isinstance(contracts, dict):
                 errors.append(ownership_error("extension_manifest_contract_invalid", "public_api.skill_contracts", "expected object"))
@@ -604,6 +690,7 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
                     "codex": ".codex",
                     "cursor": ".cursor",
                     "claude": ".claude",
+                    "opencode": ".opencode",
                 }.items():
                     discovery = f"{root}/skills/{skill_id}/SKILL.md"
                     expected_rule = "shared-skill-discovery" if platform == "shared" else f"{platform}-skill-discovery"
@@ -652,6 +739,7 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
         "active_skill_count": len(active_skill_ids),
         "planned_skill_count": len(planned_skill_ids),
         "canonical_package_count": len(canonical_package_ids),
+        "platform_capabilities": platform_capability_facts,
     }
     errors.sort(key=lambda item: (item["code"], item["path"], item["detail"]))
     return {

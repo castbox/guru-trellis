@@ -1,0 +1,312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-maintain-architecture-baseline",
+  "evals": [
+    {
+      "id": "bootstrap-foundation-current",
+      "prompt": "A reviewed foundation bootstrap activates one successor Architecture Baseline at the canonical locator without introducing a second authority.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The foundation bootstrap scenario returns baseline_current for the declared successor identity.",
+      "input_profile_id": "bootstrap_foundation",
+      "files": [
+        "evals/files/bootstrap-foundation-input.json",
+        "evals/files/bootstrap-foundation-current-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "no-impact",
+      "prompt": "A bounded documentation-equivalent change has no architecture impact and creates no contribution or ADR.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The no-impact scenario returns baseline_current.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/no-impact-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "planning-semantic-authoring",
+      "prompt": "At Planning, review the complete current task and repository Architecture authority. The bounded change clarifies the existing semantic-owner execution contract and adds regression coverage without changing public I/O, owners, persistence, integration boundaries, decisions, or GAP lifecycle. Act as the contract-selected Architecture semantic owner, author the result, and invoke the formal wrapper once.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The native Agent authors a fresh no-architecture-impact Planning result and returns baseline_current.",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/planning-semantic-authoring-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          },
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      }
+    },
+    {
+      "id": "target-native",
+      "prompt": "A new capability follows the target boundary and one writer without introducing a legacy authority.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The target-native scenario returns baseline_current.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/target-native-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "legacy-boundary-convergence",
+      "prompt": "A feature touches a legacy boundary and records bounded convergence, remaining debt, compatibility exit, and forbidden parallel scope.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The legacy-boundary-convergence scenario returns baseline_current.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/legacy-boundary-convergence-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "dedicated-refactor-slice",
+      "prompt": "A behavior-preserving refactor slice has one writer, bounded migration, observation, rollback, and deletion condition.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The dedicated-refactor-slice scenario returns baseline_current.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/dedicated-refactor-slice-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "scope-expansion",
+      "prompt": "Implementation discovery expands persistence or owner scope and the old planning contract must be redone.",
+      "expected_exit": "contract_incomplete",
+      "expected_output": "The scope-expansion scenario returns contract_incomplete.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-scope-expansion-input.json",
+        "evals/files/scope-expansion-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "contract_incomplete"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fitness-regression",
+      "prompt": "The candidate introduces a second authority or reopens a closed GAP.",
+      "expected_exit": "fitness_regression",
+      "expected_output": "The fitness-regression scenario returns fitness_regression.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/fitness-regression-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "fitness_regression"
+          }
+        ]
+      }
+    },
+    {
+      "id": "parallel-stale",
+      "prompt": "Another task promoted a new current identity before this task could promote.",
+      "expected_exit": "sync_required",
+      "expected_output": "The parallel-stale scenario returns sync_required.",
+      "input_profile_id": "promotion",
+      "files": [
+        "evals/files/promotion-sync-input.json",
+        "evals/files/parallel-stale-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "sync_required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unpromoted-contribution",
+      "prompt": "Implementation passes, but the design constitution remains authority_status=pending_reviewed_promotion and the required reviewed contribution/promotion is incomplete; return sync_required(promotion_required), never baseline_current.",
+      "expected_exit": "sync_required",
+      "expected_output": "The unpromoted-contribution scenario returns sync_required(promotion_required).",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-unpromoted-input.json",
+        "evals/files/unpromoted-contribution-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "sync_required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "next-task-consumption",
+      "prompt": "A new task consumes only the promoted current identity and current GAP and owner state.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The next-task-consumption scenario returns baseline_current.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/next-task-consumption-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "missing-external-evidence",
+      "prompt": "Applicable external evidence is unavailable and remains unverified.",
+      "expected_exit": "contract_incomplete",
+      "expected_output": "The missing-external-evidence scenario returns contract_incomplete.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/missing-external-evidence-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "contract_incomplete"
+          }
+        ]
+      }
+    },
+    {
+      "id": "repair-current-contract",
+      "prompt": "A reviewed repair restores the missing project Architecture check descriptor while preserving the active baseline and current constitution authority.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The repair scenario returns baseline_current after restoring the declared contract evidence.",
+      "input_profile_id": "repair",
+      "files": [
+        "evals/files/repair-current-input.json",
+        "evals/files/repair-current-contract-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    }
+  ]
+}

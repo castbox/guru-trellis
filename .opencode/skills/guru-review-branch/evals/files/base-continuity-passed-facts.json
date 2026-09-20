@@ -1,0 +1,14 @@
+{
+  "scenario": "A prior full-review commit remains an ancestor of the current committed reconciled HEAD; the exact base pair and candidate tree receive bounded continuity review.",
+  "owner_evidence": {
+    "semantic_gate": "continuity_passed",
+    "checker_required": true,
+    "claim_boundary": "bounded_continuity_not_full_branch_review"
+  },
+  "owner_staging": {
+    "recipe": "review-continuity-passed"
+  },
+  "public_invocation": {
+    "arguments": ["--input", ".trellis/.runtime/guru-team/evals/public-input.json"]
+  }
+}

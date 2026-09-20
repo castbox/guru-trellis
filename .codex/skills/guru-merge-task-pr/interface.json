@@ -666,7 +666,8 @@
     "shared",
     "codex",
     "cursor",
-    "claude"
+    "claude",
+    "opencode"
   ],
   "runtime_dependency": {
     "extension_id": "guru-team",

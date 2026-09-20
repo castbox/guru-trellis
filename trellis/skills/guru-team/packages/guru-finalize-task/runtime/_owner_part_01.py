@@ -122,7 +122,7 @@ PROVENANCE_TAIL_INAPPLICABLE_ERRORS = frozenset({
 
 PROVENANCE_TAIL_OBJECT_PRESENCE = object()
 
-PROVENANCE_APPLY_PLATFORMS = ("claude", "codex", "cursor")
+PROVENANCE_APPLY_PLATFORMS = ("claude", "codex", "cursor", "opencode")
 
 AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 

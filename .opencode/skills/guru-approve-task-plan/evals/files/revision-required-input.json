@@ -1,0 +1,7 @@
+{
+  "profile": "revision_reentry",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "source_exit": "revision_required",
+  "reentry_reason": "task_local_revision"
+}

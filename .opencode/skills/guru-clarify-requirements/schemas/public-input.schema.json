@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-clarify-requirements-input-aggregate-2.0",
+  "oneOf": [
+    {
+      "$ref": "public-initial-change-request-input-2.0.schema.json"
+    },
+    {
+      "$ref": "public-active-task-scope-change-input.schema.json"
+    },
+    {
+      "$ref": "public-standalone-review-input.schema.json"
+    },
+    {
+      "$ref": "public-normal-scenario-scope-confirmation-input.schema.json"
+    },
+    {
+      "$ref": "public-solution-mechanism-scope-confirmation-input.schema.json"
+    }
+  ]
+}

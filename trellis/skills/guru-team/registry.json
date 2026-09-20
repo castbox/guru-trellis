@@ -10,7 +10,7 @@
       "interface": "packages/guru-bootstrap-repository-ssot/interface.json",
       "interface_schema_id": "guru-team-skill-interface-1.4",
       "workflow_integration_state": "integrated",
-      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "supported_platforms": ["shared", "codex", "cursor", "claude", "opencode"],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "bootstrap-repository-ssot"
     },
@@ -22,7 +22,7 @@
       "interface": "packages/guru-maintain-architecture-baseline/interface.json",
       "interface_schema_id": "guru-team-skill-interface-1.4",
       "workflow_integration_state": "integrated",
-      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "supported_platforms": ["shared", "codex", "cursor", "claude", "opencode"],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "architecture-baseline-maintenance"
     },
@@ -38,7 +38,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "requirements-design-test-ssot-maintenance"
@@ -54,7 +55,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-1-task-plan-approval"
@@ -70,7 +72,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-0-task-workspace"
@@ -86,7 +89,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-3-task-commit"
@@ -102,7 +106,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-2-task-check"
@@ -118,7 +123,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-0-requirements-clarification"
@@ -135,7 +141,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "active-task-base-reconciliation"
@@ -151,7 +158,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "contract-wording-review"
@@ -167,7 +175,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-0-change-request-readiness"
@@ -183,7 +192,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-3-5-branch-review"
@@ -199,7 +209,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-3-6-task-publication-review"
@@ -216,7 +227,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-delivery-review"
@@ -228,7 +240,7 @@
       "package": "packages/guru-select-workflow-mode",
       "interface": "packages/guru-select-workflow-mode/interface.json",
       "interface_schema_id": "guru-team-skill-interface-1.4",
-      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "supported_platforms": ["shared", "codex", "cursor", "claude", "opencode"],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "workflow-mode-selection"
     },
@@ -244,7 +256,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "extension-installation-verification"
@@ -261,7 +274,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-finalization"
@@ -278,7 +292,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-delivery-publication"
@@ -295,7 +310,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-pr-merge"
@@ -312,7 +328,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-delivery-merge"
@@ -329,7 +346,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-pr-phase2-reentry"
@@ -342,7 +360,7 @@
       "interface": "packages/guru-review-task-completion/interface.json",
       "interface_schema_id": "guru-team-skill-interface-1.4",
       "workflow_integration_state": "deferred",
-      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "supported_platforms": ["shared", "codex", "cursor", "claude", "opencode"],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-completion-review"
     },
@@ -354,7 +372,7 @@
       "interface": "packages/guru-complete-task-closure/interface.json",
       "interface_schema_id": "guru-team-skill-interface-1.4",
       "workflow_integration_state": "deferred",
-      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "supported_platforms": ["shared", "codex", "cursor", "claude", "opencode"],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-closure"
     },
@@ -366,7 +384,7 @@
       "interface": "packages/guru-finish-task/interface.json",
       "interface_schema_id": "guru-team-skill-interface-1.4",
       "workflow_integration_state": "deferred",
-      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "supported_platforms": ["shared", "codex", "cursor", "claude", "opencode"],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-finish"
     },
@@ -378,7 +396,7 @@
       "interface": "packages/guru-cleanup-task-resources/interface.json",
       "interface_schema_id": "guru-team-skill-interface-1.4",
       "workflow_integration_state": "deferred",
-      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "supported_platforms": ["shared", "codex", "cursor", "claude", "opencode"],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-resource-cleanup"
     },
@@ -390,7 +408,7 @@
       "interface": "packages/guru-bind-task-session/interface.json",
       "interface_schema_id": "guru-team-skill-interface-1.4",
       "workflow_integration_state": "deferred",
-      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "supported_platforms": ["shared", "codex", "cursor", "claude", "opencode"],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-session-binding"
     },
@@ -402,7 +420,7 @@
       "interface": "packages/guru-reactivate-task/interface.json",
       "interface_schema_id": "guru-team-skill-interface-1.4",
       "workflow_integration_state": "deferred",
-      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "supported_platforms": ["shared", "codex", "cursor", "claude", "opencode"],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-reactivation"
     },
@@ -417,7 +435,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-0-base-sync"
@@ -433,7 +452,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-0-change-context"
@@ -450,7 +470,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-free-change-execution"
@@ -467,7 +488,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "normal-scenario-qualification"
@@ -484,7 +506,8 @@
         "shared",
         "codex",
         "cursor",
-        "claude"
+        "claude",
+        "opencode"
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "solution-mechanism-qualification"

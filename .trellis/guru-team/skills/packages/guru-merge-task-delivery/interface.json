@@ -63,7 +63,7 @@
   ],
   "reentry":{"identity":"task ref, delivery cycle, repository, PR number, expected head, publication body digest, reviewed message and action digest","freshness":"live task/PR/base/policy/commit facts are reread before mutation and terminal projection","stale_behavior":"fail_closed"},
   "tests":["tests/test_contract.py","tests/test_runtime.py","tests/test_history.py"],
-  "platform_destinations":["shared","codex","cursor","claude"],
+  "platform_destinations":["shared","codex","cursor","claude","opencode"],
   "public_contracts":{
     "input":{"kind":"structured_json","aggregate_schema":{"schema_id":"guru-merge-task-delivery-input-aggregate-1.0","path":"schemas/public-input.schema.json"},"profiles":[{"id":"ready_for_merge","schema":{"schema_id":"guru-merge-task-delivery-input-ready-for-merge-1.0","path":"schemas/public-ready-for-merge-input.schema.json"},"example":{"id":"ready_for_merge_input","path":"examples/public-ready-for-merge-input.json"},"discriminator":{"field":"profile","value":"ready_for_merge"}}]},
     "invocation":{"command_id":"run-skill-command","wrapper":"scripts/invoke.sh","input_binding":{"kind":"structured_json","profile_id":"ready_for_merge"},"stdout_contract":"single_typed_exit","error_schema":{"schema_id":"guru-merge-task-delivery-invocation-error-1.0","path":"schemas/public-invocation-error.schema.json"},"error_example":{"id":"invalid_public_input","path":"examples/public-invocation-error.json"},"example_argv":["--input","examples/public-ready-for-merge-input.json","--review-input","examples/semantic-review.json"]},

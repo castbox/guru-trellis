@@ -1,0 +1,7 @@
+{
+  "profile": "publication_review",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "review_intent": "initial_review"
+}

@@ -1,0 +1,17 @@
+{
+  "scenario": "The exact reviewed plan executed once and the resulting workspace artifacts passed the existing checker.",
+  "owner_evidence": {
+    "semantic_gate": "passed",
+    "executor": "passed",
+    "checker": "passed"
+  },
+  "owner_staging": {
+    "recipe": "workspace-created"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--invocation",
+      "-"
+    ]
+  }
+}

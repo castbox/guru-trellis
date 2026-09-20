@@ -1,0 +1,18 @@
+{
+  "scenario": "The target changed before mutation, so execution recorded a zero-write result requiring complete review refresh.",
+  "owner_evidence": {
+    "semantic_gate": "reroute",
+    "executor": "not_run",
+    "checker": "passed",
+    "zero_writes": true
+  },
+  "owner_staging": {
+    "recipe": "workspace-refresh-review"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--invocation",
+      "-"
+    ]
+  }
+}

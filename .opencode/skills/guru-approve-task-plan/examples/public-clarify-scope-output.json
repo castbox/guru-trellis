@@ -1,0 +1,7 @@
+{
+  "exit_id": "clarify_scope",
+  "task_ref": ".trellis/tasks/example-task",
+  "proposal_refs": [
+    "scope-proposal:R13"
+  ]
+}

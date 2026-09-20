@@ -1,0 +1,217 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-review-contract-wording",
+  "commands": [
+    {
+      "id": "record-contract-wording-review",
+      "owner": "guru-review-contract-wording",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Single-read change_request envelope; dash reads stdin. Scan requires owner_result={}, record requires flat AI authoring.",
+          "repeatable": false,
+          "conflicts": ["--mode", "--profile", "--input", "--task", "--path", "--change-request-input"]
+        },
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--mode",
+          "required": false,
+          "kind": "enum",
+          "values": [
+            "workflow",
+            "standalone"
+          ],
+          "description": "Required for legacy invocation without --invocation.",
+          "repeatable": false,
+          "conflicts": ["--invocation"]
+        },
+        {
+          "flag": "--profile",
+          "required": false,
+          "kind": "enum",
+          "values": [
+            "change_request",
+            "planning_artifacts",
+            "explicit_paths"
+          ],
+          "description": "Required fixed profile for legacy invocation without --invocation.",
+          "repeatable": false,
+          "conflicts": ["--invocation"]
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Legacy flat AI authoring locator; required unless --scan-only or --invocation. Cannot share stdin with source.",
+          "repeatable": false,
+          "conflicts": ["--invocation"]
+        },
+        {
+          "flag": "--task",
+          "required": false,
+          "kind": "string",
+          "description": "Task directory for the planning-artifacts profile.",
+          "repeatable": false,
+          "conflicts": ["--invocation"]
+        },
+        {
+          "flag": "--path",
+          "required": false,
+          "kind": "string",
+          "description": "Repository-relative Markdown path for the explicit-paths profile.",
+          "repeatable": true,
+          "conflicts": ["--invocation"]
+        },
+        {
+          "flag": "--change-request-input",
+          "required": false,
+          "kind": "string",
+          "description": "Current change-request JSON locator.",
+          "repeatable": false,
+          "conflicts": ["--invocation"]
+        },
+        {
+          "flag": "--scan-only",
+          "required": false,
+          "kind": "boolean",
+          "description": "Return deterministic scan only.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "none",
+      "schema_bindings": [],
+      "validator_id": "contract_wording_recorder",
+      "runtime_role": "record"
+    },
+    {
+      "id": "check-contract-wording-review",
+      "owner": "guru-review-contract-wording",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Single-read change_request envelope carrying the exact recorded owner_result; dash reads stdin.",
+          "repeatable": false,
+          "conflicts": ["--input", "--task", "--path", "--change-request-input"]
+        },
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Legacy review result locator; required without --invocation. Cannot share stdin with source.",
+          "repeatable": false,
+          "conflicts": ["--invocation"]
+        },
+        {
+          "flag": "--task",
+          "required": false,
+          "kind": "string",
+          "description": "Task directory for the planning-artifacts profile.",
+          "repeatable": false,
+          "conflicts": ["--invocation"]
+        },
+        {
+          "flag": "--path",
+          "required": false,
+          "kind": "string",
+          "description": "Repository-relative Markdown path for the explicit-paths profile.",
+          "repeatable": true,
+          "conflicts": ["--invocation"]
+        },
+        {
+          "flag": "--change-request-input",
+          "required": false,
+          "kind": "string",
+          "description": "Current change-request JSON locator.",
+          "repeatable": false,
+          "conflicts": ["--invocation"]
+        },
+        {
+          "flag": "--expected-facts-sha256",
+          "required": false,
+          "kind": "string",
+          "description": "Expected facts digest.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [],
+      "validator_id": "contract_wording_checker",
+      "runtime_role": "check"
+    },
+    {
+      "id": "invoke-guru-review-contract-wording",
+      "owner": "guru-review-contract-wording",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Call-local invocation envelope or dash for stdin.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [],
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    }
+  ]
+}

@@ -32,7 +32,7 @@
     {"id":"blocked","evidence":"ambiguous, foreign, terminal, unrelated, or unsupported remote state","consumer":{"kind":"stop","id":"task-delivery-publication-blocked"}}
   ],
   "reentry":{"identity":"task, delivery cycle, reviewed head, exact PR payload, repository/base/head branches and private transaction reference","freshness":"live Git/GitHub facts and every mutation pre/postimage are reread","stale_behavior":"fail_closed"},
-  "tests":["tests/test_contract.py","tests/test_transaction.py"],"platform_destinations":["shared","codex","cursor","claude"],
+  "tests":["tests/test_contract.py","tests/test_transaction.py"],"platform_destinations":["shared","codex","cursor","claude","opencode"],
   "public_contracts":{
     "input":{"kind":"structured_json","aggregate_schema":{"schema_id":"guru-publish-task-delivery-input-aggregate-1.0","path":"schemas/public-input.schema.json"},"profiles":[
       {"id":"review_ready","schema":{"schema_id":"guru-publish-task-delivery-input-review-ready-1.0","path":"schemas/public-review-ready-input.schema.json"},"example":{"id":"review_ready_input","path":"examples/public-review-ready-input.json"},"discriminator":{"field":"profile","value":"review_ready"}},

@@ -1,0 +1,5 @@
+{
+  "exit_id": "merge_blocked",
+  "reason_code": "required_checks_pending",
+  "remediation": "Wait for required checks and rerun the same repo-bound preview."
+}

@@ -2049,4 +2049,4 @@ projection of package-private helpers.
 
 ### Session binding capability boundary (#443)
 
-`guru-bind-task-session` 是 deferred public capability package，拥有 session binding/rebind/switch/resume 的 semantic route、deterministic identity validation 与五个 typed exits。它复用官方 Trellis `active_task`/`session_storage` authority，不创建 alternate task resolver、重复 session binding store、global lifecycle store、Issue ledger 或 workspace/developer state。#434 只消费其最小 route projection，并在独立 cutover 中决定 global graph activation。
+`guru-bind-task-session` 是 deferred public capability package，拥有 session binding/rebind/switch/resume/manual recovery 的 semantic route、deterministic identity validation、五个成功 typed exits 与一个 blocked exit。它复用官方 Trellis `active_task`/`session_storage` authority，不创建 alternate task resolver、重复 session binding store、global lifecycle store、Issue ledger 或 workspace/developer state。#434 只消费其最小 route projection，并在独立 cutover 中决定 global graph activation。

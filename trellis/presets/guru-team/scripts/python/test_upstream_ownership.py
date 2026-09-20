@@ -136,12 +136,19 @@ class UpstreamOwnershipTest(unittest.TestCase):
         self.assertEqual(first["schema_version"], "3.0")
         self.assertEqual(first["inventory_id"], "guru-team-upstream-ownership")
         self.assertEqual(first["target_trellis_cli"], "0.6.17")
-        self.assertEqual(first["overlay_count"], 3)
-        self.assertEqual(first["managed_claim_count"], 9)
-        self.assertEqual(first["classified_managed_claim_count"], 9)
-        self.assertEqual(first["active_skill_count"], 26)
+        self.assertEqual(first["overlay_count"], 4)
+        self.assertEqual(first["managed_claim_count"], 11)
+        self.assertEqual(first["classified_managed_claim_count"], 11)
+        self.assertEqual(first["active_skill_count"], 32)
         self.assertEqual(first["planned_skill_count"], 0)
-        self.assertEqual(first["canonical_package_count"], 26)
+        self.assertEqual(first["canonical_package_count"], 32)
+        capabilities = first["platform_capabilities"]
+        self.assertEqual(capabilities["inventory_source"], ownership.EXPECTED_PLATFORM_INVENTORY_SOURCE)
+        self.assertEqual(capabilities["inventory_sha256"], ownership.EXPECTED_PLATFORM_INVENTORY_SHA256)
+        self.assertEqual(capabilities["upstream_platform_ids"], ownership.EXPECTED_UPSTREAM_PLATFORM_IDS)
+        self.assertEqual(capabilities["guru_supported_platform_ids"], ownership.EXPECTED_GURU_SUPPORTED_PLATFORMS)
+        self.assertEqual(capabilities["default_dogfood_platform_ids"], ownership.EXPECTED_DEFAULT_DOGFOOD_PLATFORMS)
+        self.assertEqual(capabilities["deferred_platform_ids"], ownership.EXPECTED_DEFERRED_PLATFORM_IDS)
         for field in (
             "schema_sha256",
             "inventory_sha256",
@@ -161,6 +168,19 @@ class UpstreamOwnershipTest(unittest.TestCase):
             first["overlay_paths_sha256"],
             ownership.path_set_sha256(sorted(ownership.EXPECTED_FINISH_OVERLAY_CLAIMS)),
         )
+
+    def test_capability_inventory_drift_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_minimal_source(repo)
+            extension_path = repo / ownership.EXTENSION_RELATIVE
+            extension = json.loads(extension_path.read_text(encoding="utf-8"))
+            extension["public_api"]["platform_capabilities"]["deferred_platforms"] = []
+            self.write_json(extension_path, extension)
+            payload = ownership.validate_repository(repo)
+
+        self.assertEqual(payload["status"], "error")
+        self.assertIn("platform_capability_inventory_invalid", {item["code"] for item in payload["errors"]})
 
     def test_upstream_start_continue_hooks_platform_and_meta_are_not_guru_owned(self) -> None:
         inventory = json.loads(

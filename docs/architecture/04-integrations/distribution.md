@@ -88,6 +88,12 @@
   五个 packages 进入 canonical、installed 与 Shared/Codex/Cursor/Claude projections，但 workflow edges 保持
   deferred，#434 activation 前不得把 package 存在解释为 production route 可达。
 
+- `ARCH-INT-022`：#443 将五个profile/route discriminator投影为`session_resumed`、`session_rebound`、
+  `task_switched`、`reactivate_rebound`、`session_manually_recovered`与`binding_blocked`六个exit-specific
+  contracts。canonical、installed、Shared/Codex/Cursor/Claude以及当前candidate声明的OpenCode projection
+  使用同一package bytes；workflow integration保持deferred，#434 activation前不得把任何binding route解释为
+  production可达。#443历史证据只绑定其当时声明的平台，OpenCode由当前#452 combined diff独立验证。
+
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。
 - `skill_api` 与 interface/schema/command projection、distribution、managed/installed file

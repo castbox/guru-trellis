@@ -41,7 +41,7 @@
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {"enum": ["shared", "codex", "cursor", "claude"]}
+          "items": {"enum": ["shared", "codex", "cursor", "claude", "opencode"]}
         },
         "validator_command": {"const": "check-skill-packages"},
         "workflow_route_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"}

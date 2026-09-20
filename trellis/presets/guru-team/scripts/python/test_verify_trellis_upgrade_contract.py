@@ -460,6 +460,14 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             predecessor_extension = {
                 "version": "0.6.16-guru.41",
                 "target_trellis_cli": "0.6.16",
+                "public_api": {
+                    "managed_paths": [
+                        ".agents/skills/guru-*/",
+                        ".codex/skills/guru-*/",
+                        ".cursor/skills/guru-*/",
+                        ".claude/skills/guru-*/",
+                    ]
+                },
             }
             workflow_bytes = b"before workflow\n"
             def export_tree(_repo, _tag, destination, _archive):
@@ -482,6 +490,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                  mock.patch.object(self.matrix, "_install_workflow", side_effect=install_workflow) as init, \
                  mock.patch.object(self.matrix, "_docs_authority_snapshot", return_value={}), \
                  mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
+                 mock.patch.object(self.matrix, "predecessor_capability_projection", return_value=projection), \
+                 mock.patch.object(self.matrix, "predecessor_installed_capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "installed_capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "_load_json", side_effect=load_json), \
@@ -516,6 +526,30 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             )
             self.assertEqual(result["update_mode"], "migrate")
 
+    def test_existing_cell_uses_supported_predecessor_seed_for_new_platform(self) -> None:
+        predecessor_extension = {
+            "public_api": {
+                "managed_paths": [
+                    ".agents/skills/guru-*/",
+                    ".codex/skills/guru-*/",
+                    ".cursor/skills/guru-*/",
+                    ".claude/skills/guru-*/",
+                ]
+            }
+        }
+        self.assertEqual(
+            self.matrix._predecessor_seed_platform(
+                predecessor_extension, "opencode"
+            ),
+            "codex",
+        )
+        self.assertEqual(
+            self.matrix._predecessor_seed_platform(
+                predecessor_extension, "cursor"
+            ),
+            "cursor",
+        )
+
     def test_existing_cell_ordinary_update_uses_predecessor_workflow_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
@@ -538,6 +572,14 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             predecessor_extension = {
                 "version": "0.6.16-guru.41",
                 "target_trellis_cli": "0.6.16",
+                "public_api": {
+                    "managed_paths": [
+                        ".agents/skills/guru-*/",
+                        ".codex/skills/guru-*/",
+                        ".cursor/skills/guru-*/",
+                        ".claude/skills/guru-*/",
+                    ]
+                },
             }
             workflow_bytes = b"before workflow\n"
 
@@ -564,6 +606,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                  mock.patch.object(self.matrix, "_install_workflow", side_effect=install_workflow), \
                  mock.patch.object(self.matrix, "_docs_authority_snapshot", return_value={}), \
                  mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
+                 mock.patch.object(self.matrix, "predecessor_capability_projection", return_value=projection), \
+                 mock.patch.object(self.matrix, "predecessor_installed_capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "installed_capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "_load_json", side_effect=load_json), \
@@ -1079,12 +1123,12 @@ exit 23
             self.assertFalse(allowed.exists())
             self.assertTrue(unrelated.exists())
 
-    def test_live_platform_authorities_derive_exact_six_cell_matrix(self) -> None:
+    def test_live_platform_authorities_derive_exact_platform_matrix(self) -> None:
         inventory = self.matrix.derive_platform_inventory(REPO)
         plan = self.matrix.build_matrix(REPO)
 
-        self.assertEqual(inventory["platforms"], ["claude", "codex", "cursor"])
-        self.assertEqual(plan["cell_count"], 6)
+        self.assertEqual(inventory["platforms"], ["claude", "codex", "cursor", "opencode"])
+        self.assertEqual(plan["cell_count"], 8)
         self.assertEqual(
             [cell["cell_id"] for cell in plan["cells"]],
             [
@@ -1094,6 +1138,8 @@ exit 23
                 "codex-existing",
                 "cursor-clean",
                 "cursor-existing",
+                "opencode-clean",
+                "opencode-existing",
             ],
         )
         self.assertTrue(all(cell["shared_projection"] for cell in plan["cells"]))
@@ -1782,14 +1828,14 @@ exit 23
         projection = self.matrix.capability_projection(REPO)
 
         self.assertRegex(projection["projection_sha256"], r"^[0-9a-f]{64}$")
-        self.assertEqual(len(projection["skill_api"]["interfaces"]), 26)
+        self.assertEqual(len(projection["skill_api"]["interfaces"]), 32)
         self.assertEqual(len(projection["workflow"]["skill_invokes"]), 22)
         self.assertEqual(len(projection["workflow"]["skill_exits"]), 98)
         self.assertEqual(len(projection["workflow"]["workflow_targets"]), 35)
         self.assertEqual(len(projection["workflow"]["stop_targets"]), 24)
         self.assertEqual(
             projection["distribution"]["platforms"],
-            ["claude", "codex", "cursor"],
+            ["claude", "codex", "cursor", "opencode"],
         )
         self.assertGreater(
             len(projection["distribution"]["skill_package_files_and_modes"]),
@@ -2015,8 +2061,8 @@ exit 23
         template_hashes = self.matrix._assert_template_hashes(REPO, REPO)
 
         self.assertTrue(comparison["capabilities_preserved"])
-        self.assertEqual(len(installed["skill_api"]["interfaces"]), 26)
-        self.assertEqual(installed["distribution"]["platforms"], ["claude", "codex", "cursor"])
+        self.assertEqual(len(installed["skill_api"]["interfaces"]), 32)
+        self.assertEqual(installed["distribution"]["platforms"], ["claude", "codex", "cursor", "opencode"])
         source = self.matrix.capability_projection(REPO)
         current = self.matrix.compare_capabilities(
             self.matrix.runtime_contract_projection(source),

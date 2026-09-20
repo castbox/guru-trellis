@@ -43,7 +43,7 @@
   ],
   "validators": [{"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-maintain-architecture-baseline", "objective_scope": "Validate the closed 2.0 profile, exact authority status, existing current constitution locator, committed-range and freshness binding, one-to-one owner-result project-check descriptor/result binding, semantic gate, unique consumer, and one minimal profile-bound typed projection."}],
   "tests": ["tests/test_contract.py"],
-  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude", "opencode"],
   "external_exits": [
     {"id": "baseline_current", "evidence": "fresh current constitution authority plus profile-bound current or reviewed-and-promoted Architecture state", "consumer": {"kind": "workflow", "id": "guru-architecture-baseline-current-router"}},
     {"id": "sync_required", "evidence": "stale or unpromoted Architecture identity", "consumer": {"kind": "skill", "id": "guru-maintain-architecture-baseline"}},

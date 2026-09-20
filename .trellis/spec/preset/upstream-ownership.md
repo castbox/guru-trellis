@@ -30,7 +30,7 @@ them. Upstream `0.6.17` retired command stubs remain upstream-owned migration
 messages, not supported Guru runtime entries.
 
 Guru Team owns only paths inside an anchored Guru namespace. Current ownership
-contains exactly 11 rules:
+contains exactly 13 rules:
 
 1. installed runtime under `.trellis/guru-team/`;
 2. canonical workflow under `trellis/workflows/guru-team/`;
@@ -40,16 +40,18 @@ contains exactly 11 rules:
 6. Codex discovery packages under `.codex/skills/guru-*/**`;
 7. Cursor discovery packages under `.cursor/skills/guru-*/**`;
 8. Claude discovery packages under `.claude/skills/guru-*/**`;
-9. the Codex `guru-finish-work` entry;
-10. the Claude `guru-finish-work` entry;
-11. the Cursor `guru-finish-work` entry.
+9. OpenCode discovery packages under `.opencode/skills/guru-*/**`;
+10. the Codex `guru-finish-work` entry;
+11. the Claude `guru-finish-work` entry;
+12. the Cursor `guru-finish-work` entry;
+13. the OpenCode `guru-finish-work` entry.
 
 Rules are matched by complete anchored path components. They never authorize a
 broad prompt, command, Skill, hook, agent, or platform directory.
 
 ## Managed Claims
 
-The extension manifest and ownership contract expose exactly nine current
+The extension manifest and ownership contract expose exactly 11 current
 managed claims:
 
 - `.trellis/guru-team/`;
@@ -58,9 +60,11 @@ managed claims:
 - `.codex/skills/guru-*/`;
 - `.cursor/skills/guru-*/`;
 - `.claude/skills/guru-*/`;
+- `.opencode/skills/guru-*/`;
 - `.codex/prompts/guru-finish-work.md`;
 - `.claude/commands/guru/finish-work.md`;
-- `.cursor/commands/guru-finish-work.md`.
+- `.cursor/commands/guru-finish-work.md`;
+- `.opencode/commands/guru-finish-work.md`.
 
 Canonical `trellis/workflows/guru-team/**` and
 `trellis/skills/guru-team/**` remain Guru-owned source content. They are not
@@ -68,7 +72,7 @@ additional installed managed-path claims.
 
 ## Additive Overlay Set
 
-The canonical overlay tree contains exactly three files:
+The canonical overlay tree contains exactly four files:
 
 - `.codex/prompts/guru-finish-work.md`;
 - `.claude/commands/guru/finish-work.md`;
@@ -106,8 +110,8 @@ Maintainers run:
 trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
 ```
 
-The validator is read-only. It verifies schema 3.0, the exact 11 rules, nine
-managed claims, three additive overlays, anchored namespace matching, current
+The validator is read-only. It verifies schema 3.0, the exact 13 rules, 11
+managed claims, four additive overlays, anchored namespace matching, current
 registry/package identities, and objective counts/digests derived from current
 assets. It must not judge design quality, route intent, finding severity,
 update safety, or Issue closure.

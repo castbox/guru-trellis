@@ -67,7 +67,7 @@
   ],
   "reentry":{"identity":"task_ref, branch_review_commit, current base, exact PR payload, approved Delivery policy, and call-local delivery_cycle_ref","freshness":"any task, scope, policy, content, base, review, validation, docs, Architecture, PR payload, or live-fact drift requires a fresh semantic round","stale_behavior":"fail_closed"},
   "tests":["tests/test_contract.py","tests/test_runtime.py"],
-  "platform_destinations":["shared","codex","cursor","claude"],
+  "platform_destinations":["shared","codex","cursor","claude","opencode"],
   "public_contracts":{
     "input":{"kind":"structured_json","aggregate_schema":{"schema_id":"guru-review-task-delivery-input-aggregate-1.0","path":"schemas/public-input.schema.json"},"profiles":[{"id":"delivery_review","schema":{"schema_id":"guru-review-task-delivery-input-delivery-review-1.0","path":"schemas/public-delivery-review-input.schema.json"},"example":{"id":"delivery_review_input","path":"examples/public-delivery-review-input.json"},"discriminator":{"field":"profile","value":"delivery_review"}}]},
     "invocation":{"command_id":"run-skill-command","wrapper":"scripts/invoke.sh","input_binding":{"kind":"structured_json","profile_id":"delivery_review"},"stdout_contract":"single_typed_exit","error_schema":{"schema_id":"guru-review-task-delivery-invocation-error-1.0","path":"schemas/public-invocation-error.schema.json"},"error_example":{"id":"invalid_public_input","path":"examples/public-invocation-error.json"},"example_argv":["--input","examples/public-delivery-review-input.json","--semantic-result","examples/semantic-ready.json"]},

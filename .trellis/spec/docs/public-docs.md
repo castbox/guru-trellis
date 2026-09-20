@@ -44,9 +44,9 @@ one installation use the same immutable release tag; an unreleased reviewed
 checkout is identified as such and never described as tag-pinned release
 provenance. Unpinned or branch sources remain mutable latest/canary inputs.
 
-Current knowledge authority is `current-main-0.6.17-guru.55`, inheriting
-immutable `.54`; it is not a product release axis. Read the current
-`R435-01..08`, `D435-01..09`, and `T435-01..45` delta through the three layer
+Current knowledge authority is `current-main-0.6.17-guru.57`, inheriting
+immutable `.56`; it is not a product release axis. Read the current
+`R443-01..08`, `D443-01..07`, and `T443-01..20` delta through the three layer
 READMEs. The inherited R410 release axes, R408 source/session boundary and older pins remain
 historical authority. Do not rewrite history or claim post-promotion checks,
 remote mutation, tag, GitHub Release, or Issue closure from this knowledge

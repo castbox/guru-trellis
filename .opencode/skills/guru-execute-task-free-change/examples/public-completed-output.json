@@ -1,0 +1,1 @@
+{"exit_id":"completed","edited_paths":["docs/guide.md"],"validation_summary":{"overall_status":"passed","checks":[{"summary":"The bounded documentation diff has no whitespace errors.","status":"passed"}]},"unverified_boundaries":["No full repository test suite was run for this documentation-only change."]}

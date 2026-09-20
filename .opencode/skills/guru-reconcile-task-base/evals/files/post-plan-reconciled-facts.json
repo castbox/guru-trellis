@@ -1,0 +1,1 @@
+{"scenario":"Authority and task content remain valid for the cumulative base delta.","owner_staging":{"recipe":"base-reconciled"},"public_invocation":{"arguments":["--invocation","-"]}}

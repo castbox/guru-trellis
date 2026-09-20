@@ -18,7 +18,7 @@ while [[ $# -gt 0 ]]; do
     --predecessor-commit) PREDECESSOR_COMMIT="${2:?--predecessor-commit requires a SHA}"; shift 2 ;;
     --before-tag) BEFORE_TAG="${2:?--before-tag requires a tag}"; shift 2 ;;
     --before-cli) BEFORE_CLI="${2:?--before-cli requires a version}"; shift 2 ;;
-    --platform) VERIFY_PLATFORM="${2:?--platform requires claude, codex, or cursor}"; shift 2 ;;
+    --platform) VERIFY_PLATFORM="${2:?--platform requires claude, codex, cursor, or opencode}"; shift 2 ;;
     --mode) VERIFY_MODE="${2:?--mode requires full, focused, or existing}"; shift 2 ;;
     *) echo "Unknown verifier option: $1" >&2; exit 2 ;;
   esac

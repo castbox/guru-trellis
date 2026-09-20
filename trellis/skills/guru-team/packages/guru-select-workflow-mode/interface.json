@@ -37,7 +37,7 @@
   ],
   "reentry": {"identity": "current request scope and continuation identity", "freshness": "mapped exits and same-scope retries reuse the selection; material scope or authority changes invalidate it", "stale_behavior": "fail_closed"},
   "tests": ["tests/test_contract.py"],
-  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude", "opencode"],
   "public_contracts": {
     "input": {"kind": "structured_json", "aggregate_schema": {"schema_id": "guru-workflow-mode-input-aggregate-1.0", "path": "schemas/public-input.schema.json"}, "profiles": [{"id": "initial_request", "schema": {"schema_id": "guru-workflow-mode-input-initial-1.0", "path": "schemas/public-input-initial.schema.json"}, "example": {"id": "public_input", "path": "examples/public-input.json"}, "discriminator": {"field": "profile", "value": "initial_request"}}]},
     "invocation": {"command_id": "run-skill-command", "wrapper": "scripts/invoke.sh", "input_binding": {"kind": "structured_json", "profile_id": "initial_request"}, "stdout_contract": "single_typed_exit", "error_schema": {"schema_id": "guru-workflow-mode-invocation-error-1.0", "path": "schemas/public-invocation-error.schema.json"}, "error_example": {"id": "invalid_public_input", "path": "examples/public-invocation-error.json"}, "example_argv": ["--input", "examples/public-input.json", "--owner-result", "examples/workflow-mode-selection.json"]},

@@ -1,0 +1,195 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-sync-base",
+  "commands": [
+    {
+      "id": "sync-base",
+      "owner": "guru-sync-base",
+      "validator_id": "sync_executor",
+      "entrypoint": "runtime/execute.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--mode",
+          "required": true,
+          "kind": "enum",
+          "values": [
+            "workflow",
+            "standalone"
+          ],
+          "description": "Invocation mode.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--resolve-only",
+          "required": false,
+          "kind": "boolean",
+          "description": "Resolve without fetching.",
+          "repeatable": false,
+          "conflicts": [
+            "--execute"
+          ]
+        },
+        {
+          "flag": "--execute",
+          "required": false,
+          "kind": "boolean",
+          "description": "Fetch and fast-forward.",
+          "repeatable": false,
+          "conflicts": [
+            "--resolve-only"
+          ]
+        },
+        {
+          "flag": "--base",
+          "required": false,
+          "kind": "string",
+          "description": "Explicit base branch.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--remote",
+          "required": false,
+          "kind": "string",
+          "description": "Git remote.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--expected-resolution-sha256",
+          "required": false,
+          "kind": "string",
+          "description": "Reviewed resolution digest.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "git_failed",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_write",
+      "schema_bindings": [
+        "schemas/base-sync-result.schema.json"
+      ],
+      "runtime_role": "sync"
+    },
+    {
+      "id": "check-base-sync",
+      "owner": "guru-sync-base",
+      "validator_id": "result_validator",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--mode",
+          "required": true,
+          "kind": "enum",
+          "values": [
+            "workflow",
+            "standalone"
+          ],
+          "description": "Invocation mode.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--result-json",
+          "required": false,
+          "kind": "json",
+          "description": "Executor result JSON or dash for stdin.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--expected-resolution-sha256",
+          "required": false,
+          "kind": "string",
+          "description": "Expected resolution digest.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--record-skipped",
+          "required": false,
+          "kind": "string",
+          "description": "Declared skipped route.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "git_failed",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/base-sync-result.schema.json"
+      ],
+      "runtime_role": "check"
+    },
+    {
+      "id": "invoke-guru-sync-base",
+      "owner": "guru-sync-base",
+      "validator_id": "public_invocation",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": true,
+          "kind": "json",
+          "description": "Deterministic invocation envelope or dash for stdin.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "required_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "git_failed",
+        "internal_error"
+      ],
+      "side_effect": "git_write",
+      "schema_bindings": [
+        "schemas/public-synced-output-2.0.schema.json",
+        "schemas/public-skipped-output.schema.json",
+        "schemas/public-blocked-output.schema.json"
+      ],
+      "runtime_role": "invoke"
+    }
+  ]
+}

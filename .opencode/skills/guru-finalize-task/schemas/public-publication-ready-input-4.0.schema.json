@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-finalize-task-input-publication-ready-4.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "task_ref",
+    "branch_review_commit",
+    "pr_title",
+    "pr_body"
+  ],
+  "properties": {
+    "profile": {"const": "publication_ready"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "branch_review_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "pr_title": {"type": "string", "minLength": 1},
+    "pr_body": {"type": "string", "minLength": 1}
+  }
+}

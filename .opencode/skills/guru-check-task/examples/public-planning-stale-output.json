@@ -1,0 +1,8 @@
+{
+  "exit_id": "planning_stale",
+  "task_ref": ".trellis/tasks/example-task",
+  "planning_route": "reapprove_plan",
+  "proposal_refs": [
+    "scope-proposal:R13"
+  ]
+}

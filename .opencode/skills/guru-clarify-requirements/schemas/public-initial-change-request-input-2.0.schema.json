@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-clarify-requirements-input-initial-change-request-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_exit",
+    "mode",
+    "target_locator",
+    "continuation_id"
+  ],
+  "properties": {
+    "profile": {
+      "const": "initial_change_request"
+    },
+    "source_exit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "target_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "duplicate_snapshot": {
+      "type": "object", "additionalProperties": false,
+      "required": ["query", "checked_at", "target_locator", "authority_content_sha256", "candidates", "facts_sha256"],
+      "properties": {
+        "query": {"type": "string", "minLength": 1}, "checked_at": {"type": "string", "format": "date-time"},
+        "target_locator": {"type": "string", "minLength": 1}, "authority_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "candidates": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["repo", "number", "url", "updated_at", "facts_sha256"], "properties": {"repo": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"}, "number": {"type": "integer", "minimum": 1}, "url": {"type": "string", "format": "uri"}, "updated_at": {"type": "string", "format": "date-time"}, "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}}}
+      }
+    }
+  },
+  "allOf": [{"if": {"properties": {"source_exit": {"const": "context_ready"}}}, "then": {"required": ["duplicate_snapshot"]}}]
+}

@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "exit_id": "restore_blocked",
+  "reason_code": "identity_drift",
+  "remediation": "Resolve the current blocker and rerun the recovery from fresh identity facts.",
+  "zero_writes": true
+}

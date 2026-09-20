@@ -1,0 +1,180 @@
+---
+name: guru-review-branch
+description: Review committed task content, bounded base continuity, or a completed archive through independent semantic review.
+---
+
+# Guru Review Branch
+
+Use this Skill after `guru-create-task-commit:committed` and before publication.
+Read [references/contract.md](references/contract.md) completely before acting.
+
+## Archived Read-Only Review
+
+Aggregate input schema 5.0 adds the independent `archived_review` profile.
+The existing aggregate schema 4.0 profiles and ordinary gate schema 7.0
+behavior below are unchanged. Enter this profile only after Merge's
+`review_refresh_required`, never because a successfully consumed checkpoint
+was normally retired. Its input is exactly profile, mode, task_ref,
+branch_review_commit (A), and pr_payload_snapshot_sha256.
+
+Resolve the task's already-existing selected-base ref and live GitHub base to
+the same commit B before reviewing. Do not fetch, synchronize, or update refs.
+The global workflow owns the fresh Architecture
+`task_impact_sync(stage=branch_review)` invocation with
+`source_exit=review_refresh_required` over exact B...A. Consume only its
+read-only accepted result; missing evidence, blocked, or a result requiring
+promotion/repair stops, never enters a writable consumer.
+
+Independently review the full current B...A diff, live requirement authority,
+archived planning and current test evidence. Neither the prior review nor a
+PR snapshot is a semantic pass. This profile overrides ordinary finding-fix
+and scope routes: content findings, scope insufficiency and missing authority
+return only `blocked`, retaining truthful current findings in the private
+semantic result. Do not restore tasks, fix content, rewrite archive history,
+promote Architecture, update PRs, or mutate Issues.
+
+After fresh AI review, use the same review-branch/check-review-gate/invoke
+commands. The dedicated closed `archived-1.0` gate admits only
+`archived_review_passed|blocked`; it is never synthesized from an ordinary
+checkpoint. Both exits retire the owner checkpoint after validated projection.
+The success output carries only task_ref, A, the exact title/body snapshot,
+and reviewed_base_head B. Publication owns the target authoring fields
+profile=archived_publication_review and mode. Stale A/B/PR payload, non-Ready
+state, dirty archive or missing/mismatched mappings fail closed without repair.
+
+## Ordinary Reviews
+
+Before searching the range, Docs, tests, fixtures, consumers, or relevant
+history, read `.trellis/spec/workflow/semantic-retrieval.md` and apply it in
+candidate qualification. A negative finding or impact conclusion cannot rely
+on a single-language zero result, and no query process enters the gate or DTO.
+
+Validate all eight entry preconditions in workflow or standalone mode. Perform one
+independent semantic review of the complete current range. Form only candidate
+refs and live locators, then invoke `guru-qualify-normal-scenario` with
+`branch_review_candidate_set` before assigning severity.
+For delete, replace, merge, or compatibility-impacting ranges, apply
+`.trellis/spec/workflow/subtraction-first-compatibility.md`: independently
+recompute `code_subtraction` and `docs_ssot_subtraction`, verify deprecated-asset
+exit and direct evolution, and treat unsupported compatibility or redundant
+growth as a finding. Do not use Phase 2 evidence or a generic continuation as
+compatibility approval.
+Independently review long-term maintainability as well: task-local fields,
+persistence, retries, locks, or extra paths need named direct consumers and
+must not be justified only by excluded threat, concurrency, crash, or formal
+idempotency concerns. Every touched non-generated code file at or above 3000
+lines requires a mechanical-split or small-decoupling conclusion; untouched
+historical large files are not imported into scope.
+Immediately before dispatch, tell the user in the current dialogue the
+independent reviewer identity, the exact committed `origin/<base>...HEAD`
+range, and the review target. Immediately after return, show the final finding
+summary and the semantic owner's conclusion. Keep the reviewer transcript and
+these lifecycle notices dialogue-local; do not persist them in a gate, DTO,
+checkpoint, or tracked report.
+Scripts never decide scope, scenario class, qualification, severity,
+review sufficiency, pass, or route.
+Rejected candidates remain `rejected_candidate` without severity or
+finding-only fields and cannot become scope confirmation, tests,
+implementation, follow-up, or publication blockers. Mechanism revision returns
+to task work for remove/replace and fresh qualification; blocked stops. The
+review gate records only this owner's final classifications and direct-consumer
+witness, never a qualification artifact.
+
+Before a proposed review mechanism participates in severity, findings, scope,
+or blocker judgment, invoke `guru-qualify-solution-mechanism` with
+`branch_review_candidate_set`. A `mechanism_revision_required` result removes
+or replaces only that mechanism and returns to task work for fresh
+qualification; it never enters scope confirmation.
+
+Before this review can pass, consume a fresh
+`guru-maintain-architecture-baseline:task_impact_sync(stage=branch_review)`
+result. The Architecture owner independently recomputes project checks and
+before/after satisfaction from the complete committed base-to-HEAD diff. This
+Skill then rereads the current Architecture Baseline, design constitution, and
+task-local change contract as part of its own complete-range semantic review.
+Neither owner may reuse the Phase 2 Architecture result as Branch Review proof.
+A single extra blank line, or multiple blank lines, at the end of a text file
+is formatting noise when it is the only observed issue and the file's
+meaningful bytes are otherwise unchanged. Keep EOF-only whitespace as a
+non-blocking observation; it must not become a qualified P0-P3 finding or an
+`implementation_required` route. This narrow rule does not suppress trailing
+spaces on non-blank lines, indentation changes, changes inside
+strings/configuration values, invalid encoding, or whitespace that changes a
+parser/linter/formatter contract.
+A stale identity, incomplete contract, authority conflict, fitness regression,
+unreviewed contribution, or missing project check prevents `passed` and follows
+the Architecture result's unique global route.
+
+Every official independent-review worker invocation prompt authorizes
+approved-plan work only. A planning-external observation must stop before any
+edit, added test, self-fix, severity, classification, or route and return only
+`candidate_ref`, `observed_behavior`, `locators`, and
+`minimal_reproduction_hint`. This owner rereads the live range and authority
+and completes fresh qualification before continuing the review or dispatching
+another worker for that candidate. Upstream-owned `trellis-*` agent files stay
+unchanged.
+
+Current-scope qualified findings return `implementation_required`; fixes must
+pass the applicable checks, a fresh task commit, and this Skill again. An
+unconfirmed nonstandard proposal returns `scope_confirmation_required` and
+cannot become a finding. After a fix commit, the finding owner or a real
+unfinished-agent replacement performs closure as an internal transient
+judgment. It retains `introduced_head`, binds the fixing `fix_head`, and
+produces a later `closure_head` plus concrete closure evidence. The AI workflow
+then automatically dispatches a distinct fresh reviewer over the complete
+current `origin/<base>...HEAD` range.
+
+Closure emits no public exit and writes no artifact. Only the distinct
+`fresh_final_review` may reach the recorder and pass. After its AI Review Gate
+exists, the recorder writes the compact `review-gate.json` to the exact
+task-owned ignored-runtime checkpoint and returns only a minimal receipt; it
+does not create assignment, liveness, rollup, or raw per-round reports. Only
+after `check-review-gate` resolves and validates that exact checkpoint
+may the public wrapper emit exactly one of `passed`,
+`continuity_passed`, `implementation_required`,
+`scope_confirmation_required`, or `blocked`.
+The semantic owner's passing conclusion is provisional. Do not tell the user
+that Branch Review has formally passed until both `check-review-gate` and the
+public wrapper return `passed` for the same current task, range, commit, and
+reviewed-content identity.
+`continuity_passed` is only a bounded continuity judgment over a previously
+reviewed task plus one committed reconciliation pair. It must never be
+described as a full Branch Review.
+`passed` targets the active `guru-review-task-publication` Skill through its
+target-owned authoring seed. The workflow caller performs the publication
+content authoring preparation required by the global Phase 3.6 order before
+invoking that active owner.
+This package is not self-contained or portable.
+
+The public wrapper accepts only current public input, reruns the objective
+checker internally, and never accepts caller-authored gate or checker output.
+Successful `passed`, `continuity_passed`, and zero-payload stop `blocked`
+projection retires the checkpoint. The two active re-entry routes retain the
+one checkpoint for deterministic
+same-owner re-entry; a repeated invocation returns the same DTO without writing
+another checkpoint. Failed check or projection preserves the current regular
+checkpoint. A retired, mismatched, stale, unsafe, or symlink-backed checkpoint
+fails closed.
+
+If Architecture promotion changes shared current files, that diff returns to a
+fresh Phase 2 Architecture/check round, a new task commit, and this independent
+complete-range Branch Review. Publication cannot consume the pre-promotion
+review or a Phase 2 result in place of that fresh review.
+
+Aggregate public input schema 4.0 dispatches two profiles: `branch_review`
+schema 2.0 accepts only `initial_review` and `fresh_final_review`, while
+current-only `base_continuity` schema 2.0 accepts only `base_continuity` and
+separates the prior full-review `branch_review_commit` from the current
+committed reconciled `task_head`. The continuity recorder requires
+`task_head == HEAD`, the prior review and `new_base_head` to be ancestors of
+that HEAD, and the current committed tree to match `candidate_tree_sha256`.
+The owner-private gate is current-only schema 7.0. Its `review_commit` binds the
+current `task_head`; its integration pair separately binds the prior full-review
+commit, current HEAD, exact old/new base pair, candidate tree, relevant paths,
+and resume target. `continuity_passed` output schema 2.0 projects
+`branch_review_commit` as that current continuity-reviewed HEAD for the next
+owner. Aggregate input schema 3.0, base-continuity input/output schema 1.0, and
+gate schema 6.0 or older remain legacy stale inventory, not current runtime
+authority. Runtime does not dual-read them. Any non-7.0 gate fails closed
+through the stable stale-identity path. Any other current input shape fails
+closed through the normal invalid-input path.

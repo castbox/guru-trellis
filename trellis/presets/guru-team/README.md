@@ -10,7 +10,7 @@ fallbacks are unsupported. Package-owned runtime distinguishes CLI, auth,
 repository-access, permission, API-availability and incomplete-response
 failures. `git` continues to own fetch, push, ls-remote and local worktrees.
 
-The preset installs companion assets, Guru Skill packages, and three additive
+The preset installs companion assets, Guru Skill packages, and four additive
 Guru finish entries for the `guru-team` Trellis workflow into an existing
 Trellis project.
 
@@ -66,8 +66,8 @@ build and installed-runtime proof. Both packages remain `0.6.17`; no upstream
 It is idempotent: identical files are skipped, missing files are installed,
 Guru-managed companion assets are upgraded in place with `.bak` backups,
 and existing `.trellis/guru-team/config.yml` is preserved. Current-only
-ownership schema 3.0 defines exactly 11 anchored Guru rules, nine managed
-claims, and three additive finish overlays. Official Trellis paths are outside
+ownership schema 3.0 defines exactly 13 anchored Guru rules, 11 managed
+claims, and four additive finish overlays. Official Trellis paths are outside
 that contract. A non-current ownership or installed manifest fails closed
 before mutation; unknown edits to current Guru-owned assets are preserved with
 deterministic `.new` remediation.
@@ -157,8 +157,8 @@ in the canonical source package for source validation. The
 installer derives that inventory from the active registry and package tree; it
 does not reconstruct semantic routes or maintain a second command list. The
 marketplace workflow supplies the guarded boundaries and single router, while
-the preset supplies the complete runtime needed by Shared, Codex, Claude, and
-Cursor discovery.
+the preset supplies the complete runtime needed by Shared, Codex, Claude,
+Cursor, and OpenCode discovery.
 
 The preset also maintains one bounded AI-first principles block in the target
 root `AGENTS.md`. Missing files are created, existing user content outside the
@@ -179,13 +179,22 @@ Platform distribution is selectable. Shared `.agents/skills/guru-*` public
 projections are always installed; selected platforms receive matching public
 projections and the additive finish entry. Complete package runtime, internal
 tests and error implementation remain only below `.trellis/guru-team/`.
+The canonical `public_api.platform_capabilities` inventory in
+`trellis/guru-team-extension.json` is the machine-readable platform authority.
+It binds the pinned upstream `AI_TOOLS` registry source/version/digest, all 22
+upstream platform rows, the four Guru-supported projections, the Codex/Cursor
+default dogfood set, and the 18 explicitly deferred upstream platforms. Source,
+installed, installer, and compatibility-matrix validation consume this same
+inventory; a platform directory name alone never grants support.
 Defaults are Codex and Cursor. Repeat
 `--platform <name>` to select a specific set; supported values are `codex`,
-`cursor`, and `claude`. `--all-platforms` selects all three. `--platform` and
-`--all-platforms` are mutually exclusive, and invalid platform names fail
-closed.
+`cursor`, `claude`, and `opencode`. `--all-platforms` selects every currently
+validated Guru platform. `--platform` and
+`--all-platforms` are mutually exclusive. An upstream-known deferred platform
+returns a structured `deferred` result before target mutation; a truly unknown
+platform name fails argument validation.
 
-The installed manifest records the three additive entries in a separate
+The installed manifest records the four additive entries in a separate
 top-level `overlays` provenance domain with closed fields
 `schema_version/status/selected_platforms/files/removals/conflicts/sidecars`.
 Missing entries install, canonical-equal entries remain unchanged, and only a
@@ -255,18 +264,19 @@ The current-only schema 3.0 inventory and schema live at:
 - `trellis/presets/guru-team/ownership/upstream-ownership.json`
 - `trellis/presets/guru-team/ownership/upstream-ownership.schema.json`
 
-The inventory describes only assets Guru Team owns now. It contains exactly 11
+The inventory describes only assets Guru Team owns now. It contains exactly 13
 anchored rules for the installed runtime, canonical workflow and Skill roots,
-`guru-*` package discovery roots, and the three finish entries. It exposes nine
+`guru-*` package discovery roots, and the four finish entries. It exposes 11
 current managed claims and does not claim any official Trellis namespace.
 
-The canonical overlay tree contains only these three Guru-owned additive entries:
+The canonical overlay tree contains only these four Guru-owned additive entries:
 
 - `.codex/prompts/guru-finish-work.md`
 - `.claude/commands/guru/finish-work.md`
 - `.cursor/commands/guru-finish-work.md`
+- `.opencode/commands/guru-finish-work.md`
 
-The extension manifest and inventory contain exactly nine anchored Guru namespace
+The extension manifest and inventory contain exactly 11 anchored Guru namespace
 claims. No claim covers an upstream Trellis namespace.
 
 Before any target activation, the installer validates the source inventory,
@@ -290,7 +300,7 @@ Maintainers can run the read-only ownership gate directly:
 python3 ./trellis/presets/guru-team/scripts/python/test_upstream_ownership.py
 ```
 
-The validator reports schema 3.0, 11 rules, nine managed claims, three additive
+The validator reports schema 3.0, 13 rules, 11 managed claims, four additive
 overlays, and the current registry/package facts. These bindings provide normal
 version and drift detection, not semantic ownership judgment; AI review still
 owns whether a proposed current owner is valid.
@@ -427,6 +437,25 @@ Each predecessor requires a separate work root and invocation. This bounded
 mode proves only that exact existing-install path; it does not claim the full
 six-cell matrix or arbitrary historical-version support.
 
+When the immutable predecessor predates the requested target platform, the
+existing-install verifier derives a supported seed platform from the
+predecessor manifest instead of requiring current platform-capability fields.
+It installs that predecessor projection first, records both `seed_platform`
+and `target_platform`, then migrates to and strictly validates the requested
+current projection. A predecessor with no supported seed platform fails closed;
+legacy projection handling is limited to the pre-update snapshot and never
+weakens current source or installed validation.
+
+For OpenCode, compatibility verification performs two native catalog probes,
+each with a new isolated HOME and XDG state. The default probe accepts
+OpenCode's native, shared, or Claude-compatible Skill selection only when the
+loaded bytes equal `.opencode`; the second sets
+`OPENCODE_DISABLE_EXTERNAL_SKILLS=1` and requires every active Guru Skill to
+load from `.opencode/skills`. Both probes require the exact active Skill set and
+the installed `guru-finish-work` command template. Missing OpenCode, stale
+catalog state, unexpected roots, byte drift, or incomplete discovery blocks
+the matrix cell.
+
 That command has exactly one direct PATH Python bootstrap seed. It consumes the
 seed result through the canonical source managed runner, then routes every
 source or installed Python subprocess through the corresponding
@@ -493,15 +522,15 @@ the command executed from the repository root remains exactly:
 ```
 
 The script creates a temporary Git repo, runs `trellis init -y` with the
-`guru-team` marketplace workflow, applies the preset with
-`--platform claude --platform codex --platform cursor`, checks that `.trellis/workflow.md`
+`guru-team` marketplace workflow, applies the preset for the selected
+`--platform` (`codex` by default), checks that `.trellis/workflow.md`
 exists, verifies that the active workflow requires the three Guru Team planning
 artifacts, verifies that `check-env.sh` and `version.sh` are executable,
 asserts `.trellis/guru-team/extension.json` satisfies the complete current
 installed-manifest schema 2.0, derives its managed inventory from canonical
-current assets, and verifies the three selected Guru finish entries match their
-canonical additive overlays. Source ownership validation must report schema
-3.0 with 11 rules, nine managed claims, and three overlays before and after
+current assets, and verifies the selected Guru finish entry matches its
+canonical additive overlay. Source ownership validation must report schema
+3.0 with 13 rules, 11 managed claims, and four overlays before and after
 the dry-run-selected `trellis update --force --migrate --assignee <owner> --skip-all` or
 `trellis update --skip-all` plus workflow/preset reapply.
 It also asserts target `.trellis/spec/**` and
@@ -549,7 +578,7 @@ companion asset.
 
 ## Dogfood Overlay Drift Check
 
-Only the three additive Guru finish entries remain under
+Only the four additive Guru finish entries remain under
 `trellis/presets/guru-team/overlays/`. For a current installation, use this
 sequence:
 
@@ -576,8 +605,8 @@ For this source repository, the final preset/drift commands are:
 ```
 
 `check-dogfood-overlay-drift.sh` is read-only. It first validates current
-ownership schema 3.0, 11 Guru rules, nine managed claims, and the three-entry
-canonical overlay tree. It then compares those three additive
+ownership schema 3.0, 13 Guru rules, 11 managed claims, and the four-entry
+canonical overlay tree. It then compares those four additive
 overlays with same-path installed dogfood copies and exits non-zero for
 ownership failure, missing copies, or changed bytes. It never treats an
 upstream-owned path as a dogfood overlay.
@@ -593,10 +622,10 @@ Preset 还安装唯一的版本化语义检索合同
 entry 复制中英文概念族规则。
 
 Preset 是完整 Guru Team extension configurator。除 companion assets、
-Guru Skill packages 和三个 additive finish entries 外，它验证
+Guru Skill packages 和四个 additive finish entries 外，它验证
 `trellis/skills/guru-team/registry.json`，将
 registry/schema/active packages 安装到 `.trellis/guru-team/skills/`，并把
-active package 分发到 shared root 与明确选择的 Codex/Cursor/Claude roots。
+active package 分发到 shared root 与明确选择的 Codex/Cursor/Claude/OpenCode roots。
 Test fixtures 永不安装，未选择的平台 root 不因 skill 分发
 而创建。
 
@@ -636,7 +665,7 @@ Fixture source validation 强制 Skill consumer 使用 active registry exact can
 required 与映射/normalizer 后全域兼容证明，分别检查 public/private
 schema id/path 互斥，并要求 wrapper 完整匹配 dispatcher-only template。
 
-Current ownership schema 3.0 只声明 11 条 Guru rules、9 条 managed claims 与 3 个
+Current ownership schema 3.0 只声明 13 条 Guru rules、11 条 managed claims 与 4 个
 additive overlays。Preset 不安装或更新任何 `trellis-continue`、`trellis-start`、
 `trellis-finish-work`、agent、hook 或 runtime-agent payload。Branch Review `passed`
 后的 publication/finalization
@@ -678,10 +707,10 @@ locators。Missing/drift/version mismatch 使用 stable
 `code`、repo-relative `field_path` 与 `remediation` fail closed。
 
 Active `guru-approve-task-plan` package 随 registry-driven install 分发到 shared root 与所选
-Codex/Cursor/Claude discovery roots，并依赖同一 preset 安装的 schema
+Codex/Cursor/Claude/OpenCode discovery roots，并依赖同一 preset 安装的 schema
 `guru-planning-approval-3.0`、shared dispatcher 和
 `record-planning-approval` / `check-planning-approval` runtime commands。该分发是
-Guru-owned additive content，不扩展当前三文件
+Guru-owned additive content，不扩展当前四文件
 `trellis/presets/guru-team/overlays/**` 集合。
 
 每个 active package 的 `SKILL.md` 必须有与 stable id/interface 一致的唯一
@@ -807,7 +836,7 @@ invoke 与六个 exit marker。Current main/source checkout 的 canonical extens
 fake-production 结果不能证明 pressure matrix、模型稳定性或未来模型行为。
 Preset 将 active package
 （含 interface、artifact schema、commands、error catalog、runtime、thin wrappers 与 tests）
-完整安装到 `.trellis/guru-team/skills/`。Shared root 和所选 Codex/Cursor/Claude
+完整安装到 `.trellis/guru-team/skills/`。Shared root 和所选 Codex/Cursor/Claude/OpenCode
 skill roots 仅接收 public projection，不包含 private runtime、tests 或 error
 implementation；planned id 不安装。升级后必须处理
 `.new`/`.bak`，再通过 source/installed package validation 与 dogfood drift。
@@ -1018,16 +1047,17 @@ Guru Skill packages are distributed independently of overlays:
 - package-private tests remain in the canonical source tree and are used only by
   source validation;
 - active packages are always copied to `.agents/skills/guru-*/`;
-- selected Codex, Cursor, and Claude platforms receive matching
+- selected Codex, Cursor, Claude, and OpenCode platforms receive matching
   `.codex/skills/guru-*/`, `.cursor/skills/guru-*/`, and
-  `.claude/skills/guru-*/` copies.
+  `.claude/skills/guru-*/`, and `.opencode/skills/guru-*/` copies.
 
-The canonical overlay tree has exactly three files. Each is installed only when
+The canonical overlay tree has exactly four files. Each is installed only when
 its platform is selected:
 
 - Codex: `.codex/prompts/guru-finish-work.md`;
 - Cursor: `.cursor/commands/guru-finish-work.md`;
 - Claude: `.claude/commands/guru/finish-work.md`.
+- OpenCode: `.opencode/commands/guru-finish-work.md`.
 
 Official Trellis owns every `trellis-*` Skill, command, prompt, hook, platform
 agent, bundled reference, and `.trellis/agents/*` runtime file. The preset never
@@ -1138,7 +1168,7 @@ by active `guru-check-task`. Official unchanged `trellis-check` is evidence-only
 the Skill owns scope-before-severity, adequacy, findings, full rerun, Docs SSOT
 review, its AI Gate, and four typed exits. Coverage flags, worker output, or
 script recorder/validator success cannot replace that loop. The preset
-distributes the additive Guru package to shared/Codex/Cursor/Claude roots
+distributes the additive Guru package to shared/Codex/Cursor/Claude/OpenCode roots
 without modifying any upstream-owned `trellis-check` file; current ownership
 remains limited to schema 3.0's anchored Guru namespaces.
 The Phase 2 public wrapper emits only `task_ref + phase2_commit_anchor` for

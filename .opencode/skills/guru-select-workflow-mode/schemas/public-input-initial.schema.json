@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-workflow-mode-input-initial-1.0","type":"object","additionalProperties":false,"required":["profile","mode","continuation_id"],"properties":{"profile":{"const":"initial_request"},"mode":{"enum":["workflow","standalone"]},"continuation_id":{"type":"string","minLength":1}}}

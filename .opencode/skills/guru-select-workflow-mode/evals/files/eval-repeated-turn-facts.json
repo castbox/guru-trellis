@@ -1,0 +1,1 @@
+{"scenario":"A same-scope retry carries the unchanged continuation identity and prior bounded selection.","owner_staging":{"recipe":"workflow-mode-repeated-turn"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

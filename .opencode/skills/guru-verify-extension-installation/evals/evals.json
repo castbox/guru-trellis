@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-verify-extension-installation",
+  "evals": [
+    {
+      "id": "source-repository-verified",
+      "prompt": "Explicitly verify the current clean castbox/guru-trellis source checkout and return the checked standalone result.",
+      "expected_exit": "verified",
+      "expected_output": "The DTO contains only the source repository identity, resolved HEAD, and opaque session identity.",
+      "input_profile_id": "source_repository_verification",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "verified"},
+          {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
+          {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+          {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+        ]
+      },
+      "files": [
+        "evals/files/source-repository-input.json",
+        "evals/files/source-repository-verified-facts.json"
+      ]
+    },
+    {
+      "id": "source-remote-unavailable",
+      "prompt": "Preserve a source remote failure as a standalone blocked result without routing into task work or Finalizer.",
+      "expected_exit": "blocked",
+      "expected_output": "The DTO contains only the stable source blocker and remediation.",
+      "input_profile_id": "source_repository_verification",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "blocked"}
+        ]
+      },
+      "files": [
+        "evals/files/source-repository-input.json",
+        "evals/files/source-remote-unavailable-facts.json"
+      ]
+    }
+  ]
+}

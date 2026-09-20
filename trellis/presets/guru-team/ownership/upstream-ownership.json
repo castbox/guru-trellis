@@ -53,6 +53,12 @@
       "category": "guru_owned"
     },
     {
+      "id": "opencode-skill-discovery",
+      "match_type": "path_glob",
+      "pattern": ".opencode/skills/guru-*/**",
+      "category": "guru_owned"
+    },
+    {
       "id": "codex-finish-entry",
       "match_type": "path_prefix",
       "pattern": ".codex/prompts/guru-finish-work.md",
@@ -68,6 +74,12 @@
       "id": "cursor-finish-entry",
       "match_type": "path_prefix",
       "pattern": ".cursor/commands/guru-finish-work.md",
+      "category": "guru_owned"
+    },
+    {
+      "id": "opencode-finish-entry",
+      "match_type": "path_prefix",
+      "pattern": ".opencode/commands/guru-finish-work.md",
       "category": "guru_owned"
     }
   ],
@@ -103,6 +115,11 @@
       "classification_rule": "claude-skill-discovery"
     },
     {
+      "path": ".opencode/skills/guru-*/",
+      "category": "guru_owned",
+      "classification_rule": "opencode-skill-discovery"
+    },
+    {
       "path": ".codex/prompts/guru-finish-work.md",
       "category": "guru_owned",
       "classification_rule": "codex-finish-entry"
@@ -116,6 +133,11 @@
       "path": ".cursor/commands/guru-finish-work.md",
       "category": "guru_owned",
       "classification_rule": "cursor-finish-entry"
+    },
+    {
+      "path": ".opencode/commands/guru-finish-work.md",
+      "category": "guru_owned",
+      "classification_rule": "opencode-finish-entry"
     }
   ]
 }

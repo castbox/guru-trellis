@@ -1,0 +1,236 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-create-task-workspace",
+  "commands": [
+    {
+      "id": "record-task-workspace-plan",
+      "owner": "guru-create-task-workspace",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Reviewed plan JSON locator.",
+          "repeatable": false,
+          "conflicts": [
+            "--invocation"
+          ]
+        },
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Ordinary existing-issue {schema_version,transition,authoring}, or compatible {schema_version,transition,plan}; dash reads stdin.",
+          "repeatable": false,
+          "conflicts": [
+            "--input"
+          ]
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [],
+      "validator_id": "task_workspace_plan_recorder",
+      "runtime_role": "record"
+    },
+    {
+      "id": "create-task-workspace",
+      "owner": "guru-create-task-workspace",
+      "entrypoint": "runtime/execute.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Reviewed plan JSON locator.",
+          "repeatable": false,
+          "conflicts": [
+            "--invocation"
+          ]
+        },
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "{schema_version,transition,plan} using the recorder stdout plan; dash reads stdin.",
+          "repeatable": false,
+          "conflicts": [
+            "--input"
+          ]
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "github_write",
+      "schema_bindings": [],
+      "validator_id": "task_workspace_exact_executor",
+      "runtime_role": "execute"
+    },
+    {
+      "id": "check-task-workspace-result",
+      "owner": "guru-create-task-workspace",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Executor result JSON locator.",
+          "repeatable": false,
+          "conflicts": [
+            "--invocation"
+          ]
+        },
+        {
+          "flag": "--plan-input",
+          "required": false,
+          "kind": "string",
+          "description": "Reviewed plan JSON locator.",
+          "repeatable": false,
+          "conflicts": [
+            "--invocation"
+          ]
+        },
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "{schema_version,transition,plan,result} using recorder and executor stdout; dash reads stdin.",
+          "repeatable": false,
+          "conflicts": [
+            "--input",
+            "--plan-input"
+          ]
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [],
+      "validator_id": "task_workspace_result_checker",
+      "runtime_role": "check"
+    },
+    {
+      "id": "recover-task-workspace-result",
+      "owner": "guru-create-task-workspace",
+      "entrypoint": "runtime/recover.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--task",
+          "required": true,
+          "kind": "string",
+          "description": "Exact repository-relative planning task path.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/task-workspace-recovery-result.schema.json"
+      ],
+      "validator_id": "task_workspace_created_result_recovery",
+      "runtime_role": "recover"
+    },
+    {
+      "id": "invoke-guru-create-task-workspace",
+      "owner": "guru-create-task-workspace",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Call-local invocation envelope or dash for stdin.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "github_write",
+      "schema_bindings": [],
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    }
+  ]
+}

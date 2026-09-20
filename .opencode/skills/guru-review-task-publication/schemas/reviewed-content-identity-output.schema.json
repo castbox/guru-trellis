@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-reviewed-content-identity-output-1.0.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["algorithm", "sha256", "commit", "include_worktree"],
+  "properties": {
+    "algorithm": {"const": "guru-reviewed-content-1.0"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "commit": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "include_worktree": {"type": "boolean"}
+  }
+}

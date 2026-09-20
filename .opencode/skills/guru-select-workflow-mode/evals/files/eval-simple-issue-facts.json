@@ -1,0 +1,1 @@
+{"scenario":"A live Issue precisely limits the work to one documentation label with no runtime effect.","owner_staging":{"recipe":"workflow-mode-simple-issue"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

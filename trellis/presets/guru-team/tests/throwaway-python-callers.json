@@ -61,7 +61,7 @@
       "path": "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py",
       "classification": "installed_managed",
       "expected_launcher": "installed resolve-python.sh",
-      "sys_executable_subprocesses": 4,
+      "sys_executable_subprocesses": 5,
       "managed_shebang_bindings": 0
     }
   ],
@@ -322,6 +322,15 @@
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
       "anchor_sha256": "87aaf6ce17382a2d69520061f83765c7041a6f3172e3bfe7ca31c46847f7a59b",
+      "ordinal": 1
+    },
+    {
+      "id": "helper-python_subprocess_second_hop-a07083764602",
+      "owner": "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py",
+      "kind": "python_subprocess_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "sys.executable",
+      "anchor_sha256": "a07083764602e746f233ca534a0cc626f4e3e323430d277f615dd6c963ca55de",
       "ordinal": 1
     },
     {

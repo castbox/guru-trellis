@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-restore-archived-task",
+  "commands": [
+    {
+      "id": "restore-archived-task",
+      "owner": "guru-restore-archived-task",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {"flag": "--root", "required": false, "kind": "string", "description": "Repository root.", "repeatable": false, "conflicts": []},
+        {"flag": "--input", "required": true, "kind": "json", "description": "Archived-task Phase 2 re-entry input.", "repeatable": false, "conflicts": []},
+        {"flag": "--semantic-result", "required": true, "kind": "json", "description": "AI-owned task-work classification bound to this input.", "repeatable": false, "conflicts": []},
+        {"flag": "--facts", "required": true, "kind": "json", "description": "Fresh live authority facts.", "repeatable": false, "conflicts": []}
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": ["invalid_arguments", "conflicting_arguments", "schema_mismatch", "restore_precondition_failed", "internal_error"],
+      "side_effect": "repo_write",
+      "schema_bindings": [
+        "schemas/public-restore-input.schema.json",
+        "schemas/semantic-review-input.schema.json",
+        "schemas/live-facts.schema.json",
+        "schemas/public-restored-output.schema.json",
+        "schemas/public-blocked-output.schema.json"
+      ],
+      "validator_id": "restore_executor",
+      "runtime_role": "invoke"
+    }
+  ]
+}

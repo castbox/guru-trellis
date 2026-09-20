@@ -1,0 +1,5 @@
+{
+  "exit_id": "restored_to_phase2",
+  "task_ref": ".trellis/tasks/09-03-348-merge-blocked-phase2-reentry",
+  "resume_target": "phase-2"
+}

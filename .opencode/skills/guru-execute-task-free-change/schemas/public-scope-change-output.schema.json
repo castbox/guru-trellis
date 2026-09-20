@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-task-free-change-output-scope-change-1.0","type":"object","additionalProperties":false,"required":["exit_id","task_ref"],"properties":{"exit_id":{"const":"scope_change"},"task_ref":{"type":"string","minLength":1}}}

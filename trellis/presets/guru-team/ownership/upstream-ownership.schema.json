@@ -19,15 +19,15 @@
     "overlay_root": {"const": "trellis/presets/guru-team/overlays"},
     "guru_owned_rules": {
       "type": "array",
-      "minItems": 11,
-      "maxItems": 11,
+      "minItems": 13,
+      "maxItems": 13,
       "uniqueItems": true,
       "items": {"$ref": "#/$defs/guruOwnedRule"}
     },
     "managed_path_claims": {
       "type": "array",
-      "minItems": 9,
-      "maxItems": 9,
+      "minItems": 11,
+      "maxItems": 11,
       "uniqueItems": true,
       "items": {"$ref": "#/$defs/managedPathClaim"}
     }

@@ -50,7 +50,7 @@
   ],
   "reentry": {"identity": "repository, PR number, expected head, task id, archive/active locators, archive commit and exact finding refs", "freshness": "rebuild PR, Issue, branch, task, archive, finish-summary, mapping, worktree and active-task facts for every call", "stale_behavior": "fail_closed"},
   "tests": ["tests/test_contract.py", "tests/test_runtime.py"],
-  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude", "opencode"],
   "public_contracts": {
     "input": {
       "kind": "structured_json",

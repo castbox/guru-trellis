@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-extension-verify-installation-input-standalone-verification-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profile", "mode", "repo_ref", "remote", "ref", "caller_intent"],
+  "properties": {
+    "profile": {"const": "standalone_verification"},
+    "mode": {"const": "standalone"},
+    "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+    "remote": {"type": "string", "pattern": "^[A-Za-z0-9._-]+$"},
+    "ref": {"type": "string", "pattern": "^refs/(heads|tags)/[A-Za-z0-9._/-]+$"},
+    "caller_intent": {"const": "verify-extension-installation"},
+    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"}
+  },
+  "oneOf": [
+    {"required": ["task_ref"]},
+    {"not": {"required": ["task_ref"]}}
+  ]
+}

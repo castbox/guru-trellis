@@ -1,0 +1,1 @@
+{"scenario":"The relevant delta is compatible but requires bounded integration continuity review.","owner_staging":{"recipe":"base-review-continuity"},"public_invocation":{"arguments":["--invocation","-"]}}

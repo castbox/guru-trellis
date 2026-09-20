@@ -268,7 +268,8 @@
     "shared",
     "codex",
     "cursor",
-    "claude"
+    "claude",
+    "opencode"
   ],
   "public_contracts": {
     "input": {

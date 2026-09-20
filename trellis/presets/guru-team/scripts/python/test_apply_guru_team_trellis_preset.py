@@ -20,6 +20,7 @@ GURU_FINISH_ENTRIES = (
     ".codex/prompts/guru-finish-work.md",
     ".claude/commands/guru/finish-work.md",
     ".cursor/commands/guru-finish-work.md",
+    ".opencode/commands/guru-finish-work.md",
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -1501,17 +1502,42 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertFalse((self.repo / ".codex").exists())
         self.assertFalse((self.repo / ".cursor").exists())
 
+    def test_explicit_opencode_platform_installs_only_shared_and_opencode_overlays(self) -> None:
+        payload = self.install({"opencode"})
+
+        self.assertEqual(payload["platforms"], ["opencode"])
+        self.assertFalse(payload["all_platforms"])
+        self.assertTrue((self.repo / ".agents/skills/guru-create-task-workspace/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".opencode/skills/guru-create-task-workspace/SKILL.md").is_file())
+        entry = self.repo / ".opencode/commands/guru-finish-work.md"
+        self.assertTrue(entry.is_file())
+        assert_thin_guru_finish_entry(self, entry)
+        self.assertFalse((self.repo / ".codex").exists())
+        self.assertFalse((self.repo / ".claude").exists())
+        self.assertFalse((self.repo / ".cursor").exists())
+
+    def test_platform_selection_consumes_canonical_capability_inventory(self) -> None:
+        manifest = preset.load_extension_manifest(self.guru_root)
+        supported, default, deferred = preset.platform_capability_sets(manifest)
+
+        self.assertEqual(supported, ("claude", "codex", "cursor", "opencode"))
+        self.assertEqual(default, ("codex", "cursor"))
+        self.assertEqual(len(deferred), 18)
+        self.assertIn("kilo", deferred)
+        self.assertEqual(preset.selected_platforms(None, True, supported, default), (set(supported), True))
+        self.assertEqual(preset.selected_platforms(None, False, supported, default), (set(default), False))
+
     def test_all_platforms_installs_only_guru_owned_overlays(self) -> None:
         platforms, all_platforms = preset.selected_platforms(None, True)
         payload = self.install(platforms, all_platforms=all_platforms)
 
         self.assertTrue(all_platforms)
-        self.assertEqual(payload["platforms"], ["claude", "codex", "cursor"])
+        self.assertEqual(payload["platforms"], ["claude", "codex", "cursor", "opencode"])
         ownership_facts = payload["upstream_ownership_validation"]
         self.assertEqual(ownership_facts["schema_version"], "3.0")
-        self.assertEqual(ownership_facts["overlay_count"], 3)
-        self.assertEqual(ownership_facts["active_skill_count"], 26)
-        self.assertEqual(ownership_facts["managed_claim_count"], 9)
+        self.assertEqual(ownership_facts["overlay_count"], 4)
+        self.assertEqual(ownership_facts["active_skill_count"], 32)
+        self.assertEqual(ownership_facts["managed_claim_count"], 11)
         self.assertEqual(payload["replaced_overlays"], [])
         overlay_root = self.guru_root / "trellis/presets/guru-team/overlays"
         guru_entry_bytes = []
@@ -1537,7 +1563,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         installed_continuity_path = (
             ".trellis/guru-team/skills/tests/test_base_continuity_integration.py"
         )
-        self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
+        self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor", "opencode"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
         self.assertEqual(
             len(managed_assets),
@@ -1624,6 +1650,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             self.repo / ".codex/skills/guru-review-branch",
             self.repo / ".claude/skills/guru-review-branch",
             self.repo / ".cursor/skills/guru-review-branch",
+            self.repo / ".opencode/skills/guru-review-branch",
         )
         legacy_schema_paths = (
             Path("schemas/review-gate.schema.json"),
@@ -1676,6 +1703,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             self.repo / ".codex/skills" / package_relative,
             self.repo / ".claude/skills" / package_relative,
             self.repo / ".cursor/skills" / package_relative,
+            self.repo / ".opencode/skills" / package_relative,
         )
         for relative in private_paths:
             with self.subTest(relative=relative, location="canonical-installed"):
@@ -1720,7 +1748,17 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                             / "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md"
                         ).read_bytes()
                     ).hexdigest(),
-                }
+                },
+                {
+                    "path": ".opencode/commands/guru-finish-work.md",
+                    "action": "removed_managed",
+                    "previous_managed_sha256": hashlib.sha256(
+                        (
+                            self.guru_root
+                            / "trellis/presets/guru-team/overlays/.opencode/commands/guru-finish-work.md"
+                        ).read_bytes()
+                    ).hexdigest(),
+                },
             ],
         )
         installed_manifest = json.loads(
@@ -1731,6 +1769,22 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             ".claude/commands/guru/finish-work.md",
             installed_manifest["install"]["managed_assets"],
         )
+
+    def test_platform_reselection_prunes_empty_unselected_skill_directories(self) -> None:
+        platforms, all_platforms = preset.selected_platforms(None, True)
+        self.install(platforms, all_platforms=all_platforms)
+        retired_root = self.repo / ".codex/skills/guru-review-branch"
+        empty_nested = retired_root / "empty/nested"
+        empty_nested.mkdir(parents=True)
+
+        payload = self.install({"opencode"})
+
+        self.assertEqual(payload["skill_packages"]["status"], "ok")
+        self.assertFalse(retired_root.exists())
+        self.assertFalse(any((self.repo / ".codex/skills").glob("guru-*")))
+        self.assertFalse(any((self.repo / ".cursor/skills").glob("guru-*")))
+        self.assertFalse(any((self.repo / ".claude/skills").glob("guru-*")))
+        self.assertTrue(any((self.repo / ".opencode/skills").glob("guru-*")))
 
     def test_reselecting_removed_platform_clears_restored_removal_provenance(self) -> None:
         platforms, all_platforms = preset.selected_platforms(None, True)
@@ -2033,6 +2087,28 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
 
         self.assertNotEqual(context.exception.code, 0)
 
+    def test_main_reports_deferred_platform_without_mutating_target(self) -> None:
+        with mock.patch(
+            "sys.argv",
+            [
+                "apply_guru_team_trellis_preset.py",
+                "--repo",
+                str(self.repo),
+                "--platform",
+                "kilo",
+            ],
+        ):
+            stdout = StringIO()
+            with mock.patch("sys.stdout", stdout):
+                exit_code = preset.main()
+
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(exit_code, 2)
+        self.assertEqual(payload["status"], "deferred")
+        self.assertEqual(payload["requested_platforms"], ["kilo"])
+        self.assertEqual(payload["deferred_platforms"][0]["id"], "kilo")
+        self.assertFalse((self.repo / ".trellis" / "guru-team").exists())
+
     def test_main_rejects_unknown_platform(self) -> None:
         with mock.patch(
             "sys.argv",
@@ -2041,7 +2117,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 "--repo",
                 str(self.repo),
                 "--platform",
-                "opencode",
+                "unknown-platform",
             ],
         ):
             with self.assertRaises(SystemExit) as context:
@@ -2202,8 +2278,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         for field, expected_count in (
-            ("public_input_schema_ids", 83),
-            ("typed_output_schema_ids", 95),
+            ("public_input_schema_ids", 88),
+            ("typed_output_schema_ids", 100),
             ("private_artifact_schema_ids", 22),
         ):
             self.assertEqual(

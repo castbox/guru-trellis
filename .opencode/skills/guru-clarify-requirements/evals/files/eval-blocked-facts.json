@@ -1,0 +1,16 @@
+{
+  "scenario": "A load-bearing decision remains unresolved and cannot be resolved from repository evidence.",
+  "owner_evidence": {
+    "semantic_gate": "blocked",
+    "checker_required": true
+  },
+  "owner_staging": {
+    "recipe": "clarity-blocked"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--invocation",
+      "-"
+    ]
+  }
+}

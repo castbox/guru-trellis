@@ -1,0 +1,1 @@
+{"scenario":"The user explicitly requested a bounded current-checkout edit without the development process.","owner_staging":{"recipe":"workflow-mode-explicit-task-free"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}
