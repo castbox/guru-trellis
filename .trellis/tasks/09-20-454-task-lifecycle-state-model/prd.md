@@ -93,7 +93,7 @@ authority。
 - base reconcile、commit、review、publication 和 finish 各自读取本步骤所需的 fresh Git identity；不存在
   跨阶段通用 `base_head` authority。
 - Delivery target 只表达 portable repository/ref 关系。target ref 的 HEAD 演进不要求改写 task metadata；
-  target relation 本身发生变化时，必须由独立的 accepted-scope mutation 明确更新。
+  target relation 本身发生变化时，必须由独立的 Delivery-target mutation 明确更新。
 - Legacy extra fields 不触发 tracked metadata 清理提交；生产 reader 停止把它们当作 authority。
 
 ### I-454-03 Source、scope 与 Closure 分离
@@ -310,7 +310,8 @@ archive presence、checkout availability、旧 receipt 或唯一候选推断意�
 `guru-checkpoint-task-state`建立只包含当前task control/planning artifact的checkpoint，并通过用户已确认的
 Git transport使该ref在目标机器可获取；普通Task Commit随后已由Publication传输，或Publication本身已满足
 同一条件时不得重复创建checkpoint。Checkpoint不冒充Phase 2 check或Task Commit；新commit使旧base reconcile、
-Task Commit pair、Phase 2 check、Branch Review、Publication、Completion、Closure与Finish eligibility失效。未提交working tree、ignored association/session/
+Task Commit pair、Phase 2 check、Branch Review、closeout Publication、Delivery Review、Delivery Publication、
+Completion、Closure与Finish eligibility失效。未提交working tree、ignored association/session/
 ledger与本机path不属于跨机器恢复范围。
 
 计划内active handoff由`guru-transfer-task-machine`独占：源机器先把Guru-owned local resource封存进独立
@@ -386,7 +387,8 @@ association，固定返回Closure `external_change_conflict`进行semantic re-re
   五类结果具有唯一行为；正常 Cleanup 不删除 caller-owned 或 unknown-ownership resource，手工清理只
   影响用户本次选定、重新验证并再次确认的资源。
 - `AC-454-14`：reconcile base 不修改 task metadata；每次成功reconcile固定使Task Commit pair、Phase 2、Branch
-  Review、Publication、Completion、Closure与Finish eligibility stale；Planning只在semantic impact改变需求、设计
+  Review、closeout Publication、Delivery Review、Delivery Publication、Completion、Closure与Finish eligibility
+  stale；Planning只在semantic impact改变需求、设计
   或验收合同时stale。各原owner基于reconciled HEAD重建自己的evidence。
 - `AC-454-15`：所有生产 reader、writer、resolver、session flow 与 terminal owner 不再创建、读取、修复
   task/workspace mappings，不再把 `task_workspace` 作为 public 或内部领域概念。

@@ -58,13 +58,16 @@ Legacy source缺失时，`guru-reconcile-task-source:establish_missing`展示leg
 已有source只在用户明确要求纠正来源、AI重新审查scope authority、并完成
 `guru-reconcile-task-source:correct_existing`后才改变。PR body、branch name、Issue mention、task title 和唯一搜索命中都
 不能改写 source。修正 source 不改变 TaskId 或 lifecycle generation，但固定使旧 Planning approval、base
-reconcile、Task Commit pair、Phase 2 check、Branch Review、Publication、Completion、Closure 与 Finish eligibility
+reconcile、Task Commit pair、Phase 2 check、Branch Review、closeout Publication、Delivery Review、Delivery
+Publication、Completion、Closure 与 Finish eligibility
 失效。
 
 当前 generation 已有 sealed Finish 时禁止原地修正。`guru-reconcile-task-source:prepare_reactivation_correction`
 对 archived TaskLifecycleKey、current source 与目标 source完成语义审查，只产生绑定 exact archived generation 的
-`source_correction_ready` DTO，不修改 tracked task。`guru-reactivate-task`是该 DTO 的唯一 consumer，在同一原子
-transaction中建立 generation `g+1`、写入已审查 source/scope/target并完成checkout acquisition。Reactivate不得
+`SourceCorrectionReadyDTO`，其中固定包含archived TaskArtifact identity、current source、reviewed source、
+accepted-scope identity与target relation identity，不修改 tracked task。`guru-reactivate-task`是该 DTO 的唯一
+consumer，在同一原子transaction中先验证current source未变化，再建立 generation `g+1`、写入已审查
+source/scope/target并完成checkout acquisition。Reactivate不得
 自行重新判断 source，也不得在旧 generation 上改写历史 Closure/Finish authority。
 
 ## 4. Accepted scope 与 Issue 关系
@@ -82,7 +85,8 @@ requirement/planning authority 中，不复制进稳定 task metadata。自由�
 受控关系；`guru-clarify-requirements` active-task profile必须把实际参与验收或Closure的关系写成明确scope条款。
 
 关系角色变化属于 scope mutation。mutation 完成后，依赖旧 scope 的 Planning approval、base reconcile、Task
-Commit pair、Phase 2 check、Branch Review、Publication、Completion、Closure 与 Finish eligibility 全部失效。
+Commit pair、Phase 2 check、Branch Review、closeout Publication、Delivery Review、Delivery Publication、Completion、
+Closure 与 Finish eligibility 全部失效。
 
 ## 5. Delivery target
 
@@ -96,15 +100,17 @@ Commit pair、Phase 2 check、Branch Review、Publication、Completion、Closure
 - review range；
 - PR number 或 PR state。
 
-Task Commit、Branch Review、Publication、Completion 与 Finish 在各自调用时重新读取所需的 exact HEAD、
-merge-base、ancestry 和 live PR facts。不存在跨阶段共享的 durable `base_head`。
+Task Commit、Branch Review、closeout Publication、Delivery Review、Delivery Publication、Completion 与 Finish 在
+各自调用时重新读取所需的 exact HEAD、merge-base、ancestry 和 live PR facts。不存在跨阶段共享的 durable
+`base_head`。
 
 ### 5.2 Reconcile 与 retarget
 
 普通 base reconcile 只处理 target ref 的内容演进，不修改 `task.json.base_branch`。旧 HEAD 变为新 HEAD
 属于 live Git 变化，不是 task metadata mutation。`guru-reconcile-task-base`成功后固定执行以下 transition：
 
-- Task Commit pair、Phase 2 check、Branch Review、Publication、Completion、Closure与Finish eligibility全部 stale；
+- Task Commit pair、Phase 2 check、Branch Review、closeout Publication、Delivery Review、Delivery Publication、
+  Completion、Closure与Finish eligibility全部 stale；
 - semantic impact未改变需求、设计或验收合同时，Planning approval保持current；
 - semantic impact改变需求、设计或验收合同时，Planning approval变为stale，并进入现有Planning/scope re-entry；
 - 新 evidence只能由各原owner基于reconciled HEAD重新形成，reconcile result不得替代任一 semantic pass。
@@ -117,8 +123,8 @@ Target缺失与target relation变化均由`guru-retarget-task-delivery`处理。
 3. 展示 exact old target 与 new target；
 4. 在当前对话确认 mutation；
 5. 只更新 `task.json.base_branch` 与直接依赖该 target relation 的 current planning authority；
-6. 使旧 Planning approval、base reconcile、Task Commit pair、Phase 2 check、Branch Review、Publication、Completion、
-   Closure 与 Finish eligibility 失效。
+6. 使旧 Planning approval、base reconcile、Task Commit pair、Phase 2 check、Branch Review、closeout Publication、
+   Delivery Review、Delivery Publication、Completion、Closure 与 Finish eligibility 失效。
 
 Retarget 不改变 TaskId、generation、current task branch 或 resource ownership。
 

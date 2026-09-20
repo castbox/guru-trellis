@@ -91,6 +91,8 @@ SupersessionReceiptRef = {
 consumed与artifact-deletion commit。它不是Delivery remote
 resource，不参与current branch association，不进入Finish inventory或Normal Cleanup。首次建立与后续更新只由
 `guru-transfer-task-machine`执行；已存在ref必须fresh验证其history属于同repository与TaskId，否则transfer阻塞。
+`refs/heads/guru-task-lifecycle/*`是保留control namespace，任何Create、Reactivate、Ensure Checkout、Rebind、
+Delivery target或missing-association candidate validator都必须拒绝该namespace。
 
 ## 3. Ownership establishment
 

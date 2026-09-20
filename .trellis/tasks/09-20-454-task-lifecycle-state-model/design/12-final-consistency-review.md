@@ -9,7 +9,7 @@
 - 16个lifecycle scenario；
 - 22条acceptance criteria，包括`AC-454-02A`；
 - 31条reachability constraint；
-- primary transition matrix、8组active runtime-loss matrix、archived intent matrix与evidence invalidation matrix；
+- primary transition matrix、8组active runtime-loss matrix、archived intent matrix与11-slot evidence invalidation matrix；
 - 11个owning design中的tracked authority、ignored control state、live Git facts、public Skill I/O与migration cutover；
 - Create、Activate、Resume、Repair、Rebind、Checkpoint、Machine Transfer、Delivery、Publication、Merge、Completion、
   Closure、Finish、Cleanup与Reactivate的联合可达性。
@@ -22,7 +22,7 @@
 
 ## 2. 本轮发现与修订
 
-本轮累计47个finding均已回写对应owning design，当前无open finding。
+本轮累计55个finding均已回写对应owning design，当前无open finding。
 
 | Finding | 原问题 | 最终修订 |
 | --- | --- | --- |
@@ -38,7 +38,7 @@
 | F-454-D10 | 跨机器只恢复checkout，未转移association与responsibility | 增加planned handoff、unavailable-source recovery与source-local handoff Cleanup |
 | F-454-D11 | session write failure与lifecycle rollback边界不清 | artifact/association/ledger提交即成立；session失败只进入pointer recovery或explicit-task mode |
 | F-454-D12 | identity/source/target/zero-checkout/repair缺少唯一owner | 补齐identity、lifecycle repair、source、retarget、binding establishment与ensure-checkout owners |
-| F-454-D13 | source correction与retarget未完整使evidence stale | Planning、base reconcile、Task Commit、Phase 2、Review、Publication、Completion、Closure与Finish eligibility统一失效 |
+| F-454-D13 | source correction与retarget未完整使evidence stale | Planning、base reconcile、Task Commit、Phase 2、Branch Review、closeout Publication、Delivery Review、Delivery Publication、Completion、Closure与Finish eligibility统一失效 |
 | F-454-D14 | Multi-Issue Closure未区分no-mutation basis | 固定`relation_has_no_close_authority`与`already_closed_at_review`，后者reopen进入external conflict |
 | F-454-D15 | 单一current TaskLifecycleKey与并行task冲突 | state vector改为operation-scoped，禁止多个task共享current resource |
 | F-454-D16 | checkpoint能写remote但无remote ownership合同 | Checkpoint与Publication共享首次create/reuse ownership规则 |
@@ -55,7 +55,7 @@
 | F-454-D27 | Cleanup删除唯一supersession receipt | receipt ref固定`retained_control`，永不进入Finish、Normal Cleanup或manual cleanup |
 | F-454-D28 | active ledger loss同时被判invalid与recoverable | `missing`固定为degraded recovery；`conflict`固定为invalid state |
 | F-454-D29 | Planning到implementation activation没有owner | 新增deterministic `guru-activate-task`独占`planning -> in_progress` |
-| F-454-D30 | unified state缺少scope/evidence currentness | 增加AcceptedScopeIdentity与九个EvidenceCurrentness slots |
+| F-454-D30 | unified state缺少scope/evidence currentness | 增加AcceptedScopeIdentity与11个EvidenceCurrentness slots |
 | F-454-D31 | Closure in-progress仍允许authority/content mutation | transaction期间所有会改变frozen authority或evidence的mutation不可达 |
 | F-454-D32 | public migration没有完整exit/consumer/projection | 新增独立public-contract migration设计与activation三方一致gate |
 | F-454-D33 | archived source correction造成Reactivate循环 | Source owner只产出`source_correction_ready`，Reactivate在g+1 transaction原子应用 |
@@ -73,6 +73,14 @@
 | F-454-D45 | DTO总规则禁止HEAD字段，但Reconcile/Merge direct consumer需要 | 只允许named operation DTO携带相邻consumer所需commit/head identity，禁止进入durable task authority |
 | F-454-D46 | post-merge restore默认原head branch仍存在 | 从live merge commit采用或provision non-target recovery branch，Merge只恢复result不重放mutation |
 | F-454-D47 | `public output path field count=0`会错误排除portable TaskRef | activation计数只禁止machine-local checkout/workspace path，repository-relative TaskRef继续作为合法locator |
+| F-454-D48 | Completion把closeout与Delivery强制绑定同一Branch Review/Publication前置 | evidence slots拆为closeout与Delivery两组，Completion只消费当前merge lineage要求的slot |
+| F-454-D49 | post-merge premature archive恢复后无法满足普通closeout evidence lineage | `TaskMergeResultDTO.merge_lineage=pre_cutover_recovered`固定消费restored/live merge事实进入migration Completion profile，不伪造旧review pass |
+| F-454-D50 | Rebind idempotent result与Create/Reactivate/Rebind/Ensure transaction recovery缺少public exit | 增加`already_bound`及四个same-owner resume exit，全部使用exact transaction/result identity |
+| F-454-D51 | base continuity pass丢失原`resume_target` | 新增`BaseContinuityResultDTO`，continuity router只按该target恢复原stage |
+| F-454-D52 | archived source correction只传result ref，Reactivate无法确定性取得已审查source | 新增`SourceCorrectionReadyDTO`，固定携带`current_source`、`reviewed_source`、scope identity与target relation |
+| F-454-D53 | retained task metadata仍让`scope`、relation与`meta`形成潜在第二authority | 为全部tracked字段固定处置；`children`/`parent`新写入只使用TaskId，legacy `subtasks`停止新写 |
+| F-454-D54 | supersession receipt branch可能被branch discovery重新选为task branch | `refs/heads/guru-task-lifecycle/*`固定为reserved control namespace，全部acquisition/rebind/target validator拒绝 |
+| F-454-D55 | Reactivate recovery未定义transaction generation指旧代还是新代 | public transaction固定绑定target `g+1`，private transaction同时验证source `g`与target `g+1` |
 
 ## 3. 单项收敛审查
 
@@ -87,7 +95,7 @@
 | 07 Resolution and Selection | pass | automatic/manual共用validator，authority conflict不可被selection绕过 |
 | 08 Session Association | pass | payload只含TaskId + generation，explicit-task mode与A -> B -> A闭合 |
 | 09 Ownership/Finish/Cleanup | pass | complete ledger、remote roles、Finish seal、Normal/manual/handoff Cleanup分区闭合 |
-| 10 Composition/Migration | pass | state vector、31 constraints、precedence、invalidation、transition/loss matrices与atomic cutover一致 |
+| 10 Composition/Migration | pass | state vector、31 constraints、11-slot chain-specific invalidation、transition/loss matrices与atomic cutover一致 |
 | 11 Public Contract Migration | pass | 每个新增/受影响owner拥有完整exit、minimal output、唯一consumer与旧identity处置 |
 
 ## 4. Global invariant review
@@ -146,7 +154,7 @@
 | AC-454-13 | pass | 09 Normal Cleanup matrix + terminal manual cleanup |
 | AC-454-14 | pass | 02 live base facts + 10 invalidation matrix |
 | AC-454-15 | pass | 10 zero-reader/zero-writer activation gate + 11 retired IDs |
-| AC-454-16 | pass | 10 authority/storage + 11 producer/output/consumer projection |
+| AC-454-16 | pass | 10 exact tracked-field authority/storage + 11 producer/output/consumer projection |
 | AC-454-17 | pass | 03 intent isolation + 10 archived precedence |
 | AC-454-18 | pass | 05 dirty same-checkout route + clean existing-target route |
 | AC-454-19 | pass | 09 current branch ref、zero/one current-delivery、complete remote set与receipt history |
@@ -182,6 +190,9 @@
 | pre/post-merge premature archive走同一路径 | absent | 两个profile按live PR merged state互斥 |
 | 多个active task共享current resource | absent | operation-scoped vector与constraint 28 |
 | generic router执行semantic judgment | absent | router只验证discriminator/current state并映射named owner |
+| Delivery cycle被closeout evidence错误阻塞 | absent | Completion按exact merge lineage选择closeout或Delivery slot set |
+| post-merge migration伪造旧review pass | absent | `pre_cutover_recovered` lineage只证明live merged PR/commit，Completion重新判断scope/evidence |
+| receipt ref被选为task branch | absent | reserved control namespace在全部branch target validator中被拒绝 |
 | dual-read/dual-write长期兼容 | absent | one-step activation前old reader/writer/consumer count为0 |
 
 ## 8. Authority completeness
@@ -197,8 +208,8 @@
 7. execution checkout由live resolver解析，zero/multiple topology由Ensure Checkout闭环；
 8. session pointer由Bind Task Session拥有；
 9. resource ledger由acquisition、Checkpoint、Publication、Rebind、Transfer、Finish与Cleanup exact mutation拥有；
-10. stage evidence由Planning、Base Reconcile、Task Commit、Phase 2、Branch Review、Publication、Completion与Closure
-    各自拥有一个slot；
+10. stage evidence由Planning、Base Reconcile、Task Commit、Phase 2、Branch Review、Closeout Publication、
+    Delivery Review、Delivery Publication、Completion与Closure各自拥有一个slot；
 11. terminal result与archive projection只由Finish拥有；
 12. resource deletion只由Cleanup exact profile拥有；
 13. pre-cutover premature archive recovery只由Restore Archived Task migration profiles拥有；
@@ -222,7 +233,7 @@ authority，也没有合法recovery依赖stored path、old mapping、closing key
 
 在PRD声明的正常协作、单repository lifecycle、无hostile actor、无分布式锁/并发压力/crash-consistency扩张、
 不提前激活#434的边界内，11个owning design已经单项收敛并联合闭合。16个场景、22条AC、31条reachability
-constraint、8组active runtime-loss组合、47个已修订finding与完整public contract graph之间不存在已知矛盾、
+constraint、8组active runtime-loss组合、55个已修订finding与完整public contract graph之间不存在已知矛盾、
 冲突或缺漏。
 
 该结论证明统一task lifecycle模型在声明范围内具备一致且可实现的完整设计，不证明实现或验证已经完成。

@@ -110,6 +110,12 @@ Reactivate transaction 原子完成：
 - 旧 generation session association 全部失效；
 - 不复制旧 branch association、Completion、Closure、Finish 或 Cleanup result 到新 generation。
 
+Reactivate私有transaction identity同时绑定`source_generation=g`与`target_generation=g+1`。任何
+`resume_reactivation` public handoff中的`TransactionRefDTO.lifecycle_generation`固定等于target generation
+`g+1`；同一owner恢复时必须从private transaction重新验证source generation `g`的sealed Finish与archived
+artifact仍匹配。它不得用source generation `g`作为public transaction generation，也不得把target generation
+`g+1`接到旧generation的Finish或Cleanup authority。
+
 旧 generation 的 sealed Finish 与 Cleanup authority 仍只服务旧 generation 的历史恢复和资源清理。它们
 不能驱动新 generation。若旧 Guru-owned resource 仍等待 Cleanup，新 generation 不得复用其 ref，直到旧
 resource responsibility 收敛。

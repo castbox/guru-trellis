@@ -60,6 +60,7 @@ Rebind 只接受 active TaskLifecycleKey。两条 route 共享以下前置条件
 - 当前 association 唯一且可验证；
 - current execution checkout 已唯一解析；
 - target branch 不是 Delivery target branch；
+- target branch 不属于保留的 `refs/heads/guru-task-lifecycle/*` control namespace；
 - target branch 不被另一个 active TaskLifecycleKey 占用；
 - target branch ref 不承担另一个 unresolved resource incarnation；
 - 当前不存在 Finish transaction、Cleanup mutation、Reactivate transaction或其它 Git operation。
@@ -92,7 +93,8 @@ index entry、HEAD或path变化都使transaction失败并恢复old branch associ
 - current workflow owner已确认target HEAD是当前accepted scope的合法接续点。
 
 Rebind不把source commit或working tree复制到target。Target比current HEAD更前时，rebind后Planning approval、
-Phase 2 check、Branch Review、Publication、Completion、Closure与Finish eligibility全部失效，并从current
+Phase 2 check、Branch Review、closeout Publication、Delivery Review、Delivery Publication、Completion、Closure与
+Finish eligibility全部失效，并从current
 scope owner重新建立。Target不包含current HEAD、缺少task artifact或需要内容迁移时固定返回
 `rebind_reconcile_required`；用户先完成独立reconcile，再重新发起rebind。
 
@@ -113,7 +115,7 @@ scope owner重新建立。Target不包含current HEAD、缺少task artifact或�
 8. 提交 ledger 与 association transaction；
 9. 按问题10 evidence invalidation matrix使exact slots失效：`same_checkout_new_ref`保留Planning，
    `existing_target`使Planning stale；两条route均使base reconcile、Task Commit pair、Phase 2、Branch Review、
-   Publication、Completion、Closure与Finish eligibility stale。
+   closeout Publication、Delivery Review、Delivery Publication、Completion、Closure与Finish eligibility stale。
 
 相同 branch ref、相同 resource set 与相同 revision intent 的请求返回 `already_bound`，不增加 revision。
 
@@ -185,12 +187,11 @@ Rebind 在提交步骤 8 前失败时必须恢复：
 
 `same_checkout_new_ref`回滚固定先在同一checkout切回old ref，再删除transaction新建target ref，并重新验证
 HEAD、index、working tree、path与task artifact均等于mutation前identity。任一项无法证明时返回
-`rebind_recovery_conflict`，保留transaction checkpoint供同一owner恢复，不继续另一rebind。
+`resume_rebind`，携带exact transaction identity供同一owner恢复，不继续另一rebind。
 
 若 mutation 已提交但结果丢失，同一 owner通过 TaskLifecycleKey、binding epoch、expected old revision、
 new revision 与 target branch ref 恢复 exact result。它不得再次增加 revision。无法证明 epoch 或 old/new
-revision 时返回
-`rebind_recovery_conflict`，不得同时保留两个 current branch。
+revision 时返回`resume_rebind`，不得同时保留两个 current branch。
 
 ## 10. 当前设计结论
 

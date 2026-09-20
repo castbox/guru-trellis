@@ -150,7 +150,8 @@ resource，采用pre-existing remote ref时建立caller-owned remote resource；
 `responsibility_role=checkpoint_transport`与`state=portable_auxiliary`，后续写入不改变ownership。
 
 新checkpoint commit改变current HEAD，因此base reconcile、Task Commit pair、Phase 2 check、Branch Review、
-Publication、Completion、Closure与Finish eligibility全部失效；Planning bytes未改变时Planning approval保持
+closeout Publication、Delivery Review、Delivery Publication、Completion、Closure与Finish eligibility全部失效；
+Planning bytes未改变时Planning approval保持
 current。后续owner必须基于新HEAD重建。Closure或Finish transaction进行中时checkpoint不可达。
 
 源机器必须先由`guru-checkpoint-task-state`、普通Task Commit随后由Publication传输、或Publication直接形成

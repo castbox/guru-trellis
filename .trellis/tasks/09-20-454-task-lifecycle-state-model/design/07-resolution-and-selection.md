@@ -76,6 +76,7 @@ session record、gate artifact 或 public typed exit。
 - TaskId 与 generation；
 - TaskRef 指向的 artifact identity；
 - branch exclusivity；
+- reserved control-ref exclusion；
 - resource claim conflict；
 - checkout registration/common dir/branch；
 - operation-specific cleanliness 与 HEAD relation；
@@ -120,6 +121,10 @@ state 以绕过重新读取。
 
 Archived `finish_recovery` 与 `reactivate` 不使用 candidate count 推断。用户先声明 intent，再进入对应
 validator。
+
+`refs/heads/guru-task-lifecycle/*`是machine-transfer control namespace，不是task branch、Delivery target、
+checkout acquisition或Rebind candidate。任何显式输入命中该namespace都返回`reserved_control_ref`，保持原
+lifecycle state不变。
 
 ## 9. Failure matrix
 

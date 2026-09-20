@@ -80,7 +80,9 @@ base_reconcile
 task_commit_pair
 phase2_check
 branch_review
-publication
+closeout_publication
+delivery_review
+delivery_publication
 completion
 closure
 finish_eligibility
@@ -112,8 +114,14 @@ establishment matrix的状态是可恢复degraded state；其它违反约束的�
    branch/checkout/session recovery、explicit rebind、checkpoint、machine handoff、rename与activation；它不允许
    Phase 2、Delivery、Completion、Closure或Finish。`active_tree + WorkflowPhaseState=in_progress`允许Planning
    re-entry与Phase 2及后续owner；archive_tree固定为`not_active`；
-9. `CompletionState=passed`要求planning、task_commit_pair、phase2_check、branch_review与publication所需slot均
-   current；
+9. Completion每次只消费一个exact merge lineage。普通closeout lineage要求该cycle适用的Planning、Task Commit、
+   Phase 2、Branch Review与closeout Publication slot均current；Delivery lineage要求该cycle适用的Planning、
+   Delivery Review与Delivery Publication slot均current；`pre_cutover_recovered` lineage只要求Restore与Merge
+   terminal-recovery已fresh证明exact merged PR/commit。Completion固定读取restored TaskArtifact、
+   MergedPRRecovery result、`TaskMergeResultDTO`、current accepted scope、live merged PR/merge commit/tree与current
+   planning artifact，基于这些事实独立判断完成性；它不要求也不重建旧Branch Review、closeout Publication、
+   Delivery Review或Delivery Publication slot。
+   未被当前lineage选择的slot保持absent或历史状态，不得被当作当前cycle前置条件；
 10. `ClosureState=closed|no_mutation` 必须存在 current `CompletionState=passed`与current closure slot；
 11. `FinishState=sealed` 必须存在current Closure result，且Finish entry freshness已经通过；
 12. Cleanup 只绑定 sealed Finish 的同一 TaskLifecycleKey；
@@ -186,24 +194,29 @@ Task selection 与 session persistence 分离。调用方先通过显式 TaskId�
 下表是全部authority/content mutation的唯一invalidation规则。`current`表示保留现有slot，`stale`表示原producer
 必须重建；未列出的下游slot同样按最早stale依赖传递失效。
 
-| Event | Planning | Base reconcile | Task Commit pair | Phase 2 | Branch Review | Publication | Completion | Closure | Finish eligibility |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| source correction | stale | stale | stale | stale | stale | stale | stale | stale | stale |
-| accepted-scope mutation | stale | stale | stale | stale | stale | stale | stale | stale | stale |
-| Delivery target retarget | stale | stale | stale | stale | stale | stale | stale | stale | stale |
-| base reconcile, no planning impact | current | current(new) | stale | stale | stale | stale | stale | stale | stale |
-| base reconcile, planning impact | stale | current(new) | stale | stale | stale | stale | stale | stale | stale |
-| same-checkout-new-ref rebind | current | stale | stale | stale | stale | stale | stale | stale | stale |
-| existing-target rebind | stale | stale | stale | stale | stale | stale | stale | stale | stale |
-| checkpoint commit | current | stale | stale | stale | stale | stale | stale | stale | stale |
-| destination machine-transfer consume | stale | stale | stale | stale | stale | stale | stale | stale | stale |
-| task content changes after any pass | current when planning bytes unchanged | stale | stale | stale | stale | stale | stale | stale | stale |
-| new Publication result | current | current | current | current | current | current(new) | stale | stale | stale |
-| new Completion result | current | current | current | current | current | current | current(new) | stale | stale |
-| new Closure result | current | current | current | current | current | current | current | current(new) | current pending live freshness |
+| Event | Planning | Base reconcile | Task Commit pair | Phase 2 | Branch Review | Closeout Publication | Delivery Review | Delivery Publication | Completion | Closure | Finish eligibility |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| source correction | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale |
+| accepted-scope mutation | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale |
+| Delivery target retarget | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale |
+| base reconcile, no planning impact | current | current(new) | stale | stale | stale | stale | stale | stale | stale | stale | stale |
+| base reconcile, planning impact | stale | current(new) | stale | stale | stale | stale | stale | stale | stale | stale | stale |
+| same-checkout-new-ref rebind | current | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale |
+| existing-target rebind | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale |
+| checkpoint commit | current | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale |
+| destination machine-transfer consume | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale |
+| task content changes after any pass | current when planning bytes unchanged | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale |
+| new Branch Review result | current | current | current | current | current(new) | stale | current | current | stale | stale | stale |
+| new closeout Publication result | current | current | current | current | current | current(new) | current | current | stale | stale | stale |
+| new Delivery Review result | current | current | current | current | current | current | current(new) | stale | stale | stale | stale |
+| new Delivery Publication result | current | current | current | current | current | current | current | current(new) | stale | stale | stale |
+| new Completion result | current | current | current | current | current | current | current | current | current(new) | stale | stale |
+| new Closure result | current | current | current | current | current | current | current | current | current | current(new) | current pending live freshness |
 
-`current(new)`表示该event的owner形成新的current result identity。Finish eligibility不是独立semantic artifact；它只在
-current Closure result存在且entry live freshness通过时派生为current。
+`current`表示保留原slot状态；原slot为absent时仍为absent。`current(new)`表示该event的owner形成新的current
+result identity。Finish eligibility不是独立semantic artifact；它只在current Closure result存在且entry live
+freshness通过时派生为current。Completion根据输入DTO类型与`merge_lineage`只选择一条lineage，禁止用另一条链的
+历史slot补足当前cycle。
 
 ## 5. Primary lifecycle transition matrix
 
@@ -220,7 +233,7 @@ Merge PR；active Delivery slice链为Delivery Review -> Publish Delivery -> Mer
 | no task | proposed draft | reviewed Issue payload | `guru-create-issue` | live Issue，随后 Sync + fresh Intake |
 | legacy task | establish TaskId | explicit candidate + repository uniqueness | `guru-establish-task-identity` | immutable TaskId established |
 | active_tree | establish/correct source | exact source choice + reviewed scope | `guru-reconcile-task-source` exact profile | source valid、dependent evidence stale |
-| archive_tree + sealed Finish | prepare source correction | exact archived key + reviewed new source | `guru-reconcile-task-source:prepare_reactivation_correction` | no task mutation、`source_correction_ready` for Reactivate |
+| archive_tree + sealed Finish | prepare source correction | exact archived key + `reviewed_source` | `guru-reconcile-task-source:prepare_reactivation_correction` | no task mutation、`source_correction_ready` for Reactivate |
 | active_tree | mutate accepted scope | reviewed current requirement change | `guru-clarify-requirements` active-task profile | scope identity更新、dependent evidence stale |
 | active_tree | establish/retarget delivery target | reviewed target relation | `guru-retarget-task-delivery` exact profile | target valid、dependent evidence stale |
 | active_tree(planning) | activate implementation | current Planning approved DTO | `guru-activate-task` | status=`in_progress`、activated或session recovery result |
@@ -424,19 +437,28 @@ association close与session invalidation均尚未开始。Freshness通过后才�
 
 ### 8.1 Tracked task fields retained by Guru
 
-Guru authority retains:
+Tracked字段使用以下封闭处置，不允许实现阶段再按字段名临时推断authority：
 
-- immutable `id`；
-- lifecycle `status`；
-- top-level `lifecycle_generation`；
-- `source` identity；
-- `base_branch` Delivery target；
-- ordinary portable Trellis fields with named consumers, including display/name、scope、priority、assignee 与
-  parent/child relation。
+| Field | Post-cutover disposition | Exact consumer boundary |
+| --- | --- | --- |
+| `id` | immutable TaskId authority | identity resolver、全部TaskLifecycleKey owner |
+| `status` | lifecycle phase/terminal authority | Create、Activate、Finish、Reactivate与phase router |
+| `lifecycle_generation` | lifecycle incarnation authority | generation-sensitive owner |
+| `source` | Issue/no-Issue source identity authority | Source Reconcile、Closure fresh reread |
+| `base_branch` | Delivery target relation authority | Retarget、Base Reconcile、Publication/Delivery owner |
+| `name`、`title`、`description` | portable display fields | Trellis task presentation；不得参与identity、scope或routing |
+| `dev_type`、`priority`、`creator`、`assignee`、`createdAt`、`package`、`relatedFiles`、`notes` | portable task-management fields | 对应Trellis presentation/filter consumer；不得参与lifecycle identity或freshness |
+| `scope` | legacy human-readable intake summary | 仅presentation/intake display；Planning、Completion与Closure不得把它当作accepted scope authority |
+| `completedAt` | terminal presentation timestamp | 只由Finish成功投影；不得替代Completion、Closure或Finish result identity |
+| `children`、`parent` | portable task hierarchy relation | 新写入只保存TaskId；legacy slug/TaskRef值只作candidate，semantic consumer必须先解析并验证TaskId |
+| `subtasks` | retained legacy alias of `children`, no new relation authority | Guru新writer不得写入或同步该字段；legacy值只作hierarchy candidate，consumer解析并验证TaskId后只以`children`/`parent`为current relation authority |
+| `branch`、`worktree_path`、`commit`、`pr_url` | retained legacy bytes, no Guru authority | production Guru reader/writer count固定为0 |
+| `meta` | opaque upstream extension container | Guru不得在其中读写TaskId、generation、source、target、branch、path、HEAD、session、evidence、result或ownership副本 |
 
-Guru readers stop treating the following legacy fields as authority：`branch`、`worktree_path`、`base_head`、
-`entry_head`、workspace slug/path/mode、source checkout、meta duplicates、single commit/PR shortcut与重复 Issue
-fields。Migration不批量删除这些 tracked bytes。
+Legacy `base_head`、`entry_head`、workspace slug/path/mode、source checkout、重复Issue字段以及`meta`中的Guru
+lifecycle副本同样停止读取。Migration不批量删除这些tracked bytes；新writer不得继续产生。`scope`与
+`children`/`parent`保留只因存在明确presentation/relation consumer；`subtasks`只保留legacy bytes。它们都不形成
+accepted scope或identity的第二authority。
 
 ### 8.2 Ignored repository-local layout
 

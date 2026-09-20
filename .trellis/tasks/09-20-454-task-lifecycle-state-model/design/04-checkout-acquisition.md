@@ -30,12 +30,13 @@ metadata。Rebind 的 `same-checkout-new-ref` 不取得第二个 checkout，归�
 3. checkout 绑定 `refs/heads/*`，不是 detached HEAD；
 4. checkout clean；
 5. branch 不是 selected Delivery target branch；
-6. branch 不被另一个 active TaskLifecycleKey 占用；
-7. HEAD 等于当前 reviewed decision head；
-8. repository identity、source authority 与 task creation/reactivation input 仍匹配；Reactivate携带
-   `source_correction_ready`时，tracked current source必须匹配DTO的old source，new source只在Reactivate原子
-   transaction内写入；
-9. create 场景中不存在同 TaskId artifact；Reactivate 场景中 exact archived TaskId/generation 匹配。
+6. branch 不属于保留的 `refs/heads/guru-task-lifecycle/*` control namespace；
+7. branch 不被另一个 active TaskLifecycleKey 占用；
+8. HEAD 等于当前 reviewed decision head；
+9. repository identity、source authority 与 task creation/reactivation input 仍匹配；Reactivate携带
+   `source_correction_ready`时，tracked current source必须匹配DTO的`current_source`，`reviewed_source`只在
+   Reactivate原子transaction内写入；
+10. create 场景中不存在同 TaskId artifact；Reactivate 场景中 exact archived TaskId/generation 匹配。
 
 路径只用于当前调用定位 checkout，不进入 output identity、task metadata、session binding 或 resource ledger。
 
@@ -71,6 +72,7 @@ Provision 分为三个确定性事实组合：
 - target path 已存在但不是 exact registered checkout；
 - checkout dirty、detached 或属于 foreign common dir；
 - selected branch 等于 Delivery target branch。
+- selected branch 属于 `refs/heads/guru-task-lifecycle/*` control namespace。
 
 这些状态进入共享 resolution/selection 协议，不通过 `--force` 覆盖。
 
@@ -100,7 +102,9 @@ Guru-owned branch/worktree。
 - 删除本 transaction 新建且仍匹配 exact identity 的 Guru-owned branch；
 - 保留 caller-owned branch/worktree；
 - 恢复原 task locator、branch association与ledger；步骤 3 前存在的 session binding保持原状；
-- 若 exact rollback 无法证明，返回 recovery-required，并保留 transaction identity供同一 owner 恢复。
+- 若 exact rollback 无法证明，保留 transaction identity并返回 owning Skill 的固定same-owner exit：Create返回
+  `resume_creation`，Reactivate返回`resume_reactivation`，Rebind返回`resume_rebind`，Ensure Checkout返回
+  `resume_checkout_acquisition`。四个exit都只允许原owner恢复同一transaction。
 
 步骤 3 至 7 的统一 post-state 是 lifecycle commit boundary。Session 不是该 transaction 的 commit participant：
 
@@ -159,7 +163,7 @@ topology repair也由该Skill在用户选定retain target与逐项确认repair a
 | session context key 缺失 | task lifecycle 成功，当前调用进入 explicit-task mode |
 | session write/verify 失败 | task lifecycle 成功，返回 session-binding recovery，当前调用进入 explicit-task mode |
 | mutation 失败且 Guru-created rollback 完成 | transaction failed，无残留 Guru-owned resource |
-| mutation 失败且 exact rollback 未完成 | same-owner recovery required |
+| mutation 失败且 exact rollback 未完成 | owning Skill返回固定same-owner transaction exit |
 
 ## 9. 当前设计结论
 

@@ -19,6 +19,7 @@ Public handoff只使用以下封闭DTO族。Repository context由调用图验证
 | `IssueRefDTO` | `repo_ref`、`issue_number` | fresh读取exact Issue |
 | `IssueIntakeRefDTO` | `repo_ref`、`issue_number`、`result_id` | fresh intake消费Issue创建或复用结果 |
 | `SourceRelationRefDTO` | `task_id`、`lifecycle_generation`、`source_relation_id` | consumer fresh重读current source relation |
+| `SourceCorrectionReadyDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`current_source`、`reviewed_source`、`accepted_scope_identity`、`target_relation_id`、`result_id` | Reactivate验证`current_source`并原子写入`reviewed_source` |
 | `DeliveryTargetRefDTO` | `task_id`、`lifecycle_generation`、`target_relation_id` | consumer fresh重读current Delivery target |
 | `BranchBindingRefDTO` | `task_id`、`lifecycle_generation`、`binding_epoch`、`binding_revision` | consumer fresh重读current branch association |
 | `CheckpointRefDTO` | `task_id`、`lifecycle_generation`、`checkpoint_commit`、`checkpoint_ref`、`result_id` | 消费exact portable task-state checkpoint |
@@ -30,6 +31,7 @@ Public handoff只使用以下封闭DTO族。Repository context由调用图验证
 | `PlanningApprovalRefDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`result_id` | Activation消费current Planning approval |
 | `BaseReconcileResultDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`task_head`、`new_base_head`、`resume_target`、`result_id` | 恢复base reconcile后的exact stage |
 | `BaseContinuitySeedDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`task_head`、`old_base_head`、`new_base_head`、`branch_review_commit`、`candidate_tree_sha256`、`relevant_paths`、`resume_target`、`result_id` | Branch Review执行bounded continuity |
+| `BaseContinuityResultDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`branch_review_commit`、`resume_target`、`result_id` | base-continuity router恢复exact原stage |
 | `Phase2ResultDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`phase2_commit_anchor`、`result_id` | Task Commit消费current Phase 2 pass |
 | `TaskCommitResultDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`base_ref`、`branch_review_commit`、`result_id` | Branch Review消费exact committed candidate |
 | `BranchReviewResultDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`branch_review_commit`、`result_id` | Publication消费current complete-range review |
@@ -37,7 +39,7 @@ Public handoff只使用以下封闭DTO族。Repository context由调用图验证
 | `DeliveryReviewReadyDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`delivery_cycle_ref`、`reviewed_head`、`pr_title`、`pr_body`、`remaining_work_state`、`result_id` | Publish Delivery消费reviewed slice payload |
 | `MergeReadyDTO` | `task_id`、`lifecycle_generation`、`repo_ref`、`pr_number`、`expected_head_sha`、`expected_base_branch`、`expected_head_branch`、`publication_body_sha256`、`result_id` | Merge PR fresh验证exact closeout PR |
 | `DeliveryMergeReadyDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`delivery_cycle_ref`、`repo_ref`、`pr_number`、`expected_head_sha`、`publication_body_sha256`、`result_id` | Merge Delivery fresh验证exact slice PR |
-| `TaskMergeResultDTO` | `task_id`、`lifecycle_generation`、`repo_ref`、`pr_number`、`merge_commit_sha`、`result_id` | Completion消费exact closeout merge |
+| `TaskMergeResultDTO` | `task_id`、`lifecycle_generation`、`repo_ref`、`pr_number`、`merge_commit_sha`、`merge_lineage`、`result_id` | Completion消费exact closeout或pre-cutover recovered merge |
 | `DeliveryMergeResultDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`delivery_cycle_ref`、`repo_ref`、`pr_number`、`reviewed_head`、`merge_commit_sha`、`result_id` | Completion消费exact Delivery merge |
 | `FinalizerBaseReconcileSeedDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`task_head`、`publication_head`、`selected_base_ref`、`old_base_head`、`new_base_head`、`branch_review_commit`、`resume_target`、`result_id` | Base Reconcile消费Finalizer发现的exact evolved-base pair |
 | `PublicationRefreshSeedDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`branch_review_commit`、`reason_code`、`result_id` | Publication重新审查exact reviewed content |
@@ -51,14 +53,14 @@ checkpoint locator或generic digest bundle。只有上表operation-specific DTO�
 跨相邻Skill传递；它们只绑定该次handoff freshness，不进入tracked task metadata、session、association或通用
 evidence authority。Consumer仍必须fresh重读live facts并验证这些identity。
 
-Public scalar enum只有以下两组：`session_outcome=session_bound|explicit_task_mode`；`resume_target`使用workflow已声明
-的named target id。任何其它跨owner字段必须先进入上表中的named DTO；实现不得在schema中临时增加自由格式
+DTO外独立public scalar enum只有以下三组：`session_outcome=session_bound|explicit_task_mode`；`resume_target`使用workflow已声明
+的named target id；`merge_lineage=closeout|pre_cutover_recovered`。任何其它跨owner字段必须先进入上表中的named DTO；实现不得在schema中临时增加自由格式
 `source_identity`、`target_ref`、`inventory_id`、`cleanup_state`或reviewed Issue payload。
 
 ## 3. 新增与替换owner的完整exit closure
 
-表中列出的exit是对应Skill的全部external exits。Skill内部多轮选择、confirmation与same-owner retry不产生额外
-public exit。
+表中列出的exit是对应Skill的全部external exits。同一invocation内的多轮选择、confirmation与即时retry不产生
+额外public exit；需要跨invocation继续的未收敛transaction必须返回表中声明的same-owner resume exit。
 
 | Producer | Exit | Minimal output | Unique consumer |
 | --- | --- | --- | --- |
@@ -67,6 +69,7 @@ public exit。
 | `guru-create-issue` | `blocked` | `ReasonDTO` | `issue-creation-blocked` stop |
 | `guru-create-task` | `created` | `TaskArtifactDTO`、`BranchBindingRefDTO`、`session_outcome` | `guru-task-created` workflow target |
 | `guru-create-task` | `session_binding_recovery_required` | `TaskArtifactDTO`、`ReasonDTO` | `guru-bind-task-session` |
+| `guru-create-task` | `resume_creation` | `TransactionRefDTO`、`ReasonDTO` | `guru-create-task` same transaction profile |
 | `guru-create-task` | `refresh_review` | `IssueRefDTO`、`ReasonDTO` | `guru-sync-base` |
 | `guru-create-task` | `invalid_task_state` | `TaskIdentityDTO`、`ReasonDTO` | `invalid-task-state` stop |
 | `guru-create-task` | `blocked` | `ReasonDTO` | `task-creation-blocked` stop |
@@ -77,7 +80,7 @@ public exit。
 | `guru-rename-task` | `renamed` | new `TaskArtifactDTO`、`ResultRefDTO` | `guru-current-phase-router` |
 | `guru-rename-task` | `blocked` | `ReasonDTO` | `task-rename-blocked` stop |
 | `guru-reconcile-task-source` | `source_current` | `TaskArtifactDTO`、`SourceRelationRefDTO`、`ResultRefDTO` | `guru-task-source-current-router` |
-| `guru-reconcile-task-source` | `source_correction_ready` | archived `TaskLifecycleDTO`、`SourceRelationRefDTO`、`ResultRefDTO` | `guru-reactivate-task` |
+| `guru-reconcile-task-source` | `source_correction_ready` | `SourceCorrectionReadyDTO` | `guru-reactivate-task` |
 | `guru-reconcile-task-source` | `blocked` | `ReasonDTO` | `task-source-reconciliation-blocked` stop |
 | `guru-retarget-task-delivery` | `target_current` | `TaskArtifactDTO`、`DeliveryTargetRefDTO`、`ResultRefDTO` | `guru-task-target-current-router` |
 | `guru-retarget-task-delivery` | `planning_stale` | `TaskArtifactDTO`、`ReasonDTO` | `guru-approve-task-plan` |
@@ -87,10 +90,13 @@ public exit。
 | `guru-activate-task` | `blocked` | `ReasonDTO` | `task-activation-blocked` stop |
 | `guru-establish-task-branch-binding` | `binding_established` | `TaskArtifactDTO`、`BranchBindingRefDTO` | `guru-task-binding-established-router` |
 | `guru-establish-task-branch-binding` | `blocked` | `ReasonDTO` | `task-binding-establishment-blocked` stop |
-| `guru-rebind-task-branch` | `rebound` | `TaskArtifactDTO`、new `BranchBindingRefDTO`、`result_id` | `guru-task-rebound-router` |
+| `guru-rebind-task-branch` | `rebound` | `TaskArtifactDTO`、new `BranchBindingRefDTO`、`ResultRefDTO` | `guru-task-rebound-router` |
+| `guru-rebind-task-branch` | `already_bound` | `TaskArtifactDTO`、current `BranchBindingRefDTO`、`ResultRefDTO` | `guru-task-rebound-router` |
+| `guru-rebind-task-branch` | `resume_rebind` | `TransactionRefDTO`、`ReasonDTO` | `guru-rebind-task-branch` same transaction profile |
 | `guru-rebind-task-branch` | `reconcile_required` | `TaskArtifactDTO`、`ReasonDTO` | `task-branch-target-reconciliation-required` stop |
 | `guru-rebind-task-branch` | `blocked` | `ReasonDTO` | `task-branch-rebind-blocked` stop |
-| `guru-ensure-task-checkout` | `checkout_ready` | `TaskArtifactDTO`、`BranchBindingRefDTO`、`result_id` | `guru-task-checkout-ready-router` |
+| `guru-ensure-task-checkout` | `checkout_ready` | `TaskArtifactDTO`、`BranchBindingRefDTO`、`ResultRefDTO` | `guru-task-checkout-ready-router` |
+| `guru-ensure-task-checkout` | `resume_checkout_acquisition` | `TransactionRefDTO`、`ReasonDTO` | `guru-ensure-task-checkout` same transaction profile |
 | `guru-ensure-task-checkout` | `blocked` | `ReasonDTO` | `task-checkout-acquisition-blocked` stop |
 | `guru-checkpoint-task-state` | `portable` | `TaskArtifactDTO`、`CheckpointRefDTO` | `guru-task-portable-router` |
 | `guru-checkpoint-task-state` | `already_portable` | 与`portable`相同 | `guru-task-portable-router` |
@@ -117,12 +123,12 @@ public exit。
 | `guru-review-task-completion` | `blocked` | `ReasonDTO` | `task-completion-blocked` stop |
 | `guru-complete-task-closure` | `closed` | Closure `ResultRefDTO` | `guru-finish-task` |
 | `guru-complete-task-closure` | `no_mutation` | Closure `ResultRefDTO` | `guru-finish-task` |
-| `guru-complete-task-closure` | `resume_closure` | Closure transaction `ResultRefDTO` | `guru-complete-task-closure` |
-| `guru-complete-task-closure` | `external_change_conflict` | Closure transaction `ResultRefDTO`、`ReasonDTO` | `guru-complete-task-closure` semantic re-entry |
+| `guru-complete-task-closure` | `resume_closure` | `TransactionRefDTO` | `guru-complete-task-closure` |
+| `guru-complete-task-closure` | `external_change_conflict` | `TransactionRefDTO`、`ReasonDTO` | `guru-complete-task-closure` semantic re-entry |
 | `guru-complete-task-closure` | `blocked` | `ReasonDTO` | `task-closure-blocked` stop |
 | `guru-finish-task` | `success` | `ResourceSealRefDTO` | `guru-cleanup-task-resources` normal profile |
 | `guru-finish-task` | `closure_refresh_required` | Closure `ResultRefDTO`、`ReasonDTO` | `guru-complete-task-closure` |
-| `guru-finish-task` | `resume_finish` | Finish transaction `ResultRefDTO` | `guru-finish-task` |
+| `guru-finish-task` | `resume_finish` | `TransactionRefDTO` | `guru-finish-task` |
 | `guru-finish-task` | `manual_cleanup_required` | `TerminalFinishRefDTO`、`ReasonDTO` | `guru-cleanup-task-resources:manual_cleanup` |
 | `guru-finish-task` | `blocked` | `ReasonDTO` | `task-finish-blocked` stop |
 | `guru-cleanup-task-resources` | `cleaned` | `CleanupResultRefDTO` | `task-cleanup-complete` stop |
@@ -133,6 +139,7 @@ public exit。
 | `guru-cleanup-task-resources` | `blocked` | `ReasonDTO` | `task-cleanup-blocked` stop |
 | `guru-reactivate-task` | `reactivated_to_planning` | new `TaskArtifactDTO`、new `BranchBindingRefDTO`、`session_outcome` | `task-planning-router` |
 | `guru-reactivate-task` | `session_binding_recovery_required` | new `TaskArtifactDTO`、`ReasonDTO` | `guru-bind-task-session` |
+| `guru-reactivate-task` | `resume_reactivation` | `TransactionRefDTO`、`ReasonDTO` | `guru-reactivate-task` same transaction profile |
 | `guru-reactivate-task` | `source_correction_required` | archived `TaskLifecycleDTO`、`ReasonDTO` | `guru-reconcile-task-source:prepare_reactivation_correction` |
 | `guru-reactivate-task` | `reactivate_blocked` | `ReasonDTO` | `task-reactivate-blocked` stop |
 
@@ -173,7 +180,8 @@ declared intent和fresh lifecycle state选择本文件已列出的named Skill，
 | `guru-reconcile-task-base:review_continuity_required` | `BaseContinuitySeedDTO` |
 | `guru-check-task:passed` | `Phase2ResultDTO` |
 | `guru-create-task-commit:committed` | `TaskCommitResultDTO` |
-| `guru-review-branch:passed|continuity_passed` | `BranchReviewResultDTO` |
+| `guru-review-branch:passed` | `BranchReviewResultDTO` |
+| `guru-review-branch:continuity_passed` | `BaseContinuityResultDTO` |
 | `guru-review-task-delivery:ready` | `DeliveryReviewReadyDTO` |
 | `guru-publish-task-delivery:ready_for_merge` | `DeliveryMergeReadyDTO` |
 | `guru-review-task-publication:ready` | `PublicationReadyDTO` |
@@ -182,14 +190,22 @@ declared intent和fresh lifecycle state选择本文件已列出的named Skill，
 | `guru-finalize-task:publication_review_stale` | `PublicationRefreshSeedDTO` |
 | `guru-finalize-task:resume_finalization|reprepare_required` | `FinalizationReprepareRefDTO` |
 | `guru-merge-task-delivery:delivered` | `DeliveryMergeResultDTO` |
-| `guru-merge-task-pr:merged` | `TaskMergeResultDTO` |
+| `guru-merge-task-pr:merged` | `TaskMergeResultDTO`，normal profile固定`merge_lineage=closeout`，terminal-recovery profile固定`merge_lineage=pre_cutover_recovered` |
 | `guru-restore-archived-task:restored_to_phase2` | `TaskArtifactDTO`、`ResultRefDTO` |
 | `guru-restore-archived-task:restored_for_merge_recovery` | `TaskArtifactDTO`、`MergedPRRecoveryRefDTO` |
 
-所有`revision_required`、`implementation_required`、`planning_stale|planning_revision_required`、
+`guru-publish-task-delivery:resume_publication|reprepare_required`固定输出`TransactionRefDTO + ReasonDTO`；
+`guru-finalize-task:resume_finalization|reprepare_required`继续输出`FinalizationReprepareRefDTO`。所有
+`revision-required`、`revision_required`、`implementation_required`、`planning_stale|planning_revision_required`、
 `scope_confirmation_required|clarify_scope`、`review_stale|review_refresh_required`与`return_to_task_work`输出固定为
 `TaskArtifactDTO + ReasonDTO`。Same-owner transaction resume输出固定为对应named transaction DTO；普通blocked输出
 固定为`ReasonDTO`。Pre-task Clarify profiles继续使用各自现有最小context DTO，但其中workspace/path字段数必须为0。
+
+`SourceCorrectionReadyDTO.current_source`与`reviewed_source`严格使用问题02声明的`IssueSource|NoIssueSource`
+封闭结构。`TransactionRefDTO.result_id`标识该transaction当前已持久化的恢复结果，不表示transaction已terminal；
+consumer必须同时验证`transaction_id`并只恢复同一owner mutation。普通transaction的`lifecycle_generation`绑定
+其current TaskLifecycleKey；Reactivate transaction固定绑定target generation `g+1`，private transaction另外保存并
+验证source generation `g`，不得把两代authority合并。
 
 `guru-create-task-workspace:created`迁移为`guru-create-task:created`；`refresh_review`与`invalid_task_state`保留exit id并
 更换producer；旧`blocked` stop id改为`task-creation-blocked`。不存在同时发布old/new producer的兼容期。
@@ -215,7 +231,13 @@ Pre-cutover premature archive固定分为两个互斥migration profile，不进�
 2. exact PR已经merged时，`guru-restore-archived-task:post_merge_restore`把同一generation恢复为
    `active(in_progress)`；它从live merge commit采用或provision一个不等于Delivery target的recovery branch，按
    create/reuse facts建立association与ownership，只返回`restored_for_merge_recovery`；`guru-merge-task-pr`从live
-   merged PR恢复exact `merged` result后进入Completion，不重复merge或其它remote mutation。
+   merged PR恢复exact `merged` result，固定输出`merge_lineage=pre_cutover_recovered`后进入Completion，不重复merge
+   或其它remote mutation。该lineage不伪造已退役的Branch Review/Publication pass；Completion固定读取restored
+   `TaskArtifactDTO`、`MergedPRRecoveryRefDTO`、`TaskMergeResultDTO`、current accepted scope、live merged PR/merge
+   commit/tree与current planning artifact，独立返回
+   `completed|evidence_pending|remaining_work|requirements_revision_required|implementation_revision_required`。
+   `evidence_pending`只表示上述固定输入暂时不可读或不完整，并重入同一migration Completion profile；它不得路由到
+   旧Branch Review、closeout Publication、Delivery Review或Delivery Publication以补造历史pass。
 
 Old Finalizer写入的archive presence不是Finish result。只有新`guru-finish-task` transaction产生的
 `finish_in_progress|sealed`才能进入Finish recovery。上述migration完成前不得Reactivate、Cleanup或继续旧
@@ -236,6 +258,8 @@ Old Finalizer写入的archive presence不是Finish result。只有新`guru-finis
 7. `session_outcome`封闭为`session_bound`与`explicit_task_mode`。Session write/verify失败使用独立
    `session_binding_recovery_required` exit投影到`guru-bind-task-session`，不回滚已经提交的lifecycle mutation。
 8. Exit或consumer未出现在本文件、interface package与workflow graph三方一致集合中时，activation gate失败。
+9. Reserved receipt ref namespace不得出现在Create、Reactivate、Ensure Checkout、Rebind、Delivery target或
+   missing-association candidate的validated target set中。
 
 ## 6. 旧public identity处置
 
