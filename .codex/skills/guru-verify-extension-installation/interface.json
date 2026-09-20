@@ -7,20 +7,66 @@
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
-    "workflow": {"routing": "not_applicable", "entry_precondition_ids": []},
+    "workflow": {
+      "routing": "not_applicable",
+      "entry_precondition_ids": []
+    },
     "standalone": {
       "routing": "direct_discovery",
-      "entry_precondition_ids": ["runtime_dependency", "public_input", "source_repository_identity", "source_ref_identity", "clean_source_state", "throwaway_boundary", "invocation_freshness"]
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "public_input",
+        "source_repository_identity",
+        "source_ref_identity",
+        "clean_source_state",
+        "throwaway_boundary",
+        "invocation_freshness"
+      ]
     }
   },
   "entry_preconditions": [
-    {"id": "runtime_dependency", "evidence": "installed dispatcher, active package, schemas and verification commands", "binding": "complete compatible Guru Team preset", "freshness": "validated before every command"},
-    {"id": "public_input", "evidence": "one closed source_repository_verification profile", "binding": "explicit standalone verification intent", "freshness": "validated before invocation"},
-    {"id": "source_repository_identity", "evidence": "canonical source assets, current Git root and origin", "binding": "castbox/guru-trellis source checkout", "freshness": "validated before temporary directory creation or artifact write"},
-    {"id": "source_ref_identity", "evidence": "requested ref, resolved commit and current HEAD", "binding": "one immutable source commit", "freshness": "resolved before executor side effects"},
-    {"id": "clean_source_state", "evidence": "current source worktree status", "binding": "no uncommitted source changes", "freshness": "checked before executor side effects"},
-    {"id": "throwaway_boundary", "evidence": "temporary target root and source checkout", "binding": "no business task, branch, publication or Finalizer identity", "freshness": "validated before and after execution"},
-    {"id": "invocation_freshness", "evidence": "source commit, semantic gate and actual exit", "binding": "one source-owned standalone round", "freshness": "checker rejects drift and ambiguity"}
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed dispatcher, active package, schemas and verification commands",
+      "binding": "complete compatible Guru Team preset",
+      "freshness": "validated before every command"
+    },
+    {
+      "id": "public_input",
+      "evidence": "one closed source_repository_verification profile",
+      "binding": "explicit standalone verification intent",
+      "freshness": "validated before invocation"
+    },
+    {
+      "id": "source_repository_identity",
+      "evidence": "canonical source assets, current Git root and origin",
+      "binding": "castbox/guru-trellis source checkout",
+      "freshness": "validated before temporary directory creation or artifact write"
+    },
+    {
+      "id": "source_ref_identity",
+      "evidence": "requested ref, resolved commit and current HEAD",
+      "binding": "one immutable source commit",
+      "freshness": "resolved before executor side effects"
+    },
+    {
+      "id": "clean_source_state",
+      "evidence": "current source worktree status",
+      "binding": "no uncommitted source changes",
+      "freshness": "checked before executor side effects"
+    },
+    {
+      "id": "throwaway_boundary",
+      "evidence": "temporary target root and source checkout",
+      "binding": "no business task, branch, publication or Finalizer identity",
+      "freshness": "validated before and after execution"
+    },
+    {
+      "id": "invocation_freshness",
+      "evidence": "source commit, semantic gate and actual exit",
+      "binding": "one source-owned standalone round",
+      "freshness": "checker rejects drift and ambiguity"
+    }
   ],
   "runtime_dependency": {
     "extension_id": "guru-team",
@@ -30,86 +76,336 @@
     "distribution": "guru-team-preset",
     "package_portability": "not-self-contained"
   },
-  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
   "artifacts": [
-    {"id": "source_input", "path": "examples/public-source-repository-verification-input.json"},
-    {"id": "execution_facts", "path": "examples/execution-facts.json"},
-    {"id": "semantic_review_input", "path": "examples/semantic-review-input.json"},
-    {"id": "verification_result", "path": "examples/verification-result.json"},
-    {"id": "verified_output", "path": "examples/public-verified-output.json"},
-    {"id": "blocked_output", "path": "examples/public-blocked-output.json"},
-    {"id": "public_invocation_error", "path": "examples/public-invocation-error.json"},
-    {"id": "reviewed_content_identity_output_example", "path": "examples/reviewed-content-identity-output.json"}
+    {
+      "id": "source_input",
+      "path": "examples/public-source-repository-verification-input.json"
+    },
+    {
+      "id": "execution_facts",
+      "path": "examples/execution-facts.json"
+    },
+    {
+      "id": "semantic_review_input",
+      "path": "examples/semantic-review-input.json"
+    },
+    {
+      "id": "verification_result",
+      "path": "examples/verification-result.json"
+    },
+    {
+      "id": "verified_output",
+      "path": "examples/public-verified-output.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "reviewed_content_identity_output_example",
+      "path": "examples/reviewed-content-identity-output.json"
+    }
   ],
   "schemas": [
-    {"id": "legacy_public_input_aggregate_3_0", "path": "schemas/public-input-3.0.schema.json"},
-    {"id": "legacy_public_input_verification_required_3_0", "path": "schemas/public-verification-required-input-3.0.schema.json"},
-    {"id": "legacy_public_input_standalone_verification_1_0", "path": "schemas/public-standalone-verification-input.schema.json"},
-    {"id": "public_input_source_repository_verification", "path": "schemas/public-source-repository-verification-input.schema.json"},
-    {"id": "public_input_aggregate", "path": "schemas/public-input-4.0.schema.json"},
-    {"id": "legacy_public_verified_output_3_0", "path": "schemas/public-verified-output-3.0.schema.json"},
-    {"id": "legacy_public_not_required_output_3_0", "path": "schemas/public-not-required-output.schema.json"},
-    {"id": "legacy_public_return_to_task_work_output_1_0", "path": "schemas/public-return-to-task-work-output.schema.json"},
-    {"id": "public_verified_output", "path": "schemas/public-verified-output-4.0.schema.json"},
-    {"id": "public_blocked_output", "path": "schemas/public-blocked-output-2.0.schema.json"},
-    {"id": "public_invocation_error", "path": "schemas/public-invocation-error.schema.json"},
-    {"id": "execution_facts", "path": "schemas/execution-facts.schema.json"},
-    {"id": "legacy_semantic_review_input_1_0", "path": "schemas/semantic-review-input.schema.json"},
-    {"id": "semantic_review_input", "path": "schemas/semantic-review-input-2.0.schema.json"},
-    {"id": "legacy_private_verification_result_4_0", "path": "schemas/verification-result-4.0.schema.json"},
-    {"id": "verification_result", "path": "schemas/verification-result-5.0.schema.json"},
-    {"id": "reviewed_content_identity_output", "path": "schemas/reviewed-content-identity-output.schema.json"}
+    {
+      "id": "legacy_public_input_aggregate_3_0",
+      "path": "schemas/public-input-3.0.schema.json"
+    },
+    {
+      "id": "legacy_public_input_verification_required_3_0",
+      "path": "schemas/public-verification-required-input-3.0.schema.json"
+    },
+    {
+      "id": "legacy_public_input_standalone_verification_1_0",
+      "path": "schemas/public-standalone-verification-input.schema.json"
+    },
+    {
+      "id": "public_input_source_repository_verification",
+      "path": "schemas/public-source-repository-verification-input.schema.json"
+    },
+    {
+      "id": "public_input_aggregate",
+      "path": "schemas/public-input-4.0.schema.json"
+    },
+    {
+      "id": "legacy_public_verified_output_3_0",
+      "path": "schemas/public-verified-output-3.0.schema.json"
+    },
+    {
+      "id": "legacy_public_not_required_output_3_0",
+      "path": "schemas/public-not-required-output.schema.json"
+    },
+    {
+      "id": "legacy_public_return_to_task_work_output_1_0",
+      "path": "schemas/public-return-to-task-work-output.schema.json"
+    },
+    {
+      "id": "public_verified_output",
+      "path": "schemas/public-verified-output-4.0.schema.json"
+    },
+    {
+      "id": "public_blocked_output",
+      "path": "schemas/public-blocked-output-2.0.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "execution_facts",
+      "path": "schemas/execution-facts.schema.json"
+    },
+    {
+      "id": "legacy_semantic_review_input_1_0",
+      "path": "schemas/semantic-review-input.schema.json"
+    },
+    {
+      "id": "semantic_review_input",
+      "path": "schemas/semantic-review-input-2.0.schema.json"
+    },
+    {
+      "id": "legacy_private_verification_result_4_0",
+      "path": "schemas/verification-result-4.0.schema.json"
+    },
+    {
+      "id": "verification_result",
+      "path": "schemas/verification-result-5.0.schema.json"
+    },
+    {
+      "id": "reviewed_content_identity_output",
+      "path": "schemas/reviewed-content-identity-output.schema.json"
+    }
   ],
   "validators": [
-    {"id": "extension_version_projection", "command": "scripts/version.sh", "runtime_command": "show-extension-version", "objective_scope": "Project the installed Guru Team extension version and provenance from the repository-local manifest without semantic judgment"},
-    {"id": "verification_executor", "command": "scripts/execute-extension-verification.sh", "runtime_command": "execute-extension-verification", "objective_scope": "Validate source identity before side effects, create isolated source and clean throwaway target checkouts, then execute the source-owned installation catalog"},
-    {"id": "verification_recorder", "command": "scripts/record-extension-verification.sh", "runtime_command": "record-extension-verification", "objective_scope": "Record already completed AI adequacy, findings and route in ignored source-session runtime"},
-    {"id": "verification_checker", "command": "scripts/check-extension-verification.sh", "runtime_command": "check-extension-verification", "objective_scope": "Validate source identity, schema, freshness, redaction, ignored persistence and terminal consumer without semantic judgment"},
-    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-extension-verification", "objective_scope": "Validate current source-only input, rerun the owner checker, select the actual exit schema and emit one minimal DTO"},
-    {"id": "reviewed_content_identity", "command": "scripts/reviewed-content-identity.sh", "runtime_command": "verify-extension-content-identity", "objective_scope": "Compute the canonical metadata-excluded reviewed-content identity for one Git commit"}
+    {
+      "id": "extension_version_projection",
+      "command": "scripts/version.sh",
+      "runtime_command": "show-extension-version",
+      "objective_scope": "Project the installed Guru Team extension version and provenance from the repository-local manifest without semantic judgment"
+    },
+    {
+      "id": "verification_executor",
+      "command": "scripts/execute-extension-verification.sh",
+      "runtime_command": "execute-extension-verification",
+      "objective_scope": "Validate source identity before side effects, create isolated source and clean throwaway target checkouts, then execute the source-owned installation catalog"
+    },
+    {
+      "id": "verification_recorder",
+      "command": "scripts/record-extension-verification.sh",
+      "runtime_command": "record-extension-verification",
+      "objective_scope": "Record already completed AI adequacy, findings and route in ignored source-session runtime"
+    },
+    {
+      "id": "verification_checker",
+      "command": "scripts/check-extension-verification.sh",
+      "runtime_command": "check-extension-verification",
+      "objective_scope": "Validate source identity, schema, freshness, redaction, ignored persistence and terminal consumer without semantic judgment"
+    },
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-extension-verification",
+      "objective_scope": "Validate current source-only input, rerun the owner checker, select the actual exit schema and emit one minimal DTO"
+    },
+    {
+      "id": "reviewed_content_identity",
+      "command": "scripts/reviewed-content-identity.sh",
+      "runtime_command": "verify-extension-content-identity",
+      "objective_scope": "Compute the canonical metadata-excluded reviewed-content identity for one Git commit"
+    }
   ],
   "external_exits": [
-    {"id": "verified", "evidence": "every selected source-owned installation capability passed and AI adequacy review has no open finding", "consumer": {"kind": "stop", "id": "extension-installation-verification-verified"}},
-    {"id": "blocked", "evidence": "source identity, ref, clean-state, installation or another required capability prevents completion", "consumer": {"kind": "stop", "id": "extension-installation-verification-blocked"}}
+    {
+      "id": "verified",
+      "evidence": "every selected source-owned installation capability passed and AI adequacy review has no open finding",
+      "consumer": {
+        "kind": "stop",
+        "id": "extension-installation-verification-verified"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "source identity, ref, clean-state, installation or another required capability prevents completion",
+      "consumer": {
+        "kind": "stop",
+        "id": "extension-installation-verification-blocked"
+      }
+    }
   ],
   "reentry": {
     "identity": "source repository, origin, requested ref, resolved commit, checkout HEAD, clean state, semantic gate and actual exit",
     "freshness": "same-source transient retry reruns the complete standalone Skill; any source or HEAD drift supersedes prior ignored state",
     "stale_behavior": "fail_closed"
   },
-  "tests": ["tests/test_contract.py"],
-  "platform_destinations": ["shared", "codex", "cursor", "claude", "opencode"],
+  "tests": [
+    "tests/test_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
   "public_contracts": {
     "input": {
       "kind": "structured_json",
-      "aggregate_schema": {"schema_id": "guru-extension-verify-installation-input-aggregate-4.0", "path": "schemas/public-input-4.0.schema.json"},
+      "aggregate_schema": {
+        "schema_id": "guru-extension-verify-installation-input-aggregate-4.0",
+        "path": "schemas/public-input-4.0.schema.json"
+      },
       "profiles": [
-        {"id": "source_repository_verification", "schema": {"schema_id": "guru-extension-verify-installation-input-source-repository-verification-4.0", "path": "schemas/public-source-repository-verification-input.schema.json"}, "example": {"id": "source_repository_verification_input", "path": "examples/public-source-repository-verification-input.json"}, "discriminator": {"field": "profile", "value": "source_repository_verification"}}
+        {
+          "id": "source_repository_verification",
+          "schema": {
+            "schema_id": "guru-extension-verify-installation-input-source-repository-verification-4.0",
+            "path": "schemas/public-source-repository-verification-input.schema.json"
+          },
+          "example": {
+            "id": "source_repository_verification_input",
+            "path": "examples/public-source-repository-verification-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "source_repository_verification"
+          }
+        }
       ]
     },
     "invocation": {
       "command_id": "run-skill-command",
       "wrapper": "scripts/invoke.sh",
-      "input_binding": {"kind": "structured_json", "profile_id": "source_repository_verification"},
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "source_repository_verification"
+      },
       "stdout_contract": "single_typed_exit",
-      "error_schema": {"schema_id": "guru-extension-verify-installation-invocation-error-1.0", "path": "schemas/public-invocation-error.schema.json"},
-      "error_example": {"id": "invalid_public_input", "path": "examples/public-invocation-error.json"},
-      "example_argv": ["--input", "examples/public-source-repository-verification-input.json", "--owner-result", "examples/verification-result.json"]
+      "error_schema": {
+        "schema_id": "guru-extension-verify-installation-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invalid_public_input",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-source-repository-verification-input.json",
+        "--owner-result",
+        "examples/verification-result.json"
+      ]
     },
     "outputs": [
-      {"exit_id": "verified", "schema": {"schema_id": "guru-extension-verify-installation-output-verified-4.0", "path": "schemas/public-verified-output-4.0.schema.json"}, "example": {"id": "verified_output", "path": "examples/public-verified-output.json"}, "consumer_use_ids": ["project_verified"]},
-      {"exit_id": "blocked", "schema": {"schema_id": "guru-extension-verify-installation-output-blocked-2.0", "path": "schemas/public-blocked-output-2.0.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["project_blocked"]}
+      {
+        "exit_id": "verified",
+        "schema": {
+          "schema_id": "guru-extension-verify-installation-output-verified-4.0",
+          "path": "schemas/public-verified-output-4.0.schema.json"
+        },
+        "example": {
+          "id": "verified_output",
+          "path": "examples/public-verified-output.json"
+        },
+        "consumer_use_ids": [
+          "project_verified"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-extension-verify-installation-output-blocked-2.0",
+          "path": "schemas/public-blocked-output-2.0.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "project_blocked"
+        ]
+      }
     ],
     "consumer_inputs": [
-      {"id": "verified_stop_input", "consumer": {"kind": "stop", "id": "extension-installation-verification-verified"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-extension-verify-installation-stop-verified-input-1.0", "path": "consumers/stop/production/verify-extension-installation-verified.schema.json"}},
-      {"id": "blocked_stop_input", "consumer": {"kind": "stop", "id": "extension-installation-verification-blocked"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-extension-verify-installation-stop-blocked-input-1.0", "path": "consumers/stop/production/verify-extension-installation-blocked.schema.json"}}
+      {
+        "id": "verified_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "extension-installation-verification-verified"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-extension-verify-installation-stop-verified-input-1.0",
+          "path": "consumers/stop/production/verify-extension-installation-verified.schema.json"
+        }
+      },
+      {
+        "id": "blocked_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "extension-installation-verification-blocked"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-extension-verify-installation-stop-blocked-input-1.0",
+          "path": "consumers/stop/production/verify-extension-installation-blocked.schema.json"
+        }
+      }
     ],
     "projections": [
-      {"id": "project_verified", "exit_id": "verified", "consumer_input_id": "verified_stop_input", "operation": "direct"},
-      {"id": "project_blocked", "exit_id": "blocked", "consumer_input_id": "blocked_stop_input", "operation": "direct"}
+      {
+        "id": "project_verified",
+        "exit_id": "verified",
+        "consumer_input_id": "verified_stop_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_stop_input",
+        "operation": "direct"
+      }
     ],
     "private_artifacts": [
-      {"id": "source_verification_result", "kind": "gate_evidence", "schema": {"schema_id": "guru-extension-installation-verification-result-5.0", "path": "schemas/verification-result-5.0.schema.json"}, "persistence": "ignored_runtime"}
+      {
+        "id": "source_verification_result",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "guru-extension-installation-verification-result-5.0",
+          "path": "schemas/verification-result-5.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      }
     ]
   }
 }

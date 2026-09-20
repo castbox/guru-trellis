@@ -374,7 +374,7 @@ class ExtensionVerificationContractTests(unittest.TestCase):
                     "tree_state": "clean",
                     "is_mutable_ref": False,
                 },
-                "install": {"selected_platforms": ["codex"], "all_platforms": False},
+                "install": {"selected_platforms": ["codex"]},
             }), encoding="utf-8")
             result = subprocess.run(
                 [str(PACKAGE / "scripts/version.sh"), "--root", str(root), "--json"],
@@ -387,6 +387,7 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             payload = json.loads(result.stdout)
             self.assertEqual(payload["guru_team_extension"]["version"], "0.6.16-guru.41")
             self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.17"])
+            self.assertEqual(payload["guru_team_extension"]["selected_platforms"], ["codex"])
             self.assertEqual(result.stderr, "")
 
     def test_version_help_and_compatibility_wrapper_route_to_package(self) -> None:

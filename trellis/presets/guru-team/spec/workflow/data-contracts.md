@@ -467,11 +467,12 @@ participates in current invocation.
 
 The source and installed closure algorithm reads the live registry, current
 package contracts, the production current manifest, Interface public
-contracts, and package-local corpora. Nineteen integrated rows select Interface
-1.4; normal-scenario qualification selects Interface 1.6; the standalone
-verifier selects Interface 1.5. Exact profile, exit,
+contracts, and package-local corpora. Twenty-eight active rows select Interface
+1.4; `guru-create-task-workspace` and the two qualification packages select
+Interface 1.6; the standalone verifier selects Interface 1.5. Exact profile, exit,
 consumer, projection, current-case, and authoring-edge equality is required.
-Twenty-three Skills and 100 exits are the current package cardinality regression, not
+Thirty-two Skills, 142 exits, and 102 commands are the current package
+cardinality regression, not
 a hard-coded future registry allowlist; the business workflow independently
 asserts 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets.
 

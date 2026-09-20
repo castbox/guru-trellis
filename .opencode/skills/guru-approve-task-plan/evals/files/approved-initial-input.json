@@ -1,6 +1,0 @@
-{
-  "profile": "initial_review",
-  "mode": "workflow",
-  "task_ref": ".trellis/tasks/current",
-  "source_exit": "planning_ready"
-}

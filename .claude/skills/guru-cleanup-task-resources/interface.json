@@ -1,1 +1,388 @@
-{"$schema":"../../schemas/skill-interface-1.4.schema.json","schema_version":"1.4","id":"guru-cleanup-task-resources","name":"guru-cleanup-task-resources","description":"Remove only the current Finish-owned local, remote and runtime resources after terminal success.","state":"active","judgment_mode":"semantic","modes":{"workflow":{"routing":"global_workflow","entry_precondition_ids":["runtime_dependency","finish_success","owned_resources","cleanup_freshness"]},"standalone":{"routing":"direct_discovery","entry_precondition_ids":["runtime_dependency","finish_success","owned_resources","cleanup_freshness"]}},"entry_preconditions":[{"id":"runtime_dependency","evidence":"installed cleanup package","binding":"Guru Team preset","freshness":"each call"},{"id":"finish_success","evidence":"current Finish success DTO or exact cleaned recovery receipt","binding":"one finish identity","freshness":"current"},{"id":"owned_resources","evidence":"local branch, worktree, remote branch, remote-tracking and runtime ownership, including an empty set","binding":"this task only","freshness":"fresh discovery"},{"id":"cleanup_freshness","evidence":"current consumers and user resources","binding":"deletion scope","freshness":"before confirmation"}],"runtime_dependency":{"extension_id":"guru-team","api_version":"1.0","manifest_path":".trellis/guru-team/extension.json","dispatcher":"run-skill-command","distribution":"guru-team-preset","package_portability":"not-self-contained"},"ordered_stages":["forward_behavior","ai_review_gate","conditional_human_confirmation","recorder_validator","typed_exit"],"artifacts":[{"id":"input","path":"examples/public-input.json"},{"id":"semantic_result","path":"examples/semantic-result.json"},{"id":"cleaned_output","path":"examples/public-output.json"},{"id":"remaining_resources_output","path":"examples/public-remaining-resources-output.json"},{"id":"blocked_output","path":"examples/public-blocked-output.json"},{"id":"self_authoring","path":"examples/self-authoring.json"}],"schemas":[{"id":"public_input","path":"schemas/public-input.schema.json"},{"id":"semantic_result","path":"schemas/semantic-result.schema.json"},{"id":"public_output","path":"schemas/public-output.schema.json"},{"id":"cleaned_output","path":"schemas/public-cleaned-output.schema.json"},{"id":"remaining_resources_output","path":"schemas/public-remaining-resources-output.schema.json"},{"id":"blocked_output","path":"schemas/public-blocked-output.schema.json"},{"id":"cleanup_transaction","path":"schemas/cleanup-transaction.schema.json"}],"validators":[{"id":"public_invocation","command":"scripts/invoke.sh","runtime_command":"invoke-guru-cleanup-task-resources","objective_scope":"Validate current Finish identity and cleanup scope."}],"external_exits":[{"id":"cleaned","evidence":"the reviewed owned set was empty, already absent, removed, or recovered as cleaned","consumer":{"kind":"stop","id":"task-cleanup-complete"}},{"id":"remaining_resources","evidence":"confirmation or deletion remains pending","consumer":{"kind":"skill","id":"guru-cleanup-task-resources"}},{"id":"blocked","evidence":"resource ownership is ambiguous","consumer":{"kind":"stop","id":"task-cleanup-blocked"}}],"reentry":{"identity":"task, Finish success, lifecycle generation and owned resource set","freshness":"rediscover resources for every pending call; recover only an exact cleaned receipt","stale_behavior":"fail_closed"},"tests":["tests/test_cleanup_contract.py"],"platform_destinations":["shared","codex","cursor","claude","opencode"],"public_contracts":{"input":{"kind":"structured_json","aggregate_schema":{"schema_id":"guru-cleanup-task-resources-input-1.0","path":"schemas/public-input.schema.json"},"profiles":[{"id":"finish_success","schema":{"schema_id":"guru-cleanup-task-resources-input-1.0","path":"schemas/public-input.schema.json"},"example":{"id":"input","path":"examples/public-input.json"},"discriminator":{"field":"profile","value":"finish_success"}}]},"invocation":{"command_id":"run-skill-command","wrapper":"scripts/invoke.sh","input_binding":{"kind":"structured_json","profile_id":"finish_success"},"stdout_contract":"single_typed_exit","error_schema":{"schema_id":"guru-cleanup-task-resources-output-1.0","path":"schemas/public-output.schema.json"},"error_example":{"id":"input","path":"examples/public-input.json"},"example_argv":["--input","examples/public-input.json","--semantic-result","examples/semantic-result.json"]},"outputs":[{"exit_id":"cleaned","schema":{"schema_id":"guru-cleanup-task-resources-output-cleaned-1.0","path":"schemas/public-cleaned-output.schema.json"},"example":{"id":"cleaned_output","path":"examples/public-output.json"},"consumer_use_ids":["terminal"]},{"exit_id":"remaining_resources","schema":{"schema_id":"guru-cleanup-task-resources-output-remaining-resources-1.0","path":"schemas/public-remaining-resources-output.schema.json"},"example":{"id":"remaining_resources_output","path":"examples/public-remaining-resources-output.json"},"consumer_use_ids":["self"]},{"exit_id":"blocked","schema":{"schema_id":"guru-cleanup-task-resources-output-blocked-1.0","path":"schemas/public-blocked-output.schema.json"},"example":{"id":"blocked_output","path":"examples/public-blocked-output.json"},"consumer_use_ids":["blocked"]}],"consumer_inputs":[{"id":"terminal","consumer":{"kind":"stop","id":"task-cleanup-complete"},"payload_kind":"zero_payload"},{"id":"self","consumer":{"kind":"skill","id":"guru-cleanup-task-resources"},"payload_kind":"structured_json","contract":{"kind":"skill_input_authoring_seed","interface_path":"packages/guru-cleanup-task-resources/interface.json","input_kind":"structured_json","profile_id":"finish_success","seed_fields":["source_exit","task_ref","archive_ref","finish_ref","lifecycle_generation"],"authoring_fields":["profile","mode"],"authoring_example":{"id":"self_authoring","path":"examples/self-authoring.json"}}},{"id":"blocked","consumer":{"kind":"stop","id":"task-cleanup-blocked"},"payload_kind":"zero_payload"}],"projections":[{"id":"terminal","exit_id":"cleaned","consumer_input_id":"terminal","operation":"select","mappings":[]},{"id":"self","exit_id":"remaining_resources","consumer_input_id":"self","operation":"rename","mappings":[{"source":"exit_id","target":"source_exit"},{"source":"task_ref","target":"task_ref"},{"source":"archive_ref","target":"archive_ref"},{"source":"finish_ref","target":"finish_ref"},{"source":"lifecycle_generation","target":"lifecycle_generation"}]},{"id":"blocked","exit_id":"blocked","consumer_input_id":"blocked","operation":"select","mappings":[]}],"private_artifacts":[{"id":"cleanup_transaction","kind":"runtime_checkpoint","schema":{"schema_id":"guru-cleanup-task-resources-transaction-1.0","path":"schemas/cleanup-transaction.schema.json"},"persistence":"ignored_runtime"}]}}
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-cleanup-task-resources",
+  "name": "guru-cleanup-task-resources",
+  "description": "Remove only the current Finish-owned local, remote and runtime resources after terminal success.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "finish_success",
+        "owned_resources",
+        "cleanup_freshness"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "finish_success",
+        "owned_resources",
+        "cleanup_freshness"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed cleanup package",
+      "binding": "Guru Team preset",
+      "freshness": "each call"
+    },
+    {
+      "id": "finish_success",
+      "evidence": "current Finish success DTO or exact cleaned recovery receipt",
+      "binding": "one finish identity",
+      "freshness": "current"
+    },
+    {
+      "id": "owned_resources",
+      "evidence": "local branch, worktree, remote branch, remote-tracking and runtime ownership, including an empty set",
+      "binding": "this task only",
+      "freshness": "fresh discovery"
+    },
+    {
+      "id": "cleanup_freshness",
+      "evidence": "current consumers and user resources",
+      "binding": "deletion scope",
+      "freshness": "before confirmation"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "input",
+      "path": "examples/public-input.json"
+    },
+    {
+      "id": "semantic_result",
+      "path": "examples/semantic-result.json"
+    },
+    {
+      "id": "cleaned_output",
+      "path": "examples/public-output.json"
+    },
+    {
+      "id": "remaining_resources_output",
+      "path": "examples/public-remaining-resources-output.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "self_authoring",
+      "path": "examples/self-authoring.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "public_input",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "semantic_result",
+      "path": "schemas/semantic-result.schema.json"
+    },
+    {
+      "id": "public_output",
+      "path": "schemas/public-output.schema.json"
+    },
+    {
+      "id": "cleaned_output",
+      "path": "schemas/public-cleaned-output.schema.json"
+    },
+    {
+      "id": "remaining_resources_output",
+      "path": "schemas/public-remaining-resources-output.schema.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "cleanup_transaction",
+      "path": "schemas/cleanup-transaction.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-cleanup-task-resources",
+      "objective_scope": "Validate current Finish identity and cleanup scope."
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "cleaned",
+      "evidence": "the reviewed owned set was empty, already absent, removed, or recovered as cleaned",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-cleanup-complete"
+      }
+    },
+    {
+      "id": "remaining_resources",
+      "evidence": "confirmation or deletion remains pending",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-cleanup-task-resources"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "resource ownership is ambiguous",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-cleanup-blocked"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "task, Finish success, lifecycle generation and owned resource set",
+    "freshness": "rediscover resources for every pending call; recover only an exact cleaned receipt",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_cleanup_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-cleanup-task-resources-input-1.0",
+        "path": "schemas/public-input.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "finish_success",
+          "schema": {
+            "schema_id": "guru-cleanup-task-resources-input-1.0",
+            "path": "schemas/public-input.schema.json"
+          },
+          "example": {
+            "id": "input",
+            "path": "examples/public-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "finish_success"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "finish_success"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-cleanup-task-resources-output-1.0",
+        "path": "schemas/public-output.schema.json"
+      },
+      "error_example": {
+        "id": "input",
+        "path": "examples/public-input.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-input.json",
+        "--semantic-result",
+        "examples/semantic-result.json"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "cleaned",
+        "schema": {
+          "schema_id": "guru-cleanup-task-resources-output-cleaned-1.0",
+          "path": "schemas/public-cleaned-output.schema.json"
+        },
+        "example": {
+          "id": "cleaned_output",
+          "path": "examples/public-output.json"
+        },
+        "consumer_use_ids": [
+          "terminal"
+        ]
+      },
+      {
+        "exit_id": "remaining_resources",
+        "schema": {
+          "schema_id": "guru-cleanup-task-resources-output-remaining-resources-1.0",
+          "path": "schemas/public-remaining-resources-output.schema.json"
+        },
+        "example": {
+          "id": "remaining_resources_output",
+          "path": "examples/public-remaining-resources-output.json"
+        },
+        "consumer_use_ids": [
+          "self"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-cleanup-task-resources-output-blocked-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "blocked"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "terminal",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-cleanup-complete"
+        },
+        "payload_kind": "zero_payload"
+      },
+      {
+        "id": "self",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-cleanup-task-resources"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-cleanup-task-resources/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "finish_success",
+          "seed_fields": [
+            "source_exit",
+            "task_ref",
+            "archive_ref",
+            "finish_ref",
+            "lifecycle_generation"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "self_authoring",
+            "path": "examples/self-authoring.json"
+          }
+        }
+      },
+      {
+        "id": "blocked",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-cleanup-blocked"
+        },
+        "payload_kind": "zero_payload"
+      }
+    ],
+    "projections": [
+      {
+        "id": "terminal",
+        "exit_id": "cleaned",
+        "consumer_input_id": "terminal",
+        "operation": "select",
+        "mappings": []
+      },
+      {
+        "id": "self",
+        "exit_id": "remaining_resources",
+        "consumer_input_id": "self",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "archive_ref",
+            "target": "archive_ref"
+          },
+          {
+            "source": "finish_ref",
+            "target": "finish_ref"
+          },
+          {
+            "source": "lifecycle_generation",
+            "target": "lifecycle_generation"
+          }
+        ]
+      },
+      {
+        "id": "blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked",
+        "operation": "select",
+        "mappings": []
+      }
+    ],
+    "private_artifacts": [
+      {
+        "id": "cleanup_transaction",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "guru-cleanup-task-resources-transaction-1.0",
+          "path": "schemas/cleanup-transaction.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      }
+    ]
+  }
+}

@@ -1,5 +1,0 @@
-{
-  "profile": "recover_created_result",
-  "mode": "workflow",
-  "task_ref": ".trellis/tasks/current"
-}

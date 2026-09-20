@@ -235,7 +235,6 @@ def prepare_clean_installed_repository(installed_repo: Path, work_root: Path) ->
                 str(apply_script),
                 "--repo",
                 str(source),
-                "--all-platforms",
                 "--json",
             ),
             source,

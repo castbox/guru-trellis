@@ -29,7 +29,7 @@ class WorkspaceInvocationIntegrationTests(unittest.TestCase):
             shutil.copytree(SOURCE / ".trellis/scripts", installed / ".trellis/scripts", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
             for phase in ("initial", "reapply"):
                 with self.subTest(phase=phase):
-                    result = run_preset_install(installed, all_platforms=True)
+                    result = run_preset_install(installed)
                     self.assertEqual(result.returncode, 0, result.stdout[-3000:] + result.stderr)
                     self.check_chain(installed, work / phase)
 

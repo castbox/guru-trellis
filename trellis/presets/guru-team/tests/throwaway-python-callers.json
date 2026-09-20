@@ -188,12 +188,30 @@
       "ordinal": 1
     },
     {
-      "id": "verifier-source_managed-f037db3bfe71",
+      "id": "verifier-source_managed-575645202b83",
       "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
       "kind": "inline_stdin",
       "classification": "source_managed",
       "expected_launcher": "source_python",
-      "anchor_sha256": "f037db3bfe71f63fc8fa7a77de1a156008ef61a55d9482125dd20bd69847b026",
+      "anchor_sha256": "575645202b83e57bc4fe642b8aa066a3bc128741ba611d7ac7a17de4103b9560",
+      "ordinal": 1
+    },
+    {
+      "id": "verifier-source_managed-8d93b19056b2",
+      "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "kind": "inline_stdin",
+      "classification": "source_managed",
+      "expected_launcher": "source_python",
+      "anchor_sha256": "8d93b19056b2481eac2deb43e0875ba0cff3ca48d8eaa246d9c00a9cbe626382",
+      "ordinal": 1
+    },
+    {
+      "id": "verifier-source_managed-b5d14aae30ed",
+      "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "kind": "inline_stdin",
+      "classification": "source_managed",
+      "expected_launcher": "source_python",
+      "anchor_sha256": "b5d14aae30ed4ebbd16103552b704471ee2f4f63ddc2397f53b5db8a4bf33df8",
       "ordinal": 1
     }
   ],
@@ -334,12 +352,12 @@
       "ordinal": 1
     },
     {
-      "id": "helper-python_subprocess_second_hop-adacb3b0a0df",
+      "id": "helper-python_subprocess_second_hop-3128cca1edd8",
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
-      "anchor_sha256": "adacb3b0a0dfacebb1bc4afae8d56c36918c4658bd050c5d70e82a9750f227dc",
+      "anchor_sha256": "3128cca1edd85f09019164eaab9e0e831fa1e7a64a1082969e82f014c470586e",
       "ordinal": 1
     },
     {
@@ -397,12 +415,12 @@
       "ordinal": 1
     },
     {
-      "id": "helper-python_subprocess_second_hop-dc8ffaff9013",
+      "id": "helper-python_subprocess_second_hop-a8560bde9c87",
       "owner": "trellis/skills/guru-team/adapters/eval/fixture_io.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
-      "anchor_sha256": "dc8ffaff9013a5e7072a91edea10d2a957f12c328fb580b5f768c19463a3329d",
+      "anchor_sha256": "a8560bde9c87a2325e87bcf529fb6da1d8985e19c18b6be4575f67c8f8aab394",
       "ordinal": 1
     },
     {

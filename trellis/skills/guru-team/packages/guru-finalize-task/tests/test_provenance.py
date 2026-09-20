@@ -348,17 +348,15 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
 
     def test_provenance_apply_platform_args_preserve_exact_manifest_selection(self) -> None:
         cases = {
-            "claude": (["claude"], False, ["--platform", "claude"]),
-            "codex": (["codex"], False, ["--platform", "codex"]),
-            "cursor": (["cursor"], False, ["--platform", "cursor"]),
+            "claude": (["claude"], ["--platform", "claude"]),
+            "codex": (["codex"], ["--platform", "codex"]),
+            "cursor": (["cursor"], ["--platform", "cursor"]),
             "codex_cursor": (
                 ["codex", "cursor"],
-                False,
                 ["--platform", "codex", "--platform", "cursor"],
             ),
             "all_explicit": (
                 ["claude", "codex", "cursor"],
-                False,
                 [
                     "--platform",
                     "claude",
@@ -368,19 +366,17 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
                     "cursor",
                 ],
             ),
-            "all_flag": (
-                ["claude", "codex", "cursor"],
-                True,
-                ["--all-platforms"],
+            "opencode": (
+                ["opencode"],
+                ["--platform", "opencode"],
             ),
         }
-        for name, (selected, all_platforms, expected) in cases.items():
+        for name, (selected, expected) in cases.items():
             with self.subTest(name=name):
                 manifest = provenance_manifest(
                     "castbox/guru-trellis",
                     "b" * 40,
                     selected_platforms=selected,
-                    all_platforms=all_platforms,
                 )
                 self.assertEqual(
                     GTT.provenance_apply_platform_args(manifest),
@@ -414,20 +410,6 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
             ),
             "locator_mismatch": lambda payload: payload["overlays"].update(
                 {"selected_platforms": ["codex"]}
-            ),
-            "all_platforms_type": lambda payload: payload["install"].update(
-                {"all_platforms": 1}
-            ),
-            "subset_flag_true": lambda payload: (
-                payload["install"].update(
-                    {"selected_platforms": ["claude"], "all_platforms": True}
-                ),
-                payload["skill_packages"].update(
-                    {"selected_platforms": ["claude"]}
-                ),
-                payload["overlays"].update(
-                    {"selected_platforms": ["claude"]}
-                ),
             ),
         }
         for name, mutate in cases.items():
@@ -509,33 +491,14 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
 
     def test_provenance_tail_preparation_preserves_platform_selection_matrix(self) -> None:
         cases = {
-            "claude": (["claude"], False, ["--platform", "claude"]),
-            "codex": (["codex"], False, ["--platform", "codex"]),
-            "cursor": (["cursor"], False, ["--platform", "cursor"]),
-            "codex_cursor": (
-                ["codex", "cursor"],
-                False,
-                ["--platform", "codex", "--platform", "cursor"],
-            ),
-            "all_explicit": (
-                ["claude", "codex", "cursor"],
-                False,
-                [
-                    "--platform",
-                    "claude",
-                    "--platform",
-                    "codex",
-                    "--platform",
-                    "cursor",
-                ],
-            ),
-            "all_flag": (
-                ["claude", "codex", "cursor"],
-                True,
-                ["--all-platforms"],
-            ),
+            "claude": ["claude"],
+            "codex": ["codex"],
+            "cursor": ["cursor"],
+            "codex_cursor": ["codex", "cursor"],
+            "all_explicit": ["claude", "codex", "cursor"],
+            "opencode": ["opencode"],
         }
-        for name, (selected, all_platforms, expected_args) in cases.items():
+        for name, selected in cases.items():
             with self.subTest(name=name), tempfile.TemporaryDirectory() as raw:
                 root = Path(raw)
                 initialize_provenance_git_repo(root, "castbox/guru-trellis")
@@ -550,7 +513,6 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
                             tree_state="dirty",
                             is_mutable_ref=True,
                             selected_platforms=selected,
-                            all_platforms=all_platforms,
                         ),
                         ensure_ascii=False,
                         indent=2,
@@ -577,10 +539,6 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
                         applied[locator]["selected_platforms"],
                         selected,
                     )
-                self.assertEqual(
-                    applied["install"]["all_platforms"],
-                    all_platforms,
-                )
                 changed_paths = subprocess.run(
                     [
                         "git",

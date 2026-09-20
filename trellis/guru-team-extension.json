@@ -23,69 +23,411 @@
       "inventory_version": "trellis-ai-tools-2026-09-19",
       "inventory_sha256": "bceda2df084a5f649f7661615588c33dc43221e7cce6c196673a9bc0bfa34171",
       "upstream_platforms": [
-        {"id": "claude-code", "template_dir": "claude", "config_dir": ".claude", "cli_flag": "claude"},
-        {"id": "cursor", "template_dir": "cursor", "config_dir": ".cursor", "cli_flag": "cursor"},
-        {"id": "opencode", "template_dir": "opencode", "config_dir": ".opencode", "cli_flag": "opencode"},
-        {"id": "codex", "template_dir": "codex", "config_dir": ".codex", "cli_flag": "codex"},
-        {"id": "kilo", "template_dir": "kilo", "config_dir": ".kilocode", "cli_flag": "kilo"},
-        {"id": "kiro", "template_dir": "kiro", "config_dir": ".kiro/skills", "cli_flag": "kiro"},
-        {"id": "gemini", "template_dir": "gemini", "config_dir": ".gemini", "cli_flag": "gemini"},
-        {"id": "antigravity", "template_dir": "antigravity", "config_dir": ".agent/workflows", "cli_flag": "antigravity"},
-        {"id": "devin", "template_dir": "devin", "config_dir": ".devin/workflows", "cli_flag": "devin"},
-        {"id": "qoder", "template_dir": "qoder", "config_dir": ".qoder", "cli_flag": "qoder"},
-        {"id": "codebuddy", "template_dir": "codebuddy", "config_dir": ".codebuddy", "cli_flag": "codebuddy"},
-        {"id": "copilot", "template_dir": "copilot", "config_dir": ".github/copilot", "cli_flag": "copilot"},
-        {"id": "droid", "template_dir": "droid", "config_dir": ".factory", "cli_flag": "droid"},
-        {"id": "dsh", "template_dir": "dsh", "config_dir": ".dsh", "cli_flag": "dsh"},
-        {"id": "pi", "template_dir": "pi", "config_dir": ".pi", "cli_flag": "pi"},
-        {"id": "reasonix", "template_dir": "reasonix", "config_dir": ".reasonix", "cli_flag": "reasonix"},
-        {"id": "zcode", "template_dir": "zcode", "config_dir": ".zcode", "cli_flag": "zcode"},
-        {"id": "trae", "template_dir": "trae", "config_dir": ".trae", "cli_flag": "trae"},
-        {"id": "omp", "template_dir": "omp", "config_dir": ".omp", "cli_flag": "omp"},
-        {"id": "grok", "template_dir": "grok", "config_dir": ".grok", "cli_flag": "grok"},
-        {"id": "kimi", "template_dir": "kimi", "config_dir": ".kimi-code", "cli_flag": "kimi"},
-        {"id": "snow", "template_dir": "snow", "config_dir": ".snow/skills", "cli_flag": "snow"}
+        {
+          "id": "claude-code",
+          "template_dir": "claude",
+          "config_dir": ".claude",
+          "cli_flag": "claude"
+        },
+        {
+          "id": "cursor",
+          "template_dir": "cursor",
+          "config_dir": ".cursor",
+          "cli_flag": "cursor"
+        },
+        {
+          "id": "opencode",
+          "template_dir": "opencode",
+          "config_dir": ".opencode",
+          "cli_flag": "opencode"
+        },
+        {
+          "id": "codex",
+          "template_dir": "codex",
+          "config_dir": ".codex",
+          "cli_flag": "codex"
+        },
+        {
+          "id": "kilo",
+          "template_dir": "kilo",
+          "config_dir": ".kilocode",
+          "cli_flag": "kilo"
+        },
+        {
+          "id": "kiro",
+          "template_dir": "kiro",
+          "config_dir": ".kiro/skills",
+          "cli_flag": "kiro"
+        },
+        {
+          "id": "gemini",
+          "template_dir": "gemini",
+          "config_dir": ".gemini",
+          "cli_flag": "gemini"
+        },
+        {
+          "id": "antigravity",
+          "template_dir": "antigravity",
+          "config_dir": ".agent/workflows",
+          "cli_flag": "antigravity"
+        },
+        {
+          "id": "devin",
+          "template_dir": "devin",
+          "config_dir": ".devin/workflows",
+          "cli_flag": "devin"
+        },
+        {
+          "id": "qoder",
+          "template_dir": "qoder",
+          "config_dir": ".qoder",
+          "cli_flag": "qoder"
+        },
+        {
+          "id": "codebuddy",
+          "template_dir": "codebuddy",
+          "config_dir": ".codebuddy",
+          "cli_flag": "codebuddy"
+        },
+        {
+          "id": "copilot",
+          "template_dir": "copilot",
+          "config_dir": ".github/copilot",
+          "cli_flag": "copilot"
+        },
+        {
+          "id": "droid",
+          "template_dir": "droid",
+          "config_dir": ".factory",
+          "cli_flag": "droid"
+        },
+        {
+          "id": "dsh",
+          "template_dir": "dsh",
+          "config_dir": ".dsh",
+          "cli_flag": "dsh"
+        },
+        {
+          "id": "pi",
+          "template_dir": "pi",
+          "config_dir": ".pi",
+          "cli_flag": "pi"
+        },
+        {
+          "id": "reasonix",
+          "template_dir": "reasonix",
+          "config_dir": ".reasonix",
+          "cli_flag": "reasonix"
+        },
+        {
+          "id": "zcode",
+          "template_dir": "zcode",
+          "config_dir": ".zcode",
+          "cli_flag": "zcode"
+        },
+        {
+          "id": "trae",
+          "template_dir": "trae",
+          "config_dir": ".trae",
+          "cli_flag": "trae"
+        },
+        {
+          "id": "omp",
+          "template_dir": "omp",
+          "config_dir": ".omp",
+          "cli_flag": "omp"
+        },
+        {
+          "id": "grok",
+          "template_dir": "grok",
+          "config_dir": ".grok",
+          "cli_flag": "grok"
+        },
+        {
+          "id": "kimi",
+          "template_dir": "kimi",
+          "config_dir": ".kimi-code",
+          "cli_flag": "kimi"
+        },
+        {
+          "id": "snow",
+          "template_dir": "snow",
+          "config_dir": ".snow/skills",
+          "cli_flag": "snow"
+        }
       ],
-      "guru_supported_platforms": [
-        {"id": "claude", "upstream_id": "claude-code", "skill_root": ".claude/skills", "finish_entry": ".claude/commands/guru/finish-work.md", "native_init_flag": "--claude", "actual_load": "native command discovery"},
-        {"id": "codex", "upstream_id": "codex", "skill_root": ".codex/skills", "finish_entry": ".codex/prompts/guru-finish-work.md", "native_init_flag": "--codex", "actual_load": "native skill discovery"},
-        {"id": "cursor", "upstream_id": "cursor", "skill_root": ".cursor/skills", "finish_entry": ".cursor/commands/guru-finish-work.md", "native_init_flag": "--cursor", "actual_load": "native command discovery"},
-        {"id": "opencode", "upstream_id": "opencode", "skill_root": ".opencode/skills", "finish_entry": ".opencode/commands/guru-finish-work.md", "native_init_flag": "--opencode", "actual_load": "native command and skill discovery without hooks"}
+      "default_platforms": [
+        "claude",
+        "codex",
+        "cursor"
       ],
-      "default_dogfood_platforms": ["codex", "cursor"],
-      "deferred_platforms": [
-        {"id": "kilo", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "kiro", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "gemini", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "antigravity", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "devin", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "qoder", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "codebuddy", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "copilot", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "droid", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "dsh", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "pi", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "reasonix", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "zcode", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "trae", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "omp", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "grok", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "kimi", "reason": "Guru public projection and actual-load verification are not implemented"},
-        {"id": "snow", "reason": "Guru public projection and actual-load verification are not implemented"}
+      "projection_descriptors": [
+        {
+          "id": "claude-code",
+          "cli_flag": "claude",
+          "template_dir": "claude",
+          "config_dir": ".claude",
+          "skill_root": ".claude/skills",
+          "entry_path": ".claude/commands/guru/finish-work.md",
+          "entry_kind": "markdown_command",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "cursor",
+          "cli_flag": "cursor",
+          "template_dir": "cursor",
+          "config_dir": ".cursor",
+          "skill_root": ".cursor/skills",
+          "entry_path": ".cursor/commands/guru-finish-work.md",
+          "entry_kind": "markdown_command",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "opencode",
+          "cli_flag": "opencode",
+          "template_dir": "opencode",
+          "config_dir": ".opencode",
+          "skill_root": ".opencode/skills",
+          "entry_path": ".opencode/commands/guru-finish-work.md",
+          "entry_kind": "markdown_command",
+          "actual_load": "opencode_catalog"
+        },
+        {
+          "id": "codex",
+          "cli_flag": "codex",
+          "template_dir": "codex",
+          "config_dir": ".codex",
+          "skill_root": ".codex/skills",
+          "entry_path": ".codex/prompts/guru-finish-work.md",
+          "entry_kind": "markdown_prompt",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "kilo",
+          "cli_flag": "kilo",
+          "template_dir": "kilo",
+          "config_dir": ".kilocode",
+          "skill_root": ".kilocode/skills",
+          "entry_path": ".kilocode/workflows/guru-finish-work.md",
+          "entry_kind": "markdown_workflow",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "kiro",
+          "cli_flag": "kiro",
+          "template_dir": "kiro",
+          "config_dir": ".kiro/skills",
+          "skill_root": ".kiro/skills",
+          "entry_path": ".kiro/skills/guru-finish-work/SKILL.md",
+          "entry_kind": "skill_command",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "gemini",
+          "cli_flag": "gemini",
+          "template_dir": "gemini",
+          "config_dir": ".gemini",
+          "skill_root": ".agents/skills",
+          "entry_path": ".gemini/commands/guru/finish-work.toml",
+          "entry_kind": "toml_command",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "antigravity",
+          "cli_flag": "antigravity",
+          "template_dir": "antigravity",
+          "config_dir": ".agent/workflows",
+          "skill_root": ".agent/skills",
+          "entry_path": ".agent/workflows/guru-finish-work.md",
+          "entry_kind": "markdown_workflow",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "devin",
+          "cli_flag": "devin",
+          "template_dir": "devin",
+          "config_dir": ".devin/workflows",
+          "skill_root": ".devin/skills",
+          "entry_path": ".devin/workflows/guru-finish-work.md",
+          "entry_kind": "markdown_workflow",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "qoder",
+          "cli_flag": "qoder",
+          "template_dir": "qoder",
+          "config_dir": ".qoder",
+          "skill_root": ".qoder/skills",
+          "entry_path": ".qoder/commands/guru-finish-work.md",
+          "entry_kind": "markdown_command",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "codebuddy",
+          "cli_flag": "codebuddy",
+          "template_dir": "codebuddy",
+          "config_dir": ".codebuddy",
+          "skill_root": ".codebuddy/skills",
+          "entry_path": ".codebuddy/commands/guru/finish-work.md",
+          "entry_kind": "markdown_command",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "copilot",
+          "cli_flag": "copilot",
+          "template_dir": "copilot",
+          "config_dir": ".github/copilot",
+          "skill_root": ".github/skills",
+          "entry_path": ".github/prompts/guru-finish-work.prompt.md",
+          "entry_kind": "markdown_prompt",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "droid",
+          "cli_flag": "droid",
+          "template_dir": "droid",
+          "config_dir": ".factory",
+          "skill_root": ".factory/skills",
+          "entry_path": ".factory/commands/guru/finish-work.md",
+          "entry_kind": "markdown_command",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "dsh",
+          "cli_flag": "dsh",
+          "template_dir": "dsh",
+          "config_dir": ".dsh",
+          "skill_root": ".agents/skills",
+          "entry_path": ".dsh/skills/guru-finish-work/SKILL.md",
+          "entry_kind": "skill_command",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "pi",
+          "cli_flag": "pi",
+          "template_dir": "pi",
+          "config_dir": ".pi",
+          "skill_root": ".agents/skills",
+          "entry_path": ".pi/prompts/guru-finish-work.md",
+          "entry_kind": "markdown_prompt",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "reasonix",
+          "cli_flag": "reasonix",
+          "template_dir": "reasonix",
+          "config_dir": ".reasonix",
+          "skill_root": ".reasonix/skills",
+          "entry_path": ".reasonix/skills/guru-finish-work/SKILL.md",
+          "entry_kind": "skill_command",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "zcode",
+          "cli_flag": "zcode",
+          "template_dir": "zcode",
+          "config_dir": ".zcode",
+          "skill_root": ".zcode/skills",
+          "entry_path": ".zcode/commands/guru/finish-work.md",
+          "entry_kind": "markdown_command",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "trae",
+          "cli_flag": "trae",
+          "template_dir": "trae",
+          "config_dir": ".trae",
+          "skill_root": ".trae/skills",
+          "entry_path": ".trae/commands/guru-finish-work.md",
+          "entry_kind": "markdown_command",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "omp",
+          "cli_flag": "omp",
+          "template_dir": "omp",
+          "config_dir": ".omp",
+          "skill_root": ".omp/skills",
+          "entry_path": ".omp/commands/guru-finish-work.md",
+          "entry_kind": "markdown_command",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "grok",
+          "cli_flag": "grok",
+          "template_dir": "grok",
+          "config_dir": ".grok",
+          "skill_root": ".grok/skills",
+          "entry_path": ".grok/commands/guru-finish-work.md",
+          "entry_kind": "markdown_command",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "kimi",
+          "cli_flag": "kimi",
+          "template_dir": "kimi",
+          "config_dir": ".kimi-code",
+          "skill_root": ".agents/skills",
+          "entry_path": ".kimi-code/skills/guru-finish-work/SKILL.md",
+          "entry_kind": "skill_command",
+          "actual_load": "projection_contract"
+        },
+        {
+          "id": "snow",
+          "cli_flag": "snow",
+          "template_dir": "snow",
+          "config_dir": ".snow/skills",
+          "skill_root": ".snow/skills",
+          "entry_path": ".snow/commands/guru-finish-work.json",
+          "entry_kind": "json_prompt",
+          "actual_load": "projection_contract"
+        }
       ]
     },
     "managed_paths": [
+      ".agent/skills/guru-*/",
+      ".agent/workflows/guru-finish-work.md",
+      ".agents/skills/guru-*/",
+      ".claude/commands/guru/finish-work.md",
+      ".claude/skills/guru-*/",
+      ".codebuddy/commands/guru/finish-work.md",
+      ".codebuddy/skills/guru-*/",
+      ".codex/prompts/guru-finish-work.md",
+      ".codex/skills/guru-*/",
+      ".cursor/commands/guru-finish-work.md",
+      ".cursor/skills/guru-*/",
+      ".devin/skills/guru-*/",
+      ".devin/workflows/guru-finish-work.md",
+      ".dsh/skills/guru-finish-work/SKILL.md",
+      ".factory/commands/guru/finish-work.md",
+      ".factory/skills/guru-*/",
+      ".gemini/commands/guru/finish-work.toml",
+      ".github/prompts/guru-finish-work.prompt.md",
+      ".github/skills/guru-*/",
+      ".grok/commands/guru-finish-work.md",
+      ".grok/skills/guru-*/",
+      ".kilocode/skills/guru-*/",
+      ".kilocode/workflows/guru-finish-work.md",
+      ".kimi-code/skills/guru-finish-work/SKILL.md",
+      ".kiro/skills/guru-*/",
+      ".kiro/skills/guru-finish-work/SKILL.md",
+      ".omp/commands/guru-finish-work.md",
+      ".omp/skills/guru-*/",
+      ".opencode/commands/guru-finish-work.md",
+      ".opencode/skills/guru-*/",
+      ".pi/prompts/guru-finish-work.md",
+      ".qoder/commands/guru-finish-work.md",
+      ".qoder/skills/guru-*/",
+      ".reasonix/skills/guru-*/",
+      ".reasonix/skills/guru-finish-work/SKILL.md",
+      ".snow/commands/guru-finish-work.json",
+      ".snow/skills/guru-*/",
+      ".trae/commands/guru-finish-work.md",
+      ".trae/skills/guru-*/",
       ".trellis/guru-team/",
       ".trellis/guru-team/skills/",
-      ".agents/skills/guru-*/",
-      ".codex/skills/guru-*/",
-      ".cursor/skills/guru-*/",
-      ".claude/skills/guru-*/",
-      ".opencode/skills/guru-*/",
-      ".codex/prompts/guru-finish-work.md",
-      ".claude/commands/guru/finish-work.md",
-      ".cursor/commands/guru-finish-work.md",
-      ".opencode/commands/guru-finish-work.md"
+      ".zcode/commands/guru/finish-work.md",
+      ".zcode/skills/guru-*/"
     ],
     "config_files": [
       ".trellis/guru-team/config.yml",

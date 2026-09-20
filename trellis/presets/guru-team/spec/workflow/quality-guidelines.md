@@ -202,7 +202,7 @@ edges, private artifact ids, examples, the 160-case/5-invocation production
 control, and eval case bindings. Versioned v2/v3 files are immutable legacy
 assets and are not alternate current selectors, input projectors, or fixtures.
 Then validate the current package closure
-at twenty-three active Skills and 100 external exits, while the integrated business
+at 32 active Skills, 142 external exits, and 102 commands, while the integrated business
 workflow projection is 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or non-current entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
@@ -443,7 +443,8 @@ created Issue, and zero persisted user-acceptance fields or reply parsing in a
 recorder/validator.
 Run source and installed package validation, dogfood drift, clean throwaway
 install, and `trellis update` plus preset reapply because the package, runtime
-commands, schema, and four discovery roots are one distribution contract.
+commands, schema, and exact manifest-selected discovery roots are one
+distribution contract.
 The throwaway fresh-install and after-update/reapply phases must each discover
 the installed package and execute a real v2 recorder/checker path.
 For `guru-review-change-request`, tests must cover workflow/standalone
@@ -632,9 +633,10 @@ rerun, exceptional unfinished/replacement recovery, dirty/reviewed-path and
 post-commit freshness, the current schema 5.0 checkpoint, and the single compact
 artifact owner. Routine implementation/check identity remains live semantic
 context and must not become persisted assignment or liveness evidence.
-Distribution validation must compare canonical/shared/Codex/Claude/Cursor/OpenCode
-package bytes and validate the current-only ownership schema 3.0 with exactly
-13 Guru-owned rules, 11 managed claims, and four Guru-owned overlay entries.
+Distribution validation must compare canonical, installed shared, and exact
+manifest-selected platform package bytes and validate current-only ownership
+schema 4.0 with exactly 22 platform descriptors, 43 derived managed claims,
+and 22 descriptor-bound canonical overlay entries.
 Non-current ownership or installed manifests, unknown claims, and unexpected
 overlay paths must fail current-contract validation. Validation must run dogfood
 apply/drift and sidecar checks and exercise clean
@@ -820,7 +822,7 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  twenty-three-Skill/100-exit current package closure while the production activation
+  32-Skill/142-exit/102-command current package closure while the production activation
   unit remains three Skills/11 exits and business markers remain integrated at
   22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Update and preset reapply must reproduce
   that closure with zero unresolved `.new` or `.bak`.
@@ -1013,8 +1015,8 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert twenty-three active Skills and 100
-package exits, exactly one selected `production-current-v4`
+Source/installed/platform/throwaway checks assert 32 active Skills, 142 package
+exits, and 102 commands, exactly one selected `production-current-v4`
 four-Skill/15-exit current manifest, and business workflow markers of 22
 invokes, 98 exits, 35 workflow targets, and 24 stop targets.
 
@@ -1140,7 +1142,7 @@ verifier hop and scans terminal task/runtime state for verifier residue.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes match after fresh install, update, and preset reapply. Package
-closure is twenty-three active Skills and 100 exits; business global markers remain 22
+closure is 32 active Skills, 142 exits, and 102 commands; business global markers remain 22
 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Upstream Finish
 assets remain unchanged.
 
@@ -1202,13 +1204,14 @@ reconstruct valid live facts without treating old HEADs, digests, or fabricated
 state as authority.
 
 Distribution acceptance covers canonical and installed specs, package/runtime
-inventory, Shared/Codex/Claude/Cursor discovery bytes and executable modes,
-clean marketplace init, preview/switch, preset apply/reapply, official Trellis
-update and supported version upgrade, managed-hash replacement, unknown-edit
-`.new`, known-upgrade `.bak`, legacy cleanup, recursive zero sidecars, and
-README commands. Graph cardinalities are derived from the current registry,
-interfaces, and workflow markers; documentation and tests must not preserve
-stale hard-coded counts after package activation.
+inventory, complete descriptor-bound canonical projections, exact
+manifest-selected discovery bytes and executable modes, three-platform dogfood
+drift, clean marketplace init, preview/switch, preset apply/reapply, official
+Trellis update and supported version upgrade, managed-hash replacement,
+unknown-edit `.new`, known-upgrade `.bak`, legacy cleanup, recursive zero
+sidecars, and README commands. Graph cardinalities are derived from the current
+registry, interfaces, and workflow markers; documentation and tests must not
+preserve stale hard-coded counts after package activation.
 
 ## Managed Python Runtime Gate
 

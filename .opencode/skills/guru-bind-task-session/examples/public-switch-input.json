@@ -1,1 +1,0 @@
-{"profile":"switch_task","mode":"standalone","task_ref":".trellis/tasks/task-b","current_task_ref":".trellis/tasks/task-a","target_task_ref":".trellis/tasks/task-b","continuation_id":"switch-example"}

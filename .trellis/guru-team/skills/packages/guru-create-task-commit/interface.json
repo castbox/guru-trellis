@@ -238,10 +238,28 @@
   ],
   "platform_destinations": [
     "shared",
-    "codex",
-    "cursor",
     "claude",
-    "opencode"
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
   ],
   "public_contracts": {
     "input": {

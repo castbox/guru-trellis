@@ -7,10 +7,11 @@ if [[ $# -gt 0 && "$1" != --* ]]; then shift; else WORK_DIR=""; fi
 FORK_SOURCE="${TRELLIS_FORK_SOURCE:-}"
 PREDECESSOR_SOURCE="${TRELLIS_PREDECESSOR_SOURCE:-}"
 PREDECESSOR_COMMIT="${TRELLIS_PREDECESSOR_COMMIT:-}"
-VERIFY_MODE="full"
+VERIFY_MODE="focused"
 BEFORE_TAG="${TRELLIS_BEFORE_TAG:-v0.6.5-guru.10}"
 BEFORE_CLI="${TRELLIS_BEFORE_CLI:-0.6.5}"
-VERIFY_PLATFORM="${TRELLIS_VERIFY_PLATFORM:-codex}"
+VERIFY_PLATFORMS=()
+INSTALLED_MANIFEST=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --fork-source) FORK_SOURCE="${2:?--fork-source requires a checkout}"; shift 2 ;;
@@ -18,7 +19,8 @@ while [[ $# -gt 0 ]]; do
     --predecessor-commit) PREDECESSOR_COMMIT="${2:?--predecessor-commit requires a SHA}"; shift 2 ;;
     --before-tag) BEFORE_TAG="${2:?--before-tag requires a tag}"; shift 2 ;;
     --before-cli) BEFORE_CLI="${2:?--before-cli requires a version}"; shift 2 ;;
-    --platform) VERIFY_PLATFORM="${2:?--platform requires claude, codex, cursor, or opencode}"; shift 2 ;;
+    --platform) VERIFY_PLATFORMS+=("${2:?--platform requires a cli_flag}"); shift 2 ;;
+    --installed-manifest) INSTALLED_MANIFEST="${2:?--installed-manifest requires a path}"; shift 2 ;;
     --mode) VERIFY_MODE="${2:?--mode requires full, focused, or existing}"; shift 2 ;;
     *) echo "Unknown verifier option: $1" >&2; exit 2 ;;
   esac
@@ -32,6 +34,8 @@ SOURCE_RUNTIME_ASSETS="$REPO_ROOT/trellis/skills/guru-team/runtime"
 SOURCE_RUNTIME_RESOLVER="$SOURCE_RUNTIME_ASSETS/resolve-python.sh"
 PYTHON_ROUTING_HELPER="$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_throwaway_python_routing.py"
 COMPATIBILITY_MATRIX_HELPER="$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+PLATFORM_SELECTION_HELPER="$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_upgrade_platform_selection.py"
+SOURCE_EXTENSION_MANIFEST="$REPO_ROOT/trellis/guru-team-extension.json"
 PYTHON_CALLER_INVENTORY="$REPO_ROOT/trellis/presets/guru-team/tests/throwaway-python-callers.json"
 ENGLISH_LANGUAGE_RULE_PATTERN='All documentation (must|should) be written in .*English'
 
@@ -73,7 +77,6 @@ fi
   echo "Unknown verifier mode: $VERIFY_MODE" >&2
   exit 2
 }
-
 command -v git >/dev/null 2>&1 || {
   echo "git not found on PATH" >&2
   exit 127
@@ -122,18 +125,36 @@ source_python "$PYTHON_ROUTING_HELPER" check-inventory \
   --inventory "$PYTHON_CALLER_INVENTORY" \
   --json
 
-# Full preserves the standalone catalog; focused and existing are bounded runs.
-if [[ "$VERIFY_MODE" == full || "$VERIFY_MODE" == focused || "$VERIFY_MODE" == existing ]]; then
+# Every mode runs one exact cell per selected cli_flag. With no explicit
+# selection, verification follows the installer default projection.
+if [[ "${#VERIFY_PLATFORMS[@]}" == 0 ]]; then
+  VERIFY_PLATFORMS=(claude codex cursor)
+fi
+
+if [[ -n "$INSTALLED_MANIFEST" ]]; then
+  VALIDATE_SELECTION_ARGS=(validate-upgrade --source-manifest "$SOURCE_EXTENSION_MANIFEST" \
+    --installed-manifest "$INSTALLED_MANIFEST")
+  for platform in "${VERIFY_PLATFORMS[@]}"; do
+    VALIDATE_SELECTION_ARGS+=(--platform "$platform")
+  done
+  source_python "$PLATFORM_SELECTION_HELPER" "${VALIDATE_SELECTION_ARGS[@]}" >/dev/null
+fi
+
+RESULT_FILES=()
+AGGREGATE_ARGS=(aggregate --mode "$VERIFY_MODE")
+for platform in "${VERIFY_PLATFORMS[@]}"; do
+  result_file="$WORK_DIR/matrix-$VERIFY_MODE-$platform.json"
+  matrix_work_root="$WORK_DIR/matrix/$platform"
   MATRIX_ARGS=(
     run
     --repo-root "$REPO_ROOT"
-    --work-root "$WORK_DIR/matrix"
+    --work-root "$matrix_work_root"
     --workflow-source "$WORKFLOW_SOURCE"
     --fork-source "$FORK_SOURCE"
     --mode "$VERIFY_MODE"
     --before-tag "$BEFORE_TAG"
     --before-cli "$BEFORE_CLI"
-    --platform "$VERIFY_PLATFORM"
+    --platform "$platform"
   )
   if [[ -n "$PREDECESSOR_SOURCE" ]]; then
     MATRIX_ARGS+=(--predecessor-source "$PREDECESSOR_SOURCE")
@@ -144,6 +165,11 @@ if [[ "$VERIFY_MODE" == full || "$VERIFY_MODE" == focused || "$VERIFY_MODE" == e
   if [[ "$ALLOW_PUBLIC_SAMPLE" == "1" ]]; then
     MATRIX_ARGS+=(--allow-local-sample)
   fi
-  source_python "$COMPATIBILITY_MATRIX_HELPER" "${MATRIX_ARGS[@]}"
-  exit 0
-fi
+  if ! source_python "$COMPATIBILITY_MATRIX_HELPER" "${MATRIX_ARGS[@]}" >"$result_file"; then
+    cat "$result_file"
+    exit 2
+  fi
+  RESULT_FILES+=("$result_file")
+  AGGREGATE_ARGS+=(--platform "$platform" --result "$result_file")
+done
+source_python "$PLATFORM_SELECTION_HELPER" "${AGGREGATE_ARGS[@]}"

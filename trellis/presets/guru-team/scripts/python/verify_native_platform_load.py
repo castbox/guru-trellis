@@ -16,6 +16,13 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+from guru_platform_inventory import PLATFORM_BY_FLAG
+from platform_projection_contract import (
+    DESCRIPTORS_BY_FLAG,
+    PlatformContractError,
+    installed_selection,
+)
+
 
 class NativeLoadError(RuntimeError):
     """A native platform failed to discover its installed Guru projection."""
@@ -157,27 +164,107 @@ def _verify_command(catalog: Any, target: Path, label: str) -> None:
         )
 
 
+def _projection_parity(target: Path, platform: str) -> dict[str, Any]:
+    descriptor = DESCRIPTORS_BY_FLAG.get(platform)
+    core_descriptor = PLATFORM_BY_FLAG.get(platform)
+    if descriptor is None or core_descriptor is None:
+        raise NativeLoadError(f"unknown platform cli_flag: {platform}")
+    manifest = _load_json(
+        target / ".trellis/guru-team/extension.json",
+        "installed extension manifest",
+    )
+    if not isinstance(manifest, dict):
+        raise NativeLoadError("installed extension manifest root must be an object")
+    try:
+        selected = installed_selection(manifest)
+    except PlatformContractError as exc:
+        raise NativeLoadError(str(exc)) from exc
+    if selected != (platform,):
+        raise NativeLoadError(
+            f"native load requires exact selected platform {[platform]}, got {list(selected)}"
+        )
+
+    registry = _load_json(
+        target / ".trellis/guru-team/skills/registry.json",
+        "installed skill registry",
+    )
+    if not isinstance(registry, dict):
+        raise NativeLoadError("installed skill registry root must be an object")
+    active_ids = sorted(
+        row["id"]
+        for row in registry.get("skills", [])
+        if isinstance(row, dict)
+        and row.get("state") == "active"
+        and isinstance(row.get("id"), str)
+    )
+    if not active_ids:
+        raise NativeLoadError("installed skill registry contains no active skills")
+    roots = tuple(dict.fromkeys((Path(".agents/skills"), *core_descriptor.skill_roots)))
+    entry_path = Path(descriptor["entry_path"])
+    for relative_root in roots:
+        root = target / relative_root
+        excluded_entry_dir = (
+            entry_path.parent.name
+            if descriptor["entry_kind"] == "skill_command"
+            and entry_path.parent.parent == relative_root
+            else None
+        )
+        actual_ids = sorted(
+            path.name
+            for path in root.glob("guru-*")
+            if path.is_dir() and path.name != excluded_entry_dir
+        ) if root.is_dir() else []
+        if actual_ids != active_ids:
+            raise NativeLoadError(
+                f"{platform} projection at {relative_root} disagrees with active registry"
+            )
+        leaked = sorted(
+            (root / skill_id / "tests").relative_to(target).as_posix()
+            for skill_id in active_ids
+            if (root / skill_id / "tests").exists()
+        )
+        if leaked:
+            raise NativeLoadError(
+                f"{platform} public projection leaked package-private tests: {leaked}"
+            )
+    entry = target / entry_path
+    if not entry.is_file() or entry.is_symlink():
+        raise NativeLoadError(
+            f"{platform} native entry is missing: {descriptor['entry_path']}"
+        )
+    return {
+        "selected_platforms": list(selected),
+        "skill_roots": [path.as_posix() for path in roots],
+        "skill_count": len(active_ids),
+        "entry_path": descriptor["entry_path"],
+        "entry_kind": descriptor["entry_kind"],
+        "package_private_tests": "excluded",
+    }
+
+
 def verify_native_platform_load(
     target: Path,
     platform: str,
     work_root: Path,
 ) -> dict[str, Any]:
     """Use the platform's native loader and verify its Guru command/skill catalog."""
+    parity = _projection_parity(target, platform)
     if platform != "opencode":
-        return {"status": "not_applicable", "platform": platform}
+        return {
+            "status": "passed",
+            "platform": platform,
+            "actual_load": "projection_parity",
+            **parity,
+        }
 
     executable = shutil.which("opencode")
     if executable is None:
         raise NativeLoadError("OpenCode actual-load verification requires opencode on PATH")
 
-    registry = _load_json(
-        target / ".trellis/guru-team/skills/registry.json",
-        "installed skill registry",
-    )
     active_ids = sorted(
-        row["id"]
-        for row in registry.get("skills", [])
-        if isinstance(row, dict) and row.get("state") == "active"
+        path.name
+        for path in (target / ".opencode/skills").glob("guru-*")
+        if path.is_dir()
     )
     work_root.mkdir(parents=True, exist_ok=True)
     skills, commands, version = _isolated_opencode_catalogs(
@@ -237,6 +324,7 @@ def verify_native_platform_load(
     return {
         "status": "passed",
         "platform": "opencode",
+        "actual_load": "opencode_catalog",
         "opencode_version": version,
         "skill_count": len(guru_skills),
         "skills": sorted(guru_skills),
@@ -245,4 +333,5 @@ def verify_native_platform_load(
         "command": "guru-finish-work",
         "isolated_home": True,
         "external_skills_disabled_for_native_probe": True,
+        **parity,
     }

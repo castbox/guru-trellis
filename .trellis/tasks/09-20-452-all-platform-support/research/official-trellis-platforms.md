@@ -1,6 +1,6 @@
 # Issue #452 上游平台与 OpenCode 研究证据
 
-研究日期：2026-09-19
+研究日期：2026-09-19；2026-09-20 按 live Issue #452 superseding platform-contract amendment 刷新结论
 
 ## Authority
 
@@ -15,7 +15,7 @@
 
 `claude-code`, `cursor`, `opencode`, `codex`, `kilo`, `kiro`, `gemini`, `antigravity`, `devin`, `qoder`, `codebuddy`, `copilot`, `droid`, `dsh`, `pi`, `reasonix`, `zcode`, `trae`, `omp`, `grok`, `kimi`, `snow`。
 
-该 registry 同时定义 `templateDirs`、`configDir`、`cliFlag`、默认选择和模板上下文，因此本 Issue 不应通过本仓库目录枚举推断“上游全平台”。实施时应读取/绑定该 registry 事实，并把无法完成 Guru public projection 与 actual-load 验证的平台列入 deferred inventory。
+该 registry 同时定义 `templateDirs`、`configDir`、`cliFlag`、默认选择和模板上下文，因此本 Issue 不应通过本仓库目录枚举推断“上游全平台”。canonical inventory 必须同时保存 `AITool` id 与唯一 `cliFlag`；public `--platform` 和 installed `selected_platforms` 使用 `cliFlag`。例如 canonical id `claude-code` 对应 public value `claude`，两者不得混为一个字段。
 
 ## OpenCode native projection evidence
 
@@ -44,6 +44,10 @@
 
 ## Scope consequence
 
-- `default_dogfood_platforms` 继续保持当前 Guru 默认行为（Codex/Cursor；按现有 installer 合同保留 Claude 的既有显式支持语义）。
-- `guru_supported_platforms` 只有在 projection、ownership、manifest、reapply/update、throwaway 和 actual-load 都有可执行证据后才能加入；OpenCode 是本 Issue 目标。
-- 其余 upstream registry 平台不因存在于上游 registry 就自动进入 `--all-platforms`；缺少 Guru 完整投影的项必须输出稳定 deferred/unsupported 结果。
+以下结论以 2026-09-20 live Issue amendment 为 current authority；此前“三层/Guru-supported/deferred”研究假设已废弃：
+
+- registry 全部 22 个 `cliFlag` 都必须具有完整 descriptor/projection；缺少任一平台是 blocking defect，不是 deferred success。
+- repeated `--platform <cli-flag>` 是唯一显式选择入口；公开 CLI 不提供全集安装快捷方式。
+- 未提供 `--platform` 时固定选择 `claude,codex,cursor`；这只是新安装默认策略。guru-trellis dogfood 也显式安装这三个值。
+- 业务仓库升级从目标 manifest/provenance 读取 exact `cliFlag` selection 并原样 reapply，不从 source dogfood、默认值或完整 inventory 推断。
+- OpenCode 是普通 upstream member；其代表性 actual-load 验证不把其提升为独立中间层。

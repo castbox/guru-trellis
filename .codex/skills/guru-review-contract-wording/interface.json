@@ -221,10 +221,28 @@
   ],
   "platform_destinations": [
     "shared",
-    "codex",
-    "cursor",
     "claude",
-    "opencode"
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
   ],
   "public_contracts": {
     "input": {
@@ -372,7 +390,9 @@
           "stage": "wording_current",
           "schema_id": "guru-stage0-transition-wording-current-1.0",
           "path": "consumers/workflow/stage0/transitions/wording-current.schema.json",
-          "producer_profiles": ["change_request"]
+          "producer_profiles": [
+            "change_request"
+          ]
         }
       },
       {
@@ -404,9 +424,18 @@
         "consumer_input_id": "pass_workflow_input",
         "operation": "select",
         "mappings": [
-          {"source": "exit_id", "target": "exit_id"},
-          {"source": "profile", "target": "profile"},
-          {"source": "continuation_id", "target": "continuation_id"}
+          {
+            "source": "exit_id",
+            "target": "exit_id"
+          },
+          {
+            "source": "profile",
+            "target": "profile"
+          },
+          {
+            "source": "continuation_id",
+            "target": "continuation_id"
+          }
         ]
       },
       {

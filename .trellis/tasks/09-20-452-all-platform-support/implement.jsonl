@@ -1,8 +1,10 @@
 {"file": ".trellis/tasks/09-20-452-all-platform-support/prd.md", "reason": "Issue #452 requirements and acceptance contract for implementation."}
-{"file": ".trellis/tasks/09-20-452-all-platform-support/design.md", "reason": "Approved three-layer capability model and OpenCode projection design."}
+{"file": ".trellis/tasks/09-20-452-all-platform-support/design.md", "reason": "Approved two-layer platform authority, repeated selection, removed full-inventory option, and OpenCode projection design."}
 {"file": ".trellis/tasks/09-20-452-all-platform-support/implement.md", "reason": "Ordered implementation scope and validation command contract."}
 {"file": ".trellis/tasks/09-20-452-all-platform-support/research/official-trellis-platforms.md", "reason": "Current upstream AI_TOOLS and OpenCode native-path evidence."}
 {"file": ".trellis/spec/preset/index.md", "reason": "Preset change checklist and canonical authority."}
 {"file": ".trellis/spec/preset/installer.md", "reason": "Installer behavior, managed assets, and validation boundaries."}
 {"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "Ownership and managed-claim contract for platform projections."}
 {"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "Public platform discovery and overlay projection rules."}
+{"file": ".trellis/tasks/09-20-452-all-platform-support/design.md", "reason": "Current two-layer platform contract; registry AITool ids remain canonical while repeated --platform and installed selections use unique cliFlag values, with no full-inventory option."}
+{"file": ".trellis/tasks/09-20-452-all-platform-support/implement.md", "reason": "Current complete implementation order, including mandatory under-3000-line splits before adding platform behavior."}

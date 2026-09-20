@@ -640,17 +640,6 @@ def provenance_apply_platform_args(manifest: Any) -> list[str]:
         if selections[1:] != selections[:-1]:
             errors.append("provenance_platform_selection_mismatch")
 
-    install = manifest.get("install") if isinstance(manifest, dict) else None
-    all_platforms = install.get("all_platforms") if isinstance(install, dict) else None
-    if not isinstance(all_platforms, bool):
-        errors.append("provenance_platform_selection_all_platforms_invalid")
-    elif "install" in selected_by_locator:
-        full_selection = selected_by_locator["install"] == list(
-            PROVENANCE_APPLY_PLATFORMS
-        )
-        if all_platforms and not full_selection:
-            errors.append("provenance_platform_selection_all_platforms_mismatch")
-
     if errors:
         raise WorkflowError(
             "Installed platform selection is invalid for Finalizer preparation.",
@@ -662,8 +651,6 @@ def provenance_apply_platform_args(manifest: Any) -> list[str]:
         )
 
     selected = selected_by_locator["install"]
-    if all_platforms:
-        return ["--all-platforms"]
     return [item for platform in selected for item in ("--platform", platform)]
 
 def provenance_tail_manifest_errors(

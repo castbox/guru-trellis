@@ -39,11 +39,12 @@ The installer is idempotent:
 - missing managed files are installed
 - changed managed companion assets are updated with `.bak` backups
 - existing `.trellis/guru-team/config.yml` is preserved
-- ownership inventory schema 3.0 contains exactly 13 current Guru rules, 11
-  managed claims, and four additive overlays
+- ownership inventory schema 4.0 derives 22 platform descriptors, 43 managed
+  claims, and 22 additive overlays
 - existing ownership or installed manifests must satisfy the current schema;
   non-current input fails current-contract validation before mutation
-- the overlay tree contains only the four Guru-owned `guru-finish-work` entries
+- the overlay tree contains one Guru-owned `guru-finish-work` entry for every
+  pinned upstream platform
 - unknown local edits receive `.new` copies instead of being overwritten
 - the six-package/23-exit Phase 0 graph, five closed transition stages,
   call-local envelopes, package runtimes, minimal shared kernel, and activation manifest install as one

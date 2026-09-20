@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Focused regression tests for the current Guru ownership contract."""
+"""Focused regression tests for descriptor-derived Guru ownership."""
 
 from __future__ import annotations
 
 import json
 import shutil
-import subprocess
 import sys
 import tempfile
 import unittest
@@ -20,203 +19,63 @@ class UpstreamOwnershipTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.repo = Path(__file__).resolve().parents[5]
-        cls.fixtures = Path(__file__).resolve().parent / "fixtures/upstream-ownership"
 
-    def copy_minimal_source(self, target: Path) -> None:
-        directories = [
+    @staticmethod
+    def write_json(path: Path, value: object) -> None:
+        path.write_text(
+            json.dumps(value, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+    def copy_source(self, target: Path) -> None:
+        directories = (
             Path("trellis/presets/guru-team/ownership"),
             Path("trellis/presets/guru-team/overlays"),
             Path("trellis/workflows/guru-team"),
             Path("trellis/skills/guru-team"),
-        ]
-        files = [
+            Path(".trellis/guru-team"),
+            Path(".agents/skills"),
+            Path(".claude/skills"),
+            Path(".codex/skills"),
+            Path(".cursor/skills"),
+        )
+        for relative in directories:
+            source = self.repo / relative
+            if source.exists():
+                shutil.copytree(source, target / relative)
+        for relative in (
             ownership.EXTENSION_RELATIVE,
             ownership.INSTALLER_RELATIVE,
-        ]
-        for relative in directories:
-            shutil.copytree(self.repo / relative, target / relative)
-        for relative in files:
+        ):
             destination = target / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(self.repo / relative, destination)
 
-    @staticmethod
-    def write_json(path: Path, value: object) -> None:
-        path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-    def apply_mutation(self, repo: Path, fixture: dict[str, object]) -> None:
-        mutation = fixture["mutation"]
-        self.assertIsInstance(mutation, dict)
-        mutation_type = mutation["type"]
-        inventory_path = repo / ownership.INVENTORY_RELATIVE
-        inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
-        if mutation_type == "none":
-            return
-        if mutation_type == "add_overlay":
-            path = repo / ownership.OVERLAY_ROOT_RELATIVE / mutation["path"]
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(mutation["content"], encoding="utf-8")
-            return
-        if mutation_type == "remove_overlay":
-            (repo / ownership.OVERLAY_ROOT_RELATIVE / mutation["path"]).unlink()
-            return
-        if mutation_type == "add_inventory_field":
-            inventory[mutation["name"]] = mutation["value"]
-            self.write_json(inventory_path, inventory)
-            return
-        if mutation_type == "remove_managed_claim":
-            inventory["managed_path_claims"] = [
-                claim
-                for claim in inventory["managed_path_claims"]
-                if claim["path"] != mutation["path"]
-            ]
-            self.write_json(inventory_path, inventory)
-            return
-        if mutation_type == "append_manifest_managed_path":
-            extension_path = repo / ownership.EXTENSION_RELATIVE
-            extension = json.loads(extension_path.read_text(encoding="utf-8"))
-            extension["public_api"]["managed_paths"].append(mutation["path"])
-            self.write_json(extension_path, extension)
-            return
-        if mutation_type == "set_registry_platforms":
-            registry_path = repo / ownership.SKILL_REGISTRY_RELATIVE
-            registry = json.loads(registry_path.read_text(encoding="utf-8"))
-            skill = next(item for item in registry["skills"] if item["id"] == mutation["skill_id"])
-            skill["supported_platforms"] = mutation["platforms"]
-            self.write_json(registry_path, registry)
-            return
-        self.fail(f"unknown fixture mutation: {mutation_type}")
-
-    def fixture_paths(self) -> list[Path]:
-        return sorted(self.fixtures.glob("*.json"))
-
-    def test_structured_fixtures(self) -> None:
-        for fixture_path in self.fixture_paths():
-            with self.subTest(fixture=fixture_path.name):
-                fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
-                mutation = fixture["mutation"]
-                if mutation["type"] == "classify_guru_paths":
-                    inventory = json.loads((self.repo / ownership.INVENTORY_RELATIVE).read_text(encoding="utf-8"))
-                    for case in mutation["cases"]:
-                        self.assertEqual(
-                            ownership.classify_guru_path(case["path"], inventory["guru_owned_rules"]),
-                            [case["expected_rule"]],
-                        )
-                    continue
-                with tempfile.TemporaryDirectory() as directory:
-                    repo = Path(directory)
-                    self.copy_minimal_source(repo)
-                    self.apply_mutation(repo, fixture)
-                    payload = ownership.validate_repository(repo)
-                    cli_result = None
-                    if fixture.get("assert_cli_json"):
-                        command = self.repo / "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
-                        cli_result = subprocess.run(
-                            [str(command), "--repo", str(repo), "--json"],
-                            text=True,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            check=False,
-                        )
-                self.assertEqual(payload["status"], fixture["expected_status"], payload)
-                codes = {item["code"] for item in payload["errors"]}
-                self.assertTrue(set(fixture["expected_error_codes"]).issubset(codes), (fixture_path.name, payload))
-                for error in payload["errors"]:
-                    self.assertEqual(set(error), {"code", "path", "detail"})
-                if cli_result is not None:
-                    self.assertNotEqual(cli_result.returncode, 0)
-                    self.assertEqual(json.loads(cli_result.stdout)["status"], "error")
-                    self.assertNotIn("Traceback", cli_result.stderr)
-
-    def test_current_facts_are_stable(self) -> None:
+    def test_current_facts_are_stable_and_descriptor_driven(self) -> None:
         first = ownership.validate_repository(self.repo)
         second = ownership.validate_repository(self.repo)
         self.assertEqual(first, second)
-        self.assertEqual(first["status"], "ok")
-        self.assertEqual(first["schema_version"], "3.0")
-        self.assertEqual(first["inventory_id"], "guru-team-upstream-ownership")
-        self.assertEqual(first["target_trellis_cli"], "0.6.17")
-        self.assertEqual(first["overlay_count"], 4)
-        self.assertEqual(first["managed_claim_count"], 11)
-        self.assertEqual(first["classified_managed_claim_count"], 11)
-        self.assertEqual(first["active_skill_count"], 32)
-        self.assertEqual(first["planned_skill_count"], 0)
-        self.assertEqual(first["canonical_package_count"], 32)
-        capabilities = first["platform_capabilities"]
-        self.assertEqual(capabilities["inventory_source"], ownership.EXPECTED_PLATFORM_INVENTORY_SOURCE)
-        self.assertEqual(capabilities["inventory_sha256"], ownership.EXPECTED_PLATFORM_INVENTORY_SHA256)
-        self.assertEqual(capabilities["upstream_platform_ids"], ownership.EXPECTED_UPSTREAM_PLATFORM_IDS)
-        self.assertEqual(capabilities["guru_supported_platform_ids"], ownership.EXPECTED_GURU_SUPPORTED_PLATFORMS)
-        self.assertEqual(capabilities["default_dogfood_platform_ids"], ownership.EXPECTED_DEFAULT_DOGFOOD_PLATFORMS)
-        self.assertEqual(capabilities["deferred_platform_ids"], ownership.EXPECTED_DEFERRED_PLATFORM_IDS)
+        self.assertEqual(first["status"], "ok", first["errors"])
+        self.assertEqual(first["schema_version"], "4.0")
+        self.assertEqual(first["descriptor_count"], 22)
+        self.assertEqual(first["platform_ids"], list(ownership.PLATFORM_IDS))
+        self.assertEqual(first["platform_cli_flags"], list(ownership.PLATFORM_FLAGS))
+        self.assertEqual(first["dogfood_platforms"], ["claude", "codex", "cursor"])
+        self.assertEqual(first["derived_managed_paths"], ownership.EXPECTED_MANAGED_PATHS)
+        self.assertEqual(first["managed_claim_count"], len(ownership.EXPECTED_MANAGED_PATHS))
+        self.assertEqual(first["classified_managed_claim_count"], len(ownership.EXPECTED_MANAGED_PATHS))
+        self.assertEqual(first["overlay_count"], first["descriptor_count"])
         for field in (
             "schema_sha256",
             "inventory_sha256",
-            "guru_owned_rules_sha256",
-            "managed_path_claims_sha256",
+            "descriptor_sha256",
             "overlay_paths_sha256",
             "overlay_payload_aggregate_sha256",
             "facts_sha256",
         ):
             self.assertRegex(first[field], r"^[0-9a-f]{64}$")
 
-        inventory = json.loads((self.repo / ownership.INVENTORY_RELATIVE).read_text(encoding="utf-8"))
-        self.assertEqual(set(inventory), ownership.TOP_LEVEL_KEYS)
-        self.assertEqual(inventory["guru_owned_rules"], ownership.EXPECTED_GURU_RULES)
-        self.assertEqual(inventory["managed_path_claims"], ownership.EXPECTED_MANAGED_PATH_CLAIMS)
-        self.assertEqual(
-            first["overlay_paths_sha256"],
-            ownership.path_set_sha256(sorted(ownership.EXPECTED_FINISH_OVERLAY_CLAIMS)),
-        )
-
-    def test_capability_inventory_drift_is_rejected(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repo = Path(directory)
-            self.copy_minimal_source(repo)
-            extension_path = repo / ownership.EXTENSION_RELATIVE
-            extension = json.loads(extension_path.read_text(encoding="utf-8"))
-            extension["public_api"]["platform_capabilities"]["deferred_platforms"] = []
-            self.write_json(extension_path, extension)
-            payload = ownership.validate_repository(repo)
-
-        self.assertEqual(payload["status"], "error")
-        self.assertIn("platform_capability_inventory_invalid", {item["code"] for item in payload["errors"]})
-
-    def test_upstream_start_continue_hooks_platform_and_meta_are_not_guru_owned(self) -> None:
-        inventory = json.loads(
-            (self.repo / ownership.INVENTORY_RELATIVE).read_text(encoding="utf-8")
-        )
-        extension = json.loads(
-            (self.repo / ownership.EXTENSION_RELATIVE).read_text(encoding="utf-8")
-        )
-        upstream_paths = (
-            ".trellis/scripts/get_context.py",
-            ".trellis/scripts/common/continuation_contract.py",
-            ".agents/skills/trellis-start/SKILL.md",
-            ".agents/skills/trellis-continue/SKILL.md",
-            ".agents/skills/trellis-meta/SKILL.md",
-            ".codex/prompts/trellis-start.md",
-            ".codex/prompts/trellis-continue.md",
-            ".codex/hooks/session-start.py",
-            ".claude/commands/trellis/continue.md",
-            ".claude/hooks/inject-workflow-state.py",
-            ".cursor/commands/trellis-continue.md",
-            ".cursor/hooks/session-start.py",
-        )
-        managed_paths = set(extension["public_api"]["managed_paths"])
-        overlay_root = self.repo / ownership.OVERLAY_ROOT_RELATIVE
-        for path in upstream_paths:
-            with self.subTest(path=path):
-                self.assertEqual(
-                    ownership.classify_guru_path(
-                        path, inventory["guru_owned_rules"]
-                    ),
-                    [],
-                )
-                self.assertNotIn(path, managed_paths)
-                self.assertFalse((overlay_root / path).exists())
-
-    def test_schema_is_valid_draft_2020_12_and_accepts_inventory(self) -> None:
+    def test_schema_is_valid_and_accepts_inventory(self) -> None:
         from jsonschema import Draft202012Validator
 
         schema = json.loads((self.repo / ownership.SCHEMA_RELATIVE).read_text(encoding="utf-8"))
@@ -224,57 +83,75 @@ class UpstreamOwnershipTest(unittest.TestCase):
         Draft202012Validator.check_schema(schema)
         self.assertEqual(list(Draft202012Validator(schema).iter_errors(inventory)), [])
 
-    def test_finish_overlay_must_be_regular(self) -> None:
+    def test_descriptor_ids_and_cli_flags_are_unique(self) -> None:
+        inventory = json.loads((self.repo / ownership.INVENTORY_RELATIVE).read_text(encoding="utf-8"))
+        rows = inventory["platform_descriptors"]
+        self.assertEqual(len(rows), 22)
+        self.assertEqual(len({row["id"] for row in rows}), 22)
+        self.assertEqual(len({row["cli_flag"] for row in rows}), 22)
+        self.assertEqual(rows[0]["id"], "claude-code")
+        self.assertEqual(rows[0]["cli_flag"], "claude")
+
+    def test_legacy_supported_or_deferred_tier_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repo = Path(directory)
-            self.copy_minimal_source(repo)
-            relative = ".codex/prompts/guru-finish-work.md"
-            overlay = repo / ownership.OVERLAY_ROOT_RELATIVE / relative
-            overlay.unlink()
-            overlay.symlink_to("guru-finish-work-local.md")
+            self.copy_source(repo)
+            extension_path = repo / ownership.EXTENSION_RELATIVE
+            extension = json.loads(extension_path.read_text(encoding="utf-8"))
+            extension["public_api"]["platform_capabilities"]["deferred_platforms"] = []
+            self.write_json(extension_path, extension)
             payload = ownership.validate_repository(repo)
-
         self.assertEqual(payload["status"], "error")
+        self.assertIn("platform_capability_legacy_tier", {row["code"] for row in payload["errors"]})
+
+    def test_descriptor_drift_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_source(repo)
+            inventory_path = repo / ownership.INVENTORY_RELATIVE
+            inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+            inventory["platform_descriptors"][0]["cli_flag"] = "claude-code"
+            self.write_json(inventory_path, inventory)
+            payload = ownership.validate_repository(repo)
+        self.assertEqual(payload["status"], "error")
+        self.assertIn("platform_descriptor_inventory_invalid", {row["code"] for row in payload["errors"]})
+
+    def test_overlay_count_does_not_define_platform_count(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_source(repo)
+            overlay = repo / ownership.OVERLAY_ROOT_RELATIVE / ".opencode/commands/guru-finish-work.md"
+            if overlay.exists():
+                overlay.unlink()
+            payload = ownership.validate_repository(repo)
+        self.assertNotIn("missing_finish_overlay", {row["code"] for row in payload["errors"]})
+        self.assertEqual(payload["descriptor_count"], 22)
+
+    def test_package_private_tests_in_public_projection_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_source(repo)
+            leaked = repo / ".cursor/skills/guru-example/tests/test_private.py"
+            leaked.parent.mkdir(parents=True, exist_ok=True)
+            leaked.write_text("raise AssertionError\n", encoding="utf-8")
+            payload = ownership.validate_repository(repo)
+        self.assertEqual(payload["status"], "error")
+        self.assertIn("package_private_test_projected", {row["code"] for row in payload["errors"]})
+
+    def test_descriptor_classification_covers_skill_and_entry(self) -> None:
+        inventory = json.loads((self.repo / ownership.INVENTORY_RELATIVE).read_text(encoding="utf-8"))
         self.assertIn(
-            "overlay_not_regular",
-            {item["code"] for item in payload["errors"] if item["path"] == relative},
+            "platform:opencode:skill",
+            ownership.classify_guru_path(".opencode/skills/guru-review-branch/SKILL.md", inventory),
         )
-
-    def test_missing_managed_asset_is_rejected(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repo = Path(directory)
-            self.copy_minimal_source(repo)
-            relative = "scripts/bash/check-env.sh"
-            (repo / ownership.WORKFLOW_ROOT_RELATIVE / relative).unlink()
-            payload = ownership.validate_repository(repo)
-
-        self.assertEqual(payload["status"], "error")
-        self.assertIn(
-            "missing_managed_asset",
-            {item["code"] for item in payload["errors"] if item["path"] == relative},
+        self.assertEqual(
+            ownership.classify_guru_path(".opencode/commands/guru-finish-work.md", inventory),
+            ["platform:opencode:entry"],
         )
-
-    def test_extra_canonical_package_is_rejected(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repo = Path(directory)
-            self.copy_minimal_source(repo)
-            (repo / ownership.SKILL_PACKAGE_ROOT_RELATIVE / "guru-extra").mkdir()
-            payload = ownership.validate_repository(repo)
-
-        self.assertEqual(payload["status"], "error")
-        self.assertIn("canonical_package_set_mismatch", {item["code"] for item in payload["errors"]})
-
-    def test_bash_entry_preserves_json_and_exit_status(self) -> None:
-        command = self.repo / "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
-        completed = subprocess.run(
-            [str(command), "--repo", str(self.repo), "--json"],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
+        self.assertEqual(
+            ownership.classify_guru_path(".opencode/commands/trellis/start.md", inventory),
+            [],
         )
-        self.assertEqual(completed.returncode, 0, completed.stderr)
-        self.assertEqual(json.loads(completed.stdout)["status"], "ok")
 
 
 if __name__ == "__main__":

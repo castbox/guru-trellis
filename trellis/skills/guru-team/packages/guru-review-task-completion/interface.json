@@ -1,1 +1,715 @@
-{"$schema":"../../schemas/skill-interface-1.4.schema.json","schema_version":"1.4","id":"guru-review-task-completion","name":"guru-review-task-completion","description":"Review all current task Delivery and evidence facts and select one bounded completion route.","state":"active","judgment_mode":"semantic","modes":{"workflow":{"routing":"global_workflow","entry_precondition_ids":["runtime_dependency","active_task","current_authority","delivery_history","evidence_freshness"]},"standalone":{"routing":"direct_discovery","entry_precondition_ids":["runtime_dependency","active_task","current_authority","delivery_history","evidence_freshness"]}},"entry_preconditions":[{"id":"runtime_dependency","evidence":"installed package and dispatcher","binding":"compatible Guru Team preset","freshness":"validated before invocation"},{"id":"active_task","evidence":"current task identity and binding","binding":"one task reference","freshness":"reread for every review"},{"id":"current_authority","evidence":"accepted scope, requirements, design and test authority","binding":"current task contract","freshness":"fresh semantic read"},{"id":"delivery_history","evidence":"all historical Delivery facts","binding":"task identity and target base","freshness":"reconstructed from live history"},{"id":"evidence_freshness","evidence":"validation and external evidence","binding":"current completion round","freshness":"stale evidence fails closed"}],"runtime_dependency":{"extension_id":"guru-team","api_version":"1.0","manifest_path":".trellis/guru-team/extension.json","dispatcher":"run-skill-command","distribution":"guru-team-preset","package_portability":"not-self-contained"},"ordered_stages":["forward_behavior","ai_review_gate","conditional_human_confirmation","recorder_validator","typed_exit"],"artifacts":[{"id":"input","path":"examples/public-input.json"},{"id":"semantic_result","path":"examples/semantic-result.json"},{"id":"completed_output","path":"examples/public-output.json"},{"id":"remaining_work_output","path":"examples/public-remaining-work-output.json"},{"id":"evidence_pending_output","path":"examples/public-evidence-pending-output.json"},{"id":"additional_delivery_required_output","path":"examples/public-additional-delivery-required-output.json"},{"id":"requirements_revision_required_output","path":"examples/public-requirements-revision-required-output.json"},{"id":"implementation_revision_required_output","path":"examples/public-implementation-revision-required-output.json"},{"id":"blocked_output","path":"examples/public-blocked-output.json"},{"id":"evidence_refresh_authoring","path":"examples/evidence-refresh-authoring.json"},{"id":"requirements_authoring","path":"examples/requirements-authoring.json"},{"id":"closure_authoring","path":"examples/closure-authoring.json"},{"id":"evidence_refresh_input","path":"examples/public-evidence-refresh-input.json"},{"id":"invocation_error","path":"examples/public-invocation-error.json"}],"schemas":[{"id":"public_input","path":"schemas/public-input.schema.json"},{"id":"completion_input","path":"schemas/public-completion-input.schema.json"},{"id":"evidence_refresh_input","path":"schemas/public-evidence-refresh-input.schema.json"},{"id":"semantic_result","path":"schemas/semantic-result.schema.json"},{"id":"public_output","path":"schemas/public-output.schema.json"},{"id":"public_completed_output","path":"schemas/public-completed-output.schema.json"},{"id":"public_remaining_work_output","path":"schemas/public-remaining-work-output.schema.json"},{"id":"public_evidence_pending_output","path":"schemas/public-evidence-pending-output.schema.json"},{"id":"public_additional_delivery_required_output","path":"schemas/public-additional-delivery-required-output.schema.json"},{"id":"public_requirements_revision_required_output","path":"schemas/public-requirements-revision-required-output.schema.json"},{"id":"public_implementation_revision_required_output","path":"schemas/public-implementation-revision-required-output.schema.json"},{"id":"public_blocked_output","path":"schemas/public-blocked-output.schema.json"}],"validators":[{"id":"public_invocation","command":"scripts/invoke.sh","runtime_command":"invoke-guru-review-task-completion","objective_scope":"Validate one AI-owned completion route and emit its minimal typed DTO."}],"external_exits":[{"id":"remaining_work","evidence":"accepted scope still has work","consumer":{"kind":"workflow","id":"active-task-continuation"}},{"id":"evidence_pending","evidence":"required evidence is not current","consumer":{"kind":"skill","id":"guru-review-task-completion"}},{"id":"additional_delivery_required","evidence":"another independent business Delivery is required","consumer":{"kind":"workflow","id":"task-delivery-planning-router"}},{"id":"requirements_revision_required","evidence":"requirements authority must change","consumer":{"kind":"skill","id":"guru-clarify-requirements"}},{"id":"implementation_revision_required","evidence":"implementation must change","consumer":{"kind":"workflow","id":"guru-resume-implementation"}},{"id":"completed","evidence":"all accepted scope, Delivery and evidence facts pass","consumer":{"kind":"skill","id":"guru-complete-task-closure"}},{"id":"blocked","evidence":"current completion judgment is not reliable","consumer":{"kind":"stop","id":"task-completion-blocked"}}],"reentry":{"identity":"task, scope, Delivery history, authority, evidence, semantic route","freshness":"rebuild all facts for every call","stale_behavior":"fail_closed"},"tests":["tests/test_completion_contract.py"],"platform_destinations":["shared","codex","cursor","claude","opencode"],"public_contracts":{"input":{"kind":"structured_json","aggregate_schema":{"schema_id":"guru-review-task-completion-input-aggregate-1.0","path":"schemas/public-input.schema.json"},"profiles":[{"id":"completion","schema":{"schema_id":"guru-review-task-completion-input-completion-1.0","path":"schemas/public-completion-input.schema.json"},"example":{"id":"input","path":"examples/public-input.json"},"discriminator":{"field":"profile","value":"completion"}},{"id":"evidence_refresh","schema":{"schema_id":"guru-review-task-completion-input-evidence-refresh-1.0","path":"schemas/public-evidence-refresh-input.schema.json"},"example":{"id":"evidence_refresh_input","path":"examples/public-evidence-refresh-input.json"},"discriminator":{"field":"profile","value":"evidence_refresh"}}]},"invocation":{"command_id":"run-skill-command","wrapper":"scripts/invoke.sh","input_binding":{"kind":"structured_json","profile_id":"completion"},"stdout_contract":"single_typed_exit","error_schema":{"schema_id":"guru-review-task-completion-output-1.0","path":"schemas/public-output.schema.json"},"error_example":{"id":"invocation_error","path":"examples/public-invocation-error.json"},"example_argv":["--input","examples/public-input.json","--semantic-result","examples/semantic-result.json"]},"outputs":[{"exit_id":"remaining_work","schema":{"schema_id":"guru-review-task-completion-output-remaining-work-1.0","path":"schemas/public-remaining-work-output.schema.json"},"example":{"id":"remaining_work_output","path":"examples/public-remaining-work-output.json"},"consumer_use_ids":["remaining"]},{"exit_id":"evidence_pending","schema":{"schema_id":"guru-review-task-completion-output-evidence-pending-1.0","path":"schemas/public-evidence-pending-output.schema.json"},"example":{"id":"evidence_pending_output","path":"examples/public-evidence-pending-output.json"},"consumer_use_ids":["evidence"]},{"exit_id":"additional_delivery_required","schema":{"schema_id":"guru-review-task-completion-output-additional-delivery-required-1.0","path":"schemas/public-additional-delivery-required-output.schema.json"},"example":{"id":"additional_delivery_required_output","path":"examples/public-additional-delivery-required-output.json"},"consumer_use_ids":["delivery"]},{"exit_id":"requirements_revision_required","schema":{"schema_id":"guru-review-task-completion-output-requirements-revision-required-1.0","path":"schemas/public-requirements-revision-required-output.schema.json"},"example":{"id":"requirements_revision_required_output","path":"examples/public-requirements-revision-required-output.json"},"consumer_use_ids":["requirements"]},{"exit_id":"implementation_revision_required","schema":{"schema_id":"guru-review-task-completion-output-implementation-revision-required-1.0","path":"schemas/public-implementation-revision-required-output.schema.json"},"example":{"id":"implementation_revision_required_output","path":"examples/public-implementation-revision-required-output.json"},"consumer_use_ids":["implementation"]},{"exit_id":"completed","schema":{"schema_id":"guru-review-task-completion-output-completed-1.0","path":"schemas/public-completed-output.schema.json"},"example":{"id":"completed_output","path":"examples/public-output.json"},"consumer_use_ids":["closure"]},{"exit_id":"blocked","schema":{"schema_id":"guru-review-task-completion-output-blocked-1.0","path":"schemas/public-blocked-output.schema.json"},"example":{"id":"blocked_output","path":"examples/public-blocked-output.json"},"consumer_use_ids":["blocked"]}],"consumer_inputs":[{"id":"closure","consumer":{"kind":"skill","id":"guru-complete-task-closure"},"payload_kind":"structured_json","contract":{"kind":"skill_input_authoring_seed","interface_path":"packages/guru-complete-task-closure/interface.json","input_kind":"structured_json","profile_id":"completion_approved","seed_fields":["source_exit","task_ref","completion_ref"],"authoring_fields":["profile","mode","source_issue"],"authoring_example":{"id":"closure_authoring","path":"examples/closure-authoring.json"}}},{"id":"remaining","consumer":{"kind":"workflow","id":"active-task-continuation"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-review-task-completion-route-1.0","path":"consumers/workflow/production/completion-route.schema.json"}},{"id":"evidence","consumer":{"kind":"skill","id":"guru-review-task-completion"},"payload_kind":"structured_json","contract":{"kind":"skill_input_authoring_seed","interface_path":"packages/guru-review-task-completion/interface.json","input_kind":"structured_json","profile_id":"evidence_refresh","seed_fields":["source_exit","task_ref","resume_target"],"authoring_fields":["profile","mode","authority_refs","delivery_facts","evidence_refs"],"authoring_example":{"id":"evidence_refresh_authoring","path":"examples/evidence-refresh-authoring.json"}}},{"id":"delivery","consumer":{"kind":"workflow","id":"task-delivery-planning-router"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-review-task-completion-route-1.0","path":"consumers/workflow/production/completion-route.schema.json"}},{"id":"requirements","consumer":{"kind":"skill","id":"guru-clarify-requirements"},"payload_kind":"structured_json","contract":{"kind":"skill_input_authoring_seed","interface_path":"packages/guru-clarify-requirements/interface.json","input_kind":"structured_json","profile_id":"active_task_scope_change","seed_fields":["source_exit","task_locator","resume_target"],"authoring_fields":["profile","mode","target_locator","continuation_id"],"authoring_example":{"id":"requirements_authoring","path":"examples/requirements-authoring.json"}}},{"id":"implementation","consumer":{"kind":"workflow","id":"guru-resume-implementation"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-review-task-completion-route-1.0","path":"consumers/workflow/production/completion-route.schema.json"}},{"id":"blocked","consumer":{"kind":"stop","id":"task-completion-blocked"},"payload_kind":"zero_payload"}],"projections":[{"id":"closure","exit_id":"completed","consumer_input_id":"closure","operation":"rename","mappings":[{"source":"exit_id","target":"source_exit"},{"source":"task_ref","target":"task_ref"},{"source":"completion_ref","target":"completion_ref"}]},{"id":"remaining","exit_id":"remaining_work","consumer_input_id":"remaining","operation":"select","mappings":[{"source":"exit_id","target":"exit_id"},{"source":"task_ref","target":"task_ref"},{"source":"resume_target","target":"resume_target"}]},{"id":"evidence","exit_id":"evidence_pending","consumer_input_id":"evidence","operation":"rename","mappings":[{"source":"exit_id","target":"source_exit"},{"source":"task_ref","target":"task_ref"},{"source":"resume_target","target":"resume_target"}]},{"id":"delivery","exit_id":"additional_delivery_required","consumer_input_id":"delivery","operation":"select","mappings":[{"source":"exit_id","target":"exit_id"},{"source":"task_ref","target":"task_ref"},{"source":"resume_target","target":"resume_target"}]},{"id":"requirements","exit_id":"requirements_revision_required","consumer_input_id":"requirements","operation":"rename","mappings":[{"source":"exit_id","target":"source_exit"},{"source":"task_ref","target":"task_locator"},{"source":"resume_target","target":"resume_target"}]},{"id":"implementation","exit_id":"implementation_revision_required","consumer_input_id":"implementation","operation":"select","mappings":[{"source":"exit_id","target":"exit_id"},{"source":"task_ref","target":"task_ref"},{"source":"resume_target","target":"resume_target"}]},{"id":"blocked","exit_id":"blocked","consumer_input_id":"blocked","operation":"select","mappings":[]}],"private_artifacts":[]}}
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-review-task-completion",
+  "name": "guru-review-task-completion",
+  "description": "Review all current task Delivery and evidence facts and select one bounded completion route.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "active_task",
+        "current_authority",
+        "delivery_history",
+        "evidence_freshness"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "active_task",
+        "current_authority",
+        "delivery_history",
+        "evidence_freshness"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed package and dispatcher",
+      "binding": "compatible Guru Team preset",
+      "freshness": "validated before invocation"
+    },
+    {
+      "id": "active_task",
+      "evidence": "current task identity and binding",
+      "binding": "one task reference",
+      "freshness": "reread for every review"
+    },
+    {
+      "id": "current_authority",
+      "evidence": "accepted scope, requirements, design and test authority",
+      "binding": "current task contract",
+      "freshness": "fresh semantic read"
+    },
+    {
+      "id": "delivery_history",
+      "evidence": "all historical Delivery facts",
+      "binding": "task identity and target base",
+      "freshness": "reconstructed from live history"
+    },
+    {
+      "id": "evidence_freshness",
+      "evidence": "validation and external evidence",
+      "binding": "current completion round",
+      "freshness": "stale evidence fails closed"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "input",
+      "path": "examples/public-input.json"
+    },
+    {
+      "id": "semantic_result",
+      "path": "examples/semantic-result.json"
+    },
+    {
+      "id": "completed_output",
+      "path": "examples/public-output.json"
+    },
+    {
+      "id": "remaining_work_output",
+      "path": "examples/public-remaining-work-output.json"
+    },
+    {
+      "id": "evidence_pending_output",
+      "path": "examples/public-evidence-pending-output.json"
+    },
+    {
+      "id": "additional_delivery_required_output",
+      "path": "examples/public-additional-delivery-required-output.json"
+    },
+    {
+      "id": "requirements_revision_required_output",
+      "path": "examples/public-requirements-revision-required-output.json"
+    },
+    {
+      "id": "implementation_revision_required_output",
+      "path": "examples/public-implementation-revision-required-output.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "evidence_refresh_authoring",
+      "path": "examples/evidence-refresh-authoring.json"
+    },
+    {
+      "id": "requirements_authoring",
+      "path": "examples/requirements-authoring.json"
+    },
+    {
+      "id": "closure_authoring",
+      "path": "examples/closure-authoring.json"
+    },
+    {
+      "id": "evidence_refresh_input",
+      "path": "examples/public-evidence-refresh-input.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "examples/public-invocation-error.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "public_input",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "completion_input",
+      "path": "schemas/public-completion-input.schema.json"
+    },
+    {
+      "id": "evidence_refresh_input",
+      "path": "schemas/public-evidence-refresh-input.schema.json"
+    },
+    {
+      "id": "semantic_result",
+      "path": "schemas/semantic-result.schema.json"
+    },
+    {
+      "id": "public_output",
+      "path": "schemas/public-output.schema.json"
+    },
+    {
+      "id": "public_completed_output",
+      "path": "schemas/public-completed-output.schema.json"
+    },
+    {
+      "id": "public_remaining_work_output",
+      "path": "schemas/public-remaining-work-output.schema.json"
+    },
+    {
+      "id": "public_evidence_pending_output",
+      "path": "schemas/public-evidence-pending-output.schema.json"
+    },
+    {
+      "id": "public_additional_delivery_required_output",
+      "path": "schemas/public-additional-delivery-required-output.schema.json"
+    },
+    {
+      "id": "public_requirements_revision_required_output",
+      "path": "schemas/public-requirements-revision-required-output.schema.json"
+    },
+    {
+      "id": "public_implementation_revision_required_output",
+      "path": "schemas/public-implementation-revision-required-output.schema.json"
+    },
+    {
+      "id": "public_blocked_output",
+      "path": "schemas/public-blocked-output.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-review-task-completion",
+      "objective_scope": "Validate one AI-owned completion route and emit its minimal typed DTO."
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "remaining_work",
+      "evidence": "accepted scope still has work",
+      "consumer": {
+        "kind": "workflow",
+        "id": "active-task-continuation"
+      }
+    },
+    {
+      "id": "evidence_pending",
+      "evidence": "required evidence is not current",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-review-task-completion"
+      }
+    },
+    {
+      "id": "additional_delivery_required",
+      "evidence": "another independent business Delivery is required",
+      "consumer": {
+        "kind": "workflow",
+        "id": "task-delivery-planning-router"
+      }
+    },
+    {
+      "id": "requirements_revision_required",
+      "evidence": "requirements authority must change",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-clarify-requirements"
+      }
+    },
+    {
+      "id": "implementation_revision_required",
+      "evidence": "implementation must change",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-resume-implementation"
+      }
+    },
+    {
+      "id": "completed",
+      "evidence": "all accepted scope, Delivery and evidence facts pass",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-complete-task-closure"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "current completion judgment is not reliable",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-completion-blocked"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "task, scope, Delivery history, authority, evidence, semantic route",
+    "freshness": "rebuild all facts for every call",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_completion_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-review-task-completion-input-aggregate-1.0",
+        "path": "schemas/public-input.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "completion",
+          "schema": {
+            "schema_id": "guru-review-task-completion-input-completion-1.0",
+            "path": "schemas/public-completion-input.schema.json"
+          },
+          "example": {
+            "id": "input",
+            "path": "examples/public-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "completion"
+          }
+        },
+        {
+          "id": "evidence_refresh",
+          "schema": {
+            "schema_id": "guru-review-task-completion-input-evidence-refresh-1.0",
+            "path": "schemas/public-evidence-refresh-input.schema.json"
+          },
+          "example": {
+            "id": "evidence_refresh_input",
+            "path": "examples/public-evidence-refresh-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "evidence_refresh"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "completion"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-review-task-completion-output-1.0",
+        "path": "schemas/public-output.schema.json"
+      },
+      "error_example": {
+        "id": "invocation_error",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-input.json",
+        "--semantic-result",
+        "examples/semantic-result.json"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "remaining_work",
+        "schema": {
+          "schema_id": "guru-review-task-completion-output-remaining-work-1.0",
+          "path": "schemas/public-remaining-work-output.schema.json"
+        },
+        "example": {
+          "id": "remaining_work_output",
+          "path": "examples/public-remaining-work-output.json"
+        },
+        "consumer_use_ids": [
+          "remaining"
+        ]
+      },
+      {
+        "exit_id": "evidence_pending",
+        "schema": {
+          "schema_id": "guru-review-task-completion-output-evidence-pending-1.0",
+          "path": "schemas/public-evidence-pending-output.schema.json"
+        },
+        "example": {
+          "id": "evidence_pending_output",
+          "path": "examples/public-evidence-pending-output.json"
+        },
+        "consumer_use_ids": [
+          "evidence"
+        ]
+      },
+      {
+        "exit_id": "additional_delivery_required",
+        "schema": {
+          "schema_id": "guru-review-task-completion-output-additional-delivery-required-1.0",
+          "path": "schemas/public-additional-delivery-required-output.schema.json"
+        },
+        "example": {
+          "id": "additional_delivery_required_output",
+          "path": "examples/public-additional-delivery-required-output.json"
+        },
+        "consumer_use_ids": [
+          "delivery"
+        ]
+      },
+      {
+        "exit_id": "requirements_revision_required",
+        "schema": {
+          "schema_id": "guru-review-task-completion-output-requirements-revision-required-1.0",
+          "path": "schemas/public-requirements-revision-required-output.schema.json"
+        },
+        "example": {
+          "id": "requirements_revision_required_output",
+          "path": "examples/public-requirements-revision-required-output.json"
+        },
+        "consumer_use_ids": [
+          "requirements"
+        ]
+      },
+      {
+        "exit_id": "implementation_revision_required",
+        "schema": {
+          "schema_id": "guru-review-task-completion-output-implementation-revision-required-1.0",
+          "path": "schemas/public-implementation-revision-required-output.schema.json"
+        },
+        "example": {
+          "id": "implementation_revision_required_output",
+          "path": "examples/public-implementation-revision-required-output.json"
+        },
+        "consumer_use_ids": [
+          "implementation"
+        ]
+      },
+      {
+        "exit_id": "completed",
+        "schema": {
+          "schema_id": "guru-review-task-completion-output-completed-1.0",
+          "path": "schemas/public-completed-output.schema.json"
+        },
+        "example": {
+          "id": "completed_output",
+          "path": "examples/public-output.json"
+        },
+        "consumer_use_ids": [
+          "closure"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-review-task-completion-output-blocked-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "blocked"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "closure",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-complete-task-closure"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-complete-task-closure/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "completion_approved",
+          "seed_fields": [
+            "source_exit",
+            "task_ref",
+            "completion_ref"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode",
+            "source_issue"
+          ],
+          "authoring_example": {
+            "id": "closure_authoring",
+            "path": "examples/closure-authoring.json"
+          }
+        }
+      },
+      {
+        "id": "remaining",
+        "consumer": {
+          "kind": "workflow",
+          "id": "active-task-continuation"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-review-task-completion-route-1.0",
+          "path": "consumers/workflow/production/completion-route.schema.json"
+        }
+      },
+      {
+        "id": "evidence",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-review-task-completion"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-review-task-completion/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "evidence_refresh",
+          "seed_fields": [
+            "source_exit",
+            "task_ref",
+            "resume_target"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode",
+            "authority_refs",
+            "delivery_facts",
+            "evidence_refs"
+          ],
+          "authoring_example": {
+            "id": "evidence_refresh_authoring",
+            "path": "examples/evidence-refresh-authoring.json"
+          }
+        }
+      },
+      {
+        "id": "delivery",
+        "consumer": {
+          "kind": "workflow",
+          "id": "task-delivery-planning-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-review-task-completion-route-1.0",
+          "path": "consumers/workflow/production/completion-route.schema.json"
+        }
+      },
+      {
+        "id": "requirements",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-clarify-requirements"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-clarify-requirements/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "active_task_scope_change",
+          "seed_fields": [
+            "source_exit",
+            "task_locator",
+            "resume_target"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode",
+            "target_locator",
+            "continuation_id"
+          ],
+          "authoring_example": {
+            "id": "requirements_authoring",
+            "path": "examples/requirements-authoring.json"
+          }
+        }
+      },
+      {
+        "id": "implementation",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-resume-implementation"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-review-task-completion-route-1.0",
+          "path": "consumers/workflow/production/completion-route.schema.json"
+        }
+      },
+      {
+        "id": "blocked",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-completion-blocked"
+        },
+        "payload_kind": "zero_payload"
+      }
+    ],
+    "projections": [
+      {
+        "id": "closure",
+        "exit_id": "completed",
+        "consumer_input_id": "closure",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "completion_ref",
+            "target": "completion_ref"
+          }
+        ]
+      },
+      {
+        "id": "remaining",
+        "exit_id": "remaining_work",
+        "consumer_input_id": "remaining",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "exit_id"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "resume_target",
+            "target": "resume_target"
+          }
+        ]
+      },
+      {
+        "id": "evidence",
+        "exit_id": "evidence_pending",
+        "consumer_input_id": "evidence",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "resume_target",
+            "target": "resume_target"
+          }
+        ]
+      },
+      {
+        "id": "delivery",
+        "exit_id": "additional_delivery_required",
+        "consumer_input_id": "delivery",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "exit_id"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "resume_target",
+            "target": "resume_target"
+          }
+        ]
+      },
+      {
+        "id": "requirements",
+        "exit_id": "requirements_revision_required",
+        "consumer_input_id": "requirements",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_locator"
+          },
+          {
+            "source": "resume_target",
+            "target": "resume_target"
+          }
+        ]
+      },
+      {
+        "id": "implementation",
+        "exit_id": "implementation_revision_required",
+        "consumer_input_id": "implementation",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "exit_id"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "resume_target",
+            "target": "resume_target"
+          }
+        ]
+      },
+      {
+        "id": "blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked",
+        "operation": "select",
+        "mappings": []
+      }
+    ],
+    "private_artifacts": []
+  }
+}

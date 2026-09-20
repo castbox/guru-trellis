@@ -106,12 +106,9 @@ def provenance_manifest(
     tree_state: str = "clean",
     is_mutable_ref: bool = False,
     selected_platforms: list[str] | None = None,
-    all_platforms: bool | None = None,
 ) -> dict:
     if selected_platforms is None:
         selected_platforms = ["claude", "codex", "cursor"]
-    if all_platforms is None:
-        all_platforms = selected_platforms == ["claude", "codex", "cursor"]
     return {
         "schema_version": "2.0",
         "extension": {"extension_id": "guru-team"},
@@ -125,7 +122,6 @@ def provenance_manifest(
         },
         "install": {
             "selected_platforms": selected_platforms,
-            "all_platforms": all_platforms,
             "managed_assets": [
                 ".trellis/spec/workflow/semantic-retrieval.md"
             ],
@@ -222,8 +218,11 @@ from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--repo", required=True)
-parser.add_argument("--platform", action="append", choices=("claude", "codex", "cursor"))
-parser.add_argument("--all-platforms", action="store_true")
+parser.add_argument(
+    "--platform",
+    action="append",
+    choices=("claude", "codex", "cursor", "opencode"),
+)
 parser.add_argument("--json", action="store_true")
 args = parser.parse_args()
 source_root = Path(__file__).resolve().parents[5]
@@ -238,15 +237,9 @@ target_head = subprocess.run(
 ).stdout.strip()
 manifest_path = target_root / ".trellis/guru-team/extension.json"
 manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-requested_platforms = (
-    ["claude", "codex", "cursor"]
-    if args.all_platforms
-    else sorted(args.platform or [])
-)
+requested_platforms = sorted(args.platform or [])
 if requested_platforms != manifest["install"]["selected_platforms"]:
     raise SystemExit("preset apply platform selection did not match parent manifest")
-if args.all_platforms is not manifest["install"]["all_platforms"]:
-    raise SystemExit("preset apply all-platforms identity did not match parent manifest")
 manifest["installed_at"] = "after"
 manifest["source"]["ref"] = source_head
 manifest["source"]["commit"] = source_head

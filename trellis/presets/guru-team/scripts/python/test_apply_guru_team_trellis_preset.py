@@ -370,11 +370,11 @@ class CanonicalWorkflowBaseEvolutionTest(unittest.TestCase):
             fixture_io,
         )
         self.assertIn(
-            '[sys.executable, str(apply_script), "--repo", str(fixture), "--all-platforms"]',
+            '[sys.executable, str(apply_script), "--repo", str(fixture)]',
             fixture_io,
         )
         self.assertNotIn(
-            '[str(apply_script), "--repo", str(fixture), "--all-platforms"]',
+            '[str(apply_script), "--repo", str(fixture)]',
             fixture_io,
         )
 
@@ -897,8 +897,8 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertEqual(after, before)
         self.assertFalse(self.install_dst.exists())
 
-    def install(self, platforms: set[str] | None = None, all_platforms: bool = False) -> dict[str, object]:
-        return preset.install_assets(self.workflow_src, self.install_dst, self.repo, platforms, all_platforms=all_platforms)
+    def install(self, platforms: set[str] | None = None) -> dict[str, object]:
+        return preset.install_assets(self.workflow_src, self.install_dst, self.repo, platforms)
 
     def test_legacy_finalizer_wrappers_import_shared_runtime_from_canonical_and_installed_roots(self) -> None:
         self.install({"codex", "cursor"})
@@ -1255,11 +1255,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             ],
         )
 
-    def test_default_platforms_install_codex_cursor_and_shared_overlays(self) -> None:
+    def test_default_platforms_install_claude_codex_cursor_and_shared_overlays(self) -> None:
         payload = self.install()
 
-        self.assertEqual(payload["platforms"], ["codex", "cursor"])
-        self.assertFalse(payload["all_platforms"])
+        self.assertEqual(payload["platforms"], ["claude", "codex", "cursor"])
         self.assertIn(Path("scripts/bash/check-workspace-boundary.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/start-task.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/discover-skill-contract.sh"), preset.MANAGED_ASSET_PATHS)
@@ -1374,19 +1373,21 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue((self.repo / ".cursor/skills/guru-create-task-workspace/SKILL.md").is_file())
         self.assertTrue((self.repo / ".codex/prompts/guru-finish-work.md").is_file())
         self.assertTrue((self.repo / ".cursor/commands/guru-finish-work.md").is_file())
+        self.assertTrue((self.repo / ".claude/commands/guru/finish-work.md").is_file())
         assert_thin_guru_finish_entry(self, self.repo / ".codex/prompts/guru-finish-work.md")
         assert_thin_guru_finish_entry(self, self.repo / ".cursor/commands/guru-finish-work.md")
-        self.assertFalse((self.repo / ".claude").exists())
+        assert_thin_guru_finish_entry(self, self.repo / ".claude/commands/guru/finish-work.md")
 
-    def test_repeated_default_apply_does_not_restore_unselected_claude_overlay(self) -> None:
+    def test_repeated_default_apply_keeps_all_three_default_overlays(self) -> None:
         self.install()
-        self.assertFalse((self.repo / ".claude").exists())
+        self.assertTrue((self.repo / ".claude/commands/guru/finish-work.md").is_file())
 
         second_payload = self.install()
 
-        self.assertEqual(second_payload["platforms"], ["codex", "cursor"])
+        self.assertEqual(second_payload["platforms"], ["claude", "codex", "cursor"])
         self.assertEqual(second_payload["new_copies"], [])
         for relative in (
+            ".claude/commands/guru/finish-work.md",
             ".codex/prompts/guru-finish-work.md",
             ".cursor/commands/guru-finish-work.md",
         ):
@@ -1394,7 +1395,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 (self.repo / relative).read_bytes(),
                 (self.guru_root / "trellis/presets/guru-team/overlays" / relative).read_bytes(),
             )
-        self.assertFalse((self.repo / ".claude").exists())
+        self.assertTrue((self.repo / ".claude/skills/guru-create-task-workspace/SKILL.md").is_file())
 
     def test_non_current_installed_manifest_fails_before_reapply(self) -> None:
         self.install()
@@ -1412,14 +1413,14 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
 
         self.assertEqual(manifest_path.read_bytes(), before)
 
-    def test_default_reapply_does_not_restore_removed_unselected_claude_guru_entry(self) -> None:
+    def test_default_reapply_restores_removed_selected_claude_guru_entry(self) -> None:
         self.install({"claude", "codex", "cursor"})
         claude_entry = self.repo / ".claude/commands/guru/finish-work.md"
         claude_entry.unlink()
 
         self.install()
 
-        self.assertFalse(claude_entry.exists())
+        self.assertTrue(claude_entry.exists())
 
     def test_unknown_local_guru_finish_edit_gets_new_copy(self) -> None:
         target = self.repo / ".codex/prompts/guru-finish-work.md"
@@ -1467,7 +1468,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         payload = self.install({"claude"})
 
         self.assertEqual(payload["platforms"], ["claude"])
-        self.assertFalse(payload["all_platforms"])
         self.assertTrue((self.repo / ".agents/skills/guru-create-task-workspace/SKILL.md").is_file())
         self.assertTrue((self.repo / ".claude/skills/guru-create-task-workspace/SKILL.md").is_file())
         installed_finish_integration = (
@@ -1506,7 +1506,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         payload = self.install({"opencode"})
 
         self.assertEqual(payload["platforms"], ["opencode"])
-        self.assertFalse(payload["all_platforms"])
         self.assertTrue((self.repo / ".agents/skills/guru-create-task-workspace/SKILL.md").is_file())
         self.assertTrue((self.repo / ".opencode/skills/guru-create-task-workspace/SKILL.md").is_file())
         entry = self.repo / ".opencode/commands/guru-finish-work.md"
@@ -1516,126 +1515,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertFalse((self.repo / ".claude").exists())
         self.assertFalse((self.repo / ".cursor").exists())
 
-    def test_platform_selection_consumes_canonical_capability_inventory(self) -> None:
-        manifest = preset.load_extension_manifest(self.guru_root)
-        supported, default, deferred = preset.platform_capability_sets(manifest)
-
-        self.assertEqual(supported, ("claude", "codex", "cursor", "opencode"))
-        self.assertEqual(default, ("codex", "cursor"))
-        self.assertEqual(len(deferred), 18)
-        self.assertIn("kilo", deferred)
-        self.assertEqual(preset.selected_platforms(None, True, supported, default), (set(supported), True))
-        self.assertEqual(preset.selected_platforms(None, False, supported, default), (set(default), False))
-
-    def test_all_platforms_installs_only_guru_owned_overlays(self) -> None:
-        platforms, all_platforms = preset.selected_platforms(None, True)
-        payload = self.install(platforms, all_platforms=all_platforms)
-
-        self.assertTrue(all_platforms)
-        self.assertEqual(payload["platforms"], ["claude", "codex", "cursor", "opencode"])
-        ownership_facts = payload["upstream_ownership_validation"]
-        self.assertEqual(ownership_facts["schema_version"], "3.0")
-        self.assertEqual(ownership_facts["overlay_count"], 4)
-        self.assertEqual(ownership_facts["active_skill_count"], 32)
-        self.assertEqual(ownership_facts["managed_claim_count"], 11)
-        self.assertEqual(payload["replaced_overlays"], [])
-        overlay_root = self.guru_root / "trellis/presets/guru-team/overlays"
-        guru_entry_bytes = []
-        for relative in GURU_FINISH_ENTRIES:
-            canonical = overlay_root / relative
-            installed = self.repo / relative
-            assert_thin_guru_finish_entry(self, canonical)
-            assert_thin_guru_finish_entry(self, installed)
-            self.assertFalse(canonical.is_symlink())
-            self.assertFalse(installed.is_symlink())
-            self.assertEqual(canonical.stat().st_mode & 0o777, 0o644)
-            self.assertEqual(installed.stat().st_mode & 0o777, 0o644)
-            self.assertEqual(installed.read_bytes(), canonical.read_bytes())
-            guru_entry_bytes.append(canonical.read_bytes())
-        self.assertEqual(len(set(guru_entry_bytes)), 1)
-        installed_manifest = json.loads(
-            (self.repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8")
-        )
-        managed_assets = installed_manifest["install"]["managed_assets"]
-        installed_integration_path = (
-            ".trellis/guru-team/skills/tests/test_finish_family_integration.py"
-        )
-        installed_continuity_path = (
-            ".trellis/guru-team/skills/tests/test_base_continuity_integration.py"
-        )
-        self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor", "opencode"])
-        self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(
-            len(managed_assets),
-            len(preset.MANAGED_ASSET_PATHS)
-            + len(preset.MANAGED_SPEC_PATHS)
-            + len(preset.MANAGED_SOURCE_PATHS)
-            + len(GURU_FINISH_ENTRIES)
-            + 1,
-        )
-        self.assertEqual(managed_assets, sorted(set(managed_assets)))
-        self.assertNotIn(installed_integration_path, managed_assets)
-        self.assertNotIn(installed_continuity_path, managed_assets)
-        self.assertEqual(
-            [path for path in managed_assets if not (self.repo / path).is_file()],
-            [],
-        )
-        managed_specs = {
-            target.as_posix(): source
-            for source, target in preset.MANAGED_SPEC_PATHS
-        }
-        self.assertEqual(
-            set(managed_specs),
-            {
-                ".trellis/spec/workflow/companion-scripts.md",
-                ".trellis/spec/workflow/data-contracts.md",
-                ".trellis/spec/workflow/quality-guidelines.md",
-                ".trellis/spec/workflow/requirements-design-test-ssot.md",
-                ".trellis/spec/workflow/semantic-retrieval.md",
-                ".trellis/spec/workflow/subtraction-first-compatibility.md",
-                ".trellis/spec/workflow/skill-package-contract.md",
-                ".trellis/spec/workflow/workflow-contract.md",
-            },
-        )
-        for target, source in managed_specs.items():
-            self.assertIn(target, managed_assets)
-            self.assertEqual(
-                (self.repo / target).read_bytes(),
-                (self.guru_root / source).read_bytes(),
-            )
-        integration_records = [
-            record
-            for record in installed_manifest["skill_packages"]["files"]
-            if record["path"] == installed_integration_path
-        ]
-        self.assertEqual(len(integration_records), 1)
-        self.assertEqual(
-            integration_records[0]["source"],
-            "trellis/skills/guru-team/tests/test_finish_family_integration.py",
-        )
-        self.assertEqual(
-            integration_records[0]["sha256"],
-            hashlib.sha256(
-                (
-                    self.guru_root
-                    / "trellis/skills/guru-team/tests/test_finish_family_integration.py"
-                ).read_bytes()
-            ).hexdigest(),
-        )
-        continuity_records = [
-            record
-            for record in installed_manifest["skill_packages"]["files"]
-            if record["path"] == installed_continuity_path
-        ]
-        self.assertEqual(len(continuity_records), 1)
-        self.assertEqual(
-            continuity_records[0]["source"],
-            "trellis/skills/guru-team/tests/test_base_continuity_integration.py",
-        )
-
     def test_review_branch_current_gate_schema_closes_every_platform_interface_reference(self) -> None:
-        platforms, all_platforms = preset.selected_platforms(None, True)
-        payload = self.install(platforms, all_platforms=all_platforms)
+        payload = self.install({"claude", "codex", "cursor", "opencode"})
 
         self.assertEqual(payload["skill_packages"]["status"], "ok")
         canonical_root = (
@@ -1683,8 +1564,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                     )
 
     def test_merge_private_gate_generations_stay_out_of_every_platform_projection(self) -> None:
-        platforms, all_platforms = preset.selected_platforms(None, True)
-        payload = self.install(platforms, all_platforms=all_platforms)
+        payload = self.install({"claude", "codex", "cursor", "opencode"})
 
         self.assertEqual(payload["skill_packages"]["status"], "ok")
         package_relative = Path("guru-merge-task-pr")
@@ -1726,9 +1606,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 with self.subTest(platform_root=platform_root, retired=relative):
                     self.assertFalse((platform_root / relative).exists())
 
-    def test_all_platforms_to_subset_removes_clean_managed_overlay(self) -> None:
-        platforms, all_platforms = preset.selected_platforms(None, True)
-        self.install(platforms, all_platforms=all_platforms)
+    def test_explicit_selection_to_subset_removes_clean_managed_overlay(self) -> None:
+        self.install({"claude", "codex", "cursor", "opencode"})
         claude_entry = self.repo / ".claude/commands/guru/finish-work.md"
         self.assertTrue(claude_entry.is_file())
 
@@ -1771,8 +1650,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
 
     def test_platform_reselection_prunes_empty_unselected_skill_directories(self) -> None:
-        platforms, all_platforms = preset.selected_platforms(None, True)
-        self.install(platforms, all_platforms=all_platforms)
+        self.install({"claude", "codex", "cursor", "opencode"})
         retired_root = self.repo / ".codex/skills/guru-review-branch"
         empty_nested = retired_root / "empty/nested"
         empty_nested.mkdir(parents=True)
@@ -1787,11 +1665,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue(any((self.repo / ".opencode/skills").glob("guru-*")))
 
     def test_reselecting_removed_platform_clears_restored_removal_provenance(self) -> None:
-        platforms, all_platforms = preset.selected_platforms(None, True)
-        self.install(platforms, all_platforms=all_platforms)
+        platforms = {"claude", "codex", "cursor", "opencode"}
+        self.install(platforms)
         self.install({"codex", "cursor"})
 
-        payload = self.install(platforms, all_platforms=all_platforms)
+        payload = self.install(platforms)
 
         self.assertEqual(payload["skill_installed_validation"]["returncode"], 0)
         manifest = json.loads((self.install_dst / "extension.json").read_text(encoding="utf-8"))
@@ -1803,9 +1681,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 self.assertTrue(all((self.repo / path).is_file() for path in restored))
                 self.assertFalse(restored & {item["path"] for item in section["removals"]})
 
-    def test_all_platforms_to_subset_preserves_edited_overlay_and_blocks_activation(self) -> None:
-        platforms, all_platforms = preset.selected_platforms(None, True)
-        self.install(platforms, all_platforms=all_platforms)
+    def test_explicit_selection_to_subset_preserves_edited_overlay_and_blocks_activation(self) -> None:
+        self.install({"claude", "codex", "cursor", "opencode"})
         claude_entry = self.repo / ".claude/commands/guru/finish-work.md"
         local_bytes = claude_entry.read_bytes() + b"\n# Claude project customization\n"
         claude_entry.write_bytes(local_bytes)
@@ -1951,12 +1828,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
 
         ownership_gate = checker.index('"$OWNERSHIP_CHECK" --repo "$REPO_ROOT" --json')
         workflow_check = checker.index('cmp -s "$workflow_source" "$workflow"')
-        payload_loop = checker.index('while IFS= read -r source; do')
+        payload_loop = checker.index('"$DOGFOOD_CHECK"')
         self.assertLess(ownership_gate, workflow_check)
         self.assertLess(ownership_gate, payload_loop)
         self.assertIn("Missing executable ownership validator", checker)
         self.assertIn("current Guru-owned claims", checker)
-        self.assertIn("canonical Guru Team workflow and finish overlays", checker)
+        self.assertIn("selected platform projections", checker)
 
         fixture = self.repo / "dogfood-drift"
         ownership_check = (
@@ -1966,6 +1843,16 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         ownership_check.parent.mkdir(parents=True)
         ownership_check.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
         ownership_check.chmod(0o755)
+        dogfood_check = (
+            fixture
+            / "trellis/presets/guru-team/scripts/python/verify_dogfood_platform_selection.py"
+        )
+        dogfood_check.parent.mkdir(parents=True)
+        dogfood_check.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+        resolver = fixture / "trellis/skills/guru-team/runtime/resolve-python.sh"
+        resolver.parent.mkdir(parents=True)
+        resolver.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+        resolver.chmod(0o755)
         (fixture / "trellis/presets/guru-team/overlays").mkdir(parents=True)
 
         workflow_source = fixture / "trellis/workflows/guru-team/workflow.md"
@@ -2045,87 +1932,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             "CHANGED .trellis/spec/workflow/subtraction-first-compatibility.md",
             second_preset_drifted.stdout,
         )
-
-    def test_main_reports_explicit_all_platforms_only_for_all_platforms_flag(self) -> None:
-        with mock.patch(
-            "sys.argv",
-            [
-                "apply_guru_team_trellis_preset.py",
-                "--repo",
-                str(self.repo),
-                "--platform",
-                "codex",
-                "--platform",
-                "cursor",
-                "--platform",
-                "claude",
-            ],
-        ):
-            stdout = StringIO()
-            with mock.patch("sys.stdout", stdout):
-                exit_code = preset.main()
-
-        self.assertEqual(exit_code, 0)
-        self.assertIn('"platforms": [', stdout.getvalue())
-        self.assertIn('"all_platforms": false', stdout.getvalue())
-        self.assertIn('"upstream_ownership_validation": {', stdout.getvalue())
-
-    def test_main_rejects_platform_with_all_platforms(self) -> None:
-        with mock.patch(
-            "sys.argv",
-            [
-                "apply_guru_team_trellis_preset.py",
-                "--repo",
-                str(self.repo),
-                "--platform",
-                "codex",
-                "--all-platforms",
-            ],
-        ):
-            with self.assertRaises(SystemExit) as context:
-                preset.main()
-
-        self.assertNotEqual(context.exception.code, 0)
-
-    def test_main_reports_deferred_platform_without_mutating_target(self) -> None:
-        with mock.patch(
-            "sys.argv",
-            [
-                "apply_guru_team_trellis_preset.py",
-                "--repo",
-                str(self.repo),
-                "--platform",
-                "kilo",
-            ],
-        ):
-            stdout = StringIO()
-            with mock.patch("sys.stdout", stdout):
-                exit_code = preset.main()
-
-        payload = json.loads(stdout.getvalue())
-        self.assertEqual(exit_code, 2)
-        self.assertEqual(payload["status"], "deferred")
-        self.assertEqual(payload["requested_platforms"], ["kilo"])
-        self.assertEqual(payload["deferred_platforms"][0]["id"], "kilo")
-        self.assertFalse((self.repo / ".trellis" / "guru-team").exists())
-
-    def test_main_rejects_unknown_platform(self) -> None:
-        with mock.patch(
-            "sys.argv",
-            [
-                "apply_guru_team_trellis_preset.py",
-                "--repo",
-                str(self.repo),
-                "--platform",
-                "unknown-platform",
-            ],
-        ):
-            with self.assertRaises(SystemExit) as context:
-                preset.main()
-
-        self.assertNotEqual(context.exception.code, 0)
-
-
 
 class ExtensionManifestInstallerTest(unittest.TestCase):
     def setUp(self) -> None:
@@ -2867,7 +2673,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                     str(repo / "trellis/presets/guru-team/scripts/bash/apply.sh"),
                     "--repo",
                     str(repo),
-                    "--all-platforms",
                 ],
                 cwd=repo,
                 env=environment,

@@ -2,13 +2,10 @@
 
 ## Final Overlay Boundary
 
-The preset overlay tree contains exactly four Guru-owned explicit finish
-entries:
-
-- `.codex/prompts/guru-finish-work.md`;
-- `.claude/commands/guru/finish-work.md`;
-- `.cursor/commands/guru-finish-work.md`.
-- `.opencode/commands/guru-finish-work.md`.
+The preset overlay tree contains exactly one descriptor-bound Guru finish entry
+for each platform in the pinned upstream `AI_TOOLS` inventory. The current
+inventory contains 22 entries. This canonical capability set is distinct from
+the target repository's exact installed selection.
 
 They are additive platform launchers, not replacements for Trellis upstream
 files. The current ownership inventory describes only Guru-owned rules, claims,
@@ -27,7 +24,7 @@ missing or invalid continuation contract.
 
 ## Entry Contract
 
-Each of the three files must:
+Each descriptor-bound entry must:
 
 - carry the `<!-- guru-team-overlay: v1 -->` marker;
 - read live task/Git context and `.trellis/workflow.md`;
@@ -55,12 +52,13 @@ mechanics, deterministic closeout flags, or private runtime facts. They must not
 call `finish-work.sh` directly.
 
 Publication payload projection is package/workflow behavior, not an overlay
-concern. The three launchers route through current typed exits and must not
+concern. Platform launchers route through current typed exits and must not
 author `pr-body.md`, `finish-summary-index.json`, adapt legacy 3.0 DTOs, or
 reconstruct title/body for Finalizer.
 
-Codex uses the `guru-finish-work` prompt, Claude uses
-`/guru:finish-work`, and Cursor uses `/guru-finish-work`.
+Each launcher uses the native entry path and entry kind declared by its
+projection descriptor. OpenCode remains an ordinary explicit platform
+capability; it is not part of this repository's dogfood selection.
 
 ## Public Skill Discovery
 
@@ -71,10 +69,10 @@ Preset apply installs byte-identical active package copies to:
 - Codex: `.codex/skills/guru-*/**`;
 - Claude: `.claude/skills/guru-*/**`;
 - Cursor: `.cursor/skills/guru-*/**`.
-- OpenCode: `.opencode/skills/guru-*/**`.
+- every other selected upstream platform: the descriptor's `skill_root`.
 
 These package projections are managed-hash installation, not overlay files.
-Shared/Codex/Claude/Cursor/OpenCode may differ only in discovery root or native adapter
+Selected platforms may differ only in discovery root or native adapter
 protocol; public Interface, exits, projections, eval corpus, and behavior remain
 identical.
 
@@ -91,13 +89,9 @@ not by frontmatter auto-match or patched upstream entries.
 Shared `guru-*` package discovery is always installed. Platform flags select
 only the corresponding platform package root and explicit Guru finish entry:
 
-- default: Shared + Codex + Cursor;
+- default: Shared + Claude, Codex, and Cursor;
 - `--platform <name>`: Shared + exactly the selected platforms;
-- `--all-platforms`: Shared + Codex + Claude + Cursor + OpenCode;
-- upstream-known deferred platforms: return a structured `deferred` result
-  before mutating the target;
-- unknown platforms or `--platform` combined with `--all-platforms`: fail
-  closed.
+- unknown platforms: fail closed before writes.
 
 Shrinking platform selection removes only old files whose bytes match their
 previous Guru managed hashes. Unknown local edits are preserved and receive a
@@ -142,12 +136,13 @@ the default workflow. The supported recovery order is:
 After canonical overlay edits, synchronize this dogfood repository with:
 
 ```bash
-trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms --json
+trellis/presets/guru-team/scripts/bash/apply.sh --repo . \
+  --platform claude --platform codex --platform cursor --json
 trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 ```
 
-The drift checker compares only the three canonical Guru entries and managed
-Guru assets. It never compares, replaces, or deletes upstream-owned files.
+The drift checker compares only managed Guru assets and the entries selected by
+the dogfood manifest. It never compares, replaces, or deletes upstream-owned files.
 It also never treats the active workflow as a preset-managed overlay. Workflow
 selection and continuation bytes are verified by the marketplace/workflow gate;
 preset reapply must leave them unchanged.
@@ -160,16 +155,17 @@ trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --js
 trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 ```
 
-Success requires exactly three overlay files, no unexpected overlay path,
-exact canonical/dogfood bytes, correct executable modes for managed scripts,
+Success requires exactly 22 canonical overlay files, exactly three dogfood
+entries, no unexpected installed overlay path, exact canonical/dogfood bytes,
+correct executable modes for managed scripts,
 and no unresolved `.new`/`.bak` anywhere in the installed extension surface.
 Phase 0 validation also proves public-sync-only launcher wording and byte parity
 for the complete atomic package unit across dogfood and every selected platform.
 
 ## Anti-Patterns
 
-- Adding any `trellis-*` launcher outside the three canonical Guru entries.
+- Adding any `trellis-*` launcher to the Guru overlay inventory.
 - Broadly claiming a prompt, command, skill, hook, or agent directory.
-- Copying workflow or Skill internals into the three launchers.
+- Copying workflow or Skill internals into platform launchers.
 - Treating a package discovery copy as a self-contained extension.
 - Treating `.new` or `.bak` creation as successful activation.

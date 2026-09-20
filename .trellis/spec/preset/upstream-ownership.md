@@ -6,8 +6,11 @@ paths. The machine-readable contract is:
 - `trellis/presets/guru-team/ownership/upstream-ownership.json`;
 - `trellis/presets/guru-team/ownership/upstream-ownership.schema.json`.
 
-Both use current-only schema 3.0. They describe the assets this extension owns
+Both use current-only schema 4.0. They describe the assets this extension owns
 now, and every field has a current validator or installer consumer.
+Ownership does not define the platform inventory. Ownership does not define dogfood selection;
+it projects the pinned upstream inventory and validates the target
+manifest's exact selection.
 
 ## Ownership Boundary
 
@@ -29,42 +32,20 @@ without reading, indexing, copying, migrating, restoring, deleting, or claiming
 them. Upstream `0.6.17` retired command stubs remain upstream-owned migration
 messages, not supported Guru runtime entries.
 
-Guru Team owns only paths inside an anchored Guru namespace. Current ownership
-contains exactly 13 rules:
-
-1. installed runtime under `.trellis/guru-team/`;
-2. canonical workflow under `trellis/workflows/guru-team/`;
-3. canonical Skill packages under `trellis/skills/guru-team/`;
-4. stable Skill ids with the `guru-` prefix;
-5. shared discovery packages under `.agents/skills/guru-*/**`;
-6. Codex discovery packages under `.codex/skills/guru-*/**`;
-7. Cursor discovery packages under `.cursor/skills/guru-*/**`;
-8. Claude discovery packages under `.claude/skills/guru-*/**`;
-9. OpenCode discovery packages under `.opencode/skills/guru-*/**`;
-10. the Codex `guru-finish-work` entry;
-11. the Claude `guru-finish-work` entry;
-12. the Cursor `guru-finish-work` entry;
-13. the OpenCode `guru-finish-work` entry.
+Guru Team owns only paths inside anchored Guru namespaces. Schema 4.0 binds
+the shared runtime/source claims and one projection descriptor for every pinned
+upstream platform. Each descriptor declares the upstream id, public `cliFlag`,
+template/config identity, Skill root, finish entry path/kind, and actual-load
+policy.
 
 Rules are matched by complete anchored path components. They never authorize a
 broad prompt, command, Skill, hook, agent, or platform directory.
 
 ## Managed Claims
 
-The extension manifest and ownership contract expose exactly 11 current
-managed claims:
-
-- `.trellis/guru-team/`;
-- `.trellis/guru-team/skills/`;
-- `.agents/skills/guru-*/`;
-- `.codex/skills/guru-*/`;
-- `.cursor/skills/guru-*/`;
-- `.claude/skills/guru-*/`;
-- `.opencode/skills/guru-*/`;
-- `.codex/prompts/guru-finish-work.md`;
-- `.claude/commands/guru/finish-work.md`;
-- `.cursor/commands/guru-finish-work.md`;
-- `.opencode/commands/guru-finish-work.md`.
+The extension manifest and ownership contract derive 43 current managed claims:
+the installed runtime roots, shared Skill projection, and each descriptor's
+deduplicated Skill-root and finish-entry claim.
 
 Canonical `trellis/workflows/guru-team/**` and
 `trellis/skills/guru-team/**` remain Guru-owned source content. They are not
@@ -72,11 +53,8 @@ additional installed managed-path claims.
 
 ## Additive Overlay Set
 
-The canonical overlay tree contains exactly four files:
-
-- `.codex/prompts/guru-finish-work.md`;
-- `.claude/commands/guru/finish-work.md`;
-- `.cursor/commands/guru-finish-work.md`.
+The canonical overlay tree contains exactly the 22 entry paths declared by the
+pinned platform descriptors.
 
 They are additive Guru entries. They do not replace an official Trellis file.
 Any other file below `trellis/presets/guru-team/overlays/` is a current contract
@@ -110,8 +88,8 @@ Maintainers run:
 trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
 ```
 
-The validator is read-only. It verifies schema 3.0, the exact 13 rules, 11
-managed claims, four additive overlays, anchored namespace matching, current
+The validator is read-only. It verifies schema 4.0, all 22 descriptors, 43
+derived managed claims, 22 additive overlays, anchored namespace matching, current
 registry/package identities, and objective counts/digests derived from current
 assets. It must not judge design quality, route intent, finding severity,
 update safety, or Issue closure.

@@ -459,10 +459,10 @@ installed platform-selection preservation 边界。
   DTO 或实现机制。
 - `EVO-NFR-034`：`EVO-REQ-084` 的 installed platform-selection preservation 必须对同一 exact
   candidate 达到 100% 正反向覆盖。正向至少覆盖 Claude-only、Codex-only、Cursor-only、两个平台的
-  合法 subset、`all_platforms=true` 的完整 canonical set，以及 `all_platforms=false` 的显式完整 set；
+  合法 subset、三平台集合，以及一个显式较大 platform set；
   每个 cell 的 parent/post-reprepare selected set 必须完全相同，subset 扩张、平台丢失、重排和隐式
   fallback 计数均为 0。反向必须分别覆盖四个 locator missing/type-invalid、selected list empty、
-  duplicate、unsorted、unknown、三处 mismatch、`all_platforms` 非 boolean，以及 `true` 配非完整集合；
+  duplicate、unsorted、unknown和三处 mismatch；
   每个 invalid cell 的 extension source checkout、preset apply、provenance commit、managed-path/sidecar
   mutation 计数均为 0，并保留可定位到 platform-selection identity 的 deterministic failure。平台保真
   检查不得替代 immutable source、target lineage、reviewed-content equality、provenance allowlist 或

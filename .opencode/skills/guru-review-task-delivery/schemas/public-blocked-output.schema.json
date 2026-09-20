@@ -1,5 +1,0 @@
-{
-  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-review-task-delivery-output-blocked-1.0",
-  "type":"object","additionalProperties":false,"required":["exit_id","reason_code","remediation"],
-  "properties":{"exit_id":{"const":"blocked"},"reason_code":{"type":"string","pattern":"^[a-z][a-z0-9_]{1,63}$"},"remediation":{"type":"string","minLength":1}}
-}

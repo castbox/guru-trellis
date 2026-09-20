@@ -92,32 +92,104 @@
     "typed_exit"
   ],
   "artifacts": [
-    {"id": "phase2_check_example", "path": "examples/phase2-check.json"},
-    {"id": "public_input_initial_check_example", "path": "examples/public-initial-check-input.json"},
-    {"id": "public_input_finding_fix_rerun_example", "path": "examples/public-finding-fix-rerun-input.json"},
-    {"id": "public_input_planning_reentry_example", "path": "examples/public-planning-reentry-input.json"},
-    {"id": "public_input_resolved_reconciliation_example", "path": "examples/public-resolved-reconciliation-input.json"},
-    {"id": "public_invocation_error_example", "path": "examples/public-invocation-error.json"},
-    {"id": "public_output_passed_example", "path": "examples/public-passed-output.json"},
-    {"id": "resolved_reconciliation_authoring_example", "path": "examples/public-resolved-reconciliation-authoring.json"},
-    {"id": "public_output_implementation_required_example", "path": "examples/public-implementation-required-output.json"},
-    {"id": "public_output_planning_stale_example", "path": "examples/public-planning-stale-output.json"},
-    {"id": "public_output_blocked_example", "path": "examples/public-blocked-output.json"}
+    {
+      "id": "phase2_check_example",
+      "path": "examples/phase2-check.json"
+    },
+    {
+      "id": "public_input_initial_check_example",
+      "path": "examples/public-initial-check-input.json"
+    },
+    {
+      "id": "public_input_finding_fix_rerun_example",
+      "path": "examples/public-finding-fix-rerun-input.json"
+    },
+    {
+      "id": "public_input_planning_reentry_example",
+      "path": "examples/public-planning-reentry-input.json"
+    },
+    {
+      "id": "public_input_resolved_reconciliation_example",
+      "path": "examples/public-resolved-reconciliation-input.json"
+    },
+    {
+      "id": "public_invocation_error_example",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "public_output_passed_example",
+      "path": "examples/public-passed-output.json"
+    },
+    {
+      "id": "resolved_reconciliation_authoring_example",
+      "path": "examples/public-resolved-reconciliation-authoring.json"
+    },
+    {
+      "id": "public_output_implementation_required_example",
+      "path": "examples/public-implementation-required-output.json"
+    },
+    {
+      "id": "public_output_planning_stale_example",
+      "path": "examples/public-planning-stale-output.json"
+    },
+    {
+      "id": "public_output_blocked_example",
+      "path": "examples/public-blocked-output.json"
+    }
   ],
   "schemas": [
-    {"id": "legacy_phase2_check_schema_4_0", "path": "schemas/phase2-check-4.0.schema.json"},
-    {"id": "phase2_check_schema", "path": "schemas/phase2-check.schema.json"},
-    {"id": "public_input_initial_check", "path": "schemas/public-initial-check-input.schema.json"},
-    {"id": "public_input_finding_fix_rerun", "path": "schemas/public-finding-fix-rerun-input.schema.json"},
-    {"id": "public_input_planning_reentry", "path": "schemas/public-planning-reentry-input.schema.json"},
-    {"id": "public_input_resolved_reconciliation", "path": "schemas/public-resolved-reconciliation-input.schema.json"},
-    {"id": "public_input_aggregate", "path": "schemas/public-input.schema.json"},
-    {"id": "public_invocation_error", "path": "schemas/public-invocation-error.schema.json"},
-    {"id": "public_output_passed", "path": "schemas/public-passed-output.schema.json"},
-    {"id": "resolved_reconciliation_authoring", "path": "schemas/resolved-reconciliation-authoring.schema.json"},
-    {"id": "public_output_implementation_required", "path": "schemas/public-implementation-required-output.schema.json"},
-    {"id": "public_output_planning_stale", "path": "schemas/public-planning-stale-output.schema.json"},
-    {"id": "public_output_blocked", "path": "schemas/public-blocked-output.schema.json"}
+    {
+      "id": "legacy_phase2_check_schema_4_0",
+      "path": "schemas/phase2-check-4.0.schema.json"
+    },
+    {
+      "id": "phase2_check_schema",
+      "path": "schemas/phase2-check.schema.json"
+    },
+    {
+      "id": "public_input_initial_check",
+      "path": "schemas/public-initial-check-input.schema.json"
+    },
+    {
+      "id": "public_input_finding_fix_rerun",
+      "path": "schemas/public-finding-fix-rerun-input.schema.json"
+    },
+    {
+      "id": "public_input_planning_reentry",
+      "path": "schemas/public-planning-reentry-input.schema.json"
+    },
+    {
+      "id": "public_input_resolved_reconciliation",
+      "path": "schemas/public-resolved-reconciliation-input.schema.json"
+    },
+    {
+      "id": "public_input_aggregate",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "public_output_passed",
+      "path": "schemas/public-passed-output.schema.json"
+    },
+    {
+      "id": "resolved_reconciliation_authoring",
+      "path": "schemas/resolved-reconciliation-authoring.schema.json"
+    },
+    {
+      "id": "public_output_implementation_required",
+      "path": "schemas/public-implementation-required-output.schema.json"
+    },
+    {
+      "id": "public_output_planning_stale",
+      "path": "schemas/public-planning-stale-output.schema.json"
+    },
+    {
+      "id": "public_output_blocked",
+      "path": "schemas/public-blocked-output.schema.json"
+    }
   ],
   "validators": [
     {
@@ -149,22 +221,34 @@
     {
       "id": "passed",
       "evidence": "all nine dimensions passed with no open finding or blocking unverified item",
-      "consumer": {"kind": "skill", "id": "guru-create-task-commit"}
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-create-task-commit"
+      }
     },
     {
       "id": "implementation_required",
       "evidence": "one or more supported current-scope findings remain open",
-      "consumer": {"kind": "workflow", "id": "guru-resume-implementation"}
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-resume-implementation"
+      }
     },
     {
       "id": "planning_stale",
       "evidence": "a current scope or authority decision requires planning re-entry",
-      "consumer": {"kind": "workflow", "id": "guru-task-check-planning-router"}
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-task-check-planning-router"
+      }
     },
     {
       "id": "blocked",
       "evidence": "a concrete evidence or dependency gap prevents a reliable complete check",
-      "consumer": {"kind": "stop", "id": "task-check-blocked"}
+      "consumer": {
+        "kind": "stop",
+        "id": "task-check-blocked"
+      }
     }
   ],
   "reentry": {
@@ -172,8 +256,34 @@
     "freshness": "the AI classifies each current delta and reruns only the semantic owner whose dependency changed",
     "stale_behavior": "fail_closed"
   },
-  "tests": ["tests/test_contract.py"],
-  "platform_destinations": ["shared", "codex", "cursor", "claude", "opencode"],
+  "tests": [
+    "tests/test_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
   "public_contracts": {
     "input": {
       "kind": "structured_json",
@@ -184,95 +294,207 @@
       "profiles": [
         {
           "id": "initial_check",
-          "schema": {"schema_id": "guru-production-check-task-input-initial-check-2.0", "path": "schemas/public-initial-check-input.schema.json"},
-          "example": {"id": "initial_check_input", "path": "examples/public-initial-check-input.json"},
-          "discriminator": {"field": "profile", "value": "initial_check"}
+          "schema": {
+            "schema_id": "guru-production-check-task-input-initial-check-2.0",
+            "path": "schemas/public-initial-check-input.schema.json"
+          },
+          "example": {
+            "id": "initial_check_input",
+            "path": "examples/public-initial-check-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "initial_check"
+          }
         },
         {
           "id": "finding_fix_rerun",
-          "schema": {"schema_id": "guru-production-check-task-input-finding-fix-rerun-2.0", "path": "schemas/public-finding-fix-rerun-input.schema.json"},
-          "example": {"id": "finding_fix_rerun_input", "path": "examples/public-finding-fix-rerun-input.json"},
-          "discriminator": {"field": "profile", "value": "finding_fix_rerun"}
+          "schema": {
+            "schema_id": "guru-production-check-task-input-finding-fix-rerun-2.0",
+            "path": "schemas/public-finding-fix-rerun-input.schema.json"
+          },
+          "example": {
+            "id": "finding_fix_rerun_input",
+            "path": "examples/public-finding-fix-rerun-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "finding_fix_rerun"
+          }
         },
         {
           "id": "planning_reentry",
-          "schema": {"schema_id": "guru-production-check-task-input-planning-reentry-2.0", "path": "schemas/public-planning-reentry-input.schema.json"},
-          "example": {"id": "planning_reentry_input", "path": "examples/public-planning-reentry-input.json"},
-          "discriminator": {"field": "profile", "value": "planning_reentry"}
+          "schema": {
+            "schema_id": "guru-production-check-task-input-planning-reentry-2.0",
+            "path": "schemas/public-planning-reentry-input.schema.json"
+          },
+          "example": {
+            "id": "planning_reentry_input",
+            "path": "examples/public-planning-reentry-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "planning_reentry"
+          }
         },
         {
           "id": "resolved_reconciliation",
-          "schema": {"schema_id": "guru-production-check-task-input-resolved-reconciliation-1.0", "path": "schemas/public-resolved-reconciliation-input.schema.json"},
-          "example": {"id": "resolved_reconciliation_input", "path": "examples/public-resolved-reconciliation-input.json"},
-          "discriminator": {"field": "profile", "value": "resolved_reconciliation"}
+          "schema": {
+            "schema_id": "guru-production-check-task-input-resolved-reconciliation-1.0",
+            "path": "schemas/public-resolved-reconciliation-input.schema.json"
+          },
+          "example": {
+            "id": "resolved_reconciliation_input",
+            "path": "examples/public-resolved-reconciliation-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "resolved_reconciliation"
+          }
         }
       ]
     },
     "invocation": {
       "command_id": "run-skill-command",
       "wrapper": "scripts/invoke.sh",
-      "input_binding": {"kind": "structured_json", "profile_id": "initial_check"},
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "initial_check"
+      },
       "stdout_contract": "single_typed_exit",
-      "error_schema": {"schema_id": "guru-production-check-task-invocation-error-1.0", "path": "schemas/public-invocation-error.schema.json"},
-      "error_example": {"id": "invalid_public_input", "path": "examples/public-invocation-error.json"},
-      "example_argv": ["--input", "examples/public-initial-check-input.json", "--owner-result", "examples/phase2-check.json"]
+      "error_schema": {
+        "schema_id": "guru-production-check-task-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invalid_public_input",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-initial-check-input.json",
+        "--owner-result",
+        "examples/phase2-check.json"
+      ]
     },
     "outputs": [
       {
         "exit_id": "passed",
-        "schema": {"schema_id": "guru-production-check-task-output-passed-3.0", "path": "schemas/public-passed-output.schema.json"},
-        "example": {"id": "passed_output", "path": "examples/public-passed-output.json"},
-        "consumer_use_ids": ["project_passed"]
+        "schema": {
+          "schema_id": "guru-production-check-task-output-passed-3.0",
+          "path": "schemas/public-passed-output.schema.json"
+        },
+        "example": {
+          "id": "passed_output",
+          "path": "examples/public-passed-output.json"
+        },
+        "consumer_use_ids": [
+          "project_passed"
+        ]
       },
       {
         "exit_id": "implementation_required",
-        "schema": {"schema_id": "guru-production-check-task-output-implementation-required-1.0", "path": "schemas/public-implementation-required-output.schema.json"},
-        "example": {"id": "implementation_required_output", "path": "examples/public-implementation-required-output.json"},
-        "consumer_use_ids": ["project_implementation_required"]
+        "schema": {
+          "schema_id": "guru-production-check-task-output-implementation-required-1.0",
+          "path": "schemas/public-implementation-required-output.schema.json"
+        },
+        "example": {
+          "id": "implementation_required_output",
+          "path": "examples/public-implementation-required-output.json"
+        },
+        "consumer_use_ids": [
+          "project_implementation_required"
+        ]
       },
       {
         "exit_id": "planning_stale",
-        "schema": {"schema_id": "guru-production-check-task-output-planning-stale-1.0", "path": "schemas/public-planning-stale-output.schema.json"},
-        "example": {"id": "planning_stale_output", "path": "examples/public-planning-stale-output.json"},
-        "consumer_use_ids": ["project_planning_stale"]
+        "schema": {
+          "schema_id": "guru-production-check-task-output-planning-stale-1.0",
+          "path": "schemas/public-planning-stale-output.schema.json"
+        },
+        "example": {
+          "id": "planning_stale_output",
+          "path": "examples/public-planning-stale-output.json"
+        },
+        "consumer_use_ids": [
+          "project_planning_stale"
+        ]
       },
       {
         "exit_id": "blocked",
-        "schema": {"schema_id": "guru-production-check-task-output-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"},
-        "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"},
-        "consumer_use_ids": ["project_blocked"]
+        "schema": {
+          "schema_id": "guru-production-check-task-output-blocked-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "project_blocked"
+        ]
       }
     ],
     "consumer_inputs": [
       {
         "id": "initial_commit_seed_input",
-        "consumer": {"kind": "skill", "id": "guru-create-task-commit"},
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-create-task-commit"
+        },
         "payload_kind": "structured_json",
         "contract": {
           "kind": "skill_input_authoring_seed",
           "interface_path": "packages/guru-create-task-commit/interface.json",
           "input_kind": "structured_json",
           "profile_id": "initial_commit",
-          "seed_fields": ["source_exit", "task_ref", "phase2_commit_anchor"],
-          "authoring_fields": ["profile", "mode"],
-          "authoring_example": {"id": "initial_commit_authoring", "path": "examples/public-initial-commit-authoring.json"}
+          "seed_fields": [
+            "source_exit",
+            "task_ref",
+            "phase2_commit_anchor"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "initial_commit_authoring",
+            "path": "examples/public-initial-commit-authoring.json"
+          }
         }
       },
       {
         "id": "implementation_required_workflow_input",
-        "consumer": {"kind": "workflow", "id": "guru-resume-implementation"},
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-resume-implementation"
+        },
         "payload_kind": "structured_json",
-        "contract": {"kind": "json_schema", "schema_id": "guru-production-check-task-workflow-implementation-required-input-1.0", "path": "consumers/workflow/production/check-task-implementation-required.schema.json"}
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-production-check-task-workflow-implementation-required-input-1.0",
+          "path": "consumers/workflow/production/check-task-implementation-required.schema.json"
+        }
       },
       {
         "id": "planning_stale_workflow_input",
-        "consumer": {"kind": "workflow", "id": "guru-task-check-planning-router"},
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-task-check-planning-router"
+        },
         "payload_kind": "structured_json",
-        "contract": {"kind": "json_schema", "schema_id": "guru-production-check-task-workflow-planning-stale-input-1.0", "path": "consumers/workflow/production/check-task-planning-stale.schema.json"}
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-production-check-task-workflow-planning-stale-input-1.0",
+          "path": "consumers/workflow/production/check-task-planning-stale.schema.json"
+        }
       },
       {
         "id": "blocked_stop_input",
-        "consumer": {"kind": "stop", "id": "task-check-blocked"},
+        "consumer": {
+          "kind": "stop",
+          "id": "task-check-blocked"
+        },
         "payload_kind": "zero_payload"
       }
     ],
@@ -283,20 +505,48 @@
         "consumer_input_id": "initial_commit_seed_input",
         "operation": "rename",
         "mappings": [
-          {"source": "exit_id", "target": "source_exit"},
-          {"source": "task_ref", "target": "task_ref"},
-          {"source": "phase2_commit_anchor", "target": "phase2_commit_anchor"}
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "phase2_commit_anchor",
+            "target": "phase2_commit_anchor"
+          }
         ]
       },
-      {"id": "project_implementation_required", "exit_id": "implementation_required", "consumer_input_id": "implementation_required_workflow_input", "operation": "direct"},
-      {"id": "project_planning_stale", "exit_id": "planning_stale", "consumer_input_id": "planning_stale_workflow_input", "operation": "direct"},
-      {"id": "project_blocked", "exit_id": "blocked", "consumer_input_id": "blocked_stop_input", "operation": "select", "mappings": []}
+      {
+        "id": "project_implementation_required",
+        "exit_id": "implementation_required",
+        "consumer_input_id": "implementation_required_workflow_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_planning_stale",
+        "exit_id": "planning_stale",
+        "consumer_input_id": "planning_stale_workflow_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_stop_input",
+        "operation": "select",
+        "mappings": []
+      }
     ],
     "private_artifacts": [
       {
         "id": "phase2_check",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-5.0.json", "path": "schemas/phase2-check.schema.json"},
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-5.0.json",
+          "path": "schemas/phase2-check.schema.json"
+        },
         "persistence": "ignored_runtime"
       }
     ]

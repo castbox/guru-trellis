@@ -1,90 +1,538 @@
 {
-  "$schema":"../../schemas/skill-interface-1.4.schema.json",
-  "schema_version":"1.4",
-  "id":"guru-merge-task-delivery",
-  "name":"guru-merge-task-delivery",
-  "description":"Merge one reviewed active-task Delivery PR through a semantic live gate, exact merge-commit trailers, and terminal recovery.",
-  "state":"active",
-  "judgment_mode":"semantic",
-  "modes":{
-    "workflow":{"routing":"global_workflow","entry_precondition_ids":["runtime_dependency","active_task","publication_handoff","live_merge_readiness","merge_message","invocation_freshness"]},
-    "standalone":{"routing":"direct_discovery","entry_precondition_ids":["runtime_dependency","active_task","publication_handoff","live_merge_readiness","merge_message","invocation_freshness"]}
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-merge-task-delivery",
+  "name": "guru-merge-task-delivery",
+  "description": "Merge one reviewed active-task Delivery PR through a semantic live gate, exact merge-commit trailers, and terminal recovery.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "active_task",
+        "publication_handoff",
+        "live_merge_readiness",
+        "merge_message",
+        "invocation_freshness"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "active_task",
+        "publication_handoff",
+        "live_merge_readiness",
+        "merge_message",
+        "invocation_freshness"
+      ]
+    }
   },
-  "entry_preconditions":[
-    {"id":"runtime_dependency","evidence":"installed extension, dispatcher, active package, schemas and commands","binding":"complete current Guru Team preset","freshness":"validated before every command"},
-    {"id":"active_task","evidence":"task.json, current branch/worktree and Git HEAD","binding":"one current in_progress task and stable task id","freshness":"reread before gate, mutation and terminal projection"},
-    {"id":"publication_handoff","evidence":"Publish ready_for_merge DTO","binding":"task, delivery cycle, repository, PR, reviewed head and exact PR-body digest","freshness":"compared with the first live PR read"},
-    {"id":"live_merge_readiness","evidence":"Ready/Open PR, checks, reviews, mergeability, base ref and repository policy","binding":"one same-repository merge-commit candidate","freshness":"reread at the mutation boundary"},
-    {"id":"merge_message","evidence":"AI-reviewed subject, body and exact Delivery trailers","binding":"stable task id, schema 1 and reviewed head","freshness":"stored only in the current owner-private gate"},
-    {"id":"invocation_freshness","evidence":"public input, semantic review, private gate and terminal live facts","binding":"one PR and one expected-head merge action","freshness":"checker rejects any identity drift or ambiguous terminal state"}
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed extension, dispatcher, active package, schemas and commands",
+      "binding": "complete current Guru Team preset",
+      "freshness": "validated before every command"
+    },
+    {
+      "id": "active_task",
+      "evidence": "task.json, current branch/worktree and Git HEAD",
+      "binding": "one current in_progress task and stable task id",
+      "freshness": "reread before gate, mutation and terminal projection"
+    },
+    {
+      "id": "publication_handoff",
+      "evidence": "Publish ready_for_merge DTO",
+      "binding": "task, delivery cycle, repository, PR, reviewed head and exact PR-body digest",
+      "freshness": "compared with the first live PR read"
+    },
+    {
+      "id": "live_merge_readiness",
+      "evidence": "Ready/Open PR, checks, reviews, mergeability, base ref and repository policy",
+      "binding": "one same-repository merge-commit candidate",
+      "freshness": "reread at the mutation boundary"
+    },
+    {
+      "id": "merge_message",
+      "evidence": "AI-reviewed subject, body and exact Delivery trailers",
+      "binding": "stable task id, schema 1 and reviewed head",
+      "freshness": "stored only in the current owner-private gate"
+    },
+    {
+      "id": "invocation_freshness",
+      "evidence": "public input, semantic review, private gate and terminal live facts",
+      "binding": "one PR and one expected-head merge action",
+      "freshness": "checker rejects any identity drift or ambiguous terminal state"
+    }
   ],
-  "runtime_dependency":{"extension_id":"guru-team","api_version":"1.0","manifest_path":".trellis/guru-team/extension.json","dispatcher":"run-skill-command","distribution":"guru-team-preset","package_portability":"not-self-contained"},
-  "ordered_stages":["forward_behavior","ai_review_gate","conditional_human_confirmation","recorder_validator","typed_exit"],
-  "artifacts":[
-    {"id":"ready_for_merge_input","path":"examples/public-ready-for-merge-input.json"},
-    {"id":"semantic_review","path":"examples/semantic-review.json"},
-    {"id":"private_merge_gate","path":"examples/private-merge-gate.json"},
-    {"id":"delivered_output","path":"examples/public-delivered-output.json"},
-    {"id":"merge_blocked_output","path":"examples/public-merge-blocked-output.json"},
-    {"id":"implementation_required_output","path":"examples/public-implementation-required-output.json"},
-    {"id":"review_refresh_required_output","path":"examples/public-review-refresh-required-output.json"},
-    {"id":"review_refresh_authoring","path":"examples/review-refresh-authoring.json"},
-    {"id":"delivery_history_query","path":"examples/delivery-history-query.json"},
-    {"id":"delivery_history_result","path":"examples/delivery-history-result.json"},
-    {"id":"invocation_error","path":"examples/public-invocation-error.json"}
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
   ],
-  "schemas":[
-    {"id":"public_input_ready_for_merge","path":"schemas/public-ready-for-merge-input.schema.json"},
-    {"id":"public_input_aggregate","path":"schemas/public-input.schema.json"},
-    {"id":"semantic_review","path":"schemas/semantic-review.schema.json"},
-    {"id":"live_facts","path":"schemas/live-facts.schema.json"},
-    {"id":"private_merge_gate","path":"schemas/merge-gate.schema.json"},
-    {"id":"delivery_history_query","path":"schemas/delivery-history-query.schema.json"},
-    {"id":"delivery_history_result","path":"schemas/delivery-history-result.schema.json"},
-    {"id":"public_output_delivered","path":"schemas/public-delivered-output.schema.json"},
-    {"id":"public_output_merge_blocked","path":"schemas/public-merge-blocked-output.schema.json"},
-    {"id":"public_output_implementation_required","path":"schemas/public-implementation-required-output.schema.json"},
-    {"id":"public_output_review_refresh_required","path":"schemas/public-review-refresh-required-output.schema.json"},
-    {"id":"public_invocation_error","path":"schemas/public-invocation-error.schema.json"}
+  "artifacts": [
+    {
+      "id": "ready_for_merge_input",
+      "path": "examples/public-ready-for-merge-input.json"
+    },
+    {
+      "id": "semantic_review",
+      "path": "examples/semantic-review.json"
+    },
+    {
+      "id": "private_merge_gate",
+      "path": "examples/private-merge-gate.json"
+    },
+    {
+      "id": "delivered_output",
+      "path": "examples/public-delivered-output.json"
+    },
+    {
+      "id": "merge_blocked_output",
+      "path": "examples/public-merge-blocked-output.json"
+    },
+    {
+      "id": "implementation_required_output",
+      "path": "examples/public-implementation-required-output.json"
+    },
+    {
+      "id": "review_refresh_required_output",
+      "path": "examples/public-review-refresh-required-output.json"
+    },
+    {
+      "id": "review_refresh_authoring",
+      "path": "examples/review-refresh-authoring.json"
+    },
+    {
+      "id": "delivery_history_query",
+      "path": "examples/delivery-history-query.json"
+    },
+    {
+      "id": "delivery_history_result",
+      "path": "examples/delivery-history-result.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "examples/public-invocation-error.json"
+    }
   ],
-  "validators":[
-    {"id":"merge_previewer","command":"scripts/preview-task-delivery-merge.sh","runtime_command":"preview-task-delivery-merge","objective_scope":"Read the exact active task, live PR, checks, policy, base and terminal facts without mutation"},
-    {"id":"merge_recorder","command":"scripts/record-task-delivery-merge.sh","runtime_command":"record-task-delivery-merge","objective_scope":"Record one already completed semantic route and exact action identity in owner-private runtime"},
-    {"id":"merge_checker","command":"scripts/check-task-delivery-merge.sh","runtime_command":"check-task-delivery-merge","objective_scope":"Validate gate structure, live freshness, exact trailers and route consistency"},
-    {"id":"delivery_history_discoverer","command":"scripts/discover-task-deliveries.sh","runtime_command":"discover-task-deliveries","objective_scope":"Read target-base merge history and reconstruct exact task Delivery facts from schema-1 trailers plus GitHub PR and merge identity without reading PR bodies or current task branches"},
-    {"id":"merge_executor","command":"scripts/execute-task-delivery-merge.sh","runtime_command":"execute-task-delivery-merge","objective_scope":"Perform at most one merge-commit-only expected-head mutation and exact post-read verification"},
-    {"id":"public_invocation","command":"scripts/invoke.sh","runtime_command":"invoke-guru-merge-task-delivery","objective_scope":"Sole public entry with one pre-read, one mutation maximum, one post-read and read-only terminal recovery"}
+  "schemas": [
+    {
+      "id": "public_input_ready_for_merge",
+      "path": "schemas/public-ready-for-merge-input.schema.json"
+    },
+    {
+      "id": "public_input_aggregate",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "semantic_review",
+      "path": "schemas/semantic-review.schema.json"
+    },
+    {
+      "id": "live_facts",
+      "path": "schemas/live-facts.schema.json"
+    },
+    {
+      "id": "private_merge_gate",
+      "path": "schemas/merge-gate.schema.json"
+    },
+    {
+      "id": "delivery_history_query",
+      "path": "schemas/delivery-history-query.schema.json"
+    },
+    {
+      "id": "delivery_history_result",
+      "path": "schemas/delivery-history-result.schema.json"
+    },
+    {
+      "id": "public_output_delivered",
+      "path": "schemas/public-delivered-output.schema.json"
+    },
+    {
+      "id": "public_output_merge_blocked",
+      "path": "schemas/public-merge-blocked-output.schema.json"
+    },
+    {
+      "id": "public_output_implementation_required",
+      "path": "schemas/public-implementation-required-output.schema.json"
+    },
+    {
+      "id": "public_output_review_refresh_required",
+      "path": "schemas/public-review-refresh-required-output.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    }
   ],
-  "external_exits":[
-    {"id":"delivered","evidence":"PR merged through the reviewed expected-head merge commit and exact task/head trailers were verified","consumer":{"kind":"skill","id":"guru-review-task-completion"}},
-    {"id":"merge_blocked","evidence":"one current external or objective condition prevents the reviewed merge mutation","consumer":{"kind":"stop","id":"task-delivery-merge-blocked"}},
-    {"id":"implementation_required","evidence":"one current Delivery-slice finding requires Phase 2 task work before a new review","consumer":{"kind":"workflow","id":"guru-resume-implementation"}},
-    {"id":"review_refresh_required","evidence":"the current Delivery review authority is stale and must be rebuilt for the active task","consumer":{"kind":"skill","id":"guru-review-task-delivery"}}
+  "validators": [
+    {
+      "id": "merge_previewer",
+      "command": "scripts/preview-task-delivery-merge.sh",
+      "runtime_command": "preview-task-delivery-merge",
+      "objective_scope": "Read the exact active task, live PR, checks, policy, base and terminal facts without mutation"
+    },
+    {
+      "id": "merge_recorder",
+      "command": "scripts/record-task-delivery-merge.sh",
+      "runtime_command": "record-task-delivery-merge",
+      "objective_scope": "Record one already completed semantic route and exact action identity in owner-private runtime"
+    },
+    {
+      "id": "merge_checker",
+      "command": "scripts/check-task-delivery-merge.sh",
+      "runtime_command": "check-task-delivery-merge",
+      "objective_scope": "Validate gate structure, live freshness, exact trailers and route consistency"
+    },
+    {
+      "id": "delivery_history_discoverer",
+      "command": "scripts/discover-task-deliveries.sh",
+      "runtime_command": "discover-task-deliveries",
+      "objective_scope": "Read target-base merge history and reconstruct exact task Delivery facts from schema-1 trailers plus GitHub PR and merge identity without reading PR bodies or current task branches"
+    },
+    {
+      "id": "merge_executor",
+      "command": "scripts/execute-task-delivery-merge.sh",
+      "runtime_command": "execute-task-delivery-merge",
+      "objective_scope": "Perform at most one merge-commit-only expected-head mutation and exact post-read verification"
+    },
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-merge-task-delivery",
+      "objective_scope": "Sole public entry with one pre-read, one mutation maximum, one post-read and read-only terminal recovery"
+    }
   ],
-  "reentry":{"identity":"task ref, delivery cycle, repository, PR number, expected head, publication body digest, reviewed message and action digest","freshness":"live task/PR/base/policy/commit facts are reread before mutation and terminal projection","stale_behavior":"fail_closed"},
-  "tests":["tests/test_contract.py","tests/test_runtime.py","tests/test_history.py"],
-  "platform_destinations":["shared","codex","cursor","claude","opencode"],
-  "public_contracts":{
-    "input":{"kind":"structured_json","aggregate_schema":{"schema_id":"guru-merge-task-delivery-input-aggregate-1.0","path":"schemas/public-input.schema.json"},"profiles":[{"id":"ready_for_merge","schema":{"schema_id":"guru-merge-task-delivery-input-ready-for-merge-1.0","path":"schemas/public-ready-for-merge-input.schema.json"},"example":{"id":"ready_for_merge_input","path":"examples/public-ready-for-merge-input.json"},"discriminator":{"field":"profile","value":"ready_for_merge"}}]},
-    "invocation":{"command_id":"run-skill-command","wrapper":"scripts/invoke.sh","input_binding":{"kind":"structured_json","profile_id":"ready_for_merge"},"stdout_contract":"single_typed_exit","error_schema":{"schema_id":"guru-merge-task-delivery-invocation-error-1.0","path":"schemas/public-invocation-error.schema.json"},"error_example":{"id":"invalid_public_input","path":"examples/public-invocation-error.json"},"example_argv":["--input","examples/public-ready-for-merge-input.json","--review-input","examples/semantic-review.json"]},
-    "outputs":[
-      {"exit_id":"delivered","schema":{"schema_id":"guru-merge-task-delivery-output-delivered-1.0","path":"schemas/public-delivered-output.schema.json"},"example":{"id":"delivered_output","path":"examples/public-delivered-output.json"},"consumer_use_ids":["project_delivered"]},
-      {"exit_id":"merge_blocked","schema":{"schema_id":"guru-merge-task-delivery-output-merge-blocked-1.0","path":"schemas/public-merge-blocked-output.schema.json"},"example":{"id":"merge_blocked_output","path":"examples/public-merge-blocked-output.json"},"consumer_use_ids":["project_merge_blocked"]},
-      {"exit_id":"implementation_required","schema":{"schema_id":"guru-merge-task-delivery-output-implementation-required-1.0","path":"schemas/public-implementation-required-output.schema.json"},"example":{"id":"implementation_required_output","path":"examples/public-implementation-required-output.json"},"consumer_use_ids":["project_implementation_required"]},
-      {"exit_id":"review_refresh_required","schema":{"schema_id":"guru-merge-task-delivery-output-review-refresh-required-1.0","path":"schemas/public-review-refresh-required-output.schema.json"},"example":{"id":"review_refresh_required_output","path":"examples/public-review-refresh-required-output.json"},"consumer_use_ids":["project_review_refresh_required"]}
+  "external_exits": [
+    {
+      "id": "delivered",
+      "evidence": "PR merged through the reviewed expected-head merge commit and exact task/head trailers were verified",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-review-task-completion"
+      }
+    },
+    {
+      "id": "merge_blocked",
+      "evidence": "one current external or objective condition prevents the reviewed merge mutation",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-delivery-merge-blocked"
+      }
+    },
+    {
+      "id": "implementation_required",
+      "evidence": "one current Delivery-slice finding requires Phase 2 task work before a new review",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-resume-implementation"
+      }
+    },
+    {
+      "id": "review_refresh_required",
+      "evidence": "the current Delivery review authority is stale and must be rebuilt for the active task",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-review-task-delivery"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "task ref, delivery cycle, repository, PR number, expected head, publication body digest, reviewed message and action digest",
+    "freshness": "live task/PR/base/policy/commit facts are reread before mutation and terminal projection",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_contract.py",
+    "tests/test_runtime.py",
+    "tests/test_history.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-merge-task-delivery-input-aggregate-1.0",
+        "path": "schemas/public-input.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "ready_for_merge",
+          "schema": {
+            "schema_id": "guru-merge-task-delivery-input-ready-for-merge-1.0",
+            "path": "schemas/public-ready-for-merge-input.schema.json"
+          },
+          "example": {
+            "id": "ready_for_merge_input",
+            "path": "examples/public-ready-for-merge-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "ready_for_merge"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "ready_for_merge"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-merge-task-delivery-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invalid_public_input",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-ready-for-merge-input.json",
+        "--review-input",
+        "examples/semantic-review.json"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "delivered",
+        "schema": {
+          "schema_id": "guru-merge-task-delivery-output-delivered-1.0",
+          "path": "schemas/public-delivered-output.schema.json"
+        },
+        "example": {
+          "id": "delivered_output",
+          "path": "examples/public-delivered-output.json"
+        },
+        "consumer_use_ids": [
+          "project_delivered"
+        ]
+      },
+      {
+        "exit_id": "merge_blocked",
+        "schema": {
+          "schema_id": "guru-merge-task-delivery-output-merge-blocked-1.0",
+          "path": "schemas/public-merge-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "merge_blocked_output",
+          "path": "examples/public-merge-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "project_merge_blocked"
+        ]
+      },
+      {
+        "exit_id": "implementation_required",
+        "schema": {
+          "schema_id": "guru-merge-task-delivery-output-implementation-required-1.0",
+          "path": "schemas/public-implementation-required-output.schema.json"
+        },
+        "example": {
+          "id": "implementation_required_output",
+          "path": "examples/public-implementation-required-output.json"
+        },
+        "consumer_use_ids": [
+          "project_implementation_required"
+        ]
+      },
+      {
+        "exit_id": "review_refresh_required",
+        "schema": {
+          "schema_id": "guru-merge-task-delivery-output-review-refresh-required-1.0",
+          "path": "schemas/public-review-refresh-required-output.schema.json"
+        },
+        "example": {
+          "id": "review_refresh_required_output",
+          "path": "examples/public-review-refresh-required-output.json"
+        },
+        "consumer_use_ids": [
+          "project_review_refresh_required"
+        ]
+      }
     ],
-    "consumer_inputs":[
-      {"id":"completion_seed","consumer":{"kind":"skill","id":"guru-review-task-completion"},"payload_kind":"structured_json","contract":{"kind":"planned_skill_input_seed","seed_fields":["task_ref","delivery_cycle_ref","repo_ref","pr_number","reviewed_head","merge_commit_sha"]}},
-      {"id":"merge_blocked_stop_input","consumer":{"kind":"stop","id":"task-delivery-merge-blocked"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-merge-task-delivery-stop-blocked-input-1.0","path":"consumers/stop/production/merge-task-delivery-blocked.schema.json"}},
-      {"id":"implementation_router_input","consumer":{"kind":"workflow","id":"guru-resume-implementation"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-merge-task-delivery-implementation-input-1.0","path":"consumers/workflow/production/merge-task-delivery-implementation-required.schema.json"}},
-      {"id":"delivery_review_seed","consumer":{"kind":"skill","id":"guru-review-task-delivery"},"payload_kind":"structured_json","contract":{"kind":"skill_input_authoring_seed","interface_path":"packages/guru-review-task-delivery/interface.json","input_kind":"structured_json","profile_id":"delivery_review","seed_fields":["task_ref"],"authoring_fields":["profile","mode","branch_review_commit"],"authoring_example":{"id":"review_refresh_authoring","path":"examples/review-refresh-authoring.json"}}}
+    "consumer_inputs": [
+      {
+        "id": "completion_seed",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-review-task-completion"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "planned_skill_input_seed",
+          "seed_fields": [
+            "task_ref",
+            "delivery_cycle_ref",
+            "repo_ref",
+            "pr_number",
+            "reviewed_head",
+            "merge_commit_sha"
+          ]
+        }
+      },
+      {
+        "id": "merge_blocked_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-delivery-merge-blocked"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-merge-task-delivery-stop-blocked-input-1.0",
+          "path": "consumers/stop/production/merge-task-delivery-blocked.schema.json"
+        }
+      },
+      {
+        "id": "implementation_router_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-resume-implementation"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-merge-task-delivery-implementation-input-1.0",
+          "path": "consumers/workflow/production/merge-task-delivery-implementation-required.schema.json"
+        }
+      },
+      {
+        "id": "delivery_review_seed",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-review-task-delivery"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-review-task-delivery/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "delivery_review",
+          "seed_fields": [
+            "task_ref"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode",
+            "branch_review_commit"
+          ],
+          "authoring_example": {
+            "id": "review_refresh_authoring",
+            "path": "examples/review-refresh-authoring.json"
+          }
+        }
+      }
     ],
-    "projections":[
-      {"id":"project_delivered","exit_id":"delivered","consumer_input_id":"completion_seed","operation":"select","mappings":[{"source":"task_ref","target":"task_ref"},{"source":"delivery_cycle_ref","target":"delivery_cycle_ref"},{"source":"repo_ref","target":"repo_ref"},{"source":"pr_number","target":"pr_number"},{"source":"reviewed_head","target":"reviewed_head"},{"source":"merge_commit_sha","target":"merge_commit_sha"}]},
-      {"id":"project_merge_blocked","exit_id":"merge_blocked","consumer_input_id":"merge_blocked_stop_input","operation":"direct"},
-      {"id":"project_implementation_required","exit_id":"implementation_required","consumer_input_id":"implementation_router_input","operation":"direct"},
-      {"id":"project_review_refresh_required","exit_id":"review_refresh_required","consumer_input_id":"delivery_review_seed","operation":"select","mappings":[{"source":"task_ref","target":"task_ref"}]}
+    "projections": [
+      {
+        "id": "project_delivered",
+        "exit_id": "delivered",
+        "consumer_input_id": "completion_seed",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_cycle_ref",
+            "target": "delivery_cycle_ref"
+          },
+          {
+            "source": "repo_ref",
+            "target": "repo_ref"
+          },
+          {
+            "source": "pr_number",
+            "target": "pr_number"
+          },
+          {
+            "source": "reviewed_head",
+            "target": "reviewed_head"
+          },
+          {
+            "source": "merge_commit_sha",
+            "target": "merge_commit_sha"
+          }
+        ]
+      },
+      {
+        "id": "project_merge_blocked",
+        "exit_id": "merge_blocked",
+        "consumer_input_id": "merge_blocked_stop_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_implementation_required",
+        "exit_id": "implementation_required",
+        "consumer_input_id": "implementation_router_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_review_refresh_required",
+        "exit_id": "review_refresh_required",
+        "consumer_input_id": "delivery_review_seed",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          }
+        ]
+      }
     ],
-    "private_artifacts":[{"id":"merge_gate","kind":"gate_evidence","schema":{"schema_id":"guru-merge-task-delivery-private-gate-1.0","path":"schemas/merge-gate.schema.json"},"persistence":"ignored_runtime"}]
+    "private_artifacts": [
+      {
+        "id": "merge_gate",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "guru-merge-task-delivery-private-gate-1.0",
+          "path": "schemas/merge-gate.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      }
+    ]
   }
 }

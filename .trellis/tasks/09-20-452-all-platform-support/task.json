@@ -1,8 +1,8 @@
 {
   "id": "452-all-platform-support",
   "name": "452-all-platform-support",
-  "title": "#452 提升 #443 Architecture/RDT authority，并补齐 OpenCode projection",
-  "description": "先将 #443 capability 提升为 .57 Architecture/RDT current authority并修复 current projection，再补齐平台能力分层、OpenCode projection、ownership、reapply 与 actual-load 验证。",
+  "title": "#452 提升 #443 authority，并完成 Trellis 全平台可选 projection",
+  "description": "先将 #443 capability 提升为 .57 Architecture/RDT authority并修复 current projection，再按 pinned AI_TOOLS 22 平台 inventory 与目标仓 exact installed selection 两层合同完成 repeated --platform、projection、ownership、upgrade preservation 与验证；不提供全量安装选项。",
   "status": "in_progress",
   "dev_type": null,
   "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/452",

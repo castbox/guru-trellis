@@ -275,10 +275,28 @@
   ],
   "platform_destinations": [
     "shared",
-    "codex",
-    "cursor",
     "claude",
-    "opencode"
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
   ],
   "public_contracts": {
     "input": {
@@ -512,8 +530,15 @@
           "interface_path": "packages/guru-discover-change-context/interface.json",
           "input_kind": "structured_json",
           "profile_id": "pre_task",
-          "seed_fields": ["source_exit", "profile", "mode", "continuation_id"],
-          "authoring_fields": ["change_input"],
+          "seed_fields": [
+            "source_exit",
+            "profile",
+            "mode",
+            "continuation_id"
+          ],
+          "authoring_fields": [
+            "change_input"
+          ],
           "authoring_example": {
             "id": "pre_task_input",
             "path": "examples/public-pre-task-input-2.0.json"
@@ -581,10 +606,22 @@
         "consumer_input_id": "clear_workflow_input",
         "operation": "select",
         "mappings": [
-          {"source": "exit_id", "target": "exit_id"},
-          {"source": "resume_target", "target": "resume_target"},
-          {"source": "target_disposition", "target": "target_disposition"},
-          {"source": "continuation_id", "target": "continuation_id"}
+          {
+            "source": "exit_id",
+            "target": "exit_id"
+          },
+          {
+            "source": "resume_target",
+            "target": "resume_target"
+          },
+          {
+            "source": "target_disposition",
+            "target": "target_disposition"
+          },
+          {
+            "source": "continuation_id",
+            "target": "continuation_id"
+          }
         ]
       },
       {

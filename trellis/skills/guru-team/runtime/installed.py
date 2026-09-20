@@ -8,20 +8,11 @@ import stat
 from pathlib import Path
 from typing import Any
 
-PLATFORM_ROOTS = {
-    "shared": Path(".agents/skills"),
-    "codex": Path(".codex/skills"),
-    "cursor": Path(".cursor/skills"),
-    "claude": Path(".claude/skills"),
-    "opencode": Path(".opencode/skills"),
+EXPECTED_DEFAULT_PLATFORMS = ["claude", "codex", "cursor"]
+PROJECTION_DESCRIPTOR_FIELDS = {
+    "id", "cli_flag", "template_dir", "config_dir", "skill_root",
+    "entry_path", "entry_kind", "actual_load",
 }
-OVERLAY_PATHS = {
-    "codex": Path(".codex/prompts/guru-finish-work.md"),
-    "cursor": Path(".cursor/commands/guru-finish-work.md"),
-    "claude": Path(".claude/commands/guru/finish-work.md"),
-    "opencode": Path(".opencode/commands/guru-finish-work.md"),
-}
-EXPECTED_DEFAULT_DOGFOOD_PLATFORMS = ["codex", "cursor"]
 PRIVATE_PROJECTION_ROOTS = {"runtime", "tests", "errors"}
 PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS = {
     "guru-review-branch": frozenset({Path("schemas/review-gate-7.0.schema.json")}),
@@ -49,6 +40,53 @@ def safe_relative(value: Any) -> Path | None:
     if path.is_absolute() or any(part in {"", ".", ".."} for part in path.parts):
         return None
     return path
+
+
+def platform_projection_maps(
+    capabilities: dict[str, Any],
+    errors: list[str],
+) -> tuple[dict[str, Path], dict[str, Path], list[str]]:
+    upstream = capabilities.get("upstream_platforms")
+    projections = capabilities.get("projection_descriptors")
+    if not isinstance(upstream, list) or not upstream:
+        errors.append("installed upstream platform inventory is invalid")
+        upstream = []
+    if not isinstance(projections, list) or len(projections) != len(upstream):
+        errors.append("installed platform projection descriptor inventory is invalid")
+        projections = []
+    upstream_flags = [
+        row.get("cli_flag")
+        for row in upstream
+        if isinstance(row, dict) and isinstance(row.get("cli_flag"), str)
+    ]
+    if len(upstream_flags) != len(upstream) or len(upstream_flags) != len(set(upstream_flags)):
+        errors.append("installed upstream platform cli_flag inventory is invalid")
+    roots = {"shared": Path(".agents/skills")}
+    overlays: dict[str, Path] = {}
+    projection_flags: list[str] = []
+    for index, row in enumerate(projections):
+        if not isinstance(row, dict) or set(row) != PROJECTION_DESCRIPTOR_FIELDS:
+            errors.append(f"installed platform projection descriptor {index} is invalid")
+            continue
+        flag = row.get("cli_flag")
+        skill_root = safe_relative(row.get("skill_root"))
+        entry_path = safe_relative(row.get("entry_path"))
+        if not isinstance(flag, str) or skill_root is None or entry_path is None:
+            errors.append(f"installed platform projection descriptor {index} has invalid paths")
+            continue
+        if flag in roots or flag in overlays:
+            errors.append(f"installed platform projection descriptor {index} duplicates {flag}")
+            continue
+        roots[flag] = skill_root
+        overlays[flag] = entry_path
+        projection_flags.append(flag)
+    if projection_flags != upstream_flags:
+        errors.append("installed projection descriptors disagree with upstream cli_flag order")
+    if capabilities.get("default_platforms") != EXPECTED_DEFAULT_PLATFORMS:
+        errors.append("installed default platform inventory is invalid")
+    if any(key in capabilities for key in ("guru_supported_platforms", "deferred_platforms", "default_dogfood_platforms")):
+        errors.append("installed platform capability inventory contains a legacy platform tier")
+    return roots, overlays, upstream_flags
 
 
 def lexical_relative(root: Path, path: Path) -> Path | None:
@@ -288,21 +326,14 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
     extension = manifest.get("extension") if isinstance(manifest.get("extension"), dict) else {}
     public_api = extension.get("public_api") if isinstance(extension.get("public_api"), dict) else {}
     capabilities = public_api.get("platform_capabilities") if isinstance(public_api.get("platform_capabilities"), dict) else {}
-    upstream = capabilities.get("upstream_platforms")
-    supported = capabilities.get("guru_supported_platforms")
-    deferred = capabilities.get("deferred_platforms")
-    supported_ids = [row.get("id") for row in supported] if isinstance(supported, list) and all(isinstance(row, dict) for row in supported) else []
-    upstream_ids = [row.get("id") for row in upstream] if isinstance(upstream, list) and all(isinstance(row, dict) for row in upstream) else []
-    deferred_ids = [row.get("id") for row in deferred] if isinstance(deferred, list) and all(isinstance(row, dict) for row in deferred) else []
-    supported_upstream_ids = [row.get("upstream_id") for row in supported] if isinstance(supported, list) and all(isinstance(row, dict) for row in supported) else []
+    platform_roots, overlay_paths, supported_ids = platform_projection_maps(
+        capabilities,
+        errors,
+    )
     if capabilities.get("schema_version") != "1.0": errors.append("installed platform capability inventory schema is invalid")
     if not isinstance(capabilities.get("inventory_source"), str) or not capabilities.get("inventory_source"): errors.append("installed platform capability inventory source is missing")
     if not isinstance(capabilities.get("inventory_version"), str) or not capabilities.get("inventory_version"): errors.append("installed platform capability inventory version is missing")
     if not isinstance(capabilities.get("inventory_sha256"), str) or not re.fullmatch(r"[0-9a-f]{64}", capabilities.get("inventory_sha256", "")): errors.append("installed platform capability inventory digest is invalid")
-    if sorted(supported_ids) != sorted(OVERLAY_PATHS) or sorted(supported_ids) != sorted(platform for platform in PLATFORM_ROOTS if platform != "shared"): errors.append("installed Guru-supported platform inventory disagrees with runtime roots")
-    if capabilities.get("default_dogfood_platforms") != EXPECTED_DEFAULT_DOGFOOD_PLATFORMS: errors.append("installed default dogfood platform inventory is invalid")
-    if not set(supported_upstream_ids).issubset(set(upstream_ids)): errors.append("installed supported platforms are not bound to upstream inventory")
-    if set(upstream_ids) != set(supported_upstream_ids) | set(deferred_ids): errors.append("installed upstream supported/deferred partition is incomplete")
     provenance = manifest.get("skill_packages") if isinstance(manifest.get("skill_packages"), dict) else {}
     required = {"schema_version","status","canonical_registry_sha256","registry_schema_version","active_ids","selected_platforms","packages","files","removals","conflicts","sidecars"}
     if set(provenance) != required: errors.append("installed skill package provenance has invalid fields")
@@ -368,8 +399,14 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
                     Path("runtime") / path.name,
                     path,
                 )
+    selected_roots: dict[Path, set[str]] = {Path(".agents/skills"): {"shared"}}
+    for platform in selected:
+        selected_roots.setdefault(platform_roots[platform], set()).add(platform)
+    capability_roots = set(platform_roots.values()) | {Path(".agents/skills")}
     expected_packages: dict[str, dict[str, str]] = {}
-    expected_ids_by_platform: dict[str, set[str]] = {key:set() for key in PLATFORM_ROOTS}
+    expected_ids_by_root: dict[Path, set[str]] = {
+        path: set() for path in capability_roots
+    }
     command_owners: dict[str, str] = {}
     package_private_test_count = 0
     for skill_id, entry in active.items():
@@ -420,21 +457,24 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
             tree_hash.update(inner.as_posix().encode()+b"\0"+path.read_bytes()+b"\0")
         interface = skills_root / entry["interface_rel"]
         expected_packages[skill_id] = {"id":skill_id,"interface_sha256":sha256(interface) if interface.is_file() else "","tree_sha256":tree_hash.hexdigest()}
-        supported = set(entry.get("supported_platforms", [])); platforms = {"shared"}|(set(selected)&supported)
+        supported = set(entry.get("supported_platforms", []))
         public = public_files(package, entry["interface_data"], files)
         public_inner = {path.relative_to(package).as_posix() for path in public}
-        for platform in platforms:
-            expected_ids_by_platform[platform].add(skill_id)
-            target_root = root / PLATFORM_ROOTS[platform] / skill_id
-            actual = collect_files(root, target_root, f"{platform} public projection for {skill_id}", errors)
+        for relative_root, root_platforms in selected_roots.items():
+            if not root_platforms.intersection(supported):
+                continue
+            expected_ids_by_root[relative_root].add(skill_id)
+            target_root = root / relative_root / skill_id
+            projection_label = ",".join(sorted(root_platforms))
+            actual = collect_files(root, target_root, f"{projection_label} public projection for {skill_id}", errors)
             actual_inner = {path.relative_to(target_root).as_posix() for path in actual}
-            if actual_inner != public_inner: errors.append(f"{platform} public projection inventory for {skill_id} does not match allowlist")
-            if any(Path(inner).parts[0] in PRIVATE_PROJECTION_ROOTS for inner in actual_inner): errors.append(f"{platform} public projection exposes private runtime/tests/errors for {skill_id}")
+            if actual_inner != public_inner: errors.append(f"{projection_label} public projection inventory for {skill_id} does not match allowlist")
+            if any(Path(inner).parts[0] in PRIVATE_PROJECTION_ROOTS for inner in actual_inner): errors.append(f"{projection_label} public projection exposes private runtime/tests/errors for {skill_id}")
             for source in public:
                 inner=source.relative_to(package); target=target_root/inner; expect(target,entry["package_rel"]/inner,source)
-                target_stat=lstat_path(root,target,f"{platform} public file for {skill_id}",errors,kind="file")
-                if target_stat and sha256(target)!=sha256(source): errors.append(f"{platform} runtime file content drift for {skill_id}/{inner.as_posix()}")
-                if target_stat and bool(target_stat.st_mode&stat.S_IXUSR)!=bool(source.stat().st_mode&stat.S_IXUSR): errors.append(f"{platform} runtime file mode drift for {skill_id}/{inner.as_posix()}")
+                target_stat=lstat_path(root,target,f"{projection_label} public file for {skill_id}",errors,kind="file")
+                if target_stat and sha256(target)!=sha256(source): errors.append(f"{projection_label} runtime file content drift for {skill_id}/{inner.as_posix()}")
+                if target_stat and bool(target_stat.st_mode&stat.S_IXUSR)!=bool(source.stat().st_mode&stat.S_IXUSR): errors.append(f"{projection_label} runtime file mode drift for {skill_id}/{inner.as_posix()}")
     package_records=provenance.get("packages") if isinstance(provenance.get("packages"),list) else []
     records={str(item.get("id")):item for item in package_records if isinstance(item,dict) and set(item)=={"id","interface_sha256","tree_sha256"}}
     if len(records)!=len(package_records) or set(records)!=set(expected_packages): errors.append("installed package provenance inventory is incomplete")
@@ -456,17 +496,29 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
     removals=_validate_removals(root,provenance.get("removals"),"skill",None,errors)
     conflicts=provenance.get("conflicts") if isinstance(provenance.get("conflicts"),list) else []; sidecars=_validate_sidecars(root,provenance.get("sidecars"),errors,"skill")
     if conflicts: errors.append("installed skill package has unresolved conflicts")
-    actual_sidecars=_scan_sidecars(root,[skills_root,*[root/path for path in PLATFORM_ROOTS.values()]],errors)
+    actual_sidecars=_scan_sidecars(root,[skills_root,*[root/path for path in capability_roots]],errors)
     if actual_sidecars!=sidecars: errors.append("installed skill sidecar inventory is incomplete")
-    _validate_overlays(root,manifest.get("overlays"),selected,errors)
-    for platform, relative in PLATFORM_ROOTS.items():
+    _validate_overlays(root,manifest.get("overlays"),selected,overlay_paths,errors)
+    for relative in sorted(capability_roots, key=lambda path: path.as_posix()):
         platform_root=root/relative
-        if lstat_path(root,platform_root,f"{platform} skill root",errors,kind="directory",required=False) is None: continue
+        if lstat_path(root,platform_root,f"platform skill root {relative.as_posix()}",errors,kind="directory",required=False) is None: continue
+        selected_entry_roots = {
+            entry.relative_to(relative).parts[0]
+            for platform in selected
+            for entry in (overlay_paths[platform],)
+            if relative == entry or relative in entry.parents
+        }
         for child in platform_root.iterdir():
             try: mode=child.lstat().st_mode
-            except OSError: errors.append(f"{platform} skill root contains an unreadable entry"); continue
-            if child.name.startswith("guru-") and (stat.S_ISLNK(mode) or not stat.S_ISDIR(mode) or child.name not in expected_ids_by_platform[platform]): errors.append(f"unknown {platform} workflow skill copy: {child.name}")
-    allowed={path.as_posix() for path in PLATFORM_ROOTS.values()}|{"trellis/skills"}
+            except OSError: errors.append(f"platform skill root {relative.as_posix()} contains an unreadable entry"); continue
+            allowed_names = expected_ids_by_root[relative] | selected_entry_roots
+            if child.name.startswith("guru-") and (stat.S_ISLNK(mode) or not stat.S_ISDIR(mode) or child.name not in allowed_names): errors.append(f"unknown workflow skill copy in {relative.as_posix()}: {child.name}")
+    selected_entry_discovery_roots = {
+        overlay_paths[platform].parent.parent
+        for platform in selected
+        if overlay_paths[platform].parent.name.startswith("guru-")
+    }
+    allowed={path.as_posix() for path in capability_roots | selected_entry_discovery_roots}|{"trellis/skills"}
     for top in root.iterdir():
         try: mode=top.lstat().st_mode
         except OSError: continue
@@ -537,13 +589,19 @@ def _scan_sidecars(root:Path,roots:list[Path],errors:list[str])->set[str]:
     return result
 
 
-def _validate_overlays(root:Path,value:Any,selected:list[str],errors:list[str])->None:
+def _validate_overlays(
+    root: Path,
+    value: Any,
+    selected: list[str],
+    overlay_paths: dict[str, Path],
+    errors: list[str],
+) -> None:
     required={"schema_version","status","selected_platforms","files","removals","conflicts","sidecars"}; overlay=value if isinstance(value,dict) else {}
     if not isinstance(value,dict): errors.append("installed extension manifest has no overlay provenance")
     if set(overlay)!=required: errors.append("installed overlay provenance has invalid fields")
     if overlay.get("schema_version")!="1.0" or overlay.get("status")!="ok": errors.append("installed overlay provenance is invalid or conflicted")
     if overlay.get("selected_platforms")!=selected: errors.append("installed overlay platform selection does not match skill provenance")
-    expected={path.as_posix() for platform,path in OVERLAY_PATHS.items() if platform in selected}; allowed={path.as_posix() for path in OVERLAY_PATHS.values()}; seen:set[str]=set()
+    expected={path.as_posix() for platform,path in overlay_paths.items() if platform in selected}; allowed={path.as_posix() for path in overlay_paths.values()}; seen:set[str]=set()
     files=overlay.get("files") if isinstance(overlay.get("files"),list) else []
     for index,item in enumerate(files):
         if not isinstance(item,dict) or set(item)!={"path","source","sha256","executable","action"}: errors.append(f"installed overlay file record {index} is invalid"); continue
@@ -558,7 +616,7 @@ def _validate_overlays(root:Path,value:Any,selected:list[str],errors:list[str])-
     conflicts=overlay.get("conflicts") if isinstance(overlay.get("conflicts"),list) else []
     if conflicts: errors.append("installed overlays have unresolved conflicts")
     declared=_validate_sidecars(root,overlay.get("sidecars"),errors,"overlay"); actual:set[str]=set()
-    for path in OVERLAY_PATHS.values():
+    for path in overlay_paths.values():
         target=root/path
         if path.as_posix() not in expected and lstat_path(root,target,f"unselected overlay path {path.as_posix()}",errors,kind="file",required=False): errors.append(f"Guru overlay exists for unselected platform: {path.as_posix()}")
         for suffix in SIDECAR_SUFFIXES:

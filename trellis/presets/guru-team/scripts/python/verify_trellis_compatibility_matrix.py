@@ -44,24 +44,19 @@ from compatibility_matrix_support import (
     _managed_asset_executable,
     _sorted_strings,
 )
+from compatibility_platform_inventory import (
+    SCENARIOS,
+    build_matrix,
+    derive_platform_inventory,
+    platform_init_flag,
+    platform_skill_roots,
+)
+from guru_platform_inventory import PLATFORM_BY_FLAG, PLATFORM_FLAGS
 from verify_native_platform_load import NativeLoadError, verify_native_platform_load
 
 
 SCHEMA_VERSION = "1.0"
-SCENARIOS = ("clean", "existing")
 SHARED_PLATFORM = "shared"
-PLATFORM_ROOTS = {
-    "claude": Path(".claude/skills"),
-    "codex": Path(".codex/skills"),
-    "cursor": Path(".cursor/skills"),
-    "opencode": Path(".opencode/skills"),
-}
-PLATFORM_INIT_FLAGS = {
-    "claude": "--claude",
-    "codex": "--codex",
-    "cursor": "--cursor",
-    "opencode": "--opencode",
-}
 PLATFORM_PATH_RE = re.compile(r"^\.(claude|codex|cursor|opencode)/")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 VERSION_RE = re.compile(r"(?<![0-9])([0-9]+\.[0-9]+\.[0-9]+)(?![0-9])")
@@ -185,204 +180,6 @@ def _active_registry_rows_from(skill_root: Path) -> list[dict[str, Any]]:
 
 def _active_registry_rows(repo_root: Path) -> list[dict[str, Any]]:
     return _active_registry_rows_from(repo_root / "trellis/skills/guru-team")
-
-
-def derive_platform_inventory(repo_root: Path) -> dict[str, Any]:
-    """Cross-check every live platform authority and return one closed set."""
-
-    canonical = _require_dict(
-        _load_json(repo_root / "trellis/guru-team-extension.json"),
-        "canonical extension manifest",
-    )
-    public_api = _require_dict(canonical.get("public_api"), "public_api")
-    capabilities = _require_dict(
-        public_api.get("platform_capabilities"), "public_api.platform_capabilities"
-    )
-    supported_rows = capabilities.get("guru_supported_platforms")
-    if not isinstance(supported_rows, list):
-        raise MatrixError("guru_supported_platforms must be an array")
-    capability_platforms = _sorted_strings(
-        str(_require_dict(row, "guru_supported_platform").get("id", ""))
-        for row in supported_rows
-    )
-    default_dogfood = _sorted_strings(
-        _require_string_list(
-            capabilities.get("default_dogfood_platforms"),
-            "public_api.platform_capabilities.default_dogfood_platforms",
-        )
-    )
-    if not set(default_dogfood).issubset(set(capability_platforms)):
-        raise MatrixError("default dogfood platforms are not Guru-supported")
-    upstream_rows = capabilities.get("upstream_platforms")
-    deferred_rows = capabilities.get("deferred_platforms")
-    if not isinstance(upstream_rows, list) or not isinstance(deferred_rows, list):
-        raise MatrixError("upstream/deferred platform inventories must be arrays")
-    upstream_ids = {
-        str(_require_dict(row, "upstream_platform").get("id", ""))
-        for row in upstream_rows
-    }
-    supported_upstream_ids = {
-        str(_require_dict(row, "guru_supported_platform").get("upstream_id", ""))
-        for row in supported_rows
-    }
-    deferred_ids = {
-        str(_require_dict(row, "deferred_platform").get("id", ""))
-        for row in deferred_rows
-    }
-    if upstream_ids != supported_upstream_ids | deferred_ids:
-        raise MatrixError("upstream platform inventory is not fully partitioned")
-    manifest_paths = _require_string_list(
-        public_api.get("managed_paths"), "public_api.managed_paths"
-    )
-
-    ownership = _require_dict(
-        _load_json(
-            repo_root
-            / "trellis/presets/guru-team/ownership/upstream-ownership.json"
-        ),
-        "upstream ownership",
-    )
-    claims = ownership.get("managed_path_claims")
-    if not isinstance(claims, list):
-        raise MatrixError("managed_path_claims must be an array")
-    ownership_paths = [
-        str(_require_dict(row, "managed_path_claim").get("path", ""))
-        for row in claims
-    ]
-
-    registry_rows = _active_registry_rows(repo_root)
-    registry_sets: dict[str, list[str]] = {}
-    interface_sets: dict[str, list[str]] = {}
-    for row in registry_rows:
-        skill_id = row.get("id")
-        if not isinstance(skill_id, str) or not skill_id:
-            raise MatrixError("active skill row has no id")
-        supported = set(
-            _require_string_list(
-                row.get("supported_platforms"),
-                f"registry {skill_id}.supported_platforms",
-            )
-        )
-        supported.discard(SHARED_PLATFORM)
-        registry_sets[skill_id] = _sorted_strings(supported)
-
-        interface_path = row.get("interface")
-        if not isinstance(interface_path, str) or not interface_path:
-            raise MatrixError(f"registry {skill_id} has no interface path")
-        interface = _require_dict(
-            _load_json(repo_root / "trellis/skills/guru-team" / interface_path),
-            f"interface {skill_id}",
-        )
-        destinations = set(
-            _require_string_list(
-                interface.get("platform_destinations"),
-                f"interface {skill_id}.platform_destinations",
-            )
-        )
-        destinations.discard(SHARED_PLATFORM)
-        interface_sets[skill_id] = _sorted_strings(destinations)
-        if registry_sets[skill_id] != interface_sets[skill_id]:
-            raise MatrixError(
-                f"platform declaration drift for {skill_id}: "
-                f"registry={registry_sets[skill_id]} "
-                f"interface={interface_sets[skill_id]}"
-            )
-
-    overlay_root = repo_root / "trellis/presets/guru-team/overlays"
-    overlay_platforms = {
-        item.name.removeprefix(".")
-        for item in overlay_root.iterdir()
-        if item.is_dir() and item.name.removeprefix(".") in PLATFORM_ROOTS
-    }
-
-    installed_path = repo_root / ".trellis/guru-team/extension.json"
-    installed = _require_dict(_load_json(installed_path), "installed manifest")
-    installed_sets = {
-        "install": _sorted_strings(
-            _require_string_list(
-                _require_dict(installed.get("install"), "installed install").get(
-                    "selected_platforms"
-                ),
-                "installed install.selected_platforms",
-            )
-        ),
-        "skill_packages": _sorted_strings(
-            _require_string_list(
-                _require_dict(
-                    installed.get("skill_packages"), "installed skill_packages"
-                ).get("selected_platforms"),
-                "installed skill_packages.selected_platforms",
-            )
-        ),
-        "overlays": _sorted_strings(
-            _require_string_list(
-                _require_dict(installed.get("overlays"), "installed overlays").get(
-                    "selected_platforms"
-                ),
-                "installed overlays.selected_platforms",
-            )
-        ),
-    }
-
-    authorities: dict[str, list[str]] = {
-        "capability_inventory": capability_platforms,
-        "canonical_manifest": _sorted_strings(_platforms_from_paths(manifest_paths)),
-        "upstream_ownership": _sorted_strings(_platforms_from_paths(ownership_paths)),
-        "overlay_tree": _sorted_strings(overlay_platforms),
-        "installed_install": installed_sets["install"],
-        "installed_skill_packages": installed_sets["skill_packages"],
-        "installed_overlays": installed_sets["overlays"],
-    }
-    authorities.update(
-        {f"registry:{skill_id}": value for skill_id, value in registry_sets.items()}
-    )
-    authorities.update(
-        {f"interface:{skill_id}": value for skill_id, value in interface_sets.items()}
-    )
-
-    distinct = {tuple(platforms) for platforms in authorities.values()}
-    if len(distinct) != 1:
-        raise MatrixError(
-            "live platform authorities disagree: "
-            + json.dumps(authorities, ensure_ascii=False, sort_keys=True)
-        )
-    platforms = next(iter(distinct))
-    if not platforms or any(platform not in PLATFORM_ROOTS for platform in platforms):
-        raise MatrixError(f"unsupported or empty live platform set: {platforms}")
-
-    result = {
-        "schema_version": SCHEMA_VERSION,
-        "platforms": list(platforms),
-        "default_dogfood_platforms": default_dogfood,
-        "upstream_platform_count": len(upstream_ids),
-        "deferred_platforms": sorted(deferred_ids),
-        "authorities": authorities,
-    }
-    result["identity_sha256"] = _digest(result)
-    return result
-
-
-def build_matrix(repo_root: Path) -> dict[str, Any]:
-    inventory = derive_platform_inventory(repo_root)
-    cells = [
-        {
-            "cell_id": f"{platform}-{scenario}",
-            "platform": platform,
-            "scenario": scenario,
-            "shared_projection": True,
-        }
-        for platform in inventory["platforms"]
-        for scenario in SCENARIOS
-    ]
-    result = {
-        "schema_version": SCHEMA_VERSION,
-        "platform_inventory_sha256": inventory["identity_sha256"],
-        "platforms": inventory["platforms"],
-        "cell_count": len(cells),
-        "cells": cells,
-    }
-    result["matrix_sha256"] = _digest(result)
-    return result
 
 
 def _workflow_markers(workflow_path: Path) -> dict[str, list[str]]:
@@ -677,15 +474,15 @@ def capability_projection(repo_root: Path) -> dict[str, Any]:
                     "public_api.artifact_contracts",
                 )
             ),
-            "ownership_rules": _sorted_strings(
+            "platform_descriptors": _sorted_strings(
                 json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-                for row in ownership.get("guru_owned_rules", [])
+                for row in ownership.get("platform_descriptors", [])
                 if isinstance(row, dict)
             ),
-            "managed_claims": _sorted_strings(
-                json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-                for row in ownership.get("managed_path_claims", [])
-                if isinstance(row, dict)
+            "derived_managed_claims": _sorted_strings(
+                _require_string_list(
+                    public_api.get("managed_paths"), "public_api.managed_paths"
+                )
             ),
             "overlay_files_and_modes": mode_declarations[
                 "overlay_files_and_modes"
@@ -839,8 +636,19 @@ def installed_capability_projection(target: Path) -> dict[str, Any]:
                     "installed artifact_contracts",
                 )
             ),
-            "ownership_rules": [],
-            "managed_claims": [],
+            "platform_descriptors": _sorted_strings(
+                json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+                for row in _require_dict(
+                    public_api.get("platform_capabilities"),
+                    "installed platform_capabilities",
+                ).get("upstream_platforms", [])
+                if isinstance(row, dict)
+            ),
+            "derived_managed_claims": _sorted_strings(
+                _require_string_list(
+                    public_api.get("managed_paths"), "installed managed_paths"
+                )
+            ),
             "overlay_files_and_modes": mode_declarations[
                 "overlay_files_and_modes"
             ],
@@ -1772,7 +1580,7 @@ def _install_workflow(
             *binary,
             "init",
             "-y",
-            PLATFORM_INIT_FLAGS[platform],
+            platform_init_flag(platform),
             *identity_arguments,
             *workflow_arguments,
         ),
@@ -1958,17 +1766,22 @@ def _assert_installed_file_modes(
 
 def _assert_platform_projection(target: Path, platform: str) -> None:
     shared_root = target / ".agents/skills"
-    selected_root = target / PLATFORM_ROOTS[platform]
-    if not shared_root.is_dir() or not selected_root.is_dir():
+    selected_roots = tuple(target / root for root in platform_skill_roots(platform))
+    if not shared_root.is_dir() or any(not root.is_dir() for root in selected_roots):
         raise MatrixError(f"missing shared or selected {platform} skill projection")
     shared_ids = {path.name for path in shared_root.glob("guru-*") if path.is_dir()}
-    selected_ids = {path.name for path in selected_root.glob("guru-*") if path.is_dir()}
-    if not shared_ids or shared_ids != selected_ids:
-        raise MatrixError(
-            f"shared/{platform} skill projection mismatch: "
-            f"shared={sorted(shared_ids)} selected={sorted(selected_ids)}"
-        )
-    for root in (shared_root, selected_root):
+    if not shared_ids:
+        raise MatrixError("shared Guru skill projection is empty")
+    for selected_root in selected_roots:
+        selected_ids = {
+            path.name for path in selected_root.glob("guru-*") if path.is_dir()
+        }
+        if shared_ids != selected_ids:
+            raise MatrixError(
+                f"shared/{platform} skill projection mismatch: "
+                f"shared={sorted(shared_ids)} selected={sorted(selected_ids)}"
+            )
+    for root in dict.fromkeys((shared_root, *selected_roots)):
         for skill_id in sorted(shared_ids):
             package = target / ".trellis/guru-team/skills/packages" / skill_id
             interface = _require_dict(
@@ -2020,12 +1833,15 @@ def _assert_platform_projection(target: Path, platform: str) -> None:
                 raise MatrixError(
                     f"platform public projection leaked private wrappers: {sorted(leaked)}"
                 )
-    for other, root in PLATFORM_ROOTS.items():
+    selected_relative_roots = set(platform_skill_roots(platform)) | {Path(".agents/skills")}
+    for other, descriptor in PLATFORM_BY_FLAG.items():
         if other == platform:
             continue
-        other_root = target / root
-        if any(other_root.glob("guru-*")):
-            raise MatrixError(f"unselected platform projection exists: {other}")
+        for root in descriptor.skill_roots:
+            if root in selected_relative_roots:
+                continue
+            if any((target / root).glob("guru-*")):
+                raise MatrixError(f"unselected platform projection exists: {other}")
 
 
 def _template_hash_state(root: Path) -> dict[str, Any]:
@@ -2355,7 +2171,7 @@ def validate_cell(
     before_cli: str = DEFAULT_BEFORE_CLI,
     run_cumulative_smokes: bool = True,
 ) -> dict[str, Any]:
-    if platform not in PLATFORM_ROOTS or scenario not in SCENARIOS:
+    if platform not in PLATFORM_BY_FLAG or scenario not in SCENARIOS:
         raise MatrixError(f"invalid cell identity: {platform}/{scenario}")
     if cli_version != expected_cli:
         raise MatrixError(f"cell CLI mismatch: expected {expected_cli}, got {cli_version}")
@@ -2952,7 +2768,7 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--predecessor-source", type=Path)
     run.add_argument("--predecessor-commit")
     run.add_argument("--mode", choices=("full", "focused", "existing"), default="full")
-    run.add_argument("--platform", choices=tuple(PLATFORM_ROOTS), default="codex")
+    run.add_argument("--platform", choices=PLATFORM_FLAGS, default="codex")
     validate = sub.add_parser("validate-source")
     validate.add_argument("--repo-root", type=Path, required=True)
     validate.add_argument("--fork-source", type=Path, required=True)

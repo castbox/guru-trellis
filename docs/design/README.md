@@ -1,12 +1,13 @@
 # Design SSOT
 
-唯一 current Design authority：[`versions/current-main-0.6.17-guru.57/design-main.md`](./versions/current-main-0.6.17-guru.57/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；#443 current registry（32 packages / 142 exits / 102 commands）见 [`capability-inventory.md`](./versions/current-main-0.6.17-guru.57/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。`guru-bind-task-session` 保持 `deferred`，production workflow 为 22 mandatory invokes / 98 exits。Architecture 继承 `.57` / `active`；`.56` 及更早版本保持 immutable。
+唯一 current Design authority：[`versions/current-main-0.6.17-guru.58/design-main.md`](./versions/current-main-0.6.17-guru.58/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；#452 current platform contract 与 registry（32 packages / 142 exits / 102 commands）见 [`capability-inventory.md`](./versions/current-main-0.6.17-guru.58/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。`guru-bind-task-session` 保持 `deferred`，production workflow 为 22 mandatory invokes / 98 exits。Architecture 继承 `.57` / `active`；`.57` 及更早版本保持 immutable。
 
 Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Architecture。普通 task 通过 RDT `task_impact_sync` / contribution / `promotion` 更新 current。
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.57` | [`design-main.md`](./versions/current-main-0.6.17-guru.57/design-main.md) |
+| `active` | `current-main-0.6.17-guru.58` | [`design-main.md`](./versions/current-main-0.6.17-guru.58/design-main.md) |
+| `superseded` | `current-main-0.6.17-guru.57` | [`design-main.md`](./versions/current-main-0.6.17-guru.57/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.56` | [`design-main.md`](./versions/current-main-0.6.17-guru.56/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.55` | [`design-main.md`](./versions/current-main-0.6.17-guru.55/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.54` | [`design-main.md`](./versions/current-main-0.6.17-guru.54/design-main.md) |
@@ -33,4 +34,4 @@ Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Archi
 
 Released history 只固定 release identity；未从 tag 恢复的设计内容保持 `unverified`，不能用 current 设计倒填。
 
-`.57/active` 完整继承 `.56` 并吸收 reviewed #443 contribution；Architecture 为 `.57/active`。#434 独占 production graph activation；#443 session binding package 与继承的 Delivery/lifecycle packages 仍保持 deferred。promotion-created combined diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review；完整 Release matrix 保持 `unverified`。
+`.58/active` 完整继承 immutable `.57` 并吸收 reviewed #452 contribution；Architecture 仍为 `.57/active`。平台 authority 只有 pinned upstream 22-platform inventory 与目标仓库 exact `selected_platforms` 两层；重复 `--platform` 选择 exact subset，公开 CLI 不提供全集安装选项，无 flag 默认及 `guru-trellis` dogfood 均为 Claude、Codex、Cursor，OpenCode 是 upstream inventory 普通成员。#434 独占 production graph activation；promotion-created combined diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review，且当前不声明 implementation、tests 或完整 Release matrix 已通过。

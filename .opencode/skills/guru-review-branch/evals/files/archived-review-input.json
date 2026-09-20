@@ -1,7 +1,0 @@
-{
-  "profile": "archived_review",
-  "mode": "workflow",
-  "task_ref": ".trellis/tasks/archive/2026-09/09-16-example",
-  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "pr_payload_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-}

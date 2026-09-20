@@ -1,8 +1,10 @@
 # Research: Issue #452 installer and OpenCode boundary
 
-- Query: Inspect the current installer implementation and the approved #452 plan for capability-inventory selection, OpenCode public projection, `--platform opencode`, `--all-platforms`, and focused tests.
+- Query: Inspect the pre-change installer implementation and the approved #452 plan for capability-inventory selection, OpenCode public projection, repeated `--platform`, and focused tests.
 - Scope: mixed (current workspace plus locked upstream evidence already recorded in the task research)
 - Date: 2026-09-20
+
+> Current-authority note: 本文的实现快照早于 live Issue #452 superseding platform-contract amendment。凡提到三层集合、Guru-supported inventory、Codex/Cursor 默认值、全集安装选项或仅补 OpenCode 的结论均已 superseded；current 结论见 `official-trellis-platforms.md`、task planning 与 `.58` RDT authority。下列代码定位仍可作为 before-state evidence。
 
 ## Findings
 
@@ -11,8 +13,8 @@
 - `trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py:30-41` defines `DEFAULT_PLATFORMS = ("codex", "cursor")`, `PLATFORM_OVERLAY_PREFIXES` for only `codex`, `cursor`, and `claude`, aliases that mapping as `ALL_PLATFORMS`, and enumerates only three finish overlay entry paths. This is the current single installer-side platform inventory; it does not distinguish upstream, Guru-supported, and default-dogfood sets.
 - `.../apply_guru_team_trellis_preset.py:59` fixes skill projection order to `shared`, `codex`, `claude`, `cursor`; OpenCode is absent.
 - `.../apply_guru_team_trellis_preset.py:775-781` validates manifest overlay `selected_platforms` against `ALL_PLATFORMS`, so adding OpenCode requires the same inventory change to manifest provenance validation.
-- `.../apply_guru_team_trellis_preset.py:1524-1529` maps `--all-platforms` to `ALL_PLATFORMS`, explicit `--platform` to its values, and no argument to `DEFAULT_PLATFORMS`. The default Codex/Cursor behavior is therefore already isolated from `ALL_PLATFORMS` by control flow, but the naming and all-platform set are currently conflated.
-- `.../apply_guru_team_trellis_preset.py:2790-2800` exposes `--platform` with `choices=ALL_PLATFORMS` and `--all-platforms` as a mutually exclusive flag. Once OpenCode is part of the Guru-supported installer inventory, this is the CLI acceptance point; unknown values remain argparse failures.
+- The pre-change selection resolver accepted both an explicit platform list and a boolean full-inventory branch. Current authority removes the boolean branch and keeps only repeated explicit values plus the three-platform default.
+- The pre-change argparse surface used a mutually exclusive full-inventory flag. Current authority removes that option; unknown values and the removed option remain argparse failures.
 
 ### Current OpenCode failure points
 
@@ -25,13 +27,13 @@
 
 ### Tests and expected implementation coverage
 
-- `trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py:1257-1378` verifies the no-argument/default projection and explicitly expects only Codex/Cursor. This is the compatibility test that must remain unchanged semantically.
+- `trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py:1257-1378` verifies the old no-argument/default projection and explicitly expects only Codex/Cursor. Current authority requires this expectation to change to `claude,codex,cursor`.
 - `.../test_apply_guru_team_trellis_preset.py:1465-1500` covers explicit Claude selection; an analogous explicit OpenCode test must assert shared plus `.opencode` skill/command projection and no unrelated platform roots.
-- `.../test_apply_guru_team_trellis_preset.py:1505-1545` covers `selected_platforms(..., True)` and all-platform install, currently expecting `claude`, `codex`, `cursor` and three overlay entries. Those assertions need to follow the approved Guru-supported inventory, while no-argument assertions remain Codex/Cursor.
-- `.../test_apply_guru_team_trellis_preset.py:2020-2050` tests mutual exclusion and currently treats `opencode` as unknown. Once accepted, the unknown case must use a genuinely unsupported string; the mutual exclusion test remains required.
+- The pre-change installer tests covered a boolean full-inventory selection. Current authority deletes those tests; no-argument assertions become `claude,codex,cursor` and explicit subset tests use repeated `--platform`.
+- The pre-change parser tests treated `opencode` as unknown. Current authority uses a genuinely unsupported string for unknown coverage and adds removed-option rejection coverage.
 - `.../test_apply_guru_team_trellis_preset.py:2390-2428` hardcodes eval adapter ids and installed adapter files to `shared`, `codex`, `claude`, `cursor`. This is not an installer-only OpenCode projection unless the approved implementation explicitly changes the adapter inventory; it is a likely out-of-slice coupling that must not be changed casually.
 - `.../test_apply_guru_team_trellis_preset.py:2550-2632` verifies installed manifest selected platforms and reapply provenance. OpenCode selection and platform-set changes need equivalent manifest/reapply assertions if the existing transaction contract is preserved.
-- `trellis/presets/guru-team/scripts/python/test_preset_transaction_installer.py:20-48` seeds and reapplies all currently known platforms, so adding OpenCode to the supported set requires transaction fixtures to include it if `--all-platforms` is meant to cover it.
+- Transaction fixtures that previously used a full-inventory shorthand must now pass the exact repeated platform selection needed by the scenario.
 - `.../test_preset_transaction_installer.py:100-184` exercises managed transaction inventory and source projections; it will catch missing `.opencode` staging paths once the fixture selects OpenCode.
 - `.../test_preset_transaction_installer.py:250-330` proves package-private tests remain source-only for installed packages and stale reapply removal. The analogous public projection assertion should use the existing `skill_platform_public_files` rule and assert no `.opencode/**/tests/**` output.
 
@@ -44,6 +46,6 @@
 ## Caveats / Not Found
 
 - The current working tree contains an untracked `.opencode` overlay path (`trellis/presets/guru-team/overlays/.opencode/commands/guru-finish-work.md`) outside the three user-authorized implementation files. It was pre-existing at inspection time and was not modified, staged, removed, or tested.
-- The approved PRD/design/implement documents describe broader registry, manifest, ownership, compatibility, throwaway, README, and spec changes, but the current user authorization narrows this slice to only three Python files. Those broader consumers remain unverified and cannot be repaired in this research-only role.
+- The original read-only research slice was narrower than the later accepted task scope. Current planning owns the complete registry, manifest, ownership, compatibility, throwaway, README, spec and test consumer set; this research note does not narrow it.
 - Current tests still include package-private integration tests under the installed `.trellis/guru-team/skills/tests` domain by design; the OpenCode requirement concerns the public platform projection, which should use `skill_platform_public_files` and not the installed runtime inventory rule.
 - No tests were run because this agent is constrained to read-only research and may write only under the task `research/` directory. No code, branch, worktree, task, or external state was changed.
