@@ -677,10 +677,7 @@ def _provenance_platform_inventory(manifest: Any) -> tuple[str, ...]:
 def provenance_apply_platform_args(manifest: Any) -> list[str]:
     """Project one reviewed installed platform identity into preset apply argv."""
     errors: list[str] = []
-    try:
-        available_platforms = set(_provenance_platform_inventory(manifest))
-    except WorkflowError:
-        raise
+    available_platforms = set(_provenance_platform_inventory(manifest))
     selected_by_locator: dict[str, list[str]] = {}
     for object_name in ("install", "skill_packages", "overlays"):
         container = manifest.get(object_name) if isinstance(manifest, dict) else None
