@@ -24,15 +24,14 @@ check 与完整 committed-range Branch Review 均已重新绑定并通过。精�
 
 - 本文件创建和 promotion 时只完成 task planning 与 contribution authoring；当时
   `T452-01..12` 均为 `not_executed`。该状态是历史快照，不能覆盖下面的当前执行事实。
-- 当前 Requirements/Design/Test authority 为 `current-main-0.6.17-guru.58/active`；`.57` 是 immutable predecessor，Architecture shared current 保持 `current-main-0.6.17-guru.57/active`，#452 Architecture contribution 仍按 reviewed-candidate 边界管理。
+- 当前 Requirements/Design/Test authority 与 Architecture shared current 均为 `current-main-0.6.17-guru.58/active`；`.57` 是 immutable predecessor，#452 Architecture contribution 已完成 expected-current-bound serialized promotion，状态为 `reviewed_promoted`。
 - `T452-01..11 = passed`：managed-runtime installer `83`、upgrade contract `73`、
   transaction `14`、native-load `5`、throwaway Python routing `44`、platform inventory
   `11`、upstream ownership `8` 项测试通过；Finalizer provenance `21/21` 通过；dogfood
   drift、manifest/ownership parity、package-private `tests/` 排除、默认
   `claude,codex,cursor` selection、显式 OpenCode `1.18.30` actual-load 与 focused
   clean/update/reapply 均通过。
-- `T452-12 = passed`：fresh Architecture/RDT、Phase 2、task validation、Task Commit
-  和独立完整 committed-range Branch Review 均已通过。Branch Review 的正式三层结果为
+- `T452-12 = passed`：#452 promotion 后的 fresh Architecture/RDT、Phase 2、task validation、Task Commit、独立完整 committed-range Branch Review 与 publication-stage Architecture 复核均已通过。Branch Review 的正式三层结果为
   Architecture `baseline_current`、review gate `owner_checkpoint_validated/passed`、
   public wrapper `passed`，范围为当前 `origin/main...HEAD` 完整 committed range。
   原 `BR452-FINALIZER-PLATFORM-INVENTORY` finding 已闭合；上一轮实现 HEAD 的
