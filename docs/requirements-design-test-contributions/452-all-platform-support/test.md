@@ -1,9 +1,9 @@
 # #452 All Platform Support Test contribution
 
 状态：`reviewed_promoted`。`T452-01..12` 已成为 `.58` current acceptance authority。
-截至 2026-09-20，当前 Task Commit `57878ce8dee251e5b3f2b0a2409d6169e527e533`
-已完成；fresh Architecture/RDT、Phase 2、task check 与完整 committed-range Branch
-Review 均已重新绑定并通过。脚本结果不替代 Architecture/RDT semantic gate。
+截至 2026-09-20，当前 Task Commit 已完成；fresh Architecture/RDT、Phase 2、task
+check 与完整 committed-range Branch Review 均已重新绑定并通过。精确 reviewed HEAD
+由当前 runtime gate 与 Git 提供；脚本结果不替代 Architecture/RDT semantic gate。
 
 | Test | 场景与计划通过条件 |
 | --- | --- |
@@ -34,8 +34,7 @@ Review 均已重新绑定并通过。脚本结果不替代 Architecture/RDT sema
 - `T452-12 = passed`：fresh Architecture/RDT、Phase 2、task validation、Task Commit
   和独立完整 committed-range Branch Review 均已通过。Branch Review 的正式三层结果为
   Architecture `baseline_current`、review gate `owner_checkpoint_validated/passed`、
-  public wrapper `passed`，范围为
-  `origin/main@361da96327824503ffb4fb4189291b3b9b4e23ae...HEAD@57878ce8dee251e5b3f2b0a2409d6169e527e533`。
+  public wrapper `passed`，范围为当前 `origin/main...HEAD` 完整 committed range。
   原 `BR452-FINALIZER-PLATFORM-INVENTORY` finding 已闭合；上一轮实现 HEAD 的
   targeted evidence 不再作为当前 Branch Review 通过依据。Publication、Finalizer、
   push/PR、merge 属于后续 owner，不在本次测试 evidence 中宣称已执行。#434 graph 未激活，
