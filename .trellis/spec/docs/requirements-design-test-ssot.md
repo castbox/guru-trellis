@@ -7,8 +7,8 @@
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
-- Architecture inheritance：`docs/architecture/README.md`，`current-main-0.6.17-guru.57` / `active`
-- source binding：reviewed #452 contribution + inherited immutable `current-main-0.6.17-guru.57` authority；current registry 32 packages / 142 exits / 102 commands，production workflow保持22 mandatory invokes / 98 exits，fixed Fork source 为 `43fffc170927c85d9f7fc106cc5a059e80d4530b`。平台 authority 只有 pinned upstream `AI_TOOLS` 完整 inventory 与目标仓库 manifest/provenance 的 exact selected set 两层；无参数新安装及 guru-trellis dogfood 使用 Claude/Codex/Cursor，OpenCode 是普通 upstream member。`guru-bind-task-session`为active/deferred；#434独占production graph activation，#410 Release Gate matrix保持unverified。
+- Architecture inheritance：`docs/architecture/README.md`，`current-main-0.6.17-guru.58` / `active`
+- source binding：reviewed #452 contribution + inherited immutable `current-main-0.6.17-guru.57` authority promoted to `current-main-0.6.17-guru.58`；current registry 32 packages / 142 exits / 102 commands，production workflow保持22 mandatory invokes / 98 exits，fixed Fork source 为 `43fffc170927c85d9f7fc106cc5a059e80d4530b`。平台 authority 只有 pinned upstream `AI_TOOLS` 完整 inventory 与目标仓库 manifest/provenance 的 exact selected set 两层；无参数新安装及 guru-trellis dogfood 使用 Claude/Codex/Cursor，OpenCode 是普通 upstream member。`guru-bind-task-session`为active/deferred；#434独占production graph activation，#410 Release Gate matrix保持unverified。
 
 ## 读取与更新
 

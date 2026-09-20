@@ -94,6 +94,12 @@
   使用同一package bytes；workflow integration保持deferred，#434 activation前不得把任何binding route解释为
   production可达。#443历史证据只绑定其当时声明的平台，OpenCode由当前#452 combined diff独立验证。
 
+- `ARCH-INT-023`：#452 将平台分发收敛为 upstream inventory 与 target-installed selection 两层；installer
+  使用可重复 `--platform`，无参数新安装和 guru-trellis dogfood 使用 Claude/Codex/Cursor，upgrade/reapply
+  从目标 manifest/provenance 保留 exact selection。canonical 22-platform descriptors 不等于 dogfood overlay
+  数量；OpenCode 的 `.opencode` native projection 只在显式选择时安装并由 representative actual-load 验证，
+  package-private `tests/` 不进入任何 public projection。
+
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。
 - `skill_api` 与 interface/schema/command projection、distribution、managed/installed file

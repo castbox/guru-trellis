@@ -3,11 +3,11 @@
 ## Identity And Authority Boundary
 
 - candidate identity: `architecture-contribution-452-all-platform-projection-v1`.
-- lifecycle state: `reviewed_candidate`; shared current remains `current-main-0.6.17-guru.57` until independent committed-range review and serialized Architecture promotion.
+- lifecycle state: `reviewed_promoted`; shared current is `current-main-0.6.17-guru.58` after expected-current-bound serialized Architecture promotion.
 - source authority: live Issue #452 plus superseding platform-contract comment `issuecomment-5748684130`; `issuecomment-5747785875` is superseded for `--all-platforms` semantics.
 - task locator: `.trellis/tasks/09-20-452-all-platform-support`.
 - related RDT contribution: `docs/requirements-design-test-contributions/452-all-platform-support/`.
-- expected baseline: `docs/architecture/README.md` / `current-main-0.6.17-guru.57` / `active`.
+- source/expected baseline: `docs/architecture/README.md` / predecessor `current-main-0.6.17-guru.57` / `active`; promoted successor `current-main-0.6.17-guru.58` / `active`.
 - design constitution: `docs/architecture/00-foundation/design-constitution.md` / content identity `9f6100720327ad1f9a7f438bc829d568dfe71b368ae1c3fc184e2d26f8ac470b` / `current`.
 - project change contract: `docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1` / concern set `guru-trellis-architecture-change-concerns-v1`.
 - Guru contract: `guru-maintain-architecture-baseline:2.0`.
@@ -185,10 +185,10 @@ long-lived tradeoff, exception, dual writer or compatibility layer.
 
 ## Review And Promotion
 
-- review: `pending`; independent committed range is not yet available;
-- promotion: `required`; expected current identity is
-  `current-main-0.6.17-guru.57`;
-- promotion target identity is `current-main-0.6.17-guru.58`; the serialized
-  owner must still verify expected current `.57` before writing shared authority;
+- review: `reviewed`; independent committed range is
+  `origin/main@361da96327824503ffb4fb4189291b3b9b4e23ae...HEAD@b4b4ebfdd29188a36866fd832b65cc6438420acf`;
+- promotion: `reviewed_promoted`; expected current identity was
+  `current-main-0.6.17-guru.57` and promoted current identity is
+  `current-main-0.6.17-guru.58`;
 - any promotion-created diff must re-enter fresh Phase 2, Task Commit and
   independent complete-range Branch Review before Publication.

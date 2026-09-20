@@ -1,6 +1,6 @@
 # 当前测试策略
 
-当前 .58 来源：immutable predecessor `current-main-0.6.17-guru.57` 与 reviewed #452 contribution；上游仍为 `castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b` / CI `35190729418` / CLI/core `0.6.17`，Guru manifest 与 release target 沿用 predecessor。Architecture public inheritance 仍为 `docs/architecture/README.md` / `current-main-0.6.17-guru.57` / `active`。
+当前 .58 来源：immutable predecessor `current-main-0.6.17-guru.57` 与 reviewed #452 contribution；上游仍为 `castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b` / CI `35190729418` / CLI/core `0.6.17`，Guru manifest 与 release target 沿用 predecessor。Architecture public inheritance 为 `docs/architecture/README.md` / `current-main-0.6.17-guru.58` / `active`。
 完整继承 immutable `.57` 业务合同，当前增量为 #452 两层平台 authority 与安装选择合同；本 promotion 只建立 current acceptance authority，不证明实现或测试执行。
 
 `.58` 完整继承 `.57`，吸收 reviewed #452 contribution；RDT current 为 `.58/active`，Architecture inheritance 保持 `.57/active`。promotion 时 `T452-01..12` 全部为 `not_executed`。截至 2026-09-20，fresh implementation evidence 已使 `T452-01..11` 通过，`T452-12` 为 `in_progress`；Task Commit、完整 Branch Review 和后续门禁仍须独立完成。
@@ -400,7 +400,8 @@ production graph activation。完整多平台 Release/upgrade matrix 仍为 `unv
 ## #452 当前验收策略
 
 `T452-01..12` 是 `.58/active` 的 current acceptance authority。promotion 时均为
-`not_executed`；2026-09-20 fresh implementation validation 后的 current state 如下：
+`not_executed`，这是历史快照而非当前结果；截至 2026-09-21，fresh implementation
+validation、Architecture/RDT 与 Phase 2 后的 current state 如下：
 
 | ID | Current acceptance condition | 当前状态 |
 | --- | --- | --- |

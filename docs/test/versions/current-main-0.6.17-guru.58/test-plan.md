@@ -1,6 +1,6 @@
 # 当前测试计划与证据
 
-当前 .58 来源：immutable predecessor `current-main-0.6.17-guru.57` 与 reviewed #452 contribution；上游仍为 `castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b` / CI `35190729418` / CLI/core `0.6.17`，Guru manifest 与 release target 沿用 predecessor。Architecture public inheritance 仍为 `docs/architecture/README.md` / `current-main-0.6.17-guru.57` / `active`。
+当前 .58 来源：immutable predecessor `current-main-0.6.17-guru.57` 与 reviewed #452 contribution；上游仍为 `castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b` / CI `35190729418` / CLI/core `0.6.17`，Guru manifest 与 release target 沿用 predecessor。Architecture public inheritance 为 `docs/architecture/README.md` / `current-main-0.6.17-guru.58` / `active`。
 完整继承 immutable `.57` 业务合同，当前增量为 #452 两层平台 authority 与安装选择合同；本 promotion 只建立 current acceptance authority，不证明实现或测试执行。
 
 `.58` 完整继承 `.57`，吸收 reviewed #452 contribution；RDT current 为 `.58/active`，Architecture inheritance 保持 `.57/active`。promotion 时 `T452-01..12` 全部为 `not_executed`。截至 2026-09-20，fresh implementation evidence 已使 `T452-01..11` 通过，`T452-12` 为 `in_progress`；promotion-created diff 仍须完成 fresh Phase 2、Task Commit 与完整 Branch Review 后才能进入 Publication。
@@ -357,7 +357,8 @@ source/installed/platform、preset reapply、ownership、dogfood drift与普通I
 来源为 reviewed [#452 test contribution](../../../requirements-design-test-contributions/452-all-platform-support/test.md)
 及其 [traceability](../../../requirements-design-test-contributions/452-all-platform-support/traceability.md)。
 `.58` 将 `T452-01..12` 提升为 current acceptance authority。promotion 时十二项全部为
-`not_executed`；2026-09-20 fresh implementation evidence 更新后的 current state 如下：
+`not_executed`，这是历史快照而非当前结果；截至 2026-09-21，fresh implementation
+evidence、Architecture/RDT 与 Phase 2 更新后的 current state 如下：
 
 | Test | Current state | Required fresh proof |
 | --- | --- | --- |

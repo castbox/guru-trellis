@@ -2,7 +2,7 @@
 
 状态：`reviewed_promoted`。本文件已由受控 RDT promotion 提升到
 `current-main-0.6.17-guru.58`；`.57` 为 immutable predecessor，
-Architecture shared current 仍为 `.57/active`。实现与验证尚未完成。
+Architecture shared current 为 `.58/active`。实现与验证尚未完成。
 
 - `R452-01`：平台 authority 只能包含两层：由固定 Trellis source identity 绑定的 upstream `AI_TOOLS` 完整平台集合，以及目标业务仓库 installed manifest/provenance 记录的 exact selected platform set。不得新增 Guru-supported、dogfood-supported、deferred 或 unsupported 中间集合。
 - `R452-02`：upstream inventory 的 canonical `AITool` id、唯一 public `cliFlag`、template/root、native destination 与 entry form 必须来自 pinned `AI_TOOLS` registry 或其显式映射。当前 inventory cardinality 为 22；实现不得通过目录名、统一 overlay 数量或 ambient upstream checkout 猜测平台集合，也不得把 `claude-code` 与 `claude` 混为同一字段。

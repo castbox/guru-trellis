@@ -175,3 +175,18 @@ invokes / 98 exits。installed interface/runtime与canonical bytes一致；packa
 dogfood或representative throwaway gate，也不证明#434 production graph activation、完整Release matrix、生产binding、
 push、PR、远端merge、tag、Release或Issue closure mutation。promotion-created diff仍须fresh Phase 2、Task Commit与
 independent complete Branch Review后才能进入Publication。
+
+## EVD-033: #452 All-Platform Projection And Exact Selection Promotion
+
+本证据支撑 `ARCH-CUR-035`、`ARCH-DOM-020`、`ARCH-INT-023`、`ARCH-GAP-010` 以及
+`.57 -> .58` Architecture knowledge promotion。独立完整 Branch Review 绑定
+`origin/main@361da96327824503ffb4fb4189291b3b9b4e23ae...HEAD@b4b4ebfdd29188a36866fd832b65cc6438420acf`；
+Architecture contribution `architecture-contribution-452-all-platform-projection-v1` 已完成
+expected-current-bound serialized promotion。当前定向 evidence 覆盖 pinned 22-platform inventory、重复
+`--platform` 与旧参数拒绝、三平台默认/dogfood、manifest/provenance exact-selection upgrade、OpenCode
+representative actual-load、ownership/manifest/mode/parity、reapply/update/removal provenance、dogfood drift
+及 package-private `tests/` 排除；实现事实详见对应 RDT `.58` test contribution。
+
+本 evidence 不证明 #434 production graph activation、22-client native compatibility matrix、正式
+Release/tag/GitHub Release、业务生产升级、push、PR、merge 或 Issue closure；promotion-created diff 必须
+重新通过 fresh Phase 2、Task Commit 与 independent complete Branch Review。

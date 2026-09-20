@@ -1,9 +1,9 @@
 # Test Traceability
 
-当前 .58 来源：immutable predecessor `current-main-0.6.17-guru.57` 与 reviewed #452 contribution；上游仍为 `castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b` / CI `35190729418` / CLI/core `0.6.17`，Guru manifest 与 release target 沿用 predecessor。Architecture public inheritance 仍为 `docs/architecture/README.md` / `current-main-0.6.17-guru.57` / `active`。
+当前 .58 来源：immutable predecessor `current-main-0.6.17-guru.57` 与 reviewed #452 contribution；上游仍为 `castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b` / CI `35190729418` / CLI/core `0.6.17`，Guru manifest 与 release target 沿用 predecessor。Architecture public inheritance 为 `docs/architecture/README.md` / `current-main-0.6.17-guru.58` / `active`。
 完整继承 immutable `.57` 业务合同，当前增量为 #452 两层平台 authority 与安装选择合同；本 promotion 只建立 current acceptance authority，不证明实现或测试执行。
 
-`.58` 完整继承 `.57`，吸收 reviewed #452 contribution；RDT current 为 `.58/active`，Architecture inheritance 保持 `.57/active`。promotion 时 `T452-01..12` 全部为 `not_executed`。截至 2026-09-20，fresh implementation evidence 已使 `T452-01..11` 通过，`T452-12` 为 `in_progress`；Task Commit 与完整 Branch Review 仍未执行。
+`.58` 完整继承 `.57`，吸收 reviewed #452 contribution；RDT current 为 `.58/active`，Architecture inheritance 保持 `.57/active`。promotion 时 `T452-01..12` 全部为 `not_executed`，这是历史快照而非当前结果。截至 2026-09-21，fresh implementation evidence、Architecture/RDT 与 Phase 2 已使 `T452-01..11` 通过，`T452-12` 为 `in_progress`；Task Commit 与 promotion-created diff 的完整 committed-range Branch Review 仍未执行，上一轮实现 HEAD 的 targeted Branch Review 仅作为既有证据保留。
 
 | Strategy / Scenario | Requirements | Design | Evidence |
 | --- | --- | --- | --- |

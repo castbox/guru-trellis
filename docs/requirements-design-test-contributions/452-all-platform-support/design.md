@@ -2,8 +2,8 @@
 
 状态：`reviewed_promoted`。采用 `target_native`，已提升到
 `current-main-0.6.17-guru.58`；关联的 Architecture contribution
-`architecture-contribution-452-all-platform-projection-v1` 保持 `reviewed_candidate`，
-Architecture shared current 仍为 `.57/active`。以下设计尚待实现与验证。
+`architecture-contribution-452-all-platform-projection-v1` 已为 `reviewed_promoted`，
+Architecture shared current 为 `.58/active`。以下设计尚待实现与验证。
 
 - `D452-01`：preset 保存一个 pinned `upstream_platforms` inventory，记录 source identity、inventory identity/digest，以及每个平台的 canonical `AITool` id、唯一 public `cliFlag`、template/root、native destination、entry form 和 projection descriptor。inventory 当前完整 cardinality 为 22，解析器不从文件夹存在性推导平台能力。
 - `D452-02`：目标仓库 manifest/provenance 保存以 registry `cliFlag` 表示的排序、去重、非空 `selected_platforms`；每个值必须唯一映射回一个 `AITool` id。install、skill package、platform projection 与 ownership records 必须指向同一 exact selection；任何 section 缺失或不一致均 fail closed。

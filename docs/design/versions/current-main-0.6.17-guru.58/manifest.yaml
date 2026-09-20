@@ -16,4 +16,4 @@ registry_locator: trellis/skills/guru-team/registry.json
 active_skill_count: 32
 external_exit_count: 142
 command_count: 102
-provenance: "code_recovered + reviewed #452 contribution + inherited immutable current-main-0.6.17-guru.57 authority; Architecture remains current-main-0.6.17-guru.57/active, production remains 22 invokes/98 exits, and knowledge promotion is not implementation, test, post-promotion gate, or release proof"
+provenance: "code_recovered + reviewed #452 contribution + inherited immutable current-main-0.6.17-guru.57 authority; Architecture is current-main-0.6.17-guru.58/active, production remains 22 invokes/98 exits, and knowledge promotion is not implementation, test, post-promotion gate, or release proof"

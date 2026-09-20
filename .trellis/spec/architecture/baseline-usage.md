@@ -3,7 +3,7 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.57`
+- version：`current-main-0.6.17-guru.58`
 - status：`active`
 - source binding：reviewed #443 contribution + inherited immutable `.56` authority；active registry 32 Skills / 142 package exits / 102 commands，production workflow仍为22 mandatory invokes / 98 exits；current增量见`ARCH-CUR-034` / `ARCH-DOM-019` / `ARCH-INT-022` / `ARCH-GAP-009` / `ADR-014`。#443 package保持deferred，#434独占production graph activation；Release matrix未验证。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`

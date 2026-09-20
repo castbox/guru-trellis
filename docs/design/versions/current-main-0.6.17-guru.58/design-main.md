@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-当前 .58 来源：`castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b` / CI `35190729418` / CLI/core `0.6.17`；Guru manifest `0.6.17-guru.42`；repository release target `v0.6.17-guru.1`。Architecture public inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.57` / `active`。
+当前 .58 来源：`castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b` / CI `35190729418` / CLI/core `0.6.17`；Guru manifest `0.6.17-guru.42`；repository release target `v0.6.17-guru.1`。Architecture public inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.58` / `active`。
 完整继承 immutable `.57` 业务合同，当前增量为 #452；当前 registry 为 32 packages / 142 exits / 102 commands，production workflow 保持 22 mandatory invokes / 98 exits。
 
 `.58` 完整继承 `.57`，吸收 reviewed #452 contribution；RDT current 为 `.58/active`，Architecture inheritance 仍为 `.57/active`。promotion-created diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review 后才能进入 Publication；本文不声明实现、测试或下游门禁已通过。

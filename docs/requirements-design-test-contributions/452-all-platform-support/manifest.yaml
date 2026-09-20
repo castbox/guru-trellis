@@ -13,6 +13,6 @@ contribution:
   traceability: "docs/requirements-design-test-contributions/452-all-platform-support/traceability.md"
 architecture_baseline:
   locator: "docs/architecture/README.md"
-  version: "current-main-0.6.17-guru.57"
+  version: "current-main-0.6.17-guru.58"
   status: "active"
 architecture_contribution: "docs/architecture/contributions/452-all-platform-projection.md"

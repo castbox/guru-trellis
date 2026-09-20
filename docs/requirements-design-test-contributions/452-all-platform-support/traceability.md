@@ -2,7 +2,7 @@
 
 状态：`reviewed_promoted`。当前 shared RDT 为
 `current-main-0.6.17-guru.58/active`；`.57` 是 immutable predecessor，Architecture
-shared current 仍为 `.57/active`。本 contribution 已 promotion，但尚未实现或验证。
+shared current 为 `.58/active`。本 contribution 已完成 paired promotion，但尚未实现或验证。
 
 ## Requirement to design and test
 
@@ -52,5 +52,5 @@ shared current 仍为 `.57/active`。本 contribution 已 promotion，但尚未�
 | `T452-12` | `R452-10` | `D452-10` |
 
 Architecture candidate reference：`architecture-contribution-452-all-platform-projection-v1`，状态为
-`reviewed_candidate`。RDT promotion、Architecture promotion、implementation evidence 与测试执行是
+`reviewed_promoted`。RDT promotion、Architecture promotion、implementation evidence 与测试执行是
 不同门禁；不得把 `reviewed_promoted` 解释为实现完成、Architecture shared-current write 或测试 PASS。
