@@ -427,7 +427,7 @@ association close与session invalidation均尚未开始。Freshness通过后才�
 | Stage evidence currentness | invocation-time derivation from each owner result + live identity | TaskLifecycleKey + slot | each named producer owns only its slot | generic evidence bundle、cross-slot pass inference |
 | Completion result | owner result/checkpoint + terminal archive projection | TaskLifecycleKey | `guru-review-task-completion` | Delivery result |
 | Closure result | owner result/checkpoint + terminal archive projection | TaskLifecycleKey | `guru-complete-task-closure` | task source disposition |
-| Finish result | tracked terminal archive summary + local cleanup seal | TaskLifecycleKey | `guru-finish-task` | archive presence alone |
+| Finish result | tracked terminal archive summary + sealed generation resource inventory | TaskLifecycleKey | `guru-finish-task` | archive presence alone or Cleanup result |
 | Cleanup result | ignored local cleanup result | TaskLifecycleKey + resource id | `guru-cleanup-task-resources` | branch absence inference |
 | Checkout path/topology | live Git only | current invocation | Checkout resolver | any durable locator |
 | HEAD/base HEAD/cleanliness | live Git/GitHub only | current operation | calling owner | task/session/ledger general freshness |
