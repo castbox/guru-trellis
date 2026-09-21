@@ -862,12 +862,12 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-21T16:46:14Z",
+  "installed_at": "2026-09-21T19:47:20Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "2c66652d57ac99c22e209bf41f0e44282dbfc0a3",
-    "commit": "2c66652d57ac99c22e209bf41f0e44282dbfc0a3",
-    "tree_state": "clean",
+    "ref": "936c1590e1a322c5d2bc0085ecc22278076cd740",
+    "commit": "936c1590e1a322c5d2bc0085ecc22278076cd740",
+    "tree_state": "dirty",
     "is_mutable_ref": false
   },
   "install": {
@@ -1031,7 +1031,7 @@
       {
         "id": "guru-create-task-workspace",
         "interface_sha256": "70899f31bed7681d1b8cceedd972f102d395d1af5403a1a1da585129f787b02d",
-        "tree_sha256": "a8992b847619a14c316b5319b8cd418720ed8f40cb60e483b266740b4e05ebad"
+        "tree_sha256": "36f9588527ed70476ab80e66c8ba414d27c20d438b24583b61d8561b5d613817"
       },
       {
         "id": "guru-create-task-commit",
@@ -3553,7 +3553,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/common.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/common.py",
-        "sha256": "1ff43c46608fe0fd1437bb3e9d7749fab8167fd535a3bfe0aeb46cec81c9d885",
+        "sha256": "94867b729cb2816981e1aa545c2dd1cc68d96f545044ec0c456fe0db32f29abc",
         "executable": false,
         "action": "unchanged"
       },
@@ -3665,7 +3665,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
-        "sha256": "63b0ece2fae989016161ddeda0da80492d3ec7f829ddcd1e768ce6d1bf95c13d",
+        "sha256": "23d0ff02c1ea196d60417538b7d855fa2075b70ede4ac842386613d6f6350e6d",
         "executable": false,
         "action": "unchanged"
       },
