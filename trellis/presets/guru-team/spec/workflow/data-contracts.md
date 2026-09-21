@@ -1928,3 +1928,26 @@ reactivation mutation and cannot seed Cleanup.
 `task.json`、task artifact locator、live Git/worktree、repository common dir 与既有 task/workspace mappings 继续构成 task/workspace identity authority。`guru-bind-task-session` 只能在这些 facts 与当前 Trellis session context 完全一致时，通过官方 `active_task`/`session_storage` writer 建立当前 session binding；它不写入重复的 `.trellis/.runtime/guru-team/session-bindings/` projection，不进入 tracked task artifact、Issue ledger、授权记录或 public DTO。Base HEAD 只属于 Base Reconcile、Review 与 Publication 等具体操作的 fresh evidence，不属于 task/workspace/session identity；legacy `base_head` 不参与 binding validation，manual recovery 也不再写入该字段。
 
 binding 丢失时，`rebind_missing_session` 重新读取同一 task identity；同一合法 binding 重试幂等，任一 task、repository、workspace、branch、mapping、session 或 lifecycle mismatch zero-write fail closed。Target base 演进不会使 session binding 失效，由对应操作 owner fresh读取并处理 base evolution。Reactivate 的新 `lifecycle_generation` 使旧 binding 失效；Finish/Cleanup receipt 仍由各自 owner 校验。创建期 attach 继续由 `guru-create-task-workspace` owner 负责，#434 后续消费 binding typed exits，不复制 resolver/store。
+
+## Task Lifecycle Substrate Candidate (#454 C2)
+
+Task lifecycle 的 canonical shared contract 位于
+`trellis/skills/guru-team/contracts/task-lifecycle/task-lifecycle-dtos.schema.json`。它是 Draft 2020-12
+catalog；consumer 必须选择一个 named `$defs/*DTO`，不得把 catalog 顶层 `oneOf` 当作任意 public output。
+
+稳定 `TaskId`、可变 `TaskRef` 与 `lifecycle_generation` 是三类独立事实。`TaskId` 使用
+`[A-Za-z0-9][A-Za-z0-9._-]*`、精确字节比较，并在 repository inventory 中额外拒绝 case-fold collision；
+active rename、archive locator move 与 Reactivate 均不改变 TaskId。Legacy task 缺失 generation 时读取为 `0`，
+但 boolean、负数、浮点、字符串与 null 均非法。`TaskLifecycleKey` 只由 TaskId 与 generation 组成，TaskRef 不参与
+相等性。
+
+Source relation 是封闭的 `IssueSource | NoIssueSource`；Delivery target 只保存 portable `repo_ref + branch_ref`。
+Checkout path、workspace path、session identity、authorization、generic evidence bundle、resource list 与通用 Git
+snapshot 不进入 public DTO。Operation-specific commit/head 字段只允许出现在 catalog 已声明且具有直接 consumer
+的 named DTO；它们不形成 tracked task、session 或跨阶段通用 authority。
+
+Fork `castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296` 独占 immutable `task.json.id`、generation、
+TaskId-to-TaskRef resolution 与 path-free session primitive。Guru runtime 只读取并验证这些 official primitives；
+不得复制 `.trellis/scripts/common/**`、创建 durable identity index、第二 session store、mapping compatibility reader、
+alias、dual-read 或 dual-write。该 catalog 与 runtime 当前只是 C2 substrate candidate；package registration、workflow
+edge、active manifest、installed/platform projection 和 production activation 仍由后续 owner 独立完成。
