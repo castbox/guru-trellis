@@ -68,12 +68,13 @@ dialogue-local and is never persisted.
 
 ## Integrated Public Graph
 
-The current package registry contains exactly 23 active Skill ids and 100
-external exits. Twenty-two Skills participate in the business-task workflow,
-whose global graph contains 22 mandatory invokes, 98 mapped exits, 35 workflow
-targets, and 24 stop targets. `guru-verify-extension-installation` is the remaining
-standalone-only source-repository Skill; its two exits return directly to its
-caller-owned stop targets and never appear in the business workflow.
+The current package registry contains exactly 32 active Skill ids, 142 external
+exits, and 102 commands. Twenty-two mandatory Skill invocations participate in
+the business-task workflow, whose global graph contains 98 mapped exits, 35
+workflow targets, and 24 stop targets. Nine additional active packages remain
+deferred capability owners, and `guru-verify-extension-installation` remains the
+standalone-only source-repository Skill; none of those ten packages activates a
+new business-workflow edge before the owning lifecycle change.
 
 | Skill | Typed exit -> unique consumer |
 | --- | --- |
@@ -534,9 +535,12 @@ an incomplete contract and stops instead of falling back to native routes.
 
 Mandatory Guru routing is guaranteed by the active workflow markers and
 installed `guru-*` packages. Platform discovery copies are generated only under
-Guru namespaces. The only explicit platform overlays are the three Guru-owned
-`guru-finish-work` entries for Codex, Claude, and Cursor; they load live context,
-read this workflow, invoke the active owners, and contain no step-local logic.
+Guru namespaces. The canonical overlay inventory contains one descriptor-bound
+`guru-finish-work` entry for each of the 22 pinned upstream platforms. A target
+installs only its exact manifest-selected entries; the guru-trellis dogfood set
+is Claude, Codex, and Cursor, while OpenCode remains explicitly selectable.
+Every installed entry loads live context, reads this workflow, invokes the
+active owners, and contains no step-local logic.
 
 ## Validation
 
@@ -551,9 +555,10 @@ trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 
 Combined acceptance also covers clean marketplace init, existing-project
 preview/switch, preset initial apply/reapply, official `trellis update`, version
-upgrade, Shared/Codex/Claude/Cursor discovery, managed hashes, `.new`/`.bak`,
-current ownership/installed-manifest validation, executable modes, README
-commands, and a recursive zero-sidecar scan.
+upgrade, the complete descriptor inventory and canonical projections, exact
+manifest-selected discovery roots, three-platform dogfood drift, managed hashes,
+`.new`/`.bak`, current ownership/installed-manifest validation, executable
+modes, README commands, and a recursive zero-sidecar scan.
 
 ## Active-Task Base Evolution Boundaries
 

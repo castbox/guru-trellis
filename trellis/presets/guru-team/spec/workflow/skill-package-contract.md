@@ -106,7 +106,8 @@ workflow/standalone preconditions before a package command can run.
 ### 0. Current Interface And Registry Contract
 
 Issue #180 activated the historical fifteen-package/57-exit graph. The current
-Registry 1.4 graph contains twenty-three active packages and 100 package exits while
+Registry 1.4 graph contains 32 active packages, 142 package exits, and 102
+commands while
 retaining older Interface/Registry assets as immutable legacy contracts.
 `guru-merge-task-pr` is a current semantic package with exactly
 `merged`, `merge_blocked`, `phase2_reentry_required`, `closure_mismatch`, and
@@ -146,8 +147,9 @@ post-merge read-only validation. A terminal projection retires the merge gate.
 Neither Finalizer nor Merge calls Issue-close APIs, enters Phase 0, invokes base
 sync, updates the PR branch, synchronizes local `main`, or cleans resources.
 
-Nineteen integrated packages select Interface 1.4.
-`guru-qualify-normal-scenario` selects Interface 1.6,
+Twenty-eight active packages select Interface 1.4.
+`guru-create-task-workspace`, `guru-qualify-normal-scenario`, and
+`guru-qualify-solution-mechanism` select Interface 1.6;
 `guru-verify-extension-installation` selects Interface 1.5, and the latter has
 `workflow_integration_state=standalone_only`. Registry schema
 `guru-team-skill-registry-1.4` is the exact current selector; planned rows remain
@@ -158,7 +160,7 @@ The validator selects the interface schema from the registry row. It must not
 guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes one `interface_schema_id`, the registry id,
 and exact public-input, typed-output, and private-artifact schema inventories
-for all twenty-three active packages and their 100 external exits. The
+for all 32 active packages and their 142 external exits. The
 `production-current-v4` is the sole current manifest and contains exactly four
 packages and 15 exits, including `guru-qualify-normal-scenario`; additive
 activation of other packages, including `guru-finalize-task`, does not rewrite
@@ -767,8 +769,8 @@ Active closure is derived from the live registry, the production current
 manifest, and every complete active Interface 1.4 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
-The current package cardinality assertion is twenty-three active Skills and 100
-exits. The integrated business workflow projection contains 22 invoke markers,
+The current package cardinality assertion is 32 active Skills, 142 exits, and
+102 commands. The integrated business workflow projection contains 22 invoke markers,
 98 exit markers, 35 workflow-target markers, and 24 stop-target markers. Missing,
 extra, duplicate, renamed, unknown, partially activated, or
 case-mismatched entries fail closed.
@@ -1609,9 +1611,10 @@ request and records path/content identity, wrapper argv/return code, and
 normalized stdout/stderr identity. Only a complete receipt whose wrapper stdout
 matches the returned typed DTO may produce trace invariants. A valid DTO with
 no verified wrapper receipt is `execution_error`, not behavior success. The
-projection physically omits `evals/` and private runtime source; four-platform
-negative execution proves direct reads through received package/context
-locators fail at that boundary rather than relying on prompt instructions.
+projection physically omits `evals/` and private runtime source; each declared
+native adapter's negative execution proves direct reads through received
+package/context locators fail at that boundary rather than relying on prompt
+instructions. This adapter evidence is not a 22-client native matrix.
 
 Every writable run result lives below an explicit absolute temporary run root
 outside the repository and package. Closed evidence is diagnostic comparison
@@ -1857,8 +1860,8 @@ aggregate input schema `guru-finalize-task-input-aggregate-6.0`. Aggregate
 fresh Publication invocation. No alias, task-local fallback, compatibility
 reader, or migration executor is part of the current contract.
 
-The current additive activation set contributes to the live closure of twenty-three
-active Skills and 100 exits. The production current manifest contains exactly
+The current additive activation set contributes to the live closure of 32
+active Skills, 142 exits, and 102 commands. The production current manifest contains exactly
 four Skills and 15 exits.
 
 ## Extension Installation Verification Owner
@@ -1872,8 +1875,8 @@ intent from a clean `castbox/guru-trellis` source checkout.
 
 `guru-execute-task-free-change` remains an active package and integrated
 business-workflow owner. Together with `guru-qualify-normal-scenario`, the
-current graph closes at 100 package exits and 98 workflow exits without changing
-the four-package production-current manifest. Its two post-write expansion exits
+current graph closes at 142 package exits, 102 commands, and 98 workflow exits
+without changing the four-package production-current manifest. Its two post-write expansion exits
 require owner-private evidence for a real partial edit, the discovered
 scope/risk expansion, immediate stop, remaining target writes not performed,
 and applicable targeted checks. Its `completed` DTO and workflow consumer carry
@@ -2049,4 +2052,4 @@ projection of package-private helpers.
 
 ### Session binding capability boundary (#443)
 
-`guru-bind-task-session` 是 deferred public capability package，拥有 session binding/rebind/switch/resume 的 semantic route、deterministic identity validation 与五个 typed exits。它复用官方 Trellis `active_task`/`session_storage` authority，不创建 alternate task resolver、重复 session binding store、global lifecycle store、Issue ledger 或 workspace/developer state。#434 只消费其最小 route projection，并在独立 cutover 中决定 global graph activation。
+`guru-bind-task-session` 是 deferred public capability package，拥有 session binding/rebind/switch/resume/manual recovery 的 semantic route、deterministic identity validation、五个成功 typed exits 与一个 blocked exit。它复用官方 Trellis `active_task`/`session_storage` authority，不创建 alternate task resolver、重复 session binding store、global lifecycle store、Issue ledger 或 workspace/developer state。#434 只消费其最小 route projection，并在独立 cutover 中决定 global graph activation。

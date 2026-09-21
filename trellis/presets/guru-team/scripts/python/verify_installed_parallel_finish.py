@@ -181,6 +181,15 @@ def copy_installed_repository(installed_repo: Path, target: Path) -> None:
 
 
 def prepare_clean_installed_repository(installed_repo: Path, work_root: Path) -> Path:
+    preset_source = work_root / "clean-preset-source"
+    preset_source.mkdir()
+    copy_installed_repository(installed_repo, preset_source)
+    run(("git", "init", "-q", "-b", "main", str(preset_source)), work_root)
+    configure_repo(preset_source)
+    git(preset_source, "remote", "add", "origin", "https://github.com/castbox/guru-trellis.git")
+    git(preset_source, "add", ".")
+    git(preset_source, "commit", "-q", "-m", "chore: stage clean preset source")
+
     source = work_root / "clean-installed-source"
     source.mkdir()
     copy_installed_repository(installed_repo, source)
@@ -190,11 +199,35 @@ def prepare_clean_installed_repository(installed_repo: Path, work_root: Path) ->
     git(source, "add", ".")
     git(source, "commit", "-q", "-m", "chore: stage clean installed candidate")
     apply_script = (
-        source
+        preset_source
         / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"
     )
     if not apply_script.is_file():
         raise ParallelFinishError("clean installed source has no preset installer")
+    first_apply = json.loads(
+        run(
+            (
+                sys.executable,
+                str(apply_script),
+                "--repo",
+                str(source),
+                "--platform",
+                "codex",
+                "--json",
+            ),
+            source,
+        ).stdout
+    )
+    if (
+        first_apply.get("status") != "ok"
+        or first_apply.get("skill_packages", {}).get("sidecars") != []
+        or first_apply.get("overlays", {}).get("sidecars") != []
+    ):
+        raise ParallelFinishError("clean installed candidate staging did not pass")
+    if git(source, "status", "--short"):
+        git(source, "add", ".")
+        git(source, "commit", "-q", "-m", "chore: converge installed candidate")
+
     applied = json.loads(
         run(
             (
@@ -202,7 +235,6 @@ def prepare_clean_installed_repository(installed_repo: Path, work_root: Path) ->
                 str(apply_script),
                 "--repo",
                 str(source),
-                "--all-platforms",
                 "--json",
             ),
             source,
@@ -218,6 +250,11 @@ def prepare_clean_installed_repository(installed_repo: Path, work_root: Path) ->
         or extension.get("source", {}).get("tree_state") != "clean"
     ):
         raise ParallelFinishError("clean installed candidate preparation did not pass")
+    if git(source, "status", "--short"):
+        git(source, "add", ".")
+        git(source, "commit", "-q", "-m", "chore: stage clean installed candidate")
+    if git(source, "status", "--short"):
+        raise ParallelFinishError("clean installed candidate remains dirty")
     return source
 
 

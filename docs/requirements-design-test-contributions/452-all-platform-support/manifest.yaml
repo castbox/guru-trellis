@@ -1,0 +1,18 @@
+schema_version: "1.0"
+task_ref: "452-all-platform-support"
+task_locator: ".trellis/tasks/09-20-452-all-platform-support"
+issue_ref: "https://github.com/castbox/guru-trellis/issues/452"
+status: "reviewed_promoted"
+source_version: "current-main-0.6.17-guru.57"
+expected_current_version: "current-main-0.6.17-guru.57"
+target_version: "current-main-0.6.17-guru.58"
+contribution:
+  requirements: "docs/requirements-design-test-contributions/452-all-platform-support/requirements.md"
+  design: "docs/requirements-design-test-contributions/452-all-platform-support/design.md"
+  test: "docs/requirements-design-test-contributions/452-all-platform-support/test.md"
+  traceability: "docs/requirements-design-test-contributions/452-all-platform-support/traceability.md"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.58"
+  status: "active"
+architecture_contribution: "docs/architecture/contributions/452-all-platform-projection.md"

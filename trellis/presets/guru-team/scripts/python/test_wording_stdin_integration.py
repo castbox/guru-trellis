@@ -28,7 +28,7 @@ class WordingStdinIntegrationTests(unittest.TestCase):
             shutil.copytree(SOURCE / ".trellis/scripts", installed / ".trellis/scripts", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
             for phase in ("initial", "reapply"):
                 with self.subTest(phase=phase):
-                    applied = run_preset_install(installed, all_platforms=True)
+                    applied = run_preset_install(installed)
                     self.assertEqual(applied.returncode, 0, applied.stdout[-2500:] + applied.stderr)
                     self.assertEqual(list(installed.rglob("*.new")) + list(installed.rglob("*.bak")), [])
                     self.chain(installed, work / phase)

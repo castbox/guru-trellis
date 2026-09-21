@@ -44,10 +44,10 @@ one installation use the same immutable release tag; an unreleased reviewed
 checkout is identified as such and never described as tag-pinned release
 provenance. Unpinned or branch sources remain mutable latest/canary inputs.
 
-Current knowledge authority is `current-main-0.6.17-guru.55`, inheriting
-immutable `.54`; it is not a product release axis. Read the current
-`R435-01..08`, `D435-01..09`, and `T435-01..45` delta through the three layer
-READMEs. The inherited R410 release axes, R408 source/session boundary and older pins remain
+Current knowledge authority is `current-main-0.6.17-guru.58`, inheriting
+immutable `.57`; it is not a product release axis. Read the current
+`R452-01..10`, `D452-01..10`, and `T452-01..12` delta through the three layer
+READMEs. The inherited R443 session-binding authority, R410 release axes, R408 source/session boundary and older pins remain
 historical authority. Do not rewrite history or claim post-promotion checks,
 remote mutation, tag, GitHub Release, or Issue closure from this knowledge
 snapshot. Existing retired internal API cleanup and old lifecycle stay in force.
@@ -112,13 +112,17 @@ install/upgrade remediation, and list its installed executable path.
 
 All three public README files must describe the final ownership boundary:
 
-- ownership schema 3.0 contains exactly 11 anchored Guru-owned rules, nine
-  managed claims, and three additive overlay files;
+- ownership schema 4.0 contains exactly 22 platform descriptors, 43 derived
+  managed claims, and 22 descriptor-bound additive overlay files;
+- ownership rule, claim, and overlay-file cardinalities describe the current
+  ownership schema only. They do not define the upstream platform inventory,
+  the target repository selected platform set, or the guru-trellis dogfood set;
 - the preset never installs or managed-upgrades `trellis-start`,
   `trellis-continue`, `trellis-finish-work`, official hooks, agents, runtime
   agents, bundled skills, or Trellis meta references;
-- the overlay tree contains only the three Guru-owned `guru-finish-work`
-  entries;
+- the overlay tree contains exactly one Guru-owned `guru-finish-work` entry for
+  every pinned platform descriptor; each target installs only its exact
+  manifest-selected entries;
 - current managed upgrades use only the previous managed hash; unknown current
   edits are preserved with `.new`, and no unresolved `.new`/`.bak` may be
   reported as success;
@@ -332,9 +336,11 @@ docs must not claim it consumes the four-stage durable
 state that non-current artifact shapes fail current schema validation and must
 not claim that coverage flags, successful commands, worker output, or
 deterministic scripts can produce Guru pass.
-Install/update docs must describe additive registry distribution to
-shared/Codex/Cursor/Claude roots and explicitly preserve the upstream ownership
-inventory.
+Install/update docs must describe additive registry distribution to the shared
+root plus every selected registry-bound native platform root. They must keep
+the complete pinned upstream inventory distinct from the target repository's
+exact installed selection and from the Claude/Codex/Cursor no-flag default and
+guru-trellis dogfood selection.
 
 - `README.md` for install/upgrade and daily operation
 - `trellis/workflows/guru-team/README.md` for marketplace workflow behavior
@@ -552,7 +558,7 @@ or malformed matrix terminal output is explicit
 supplementary evidence. These facts are standalone-verifier-private and never
 enter Finalizer or business closeout DTOs.
 
-Install/update text requires canonical/installed/shared/Codex/Cursor/Claude byte
+Install/update text requires canonical/installed/shared/selected-native-platform byte
 identity, source and installed validation, real-wrapper eval, preset reapply
 after `trellis update`, dogfood drift, and zero unresolved `.new`/`.bak`. It
 distinguishes standalone source verification from business closeout and never

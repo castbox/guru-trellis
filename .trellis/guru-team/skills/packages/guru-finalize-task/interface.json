@@ -9,21 +9,72 @@
   "modes": {
     "workflow": {
       "routing": "global_workflow",
-      "entry_precondition_ids": ["runtime_dependency", "task_workspace", "task_identity", "publication_review", "transaction_inputs", "archive_contract", "invocation_freshness"]
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "task_workspace",
+        "task_identity",
+        "publication_review",
+        "transaction_inputs",
+        "archive_contract",
+        "invocation_freshness"
+      ]
     },
     "standalone": {
       "routing": "direct_discovery",
-      "entry_precondition_ids": ["runtime_dependency", "task_workspace", "task_identity", "publication_review", "transaction_inputs", "archive_contract", "invocation_freshness"]
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "task_workspace",
+        "task_identity",
+        "publication_review",
+        "transaction_inputs",
+        "archive_contract",
+        "invocation_freshness"
+      ]
     }
   },
   "entry_preconditions": [
-    {"id": "runtime_dependency", "evidence": "installed extension, dispatcher, active package, schemas and finalization commands", "binding": "complete current Guru Team preset", "freshness": "validated before each command"},
-    {"id": "task_workspace", "evidence": "portable task worktree or archived locator identity", "binding": "actual repository and task locator", "freshness": "rebuilt before preview, record and check"},
-    {"id": "task_identity", "evidence": "active, partially finalized or archived task identity", "binding": "task, branch, base, repository and branch_review_commit", "freshness": "current task and Git facts reread"},
-    {"id": "publication_review", "evidence": "guru-review-task-publication ready or archived_ready DTO after its workflow-owned Architecture stage", "binding": "task, branch_review_commit, exact pr_title/pr_body and reviewed_base_head for archived refresh", "freshness": "live reviewed-content continuity and Finalizer preview preflight; no producer-private checkpoint read"},
-    {"id": "transaction_inputs", "evidence": "Original profiles: Publication payload and immutable plan; archived_review_refresh: current A/B, derived H and no in-flight transaction", "binding": "profile-specific live Git/GitHub facts", "freshness": "original engine prevalidation or independent read-only archive validation"},
-    {"id": "archive_contract", "evidence": "Original profiles: official archive contract and hook preflight; archived_review_refresh: committed move/blob/metadata continuity at H and converged mappings", "binding": "exact task archive identity", "freshness": "before the original move or on every read-only refresh"},
-    {"id": "invocation_freshness", "evidence": "public profile, owner-private gate, objective plan identity, actual exit and consumer", "binding": "one current semantic finalization round", "freshness": "checker rereads objective transaction facts"}
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed extension, dispatcher, active package, schemas and finalization commands",
+      "binding": "complete current Guru Team preset",
+      "freshness": "validated before each command"
+    },
+    {
+      "id": "task_workspace",
+      "evidence": "portable task worktree or archived locator identity",
+      "binding": "actual repository and task locator",
+      "freshness": "rebuilt before preview, record and check"
+    },
+    {
+      "id": "task_identity",
+      "evidence": "active, partially finalized or archived task identity",
+      "binding": "task, branch, base, repository and branch_review_commit",
+      "freshness": "current task and Git facts reread"
+    },
+    {
+      "id": "publication_review",
+      "evidence": "guru-review-task-publication ready or archived_ready DTO after its workflow-owned Architecture stage",
+      "binding": "task, branch_review_commit, exact pr_title/pr_body and reviewed_base_head for archived refresh",
+      "freshness": "live reviewed-content continuity and Finalizer preview preflight; no producer-private checkpoint read"
+    },
+    {
+      "id": "transaction_inputs",
+      "evidence": "Original profiles: Publication payload and immutable plan; archived_review_refresh: current A/B, derived H and no in-flight transaction",
+      "binding": "profile-specific live Git/GitHub facts",
+      "freshness": "original engine prevalidation or independent read-only archive validation"
+    },
+    {
+      "id": "archive_contract",
+      "evidence": "Original profiles: official archive contract and hook preflight; archived_review_refresh: committed move/blob/metadata continuity at H and converged mappings",
+      "binding": "exact task archive identity",
+      "freshness": "before the original move or on every read-only refresh"
+    },
+    {
+      "id": "invocation_freshness",
+      "evidence": "public profile, owner-private gate, objective plan identity, actual exit and consumer",
+      "binding": "one current semantic finalization round",
+      "freshness": "checker rereads objective transaction facts"
+    }
   ],
   "runtime_dependency": {
     "extension_id": "guru-team",
@@ -33,135 +84,667 @@
     "distribution": "guru-team-preset",
     "package_portability": "not-self-contained"
   },
-  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
   "artifacts": [
-    {"id": "archived_refresh_authoring", "path": "examples/public-archived-review-refresh-authoring.json"},
-    {"id": "archived_review_refresh_input", "path": "examples/public-archived-review-refresh-input.json"},
-    {"id": "gate_example", "path": "examples/task-finalization-gate.json"},
-    {"id": "semantic_review_input", "path": "examples/semantic-review-input.json"},
-    {"id": "publication_ready_input", "path": "examples/public-publication-ready-input.json"},
-    {"id": "publication_ready_authoring", "path": "examples/public-publication-ready-authoring.json"},
-    {"id": "same_plan_resume_input", "path": "examples/public-same-plan-resume-input.json"},
-    {"id": "same_plan_resume_authoring", "path": "examples/public-same-plan-resume-authoring.json"},
-    {"id": "reprepare_preview_input", "path": "examples/public-reprepare-preview-input.json"},
-    {"id": "reprepare_preview_authoring", "path": "examples/public-reprepare-preview-authoring.json"},
-    {"id": "standalone_finalization_input", "path": "examples/public-standalone-finalization-input.json"},
-    {"id": "publication_review_stale_authoring", "path": "examples/public-publication-review-stale-authoring.json"},
-    {"id": "publication_review_stale_output", "path": "examples/public-publication-review-stale-output.json"},
-    {"id": "base_reconciliation_required_output", "path": "examples/public-base-reconciliation-required-output.json"},
-    {"id": "resume_finalization_output", "path": "examples/public-resume-finalization-output.json"},
-    {"id": "reprepare_required_output", "path": "examples/public-reprepare-required-output.json"},
-    {"id": "ready_for_merge_output", "path": "examples/public-ready-for-merge-output.json"},
-    {"id": "ready_for_merge_authoring", "path": "examples/public-ready-for-merge-authoring-2.0.json"},
-    {"id": "blocked_output", "path": "examples/public-blocked-output.json"},
-    {"id": "invocation_error", "path": "examples/public-invocation-error.json"},
-    {"id": "reviewed_content_identity_output_example", "path": "examples/reviewed-content-identity-output.json"}
-    ,{"id": "finalization_preview_example", "path": "examples/finalization-preview.json"}
+    {
+      "id": "archived_refresh_authoring",
+      "path": "examples/public-archived-review-refresh-authoring.json"
+    },
+    {
+      "id": "archived_review_refresh_input",
+      "path": "examples/public-archived-review-refresh-input.json"
+    },
+    {
+      "id": "gate_example",
+      "path": "examples/task-finalization-gate.json"
+    },
+    {
+      "id": "semantic_review_input",
+      "path": "examples/semantic-review-input.json"
+    },
+    {
+      "id": "publication_ready_input",
+      "path": "examples/public-publication-ready-input.json"
+    },
+    {
+      "id": "publication_ready_authoring",
+      "path": "examples/public-publication-ready-authoring.json"
+    },
+    {
+      "id": "same_plan_resume_input",
+      "path": "examples/public-same-plan-resume-input.json"
+    },
+    {
+      "id": "same_plan_resume_authoring",
+      "path": "examples/public-same-plan-resume-authoring.json"
+    },
+    {
+      "id": "reprepare_preview_input",
+      "path": "examples/public-reprepare-preview-input.json"
+    },
+    {
+      "id": "reprepare_preview_authoring",
+      "path": "examples/public-reprepare-preview-authoring.json"
+    },
+    {
+      "id": "standalone_finalization_input",
+      "path": "examples/public-standalone-finalization-input.json"
+    },
+    {
+      "id": "publication_review_stale_authoring",
+      "path": "examples/public-publication-review-stale-authoring.json"
+    },
+    {
+      "id": "publication_review_stale_output",
+      "path": "examples/public-publication-review-stale-output.json"
+    },
+    {
+      "id": "base_reconciliation_required_output",
+      "path": "examples/public-base-reconciliation-required-output.json"
+    },
+    {
+      "id": "resume_finalization_output",
+      "path": "examples/public-resume-finalization-output.json"
+    },
+    {
+      "id": "reprepare_required_output",
+      "path": "examples/public-reprepare-required-output.json"
+    },
+    {
+      "id": "ready_for_merge_output",
+      "path": "examples/public-ready-for-merge-output.json"
+    },
+    {
+      "id": "ready_for_merge_authoring",
+      "path": "examples/public-ready-for-merge-authoring-2.0.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "reviewed_content_identity_output_example",
+      "path": "examples/reviewed-content-identity-output.json"
+    },
+    {
+      "id": "finalization_preview_example",
+      "path": "examples/finalization-preview.json"
+    }
   ],
   "schemas": [
-    {"id": "archived_review_refresh_input", "path": "schemas/public-archived-review-refresh-input-1.0.schema.json"},
-    {"id": "archived_review_refresh_preview", "path": "schemas/archived-review-refresh-preview-1.0.schema.json"},
-    {"id": "current_gate_schema_alias", "path": "schemas/task-finalization-gate.schema.json"},
-    {"id": "current_gate_schema_5_0", "path": "schemas/task-finalization-gate-5.0.schema.json"},
-    {"id": "current_semantic_review_input_alias", "path": "schemas/semantic-review-input.schema.json"},
-    {"id": "current_semantic_review_input_3_0", "path": "schemas/semantic-review-input-3.0.schema.json"},
-    {"id": "publication_ready_input", "path": "schemas/public-publication-ready-input-4.0.schema.json"},
-    {"id": "same_plan_resume_input", "path": "schemas/public-same-plan-resume-input.schema.json"},
-    {"id": "reprepare_preview_input", "path": "schemas/public-reprepare-preview-input.schema.json"},
-    {"id": "standalone_finalization_input", "path": "schemas/public-standalone-finalization-input.schema.json"},
-    {"id": "aggregate_input", "path": "schemas/public-input-7.0.schema.json"},
-    {"id": "publication_review_stale_output", "path": "schemas/public-publication-review-stale-output.schema.json"},
-    {"id": "base_reconciliation_required_output", "path": "schemas/public-base-reconciliation-required-output.schema.json"},
-    {"id": "resume_finalization_output", "path": "schemas/public-resume-finalization-output.schema.json"},
-    {"id": "reprepare_required_output", "path": "schemas/public-reprepare-required-output.schema.json"},
-    {"id": "ready_for_merge_output", "path": "schemas/public-ready-for-merge-output.schema.json"},
-    {"id": "finalization_transaction", "path": "schemas/finalization-transaction.schema.json"},
-    {"id": "blocked_output", "path": "schemas/public-blocked-output.schema.json"},
-    {"id": "invocation_error", "path": "schemas/public-invocation-error.schema.json"},
-    {"id": "reviewed_content_identity_output", "path": "schemas/reviewed-content-identity-output.schema.json"}
-    ,{"id": "finalization_preview_1_0", "path": "schemas/finalization-preview-1.0.schema.json"}
+    {
+      "id": "archived_review_refresh_input",
+      "path": "schemas/public-archived-review-refresh-input-1.0.schema.json"
+    },
+    {
+      "id": "archived_review_refresh_preview",
+      "path": "schemas/archived-review-refresh-preview-1.0.schema.json"
+    },
+    {
+      "id": "current_gate_schema_alias",
+      "path": "schemas/task-finalization-gate.schema.json"
+    },
+    {
+      "id": "current_gate_schema_5_0",
+      "path": "schemas/task-finalization-gate-5.0.schema.json"
+    },
+    {
+      "id": "current_semantic_review_input_alias",
+      "path": "schemas/semantic-review-input.schema.json"
+    },
+    {
+      "id": "current_semantic_review_input_3_0",
+      "path": "schemas/semantic-review-input-3.0.schema.json"
+    },
+    {
+      "id": "publication_ready_input",
+      "path": "schemas/public-publication-ready-input-4.0.schema.json"
+    },
+    {
+      "id": "same_plan_resume_input",
+      "path": "schemas/public-same-plan-resume-input.schema.json"
+    },
+    {
+      "id": "reprepare_preview_input",
+      "path": "schemas/public-reprepare-preview-input.schema.json"
+    },
+    {
+      "id": "standalone_finalization_input",
+      "path": "schemas/public-standalone-finalization-input.schema.json"
+    },
+    {
+      "id": "aggregate_input",
+      "path": "schemas/public-input-7.0.schema.json"
+    },
+    {
+      "id": "publication_review_stale_output",
+      "path": "schemas/public-publication-review-stale-output.schema.json"
+    },
+    {
+      "id": "base_reconciliation_required_output",
+      "path": "schemas/public-base-reconciliation-required-output.schema.json"
+    },
+    {
+      "id": "resume_finalization_output",
+      "path": "schemas/public-resume-finalization-output.schema.json"
+    },
+    {
+      "id": "reprepare_required_output",
+      "path": "schemas/public-reprepare-required-output.schema.json"
+    },
+    {
+      "id": "ready_for_merge_output",
+      "path": "schemas/public-ready-for-merge-output.schema.json"
+    },
+    {
+      "id": "finalization_transaction",
+      "path": "schemas/finalization-transaction.schema.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "reviewed_content_identity_output",
+      "path": "schemas/reviewed-content-identity-output.schema.json"
+    },
+    {
+      "id": "finalization_preview_1_0",
+      "path": "schemas/finalization-preview-1.0.schema.json"
+    }
   ],
   "validators": [
-    {"id": "finalization_previewer", "command": "scripts/preview-finalization.sh", "runtime_command": "preview-finalization", "objective_scope": "Build or rediscover the immutable finalization plan with the existing deterministic engine and no side effect"},
-    {"id": "finalization_gate_recorder", "command": "scripts/record-finalization-gate.sh", "runtime_command": "record-finalization-gate", "objective_scope": "Record only the completed AI review, objective task/plan/content identity and selected route; user authorization remains conversation-only"},
-    {"id": "finalization_gate_checker", "command": "scripts/check-finalization-gate.sh", "runtime_command": "check-finalization-gate", "objective_scope": "Validate the minimal gate against current task, plan, content, route, consumer and transaction facts"},
-    {"id": "finalization_transition_executor", "command": "scripts/execute-finalization-transition.sh", "runtime_command": "execute-finalization-transition", "objective_scope": "Execute one checked deterministic transition through the existing finalization engine without choosing the external route"},
-    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-finalize-task", "objective_scope": "Select the original confirmed transaction or independent archived_review_refresh read-only path; record/check --review-input and emit one minimal DTO"},
-    {"id": "reviewed_content_identity", "command": "scripts/reviewed-content-identity.sh", "runtime_command": "finalize-task-content-identity", "objective_scope": "Compute the canonical metadata-excluded reviewed-content identity for one Git commit"}
+    {
+      "id": "finalization_previewer",
+      "command": "scripts/preview-finalization.sh",
+      "runtime_command": "preview-finalization",
+      "objective_scope": "Build or rediscover the immutable finalization plan with the existing deterministic engine and no side effect"
+    },
+    {
+      "id": "finalization_gate_recorder",
+      "command": "scripts/record-finalization-gate.sh",
+      "runtime_command": "record-finalization-gate",
+      "objective_scope": "Record only the completed AI review, objective task/plan/content identity and selected route; user authorization remains conversation-only"
+    },
+    {
+      "id": "finalization_gate_checker",
+      "command": "scripts/check-finalization-gate.sh",
+      "runtime_command": "check-finalization-gate",
+      "objective_scope": "Validate the minimal gate against current task, plan, content, route, consumer and transaction facts"
+    },
+    {
+      "id": "finalization_transition_executor",
+      "command": "scripts/execute-finalization-transition.sh",
+      "runtime_command": "execute-finalization-transition",
+      "objective_scope": "Execute one checked deterministic transition through the existing finalization engine without choosing the external route"
+    },
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-finalize-task",
+      "objective_scope": "Select the original confirmed transaction or independent archived_review_refresh read-only path; record/check --review-input and emit one minimal DTO"
+    },
+    {
+      "id": "reviewed_content_identity",
+      "command": "scripts/reviewed-content-identity.sh",
+      "runtime_command": "finalize-task-content-identity",
+      "objective_scope": "Compute the canonical metadata-excluded reviewed-content identity for one Git commit"
+    }
   ],
   "external_exits": [
     {
       "id": "base_reconciliation_required",
       "evidence": "the selected base advanced from the task base anchor before the first publication side effect",
-      "consumer": {"kind": "skill", "id": "guru-reconcile-task-base"}
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-reconcile-task-base"
+      }
     },
-    {"id": "publication_review_stale", "evidence": "publication evidence is missing, stale or bound to a different branch_review_commit", "consumer": {"kind": "skill", "id": "guru-review-task-publication"}},
-    {"id": "resume_finalization", "evidence": "the same plan and unique bound PR or archive transaction can continue after a normal transient interruption", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},
-    {"id": "reprepare_required", "evidence": "the live archive month changed or the pre-PR provenance tail requires a rebuilt ignored transaction and fresh confirmation", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},
-    {"id": "ready_for_merge", "evidence": "the unique PR is Ready at the expected head and matches the Publication-reviewed payload", "consumer": {"kind": "skill", "id": "guru-merge-task-pr"}},
-    {"id": "blocked", "evidence": "a prerequisite, private state, path, HEAD, draft identity or external dependency prevents a unique safe continuation", "consumer": {"kind": "stop", "id": "task-finalization-blocked"}}
+    {
+      "id": "publication_review_stale",
+      "evidence": "publication evidence is missing, stale or bound to a different branch_review_commit",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-review-task-publication"
+      }
+    },
+    {
+      "id": "resume_finalization",
+      "evidence": "the same plan and unique bound PR or archive transaction can continue after a normal transient interruption",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-finalize-task"
+      }
+    },
+    {
+      "id": "reprepare_required",
+      "evidence": "the live archive month changed or the pre-PR provenance tail requires a rebuilt ignored transaction and fresh confirmation",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-finalize-task"
+      }
+    },
+    {
+      "id": "ready_for_merge",
+      "evidence": "the unique PR is Ready at the expected head and matches the Publication-reviewed payload",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-merge-task-pr"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "a prerequisite, private state, path, HEAD, draft identity or external dependency prevents a unique safe continuation",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-finalization-blocked"
+      }
+    }
   ],
   "reentry": {
     "identity": "task, repository, branch_review_commit, publication_head, immutable publication input, owner-private semantic gate and actual exit",
     "freshness": "owner checkers rebuild live Git/GitHub/Trellis facts before every transition; same-owner recovery uses only the ignored minimal transaction",
     "stale_behavior": "fail_closed"
   },
-  "tests": ["tests/test_contract.py", "tests/test_archived_review_refresh.py"],
-  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "tests": [
+    "tests/test_contract.py",
+    "tests/test_archived_review_refresh.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
   "public_contracts": {
     "input": {
       "kind": "structured_json",
-      "aggregate_schema": {"schema_id": "guru-finalize-task-input-aggregate-7.0", "path": "schemas/public-input-7.0.schema.json"},
+      "aggregate_schema": {
+        "schema_id": "guru-finalize-task-input-aggregate-7.0",
+        "path": "schemas/public-input-7.0.schema.json"
+      },
       "profiles": [
-        {"id": "publication_ready", "schema": {"schema_id": "guru-finalize-task-input-publication-ready-4.0", "path": "schemas/public-publication-ready-input-4.0.schema.json"}, "example": {"id": "publication_ready_input", "path": "examples/public-publication-ready-input.json"}, "discriminator": {"field": "profile", "value": "publication_ready"}},
-        {"id": "same_plan_resume", "schema": {"schema_id": "guru-finalize-task-input-same-plan-resume-2.0", "path": "schemas/public-same-plan-resume-input.schema.json"}, "example": {"id": "same_plan_resume_input", "path": "examples/public-same-plan-resume-input.json"}, "discriminator": {"field": "profile", "value": "same_plan_resume"}},
-        {"id": "reprepare_preview", "schema": {"schema_id": "guru-finalize-task-input-reprepare-preview-3.0", "path": "schemas/public-reprepare-preview-input.schema.json"}, "example": {"id": "reprepare_preview_input", "path": "examples/public-reprepare-preview-input.json"}, "discriminator": {"field": "profile", "value": "reprepare_preview"}},
-        {"id": "standalone_finalization", "schema": {"schema_id": "guru-finalize-task-input-standalone-finalization-2.0", "path": "schemas/public-standalone-finalization-input.schema.json"}, "example": {"id": "standalone_finalization_input", "path": "examples/public-standalone-finalization-input.json"}, "discriminator": {"field": "profile", "value": "standalone_finalization"}},
-        {"id": "archived_review_refresh", "schema": {"schema_id": "guru-finalize-task-input-archived-review-refresh-1.0", "path": "schemas/public-archived-review-refresh-input-1.0.schema.json"}, "example": {"id": "archived_review_refresh_input", "path": "examples/public-archived-review-refresh-input.json"}, "discriminator": {"field": "profile", "value": "archived_review_refresh"}}
+        {
+          "id": "publication_ready",
+          "schema": {
+            "schema_id": "guru-finalize-task-input-publication-ready-4.0",
+            "path": "schemas/public-publication-ready-input-4.0.schema.json"
+          },
+          "example": {
+            "id": "publication_ready_input",
+            "path": "examples/public-publication-ready-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "publication_ready"
+          }
+        },
+        {
+          "id": "same_plan_resume",
+          "schema": {
+            "schema_id": "guru-finalize-task-input-same-plan-resume-2.0",
+            "path": "schemas/public-same-plan-resume-input.schema.json"
+          },
+          "example": {
+            "id": "same_plan_resume_input",
+            "path": "examples/public-same-plan-resume-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "same_plan_resume"
+          }
+        },
+        {
+          "id": "reprepare_preview",
+          "schema": {
+            "schema_id": "guru-finalize-task-input-reprepare-preview-3.0",
+            "path": "schemas/public-reprepare-preview-input.schema.json"
+          },
+          "example": {
+            "id": "reprepare_preview_input",
+            "path": "examples/public-reprepare-preview-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "reprepare_preview"
+          }
+        },
+        {
+          "id": "standalone_finalization",
+          "schema": {
+            "schema_id": "guru-finalize-task-input-standalone-finalization-2.0",
+            "path": "schemas/public-standalone-finalization-input.schema.json"
+          },
+          "example": {
+            "id": "standalone_finalization_input",
+            "path": "examples/public-standalone-finalization-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "standalone_finalization"
+          }
+        },
+        {
+          "id": "archived_review_refresh",
+          "schema": {
+            "schema_id": "guru-finalize-task-input-archived-review-refresh-1.0",
+            "path": "schemas/public-archived-review-refresh-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "archived_review_refresh_input",
+            "path": "examples/public-archived-review-refresh-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "archived_review_refresh"
+          }
+        }
       ]
     },
     "invocation": {
       "command_id": "run-skill-command",
       "wrapper": "scripts/invoke.sh",
-      "input_binding": {"kind": "structured_json", "profile_id": "publication_ready"},
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "publication_ready"
+      },
       "stdout_contract": "single_typed_exit",
-      "error_schema": {"schema_id": "guru-finalize-task-invocation-error-1.0", "path": "schemas/public-invocation-error.schema.json"},
-      "error_example": {"id": "invalid_public_input", "path": "examples/public-invocation-error.json"},
-      "example_argv": ["--input", "examples/public-publication-ready-input.json", "--review-input", "examples/semantic-review-input.json", "--confirmed-preview-sha256", "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"]
+      "error_schema": {
+        "schema_id": "guru-finalize-task-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invalid_public_input",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-publication-ready-input.json",
+        "--review-input",
+        "examples/semantic-review-input.json",
+        "--confirmed-preview-sha256",
+        "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      ]
     },
     "outputs": [
       {
         "exit_id": "base_reconciliation_required",
-        "schema": {"schema_id": "guru-finalize-task-output-base-reconciliation-required-1.0", "path": "schemas/public-base-reconciliation-required-output.schema.json"},
-        "example": {"id": "base_reconciliation_required_output", "path": "examples/public-base-reconciliation-required-output.json"},
-        "consumer_use_ids": ["project_base_reconciliation_required"]
+        "schema": {
+          "schema_id": "guru-finalize-task-output-base-reconciliation-required-1.0",
+          "path": "schemas/public-base-reconciliation-required-output.schema.json"
+        },
+        "example": {
+          "id": "base_reconciliation_required_output",
+          "path": "examples/public-base-reconciliation-required-output.json"
+        },
+        "consumer_use_ids": [
+          "project_base_reconciliation_required"
+        ]
       },
-      {"exit_id": "publication_review_stale", "schema": {"schema_id": "guru-finalize-task-output-publication-review-stale-3.0", "path": "schemas/public-publication-review-stale-output.schema.json"}, "example": {"id": "publication_review_stale_output", "path": "examples/public-publication-review-stale-output.json"}, "consumer_use_ids": ["project_publication_review_stale"]},
-      {"exit_id": "resume_finalization", "schema": {"schema_id": "guru-finalize-task-output-resume-finalization-1.0", "path": "schemas/public-resume-finalization-output.schema.json"}, "example": {"id": "resume_finalization_output", "path": "examples/public-resume-finalization-output.json"}, "consumer_use_ids": ["project_resume_finalization"]},
-      {"exit_id": "reprepare_required", "schema": {"schema_id": "guru-finalize-task-output-reprepare-required-2.0", "path": "schemas/public-reprepare-required-output.schema.json"}, "example": {"id": "reprepare_required_output", "path": "examples/public-reprepare-required-output.json"}, "consumer_use_ids": ["project_reprepare_required"]},
-      {"exit_id": "ready_for_merge", "schema": {"schema_id": "guru-finalize-task-output-ready-for-merge-1.0", "path": "schemas/public-ready-for-merge-output.schema.json"}, "example": {"id": "ready_for_merge_output", "path": "examples/public-ready-for-merge-output.json"}, "consumer_use_ids": ["project_ready_for_merge"]},
-      {"exit_id": "blocked", "schema": {"schema_id": "guru-finalize-task-output-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["project_blocked"]}
+      {
+        "exit_id": "publication_review_stale",
+        "schema": {
+          "schema_id": "guru-finalize-task-output-publication-review-stale-3.0",
+          "path": "schemas/public-publication-review-stale-output.schema.json"
+        },
+        "example": {
+          "id": "publication_review_stale_output",
+          "path": "examples/public-publication-review-stale-output.json"
+        },
+        "consumer_use_ids": [
+          "project_publication_review_stale"
+        ]
+      },
+      {
+        "exit_id": "resume_finalization",
+        "schema": {
+          "schema_id": "guru-finalize-task-output-resume-finalization-1.0",
+          "path": "schemas/public-resume-finalization-output.schema.json"
+        },
+        "example": {
+          "id": "resume_finalization_output",
+          "path": "examples/public-resume-finalization-output.json"
+        },
+        "consumer_use_ids": [
+          "project_resume_finalization"
+        ]
+      },
+      {
+        "exit_id": "reprepare_required",
+        "schema": {
+          "schema_id": "guru-finalize-task-output-reprepare-required-2.0",
+          "path": "schemas/public-reprepare-required-output.schema.json"
+        },
+        "example": {
+          "id": "reprepare_required_output",
+          "path": "examples/public-reprepare-required-output.json"
+        },
+        "consumer_use_ids": [
+          "project_reprepare_required"
+        ]
+      },
+      {
+        "exit_id": "ready_for_merge",
+        "schema": {
+          "schema_id": "guru-finalize-task-output-ready-for-merge-1.0",
+          "path": "schemas/public-ready-for-merge-output.schema.json"
+        },
+        "example": {
+          "id": "ready_for_merge_output",
+          "path": "examples/public-ready-for-merge-output.json"
+        },
+        "consumer_use_ids": [
+          "project_ready_for_merge"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-finalize-task-output-blocked-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "project_blocked"
+        ]
+      }
     ],
     "consumer_inputs": [
       {
         "id": "base_reconciliation_input",
-        "consumer": {"kind": "skill", "id": "guru-reconcile-task-base"},
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-reconcile-task-base"
+        },
         "payload_kind": "structured_json",
         "contract": {
           "kind": "skill_input_authoring_seed",
           "interface_path": "packages/guru-reconcile-task-base/interface.json",
           "input_kind": "structured_json",
           "profile_id": "finalizer_base_mismatch",
-          "seed_fields": ["task_ref", "task_head", "selected_base_ref", "old_base_head", "new_base_head", "branch_review_commit", "resume_target"],
-          "authoring_fields": ["profile", "mode"],
-          "authoring_example": {"id": "finalizer_base_mismatch_authoring", "path": "examples/public-finalizer-base-mismatch-authoring.json"}
+          "seed_fields": [
+            "task_ref",
+            "task_head",
+            "selected_base_ref",
+            "old_base_head",
+            "new_base_head",
+            "branch_review_commit",
+            "resume_target"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "finalizer_base_mismatch_authoring",
+            "path": "examples/public-finalizer-base-mismatch-authoring.json"
+          }
         }
       },
-      {"id": "publication_review_stale_input", "consumer": {"kind": "skill", "id": "guru-review-task-publication"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-review-task-publication/interface.json", "input_kind": "structured_json", "profile_id": "publication_review_stale", "seed_fields": ["task_ref", "branch_review_commit", "stale_reason"], "authoring_fields": ["profile", "mode", "review_intent"], "authoring_example": {"id": "publication_review_stale_authoring", "path": "examples/public-publication-review-stale-authoring.json"}}},
-      {"id": "same_plan_resume_input", "consumer": {"kind": "skill", "id": "guru-finalize-task"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-finalize-task/interface.json", "input_kind": "structured_json", "profile_id": "same_plan_resume", "seed_fields": ["task_ref", "plan_ref"], "authoring_fields": ["profile", "mode"], "authoring_example": {"id": "same_plan_resume_authoring", "path": "examples/public-same-plan-resume-authoring.json"}}},
-      {"id": "reprepare_preview_input", "consumer": {"kind": "skill", "id": "guru-finalize-task"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-finalize-task/interface.json", "input_kind": "structured_json", "profile_id": "reprepare_preview", "seed_fields": ["task_ref", "reason_code", "branch_review_commit", "publication_head"], "authoring_fields": ["profile", "mode"], "authoring_example": {"id": "reprepare_preview_authoring", "path": "examples/public-reprepare-preview-authoring.json"}}},
-      {"id": "ready_for_merge_input", "consumer": {"kind": "skill", "id": "guru-merge-task-pr"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-merge-task-pr/interface.json", "input_kind": "structured_json", "profile_id": "ready_for_merge", "seed_fields": ["repo_ref", "pr_number", "pr_url", "expected_head_sha", "expected_base_branch", "expected_head_branch", "publication_body_sha256"], "authoring_fields": ["schema_version", "profile", "mode", "reviewed_merge_message"], "authoring_example": {"id": "ready_for_merge_authoring", "path": "examples/public-ready-for-merge-authoring-2.0.json"}}},
-      {"id": "blocked_stop_input", "consumer": {"kind": "stop", "id": "task-finalization-blocked"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-finalize-task-stop-blocked-input-1.0", "path": "consumers/stop/production/finalize-task-blocked.schema.json"}}
+      {
+        "id": "publication_review_stale_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-review-task-publication"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-review-task-publication/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "publication_review_stale",
+          "seed_fields": [
+            "task_ref",
+            "branch_review_commit",
+            "stale_reason"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode",
+            "review_intent"
+          ],
+          "authoring_example": {
+            "id": "publication_review_stale_authoring",
+            "path": "examples/public-publication-review-stale-authoring.json"
+          }
+        }
+      },
+      {
+        "id": "same_plan_resume_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-finalize-task"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-finalize-task/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "same_plan_resume",
+          "seed_fields": [
+            "task_ref",
+            "plan_ref"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "same_plan_resume_authoring",
+            "path": "examples/public-same-plan-resume-authoring.json"
+          }
+        }
+      },
+      {
+        "id": "reprepare_preview_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-finalize-task"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-finalize-task/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "reprepare_preview",
+          "seed_fields": [
+            "task_ref",
+            "reason_code",
+            "branch_review_commit",
+            "publication_head"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "reprepare_preview_authoring",
+            "path": "examples/public-reprepare-preview-authoring.json"
+          }
+        }
+      },
+      {
+        "id": "ready_for_merge_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-merge-task-pr"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-merge-task-pr/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "ready_for_merge",
+          "seed_fields": [
+            "repo_ref",
+            "pr_number",
+            "pr_url",
+            "expected_head_sha",
+            "expected_base_branch",
+            "expected_head_branch",
+            "publication_body_sha256"
+          ],
+          "authoring_fields": [
+            "schema_version",
+            "profile",
+            "mode",
+            "reviewed_merge_message"
+          ],
+          "authoring_example": {
+            "id": "ready_for_merge_authoring",
+            "path": "examples/public-ready-for-merge-authoring-2.0.json"
+          }
+        }
+      },
+      {
+        "id": "blocked_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-finalization-blocked"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-finalize-task-stop-blocked-input-1.0",
+          "path": "consumers/stop/production/finalize-task-blocked.schema.json"
+        }
+      }
     ],
     "projections": [
       {
@@ -170,24 +753,158 @@
         "consumer_input_id": "base_reconciliation_input",
         "operation": "select",
         "mappings": [
-          {"source": "task_ref", "target": "task_ref"},
-          {"source": "task_head", "target": "task_head"},
-          {"source": "selected_base_ref", "target": "selected_base_ref"},
-          {"source": "old_base_head", "target": "old_base_head"},
-          {"source": "new_base_head", "target": "new_base_head"},
-          {"source": "branch_review_commit", "target": "branch_review_commit"},
-          {"source": "resume_target", "target": "resume_target"}
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "task_head",
+            "target": "task_head"
+          },
+          {
+            "source": "selected_base_ref",
+            "target": "selected_base_ref"
+          },
+          {
+            "source": "old_base_head",
+            "target": "old_base_head"
+          },
+          {
+            "source": "new_base_head",
+            "target": "new_base_head"
+          },
+          {
+            "source": "branch_review_commit",
+            "target": "branch_review_commit"
+          },
+          {
+            "source": "resume_target",
+            "target": "resume_target"
+          }
         ]
       },
-      {"id": "project_publication_review_stale", "exit_id": "publication_review_stale", "consumer_input_id": "publication_review_stale_input", "operation": "select", "mappings": [{"source": "task_ref", "target": "task_ref"}, {"source": "branch_review_commit", "target": "branch_review_commit"}, {"source": "stale_reason", "target": "stale_reason"}]},
-      {"id": "project_resume_finalization", "exit_id": "resume_finalization", "consumer_input_id": "same_plan_resume_input", "operation": "select", "mappings": [{"source": "task_ref", "target": "task_ref"}, {"source": "plan_ref", "target": "plan_ref"}]},
-      {"id": "project_reprepare_required", "exit_id": "reprepare_required", "consumer_input_id": "reprepare_preview_input", "operation": "select", "mappings": [{"source": "task_ref", "target": "task_ref"}, {"source": "reason_code", "target": "reason_code"}, {"source": "branch_review_commit", "target": "branch_review_commit"}, {"source": "publication_head", "target": "publication_head"}]},
-      {"id": "project_ready_for_merge", "exit_id": "ready_for_merge", "consumer_input_id": "ready_for_merge_input", "operation": "select", "mappings": [{"source": "repo_ref", "target": "repo_ref"}, {"source": "pr_number", "target": "pr_number"}, {"source": "pr_url", "target": "pr_url"}, {"source": "expected_head_sha", "target": "expected_head_sha"}, {"source": "expected_base_branch", "target": "expected_base_branch"}, {"source": "expected_head_branch", "target": "expected_head_branch"}, {"source": "publication_body_sha256", "target": "publication_body_sha256"}]},
-      {"id": "project_blocked", "exit_id": "blocked", "consumer_input_id": "blocked_stop_input", "operation": "direct"}
+      {
+        "id": "project_publication_review_stale",
+        "exit_id": "publication_review_stale",
+        "consumer_input_id": "publication_review_stale_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "branch_review_commit",
+            "target": "branch_review_commit"
+          },
+          {
+            "source": "stale_reason",
+            "target": "stale_reason"
+          }
+        ]
+      },
+      {
+        "id": "project_resume_finalization",
+        "exit_id": "resume_finalization",
+        "consumer_input_id": "same_plan_resume_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "plan_ref",
+            "target": "plan_ref"
+          }
+        ]
+      },
+      {
+        "id": "project_reprepare_required",
+        "exit_id": "reprepare_required",
+        "consumer_input_id": "reprepare_preview_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "reason_code",
+            "target": "reason_code"
+          },
+          {
+            "source": "branch_review_commit",
+            "target": "branch_review_commit"
+          },
+          {
+            "source": "publication_head",
+            "target": "publication_head"
+          }
+        ]
+      },
+      {
+        "id": "project_ready_for_merge",
+        "exit_id": "ready_for_merge",
+        "consumer_input_id": "ready_for_merge_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "repo_ref",
+            "target": "repo_ref"
+          },
+          {
+            "source": "pr_number",
+            "target": "pr_number"
+          },
+          {
+            "source": "pr_url",
+            "target": "pr_url"
+          },
+          {
+            "source": "expected_head_sha",
+            "target": "expected_head_sha"
+          },
+          {
+            "source": "expected_base_branch",
+            "target": "expected_base_branch"
+          },
+          {
+            "source": "expected_head_branch",
+            "target": "expected_head_branch"
+          },
+          {
+            "source": "publication_body_sha256",
+            "target": "publication_body_sha256"
+          }
+        ]
+      },
+      {
+        "id": "project_blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_stop_input",
+        "operation": "direct"
+      }
     ],
     "private_artifacts": [
-      {"id": "finalization_gate", "kind": "gate_evidence", "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-5.0.json", "path": "schemas/task-finalization-gate-5.0.schema.json"}, "persistence": "ignored_runtime"},
-      {"id": "finalization_transaction", "kind": "runtime_checkpoint", "schema": {"schema_id": "guru-finalization-transaction-3.0", "path": "schemas/finalization-transaction.schema.json"}, "persistence": "ignored_runtime"}
+      {
+        "id": "finalization_gate",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-5.0.json",
+          "path": "schemas/task-finalization-gate-5.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "finalization_transaction",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "guru-finalization-transaction-3.0",
+          "path": "schemas/finalization-transaction.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      }
     ]
   }
 }

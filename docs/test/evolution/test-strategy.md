@@ -32,7 +32,7 @@ Every executed fixture binds:
 - evidence layer actually executed, observed actions and explicit unverified boundaries.
 - for standalone verifier failure only, the pre-cleanup stage/cell/command/exit/safe-tail/hash-size evidence identity
   and the subsequent cleanup/blocked/re-entry observation; embedded callers do not inherit that verifier lifecycle.
-- for installed provenance preparation, the parent manifest's three exact selected lists plus `all_platforms`, the
+- for installed provenance preparation, the parent manifest's three exact selected lists, the repeated-`--platform`
   projected provider argv, parent/post-reprepare set equality and the pre-extension-source-checkout/apply/commit
   failure observation; this remains part of the existing installed-publication fixture identity.
 

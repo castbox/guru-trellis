@@ -1,7 +1,7 @@
 # PLAN
 
 既有行的版本与 gate 状态保留对应 Issue 当时的记录，不作为当前调用的完成或执行依据。
-当前知识提升条目为 #436；后续动作仍需各 owner 读取 live authority。
+当前知识提升条目为 #443；后续动作仍需各 owner 读取 live authority。
 
 | 顺序 | Issue | 已知目的 | 状态语义 |
 | --- | --- | --- | --- |
@@ -15,6 +15,8 @@
 | current Nightly and normal-chain adoption | #408 | 采用固定 `db4ca1df...` / CI `34838784963`，闭合正常 authoring/创建/激活与同 session 接续；自动停止不阻断独立手动操作 | reviewed contribution 由 expected `.50` 提升为 `.51`；不新增 lifecycle 或恢复状态。promotion-created diff 仍须 fresh Phase 2、commit、完整 Branch Review；不证明远端发布或 Release matrix |
 | current Active Task Delivery capability | #435 | 增加Delivery Review/Publish/Merge、重复Delivery、跨分支事实发现、#405 recovery与#407 resolved-tree route | reviewed contribution由expected `.54`提升为`.55`；active registry为26/114/96，production workflow仍为22 invokes/98 exits。#434独占graph activation，#436提供后继终态能力 |
 | current Post-Delivery Completion and Finish capability | #436 | 增加Completion、Closure、Finish、Cleanup与Reactivate五个独立owner，保持production edges deferred | reviewed contribution由expected `.55`提升为`.56`；active registry为31/136/101，production workflow仍为22 invokes/98 exits。#434独占graph activation，完整 Release matrix未验证 |
+| current Task Identity Session Binding capability | #443 | 增加stable task identity上的resume/rebind/switch/reactivate/manual-recovery唯一owner，复用official Trellis session store | reviewed contribution由expected `.56`提升为`.57`；active registry为32/142/102，production workflow仍为22 invokes/98 exits。#434独占graph activation，完整Release matrix未验证 |
+| current All-Platform Projection and Exact Selection capability | #452 | 以 pinned upstream inventory 与 target-installed exact selection 建立两层平台 authority；删除 `--all-platforms` 与四平台中间层；保留三平台新装/dogfood缺省并支持显式 OpenCode projection | reviewed contribution由expected `.57`提升为`.58`；active registry保持32/142/102，production workflow仍为22 invokes/98 exits。#434独占graph activation，22-client native matrix与Release matrix未验证 |
 | post-stable refactor | #249 -> #250 -> #292 -> #293 -> #261 -> #248 -> #252 -> #267 | Phase/owner 解耦、Intake、Planning、Publication、Acceptance/Finish、cleanup 与最终重构版 Release | TARGET/PLAN 候选参考；不作为重构前 Release 的前置、owner 或验收范围；#247 已作为 `.50` current predecessor完成独立 Architecture scope，不表示后续 #305 target 已实现 |
 
 PLAN 记录依赖与 owner，不证明 outcome，也不改变各 Issue 的 live authority。

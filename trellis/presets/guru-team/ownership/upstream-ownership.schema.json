@@ -1,35 +1,76 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/upstream-ownership-3.0.json",
-  "title": "Guru Team current ownership inventory",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/upstream-ownership-4.0.json",
+  "title": "Guru Team descriptor-derived ownership inventory",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "schema_version",
     "inventory_id",
     "target_trellis_cli",
+    "inventory_source",
+    "inventory_version",
+    "inventory_sha256",
     "overlay_root",
-    "guru_owned_rules",
-    "managed_path_claims"
+    "shared_managed_paths",
+    "dogfood_platforms",
+    "platform_descriptors"
   ],
   "properties": {
-    "schema_version": {"const": "3.0"},
-    "inventory_id": {"const": "guru-team-upstream-ownership"},
-    "target_trellis_cli": {"const": "0.6.17"},
-    "overlay_root": {"const": "trellis/presets/guru-team/overlays"},
-    "guru_owned_rules": {
-      "type": "array",
-      "minItems": 11,
-      "maxItems": 11,
-      "uniqueItems": true,
-      "items": {"$ref": "#/$defs/guruOwnedRule"}
+    "schema_version": {
+      "const": "4.0"
     },
-    "managed_path_claims": {
+    "inventory_id": {
+      "const": "guru-team-upstream-ownership"
+    },
+    "target_trellis_cli": {
+      "const": "0.6.17"
+    },
+    "inventory_source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inventory_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inventory_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "overlay_root": {
+      "const": "trellis/presets/guru-team/overlays"
+    },
+    "shared_managed_paths": {
       "type": "array",
-      "minItems": 9,
-      "maxItems": 9,
+      "minItems": 3,
+      "maxItems": 3,
       "uniqueItems": true,
-      "items": {"$ref": "#/$defs/managedPathClaim"}
+      "items": {
+        "$ref": "#/$defs/safePath"
+      }
+    },
+    "dogfood_platforms": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "claude",
+          "codex",
+          "cursor"
+        ]
+      }
+    },
+    "platform_descriptors": {
+      "type": "array",
+      "minItems": 22,
+      "maxItems": 22,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/platformDescriptor"
+      }
     }
   },
   "$defs": {
@@ -38,25 +79,57 @@
       "minLength": 1,
       "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000-\\u001f]+$"
     },
-    "guruOwnedRule": {
+    "platformDescriptor": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "match_type", "pattern", "category"],
+      "required": [
+        "id",
+        "cli_flag",
+        "template_dir",
+        "config_dir",
+        "skill_root",
+        "entry_path",
+        "entry_kind",
+        "actual_load"
+      ],
       "properties": {
-        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
-        "match_type": {"enum": ["path_prefix", "path_glob", "skill_id_prefix"]},
-        "pattern": {"type": "string", "minLength": 1},
-        "category": {"const": "guru_owned"}
-      }
-    },
-    "managedPathClaim": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["path", "category", "classification_rule"],
-      "properties": {
-        "path": {"$ref": "#/$defs/safePath"},
-        "category": {"const": "guru_owned"},
-        "classification_rule": {"type": "string", "minLength": 1}
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "cli_flag": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "template_dir": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "config_dir": {
+          "$ref": "#/$defs/safePath"
+        },
+        "skill_root": {
+          "$ref": "#/$defs/safePath"
+        },
+        "entry_path": {
+          "$ref": "#/$defs/safePath"
+        },
+        "entry_kind": {
+          "enum": [
+            "json_prompt",
+            "markdown_command",
+            "markdown_prompt",
+            "markdown_workflow",
+            "skill_command",
+            "toml_command"
+          ]
+        },
+        "actual_load": {
+          "enum": [
+            "opencode_catalog",
+            "projection_contract"
+          ]
+        }
       }
     }
   }

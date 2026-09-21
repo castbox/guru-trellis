@@ -133,6 +133,9 @@ after `check-review-gate` resolves and validates that exact checkpoint
 may the public wrapper emit exactly one of `passed`,
 `continuity_passed`, `implementation_required`,
 `scope_confirmation_required`, or `blocked`.
+The checker is not a public pass: it returns
+`status=owner_checkpoint_validated` with `formal_exit=false`. Only the public
+wrapper's DTO is a formal Branch Review exit.
 The semantic owner's passing conclusion is provisional. Do not tell the user
 that Branch Review has formally passed until both `check-review-gate` and the
 public wrapper return `passed` for the same current task, range, commit, and

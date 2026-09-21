@@ -31,7 +31,6 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             self.install_dst,
             self.repo,
             {"codex", "cursor", "claude"},
-            all_platforms=True,
         )
         self.assertEqual(fresh["skill_packages"]["status"], "ok")
 
@@ -44,7 +43,6 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             self.install_dst,
             self.repo,
             {"codex", "cursor", "claude"},
-            all_platforms=True,
         )
 
     def managed_graph_snapshot(self) -> dict[str, tuple[bytes, int]]:
@@ -109,7 +107,6 @@ class PresetTransactionInstallerTest(unittest.TestCase):
                 self.repo,
                 self.install_dst,
                 {"codex", "cursor", "claude"},
-                True,
                 json.loads((self.install_dst / "extension.json").read_text(encoding="utf-8")),
             )
             staging_repo.mkdir(parents=True)
@@ -126,7 +123,6 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             self.repo,
             self.install_dst,
             {"codex", "cursor", "claude"},
-            True,
             manifest,
         )
         unmanaged = self.repo / "build-output" / "nested-repository" / "dependency.bin"
@@ -137,7 +133,6 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             self.repo,
             self.install_dst,
             {"codex", "cursor", "claude"},
-            True,
             manifest,
         )
         self.assertEqual(inventory, baseline_inventory)

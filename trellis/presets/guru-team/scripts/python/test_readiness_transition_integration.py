@@ -82,7 +82,7 @@ class InstalledReadinessTransitionTests(unittest.TestCase):
             shutil.copytree(SOURCE / ".trellis/scripts", installed / ".trellis/scripts", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
             for phase in ("initial", "reapply"):
                 with self.subTest(phase=phase):
-                    applied = run_preset_install(installed, all_platforms=True)
+                    applied = run_preset_install(installed)
                     self.assertEqual(applied.returncode, 0, applied.stdout[-5000:] + applied.stderr[-2000:])
                     self.assertEqual(list(installed.rglob("*.bak")) + list(installed.rglob("*.new")), [])
                     self.check_chain(installed, work / phase)

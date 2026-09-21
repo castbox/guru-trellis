@@ -97,11 +97,11 @@ node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
 
 Workflow marketplace 只安装 global .trellis/workflow.md；完整 Guru Team extension
 由 preset 安装。公共 Skill 唯一 canonical root 是 trellis/skills/guru-team/，
-installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed projection，
+installed、shared 与 manifest 精确选择的平台 discovery copies 都是 managed projection，
 不能反向成为语义来源。
 
-当前 registry 激活 26 Skills / 114 package exits；其中三个 Delivery packages 在 #434
-cutover 前保持 `deferred`，业务 global workflow closure
+当前 registry 激活 32 Skills / 142 package exits / 102 commands；其中九个 packages 在各自
+生命周期 cutover 前保持 `deferred`，业务 global workflow closure
 为 22 个 invokes / 98 个 exits / 59 个 total targets。下列 22 个业务 active ids 参与
 global workflow：
 
@@ -163,7 +163,7 @@ Publication 与 Finalizer 的业务语义仍由各自 package 独占。
 新 Skill 必须引用 installed `.trellis/spec/workflow/semantic-retrieval.md`，不得在 workflow、
 README、平台 entry 或 package 中复制中英文概念族。`tests/` 保留在 canonical source 用于
 source validation；preset 根据 current registry 原子安装不含 package-private tests 的
-runtime/schema/commands 公开投影及 Shared/Codex/Claude/Cursor discovery copies。升级顺序
+runtime/schema/commands 公开投影及 shared 与 manifest 精确选择的平台 discovery copies。升级顺序
 仍是 official update/upgrade、workflow re-selection、same-ref preset reapply、sidecar 处理和
 完整 source/installed/platform/drift 验证。
 
@@ -244,19 +244,17 @@ hooks、sub-agents、runtime agents、bundled skills 与 meta references。Guru 
 不安装、不 patch、不 managed-upgrade 这些路径；mandatory Guru routing 由 active
 workflow markers 和 installed guru-* packages 保证。
 
-Preset overlay tree 只保留三个 Guru-owned explicit entry：
-
-- .codex/prompts/guru-finish-work.md
-- .claude/commands/guru/finish-work.md
-- .cursor/commands/guru-finish-work.md
+Preset overlay tree 为 pinned upstream 22 个平台 descriptor 各保留一个
+Guru-owned explicit entry；目标仓库只安装 manifest 精确选择的 entry，当前
+guru-trellis dogfood 只选择 Claude、Codex、Cursor，OpenCode 仅显式选择时安装。
 
 这些 entry 只读取 live context 和 .trellis/workflow.md、调用 public Skills、消费
 mapped exits，并返回 terminal result。它们不读取 producer-private runtime/artifact，
 不复制 package input fields、review dimensions、interaction algorithm 或 executor
 commands。
 
-Current-only ownership schema 3.0 固定为 11 条 anchored Guru-owned rules、9 条
-managed claims 和上述 3 个 additive overlays，只记录 current Guru-owned assets；
+Current-only ownership schema 4.0 固定为 22 个平台 descriptors、43 条 derived
+managed claims 和 22 个 descriptor-bound additive overlays，只记录 current Guru-owned assets；
 非 current ownership/installed manifest 在 mutation 前统一
 fail closed，不存在 projection 或迁移入口。当前完整升级/更新顺序为：
 
@@ -1202,7 +1200,7 @@ label、exit code 与 bounded credential-safe tail；无法解析时显式记录
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的二十六个 packages 已维护 canonical corpora；三个 Delivery packages 在 #434 cutover 前保持
+中的 32 个 packages 已维护 canonical corpora；九个 packages 在各自 lifecycle cutover 前保持
 `deferred`，不进入 production workflow mandatory invoke/exit 图；六个 Intake
 packages 的 23-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
@@ -1213,7 +1211,8 @@ prompt/staged files，不接收 canonical package/corpus/private runtime locator
 读取 `SKILL.md` 并调用 exact wrapper；`guru-team-skill-eval-native-trace-1.0` receipt 与
 request、projection、Skill/wrapper digest、wrapper argv/return code 和返回 DTO 完整绑定后才产生 trace invariant。合法 DTO
 缺少 receipt 为 `execution_error`。Native argv、output、context 与 receipt locator 收集到
-repo 外 transcript；四平台 projection 中 eval/private runtime raw read 必须真实失败。缺失
+repo 外 transcript；每个已声明 native adapter projection 中 eval/private runtime raw read 必须真实失败，
+但不重复 pinned upstream 的 22 客户端 native matrix。缺失
 native command 为 `unsupported`，不依赖隐藏环境变量替代 adapter。
 Case 缺省或显式 `native_execution_mode=post_owner` 时，由 host 准备 repo-local
 checker-passed owner result，且 full run 在每个 adapter 上都必须执行这些 adapter-neutral

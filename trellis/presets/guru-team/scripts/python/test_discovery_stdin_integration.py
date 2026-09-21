@@ -28,10 +28,12 @@ def file_snapshot(root: Path) -> dict[str, str]:
     }
 
 
-def run_preset_install(installed: Path, *, all_platforms: bool = False) -> subprocess.CompletedProcess[str]:
+def run_preset_install(
+    installed: Path, *, platforms: tuple[str, ...] = ()
+) -> subprocess.CompletedProcess[str]:
     command = [sys.executable, str(INSTALLER), "--repo", str(installed)]
-    if all_platforms:
-        command.append("--all-platforms")
+    for platform in platforms:
+        command.extend(("--platform", platform))
     command.append("--json")
     return subprocess.run(
         command,

@@ -259,7 +259,10 @@
     {
       "id": "invalid_task_state",
       "evidence": "task identity cannot be closed across task, branch/worktree and Guru runtime mappings",
-      "consumer": {"kind": "stop", "id": "invalid-task-state"}
+      "consumer": {
+        "kind": "stop",
+        "id": "invalid-task-state"
+      }
     }
   ],
   "reentry": {
@@ -274,9 +277,28 @@
   ],
   "platform_destinations": [
     "shared",
-    "codex",
+    "claude",
     "cursor",
-    "claude"
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
   ],
   "public_contracts": {
     "input": {
@@ -395,9 +417,17 @@
       },
       {
         "exit_id": "invalid_task_state",
-        "schema": {"schema_id": "guru-stage0-create-task-workspace-output-invalid-task-state-2.0", "path": "schemas/public-invalid-task-state-output.schema.json"},
-        "example": {"id": "invalid_task_state_output", "path": "examples/public-invalid-task-state-output.json"},
-        "consumer_use_ids": ["project_invalid_task_state"]
+        "schema": {
+          "schema_id": "guru-stage0-create-task-workspace-output-invalid-task-state-2.0",
+          "path": "schemas/public-invalid-task-state-output.schema.json"
+        },
+        "example": {
+          "id": "invalid_task_state_output",
+          "path": "examples/public-invalid-task-state-output.json"
+        },
+        "consumer_use_ids": [
+          "project_invalid_task_state"
+        ]
       }
     ],
     "consumer_inputs": [
@@ -437,9 +467,16 @@
       },
       {
         "id": "invalid_task_state_stop_input",
-        "consumer": {"kind": "stop", "id": "invalid-task-state"},
+        "consumer": {
+          "kind": "stop",
+          "id": "invalid-task-state"
+        },
         "payload_kind": "structured_json",
-        "contract": {"kind": "json_schema", "schema_id": "guru-stage0-create-task-workspace-invalid-task-state-stop-2.0", "path": "consumers/stop/invalid-task-state.schema.json"}
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-stage0-create-task-workspace-invalid-task-state-stop-2.0",
+          "path": "consumers/stop/invalid-task-state.schema.json"
+        }
       }
     ],
     "projections": [

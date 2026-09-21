@@ -304,10 +304,9 @@ under the shared external `ssot_current`/`baseline_current` route. `impact_kind`
 For the existing `guru-publish-task-pr:provenance_prepare` installed profile, the Design projection for
 `EVO-REQ-084` adds no public input/output field or exit. Before the immutable extension-source checkout is created,
 the owner reads the parent installed manifest and deterministically validates
-`install.selected_platforms`, `install.all_platforms`, `skill_packages.selected_platforms` and
-`overlays.selected_platforms`. The three lists must be non-empty, sorted, unique, canonical and equal. Only
-`all_platforms=true` plus the full canonical set projects `--all-platforms`; every `false` selection projects repeated
-ordered `--platform`, including an explicit full set. Invalid identity raises the existing provenance preparation
+`install.selected_platforms`, `skill_packages.selected_platforms` and
+`overlays.selected_platforms`. The three lists must be non-empty, sorted, unique, canonical and equal. Every valid
+selection projects repeated ordered `--platform`. Invalid identity raises the existing provenance preparation
 recovery before source checkout, preset apply or commit, with target managed mutation zero. This is an internal
 projection of the existing installed mode and `provenance_reentry`, not a new profile, continuation, DTO or owner.
 
