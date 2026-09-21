@@ -1,0 +1,11 @@
+{"file": ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/prd.md", "reason": "Requirement scope, authority, acceptance, and non-goals for Issue #456."}
+{"file": ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/design.md", "reason": "Legacy-to-target consumer inventory, migration matrix, ordering, and activation gates."}
+{"file": ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/implement.md", "reason": "Planning-only execution boundary and downstream task contracts."}
+{"file": ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/01-current-contract-inventory.md", "reason": "Fixed Issue #456 live inventory deliverable for #443/#436/#434 consumers."}
+{"file": ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/02-contract-mapping.md", "reason": "Fixed Issue #456 current-to-#454 mapping and disposition deliverable."}
+{"file": ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/03-migration-boundary.md", "reason": "Fixed Issue #456 owner, dependency, activation-blocking, and successor boundary deliverable."}
+{"file": ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/04-reconcile-result.md", "reason": "Fixed Issue #456 final closure and unresolved-item handoff deliverable."}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Public Skill I/O, consumer ownership, projection, and private-state SSOT."}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "Required direct retirement and compatibility decision policy."}
+{"file": ".trellis/tasks/archive/2026-09/09-19-443-task-identity-binding/design.md", "reason": "Immutable historical session-binding contract input."}
+{"file": ".trellis/tasks/archive/2026-09/09-19-436-post-delivery-completion-finish/design.md", "reason": "Immutable historical post-delivery lifecycle contract input."}
