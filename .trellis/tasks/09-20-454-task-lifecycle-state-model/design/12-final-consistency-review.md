@@ -239,8 +239,8 @@ authority，也没有合法recovery依赖stored path、old mapping、closing key
   old/new base HEAD只允许作为live fact或相邻operation DTO出现；
 - “或”只用于封闭枚举、互斥route与确定性状态组合，不表达未决设计选择；
 - 禁用模糊措辞扫描无命中；
-- task当前为`in_progress`；C2已有本地commit，D0为未提交candidate。本轮未修改Issue、未push、未创建PR、未执行
-  新base reconcile merge或cleanup。
+- task当前为`in_progress`；C2与D0已形成committed/reconciled candidate。本轮未修改Issue、未push、未创建PR或
+  执行cleanup。
 - #434 只作为 #454 substrate 的后置 consumer；本 task没有提前激活 #434，也没有把 #443/#436 历史 task 文档或
   旧 Issue evidence 回改成新 contract 证据。
 
@@ -252,7 +252,7 @@ constraint、8组active runtime-loss组合、60个已修订finding、跨任务�
 冲突或缺漏。
 
 该结论证明统一task lifecycle模型在声明范围内具备一致且可实现的完整设计，不证明实现或验证已经完成。
-Task当前保持`in_progress`。C2 lifecycle kernel已形成；D0 stage-evidence candidate通过后仍必须执行正式base
-reconcile、fresh Phase 2、fresh Task Commit与完整Branch Review。C3-C6与D443/D436后续实现必须迁移全部production
-consumer，并在E434 activation前证明旧mapping reader、writer、active domain reference、pre-Closure
-closing-effect owner与old public ID consumer均为零。
+Task当前保持`in_progress`。C2 lifecycle kernel与D0 stage-evidence correction已形成committed/reconciled
+candidate；任何finding fix后均必须重建fresh Phase 2、fresh Task Commit与完整Branch Review。C3-C6与D443/D436
+后续实现必须迁移全部production consumer，并在E434 activation前证明旧mapping reader、writer、active domain
+reference、pre-Closure closing-effect owner与old public ID consumer均为零。

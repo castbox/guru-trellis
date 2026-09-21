@@ -15,5 +15,5 @@
 
 Architecture source reference：`architecture-contribution-454-task-lifecycle-state-model-v1`。Promotion 必须由
 RDT 与 Architecture owners 按 expected current `.58` 串行执行；任何 promotion-created diff 都重新进入 fresh
-Phase 2、Task Commit 与完整 Branch Review。D0 candidate 已完成定向验证，但仍必须先提交、执行正式 base
-reconcile 并重建上述证据；C3-C6、D443/D436 package migration 与 #434 production activation 仍是独立后续边界。
+Phase 2、Task Commit 与完整 Branch Review。D0 candidate 已提交并完成正式 base reconcile；后续任何 finding fix
+仍须重建上述证据。C3-C6、D443/D436 package migration 与 #434 production activation 仍是独立后续边界。

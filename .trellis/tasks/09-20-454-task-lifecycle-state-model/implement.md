@@ -57,9 +57,9 @@ owner，不开始生产编辑。
 ## 3. Delivery policy
 
 Phase C 是本 task 的首个独立 Delivery slice。它只交付 substrate 与 package-ready canonical contracts；它不要求
-Phase D443、Phase D436 或 Phase E434 已完成。当前实现状态为 C2 lifecycle kernel 已提交，D0 stage-evidence
-contract correction candidate 已实现并通过定向验证，等待本 task commit 与正式 base reconcile；C3-C6 与其余
-Phase D/E 工作仍未完成。
+Phase D443、Phase D436 或 Phase E434 已完成。当前实现状态为 C2 lifecycle kernel 与 D0 stage-evidence contract
+correction 已提交并完成正式 base reconcile；任何 finding fix 后均须重建 fresh Phase 2、Task Commit 与完整
+Branch Review。C3-C6 与其余 Phase D/E 工作仍未完成。
 
 独立可交付条件：
 
@@ -73,9 +73,9 @@ Phase D/E 工作仍未完成。
 - old mappings与`guru-create-task-workspace`仍作为当前 production predecessor保留，但 Phase C 新代码零读取、
   零写入，退役由 Phase E434 activation transaction完成。
 
-剩余工作 owner：Phase D0、Phase D443、Phase D436 与 Phase E434。D0 可以在本 #454 task 内提前完成，因为它是
-本 task 自身 fresh Phase 2 与完整 Branch Review 的必要承接修复；它不替 D443/D436 迁移 lifecycle package，也不替
-E434 激活 production graph。
+剩余工作 owner：Phase D443、Phase D436 与 Phase E434。D0 已在本 #454 task 内完成，因为它是本 task 自身 fresh
+Phase 2 与完整 Branch Review 的必要承接修复；它不替 D443/D436 迁移 lifecycle package，也不替 E434 激活
+production graph。
 
 ## 4. 实施切片
 
