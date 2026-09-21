@@ -1,0 +1,124 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-21T08:03:48Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-21-456-task-lifecycle-contract-reconcile",
+    "title": "#456 对齐 #443/#436/#434 public consumer 到 #454 lifecycle contract",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/456-task-lifecycle-contract-reconcile",
+    "commits": [
+      "b62c74484661592ee110facfa6ca9db653cb218c",
+      "8755e61e449402e68aa774057947448d1b80142d",
+      "42c80c14bc779b52bbedf7c5f72db40094e0a7e0"
+    ],
+    "changed_paths": [
+      ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/check.jsonl",
+      ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/design.md",
+      ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/implement.jsonl",
+      ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/implement.md",
+      ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/prd.md",
+      ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/01-current-contract-inventory.md",
+      ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/02-contract-mapping.md",
+      ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/03-migration-boundary.md",
+      ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/04-reconcile-result.md",
+      ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/task.json",
+      ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/design.md",
+      ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/implement.md",
+      ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/prd.md",
+      ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/task.json"
+    ]
+  },
+  "github": {
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/457"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#456 对齐 #443/#436/#434 public consumer 到 #454 lifecycle contract",
+    "outcome": "记录 #443、#436、#434 三组 public consumer 的 47 项 current contract inventory。",
+    "changed_behavior": [
+      "记录 #443、#436、#434 三组 public consumer 的 47 项 current contract inventory。",
+      "将每项 contract 映射到 `#454@b695adc928c2064bd27f07e2bb3bbbd034540571`，固定 `retain|replace|retire|out_of_scope` disposition。",
+      "为 33 个 `replace|retire` 项明确唯一 migration owner、依赖、禁止激活边界、blocking、successor 与 completion proof。",
+      "隔离 Phase D package-ready source 与 Phase E434 workflow、registry、manifest、active installed/platform publication 的 mutation owner。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/design.md",
+          ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/implement.md",
+          ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/prd.md",
+          ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/01-current-contract-inventory.md",
+          ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/02-contract-mapping.md",
+          ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/03-migration-boundary.md",
+          ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/04-reconcile-result.md",
+          ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/design.md",
+          ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/implement.md",
+          ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/prd.md"
+        ],
+        "change": "记录 #443、#436、#434 三组 public consumer 的 47 项 current contract inventory。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/check.jsonl",
+          ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/implement.jsonl",
+          ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/task.json",
+          ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/task.json"
+        ],
+        "change": "记录 #443、#436、#434 三组 public consumer 的 47 项 current contract inventory。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [],
+      "pr_refs": [
+        "PR #457"
+      ],
+      "branches": [
+        "codex/456-task-lifecycle-contract-reconcile"
+      ],
+      "paths": [
+        ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/check.jsonl",
+        ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/design.md",
+        ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/implement.jsonl",
+        ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/implement.md",
+        ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/prd.md",
+        ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/01-current-contract-inventory.md",
+        ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/02-contract-mapping.md",
+        ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/03-migration-boundary.md",
+        ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/reconcile/04-reconcile-result.md",
+        ".trellis/tasks/09-21-456-task-lifecycle-contract-reconcile/task.json",
+        ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/design.md",
+        ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/implement.md",
+        ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/prd.md",
+        ".trellis/tasks/archive/2026-09/09-21-456-task-lifecycle-contract-reconcile/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#456 对齐 #443/#436/#434 public consumer 到 #454 lifecycle cont",
+        "记录 #443、#436、#434 三组 public consumer 的 47 项 current contract",
+        "完成 check.jsonl 相关变更"
+      ]
+    },
+    "retrieval_text": "#456 对齐 #443/#436/#434 public consumer 到 #454 lifecycle contract\n记录 #443、#436、#434 三组 public consumer 的 47 项 current contract inventory。\n将每项 contract 映射到 `#454@b695adc928c2064bd27f07e2bb3bbbd034540571`，固定 `retain|replace|retire|out_of_scope` disposition。\n为 33 个 `replace|retire` 项明确唯一 migration owner、依赖、禁止激活边界、blocking、successor 与 completion proof。\n隔离 Phase D package-ready source 与 Phase E434 workflow、registry、manifest、active installed/platform publication 的 mutation owner。\n#456 对齐 #443/#436/#434 public consumer 到 #454 lifecycle cont\n记录 #443、#436、#434 三组 public consumer 的 47 项 current contract\n完成 check.jsonl 相关变更"
+  }
+}
