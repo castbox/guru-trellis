@@ -5,14 +5,20 @@
 The semantic Skill has six caller-owned input profiles: `post_plan`,
 `post_check`, `post_commit`, `post_branch_review`, `post_publication`, and
 `finalizer_base_mismatch`. Each carries one exact active-task identity,
-`(task_head, old_base_head, new_base_head)`, selected base ref, and a closed
-`resume_target`. Profiles carrying an existing branch or publication judgment
-also carry its minimum caller-owned commit identity. There is no optional
-continuity bag.
+selected base ref, task HEAD, and a closed `resume_target`. The three
+pre-review profiles do not accept caller-supplied old/new base SHAs: the guard
+resolves the selected base and derives the old base from the unique live merge
+base of task HEAD and selected base. The three post-review profiles carry the
+adjacent old/new pair plus their minimum caller-owned full-review identity.
+There is no optional continuity bag.
 
 Before semantic invocation, `guard-task-base-pair` performs one live resolution
-of the selected base ref. It returns only `unchanged`, `current_pair`,
-`new_pair`, or `blocked`. It checks identity and ancestry, but never judges
+of the selected base ref. For a pre-review profile it treats the selected base
+being an ancestor of task HEAD as `unchanged`; otherwise it emits the
+operation-scoped `(live merge base, selected base HEAD)` pair. For a
+post-review profile it validates the caller-bound adjacent pair. It returns
+only `unchanged`, `current_pair`, `new_pair`, or `blocked`. It checks identity
+and ancestry, but never judges
 authority, task-content impact, integration impact, relevant paths, validation
 sufficiency, findings, or route. `unchanged` creates no checkpoint. A matching
 owner-private result makes `current_pair` return its already validated exact
@@ -43,9 +49,11 @@ assumptions, and task content form the authority/task-content clock. Advancing
 the integration clock alone never makes planning stale and never changes the
 caller's closed `resume_target`. If authority and task content remain unchanged
 and the exact candidate is compatible, `post_plan`, `post_check`, and
-`post_commit` return `reconciled` with the original `resume_target`. The three
-post-review profiles also return `reconciled` when the candidate preserves the
-reviewed-content identity. When that identity must advance, they return
+`post_commit` create one checked local reconciliation merge commit before
+returning `reconciled`. `post_plan` preserves `task_activation`; `post_check`
+and `post_commit` both route to fresh Phase 2. The three post-review profiles
+also return `reconciled` when the candidate preserves the reviewed-content
+identity. When that identity must advance, only those three profiles may return
 `review_continuity_required`; they do not route through implementation or a
 new full Branch Review. `planning_stale` is valid only when current live
 authority or an approved planning assumption has actually changed; it carries
@@ -95,20 +103,23 @@ There is no digest/schema version bump, fallback, or dual-read path. Existing
 managed-copy consistency and live candidate-tree comparisons remain in force
 when updating between candidate validation and persistent reconciliation.
 
-For a post-review continuity result, the AI completes the semantic gate before
-any persistent Git write. It then displays the exact branch, prior task HEAD,
-old/new base pair, prior full-review commit, candidate tree, commit message,
-and the fact that no push or remote mutation will occur. Current-dialogue confirmation
-authorizes only that displayed invocation and is not included in
-any request, result, checkpoint, or DTO.
+For every compatible pre-review result and every post-review continuity result,
+the AI completes the semantic gate before any persistent Git write. It then
+displays the exact branch, prior task HEAD, operation-scoped old/new pair,
+candidate tree, commit message, and the fact that no push or remote mutation
+will occur. A post-review continuity action also displays the prior full-review
+commit. Current-dialogue confirmation authorizes only that displayed invocation
+and is not included in any request, result, checkpoint, or DTO.
 
 `execute-base-reconciliation` is package-private. It requires a clean,
-uniquely branch-bound task worktree at the exact prior task HEAD, binds the
-selected ref to the exact new base, validates old-base and prior-review
-ancestry, creates one local `--no-ff` merge commit, and verifies exact parent
-order, result ancestry, candidate tree identity, and final cleanliness. Stale
-or mismatched preconditions fail before commit. A failed merge or candidate
-mismatch is aborted back to the prior task HEAD. The executor never pushes or records user authorization.
+uniquely branch-bound task worktree at the exact prior task HEAD and binds the
+selected ref to the exact new base. For pre-review profiles it re-derives the
+old base from the live merge base. For post-review profiles it validates the
+adjacent old-base ancestry and prior full-review ancestry. It creates one local
+`--no-ff` merge commit and verifies exact parent order, result ancestry,
+candidate tree identity, and final cleanliness. Stale or mismatched
+preconditions fail before commit. A failed merge or candidate mismatch is
+aborted back to the prior task HEAD. The executor never pushes or records user authorization.
 
 The recorder and checker validate the AI-authored result and live Git facts.
 They do not generate semantic retrieval terms or infer impact/route. The
@@ -143,10 +154,14 @@ Reconcile external exit; bounded base continuity is not used for this path.
 ## Exits
 
 - `reconciled`: the workflow router receives task/current-base identity and the
-  original `resume_target`.
+  checked resume target. `post_plan` preserves task activation; `post_check`
+  and `post_commit` route to fresh Phase 2; post-review profiles preserve their
+  closed target when no bounded continuity review is needed.
 - `review_continuity_required`: Branch Review receives the exact old/new pair,
   prior full-review commit, current reconciled task HEAD, candidate tree token,
-  semantically relevant paths, and original route for bounded continuity.
+  semantically relevant paths, and original route for bounded continuity. This
+  exit is invalid for `post_plan`, `post_check`, and `post_commit`, and cannot
+  substitute for the first complete Branch Review.
 - `implementation_required`: implementation receives exact finding refs and
   resumes the affected downstream graph.
 - `planning_stale`: Planning receives exact reason refs for changed live

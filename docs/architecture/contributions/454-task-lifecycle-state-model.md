@@ -14,9 +14,10 @@
 
 This contribution is task-owned and does not update shared CURRENT. Promotion
 requires independent committed full-diff review and an expected-current-bound
-Architecture owner action. C2 records only the shared lifecycle kernel and DTO
-substrate; C3-C6 package/runtime slices and #434 production activation remain
-pending.
+Architecture owner action. C2 records the shared lifecycle kernel and DTO
+substrate; D0 adds a candidate correction for Reconcile/Task Commit/Branch Review
+stage-evidence handoff. C3-C6 package/runtime slices, D443/D436 migration and
+#434 production activation remain pending.
 
 ## Boundary And Decision
 
@@ -32,9 +33,12 @@ mappings. The target boundary has one framework/extension split:
 4. #434 alone activates registry, workflow, manifest, installed and platform
    projections.
 
-C2 implements only item 2's contract/identity/source/result primitives. It
-does not add a durable identity index, second session store, workspace mapping
-reader, compatibility alias, dual-read, dual-write or production route.
+C2 implements only item 2's contract/identity/source/result primitives. D0
+changes only operation-scoped integration/review lineage: pre-review reconcile
+must commit the selected base before full review, while bounded continuity
+remains post-review only. Neither slice adds a durable identity index, durable
+`base_head`, second session store, workspace mapping reader, compatibility
+alias, dual-read, dual-write or production activation.
 
 ## Ownership And Source Identity
 
@@ -87,6 +91,12 @@ C2 focused validation covers the lifecycle unit suite, Fork preparation/source
 mapping, task validation, schema/compile checks, canonical/preset SSOT equality,
 forbidden-field and legacy-reader scans, line limits, zero
 `.trellis/scripts/**` diff and `git diff --check`.
+
+D0 focused validation covers pre-review pair derivation, expected-head-bound
+merge creation, parent order, fresh Phase 2 re-entry, full-review base ancestry,
+post-review continuity caller/ancestry/tree identity, and regression behavior
+for date-prefixed TaskRef plus created-Issue provenance and same-result recovery.
+The predecessor workspace/result structure is not part of the target model.
 
 The complete installer/upgrade/release matrix, registry closure, production
 workflow cardinality, installed/platform projection, C3-C6 behavior and live

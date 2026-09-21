@@ -21,7 +21,7 @@ assumptions。Target boundary分为：
 
 1. `castbox/Trellis` Fork独占official TaskId/TaskRef/generation/session primitives；
 2. Guru lifecycle kernel独占branch association、checkout acquisition/resolution、resource ledger与shared DTO；
-3. Phase D package owners消费substrate但不复制authority；
+3. Phase D0先修正stage-evidence承接，D443/D436 package owners随后消费substrate但不复制authority；
 4. Phase E434独占production graph与distribution activation。
 
 Decision refs：`ARCH-FND-001..006`、`ARCH-CUR-031`、`ARCH-INT-019`、ADR-011、Design Constitution五项原则。
@@ -45,6 +45,7 @@ Decision refs：`ARCH-FND-001..006`、`ARCH-CUR-031`、`ARCH-INT-019`、ADR-011�
 
 - Framework primitive writer: `castbox/Trellis` Fork task；
 - Guru substrate writer: #454 Phase C；
+- Reconcile/Task Commit/Branch Review stage-evidence writer: Phase D0；
 - Bind package writer: Phase D443；
 - Reactivate/Completion/Closure/Finish/Cleanup writers: Phase D436；
 - workflow/registry/manifest/installed/platform activation writer: Phase E434；

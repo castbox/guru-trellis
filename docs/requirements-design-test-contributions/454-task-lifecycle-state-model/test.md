@@ -20,6 +20,11 @@ Release matrix。
 - `T454-08`：静态边界证明 `.trellis/scripts/**` diff 为零，新 runtime 无 workspace mapping、second session store、
   durable identity index、compatibility alias、dual-read/dual-write；每个 touched non-generated runtime 文件低于
   3000 行。
+- `T454-09`：D0 focused tests覆盖pre-review pair guard、expected-head mismatch、双亲顺序、post_check/post_commit
+  fresh Phase 2 routing、full review base ancestry、continuity profile caller限制、prior-review/new-base ancestry、
+  candidate tree identity与首次review禁止continuity。Regression fixtures覆盖日期前缀TaskRef，以及created Issue
+  provenance/schema 3.0/same-result recovery不重复创建Issue；target contract不得读取旧workspace mapping或nested
+  result/digest。
 
-不运行或宣称完整多平台 installer、upgrade、workflow-switch、marketplace、release-candidate、registry closure、
+不运行或宣称完整多平台 installer、upgrade、workflow-switch、release-candidate、registry closure、
 active graph、installed/platform projection 或真实 business mutation evidence。

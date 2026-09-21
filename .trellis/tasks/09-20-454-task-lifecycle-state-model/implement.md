@@ -1,9 +1,10 @@
-# #454 Phase C 实施计划
+# #454 Phase C 与 Phase D0 实施计划
 
 ## 1. 计划目标与停止边界
 
-本计划只覆盖 #454 Phase C。交付目标是得到一组 package-ready、未激活的 lifecycle substrate 与 public owner
-contracts，供 Phase D443、Phase D436 和 Phase E434 后续消费。
+本计划覆盖 #454 Phase C substrate，以及在进入 Phase D443/D436 前必须完成的 Phase D0 stage-evidence contract
+migration。Phase C 交付 package-ready、未激活的 lifecycle substrate 与 public owner contracts；Phase D0 修正
+Reconcile、Task Commit 与 Branch Review 的承接合同，使后续 package migration 能在同一 #454 状态模型上运行。
 
 本 Planning 轮次只写 task-local 文档并完成 Phase 1 semantic approval。它不执行以下动作：
 
@@ -56,7 +57,9 @@ owner，不开始生产编辑。
 ## 3. Delivery policy
 
 Phase C 是本 task 的首个独立 Delivery slice。它只交付 substrate 与 package-ready canonical contracts；它不要求
-Phase D443、Phase D436 或 Phase E434 已完成。
+Phase D443、Phase D436 或 Phase E434 已完成。当前实现状态为 C2 lifecycle kernel 已提交，D0 stage-evidence
+contract correction candidate 已实现并通过定向验证，等待本 task commit 与正式 base reconcile；C3-C6 与其余
+Phase D/E 工作仍未完成。
 
 独立可交付条件：
 
@@ -70,7 +73,9 @@ Phase D443、Phase D436 或 Phase E434 已完成。
 - old mappings与`guru-create-task-workspace`仍作为当前 production predecessor保留，但 Phase C 新代码零读取、
   零写入，退役由 Phase E434 activation transaction完成。
 
-剩余工作 owner：Phase D443、Phase D436 与 Phase E434 各自任务。Phase C 不替这些 owner 迁移或激活。
+剩余工作 owner：Phase D0、Phase D443、Phase D436 与 Phase E434。D0 可以在本 #454 task 内提前完成，因为它是
+本 task 自身 fresh Phase 2 与完整 Branch Review 的必要承接修复；它不替 D443/D436 迁移 lifecycle package，也不替
+E434 激活 production graph。
 
 ## 4. 实施切片
 
@@ -279,6 +284,55 @@ Validation set：
 
 Exit：`phase_c_validated_inactive`。
 
+### D0 Stage Evidence Contract Migration
+
+Purpose：在 D443/D436 前修正现有 Reconcile/Task Commit/Branch Review 的阶段证据承接。该 slice 只处理
+operation-scoped Git integration identity 与 review lineage，不新增 durable `base_head`、不改变 TaskId/
+TaskLifecycleKey，也不把 Git HEAD 写入 tracked task authority。
+
+Canonical owners：
+
+- `guru-reconcile-task-base`：`post_plan`、`post_check`、`post_commit` 三个 pre-review profile，以及
+  `post_branch_review`、`post_publication`、`finalizer_base_mismatch` 三个 post-review profile；
+- `guru-create-task-commit`：继续只交付 exact committed candidate，不负责构造 old/new base pair；
+- `guru-review-branch`：full review 与 bounded continuity 两种互斥 profile；
+- canonical workflow、package interface/schema/consumer projection、dogfood installed copy 与 focused tests。
+
+Pre-review contract：
+
+1. pair guard fresh解析 selected base。只有 current selected base 已是 current task HEAD 的祖先时才返回
+   `unchanged`；不得把同一时刻读取的 base SHA 同时冒充 old/new pair；
+2. base 尚未进入 task committed history 时，从 live Git 唯一 merge-base派生 operation-scoped old base，构建
+   candidate并完成semantic impact review；
+3. compatible result在用户确认 exact branch、expected prior task HEAD、new base、candidate tree、双亲顺序、merge
+   message与零远端副作用后，创建 expected-head-bound 本地双亲 merge commit，parents 固定为
+   `[prior_task_head, new_base_head]`；
+4. `post_plan`保留`resume_target=task_activation`；`post_check`与`post_commit`形成merge commit后固定回 fresh
+   Phase 2，旧 Phase 2、Task Commit 与 Branch Review evidence全部 stale，不得直接进入 Task Commit或full Branch
+   Review。
+
+Full Branch Review contract：
+
+- 首次/full review只审查 committed `origin/<selected-base>...reconciled-HEAD`；selected base必须是review HEAD祖先；
+- `post_commit`不是 bounded continuity entry；current base尚未进入task history时不得用triple-dot审查替代reconcile；
+- bounded continuity只允许`post_branch_review`、`post_publication`与`finalizer_base_mismatch`，并要求prior full
+  Branch Review commit、new base与current reconciled HEAD满足ancestry和candidate tree identity合同；
+- continuity只承接已存在的full review，不得为首次full review造出pass。
+
+Base updates carried into migration ledger：
+
+- #459 的日期前缀 TaskRef locator 行为保留到 D436 Reactivate major替换；target实现仍以`task.json.id`为TaskId
+  authority，不复制旧 locator/result结构；
+- #460/#462 的created Issue target provenance、schema 3.0一致性与output-loss recovery不重复创建Issue的行为保留到
+  E434切换`guru-create-task`；target实现不复用旧nested result/digest或workspace mapping。
+
+Validation：Reconcile/Branch Review package unit/contract tests、base-continuity integration、workflow/package contract、
+consumer projection、canonical/installed parity、preset reapply/drift、task validation、`git diff --check`，并证明
+`.trellis/scripts/**` diff为零。
+
+Exit：`stage_evidence_contract_ready`。该exit只表示D0 candidate完成；随后对本task执行正式base reconcile，并按
+`fresh Phase 2 -> fresh Task Commit -> full Branch Review`重建证据。它不表示C3-C6、D443、D436或E434完成。
+
 ## 5. Subtraction 与兼容策略
 
 Direct evolution选择：replace + synchronized later retirement。
@@ -286,7 +340,7 @@ Direct evolution选择：replace + synchronized later retirement。
 - Phase C新增target-native substrate，新代码不读写old mappings；
 - predecessor `guru-create-task-workspace`、mapping runtime与旧session contract在Phase C保留为active production，
   只因Phase E尚未切图；
-- Phase D迁移package major，但不翻active selector；
+- Phase D0先修正stage-evidence承接；D443/D436再迁移package major，但不翻active selector；
 - Phase E在一个activation transaction中切换workflow/registry/manifest/projections并删除old readers/writers/IDs；
 - 不存在兼容alias、长期adapter、dual-read、dual-write或两套owner同时active的中间态。
 
@@ -324,5 +378,6 @@ Phase C通过条件：
 9. focused validation与Release matrix边界如实报告；
 10. 所有touched non-generated code file不超过3000行，或在同一slice先完成reviewed split。
 
-Phase C完成后仍禁止production activation。后续固定进入Phase D443，再进入Phase D436，最后由Phase E434 fresh
-reconcile并执行atomic activation。
+Phase C完成后仍禁止production activation。后续固定先完成Phase D0，再进入Phase D443与Phase D436，最后由
+Phase E434 fresh reconcile并执行atomic activation。#459、#460/#462 仅以迁移账本中的行为保证被承接，不把旧
+predecessor数据模型带入target graph。

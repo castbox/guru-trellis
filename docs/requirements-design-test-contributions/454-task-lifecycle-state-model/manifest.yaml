@@ -9,7 +9,7 @@ status: "candidate_pending_review"
 authority_scope: "isolated_contribution"
 architecture_impact: "architecture_impact"
 change_path: "target_native"
-implementation_state: "c2_lifecycle_kernel_candidate"
+implementation_state: "c2_lifecycle_kernel_plus_d0_stage_evidence_validated_candidate"
 contribution:
   requirements: "docs/requirements-design-test-contributions/454-task-lifecycle-state-model/requirements.md"
   design: "docs/requirements-design-test-contributions/454-task-lifecycle-state-model/design.md"

@@ -82,10 +82,26 @@ copy、platform projection或workflow target。Package existence不等于product
 
 ## 5. Consumer boundary
 
+- Phase D0消费operation-scoped Git facts，修正Reconcile、Task Commit与Branch Review的stage-evidence lineage；它不
+  消费或写入durable task identity，也不创建新的generic evidence store；
 - Phase D443消费TaskLifecycleDTO、Fork session primitive与TaskId -> TaskRef resolver；
 - Phase D436消费TaskLifecycleKey、branch/resource/result primitives；
 - Phase E434消费package-ready interfaces并独占workflow/registry/manifest/projection activation；
 - #410保留完整Release matrix；Phase C只运行focused validation。
+
+### 5.1 Phase D0 stage-evidence ownership
+
+| Surface | Owner | D0 contract | Forbidden carry-over |
+| --- | --- | --- | --- |
+| selected base / current task HEAD / merge-base | live Git facts | pair guard每次fresh解析，old base只在当前operation由唯一merge-base派生 | tracked/session/general DTO `base_head` authority |
+| pre-review reconciliation commit | `guru-reconcile-task-base` | compatible `post_plan/post_check/post_commit`创建expected-head-bound双亲merge commit | no-commit `reconciled`后直接进入Task Commit/Branch Review |
+| committed implementation candidate | `guru-create-task-commit` | 输出exact `branch_review_commit`与portable base ref，不构造base pair | caller补造old/new base SHA |
+| first/full review | `guru-review-branch` full profile | selected base必须是review HEAD祖先，审查committed `base...HEAD` | current base未入history时直接triple-dot审查 |
+| bounded continuity | Reconcile + `guru-review-branch` continuity profile | 只承接prior full review，验证prior review/new base ancestry与candidate tree identity | `post_commit`或首次review使用continuity |
+
+#459/#460/#462仍属于current predecessor maintenance：D0只在计划与测试中登记其target行为保证。日期前缀TaskRef
+由D436 target resolver承接；created Issue provenance、schema一致性与same-result recovery由Phase C `guru-create-task`
+candidate及E434 cutover承接。D0不得复制旧workspace mapping、nested result/digest或legacy TaskId推断。
 
 ## 6. Zero-copy and zero-second-authority checks
 

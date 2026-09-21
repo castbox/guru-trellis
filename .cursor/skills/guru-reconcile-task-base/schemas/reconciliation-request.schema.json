@@ -1,6 +1,9 @@
 {
   "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-reconcile-task-base-reconciliation-request-1.0",
   "type":"object","additionalProperties":false,
-  "required":["task_ref","branch","prior_task_head","selected_base_ref","old_base_head","new_base_head","branch_review_commit","candidate_tree_sha256","commit_message"],
-  "properties":{"task_ref":{"type":"string","pattern":"^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},"branch":{"type":"string","minLength":1},"prior_task_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"selected_base_ref":{"type":"string","minLength":1},"old_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"new_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"branch_review_commit":{"type":"string","pattern":"^[0-9a-f]{40}$"},"candidate_tree_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"commit_message":{"type":"string","minLength":1,"maxLength":500,"pattern":"^[^\\r\\n]+$"}}
+  "required":["profile","task_ref","branch","prior_task_head","selected_base_ref","old_base_head","new_base_head","resume_target","candidate_tree_sha256","commit_message"],
+  "properties":{"profile":{"enum":["post_plan","post_check","post_commit","post_branch_review","post_publication","finalizer_base_mismatch"]},"task_ref":{"type":"string","pattern":"^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},"branch":{"type":"string","minLength":1},"prior_task_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"selected_base_ref":{"type":"string","minLength":1},"old_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"new_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"resume_target":{"enum":["task_activation","task_commit","branch_review","publication_review","task_finalization","finalization_resume"]},"branch_review_commit":{"type":"string","pattern":"^[0-9a-f]{40}$"},"candidate_tree_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"commit_message":{"type":"string","minLength":1,"maxLength":500,"pattern":"^[^\\r\\n]+$"}},
+  "allOf":[
+    {"if":{"properties":{"profile":{"enum":["post_branch_review","post_publication","finalizer_base_mismatch"]}},"required":["profile"]},"then":{"required":["branch_review_commit"]},"else":{"not":{"required":["branch_review_commit"]}}}
+  ]
 }

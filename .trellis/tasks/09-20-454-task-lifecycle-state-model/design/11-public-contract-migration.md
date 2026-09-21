@@ -29,11 +29,11 @@ Public handoff只使用以下封闭DTO族。Repository context由调用图验证
 | `TerminalFinishRefDTO` | `task_id`、`lifecycle_generation`、`finish_result_id`、`cleanup_state` | inventory缺失时证明Finish已terminal并进入manual Cleanup |
 | `CleanupResultRefDTO` | `task_id`、`lifecycle_generation`、`cleanup_result_id` | 恢复同一Cleanup result |
 | `PlanningApprovalRefDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`result_id` | Activation消费current Planning approval |
-| `BaseReconcileResultDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`task_head`、`new_base_head`、`resume_target`、`result_id` | 恢复base reconcile后的exact stage |
+| `BaseReconcileResultDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`task_head`、`new_base_head`、`resume_target`、`result_id` | 恢复base reconcile后的exact stage；`task_head`固定为reconciled merge commit |
 | `BaseContinuitySeedDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`task_head`、`old_base_head`、`new_base_head`、`branch_review_commit`、`candidate_tree_sha256`、`relevant_paths`、`resume_target`、`result_id` | Branch Review执行bounded continuity |
 | `BaseContinuityResultDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`branch_review_commit`、`resume_target`、`result_id` | base-continuity router恢复exact原stage |
 | `Phase2ResultDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`phase2_commit_anchor`、`result_id` | Task Commit消费current Phase 2 pass |
-| `TaskCommitResultDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`base_ref`、`branch_review_commit`、`result_id` | Branch Review消费exact committed candidate |
+| `TaskCommitResultDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`base_ref`、`branch_review_commit`、`result_id` | pair guard fresh解析base；Branch Review只消费exact committed candidate，不从本DTO取得old/new base pair |
 | `BranchReviewResultDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`branch_review_commit`、`result_id` | Publication消费current complete-range review |
 | `PublicationReadyDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`branch_review_commit`、`pr_title`、`pr_body`、`result_id` | Finalizer消费reviewed closeout payload |
 | `DeliveryReviewReadyDTO` | `task_id`、`task_ref`、`lifecycle_generation`、`delivery_cycle_ref`、`reviewed_head`、`pr_title`、`pr_body`、`remaining_work_state`、`result_id` | Publish Delivery消费reviewed slice payload |
@@ -52,6 +52,10 @@ DTO不携带absolute path、checkout path、resource list、Issue snapshot、aut
 checkpoint locator或generic digest bundle。只有上表operation-specific DTO中具有直接consumer的commit/head字段能
 跨相邻Skill传递；它们只绑定该次handoff freshness，不进入tracked task metadata、session、association或通用
 evidence authority。Consumer仍必须fresh重读live facts并验证这些identity。
+
+`BaseReconcileResultDTO.new_base_head`与`BaseContinuitySeedDTO.old_base_head/new_base_head`都是operation-scoped Git
+identity。它们不属于TaskId、TaskLifecycleKey、task metadata或跨阶段共享authority。Pre-review pair的old base只由
+当前task HEAD与fresh selected base的唯一merge-base派生；Task Commit producer与caller都不得补造该pair。
 
 DTO外独立public scalar enum只有以下三组：`session_outcome=session_bound|explicit_task_mode`；`resume_target`使用workflow已声明
 的named target id；`merge_lineage=closeout|pre_cutover_recovered`。任何其它跨owner字段必须先进入上表中的named DTO；实现不得在schema中临时增加自由格式
@@ -170,6 +174,21 @@ declared intent和fresh lifecycle state选择本文件已列出的named Skill，
 | `guru-merge-task-pr` | `merged -> guru-review-task-completion`；`review_refresh_required -> guru-review-branch`；`implementation_required -> guru-resume-implementation`；`merge_blocked -> stop`；`phase2_reentry_required`与`closure_mismatch` retired。Merge不读取closing keywords、不读取Issue、不验证Closure effect |
 | `guru-restore-archived-task` | `restored_to_phase2 -> guru-resume-implementation`；`restored_for_merge_recovery -> guru-merge-task-pr` terminal-recovery profile；`restore_blocked -> stop` |
 
+`guru-reconcile-task-base`的consumer projection按profile封闭：
+
+| Caller profile | Compatible mutation/result | Unique next owner |
+| --- | --- | --- |
+| `post_plan` | expected-head-bound local merge commit + `BaseReconcileResultDTO(resume_target=task_activation)` | `phase-1-task-activation` |
+| `post_check` | expected-head-bound local merge commit + stale old Phase 2/Task Commit/Review slots | fresh `guru-check-task` chain |
+| `post_commit` | expected-head-bound local merge commit + stale old Phase 2/Task Commit/Review slots | fresh `guru-check-task` chain |
+| `post_branch_review` | local merge commit + `BaseContinuitySeedDTO` bound to prior full review | `guru-review-branch` continuity profile |
+| `post_publication` | local merge commit + `BaseContinuitySeedDTO` bound to prior full review | `guru-review-branch` continuity profile，随后恢复Publication |
+| `finalizer_base_mismatch` | local merge commit + `BaseContinuitySeedDTO` bound to prior full review | `guru-review-branch` continuity profile，随后恢复Finalizer链 |
+
+Pre-review `unchanged`只在fresh selected base已经是current task HEAD祖先时成立。`post_commit`不得投影到
+`review_continuity_required`。Post-review continuity没有prior full Branch Review、ancestry不成立或candidate tree
+identity不匹配时fail closed，不降级为continuity pass，也不把首次full review改成triple-dot-only审查。
+
 上述owner的output projection固定如下，不沿用旧path-only output：
 
 | Producer exit | Minimal output |
@@ -261,7 +280,9 @@ Old Finalizer写入的archive presence不是Finish result。只有新`guru-finis
    `TaskArtifactDTO`。Router或最终 consumer需要 task artifact 时，必须按 TaskId fresh派生 TaskRef并验证generation。
 9. Exit或consumer未出现在本文件、interface package与workflow graph三方一致集合中时，activation gate失败。
 10. Reserved receipt ref namespace不得出现在Create、Reactivate、Ensure Checkout、Rebind、Delivery target或
-   missing-association candidate的validated target set中。
+    missing-association candidate的validated target set中。
+11. Full Branch Review只接受selected base为review HEAD祖先的committed range。Pre-review reconcile后必须先按
+    fresh Phase 2形成新的`TaskCommitResultDTO`；bounded continuity仅消费post-review `BaseContinuitySeedDTO`。
 
 ## 6. 旧public identity处置
 

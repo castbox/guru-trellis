@@ -1,0 +1,13 @@
+{
+  "scenario": "Compatible post-check base advance requires a committed integration HEAD before downstream evidence can continue.",
+  "owner_staging": {
+    "recipe": "pre-review-compatible-reconciled",
+    "expected_resume_target": "phase2"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--invocation",
+      "-"
+    ]
+  }
+}

@@ -24,6 +24,8 @@ class ContractTest(unittest.TestCase):
         self.assertEqual(6,len(interface['external_exits'])); self.assertEqual(8,len(commands['commands']))
         eval_ids={item['id'] for item in json.loads((PACKAGE/'evals/evals.json').read_text())['evals']}
         self.assertIn('unrelated-base-delta-reconciled',eval_ids)
+        self.assertIn('post-check-reconciled-reenters-phase2',eval_ids)
+        self.assertIn('post-commit-reconciled-reenters-phase2',eval_ids)
         for profile in interface['public_contracts']['input']['profiles']:
             self.assertEqual([],validate(PACKAGE/profile['schema']['path'],json.loads((PACKAGE/profile['example']['path']).read_text())))
         for output in interface['public_contracts']['outputs']:
@@ -51,8 +53,10 @@ class ContractTest(unittest.TestCase):
         self.assertTrue(validate(PACKAGE/'schemas/public-post-plan-input.schema.json',post))
         post_commit=json.loads((PACKAGE/'examples/public-post-commit-input.json').read_text())
         self.assertNotIn('branch_review_commit',post_commit)
+        self.assertNotIn('old_base_head',post_commit)
+        self.assertNotIn('new_base_head',post_commit)
         self.assertEqual([],validate(PACKAGE/'schemas/public-post-commit-input.schema.json',post_commit))
-        post_commit['branch_review_commit']=post_commit['task_head']
+        post_commit['old_base_head']=post_commit['task_head']
         self.assertTrue(validate(PACKAGE/'schemas/public-post-commit-input.schema.json',post_commit))
     def test_workflow_consumer_locators_exist_and_accept_exact_projection(self):
         interface=json.loads((PACKAGE/'interface.json').read_text())
@@ -89,6 +93,8 @@ class ContractTest(unittest.TestCase):
         self.assertIn('never pushes or records user authorization',contract)
         self.assertIn('never consumes the ordinary Task Commit path',contract)
         self.assertIn('bounded base continuity is not used',contract)
+        self.assertIn('live merge base',contract)
+        self.assertIn('fresh Phase 2',contract)
     def test_help_is_side_effect_free(self):
         for command in json.loads((PACKAGE/'commands.json').read_text())['commands']:
             with self.subTest(command=command['id']): self.assertEqual(0,main(PACKAGE,[command['id'],'--help']))

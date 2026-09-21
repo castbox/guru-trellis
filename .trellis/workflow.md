@@ -471,10 +471,10 @@ An adjacent current public DTO goes directly to its declared unique consumer. If
 | Stage/output state | Required owner/action |
 | --- | --- |
 | Phase 2 has no current semantic result/checkpoint | Freshly invoke `guru-maintain-architecture-baseline:task_impact_sync(stage=phase2)`, then freshly invoke `guru-check-task`. |
-| The adjacent current `guru-check-task:passed` DTO is still held | Pass it directly to `guru-create-task-commit`. |
+| The adjacent current `guru-check-task:passed` DTO is still held | Pass it through the Phase 2 pair guard. An unchanged pair enters `guru-create-task-commit`; a compatible new pair is committed by Reconcile and returns to fresh Phase 2. |
 | The `passed` DTO was lost but the producer checkpoint may still be current | Run the producer's `check-phase2-check` first. Only after that checker succeeds may `invoke-guru-check-task` consume the checked checkpoint and current public input to rematerialize the formal DTO. If the checker or invocation fails, discard the attempted transition and freshly rerun Phase 2 Architecture followed by `guru-check-task`; failure never becomes `passed`. |
 | Task Commit output was lost after its mutation | Re-enter the existing `guru-create-task-commit` same-candidate/receipt recovery. It must recover the same commit and must not create a second, empty, amended, or same-content commit. |
-| The adjacent current `guru-create-task-commit:committed` DTO is still held | Pass it through the task-commit pair guard, then invoke fresh Branch Review Architecture and `guru-review-branch`. |
+| The adjacent current `guru-create-task-commit:committed` DTO is still held | Pass it through the task-commit pair guard. An unchanged pair enters fresh Branch Review Architecture and `guru-review-branch`; a compatible new pair is committed by Reconcile and returns to fresh Phase 2. |
 | Branch Review DTO is absent/stale/lost or its producer checkpoint retired | Freshly invoke `task_impact_sync(stage=branch_review)` over the complete current committed `origin/<base>...HEAD` range, then freshly invoke `guru-review-branch`. Do not reuse Phase 2. |
 | The adjacent current `guru-review-branch:passed` DTO is still held | Pass it through the pair guard to `guru-review-task-publication`. |
 | Publication DTO is absent/stale/lost or its producer checkpoint retired | Freshly invoke `task_impact_sync(stage=publication)`, then freshly invoke `guru-review-task-publication` against live Issue/PR/payload authority. |
@@ -725,10 +725,12 @@ its fresh current route invokes guru-check-task; failed/unverified mandatory
 checks, conflict, incompleteness, stale identity, or fitness regression follow
 their Architecture routes and cannot become a Phase 2 pass.
 
-Guru-check-task's passed exit first enters the active-task pair guard
-with `resume_target=task_commit`; only the checked resumed route continues to
-guru-create-task-commit. Task or planning findings return through their
-declared workflow targets.
+Guru-check-task's passed exit first enters the active-task pair guard with
+`resume_target=task_commit`. Only `unchanged` resumes directly to
+guru-create-task-commit. A compatible `new_pair` must be integrated by the
+confirmed expected-head Reconcile executor and its checked `reconciled` output
+returns to fresh Phase 2; it cannot reuse the pre-integration check. Task or
+planning findings return through their declared workflow targets.
 
 ## Phase 3: Finish
 
@@ -749,9 +751,12 @@ then run `invoke-guru-create-task-commit` once through `scripts/invoke.sh` with
 the returned candidate locator. Older argument shapes select the command's
 compatibility branch; message-check, create, and other component commands remain
 package-private testing/diagnosis/recovery entries and are not the normal Agent
-sequence. Consume only the declared Skill exit. Committed
-enters the active-task pair guard with `resume_target=branch_review` before
-Branch Review.
+sequence. Consume only the declared Skill exit. Committed enters the
+active-task pair guard with `resume_target=branch_review` before Branch Review.
+Only `unchanged` resumes directly to Branch Review. A compatible `new_pair` is
+integrated as one confirmed expected-head local merge commit and returns to
+fresh Phase 2; the pre-integration Task Commit result is not Branch Review
+evidence.
 
 #### 3.5 Branch review
 
@@ -783,7 +788,10 @@ affected validation; it never represents itself as a new complete Branch
 Review. Its distinct `continuity_passed` exit projects the current
 continuity-reviewed reconciliation commit as `branch_review_commit` for the
 downstream Publication input, preserves the prior task-content review as private
-evidence, and resumes the original closed target.
+evidence, and resumes the original closed target. This profile accepts only
+Reconcile outputs from `post_branch_review`, `post_publication`, or
+`finalizer_base_mismatch`; `post_plan`, `post_check`, and `post_commit` must
+never enter bounded continuity or use it as the first complete Branch Review.
 
 #### 3.6 Publication review
 
@@ -964,16 +972,21 @@ Only a new pair invokes guru-reconcile-task-base.
 The semantic owner reads live authority and current task/base facts, follows
 the installed semantic-retrieval SSOT, and returns exactly one declared exit.
 The base pair is an integration clock independent from the live authority and
-task-content clock. A base advance alone does not invalidate planning or reset
-the current phase. Before complete Branch Review, when authority and approved
-task assumptions remain valid and the exact candidate is compatible, the owner
-returns `reconciled` and the router preserves the caller's closed
-`resume_target`, including `resume_target=task_activation` after Planning.
+task-content clock. A base advance alone does not make planning or task content
+stale. For `post_plan`, `post_check`, and `post_commit`, the guard derives the
+operation pair from the unique live merge base and selected base HEAD; callers
+do not provide old/new base SHAs. When the exact candidate is compatible, the
+owner first displays and executes one confirmed expected-head local merge
+commit. `post_plan` then resumes `task_activation`; `post_check` and
+`post_commit` return to fresh Phase 2 so all downstream evidence is rebuilt
+against the committed integration HEAD.
 After complete Branch Review, Publication, or a Finalizer base mismatch, the
 same compatible result may return `reconciled` only when the candidate preserves
 the current reviewed-content identity. If task content remains unchanged but
 the candidate needs a new reviewed-content identity, the owner returns
-`review_continuity_required`; after the AI judgment it displays the exact task
+`review_continuity_required`; this exit is limited to those three post-review
+profiles and cannot replace the first complete Branch Review. After the AI
+judgment it displays the exact task
 branch, expected task/base HEADs, candidate tree, commit scope, and zero remote
 effects, obtains confirmation for that mutation, and invokes its deterministic
 expected-head executor to create exactly one persistent local reconciliation

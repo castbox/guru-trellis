@@ -107,13 +107,28 @@ Task Commit、Branch Review、closeout Publication、Delivery Review、Delivery 
 ### 5.2 Reconcile 与 retarget
 
 普通 base reconcile 只处理 target ref 的内容演进，不修改 `task.json.base_branch`。旧 HEAD 变为新 HEAD
-属于 live Git 变化，不是 task metadata mutation。`guru-reconcile-task-base`成功后固定执行以下 transition：
+属于 live Git 变化，不是 task metadata mutation。old base、new base、merge-base与task HEAD只允许存在于当前
+pair-guard/Reconcile/Review operation及其相邻consumer DTO中，不形成跨阶段通用`base_head` authority。
+
+Pre-review profile固定分为`post_plan`、`post_check`与`post_commit`。Pair guard每次fresh解析selected base：只有
+selected base已是current task HEAD祖先时才是`unchanged`；否则从live Git唯一merge-base派生operation-scoped old
+base。Compatible reconcile必须在用户确认exact expected prior task HEAD、new base、candidate tree、双亲顺序、merge
+message与零远端副作用后，创建parents为`[prior_task_head, new_base_head]`的本地merge commit。它不得仅记录
+candidate后返回一个未把new base纳入task history的`reconciled`结果。
+
+`guru-reconcile-task-base`成功后固定执行以下 transition：
 
 - Task Commit pair、Phase 2 check、Branch Review、closeout Publication、Delivery Review、Delivery Publication、
   Completion、Closure与Finish eligibility全部 stale；
 - semantic impact未改变需求、设计或验收合同时，Planning approval保持current；
 - semantic impact改变需求、设计或验收合同时，Planning approval变为stale，并进入现有Planning/scope re-entry；
-- 新 evidence只能由各原owner基于reconciled HEAD重新形成，reconcile result不得替代任一 semantic pass。
+- `post_plan`保留原`task_activation` resume target；`post_check`与`post_commit`固定回fresh Phase 2；
+- 新 evidence只能由各原owner基于reconciled committed HEAD重新形成，reconcile result不得替代任一 semantic pass。
+
+首次/full Branch Review只接受selected current base是review HEAD祖先的committed range，并审查
+`origin/<base>...reconciled-HEAD`。`post_commit`不得进入bounded continuity。Bounded continuity只适用于已存在prior
+full Branch Review的`post_branch_review`、`post_publication`与`finalizer_base_mismatch`，并要求prior review commit、
+new base都是current reconciled HEAD祖先且candidate tree identity匹配；它不能替代首次full review。
 
 Target缺失与target relation变化均由`guru-retarget-task-delivery`处理。缺失时使用`establish_missing` profile，
 已存在关系变化时使用`retarget_existing` profile；两者均执行以下流程：

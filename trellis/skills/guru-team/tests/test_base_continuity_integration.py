@@ -309,12 +309,14 @@ class BaseContinuityIntegrationTest(unittest.TestCase):
             ),
         )
         request = {
+            "profile": "finalizer_base_mismatch",
             "task_ref": TASK_REF,
             "branch": "feat/continuity",
             "prior_task_head": self.review_head,
             "selected_base_ref": self.new_base,
             "old_base_head": self.old_base,
             "new_base_head": self.new_base,
+            "resume_target": "finalization_resume",
             "branch_review_commit": self.review_head,
             "candidate_tree_sha256": candidate["candidate_tree_sha256"],
             "commit_message": "chore(base): reconcile reviewed task",

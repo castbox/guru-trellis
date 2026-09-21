@@ -144,7 +144,11 @@ Branch Review pass、Publication ready 与 Finalizer base-only mismatch 六类�
 同一 deterministic pair guard：unchanged pair 直接恢复原 `resume_target`；new pair 才调用
 semantic owner。六个 Gate exits 分别恢复原 route、进入 bounded Branch Review continuity、
 返回 implementation、返回 Planning、进入 requirement clarification 或 fail closed。Base SHA
-变化本身不使 authority、task-content review 或 Publication metadata stale；Finalizer 的
+变化本身不使 authority、task-content review 或 Publication metadata stale。Pre-review
+compatible new pair 必须先形成 expected-head-bound 本地双亲 merge commit；`post_plan` 恢复
+task activation，`post_check`/`post_commit` 回 fresh Phase 2。Bounded continuity 只接受
+`post_branch_review`、`post_publication`、`finalizer_base_mismatch`，不能替代首次完整 Branch
+Review。Finalizer 的
 `base_reconciliation_required` 与 `publication_review_stale` 是两个独立合同。
 
 每个 standard task 还必须在 Planning、qualified implementation discovery

@@ -2,7 +2,8 @@
 
 状态：`candidate_pending_review`。本 contribution 绑定 Issue #454、当前 task 与
 `current-main-0.6.17-guru.58`，不是 shared current authority。当前实现状态只到 C2 shared
-lifecycle kernel；C3-C6、Phase D package migration 与 #434 activation 仍未完成。
+lifecycle kernel，并包含已实现、已通过定向验证但尚未提交和正式 reconcile 的 D0 stage-evidence contract
+correction candidate；C3-C6、D443/D436 package migration 与 #434 activation 仍未完成。
 
 - `R454-01`：每个 task 使用 immutable repository-local TaskId；TaskRef 是可变 locator。TaskId 必须能安全构造
   `refs/heads/guru-task-lifecycle/<TaskId>`，因此拒绝 `..`、trailing dot 与 `.lock` suffix。Rename、archive、
@@ -21,6 +22,11 @@ lifecycle kernel；C3-C6、Phase D package migration 与 #434 activation 仍未�
 - `R454-06`：C2 canonical/preset durable SSOT、source lock、README source identity、task-owned RDT/Architecture candidate
   与 focused tests 必须一致。C2 不修改 registry、workflow graph、active manifest、installed/platform projection，
   也不声明 production activation 或完整 Release evidence。
+- `R454-07`：Phase D0 必须让pre-review compatible base reconcile形成expected-head-bound committed merge HEAD；
+  `post_check/post_commit`固定回fresh Phase 2。首次/full Branch Review要求selected base是review HEAD祖先；bounded
+  continuity只承接已有prior full review。Old/new base SHA只属于当前operation与相邻consumer，不进入durable task
+  identity。#459、#460/#462 只承接日期前缀TaskRef、created Issue provenance与same-result recovery行为保证，不复用
+  predecessor workspace mapping、nested result/digest或legacy TaskId推断。
 
 完整 #454 lifecycle 行为仍以 live Issue 与 approved task planning 为 authority。本 candidate 不授权 commit、push、
 PR、merge、shared-current promotion 或 cleanup。

@@ -8,7 +8,7 @@
 - 10条global invariant；
 - 16个lifecycle scenario；
 - 22条acceptance criteria，包括`AC-454-02A`；
-- 31条reachability constraint；
+- 33条reachability constraint；
 - primary transition matrix、8组active runtime-loss matrix、archived intent matrix与11-slot evidence invalidation matrix；
 - 11个owning design中的tracked authority、ignored control state、live Git facts、public Skill I/O与migration cutover；
 - #454 substrate、#443/#436 contract reconcile、受影响 package migration 与 #434 production graph activation 的
@@ -24,7 +24,8 @@
 
 ## 2. 本轮发现与修订
 
-本轮累计58个finding均已回写对应owning design，当前无open finding。
+本轮累计60个finding均已回写对应owning design，当前无open design finding；D0实现仍需通过fresh Phase 2与完整
+Branch Review验证。
 
 | Finding | 原问题 | 最终修订 |
 | --- | --- | --- |
@@ -86,6 +87,8 @@
 | F-454-D56 | Finish result把Cleanup seal误写成Finish authority的一部分 | Finish result固定包含terminal archive projection与sealed generation resource inventory；Cleanup result由独立Cleanup owner产生，不能反向组成Finish result |
 | F-454-D57 | #454、受影响 package 与 #434 的实现顺序未形成硬性依赖合同，可能先激活上层 graph 再固化旧 substrate 假设 | 固定为“#454 contract 定稿 -> #443/#436/#434 contract reconcile -> #454 substrate 实现 -> package/schema/projection/route migration -> fresh reconcile #434 -> #434 production graph 实现与 activation”；历史 #443/#436 task 文档和旧 Issue evidence immutable，#434 只消费 substrate 不复制 authority |
 | F-454-D58 | Session Association 要求 path-free `TaskLifecycleKey` handoff，但 Public Contract Migration 为 Bind success exits 使用含 `task_ref` 的 `TaskArtifactDTO` | Bind 六个成功 exits统一改为`TaskLifecycleDTO`；consumer按TaskId fresh派生TaskRef，session stored/public payload均不携带`task_ref` |
+| F-454-D59 | pre-review Reconcile只记录candidate、不把new base纳入task committed history，导致首次full Branch Review的base ancestry合同无法满足 | `post_plan/post_check/post_commit` compatible route统一创建expected-head-bound本地双亲merge commit；post_check/post_commit固定回fresh Phase 2 |
+| F-454-D60 | 把`post_commit`放入bounded continuity会让首次full review依赖不存在的prior review，并用triple-dot掩盖base未进入task history | continuity只允许post-Branch-Review/Publication/Finalizer；full review固定要求selected base为review HEAD祖先并审查committed range |
 
 ## 3. 单项收敛审查
 
@@ -100,7 +103,7 @@
 | 07 Resolution and Selection | pass | automatic/manual共用validator，authority conflict不可被selection绕过 |
 | 08 Session Association | pass | payload只含TaskId + generation，explicit-task mode与A -> B -> A闭合 |
 | 09 Ownership/Finish/Cleanup | pass | complete ledger、remote roles、Finish seal、Normal/manual/handoff Cleanup分区闭合 |
-| 10 Composition/Migration | pass | state vector、31 constraints、11-slot chain-specific invalidation、transition/loss matrices、atomic cutover与跨任务实施顺序一致 |
+| 10 Composition/Migration | pass | state vector、33 constraints、11-slot chain-specific invalidation、transition/loss matrices、D0 stage-evidence migration、atomic cutover与跨任务实施顺序一致 |
 | 11 Public Contract Migration | pass | 每个新增/受影响owner拥有完整exit、minimal output、唯一consumer、旧identity处置与跨任务承接边界 |
 
 ## 4. Global invariant review
@@ -174,6 +177,8 @@
 | TaskRef/branch/Issue替代TaskId | absent | candidate必须回验canonical TaskId |
 | source保存Closure disposition | absent | source只保存Issue/no-Issue identity |
 | base reconcile改写metadata HEAD | absent | HEAD/base HEAD只存在live facts或相邻operation DTO |
+| pre-review reconcile未形成committed integration HEAD | absent | compatible route必须创建expected-head-bound双亲merge commit；post_check/post_commit回fresh Phase 2 |
+| 首次full Branch Review被continuity替代 | absent | continuity要求prior full review；full profile要求selected base是review HEAD祖先 |
 | clean-only rebind永久阻断dirty task | absent | same-checkout-new-ref保持bytes不变 |
 | rebind隐式承担history迁移 | absent | invalid target保持原state并进入named reconciliation stop |
 | checkpoint冒充Task Commit/Phase 2 | absent | checkpoint只提供portable task-state bytes |
@@ -214,7 +219,8 @@
 8. session pointer由Bind Task Session拥有；
 9. resource ledger由acquisition、Checkpoint、Publication、Rebind、Transfer、Finish与Cleanup exact mutation拥有；
 10. stage evidence由Planning、Base Reconcile、Task Commit、Phase 2、Branch Review、Closeout Publication、
-    Delivery Review、Delivery Publication、Completion与Closure各自拥有一个slot；
+    Delivery Review、Delivery Publication、Completion与Closure各自拥有一个slot；D0只修正这些slot之间的
+    producer/consumer承接，不建立总evidence authority；
 11. terminal result与archive projection只由Finish拥有；
 12. resource deletion只由Cleanup exact profile拥有；
 13. pre-cutover premature archive recovery只由Restore Archived Task migration profiles拥有；
@@ -229,20 +235,24 @@ authority，也没有合法recovery依赖stored path、old mapping、closing key
 文档固定以下边界：
 
 - `task_workspace`只出现在问题背景、retired ID或migration说明，不再是领域对象；
-- `worktree_path`、`source_checkout`与`base_head`只作为停止读取的legacy字段出现；
+- `worktree_path`与`source_checkout`只作为停止读取的legacy字段出现；legacy durable `base_head`停止读取，exact
+  old/new base HEAD只允许作为live fact或相邻operation DTO出现；
 - “或”只用于封闭枚举、互斥route与确定性状态组合，不表达未决设计选择；
 - 禁用模糊措辞扫描无命中；
-- task目录仍为planning artifact；未修改Issue、production code、业务repository、commit、push或PR。
+- task当前为`in_progress`；C2已有本地commit，D0为未提交candidate。本轮未修改Issue、未push、未创建PR、未执行
+  新base reconcile merge或cleanup。
 - #434 只作为 #454 substrate 的后置 consumer；本 task没有提前激活 #434，也没有把 #443/#436 历史 task 文档或
   旧 Issue evidence 回改成新 contract 证据。
 
 ## 10. Final feasibility judgment
 
 在PRD声明的正常协作、单repository lifecycle、无hostile actor、无分布式锁/并发压力/crash-consistency扩张、
-不提前激活#434的边界内，11个owning design已经单项收敛并联合闭合。16个场景、22条AC、31条reachability
-constraint、8组active runtime-loss组合、57个已修订finding、跨任务依赖顺序与完整public contract graph之间不存在已知矛盾、
+不提前激活#434的边界内，11个owning design已经单项收敛并联合闭合。16个场景、22条AC、33条reachability
+constraint、8组active runtime-loss组合、60个已修订finding、跨任务依赖顺序与完整public contract graph之间不存在已知矛盾、
 冲突或缺漏。
 
 该结论证明统一task lifecycle模型在声明范围内具备一致且可实现的完整设计，不证明实现或验证已经完成。
-Task继续保持`planning`；后续实现必须一次性迁移全部production consumer，并在activation前证明旧mapping reader、
-writer、active domain reference、pre-Closure closing-effect owner与old public ID consumer均为零。
+Task当前保持`in_progress`。C2 lifecycle kernel已形成；D0 stage-evidence candidate通过后仍必须执行正式base
+reconcile、fresh Phase 2、fresh Task Commit与完整Branch Review。C3-C6与D443/D436后续实现必须迁移全部production
+consumer，并在E434 activation前证明旧mapping reader、writer、active domain reference、pre-Closure
+closing-effect owner与old public ID consumer均为零。

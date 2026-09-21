@@ -1,7 +1,7 @@
 from __future__ import annotations
 import argparse, os, subprocess, sys, tempfile
 from pathlib import Path
-from common import git, checkpoint_path, index_tree_digest, is_ancestor, parse, read_json, repo_root, require_clean_worktree, resolve_commit, task_identity, validate_json, validate_public, validate_result
+from common import PRE_REVIEW_PROFILES, POST_REVIEW_PROFILES, git, checkpoint_path, index_tree_digest, is_ancestor, merge_base, operation_pair, parse, read_json, repo_root, require_clean_worktree, resolve_commit, task_identity, validate_json, validate_public, validate_result
 from runtime.io import CommandError
 
 def _managed_validation_command(command: list[str]) -> list[str]:
@@ -13,10 +13,10 @@ def _managed_validation_command(command: list[str]) -> list[str]:
 def guard(package_root: Path, argv: list[str]) -> dict:
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--input",required=True)
     args=parse(parser,argv); repo=repo_root(args.root); public=read_json(repo,package_root,args.input,"input"); validate_public(package_root,public); allow_planning=public["profile"]=="post_plan"; task_identity(repo,public["task_ref"],allow_planning=allow_planning)
-    task=resolve_commit(repo,public["task_head"],"task_head"); old=resolve_commit(repo,public["old_base_head"],"old_base_head"); new=resolve_commit(repo,public["selected_base_ref"],"selected_base_ref")
-    status="unchanged" if new==old else "new_pair"
+    task,old,new=operation_pair(repo,public)
+    status=("unchanged" if is_ancestor(repo,new,task) else "new_pair") if public["profile"] in PRE_REVIEW_PROFILES else ("unchanged" if new==old else "new_pair")
     current_head=resolve_commit(repo,"HEAD","HEAD")
-    if task != public["task_head"] or new != public["new_base_head"] or not is_ancestor(repo,old,new): status="blocked"
+    if task != public["task_head"]: status="blocked"
     cp=checkpoint_path(repo,public["task_ref"],allow_planning=allow_planning)
     typed_output=None
     if status=="new_pair" and cp.is_file():
@@ -28,7 +28,7 @@ def guard(package_root: Path, argv: list[str]) -> dict:
         except Exception: status="blocked"
     elif status != "blocked" and current_head != task:
         status="blocked"
-    result={"status":status,"task_ref":public["task_ref"],"task_head":public["task_head"],"old_base_head":public["old_base_head"],"new_base_head":new,"resume_target":public["resume_target"],"typed_output":typed_output}; validate_json(result,package_root/"schemas/pair-guard-result.schema.json","result"); return result
+    result={"status":status,"task_ref":public["task_ref"],"task_head":public["task_head"],"old_base_head":old,"new_base_head":new,"resume_target":public["resume_target"],"typed_output":typed_output}; validate_json(result,package_root/"schemas/pair-guard-result.schema.json","result"); return result
 
 def candidate(package_root: Path, argv: list[str]) -> dict:
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--request",required=True)
@@ -54,21 +54,26 @@ def candidate(package_root: Path, argv: list[str]) -> dict:
 def reconcile(package_root: Path, argv: list[str]) -> dict:
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--request",required=True)
     args=parse(parser,argv); repo=repo_root(args.root); request=read_json(repo,package_root,args.request,"request"); validate_json(request,package_root/"schemas/reconciliation-request.schema.json","request")
-    identity=task_identity(repo,request["task_ref"])
+    identity=task_identity(repo,request["task_ref"],allow_planning=request["profile"]=="post_plan")
     if identity["branch"] != request["branch"]:
         raise CommandError("stale_identity","branch","Use the exact current task branch.",3)
     require_clean_worktree(repo)
     prior=resolve_commit(repo,request["prior_task_head"],"prior_task_head")
     old_base=resolve_commit(repo,request["old_base_head"],"old_base_head")
     new_base=resolve_commit(repo,request["new_base_head"],"new_base_head")
-    review=resolve_commit(repo,request["branch_review_commit"],"branch_review_commit")
     selected=resolve_commit(repo,request["selected_base_ref"],"selected_base_ref")
     if resolve_commit(repo,"HEAD","HEAD") != prior or selected != new_base:
         raise CommandError("stale_identity","expected_head","Rebuild and reconfirm the exact reconciliation request.",3)
-    if not is_ancestor(repo,old_base,new_base):
-        raise CommandError("stale_identity","base_pair","History rewrites require explicit recovery.",3)
-    if not is_ancestor(repo,review,prior):
-        raise CommandError("stale_identity","branch_review_commit","Use the prior full-review commit for this task history.",3)
+    if request["profile"] in PRE_REVIEW_PROFILES:
+        if old_base != merge_base(repo,prior,new_base):
+            raise CommandError("stale_identity","old_base_head","Use the live operation-scoped merge base.",3)
+        review=None
+    else:
+        if request["profile"] not in POST_REVIEW_PROFILES or not is_ancestor(repo,old_base,new_base):
+            raise CommandError("stale_identity","base_pair","History rewrites require explicit recovery.",3)
+        review=resolve_commit(repo,request["branch_review_commit"],"branch_review_commit")
+        if not is_ancestor(repo,review,prior):
+            raise CommandError("stale_identity","branch_review_commit","Use the prior full-review commit for this task history.",3)
     if is_ancestor(repo,new_base,prior):
         raise CommandError("stale_identity","new_base_head","The current task HEAD already contains this base.",3)
     merge_started=False
@@ -96,7 +101,8 @@ def reconcile(package_root: Path, argv: list[str]) -> dict:
         if resolve_commit(repo,"HEAD","HEAD") == prior and merge_started:
             subprocess.run(["git","merge","--abort"],cwd=repo,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         raise
-    result={"schema_version":"1.0","status":"committed","task_ref":request["task_ref"],"branch":request["branch"],"prior_task_head":prior,"old_base_head":old_base,"new_base_head":new_base,"branch_review_commit":review,"reconciled_task_head":reconciled,"candidate_tree_sha256":request["candidate_tree_sha256"]}
+    result={"schema_version":"1.0","status":"committed","profile":request["profile"],"task_ref":request["task_ref"],"branch":request["branch"],"prior_task_head":prior,"old_base_head":old_base,"new_base_head":new_base,"resume_target":request["resume_target"],"reconciled_task_head":reconciled,"candidate_tree_sha256":request["candidate_tree_sha256"]}
+    if review is not None: result["branch_review_commit"]=review
     validate_json(result,package_root/"schemas/reconciliation-result.schema.json","result"); return result
 
 def _git_path(repo: Path, name: str) -> Path:

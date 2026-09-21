@@ -17,18 +17,21 @@
 ## 1.1 跨任务实施顺序与依赖边界
 
 本组合设计定义的是 #454 lifecycle substrate 的消费合同，不是 #434 production graph 的提前实现计划。跨任务
-执行固定为以下五个阶段：
+执行固定为以下七个有序阶段；Phase D被拆成stage-evidence前置与两个package migration owner：
 
 | 阶段 | 必须完成的工作 | 禁止事项 | 产出边界 |
 | --- | --- | --- | --- |
 | A | 定稿 #454 substrate design、state matrix、public I/O 与 migration contract | 不实现 #434 production graph | #454 可被其它 package 消费的稳定合同 |
 | B | reconcile #443、#436、#434 的 package/schema/projection/workflow 承接 | 不激活 #434；不保留旧 workspace/session/Reactivate/ledger 生产语义 | 受影响 consumer 对 #454 contract 的明确承接 |
 | C | 实现并完成 #454 substrate | 不在 #434 中复制 substrate authority | 可运行的 identity、generation、checkout、association、session、ledger 与 terminal-owner substrate |
-| D | 迁移受影响 package 的代码、schema、projection、route、installer 与 overlay | 不回改 #443/#436 历史 task 文档或旧 Issue evidence | 全部 production consumer 消费 #454 contract |
+| D0 | 修正Reconcile、Task Commit与Branch Review stage-evidence承接 | 不引入durable `base_head`，不以continuity替代首次full review | pre-review reconcile形成committed integration HEAD，post-review continuity边界闭合 |
+| D443 | 迁移Bind package的代码、schema、projection与route | 不回改 #443历史task文档或旧Issue evidence | Session consumer消费TaskLifecycleDTO与Fork session primitive |
+| D436 | 迁移Reactivate/Completion/Closure/Finish/Cleanup package的代码、schema、projection与route | 不回改 #436历史task文档或旧Issue evidence | terminal/reactivation consumer消费 #454 substrate |
 | E | fresh reconcile #434 后实现并激活 Delivery 到 Cleanup graph | 不在 substrate 未就绪时实现或激活 #434 | #434 成为上层 lifecycle graph，消费而不重定义 substrate |
 
-阶段之间是单向依赖：B 依赖 A，C 依赖 A，D 依赖 C，E 依赖 B 与 D。#454 不依赖 #434 的 production graph；#434
-只能在 #454 substrate 和受影响 contract migration 完成后消费它们。该关系不是并行双写，也不是长期兼容层。
+阶段之间是单向依赖：B依赖A，C依赖A，D0依赖A且必须在本task首次full Branch Review前完成，D443/D436依赖C与
+D0，E依赖B、D443与D436。#454 不依赖 #434 的 production graph；#434只能在 #454 substrate 和受影响 contract
+migration完成后消费它们。该关系不是并行双写，也不是长期兼容层。
 
 ### 1.1.1 #434 的消费边界
 
@@ -130,6 +133,11 @@ finish_eligibility
 Consumer只接受自己所需slot为`current`。Producer mutation按本文件的invalidation matrix把受影响slot派生为
 `stale`；不存在跨Skill通用evidence bundle，也不允许一个slot替代另一个slot的semantic result。
 
+Base pair不是上述slot之外的新durable authority。Pair guard/Reconcile每次fresh解析selected base、task HEAD与
+merge-base。Pre-review compatible reconcile把new base纳入task committed history后，旧Phase 2、Task Commit与Branch
+Review slot均stale；`post_check`与`post_commit`必须从fresh Phase 2重建。Post-review evolved-base只能在已有prior full
+Branch Review时进入bounded continuity；continuity result是对新reconciled HEAD的独立review result，不复用旧pass。
+
 ## 3. Reachability constraints
 
 以下约束定义全部稳定组合与已声明degraded recovery组合。明确列入runtime-loss、transaction recovery或
@@ -199,6 +207,12 @@ establishment matrix的状态是可恢复degraded state；其它违反约束的�
 30. supersession receipt ref固定为`retained_control`，不得进入Finish inventory、Normal Cleanup或manual cleanup。
 31. 任一mutation完成后必须按invalidation matrix更新EvidenceCurrentness；stale consumer不得继续执行或从其它
     slot推断pass。
+32. `post_plan|post_check|post_commit`发现selected base尚未成为task HEAD祖先时，compatible reconcile必须创建
+    expected-head-bound本地双亲merge commit；`post_check|post_commit`随后只进入fresh Phase 2，不得直接进入Task
+    Commit、full Branch Review或bounded continuity。
+33. Full Branch Review要求selected current base是review HEAD祖先。Bounded continuity只允许
+    `post_branch_review|post_publication|finalizer_base_mismatch`，且必须存在prior full review commit并通过prior
+    review/new base ancestry与candidate tree identity验证。
 
 ## 4. Resolution precedence
 
@@ -246,6 +260,7 @@ Task selection 与 session persistence 分离。调用方先通过显式 TaskId�
 | destination machine-transfer consume | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale |
 | task content changes after any pass | current when planning bytes unchanged | stale | stale | stale | stale | stale | stale | stale | stale | stale | stale |
 | new Branch Review result | current | current | current | current | current(new) | stale | current | current | stale | stale | stale |
+| new bounded continuity result | current | current | current | current | current(new) | stale | current | current | stale | stale | stale |
 | new closeout Publication result | current | current | current | current | current | current(new) | current | current | stale | stale | stale |
 | new Delivery Review result | current | current | current | current | current | current | current(new) | stale | stale | stale | stale |
 | new Delivery Publication result | current | current | current | current | current | current | current | current(new) | stale | stale | stale |
@@ -281,7 +296,8 @@ Merge PR；active Delivery slice链为Delivery Review -> Publish Delivery -> Mer
 | active_tree | rename | valid TaskId | `guru-rename-task` | TaskRef 更新，TaskId/control state不变 |
 | active_tree | external checkout move | valid Git registration move | caller Git operation | 下一 resolver 使用新 path |
 | active_tree + zero checkout | ensure checkout | valid current association + reviewed acquisition | `guru-ensure-task-checkout` | same branch association + unique checkout + ledger resource |
-| active_tree(in_progress) | reconcile evolved base | current target + semantic impact review | `guru-reconcile-task-base` | metadata不变、new reconcile result、matrix-defined evidence stale |
+| active_tree(in_progress) | reconcile evolved base before full review | current target + semantic impact review + expected-head-bound local merge commit | `guru-reconcile-task-base` pre-review profile | metadata不变、new reconcile result；post_check/post_commit回fresh Phase 2 |
+| active_tree(in_progress) | reconcile evolved base after full review | current prior full review + semantic impact review + expected-head-bound local merge commit | `guru-reconcile-task-base` post-review profile | bounded continuity seed进入`guru-review-branch` continuity profile |
 | active_tree | retarget | reviewed target relation change | `guru-retarget-task-delivery` | `base_branch` 更新，branch不变，旧 evidence stale |
 | active_tree | rebind same checkout/new ref | unique checkout + target ref absent + no Git operation | `guru-rebind-task-branch` | HEAD/index/working tree不变、revision+1、唯一新 current branch |
 | active_tree | rebind existing target | clean source + artifact/content-compatible target | `guru-rebind-task-branch` | epoch不变、revision+1、唯一target current branch |
@@ -710,7 +726,7 @@ Issue后续修订必须使用本规划的最终审查结论，不能继续保留
 
 ## 13. Composition result
 
-本文件已给出完整state vector、31条reachability constraints、owner precedence、evidence invalidation、
+本文件已给出完整state vector、33条reachability constraints、owner precedence、evidence invalidation、
 主transition、8组active runtime-loss、required scenarios、authority/storage与atomic migration。
 `design/11-public-contract-migration.md`独占public producer/consumer闭包；最终联合结论只由
 `design/12-final-consistency-review.md`给出。
