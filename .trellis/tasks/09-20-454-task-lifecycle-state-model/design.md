@@ -63,3 +63,72 @@ Reactivate 和 resource ownership 假设固化到 production graph，形成必�
 历史 #443、#436 task 文档、旧 Issue evidence 和已经形成的历史审查结论保持 immutable。新 contract reconcile、
 package migration 和实现差异必须由当前 package 的迁移记录或新的 migration task 承接，不通过回改历史 task 文档
 制造“历史上已经符合新 contract”的假象。
+
+## Phase C 实施边界收敛
+
+Phase C planning 绑定以下 current authority：
+
+- live Issue `castbox/guru-trellis#454`，2026-09-21 fresh reread；
+- `#454@b695adc928c2064bd27f07e2bb3bbbd034540571` 的 PRD 与 12 份 owning design；
+- `origin/main@b4b42b49592d7bbc41caf8c0318056a0adcf6f72` 中已归档的 #456 四份 reconcile 文档；
+- current Architecture Baseline `current-main-0.6.17-guru.58`、Design Constitution
+  `guru-trellis-design-constitution-v1` 与 change contract
+  `guru-trellis-architecture-change-contract-v1`；
+- fixed Fork source `castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b`。
+
+当前 task branch HEAD 为 `b695adc928c2064bd27f07e2bb3bbbd034540571`，与
+`origin/main@b4b42b49592d7bbc41caf8c0318056a0adcf6f72` 的 merge-base 为
+`361da96327824503ffb4fb4189291b3b9b4e23ae`。Current production workflow 对该 pair 的顺序固定为：
+
+1. 当前 session 必须先由现有正式 session owner 绑定到 exact planning task；session 缺失时唯一合法路径是调用当前正式
+   rebind/recovery owner。其 entry preconditions 不满足时 fail closed，不从 task inventory、旧 session record、
+   mapping、branch name 或未来 Phase C package 推断绑定；
+2. fresh Planning approval 的 task-local bytes 必须先形成 exact committed task HEAD。该 planning checkpoint commit
+   需要独立展示精确文件、命令与零远端副作用并取得当前对话确认；它不是 implementation activation；
+3. approved DTO 以 `resume_target=task_activation` 进入 post-plan pair guard；`new_pair` 在 task 仍为 `planning` 时
+   调用 `guru-reconcile-task-base`，完成 temporary candidate、semantic review 与 exact local merge confirmation；
+4. `reconciled` 返回 task activation router 后，才调用正式 activation owner完成 `planning -> in_progress`；
+5. activation checked result进入Phase 2后，C1才可开始生产编辑。
+
+当前执行入口不得通过直接调用 `set_active_task`、复制旧 session record、补写 legacy mapping/base metadata、直接调用
+upstream `task.py start`、伪造 output-loss recovery 或绕过 `start-task.sh` 来修复 session。正式 session owner无法证明
+当前绑定时，本task保持 `planning` 并返回 Planning blocker。完成 C0 semantic review 与用户对 exact Git mutation 的确认
+前，禁止修改Phase C生产文件。
+
+### Framework 与 extension ownership
+
+`.trellis/scripts/common/task_store.py`、`active_task.py`、`session_storage.py`、`task_utils.py` 与
+`.trellis/scripts/task.py` 是 fixed Fork 生成并拥有的 framework surface。Guru ownership inventory 不声明
+`.trellis/scripts/**`，因此 Phase C 禁止通过 preset overlay、dogfood patch、安装后改写或 Guru package 内复制
+第二套 task/session store 来满足需求。
+
+Phase C 使用两个串行 owner boundary：
+
+1. `castbox/Trellis` Fork prerequisite：从 fresh verified Fork base 修改 official task/session primitives，使
+   immutable TaskId、rename/archive locator、path-free session payload 与 common-dir store 成为 framework
+   capability；该工作必须在 Fork repository 的独立 Issue/task/branch 中完成，当前 Planning 不虚构其 Issue id、
+   branch 或 candidate commit。
+2. `castbox/guru-trellis` substrate：只在 Guru-owned canonical package/runtime/schema/docs/test surface 实现
+   branch association、checkout acquisition/resolution、resource ledger、shared DTO 与 Phase C public owner
+   packages，并把 source lock 更新到通过 Fork build/test 的 exact candidate。Phase C 不修改 active registry
+   selector、extension active manifest、installed/platform bytes或 production workflow edge。
+
+Fork prerequisite 未形成 exact reviewed commit，或该 commit 未通过 Fork build、task/session focused tests 与
+Guru source preparation validation时，Guru substrate 的 framework-dependent slices 保持 blocked。该阻塞不得
+通过兼容 alias、dual-read、dual-write、旧 mapping fallback 或复制 official Python 模块规避。
+
+### Phase ownership
+
+- Phase C：lifecycle kernel、TaskId/TaskRef/generation normalization、checkout acquisition/resolution、branch
+  association/establishment/rebind substrate、path-free common-dir session storage、common-dir resource ledger、
+  task creation、shared DTO/schema primitives及其 package-ready canonical owners。
+- Phase D443：`guru-bind-task-session` major migration及其五个保留 success exits、`explicit_task_mode`、schema、
+  runtime 与 package-owned source projections。
+- Phase D436：Reactivate、Completion、Closure、Finish、Cleanup major migration；Phase C 只提供它们消费的
+  substrate和DTO，不改这些 package 的 active major contract。
+- Phase E434：fresh reconcile 后一次性切换 workflow、registry selectors、active manifest、installed/platform
+  bytes与旧 edge retirement；Phase C 与 Phase D 均不得提前激活。
+
+具体文件、切片、测试、entry/exit criteria 与 rollback boundary 以 `implement.md`、
+`planning/phase-c-surface-inventory.md` 和 `planning/phase-c-migration-retirement-ledger.md` 为 Phase C 实施计划
+SSOT。

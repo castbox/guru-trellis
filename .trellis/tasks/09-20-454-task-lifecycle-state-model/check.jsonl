@@ -12,5 +12,9 @@
 {"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/10-composition-and-migration.md", "reason": "Issue #454 owning design contract: 10-composition-and-migration.md."}
 {"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/11-public-contract-migration.md", "reason": "Issue #454 owning design contract: 11-public-contract-migration.md."}
 {"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/12-final-consistency-review.md", "reason": "Issue #454 owning design contract: 12-final-consistency-review.md."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/implement.md", "reason": "Phase C implementation slices, entry and exit criteria, recovery boundaries, tests, and inactive delivery policy."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/planning/phase-c-surface-inventory.md", "reason": "Exact Fork and Guru ownership surface inventory for Phase C."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/planning/phase-c-migration-retirement-ledger.md", "reason": "Closed predecessor disposition and Phase C/D/E retirement boundary."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/planning/architecture-change-contract.md", "reason": "Task-local Architecture target-native change contract against current baseline .58."}
 {"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Public Skill I/O, private state, consumer ownership, and typed-exit SSOT."}
 {"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Validation scope and evidence ownership requirements."}
