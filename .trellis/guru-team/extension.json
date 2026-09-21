@@ -862,11 +862,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-21T11:22:20Z",
+  "installed_at": "2026-09-21T16:53:32Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "b5e0eb2b9d1a4c1abab5b09bed771deafcfe55e9",
-    "commit": "b5e0eb2b9d1a4c1abab5b09bed771deafcfe55e9",
+    "ref": "184e393603c3b8372c2d6fce49321fedaeeb37f7",
+    "commit": "184e393603c3b8372c2d6fce49321fedaeeb37f7",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1031,7 +1031,7 @@
       {
         "id": "guru-create-task-workspace",
         "interface_sha256": "70899f31bed7681d1b8cceedd972f102d395d1af5403a1a1da585129f787b02d",
-        "tree_sha256": "a8992b847619a14c316b5319b8cd418720ed8f40cb60e483b266740b4e05ebad"
+        "tree_sha256": "06c2e272bd3e749e6f17089014e695b617515f7a10cdaab071bc0db1001bccda"
       },
       {
         "id": "guru-create-task-commit",
@@ -3665,7 +3665,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
-        "sha256": "63b0ece2fae989016161ddeda0da80492d3ec7f829ddcd1e768ce6d1bf95c13d",
+        "sha256": "23d0ff02c1ea196d60417538b7d855fa2075b70ede4ac842386613d6f6350e6d",
         "executable": false,
         "action": "unchanged"
       },

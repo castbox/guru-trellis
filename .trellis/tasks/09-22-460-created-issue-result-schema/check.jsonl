@@ -1,0 +1,5 @@
+{"file": ".trellis/tasks/09-22-460-created-issue-result-schema/prd.md", "reason": "核对 accepted scope、排除项与验收条件。"}
+{"file": ".trellis/tasks/09-22-460-created-issue-result-schema/design.md", "reason": "核对单版本直接修复、provenance 与 fail-closed 设计。"}
+{"file": ".trellis/tasks/09-22-460-created-issue-result-schema/implement.md", "reason": "核对 planned tests、preset 同步和停止条件。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "约束普通 Issue 的最小验证范围与 installed/dogfood 证据。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "约束 canonical 到 dogfood 同步与 drift 校验。"}

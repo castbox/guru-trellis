@@ -31,6 +31,16 @@ class WorkspaceTest(unittest.TestCase):
   live={"number":27,"url":"https://github.com/example/repo/issues/27","state":"OPEN","title":"Create a reviewed task workspace","body":"","updatedAt":"2026-01-01T00:00:00Z"}
   with mock.patch.object(execute,"github",return_value=live):result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
   rp=self.write("result.json",result);return result,check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
+ def checked_created_issue(self):
+  draft=self.draft_plan();pp=self.write("created-issue-draft.json",draft);live=self.issue_row()
+  with mock.patch.object(execute,"github",side_effect=[[],live]),mock.patch.object(execute,"run_gh",return_value=live["url"]+"\n"),mock.patch.object(check,"github",return_value=live):
+   result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]);rp=self.write("created-issue-result.json",result);checked=check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
+  self.assertEqual(("3.0","created_issue","passed"),(checked["schema_version"],checked["variant"],checked["checker"]["status"]))
+  return live,checked
+ def created_issue_plan(self):
+  live,checked=self.checked_created_issue();plan=copy.deepcopy(self.plan);binding=checked["created_issue"]
+  plan["target"].update({"issue_number":binding["number"],"url":binding["canonical_url"],"updated_at":binding["updated_at"],"title_sha256":binding["title_sha256"],"body_sha256":binding["body_sha256"],"created_issue_binding_sha256":binding["facts_sha256"],"created_issue_result":checked})
+  return self.refresh(plan),live
  def assert_no_workspace_writes(self,workspace):
   self.assertFalse(workspace.exists());self.assertNotEqual(0,subprocess.run(["git","show-ref","--verify","--quiet",f"refs/heads/{self.plan['naming']['branch_name']}"],cwd=self.repo).returncode);self.assertFalse((self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json").exists())
  def workspace_state(self,workspace):
@@ -211,6 +221,29 @@ class WorkspaceTest(unittest.TestCase):
   with mock.patch.object(execute,"github",side_effect=[[live],live]),mock.patch.object(execute,"run_gh") as created:
    result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
   created.assert_not_called();self.assertEqual((112,live["url"],"refresh_review"),(result["created_issue"]["number"],result["created_issue"]["canonical_url"],result["typed_exit"]))
+ def test_checker_passed_created_issue_result_builds_fresh_workspace_plan(self):
+  plan,live=self.created_issue_plan();self.assertEqual(("2.0","3.0"),(plan["schema_version"],plan["target"]["created_issue_result"]["schema_version"]));pp=self.write("fresh-created-issue-plan.json",plan);self.assertEqual(plan,record.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]))
+  with mock.patch.object(execute,"github",return_value=live):result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  rp=self.write("fresh-created-workspace-result.json",result);checked=check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
+  workspace=(self.parent/"repo-worktrees/027-workspace").resolve();self.assertEqual(("created","passed","planning"),(result["typed_exit"],checked["checker"]["status"],result["created_workspace"]["task_status"]));self.assertTrue(workspace.is_dir());self.assertTrue((workspace/result["created_workspace"]["task_artifact_dir"]/"task.json").is_file())
+ def test_created_issue_plan_schema_rejects_legacy_partial_and_incomplete_provenance(self):
+  plan,_=self.created_issue_plan();cases=[]
+  legacy=copy.deepcopy(plan);legacy["target"]["created_issue_result"]["schema_version"]="2.0";cases.append(("legacy",self.refresh(legacy)))
+  missing_binding=copy.deepcopy(plan);missing_binding["target"].pop("created_issue_binding_sha256");cases.append(("missing_binding",self.refresh(missing_binding)))
+  binding_only=copy.deepcopy(plan);binding_only["target"]["created_issue_result"]=None;cases.append(("binding_only",self.refresh(binding_only)))
+  result_only=copy.deepcopy(plan);result_only["target"]["created_issue_binding_sha256"]=None;cases.append(("result_only",self.refresh(result_only)))
+  incomplete=copy.deepcopy(plan);incomplete["target"]["created_issue_result"].pop("checker");cases.append(("incomplete",self.refresh(incomplete)))
+  for name,candidate in cases:
+   with self.subTest(name=name),self.assertRaises(CommandError):record.run(PACKAGE,{},["--root",str(self.repo),"--input",str(self.write(f"invalid-{name}.json",candidate))])
+ def test_created_issue_provenance_digest_and_live_identity_drift_fail_closed(self):
+  plan,live=self.created_issue_plan();pp=self.write("created-provenance-plan.json",plan)
+  for name,mutate in (("binding",lambda value:value["target"].__setitem__("created_issue_binding_sha256","0"*64)),("result",lambda value:value["target"]["created_issue_result"].__setitem__("facts_sha256","0"*64))):
+   candidate=copy.deepcopy(plan);mutate(candidate)
+   with self.subTest(name=name),self.assertRaises(CommandError) as raised:record.run(PACKAGE,{},["--root",str(self.repo),"--input",str(self.write(f"stale-{name}.json",candidate))])
+   self.assertEqual(("stale_identity","freshness"),(raised.exception.code,raised.exception.field_path))
+  drift=copy.deepcopy(live);drift["updatedAt"]="2026-01-01T00:00:02Z";workspace=self.parent/"repo-worktrees/027-workspace";before=self.mutation_state(workspace)
+  with mock.patch.object(execute,"github",return_value=drift):result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  self.assertEqual(("no_side_effect","refresh_review",True),(result["variant"],result["typed_exit"],result["no_side_effect"]["zero_writes"]));self.assertEqual(before,self.mutation_state(workspace))
  def test_reviewed_draft_label_identity_uses_canonical_case_for_live_comparison(self):
   plan=self.draft_plan(labels=["BUG"]);pp=self.write("recover-label-case.json",plan);live=self.issue_row(labels=["bug"])
   with mock.patch.object(execute,"github",side_effect=[[live],live]),mock.patch.object(execute,"run_gh") as created:
@@ -275,6 +308,7 @@ print('unsupported fake gh command: '+' '.join(args),file=sys.stderr);raise Syst
 ''');fake_gh.chmod(0o755);path=f"{fake_bin}{os.pathsep}{os.environ.get('PATH','')}"
   with mock.patch.dict(os.environ,{"PATH":path}):
    with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+   self.assertEqual(1,json.loads(state_path.read_text())["create_count"])
    result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]);rp=self.write("stateful-result.json",result);checked=check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
   state=json.loads(state_path.read_text());self.assertEqual((1,[{"name":"bug"}]),(state["create_count"],state["issue"]["labels"]));self.assertEqual((112,state["issue"]["url"],"refresh_review","passed"),(result["created_issue"]["number"],result["created_issue"]["canonical_url"],result["typed_exit"],checked["checker"]["status"]));self.assertFalse((self.parent/"repo-worktrees/027-workspace").exists());self.assertEqual("main",self.git("branch","--show-current"))
  def test_runtime_has_no_placeholder_or_monolith(self):
