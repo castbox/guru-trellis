@@ -60,7 +60,7 @@ Before editing workflow behavior:
 - Registry 1.4 accepts integrated, deferred, and standalone-only active rows.
   Integrated packages select Interface 1.4, normal-scenario qualification selects
   Interface 1.6, and the source-only verifier selects Interface 1.5. The registry
-  contains twenty-three active packages and 100 exits; global business workflow markers
+  contains 32 active packages, 142 exits, and 102 commands; global business workflow markers
   are 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Registry,
   discovery, invocation, installation, and validation read only the live
   current package graph. The planning/check/commit/qualification closure is
@@ -115,8 +115,9 @@ Before editing workflow behavior:
   validates current review and archive continuity without transaction mutation.
   Current re-entry uses ignored `finalization-transaction.json`; no retired
   task-local aggregate participates in current preparation or archive selection.
-  Package discovery, global invocation after publication `ready`, three Guru-owned
-  daily entries, and automatic machine recovery routing are active. Terminal
+  Package discovery, global invocation after publication `ready`, the exact
+  manifest-selected Guru-owned daily entries, and automatic machine recovery
+  routing are active. Terminal
   `ready_for_merge` evals feed
   `guru-merge-task-pr`. Upstream
   `trellis-finish-work` entries are owned only by official Trellis and are not
@@ -172,8 +173,8 @@ The durable contracts for `guru-review-task-publication` are split across
 `skill-package-contract.md`, `workflow-contract.md`, `data-contracts.md`,
 `companion-scripts.md`, and `quality-guidelines.md`. Together they own the three
 Interface 1.4 profiles, four minimal exits, ordinary/archived private gate variants, semantic/runtime
-boundary, thin routing, real-wrapper eval, participation in the current
-  twenty-three-Skill/100-exit package closure, and install/update checks. The global
+  boundary, thin routing, real-wrapper eval, participation in the current
+  32-Skill/142-exit/102-command package closure, and install/update checks. The global
 business workflow projection is 22 invokes, 98 exits, 35 workflow targets, and
 24 stop targets.
 
@@ -198,9 +199,9 @@ exits, dialogue-only side-effect confirmation, owner-private minimal transaction
 archive contract, real-wrapper eval, and additive distribution. The dedicated
 archived profile remains read-only and does not enter the ordinary transaction.
 
-The current package graph contains twenty-three active Skills and 100 external exits
+The current package graph contains 32 active Skills, 142 external exits, and 102 commands
 with Interface-declared target-owned `skill_input_authoring_seed` handoffs. Global workflow
 markers are 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Issue #119 combined acceptance
-additionally requires the three Guru-owned daily entries, terminal
+additionally requires the descriptor-bound daily entries selected by the target, terminal
 `ready_for_merge` and Merge evals, current ownership
 validation, and installed integration coverage.

@@ -77,7 +77,6 @@ def extension_payload(root: Path) -> dict[str, Any]:
         "selected_platforms": install.get("selected_platforms")
         if isinstance(install.get("selected_platforms"), list)
         else [],
-        "all_platforms": install.get("all_platforms"),
     }
 
 

@@ -167,23 +167,6 @@ def _candidate_task_paths(root: Path, task_ref: str, manual: bool) -> list[tuple
     return list(dedup.values())
 
 
-def _base_head(workspace: Path, base_branch: str) -> str:
-    for ref in (f"refs/heads/{base_branch}", f"refs/remotes/origin/{base_branch}"):
-        process = subprocess.run(["git", "rev-parse", "--verify", ref], cwd=workspace, text=True, capture_output=True)
-        if process.returncode == 0:
-            return process.stdout.strip()
-    raise CommandError("stale_identity", "base_branch", "Task base branch is unavailable in the repository.", 3)
-
-
-def _expected_base_head(task: dict[str, Any], tm: dict[str, Any] | None, wm: dict[str, Any] | None) -> str | None:
-    meta = task.get("meta") if isinstance(task.get("meta"), dict) else {}
-    for source in (task, meta, tm or {}, wm or {}):
-        value = source.get("base_head")
-        if value:
-            return str(value)
-    return None
-
-
 def task_facts(root: Path, task_ref: str, allow_missing_mappings: bool = False) -> dict[str, Any]:
     root = _repo_root(root)
     common_dir = _repo_common_dir(root)
@@ -212,7 +195,6 @@ def task_facts(root: Path, task_ref: str, allow_missing_mappings: bool = False) 
     base_branch = task.get("base_branch") or (task.get("meta") or {}).get("base_branch")
     if not base_branch:
         raise CommandError("stale_identity", "base_branch", "Task base branch is missing.", 3)
-    base_head = _base_head(workspace, str(base_branch))
     task_id = str(task["id"])
     tm = wm = None
     for candidate_root in (root, workspace):
@@ -221,11 +203,6 @@ def task_facts(root: Path, task_ref: str, allow_missing_mappings: bool = False) 
     if (not tm or not wm) and not allow_missing_mappings:
         raise CommandError("stale_identity", "runtime_mapping", "Task/workspace mapping identity drifted.", 3)
     generation = int(task.get("lifecycle_generation") or (task.get("meta") or {}).get("lifecycle_generation") or 1)
-    expected_head = _expected_base_head(task, tm, wm)
-    if not expected_head:
-        raise CommandError("stale_identity", "base_head", "Base HEAD provenance is unavailable for task identity validation.", 3)
-    if expected_head and expected_head != base_head:
-        raise CommandError("stale_identity", "base_head", "Task base HEAD does not match the live base branch.", 3)
     for mapping, category in ((tm, "tasks"), (wm, "workspaces")):
         if mapping is None:
             continue
@@ -235,17 +212,15 @@ def task_facts(root: Path, task_ref: str, allow_missing_mappings: bool = False) 
             raise CommandError("stale_identity", f"{category}.workspace_path", "Runtime mapping workspace or repository identity drifted.", 3)
         if category == "workspaces" and mapping.get("branch_name") != branch:
             raise CommandError("stale_identity", "workspaces.branch_name", "Workspace mapping branch drifted.", 3)
-        if mapping.get("base_head") and mapping.get("base_head") != base_head:
-            raise CommandError("stale_identity", f"{category}.base_head", "Runtime mapping base HEAD drifted.", 3)
         if mapping.get("lifecycle_generation", generation) != generation:
             raise CommandError("stale_identity", "lifecycle_generation", "Task and workspace lifecycle generations differ.", 3)
-    return {"task": task, "task_ref": task_ref, "task_path": task_path, "workspace": workspace, "branch": branch, "head": head, "common_dir": common_dir, "base_branch": str(base_branch), "base_head": base_head, "generation": generation, "task_mapping": tm, "workspace_mapping": wm}
+    return {"task": task, "task_ref": task_ref, "task_path": task_path, "workspace": workspace, "branch": branch, "head": head, "common_dir": common_dir, "base_branch": str(base_branch), "generation": generation, "task_mapping": tm, "workspace_mapping": wm}
 
 
-def _mapping_payloads(root: Path, workspace: Path, task_ref: str, task: dict[str, Any], branch: str, base_branch: str, common_dir: Path, base_head: str, generation: int) -> dict[Path, dict[str, Any]]:
+def _mapping_payloads(root: Path, workspace: Path, task_ref: str, task: dict[str, Any], branch: str, base_branch: str, common_dir: Path, generation: int) -> dict[Path, dict[str, Any]]:
     slug = str(task["id"])
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    base = {"schema_version": "1.0", "task_slug": slug, "workspace_slug": slug, "workspace_path": str(workspace), "repository_common_dir": str(common_dir), "base_branch": base_branch, "base_head": base_head, "lifecycle_generation": generation, "updated_at": now}
+    base = {"schema_version": "1.0", "task_slug": slug, "workspace_slug": slug, "workspace_path": str(workspace), "repository_common_dir": str(common_dir), "base_branch": base_branch, "lifecycle_generation": generation, "updated_at": now}
     return {
         _mapping_path(root, "tasks", slug): {**base, "task_artifact_dir": task_ref},
         _mapping_path(root, "workspaces", slug): {**base, "source_checkout": str(root), "branch_name": branch},
@@ -255,7 +230,7 @@ def _mapping_payloads(root: Path, workspace: Path, task_ref: str, task: dict[str
 
 
 def write_recovery_mappings(root: Path, facts: dict[str, Any], task_ref: str) -> list[Path]:
-    payloads = _mapping_payloads(root, facts["workspace"], task_ref, facts["task"], facts["branch"], facts["base_branch"], facts["common_dir"], facts["base_head"], facts["generation"])
+    payloads = _mapping_payloads(root, facts["workspace"], task_ref, facts["task"], facts["branch"], facts["base_branch"], facts["common_dir"], facts["generation"])
     # Check every destination before the first write: conflicts are zero-write.
     for path, payload in payloads.items():
         if path.exists():
@@ -271,13 +246,33 @@ def write_recovery_mappings(root: Path, facts: dict[str, Any], task_ref: str) ->
     return created
 
 
+def _resolved_active_task_path(active: Any) -> Path | None:
+    resolved = getattr(active, "resolved_task_path", None)
+    if resolved is not None:
+        path = Path(resolved).expanduser()
+        return path.resolve() if path.is_absolute() else None
+    task_path = getattr(active, "task_path", None)
+    if task_path is None or str(task_path) == "":
+        return None
+    path = Path(task_path).expanduser()
+    if path.is_absolute():
+        return path.resolve()
+    workspace = getattr(active, "task_workspace_root", None)
+    if workspace is None:
+        return None
+    workspace_path = Path(workspace).expanduser()
+    if not workspace_path.is_absolute():
+        return None
+    return (workspace_path / path).resolve()
+
+
 def _assert_post_write(module, root: Path, facts: dict[str, Any], task_ref: str) -> dict[str, Any]:
     post = task_facts(root, task_ref, allow_missing_mappings=False)
     active = module.resolve_active_task(root)
     if getattr(active, "error", None) or getattr(active, "task_path", None) is None:
         raise CommandError("stale_identity", "session_identity", "Post-write session boundary validation failed.", 3)
-    expected_path = str((post["workspace"] / task_ref).resolve())
-    actual_path = str(Path(active.task_path).resolve())
+    expected_path = (post["workspace"] / task_ref).resolve()
+    actual_path = _resolved_active_task_path(active)
     if actual_path != expected_path or getattr(active, "task_workspace_root", None) and Path(active.task_workspace_root).resolve() != post["workspace"]:
         raise CommandError("stale_identity", "session_identity", "Post-write session task or workspace does not match.", 3)
     if getattr(active, "repository_common_dir", None) and Path(active.repository_common_dir).resolve() != post["common_dir"]:
@@ -317,7 +312,7 @@ def execute(root: Path, input_value: str, owner_value: str) -> dict[str, Any]:
         if getattr(previous, "error", None) or str(getattr(previous, "task_path", "")) == "":
             raise CommandError("stale_identity", "current_task_ref", "Switch source task is not currently bound.", 3)
         source_facts = task_facts(root, current_ref, allow_missing_mappings=False)
-        if Path(previous.task_path).resolve() != (source_facts["workspace"] / current_ref).resolve():
+        if _resolved_active_task_path(previous) != (source_facts["workspace"] / current_ref).resolve():
             raise CommandError("stale_identity", "current_task_ref", "Current session is bound to another source task.", 3)
     manual = profile == "manual_recovery"
     facts = task_facts(root, target_ref, allow_missing_mappings=manual)
@@ -326,12 +321,12 @@ def execute(root: Path, input_value: str, owner_value: str) -> dict[str, Any]:
     previous_error = getattr(previous, "error", None)
     target_path = (facts["workspace"] / target_ref).resolve()
     if profile == "resume_current_task":
-        if previous_error or previous_path is None or Path(previous_path).resolve() != target_path:
+        if previous_error or previous_path is None or _resolved_active_task_path(previous) != target_path:
             raise CommandError("stale_identity", "current_task_ref", "Resume requires the current session to already target the requested task.", 3)
     elif profile in {"rebind_missing_session", "reactivate_rebind"}:
         if previous_error:
             raise CommandError("stale_identity", "current_task_ref", "Current session route is invalid; rebind cannot replace an unknown active task.", 3)
-        if previous_path is not None and Path(previous_path).resolve() != target_path:
+        if previous_path is not None and _resolved_active_task_path(previous) != target_path:
             raise CommandError("stale_identity", "current_task_ref", "A different active task requires an explicit switch route.", 3)
     if facts["generation"] != int(owner["lifecycle_generation"]):
         raise CommandError("stale_identity", "lifecycle_generation", "Requested lifecycle generation is stale.", 3)

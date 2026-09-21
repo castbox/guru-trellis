@@ -467,11 +467,12 @@ participates in current invocation.
 
 The source and installed closure algorithm reads the live registry, current
 package contracts, the production current manifest, Interface public
-contracts, and package-local corpora. Nineteen integrated rows select Interface
-1.4; normal-scenario qualification selects Interface 1.6; the standalone
-verifier selects Interface 1.5. Exact profile, exit,
+contracts, and package-local corpora. Twenty-eight active rows select Interface
+1.4; `guru-create-task-workspace` and the two qualification packages select
+Interface 1.6; the standalone verifier selects Interface 1.5. Exact profile, exit,
 consumer, projection, current-case, and authoring-edge equality is required.
-Twenty-three Skills and 100 exits are the current package cardinality regression, not
+Thirty-two Skills, 142 exits, and 102 commands are the current package
+cardinality regression, not
 a hard-coded future registry allowlist; the business workflow independently
 asserts 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets.
 
@@ -1924,6 +1925,6 @@ reactivation mutation and cannot seed Cleanup.
 
 ### Task identity session binding (#443)
 
-`task.json`、task artifact locator、live Git/worktree、repository common dir 与既有 task/workspace mappings 继续构成 task/workspace identity authority。`guru-bind-task-session` 只能在这些 facts 与当前 Trellis session context 完全一致时，通过官方 `active_task`/`session_storage` writer 建立当前 session binding；它不写入重复的 `.trellis/.runtime/guru-team/session-bindings/` projection，不进入 tracked task artifact、Issue ledger、授权记录或 public DTO。
+`task.json`、task artifact locator、live Git/worktree、repository common dir 与既有 task/workspace mappings 继续构成 task/workspace identity authority。`guru-bind-task-session` 只能在这些 facts 与当前 Trellis session context 完全一致时，通过官方 `active_task`/`session_storage` writer 建立当前 session binding；它不写入重复的 `.trellis/.runtime/guru-team/session-bindings/` projection，不进入 tracked task artifact、Issue ledger、授权记录或 public DTO。Base HEAD 只属于 Base Reconcile、Review 与 Publication 等具体操作的 fresh evidence，不属于 task/workspace/session identity；legacy `base_head` 不参与 binding validation，manual recovery 也不再写入该字段。
 
-binding 丢失时，`rebind_missing_session` 重新读取同一 task identity；同一合法 binding 重试幂等，任一 task、repository、workspace、branch、mapping、base、session 或 lifecycle mismatch zero-write fail closed。Reactivate 的新 `lifecycle_generation` 使旧 binding 失效；Finish/Cleanup receipt 仍由各自 owner 校验。创建期 attach 继续由 `guru-create-task-workspace` owner 负责，#434 后续消费 binding typed exits，不复制 resolver/store。
+binding 丢失时，`rebind_missing_session` 重新读取同一 task identity；同一合法 binding 重试幂等，任一 task、repository、workspace、branch、mapping、session 或 lifecycle mismatch zero-write fail closed。Target base 演进不会使 session binding 失效，由对应操作 owner fresh读取并处理 base evolution。Reactivate 的新 `lifecycle_generation` 使旧 binding 失效；Finish/Cleanup receipt 仍由各自 owner 校验。创建期 attach 继续由 `guru-create-task-workspace` owner 负责，#434 后续消费 binding typed exits，不复制 resolver/store。

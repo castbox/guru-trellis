@@ -20,6 +20,8 @@
 | `ARCH-DOM-016` | active-task continuation | Guru workflow独占detailed continuation；adjacent DTO的consumer、deterministic producer recovery、semantic owner fresh rerun与activation owner各保持单写；upstream独占extractor和thin entries |
 | `ARCH-DOM-017` | active-task Delivery capability | Delivery Review独占slice readiness与PR payload truth；Delivery Publish独占push/PR/Draft/Ready及同计划恢复；Delivery Merge独占merge readiness、受控merge commit与Delivery result；Reconcile独占resolved-tree commit；#434独占production graph activation，#436独占Completion及其后续lifecycle |
 | `ARCH-DOM-018` | post-delivery terminal lifecycle | Completion、Closure、Finish、Cleanup与Reactivate各自拥有独立semantic judgment、最小DTO与owner-private recovery；#434独占production graph activation，shared authority promotion仍由Architecture/RDT owners串行完成 |
+| `ARCH-DOM-019` | task identity session binding | official Trellis task/session store拥有稳定task identity与底层resolver/persistence；`guru-bind-task-session`独占lifecycle-aware resume/rebind/switch/reactivate/manual-recovery判断与最小runtime write；#438保留creation attach，#436保留terminal lifecycle receipts，#434独占production route activation |
+| `ARCH-DOM-020` | platform inventory and exact selection | pinned upstream `AI_TOOLS` owns the complete 22-platform inventory and canonical `AITool`/`cliFlag` mapping；Guru preset owns projection descriptors and managed paths；each installed repository manifest/provenance owns its exact selected set；dogfood consumes only Claude/Codex/Cursor；OpenCode remains explicit-only for guru-trellis |
 
 跨 domain 只使用 interface/schema/typed projection；不得读取对方 private checkpoint 作为 public contract。
 
@@ -49,6 +51,12 @@
 - `delivered`只表达一个业务Delivery完成并保持task active；它不是task completion、Issue closure、archive、Finish或Cleanup。
 - Merge owner写受控merge commit trailer；历史发现只读GitHub/Git immutable facts，不读取PR body、当前branch存活或task-local ledger作为identity authority。
 - #434在#435与#436 capability均ready后原子激活新图并退休旧edges；#436单独拥有Completion、Closure、Finish、Cleanup与Reactivate。
+
+## #443 Task identity session binding 归属
+
+- task.json、artifact locator、repository common dir、live Git/worktree与official runtime mappings共同提供identity facts；新package不复制task/session store。
+- binding/rebind/switch/resume/manual recovery只由`guru-bind-task-session`判断并执行；public DTO不携带runtime binding identity或private snapshot。
+- #438 creation attach、#436 Reactivate/Finish/Cleanup generation/receipt、#434 global route cutover保持各自单写；package存在不表示production route可达。
 
 #408 的独立手动请求不进入上述 Guru lifecycle domain，由当前会话 AI 依
 [全局操作边界](../../../trellis/workflows/guru-team/workflow.md#manual-gitgithub-operations)

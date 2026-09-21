@@ -58,8 +58,8 @@ class FakeModule:
         return self.active
 
     def set_active_task(self, task_ref, workspace):
-        task_path = (workspace / task_ref).resolve()
-        raw = Path(git(workspace, "rev-parse", "--git-common-dir")); common = (workspace / raw if not raw.is_absolute() else raw).resolve(); self.active = SimpleNamespace(task_path=task_path, task_workspace_root=workspace.resolve(), repository_common_dir=common, error=None)
+        resolved_task_path = (workspace / task_ref).resolve()
+        raw = Path(git(workspace, "rev-parse", "--git-common-dir")); common = (workspace / raw if not raw.is_absolute() else raw).resolve(); self.active = SimpleNamespace(task_path=task_ref, resolved_task_path=resolved_task_path, task_workspace_root=workspace.resolve(), repository_common_dir=common, error=None)
         return self.active
 
 
@@ -96,15 +96,13 @@ class BindingRuntimeTest(unittest.TestCase):
                 mod.task_facts(repo, task_ref, allow_missing_mappings=True)
         self.assertIn("repository_common_dir", str(caught.exception))
 
-    def test_base_head_mismatch_fails(self):
-        repo = make_repo(); current = git(repo, "rev-parse", "refs/heads/main")
+    def test_legacy_base_head_mismatch_does_not_affect_task_identity(self):
+        repo = make_repo()
         task_ref, data = add_task(repo, "demo", branch="main", meta_workspace=False, base_head="0" * 40)
-        import importlib.util
-        spec = importlib.util.spec_from_file_location("binding_runtime", RUNTIME)
-        mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
-        with self.assertRaises(Exception) as caught:
-            mod.task_facts(repo, task_ref, allow_missing_mappings=True)
-        self.assertIn("base_head", str(caught.exception)); self.assertNotEqual(current, "0" * 40)
+        mod = self.load()
+        facts = mod.task_facts(repo, task_ref, allow_missing_mappings=True)
+        self.assertEqual(facts["task"]["meta"]["base_head"], "0" * 40)
+        self.assertNotIn("base_head", facts)
 
     def test_manual_recovery_conflict_is_zero_write(self):
         repo = make_repo(); task_ref, data = add_task(repo, "demo", branch="main", meta_workspace=False)
@@ -124,9 +122,36 @@ class BindingRuntimeTest(unittest.TestCase):
         spec = importlib.util.spec_from_file_location("binding_runtime", RUNTIME)
         mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
         facts = mod.task_facts(repo, task_ref, allow_missing_mappings=True)
-        wrong = SimpleNamespace(task_path=repo / ".trellis/tasks/other", task_workspace_root=repo, repository_common_dir=facts["common_dir"], error=None)
+        wrong_path = repo / ".trellis/tasks/other"
+        wrong = SimpleNamespace(task_path=".trellis/tasks/other", resolved_task_path=wrong_path, task_workspace_root=repo, repository_common_dir=facts["common_dir"], error=None)
         with self.assertRaises(Exception):
             mod._assert_post_write(SimpleNamespace(resolve_active_task=lambda repo_root: wrong), repo, facts, task_ref)
+
+    def test_post_write_validator_accepts_relative_task_path_in_external_worktree(self):
+        repo = make_repo()
+        workspace = repo.parent / ("task-worktree-post-write-" + next(tempfile._get_candidate_names()))
+        subprocess.check_call(["git", "worktree", "add", "-qb", "codex/demo", str(workspace), "main"], cwd=repo)
+        task_ref, data = add_task(workspace, "demo", branch="codex/demo")
+        mod = self.load()
+        facts = mod.task_facts(repo, task_ref, allow_missing_mappings=True)
+        mod.write_recovery_mappings(repo, facts, task_ref)
+        active = SimpleNamespace(
+            task_path=task_ref,
+            resolved_task_path=(workspace / task_ref).resolve(),
+            task_workspace_root=workspace.resolve(),
+            repository_common_dir=facts["common_dir"],
+            error=None,
+        )
+        post = mod._assert_post_write(SimpleNamespace(resolve_active_task=lambda repo_root: active), repo, facts, task_ref)
+        self.assertEqual(post["workspace"], workspace.resolve())
+
+    def test_active_task_path_fallback_uses_workspace_not_process_cwd(self):
+        mod = self.load()
+        workspace = Path(tempfile.mkdtemp()).resolve()
+        active = SimpleNamespace(task_path=".trellis/tasks/demo", task_workspace_root=workspace)
+        self.assertEqual(mod._resolved_active_task_path(active), workspace / ".trellis/tasks/demo")
+        missing_workspace = SimpleNamespace(task_path=".trellis/tasks/demo", task_workspace_root=None)
+        self.assertIsNone(mod._resolved_active_task_path(missing_workspace))
 
     def test_switch_requires_source_and_binds_target(self):
         repo = make_repo(); add_task(repo, "a", branch="main", meta_workspace=False); add_task(repo, "b", branch="main", meta_workspace=False)
@@ -142,15 +167,16 @@ class BindingRuntimeTest(unittest.TestCase):
         with patch.object(mod, "active_module", return_value=fake), patch.object(mod, "session_id", return_value="codex_fixture"):
             output = mod.execute(repo, json.dumps(public), json.dumps(owner))
         self.assertEqual(output["task_ref"], ".trellis/tasks/b")
-        self.assertEqual(str(fake.active.task_path), str((repo / ".trellis/tasks/b").resolve()))
+        self.assertEqual(fake.active.task_path, ".trellis/tasks/b")
+        self.assertEqual(fake.active.resolved_task_path, (repo / ".trellis/tasks/b").resolve())
         self.assertEqual(fake.resolve_roots, [repo.resolve(), repo.resolve(), repo.resolve()])
 
-    def test_missing_mapping_without_base_provenance_is_blocked(self):
+    def test_missing_mapping_without_base_provenance_is_supported(self):
         mod = self.load(); repo = make_repo(); task_ref, data = add_task(repo, "demo", branch="main", meta_workspace=False)
         data["meta"].pop("base_head", None); (repo / task_ref / "task.json").write_text(json.dumps(data) + "\n")
-        with self.assertRaises(Exception) as caught:
-            mod.task_facts(repo, task_ref, allow_missing_mappings=True)
-        self.assertIn("base_head", str(caught.exception))
+        facts = mod.task_facts(repo, task_ref, allow_missing_mappings=True)
+        self.assertEqual(facts["task_ref"], task_ref)
+        self.assertNotIn("base_head", facts)
 
     def test_profile_route_mismatch_is_blocked_before_write(self):
         mod = self.load(); repo = make_repo(); task_ref, data = add_task(repo, "demo", branch="main", meta_workspace=False)
@@ -192,7 +218,8 @@ class BindingBoundaryCoverageTest(unittest.TestCase):
                 owner = {**public,"route":"switch","lifecycle_generation":1,"resume_target":"phase-2","ai_review_gate":{"status":"passed","summary":"ok"}}
                 output = mod.execute(repo, json.dumps(public), json.dumps(owner))
                 self.assertEqual(output["task_ref"], f".trellis/tasks/{target}")
-                self.assertEqual(fake.active.task_path, (repo / f".trellis/tasks/{target}").resolve())
+                self.assertEqual(fake.active.task_path, f".trellis/tasks/{target}")
+                self.assertEqual(fake.active.resolved_task_path, (repo / f".trellis/tasks/{target}").resolve())
 
     def test_unknown_branch_and_missing_session_fail_closed(self):
         mod = self.load(); repo = make_repo(); task_ref, data = add_task(repo, "demo", branch="wrong", meta_workspace=False)
@@ -229,7 +256,7 @@ class BindingBoundaryCoverageTest(unittest.TestCase):
             cleanup.archive_generation(repo, public)
         self.assertIn("lifecycle_generation", str(caught.exception))
 
-    def test_manual_recovery_missing_provenance_blocks_before_any_write_after_base_advance(self):
+    def test_manual_recovery_without_base_provenance_succeeds_after_base_advance(self):
         mod = self.load()
         repo = make_repo()
         task_ref, data = add_task(repo, 'demo', branch='main', meta_workspace=False)
@@ -239,22 +266,21 @@ class BindingBoundaryCoverageTest(unittest.TestCase):
         public = {'profile': 'manual_recovery', 'mode': 'standalone', 'task_ref': task_ref, 'continuation_id': 'missing-base'}
         owner = {**public, 'route': 'manual_recovery', 'lifecycle_generation': 1, 'resume_target': 'phase-2', 'ai_review_gate': {'status': 'passed', 'summary': 'Fresh preflight required.'}}
         fake = FakeModule(repo)
-        before = {str(p.relative_to(repo)): p.read_bytes() for p in repo.rglob('*') if p.is_file()}
         with patch.object(mod, 'active_module', return_value=fake), patch.object(fake, 'set_active_task', wraps=fake.set_active_task) as writer:
-            with self.assertRaises(mod.CommandError) as caught:
-                mod.execute(repo, json.dumps(public), json.dumps(owner))
-            writer.assert_not_called()
-        self.assertEqual(caught.exception.field_path, 'base_head')
-        self.assertEqual(before, {str(p.relative_to(repo)): p.read_bytes() for p in repo.rglob('*') if p.is_file()})
+            output = mod.execute(repo, json.dumps(public), json.dumps(owner))
+            writer.assert_called_once_with(task_ref, repo.resolve())
+        self.assertEqual(output['exit_id'], 'session_manually_recovered')
+        for category in ('tasks', 'workspaces'):
+            mapping = json.loads((repo / f'.trellis/.runtime/guru-team/{category}/demo.json').read_text())
+            self.assertNotIn('base_head', mapping)
 
-    def test_recorded_base_provenance_rejects_live_base_advance(self):
+    def test_recorded_base_provenance_does_not_reject_live_base_advance(self):
         mod = self.load()
         repo = make_repo()
         task_ref, data = add_task(repo, 'demo', branch='main', meta_workspace=False)
         git(repo, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '--allow-empty', '-qm', 'base advances')
-        with self.assertRaises(mod.CommandError) as caught:
-            mod.task_facts(repo, task_ref, allow_missing_mappings=True)
-        self.assertEqual(caught.exception.field_path, 'base_head')
+        facts = mod.task_facts(repo, task_ref, allow_missing_mappings=True)
+        self.assertEqual(facts['task_ref'], task_ref)
 
     def test_runtime_rejects_every_mismatched_profile_route_before_discovery(self):
         mod = self.load()
@@ -273,7 +299,7 @@ class BindingBoundaryCoverageTest(unittest.TestCase):
                         discovery.assert_not_called()
                     self.assertEqual(caught.exception.field_path, 'owner_result.route')
 
-    def test_existing_legacy_mappings_without_base_provenance_are_rejected_after_base_advance(self):
+    def test_existing_legacy_mappings_without_base_provenance_survive_base_advance(self):
         mod = self.load()
         repo = make_repo()
         task_ref, data = add_task(repo, 'demo', branch='main', meta_workspace=False)
@@ -286,9 +312,8 @@ class BindingBoundaryCoverageTest(unittest.TestCase):
         for path in repo.glob('.trellis/.runtime/guru-team/workspaces/demo.json'):
             payload = json.loads(path.read_text()); payload.pop('base_head', None); path.write_text(json.dumps(payload) + '\n')
         git(repo, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '--allow-empty', '-qm', 'base advances')
-        with self.assertRaises(mod.CommandError) as caught:
-            mod.task_facts(repo, task_ref, allow_missing_mappings=False)
-        self.assertEqual(caught.exception.field_path, 'base_head')
+        facts = mod.task_facts(repo, task_ref, allow_missing_mappings=False)
+        self.assertEqual(facts['generation'], 1)
 
     def test_metadata_base_branch_fallback_is_used_by_recovery_writer(self):
         mod = self.load()
@@ -317,7 +342,8 @@ class BindingBoundaryCoverageTest(unittest.TestCase):
                     with self.assertRaises(mod.CommandError) as caught:
                         mod.execute(repo, json.dumps(public), json.dumps(owner))
                 self.assertEqual(caught.exception.field_path, 'current_task_ref')
-                self.assertEqual(fake.active.task_path, (repo / '.trellis/tasks/b').resolve())
+                self.assertEqual(fake.active.task_path, '.trellis/tasks/b')
+                self.assertEqual(fake.active.resolved_task_path, (repo / '.trellis/tasks/b').resolve())
 
     def test_existing_mapping_locator_disambiguates_main_and_external_worktree_task_artifacts(self):
         mod = self.load()

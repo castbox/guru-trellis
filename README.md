@@ -90,7 +90,7 @@ node "$FORK_SOURCE/packages/cli/bin/trellis.js" init -y --claude --codex --curso
   --workflow guru-team \
   --workflow-source "$GURU_WORKFLOW_SOURCE"
 (cd "$GURU_SOURCE" && bash trellis/presets/guru-team/scripts/bash/apply.sh \
-  --repo "$TARGET_REPO" --all-platforms)
+  --repo "$TARGET_REPO")
 ```
 
 已有仓库先核验/构建同一固定 Fork，再预览 update：
@@ -127,7 +127,7 @@ node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
   --marketplace "$GURU_WORKFLOW_SOURCE" \
   --template guru-team --force
 (cd "$GURU_SOURCE" && bash trellis/presets/guru-team/scripts/bash/apply.sh \
-  --repo "$TARGET_REPO" --all-platforms)
+  --repo "$TARGET_REPO")
 ```
 
 `--create-new` 只生成预览，不会切换 active workflow；无 flag replacement 不属于支持

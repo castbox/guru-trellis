@@ -391,6 +391,18 @@ def record_fixture_planning(
     semantic_input = fixture_input(root, "planning-input.json", {
         "mode": "workflow",
         "authority_refs": [f"issue:{issue}"],
+        "delivery_policy": {
+            "task_scope": ["Validate the isolated installed closeout workflow."],
+            "delivery_slice": ["Exercise the complete synthetic closeout path."],
+            "remaining_work": [],
+            "independent_delivery_conditions": [
+                "The fixture is self-contained and does not claim production evidence."
+            ],
+            "validation_boundaries": [
+                "Only the isolated installed wrappers and Git fixture are validated."
+            ],
+            "remaining_work_owner": "The fixture has no remaining delivery scope.",
+        },
         "docs_ssot_plan": {
             "strategy": "ssot_first", "durable_paths": ["docs/requirements.md"],
             "summary": "The isolated fixture uses the durable closeout requirement.",
@@ -447,6 +459,20 @@ def record_fixture_phase2(
             "status": "passed", "strategy": "ssot_first",
             "durable_paths": ["docs/requirements.md"],
             "summary": "Fixture documentation represents the closeout requirement.",
+        },
+        "delivery_policy": {
+            "task_scope": ["Validate the isolated installed closeout workflow."],
+            "delivery_slice": ["Exercise the complete synthetic closeout path."],
+            "remaining_work": [],
+            "independent_delivery_conditions": [
+                "The fixture is self-contained and does not claim production evidence."
+            ],
+            "validation_boundaries": [
+                "Only the isolated installed wrappers and Git fixture are validated."
+            ],
+            "current_slice_status": "passed",
+            "remaining_work_status": "disclosed",
+            "summary": "The synthetic closeout slice is complete with no claimed remaining work.",
         },
         "candidate_classifications": fixture_classification("phase2", "task_commit_preflight"),
         "semantic_review": {
@@ -523,6 +549,20 @@ def record_fixture_review(
         "review_intent": "initial_review",
     })
     semantic_input = fixture_input(root, "review-input.json", {
+        "delivery_review": {
+            "task_scope": ["Validate the isolated installed closeout workflow."],
+            "delivery_slice": ["Exercise the complete synthetic closeout path."],
+            "remaining_work": [],
+            "independent_delivery_conditions": [
+                "The fixture is self-contained and does not claim production evidence."
+            ],
+            "validation_boundaries": [
+                "Only the isolated installed wrappers and Git fixture are validated."
+            ],
+            "current_slice_status": "passed",
+            "remaining_work_status": "disclosed",
+            "summary": "The committed fixture range completes the synthetic closeout slice.",
+        },
         "candidate_classifications": fixture_classification("review", "branch_review_route_checker"),
         "semantic_review": {
             "qualified_findings": [], "scope_proposals": [], "observations": [],

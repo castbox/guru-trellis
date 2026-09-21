@@ -292,7 +292,7 @@ def stage_clean_installed_owner_repo(
             raise ValueError("canonical workflow input is unavailable for owner staging")
         shutil.copy2(canonical_workflow, fixture / ".trellis/workflow.md")
         applied = subprocess.run(
-            [sys.executable, str(apply_script), "--repo", str(fixture), "--all-platforms"],
+            [sys.executable, str(apply_script), "--repo", str(fixture)],
             cwd=source_repo, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             check=False, env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
         )

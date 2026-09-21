@@ -11,6 +11,9 @@ class ContractTest(unittest.TestCase):
         self.assertEqual(interface["judgment_mode"], "semantic")
         self.assertEqual(interface["public_contracts"]["input"]["profiles"][-1]["example"]["path"], "examples/public-manual-recovery-input.json")
         self.assertEqual(interface.get("private_artifacts", []), [])
+        workspace = next(item for item in interface["entry_preconditions"] if item["id"] == "workspace_identity")
+        self.assertNotIn("base", workspace["evidence"].lower())
+        self.assertNotIn("base", interface["reentry"]["identity"].lower())
 
     def test_switch_contract_exposes_explicit_source_and_target_fields(self):
         p = Path(__file__).resolve().parents[1]

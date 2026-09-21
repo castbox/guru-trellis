@@ -21,6 +21,10 @@ MATRIX_HELPER = (
     REPO
     / "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
 )
+PLATFORM_SELECTION_HELPER = (
+    REPO
+    / "trellis/presets/guru-team/scripts/python/verify_upgrade_platform_selection.py"
+)
 
 
 def load_matrix_helper():
@@ -29,6 +33,17 @@ def load_matrix_helper():
     )
     if spec is None or spec.loader is None:
         raise RuntimeError("cannot load compatibility matrix helper")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def load_platform_selection_helper():
+    spec = importlib.util.spec_from_file_location(
+        "verify_upgrade_platform_selection", PLATFORM_SELECTION_HELPER
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError("cannot load platform selection helper")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -251,6 +266,37 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                 self.assertNotIn("Codex uses a trusted Git root", text)
                 self.assertNotIn("Codex 使用 trusted Git root", text)
 
+    def test_current_platform_docs_use_two_layer_platform_authority(self) -> None:
+        expected = {
+            REPO / ".trellis/spec/preset/installer.md": (
+                "pinned upstream `AI_TOOLS`",
+                "Claude, Codex, and Cursor",
+                "exact installed selection",
+            ),
+            REPO / ".trellis/spec/preset/overlay-guidelines.md": (
+                "pinned upstream `AI_TOOLS`",
+                "Claude, Codex, and Cursor",
+                "exact installed selection",
+            ),
+            REPO / ".trellis/spec/preset/upstream-ownership.md": (
+                "does not define the platform inventory",
+                "does not define dogfood selection",
+            ),
+        }
+        stale = (
+            "Guru-supported projections",
+            "deferred upstream platforms",
+            "all four platforms",
+            "exactly four overlay files",
+        )
+        for path, required in expected.items():
+            with self.subTest(path=path.relative_to(REPO)):
+                text = path.read_text(encoding="utf-8")
+                for phrase in required:
+                    self.assertIn(phrase, text)
+                for phrase in stale:
+                    self.assertNotIn(phrase, text)
+
     def test_fork_source_uses_real_node_esm_entry_and_observed_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repo, source = self.fork_fixture(Path(directory))
@@ -460,6 +506,14 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             predecessor_extension = {
                 "version": "0.6.16-guru.41",
                 "target_trellis_cli": "0.6.16",
+                "public_api": {
+                    "managed_paths": [
+                        ".agents/skills/guru-*/",
+                        ".codex/skills/guru-*/",
+                        ".cursor/skills/guru-*/",
+                        ".claude/skills/guru-*/",
+                    ]
+                },
             }
             workflow_bytes = b"before workflow\n"
             def export_tree(_repo, _tag, destination, _archive):
@@ -482,6 +536,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                  mock.patch.object(self.matrix, "_install_workflow", side_effect=install_workflow) as init, \
                  mock.patch.object(self.matrix, "_docs_authority_snapshot", return_value={}), \
                  mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
+                 mock.patch.object(self.matrix, "predecessor_capability_projection", return_value=projection), \
+                 mock.patch.object(self.matrix, "predecessor_installed_capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "installed_capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "_load_json", side_effect=load_json), \
@@ -516,6 +572,30 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             )
             self.assertEqual(result["update_mode"], "migrate")
 
+    def test_existing_cell_uses_supported_predecessor_seed_for_new_platform(self) -> None:
+        predecessor_extension = {
+            "public_api": {
+                "managed_paths": [
+                    ".agents/skills/guru-*/",
+                    ".codex/skills/guru-*/",
+                    ".cursor/skills/guru-*/",
+                    ".claude/skills/guru-*/",
+                ]
+            }
+        }
+        self.assertEqual(
+            self.matrix._predecessor_seed_platform(
+                predecessor_extension, "opencode"
+            ),
+            "codex",
+        )
+        self.assertEqual(
+            self.matrix._predecessor_seed_platform(
+                predecessor_extension, "cursor"
+            ),
+            "cursor",
+        )
+
     def test_existing_cell_ordinary_update_uses_predecessor_workflow_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
@@ -538,6 +618,14 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             predecessor_extension = {
                 "version": "0.6.16-guru.41",
                 "target_trellis_cli": "0.6.16",
+                "public_api": {
+                    "managed_paths": [
+                        ".agents/skills/guru-*/",
+                        ".codex/skills/guru-*/",
+                        ".cursor/skills/guru-*/",
+                        ".claude/skills/guru-*/",
+                    ]
+                },
             }
             workflow_bytes = b"before workflow\n"
 
@@ -564,6 +652,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                  mock.patch.object(self.matrix, "_install_workflow", side_effect=install_workflow), \
                  mock.patch.object(self.matrix, "_docs_authority_snapshot", return_value={}), \
                  mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
+                 mock.patch.object(self.matrix, "predecessor_capability_projection", return_value=projection), \
+                 mock.patch.object(self.matrix, "predecessor_installed_capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "installed_capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "_load_json", side_effect=load_json), \
@@ -711,7 +801,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             self.assertFalse((target / ".trellis/workflow.md.new").exists())
             self.assertFalse((target / ".trellis/workflow.md.bak").exists())
 
-    def test_standalone_shell_env_forwards_full_and_explicit_focused(self) -> None:
+    def test_standalone_shell_env_forwards_default_and_explicit_selections(self) -> None:
         import shutil
         import sys
 
@@ -731,25 +821,76 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             scripts = shell.parent.parent / "python"
             scripts.mkdir()
             (scripts / "verify_throwaway_python_routing.py").write_text('print("{}")\n')
-            (scripts / MATRIX_HELPER.name).write_text('import json, sys\nprint(json.dumps(sys.argv[1:]))\n')
+            (scripts / MATRIX_HELPER.name).write_text(
+                'import json, sys\n'
+                'if sys.argv[1] == "validate-source":\n'
+                '  print(json.dumps({"status":"passed"}))\n'
+                '  raise SystemExit(0)\n'
+                'mode = sys.argv[sys.argv.index("--mode") + 1]\n'
+                'platform = sys.argv[sys.argv.index("--platform") + 1] if "--platform" in sys.argv else None\n'
+                'print(json.dumps({"status":"passed","mode":mode,"platform":platform,"argv":sys.argv[1:]}))\n'
+            )
+            (scripts / PLATFORM_SELECTION_HELPER.name).write_text(
+                'import json, sys\n'
+                'if sys.argv[1] == "inventory-lines": print("claude\\ncodex\\ncursor\\nopencode")\n'
+                'elif sys.argv[1] == "validate-upgrade": print(json.dumps({"status":"passed"}))\n'
+                'else:\n'
+                '  platforms = [sys.argv[i+1] for i, value in enumerate(sys.argv) if value == "--platform"]\n'
+                '  print(json.dumps({"status":"passed","mode":sys.argv[sys.argv.index("--mode")+1],"selected_platforms":platforms}))\n'
+            )
             env = {**os.environ, "TRELLIS_FORK_SOURCE": str(root / "target fork"),
                    "TRELLIS_PREDECESSOR_SOURCE": str(root / "before fork"),
                    "TRELLIS_PREDECESSOR_COMMIT": "a" * 40}
-            for options, expected_mode, expected_source, expected_tag, expected_cli, expected_platform in (
-                ([], "full", env["TRELLIS_FORK_SOURCE"], "v0.6.5-guru.10", "0.6.5", "codex"),
-                (["--mode", "focused", "--fork-source", str(root / "explicit fork")], "focused", str(root / "explicit fork"), "v0.6.5-guru.10", "0.6.5", "codex"),
-                (["--mode", "existing", "--before-tag", "v0.6.16-guru.1", "--before-cli", "0.6.16", "--platform", "cursor"], "existing", env["TRELLIS_FORK_SOURCE"], "v0.6.16-guru.1", "0.6.16", "cursor"),
+            for options, expected_mode, expected_source, expected_tag, expected_cli, expected_platforms in (
+                ([], "focused", env["TRELLIS_FORK_SOURCE"], "v0.6.5-guru.10", "0.6.5", ["claude", "codex", "cursor"]),
+                (["--mode", "focused", "--fork-source", str(root / "explicit fork"), "--platform", "opencode"], "focused", str(root / "explicit fork"), "v0.6.5-guru.10", "0.6.5", ["opencode"]),
+                (["--mode", "full", "--platform", "codex"], "full", env["TRELLIS_FORK_SOURCE"], "v0.6.5-guru.10", "0.6.5", ["codex"]),
+                (["--mode", "existing", "--before-tag", "v0.6.16-guru.1", "--before-cli", "0.6.16", "--platform", "cursor"], "existing", env["TRELLIS_FORK_SOURCE"], "v0.6.16-guru.1", "0.6.16", ["cursor"]),
             ):
                 result = subprocess.run([str(shell), str(root / expected_mode), *options],
                                         env=env, capture_output=True, text=True)
                 self.assertEqual(result.returncode, 0, result.stderr)
-                argv = json.loads(result.stdout.splitlines()[-1])
-                self.assertEqual(argv[0], "run")
-                for flag, value in (("--mode", expected_mode), ("--fork-source", expected_source),
-                    ("--predecessor-source", env["TRELLIS_PREDECESSOR_SOURCE"]),
-                    ("--predecessor-commit", "a" * 40), ("--before-tag", expected_tag),
-                    ("--before-cli", expected_cli), ("--platform", expected_platform)):
-                    self.assertEqual(argv[argv.index(flag) + 1], value)
+                payload = json.loads(result.stdout.splitlines()[-1])
+                self.assertEqual(payload["mode"], expected_mode)
+                self.assertEqual(payload["selected_platforms"], expected_platforms)
+                for platform in expected_platforms:
+                    matrix_payload = json.loads((root / expected_mode /
+                        f"matrix-{expected_mode}-{platform}.json").read_text())
+                    argv = matrix_payload["argv"]
+                    for flag, value in (("--mode", expected_mode), ("--fork-source", expected_source),
+                        ("--predecessor-source", env["TRELLIS_PREDECESSOR_SOURCE"]),
+                        ("--predecessor-commit", "a" * 40), ("--before-tag", expected_tag),
+                        ("--before-cli", expected_cli), ("--platform", platform)):
+                        self.assertEqual(argv[argv.index(flag) + 1], value)
+
+    def test_upgrade_selection_uses_exact_installed_cli_flags(self) -> None:
+        helper = load_platform_selection_helper()
+        source = {
+            "public_api": {"platform_capabilities": {"upstream_platforms": [
+                {"id": "claude-code", "cli_flag": "claude"},
+                {"id": "codex", "cli_flag": "codex"},
+                {"id": "cursor", "cli_flag": "cursor"},
+                {"id": "opencode", "cli_flag": "opencode"},
+            ]}}
+        }
+        supported = helper.platform_inventory(source)
+        installed = {
+            section: {"selected_platforms": ["claude", "opencode"]}
+            for section in ("install", "skill_packages", "overlays")
+        }
+        selection = helper.installed_selection(installed, supported)
+        self.assertEqual(
+            helper.validate_requested_selection(
+                ["opencode", "claude"], selection, supported
+            ),
+            ("claude", "opencode"),
+        )
+        self.assertEqual(
+            helper.platform_args(selection),
+            ["--platform", "claude", "--platform", "opencode"],
+        )
+        with self.assertRaisesRegex(helper.SelectionError, "do not match"):
+            helper.validate_requested_selection(["codex"], selection, supported)
 
     def test_existing_mode_runs_one_exact_predecessor_cell(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -824,6 +965,11 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             with mock.patch.object(self.matrix, "_install_workflow", side_effect=init), \
                  mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
                  mock.patch.object(self.matrix, "_assert_template_hashes", return_value={}), \
+                 mock.patch.object(
+                     self.matrix,
+                     "verify_native_platform_load",
+                     return_value={"status": "passed", "actual_load": "projection_parity"},
+                 ) as native_load, \
                  mock.patch.object(self.matrix, "_verify_focused_sessions", return_value={"status": "passed"}) as sessions, \
                  mock.patch.object(self.matrix, "_run", wraps=self.matrix._run) as runner, \
                  mock.patch.object(self.matrix, "_preview_and_switch_workflow"):
@@ -834,6 +980,11 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             self.assertFalse(result["predecessor_upgrade_verified"])
             self.assertFalse(result["full_matrix_verified"])
             self.assertTrue((args.work_root / "focused-summary.json").is_file())
+            native_load.assert_called_once_with(
+                args.work_root.resolve() / "project",
+                "codex",
+                args.work_root.resolve() / "native-load",
+            )
             sessions.assert_called_once_with(args.work_root.resolve() / "project", "codex", args.work_root.resolve())
             self.assertEqual(result["session_binding"], {"status": "passed"})
 
@@ -1019,17 +1170,16 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         )
 
     def test_default_entry_delegates_to_live_manifest_matrix(self) -> None:
-        dispatch = self.text.index(
-            'if [[ "$VERIFY_MODE" == full || "$VERIFY_MODE" == focused || "$VERIFY_MODE" == existing ]]; then'
-        )
+        dispatch = self.text.index('RESULT_FILES=()')
         segment = self.text[dispatch:]
-        self.assertTrue(segment.rstrip().endswith("exit 0\nfi"))
         self.assertIn('source_python "$COMPATIBILITY_MATRIX_HELPER" "${MATRIX_ARGS[@]}"', segment)
         self.assertIn('--fork-source "$FORK_SOURCE"', segment)
         self.assertIn('--mode "$VERIFY_MODE"', segment)
         self.assertIn('--before-tag "$BEFORE_TAG"', segment)
         self.assertIn('--before-cli "$BEFORE_CLI"', segment)
-        self.assertIn('--platform "$VERIFY_PLATFORM"', segment)
+        self.assertIn('--platform "$platform"', segment)
+        self.assertIn('VERIFY_PLATFORMS=(claude codex cursor)', self.text)
+        self.assertIn('validate-upgrade', self.text)
 
     def test_empty_cleanup_preserves_the_primary_verifier_failure(self) -> None:
         self.assertIn('if [[ "${#GURU_TEMP_FILES[@]}" -gt 0 ]]; then', self.text)
@@ -1079,12 +1229,13 @@ exit 23
             self.assertFalse(allowed.exists())
             self.assertTrue(unrelated.exists())
 
-    def test_live_platform_authorities_derive_exact_six_cell_matrix(self) -> None:
+    def test_live_platform_authorities_derive_exact_platform_matrix(self) -> None:
         inventory = self.matrix.derive_platform_inventory(REPO)
         plan = self.matrix.build_matrix(REPO)
 
-        self.assertEqual(inventory["platforms"], ["claude", "codex", "cursor"])
-        self.assertEqual(plan["cell_count"], 6)
+        self.assertEqual(len(inventory["platforms"]), 22)
+        self.assertEqual(inventory["dogfood_platforms"], ["claude", "codex", "cursor"])
+        self.assertEqual(plan["cell_count"], 8)
         self.assertEqual(
             [cell["cell_id"] for cell in plan["cells"]],
             [
@@ -1094,6 +1245,8 @@ exit 23
                 "codex-existing",
                 "cursor-clean",
                 "cursor-existing",
+                "opencode-clean",
+                "opencode-existing",
             ],
         )
         self.assertTrue(all(cell["shared_projection"] for cell in plan["cells"]))
@@ -1681,6 +1834,11 @@ exit 23
                      return_value=source,
                  ) as prepare_clean, \
                  mock.patch.object(self.matrix, "_apply_preset") as apply_clean, \
+                 mock.patch.object(
+                     self.matrix,
+                     "verify_native_platform_load",
+                     return_value={"status": "passed", "actual_load": "projection_parity"},
+                 ) as native_load, \
                  mock.patch.object(self.matrix, "_run", side_effect=run) as invoked:
                 result = self.matrix._run_installed_smokes(target, source, work, scenario, "codex")
                 prepare_clean.assert_called_once_with(
@@ -1692,6 +1850,7 @@ exit 23
                     "codex",
                     work / "preset-clean-provenance.log",
                 )
+                native_load.assert_called_once_with(target, "codex", work / "native-load")
                 self.assertEqual(result["runtime_smokes"], [
                     "closeout",
                     "phase0",
@@ -1782,14 +1941,14 @@ exit 23
         projection = self.matrix.capability_projection(REPO)
 
         self.assertRegex(projection["projection_sha256"], r"^[0-9a-f]{64}$")
-        self.assertEqual(len(projection["skill_api"]["interfaces"]), 26)
+        self.assertEqual(len(projection["skill_api"]["interfaces"]), 32)
         self.assertEqual(len(projection["workflow"]["skill_invokes"]), 22)
         self.assertEqual(len(projection["workflow"]["skill_exits"]), 98)
         self.assertEqual(len(projection["workflow"]["workflow_targets"]), 35)
         self.assertEqual(len(projection["workflow"]["stop_targets"]), 24)
         self.assertEqual(
             projection["distribution"]["platforms"],
-            ["claude", "codex", "cursor"],
+            list(self.matrix.PLATFORM_FLAGS),
         )
         self.assertGreater(
             len(projection["distribution"]["skill_package_files_and_modes"]),
@@ -2015,7 +2174,7 @@ exit 23
         template_hashes = self.matrix._assert_template_hashes(REPO, REPO)
 
         self.assertTrue(comparison["capabilities_preserved"])
-        self.assertEqual(len(installed["skill_api"]["interfaces"]), 26)
+        self.assertEqual(len(installed["skill_api"]["interfaces"]), 32)
         self.assertEqual(installed["distribution"]["platforms"], ["claude", "codex", "cursor"])
         source = self.matrix.capability_projection(REPO)
         current = self.matrix.compare_capabilities(

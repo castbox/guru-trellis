@@ -67,7 +67,7 @@ gate，也不替代上表的 Architecture、qualifier、freshness checker与publ
 | installed closeout owner boundary | `3/3 PASS` | Publication closing keyword、Finalizer绑定与 Merge live closure verification owner边界。 |
 | Python routing suite | `42/42 PASS` | current command/skill route inventory与删除后的 package graph一致。 |
 | live routing inventory | `status=ok` | generated-shebang fingerprint与 current inventory一致。 |
-| preset reapply / dogfood | `status=ok` | fresh `--all-platforms` reapply 全部 unchanged；canonical/installed source validation通过，未生成 `.new` / `.bak`，sidecar/conflict为0。 |
+| preset reapply / dogfood | `status=ok` | historical three-platform dogfood reapply 全部 unchanged；canonical/installed source validation通过，未生成 `.new` / `.bak`，sidecar/conflict为0。 |
 | static hygiene | `PASS` | relevant Python compilation、JSON parsing与 `git diff --check` 通过。 |
 
 针对 `T247-01..08` 的 current active graph扫描未发现 ledger writer、reader、schema registration、

@@ -144,9 +144,8 @@ installed publication、exact platform-set preservation、verifier failure evide
   exact base/head Draft/READY PR已current时分别无写入产生`publication_head_current`、`branch_published`或
   `draft_pr_current`，不得重复确认、commit、push或创建duplicate PR。任一confirmation永不授权下一action；
   PR current只进入Finish，不能直接Merge。installed `provenance_prepare` 还必须在 immutable source checkout
-  前验证 parent manifest 三处 non-empty/sorted/unique/canonical/equal selected lists 与 boolean
-  `all_platforms`：只有 `true` + full canonical set 使用 `--all-platforms`，否则 repeated `--platform` 保留
-  exact selection；invalid identity 在 source checkout/preset apply/commit 前进入既有 `provenance_reentry`，
+  前验证 parent manifest 三处 non-empty/sorted/unique/canonical/equal selected lists，并始终用 repeated
+  `--platform` 保留 exact selection；invalid identity 在 source checkout/preset apply/commit 前进入既有 `provenance_reentry`，
   target managed mutation 为 0。该约束不新增 profile、DTO、continuation、owner 或 refusal exit。
 - `EVO-DDEC-027`（accepted）：causally bound user event必须以`bound_event_ref,event_sequence`直达closed
   lifecycle owner；ref绑定host event identity/session/content，sequence只负责arrival order，不能单独承担事件

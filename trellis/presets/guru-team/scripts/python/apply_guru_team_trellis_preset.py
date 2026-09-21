@@ -21,23 +21,30 @@ SCRIPT_MODULE_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_MODULE_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_MODULE_DIR))
 
+from guru_platform_inventory import (
+    DEFAULT_PLATFORM_FLAGS,
+    PLATFORM_BY_FLAG,
+    PLATFORM_FLAGS,
+    all_skill_roots,
+    select_platforms,
+    selected_skill_roots,
+    validate_manifest_inventory,
+)
+from platform_projection_contract import DESCRIPTORS_BY_FLAG
 from validate_upstream_ownership import validate_repository as validate_upstream_ownership_repository
 
 
 EXTENSION_MANIFEST = Path("trellis/guru-team-extension.json")
 WORKFLOW_MARKETPLACE = "gh:castbox/guru-trellis/trellis"
 WORKFLOW_TEMPLATE = "guru-team"
-DEFAULT_PLATFORMS = ("codex", "cursor")
-PLATFORM_OVERLAY_PREFIXES = {
-    "codex": (Path(".codex"),),
-    "cursor": (Path(".cursor"),),
-    "claude": (Path(".claude"),),
-}
-ALL_PLATFORMS = tuple(PLATFORM_OVERLAY_PREFIXES)
+DEFAULT_DOGFOOD_PLATFORMS = DEFAULT_PLATFORM_FLAGS
 GURU_OVERLAY_ENTRY_PATHS = {
-    "codex": Path(".codex/prompts/guru-finish-work.md"),
-    "cursor": Path(".cursor/commands/guru-finish-work.md"),
-    "claude": Path(".claude/commands/guru/finish-work.md"),
+    flag: Path(descriptor["entry_path"])
+    for flag, descriptor in DESCRIPTORS_BY_FLAG.items()
+}
+PLATFORM_OVERLAY_PREFIXES = {
+    flag: (Path(path.parts[0]),)
+    for flag, path in GURU_OVERLAY_ENTRY_PATHS.items()
 }
 GURU_OVERLAY_SCHEMA_VERSION = "1.0"
 INSTALLED_EXTENSION_SCHEMA_VERSION = "2.0"
@@ -56,7 +63,6 @@ GURU_OVERLAY_REMOVAL_SIDECAR = (
     "preserved local file, remove it or migrate its content, then delete this "
     "sidecar and reapply the preset.\n"
 ).encode("utf-8")
-SKILL_DESTINATION_PLATFORM_ORDER = ("shared", "codex", "claude", "cursor")
 SKILL_INTEGRATION_TEST_PATHS = (
     Path("tests/test_finish_family_integration.py"),
     Path("tests/test_base_continuity_integration.py"),
@@ -353,7 +359,10 @@ def load_extension_manifest(guru_root: Path) -> dict[str, Any]:
 
 
 def run_upstream_ownership_validator(guru_root: Path) -> dict[str, Any]:
-    payload = validate_upstream_ownership_repository(guru_root)
+    payload = validate_upstream_ownership_repository(
+        guru_root,
+        validate_installed=False,
+    )
     if payload.get("status") != "ok":
         first_error = next(iter(payload.get("errors") or []), {})
         code = str(first_error.get("code") or "ownership_validation_failed")
@@ -511,7 +520,6 @@ def build_installed_extension_manifest(
         "source": source,
         "install": {
             "selected_platforms": result["platforms"],
-            "all_platforms": result["all_platforms"],
             "managed_assets": managed_assets,
             "managed_asset_hashes": result["managed_asset_hashes"],
             "new_copies": result["new_copies"],
@@ -775,7 +783,7 @@ def previous_overlay_hashes(
     selected = overlays.get("selected_platforms")
     if (
         not isinstance(selected, list)
-        or any(not isinstance(item, str) or item not in ALL_PLATFORMS for item in selected)
+        or any(not isinstance(item, str) or item not in PLATFORM_FLAGS for item in selected)
         or selected != sorted(set(selected))
     ):
         valid = False
@@ -1021,10 +1029,7 @@ def skill_registry_entries(skills_root: Path) -> tuple[dict[str, Any], list[dict
 SKILL_MANAGED_ROOTS = (
     Path(".trellis/guru-team/skills"),
     Path(".trellis/guru-team/runtime"),
-    Path(".agents/skills"),
-    Path(".codex/skills"),
-    Path(".cursor/skills"),
-    Path(".claude/skills"),
+    *all_skill_roots(),
 )
 
 
@@ -1048,6 +1053,31 @@ def prune_empty_managed_skill_parents(repo: Path, path: Path) -> None:
         except OSError:
             return
         current = current.parent
+
+
+def prune_empty_unselected_skill_projections(
+    repo: Path, platforms: set[str]
+) -> None:
+    selected_roots = set(selected_skill_roots(platforms))
+    for root in SKILL_MANAGED_ROOTS:
+        if root in selected_roots or root == Path(".trellis/guru-team/skills"):
+            continue
+        absolute_root = Path(os.path.abspath(repo)) / root
+        for skill_root in sorted(
+            absolute_root.glob("guru-*"),
+            key=lambda path: len(path.parts),
+            reverse=True,
+        ):
+            directories = sorted(
+                (path for path in skill_root.rglob("*") if path.is_dir()),
+                key=lambda path: len(path.parts),
+                reverse=True,
+            )
+            for directory in (*directories, skill_root):
+                try:
+                    directory.rmdir()
+                except OSError:
+                    pass
 
 
 def remove_stale_skill_path(
@@ -1362,23 +1392,19 @@ def install_skill_packages(
                 raise SystemExit(f"Missing canonical Skill runtime kernel file: {source}")
             desired_files.append((source, dst / "runtime" / relative))
 
-    destination_roots = [
-        (
-            platform,
-            Path(".agents/skills")
-            if platform == "shared"
-            else PLATFORM_OVERLAY_PREFIXES[platform][0] / "skills",
-        )
-        for platform in SKILL_DESTINATION_PLATFORM_ORDER
-        if platform == "shared" or platform in platforms
-    ]
+    destination_roots = selected_skill_roots(platforms)
     for entry in active_entries:
         skill_id = str(entry["id"])
         supported = set(entry.get("supported_platforms") or [])
         package_root = canonical_root / str(entry["package"])
         package_files = skill_platform_public_files(package_root)
-        for platform, target_root in destination_roots:
-            if platform not in supported:
+        for target_root in destination_roots:
+            root_platforms = {
+                flag
+                for flag in platforms
+                if target_root in PLATFORM_BY_FLAG[flag].skill_roots
+            }
+            if "shared" not in supported and not root_platforms.intersection(supported):
                 continue
             for source in package_files:
                 desired_files.append((source, repo / target_root / skill_id / source.relative_to(package_root)))
@@ -1423,6 +1449,7 @@ def install_skill_packages(
             conflicts.append(conflict)
         if sidecar:
             sidecars.append(sidecar)
+    prune_empty_unselected_skill_projections(repo, platforms)
 
     status = "ok" if provenance_valid and not conflicts and not sidecars else "conflict"
     return {
@@ -1516,17 +1543,24 @@ def overlay_selected(relative: Path, platforms: set[str]) -> bool:
     selected_prefixes = [
         prefix
         for platform in sorted(platforms)
-        for prefix in PLATFORM_OVERLAY_PREFIXES[platform]
+        for prefix in PLATFORM_OVERLAY_PREFIXES.get(platform, ())
     ]
     return any(path_has_prefix(relative, prefix) for prefix in selected_prefixes)
 
 
-def selected_platforms(platforms: list[str] | None, all_platforms: bool) -> tuple[set[str], bool]:
-    if all_platforms:
-        return set(ALL_PLATFORMS), True
-    if platforms:
-        return set(platforms), False
-    return set(DEFAULT_PLATFORMS), False
+def platform_capability_sets(
+    manifest: dict[str, Any],
+) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    validate_manifest_inventory(manifest)
+    return PLATFORM_FLAGS, DEFAULT_DOGFOOD_PLATFORMS
+
+
+def selected_platforms(
+    platforms: list[str] | None,
+    supported: tuple[str, ...] = PLATFORM_FLAGS,
+    default: tuple[str, ...] = DEFAULT_DOGFOOD_PLATFORMS,
+) -> set[str]:
+    return select_platforms(platforms, supported, default)
 
 
 def leading_spaces(value: str) -> int:
@@ -1890,7 +1924,6 @@ def managed_transaction_paths(
     repo: Path,
     dst: Path,
     platforms: set[str],
-    all_platforms: bool,
     previous_manifest: dict[str, Any] | None,
     source_projections: dict[Path, Path] | None = None,
 ) -> set[Path]:
@@ -1899,7 +1932,6 @@ def managed_transaction_paths(
     The inventory is intentionally assembled from canonical declarations and the
     prior installed manifest. It never walks the target repository.
     """
-    del all_platforms  # the selected set is already expanded by the caller
     paths: set[Path] = {
         Path("AGENTS.md"),
         Path(".gitignore"),
@@ -1979,19 +2011,18 @@ def managed_source_projections(
     for relative in SKILL_RUNTIME_KERNEL_PATHS:
         add(canonical_root / "runtime" / relative, dst / "runtime" / relative)
 
-    destination_roots = [
-        ("shared", Path(".agents/skills")),
-        *[
-            (platform, PLATFORM_OVERLAY_PREFIXES[platform][0] / "skills")
-            for platform in sorted(platforms)
-        ],
-    ]
+    destination_roots = selected_skill_roots(platforms)
     for entry in active_entries:
         skill_id = str(entry["id"])
         package_root = canonical_root / str(entry["package"])
         supported = set(entry.get("supported_platforms") or [])
-        for platform, target_root in destination_roots:
-            if platform not in supported:
+        for target_root in destination_roots:
+            root_platforms = {
+                flag
+                for flag in platforms
+                if target_root in PLATFORM_BY_FLAG[flag].skill_roots
+            }
+            if "shared" not in supported and not root_platforms.intersection(supported):
                 continue
             for source in skill_platform_public_files(package_root):
                 add(
@@ -2300,7 +2331,6 @@ def install_assets(
     dst: Path,
     repo: Path,
     platforms: set[str] | None = None,
-    all_platforms: bool = False,
 ) -> dict[str, Any]:
     if not src.is_dir():
         raise SystemExit(f"Missing source directory: {src}")
@@ -2323,13 +2353,12 @@ def install_assets(
         source_projections = managed_source_projections(
             repo,
             dst,
-            platforms or set(DEFAULT_PLATFORMS),
+            platforms or set(DEFAULT_DOGFOOD_PLATFORMS),
         )
         managed_paths = managed_transaction_paths(
             repo,
             dst,
-            platforms or set(DEFAULT_PLATFORMS),
-            all_platforms,
+            platforms or set(DEFAULT_DOGFOOD_PLATFORMS),
             previous_manifest,
             source_projections,
         )
@@ -2346,7 +2375,6 @@ def install_assets(
             staging_repo / dst_relative,
             staging_repo,
             platforms,
-            all_platforms=all_platforms,
             source_validation=source_validation,
             upstream_ownership_validation=upstream_ownership_validation,
             managed_python=managed_python,
@@ -2417,6 +2445,9 @@ def install_assets(
                 if isinstance(item, dict) and isinstance(item.get("path"), str)
             )
             activate_staged_repository(staging_repo, repo, activation_paths)
+            prune_empty_unselected_skill_projections(
+                repo, platforms or set(DEFAULT_DOGFOOD_PLATFORMS)
+            )
             activated_runtime = ensure_managed_python_runtime(repo, guru_root, activate=True)
             if activated_runtime.get("runtime_identity") != python_runtime.get("runtime_identity"):
                 raise_managed_runtime_error(str(python_runtime.get("runtime_identity") or "") or None)
@@ -2430,7 +2461,6 @@ def _install_assets_in_place(
     dst: Path,
     repo: Path,
     platforms: set[str] | None = None,
-    all_platforms: bool = False,
     *,
     source_validation: dict[str, Any],
     upstream_ownership_validation: dict[str, Any],
@@ -2558,7 +2588,7 @@ def _install_assets_in_place(
         if script.exists():
             ensure_executable(script)
 
-    selected = platforms or set(DEFAULT_PLATFORMS)
+    selected = platforms or set(DEFAULT_DOGFOOD_PLATFORMS)
     skill_packages = install_skill_packages(repo, guru_root, dst, selected, previous_manifest)
     skill_packages["conflicts"].extend(managed_spec_conflicts)
     skill_packages["sidecars"] = sorted(set(skill_packages["sidecars"] + managed_spec_sidecars))
@@ -2594,7 +2624,6 @@ def _install_assets_in_place(
         "runtime_gitignore": runtime_gitignore,
         "language_guidance": language_guidance,
         "platforms": sorted(selected),
-        "all_platforms": all_platforms,
         "skill_packages": skill_packages,
         "overlays": overlays,
         "skill_source_validation": source_validation,
@@ -2654,7 +2683,7 @@ def install_overlays(
     }
     if set(canonical_by_path) != expected_paths:
         raise SystemExit(
-            "Canonical Guru Team overlay inventory must contain exactly the three Guru finish entries."
+            "Canonical Guru Team overlay inventory must match the pinned platform descriptors."
         )
     canonical_hashes = {
         relative: hashlib.sha256(source.read_bytes()).hexdigest()
@@ -2783,35 +2812,34 @@ def install_overlays(
 
 
 def main() -> int:
+    guru_root = guru_root_from_script()
+    manifest = load_extension_manifest(guru_root)
+    supported_platforms, default_platforms = platform_capability_sets(manifest)
     parser = argparse.ArgumentParser(description="Apply Guru team Trellis preset")
     parser.add_argument("--repo", help="Target repository root. Defaults to current directory.")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--version", action="store_true", help="Print the Guru Team extension version from the canonical manifest and exit.")
-    platform_group = parser.add_mutually_exclusive_group()
-    platform_group.add_argument(
+    parser.add_argument(
         "--platform",
         action="append",
-        choices=ALL_PLATFORMS,
-        help="Platform overlay to install. Repeat to select multiple platforms. Defaults to codex + cursor.",
-    )
-    platform_group.add_argument(
-        "--all-platforms",
-        action="store_true",
-        help="Install every known platform overlay.",
+        choices=supported_platforms,
+        help="Platform projection to install. Repeat to select multiple platforms. Defaults to claude + codex + cursor.",
     )
     args = parser.parse_args()
 
-    guru_root = guru_root_from_script()
     if args.version:
-        manifest = load_extension_manifest(guru_root)
         print(str(manifest["version"]))
         return 0
 
     repo = repo_root_from_args(args.repo)
-    platforms, all_platforms = selected_platforms(args.platform, args.all_platforms)
+    platforms = selected_platforms(
+        args.platform,
+        supported_platforms,
+        default_platforms,
+    )
     src = guru_root / "trellis/workflows/guru-team"
     dst = repo / ".trellis/guru-team"
-    result = install_assets(src, dst, repo, platforms, all_platforms=all_platforms)
+    result = install_assets(src, dst, repo, platforms)
 
     payload: dict[str, Any] = {
         "status": (
@@ -2823,7 +2851,6 @@ def main() -> int:
         ),
         "repo": str(repo),
         "platforms": result["platforms"],
-        "all_platforms": result["all_platforms"],
         "installed": result["installed"],
         "unchanged": result["unchanged"],
         "new_copies": result["new_copies"],

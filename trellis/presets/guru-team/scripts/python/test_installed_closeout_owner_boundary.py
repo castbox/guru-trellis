@@ -37,7 +37,7 @@ class InstalledCloseoutOwnerBoundaryTests(unittest.TestCase):
                 if key.startswith("INSTALLED_CLOSEOUT_"):
                     env.pop(key)
             self.run_ok(["git", "init", "-q", "-b", "main", str(repo)], work, env)
-            applied = self.run_ok([sys.executable, str(SCRIPTS / "apply_guru_team_trellis_preset.py"), "--repo", str(repo), "--all-platforms", "--json"], SOURCE, env)
+            applied = self.run_ok([sys.executable, str(SCRIPTS / "apply_guru_team_trellis_preset.py"), "--repo", str(repo), "--json"], SOURCE, env)
             self.assertIn('"status": "ok"', applied.stdout)
             # This fixture uses one current checkout. No source task or session
             # is copied, and GitHub operations are handled by the verifier fake.
@@ -93,7 +93,7 @@ assert task.is_dir() and len(commit) == 40
 assert intake["intake_steps"] == 6
 assert intake["workspace_exit"] == "created"
 assert intake["workspace_path"] == str(task.parents[2])
-assert intake["task_status_after_creation"] == "planning"
+assert intake["task_status_after_creation"] == "in_progress"
 assert Path(intake["remote_path"]).is_dir()
 print(json.dumps({"task": task.name, "branch": branch, "reviewed_commit": commit, "fixture_prepared": True, "intake": intake}))
 '''

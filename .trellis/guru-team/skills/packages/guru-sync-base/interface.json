@@ -181,9 +181,28 @@
   ],
   "platform_destinations": [
     "shared",
-    "codex",
+    "claude",
     "cursor",
-    "claude"
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
   ],
   "public_contracts": {
     "input": {
@@ -325,8 +344,15 @@
           "interface_path": "packages/guru-discover-change-context/interface.json",
           "input_kind": "structured_json",
           "profile_id": "pre_task",
-          "seed_fields": ["source_exit", "profile", "mode", "continuation_id"],
-          "authoring_fields": ["change_input"],
+          "seed_fields": [
+            "source_exit",
+            "profile",
+            "mode",
+            "continuation_id"
+          ],
+          "authoring_fields": [
+            "change_input"
+          ],
           "authoring_example": {
             "id": "pre_task_input",
             "path": "examples/public-pre-task-input-2.0.json"

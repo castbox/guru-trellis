@@ -108,9 +108,19 @@ stable task/Issue identity 并使旧 Finish receipt 失效。canonical registry 
 activation 与旧 edge retirement。`ADR-013`、`EVD-031` 与 #436 contribution 定义边界；完整 Release
 matrix 仍 `unverified`。
 
-当前 Architecture knowledge identity 为 `.56`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
+`ARCH-CUR-034`（`source_confirmed` + `reviewed`）：#443 以 `target_native` 在 `.56` current 上增加
+`guru-bind-task-session` additive/deferred semantic package。task identity保持唯一长期主身份，official Trellis
+`active_task` / `session_storage`保持resolver/store authority；新package独占lifecycle-aware resume、rebind、
+switch、reactivate rebind与manual recovery的semantic judgment和boundary write。五个success exits与一个blocked
+exit进入closed package contract；canonical registry为32 packages / 142 exits / 102 commands，production workflow
+仍为22 mandatory invokes / 98 exits。#434独占global route activation与旧edge retirement；`ADR-014`、
+`EVD-032`与#443 contribution定义边界，完整Release matrix仍`unverified`。
+
+`ARCH-CUR-035`（`source_confirmed` + `reviewed`）：#452 以 `target_native` 在 `.57` current 上建立两层平台 authority：pinned upstream `AI_TOOLS` 的完整 22-platform inventory 与目标仓库 manifest/provenance 的 exact `selected_platforms`。重复 `--platform` 选择任意合法 subset；无参数新安装与 guru-trellis dogfood 固定为 Claude/Codex/Cursor；OpenCode 是可显式选择的普通 upstream member，不进入 dogfood；公开 `--all-platforms` 及中间 Guru-supported/deferred inventory 已删除。canonical/installed/platform/ownership、升级保真、reapply/drift、package-private `tests/` 排除与代表性 OpenCode actual-load 由 `EVD-033` 支撑；#434 production graph 仍未激活，22/98 production boundary 不变。
+
+当前 Architecture knowledge identity 为 `.58`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
 `0.6.17`，framework source/CI 由 `ARCH-CUR-028` 与 canonical source record 绑定，package manager 为
-`pnpm@10.32.1`。`.54` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
+`pnpm@10.32.1`。`.57` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。
 

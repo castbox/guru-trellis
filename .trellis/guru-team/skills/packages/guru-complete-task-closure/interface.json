@@ -1,1 +1,495 @@
-{"$schema":"../../schemas/skill-interface-1.4.schema.json","schema_version":"1.4","id":"guru-complete-task-closure","name":"guru-complete-task-closure","description":"Apply the exact source Issue disposition after Completion approval and return a recoverable closure result.","state":"active","judgment_mode":"semantic","modes":{"workflow":{"routing":"global_workflow","entry_precondition_ids":["runtime_dependency","completion_approval","source_issue_identity","closure_freshness"]},"standalone":{"routing":"direct_discovery","entry_precondition_ids":["runtime_dependency","completion_approval","source_issue_identity","closure_freshness"]}},"entry_preconditions":[{"id":"runtime_dependency","evidence":"installed closure package","binding":"Guru Team preset","freshness":"each call"},{"id":"completion_approval","evidence":"Completion completed DTO","binding":"one task identity","freshness":"current"},{"id":"source_issue_identity","evidence":"exact repository and source Issue disposition","binding":"Issue closure boundary","freshness":"live reread"},{"id":"closure_freshness","evidence":"provider and transaction facts","binding":"one closure transaction","freshness":"mutation boundary"}],"runtime_dependency":{"extension_id":"guru-team","api_version":"1.0","manifest_path":".trellis/guru-team/extension.json","dispatcher":"run-skill-command","distribution":"guru-team-preset","package_portability":"not-self-contained"},"ordered_stages":["forward_behavior","ai_review_gate","conditional_human_confirmation","recorder_validator","typed_exit"],"artifacts":[{"id":"input","path":"examples/public-input.json"},{"id":"semantic_result","path":"examples/semantic-result.json"},{"id":"live_facts","path":"examples/live-facts.json"},{"id":"no_mutation_output","path":"examples/public-output.json"},{"id":"closed_output","path":"examples/public-closed-output.json"},{"id":"resume_closure_output","path":"examples/public-resume-closure-output.json"},{"id":"blocked_output","path":"examples/public-blocked-output.json"},{"id":"finish_authoring","path":"examples/public-finish-authoring.json"},{"id":"self_authoring","path":"examples/public-self-authoring.json"},{"id":"invocation_error","path":"examples/public-invocation-error.json"}],"schemas":[{"id":"public_input","path":"schemas/public-input.schema.json"},{"id":"semantic_result","path":"schemas/semantic-result.schema.json"},{"id":"live_facts","path":"schemas/live-facts.schema.json"},{"id":"aggregate_output","path":"schemas/public-output.schema.json"},{"id":"no_mutation_output","path":"schemas/public-no-mutation-output.schema.json"},{"id":"closed_output","path":"schemas/public-closed-output.schema.json"},{"id":"resume_closure_output","path":"schemas/public-resume-closure-output.schema.json"},{"id":"blocked_output","path":"schemas/public-blocked-output.schema.json"},{"id":"invocation_error","path":"schemas/public-invocation-error.schema.json"}],"validators":[{"id":"public_invocation","command":"scripts/invoke.sh","runtime_command":"invoke-guru-complete-task-closure","objective_scope":"Validate source disposition and execute or recover one closure transaction."}],"external_exits":[{"id":"no_mutation","evidence":"source does not own Issue closure","consumer":{"kind":"skill","id":"guru-finish-task"}},{"id":"closed","evidence":"exact source Issue was closed and post-checked","consumer":{"kind":"skill","id":"guru-finish-task"}},{"id":"resume_closure","evidence":"confirmation or provider terminal fact is missing","consumer":{"kind":"skill","id":"guru-complete-task-closure"}},{"id":"blocked","evidence":"closure identity or provider cannot be trusted","consumer":{"kind":"stop","id":"task-closure-blocked"}}],"reentry":{"identity":"task, completion, source Issue/disposition/action and closure transaction","freshness":"reread provider and task facts before mutation","stale_behavior":"fail_closed"},"tests":["tests/test_closure_contract.py"],"platform_destinations":["shared","codex","cursor","claude"],"public_contracts":{"input":{"kind":"structured_json","aggregate_schema":{"schema_id":"guru-complete-task-closure-input-1.0","path":"schemas/public-input.schema.json"},"profiles":[{"id":"completion_approved","schema":{"schema_id":"guru-complete-task-closure-input-1.0","path":"schemas/public-input.schema.json"},"example":{"id":"input","path":"examples/public-input.json"},"discriminator":{"field":"profile","value":"completion_approved"}}]},"invocation":{"command_id":"run-skill-command","wrapper":"scripts/invoke.sh","input_binding":{"kind":"structured_json","profile_id":"completion_approved"},"stdout_contract":"single_typed_exit","error_schema":{"schema_id":"guru-complete-task-closure-invocation-error-1.0","path":"schemas/public-invocation-error.schema.json"},"error_example":{"id":"invocation_error","path":"examples/public-invocation-error.json"},"example_argv":["--input","examples/public-input.json","--semantic-result","examples/semantic-result.json"]},"outputs":[{"exit_id":"no_mutation","schema":{"schema_id":"guru-complete-task-closure-output-no-mutation-1.0","path":"schemas/public-no-mutation-output.schema.json"},"example":{"id":"no_mutation_output","path":"examples/public-output.json"},"consumer_use_ids":["finish_no_mutation"]},{"exit_id":"closed","schema":{"schema_id":"guru-complete-task-closure-output-closed-1.0","path":"schemas/public-closed-output.schema.json"},"example":{"id":"closed_output","path":"examples/public-closed-output.json"},"consumer_use_ids":["finish_closed"]},{"exit_id":"resume_closure","schema":{"schema_id":"guru-complete-task-closure-output-resume-closure-1.0","path":"schemas/public-resume-closure-output.schema.json"},"example":{"id":"resume_closure_output","path":"examples/public-resume-closure-output.json"},"consumer_use_ids":["self"]},{"exit_id":"blocked","schema":{"schema_id":"guru-complete-task-closure-output-blocked-1.0","path":"schemas/public-blocked-output.schema.json"},"example":{"id":"blocked_output","path":"examples/public-blocked-output.json"},"consumer_use_ids":["blocked"]}],"consumer_inputs":[{"id":"finish","consumer":{"kind":"skill","id":"guru-finish-task"},"payload_kind":"structured_json","contract":{"kind":"skill_input_authoring_seed","interface_path":"packages/guru-finish-task/interface.json","input_kind":"structured_json","profile_id":"closure_completed","seed_fields":["source_exit","task_ref","closure_exit","closure_ref","source_issue"],"authoring_fields":["profile","mode"],"authoring_example":{"id":"finish_authoring","path":"examples/public-finish-authoring.json"}}},{"id":"self","consumer":{"kind":"skill","id":"guru-complete-task-closure"},"payload_kind":"structured_json","contract":{"kind":"skill_input_authoring_seed","interface_path":"packages/guru-complete-task-closure/interface.json","input_kind":"structured_json","profile_id":"completion_approved","seed_fields":["source_exit","task_ref","completion_ref","closure_ref","source_issue"],"authoring_fields":["profile","mode","source_issue"],"authoring_example":{"id":"self_authoring","path":"examples/public-self-authoring.json"}}},{"id":"blocked","consumer":{"kind":"stop","id":"task-closure-blocked"},"payload_kind":"zero_payload"}],"projections":[{"id":"finish_no_mutation","exit_id":"no_mutation","consumer_input_id":"finish","operation":"rename","mappings":[{"source":"exit_id","target":"source_exit"},{"source":"task_ref","target":"task_ref"},{"source":"closure_exit","target":"closure_exit"},{"source":"closure_ref","target":"closure_ref"},{"source":"source_issue","target":"source_issue"}]},{"id":"finish_closed","exit_id":"closed","consumer_input_id":"finish","operation":"rename","mappings":[{"source":"exit_id","target":"source_exit"},{"source":"task_ref","target":"task_ref"},{"source":"closure_exit","target":"closure_exit"},{"source":"closure_ref","target":"closure_ref"},{"source":"source_issue","target":"source_issue"}]},{"id":"self","exit_id":"resume_closure","consumer_input_id":"self","operation":"rename","mappings":[{"source":"exit_id","target":"source_exit"},{"source":"task_ref","target":"task_ref"},{"source":"completion_ref","target":"completion_ref"},{"source":"closure_ref","target":"closure_ref"},{"source":"source_issue","target":"source_issue"}]},{"id":"blocked","exit_id":"blocked","consumer_input_id":"blocked","operation":"select","mappings":[]}],"private_artifacts":[]}}
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-complete-task-closure",
+  "name": "guru-complete-task-closure",
+  "description": "Apply the exact source Issue disposition after Completion approval and return a recoverable closure result.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "completion_approval",
+        "source_issue_identity",
+        "closure_freshness"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "completion_approval",
+        "source_issue_identity",
+        "closure_freshness"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed closure package",
+      "binding": "Guru Team preset",
+      "freshness": "each call"
+    },
+    {
+      "id": "completion_approval",
+      "evidence": "Completion completed DTO",
+      "binding": "one task identity",
+      "freshness": "current"
+    },
+    {
+      "id": "source_issue_identity",
+      "evidence": "exact repository and source Issue disposition",
+      "binding": "Issue closure boundary",
+      "freshness": "live reread"
+    },
+    {
+      "id": "closure_freshness",
+      "evidence": "provider and transaction facts",
+      "binding": "one closure transaction",
+      "freshness": "mutation boundary"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "input",
+      "path": "examples/public-input.json"
+    },
+    {
+      "id": "semantic_result",
+      "path": "examples/semantic-result.json"
+    },
+    {
+      "id": "live_facts",
+      "path": "examples/live-facts.json"
+    },
+    {
+      "id": "no_mutation_output",
+      "path": "examples/public-output.json"
+    },
+    {
+      "id": "closed_output",
+      "path": "examples/public-closed-output.json"
+    },
+    {
+      "id": "resume_closure_output",
+      "path": "examples/public-resume-closure-output.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "finish_authoring",
+      "path": "examples/public-finish-authoring.json"
+    },
+    {
+      "id": "self_authoring",
+      "path": "examples/public-self-authoring.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "examples/public-invocation-error.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "public_input",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "semantic_result",
+      "path": "schemas/semantic-result.schema.json"
+    },
+    {
+      "id": "live_facts",
+      "path": "schemas/live-facts.schema.json"
+    },
+    {
+      "id": "aggregate_output",
+      "path": "schemas/public-output.schema.json"
+    },
+    {
+      "id": "no_mutation_output",
+      "path": "schemas/public-no-mutation-output.schema.json"
+    },
+    {
+      "id": "closed_output",
+      "path": "schemas/public-closed-output.schema.json"
+    },
+    {
+      "id": "resume_closure_output",
+      "path": "schemas/public-resume-closure-output.schema.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-complete-task-closure",
+      "objective_scope": "Validate source disposition and execute or recover one closure transaction."
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "no_mutation",
+      "evidence": "source does not own Issue closure",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-finish-task"
+      }
+    },
+    {
+      "id": "closed",
+      "evidence": "exact source Issue was closed and post-checked",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-finish-task"
+      }
+    },
+    {
+      "id": "resume_closure",
+      "evidence": "confirmation or provider terminal fact is missing",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-complete-task-closure"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "closure identity or provider cannot be trusted",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-closure-blocked"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "task, completion, source Issue/disposition/action and closure transaction",
+    "freshness": "reread provider and task facts before mutation",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_closure_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-complete-task-closure-input-1.0",
+        "path": "schemas/public-input.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "completion_approved",
+          "schema": {
+            "schema_id": "guru-complete-task-closure-input-1.0",
+            "path": "schemas/public-input.schema.json"
+          },
+          "example": {
+            "id": "input",
+            "path": "examples/public-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "completion_approved"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "completion_approved"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-complete-task-closure-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invocation_error",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-input.json",
+        "--semantic-result",
+        "examples/semantic-result.json"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "no_mutation",
+        "schema": {
+          "schema_id": "guru-complete-task-closure-output-no-mutation-1.0",
+          "path": "schemas/public-no-mutation-output.schema.json"
+        },
+        "example": {
+          "id": "no_mutation_output",
+          "path": "examples/public-output.json"
+        },
+        "consumer_use_ids": [
+          "finish_no_mutation"
+        ]
+      },
+      {
+        "exit_id": "closed",
+        "schema": {
+          "schema_id": "guru-complete-task-closure-output-closed-1.0",
+          "path": "schemas/public-closed-output.schema.json"
+        },
+        "example": {
+          "id": "closed_output",
+          "path": "examples/public-closed-output.json"
+        },
+        "consumer_use_ids": [
+          "finish_closed"
+        ]
+      },
+      {
+        "exit_id": "resume_closure",
+        "schema": {
+          "schema_id": "guru-complete-task-closure-output-resume-closure-1.0",
+          "path": "schemas/public-resume-closure-output.schema.json"
+        },
+        "example": {
+          "id": "resume_closure_output",
+          "path": "examples/public-resume-closure-output.json"
+        },
+        "consumer_use_ids": [
+          "self"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-complete-task-closure-output-blocked-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "blocked"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "finish",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-finish-task"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-finish-task/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "closure_completed",
+          "seed_fields": [
+            "source_exit",
+            "task_ref",
+            "closure_exit",
+            "closure_ref",
+            "source_issue"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "finish_authoring",
+            "path": "examples/public-finish-authoring.json"
+          }
+        }
+      },
+      {
+        "id": "self",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-complete-task-closure"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-complete-task-closure/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "completion_approved",
+          "seed_fields": [
+            "source_exit",
+            "task_ref",
+            "completion_ref",
+            "closure_ref",
+            "source_issue"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode",
+            "source_issue"
+          ],
+          "authoring_example": {
+            "id": "self_authoring",
+            "path": "examples/public-self-authoring.json"
+          }
+        }
+      },
+      {
+        "id": "blocked",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-closure-blocked"
+        },
+        "payload_kind": "zero_payload"
+      }
+    ],
+    "projections": [
+      {
+        "id": "finish_no_mutation",
+        "exit_id": "no_mutation",
+        "consumer_input_id": "finish",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "closure_exit",
+            "target": "closure_exit"
+          },
+          {
+            "source": "closure_ref",
+            "target": "closure_ref"
+          },
+          {
+            "source": "source_issue",
+            "target": "source_issue"
+          }
+        ]
+      },
+      {
+        "id": "finish_closed",
+        "exit_id": "closed",
+        "consumer_input_id": "finish",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "closure_exit",
+            "target": "closure_exit"
+          },
+          {
+            "source": "closure_ref",
+            "target": "closure_ref"
+          },
+          {
+            "source": "source_issue",
+            "target": "source_issue"
+          }
+        ]
+      },
+      {
+        "id": "self",
+        "exit_id": "resume_closure",
+        "consumer_input_id": "self",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "completion_ref",
+            "target": "completion_ref"
+          },
+          {
+            "source": "closure_ref",
+            "target": "closure_ref"
+          },
+          {
+            "source": "source_issue",
+            "target": "source_issue"
+          }
+        ]
+      },
+      {
+        "id": "blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked",
+        "operation": "select",
+        "mappings": []
+      }
+    ],
+    "private_artifacts": []
+  }
+}

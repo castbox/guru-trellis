@@ -10,9 +10,10 @@ usage() {
 Usage: check-dogfood-overlay-drift.sh [--repo <path>]
 
 Validate the current Guru-owned claims and managed asset/package closure, then
-compare the canonical Guru Team workflow and finish overlays with installed
-dogfood copies in this repository, and verify managed workflow specs exist and
-match. These checks provide normal version/drift binding, not an
+compare the canonical Guru Team workflow with installed dogfood copies, verify
+the exact Claude/Codex/Cursor installed selection and selected native
+projections, and verify managed workflow specs exist and match. These checks
+provide normal version/drift binding, not an
 authenticity boundary. The command is read-only and exits non-zero on ownership
 failure or when any managed copy is missing or different.
 USAGE
@@ -41,8 +42,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 REPO_ROOT="$(cd "$REPO_ROOT" && pwd)"
-OVERLAY_ROOT="$REPO_ROOT/trellis/presets/guru-team/overlays"
 OWNERSHIP_CHECK="$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
+RUNTIME_ASSETS="$REPO_ROOT/trellis/skills/guru-team/runtime"
+DOGFOOD_CHECK="$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_dogfood_platform_selection.py"
 
 if [[ ! -x "$OWNERSHIP_CHECK" ]]; then
   echo "Missing executable ownership validator: $OWNERSHIP_CHECK" >&2
@@ -51,10 +53,17 @@ fi
 
 "$OWNERSHIP_CHECK" --repo "$REPO_ROOT" --json
 
-if [[ ! -d "$OVERLAY_ROOT" ]]; then
-  echo "Missing overlay root: $OVERLAY_ROOT" >&2
+if [[ ! -f "$DOGFOOD_CHECK" ]]; then
+  echo "Missing dogfood platform validator: $DOGFOOD_CHECK" >&2
   exit 2
 fi
+
+"$RUNTIME_ASSETS/resolve-python.sh" \
+  "$REPO_ROOT" \
+  "$RUNTIME_ASSETS" \
+  "$DOGFOOD_CHECK" \
+  --repo "$REPO_ROOT" \
+  --json
 
 missing=0
 changed=0
@@ -72,22 +81,6 @@ elif ! cmp -s "$workflow_source" "$workflow"; then
   changed=$((changed + 1))
   workflow_drift=1
 fi
-
-while IFS= read -r source; do
-  relative="${source#$OVERLAY_ROOT/}"
-  target="$REPO_ROOT/$relative"
-  if [[ ! -f "$target" ]]; then
-    printf 'MISSING %s\n' "$relative"
-    missing=$((missing + 1))
-    preset_drift=1
-    continue
-  fi
-  if ! cmp -s "$source" "$target"; then
-    printf 'CHANGED %s\n' "$relative"
-    changed=$((changed + 1))
-    preset_drift=1
-  fi
-done < <(find "$OVERLAY_ROOT" -type f ! -path '*/__pycache__/*' ! -name '*.pyc' | sort)
 
 while IFS= read -r semantic_spec_source; do
   relative="${semantic_spec_source#$REPO_ROOT/trellis/presets/guru-team/}"
@@ -115,4 +108,4 @@ if [[ "$missing" -gt 0 || "$changed" -gt 0 ]]; then
   exit 1
 fi
 
-echo "Dogfood workflow and overlay copies match canonical Guru Team sources."
+echo "Dogfood workflow, selected platform projections, and spec copies match canonical Guru Team sources."
