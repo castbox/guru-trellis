@@ -202,7 +202,7 @@
       "type": "object", "additionalProperties": false,
       "required": ["schema_version", "skill_id", "generated_at", "mode", "variant", "plan_sha256", "executor", "checker", "created_issue", "created_workspace", "no_side_effect", "typed_exit", "reason", "consumer", "facts_sha256"],
       "properties": {
-        "schema_version": {"const": "2.0"},
+        "schema_version": {"const": "3.0"},
         "skill_id": {"const": "guru-create-task-workspace"},
         "generated_at": {"type": "string", "format": "date-time"},
         "mode": {"enum": ["workflow", "standalone"]},

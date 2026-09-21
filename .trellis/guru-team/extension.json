@@ -862,11 +862,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-21T22:00:05Z",
+  "installed_at": "2026-09-21T22:24:01Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "493b9801b05eab3e73d9bb21869539062487ca57",
-    "commit": "493b9801b05eab3e73d9bb21869539062487ca57",
+    "ref": "c7b3a17e001faa1f03351e02f1ccdc64e0b44efd",
+    "commit": "c7b3a17e001faa1f03351e02f1ccdc64e0b44efd",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1031,7 +1031,7 @@
       {
         "id": "guru-create-task-workspace",
         "interface_sha256": "70899f31bed7681d1b8cceedd972f102d395d1af5403a1a1da585129f787b02d",
-        "tree_sha256": "a8992b847619a14c316b5319b8cd418720ed8f40cb60e483b266740b4e05ebad"
+        "tree_sha256": "36f9588527ed70476ab80e66c8ba414d27c20d438b24583b61d8561b5d613817"
       },
       {
         "id": "guru-create-task-commit",
@@ -1141,7 +1141,7 @@
       {
         "id": "guru-reactivate-task",
         "interface_sha256": "86df6cc9b7e446a94b7da8af7d93cb2b5ae46e54155dc17d5cfe84fd7dc89f77",
-        "tree_sha256": "0ba615f261a9cdccbeb5b6c54fe12ee088b3a6fef6fb5817178563c782cdf271"
+        "tree_sha256": "9933a23b99cd0092908c85b50f2ff0fb3879c509f9fe9c41d37fda525b654308"
       },
       {
         "id": "guru-sync-base",
@@ -3567,7 +3567,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/common.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/common.py",
-        "sha256": "1ff43c46608fe0fd1437bb3e9d7749fab8167fd535a3bfe0aeb46cec81c9d885",
+        "sha256": "94867b729cb2816981e1aa545c2dd1cc68d96f545044ec0c456fe0db32f29abc",
         "executable": false,
         "action": "unchanged"
       },
@@ -3679,7 +3679,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
-        "sha256": "63b0ece2fae989016161ddeda0da80492d3ec7f829ddcd1e768ce6d1bf95c13d",
+        "sha256": "23d0ff02c1ea196d60417538b7d855fa2075b70ede4ac842386613d6f6350e6d",
         "executable": false,
         "action": "unchanged"
       },
@@ -11113,7 +11113,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/invoke.py",
-        "sha256": "6133970b1c06c9cf04a222c9dc85c7bd8bd056fcce9342aa8ff1cd6dc199c112",
+        "sha256": "3f370b9d1b2fda2dde7db9ade406260e771db513b61002713042289b1c42d21c",
         "executable": false,
         "action": "unchanged"
       },

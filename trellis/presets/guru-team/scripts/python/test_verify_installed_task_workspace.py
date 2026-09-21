@@ -5,11 +5,15 @@ import contextlib
 import io
 import json
 import os
+import shutil
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
+
+from test_discovery_stdin_integration import run_preset_install
+from test_workspace_invocation_integration import WorkspaceInvocationIntegrationTests
 
 
 REPO = Path(__file__).resolve().parents[5]
@@ -33,6 +37,26 @@ def load_module():
 
 
 class InstalledTaskWorkspaceTests(unittest.TestCase):
+    def test_installed_preset_accepts_checked_created_issue_provenance(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="guru-460-installed-") as directory:
+            work = Path(directory)
+            installed = work / "installed"
+            (installed / ".trellis").mkdir(parents=True)
+            shutil.copy2(
+                REPO / "trellis/workflows/guru-team/workflow.md",
+                installed / ".trellis/workflow.md",
+            )
+            shutil.copytree(
+                REPO / ".trellis/scripts",
+                installed / ".trellis/scripts",
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+            )
+            install = run_preset_install(installed)
+            self.assertEqual(install.returncode, 0, install.stdout[-3000:] + install.stderr)
+            WorkspaceInvocationIntegrationTests().check_chain(
+                installed, work / "created-issue-provenance"
+            )
+
     def test_workspace_cli_consumes_shared_chain_and_preserves_legacy(self) -> None:
         module = load_module()
         with tempfile.TemporaryDirectory() as directory:

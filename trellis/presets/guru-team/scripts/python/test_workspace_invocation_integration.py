@@ -66,6 +66,20 @@ class WorkspaceInvocationIntegrationTests(unittest.TestCase):
         error = self.call(root, env, "create-task-workspace.sh", plan, expected=2)
         self.assertIn("invocation", error["field_path"])
         self.assertEqual(snapshot(root), before)
+        created_issue = self.checked_recovered_issue(root, env, transition, plan, issue)
+        plan["target"].update(
+            {
+                "created_issue_binding_sha256": created_issue["created_issue"]["facts_sha256"],
+                "created_issue_result": created_issue,
+            }
+        )
+        self.refresh_plan(plan)
+        plan = self.call(
+            root,
+            env,
+            "record-task-workspace-plan.sh",
+            {"schema_version": "1.0", "transition": transition, "plan": plan},
+        )
         mutation = {"schema_version": "1.0", "transition": transition, "plan": plan}
         result = self.call(root, env, "create-task-workspace.sh", mutation)
         result = self.call(root, env, "check-task-workspace-result.sh", {**mutation, "result": result})
@@ -78,6 +92,117 @@ class WorkspaceInvocationIntegrationTests(unittest.TestCase):
         for mapping in created["runtime_mappings"]:
             self.assertTrue((root / mapping["path"]).is_file())
             self.assertTrue(mapping["ignored"])
+
+    def checked_recovered_issue(self, root, env, transition, workspace_plan, issue):
+        self.enable_exact_recovery(env, issue)
+        draft = copy.deepcopy(workspace_plan)
+        reviewed = transcript.digest(
+            {"title": issue["title"], "body": issue["body"], "labels": []}
+        )
+        draft["invocation"].update(
+            {"target_kind": "reviewed_draft", "action_scope": "github_issue_mutation"}
+        )
+        draft["target"].update(
+            {
+                "kind": "reviewed_draft",
+                "issue_number": None,
+                "url": None,
+                "state": None,
+                "updated_at": None,
+                "draft": {
+                    "draft_id": "installed-recovery",
+                    "source_request_sha256": "1" * 64,
+                    "title": issue["title"],
+                    "body": issue["body"],
+                    "labels": [],
+                    "reviewed_draft_sha256": reviewed,
+                },
+                "created_issue_binding_sha256": None,
+                "created_issue_result": None,
+            }
+        )
+        draft["side_effects"].update(
+            {
+                "operations": ["create_issue"],
+                "runtime_mappings": [],
+                "command_argv": ["create-task-workspace", "--invocation", "-"],
+                "stop_after": "created_issue_refresh",
+            }
+        )
+        draft["freshness"]["captured_at"] = "2025-12-31T23:59:59Z"
+        self.refresh_plan(draft)
+        draft = self.call(
+            root,
+            env,
+            "record-task-workspace-plan.sh",
+            {"schema_version": "1.0", "transition": transition, "plan": draft},
+        )
+        mutation = {"schema_version": "1.0", "transition": transition, "plan": draft}
+        result = self.call(root, env, "create-task-workspace.sh", mutation)
+        checked = self.call(
+            root,
+            env,
+            "check-task-workspace-result.sh",
+            {**mutation, "result": result},
+        )
+        self.assertEqual(
+            ("3.0", "created_issue", "refresh_review", "passed"),
+            (
+                checked["schema_version"],
+                checked["variant"],
+                checked["typed_exit"],
+                checked["checker"]["status"],
+            ),
+        )
+        self.assertNotIn("issue.create", transcript.operation_counts(env))
+        return checked
+
+    def enable_exact_recovery(self, env, issue):
+        fake_gh = Path(shutil.which("gh", path=env["PATH"]) or "")
+        self.assertTrue(fake_gh.is_file())
+        original = fake_gh.with_name("gh-transcript-original")
+        fake_gh.rename(original)
+        recovery = {
+            **issue,
+            "createdAt": "2026-01-01T00:00:00Z",
+            "labels": [],
+        }
+        fake_gh.write_text(
+            f"#!{sys.executable}\n"
+            "import json,subprocess,sys\n"
+            f"original={str(original)!r}\n"
+            f"recovery={recovery!r}\n"
+            "args=sys.argv[1:]\n"
+            "if args[:2]==['issue','list']:\n"
+            " print(json.dumps([recovery]));raise SystemExit(0)\n"
+            "raise SystemExit(subprocess.run([original,*args]).returncode)\n",
+            encoding="utf-8",
+        )
+        fake_gh.chmod(0o755)
+
+    def refresh_plan(self, plan):
+        reviewable = {
+            key: copy.deepcopy(plan[key])
+            for key in (
+                "schema_version",
+                "skill_id",
+                "mode",
+                "invocation",
+                "prerequisites",
+                "target",
+                "base",
+                "naming",
+                "assignee",
+                "side_effects",
+            )
+        }
+        reviewed = transcript.digest(reviewable)
+        plan["ai_review_gate"]["reviewed_plan_sha256"] = reviewed
+        plan["freshness"]["reviewable_plan_sha256"] = reviewed
+        unsigned = copy.deepcopy(plan)
+        unsigned["freshness"].pop("plan_sha256", None)
+        plan["freshness"]["plan_sha256"] = transcript.digest(unsigned)
+        return plan
 
     def call(self, root, env, command, envelope, expected=0):
         path = root / ".trellis/guru-team/skills/packages/guru-create-task-workspace/scripts" / command
