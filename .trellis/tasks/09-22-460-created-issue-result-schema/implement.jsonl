@@ -1,5 +1,0 @@
-{"file": "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json", "reason": "Issue #460 的直接 schema 修复目标；仅校准嵌入 created-Issue result 版本。"}
-{"file": "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py", "reason": "package schema/runtime 的正负向合同回归。"}
-{"file": "trellis/presets/guru-team/scripts/python/test_workspace_invocation_integration.py", "reason": "created-Issue 恢复与 fresh Intake 到 workspace/task 创建的生产路径回归。"}
-{"file": "trellis/presets/guru-team/scripts/python/test_verify_installed_task_workspace.py", "reason": "preset 安装后 package 的代表性回归。"}
-{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "result 3.0 与 plan consumer 的当前数据合同 authority。"}
