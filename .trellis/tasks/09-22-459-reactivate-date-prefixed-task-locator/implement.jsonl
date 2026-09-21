@@ -1,0 +1,4 @@
+{"file": "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/invoke.py", "reason": "实现 locator basename 与 stable task_id 分层校验的 canonical runtime。"}
+{"file": "trellis/skills/guru-team/packages/guru-reactivate-task/tests/test_reactivate_contract.py", "reason": "扩展日期前缀、mismatch 和 output-loss recovery 回归。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "遵守 package-local deterministic runtime 与 managed Python 边界。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "通过 preset reapply 同步 installed/dogfood projection。"}
