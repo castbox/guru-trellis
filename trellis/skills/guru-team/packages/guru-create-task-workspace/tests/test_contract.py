@@ -31,8 +31,8 @@ class WorkspaceTest(unittest.TestCase):
   live={"number":27,"url":"https://github.com/example/repo/issues/27","state":"OPEN","title":"Create a reviewed task workspace","body":"","updatedAt":"2026-01-01T00:00:00Z"}
   with mock.patch.object(execute,"github",return_value=live):result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
   rp=self.write("result.json",result);return result,check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
- def checked_created_issue(self):
-  draft=self.draft_plan();pp=self.write("created-issue-draft.json",draft);live=self.issue_row()
+ def checked_created_issue(self,number=112,title="Reviewed issue",body="Reviewed body",updated_at="2026-01-01T00:00:01Z",repo="example/repo"):
+  draft=self.draft_plan(title,body);draft["target"]["repo"]=repo;self.refresh(draft);pp=self.write("created-issue-draft.json",draft);live=self.issue_row(number=number,title=title,body=body,updated_at=updated_at,repo=repo)
   with mock.patch.object(execute,"github",side_effect=[[],live]),mock.patch.object(execute,"run_gh",return_value=live["url"]+"\n"),mock.patch.object(check,"github",return_value=live):
    result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]);rp=self.write("created-issue-result.json",result);checked=check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
   self.assertEqual(("3.0","created_issue","passed"),(checked["schema_version"],checked["variant"],checked["checker"]["status"]))
@@ -250,6 +250,11 @@ class WorkspaceTest(unittest.TestCase):
   drift=copy.deepcopy(live);drift["updatedAt"]="2026-01-01T00:00:02Z";workspace=self.parent/"repo-worktrees/027-workspace";before=self.mutation_state(workspace)
   with mock.patch.object(execute,"github",return_value=drift):result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
   self.assertEqual(("no_side_effect","refresh_review",True),(result["variant"],result["typed_exit"],result["no_side_effect"]["zero_writes"]));self.assertEqual(before,self.mutation_state(workspace))
+ def test_created_issue_provenance_must_match_outer_target_identity(self):
+  plan,_=self.created_issue_plan();_,other=self.checked_created_issue(number=113,title="Other reviewed issue",body="Other reviewed body",updated_at="2026-01-01T00:00:03Z",repo="other/repo")
+  plan["target"]["created_issue_result"]=other;plan["target"]["created_issue_binding_sha256"]=other["created_issue"]["facts_sha256"];self.refresh(plan)
+  with self.assertRaises(CommandError) as raised:record.run(PACKAGE,{},["--root",str(self.repo),"--input",str(self.write("mismatched-created-issue-provenance.json",plan))])
+  self.assertEqual(("stale_identity","input.target.created_issue_result.created_issue"),(raised.exception.code,raised.exception.field_path))
  def test_reviewed_draft_label_identity_uses_canonical_case_for_live_comparison(self):
   plan=self.draft_plan(labels=["BUG"]);pp=self.write("recover-label-case.json",plan);live=self.issue_row(labels=["bug"])
   with mock.patch.object(execute,"github",side_effect=[[live],live]),mock.patch.object(execute,"run_gh") as created:

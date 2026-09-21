@@ -18,14 +18,20 @@ fail-closed 与 installed 回归，并同步受管投影。完成后 Issue #460 
    - 验证嵌入 2.0、单侧 provenance、不完整 result、binding digest、result digest 与 live Issue mismatch
      均失败。
    - 保留并加强 stateful recovery create-count 断言，证明恢复没有第二次 Issue mutation。
-3. 扩展受管安装集成测试：
+   - 使用另一个真实 executor/checker 通过的 created-Issue result，验证其不能与当前外层
+     target 组合，即使两侧 digest 都各自合法。
+3. 收紧 runtime plan 校验：
+   - 在 `runtime/common.py::validate_plan` 比较嵌入 provenance 与外层 target 的 repo、number、
+     canonical URL、state、title/body digest 和 updated time。
+   - identity 不一致沿用 `stale_identity`，不新增公共合同或兼容路径。
+4. 扩展受管安装集成测试：
    - 在 preset 安装后的 package 上执行 reviewed draft create 或精确恢复。
    - 把 checker-passed result 3.0 交给 fresh existing-Issue Intake/plan。
    - 执行 workspace/task creation，并断言 `created`、planning task、runtime mappings 与单次 Issue create。
-4. 运行 preset apply 同步 dogfood package：
+5. 运行 preset apply 同步 dogfood package：
    - `trellis/presets/guru-team/scripts/bash/apply.sh --repo .`
    - 检查命令产生的 `.new`、`.bak` 与非预期文件；任何非本任务改动都停止并审查。
-5. 执行定向验证并修复本任务 finding，直到全部通过。
+6. 执行定向验证并修复本任务 finding，直到全部通过。
 
 ## 验证命令
 
@@ -48,6 +54,7 @@ bash trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh --rep
 - [ ] schema diff 只有嵌入 result 常量从 2.0 到 3.0。
 - [ ] package 正向回归使用 checker-passed 完整 result 3.0。
 - [ ] 2.0 与所有 partial/mismatch case 仍 fail closed。
+- [ ] checked provenance 与外层 target 的完整 Issue identity 不一致时 fail closed。
 - [ ] recovery create mutation count 保持为一。
 - [ ] fresh plan 后 workspace/task 创建成功。
 - [ ] canonical 与 dogfood package 无 drift。

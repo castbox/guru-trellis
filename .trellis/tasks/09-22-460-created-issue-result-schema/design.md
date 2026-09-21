@@ -7,10 +7,15 @@
 `guru-task-workspace-result-3.0` `created_issue` variant。Data Contracts 已经明确该
 关系，runtime、checker 与 result schema 也都使用 `3.0`。
 
-当前缺陷只位于
+原始缺陷位于
 `trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json`
 的 `$defs.createdIssueResult.properties.schema_version`。该常量仍为 `2.0`，与同一
 package 的 producer contract 冲突。
+
+合并当前 `main` 后的完整 Branch Review 还发现一个同 scope 的一致性缺口：
+`runtime/common.py::validate_plan` 虽然重算外层 result、内层 `created_issue` 和 binding
+digest，却没有比较内层 provenance 与外层 `plan.target` 的 Issue identity。两个分别合法、
+但属于不同 Issue 的 checked result 和 target 因此可能被错误组合。
 
 ## 设计决策
 
@@ -29,11 +34,17 @@ result 2.0，不增加 `oneOf` 双版本，不增加转换器，也不复制
 consumer 与 digest 字段不变。`runtime/plan_input.py`、`runtime/common.py`、
 `runtime/check.py` 和 `runtime/recover.py` 的现有 semantic/deterministic ownership 不迁移。
 
+在现有 `validate_plan` 中增加单一直接校验：把嵌入 `created_issue` 的 `repo`、`number`、
+`canonical_url`、`state`、`title_sha256`、`body_sha256`、`updated_at` 映射到外层 target 的
+对应字段并要求完全相等。失败继续使用现有 `stale_identity`；不新增 schema、wrapper、
+compatibility path 或持久状态。
+
 测试只构造生产 recorder/checker 能产生的完整 result，并验证：
 
 - result 3.0 能够进入 fresh existing-Issue plan；
 - result 2.0 在 schema 边界被拒绝；
 - 缺一侧 provenance、字段缺失、binding/result digest 漂移、live Issue 漂移仍被拒绝；
+- 两个各自 checker-passed、但 Issue identity 不同的 target/result 组合被拒绝；
 - reviewed draft recovery 不执行第二次 create mutation。
 
 ### 3. 端到端回归位置
