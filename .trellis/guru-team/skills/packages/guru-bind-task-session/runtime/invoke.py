@@ -167,23 +167,6 @@ def _candidate_task_paths(root: Path, task_ref: str, manual: bool) -> list[tuple
     return list(dedup.values())
 
 
-def _base_head(workspace: Path, base_branch: str) -> str:
-    for ref in (f"refs/heads/{base_branch}", f"refs/remotes/origin/{base_branch}"):
-        process = subprocess.run(["git", "rev-parse", "--verify", ref], cwd=workspace, text=True, capture_output=True)
-        if process.returncode == 0:
-            return process.stdout.strip()
-    raise CommandError("stale_identity", "base_branch", "Task base branch is unavailable in the repository.", 3)
-
-
-def _expected_base_head(task: dict[str, Any], tm: dict[str, Any] | None, wm: dict[str, Any] | None) -> str | None:
-    meta = task.get("meta") if isinstance(task.get("meta"), dict) else {}
-    for source in (task, meta, tm or {}, wm or {}):
-        value = source.get("base_head")
-        if value:
-            return str(value)
-    return None
-
-
 def task_facts(root: Path, task_ref: str, allow_missing_mappings: bool = False) -> dict[str, Any]:
     root = _repo_root(root)
     common_dir = _repo_common_dir(root)
@@ -212,7 +195,6 @@ def task_facts(root: Path, task_ref: str, allow_missing_mappings: bool = False) 
     base_branch = task.get("base_branch") or (task.get("meta") or {}).get("base_branch")
     if not base_branch:
         raise CommandError("stale_identity", "base_branch", "Task base branch is missing.", 3)
-    base_head = _base_head(workspace, str(base_branch))
     task_id = str(task["id"])
     tm = wm = None
     for candidate_root in (root, workspace):
@@ -221,11 +203,6 @@ def task_facts(root: Path, task_ref: str, allow_missing_mappings: bool = False) 
     if (not tm or not wm) and not allow_missing_mappings:
         raise CommandError("stale_identity", "runtime_mapping", "Task/workspace mapping identity drifted.", 3)
     generation = int(task.get("lifecycle_generation") or (task.get("meta") or {}).get("lifecycle_generation") or 1)
-    expected_head = _expected_base_head(task, tm, wm)
-    if not expected_head:
-        raise CommandError("stale_identity", "base_head", "Base HEAD provenance is unavailable for task identity validation.", 3)
-    if expected_head and expected_head != base_head:
-        raise CommandError("stale_identity", "base_head", "Task base HEAD does not match the live base branch.", 3)
     for mapping, category in ((tm, "tasks"), (wm, "workspaces")):
         if mapping is None:
             continue
@@ -235,17 +212,15 @@ def task_facts(root: Path, task_ref: str, allow_missing_mappings: bool = False) 
             raise CommandError("stale_identity", f"{category}.workspace_path", "Runtime mapping workspace or repository identity drifted.", 3)
         if category == "workspaces" and mapping.get("branch_name") != branch:
             raise CommandError("stale_identity", "workspaces.branch_name", "Workspace mapping branch drifted.", 3)
-        if mapping.get("base_head") and mapping.get("base_head") != base_head:
-            raise CommandError("stale_identity", f"{category}.base_head", "Runtime mapping base HEAD drifted.", 3)
         if mapping.get("lifecycle_generation", generation) != generation:
             raise CommandError("stale_identity", "lifecycle_generation", "Task and workspace lifecycle generations differ.", 3)
-    return {"task": task, "task_ref": task_ref, "task_path": task_path, "workspace": workspace, "branch": branch, "head": head, "common_dir": common_dir, "base_branch": str(base_branch), "base_head": base_head, "generation": generation, "task_mapping": tm, "workspace_mapping": wm}
+    return {"task": task, "task_ref": task_ref, "task_path": task_path, "workspace": workspace, "branch": branch, "head": head, "common_dir": common_dir, "base_branch": str(base_branch), "generation": generation, "task_mapping": tm, "workspace_mapping": wm}
 
 
-def _mapping_payloads(root: Path, workspace: Path, task_ref: str, task: dict[str, Any], branch: str, base_branch: str, common_dir: Path, base_head: str, generation: int) -> dict[Path, dict[str, Any]]:
+def _mapping_payloads(root: Path, workspace: Path, task_ref: str, task: dict[str, Any], branch: str, base_branch: str, common_dir: Path, generation: int) -> dict[Path, dict[str, Any]]:
     slug = str(task["id"])
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    base = {"schema_version": "1.0", "task_slug": slug, "workspace_slug": slug, "workspace_path": str(workspace), "repository_common_dir": str(common_dir), "base_branch": base_branch, "base_head": base_head, "lifecycle_generation": generation, "updated_at": now}
+    base = {"schema_version": "1.0", "task_slug": slug, "workspace_slug": slug, "workspace_path": str(workspace), "repository_common_dir": str(common_dir), "base_branch": base_branch, "lifecycle_generation": generation, "updated_at": now}
     return {
         _mapping_path(root, "tasks", slug): {**base, "task_artifact_dir": task_ref},
         _mapping_path(root, "workspaces", slug): {**base, "source_checkout": str(root), "branch_name": branch},
@@ -255,7 +230,7 @@ def _mapping_payloads(root: Path, workspace: Path, task_ref: str, task: dict[str
 
 
 def write_recovery_mappings(root: Path, facts: dict[str, Any], task_ref: str) -> list[Path]:
-    payloads = _mapping_payloads(root, facts["workspace"], task_ref, facts["task"], facts["branch"], facts["base_branch"], facts["common_dir"], facts["base_head"], facts["generation"])
+    payloads = _mapping_payloads(root, facts["workspace"], task_ref, facts["task"], facts["branch"], facts["base_branch"], facts["common_dir"], facts["generation"])
     # Check every destination before the first write: conflicts are zero-write.
     for path, payload in payloads.items():
         if path.exists():

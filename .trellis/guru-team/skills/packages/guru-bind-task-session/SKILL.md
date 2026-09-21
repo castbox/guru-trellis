@@ -11,5 +11,9 @@ reads official `task.json`, ignored task/workspace mappings, live Git facts and
 the official Trellis session resolver, then writes only its own ignored
 session-binding record after the caller's semantic result has selected a route.
 
+Base HEAD is operation-scoped reconcile/review evidence, not task or session
+identity. Legacy `base_head` values in task metadata or runtime mappings are
+ignored, and recovery mapping writes do not produce that field.
+
 The current task identity remains authoritative; session, branch and worktree
 are replaceable carriers. Missing or mismatched identity fails closed.

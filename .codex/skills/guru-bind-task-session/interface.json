@@ -41,7 +41,7 @@
     },
     {
       "id": "workspace_identity",
-      "evidence": "task/workspace mappings, live worktree, branch, repository common dir and HEAD",
+      "evidence": "task/workspace mappings, live worktree, branch and repository common dir",
       "binding": "one task workspace",
       "freshness": "validated before write"
     },
@@ -162,7 +162,7 @@
     }
   ],
   "reentry": {
-    "identity": "profile, task ref, session context, workspace/branch/base identity and lifecycle generation",
+    "identity": "profile, task ref, session context, workspace/branch identity and lifecycle generation",
     "freshness": "reread all live facts before every binding write",
     "stale_behavior": "fail_closed"
   },
