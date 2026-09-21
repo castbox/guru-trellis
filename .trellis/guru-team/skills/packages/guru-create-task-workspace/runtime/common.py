@@ -133,6 +133,12 @@ def validate_plan(package_root,repo,plan,field="input"):
  validate(package_root,plan,"task-workspace-plan.schema.json",field)
  r=digest(reviewable(plan));f=plan["freshness"]
  if f["reviewable_plan_sha256"]!=r or f["plan_sha256"]!=plan_digest(plan) or plan["ai_review_gate"]["reviewed_plan_sha256"]!=r:raise CommandError("stale_identity","freshness","Rerecord the exact current plan.",3)
+ result=plan["target"]["created_issue_result"]
+ if result is not None:
+  if result["facts_sha256"]!=digest({k:v for k,v in result.items() if k!="facts_sha256"}):raise CommandError("stale_identity",f"{field}.target.created_issue_result.facts_sha256","Refresh the checker-passed created issue result.",3)
+  created_issue=result["created_issue"]
+  if created_issue["facts_sha256"]!=digest({k:v for k,v in created_issue.items() if k!="facts_sha256"}):raise CommandError("stale_identity",f"{field}.target.created_issue_result.created_issue.facts_sha256","Refresh the checked created issue binding.",3)
+  if plan["target"]["created_issue_binding_sha256"]!=result["created_issue"]["facts_sha256"]:raise CommandError("stale_identity",f"{field}.target.created_issue_binding_sha256","Refresh the created issue binding from the exact checked result.",3)
  if git(repo,"rev-parse","HEAD").stdout.strip()!=plan["base"]["decision_head"]:raise CommandError("stale_identity","base.decision_head","Refresh base and plan.",3)
  return plan
 def finalize(package_root,result):

@@ -233,14 +233,20 @@ class WorkspaceTest(unittest.TestCase):
   binding_only=copy.deepcopy(plan);binding_only["target"]["created_issue_result"]=None;cases.append(("binding_only",self.refresh(binding_only)))
   result_only=copy.deepcopy(plan);result_only["target"]["created_issue_binding_sha256"]=None;cases.append(("result_only",self.refresh(result_only)))
   incomplete=copy.deepcopy(plan);incomplete["target"]["created_issue_result"].pop("checker");cases.append(("incomplete",self.refresh(incomplete)))
+  missing_created_issue=copy.deepcopy(plan);missing_created_issue["target"]["created_issue_result"].pop("created_issue");cases.append(("missing_created_issue",self.refresh(missing_created_issue)))
   for name,candidate in cases:
    with self.subTest(name=name),self.assertRaises(CommandError):record.run(PACKAGE,{},["--root",str(self.repo),"--input",str(self.write(f"invalid-{name}.json",candidate))])
  def test_created_issue_provenance_digest_and_live_identity_drift_fail_closed(self):
   plan,live=self.created_issue_plan();pp=self.write("created-provenance-plan.json",plan)
-  for name,mutate in (("binding",lambda value:value["target"].__setitem__("created_issue_binding_sha256","0"*64)),("result",lambda value:value["target"]["created_issue_result"].__setitem__("facts_sha256","0"*64))):
-   candidate=copy.deepcopy(plan);mutate(candidate)
+  cases=[]
+  result_drift=copy.deepcopy(plan);result_drift["target"]["created_issue_result"]["reason"]="tampered result facts";cases.append(("result_facts",result_drift,"input.target.created_issue_result.facts_sha256"))
+  issue_facts_drift=copy.deepcopy(plan);result=issue_facts_drift["target"]["created_issue_result"];result["created_issue"]["updated_at"]="2026-01-01T00:00:02Z";result["facts_sha256"]=common.digest({k:v for k,v in result.items() if k!="facts_sha256"});cases.append(("created_issue_facts",issue_facts_drift,"input.target.created_issue_result.created_issue.facts_sha256"))
+  binding_drift=copy.deepcopy(plan);binding_drift["target"]["created_issue_binding_sha256"]="0"*64;cases.append(("target_binding",binding_drift,"input.target.created_issue_binding_sha256"))
+  nested_binding_drift=copy.deepcopy(plan);result=nested_binding_drift["target"]["created_issue_result"];created_issue=result["created_issue"];created_issue["updated_at"]="2026-01-01T00:00:02Z";created_issue["facts_sha256"]=common.digest({k:v for k,v in created_issue.items() if k!="facts_sha256"});result["facts_sha256"]=common.digest({k:v for k,v in result.items() if k!="facts_sha256"});cases.append(("result_binding",nested_binding_drift,"input.target.created_issue_binding_sha256"))
+  for name,candidate,field_path in cases:
+   self.refresh(candidate)
    with self.subTest(name=name),self.assertRaises(CommandError) as raised:record.run(PACKAGE,{},["--root",str(self.repo),"--input",str(self.write(f"stale-{name}.json",candidate))])
-   self.assertEqual(("stale_identity","freshness"),(raised.exception.code,raised.exception.field_path))
+   self.assertEqual(("stale_identity",field_path),(raised.exception.code,raised.exception.field_path))
   drift=copy.deepcopy(live);drift["updatedAt"]="2026-01-01T00:00:02Z";workspace=self.parent/"repo-worktrees/027-workspace";before=self.mutation_state(workspace)
   with mock.patch.object(execute,"github",return_value=drift):result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
   self.assertEqual(("no_side_effect","refresh_review",True),(result["variant"],result["typed_exit"],result["no_side_effect"]["zero_writes"]));self.assertEqual(before,self.mutation_state(workspace))
