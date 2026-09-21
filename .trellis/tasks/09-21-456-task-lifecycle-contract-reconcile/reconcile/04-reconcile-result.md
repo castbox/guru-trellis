@@ -52,17 +52,19 @@ Current contract analysis
 
 No successor may use the old Interface `1.4` payloads as target authority or reuse the separate #434 dirty planning state.
 
-## 5. Current Workflow State
+## 5. Durable Boundary
 
-- Phase 1 wording、Architecture impact、plan approval 和 activation 均已完成。
-- 当前 task 状态为 `in_progress`，正在执行 planning-only 交付的 Phase 2 semantic check。
-- Phase 2 通过后仍需 task commit、独立完整 Branch Review、Publication/Finish 等各自门禁。
+This document records the contract reconcile only. It does not authorize push, PR, merge, implementation, package or
+schema migration, workflow or production-graph activation, release, or cleanup. Current Git and Trellis workflow progress
+is not part of the business reconcile authority and must be reread by each successor owner from live state.
 
-当前状态不代表 substrate、package、schema、workflow 或 production graph 已实现、迁移、验证或激活。
+The conclusions above do not claim that substrate, package, schema, workflow, or production graph work has been implemented,
+migrated, validated, or activated.
 
 ## 6. Preserved Boundaries
 
 - No production code, schema, package interface, workflow, registry, manifest, projection, or installer was modified.
 - Historical #443/#436/#434 task artifacts were not modified.
 - The #434 dirty worktree was not modified.
-- No #456 commit, push, PR, merge, production workflow/graph activation, or cleanup was performed.
+- No implementation, production workflow/graph activation, push, PR, merge, release, or cleanup is authorized by this
+  document-level result.
