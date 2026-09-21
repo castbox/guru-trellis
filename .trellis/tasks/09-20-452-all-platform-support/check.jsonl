@@ -1,8 +1,0 @@
-{"file": ".trellis/tasks/09-20-452-all-platform-support/prd.md", "reason": "Acceptance criteria to validate against the delivered change."}
-{"file": ".trellis/tasks/09-20-452-all-platform-support/design.md", "reason": "Expected behavior, deferred-platform semantics, and fail-closed rules."}
-{"file": ".trellis/tasks/09-20-452-all-platform-support/design.md", "reason": "Superseding check context: exact two-layer authority, repeated registry cliFlag selection, removed full-inventory option, and no deferred platform tier."}
-{"file": ".trellis/tasks/09-20-452-all-platform-support/implement.md", "reason": "Planned validation command family and scope boundaries."}
-{"file": ".trellis/tasks/09-20-452-all-platform-support/research/official-trellis-platforms.md", "reason": "Upstream registry evidence for inventory and platform coverage checks."}
-{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Validation ownership and required source/installed/platform evidence."}
-{"file": ".trellis/spec/preset/installer.md", "reason": "Installer/reapply/update and sidecar validation contract."}
-{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "Ownership, public claims, and private test exclusion checks."}
