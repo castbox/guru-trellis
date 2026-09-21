@@ -14,6 +14,45 @@
 - Completion、Closure、Finish、Cleanup 与 Reactivate 不共享可变 authority；
 - 旧 `task_workspace`、path mappings 与 workspace public IDs 在同一 production cutover 中退出。
 
+## 1.1 跨任务实施顺序与依赖边界
+
+本组合设计定义的是 #454 lifecycle substrate 的消费合同，不是 #434 production graph 的提前实现计划。跨任务
+执行固定为以下五个阶段：
+
+| 阶段 | 必须完成的工作 | 禁止事项 | 产出边界 |
+| --- | --- | --- | --- |
+| A | 定稿 #454 substrate design、state matrix、public I/O 与 migration contract | 不实现 #434 production graph | #454 可被其它 package 消费的稳定合同 |
+| B | reconcile #443、#436、#434 的 package/schema/projection/workflow 承接 | 不激活 #434；不保留旧 workspace/session/Reactivate/ledger 生产语义 | 受影响 consumer 对 #454 contract 的明确承接 |
+| C | 实现并完成 #454 substrate | 不在 #434 中复制 substrate authority | 可运行的 identity、generation、checkout、association、session、ledger 与 terminal-owner substrate |
+| D | 迁移受影响 package 的代码、schema、projection、route、installer 与 overlay | 不回改 #443/#436 历史 task 文档或旧 Issue evidence | 全部 production consumer 消费 #454 contract |
+| E | fresh reconcile #434 后实现并激活 Delivery 到 Cleanup graph | 不在 substrate 未就绪时实现或激活 #434 | #434 成为上层 lifecycle graph，消费而不重定义 substrate |
+
+阶段之间是单向依赖：B 依赖 A，C 依赖 A，D 依赖 C，E 依赖 B 与 D。#454 不依赖 #434 的 production graph；#434
+只能在 #454 substrate 和受影响 contract migration 完成后消费它们。该关系不是并行双写，也不是长期兼容层。
+
+### 1.1.1 #434 的消费边界
+
+#434 只拥有上层 Delivery、Completion、Closure、Finish、Cleanup graph 的编排和语义判断，不重新定义或复制以下
+#454/#443/#436 substrate：
+
+- stable Task Identity 与 lifecycle generation；
+- source、accepted scope、Delivery target 与 current branch association；
+- checkout acquisition、live checkout resolver 与显式 branch rebind；
+- path-free session association 与 session-loss recovery；
+- resource ownership ledger、Finish inventory 与 Cleanup ownership boundary；
+- Reactivate 的 generation、source-correction 与固定 exits。
+
+#434 中出现的 `workspace rebinding`、`Workspace selection`、以 workspace 为中心的 Reactivate 描述，必须在
+reconcile 时改写为 checkout acquisition、branch association、live resolver 与 generation-aware Reactivate。#434
+不得建立第二个 resource ledger，也不得以 alternative 形式排除 #454 ledger；它只消费 #454 ledger contract。
+
+### 1.1.2 历史 task 与迁移记录
+
+历史 #443、#436 task 文档及其旧 Issue evidence 不回改。旧 task 只作为迁移输入或历史证据读取；新 contract
+reconcile、schema/projection 迁移和实现差异由当前 package 的 migration record 或新 migration task 承接。迁移
+记录必须明确 source contract、target contract、受影响 consumer、旧 identity 的处置和 activation 前置条件，不能
+通过修改历史 task 文档把旧 graph 追溯标记为已迁移。
+
 ## 2. Unified state vector
 
 每次 lifecycle resolution 使用以下完整向量：

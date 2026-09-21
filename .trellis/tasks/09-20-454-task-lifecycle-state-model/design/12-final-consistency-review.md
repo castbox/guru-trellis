@@ -11,6 +11,8 @@
 - 31条reachability constraint；
 - primary transition matrix、8组active runtime-loss matrix、archived intent matrix与11-slot evidence invalidation matrix；
 - 11个owning design中的tracked authority、ignored control state、live Git facts、public Skill I/O与migration cutover；
+- #454 substrate、#443/#436 contract reconcile、受影响 package migration 与 #434 production graph activation 的
+  跨任务依赖顺序；
 - Create、Activate、Resume、Repair、Rebind、Checkpoint、Machine Transfer、Delivery、Publication、Merge、Completion、
   Closure、Finish、Cleanup与Reactivate的联合可达性。
 
@@ -22,7 +24,7 @@
 
 ## 2. 本轮发现与修订
 
-本轮累计56个finding均已回写对应owning design，当前无open finding。
+本轮累计57个finding均已回写对应owning design，当前无open finding。
 
 | Finding | 原问题 | 最终修订 |
 | --- | --- | --- |
@@ -82,6 +84,7 @@
 | F-454-D54 | supersession receipt branch可能被branch discovery重新选为task branch | `refs/heads/guru-task-lifecycle/*`固定为reserved control namespace，全部acquisition/rebind/target validator拒绝 |
 | F-454-D55 | Reactivate recovery未定义transaction generation指旧代还是新代 | public transaction固定绑定target `g+1`，private transaction同时验证source `g`与target `g+1` |
 | F-454-D56 | Finish result把Cleanup seal误写成Finish authority的一部分 | Finish result固定包含terminal archive projection与sealed generation resource inventory；Cleanup result由独立Cleanup owner产生，不能反向组成Finish result |
+| F-454-D57 | #454、受影响 package 与 #434 的实现顺序未形成硬性依赖合同，可能先激活上层 graph 再固化旧 substrate 假设 | 固定为“#454 contract 定稿 -> #443/#436/#434 contract reconcile -> #454 substrate 实现 -> package/schema/projection/route migration -> fresh reconcile #434 -> #434 production graph 实现与 activation”；历史 #443/#436 task 文档和旧 Issue evidence immutable，#434 只消费 substrate 不复制 authority |
 
 ## 3. 单项收敛审查
 
@@ -96,8 +99,8 @@
 | 07 Resolution and Selection | pass | automatic/manual共用validator，authority conflict不可被selection绕过 |
 | 08 Session Association | pass | payload只含TaskId + generation，explicit-task mode与A -> B -> A闭合 |
 | 09 Ownership/Finish/Cleanup | pass | complete ledger、remote roles、Finish seal、Normal/manual/handoff Cleanup分区闭合 |
-| 10 Composition/Migration | pass | state vector、31 constraints、11-slot chain-specific invalidation、transition/loss matrices与atomic cutover一致 |
-| 11 Public Contract Migration | pass | 每个新增/受影响owner拥有完整exit、minimal output、唯一consumer与旧identity处置 |
+| 10 Composition/Migration | pass | state vector、31 constraints、11-slot chain-specific invalidation、transition/loss matrices、atomic cutover与跨任务实施顺序一致 |
+| 11 Public Contract Migration | pass | 每个新增/受影响owner拥有完整exit、minimal output、唯一consumer、旧identity处置与跨任务承接边界 |
 
 ## 4. Global invariant review
 
@@ -229,12 +232,14 @@ authority，也没有合法recovery依赖stored path、old mapping、closing key
 - “或”只用于封闭枚举、互斥route与确定性状态组合，不表达未决设计选择；
 - 禁用模糊措辞扫描无命中；
 - task目录仍为planning artifact；未修改Issue、production code、业务repository、commit、push或PR。
+- #434 只作为 #454 substrate 的后置 consumer；本 task没有提前激活 #434，也没有把 #443/#436 历史 task 文档或
+  旧 Issue evidence 回改成新 contract 证据。
 
 ## 10. Final feasibility judgment
 
 在PRD声明的正常协作、单repository lifecycle、无hostile actor、无分布式锁/并发压力/crash-consistency扩张、
 不提前激活#434的边界内，11个owning design已经单项收敛并联合闭合。16个场景、22条AC、31条reachability
-constraint、8组active runtime-loss组合、56个已修订finding与完整public contract graph之间不存在已知矛盾、
+constraint、8组active runtime-loss组合、57个已修订finding、跨任务依赖顺序与完整public contract graph之间不存在已知矛盾、
 冲突或缺漏。
 
 该结论证明统一task lifecycle模型在声明范围内具备一致且可实现的完整设计，不证明实现或验证已经完成。

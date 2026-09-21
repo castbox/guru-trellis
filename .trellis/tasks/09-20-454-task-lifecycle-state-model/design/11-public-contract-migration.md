@@ -313,3 +313,22 @@ Production activation前必须同时证明：
 5. Publication/Finalizer/Merge不再提前执行Closure，terminal graph只保留一个Issue disposition owner；
 6. pre-cutover premature archive按merged state进入两条互斥Restore profile，不复用旧archived-review链；
 7. old workspace public graph在one-step activation中彻底退出。
+
+## 9. 跨任务 contract 承接
+
+本文件的 public contract 是 #454 substrate 与上层 lifecycle graph 之间的迁移边界。#434、#443、#436 的新
+consumer 必须在实现前完成 fresh contract reconcile，并逐项绑定到本文件声明的 DTO、exit、consumer 和 projection。
+任何 package 不得通过保留旧 `workspace`、path-bearing session、旧 Reactivate exit 或自有 resource ledger 来绕过
+该迁移。
+
+`#454` 不接管 `#443`、`#436` 或 `#434` 的 semantic owner；它只提供共同 substrate 和 public I/O。`#434` 在
+reconcile 后只编排并拥有 Delivery、Completion、Closure、Finish、Cleanup graph，不能重新实现 identity、session、
+checkout、branch association、resource ledger 或 Reactivate。
+
+历史 #443、#436 task 文档、旧 Issue evidence 与旧审查结论保持 immutable。contract reconcile 与 package migration
+必须由当前 package 的迁移记录或新的 migration task 记录；不得回改历史 task 文档、不得新增旧 producer/new producer
+双发布期、不得把旧 evidence 投影为新 contract 已通过。
+
+实现顺序固定为：#454 contract 定稿 -> 受影响 package reconcile -> #454 substrate 实现 -> package/schema/
+projection/route migration -> fresh reconcile #434 -> #434 production graph 实现与 activation。任一步骤缺少前置
+contract 或 consumer projection 时，后续 activation 不可达。

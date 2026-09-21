@@ -33,8 +33,33 @@
 
 问题01至11已分别完成单项审查，并通过`design/12-final-consistency-review.md`对16个lifecycle scenario、
 22条acceptance criteria、31条reachability constraint、11个evidence slot、8组active runtime-loss组合、
-forbidden states与public owner completeness执行联合复核。56个finding已全部回写owning design。当前结论是在PRD声明边界内整体
+forbidden states与public owner completeness执行联合复核。57个finding已全部回写owning design。当前结论是在PRD声明边界内整体
 设计可实现，不存在已知矛盾、冲突或缺漏。
 
 该结论只覆盖设计，不代表实现、测试、业务 repository 安装或 production cutover已经完成。本 task继续
 保持 `planning`，后续进入实现前仍需完成正式 Phase 1 planning artifacts 与 approval boundary。
+
+## 跨任务实施顺序与依赖边界
+
+本 task 的设计定稿不是 #434 production graph 的激活授权。涉及 #443、#436、#434 的后续工作必须严格按以下
+顺序执行：
+
+1. 先完成 #454 substrate design 与 migration contract 的定稿；本 task在此阶段只定义共同 lifecycle substrate、
+   public contract、迁移边界和 activation gate，不接管 #443、#436 或 #434 的 semantic owner。
+2. 对 #443、#436、#434 做 contract reconcile。reconcile 只更新当前 package、schema、projection、workflow
+   consumer 和规划合同对 #454 新接口的承接；不提前激活 #434，也不把旧设计中的 `workspace`、旧 session payload、
+   旧 Reactivate exits 或重复 resource ledger 保留为生产语义。
+3. 实现 #454 substrate，包括 stable identity、generation、checkout acquisition/resolution、branch association
+   与 rebind、path-free session、resource ownership ledger、Finish/Cleanup 边界以及统一 public I/O。
+4. 在 #454 substrate 可被消费后，迁移受影响的 #443、#436 及其它 package 的代码、schema、projection、workflow
+   route 和 installer/overlay 引用。迁移必须以 #454 contract 为唯一共同 substrate，不复制一份 identity、session、
+   checkout、ledger 或 Reactivate 实现。
+5. 重新 reconcile #434，使其只消费已迁移的 #443/#436 contract 与 #454 substrate；随后才实现并激活 #434 的
+   Delivery、Completion、Closure、Finish、Cleanup production graph。
+
+上述顺序禁止反向执行。特别是，不能先实现或激活 #434 再回头实现 #454；否则 #434 会把旧 workspace、session、
+Reactivate 和 resource ownership 假设固化到 production graph，形成必须返工的第二套 authority。
+
+历史 #443、#436 task 文档、旧 Issue evidence 和已经形成的历史审查结论保持 immutable。新 contract reconcile、
+package migration 和实现差异必须由当前 package 的迁移记录或新的 migration task 承接，不通过回改历史 task 文档
+制造“历史上已经符合新 contract”的假象。
