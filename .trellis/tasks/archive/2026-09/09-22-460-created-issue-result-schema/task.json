@@ -18,8 +18,9 @@
   "priority": "P2",
   "relatedFiles": [],
   "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/460",
-  "status": "in_progress",
+  "status": "completed",
   "subtasks": [],
   "title": "#460 修复 created_issue_result 3.0 plan schema 冲突",
-  "worktree_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/460-created-issue-result-schema"
+  "worktree_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/460-created-issue-result-schema",
+  "completedAt": "2026-09-22"
 }

@@ -1,0 +1,153 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-21T20:01:29Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-22-460-created-issue-result-schema",
+    "title": "#460 修复 created_issue_result 3.0 plan schema 冲突",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-22-460-created-issue-result-schema",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/460-created-issue-result-schema",
+    "commits": [
+      "8942e545b74dc131754acae424425cabb076586d",
+      "bbee11c3f1da0fc5234e1eb5df8cb8d0f06c468e",
+      "b1ffd69afe355958df00ddeec1001073a07e2f2d",
+      "b0e3417de2e2cc1d9deb956df5aa8f037789f5d3",
+      "936c1590e1a322c5d2bc0085ecc22278076cd740",
+      "51ef510bbdf584861a19f6325d4bad0ef460f72b"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/common.py",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+      ".trellis/tasks/09-22-460-created-issue-result-schema/design.md",
+      ".trellis/tasks/09-22-460-created-issue-result-schema/implement.md",
+      ".trellis/tasks/09-22-460-created-issue-result-schema/prd.md",
+      ".trellis/tasks/09-22-460-created-issue-result-schema/task.json",
+      ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/design.md",
+      ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/implement.md",
+      ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/prd.md",
+      ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/task.json",
+      "trellis/presets/guru-team/scripts/python/test_verify_installed_task_workspace.py",
+      "trellis/presets/guru-team/scripts/python/test_workspace_invocation_integration.py",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/common.py",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/462"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#460 修复 created_issue_result 3.0 plan schema 冲突",
+    "outcome": "保持 `guru-task-workspace-plan` 顶层版本为 `2.0`，将内嵌 `createdIssueResult` 校准为当前 producer 输出的 `3.0`。",
+    "changed_behavior": [
+      "保持 `guru-task-workspace-plan` 顶层版本为 `2.0`，将内嵌 `createdIssueResult` 校准为当前 producer 输出的 `3.0`。",
+      "在 plan 校验阶段重算外层 result facts、内层 `created_issue` facts，要求 target binding 与 checked binding 一致，并逐项比较 repo、number、canonical URL、state、title/body digest 与 updated time。",
+      "补充 result 3.0、legacy 2.0、partial provenance、三层 digest mismatch、cross-Issue identity mismatch、live Issue drift、精确恢复、workspace/task 创建及 installed projection 回归。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-22-460-created-issue-result-schema/design.md",
+          ".trellis/tasks/09-22-460-created-issue-result-schema/implement.md",
+          ".trellis/tasks/09-22-460-created-issue-result-schema/prd.md",
+          ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/design.md",
+          ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/implement.md",
+          ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/prd.md"
+        ],
+        "change": "保持 `guru-task-workspace-plan` 顶层版本为 `2.0`，将内嵌 `createdIssueResult` 校准为当前 producer 输出的 `3.0`。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "保持 `guru-task-workspace-plan` 顶层版本为 `2.0`，将内嵌 `createdIssueResult` 校准为当前 producer 输出的 `3.0`。"
+      },
+      {
+        "kind": "schema",
+        "name": "schema",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json"
+        ],
+        "change": "保持 `guru-task-workspace-plan` 顶层版本为 `2.0`，将内嵌 `createdIssueResult` 校准为当前 producer 输出的 `3.0`。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/common.py",
+          "trellis/presets/guru-team/scripts/python/test_verify_installed_task_workspace.py",
+          "trellis/presets/guru-team/scripts/python/test_workspace_invocation_integration.py",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/common.py",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py"
+        ],
+        "change": "保持 `guru-task-workspace-plan` 顶层版本为 `2.0`，将内嵌 `createdIssueResult` 校准为当前 producer 输出的 `3.0`。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-22-460-created-issue-result-schema/task.json",
+          ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/task.json"
+        ],
+        "change": "保持 `guru-task-workspace-plan` 顶层版本为 `2.0`，将内嵌 `createdIssueResult` 校准为当前 producer 输出的 `3.0`。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [],
+      "pr_refs": [
+        "PR #462"
+      ],
+      "branches": [
+        "fix/460-created-issue-result-schema"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/common.py",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+        ".trellis/tasks/09-22-460-created-issue-result-schema/design.md",
+        ".trellis/tasks/09-22-460-created-issue-result-schema/implement.md",
+        ".trellis/tasks/09-22-460-created-issue-result-schema/prd.md",
+        ".trellis/tasks/09-22-460-created-issue-result-schema/task.json",
+        ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/design.md",
+        ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/implement.md",
+        ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/prd.md",
+        ".trellis/tasks/archive/2026-09/09-22-460-created-issue-result-schema/task.json",
+        "trellis/presets/guru-team/scripts/python/test_verify_installed_task_workspace.py",
+        "trellis/presets/guru-team/scripts/python/test_workspace_invocation_integration.py",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/common.py",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#460 修复 created_issue_result 3.0 plan schema 冲突",
+        "保持 `guru-task-workspace-plan` 顶层版本为 `2.0`，将内嵌 `createdIssueR",
+        "完成 extension.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#460 修复 created_issue_result 3.0 plan schema 冲突\n保持 `guru-task-workspace-plan` 顶层版本为 `2.0`，将内嵌 `createdIssueResult` 校准为当前 producer 输出的 `3.0`。\n在 plan 校验阶段重算外层 result facts、内层 `created_issue` facts，要求 target binding 与 checked binding 一致，并逐项比较 repo、number、canonical URL、state、title/body digest 与 updated time。\n补充 result 3.0、legacy 2.0、partial provenance、三层 digest mismatch、cross-Issue identity mismatch、live Issue drift、精确恢复、workspace/task 创建及 installed projection 回归。\n保持 `guru-task-workspace-plan` 顶层版本为 `2.0`，将内嵌 `createdIssueR\n完成 extension.json 相关变更"
+  }
+}
