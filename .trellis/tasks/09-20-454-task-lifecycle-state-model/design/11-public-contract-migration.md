@@ -107,12 +107,12 @@ DTO外独立public scalar enum只有以下三组：`session_outcome=session_boun
 | `guru-transfer-task-machine` | `source_recovered` | `TaskArtifactDTO`、current `BranchBindingRefDTO`、`HandoffRefDTO` | `guru-machine-transfer-source-recovered-router` |
 | `guru-transfer-task-machine` | `resume_transfer` | `HandoffRefDTO`、`ReasonDTO` | `guru-transfer-task-machine` same handoff profile |
 | `guru-transfer-task-machine` | `blocked` | `ReasonDTO` | `machine-transfer-blocked` stop |
-| `guru-bind-task-session` | `session_resumed` | `TaskArtifactDTO`、`resume_target` | `guru-bind-task-session-resume-router` |
-| `guru-bind-task-session` | `session_rebound` | `TaskArtifactDTO`、`resume_target` | `guru-bind-task-session-rebind-router` |
-| `guru-bind-task-session` | `task_switched` | `TaskArtifactDTO`、`resume_target` | `guru-bind-task-session-switch-router` |
-| `guru-bind-task-session` | `reactivate_rebound` | `TaskArtifactDTO`、`resume_target` | `guru-bind-task-session-reactivate-router` |
-| `guru-bind-task-session` | `session_manually_recovered` | `TaskArtifactDTO`、`resume_target` | `guru-bind-task-session-manual-recovery-router` |
-| `guru-bind-task-session` | `explicit_task_mode` | `TaskArtifactDTO` | `guru-current-phase-router` |
+| `guru-bind-task-session` | `session_resumed` | `TaskLifecycleDTO`、`resume_target` | `guru-bind-task-session-resume-router` |
+| `guru-bind-task-session` | `session_rebound` | `TaskLifecycleDTO`、`resume_target` | `guru-bind-task-session-rebind-router` |
+| `guru-bind-task-session` | `task_switched` | `TaskLifecycleDTO`、`resume_target` | `guru-bind-task-session-switch-router` |
+| `guru-bind-task-session` | `reactivate_rebound` | `TaskLifecycleDTO`、`resume_target` | `guru-bind-task-session-reactivate-router` |
+| `guru-bind-task-session` | `session_manually_recovered` | `TaskLifecycleDTO`、`resume_target` | `guru-bind-task-session-manual-recovery-router` |
+| `guru-bind-task-session` | `explicit_task_mode` | `TaskLifecycleDTO` | `guru-current-phase-router` |
 | `guru-bind-task-session` | `binding_blocked` | `ReasonDTO` | `task-session-binding-blocked` stop |
 | `guru-review-task-completion` | `remaining_work` | `TaskArtifactDTO`、`ReasonDTO` | `active-task-continuation` workflow target |
 | `guru-review-task-completion` | `evidence_pending` | `TaskArtifactDTO`、`ReasonDTO` | `guru-review-task-completion` evidence-refresh profile |
@@ -257,8 +257,10 @@ Old Finalizer写入的archive presence不是Finish result。只有新`guru-finis
    router不得替用户决定reconcile机制。
 7. `session_outcome`封闭为`session_bound`与`explicit_task_mode`。Session write/verify失败使用独立
    `session_binding_recovery_required` exit投影到`guru-bind-task-session`，不回滚已经提交的lifecycle mutation。
-8. Exit或consumer未出现在本文件、interface package与workflow graph三方一致集合中时，activation gate失败。
-9. Reserved receipt ref namespace不得出现在Create、Reactivate、Ensure Checkout、Rebind、Delivery target或
+8. `guru-bind-task-session` 的所有成功 output 固定使用 `TaskLifecycleDTO`，不得使用含 `task_ref` 的
+   `TaskArtifactDTO`。Router或最终 consumer需要 task artifact 时，必须按 TaskId fresh派生 TaskRef并验证generation。
+9. Exit或consumer未出现在本文件、interface package与workflow graph三方一致集合中时，activation gate失败。
+10. Reserved receipt ref namespace不得出现在Create、Reactivate、Ensure Checkout、Rebind、Delivery target或
    missing-association candidate的validated target set中。
 
 ## 6. 旧public identity处置

@@ -1,0 +1,16 @@
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/prd.md", "reason": "Issue #454 requirements, invariants, acceptance, and non-goals."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design.md", "reason": "Issue #454 design index, convergence status, and cross-task ordering."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/01-stable-task-identity.md", "reason": "Issue #454 owning design contract: 01-stable-task-identity.md."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/02-task-authority-relations.md", "reason": "Issue #454 owning design contract: 02-task-authority-relations.md."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/03-lifecycle-incarnation.md", "reason": "Issue #454 owning design contract: 03-lifecycle-incarnation.md."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/04-checkout-acquisition.md", "reason": "Issue #454 owning design contract: 04-checkout-acquisition.md."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/05-task-branch-association.md", "reason": "Issue #454 owning design contract: 05-task-branch-association.md."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/06-live-checkout-resolution.md", "reason": "Issue #454 owning design contract: 06-live-checkout-resolution.md."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/07-resolution-and-selection.md", "reason": "Issue #454 owning design contract: 07-resolution-and-selection.md."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/08-session-association.md", "reason": "Issue #454 owning design contract: 08-session-association.md."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/09-resource-ownership-cleanup.md", "reason": "Issue #454 owning design contract: 09-resource-ownership-cleanup.md."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/10-composition-and-migration.md", "reason": "Issue #454 owning design contract: 10-composition-and-migration.md."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/11-public-contract-migration.md", "reason": "Issue #454 owning design contract: 11-public-contract-migration.md."}
+{"file": ".trellis/tasks/09-20-454-task-lifecycle-state-model/design/12-final-consistency-review.md", "reason": "Issue #454 owning design contract: 12-final-consistency-review.md."}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Public Skill I/O, private state, consumer ownership, and typed-exit SSOT."}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "Breaking migration and direct-retirement policy."}

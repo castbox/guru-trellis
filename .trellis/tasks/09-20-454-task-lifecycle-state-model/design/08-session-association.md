@@ -130,11 +130,12 @@ Reactivate 从 generation `g` 进入 `g+1` 后，任何仍保存 `(TaskId, g)` �
 
 Session owner的成功 output 只传下游直接需要的：
 
-- TaskLifecycleKey；
+- `TaskLifecycleDTO`，字段恰好为 TaskLifecycleKey 的 `task_id + lifecycle_generation`；
 - current resume target。
 
 需要读取 task artifact 的 consumer 按 TaskId 派生 TaskRef并重新验证。Public output 不传 session file path、
-context key、common-dir path、checkout path、branch 或 HEAD。
+context key、common-dir path、checkout path、branch、HEAD 或 `task_ref`。Bind 的成功 output 不得改用
+`TaskArtifactDTO`。
 
 ## 10. 当前设计结论
 

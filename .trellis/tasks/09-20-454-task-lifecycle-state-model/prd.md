@@ -153,8 +153,12 @@ authority。
 
 - session association 只绑定 session context、task identity 与 lifecycle incarnation；task locator 每次从
   stable task identity 重新解析。
+- session association 的领域 payload 恰好是 `task_id + lifecycle_generation`；不保存 `task_ref`。公开 handoff
+  使用同构的 `TaskLifecycleDTO`，需要读取 task artifact 的 consumer 按 TaskId fresh 派生并验证 TaskRef。
 - session association 不保存 branch authority、checkout path、HEAD、resource ownership、semantic pass 或
   用户授权。
+- context key 不可用时不写 session record，也不阻塞或回滚已成立的 lifecycle；当前 invocation 进入
+  `explicit_task_mode`，后续 invocation 重新要求显式 TaskId 或 candidate selection。
 - session association 丢失时，基于 durable task facts、current branch association 与 live Git facts重建。
 - 同一 task 能先后由多个 session 继续；同一 session 能受控从 task A 切换到 task B，再返回 task A。
 - session switch 分别验证 source task 与 target task，不覆盖另一个 task 的 current state。
@@ -370,8 +374,9 @@ association，固定返回Closure `external_change_conflict`进行semantic re-re
   用户选定 candidate 与显式 target 均执行同一 live validation，合法 target 能恢复，非法 target 被拒绝。
 - `AC-454-06`：`git worktree move` 与目录变化后无需更新 tracked task、session 或 branch association，
   下一次操作仍能通过 live Git facts 得到唯一 checkout。
-- `AC-454-07`：session binding 丢失、branch association 丢失、active ownership 丢失、三者组合丢失与
-  terminal ownership 丢失均有互不矛盾的恢复结果；恢复不推断 Guru ownership。
+- `AC-454-07`：session stored/public payload 只携带 `task_id + lifecycle_generation`，不携带 `task_ref`；context
+  key 不可用时使用 `explicit_task_mode`。session binding 丢失、branch association 丢失、active ownership
+  丢失、三者组合丢失与 terminal ownership 丢失均有互不矛盾的恢复结果；恢复不推断 Guru ownership。
 - `AC-454-08`：task A → task B → task A、session 1 → session 2 与 Reactivate generation change 均不
   串用 task、session、receipt 或 branch state。
 - `AC-454-09`：task 在同一 lifecycle incarnation 中完成至少一次显式 branch rebind 后，恰好一个 branch

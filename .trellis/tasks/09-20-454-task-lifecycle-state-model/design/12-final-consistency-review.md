@@ -24,7 +24,7 @@
 
 ## 2. 本轮发现与修订
 
-本轮累计57个finding均已回写对应owning design，当前无open finding。
+本轮累计58个finding均已回写对应owning design，当前无open finding。
 
 | Finding | 原问题 | 最终修订 |
 | --- | --- | --- |
@@ -85,6 +85,7 @@
 | F-454-D55 | Reactivate recovery未定义transaction generation指旧代还是新代 | public transaction固定绑定target `g+1`，private transaction同时验证source `g`与target `g+1` |
 | F-454-D56 | Finish result把Cleanup seal误写成Finish authority的一部分 | Finish result固定包含terminal archive projection与sealed generation resource inventory；Cleanup result由独立Cleanup owner产生，不能反向组成Finish result |
 | F-454-D57 | #454、受影响 package 与 #434 的实现顺序未形成硬性依赖合同，可能先激活上层 graph 再固化旧 substrate 假设 | 固定为“#454 contract 定稿 -> #443/#436/#434 contract reconcile -> #454 substrate 实现 -> package/schema/projection/route migration -> fresh reconcile #434 -> #434 production graph 实现与 activation”；历史 #443/#436 task 文档和旧 Issue evidence immutable，#434 只消费 substrate 不复制 authority |
+| F-454-D58 | Session Association 要求 path-free `TaskLifecycleKey` handoff，但 Public Contract Migration 为 Bind success exits 使用含 `task_ref` 的 `TaskArtifactDTO` | Bind 六个成功 exits统一改为`TaskLifecycleDTO`；consumer按TaskId fresh派生TaskRef，session stored/public payload均不携带`task_ref` |
 
 ## 3. 单项收敛审查
 
