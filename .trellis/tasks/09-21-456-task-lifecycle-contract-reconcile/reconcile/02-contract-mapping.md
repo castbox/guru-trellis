@@ -23,8 +23,8 @@ freshly derive TaskRef. Other owners may use `TaskArtifactDTO` only where their 
 | `443-MANUAL-RECOVERY` | Recover only session pointer; never reconstruct mappings. | `replace` | #443 package migration |
 | `443-MAPPING-DEPENDENCY` | Remove all task/workspace mapping and path/branch/HEAD authority from Bind. | `retire` | #454 substrate + #443 migration |
 | `443-CONSUMER-ROUTERS` | Materialize six target routers in workflow, validating DTO then routing only. | `replace` | #434 graph activation |
-| `443-REGISTRY-SELECTOR` | Select the new major contract; remain deferred until graph activation. | `replace` | #443 migration then #434 |
-| `443-PROJECTIONS` | Atomically project new schemas/interface/consumer contracts to all declared platforms. | `replace` | #443 package migration |
+| `443-REGISTRY-SELECTOR` | Select the new major contract only during atomic graph activation after Phase D443 is package-ready. | `replace` | #434 activation |
+| `443-PROJECTIONS` | Produce package-ready canonical schemas/interface/consumer contracts and package-owned projection sources; active installed/platform publication remains deferred. | `replace` | #443 package migration |
 
 ## 3. #436 Mapping
 
@@ -64,9 +64,9 @@ freshly derive TaskRef. Other owners may use `TaskArtifactDTO` only where their 
 | `434-STOPS` | Add all named blocked/terminal stops with one producer route each. | `replace` | #434 graph task |
 | `434-REGISTRY-DEFERRED` | Keep deferred state until package migration and graph activation are jointly ready. | `retain` | #434 activation gate |
 | `434-REGISTRY-SELECTORS` | Switch selectors to migrated major contracts only during atomic activation. | `replace` | #434 graph task |
-| `434-MANIFEST` | Replace old schema/package references with migrated interface and platform files. | `replace` | package migration then #434 |
+| `434-MANIFEST` | Replace old schema/package references with the reviewed package-ready interface and projection inventory during activation. | `replace` | #434 activation |
 | `434-PROJECTION-MECHANISM` | Keep projection/parity mechanism. | `retain` | installer/overlay owner |
-| `434-PROJECTION-BYTES` | Replace old projected contracts atomically; no mixed old/new platform state. | `replace` | package migration then #434 |
+| `434-PROJECTION-BYTES` | Publish the reviewed package-ready contracts atomically to active installed/platform bytes; no mixed old/new platform state. | `replace` | #434 activation |
 | `434-DIRTY-WORKTREE` | Historical/stale planning input; not target authority or activation evidence. | `out_of_scope` | none |
 
 ## 5. Mapping Closure
