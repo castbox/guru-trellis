@@ -130,15 +130,17 @@ def validate_recovery_mapping(path: Path, expected: dict, field: str) -> dict:
 
 def validate_task_identity(public: dict, plan: dict) -> None:
     task_id = public["task_id"]
-    locators = {
-        "task_ref": Path(public["task_ref"]).name,
-        "archive_ref": Path(public["archive_ref"]).name,
+    task_basename = Path(public["task_ref"]).name
+    archive_basename = Path(public["archive_ref"]).name
+    if task_basename != archive_basename:
+        raise CommandError("stale_identity", "archive_ref", "Reactivate task and archive locators must use the same basename.", 3)
+    mappings = {
         "workspace.workspace_mapping": Path(plan["workspace_mapping"]).stem,
         "workspace.task_mapping": Path(plan["task_mapping"]).stem,
     }
-    for field, locator_id in locators.items():
-        if locator_id != task_id:
-            raise CommandError("stale_identity", field, "Reactivate locators must bind the exact task id.", 3)
+    for field, mapping_id in mappings.items():
+        if mapping_id != task_id:
+            raise CommandError("stale_identity", field, "Reactivate mappings must bind the exact task id.", 3)
 
 
 def recover_completed_reactivation(root: Path, public: dict, plan: dict) -> int | None:

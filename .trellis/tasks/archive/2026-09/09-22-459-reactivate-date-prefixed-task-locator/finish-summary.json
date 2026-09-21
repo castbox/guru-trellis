@@ -1,0 +1,136 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-21T17:03:36Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-22-459-reactivate-date-prefixed-task-locator",
+    "title": "#459 修复 guru-reactivate-task 日期前缀任务定位",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/459-reactivate-date-prefixed-task-locator",
+    "commits": [
+      "2c66652d57ac99c22e209bf41f0e44282dbfc0a3"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/invoke.py",
+      ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/check.jsonl",
+      ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/design.md",
+      ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/implement.jsonl",
+      ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/implement.md",
+      ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/prd.md",
+      ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/task.json",
+      ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/design.md",
+      ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/implement.md",
+      ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/prd.md",
+      ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/task.json",
+      "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/invoke.py",
+      "trellis/skills/guru-team/packages/guru-reactivate-task/tests/test_reactivate_contract.py"
+    ]
+  },
+  "github": {
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/461"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#459 修复 guru-reactivate-task 日期前缀任务定位",
+    "outcome": "修复 `guru-reactivate-task` 将 `MM-DD-slug` locator basename 错误地与稳定 `task.json.id` 比较的问题。",
+    "changed_behavior": [
+      "修复 `guru-reactivate-task` 将 `MM-DD-slug` locator basename 错误地与稳定 `task.json.id` 比较的问题。",
+      "改为要求 active/archive locator basename 精确一致，同时继续以稳定 `task_id` 约束 workspace/task mapping。",
+      "保留 archive `task.json.id`、`status=completed` 的移动前校验与 stdout-loss recovery 语义。",
+      "补充日期前缀的 `reuse_exact`、`create_new`、恢复、mismatch 和无前缀回归覆盖，并同步 installed projection。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/design.md",
+          ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/implement.md",
+          ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/prd.md",
+          ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/design.md",
+          ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/implement.md",
+          ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/prd.md"
+        ],
+        "change": "修复 `guru-reactivate-task` 将 `MM-DD-slug` locator basename 错误地与稳定 `task.json.id` 比较的问题。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "修复 `guru-reactivate-task` 将 `MM-DD-slug` locator basename 错误地与稳定 `task.json.id` 比较的问题。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/invoke.py",
+          "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/invoke.py",
+          "trellis/skills/guru-team/packages/guru-reactivate-task/tests/test_reactivate_contract.py"
+        ],
+        "change": "修复 `guru-reactivate-task` 将 `MM-DD-slug` locator basename 错误地与稳定 `task.json.id` 比较的问题。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/check.jsonl",
+          ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/implement.jsonl",
+          ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/task.json",
+          ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/task.json"
+        ],
+        "change": "修复 `guru-reactivate-task` 将 `MM-DD-slug` locator basename 错误地与稳定 `task.json.id` 比较的问题。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [],
+      "pr_refs": [
+        "PR #461"
+      ],
+      "branches": [
+        "fix/459-reactivate-date-prefixed-task-locator"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/invoke.py",
+        ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/check.jsonl",
+        ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/design.md",
+        ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/implement.jsonl",
+        ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/implement.md",
+        ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/prd.md",
+        ".trellis/tasks/09-22-459-reactivate-date-prefixed-task-locator/task.json",
+        ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/design.md",
+        ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/implement.md",
+        ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/prd.md",
+        ".trellis/tasks/archive/2026-09/09-22-459-reactivate-date-prefixed-task-locator/task.json",
+        "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/invoke.py",
+        "trellis/skills/guru-team/packages/guru-reactivate-task/tests/test_reactivate_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#459 修复 guru-reactivate-task 日期前缀任务定位",
+        "修复 `guru-reactivate-task` 将 `MM-DD-slug` locator basename 错误",
+        "完成 extension.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#459 修复 guru-reactivate-task 日期前缀任务定位\n修复 `guru-reactivate-task` 将 `MM-DD-slug` locator basename 错误地与稳定 `task.json.id` 比较的问题。\n改为要求 active/archive locator basename 精确一致，同时继续以稳定 `task_id` 约束 workspace/task mapping。\n保留 archive `task.json.id`、`status=completed` 的移动前校验与 stdout-loss recovery 语义。\n补充日期前缀的 `reuse_exact`、`create_new`、恢复、mismatch 和无前缀回归覆盖，并同步 installed projection。\n修复 `guru-reactivate-task` 将 `MM-DD-slug` locator basename 错误\n完成 extension.json 相关变更"
+  }
+}
