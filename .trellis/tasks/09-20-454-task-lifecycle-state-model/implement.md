@@ -441,3 +441,15 @@ Phase C通过条件：
 Phase C完成后仍禁止production activation。后续固定先完成Phase D0，再进入Phase D443与Phase D436，最后由
 Phase E434 fresh reconcile并执行atomic activation。#459、#460/#462 仅以迁移账本中的行为保证被承接，不把旧
 predecessor数据模型带入target graph。
+
+## Publication finding-fix（2026-09-23）
+
+- `PUB454-C3-P2-009`：active task 已进入 `in_progress / lifecycle_generation=1`，但工作树仍跟踪上一轮
+  `completed` closeout 生成的 `finish-summary.json`。该旧摘要绑定 commit `2ba449e3a2456479bbb58bad48d22ae02451c859`，
+  不能作为当前 generation 的 Finalizer 输出。
+- 修复：删除 active task 中的 tracked 旧摘要，恢复 `guru-finalize-task` 对摘要的唯一所有权；当前 generation 的
+  `finish-summary.json` 必须在正式 Finalizer transaction 中重新生成为 untracked archive output，并随 task move
+  进入 archive。
+- 验证：先执行 focused Finalizer preflight，确认旧的 archive-output classification/subset 错误消失；再执行 task
+  validator 与 `git diff --check`。本次 finding-fix 使既有 Publication 证据失效，后续必须从 fresh Phase 2、Task
+  Commit、full Branch Review 到 fresh Publication 依次重建，不得复用上一轮 ready/finalization 结果。
