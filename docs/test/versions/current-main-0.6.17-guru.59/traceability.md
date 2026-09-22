@@ -3,7 +3,7 @@
 当前 .59 来源：immutable predecessor `current-main-0.6.17-guru.58` 与 reviewed #454 contribution；上游固定为 `castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296` / CI `35621578090` / CLI/core `0.6.17`，Guru manifest 与 release target 沿用 predecessor。Architecture public inheritance 为 `docs/architecture/README.md` / `current-main-0.6.17-guru.59` / `active`。
 完整继承 immutable `.58` 业务合同，当前增量为 #454 C2+D0；本 promotion 只建立 current acceptance authority。
 
-`.59` 完整继承 `.58`，吸收 reviewed #454 contribution；RDT 与 Architecture current 均为 `.59/active`。截至 2026-09-22，提升前 `T454-01..09` 已通过；promotion-created diff 的 fresh Phase 2、Task Commit 与完整 committed-range Branch Review 尚未执行。
+`.59` 完整继承 `.58`，吸收 reviewed #454 contribution；RDT 与 Architecture current 均为 `.59/active`。截至 2026-09-22，提升前 `T454-01..09` 已通过；promotion-created diff 必须由后续 owner 以 fresh Phase 2、Task Commit 与完整 committed-range Branch Review 独立证明，提升前结果不得替代这些 gate。
 
 | Strategy / Scenario | Requirements | Design | Evidence |
 | --- | --- | --- | --- |

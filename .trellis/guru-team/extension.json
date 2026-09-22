@@ -862,11 +862,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-21T22:24:01Z",
+  "installed_at": "2026-09-22T02:04:35Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "c7b3a17e001faa1f03351e02f1ccdc64e0b44efd",
-    "commit": "c7b3a17e001faa1f03351e02f1ccdc64e0b44efd",
+    "ref": "38c656e0422d7a2f5a87a35520e8a5123f7c5d21",
+    "commit": "38c656e0422d7a2f5a87a35520e8a5123f7c5d21",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1051,7 +1051,7 @@
       {
         "id": "guru-reconcile-task-base",
         "interface_sha256": "dbc967273ae8bb24acd4be651c8418d8fff21beaccca03c4356fef9034b67d27",
-        "tree_sha256": "ff8c3e1a37e15cb8d5e53e262489e2755657aa0faf7b820336bb49b5955b2cdc"
+        "tree_sha256": "0052ab8b2940ce8ff0656fe385002a6d1c5d7ba1ee44f210235727e5c0a9a75d"
       },
       {
         "id": "guru-review-contract-wording",
@@ -5177,7 +5177,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/execute.py",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/execute.py",
-        "sha256": "14d760b034f6a256a9da9650e69ba03417711f8398645dc678e6624e2e1e587d",
+        "sha256": "0ee252785e1a42ee2cb63a6f5f9efb18994e745bcd38b399b7db2ef5d7d8b5ba",
         "executable": false,
         "action": "unchanged"
       },

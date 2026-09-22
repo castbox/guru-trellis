@@ -261,10 +261,15 @@ class RuntimeTest(unittest.TestCase):
         for profile in ('post_plan','post_check','post_commit','post_branch_review','post_publication','finalizer_base_mismatch'):
             public=self.public(profile)
             if profile in {'post_plan','post_check','post_commit'}: public['selected_base_ref']=self.old
-            else: public['old_base_head']=self.new
+            else: public.update({'selected_base_ref':self.old,'old_base_head':self.old,'new_base_head':self.old})
             result=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write(profile+'.json',public))])
             self.assertEqual('unchanged',result['status'],profile)
         self.assertNotIn('branch_review_commit',self.public('post_commit'))
+    def test_post_review_equal_pair_requires_selected_base_ancestry(self):
+        for profile in ('post_branch_review','post_publication','finalizer_base_mismatch'):
+            public=self.public(profile); public['old_base_head']=self.new
+            result=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write(profile+'-stale-equal-pair.json',public))])
+            self.assertEqual('new_pair',result['status'],profile)
     def test_post_plan_accepts_planning_before_activation_but_later_boundaries_do_not(self):
         self.write_identity(status='planning')
         post_plan=self.public('post_plan'); post_plan['selected_base_ref']=self.old

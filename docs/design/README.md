@@ -35,4 +35,4 @@ Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Archi
 
 Released history 只固定 release identity；未从 tag 恢复的设计内容保持 `unverified`，不能用 current 设计倒填。
 
-`.58/active` 完整继承 immutable `.57` 并吸收 reviewed #452 contribution；Architecture 为 `.58/active`。平台 authority 只有 pinned upstream 22-platform inventory 与目标仓库 exact `selected_platforms` 两层；重复 `--platform` 选择 exact subset，公开 CLI 不提供全集安装选项，无 flag 默认及 `guru-trellis` dogfood 均为 Claude、Codex、Cursor，OpenCode 是 upstream inventory 普通成员。#434 独占 production graph activation；promotion-created combined diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review，且当前不声明 implementation、tests 或完整 Release matrix 已通过。
+`.58` 作为 immutable predecessor 完整继承 `.57` 并吸收 reviewed #452 contribution；该 snapshot 的 Architecture identity 为 `.58/active`。平台 authority 只有 pinned upstream 22-platform inventory 与目标仓库 exact `selected_platforms` 两层；重复 `--platform` 选择 exact subset，公开 CLI 不提供全集安装选项，无 flag 默认及 `guru-trellis` dogfood 均为 Claude、Codex、Cursor，OpenCode 是 upstream inventory 普通成员。#434 独占 production graph activation；promotion-created combined diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review，且该 snapshot 不声明 implementation、tests 或完整 Release matrix 已通过。

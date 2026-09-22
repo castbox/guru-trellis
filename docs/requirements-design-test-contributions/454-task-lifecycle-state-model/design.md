@@ -19,7 +19,7 @@
   不导入 Fork private code，不修复 metadata，不选择 semantic route，也不持久化 validation result。
 - `D454-06`：Fork source lock 固定到 reviewed commit `eb370008c7689d4e272ae626bd002190ecbb3296`、tree
   `bd1f133cc55d0562ad9ec5f426bca70d1584194b` 与 CI `35621578090`。四份 workflow SSOT 在 canonical/preset
-  保持字节一致；task-owned contribution 保持 pending，C3-C6 与 #434 activation 不提前投影。
+  保持字节一致；task-owned contribution 保持 pending，C3-C7 与 #434 activation 不提前投影。
 - `D454-07`：D0由`guru-reconcile-task-base`拥有pre/post-review integration，`guru-create-task-commit`只输出exact
   committed candidate，`guru-review-branch`分别拥有full与continuity profile。Pre-review pair由fresh selected base与
   唯一merge-base派生，compatible route创建parents为`[prior_task_head, new_base_head]`的本地merge commit；

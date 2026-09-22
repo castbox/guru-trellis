@@ -3,7 +3,7 @@
 当前 .59 来源：immutable predecessor `current-main-0.6.17-guru.58` 与 reviewed #454 contribution；上游固定为 `castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296` / CI `35621578090` / CLI/core `0.6.17`，Guru manifest 与 release target 沿用 predecessor。Architecture public inheritance 为 `docs/architecture/README.md` / `current-main-0.6.17-guru.59` / `active`。
 完整继承 immutable `.58` 业务合同，当前增量为 #454 C2 lifecycle kernel 与 D0 stage-evidence correction；本 promotion 只建立 current acceptance authority。
 
-`.59` 完整继承 `.58`，吸收 reviewed #454 contribution；RDT 与 Architecture current 均为 `.59/active`。截至 2026-09-22，提升前 `T454-01..09` 已通过；promotion-created diff 仍须完成 fresh Phase 2、Task Commit 与完整 Branch Review 后才能进入 Publication。
+`.59` 完整继承 `.58`，吸收 reviewed #454 contribution；RDT 与 Architecture current 均为 `.59/active`。截至 2026-09-22，提升前 `T454-01..09` 已通过；这些结果不替代 promotion-created diff 的 fresh Phase 2、Task Commit 与完整 Branch Review，Publication 必须消费后续 exact-range gate 结果。
 
 版本：`current-main-0.6.17-guru.59`；状态：`active`；predecessor：`current-main-0.6.17-guru.58`；source baseline：reviewed #454 contribution + inherited immutable `.58` authority；精确 revision 由 containing Git object/tree identity 绑定。
 

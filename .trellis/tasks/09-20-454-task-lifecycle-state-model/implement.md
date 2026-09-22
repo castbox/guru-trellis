@@ -59,7 +59,7 @@ owner，不开始生产编辑。
 Phase C 是本 task 的首个独立 Delivery slice。它只交付 substrate 与 package-ready canonical contracts；它不要求
 Phase D443、Phase D436 或 Phase E434 已完成。当前实现状态为 C2 lifecycle kernel 与 D0 stage-evidence contract
 correction 已提交并完成正式 base reconcile；任何 finding fix 后均须重建 fresh Phase 2、Task Commit 与完整
-Branch Review。C3-C6 与其余 Phase D/E 工作仍未完成。
+Branch Review。C3-C7 与其余 Phase D/E 工作仍未完成。
 
 独立可交付条件：
 
@@ -331,7 +331,7 @@ consumer projection、canonical/installed parity、preset reapply/drift、task v
 `.trellis/scripts/**` diff为零。
 
 Exit：`stage_evidence_contract_ready`。该exit只表示D0 candidate完成；随后对本task执行正式base reconcile，并按
-`fresh Phase 2 -> fresh Task Commit -> full Branch Review`重建证据。它不表示C3-C6、D443、D436或E434完成。
+`fresh Phase 2 -> fresh Task Commit -> full Branch Review`重建证据。它不表示C3-C7、D443、D436或E434完成。
 
 ## 5. Subtraction 与兼容策略
 

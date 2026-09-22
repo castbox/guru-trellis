@@ -253,6 +253,6 @@ constraint、8组active runtime-loss组合、60个已修订finding、跨任务�
 
 该结论证明统一task lifecycle模型在声明范围内具备一致且可实现的完整设计，不证明实现或验证已经完成。
 Task当前保持`in_progress`。C2 lifecycle kernel与D0 stage-evidence correction已形成committed/reconciled
-candidate；任何finding fix后均必须重建fresh Phase 2、fresh Task Commit与完整Branch Review。C3-C6与D443/D436
+candidate；任何finding fix后均必须重建fresh Phase 2、fresh Task Commit与完整Branch Review。C3-C7与D443/D436
 后续实现必须迁移全部production consumer，并在E434 activation前证明旧mapping reader、writer、active domain
 reference、pre-Closure closing-effect owner与old public ID consumer均为零。

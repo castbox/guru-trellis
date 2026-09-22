@@ -14,7 +14,7 @@ def guard(package_root: Path, argv: list[str]) -> dict:
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--input",required=True)
     args=parse(parser,argv); repo=repo_root(args.root); public=read_json(repo,package_root,args.input,"input"); validate_public(package_root,public); allow_planning=public["profile"]=="post_plan"; task_identity(repo,public["task_ref"],allow_planning=allow_planning)
     task,old,new=operation_pair(repo,public)
-    status=("unchanged" if is_ancestor(repo,new,task) else "new_pair") if public["profile"] in PRE_REVIEW_PROFILES else ("unchanged" if new==old else "new_pair")
+    status=("unchanged" if is_ancestor(repo,new,task) else "new_pair") if public["profile"] in PRE_REVIEW_PROFILES else ("unchanged" if new==old and is_ancestor(repo,new,task) else "new_pair")
     current_head=resolve_commit(repo,"HEAD","HEAD")
     if task != public["task_head"]: status="blocked"
     cp=checkpoint_path(repo,public["task_ref"],allow_planning=allow_planning)

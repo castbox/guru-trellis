@@ -209,4 +209,4 @@ CI `35621578090`。
 两个 base-identical 全局测试 observation 属于 #454 range 外既有问题，不写成通过，也不阻塞本次 scoped
 promotion。本证据不证明 C3-C7、D443、D436、E434、production activation、完整 installer/upgrade/
 workflow-switch 或多平台 Release matrix、push、PR、merge、tag、GitHub Release、业务生产验证或 Issue closure。
-Promotion-created diff 尚未通过后续 fresh Phase 2、Task Commit 与 independent complete Branch Review。
+本 evidence 不替代 promotion-created diff 后续 fresh Phase 2、Task Commit 与 independent complete Branch Review；Publication 必须消费后续 exact-range gate 结果。

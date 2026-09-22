@@ -17,7 +17,7 @@
 This contribution completed independent committed full-diff review with P0/P1/P2/P3 `0/0/0/0` and was promoted
 through the expected-current-bound Architecture owner from `.58` to `.59`. C2 records the shared lifecycle kernel and DTO
 substrate; D0 adds a candidate correction for Reconcile/Task Commit/Branch Review
-stage-evidence handoff. C3-C6 package/runtime slices, D443/D436 migration and
+stage-evidence handoff. C3-C7 package/runtime slices, D443/D436 migration and
 #434 production activation remain pending.
 
 ## Boundary And Decision
@@ -66,7 +66,7 @@ closed; the runtime does not repair task metadata or select semantic routes.
 | gap-and-deviation | applicable | C2 removes the need for a new duplicate identity/session substrate but does not claim the complete lifecycle gap closed. |
 | parallel-scope | applicable | This task writes only canonical substrate and task-owned contributions, not shared current or another task's package. |
 | evidence-and-freshness | applicable | Bind exact Fork source, focused tests, source/README consistency, SSOT parity, task validation and zero upstream-script diff. |
-| review-and-promotion | applicable | Candidate remains pending until Phase 2, committed full-diff review and serialized expected-current promotion. |
+| review-and-promotion | applicable | Independent committed full-diff review and serialized expected-current promotion completed; the promotion-created diff independently re-enters fresh Phase 2, Task Commit and complete Branch Review. |
 
 ## Contract Shape
 
@@ -100,7 +100,7 @@ for date-prefixed TaskRef plus created-Issue provenance and same-result recovery
 The predecessor workspace/result structure is not part of the target model.
 
 The complete installer/upgrade/release matrix, production
-workflow cardinality, installed/platform projection, C3-C6 behavior and live
+workflow cardinality, installed/platform projection, C3-C7 behavior and live
 business operations are not C2 evidence. ADR is required at serialized
 promotion because the final task changes framework/extension ownership and
 state authority; the accepted shared decision is `ADR-015`. Promotion state is
