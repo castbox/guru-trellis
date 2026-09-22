@@ -124,6 +124,8 @@ class CheckoutSubstrateTests(unittest.TestCase):
         target: Path | None = None,
         head: str | None = None,
         artifact_expectation: str = "required",
+        transaction_id: str = "checkout-transaction:1",
+        result_id: str = "checkout-result:1",
     ) -> CheckoutAcquisitionPlan:
         return CheckoutAcquisitionPlan(
             route=route,
@@ -134,8 +136,8 @@ class CheckoutSubstrateTests(unittest.TestCase):
             branch_ref=branch,
             expected_status="in_progress",
             decision_head=head or self.fixture.head,
-            transaction_id="checkout-transaction:1",
-            result_id="checkout-result:1",
+            transaction_id=transaction_id,
+            result_id=result_id,
             provision_disposition=disposition,
             invocation_checkout=invocation,
             target_path=target,
@@ -215,6 +217,18 @@ class CheckoutSubstrateTests(unittest.TestCase):
                 )
             )
 
+    def test_existing_primary_checkout_must_use_adopt_route(self) -> None:
+        self.fixture.git("checkout", "-b", "task-primary-provision")
+        with self.assertRaisesRegex(LifecycleContractError, "primary_checkout_requires_adoption"):
+            provision_linked_worktree(
+                self.plan(
+                    "provision_linked_worktree",
+                    "task-primary-provision",
+                    disposition="existing_checkout",
+                    target=self.fixture.repo,
+                )
+            )
+
     def test_pre_task_adopt_and_provision_require_the_task_artifact_to_be_absent(self) -> None:
         self.fixture.git("checkout", "-b", "task-prebuilt")
         self.remove_task_artifact(self.fixture.repo)
@@ -252,6 +266,75 @@ class CheckoutSubstrateTests(unittest.TestCase):
                     artifact_expectation="required",
                 )
             )
+
+    def test_pre_task_candidate_rejects_another_active_task_authority(self) -> None:
+        self.fixture.git("checkout", "-b", "task-prebuilt-conflict")
+        self.remove_task_artifact(self.fixture.repo)
+        other = self.fixture.repo / ".trellis/tasks/09-21-other-active"
+        other.mkdir(parents=True)
+        (other / "task.json").write_text(
+            json.dumps(
+                {
+                    "id": "other-active-task",
+                    "name": other.name,
+                    "status": "in_progress",
+                    "lifecycle_generation": 0,
+                }
+            ),
+            encoding="utf-8",
+        )
+        self.fixture.git("add", "-A")
+        self.fixture.git("commit", "-m", "other active task authority")
+
+        resolution = discover_validate_classify(
+            self.request(
+                "task-prebuilt-conflict",
+                head=self.fixture.head,
+                artifact_expectation="absent",
+            )
+        )
+        self.assertEqual(
+            (resolution.kind, resolution.reason_code),
+            ("authority_conflict", "active_task_authority_conflict"),
+        )
+        with self.assertRaisesRegex(LifecycleContractError, "active_task_authority_conflict"):
+            adopt_invocation_checkout(
+                self.plan(
+                    "adopt_invocation_checkout",
+                    "task-prebuilt-conflict",
+                    invocation=self.fixture.repo,
+                    artifact_expectation="absent",
+                )
+            )
+
+    def test_transaction_and_result_ids_match_shared_identifier_grammar(self) -> None:
+        self.fixture.git("checkout", "-b", "task-identifiers")
+        accepted = adopt_invocation_checkout(
+            self.plan(
+                "adopt_invocation_checkout",
+                "task-identifiers",
+                invocation=self.fixture.repo,
+                transaction_id="A.b_c:d-1",
+                result_id="result:1.2_test-value",
+            )
+        )
+        self.assertEqual(accepted.transaction_id, "A.b_c:d-1")
+        self.assertEqual(accepted.result_id, "result:1.2_test-value")
+
+        for field, value in [("transaction_id", "bad/id"), ("result_id", "@bad")]:
+            overrides = {field: value}
+            with self.subTest(field=field, value=value), self.assertRaisesRegex(
+                LifecycleContractError,
+                "invalid_transaction_identity",
+            ):
+                adopt_invocation_checkout(
+                    self.plan(
+                        "adopt_invocation_checkout",
+                        "task-identifiers",
+                        invocation=self.fixture.repo,
+                        **overrides,
+                    )
+                )
 
     def test_wrong_repository_detached_dirty_and_head_drift_are_distinct(self) -> None:
         foreign = GitFixture(self.root, "foreign")

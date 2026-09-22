@@ -289,6 +289,7 @@ def _validate_registry(
             active.append(skill_id)
         elif state == "planned":
             planned.append(skill_id)
+            continue
         else:
             errors.append(ownership_error("skill_registry_contract_invalid", f"skills[{index}].state", "expected active or planned"))
             continue
@@ -399,8 +400,9 @@ def _validate_repository(
         candidate.name for candidate in package_root.iterdir()
         if candidate.is_dir() and not candidate.is_symlink()
     ) if package_root.is_dir() else []
-    if package_ids != sorted(active_skill_ids):
-        errors.append(ownership_error("canonical_package_set_mismatch", SKILL_PACKAGE_ROOT_RELATIVE.as_posix(), f"packages={package_ids} active={sorted(active_skill_ids)}"))
+    registered_package_ids = sorted([*active_skill_ids, *planned_skill_ids])
+    if package_ids != registered_package_ids:
+        errors.append(ownership_error("canonical_package_set_mismatch", SKILL_PACKAGE_ROOT_RELATIVE.as_posix(), f"packages={package_ids} registered={registered_package_ids}"))
 
     overlay_root = repo_root / OVERLAY_ROOT_RELATIVE
     overlay_paths = collect_overlay_paths(overlay_root, errors)

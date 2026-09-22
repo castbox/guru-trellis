@@ -58,8 +58,9 @@ owner，不开始生产编辑。
 
 Phase C 是本 task 的首个独立 Delivery slice。它只交付 substrate 与 package-ready canonical contracts；它不要求
 Phase D443、Phase D436 或 Phase E434 已完成。当前实现状态为 C2 lifecycle kernel 与 D0 stage-evidence contract
-correction 已提交并完成正式 base reconcile；任何 finding fix 后均须重建 fresh Phase 2、Task Commit 与完整
-Branch Review。C3-C7 与其余 Phase D/E 工作仍未完成。
+correction 已提交并完成正式 base reconcile；C3 已形成 package-ready candidate，并仅增加非激活的 `planned`
+registry metadata 与 canonical `planned_skill_ids`。任何 finding fix 后均须重建 fresh Phase 2、Task Commit 与完整
+Branch Review。C3 fresh gates、C4-C7 与其余 Phase D/E 工作仍未完成。
 
 独立可交付条件：
 
@@ -68,8 +69,9 @@ Branch Review。C3-C7 与其余 Phase D/E 工作仍未完成。
 - `guru-create-task`、`guru-establish-task-identity`、`guru-establish-task-branch-binding`、
   `guru-ensure-task-checkout`、`guru-rebind-task-branch`、`guru-activate-task` 具备完整 canonical package contract；
 - shared DTO/schema 与每个 Phase C owner 的 input/output/consumer projection闭合；
-- canonical package-ready bytes保持 inactive，不写 registry selector、active manifest、installed/platform projection
-  或 workflow edge；
+- canonical package-ready bytes保持 inactive；允许写入 `state=planned` registry metadata 与 canonical
+  `planned_skill_ids`，但不写 active/integrated registry selector、active graph manifest、installed/platform
+  projection 或 workflow edge；
 - old mappings与`guru-create-task-workspace`仍作为当前 production predecessor保留，但 Phase C 新代码零读取、
   零写入，退役由 Phase E434 activation transaction完成。
 
@@ -182,6 +184,12 @@ checkout path。
 Tests：primary/linked adopt、new/reuse provision、wrong repository、detached、base branch、dirty、HEAD drift、zero/
 multiple candidate、worktree move、explicit target fresh revalidation、output loss recovery、zero mapping access。
 
+RDT candidate：`docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c3/` 独立承接 C3
+Requirements、Design、Test 与 traceability；已提升的
+`docs/requirements-design-test-contributions/454-task-lifecycle-state-model/` 继续只证明 C2+D0，保持 immutable。
+Focused C3 evidence 与完整 preset suite 分开报告；raw apply 若因故意未同步的 installed projection 产生 conflict，
+该 case 与 suite 保持未通过，不得通过越权同步 installed/platform bytes 修复。
+
 Exit：`checkout_substrate_ready`。
 
 Recovery：provision transaction按reviewed disposition记录Guru新建资源；失败只删除本transaction新建且身份仍匹配
@@ -250,8 +258,8 @@ Create只消费reviewed `existing_issue | standalone_request`，不创建Issue�
 Package-ready boundary：
 
 - canonical package与package-owned consumer schemas完成；
-- registry继续保持predecessor selection，不增加integrated selector；
-- extension active manifest不枚举新active graph；
+- registry可新增`state=planned` metadata，但active/integrated selector继续保持predecessor selection；
+- canonical extension manifest可将该ID列入`planned_skill_ids`，但`active_skill_ids`与active graph保持不变；
 - installed `.trellis/guru-team/**`、`.agents/.codex/.claude/.cursor`投影不发布新major；
 - canonical workflow与dogfood workflow不增加production mandatory invocation。
 
@@ -358,7 +366,9 @@ Durable Docs SSOT候选：
 - `.trellis/spec/workflow/skill-package-contract.md`；
 - `.trellis/spec/workflow/companion-scripts.md`；
 - `.trellis/spec/workflow/quality-guidelines.md`；
-- `docs/architecture/**` 与 `docs/requirements-design-test-contributions/454-task-lifecycle-state-model/**`；
+- 已提升且 immutable 的 `docs/requirements-design-test-contributions/454-task-lifecycle-state-model/**`；
+- C3 task-isolated candidate `docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c3/**`；
+- task-local `planning/architecture-change-contract.md`，shared `docs/architecture/**` 只允许 serialized promotion owner 写入；
 - `README.md`、canonical workflow/package README与preset README中的current source/ownership/migration说明。
 
 这些shared路径只在实施/检查阶段修改。本Planning不直接修改shared current authority。

@@ -6,6 +6,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
+
 
 PACKAGE = Path(__file__).resolve().parents[1]
 
@@ -62,7 +64,11 @@ class CheckoutPackageRuntimeTests(unittest.TestCase):
                 text=True,
             )
         self.assertEqual(completed.returncode, 2)
-        self.assertEqual(json.loads(completed.stdout)["code"], "schema_mismatch")
+        error = json.loads(completed.stdout)
+        schema = json.loads((PACKAGE / "schemas/public-invocation-error.schema.json").read_text(encoding="utf-8"))
+        Draft202012Validator(schema).validate(error)
+        self.assertEqual(set(error), {"code", "field_path", "remediation"})
+        self.assertEqual(error["code"], "schema_mismatch")
 
 
 if __name__ == "__main__":

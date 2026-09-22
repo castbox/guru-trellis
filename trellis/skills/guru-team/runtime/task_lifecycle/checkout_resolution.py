@@ -15,7 +15,7 @@ from .git_facts import (
     inspect_registered_worktree,
     inspect_repository,
 )
-from .identity import normalize_generation, normalize_task_id, normalize_task_ref
+from .identity import normalize_generation, normalize_task_id, normalize_task_ref, task_inventory
 from .source import normalize_branch_ref
 
 
@@ -109,6 +109,16 @@ def _artifact_facts(candidate: WorktreeFacts, request: CheckoutRequest) -> tuple
     try:
         if metadata_path.is_symlink() or not metadata_path.is_file():
             if request.task_artifact_expectation == "absent":
+                try:
+                    active_tasks = tuple(
+                        row for row in task_inventory(candidate.path) if row.lifecycle_state == "active"
+                    )
+                except LifecycleContractError:
+                    return None, "active_task_inventory_invalid"
+                if active_tasks:
+                    return {
+                        "active_task_refs": [row.task_ref for row in active_tasks],
+                    }, "active_task_authority_conflict"
                 return None, None
             return None, "task_artifact_missing"
         payload = json.loads(metadata_path.read_text(encoding="utf-8"))

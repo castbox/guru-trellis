@@ -176,7 +176,11 @@
         "dirty_paths": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
         "discovered_at": {"$ref": "#/$defs/timestamp"}, "validation_state": {"enum": ["valid", "invalid_candidate", "authority_conflict"]},
         "reason_code": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"}
-      }
+      },
+      "allOf": [
+        {"if": {"properties": {"validation_state": {"const": "valid"}}, "required": ["validation_state"]}, "then": {"properties": {"reason_code": {"type": "null"}}}},
+        {"if": {"properties": {"validation_state": {"enum": ["invalid_candidate", "authority_conflict"]}}, "required": ["validation_state"]}, "then": {"properties": {"reason_code": {"$ref": "#/$defs/identifier"}}}}
+      ]
     },
     "CheckoutResolutionDTO": {
       "type": "object", "additionalProperties": false,
@@ -186,7 +190,11 @@
         "reason_code": {"$ref": "#/$defs/identifier"},
         "candidate_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},
         "selected_candidate_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"}
-      }
+      },
+      "allOf": [
+        {"if": {"properties": {"resolution_kind": {"const": "checkout_resolved"}}, "required": ["resolution_kind"]}, "then": {"properties": {"selected_candidate_id": {"$ref": "#/$defs/identifier"}}}},
+        {"if": {"properties": {"resolution_kind": {"enum": ["selection_required", "authority_conflict"]}}, "required": ["resolution_kind"]}, "then": {"properties": {"selected_candidate_id": {"type": "null"}}}}
+      ]
     },
     "CheckoutSelectionDTO": {
       "oneOf": [

@@ -1,1 +1,1 @@
-{"error":"schema_mismatch","field_path":"semantic_result","remediation":"Use the current package schemas."}
+{"code":"schema_mismatch","field_path":"semantic_result","remediation":"Use the current package schemas."}

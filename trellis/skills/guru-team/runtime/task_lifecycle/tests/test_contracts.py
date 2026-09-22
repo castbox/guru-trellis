@@ -128,6 +128,46 @@ class ContractTests(unittest.TestCase):
         }
         self.assertEqual(validate_dto("CheckoutCandidateDTO", detached), detached)
 
+    def test_checkout_candidate_reason_matches_validation_state(self):
+        candidate = valid_payloads()["CheckoutCandidateDTO"]
+        valid = [
+            candidate,
+            {**candidate, "validation_state": "invalid_candidate", "reason_code": "detached_checkout"},
+            {**candidate, "validation_state": "authority_conflict", "reason_code": "task_artifact_mismatch"},
+        ]
+        for payload in valid:
+            with self.subTest(valid=payload["validation_state"]):
+                self.assertEqual(validate_dto("CheckoutCandidateDTO", payload), payload)
+
+        invalid = [
+            {**candidate, "reason_code": "unexpected_reason"},
+            {**candidate, "validation_state": "invalid_candidate", "reason_code": None},
+            {**candidate, "validation_state": "authority_conflict", "reason_code": None},
+        ]
+        for payload in invalid:
+            with self.subTest(invalid=payload["validation_state"]), self.assertRaises(LifecycleContractError):
+                validate_dto("CheckoutCandidateDTO", payload)
+
+    def test_checkout_resolution_selection_matches_resolution_kind(self):
+        resolution = valid_payloads()["CheckoutResolutionDTO"]
+        valid = [
+            resolution,
+            {**resolution, "resolution_kind": "selection_required", "reason_code": "multiple_candidates", "selected_candidate_id": None},
+            {**resolution, "resolution_kind": "authority_conflict", "reason_code": "task_artifact_mismatch", "selected_candidate_id": None},
+        ]
+        for payload in valid:
+            with self.subTest(valid=payload["resolution_kind"]):
+                self.assertEqual(validate_dto("CheckoutResolutionDTO", payload), payload)
+
+        invalid = [
+            {**resolution, "selected_candidate_id": None},
+            {**resolution, "resolution_kind": "selection_required"},
+            {**resolution, "resolution_kind": "authority_conflict"},
+        ]
+        for payload in invalid:
+            with self.subTest(invalid=payload["resolution_kind"]), self.assertRaises(LifecycleContractError):
+                validate_dto("CheckoutResolutionDTO", payload)
+
     def test_path_and_branch_primitives_reject_non_portable_values(self):
         payloads = valid_payloads()
         invalid = [

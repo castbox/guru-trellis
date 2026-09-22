@@ -20,13 +20,14 @@ the retained predecessor mappings.
 | C3 checkout acquisition/resolution | `reviewed_candidate` | Canonical runtime, DTOs, tests and inactive package are present in the current worktree; fresh gates remain. |
 | C4-C7 | `not_started` | No authority or completion may be inferred from C3. |
 | D443 / D436 | `not_started` | Existing active packages remain unchanged. |
-| E434 / #434 activation | `not_started` | Registry, manifest, workflow and projections remain on the predecessor. |
+| E434 / #434 activation | `not_started` | Active registry selector, active graph, workflow and projections remain on the predecessor. |
 
 ## 3. Closed Disposition
 
 | Asset/capability | Current disposition | Later owner | Exit condition |
 | --- | --- | --- | --- |
 | C3 `guru-ensure-task-checkout` canonical package | `candidate_inactive` | C6 validates composition; E434 activates | Required later packages complete and atomic selector/workflow activation passes. |
+| C3 planned registry/manifest metadata | `candidate_planned_metadata` | C3 records package readiness; E434 owns later activation | Registry state is exactly `planned`, canonical `planned_skill_ids` contains the ID, and no active selector or projection consumes it. |
 | C3 checkout DTO/runtime | `candidate_target_native` | C4-C7 consume without copying authority | Fresh C3 gates and later consumer contracts pass. |
 | `guru-create-task-workspace` package/id/command | `retain_until_phase_e` | new `guru-create-task` package in C6 | Selector switches atomically, then old ID/command exits. |
 | task-workspace plan/result/recovery schemas | `retain_until_phase_e` | no new owner reuses old IDs | Old consumer count reaches zero. |
@@ -39,8 +40,8 @@ the retained predecessor mappings.
 | Bind Interface current major | `out_of_phase_c3` | D443 | New major selector and routers activate atomically. |
 | Reactivate/Completion/Closure/Finish/Cleanup majors | `out_of_phase_c3` | D436 | Migrated interfaces and routers activate atomically. |
 | #434 workflow graph/targets/stops | `forbidden_in_phase_c` | E434 | Fresh E434 reconcile and complete graph validation pass. |
-| registry selectors | `forbidden_in_phase_c` | E434 | Package-ready gate passes. |
-| active extension manifest | `forbidden_in_phase_c` | E434 | Complete active inventory passes. |
+| active/integrated registry selectors | `forbidden_in_phase_c` | E434 | Package-ready gate passes. |
+| `active_skill_ids` and active graph manifest | `forbidden_in_phase_c` | E434 | Complete active inventory passes. |
 | installed/platform projection bytes | `forbidden_in_phase_c` | E434 | Atomic publication and parity pass. |
 
 ## 4. Unsupported Intermediate States
@@ -65,8 +66,9 @@ C3 verification maintains these bounded facts:
 - new runtime mapping reader/writer count is zero;
 - new runtime references to `worktree_path`, `source_checkout` and
   `.trellis/workspace` authority are zero;
-- active registry, workflow, manifest and installed projection changes are
-  zero;
+- planned registry/manifest metadata names exactly the C3 package-ready ID;
+- active registry selector, `active_skill_ids`, workflow, active graph and
+  installed projection changes are zero;
 - C4-C7 and D/E surface changes are zero;
 - call-local checkout DTO fields do not enter durable lifecycle DTOs;
 - every C3 package exit has one declared consumer;

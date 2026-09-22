@@ -12,7 +12,8 @@ substrate.
 | `trellis/skills/guru-team/runtime/task_lifecycle/**` | Guru canonical | C2 promoted; C3 checkout modules are current candidate | `castbox/guru-trellis` |
 | `guru-ensure-task-checkout` | Guru canonical | C3 package-ready candidate, production inactive | `castbox/guru-trellis` |
 | Other Phase C packages | Guru canonical | C4-C7 not started | `castbox/guru-trellis` |
-| Registry/workflow/manifest/installed/platform bytes | E434 | forbidden in C3 | none in C3 |
+| Planned registry metadata and canonical `planned_skill_ids` | Guru canonical | C3 records `guru-ensure-task-checkout` as planned, not active | `castbox/guru-trellis` |
+| Active registry selector/workflow/graph/installed/platform bytes | E434 | forbidden in C3 | none in C3 |
 
 Guru ownership does not include `.trellis/scripts/**`. No overlay, installer
 post-patch, copied Fork module or alternate task/session store may bypass that
@@ -69,8 +70,10 @@ result/reference DTOs remain path-free and do not inherit those fields.
 - consumers: `guru-task-checkout-ready-router`, same-Skill recovery, and
   `task-checkout-acquisition-blocked`;
 - package-owned schemas, examples, error catalog, wrapper and focused tests;
-- no registration, active manifest entry, workflow edge or installed/platform
-  projection.
+- one `state=planned` registry row and canonical `planned_skill_ids`
+  membership;
+- no active/integrated selector, `active_skill_ids`, workflow edge, active
+  graph or installed/platform projection.
 
 Zero or multiple candidates stay inside the semantic owner for reviewed
 selection/acquisition. They do not create a durable candidate artifact or an
@@ -97,7 +100,8 @@ Package existence is not production capability.
 - D443 consumes lifecycle/session primitives without copying their authority.
 - D436 consumes lifecycle, branch, resource and result primitives.
 - E434 consumes complete package-ready interfaces and exclusively activates
-  workflow, registry, manifest and distribution projections.
+  workflow, active registry selector, active graph and distribution
+  projections.
 - #410 retains the complete Release matrix; C3 runs focused validation only.
 
 ## 8. C3 Zero-Second-Authority Checks
@@ -109,8 +113,9 @@ C3 Phase 2 must prove:
 - no task/workspace mapping reader or writer appears in new C3 modules;
 - no durable checkout locator, topology, HEAD or candidate store is added;
 - no branch/session/resource store is implemented early;
-- active registry, workflow, manifest and installed/platform bytes are
-  unchanged;
+- planned ownership metadata names exactly the package-ready C3 ID, while the
+  active registry selector, `active_skill_ids`, workflow, active graph and
+  installed/platform bytes are unchanged;
 - adoption and provisioning use the same live validation boundary;
 - caller-owned resources are preserved and rollback only removes exact
   transaction-created resources;

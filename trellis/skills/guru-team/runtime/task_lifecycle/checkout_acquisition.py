@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Literal
@@ -25,6 +26,7 @@ from .git_facts import (
 AcquisitionRoute = Literal["adopt_invocation_checkout", "provision_linked_worktree"]
 Ownership = Literal["guru_owned", "caller_owned", "not_applicable"]
 ProvisionDisposition = Literal["new_branch", "existing_branch", "existing_checkout"]
+IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
 
 
 @dataclass(frozen=True)
@@ -75,11 +77,11 @@ class CheckoutAcquisitionResult:
 
 
 def _require_identifier(value: str, field_path: str) -> str:
-    if not isinstance(value, str) or not value or any(character.isspace() for character in value):
+    if not isinstance(value, str) or not IDENTIFIER_PATTERN.fullmatch(value):
         raise LifecycleContractError(
             "invalid_transaction_identity",
             field_path,
-            "Use one non-empty call-local transaction or result identity without whitespace.",
+            "Use one call-local identity matching ^[A-Za-z0-9][A-Za-z0-9._:-]*$.",
         )
     return value
 
@@ -218,6 +220,12 @@ def provision_linked_worktree(
                 "provision_pre_state_changed",
                 "provision_disposition",
                 "Repeat semantic review against the fresh existing-checkout topology.",
+            )
+        if resolution.selected.facts.topology == "primary":
+            raise LifecycleContractError(
+                "primary_checkout_requires_adoption",
+                "route",
+                "Use adopt_invocation_checkout for the primary checkout; provision_linked_worktree only acquires linked worktrees.",
             )
         if plan.target_path is not None and resolution.selected.facts.path != plan.target_path.resolve():
             raise LifecycleContractError(

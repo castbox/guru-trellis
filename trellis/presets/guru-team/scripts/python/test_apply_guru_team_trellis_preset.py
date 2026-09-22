@@ -25,6 +25,7 @@ GURU_FINISH_ENTRIES = (
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import apply_guru_team_trellis_preset as preset
+import validate_upstream_ownership as ownership
 
 
 _RUNTIME_RESULT = {
@@ -52,6 +53,90 @@ def setUpModule() -> None:
 def tearDownModule() -> None:
     for patcher in reversed(_runtime_patchers):
         patcher.stop()
+
+
+class CanonicalPlannedPackageOwnershipTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.repo = preset.guru_root_from_script()
+
+    def copy_source(self, target: Path) -> None:
+        for relative in (
+            Path("trellis/presets/guru-team/ownership"),
+            Path("trellis/presets/guru-team/overlays"),
+            Path("trellis/workflows/guru-team"),
+            Path("trellis/skills/guru-team"),
+            Path(".trellis/guru-team"),
+            Path(".agents/skills"),
+            Path(".claude/skills"),
+            Path(".codex/skills"),
+            Path(".cursor/skills"),
+        ):
+            source = self.repo / relative
+            if source.exists():
+                shutil.copytree(source, target / relative)
+        for relative in (
+            ownership.EXTENSION_RELATIVE,
+            ownership.INSTALLER_RELATIVE,
+        ):
+            destination = target / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(self.repo / relative, destination)
+
+    def test_planned_canonical_package_is_registered_and_accepted(self) -> None:
+        payload = ownership.validate_repository(self.repo)
+        self.assertEqual(payload["status"], "ok", payload["errors"])
+        self.assertEqual(payload["active_skill_count"], 32)
+        self.assertEqual(payload["planned_skill_count"], 1)
+        self.assertEqual(payload["canonical_package_count"], 33)
+
+        registry = json.loads(
+            (self.repo / ownership.SKILL_REGISTRY_RELATIVE).read_text(encoding="utf-8")
+        )
+        planned = [entry for entry in registry["skills"] if entry.get("state") == "planned"]
+        self.assertEqual(
+            planned,
+            [
+                {
+                    "id": "guru-ensure-task-checkout",
+                    "state": "planned",
+                    "reason": "Issue #454 C3 canonical package is package-ready but remains inactive until the later lifecycle graph activation.",
+                }
+            ],
+        )
+
+    def test_missing_planned_canonical_package_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_source(repo)
+            shutil.rmtree(
+                repo
+                / ownership.SKILL_PACKAGE_ROOT_RELATIVE
+                / "guru-ensure-task-checkout"
+            )
+            payload = ownership.validate_repository(repo)
+        self.assertEqual(payload["status"], "error")
+        self.assertIn(
+            "canonical_package_set_mismatch",
+            {row["code"] for row in payload["errors"]},
+        )
+
+    def test_extra_unregistered_canonical_package_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_source(repo)
+            extra = (
+                repo
+                / ownership.SKILL_PACKAGE_ROOT_RELATIVE
+                / "guru-unregistered-package"
+            )
+            extra.mkdir()
+            payload = ownership.validate_repository(repo)
+        self.assertEqual(payload["status"], "error")
+        self.assertIn(
+            "canonical_package_set_mismatch",
+            {row["code"] for row in payload["errors"]},
+        )
 
 
 class InstalledCloseoutFixtureTest(unittest.TestCase):
@@ -2350,8 +2435,30 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertEqual(
             public_api["skill_contracts"]["planned_skill_ids"],
-            [],
+            ["guru-ensure-task-checkout"],
         )
+        installed_planned = [
+            entry
+            for entry in installed_registry["skills"]
+            if entry.get("state") == "planned"
+        ]
+        self.assertEqual(
+            installed_planned,
+            [
+                {
+                    "id": "guru-ensure-task-checkout",
+                    "state": "planned",
+                    "reason": "Issue #454 C3 canonical package is package-ready but remains inactive until the later lifecycle graph activation.",
+                }
+            ],
+        )
+        for planned_path in (
+            self.install_dst / "skills/packages/guru-ensure-task-checkout",
+            self.repo / ".agents/skills/guru-ensure-task-checkout",
+            self.repo / ".codex/skills/guru-ensure-task-checkout",
+            self.repo / ".cursor/skills/guru-ensure-task-checkout",
+        ):
+            self.assertFalse(planned_path.exists(), planned_path)
         self.assertIn(
             "guru-base-sync-result-1.0",
             public_api["skill_contracts"]["artifact_schema_ids"],

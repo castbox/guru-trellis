@@ -729,7 +729,9 @@
         "guru-sync-base",
         "guru-verify-extension-installation"
       ],
-      "planned_skill_ids": [],
+      "planned_skill_ids": [
+        "guru-ensure-task-checkout"
+      ],
       "registry_lifecycle": [
         "planned",
         "active"
