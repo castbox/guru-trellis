@@ -217,6 +217,27 @@ Branch Review finding-fix（2026-09-22）：
 本轮未运行或改写完整package/preset suite，已知installed projection conflict与完整Release matrix继续保持未通过/
 未验证边界，不构成C3 activation或Branch Review重新通过。
 
+Post-promotion Branch Review finding-fix（2026-09-23）：
+
+- `BR454-C3-P2-006` 已修复：`.60` Design 的 `D454-05` 与已提升 error contract 对齐，只声明稳定
+  `code`、`field`、`remediation`，不再保留已移除的 `details`；
+- `BR454-C3-P2-007` 已修复：task lifecycle schema runtime 为 `date-time` 注册与现有 contract 一致的闭合
+  RFC 3339 checker，覆盖大小写 `T/Z`、calendar validity、offset、year `0000` 与合法 leap second，并新增有效/
+  非法 timestamp regression；
+- `BR454-C3-P2-008` 已修复：provision creation、existing-checkout reuse 与 output-loss recovery 共用同一
+  acquisition-disposition projection；恢复原 transaction 的 `action`、ownership 与 created flags，同时继续以 fresh
+  branch/HEAD/checkout facts 拒绝 identity 已变化的 replacement resource；
+- finding-fix 验证：lifecycle runtime `unittest discover` 52项通过；task-lifecycle Python compile通过；两组直接
+  regression 39项通过；`git diff --check`通过。
+
+本轮已运行完整 repository validation：package integration `19/20`，唯一失败仍为
+`guru-complete-task-closure` 的既有相对 `$ref` 解析缺陷；runtime `119/128`、integration `38/44` 的失败仍位于
+installed projection、Finish/later-slice contract 与临时 Git fixture 边界；preset suite 共 `272` 项，结果为
+`2 errors, 3 skipped`，两项错误分别是 raw apply 的既有 installed projection conflict 与 parallel-finish fixture
+中的同一 conflict。上述结果均不得记为通过，但未命中本轮六路径 finding-fix。C4-C7、D443、D436、E434 与完整
+Release matrix继续保持后续或未验证边界。该 finding-fix 需要重新建立 fresh Phase 2、Task Commit 与完整 Branch
+Review，不能复用旧 gate。
+
 ### C4 Branch association、establishment 与 rebind substrate
 
 Canonical package/runtime surfaces：

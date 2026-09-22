@@ -165,6 +165,46 @@ def _exact_post_state(request: CheckoutRequest, target_path: Path | None = None)
     return facts
 
 
+def _provision_result(
+    plan: CheckoutAcquisitionPlan, checkout: WorktreeFacts
+) -> CheckoutAcquisitionResult:
+    disposition = plan.provision_disposition
+    assert disposition is not None
+    if disposition == "existing_checkout":
+        if checkout.topology == "primary":
+            raise LifecycleContractError(
+                "primary_checkout_requires_adoption",
+                "route",
+                "Use adopt_invocation_checkout for the primary checkout; provision_linked_worktree only acquires linked worktrees.",
+            )
+        action = "reused_exact_checkout"
+        branch_ownership: Ownership = "caller_owned"
+        worktree_ownership: Ownership = "caller_owned"
+        created_branch = False
+        created_worktree = False
+    else:
+        created_branch = disposition == "new_branch"
+        action = (
+            "created_branch_and_worktree"
+            if created_branch
+            else "created_worktree_for_existing_branch"
+        )
+        branch_ownership = "guru_owned" if created_branch else "caller_owned"
+        worktree_ownership = "guru_owned"
+        created_worktree = True
+    return CheckoutAcquisitionResult(
+        route=plan.route,
+        action=action,
+        checkout=checkout,
+        transaction_id=plan.transaction_id,
+        result_id=plan.result_id,
+        branch_ownership=branch_ownership,
+        worktree_ownership=worktree_ownership,
+        created_branch=created_branch,
+        created_worktree=created_worktree,
+    )
+
+
 def _rollback_created(
     request: CheckoutRequest,
     *,
@@ -213,31 +253,13 @@ def provision_linked_worktree(
                 "provision_disposition",
                 "Repeat semantic review against the fresh existing-checkout topology.",
             )
-        if resolution.selected.facts.topology == "primary":
-            raise LifecycleContractError(
-                "primary_checkout_requires_adoption",
-                "route",
-                "Use adopt_invocation_checkout for the primary checkout; provision_linked_worktree only acquires linked worktrees.",
-            )
         if plan.target_path is not None and resolution.selected.facts.path != plan.target_path.resolve():
             raise LifecycleContractError(
                 "provision_pre_state_changed",
                 "target_path",
                 "Repeat semantic review for the exact freshly resolved checkout path.",
             )
-        result = CheckoutAcquisitionResult(
-            route=plan.route,
-            action="reused_exact_checkout",
-            checkout=resolution.selected.facts,
-            transaction_id=plan.transaction_id,
-            result_id=plan.result_id,
-            branch_ownership="caller_owned",
-            worktree_ownership=(
-                "not_applicable" if resolution.selected.facts.topology == "primary" else "caller_owned"
-            ),
-            created_branch=False,
-            created_worktree=False,
-        )
+        result = _provision_result(plan, resolution.selected.facts)
         if post_acquire is not None:
             post_acquire(result)
         return result
@@ -289,17 +311,7 @@ def provision_linked_worktree(
             run_common_git(request.repository, ["worktree", "add", str(target), short_branch])
         created_worktree = True
         checkout = _exact_post_state(request, target)
-        result = CheckoutAcquisitionResult(
-            route=plan.route,
-            action="created_branch_and_worktree" if created_branch else "created_worktree_for_existing_branch",
-            checkout=checkout,
-            transaction_id=plan.transaction_id,
-            result_id=plan.result_id,
-            branch_ownership="guru_owned" if created_branch else "caller_owned",
-            worktree_ownership="guru_owned",
-            created_branch=created_branch,
-            created_worktree=True,
-        )
+        result = _provision_result(plan, checkout)
         if post_acquire is not None:
             post_acquire(result)
         return result
@@ -327,24 +339,7 @@ def recover_checkout_acquisition(plan: CheckoutAcquisitionPlan) -> CheckoutAcqui
                 "target_path",
                 "Recover only the exact live checkout for this transaction.",
             )
-    assert plan.provision_disposition is not None
-    branch_ownership: Ownership = "caller_owned"
-    worktree_ownership: Ownership
-    if plan.provision_disposition == "existing_checkout":
-        worktree_ownership = "not_applicable" if checkout.topology == "primary" else "caller_owned"
-    else:
-        worktree_ownership = "caller_owned"
-    return CheckoutAcquisitionResult(
-        route=plan.route,
-        action="rematerialized_unproven_resource_result",
-        checkout=checkout,
-        transaction_id=plan.transaction_id,
-        result_id=plan.result_id,
-        branch_ownership=branch_ownership,
-        worktree_ownership=worktree_ownership,
-        created_branch=False,
-        created_worktree=False,
-    )
+    return _provision_result(plan, checkout)
 
 
 def acquire_checkout(

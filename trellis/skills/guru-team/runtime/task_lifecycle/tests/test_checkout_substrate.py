@@ -531,10 +531,24 @@ class CheckoutSubstrateTests(unittest.TestCase):
         after = list_worktree_registrations(inspect_repository(self.fixture.repo))
         self.assertEqual(before, after)
         self.assertEqual(recovered.checkout.path, created.checkout.path)
-        self.assertEqual((recovered.branch_ownership, recovered.worktree_ownership), ("caller_owned", "caller_owned"))
-        self.assertEqual(recovered.action, "rematerialized_unproven_resource_result")
+        self.assertEqual(
+            (
+                recovered.action,
+                recovered.branch_ownership,
+                recovered.worktree_ownership,
+                recovered.created_branch,
+                recovered.created_worktree,
+            ),
+            (
+                created.action,
+                created.branch_ownership,
+                created.worktree_ownership,
+                created.created_branch,
+                created.created_worktree,
+            ),
+        )
 
-    def test_recovery_never_infers_guru_ownership_for_replacement_resources(self) -> None:
+    def test_recovery_rejects_replacement_resources_with_changed_identity(self) -> None:
         target = self.root / "replacement-target"
         plan = self.plan(
             "provision_linked_worktree",
@@ -546,8 +560,11 @@ class CheckoutSubstrateTests(unittest.TestCase):
         self.fixture.git("worktree", "remove", str(target))
         self.fixture.git("branch", "-D", "task-replacement")
         self.fixture.git("worktree", "add", "-b", "task-replacement", str(target), self.fixture.head)
-        recovered = recover_checkout_acquisition(plan)
-        self.assertEqual((recovered.branch_ownership, recovered.worktree_ownership), ("caller_owned", "caller_owned"))
+        (target / "replacement.txt").write_text("replacement\n", encoding="utf-8")
+        self.fixture.git("add", "replacement.txt", cwd=target)
+        self.fixture.git("commit", "-m", "replace acquisition resource", cwd=target)
+        with self.assertRaisesRegex(LifecycleContractError, "head_drift"):
+            recover_checkout_acquisition(plan)
 
     def test_failure_rolls_back_only_transaction_created_resources(self) -> None:
         target = self.root / "rollback-target"

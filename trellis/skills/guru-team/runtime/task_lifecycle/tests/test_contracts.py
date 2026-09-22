@@ -98,6 +98,26 @@ class ContractTests(unittest.TestCase):
                 with self.assertRaises(LifecycleContractError):
                     validate_dto(name, {**payload, "authorization": "confirmed"})
 
+    def test_checkout_timestamps_enforce_the_declared_rfc3339_domain(self):
+        payloads = valid_payloads()
+        valid_cases = [
+            ("CheckoutCandidateDTO", "discovered_at", "2026-09-22t00:00:00z"),
+            ("CheckoutSelectionDTO", "selected_at", "0000-01-01T00:00:00Z"),
+            ("CheckoutSelectionDTO", "selected_at", "2016-12-31T23:59:60Z"),
+        ]
+        for name, field, value in valid_cases:
+            with self.subTest(name=name, value=value):
+                self.assertEqual(validate_dto(name, {**payloads[name], field: value})[field], value)
+
+        invalid_cases = [
+            ("CheckoutCandidateDTO", "discovered_at", "not-a-date"),
+            ("CheckoutCandidateDTO", "discovered_at", "2026-13-22T00:00:00Z"),
+            ("CheckoutSelectionDTO", "selected_at", "2016-12-30T23:59:60Z"),
+        ]
+        for name, field, value in invalid_cases:
+            with self.subTest(name=name, value=value), self.assertRaises(LifecycleContractError):
+                validate_dto(name, {**payloads[name], field: value})
+
     def test_task_artifact_projection_rejects_machine_and_git_authority(self):
         payload = valid_payloads()["TaskArtifactDTO"]
         for field, value in {
