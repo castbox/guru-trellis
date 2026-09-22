@@ -55,7 +55,7 @@ def tearDownModule() -> None:
         patcher.stop()
 
 
-class CanonicalPlannedPackageOwnershipTest(unittest.TestCase):
+class CanonicalPlannedIdOwnershipTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.repo = preset.guru_root_from_script()
@@ -83,12 +83,13 @@ class CanonicalPlannedPackageOwnershipTest(unittest.TestCase):
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(self.repo / relative, destination)
 
-    def test_planned_canonical_package_is_registered_and_accepted(self) -> None:
+    def test_planned_id_is_registered_without_a_canonical_package(self) -> None:
         payload = ownership.validate_repository(self.repo)
         self.assertEqual(payload["status"], "ok", payload["errors"])
         self.assertEqual(payload["active_skill_count"], 32)
         self.assertEqual(payload["planned_skill_count"], 1)
-        self.assertEqual(payload["canonical_package_count"], 33)
+        self.assertEqual(payload["planned_skill_ids"], ["guru-ensure-task-checkout"])
+        self.assertEqual(payload["canonical_package_count"], 32)
 
         registry = json.loads(
             (self.repo / ownership.SKILL_REGISTRY_RELATIVE).read_text(encoding="utf-8")
@@ -100,24 +101,31 @@ class CanonicalPlannedPackageOwnershipTest(unittest.TestCase):
                 {
                     "id": "guru-ensure-task-checkout",
                     "state": "planned",
-                    "reason": "Issue #454 C3 canonical package is package-ready but remains inactive until the later lifecycle graph activation.",
+                    "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation.",
                 }
             ],
         )
+        self.assertFalse(
+            (
+                self.repo
+                / ownership.SKILL_PACKAGE_ROOT_RELATIVE
+                / "guru-ensure-task-checkout"
+            ).exists()
+        )
 
-    def test_missing_planned_canonical_package_fails_closed(self) -> None:
+    def test_planned_canonical_package_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repo = Path(directory)
             self.copy_source(repo)
-            shutil.rmtree(
+            (
                 repo
                 / ownership.SKILL_PACKAGE_ROOT_RELATIVE
                 / "guru-ensure-task-checkout"
-            )
+            ).mkdir()
             payload = ownership.validate_repository(repo)
         self.assertEqual(payload["status"], "error")
         self.assertIn(
-            "canonical_package_set_mismatch",
+            "planned_skill_package_present",
             {row["code"] for row in payload["errors"]},
         )
 
@@ -2448,11 +2456,12 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 {
                     "id": "guru-ensure-task-checkout",
                     "state": "planned",
-                    "reason": "Issue #454 C3 canonical package is package-ready but remains inactive until the later lifecycle graph activation.",
+                    "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation.",
                 }
             ],
         )
         for planned_path in (
+            self.guru_root / "trellis/skills/guru-team/packages/guru-ensure-task-checkout",
             self.install_dst / "skills/packages/guru-ensure-task-checkout",
             self.repo / ".agents/skills/guru-ensure-task-checkout",
             self.repo / ".codex/skills/guru-ensure-task-checkout",

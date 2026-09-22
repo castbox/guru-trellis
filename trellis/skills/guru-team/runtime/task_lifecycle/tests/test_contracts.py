@@ -45,7 +45,7 @@ def valid_payloads() -> dict[str, dict]:
         "BranchBindingRefDTO": {**base, "binding_epoch": 0, "binding_revision": 1},
         "CheckoutAcquisitionPlanDTO": {**artifact, "route": "adopt_invocation_checkout", "branch_ref": "codex/task", "decision_head": COMMIT, "task_artifact_expectation": "required", "invocation_checkout": "/tmp/task", "transaction_id": "checkout:1", "result_id": "checkout-result:1"},
         "CheckoutCandidateDTO": {"candidate_id": "candidate:1", "path": "/tmp/task", "head": COMMIT, "branch_ref": "codex/task", "topology": "linked", "dirty_paths": [], "discovered_at": "2026-09-22T00:00:00Z", "validation_state": "valid", "reason_code": None},
-        "CheckoutResolutionDTO": {"resolution_kind": "checkout_resolved", "reason_code": "unique_candidate", "candidate_ids": ["candidate:1"], "selected_candidate_id": "candidate:1"},
+        "CheckoutResolutionDTO": {"resolution_kind": "checkout_resolved", "reason_code": "unique_candidate", "selected_candidate_id": "candidate:1"},
         "CheckoutSelectionDTO": {"selection_kind": "explicit_target", "target_path": "/tmp/task", "branch_ref": "codex/task", "expected_head": COMMIT, "selected_at": "2026-09-22T00:00:00Z"},
         "CheckpointRefDTO": {**base, "checkpoint_commit": COMMIT, "checkpoint_ref": "refs/heads/checkpoint", "result_id": "checkpoint:1"},
         "HandoffRefDTO": {**base, "handoff_id": "handoff:1", "receipt_ref": f"refs/heads/guru-task-lifecycle/{TASK_ID}", "result_id": "handoff-result:1"},
@@ -132,6 +132,7 @@ class ContractTests(unittest.TestCase):
         candidate = valid_payloads()["CheckoutCandidateDTO"]
         valid = [
             candidate,
+            {**candidate, "topology": "primary"},
             {**candidate, "validation_state": "invalid_candidate", "reason_code": "detached_checkout"},
             {**candidate, "validation_state": "authority_conflict", "reason_code": "task_artifact_mismatch"},
         ]
@@ -141,6 +142,10 @@ class ContractTests(unittest.TestCase):
 
         invalid = [
             {**candidate, "reason_code": "unexpected_reason"},
+            {**candidate, "head": None},
+            {**candidate, "branch_ref": None},
+            {**candidate, "topology": "registered"},
+            {**candidate, "dirty_paths": ["modified.txt"]},
             {**candidate, "validation_state": "invalid_candidate", "reason_code": None},
             {**candidate, "validation_state": "authority_conflict", "reason_code": None},
         ]
@@ -152,8 +157,9 @@ class ContractTests(unittest.TestCase):
         resolution = valid_payloads()["CheckoutResolutionDTO"]
         valid = [
             resolution,
-            {**resolution, "resolution_kind": "selection_required", "reason_code": "multiple_candidates", "selected_candidate_id": None},
-            {**resolution, "resolution_kind": "authority_conflict", "reason_code": "task_artifact_mismatch", "selected_candidate_id": None},
+            {"resolution_kind": "selection_required", "reason_code": "no_candidates", "candidate_ids": []},
+            {"resolution_kind": "selection_required", "reason_code": "multiple_candidates", "candidate_ids": ["candidate:1", "candidate:2"]},
+            {"resolution_kind": "authority_conflict", "reason_code": "task_artifact_mismatch", "candidate_ids": []},
         ]
         for payload in valid:
             with self.subTest(valid=payload["resolution_kind"]):
@@ -161,8 +167,10 @@ class ContractTests(unittest.TestCase):
 
         invalid = [
             {**resolution, "selected_candidate_id": None},
-            {**resolution, "resolution_kind": "selection_required"},
-            {**resolution, "resolution_kind": "authority_conflict"},
+            {**resolution, "candidate_ids": ["candidate:1"]},
+            {"resolution_kind": "selection_required", "reason_code": "multiple_candidates"},
+            {"resolution_kind": "selection_required", "reason_code": "multiple_candidates", "candidate_ids": [], "selected_candidate_id": None},
+            {"resolution_kind": "authority_conflict", "reason_code": "task_artifact_mismatch"},
         ]
         for payload in invalid:
             with self.subTest(invalid=payload["resolution_kind"]), self.assertRaises(LifecycleContractError):

@@ -2,7 +2,7 @@
 
 ## 1. Rule
 
-Phase C builds target-native substrate and package-ready contracts while the
+Phase C builds target-native substrate, activation inputs and planned stable IDs while the
 current production predecessor remains the sole active graph. Phase D443 and
 D436 migrate package owners; E434 later performs the atomic activation and
 retirement transaction.
@@ -17,7 +17,7 @@ the retained predecessor mappings.
 | --- | --- | --- |
 | C2 shared lifecycle kernel | `reviewed_promoted` in `.59` | Current contract/runtime substrate only. |
 | D0 stage-evidence correction | `reviewed_promoted` in `.59` | Current Reconcile/Task Commit/Branch Review lineage only. |
-| C3 checkout acquisition/resolution | `reviewed_candidate` | Canonical runtime, DTOs, tests and inactive package are present in the current worktree; fresh gates remain. |
+| C3 checkout acquisition/resolution | `reviewed_candidate` | Canonical runtime, DTOs, tests and planned stable-ID metadata are present; no planned package directory exists; fresh gates remain. |
 | C4-C7 | `not_started` | No authority or completion may be inferred from C3. |
 | D443 / D436 | `not_started` | Existing active packages remain unchanged. |
 | E434 / #434 activation | `not_started` | Active registry selector, active graph, workflow and projections remain on the predecessor. |
@@ -26,8 +26,8 @@ the retained predecessor mappings.
 
 | Asset/capability | Current disposition | Later owner | Exit condition |
 | --- | --- | --- | --- |
-| C3 `guru-ensure-task-checkout` canonical package | `candidate_inactive` | C6 validates composition; E434 activates | Required later packages complete and atomic selector/workflow activation passes. |
-| C3 planned registry/manifest metadata | `candidate_planned_metadata` | C3 records package readiness; E434 owns later activation | Registry state is exactly `planned`, canonical `planned_skill_ids` contains the ID, and no active selector or projection consumes it. |
+| `guru-ensure-task-checkout` canonical package | `absent_while_planned` | E434 composes and activates | Complete package is created only in the atomic activation candidate. |
+| C3 planned registry/manifest metadata | `candidate_planned_metadata` | C3 reserves the stable ID; E434 owns package delivery and activation | Registry state is exactly `planned`, canonical `planned_skill_ids` contains the ID, no canonical package directory exists, and no active selector or projection consumes it. |
 | C3 checkout DTO/runtime | `candidate_target_native` | C4-C7 consume without copying authority | Fresh C3 gates and later consumer contracts pass. |
 | `guru-create-task-workspace` package/id/command | `retain_until_phase_e` | new `guru-create-task` package in C6 | Selector switches atomically, then old ID/command exits. |
 | task-workspace plan/result/recovery schemas | `retain_until_phase_e` | no new owner reuses old IDs | Old consumer count reaches zero. |
@@ -66,7 +66,8 @@ C3 verification maintains these bounded facts:
 - new runtime mapping reader/writer count is zero;
 - new runtime references to `worktree_path`, `source_checkout` and
   `.trellis/workspace` authority are zero;
-- planned registry/manifest metadata names exactly the C3 package-ready ID;
+- planned registry/manifest metadata names exactly the C3 stable ID and no
+  canonical package directory exists for it;
 - active registry selector, `active_skill_ids`, workflow, active graph and
   installed projection changes are zero;
 - C4-C7 and D/E surface changes are zero;

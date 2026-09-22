@@ -1,1 +1,0 @@
-{"typed_exit":"resume_checkout_acquisition","transaction_ref":{"task_id":"454-task-lifecycle-state-model","lifecycle_generation":1,"transaction_id":"checkout:1","result_id":"checkout-result:1"},"reason":{"reason_code":"output_lost","reason_refs":["transaction:checkout:1"]}}

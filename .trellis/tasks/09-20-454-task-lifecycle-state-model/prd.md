@@ -20,7 +20,9 @@
 - 正常 Cleanup 只删除 Guru 明确拥有的资源；未知 ownership 与 caller-owned 资源只能在用户另行选择并
   确认的手工清理路径中删除。
 
-本 task 只完成规划，不修改 Issue #454，不进入代码实现。
+本 task 已完成规划并进入分阶段实施，不修改 Issue #454。当前 C3 只交付 checkout
+acquisition/live-resolution substrate、封闭 DTO 与 planned stable ID；完整 Skill package、production graph、
+installed/platform projection 与 predecessor retirement 由 E434 在同一原子激活边界交付。
 
 ## 背景与已确认事实
 

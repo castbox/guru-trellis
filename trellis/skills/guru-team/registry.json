@@ -1145,7 +1145,7 @@
     {
       "id": "guru-ensure-task-checkout",
       "state": "planned",
-      "reason": "Issue #454 C3 canonical package is package-ready but remains inactive until the later lifecycle graph activation."
+      "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation."
     }
   ]
 }

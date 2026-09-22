@@ -38,10 +38,10 @@ C3 adds only the next target-native substrate slice:
 2. common-dir based live Git/worktree fact inspection;
 3. checkout discovery, validation, classification and explicit selection;
 4. adopt/provision transactions with bounded rollback and read-only recovery;
-5. one canonical package-ready `guru-ensure-task-checkout` package recorded
-   only as `state=planned` registry metadata and canonical
-   `planned_skill_ids`, while remaining absent from active selectors, active
-   graph, workflow and installed/platform projections.
+5. one stable `guru-ensure-task-checkout` id reserved only as `state=planned`
+   registry metadata and canonical `planned_skill_ids`; no canonical package
+   directory exists until E434 delivers package, selector, workflow and
+   installed/platform projections in one activation boundary.
 
 C3 does not create branch association, session or resource-ledger stores. It
 does not activate a production owner and does not read or write legacy task or
@@ -57,8 +57,8 @@ Decision refs: `ARCH-FND-001..006`, `ARCH-GOV-006..009`, `ARCH-GAP-009`,
 | --- | --- | --- |
 | authority-binding | applicable | Bind Architecture 2.0, current `.59`, Issue #454 and generation 1. |
 | constitution-binding | applicable | Use official Git extension surfaces, unique owners, minimum state and one-way convergence. |
-| boundary-and-decision | applicable | C3 is `target_native`; checkout facts are call-local and the canonical package remains inactive. |
-| owner-and-single-writer | applicable | C3 writes shared checkout DTO/runtime, one canonical package and its non-active planned metadata; C4+ and E434 retain their owners. |
+| boundary-and-decision | applicable | C3 is `target_native`; checkout facts are call-local and the planned Skill id has no package tree. |
+| owner-and-single-writer | applicable | C3 writes shared checkout DTO/runtime and non-active planned metadata; E434 exclusively owns complete package composition and activation. |
 | compatibility-and-exit | applicable | No alias, adapter, dual-read or dual-write; predecessor remains active only until E434 atomic cutover. |
 | gap-and-deviation | applicable | Narrow `ARCH-GAP-011` by adding checkout substrate without claiming branch/session/resource or production completion. |
 | parallel-scope | applicable | Task-local contract and C3 canonical files only; shared current and active selectors are forbidden. |
@@ -76,8 +76,9 @@ Decision refs: `ARCH-FND-001..006`, `ARCH-GOV-006..009`, `ARCH-GAP-009`,
 - D443 and D436 package migration writers: their dedicated later slices.
 - Planned registry metadata and canonical `planned_skill_ids` writer: this C3
   candidate.
-- Workflow, active registry selector, active graph manifest and
-  installed/platform activation writer: E434.
+- Complete `guru-ensure-task-checkout` package, workflow, active registry
+  selector, active graph manifest and installed/platform activation writer:
+  E434.
 - Shared Architecture/RDT promotion writer: serialized Architecture/RDT owner.
 
 Discovery of a need to write another owner's surface invalidates this result
@@ -95,9 +96,10 @@ activation candidate.
 
 ## 6. Parallel Scope
 
-Allowed: the C3 runtime, shared DTO additions, focused tests, canonical
-`guru-ensure-task-checkout` package, its `state=planned` registry row, canonical
-`planned_skill_ids`, and this task-local planning authority.
+Allowed: the C3 runtime, shared DTO additions, focused tests,
+`guru-ensure-task-checkout` `state=planned` registry row, canonical
+`planned_skill_ids`, active-package ownership validation updates, and this
+task-local planning authority.
 
 Forbidden: `.trellis/scripts/**`, shared current Architecture/RDT, source lock,
 active/integrated registry selector, `active_skill_ids`, active graph manifest,
@@ -108,7 +110,7 @@ D/E package migration.
 
 Before: `.59` can express stable lifecycle identity and operation-scoped stage
 evidence, but it has no target-native checkout acquisition/resolution runtime
-or package-ready checkout owner. C3 is explicitly pending in shared current.
+or reserved checkout owner id. C3 is explicitly pending in shared current.
 
 After candidate:
 
@@ -120,8 +122,8 @@ After candidate:
 - adopt and provision routes validate fresh HEAD/repository/branch/task facts;
 - rollback removes only transaction-created resources whose identities still
   match, while output-loss recovery rematerializes without mutation;
-- `guru-ensure-task-checkout` exists as inactive canonical bytes with only a
-  `state=planned` registry row and canonical `planned_skill_ids` membership;
+- `guru-ensure-task-checkout` is reserved by a `state=planned` registry row and
+  canonical `planned_skill_ids` membership, with no canonical package directory;
 - active registry selector, `active_skill_ids`, workflow, active graph and
   installed/platform bytes are unchanged.
 
@@ -134,11 +136,13 @@ Current candidate surfaces:
 - `trellis/skills/guru-team/runtime/task_lifecycle/checkout_resolution.py`
 - `trellis/skills/guru-team/runtime/task_lifecycle/checkout_acquisition.py`
 - `trellis/skills/guru-team/runtime/task_lifecycle/tests/test_checkout_substrate.py`
-- `trellis/skills/guru-team/packages/guru-ensure-task-checkout/**`
+- `trellis/skills/guru-team/registry.json`
+- `trellis/guru-team-extension.json`
+- `trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py`
 
 Required Phase 2 evidence includes the complete lifecycle/runtime suite,
-package contract/runtime tests, Draft 2020-12 schemas, package source
-validation, planned/active ownership validation, Python compilation,
+Draft 2020-12 schemas, active package source validation, planned/active
+ownership validation including planned-directory absence, Python compilation,
 `git diff --check`, touched source line limits, workspace boundary, protected
 active-surface identity, and static proof that new C3 runtime has zero
 mapping/path-authority access.
@@ -146,7 +150,7 @@ mapping/path-authority access.
 The complete preset suite is also executed but is not silently folded into the
 focused pass set. The raw-apply fixture currently requires canonical/installed
 byte parity and can report conflict because C3 is forbidden to synchronize the
-installed checkout-contract, DTO and registry copies. That case and the suite
+installed DTO and registry copies. That case and the suite
 must be reported as unpassed; changing installed/platform projections to make
 it pass belongs to E434 and is forbidden in this candidate.
 

@@ -178,22 +178,28 @@
         "reason_code": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"}
       },
       "allOf": [
-        {"if": {"properties": {"validation_state": {"const": "valid"}}, "required": ["validation_state"]}, "then": {"properties": {"reason_code": {"type": "null"}}}},
+        {"if": {"properties": {"validation_state": {"const": "valid"}}, "required": ["validation_state"]}, "then": {"properties": {"head": {"$ref": "#/$defs/commit"}, "branch_ref": {"$ref": "#/$defs/branchRef"}, "topology": {"enum": ["primary", "linked"]}, "dirty_paths": {"maxItems": 0}, "reason_code": {"type": "null"}}}},
         {"if": {"properties": {"validation_state": {"enum": ["invalid_candidate", "authority_conflict"]}}, "required": ["validation_state"]}, "then": {"properties": {"reason_code": {"$ref": "#/$defs/identifier"}}}}
       ]
     },
     "CheckoutResolutionDTO": {
-      "type": "object", "additionalProperties": false,
-      "required": ["resolution_kind", "reason_code", "candidate_ids", "selected_candidate_id"],
-      "properties": {
-        "resolution_kind": {"enum": ["checkout_resolved", "selection_required", "authority_conflict"]},
-        "reason_code": {"$ref": "#/$defs/identifier"},
-        "candidate_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},
-        "selected_candidate_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"}
-      },
-      "allOf": [
-        {"if": {"properties": {"resolution_kind": {"const": "checkout_resolved"}}, "required": ["resolution_kind"]}, "then": {"properties": {"selected_candidate_id": {"$ref": "#/$defs/identifier"}}}},
-        {"if": {"properties": {"resolution_kind": {"enum": ["selection_required", "authority_conflict"]}}, "required": ["resolution_kind"]}, "then": {"properties": {"selected_candidate_id": {"type": "null"}}}}
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["resolution_kind", "reason_code", "selected_candidate_id"],
+          "properties": {
+            "resolution_kind": {"const": "checkout_resolved"}, "reason_code": {"$ref": "#/$defs/identifier"},
+            "selected_candidate_id": {"$ref": "#/$defs/identifier"}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["resolution_kind", "reason_code", "candidate_ids"],
+          "properties": {
+            "resolution_kind": {"enum": ["selection_required", "authority_conflict"]}, "reason_code": {"$ref": "#/$defs/identifier"},
+            "candidate_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}}
+          }
+        }
       ]
     },
     "CheckoutSelectionDTO": {

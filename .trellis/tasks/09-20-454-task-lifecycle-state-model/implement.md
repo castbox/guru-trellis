@@ -3,13 +3,15 @@
 ## 1. 计划目标与停止边界
 
 本计划覆盖 #454 Phase C substrate，以及在进入 Phase D443/D436 前必须完成的 Phase D0 stage-evidence contract
-migration。Phase C 交付 package-ready、未激活的 lifecycle substrate 与 public owner contracts；Phase D0 修正
+migration。Phase C 交付未激活的 lifecycle substrate、public contract primitives 与 planned stable IDs；完整
+canonical Skill packages 由 E434 与 selector/workflow/projection 在同一原子激活边界交付。Phase D0 修正
 Reconcile、Task Commit 与 Branch Review 的承接合同，使后续 package migration 能在同一 #454 状态模型上运行。
 
-本 Planning 轮次只写 task-local 文档并完成 Phase 1 semantic approval。它不执行以下动作：
+本 task 已完成 Phase 1 semantic approval/activation 并处于 `in_progress`。本实施计划定义切片顺序与停止边界，
+但不自行授权以下动作：
 
-- 不运行 `task.py start`，`task.json.status` 保持 `planning`；
-- 不修改生产代码、schema、workflow、registry、manifest、preset、overlay 或 platform projection；
+- 不重复运行 `task.py start` 或伪造 activation recovery；
+- 不越过当前获批切片修改 workflow、active selector、active graph、installed/platform projection；
 - 不创建 Fork/Guru Issue、task、branch、worktree、commit、push 或 PR；
 - 不执行 merge、rebase、base reconcile、source-lock mutation或 production activation。
 
@@ -56,22 +58,23 @@ owner，不开始生产编辑。
 
 ## 3. Delivery policy
 
-Phase C 是本 task 的首个独立 Delivery slice。它只交付 substrate 与 package-ready canonical contracts；它不要求
+Phase C 是本 task 的首个独立 Delivery slice。它只交付 substrate、contract primitives 与 planned stable IDs；它不要求
 Phase D443、Phase D436 或 Phase E434 已完成。当前实现状态为 C2 lifecycle kernel 与 D0 stage-evidence contract
-correction 已提交并完成正式 base reconcile；C3 已形成 package-ready candidate，并仅增加非激活的 `planned`
-registry metadata 与 canonical `planned_skill_ids`。任何 finding fix 后均须重建 fresh Phase 2、Task Commit 与完整
+correction 已提交并完成正式 base reconcile；C3 已形成 checkout runtime/DTO candidate，并仅增加非激活的
+`planned` registry metadata 与 canonical `planned_skill_ids`，不创建对应 canonical package directory。任何 finding
+fix 后均须重建 fresh Phase 2、Task Commit 与完整
 Branch Review。C3 fresh gates、C4-C7 与其余 Phase D/E 工作仍未完成。
 
 独立可交付条件：
 
 - fixed Fork prerequisite已形成 exact reviewed commit并通过本计划列出的 Fork验证；
 - Guru lifecycle kernel与common-dir stores通过 package/runtime tests；
+- shared DTO/schema、runtime substrate 与 E434 后续 package composition 所需的 activation inputs 闭合；
 - `guru-create-task`、`guru-establish-task-identity`、`guru-establish-task-branch-binding`、
-  `guru-ensure-task-checkout`、`guru-rebind-task-branch`、`guru-activate-task` 具备完整 canonical package contract；
-- shared DTO/schema 与每个 Phase C owner 的 input/output/consumer projection闭合；
-- canonical package-ready bytes保持 inactive；允许写入 `state=planned` registry metadata 与 canonical
-  `planned_skill_ids`，但不写 active/integrated registry selector、active graph manifest、installed/platform
-  projection 或 workflow edge；
+  `guru-ensure-task-checkout`、`guru-rebind-task-branch`、`guru-activate-task` 只预留 stable planned IDs；planned rows
+  不携带 package/interface/I/O 字段，也不对应 canonical package directories；
+- canonical extension manifest允许写入 `planned_skill_ids`，但不写 active/integrated registry selector、active graph
+  manifest、installed/platform projection 或 workflow edge；
 - old mappings与`guru-create-task-workspace`仍作为当前 production predecessor保留，但 Phase C 新代码零读取、
   零写入，退役由 Phase E434 activation transaction完成。
 
@@ -175,7 +178,8 @@ Canonical package/runtime surfaces：
 - `trellis/skills/guru-team/runtime/task_lifecycle/checkout_resolution.py`；
 - `trellis/skills/guru-team/runtime/task_lifecycle/git_facts.py`；
 - shared schemas for acquisition plan、candidate、resolution与selection；
-- package-ready `guru-ensure-task-checkout` canonical package。
+- `guru-ensure-task-checkout` 的 `state=planned` registry row 与 canonical `planned_skill_ids` stable-ID reservation；
+  C3 不创建该 ID 对应的 canonical package directory。
 
 Behavior：实现 `adopt_invocation_checkout` 与 `provision_linked_worktree`；所有自动/人工target使用同一live
 validator；path只存在call-local plan/transaction；repository-control operation使用common-dir facts且不依赖历史
@@ -203,7 +207,8 @@ Canonical package/runtime surfaces：
 - `trellis/skills/guru-team/runtime/task_lifecycle/branch_resolution.py`；
 - `trellis/skills/guru-team/runtime/task_lifecycle/rebind.py`；
 - common-dir branch association schemas；
-- package-ready `guru-establish-task-branch-binding` 与 `guru-rebind-task-branch` canonical packages。
+- planned `guru-establish-task-branch-binding` 与 `guru-rebind-task-branch` IDs 所需的 activation inputs；完整
+  canonical packages 由 E434 交付。
 
 Behavior：store位于Git common-dir；key为TaskLifecycleKey；record只保存generation、revision与portable branch ref；
 missing走establishment，conflict走invalid；rebind只实现same-checkout-new-ref与clean existing-target两条route；
@@ -225,7 +230,8 @@ Canonical package/runtime surfaces：
 - Fork提供的official common-dir session store由C1完成；Guru只新增session DTO adapter与consumer validators；
 - `trellis/skills/guru-team/runtime/task_lifecycle/resource_ledger.py`；
 - common-dir resource ledger schemas、Finish seal input primitives与Cleanup resolution primitives；
-- package-ready `guru-establish-task-identity` 的legacy identity establishment contract。
+- planned `guru-establish-task-identity` ID 所需的 legacy identity establishment activation inputs；完整 canonical
+  package 由 E434 交付。
 
 Behavior：session payload严格为TaskLifecycleDTO；resource ledger按resource incarnation记录acquisition origin、ownership、
 portable ref、revision、state与responsibility role；unknown ownership按caller-owned；ledger missing与conflict分开；
@@ -240,9 +246,9 @@ Exit：`control_stores_ready`。
 Recovery：session write失败不回滚已成立lifecycle；ledger mutation失败由同一transaction恢复。无法证明的历史ownership
 不补写为Guru-owned。
 
-### C6 Task creation 与 Phase C public owners
+### C6 Task creation substrate 与 activation inputs
 
-Canonical packages：
+Planned target Skill IDs：
 
 - `guru-create-task`；
 - `guru-establish-task-identity`；
@@ -251,26 +257,29 @@ Canonical packages：
 - `guru-rebind-task-branch`；
 - `guru-activate-task`。
 
-每个package提供 `SKILL.md`、`interface.json`、commands、schemas、examples、consumers、runtime、scripts、tests与evals。
-Create只消费reviewed `existing_issue | standalone_request`，不创建Issue；Activation独占
-`planning -> in_progress`；同owner recovery不得重复mutation。
+Phase C/C6 完成这些 owner 所需的 shared runtime、schemas、consumer requirements 与 activation inputs，但不为
+`state=planned` row 创建 `SKILL.md`、`interface.json`、commands、package-local schemas/examples/consumers/runtime/
+scripts/tests/evals。Create只消费reviewed `existing_issue | standalone_request`，不创建Issue；Activation独占
+`planning -> in_progress`；同owner recovery不得重复mutation。完整 package composition 由 E434 承接。
 
-Package-ready boundary：
+Planned-ID boundary：
 
-- canonical package与package-owned consumer schemas完成；
-- registry可新增`state=planned` metadata，但active/integrated selector继续保持predecessor selection；
+- registry可新增`state=planned` metadata，但 planned row 只声明 future stable consumer id，不携带 package/interface/
+  route/I/O 字段，且 active/integrated selector继续保持predecessor selection；
 - canonical extension manifest可将该ID列入`planned_skill_ids`，但`active_skill_ids`与active graph保持不变；
+- canonical package directory在E434原子激活前必须不存在；
 - installed `.trellis/guru-team/**`、`.agents/.codex/.claude/.cursor`投影不发布新major；
 - canonical workflow与dogfood workflow不增加production mandatory invocation。
 
-Tests：workflow/standalone parity、entry preconditions、semantic gate先于recorder/executor、side-effect confirmation不持久化、
-created/recovery/blocked exits、no-Issue、prebuilt/provision checkout、session explicit-task mode outcome、activation initial/
-recovery、unique consumer、unknown/multiple exit fail closed、package tree completeness与3000-line gate。
+Tests：shared runtime/schema contract、no-Issue、prebuilt/provision checkout、session explicit-task mode outcome、activation
+input requirements、planned/active inventory分离、planned IDs无canonical package directory与3000-line gate。Workflow/
+standalone parity、entry preconditions、semantic gate、typed exits、consumer closure与package tree completeness由E434在
+完整package形成后验证。
 
-Exit：`phase_c_packages_ready_inactive`。
+Exit：`phase_c_activation_inputs_ready`。
 
-Recovery：每个owner只恢复自己的transaction。output loss执行read-only rematerialization；不得重复创建task、branch、
-worktree、binding或ledger entry。
+Recovery：每个 substrate owner只恢复自己的transaction。output loss执行read-only rematerialization；不得重复创建
+task、branch、worktree、binding或ledger entry。
 
 ### C7 Subtraction、Docs SSOT 与 Phase C validation
 
@@ -279,10 +288,11 @@ Retirement action在Phase C只建立zero-new-reader/zero-new-writer证明；prod
 Validation set：
 
 - Fork exact commit build、focused task/session/generated tests；
-- lifecycle kernel、checkout、branch、session、ledger与六个package的unit/contract/eval tests；
-- canonical package inventory与public I/O/consumer graph checks；
+- lifecycle kernel、checkout、branch、session、ledger与activation-input focused tests；
+- active canonical package inventory、planned stable-ID inventory与“planned ID无package directory”检查；
 - source preparation、upstream ownership、dogfood overlay drift、recursive sidecar、managed Python routing；
-- one representative clean throwaway，证明fixed Fork生成official primitives并安装Phase C canonical package-ready bytes；
+- one representative clean throwaway仅在当前 slice 的 accepted scope需要时证明fixed Fork生成official primitives；
+  Phase C不声称安装planned package bytes；
 - static search证明Phase C新代码对task/workspace mapping、`worktree_path`、`source_checkout`、legacy session path字段
   零读取零写入；
 - touched non-generated file 3000-line report；
@@ -379,7 +389,8 @@ Phase C通过条件：
 
 1. P0、P1、C0、activation与C1至C7按顺序完成，每个boundary/slice满足entry、validation、exit与recovery合同；
 2. fixed Fork exact commit是official task/session primitive唯一source，Guru diff中无`.trellis/scripts/**` patch；
-3. lifecycle substrate与六个owner package-ready且inactive；
+3. lifecycle substrate与六个owner的activation inputs就绪，stable IDs保持planned，且planned IDs不存在canonical
+   package directory；
 4. #456标为Phase D/E的33项不被Phase C越权实现或激活；
 5. new substrate对old mappings零读取零写入，old production predecessor未被半切换；
 6. shared DTO每个字段都有named direct consumer，每个exit有唯一consumer；

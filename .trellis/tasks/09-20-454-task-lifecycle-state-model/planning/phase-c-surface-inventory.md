@@ -10,8 +10,8 @@ substrate.
 | Official task/session primitives | `castbox/Trellis` Fork | fixed source already consumed by promoted C2 | `castbox/Trellis` |
 | `trellis/skills/guru-team/contracts/task-lifecycle/**` | Guru canonical | C2 promoted; four C3 call-local checkout DTOs are current candidate | `castbox/guru-trellis` |
 | `trellis/skills/guru-team/runtime/task_lifecycle/**` | Guru canonical | C2 promoted; C3 checkout modules are current candidate | `castbox/guru-trellis` |
-| `guru-ensure-task-checkout` | Guru canonical | C3 package-ready candidate, production inactive | `castbox/guru-trellis` |
-| Other Phase C packages | Guru canonical | C4-C7 not started | `castbox/guru-trellis` |
+| `guru-ensure-task-checkout` | Guru canonical | C3 reserves the planned stable ID; package directory is deferred to E434 | `castbox/guru-trellis` |
+| Other Phase C planned Skill IDs | Guru canonical | C4-C7 activation inputs not started; package directories remain absent | `castbox/guru-trellis` |
 | Planned registry metadata and canonical `planned_skill_ids` | Guru canonical | C3 records `guru-ensure-task-checkout` as planned, not active | `castbox/guru-trellis` |
 | Active registry selector/workflow/graph/installed/platform bytes | E434 | forbidden in C3 | none in C3 |
 
@@ -61,47 +61,42 @@ Machine paths, current HEADs and timestamps are valid only in these call-local
 DTOs. Durable `TaskArtifactDTO`, `TaskLifecycleDTO`, `BranchBindingRefDTO` and
 result/reference DTOs remain path-free and do not inherit those fields.
 
-## 5. C3 Package Inventory
+## 5. C3 Planned Skill Inventory
 
-`guru-ensure-task-checkout` is a semantic canonical package with:
+`guru-ensure-task-checkout` is reserved by one `state=planned` registry row and
+canonical `planned_skill_ids` membership. Under the shared registry contract,
+that row owns only the future stable consumer id: it has no package,
+interface, invoke marker, exit marker, platform destination or canonical
+package directory and is never installed.
 
-- input profiles: `ensure_checkout`, `resume_checkout_acquisition`;
-- exits: `checkout_ready`, `resume_checkout_acquisition`, `blocked`;
-- consumers: `guru-task-checkout-ready-router`, same-Skill recovery, and
-  `task-checkout-acquisition-blocked`;
-- package-owned schemas, examples, error catalog, wrapper and focused tests;
-- one `state=planned` registry row and canonical `planned_skill_ids`
-  membership;
-- no active/integrated selector, `active_skill_ids`, workflow edge, active
-  graph or installed/platform projection.
+C3 runtime/schema tests close checkout discovery, validation, selection and
+acquisition behavior without presenting a callable public Skill. E434 later
+creates the complete semantic package, declares its input profiles/exits/
+consumers and activates it atomically with the workflow and projections.
 
-Zero or multiple candidates stay inside the semantic owner for reviewed
-selection/acquisition. They do not create a durable candidate artifact or an
-additional public authority. The wrapper projects only the final minimal exit.
-
-## 6. Remaining Package Inventory
+## 6. Remaining Planned Skill Inventory
 
 | Package | Judgment mode | State after C3 | Activation owner |
 | --- | --- | --- | --- |
 | `guru-create-task` | semantic | C6 not started | E434 |
 | `guru-establish-task-identity` | semantic | C5/C6 not started | E434 |
 | `guru-establish-task-branch-binding` | semantic | C4/C6 not started | E434 |
-| `guru-ensure-task-checkout` | semantic | C3 candidate inactive | E434 |
+| `guru-ensure-task-checkout` | semantic | C3 planned ID only; package absent | E434 |
 | `guru-rebind-task-branch` | semantic | C4/C6 not started | E434 |
 | `guru-activate-task` | deterministic | C6 not started | E434 |
 
-Package existence is not production capability.
+Planned ID reservation is not package existence or production capability.
 
 ## 7. Consumer Boundary
 
 - C4 consumes live Git/checkout facts without persisting checkout paths.
 - C5 consumes lifecycle keys and acquisition ownership projections.
-- C6 composes package contracts without changing active selectors.
+- C6 completes shared activation inputs without creating planned package trees.
 - D443 consumes lifecycle/session primitives without copying their authority.
 - D436 consumes lifecycle, branch, resource and result primitives.
-- E434 consumes complete package-ready interfaces and exclusively activates
-  workflow, active registry selector, active graph and distribution
-  projections.
+- E434 consumes complete substrate/activation inputs, creates package-ready
+  interfaces and exclusively activates workflow, active registry selector,
+  active graph and distribution projections.
 - #410 retains the complete Release matrix; C3 runs focused validation only.
 
 ## 8. C3 Zero-Second-Authority Checks
@@ -113,7 +108,8 @@ C3 Phase 2 must prove:
 - no task/workspace mapping reader or writer appears in new C3 modules;
 - no durable checkout locator, topology, HEAD or candidate store is added;
 - no branch/session/resource store is implemented early;
-- planned ownership metadata names exactly the package-ready C3 ID, while the
+- planned ownership metadata names exactly the C3 stable ID, no canonical
+  package directory exists for that ID, and the
   active registry selector, `active_skill_ids`, workflow, active graph and
   installed/platform bytes are unchanged;
 - adoption and provisioning use the same live validation boundary;

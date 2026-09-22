@@ -4,7 +4,9 @@
 upgrade/workflow-switch/release-candidate matrix 或 E434 retirement。
 
 - `T454-C3-01`（R454-C3-01/03）：Draft 2020-12 校验 39 个 named DTO；四个 checkout DTO 各有正例，
-  并拒绝 additional fields、contradictory state/candidate/selection/authority combinations 与 durable authority 字段。
+  并拒绝 additional fields、valid candidate 的 null HEAD/branch、registered topology、dirty paths，以及
+  resolved/selection-required shapes 之间的重复或缺失 identity；zero-candidate selection-required 保持正例，
+  durable authority 字段继续被拒绝。
 - `T454-C3-02`（R454-C3-02）：pre-task fixture 覆盖 clean invocation checkout、existing current-task artifact、
   another active task authority 以及 ambiguous authority；后三者必须在 mutation 前 fail closed。
 - `T454-C3-03`（R454-C3-03/04）：resolution fixture 覆盖 zero/one/multiple candidate、wrong repository、
@@ -15,12 +17,12 @@ upgrade/workflow-switch/release-candidate matrix 或 E434 retirement。
   identity mismatch preservation、caller-owned preservation 与 output-loss read-only recovery。
 - `T454-C3-06`（R454-C3-05）：schema/runtime 表驱动测试接受 letter/digit 起始及 `._:-` 后续字符，拒绝
   empty、leading separator、whitespace、slash 和其它 grammar 外 identifier。
-- `T454-C3-07`（R454-C3-06）：package contract/runtime tests 精确断言 invocation error 的 `code`、
-  `field_path`、`remediation`，并拒绝 message/details alias 与 unknown fields。
-- `T454-C3-08`（R454-C3-07/08）：package source validator、registry/schema 与 upstream ownership validator
-  断言 32 active + 1 planned = 33 canonical package；active selectors、active graph、workflow、installed/platform
-  projection 中不得出现 C3 activation。
-- `T454-C3-09`（R454-C3-01..08）：完整 lifecycle runtime 与 focused package suites、JSON parse、Python compile、
+- `T454-C3-07`（R454-C3-06）：shared runtime/contract tests 精确断言 error 的 `code`、`field_path`、
+  `remediation`，并拒绝 message/details alias 与 unknown fields。
+- `T454-C3-08`（R454-C3-07/08）：registry/schema 与 upstream ownership validator 断言 32 active package
+  directories + 1 planned ID；`guru-ensure-task-checkout` 不得存在 canonical package directory，active selectors、
+  active graph、workflow、installed/platform projection 中不得出现 C3 activation。
+- `T454-C3-09`（R454-C3-01..08）：完整 lifecycle runtime 与 focused checkout suites、JSON parse、Python compile、
   task validation、workspace boundary、`git diff --check`、touched file line limit 和 zero legacy/path-authority
   static search 构成 C3 Phase 2 的 required deterministic evidence。
 - `T454-C3-10`（R454-C3-08/09）：运行 preset suite 时，若 raw apply 因 forbidden-to-sync installed copies
