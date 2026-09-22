@@ -1,9 +1,9 @@
 # #454 Task Lifecycle State Model Requirements Contribution
 
-状态：`candidate_pending_review`。本 contribution 绑定 Issue #454、当前 task 与
-`current-main-0.6.17-guru.58`，不是 shared current authority。当前实现状态覆盖 C2 shared lifecycle kernel
-与 D0 stage-evidence contract correction；二者已形成 committed/reconciled candidate。任何 finding fix 后均须重建
-fresh Phase 2、Task Commit 与完整 Branch Review；C3-C6、D443/D436 package migration 与 #434 activation 仍未完成。
+状态：`reviewed_promoted`。本 contribution 已由受控 RDT promotion 提升到
+`current-main-0.6.17-guru.59`；`.58` 为 immutable predecessor，Architecture shared current 为
+`.59/active`。提升范围仅为 C2 shared lifecycle kernel 与 D0 stage-evidence correction；promotion-created diff
+仍须 fresh Phase 2、Task Commit 与完整 Branch Review，C3-C7、D443/D436 package migration 与 #434 activation 未完成。
 
 - `R454-01`：每个 task 使用 immutable repository-local TaskId；TaskRef 是可变 locator。TaskId 必须能安全构造
   `refs/heads/guru-task-lifecycle/<TaskId>`，因此拒绝 `..`、trailing dot 与 `.lock` suffix。Rename、archive、

@@ -1,7 +1,7 @@
 # #454 Task Lifecycle State Model Test Contribution
 
-状态：`candidate_pending_review`。以下是 C2 focused acceptance；它不等同于 C3-C6、production activation 或完整
-Release matrix。
+状态：`reviewed_promoted`。以下是 C2+D0 focused acceptance；提升前 exact-range evidence 已通过，但它不等同于
+C3-C7、promotion-created diff 的后续 gates、production activation 或完整 Release matrix。
 
 - `T454-01`：catalog 必须通过 Draft 2020-12 schema check，且 35 个 named DTO 各有一个 positive payload。
 - `T454-02`：每个 DTO 拒绝 additional `authorization`；TaskArtifact additionally rejects machine path、session、

@@ -1,7 +1,7 @@
 # #454 Contribution Traceability
 
-状态：`candidate_pending_review`。Shared RDT 与 Architecture current 均仍为
-`current-main-0.6.17-guru.58` / `active`；本 contribution 尚未 promoted。
+状态：`reviewed_promoted`。Shared RDT 与 Architecture current 均为
+`current-main-0.6.17-guru.59` / `active`；`.58` 是 immutable predecessor。
 
 | Requirement | Design | Test |
 | --- | --- | --- |
@@ -13,7 +13,7 @@
 | `R454-06` | `D454-06` | `T454-07`, `T454-08` |
 | `R454-07` | `D454-07` | `T454-09` |
 
-Architecture source reference：`architecture-contribution-454-task-lifecycle-state-model-v1`。Promotion 必须由
-RDT 与 Architecture owners 按 expected current `.58` 串行执行；任何 promotion-created diff 都重新进入 fresh
-Phase 2、Task Commit 与完整 Branch Review。D0 candidate 已提交并完成正式 base reconcile；后续任何 finding fix
-仍须重建上述证据。C3-C6、D443/D436 package migration 与 #434 production activation 仍是独立后续边界。
+Architecture source reference：`architecture-contribution-454-task-lifecycle-state-model-v1`。RDT 与 Architecture
+owners 已按 expected current `.58` 串行提升到 `.59`；promotion-created diff 重新进入 fresh Phase 2、Task Commit
+与完整 Branch Review。D0 已提交并完成正式 base reconcile；C3-C7、D443/D436 package migration 与 #434
+production activation 仍是独立后续边界。

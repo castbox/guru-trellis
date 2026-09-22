@@ -1,8 +1,8 @@
 # #454 Task Lifecycle State Model Design Contribution
 
-状态：`candidate_pending_review`。采用 `target_native`，关联
+状态：`reviewed_promoted`。采用 `target_native`，关联
 `architecture-contribution-454-task-lifecycle-state-model-v1`，expected current 为
-`current-main-0.6.17-guru.58`。
+`current-main-0.6.17-guru.58`，promoted successor 为 `current-main-0.6.17-guru.59`。
 
 - `D454-01`：`task-lifecycle-dtos.schema.json` 是单一 Draft 2020-12 catalog，声明 35 个 named DTO。
   Top-level union 只用于 catalog 完整性，不作为 package public output；consumer 选择 exact `$defs/*DTO`。
