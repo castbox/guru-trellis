@@ -28,8 +28,9 @@ Guru Trellis 是 Guru Team 面向业务研发仓库提供的 Trellis 团队扩�
 Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
 `trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
 `.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
-当前 source candidate 固定到 Nightly commit `43fffc170927c85d9f7fc106cc5a059e80d4530b`，
-并记录上游 CI `35190729418`。CLI/core 仍为 `0.6.17`，不依赖上游 `v0.6.18`。
+当前 source candidate 固定到已审查的 Fork lifecycle primitive commit
+`eb370008c7689d4e272ae626bd002190ecbb3296`，并记录对应 CI `35621578090`。
+CLI/core 仍为 `0.6.17`，不依赖上游 `v0.6.18`。
 `ci_run_id` 用于核对该 run 的仓库、head SHA 与成功状态；它不证明本地 build 或 Guru
 installed/lifecycle 验证已完成。安装与发布 evidence 必须同时记录 commit 和 CI identity。
 
@@ -68,8 +69,8 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | --- | --- |
 | Current target Guru Trellis repo tag | `v0.6.17-guru.1` |
 | Target Guru Team extension revision | `0.6.17-guru.42` |
-| Current fixed Fork `castbox/Trellis` CLI | `0.6.17` @ `43fffc170927c85d9f7fc106cc5a059e80d4530b` |
-| Upstream Nightly CI identity | `35190729418` |
+| Current fixed Fork `castbox/Trellis` CLI | `0.6.17` @ `eb370008c7689d4e272ae626bd002190ecbb3296` |
+| Reviewed Fork lifecycle primitive CI identity | `35621578090` |
 | Fork package manager | `pnpm@10.32.1` |
 
 repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。目标

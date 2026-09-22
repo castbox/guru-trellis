@@ -1,0 +1,8 @@
+{
+  "profile": "post_check",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "task_head": "1111111111111111111111111111111111111111",
+  "selected_base_ref": "origin/main",
+  "resume_target": "task_commit"
+}

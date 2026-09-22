@@ -1331,3 +1331,29 @@ loss. It must also prove one expected-head-bound watcher and reject stacked
 `gh run watch` plus Agent polling. Wall-clock medians are reported by Agent,
 deterministic command, GitHub API, and external CI wait; a slow external sample
 does not independently fail a task whose correctness and operation budgets pass.
+
+## Task Lifecycle Substrate Focused Gate (#454 C2)
+
+C2 acceptance is a focused substrate gate, not package activation or a Release
+matrix. It must cover:
+
+- Draft 2020-12 catalog validity, the exact 35 named DTO inventory, one positive
+  payload for every DTO, and rejection of additional machine path, session,
+  authorization, generic evidence, or undeclared Git fields;
+- TaskId exact validation and case-fold collision rejection, TaskId/TaskRef
+  separation across rename and archive, legacy missing generation `0`, and
+  rejection of boolean, negative, floating, string, and null generations;
+- closed `IssueSource | NoIssueSource`, portable repository/branch target
+  normalization, and minimal TaskIdentity/TaskLifecycle/TaskArtifact/result/
+  transaction/reason constructors;
+- local-only schema loading, remote/parent/nested-resource rejection, and
+  source/copy catalog identity;
+- canonical/preset equality for the four workflow SSOT files, source-lock and
+  README identity consistency, task validation, Python compilation, line-limit
+  reporting, `git diff --check`, and zero `.trellis/scripts/**` diff.
+
+Every touched non-generated runtime file remains below 3000 lines. C2 does not
+run or claim the full multi-platform installer, upgrade, workflow-switch,
+marketplace, release-candidate, registry closure, active graph, installed
+projection, or platform projection gates. Those remain with their declared
+later owners; absence of those runs is not a C2 defect.

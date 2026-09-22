@@ -1,0 +1,19 @@
+schema_version: "1.0"
+authority: design
+version: current-main-0.6.17-guru.59
+status: active
+predecessor: current-main-0.6.17-guru.58
+source_binding: "reviewed #454 contribution + inherited immutable current-main-0.6.17-guru.58 authority + Architecture docs/architecture/README.md current-main-0.6.17-guru.59/active + Fork CI 35621578090 + containing Git object/tree identity"
+extension_manifest_version: 0.6.17-guru.42
+target_trellis_cli: 0.6.17
+release_target: v0.6.17-guru.1
+released_baseline: v0.6.16-guru.1
+framework_source: castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296
+requirements_locator: docs/requirements/versions/current-main-0.6.17-guru.59/requirement-main.md
+test_locator: docs/test/versions/current-main-0.6.17-guru.59/test-strategy.md
+architecture_locator: docs/architecture/README.md
+registry_locator: trellis/skills/guru-team/registry.json
+active_skill_count: 32
+external_exit_count: 142
+command_count: 102
+provenance: "code_recovered + reviewed #454 C2+D0 contribution + inherited immutable current-main-0.6.17-guru.58 authority; Architecture is current-main-0.6.17-guru.59/active, registry remains 32/142/102, production remains 22 invokes/98 exits, and promotion-created diff still requires fresh gates"

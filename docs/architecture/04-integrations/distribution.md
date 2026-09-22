@@ -100,6 +100,13 @@
   数量；OpenCode 的 `.opencode` native projection 只在显式选择时安装并由 representative actual-load 验证，
   package-private `tests/` 不进入任何 public projection。
 
+- `ARCH-INT-024`：#454 shared lifecycle DTO catalog 与 runtime 作为 canonical/installed contract assets
+  分发，不新增 Skill、exit 或 production edge。D0 pre-review reconcile 从 fresh selected base 与唯一 merge-base
+  派生 pair，compatible route 创建 parents 为 `[prior_task_head, new_base_head]` 的 expected-head-bound local
+  merge commit；`post_check` / `post_commit` 必须回 fresh Phase 2。首次/full Branch Review 要求 selected base
+  是 review HEAD 祖先；bounded continuity 只允许 post-Branch-Review/Publication/Finalizer caller，并绑定 prior
+  full-review commit、new-base ancestry 与 candidate tree identity。
+
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。
 - `skill_api` 与 interface/schema/command projection、distribution、managed/installed file

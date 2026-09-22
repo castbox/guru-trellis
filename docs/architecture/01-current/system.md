@@ -118,9 +118,20 @@ exit进入closed package contract；canonical registry为32 packages / 142 exits
 
 `ARCH-CUR-035`（`source_confirmed` + `reviewed`）：#452 以 `target_native` 在 `.57` current 上建立两层平台 authority：pinned upstream `AI_TOOLS` 的完整 22-platform inventory 与目标仓库 manifest/provenance 的 exact `selected_platforms`。重复 `--platform` 选择任意合法 subset；无参数新安装与 guru-trellis dogfood 固定为 Claude/Codex/Cursor；OpenCode 是可显式选择的普通 upstream member，不进入 dogfood；公开 `--all-platforms` 及中间 Guru-supported/deferred inventory 已删除。canonical/installed/platform/ownership、升级保真、reapply/drift、package-private `tests/` 排除与代表性 OpenCode actual-load 由 `EVD-033` 支撑；#434 production graph 仍未激活，22/98 production boundary 不变。
 
-当前 Architecture knowledge identity 为 `.58`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
-`0.6.17`，framework source/CI 由 `ARCH-CUR-028` 与 canonical source record 绑定，package manager 为
-`pnpm@10.32.1`。`.57` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
+`ARCH-CUR-036`（`source_confirmed` + `reviewed`）：#454 以 `target_native` 在 `.58` current 上建立
+package-neutral lifecycle contract/runtime，并修正 pre-review reconciliation 与 full Branch Review 的
+stage-evidence lineage。C2 提供 35 个 named DTO、immutable TaskId / mutable TaskRef / lifecycle generation、
+closed source union、portable Delivery target、local-only schema loader 与 minimal result constructors；Fork
+source 固定为 `castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296`、tree
+`bd1f133cc55d0562ad9ec5f426bca70d1584194b`、CI `35621578090`。D0 使 pre-review compatible
+reconcile 形成 expected-head-bound two-parent committed HEAD，`post_check` / `post_commit` 回 fresh Phase 2；
+首次/full Branch Review 要求 selected base 是 review HEAD 祖先，bounded continuity 只承接已有 prior full
+review。active registry 保持 32 Skills / 142 package exits / 102 commands，production workflow 保持 22
+mandatory invokes / 98 exits；C3-C7、D443、D436、E434 与 production activation 未进入 CURRENT。
+
+当前 Architecture knowledge identity 为 `.59`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
+`0.6.17`，framework source/CI 由 canonical source record 与 `EVD-034` 绑定，package manager 为
+`pnpm@10.32.1`。`.58` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。
 
@@ -128,6 +139,6 @@ push、PR、merge、tag、Release 或 Issue closure。
 
 - `ARCH-CUR-030`（`source_confirmed` + `reviewed`）：#418 以 `target_native` 在原 Merge、Branch Review、Publication、Finalizer 内增加四个只读 profiles 和三个 success exits，当前图为 23 Skills / 100 exits / 78 commands，business workflow 为 22 invokes / 98 exits。Finalizer 原 executor 独占同一 task 双端映射的归档 locator 收敛；已知 Merge 错误从发生点保留脱敏诊断，正常 checkpoint 退休不强制复审。只读链区分原 H、当前 A、复审 base B 与 PR payload snapshot；Publication 重新判断现有 bytes，Finalizer 验证历史连续性后返回原 Merge handoff，不重复归档或发布。普通 aggregate 4.0/gate 7.0 合同保留，aggregate 5.0 加入的 archived review 使用独立 `archived-1.0` gate。`ADR-010` 与 `ARCH-INT-018` 定义边界，`EVD-028` 只提供提升前证据；本条不证明 post-promotion gate、native 归档语义链、原业务实例或 Release 完成。
 
-- `ARCH-CUR-031`（`source_confirmed` + `reviewed`）：#419 以 `target_native` 在 Guru canonical workflow 建立唯一 active-task continuation authority。Adjacent public DTO 直接进入唯一 consumer；deterministic output loss 回原 producer正式恢复，semantic output loss fresh重跑原owner。Phase 1 activation使用exact-pair-first `initial|recovery`；Phase 2、Task Commit、Branch Review、Publication继续复用既有public contracts。upstream merge candidate `43fffc170927c85d9f7fc106cc5a059e80d4530b` / CI `35190729418` 是 current fixed Fork source，独占 extractor与thin entries；Guru不patch upstream-owned paths。current graph为23 Skills / 100 exits / 79 commands。`ADR-011`、`ARCH-DOM-016`、`ARCH-INT-019`和`EVD-029`定义边界；#410独占Release Gate matrix。
+- `ARCH-CUR-031`（`source_confirmed` + `reviewed`）：#419 以 `target_native` 在 Guru canonical workflow 建立唯一 active-task continuation authority。Adjacent public DTO 直接进入唯一 consumer；deterministic output loss 回原 producer正式恢复，semantic output loss fresh重跑原owner。Phase 1 activation使用exact-pair-first `initial|recovery`；Phase 2、Task Commit、Branch Review、Publication继续复用既有public contracts。upstream merge candidate `43fffc170927c85d9f7fc106cc5a059e80d4530b` / CI `35190729418` 是 #419 reviewed parent，独占 extractor与thin entries；Guru不patch upstream-owned paths。current graph为23 Skills / 100 exits / 79 commands。`ADR-011`、`ARCH-DOM-016`、`ARCH-INT-019`和`EVD-029`定义边界；#410独占Release Gate matrix。
 
 - `ARCH-CUR-032`（`source_confirmed` + `reviewed`）：#435 以 `target_native` 增加 `guru-review-task-delivery`、`guru-publish-task-delivery` 与 `guru-merge-task-delivery` 三个 active/deferred semantic packages，并窄化演进 Planning/Check/Task Commit/Branch Review/Reconcile 合同。每次 Delivery 以受控 merge-commit trailer、GitHub PR/merge identity、repository/base 与 parents 重建跨分支事实，merge 后 task 仍 active；#405 equal-head recovery 归 Publish owner，#407 resolved-tree commit 归 Reconcile owner。active registry 为 26 Skills / 114 package exits / 96 commands，production workflow 保持 22 mandatory invokes / 98 exits。`ADR-012`、`ARCH-DOM-017`、`ARCH-INT-020`、`ARCH-GAP-009`、`ARCH-GOV-011` 与 `EVD-030` 定义边界；#434 独占 production graph 激活，#436 独占 Completion/Closure/Finish/Cleanup/Reactivate，Release matrix 未验证。

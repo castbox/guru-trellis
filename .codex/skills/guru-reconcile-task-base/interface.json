@@ -47,13 +47,13 @@
     },
     {
       "id": "base_pair",
-      "evidence": "selected base ref plus old and new full commit ids",
-      "binding": "one ancestor-preserving cumulative base delta",
-      "freshness": "selected base observed once at boundary"
+      "evidence": "selected base ref; pre-review live merge-base derivation or post-review adjacent old/new commit ids",
+      "binding": "one operation-scoped cumulative base delta",
+      "freshness": "selected base observed once and pre-review merge base re-derived live"
     },
     {
       "id": "caller_continuity",
-      "evidence": "profile-specific branch review identity when required",
+      "evidence": "profile-specific prior full-review identity for post-review profiles only",
       "binding": "one closed resume target and caller profile",
       "freshness": "bound to the exact task-content HEAD"
     },
@@ -336,7 +336,7 @@
     },
     {
       "id": "review_continuity_required",
-      "evidence": "same task-content review remains valid and bounded pair continuity is required",
+      "evidence": "one post-review profile preserves the prior task-content review and requires bounded pair continuity",
       "consumer": {
         "kind": "skill",
         "id": "guru-review-branch"

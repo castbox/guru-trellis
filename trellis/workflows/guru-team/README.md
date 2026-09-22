@@ -68,7 +68,7 @@ spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`�
 安装来源。当前框架来源以 source lock 的完整 SHA 为准。当前目标 stable source 是
 annotated tag `v0.6.17-guru.1`，canonical extension version 为 `0.6.17-guru.42`；
 current main/source checkout 则固定到
-`castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b`、CI `35190729418`、CLI `0.6.17`、
+`castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296`、CI `35621578090`、CLI `0.6.17`、
 `pnpm@10.32.1`。不依赖上游 `v0.6.18`。Repo release tag、extension revision、CLI/source commit 是独立版本轴；
 `v0.6.17-guru.1` 的 tag、Release、tag-pinned install 与 smoke 仍须由 #410 的
 exact-candidate gate 建立；当前文档不把 preparation candidate 当作已发布事实。
@@ -144,7 +144,11 @@ Branch Review pass、Publication ready 与 Finalizer base-only mismatch 六类�
 同一 deterministic pair guard：unchanged pair 直接恢复原 `resume_target`；new pair 才调用
 semantic owner。六个 Gate exits 分别恢复原 route、进入 bounded Branch Review continuity、
 返回 implementation、返回 Planning、进入 requirement clarification 或 fail closed。Base SHA
-变化本身不使 authority、task-content review 或 Publication metadata stale；Finalizer 的
+变化本身不使 authority、task-content review 或 Publication metadata stale。Pre-review
+compatible new pair 必须先形成 expected-head-bound 本地双亲 merge commit；`post_plan` 恢复
+task activation，`post_check`/`post_commit` 回 fresh Phase 2。Bounded continuity 只接受
+`post_branch_review`、`post_publication`、`finalizer_base_mismatch`，不能替代首次完整 Branch
+Review。Finalizer 的
 `base_reconciliation_required` 与 `publication_review_stale` 是两个独立合同。
 
 每个 standard task 还必须在 Planning、qualified implementation discovery
@@ -219,8 +223,9 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 业务副作用前 fail closed，不得回退 PATH Python。
 
 Current main/source checkout 的 canonical extension version 为 `0.6.17-guru.42`，固定
-framework source 为 `castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b`，
-上游 CI identity 为 `35190729418`，CLI 为 `0.6.17`，package manager 为 `pnpm@10.32.1`。Latest released Guru tag
+framework source 为已审查的 Fork lifecycle primitive commit
+`castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296`，
+对应 CI identity 为 `35621578090`，CLI 为 `0.6.17`，package manager 为 `pnpm@10.32.1`。Latest released Guru tag
 `v0.6.16-guru.1` 是独立 released predecessor；`v0.6.17-guru.1` 仍需在 #410
 exact-candidate gate 后建立，不证明当前 source adoption 已发布。
 Source/installed package validation 必须同时验证

@@ -1462,3 +1462,26 @@ same-plan deterministic recovery/reprepare transitions. Commit remains
 through `scripts/invoke.sh`. Older argument shapes select compatibility branches
 inside those same commands. Component commands remain package-owned diagnostic,
 testing, and bounded-recovery surfaces, not the normal workflow sequence.
+
+## Task Lifecycle Runtime Boundary (#454 C2)
+
+The shared `runtime/task_lifecycle/` modules are deterministic validators and
+normalizers only. They may load the schema catalog from the fixed sibling
+contract root, resolve active/archive task artifacts by immutable TaskId or
+canonical TaskRef, normalize legacy missing generation to zero, validate the
+closed source/target shapes, construct named minimal DTOs, and return classified
+`LifecycleContractError` data.
+
+The schema loader accepts one regular `*.schema.json` file below the fixed
+contract root, Draft 2020-12 validation, and fragment-only local `$ref` values.
+Remote refs, parent traversal, nested `$id`, symlink escape, unknown DTO names,
+or additional DTO fields fail closed. It does not fetch schemas, import package
+private runtime, choose a semantic exit, or persist a validation result.
+
+Identity resolution reads current official task artifacts and rejects exact or
+case-fold collisions. It does not copy or patch the Fork's
+`.trellis/scripts/common/**` modules, mutate `task.json`, repair invalid
+generation, write session state, build a task index, or read retired workspace
+mappings. Source and installed consumers must carry byte-identical contract
+catalogs through their later declared distribution owner; C2 itself does not
+write an installed projection or register a command.

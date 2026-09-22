@@ -2053,3 +2053,19 @@ projection of package-private helpers.
 ### Session binding capability boundary (#443)
 
 `guru-bind-task-session` 是 deferred public capability package，拥有 session binding/rebind/switch/resume/manual recovery 的 semantic route、deterministic identity validation、五个成功 typed exits 与一个 blocked exit。它复用官方 Trellis `active_task`/`session_storage` authority，不创建 alternate task resolver、重复 session binding store、global lifecycle store、Issue ledger 或 workspace/developer state。#434 只消费其最小 route projection，并在独立 cutover 中决定 global graph activation。
+
+## Shared Task Lifecycle Contract Substrate (#454 C2)
+
+`contracts/task-lifecycle/` 与 `runtime/task_lifecycle/` 是 package-neutral shared substrate，不是一个 public Skill、
+registry row、workflow target 或 command wrapper。Catalog 当前声明 35 个 named DTO；每个 future package 必须在自己的
+interface 中选择 exact input/output definition，并保持 producer output 到唯一 consumer input 的薄 projection。不得用
+nullable aggregate、generic lifecycle envelope 或 catalog 顶层 union 代替 per-exit schema。
+
+Shared runtime 只提供 schema loading、TaskId/TaskRef/generation normalization、active/archive inventory resolution、
+source/target normalization、minimal DTO construction 与稳定 contract errors。Semantic scope、candidate sufficiency、
+route selection、user choice、authorization、Git mutation、session mutation、branch association、checkout acquisition 与
+resource ownership 均不属于 C2 runtime。
+
+Catalog 与 runtime 的存在不代表 Phase C package-ready 或 production integrated。C3-C6 可以消费该 substrate，
+但仍须分别拥有 entry contract、judgment mode、closed exits、consumer projection、private recovery state 与 focused tests；
+#434 仍独占 registry selector、active manifest、workflow graph、installed/platform projection 与 atomic activation。

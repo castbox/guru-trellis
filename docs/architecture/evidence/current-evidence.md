@@ -190,3 +190,23 @@ representative actual-load、ownership/manifest/mode/parity、reapply/update/rem
 本 evidence 不证明 #434 production graph activation、22-client native compatibility matrix、正式
 Release/tag/GitHub Release、业务生产升级、push、PR、merge 或 Issue closure；promotion-created diff 必须
 重新通过 fresh Phase 2、Task Commit 与 independent complete Branch Review。
+
+## EVD-034: #454 Task Lifecycle C2 And Stage-Evidence Promotion
+
+本证据支撑 `ARCH-CUR-036`、`ARCH-DOM-021`、`ARCH-INT-024`、`ARCH-GAP-011`、`ADR-015`
+以及 `.58 -> .59` Architecture knowledge promotion。提升前独立完整 Branch Review 绑定
+`origin/main@0381f4ee060398f42bd2dded6ec14d7fced21393...HEAD@4421662f17b2b3adcfd3faeec6fd782d11bc947f`，
+覆盖 193 个 changed paths，P0/P1/P2/P3 为 `0/0/0/0`；Architecture contribution
+`architecture-contribution-454-task-lifecycle-state-model-v1` 完成 expected-current-bound serialized promotion。
+
+提升前 fresh 定向证据包括 lifecycle runtime `22/22`、Reconcile package `34/34`、base-continuity integration
+`3/3`、active continuation `7/7`、Reactivate `17/17`、created-Issue provenance `1/1`，以及 selected-base
+ancestry、canonical/preset/dogfood parity、source/README identity、task validation、JSON/Python checks、zero
+`.trellis/scripts/**` diff 与 `git diff --check`。Fork source 固定为
+`eb370008c7689d4e272ae626bd002190ecbb3296`、tree `bd1f133cc55d0562ad9ec5f426bca70d1584194b`、
+CI `35621578090`。
+
+两个 base-identical 全局测试 observation 属于 #454 range 外既有问题，不写成通过，也不阻塞本次 scoped
+promotion。本证据不证明 C3-C7、D443、D436、E434、production activation、完整 installer/upgrade/
+workflow-switch 或多平台 Release matrix、push、PR、merge、tag、GitHub Release、业务生产验证或 Issue closure。
+本 evidence 不替代 promotion-created diff 后续 fresh Phase 2、Task Commit 与 independent complete Branch Review；Publication 必须消费后续 exact-range gate 结果。
