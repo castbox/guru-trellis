@@ -76,6 +76,19 @@ def valid_payloads() -> dict[str, dict]:
 
 
 class ContractTests(unittest.TestCase):
+    def test_runtime_error_shape_has_exact_dispatcher_fields(self):
+        error = LifecycleContractError("target_path_conflict", "target_path", "Choose another target.")
+        self.assertEqual(set(error.as_dict()), {"code", "field_path", "remediation"})
+        self.assertNotIn("details", error.__dataclass_fields__)
+        for alias in ("details", "message", "unknown"):
+            with self.subTest(alias=alias), self.assertRaises(TypeError):
+                LifecycleContractError(
+                    "target_path_conflict",
+                    "target_path",
+                    "Choose another target.",
+                    **{alias: "not allowed"},
+                )
+
     def test_catalog_is_closed_and_every_named_dto_has_a_valid_example(self):
         payloads = valid_payloads()
         self.assertEqual(set(dto_names()), set(payloads))

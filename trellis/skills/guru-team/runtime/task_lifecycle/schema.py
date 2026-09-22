@@ -113,7 +113,6 @@ def validate_dto(name: str, payload: Any, *, contract_root: Path | None = None) 
                 "dto_identity_mismatch",
                 "HandoffRefDTO.receipt_ref",
                 "Bind the handoff receipt control ref to the same TaskId as the DTO.",
-                {"expected_receipt_ref": expected_ref},
             )
     return deepcopy(payload)
 

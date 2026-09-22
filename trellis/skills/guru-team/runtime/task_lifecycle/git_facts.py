@@ -56,20 +56,26 @@ def _git(
     if common_dir is not None:
         command.append(f"--git-dir={common_dir}")
     command.extend(args)
-    completed = subprocess.run(
-        command,
-        cwd=cwd,
-        check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=cwd,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    except OSError as exc:
+        raise LifecycleContractError(
+            "git_fact_unavailable",
+            "git",
+            "Restore a readable Git repository and repeat the live fact inspection.",
+        ) from exc
     if check and completed.returncode != 0:
         raise LifecycleContractError(
             "git_fact_unavailable",
             "git",
             "Restore a readable Git repository and repeat the live fact inspection.",
-            {"command": command, "stderr": completed.stderr.strip()},
         )
     return completed
 
@@ -169,6 +175,8 @@ def inspect_registered_worktree(
             registration=registration,
         )
     except LifecycleContractError as exc:
+        if exc.code != "git_fact_unavailable":
+            raise
         return WorktreeFacts(
             path=registration.path,
             common_dir=None,

@@ -199,6 +199,24 @@ Exit：`checkout_substrate_ready`。
 Recovery：provision transaction按reviewed disposition记录Guru新建资源；失败只删除本transaction新建且身份仍匹配
 的资源。caller-owned资源原字节保留。
 
+Branch Review finding-fix（2026-09-22）：
+
+- `BR454-C3-P1-003` 已修复：Git live-fact runner 将 `FileNotFoundError/OSError` 转换为共享
+  `LifecycleContractError`，`inspect_registered_worktree()` 将已消失 cwd 的 registration 收敛为
+  `inspection_error` candidate；真实 stale registration fixture 证明 discovery 仍可选出另一合法 checkout；
+- `BR454-C3-P1-004` 已修复：公共 runtime error shape 精确保留 `code`、`field_path`、`remediation`，移除
+  `details` 字段和全部第四参数调用；`target_path_conflict` 正常路径与 contract tests 精确断言 key set，并拒绝
+  `message`、`details` 和 unknown alias；
+- `BR454-C3-P2-005` 已修复：`CheckoutRequest` 与 `CheckoutAcquisitionPlan` 移除 `clean_required` opt-out，candidate
+  validator 无条件拒绝 non-empty dirty paths，既有 dirty fixture 与字段闭包测试通过；
+- finding-fix 验证：lifecycle runtime `unittest discover` 51项通过；task-lifecycle Python compile通过；task
+  validate通过（缺失的 `implement.jsonl` / `check.jsonl` 按validator现有合同跳过）；workspace boundary `status=ok`；
+  `git diff --check`通过；四参数error调用、legacy mapping/path authority静态命中均为0；本轮touched code/test
+  文件均低于3000行。
+
+本轮未运行或改写完整package/preset suite，已知installed projection conflict与完整Release matrix继续保持未通过/
+未验证边界，不构成C3 activation或Branch Review重新通过。
+
 ### C4 Branch association、establishment 与 rebind substrate
 
 Canonical package/runtime surfaces：

@@ -45,7 +45,6 @@ class CheckoutAcquisitionPlan:
     invocation_checkout: Path | None = None
     target_path: Path | None = None
     forbidden_branch_refs: tuple[str, ...] = ()
-    clean_required: bool = True
     task_artifact_expectation: str = "required"
 
     def request(self) -> CheckoutRequest:
@@ -57,7 +56,6 @@ class CheckoutAcquisitionPlan:
             branch_ref=self.branch_ref,
             expected_status=self.expected_status,
             expected_head=self.decision_head,
-            clean_required=self.clean_required,
             forbidden_branch_refs=self.forbidden_branch_refs,
             task_artifact_expectation=self.task_artifact_expectation,
         )
@@ -119,10 +117,6 @@ def _raise_resolution(resolution: CheckoutResolution) -> None:
         resolution.reason_code,
         "checkout_resolution",
         "Resolve the current checkout authority conflict or select a freshly validated target.",
-        {
-            "resolution_kind": resolution.kind,
-            "candidate_reasons": [row.reason_code for row in resolution.candidates if row.reason_code],
-        },
     )
 
 
@@ -143,7 +137,6 @@ def adopt_invocation_checkout(plan: CheckoutAcquisitionPlan) -> CheckoutAcquisit
             "invocation_checkout_not_unique_candidate",
             "invocation_checkout",
             "Use the unique freshly validated invocation checkout or return to reviewed selection.",
-            {"reviewed": str(plan.invocation_checkout.resolve()), "live": str(checkout.path)},
         )
     return CheckoutAcquisitionResult(
         route=plan.route,
@@ -168,7 +161,6 @@ def _exact_post_state(request: CheckoutRequest, target_path: Path | None = None)
             "acquisition_result_mismatch",
             "target_path",
             "Recover the exact transaction target or repeat semantic target selection.",
-            {"expected": str(target_path.resolve()), "actual": str(facts.path)},
         )
     return facts
 
@@ -232,7 +224,6 @@ def provision_linked_worktree(
                 "provision_pre_state_changed",
                 "target_path",
                 "Repeat semantic review for the exact freshly resolved checkout path.",
-                {"reviewed": str(plan.target_path.resolve()), "live": str(resolution.selected.facts.path)},
             )
         result = CheckoutAcquisitionResult(
             route=plan.route,
@@ -269,7 +260,6 @@ def provision_linked_worktree(
             "target_path_conflict",
             "target_path",
             "Choose an absent path or the exact registered checkout selected for reuse.",
-            {"target_path": str(target)},
         )
     existing_head = local_branch_head(request.repository, request.branch_ref)
     if existing_head is not None and existing_head != request.expected_head:
@@ -277,7 +267,6 @@ def provision_linked_worktree(
             "head_drift",
             "decision_head",
             "Refresh the reviewed branch and decision HEAD before provisioning.",
-            {"expected": request.expected_head, "actual": existing_head},
         )
     created_branch = existing_head is None
     live_disposition: ProvisionDisposition = "new_branch" if created_branch else "existing_branch"
@@ -286,7 +275,6 @@ def provision_linked_worktree(
             "provision_pre_state_changed",
             "provision_disposition",
             "Repeat semantic review against the fresh branch and checkout facts.",
-            {"reviewed": plan.provision_disposition, "live": live_disposition},
         )
     created_worktree = False
     try:

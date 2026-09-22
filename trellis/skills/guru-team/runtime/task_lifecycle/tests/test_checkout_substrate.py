@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
@@ -22,7 +24,11 @@ from runtime.task_lifecycle.checkout_resolution import (
     select_or_specify,
 )
 from runtime.task_lifecycle.errors import LifecycleContractError
-from runtime.task_lifecycle.git_facts import inspect_repository, list_worktree_registrations
+from runtime.task_lifecycle.git_facts import (
+    inspect_registered_worktree,
+    inspect_repository,
+    list_worktree_registrations,
+)
 
 
 TASK_ID = "454-task-lifecycle-state-model"
@@ -97,7 +103,6 @@ class CheckoutSubstrateTests(unittest.TestCase):
         branch: str,
         *,
         head: str | None = None,
-        clean: bool = True,
         forbidden: tuple[str, ...] = (),
         artifact_expectation: str = "required",
     ) -> CheckoutRequest:
@@ -109,7 +114,6 @@ class CheckoutSubstrateTests(unittest.TestCase):
             branch_ref=branch,
             expected_status="in_progress",
             expected_head=head,
-            clean_required=clean,
             forbidden_branch_refs=forbidden,
             task_artifact_expectation=artifact_expectation,
         )
@@ -362,6 +366,73 @@ class CheckoutSubstrateTests(unittest.TestCase):
         self.fixture.git("commit", "-m", "drift", cwd=drift)
         drift_result = discover_validate_classify(self.request("task-drift", head="a" * 40))
         self.assertEqual((drift_result.kind, drift_result.reason_code), ("authority_conflict", "head_drift"))
+
+    def test_stale_registration_becomes_closed_inspection_error_candidate(self) -> None:
+        self.fixture.branch("task-live")
+        live_path = self.fixture.linked(self.root, "task-live")
+        self.fixture.branch("task-stale-registration")
+        stale_path = self.fixture.linked(self.root, "task-stale-registration")
+        shutil.rmtree(stale_path)
+
+        resolution = discover_validate_classify(self.request("task-live", head=self.fixture.head))
+
+        self.assertEqual((resolution.kind, resolution.selected.facts.path), ("checkout_resolved", live_path.resolve()))
+        stale = next(row for row in resolution.candidates if row.facts.path == stale_path.resolve())
+        self.assertEqual(
+            (stale.status, stale.reason_code, stale.facts.inspection_error),
+            ("invalid_candidate", "git_fact_unavailable", "git_fact_unavailable"),
+        )
+
+    def test_stale_requested_branch_registration_remains_authority_conflict(self) -> None:
+        self.fixture.branch("task-stale-requested")
+        stale_path = self.fixture.linked(self.root, "task-stale-requested")
+        shutil.rmtree(stale_path)
+
+        resolution = discover_validate_classify(self.request("task-stale-requested", head=self.fixture.head))
+
+        self.assertEqual((resolution.kind, resolution.reason_code), ("authority_conflict", "git_fact_unavailable"))
+        stale = next(row for row in resolution.candidates if row.facts.path == stale_path.resolve())
+        self.assertEqual((stale.status, stale.facts.inspection_error), ("authority_conflict", "git_fact_unavailable"))
+
+    def test_registered_worktree_inspection_does_not_swallow_semantic_contract_errors(self) -> None:
+        repository = inspect_repository(self.fixture.repo)
+        registration = list_worktree_registrations(repository)[0]
+        semantic_error = LifecycleContractError(
+            "invalid_worktree_porcelain",
+            "git.worktree_list",
+            "Repair the Git worktree registry before resolving a checkout.",
+        )
+
+        with patch(
+            "runtime.task_lifecycle.git_facts.list_worktree_registrations",
+            side_effect=semantic_error,
+        ), self.assertRaisesRegex(LifecycleContractError, "invalid_worktree_porcelain"):
+            inspect_registered_worktree(repository, registration)
+
+    def test_checkout_contracts_do_not_expose_cleanliness_opt_out(self) -> None:
+        self.assertNotIn("clean_required", CheckoutRequest.__dataclass_fields__)
+        self.assertNotIn("clean_required", CheckoutAcquisitionPlan.__dataclass_fields__)
+
+    def test_target_path_conflict_uses_exact_public_error_shape(self) -> None:
+        target = self.root / "occupied-target"
+        target.mkdir()
+        with self.assertRaises(LifecycleContractError) as raised:
+            provision_linked_worktree(
+                self.plan(
+                    "provision_linked_worktree",
+                    "task-target-conflict",
+                    disposition="new_branch",
+                    target=target,
+                )
+            )
+        self.assertEqual(
+            raised.exception.as_dict(),
+            {
+                "code": "target_path_conflict",
+                "field_path": "target_path",
+                "remediation": "Choose an absent path or the exact registered checkout selected for reuse.",
+            },
+        )
 
     def test_delivery_base_and_reserved_refs_are_rejected_before_discovery(self) -> None:
         with self.assertRaisesRegex(LifecycleContractError, "delivery_or_base_branch_forbidden"):

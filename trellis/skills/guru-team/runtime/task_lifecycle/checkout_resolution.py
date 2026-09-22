@@ -38,7 +38,6 @@ class CheckoutRequest:
     branch_ref: str
     expected_status: str
     expected_head: str | None = None
-    clean_required: bool = True
     forbidden_branch_refs: tuple[str, ...] = ()
     task_artifact_expectation: TaskArtifactExpectation = "required"
 
@@ -165,7 +164,7 @@ def _candidate(
         return CheckoutCandidate(candidate_id, facts, "authority_conflict", artifact_error, (path_ref, request.task_ref))
     if request.expected_head is not None and facts.head != request.expected_head:
         return CheckoutCandidate(candidate_id, facts, "authority_conflict", "head_drift", (path_ref, facts.head or "missing"))
-    if request.clean_required and not facts.clean:
+    if not facts.clean:
         return CheckoutCandidate(candidate_id, facts, "invalid_candidate", "dirty_checkout", (path_ref, *facts.dirty_paths))
     return CheckoutCandidate(candidate_id, facts, "valid", None, ())
 
@@ -223,7 +222,6 @@ def _fresh_explicit_candidate(request: CheckoutRequest, target_path: Path) -> Ch
             "target_no_longer_present",
             "target_path",
             "Choose a checkout still registered in the current repository.",
-            {"target_path": str(target_path.resolve())},
         )
     return _candidate(request, inspect_registered_worktree(request.repository, registration))
 
