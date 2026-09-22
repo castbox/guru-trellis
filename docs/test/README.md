@@ -1,12 +1,13 @@
 # Test Strategy / Test Plan SSOT
 
-当前 authority：[`versions/current-main-0.6.17-guru.59/test-strategy.md`](./versions/current-main-0.6.17-guru.59/test-strategy.md) 与 [`test-plan.md`](./versions/current-main-0.6.17-guru.59/test-plan.md)。`traceability.md` 连接 Requirements、Design、Architecture `.59/active` 和 evidence；`.58` 及更早版本保持 immutable。
+当前 authority：[`versions/current-main-0.6.17-guru.60/test-strategy.md`](./versions/current-main-0.6.17-guru.60/test-strategy.md) 与 [`test-plan.md`](./versions/current-main-0.6.17-guru.60/test-plan.md)。`traceability.md` 连接 Requirements、Design、Architecture `.60/active` 和 evidence；`.59` 及更早版本保持 immutable。
 
-状态：`active`。`.59` 完整继承 immutable `.58` 并承接 #454 C2 lifecycle kernel 与 D0 stage-evidence correction。`T454-01..09` 是 current acceptance authority，提升前均已通过；promotion-created diff 必须由后续 owner 独立完成 fresh Phase 2、Task Commit 与完整 Branch Review，三者不得由提升前证据替代。C3-C7、D443、D436、E434、#434 activation、完整 Release Gate 与生产升级仍 `unverified`。
+状态：`active`。`.60` 完整继承 immutable `.59` 并承接 #454 C3 checkout substrate。`T454-C3-01..10` 是 current acceptance authority；focused evidence 已建立，package `19/20`、preset `85/86` 不声明通过。promotion-created diff 必须由后续 owner独立完成 fresh Phase 2、Task Commit 与完整 Branch Review。C4-C7、D443、D436、E434、#434 activation、完整 Release Gate 与生产升级仍 `unverified`。
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.59` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.59/test-strategy.md) |
+| `active` | `current-main-0.6.17-guru.60` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.60/test-strategy.md) |
+| `superseded` | `current-main-0.6.17-guru.59` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.59/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.58` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.58/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.57` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.57/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.56` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.56/test-strategy.md) |
@@ -33,4 +34,4 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [`test-strategy.md`](./versions/current-main-0.6.5-guru.35/test-strategy.md) |
 | `released-history` | `v0.6.5-guru.9` | [`README.md`](./versions/v0.6.5-guru.9/README.md) |
 
-`.59/active` 完整继承 immutable `.58` 并吸收 reviewed #454 contribution；Architecture 为 `.59/active`。C2+D0 的提升前证据已建立；promotion-created diff 的 fresh gates 由后续 exact-range 结果独立证明。C3-C7、D443、D436、E434、#434 production activation 与完整发布矩阵保持独立且当前未验证。
+`.60/active` 完整继承 immutable `.59` 并吸收 reviewed #454 C3 contribution；Architecture 为 `.60/active`。C3 的提升前 focused 证据已建立；promotion-created diff 的 fresh gates 由后续 exact-range 结果独立证明。C4-C7、D443、D436、E434、#434 production activation 与完整发布矩阵保持独立且当前未验证。

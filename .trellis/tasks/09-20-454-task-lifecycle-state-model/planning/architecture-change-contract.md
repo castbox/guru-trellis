@@ -6,7 +6,7 @@
 - Lifecycle generation: `1`
 - Requirement authority: live `castbox/guru-trellis#454`
 - Guru Architecture public contract: `guru-maintain-architecture-baseline:2.0`
-- Current baseline: `current-main-0.6.17-guru.59`
+- Current baseline: `current-main-0.6.17-guru.60`
 - Constitution: `docs/architecture/00-foundation/design-constitution.md` /
   `guru-trellis-design-constitution-v1` / `current`
 - Project change contract: `docs/architecture/06-governance/change-contract.md` /
@@ -16,20 +16,22 @@
   `architecture-contribution-454-task-lifecycle-state-model-c3-v1`
 - Contribution locator: this file
 - Expected current identity: `current-main-0.6.17-guru.59`
-- Promotion state: `reviewed_candidate`
+- Promotion state: `reviewed_promoted`
 - C3 RDT candidate:
   `docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c3/`
 
 The promoted `architecture-contribution-454-task-lifecycle-state-model-v1`
-remains immutable evidence for C2 and D0. It does not prove C3. This C3
-candidate is independently bound to the current worktree and must complete
-fresh Phase 2, Task Commit, full-diff Branch Review and serialized promotion
-before it can become shared current authority.
+remains immutable evidence for C2 and D0. This C3 contribution completed fresh
+Phase 2, Task Commit, independent full-diff Branch Review and serialized
+promotion into `current-main-0.6.17-guru.60`. The promotion-created diff must
+now re-enter fresh Phase 2, Task Commit and independent full-diff Branch Review
+before Publication.
 
 ## 2. Boundary And Decision
 
-Current `.59` authority already contains the shared lifecycle kernel and D0
-stage-evidence correction. The remaining current production graph still uses
+Current `.60` authority already contains the shared lifecycle kernel, D0
+stage-evidence correction and the promoted C3 checkout substrate. The remaining
+current production graph still uses
 the predecessor task/workspace model.
 
 C3 adds only the next target-native substrate slice:
@@ -55,7 +57,7 @@ Decision refs: `ARCH-FND-001..006`, `ARCH-GOV-006..009`, `ARCH-GAP-009`,
 
 | Concern | Applicability | C3 candidate contract |
 | --- | --- | --- |
-| authority-binding | applicable | Bind Architecture 2.0, current `.59`, Issue #454 and generation 1. |
+| authority-binding | applicable | Bind Architecture 2.0, current `.60`, Issue #454 and generation 1. |
 | constitution-binding | applicable | Use official Git extension surfaces, unique owners, minimum state and one-way convergence. |
 | boundary-and-decision | applicable | C3 is `target_native`; checkout facts are call-local and the planned Skill id has no package tree. |
 | owner-and-single-writer | applicable | C3 writes shared checkout DTO/runtime and non-active planned metadata; E434 exclusively owns complete package composition and activation. |
@@ -63,7 +65,7 @@ Decision refs: `ARCH-FND-001..006`, `ARCH-GOV-006..009`, `ARCH-GAP-009`,
 | gap-and-deviation | applicable | Narrow `ARCH-GAP-011` by adding checkout substrate without claiming branch/session/resource or production completion. |
 | parallel-scope | applicable | Task-local contract and C3 canonical files only; shared current and active selectors are forbidden. |
 | evidence-and-freshness | applicable | Bind the complete dirty/untracked C3 worktree, focused tests, schema validation, line limits and zero legacy-reader checks. |
-| review-and-promotion | applicable | This candidate requires fresh Phase 2, Task Commit, full-diff Branch Review and expected-current-bound promotion. |
+| review-and-promotion | applicable | Expected-current-bound promotion is complete; the promotion-created diff requires fresh Phase 2, Task Commit and full-diff Branch Review before Publication. |
 
 ## 4. Owner And Single Writer
 
@@ -158,14 +160,15 @@ ADR: no new ADR. `ADR-015` already owns the lifecycle identity and
 framework/extension boundary. C3 conforms to that accepted decision and does
 not add a new owner, tradeoff, exception or compatibility exit.
 
-Promotion state: `reviewed_candidate`. This statement identifies the candidate
-for the current Phase 2 semantic round; it is not a Branch Review pass or
-promotion claim.
+Promotion state: `reviewed_promoted`. The reviewed committed range is
+`origin/main@9c2238bad7e73ea4a1f23dddcb7e8e9204c244da...e965b7e8b6850614a2cd21f899a02b3ea9da73f3`.
+This state proves the serialized `.59 -> .60` Architecture promotion only; it
+does not prove the promotion-created diff's fresh downstream gates.
 
 ## 9. Resume Boundary
 
 The active task is already `in_progress`. Repairing this task-local contract
 does not reactivate, recommit or republish anything. A fresh
-`task_impact_sync(stage=phase2)` must bind the current `.59` authority, this C3
+`task_impact_sync(stage=phase2)` must bind the current `.60` authority, this C3
 identity, current project-check descriptor and the complete worktree candidate.
 Only `baseline_current` may enter `guru-check-task`.

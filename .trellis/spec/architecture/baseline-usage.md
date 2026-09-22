@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.59`
+- version：`current-main-0.6.17-guru.60`
 - status：`active`
-- source binding：reviewed #454 contribution + inherited immutable `.58` authority；active registry 保持 32 Skills / 142 package exits / 102 commands，production workflow 保持 22 mandatory invokes / 98 exits；current 增量见 `ARCH-CUR-036` / `ARCH-DOM-021` / `ARCH-INT-024` / `ARCH-GAP-011` / `ADR-015`，fixed Fork source 为 `eb370008c7689d4e272ae626bd002190ecbb3296`。`.59` 只提升 C2 shared lifecycle kernel 与 D0 stage-evidence correction；C3-C7、D443、D436、E434 与 #434 production graph activation 仍未完成，Release matrix 未验证。
+- source binding：reviewed #454 C3 contribution + inherited immutable `.59` authority；active registry 保持 32 Skills / 142 package exits / 102 commands并增加一个 planned ID，production workflow 保持 22 mandatory invokes / 98 exits；current 增量见 `ARCH-CUR-037` / `ARCH-DOM-022` / `ARCH-INT-025` / `ARCH-GAP-011` / `ADR-015` / `EVD-035`，fixed Fork source 为 `eb370008c7689d4e272ae626bd002190ecbb3296`。`.60` 完整继承 C2 shared lifecycle kernel 与 D0 stage-evidence correction，并只提升 C3 checkout acquisition/live resolution substrate；C4-C7、D443、D436、E434 与 #434 production graph activation 仍未完成，package suite `19/20`、preset suite `85/86` 与 Release matrix 均未声明通过。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`
 - required concern set：`guru-trellis-architecture-change-concerns-v1`

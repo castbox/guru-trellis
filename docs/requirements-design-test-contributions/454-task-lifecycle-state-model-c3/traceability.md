@@ -1,7 +1,8 @@
 # #454 C3 Checkout Substrate Traceability
 
-状态：`contribution_candidate`。本 contribution 继承 shared RDT 与 Architecture
-`current-main-0.6.17-guru.59` / `active`，不修改已提升的 C2+D0 contribution。
+状态：`reviewed_promoted`。Shared RDT 与 Architecture current 均为
+`current-main-0.6.17-guru.60` / `active`；`.59` 是 immutable predecessor，已提升的 C2+D0 contribution
+保持 immutable。
 
 | Requirement | Design | Test | Inherited authority |
 | --- | --- | --- | --- |
@@ -15,7 +16,6 @@
 | `R454-C3-08` | `D454-C3-07`, `D454-C3-08` | `T454-C3-08`, `T454-C3-10` | E434 activation ownership; `ARCH-GAP-011` |
 | `R454-C3-09` | `D454-C3-09` | `T454-C3-09`, `T454-C3-10` | Validation Scope Ownership |
 
-Architecture candidate：
-`.trellis/tasks/09-20-454-task-lifecycle-state-model/planning/architecture-change-contract.md` /
-`architecture-contribution-454-task-lifecycle-state-model-c3-v1`。RDT 与 Architecture candidates 均要求 fresh
-Phase 2、Task Commit、完整 Branch Review 与 serialized promotion；任何 candidate 文档都不自行声明 shared current。
+Architecture source reference：`architecture-contribution-454-task-lifecycle-state-model-c3-v1`。RDT 与
+Architecture owners 已按 expected current `.59` 串行提升到 `.60`；promotion-created diff 重新进入 fresh
+Phase 2、Task Commit 与完整 Branch Review。C4-C7、D443、D436 与 E434 仍是独立后续边界。

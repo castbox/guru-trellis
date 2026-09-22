@@ -1,12 +1,13 @@
 # Design SSOT
 
-唯一 current Design authority：[`versions/current-main-0.6.17-guru.59/design-main.md`](./versions/current-main-0.6.17-guru.59/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；#454 C2 lifecycle substrate、D0 stage-evidence contract 与 registry（32 packages / 142 exits / 102 commands）见 [`capability-inventory.md`](./versions/current-main-0.6.17-guru.59/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。production workflow 保持 22 mandatory invokes / 98 exits。Architecture 为 `.59` / `active`；`.58` 及更早版本保持 immutable。
+唯一 current Design authority：[`versions/current-main-0.6.17-guru.60/design-main.md`](./versions/current-main-0.6.17-guru.60/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；#454 C3 checkout substrate 与 registry（32 packages / 142 exits / 102 commands + 1 planned ID）见 [`capability-inventory.md`](./versions/current-main-0.6.17-guru.60/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。production workflow 保持 22 mandatory invokes / 98 exits。Architecture 为 `.60` / `active`；`.59` 及更早版本保持 immutable。
 
 Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Architecture。普通 task 通过 RDT `task_impact_sync` / contribution / `promotion` 更新 current。
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.59` | [`design-main.md`](./versions/current-main-0.6.17-guru.59/design-main.md) |
+| `active` | `current-main-0.6.17-guru.60` | [`design-main.md`](./versions/current-main-0.6.17-guru.60/design-main.md) |
+| `superseded` | `current-main-0.6.17-guru.59` | [`design-main.md`](./versions/current-main-0.6.17-guru.59/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.58` | [`design-main.md`](./versions/current-main-0.6.17-guru.58/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.57` | [`design-main.md`](./versions/current-main-0.6.17-guru.57/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.56` | [`design-main.md`](./versions/current-main-0.6.17-guru.56/design-main.md) |

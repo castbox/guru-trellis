@@ -23,6 +23,7 @@
 | `ARCH-DOM-019` | task identity session binding | official Trellis task/session store拥有稳定task identity与底层resolver/persistence；`guru-bind-task-session`独占lifecycle-aware resume/rebind/switch/reactivate/manual-recovery判断与最小runtime write；#438保留creation attach，#436保留terminal lifecycle receipts，#434独占production route activation |
 | `ARCH-DOM-020` | platform inventory and exact selection | pinned upstream `AI_TOOLS` owns the complete 22-platform inventory and canonical `AITool`/`cliFlag` mapping；Guru preset owns projection descriptors and managed paths；each installed repository manifest/provenance owns its exact selected set；dogfood consumes only Claude/Codex/Cursor；OpenCode remains explicit-only for guru-trellis |
 | `ARCH-DOM-021` | task lifecycle identity and stage evidence | Fork 独占 official TaskId/TaskRef/generation/session primitives；Guru shared lifecycle catalog/runtime 独占 package-neutral DTO、normalization、resolver adapter 与稳定错误；Reconcile 独占 integration commit，Task Commit 独占 exact committed candidate，Branch Review 独占 full/continuity review；本边界不替代 `ARCH-DOM-019` 的现有 deferred binding owner |
+| `ARCH-DOM-022` | task checkout substrate | Guru shared lifecycle runtime 独占 call-local checkout plan/candidate/resolution/selection、common-dir live facts、adopt/provision transaction、bounded rollback 与 read-only recovery；machine path 不进入 durable task/session/branch/resource authority；`guru-ensure-task-checkout` 仅是 planned ID，E434 独占完整 package 与 activation |
 
 跨 domain 只使用 interface/schema/typed projection；不得读取对方 private checkpoint 作为 public contract。
 

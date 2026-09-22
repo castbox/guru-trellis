@@ -1,7 +1,8 @@
 # #454 C3 Checkout Substrate Test Contribution
 
-状态：`contribution_candidate`。以下测试只证明 C3 candidate，不证明 production activation、完整 installer/
-upgrade/workflow-switch/release-candidate matrix 或 E434 retirement。
+状态：`reviewed_promoted`。以下测试是 `.60` C3 current acceptance authority；提升前 focused evidence 已通过，
+但不证明 promotion-created diff、production activation、完整 installer/upgrade/workflow-switch/release-candidate
+matrix 或 E434 retirement。
 
 - `T454-C3-01`（R454-C3-01/03）：Draft 2020-12 校验 39 个 named DTO；四个 checkout DTO 各有正例，
   并拒绝 additional fields、valid candidate 的 null HEAD/branch、registered topology、dirty paths，以及
@@ -30,3 +31,6 @@ upgrade/workflow-switch/release-candidate matrix 或 E434 retirement。
   完整 Release matrix 继续由专门 owner 验证。
 
 以上测试不得创建真实 PR、merge、Issue closure、production activation 或 cleanup 副作用。
+
+提升前 lifecycle runtime 为 `51/51`。Global package suite 保持 `19/20`，preset suite 保持 `85/86`；
+两项 suite 都不声明为通过。Promotion-created diff 仍须 fresh Phase 2、Task Commit 与完整 Branch Review。

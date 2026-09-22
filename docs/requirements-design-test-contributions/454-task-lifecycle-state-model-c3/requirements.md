@@ -1,9 +1,9 @@
 # #454 C3 Checkout Substrate Requirements Contribution
 
-状态：`contribution_candidate`。本 contribution 继承 active
-`current-main-0.6.17-guru.59` Requirements、Design、Test 与 Architecture authority，
-只承接 #454 C3 checkout acquisition/live resolution candidate。已提升的 C2+D0 contribution
-保持 immutable；本目录不修改 shared current，也不授权 activation、promotion 或发布。
+状态：`reviewed_promoted`。本 contribution 已由受控 RDT promotion 提升到
+`current-main-0.6.17-guru.60`；`.59` 为 immutable predecessor，Architecture shared current 为
+`.60/active`。提升范围只承接 #454 C3 checkout acquisition/live resolution substrate；已提升的 C2+D0
+contribution 保持 immutable，production activation、发布与剩余 lifecycle slices 未完成。
 
 - `R454-C3-01`：C3 必须新增四个 named checkout DTO，分别承接 acquisition plan、candidate、
   resolution 与 selection。Machine path 只允许存在于 call-local DTO/transaction，不得进入 durable task、
@@ -34,5 +34,5 @@
   preset apply 若因 canonical C3 bytes 与故意未同步的 installed bytes 产生 conflict，必须如实报告为未通过，
   不得通过同步 installed/platform projection 使该测试变绿。
 
-C4-C7、D443、D436 与 E434 保持独立后续范围。本 contribution 不授权 commit、push、PR、merge、
-shared-current promotion、Issue closure 或 cleanup。
+C4-C7、D443、D436 与 E434 保持独立后续范围。Promotion-created diff 仍须 fresh Phase 2、Task Commit
+与完整 Branch Review；本 contribution 不授权 push、PR、merge、Issue closure 或 cleanup。

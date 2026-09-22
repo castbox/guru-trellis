@@ -1,8 +1,8 @@
 # #454 C3 Checkout Substrate Design Contribution
 
-状态：`contribution_candidate`。采用 `target_native`，关联
+状态：`reviewed_promoted`。采用 `target_native`，关联
 `architecture-contribution-454-task-lifecycle-state-model-c3-v1`，expected current 为
-`current-main-0.6.17-guru.59`。
+`current-main-0.6.17-guru.59`，promoted successor 为 `current-main-0.6.17-guru.60`。
 
 - `D454-C3-01`：`task-lifecycle-dtos.schema.json` 从 35 个扩展到 39 个 named DTO。四个 C3 DTO
   使用 closed object 与 exact consumer projection；path-bearing fields 只存在于本次 acquisition 调用，
@@ -35,3 +35,6 @@
 
 本设计不新增 ADR。`ADR-015` 已拥有 TaskId/lifecycle 与 framework-extension boundary；C3 只实现其下一段
 checkout substrate，不改变 owner、兼容策略或 activation 决策。
+
+Promotion 只建立 `.60` current Design authority；promotion-created diff 的 fresh gates、C4-C7、D443、D436、
+E434、production activation 与完整 Release matrix 仍须各自 owner 独立完成。

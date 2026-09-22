@@ -107,6 +107,11 @@
   是 review HEAD 祖先；bounded continuity 只允许 post-Branch-Review/Publication/Finalizer caller，并绑定 prior
   full-review commit、new-base ancestry 与 candidate tree identity。
 
+- `ARCH-INT-025`：#454 C3 把四个 checkout DTO 与 live checkout runtime 只加入 canonical shared substrate；
+  planned registry row 与 canonical `planned_skill_ids` 预留 `guru-ensure-task-checkout`，但 active selector、
+  `active_skill_ids`、active graph、workflow、installed copy 与平台 projection 都保持原字节。raw preset apply
+  因该刻意不同步而报告 conflict，是 E434 activation 前的明确未通过边界，不是兼容层或 production route。
+
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。
 - `skill_api` 与 interface/schema/command projection、distribution、managed/installed file
