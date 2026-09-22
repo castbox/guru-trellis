@@ -560,7 +560,7 @@ ownership 或 native actual-load 验证。
 - `D454-02`：`identity.py` 分离 TaskId、TaskRef 与 generation，扫描 active/archive canonical artifacts，拒绝 non-canonical locator、control-ref-invalid TaskId、exact/case-fold collision 与 invalid generation，并返回 immutable `TaskArtifactIdentity`。
 - `D454-03`：`source.py` 只规范化 closed source union、portable repository ref、Git-valid branch ref 与 Delivery target；schema/runtime 使用同一值域，不接管 Closure disposition、branch association、checkout acquisition 或 Git mutation。
 - `D454-04`：`schema.py` 从固定 sibling contract root 加载 regular schema，验证 Draft 2020-12 并拒绝 remote/parent `$ref`、nested `$id`、symlink escape 与 unknown DTO；`results.py` 只构造 minimal named DTO。
-- `D454-05`：`LifecycleContractError` 提供稳定 code/field/remediation；runtime 不写 task/session/mapping，不导入 Fork private code，不修复 metadata，不选择 semantic route，也不持久化 validation result。
+- `D454-05`：`LifecycleContractError` 提供稳定 code/field_path/remediation；runtime 不写 task/session/mapping，不导入 Fork private code，不修复 metadata，不选择 semantic route，也不持久化 validation result。
 - `D454-06`：Fork source lock 固定到 reviewed commit `eb370008c7689d4e272ae626bd002190ecbb3296`、tree `bd1f133cc55d0562ad9ec5f426bca70d1584194b` 与 CI `35621578090`；canonical/preset durable SSOT 一致，C3-C7 与 #434 activation 不提前投影。
 - `D454-07`：D0 由 Reconcile 拥有 pre/post-review integration，Task Commit 只输出 exact committed candidate，Branch Review 分别拥有 full 与 continuity profile。Pre-review compatible route 创建 parents 为 `[prior_task_head, new_base_head]` 的本地 merge commit；`post_check/post_commit` 回 fresh Phase 2，continuity 只允许已有 prior full review 并验证 new-base ancestry 与 candidate tree identity。
 

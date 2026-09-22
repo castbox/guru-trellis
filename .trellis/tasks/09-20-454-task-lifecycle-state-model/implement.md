@@ -220,7 +220,7 @@ Branch Review finding-fix（2026-09-22）：
 Post-promotion Branch Review finding-fix（2026-09-23）：
 
 - `BR454-C3-P2-006` 已修复：`.60` Design 的 `D454-05` 与已提升 error contract 对齐，只声明稳定
-  `code`、`field`、`remediation`，不再保留已移除的 `details`；
+  `code`、`field_path`、`remediation`，不再保留已移除的 `details`；
 - `BR454-C3-P2-007` 已修复：task lifecycle schema runtime 为 `date-time` 注册与现有 contract 一致的闭合
   RFC 3339 checker，覆盖大小写 `T/Z`、calendar validity、offset、year `0000` 与合法 leap second，并新增有效/
   非法 timestamp regression；
