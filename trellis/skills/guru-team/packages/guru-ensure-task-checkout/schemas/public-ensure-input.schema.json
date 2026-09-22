@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-ensure-task-checkout-input-ensure-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profile", "mode", "task_artifact", "branch_binding_ref"],
+  "properties": {
+    "profile": {"const": "ensure_checkout"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "task_artifact": {"$ref": "#/$defs/taskArtifact"},
+    "branch_binding_ref": {"$ref": "#/$defs/branchBinding"}
+  },
+  "$defs": {
+    "taskId": {"type": "string", "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "taskRef": {"type": "string", "pattern": "^\\.trellis/tasks/(?!archive(?:/|$))(?!\\.{1,2}$)[^/\\\\]+$|^\\.trellis/tasks/archive/[0-9]{4}-[0-9]{2}/(?!\\.{1,2}$)[^/\\\\]+$"},
+    "taskArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_id", "task_ref", "lifecycle_generation"],
+      "properties": {
+        "task_id": {"$ref": "#/$defs/taskId"},
+        "task_ref": {"$ref": "#/$defs/taskRef"},
+        "lifecycle_generation": {"type": "integer", "minimum": 0}
+      }
+    },
+    "branchBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_id", "lifecycle_generation", "binding_epoch", "binding_revision"],
+      "properties": {
+        "task_id": {"$ref": "#/$defs/taskId"},
+        "lifecycle_generation": {"type": "integer", "minimum": 0},
+        "binding_epoch": {"type": "integer", "minimum": 0},
+        "binding_revision": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.58`
+- version：`current-main-0.6.17-guru.59`
 - status：`active`
-- source binding：reviewed #443 contribution + inherited immutable `.56` authority；active registry 32 Skills / 142 package exits / 102 commands，production workflow仍为22 mandatory invokes / 98 exits；current增量见`ARCH-CUR-034` / `ARCH-DOM-019` / `ARCH-INT-022` / `ARCH-GAP-009` / `ADR-014`。#443 package保持deferred，#434独占production graph activation；Release matrix未验证。
+- source binding：reviewed #454 contribution + inherited immutable `.58` authority；active registry 保持 32 Skills / 142 package exits / 102 commands，production workflow 保持 22 mandatory invokes / 98 exits；current 增量见 `ARCH-CUR-036` / `ARCH-DOM-021` / `ARCH-INT-024` / `ARCH-GAP-011` / `ADR-015`，fixed Fork source 为 `eb370008c7689d4e272ae626bd002190ecbb3296`。`.59` 只提升 C2 shared lifecycle kernel 与 D0 stage-evidence correction；C3-C7、D443、D436、E434 与 #434 production graph activation 仍未完成，Release matrix 未验证。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`
 - required concern set：`guru-trellis-architecture-change-concerns-v1`

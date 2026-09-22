@@ -13,6 +13,10 @@
     {"$ref": "#/$defs/SourceCorrectionReadyDTO"},
     {"$ref": "#/$defs/DeliveryTargetRefDTO"},
     {"$ref": "#/$defs/BranchBindingRefDTO"},
+    {"$ref": "#/$defs/CheckoutAcquisitionPlanDTO"},
+    {"$ref": "#/$defs/CheckoutCandidateDTO"},
+    {"$ref": "#/$defs/CheckoutResolutionDTO"},
+    {"$ref": "#/$defs/CheckoutSelectionDTO"},
     {"$ref": "#/$defs/CheckpointRefDTO"},
     {"$ref": "#/$defs/HandoffRefDTO"},
     {"$ref": "#/$defs/HandoffInventoryRefDTO"},
@@ -50,6 +54,8 @@
     "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "repoPath": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?![A-Za-z]:[\\\\/])(?!.*//)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\).+$"},
+    "absolutePath": {"type": "string", "minLength": 1, "pattern": "^(?:/|[A-Za-z]:[\\\\/]).+$"},
+    "timestamp": {"type": "string", "format": "date-time"},
     "IssueSource": {
       "type": "object",
       "additionalProperties": false,
@@ -134,6 +140,73 @@
       "type": "object", "additionalProperties": false,
       "required": ["task_id", "lifecycle_generation", "binding_epoch", "binding_revision"],
       "properties": {"task_id": {"$ref": "#/$defs/taskId"}, "lifecycle_generation": {"$ref": "#/$defs/generation"}, "binding_epoch": {"type": "integer", "minimum": 0}, "binding_revision": {"type": "integer", "minimum": 0}}
+    },
+    "CheckoutAcquisitionPlanDTO": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["task_id", "task_ref", "lifecycle_generation", "route", "branch_ref", "decision_head", "task_artifact_expectation", "invocation_checkout", "transaction_id", "result_id"],
+          "properties": {
+            "task_id": {"$ref": "#/$defs/taskId"}, "task_ref": {"$ref": "#/$defs/taskRef"}, "lifecycle_generation": {"$ref": "#/$defs/generation"},
+            "route": {"const": "adopt_invocation_checkout"}, "branch_ref": {"$ref": "#/$defs/branchRef"}, "decision_head": {"$ref": "#/$defs/commit"},
+            "task_artifact_expectation": {"enum": ["required", "absent"]},
+            "invocation_checkout": {"$ref": "#/$defs/absolutePath"}, "transaction_id": {"$ref": "#/$defs/identifier"}, "result_id": {"$ref": "#/$defs/identifier"}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["task_id", "task_ref", "lifecycle_generation", "route", "branch_ref", "decision_head", "task_artifact_expectation", "provision_disposition", "target_path", "transaction_id", "result_id"],
+          "properties": {
+            "task_id": {"$ref": "#/$defs/taskId"}, "task_ref": {"$ref": "#/$defs/taskRef"}, "lifecycle_generation": {"$ref": "#/$defs/generation"},
+            "route": {"const": "provision_linked_worktree"}, "branch_ref": {"$ref": "#/$defs/branchRef"}, "decision_head": {"$ref": "#/$defs/commit"},
+            "task_artifact_expectation": {"enum": ["required", "absent"]},
+            "provision_disposition": {"enum": ["new_branch", "existing_branch", "existing_checkout"]}, "target_path": {"$ref": "#/$defs/absolutePath"},
+            "transaction_id": {"$ref": "#/$defs/identifier"}, "result_id": {"$ref": "#/$defs/identifier"}
+          }
+        }
+      ]
+    },
+    "CheckoutCandidateDTO": {
+      "type": "object", "additionalProperties": false,
+      "required": ["candidate_id", "path", "head", "branch_ref", "topology", "dirty_paths", "discovered_at", "validation_state", "reason_code"],
+      "properties": {
+        "candidate_id": {"$ref": "#/$defs/identifier"}, "path": {"$ref": "#/$defs/absolutePath"},
+        "head": {"anyOf": [{"$ref": "#/$defs/commit"}, {"type": "null"}]},
+        "branch_ref": {"anyOf": [{"$ref": "#/$defs/branchRef"}, {"type": "null"}]}, "topology": {"enum": ["primary", "linked", "registered"]},
+        "dirty_paths": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "discovered_at": {"$ref": "#/$defs/timestamp"}, "validation_state": {"enum": ["valid", "invalid_candidate", "authority_conflict"]},
+        "reason_code": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"}
+      }
+    },
+    "CheckoutResolutionDTO": {
+      "type": "object", "additionalProperties": false,
+      "required": ["resolution_kind", "reason_code", "candidate_ids", "selected_candidate_id"],
+      "properties": {
+        "resolution_kind": {"enum": ["checkout_resolved", "selection_required", "authority_conflict"]},
+        "reason_code": {"$ref": "#/$defs/identifier"},
+        "candidate_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},
+        "selected_candidate_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"}
+      }
+    },
+    "CheckoutSelectionDTO": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["selection_kind", "candidate_id", "branch_ref", "expected_head", "selected_at"],
+          "properties": {
+            "selection_kind": {"const": "discovered_candidate"}, "candidate_id": {"$ref": "#/$defs/identifier"},
+            "branch_ref": {"$ref": "#/$defs/branchRef"}, "expected_head": {"$ref": "#/$defs/commit"}, "selected_at": {"$ref": "#/$defs/timestamp"}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["selection_kind", "target_path", "branch_ref", "expected_head", "selected_at"],
+          "properties": {
+            "selection_kind": {"const": "explicit_target"}, "target_path": {"$ref": "#/$defs/absolutePath"},
+            "branch_ref": {"$ref": "#/$defs/branchRef"}, "expected_head": {"$ref": "#/$defs/commit"}, "selected_at": {"$ref": "#/$defs/timestamp"}
+          }
+        }
+      ]
     },
     "CheckpointRefDTO": {
       "type": "object", "additionalProperties": false,

@@ -43,6 +43,10 @@ def valid_payloads() -> dict[str, dict]:
         },
         "DeliveryTargetRefDTO": {**base, "target_relation_id": "target:1"},
         "BranchBindingRefDTO": {**base, "binding_epoch": 0, "binding_revision": 1},
+        "CheckoutAcquisitionPlanDTO": {**artifact, "route": "adopt_invocation_checkout", "branch_ref": "codex/task", "decision_head": COMMIT, "task_artifact_expectation": "required", "invocation_checkout": "/tmp/task", "transaction_id": "checkout:1", "result_id": "checkout-result:1"},
+        "CheckoutCandidateDTO": {"candidate_id": "candidate:1", "path": "/tmp/task", "head": COMMIT, "branch_ref": "codex/task", "topology": "linked", "dirty_paths": [], "discovered_at": "2026-09-22T00:00:00Z", "validation_state": "valid", "reason_code": None},
+        "CheckoutResolutionDTO": {"resolution_kind": "checkout_resolved", "reason_code": "unique_candidate", "candidate_ids": ["candidate:1"], "selected_candidate_id": "candidate:1"},
+        "CheckoutSelectionDTO": {"selection_kind": "explicit_target", "target_path": "/tmp/task", "branch_ref": "codex/task", "expected_head": COMMIT, "selected_at": "2026-09-22T00:00:00Z"},
         "CheckpointRefDTO": {**base, "checkpoint_commit": COMMIT, "checkpoint_ref": "refs/heads/checkpoint", "result_id": "checkpoint:1"},
         "HandoffRefDTO": {**base, "handoff_id": "handoff:1", "receipt_ref": f"refs/heads/guru-task-lifecycle/{TASK_ID}", "result_id": "handoff-result:1"},
         "HandoffInventoryRefDTO": {**base, "handoff_id": "handoff:1", "inventory_id": "inventory:1"},
@@ -93,6 +97,36 @@ class ContractTests(unittest.TestCase):
         }.items():
             with self.subTest(field=field), self.assertRaises(LifecycleContractError):
                 validate_dto("TaskArtifactDTO", {**payload, field: value})
+
+    def test_checkout_machine_facts_are_limited_to_call_local_dtos(self):
+        payloads = valid_payloads()
+        self.assertEqual(validate_dto("CheckoutCandidateDTO", payloads["CheckoutCandidateDTO"])["path"], "/tmp/task")
+        for name in ("TaskArtifactDTO", "TaskLifecycleDTO", "BranchBindingRefDTO", "ResultRefDTO"):
+            with self.subTest(name=name), self.assertRaises(LifecycleContractError):
+                validate_dto(name, {**payloads[name], "checkout_path": "/tmp/task"})
+
+    def test_checkout_plan_has_a_closed_task_artifact_expectation(self):
+        payload = valid_payloads()["CheckoutAcquisitionPlanDTO"]
+        self.assertEqual(
+            validate_dto("CheckoutAcquisitionPlanDTO", {**payload, "task_artifact_expectation": "absent"})[
+                "task_artifact_expectation"
+            ],
+            "absent",
+        )
+        with self.assertRaises(LifecycleContractError):
+            validate_dto("CheckoutAcquisitionPlanDTO", {**payload, "task_artifact_expectation": "optional"})
+
+    def test_checkout_candidate_can_represent_detached_or_unreadable_live_facts(self):
+        candidate = valid_payloads()["CheckoutCandidateDTO"]
+        detached = {
+            **candidate,
+            "head": None,
+            "branch_ref": None,
+            "topology": "registered",
+            "validation_state": "invalid_candidate",
+            "reason_code": "detached_checkout",
+        }
+        self.assertEqual(validate_dto("CheckoutCandidateDTO", detached), detached)
 
     def test_path_and_branch_primitives_reject_non_portable_values(self):
         payloads = valid_payloads()

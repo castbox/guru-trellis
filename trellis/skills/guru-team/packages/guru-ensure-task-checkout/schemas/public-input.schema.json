@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-ensure-task-checkout-input-1.0","oneOf":[{"$ref":"public-ensure-input.schema.json"},{"$ref":"public-resume-input.schema.json"}]}
