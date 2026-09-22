@@ -13,19 +13,20 @@
   `guru-trellis-architecture-change-contract-v1`
 - Change path: `target_native`
 - Current candidate contribution id:
-  `architecture-contribution-454-task-lifecycle-state-model-c3-v1`
+  `architecture-contribution-454-task-lifecycle-state-model-c3-provenance-v1`
 - Contribution locator: this file
-- Expected current identity: `current-main-0.6.17-guru.59`
-- Promotion state: `reviewed_promoted`
+- Expected current identity: `current-main-0.6.17-guru.60`
+- Promotion state: `reviewed_candidate`
 - C3 RDT candidate:
   `docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c3/`
 
 The promoted `architecture-contribution-454-task-lifecycle-state-model-v1`
-remains immutable evidence for C2 and D0. This C3 contribution completed fresh
-Phase 2, Task Commit, independent full-diff Branch Review and serialized
-promotion into `current-main-0.6.17-guru.60`. The promotion-created diff must
-now re-enter fresh Phase 2, Task Commit and independent full-diff Branch Review
-before Publication.
+remains immutable evidence for C2 and D0. The promoted
+`architecture-contribution-454-task-lifecycle-state-model-c3-v1` remains
+immutable evidence for the original C3 slice in `current-main-0.6.17-guru.60`.
+Implementation discovery finding `BR454-C3-P2-011` requires this distinct
+task-owned candidate before source or test edits because live path, branch and
+HEAD facts cannot prove transaction origin after same-path replacement.
 
 ## 2. Boundary And Decision
 
@@ -40,15 +41,21 @@ C3 adds only the next target-native substrate slice:
 2. common-dir based live Git/worktree fact inspection;
 3. checkout discovery, validation, classification and explicit selection;
 4. adopt/provision transactions with bounded rollback and read-only recovery;
-5. one stable `guru-ensure-task-checkout` id reserved only as `state=planned`
+5. one closed ordinary JSON provenance marker in the created linked worktree's
+   Git administrative directory, owned by the acquisition transaction and read
+   only by the same owner's output-loss recovery; the direct handoff retires it
+   immediately before invoking its consumer, while worktree removal removes it
+   with the original resource;
+6. one stable `guru-ensure-task-checkout` id reserved only as `state=planned`
    registry metadata and canonical `planned_skill_ids`; no canonical package
    directory exists until E434 delivers package, selector, workflow and
    installed/platform projections in one activation boundary.
 
-C3 does not create branch association, session or resource-ledger stores. It
-does not activate a production owner and does not read or write legacy task or
-workspace mappings. C4-C7, D443, D436 and E434 remain owned by their existing
-later slices.
+C3 does not create branch association, session or resource-ledger stores. The
+transaction marker is not task, session, branch, workspace or resource-ledger
+authority and is never projected through a public DTO. It does not activate a
+production owner and does not read or write legacy task or workspace mappings.
+C4-C7, D443, D436 and E434 remain owned by their existing later slices.
 
 Decision refs: `ARCH-FND-001..006`, `ARCH-GOV-006..009`, `ARCH-GAP-009`,
 `ARCH-GAP-011`, `ADR-015`, and all five Design Constitution principles.
@@ -59,19 +66,23 @@ Decision refs: `ARCH-FND-001..006`, `ARCH-GOV-006..009`, `ARCH-GAP-009`,
 | --- | --- | --- |
 | authority-binding | applicable | Bind Architecture 2.0, current `.60`, Issue #454 and generation 1. |
 | constitution-binding | applicable | Use official Git extension surfaces, unique owners, minimum state and one-way convergence. |
-| boundary-and-decision | applicable | C3 is `target_native`; checkout facts are call-local and the planned Skill id has no package tree. |
-| owner-and-single-writer | applicable | C3 writes shared checkout DTO/runtime and non-active planned metadata; E434 exclusively owns complete package composition and activation. |
+| boundary-and-decision | applicable | C3 is `target_native`; checkout facts remain call-local, while one owner-private transaction marker supplies only non-reconstructible creation provenance to output-loss recovery. The planned Skill id has no package tree. |
+| owner-and-single-writer | applicable | The checkout acquisition transaction is the sole marker writer and recovery is its sole reader; C3 otherwise writes shared checkout DTO/runtime and non-active planned metadata. E434 exclusively owns complete package composition and activation. |
 | compatibility-and-exit | applicable | No alias, adapter, dual-read or dual-write; predecessor remains active only until E434 atomic cutover. |
 | gap-and-deviation | applicable | Narrow `ARCH-GAP-011` by adding checkout substrate without claiming branch/session/resource or production completion. |
 | parallel-scope | applicable | Task-local contract and C3 canonical files only; shared current and active selectors are forbidden. |
-| evidence-and-freshness | applicable | Bind the complete dirty/untracked C3 worktree, focused tests, schema validation, line limits and zero legacy-reader checks. |
-| review-and-promotion | applicable | Expected-current-bound promotion is complete; the promotion-created diff requires fresh Phase 2, Task Commit and full-diff Branch Review before Publication. |
+| evidence-and-freshness | applicable | Bind the complete dirty/untracked C3 worktree, same-path replacement and marker lifecycle tests, schema validation, line limits and zero legacy-reader/forbidden-mechanism checks. |
+| review-and-promotion | applicable | The provenance delta is a new task-owned `reviewed_candidate` against current `.60`; it requires fresh Phase 2, Task Commit, independent full-diff Branch Review and serialized promotion before Publication. |
 
 ## 4. Owner And Single Writer
 
 - Framework TaskId/session primitive writer: fixed `castbox/Trellis` source.
 - C2 shared lifecycle kernel owner: promoted #454 `.59` contribution.
 - C3 checkout substrate writer: this task and candidate.
+- C3 acquisition marker writer/reader: `provision_linked_worktree` writes the
+  marker only for transaction-created worktrees; the same acquisition owner's
+  output-loss recovery validates it; successful `post_acquire` consumption
+  removes it.
 - C4 branch association/rebind writer: later #454 slice, not started here.
 - C5 session/resource writer: later #454 slice, not started here.
 - C6/C7 package composition and validation writers: later #454 slices.
@@ -110,9 +121,10 @@ D/E package migration.
 
 ## 7. Before And After
 
-Before: `.59` can express stable lifecycle identity and operation-scoped stage
-evidence, but it has no target-native checkout acquisition/resolution runtime
-or reserved checkout owner id. C3 is explicitly pending in shared current.
+Before: `.60` contains the promoted C3 checkout substrate, but output-loss
+recovery proves only path, branch and HEAD. After the original Guru-created
+worktree is removed, an honest caller can recreate the same branch/HEAD at the
+same path and the current recovery incorrectly restores Guru ownership.
 
 After candidate:
 
@@ -123,7 +135,13 @@ After candidate:
 - authority conflicts cannot be downgraded by selection;
 - adopt and provision routes validate fresh HEAD/repository/branch/task facts;
 - rollback removes only transaction-created resources whose identities still
-  match, while output-loss recovery rematerializes without mutation;
+  match;
+- transaction-created linked worktrees carry one closed owner-private marker
+  under their Git administrative directory; recovery requires the exact marker
+  plus fresh live facts, so same-path replacement fails closed;
+- direct `post_acquire` handoff removes the marker before invoking the consumer;
+  marker-retirement or callback failure rolls back the transaction-created
+  resource, and recovery itself performs no Git mutation;
 - `guru-ensure-task-checkout` is reserved by a `state=planned` registry row and
   canonical `planned_skill_ids` membership, with no canonical package directory;
 - active registry selector, `active_skill_ids`, workflow, active graph and
@@ -156,19 +174,21 @@ installed DTO and registry copies. That case and the suite
 must be reported as unpassed; changing installed/platform projections to make
 it pass belongs to E434 and is forbidden in this candidate.
 
-ADR: no new ADR. `ADR-015` already owns the lifecycle identity and
-framework/extension boundary. C3 conforms to that accepted decision and does
-not add a new owner, tradeoff, exception or compatibility exit.
+ADR: no new ADR. `ADR-015` already owns lifecycle identity and the
+framework/extension boundary. The marker is a bounded transaction-recovery
+implementation of the existing conservative ownership rule; it adds no owner,
+compatibility exit or durable lifecycle authority.
 
-Promotion state: `reviewed_promoted`. The reviewed committed range is
-`origin/main@9c2238bad7e73ea4a1f23dddcb7e8e9204c244da...e965b7e8b6850614a2cd21f899a02b3ea9da73f3`.
-This state proves the serialized `.59 -> .60` Architecture promotion only; it
-does not prove the promotion-created diff's fresh downstream gates.
+Promotion state: `reviewed_candidate`. The prior reviewed committed range
+`origin/main@9c2238bad7e73ea4a1f23dddcb7e8e9204c244da...e965b7e8b6850614a2cd21f899a02b3ea9da73f3`
+proves only the original `.60` C3 promotion. This provenance delta has no
+committed review or promotion yet.
 
 ## 9. Resume Boundary
 
-The active task is already `in_progress`. Repairing this task-local contract
-does not reactivate, recommit or republish anything. A fresh
-`task_impact_sync(stage=phase2)` must bind the current `.60` authority, this C3
-identity, current project-check descriptor and the complete worktree candidate.
-Only `baseline_current` may enter `guru-check-task`.
+The active task is already `in_progress`. This implementation-discovery update
+does not reactivate, commit, promote or publish anything. A fresh
+`task_impact_sync(stage=implementation_discovery)` must bind current `.60`, the
+new provenance contribution, current project-check descriptor and the complete
+worktree candidate before source or test edits. After implementation, fresh
+`task_impact_sync(stage=phase2)` and `guru-check-task` are mandatory.

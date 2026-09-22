@@ -453,3 +453,48 @@ predecessor数据模型带入target graph。
 - 验证：先执行 focused Finalizer preflight，确认旧的 archive-output classification/subset 错误消失；再执行 task
   validator 与 `git diff --check`。本次 finding-fix 使既有 Publication 证据失效，后续必须从 fresh Phase 2、Task
   Commit、full Branch Review 到 fresh Publication 依次重建，不得复用上一轮 ready/finalization 结果。
+
+## Branch Review finding-fix（2026-09-22）
+
+- `BR454-C3-P2-010`：`recover_checkout_acquisition()` 在原 provisioned linked worktree 已移除、同一
+  branch/HEAD 又由 caller 于新路径重新创建时，把 replacement registration 当作原 transaction 的 moved checkout，
+  并恢复为 `created_worktree_for_existing_branch / guru_owned / created_worktree=true`。这会把 caller-created
+  resource 错误交给后续 Cleanup。
+- 修复：output-loss recovery 只接受原 call-local transaction 的 exact `target_path`；不同路径固定返回
+  `acquisition_result_mismatch`。普通 `git worktree move` 仍由 live checkout resolution 支持，但不在 output-loss
+  recovery 窗口中猜测为同一 transaction；未新增 durable path、workspace mapping、receipt 或第二 ownership owner。
+- 回归：新增 same branch/same HEAD replacement 用例，证明 recovery fail closed 且不修改 replacement resource；
+  原 output-loss rematerialization、changed-HEAD replacement rejection 与 worktree-move resolution 用例继续通过。
+- 验证：targeted regression `1/1`、完整 lifecycle runtime `53/53`、task-lifecycle Python compile、DTO JSON、
+  `git diff --check` 通过。该 finding-fix 必须重新建立 fresh Phase 2、Task Commit 与完整 Branch Review；不得复用
+  `f7718c21` 的 `implementation_required` checkpoint 或更早 Publication/Finalizer 证据。
+
+## Branch Review finding-fix（2026-09-23）
+
+- `BR454-C3-P2-011`：仅绑定 exact path、branch 与 HEAD 仍不能证明 output-loss recovery 找到的是原 transaction
+  创建的 linked worktree；原资源被移除后，honest caller 可在同一路径用同一 branch/HEAD 创建 replacement，旧恢复逻辑
+  会错误恢复 `guru_owned` disposition 并把 caller resource 交给后续 Cleanup。
+- Solution mechanism qualification 已以 `BR454-C3-MECH-012` 返回 `qualified_current`；正式 continuation 为
+  `solution-mechanism:33fd356ff8c91a1ae48892d7`。机制只在 transaction-created linked worktree 的 Git
+  administrative directory 写入一份闭合普通 JSON provenance marker，绑定 transaction/result、task/generation、
+  branch/HEAD、target、disposition、action 与 ownership projection；recovery 必须同时满足 fresh live Git facts 与
+  marker exact match。existing-checkout reuse 继续为 caller-owned，不写 marker。
+- Architecture implementation-discovery 已返回 `baseline_current`，绑定 current `.60` 与新的 task-owned
+  `architecture-contribution-454-task-lifecycle-state-model-c3-provenance-v1`；promotion state 为
+  `reviewed_candidate`。该 marker 不是 task/session/branch/workspace/resource-ledger authority，不引入 lock、inode、
+  PID、process、FD、signal、workspace mapping、resource ledger 或第二 ownership owner，`git_facts.py` 无需修改。
+- Marker lifecycle：provision 成功后创建；read-only output-loss recovery 只验证、不修改；`git worktree remove` 随原
+  administrative directory 一并移除，因此 same-path/same-branch/same-HEAD replacement 缺少 marker 并 fail closed；
+  direct handoff 在调用 `post_acquire` 前先 retire marker。Implementation review 已修正 callback ordering，避免下游
+  consumer 已接受 resource 后 marker 删除失败又触发 rollback；marker retirement 或 callback 失败均只回滚本
+  transaction 创建且身份仍匹配的资源。
+- Focused 验证：checkout substrate `27/27`、完整 task lifecycle runtime `56/56`、Python compile、task-lifecycle
+  JSON parse、ownership `32 active + 1 planned`、task validator、workspace boundary、legacy mapping/path-authority
+  零命中、forbidden OS/process/lock mechanism 零命中、touched file line limits 与 `git diff --check` 均通过；
+  marker coverage 包含正常 output-loss recovery、different-path 与 same-path replacement rejection、missing/mismatched
+  marker、successful handoff 前 retirement 及 callback failure rollback。
+- Fresh broader repository validation 保持真实非通过边界：package integration `19/20`，唯一 error 仍为
+  `guru-complete-task-closure` 相对 `$ref`；shared runtime `119/128`（`6 failures, 3 errors`）；lifecycle integration
+  `38/44`（`6 failures`）；preset suite `272` 项为 `2 errors, 3 skipped`，两项 error 仍是 raw apply installed
+  projection conflict 与 parallel-finish fixture 中的同一 conflict。上述失败未命中本次 provenance marker 路径，
+  但不得记为 suite 通过；C4-C7、D443、D436、E434 与完整多平台 Release matrix 继续为后续或未验证边界。

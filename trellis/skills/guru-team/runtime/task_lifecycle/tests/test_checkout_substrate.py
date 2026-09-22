@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from runtime.task_lifecycle.checkout_acquisition import (
     CheckoutAcquisitionPlan,
+    PROVENANCE_MARKER_NAME,
     adopt_invocation_checkout,
     provision_linked_worktree,
     recover_checkout_acquisition,
@@ -156,6 +157,10 @@ class CheckoutSubstrateTests(unittest.TestCase):
             elif path.is_dir():
                 path.rmdir()
         task.rmdir()
+
+    def provenance_marker(self, checkout_git_dir: Path | None) -> Path:
+        self.assertIsNotNone(checkout_git_dir)
+        return checkout_git_dir / PROVENANCE_MARKER_NAME
 
     def test_primary_and_linked_invocation_checkouts_are_adopted_as_caller_owned(self) -> None:
         self.fixture.git("checkout", "-b", "task-primary")
@@ -526,6 +531,8 @@ class CheckoutSubstrateTests(unittest.TestCase):
             target=target,
         )
         created = provision_linked_worktree(plan)
+        marker = self.provenance_marker(created.checkout.git_dir)
+        self.assertTrue(marker.is_file())
         before = list_worktree_registrations(inspect_repository(self.fixture.repo))
         recovered = recover_checkout_acquisition(plan)
         after = list_worktree_registrations(inspect_repository(self.fixture.repo))
@@ -547,6 +554,7 @@ class CheckoutSubstrateTests(unittest.TestCase):
                 created.created_worktree,
             ),
         )
+        self.assertTrue(marker.is_file())
 
     def test_recovery_rejects_replacement_resources_with_changed_identity(self) -> None:
         target = self.root / "replacement-target"
@@ -566,6 +574,106 @@ class CheckoutSubstrateTests(unittest.TestCase):
         with self.assertRaisesRegex(LifecycleContractError, "head_drift"):
             recover_checkout_acquisition(plan)
 
+    def test_recovery_rejects_same_head_replacement_at_another_path(self) -> None:
+        self.fixture.branch("task-replacement-same-head")
+        target = self.root / "same-head-target"
+        plan = self.plan(
+            "provision_linked_worktree",
+            "task-replacement-same-head",
+            disposition="existing_branch",
+            target=target,
+        )
+        provision_linked_worktree(plan)
+        self.fixture.git("worktree", "remove", str(target))
+        replacement = self.root / "same-head-replacement"
+        self.fixture.git("worktree", "add", str(replacement), "task-replacement-same-head")
+
+        with self.assertRaisesRegex(LifecycleContractError, "acquisition_result_mismatch"):
+            recover_checkout_acquisition(plan)
+
+        registrations = list_worktree_registrations(inspect_repository(self.fixture.repo))
+        self.assertIn(replacement.resolve(), {row.path for row in registrations})
+
+    def test_recovery_rejects_same_path_same_head_replacement_without_marker(self) -> None:
+        self.fixture.branch("task-same-path-replacement")
+        target = self.root / "same-path-target"
+        plan = self.plan(
+            "provision_linked_worktree",
+            "task-same-path-replacement",
+            disposition="existing_branch",
+            target=target,
+        )
+        created = provision_linked_worktree(plan)
+        marker = self.provenance_marker(created.checkout.git_dir)
+        self.assertTrue(marker.is_file())
+        self.fixture.git("worktree", "remove", str(target))
+        self.fixture.git("worktree", "add", str(target), "task-same-path-replacement")
+        self.assertFalse(marker.exists())
+
+        with self.assertRaisesRegex(LifecycleContractError, "acquisition_result_mismatch"):
+            recover_checkout_acquisition(plan)
+
+        registrations = list_worktree_registrations(inspect_repository(self.fixture.repo))
+        self.assertIn(target.resolve(), {row.path for row in registrations})
+
+    def test_recovery_rejects_missing_and_mismatched_provenance_markers(self) -> None:
+        for suffix, mutation in (
+            ("missing", lambda marker: marker.unlink()),
+            (
+                "mismatch",
+                lambda marker: marker.write_text(
+                    json.dumps(
+                        {
+                            **json.loads(marker.read_text(encoding="utf-8")),
+                            "transaction_id": "different-transaction:1",
+                        }
+                    ),
+                    encoding="utf-8",
+                ),
+            ),
+        ):
+            with self.subTest(suffix=suffix):
+                branch = f"task-marker-{suffix}"
+                target = self.root / f"marker-{suffix}-target"
+                plan = self.plan(
+                    "provision_linked_worktree",
+                    branch,
+                    disposition="new_branch",
+                    target=target,
+                    transaction_id=f"transaction-{suffix}:1",
+                    result_id=f"result-{suffix}:1",
+                )
+                created = provision_linked_worktree(plan)
+                marker = self.provenance_marker(created.checkout.git_dir)
+                mutation(marker)
+
+                with self.assertRaisesRegex(LifecycleContractError, "acquisition_result_mismatch"):
+                    recover_checkout_acquisition(plan)
+
+                self.assertTrue(target.is_dir())
+
+    def test_successful_post_acquire_removes_provenance_marker(self) -> None:
+        target = self.root / "post-acquire-target"
+        plan = self.plan(
+            "provision_linked_worktree",
+            "task-post-acquire",
+            disposition="new_branch",
+            target=target,
+        )
+        observed_markers: list[Path] = []
+
+        def consume(result) -> None:
+            marker = self.provenance_marker(result.checkout.git_dir)
+            self.assertFalse(marker.exists())
+            observed_markers.append(marker)
+
+        result = provision_linked_worktree(plan, post_acquire=consume)
+
+        self.assertEqual(result.checkout.path, target.resolve())
+        self.assertEqual(len(observed_markers), 1)
+        self.assertFalse(observed_markers[0].exists())
+        self.assertTrue(target.is_dir())
+
     def test_failure_rolls_back_only_transaction_created_resources(self) -> None:
         target = self.root / "rollback-target"
         plan = self.plan(
@@ -574,8 +682,18 @@ class CheckoutSubstrateTests(unittest.TestCase):
             disposition="new_branch",
             target=target,
         )
+        observed_markers: list[Path] = []
+
+        def fail_after_acquire(result) -> None:
+            marker = self.provenance_marker(result.checkout.git_dir)
+            self.assertFalse(marker.exists())
+            observed_markers.append(marker)
+            raise RuntimeError("downstream failed")
+
         with self.assertRaisesRegex(RuntimeError, "downstream failed"):
-            provision_linked_worktree(plan, post_acquire=lambda _: (_ for _ in ()).throw(RuntimeError("downstream failed")))
+            provision_linked_worktree(plan, post_acquire=fail_after_acquire)
+        self.assertEqual(len(observed_markers), 1)
+        self.assertFalse(observed_markers[0].exists())
         self.assertFalse(target.exists())
         self.assertEqual(
             self.fixture.git("show-ref", "--verify", "--quiet", "refs/heads/task-rollback", check=False),

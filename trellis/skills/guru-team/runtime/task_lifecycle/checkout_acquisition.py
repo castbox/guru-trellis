@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Literal
+from typing import Any, Callable, Literal
 
 from .checkout_resolution import (
     CheckoutRequest,
@@ -27,6 +28,8 @@ AcquisitionRoute = Literal["adopt_invocation_checkout", "provision_linked_worktr
 Ownership = Literal["guru_owned", "caller_owned", "not_applicable"]
 ProvisionDisposition = Literal["new_branch", "existing_branch", "existing_checkout"]
 IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
+PROVENANCE_MARKER_NAME = "guru-checkout-acquisition-provenance.json"
+PROVENANCE_SCHEMA_VERSION = "1.0"
 
 
 @dataclass(frozen=True)
@@ -205,6 +208,97 @@ def _provision_result(
     )
 
 
+def _provenance_marker_path(checkout: WorktreeFacts) -> Path:
+    if checkout.git_dir is None:
+        raise LifecycleContractError(
+            "acquisition_result_mismatch",
+            "transaction_provenance",
+            "Recover only a transaction-created checkout with exact acquisition provenance.",
+        )
+    return checkout.git_dir / PROVENANCE_MARKER_NAME
+
+
+def _provenance_payload(
+    request: CheckoutRequest,
+    plan: CheckoutAcquisitionPlan,
+    result: CheckoutAcquisitionResult,
+) -> dict[str, Any]:
+    return {
+        "schema_version": PROVENANCE_SCHEMA_VERSION,
+        "route": result.route,
+        "transaction_id": result.transaction_id,
+        "result_id": result.result_id,
+        "task_id": request.task_id,
+        "task_ref": request.task_ref,
+        "lifecycle_generation": request.lifecycle_generation,
+        "branch_ref": request.branch_ref,
+        "head": result.checkout.head,
+        "target_path": str(result.checkout.path),
+        "provision_disposition": plan.provision_disposition,
+        "action": result.action,
+        "branch_ownership": result.branch_ownership,
+        "worktree_ownership": result.worktree_ownership,
+        "created_branch": result.created_branch,
+        "created_worktree": result.created_worktree,
+    }
+
+
+def _raise_provenance_mismatch() -> None:
+    raise LifecycleContractError(
+        "acquisition_result_mismatch",
+        "transaction_provenance",
+        "Recover only a transaction-created checkout with exact acquisition provenance.",
+    )
+
+
+def _write_provenance_marker(
+    request: CheckoutRequest,
+    plan: CheckoutAcquisitionPlan,
+    result: CheckoutAcquisitionResult,
+) -> None:
+    marker = _provenance_marker_path(result.checkout)
+    payload = _provenance_payload(request, plan, result)
+    try:
+        with marker.open("x", encoding="utf-8") as stream:
+            stream.write(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+            stream.write("\n")
+    except OSError as exc:
+        raise LifecycleContractError(
+            "acquisition_result_mismatch",
+            "transaction_provenance",
+            "Recover only a transaction-created checkout with exact acquisition provenance.",
+        ) from exc
+
+
+def _require_provenance_marker(
+    request: CheckoutRequest,
+    plan: CheckoutAcquisitionPlan,
+    result: CheckoutAcquisitionResult,
+) -> None:
+    marker = _provenance_marker_path(result.checkout)
+    expected = _provenance_payload(request, plan, result)
+    try:
+        payload = json.loads(marker.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        _raise_provenance_mismatch()
+    if not isinstance(payload, dict) or set(payload) != set(expected):
+        _raise_provenance_mismatch()
+    if any(type(payload[key]) is not type(value) or payload[key] != value for key, value in expected.items()):
+        _raise_provenance_mismatch()
+
+
+def _remove_provenance_marker(checkout: WorktreeFacts) -> None:
+    marker = _provenance_marker_path(checkout)
+    try:
+        marker.unlink()
+    except OSError as exc:
+        raise LifecycleContractError(
+            "acquisition_result_mismatch",
+            "transaction_provenance",
+            "Recover only a transaction-created checkout with exact acquisition provenance.",
+        ) from exc
+
+
 def _rollback_created(
     request: CheckoutRequest,
     *,
@@ -312,7 +406,9 @@ def provision_linked_worktree(
         created_worktree = True
         checkout = _exact_post_state(request, target)
         result = _provision_result(plan, checkout)
+        _write_provenance_marker(request, plan, result)
         if post_acquire is not None:
+            _remove_provenance_marker(checkout)
             post_acquire(result)
         return result
     except Exception:
@@ -332,14 +428,15 @@ def recover_checkout_acquisition(plan: CheckoutAcquisitionPlan) -> CheckoutAcqui
     checkout = _exact_post_state(request)
     target = plan.target_path.resolve() if plan.target_path is not None else None
     if target is not None and checkout.path != target:
-        moved_registration = find_registration(request.repository, checkout.path)
-        if moved_registration is None:
-            raise LifecycleContractError(
-                "acquisition_result_mismatch",
-                "target_path",
-                "Recover only the exact live checkout for this transaction.",
-            )
-    return _provision_result(plan, checkout)
+        raise LifecycleContractError(
+            "acquisition_result_mismatch",
+            "target_path",
+            "Recover only the exact live checkout for this transaction.",
+        )
+    result = _provision_result(plan, checkout)
+    if result.created_worktree:
+        _require_provenance_marker(request, plan, result)
+    return result
 
 
 def acquire_checkout(
