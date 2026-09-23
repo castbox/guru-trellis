@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import secrets
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,9 +19,14 @@ _RECORD_FIELDS = {
     "schema_version",
     "task_id",
     "lifecycle_generation",
+    "binding_epoch",
     "binding_revision",
     "branch_name",
 }
+
+
+def _new_binding_epoch() -> int:
+    return secrets.randbits(63)
 
 
 def normalize_branch_name(value: Any, *, field_path: str = "branch_name") -> str:
@@ -58,6 +64,7 @@ class TaskLifecycleKey:
 class BranchBinding:
     task_id: str
     lifecycle_generation: int
+    binding_epoch: int
     binding_revision: int
     branch_name: str
     schema_version: str = BRANCH_BINDING_SCHEMA_VERSION
@@ -69,6 +76,12 @@ class BranchBinding:
             "lifecycle_generation",
             normalize_generation(self.lifecycle_generation),
         )
+        if type(self.binding_epoch) is not int or self.binding_epoch < 0:
+            raise LifecycleContractError(
+                "invalid_binding_epoch",
+                "binding_epoch",
+                "Use one non-negative integer opaque binding epoch.",
+            )
         if type(self.binding_revision) is not int or self.binding_revision < 0:
             raise LifecycleContractError(
                 "invalid_binding_revision",
@@ -96,6 +109,7 @@ class BranchBinding:
             "schema_version": self.schema_version,
             "task_id": self.task_id,
             "lifecycle_generation": self.lifecycle_generation,
+            "binding_epoch": self.binding_epoch,
             "binding_revision": self.binding_revision,
             "branch_name": self.branch_name,
         }
@@ -178,7 +192,7 @@ class BranchBindingStore:
             raise LifecycleContractError(
                 "branch_binding_conflict",
                 str(path),
-                "Use only schema_version, task_id, lifecycle_generation, binding_revision and branch_name.",
+                "Use only schema_version, task_id, lifecycle_generation, binding_epoch, binding_revision and branch_name.",
             )
         try:
             binding = BranchBinding(**payload)
@@ -250,6 +264,7 @@ class BranchBindingStore:
         key: TaskLifecycleKey,
         branch_name: str,
         *,
+        binding_epoch: int | None = None,
         binding_revision: int = 0,
     ) -> BranchBinding:
         normalized_key = TaskLifecycleKey(key.task_id, key.lifecycle_generation)
@@ -258,6 +273,12 @@ class BranchBindingStore:
                 "branch_binding_already_exists",
                 str(self.path_for(normalized_key)),
                 "Use rebind for an existing association or recover the exact prior result.",
+            )
+        if binding_epoch is None and binding_revision != 0:
+            raise LifecycleContractError(
+                "invalid_binding_revision",
+                "binding_revision",
+                "Create a new binding epoch only at revision zero, or reuse the surviving epoch.",
             )
         owner = self.branch_owner(branch_name, excluding=normalized_key)
         if owner is not None:
@@ -269,6 +290,7 @@ class BranchBindingStore:
         binding = BranchBinding(
             task_id=normalized_key.task_id,
             lifecycle_generation=normalized_key.lifecycle_generation,
+            binding_epoch=_new_binding_epoch() if binding_epoch is None else binding_epoch,
             binding_revision=binding_revision,
             branch_name=branch_name,
         )
@@ -279,6 +301,7 @@ class BranchBindingStore:
         self,
         key: TaskLifecycleKey,
         *,
+        expected_epoch: int,
         expected_revision: int,
         branch_name: str,
     ) -> BranchBinding:
@@ -288,6 +311,12 @@ class BranchBindingStore:
                 "branch_binding_required",
                 str(self.path_for(key)),
                 "Establish the missing current branch association before rebind.",
+            )
+        if type(expected_epoch) is not int or current.binding_epoch != expected_epoch:
+            raise LifecycleContractError(
+                "branch_binding_epoch_conflict",
+                "binding_epoch",
+                "Repeat the mutation against the fresh current binding epoch.",
             )
         if type(expected_revision) is not int or current.binding_revision != expected_revision:
             raise LifecycleContractError(
@@ -312,6 +341,7 @@ class BranchBindingStore:
         successor = BranchBinding(
             task_id=current.task_id,
             lifecycle_generation=current.lifecycle_generation,
+            binding_epoch=current.binding_epoch,
             binding_revision=current.binding_revision + 1,
             branch_name=target,
         )

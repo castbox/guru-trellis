@@ -23,11 +23,14 @@ This directory is substrate only. It does not register a Skill, select a
 workflow edge or activate a production package.
 
 `task-branch-binding.schema.json` is the closed durable common-dir record for
-the current task-to-branch association. Its exact five fields are
-`schema_version`, `task_id`, `lifecycle_generation`, `binding_revision`, and
-portable `branch_name`. Repository identity comes from the Git common-dir. The
-record never stores a binding epoch, checkout path, Git HEAD, session identity,
-or resource ownership.
+the current task-to-branch association. Its exact six fields are
+`schema_version`, `task_id`, `lifecycle_generation`, integer opaque
+`binding_epoch`, `binding_revision`, and portable `branch_name`. Repository
+identity comes from the Git common-dir. The record never stores a checkout
+path, Git HEAD, session identity, or resource ownership. Initial creation and
+full control-state loss create a new epoch at revision zero; one-sided recovery
+strictly reuses the surviving epoch and revision; rebind preserves the epoch
+while incrementing the revision.
 
 `BranchBindingRefDTO` remains an unchanged public DTO in the shared catalog.
 It is not the durable branch record and consumers must not serialize it as one.
@@ -36,8 +39,21 @@ It is not the durable branch record and consumers must not serialize it as one.
 checkpoint for exact rollback and lost-output recovery. It may bind call-local
 paths, Git identities, byte digests, and the resource-ledger revision because
 those facts are retired with the transaction. The two closed routes are
-`same_checkout_new_ref` and `existing_target`; neither route changes the five-
-field durable binding contract.
+`same_checkout_new_ref` and `existing_target`; neither route changes the six-
+field durable binding identity. The target revision is stored separately, but
+the unchanged rebind epoch is derived only from `source_binding.binding_epoch`
+so the checkpoint cannot encode contradictory source and target epochs.
+
+Same-checkout rollback eligibility begins before `git switch -c`: a failing
+`post-checkout` hook may return non-zero after Git has already created and
+checked out the target ref. Recovery removes that ref only when it still points
+to the reviewed pre-state HEAD and no registered checkout uses it.
+
+Establishment candidate IDs are stable labels over branch, candidate kind, and
+call-local checkout path; they deliberately exclude Git HEAD. The mutation
+still consumes the reviewed candidate HEAD and performs fresh discovery before
+writing control state. Read-only output-loss recovery consumes the expected
+epoch, revision, branch, and HEAD, and rejects a branch that has advanced.
 
 `guru-establish-task-branch-binding` and `guru-rebind-task-branch` are reserved
 only as planned stable IDs in C4. Their canonical packages, workflow routes,

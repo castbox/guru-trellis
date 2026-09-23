@@ -29,6 +29,7 @@ def valid_branch_binding() -> dict:
         "schema_version": "1.0",
         "task_id": TASK_ID,
         "lifecycle_generation": GENERATION,
+        "binding_epoch": 7,
         "binding_revision": 0,
         "branch_name": BRANCH_NAME,
     }
@@ -122,7 +123,7 @@ def valid_payloads() -> dict[str, dict]:
 
 
 class ContractTests(unittest.TestCase):
-    def test_branch_binding_schema_is_draft_2020_12_and_exactly_five_fields(self):
+    def test_branch_binding_schema_is_draft_2020_12_and_exactly_six_fields(self):
         schema = load_contract("task-branch-binding.schema.json")
         Draft202012Validator.check_schema(schema)
         validator = Draft202012Validator(schema)
@@ -135,12 +136,12 @@ class ContractTests(unittest.TestCase):
                 "schema_version",
                 "task_id",
                 "lifecycle_generation",
+                "binding_epoch",
                 "binding_revision",
                 "branch_name",
             },
         )
         for field, value in {
-            "binding_epoch": 0,
             "path": "/tmp/task",
             "head": COMMIT,
             "session_id": "session:1",
@@ -157,6 +158,9 @@ class ContractTests(unittest.TestCase):
             ("lifecycle_generation", True),
             ("lifecycle_generation", -1),
             ("lifecycle_generation", 1.5),
+            ("binding_epoch", True),
+            ("binding_epoch", -1),
+            ("binding_epoch", 1.5),
             ("binding_revision", True),
             ("binding_revision", -1),
             ("binding_revision", 1.5),
@@ -250,6 +254,22 @@ class ContractTests(unittest.TestCase):
             ]:
                 with self.subTest(route=route, field=field, value=value):
                     self.assertTrue(list(validator.iter_errors({**payload, field: value})))
+
+            for epoch in (True, -1, 1.5):
+                with self.subTest(route=route, source_binding_epoch=epoch):
+                    self.assertTrue(
+                        list(
+                            validator.iter_errors(
+                                {
+                                    **payload,
+                                    "source_binding": {
+                                        **payload["source_binding"],
+                                        "binding_epoch": epoch,
+                                    },
+                                }
+                            )
+                        )
+                    )
 
     def test_runtime_error_shape_has_exact_dispatcher_fields(self):
         error = LifecycleContractError("target_path_conflict", "target_path", "Choose another target.")

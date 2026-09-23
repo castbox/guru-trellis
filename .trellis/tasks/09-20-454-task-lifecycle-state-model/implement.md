@@ -249,18 +249,55 @@ Canonical package/runtime surfaces：
 - planned `guru-establish-task-branch-binding` 与 `guru-rebind-task-branch` IDs 所需的 activation inputs；完整
   canonical packages 由 E434 交付。
 
-Behavior：store位于Git common-dir；key为TaskLifecycleKey；record只保存generation、revision与portable branch ref；
-missing走establishment，conflict走invalid；rebind只实现same-checkout-new-ref与clean existing-target两条route；
+Behavior：store位于Git common-dir；key为TaskLifecycleKey；record保存repository-local application control identity
+`binding_epoch`、epoch内revision与portable branch ref。Association与ownership current set必须共享同一epoch、revision
+与branch。单侧control state丢失时从存续侧恢复原epoch；association与active ownership全部丢失时才建立new epoch/
+revision 0。Rebind只实现same-checkout-new-ref与clean existing-target两条route，保持epoch不变并严格递增revision；
 不同历史返回named reconciliation stop。
 
-Tests：revision 0初始化、strict increment、binding/ownership四象限恢复、unique/zero/multiple candidate、dirty
-same-checkout字节保持、existing-target exact artifact、rollback、output loss recovery、reserved control ref rejection、
-same ref resource incarnation exclusion。
+Candidate label/id只服务当前选择与展示，不是freshness token。Discovery跳过全部保留的
+`refs/heads/guru-task-lifecycle/*` control refs；mutation与output-loss recovery都绑定并fresh验证reviewed expected HEAD，
+不能用candidate label、排序或branch name替代HEAD freshness。
+
+Tests：epoch schema/store parity、revision 0初始化与strict increment、binding/ownership四象限的epoch恢复、全部control
+state丢失新epoch、rebind保持epoch、unique/zero/multiple candidate、candidate label非freshness、mutation/recovery expected
+HEAD drift、retained control-ref discovery exclusion、dirty same-checkout字节保持、existing-target exact artifact、rollback、
+output loss recovery与same-ref resource incarnation exclusion。Epoch延续、新epoch、candidate-label/HEAD分离与retained-ref
+过滤必须由独立回归用例证明，不得只依赖聚合四象限或schema循环断言。
 
 Exit：`branch_substrate_ready`。
 
 Recovery：mutation transaction保存exact pre-state；rollback恢复association与ledger revision。禁止stash、merge、rebase、
 cherry-pick、reset或force push。
+
+C4 Branch Review finding-fix（2026-09-23）：
+
+- C4 contribution与批准设计`b695adc9`重新对齐：`binding_epoch`恢复为repository-local application control identity，
+  由association、ownership、rebind与same-owner recovery共同验证；普通rebind保持epoch，只有association与active
+  ownership全部丢失时才建立new epoch/revision 0；
+- candidate label/id只作为call-local选择标签，不再承担freshness；establishment/rebind mutation与output-loss recovery
+  绑定reviewed expected HEAD并在执行/恢复时fresh reread；
+- branch discovery显式跳过retained `refs/heads/guru-task-lifecycle/*` control refs，不把machine-handoff receipt
+  namespace暴露为普通branch candidate；
+- C4 Test contribution把上述语义拆成实际新增的独立回归场景，不再用聚合runtime计数或同一循环内subcase声明独立
+  覆盖。
+
+C4 Phase 2 finding-fix（2026-09-23）：
+
+- `same_checkout_new_ref` 在调用 `git switch -c` 前即进入rollback eligibility；如果 `post-checkout` hook在Git已经
+  创建并切换target ref后返回非零，rollback以fresh branch state确认原branch已恢复，并且只删除仍指向reviewed
+  pre-state HEAD且未被任何registered checkout使用的target ref；
+- rebind transaction移除重复的`target_binding_epoch`，unchanged epoch只从
+  `source_binding.binding_epoch`派生，避免一个checkpoint同时表达互相矛盾的source/target epoch；
+- 新增成功same-checkout rebind后target HEAD前进的独立lost-output recovery regression，证明recovery继续绑定
+  reviewed HEAD并fail closed；
+- finding-fix targeted evidence为task-lifecycle runtime `93/93`、Python compile、task validation、schema/JSON parse、
+  `git diff --check`与touched non-generated file 3000-line check全部通过。task validation仍将不存在的可选
+  `implement.jsonl`、`check.jsonl`标记为skipped。
+
+本 finding-fix 仅记录当前文档与对应实现/测试修订目标，不表示 fresh Phase 2、Task Commit 或完整 Branch Review 已
+通过；这些门禁必须基于finding-fix后的current committed candidate重新执行。C5-C7、D443、D436、E434、#434
+activation与完整Release matrix状态不变。
 
 ### C5 Path-free session store 与 resource ownership ledger
 

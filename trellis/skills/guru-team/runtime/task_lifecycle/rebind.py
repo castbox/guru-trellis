@@ -35,6 +35,7 @@ class RebindPlan:
     expected_status: str
     current_checkout: Path
     target_branch_name: str
+    expected_epoch: int
     expected_revision: int
     pre_state: CheckoutStateSnapshot
     target_checkout: Path | None = None
@@ -55,6 +56,12 @@ class RebindPlan:
         object.__setattr__(self, "task_ref", normalize_task_ref(self.task_ref))
         object.__setattr__(self, "current_checkout", self.current_checkout.resolve())
         object.__setattr__(self, "target_branch_name", normalize_branch_name(self.target_branch_name))
+        if type(self.expected_epoch) is not int or self.expected_epoch < 0:
+            raise LifecycleContractError(
+                "invalid_binding_epoch",
+                "expected_epoch",
+                "Use the current non-negative opaque binding epoch.",
+            )
         if type(self.expected_revision) is not int or self.expected_revision < 0:
             raise LifecycleContractError(
                 "invalid_binding_revision",
@@ -122,13 +129,14 @@ def _current_control_state(
         )
     if (
         ownership.key != key
+        or ownership.binding_epoch != binding.binding_epoch
         or ownership.binding_revision != binding.binding_revision
         or ownership.branch_name != binding.branch_name
     ):
         raise LifecycleContractError(
             "branch_association_conflict",
             "control_state",
-            "Repair the binding and ownership current branch/revision mismatch.",
+            "Repair the binding and ownership current epoch/branch/revision mismatch.",
         )
     return binding, ownership
 
@@ -205,6 +213,7 @@ def prepare_rebind(
     if ownership_port.branch_has_unresolved_incarnation(
         target,
         key=key,
+        allowed_current_epoch=None,
         allowed_current_revision=None,
     ):
         raise LifecycleContractError(
@@ -235,6 +244,7 @@ def prepare_rebind(
             expected_status=expected_status,
             current_checkout=current_path,
             target_branch_name=target,
+            expected_epoch=binding.binding_epoch,
             expected_revision=binding.binding_revision,
             pre_state=pre_state,
             target_head=pre_state.head,
@@ -291,6 +301,7 @@ def prepare_rebind(
         expected_status=expected_status,
         current_checkout=current_path,
         target_branch_name=target,
+        expected_epoch=binding.binding_epoch,
         expected_revision=binding.binding_revision,
         pre_state=pre_state,
         target_checkout=target_facts.path,
@@ -321,6 +332,7 @@ def _fresh_plan_matches(expected: RebindPlan, actual: RebindPlan) -> bool:
         and expected.expected_status == actual.expected_status
         and expected.current_checkout == actual.current_checkout
         and expected.target_branch_name == actual.target_branch_name
+        and expected.expected_epoch == actual.expected_epoch
         and expected.expected_revision == actual.expected_revision
         and expected.pre_state == actual.pre_state
         and expected.target_checkout == actual.target_checkout
@@ -335,7 +347,17 @@ def _rollback_same_checkout(
     state = capture_checkout_state(plan.current_checkout)
     target_ref = f"refs/heads/{plan.target_branch_name}"
     if state.branch_ref == target_ref:
-        run_checkout_git(plan.current_checkout, ["switch", plan.pre_state.branch_ref.removeprefix("refs/heads/")])
+        try:
+            run_checkout_git(
+                plan.current_checkout,
+                ["switch", plan.pre_state.branch_ref.removeprefix("refs/heads/")],
+            )
+        except LifecycleContractError:
+            # The same failing post-checkout hook can report an error after the
+            # rollback switch has already restored the source branch.
+            switched = capture_checkout_state(plan.current_checkout)
+            if switched.branch_ref != plan.pre_state.branch_ref:
+                raise
     target_head = local_branch_head(repository, target_ref)
     if target_head == plan.pre_state.head and not branch_checked_out_paths(repository, target_ref):
         run_common_git(repository, ["update-ref", "-d", target_ref, plan.pre_state.head])
@@ -379,8 +401,11 @@ def execute_rebind(
     branch_created = False
     try:
         if plan.route == "same_checkout_new_ref":
-            run_checkout_git(plan.current_checkout, ["switch", "-c", plan.target_branch_name])
+            # A post-checkout hook can fail after Git has already created and
+            # checked out the target branch, so rollback eligibility must begin
+            # before invoking the mutating command.
             branch_created = True
+            run_checkout_git(plan.current_checkout, ["switch", "-c", plan.target_branch_name])
             after_switch = capture_checkout_state(plan.current_checkout)
             _assert_same_content(plan.pre_state, after_switch)
             if after_switch.branch_ref != f"refs/heads/{plan.target_branch_name}":
@@ -411,6 +436,7 @@ def execute_rebind(
 
         ownership = ownership_port.rebind_current(
             plan.key,
+            expected_epoch=plan.expected_epoch,
             expected_revision=plan.expected_revision,
             source_branch_name=plan.pre_state.branch_ref.removeprefix("refs/heads/"),
             target_branch_name=plan.target_branch_name,
@@ -421,11 +447,13 @@ def execute_rebind(
         )
         binding = store.advance(
             plan.key,
+            expected_epoch=plan.expected_epoch,
             expected_revision=plan.expected_revision,
             branch_name=plan.target_branch_name,
         )
         if (
-            ownership.binding_revision != binding.binding_revision
+            ownership.binding_epoch != binding.binding_epoch
+            or ownership.binding_revision != binding.binding_revision
             or ownership.branch_name != binding.branch_name
         ):
             raise LifecycleContractError(
@@ -469,7 +497,8 @@ def recover_rebind(
 ) -> RebindResult:
     binding, ownership = _current_control_state(store, ownership_port, plan.key)
     if (
-        binding.binding_revision != plan.expected_revision + 1
+        binding.binding_epoch != plan.expected_epoch
+        or binding.binding_revision != plan.expected_revision + 1
         or binding.branch_name != plan.target_branch_name
     ):
         raise LifecycleContractError(

@@ -8,6 +8,7 @@
     "schema_version",
     "task_id",
     "lifecycle_generation",
+    "binding_epoch",
     "binding_revision",
     "branch_name"
   ],
@@ -15,6 +16,7 @@
     "schema_version": {"const": "1.0"},
     "task_id": {"$ref": "#/$defs/taskId"},
     "lifecycle_generation": {"type": "integer", "minimum": 0},
+    "binding_epoch": {"type": "integer", "minimum": 0},
     "binding_revision": {"type": "integer", "minimum": 0},
     "branch_name": {"$ref": "#/$defs/branchName"}
   },

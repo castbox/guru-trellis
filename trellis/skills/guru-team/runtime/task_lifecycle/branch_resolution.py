@@ -36,6 +36,7 @@ EstablishmentKind = Literal[
 class OwnershipCurrent:
     task_id: str
     lifecycle_generation: int
+    binding_epoch: int
     binding_revision: int
     branch_name: str
 
@@ -46,6 +47,12 @@ class OwnershipCurrent:
             "lifecycle_generation",
             normalize_generation(self.lifecycle_generation),
         )
+        if type(self.binding_epoch) is not int or self.binding_epoch < 0:
+            raise LifecycleContractError(
+                "resource_ownership_conflict",
+                "binding_epoch",
+                "Use one non-negative current resource binding epoch.",
+            )
         if type(self.binding_revision) is not int or self.binding_revision < 0:
             raise LifecycleContractError(
                 "resource_ownership_conflict",
@@ -72,6 +79,7 @@ class OwnershipPort(Protocol):
         self,
         key: TaskLifecycleKey,
         *,
+        binding_epoch: int,
         binding_revision: int,
         branch_name: str,
         branch_ownership: Ownership,
@@ -82,6 +90,7 @@ class OwnershipPort(Protocol):
         self,
         key: TaskLifecycleKey,
         *,
+        expected_epoch: int,
         expected_revision: int,
         source_branch_name: str,
         target_branch_name: str,
@@ -96,6 +105,7 @@ class OwnershipPort(Protocol):
         branch_name: str,
         *,
         key: TaskLifecycleKey,
+        allowed_current_epoch: int | None,
         allowed_current_revision: int | None,
     ) -> bool: ...
 
@@ -158,6 +168,12 @@ def _candidate_id(branch_name: str, kind: CandidateKind, path: Path | None) -> s
     return f"branch:{sha256(identity.encode('utf-8')).hexdigest()[:24]}"
 
 
+def _is_retained_control_ref(branch_ref: str) -> bool:
+    return branch_ref == "refs/heads/guru-task-lifecycle" or branch_ref.startswith(
+        "refs/heads/guru-task-lifecycle/"
+    )
+
+
 def discover_branch_candidates(
     repository: RepositoryFacts,
     store: BranchBindingStore,
@@ -167,6 +183,7 @@ def discover_branch_candidates(
     task_ref: str,
     expected_status: str,
     required_branch_name: str | None = None,
+    allowed_current_epoch: int | None = None,
     allowed_current_revision: int | None = None,
 ) -> tuple[BranchCandidate, ...]:
     normalized_key = TaskLifecycleKey(key.task_id, key.lifecycle_generation)
@@ -176,8 +193,10 @@ def discover_branch_candidates(
     registered_refs: set[str] = set()
 
     for facts in discover_worktree_facts(repository):
-        branch_ref = facts.branch_ref or facts.registration.registered_branch_ref
+        branch_ref = facts.registration.registered_branch_ref
         if branch_ref is None or not branch_ref.startswith("refs/heads/"):
+            continue
+        if _is_retained_control_ref(branch_ref):
             continue
         branch_name = normalize_branch_name(branch_ref.removeprefix("refs/heads/"))
         if required is not None and branch_name != required:
@@ -203,6 +222,7 @@ def discover_branch_candidates(
         elif ownership_port.branch_has_unresolved_incarnation(
             branch_name,
             key=normalized_key,
+            allowed_current_epoch=allowed_current_epoch,
             allowed_current_revision=allowed_current_revision,
         ):
             reason = "unresolved_resource_incarnation"
@@ -222,6 +242,8 @@ def discover_branch_candidates(
     for branch_ref, head in list_local_branch_refs(repository):
         if branch_ref in registered_refs:
             continue
+        if _is_retained_control_ref(branch_ref):
+            continue
         branch_name = normalize_branch_name(branch_ref.removeprefix("refs/heads/"))
         if required is not None and branch_name != required:
             continue
@@ -239,6 +261,7 @@ def discover_branch_candidates(
         elif ownership_port.branch_has_unresolved_incarnation(
             branch_name,
             key=normalized_key,
+            allowed_current_epoch=allowed_current_epoch,
             allowed_current_revision=allowed_current_revision,
         ):
             reason = "unresolved_resource_incarnation"
@@ -272,12 +295,13 @@ def _control_state(
         )
     if binding is not None and ownership is not None and (
         binding.branch_name != ownership.branch_name
+        or binding.binding_epoch != ownership.binding_epoch
         or binding.binding_revision != ownership.binding_revision
     ):
         raise LifecycleContractError(
             "branch_association_conflict",
             "control_state",
-            "Repair the binding and ownership current branch/revision mismatch.",
+            "Repair the binding and ownership current epoch/branch/revision mismatch.",
         )
     return binding, ownership
 
@@ -309,6 +333,13 @@ def resolve_establishment(
         if ownership is not None
         else None
     )
+    epoch = (
+        binding.binding_epoch
+        if binding is not None
+        else ownership.binding_epoch
+        if ownership is not None
+        else None
+    )
     candidates = discover_branch_candidates(
         repository,
         store,
@@ -317,6 +348,7 @@ def resolve_establishment(
         task_ref=task_ref,
         expected_status=expected_status,
         required_branch_name=required,
+        allowed_current_epoch=epoch,
         allowed_current_revision=revision,
     )
     valid = tuple(row for row in candidates if row.valid)
@@ -347,6 +379,7 @@ def establish_branch_binding(
     key: TaskLifecycleKey,
     task_ref: str,
     expected_status: str,
+    expected_candidate_head: str,
     selected_candidate_id: str | None = None,
 ) -> EstablishmentResolution:
     resolution = resolve_establishment(
@@ -360,16 +393,18 @@ def establish_branch_binding(
     if resolution.kind == "already_established":
         return resolution
     valid = resolution.valid_candidates
+    if selected_candidate_id is None and resolution.kind == "selection_required":
+        return resolution
     if selected_candidate_id is not None:
         valid = tuple(row for row in valid if row.candidate_id == selected_candidate_id)
-    if len(valid) != 1:
+    if len(valid) != 1 or valid[0].head != expected_candidate_head:
         return EstablishmentResolution(
             "selection_required",
             resolution.binding,
             resolution.ownership,
             resolution.candidates,
             None,
-            "selected_candidate_stale" if selected_candidate_id is not None else resolution.reason_code,
+            "selected_candidate_stale",
         )
     selected = valid[0]
     if selected.kind == "local_branch":
@@ -390,12 +425,21 @@ def establish_branch_binding(
         if resolution.ownership is not None
         else 0
     )
+    target_epoch = (
+        resolution.binding.binding_epoch
+        if resolution.binding is not None
+        else resolution.ownership.binding_epoch
+        if resolution.ownership is not None
+        else None
+    )
     try:
         binding = resolution.binding or store.establish(
             key,
             selected.branch_name,
+            binding_epoch=target_epoch,
             binding_revision=target_revision,
         )
+        target_epoch = binding.binding_epoch
         ownership = resolution.ownership
         if ownership is None:
             worktree_ownership: Ownership = (
@@ -405,6 +449,7 @@ def establish_branch_binding(
             )
             ownership = ownership_port.establish_current(
                 key,
+                binding_epoch=target_epoch,
                 binding_revision=target_revision,
                 branch_name=selected.branch_name,
                 branch_ownership="caller_owned",
@@ -441,14 +486,19 @@ def recover_established_branch_binding(
     key: TaskLifecycleKey,
     task_ref: str,
     expected_status: str,
+    expected_epoch: int,
     expected_revision: int,
     expected_branch_name: str,
+    expected_head: str,
 ) -> EstablishmentResolution:
     binding, ownership = _control_state(store, ownership_port, key)
     expected_branch = normalize_branch_name(expected_branch_name)
     if (
         binding is None
         or ownership is None
+        or type(expected_epoch) is not int
+        or type(expected_revision) is not int
+        or binding.binding_epoch != expected_epoch
         or binding.binding_revision != expected_revision
         or binding.branch_name != expected_branch
     ):
@@ -465,10 +515,11 @@ def recover_established_branch_binding(
         task_ref=task_ref,
         expected_status=expected_status,
         required_branch_name=expected_branch,
+        allowed_current_epoch=expected_epoch,
         allowed_current_revision=expected_revision,
     )
     valid = tuple(row for row in candidates if row.valid)
-    if len(valid) != 1:
+    if len(valid) != 1 or valid[0].head != expected_head:
         raise LifecycleContractError(
             "branch_binding_result_mismatch",
             "candidate",
