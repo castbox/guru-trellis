@@ -158,6 +158,20 @@ installed/platform projections、task/lifecycle SSOT 与定向 tests 已通过�
 完整 Release/upgrade matrix、push、PR、远端 merge、tag、Release 或 Issue closure。promotion-created
 diff 仍须 fresh Phase 2、Task Commit 与 independent complete Branch Review 后才能进入 Publication。
 
+## EVD-036: #454 C3 Checkout Acquisition Provenance Promotion
+
+本证据支撑 `ARCH-CUR-038`、`ARCH-DOM-023`、`ARCH-INT-026` 与 `.60 -> .61` promotion。
+独立完整 Branch Review 绑定
+`origin/main@9c2238bad7e73ea4a1f23dddcb7e8e9204c244da...HEAD@b816aca8d6520bf90c52c6210ff3155174da86f3`；
+`BR454-C3-P2-010` 与 `BR454-C3-P2-011` 均 resolved，当前范围无新 P0-P3 finding。
+
+Focused evidence包括checkout substrate `27/27`、task lifecycle runtime `56/56`、Python compile、JSON parse、
+ownership `32 active + 1 planned`、task/workspace/static/line/diff checks。Package `19/20`、shared runtime
+`119/128`、lifecycle integration `38/44`、preset 272 with 2 errors/3 skips与完整Release matrix不声明通过。
+
+本证据不证明C4-C7、D443、D436、E434、production activation、push、PR、merge、tag、Release或Issue closure；
+promotion-created `.61` diff仍须fresh Phase 2、Task Commit与independent complete Branch Review。
+
 ## EVD-032: #443 Reviewed Promotion Source
 
 本证据支撑 `ARCH-CUR-034`、`ARCH-DOM-019`、`ARCH-INT-022`、`ARCH-GAP-009`、`ADR-014`
@@ -210,3 +224,20 @@ CI `35621578090`。
 promotion。本证据不证明 C3-C7、D443、D436、E434、production activation、完整 installer/upgrade/
 workflow-switch 或多平台 Release matrix、push、PR、merge、tag、GitHub Release、业务生产验证或 Issue closure。
 本 evidence 不替代 promotion-created diff 后续 fresh Phase 2、Task Commit 与 independent complete Branch Review；Publication 必须消费后续 exact-range gate 结果。
+
+## EVD-035: #454 C3 Checkout Substrate Promotion
+
+本证据支撑 `ARCH-CUR-037`、`ARCH-DOM-022`、`ARCH-INT-025`、`ARCH-GAP-011` 与
+`.59 -> .60` Architecture knowledge promotion。独立完整 Branch Review 绑定
+`origin/main@9c2238bad7e73ea4a1f23dddcb7e8e9204c244da...HEAD@e965b7e8b6850614a2cd21f899a02b3ea9da73f3`；
+原 C3 findings 已关闭，当前范围无 open P0-P3 finding。Architecture contribution
+`architecture-contribution-454-task-lifecycle-state-model-c3-v1` 完成 expected-current-bound promotion。
+
+Focused evidence 包括 lifecycle runtime `51/51`、39 named DTO/schema、live checkout discovery/acquisition、
+identifier/error contracts、planned ownership、source/installed-active、task/workspace/compile/static/line/diff checks。
+Global package suite 保持 `19/20`，preset suite 保持 `85/86`；前者是 unchanged closure relative-ref defect，
+后者是 C3 禁止同步 installed projection 后 raw apply 的预期 conflict，二者均未声明为通过。
+
+本 evidence 不证明 C4-C7、D443、D436、E434、production activation、完整 installer/upgrade/workflow-switch/
+multi-platform Release matrix、push、PR、merge、tag、GitHub Release、业务生产验证或 Issue closure。promotion-created
+diff 仍须 fresh Phase 2、Task Commit 与 independent complete Branch Review 后才能进入 Publication。

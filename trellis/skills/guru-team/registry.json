@@ -1141,6 +1141,11 @@
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "solution-mechanism-qualification"
+    },
+    {
+      "id": "guru-ensure-task-checkout",
+      "state": "planned",
+      "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation."
     }
   ]
 }

@@ -36,8 +36,10 @@
 forbidden states与public owner completeness执行联合复核。60个finding已全部回写owning design。当前结论是在PRD声明边界内整体
 设计可实现，不存在已知矛盾、冲突或缺漏。
 
-该结论只覆盖设计，不代表实现、测试、业务 repository 安装或 production cutover已经完成。本 task继续
-保持 `planning`，后续进入实现前仍需完成正式 Phase 1 planning artifacts 与 approval boundary。
+该结论证明整体设计可进入实施，但不代表全部实现、测试、业务 repository 安装或 production cutover 已完成。
+本 task 已完成正式 Phase 1 planning/approval/activation 并处于 `in_progress`；每个实施切片仍须分别完成 fresh
+Architecture、Phase 2、Task Commit 与 Branch Review，且不得把局部 candidate 解释为后续切片或 production
+cutover 已完成。
 
 ## 跨任务实施顺序与依赖边界
 
@@ -121,7 +123,8 @@ Guru source preparation validation时，Guru substrate 的 framework-dependent s
 
 - Phase C：lifecycle kernel、TaskId/TaskRef/generation normalization、checkout acquisition/resolution、branch
   association/establishment/rebind substrate、path-free common-dir session storage、common-dir resource ledger、
-  task creation、shared DTO/schema primitives及其 package-ready canonical owners。
+  task creation、shared DTO/schema primitives、planned stable IDs 与 E434 所需的 activation inputs；`planned`
+  registry row 不拥有 canonical package tree。
 - Phase D0：在D443/D436前迁移Reconcile、Task Commit与Branch Review的stage-evidence承接。Pre-review compatible
   reconcile创建expected-head-bound本地merge commit；post_check/post_commit固定回fresh Phase 2；bounded continuity
   只承接已有prior full Branch Review。该阶段不建立durable `base_head` authority。
@@ -129,8 +132,9 @@ Guru source preparation validation时，Guru substrate 的 framework-dependent s
   runtime 与 package-owned source projections。
 - Phase D436：Reactivate、Completion、Closure、Finish、Cleanup major migration；Phase C 只提供它们消费的
   substrate和DTO，不改这些 package 的 active major contract。
-- Phase E434：fresh reconcile 后一次性切换 workflow、registry selectors、active manifest、installed/platform
-  bytes与旧 edge retirement；Phase C 与 Phase D 均不得提前激活。
+- Phase E434：fresh reconcile 后为 planned IDs 交付完整 canonical packages，并一次性切换 workflow、registry
+  selectors、active manifest、installed/platform bytes与旧 edge retirement；Phase C 与 Phase D 均不得提前创建
+  planned package tree 或激活。
 
 具体文件、切片、测试、entry/exit criteria 与 rollback boundary 以 `implement.md`、
 `planning/phase-c-surface-inventory.md` 和 `planning/phase-c-migration-retirement-ledger.md` 为 Phase C 实施计划

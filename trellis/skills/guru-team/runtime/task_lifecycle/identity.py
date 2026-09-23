@@ -167,12 +167,10 @@ def task_inventory(repo_root: Path) -> tuple[TaskArtifactIdentity, ...]:
         by_fold.setdefault(row.task_id.casefold(), []).append(row)
     conflicts = [group for group in by_fold.values() if len(group) > 1]
     if conflicts:
-        refs = sorted(row.task_ref for group in conflicts for row in group)
         raise LifecycleContractError(
             "task_id_casefold_collision",
             "task_id",
             "Assign repository-unique exact and case-fold TaskIds before lifecycle resolution.",
-            {"task_refs": refs},
         )
     return rows
 

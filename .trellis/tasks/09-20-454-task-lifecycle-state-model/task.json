@@ -2,7 +2,7 @@
   "id": "454-task-lifecycle-state-model",
   "name": "454-task-lifecycle-state-model",
   "title": "#454 建立统一 task lifecycle state model",
-  "description": "在仓库内逐步规划统一状态模型、组合矩阵与迁移合同，不修改 Issue，不进入代码实现。",
+  "description": "按已批准的分阶段计划实施统一状态模型、组合矩阵与迁移合同；当前交付 C3 checkout substrate 与 planned stable ID，不修改 Issue、不提前激活 production graph。",
   "status": "in_progress",
   "dev_type": null,
   "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/454",
