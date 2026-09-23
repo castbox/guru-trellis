@@ -129,9 +129,25 @@ reconcile 形成 expected-head-bound two-parent committed HEAD，`post_check` / 
 review。active registry 保持 32 Skills / 142 package exits / 102 commands，production workflow 保持 22
 mandatory invokes / 98 exits；C3-C7、D443、D436、E434 与 production activation 未进入 CURRENT。
 
-当前 Architecture knowledge identity 为 `.59`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
+`ARCH-CUR-037`（`source_confirmed` + `reviewed`）：#454 C3 以 `target_native` 在 `.59` current 上增加
+四个 call-local checkout DTO，使 catalog 从 35 扩展为 39 个 named DTO；live Git common-dir/worktree facts、
+closed candidate/resolution/selection、adopt/provision transaction、bounded rollback 与 read-only recovery 进入
+shared lifecycle substrate。`guru-ensure-task-checkout` 仅以 `state=planned` registry row 与 canonical
+`planned_skill_ids` 预留，canonical package、active selectors、workflow、active graph、installed/platform
+projection 均未创建或修改。active registry 仍为 32 Skills / 142 package exits / 102 commands，另有一个
+planned ID；production workflow 保持 22 mandatory invokes / 98 exits。C4-C7、D443、D436、E434 与 production
+activation 未进入 CURRENT。
+
+`ARCH-CUR-038`（`source_confirmed` + `reviewed`）：#454 C3 provenance delta 在 `.60` current 上为
+transaction-created linked worktree 增加 closed owner-private Git-admin marker。Output-loss recovery同时验证
+fresh live facts与exact marker，same-path/same-branch/same-HEAD及different-path replacement均fail closed，
+caller-created resource不会继承Guru cleanup ownership。Direct handoff在consumer invocation前retire marker；
+existing-checkout reuse不写marker，recovery保持只读。该marker不成为task/session/branch/workspace/resource
+authority，active registry与production graph计数不变。
+
+当前 Architecture knowledge identity 为 `.61`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
 `0.6.17`，framework source/CI 由 canonical source record 与 `EVD-034` 绑定，package manager 为
-`pnpm@10.32.1`。`.58` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
+`pnpm@10.32.1`。`.60` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。
 

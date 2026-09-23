@@ -1,0 +1,463 @@
+from __future__ import annotations
+
+import json
+import re
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Callable, Literal
+
+from .checkout_resolution import (
+    CheckoutRequest,
+    CheckoutResolution,
+    canonical_head_ref,
+    discover_validate_classify,
+)
+from .errors import LifecycleContractError
+from .git_facts import (
+    WorktreeFacts,
+    branch_checked_out_paths,
+    find_registration,
+    inspect_registered_worktree,
+    inspect_repository,
+    local_branch_head,
+    run_common_git,
+)
+
+
+AcquisitionRoute = Literal["adopt_invocation_checkout", "provision_linked_worktree"]
+Ownership = Literal["guru_owned", "caller_owned", "not_applicable"]
+ProvisionDisposition = Literal["new_branch", "existing_branch", "existing_checkout"]
+IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
+PROVENANCE_MARKER_NAME = "guru-checkout-acquisition-provenance.json"
+PROVENANCE_SCHEMA_VERSION = "1.0"
+
+
+@dataclass(frozen=True)
+class CheckoutAcquisitionPlan:
+    route: AcquisitionRoute
+    repository_context: Path
+    task_id: str
+    task_ref: str
+    lifecycle_generation: int
+    branch_ref: str
+    expected_status: str
+    decision_head: str
+    transaction_id: str
+    result_id: str
+    provision_disposition: ProvisionDisposition | None = None
+    invocation_checkout: Path | None = None
+    target_path: Path | None = None
+    forbidden_branch_refs: tuple[str, ...] = ()
+    task_artifact_expectation: str = "required"
+
+    def request(self) -> CheckoutRequest:
+        return CheckoutRequest(
+            repository=inspect_repository(self.repository_context),
+            task_id=self.task_id,
+            task_ref=self.task_ref,
+            lifecycle_generation=self.lifecycle_generation,
+            branch_ref=self.branch_ref,
+            expected_status=self.expected_status,
+            expected_head=self.decision_head,
+            forbidden_branch_refs=self.forbidden_branch_refs,
+            task_artifact_expectation=self.task_artifact_expectation,
+        )
+
+
+@dataclass(frozen=True)
+class CheckoutAcquisitionResult:
+    route: AcquisitionRoute
+    action: str
+    checkout: WorktreeFacts
+    transaction_id: str
+    result_id: str
+    branch_ownership: Ownership
+    worktree_ownership: Ownership
+    created_branch: bool
+    created_worktree: bool
+
+
+def _require_identifier(value: str, field_path: str) -> str:
+    if not isinstance(value, str) or not IDENTIFIER_PATTERN.fullmatch(value):
+        raise LifecycleContractError(
+            "invalid_transaction_identity",
+            field_path,
+            "Use one call-local identity matching ^[A-Za-z0-9][A-Za-z0-9._:-]*$.",
+        )
+    return value
+
+
+def _validated_plan(plan: CheckoutAcquisitionPlan) -> CheckoutRequest:
+    if plan.route not in {"adopt_invocation_checkout", "provision_linked_worktree"}:
+        raise LifecycleContractError(
+            "invalid_acquisition_route",
+            "route",
+            "Use adopt_invocation_checkout or provision_linked_worktree.",
+        )
+    _require_identifier(plan.transaction_id, "transaction_id")
+    _require_identifier(plan.result_id, "result_id")
+    if plan.route == "provision_linked_worktree" and plan.provision_disposition not in {
+        "new_branch",
+        "existing_branch",
+        "existing_checkout",
+    }:
+        raise LifecycleContractError(
+            "missing_provision_disposition",
+            "provision_disposition",
+            "Bind the reviewed live pre-state as new_branch, existing_branch or existing_checkout.",
+        )
+    if plan.route == "adopt_invocation_checkout" and plan.provision_disposition is not None:
+        raise LifecycleContractError(
+            "invalid_adopt_plan",
+            "provision_disposition",
+            "Do not attach a provision disposition to the adopt route.",
+        )
+    return plan.request()
+
+
+def _raise_resolution(resolution: CheckoutResolution) -> None:
+    raise LifecycleContractError(
+        resolution.reason_code,
+        "checkout_resolution",
+        "Resolve the current checkout authority conflict or select a freshly validated target.",
+    )
+
+
+def adopt_invocation_checkout(plan: CheckoutAcquisitionPlan) -> CheckoutAcquisitionResult:
+    request = _validated_plan(plan)
+    if plan.route != "adopt_invocation_checkout" or plan.invocation_checkout is None:
+        raise LifecycleContractError(
+            "invalid_adopt_plan",
+            "invocation_checkout",
+            "Provide the current invocation checkout for the adopt route.",
+        )
+    resolution = discover_validate_classify(request)
+    if resolution.kind != "checkout_resolved" or resolution.selected is None:
+        _raise_resolution(resolution)
+    checkout = resolution.selected.facts
+    if checkout.path != plan.invocation_checkout.resolve():
+        raise LifecycleContractError(
+            "invocation_checkout_not_unique_candidate",
+            "invocation_checkout",
+            "Use the unique freshly validated invocation checkout or return to reviewed selection.",
+        )
+    return CheckoutAcquisitionResult(
+        route=plan.route,
+        action=f"adopted_{checkout.topology}_checkout",
+        checkout=checkout,
+        transaction_id=plan.transaction_id,
+        result_id=plan.result_id,
+        branch_ownership="caller_owned",
+        worktree_ownership="not_applicable" if checkout.topology == "primary" else "caller_owned",
+        created_branch=False,
+        created_worktree=False,
+    )
+
+
+def _exact_post_state(request: CheckoutRequest, target_path: Path | None = None) -> WorktreeFacts:
+    resolution = discover_validate_classify(request)
+    if resolution.kind != "checkout_resolved" or resolution.selected is None:
+        _raise_resolution(resolution)
+    facts = resolution.selected.facts
+    if target_path is not None and facts.path != target_path.resolve():
+        raise LifecycleContractError(
+            "acquisition_result_mismatch",
+            "target_path",
+            "Recover the exact transaction target or repeat semantic target selection.",
+        )
+    return facts
+
+
+def _provision_result(
+    plan: CheckoutAcquisitionPlan, checkout: WorktreeFacts
+) -> CheckoutAcquisitionResult:
+    disposition = plan.provision_disposition
+    assert disposition is not None
+    if disposition == "existing_checkout":
+        if checkout.topology == "primary":
+            raise LifecycleContractError(
+                "primary_checkout_requires_adoption",
+                "route",
+                "Use adopt_invocation_checkout for the primary checkout; provision_linked_worktree only acquires linked worktrees.",
+            )
+        action = "reused_exact_checkout"
+        branch_ownership: Ownership = "caller_owned"
+        worktree_ownership: Ownership = "caller_owned"
+        created_branch = False
+        created_worktree = False
+    else:
+        created_branch = disposition == "new_branch"
+        action = (
+            "created_branch_and_worktree"
+            if created_branch
+            else "created_worktree_for_existing_branch"
+        )
+        branch_ownership = "guru_owned" if created_branch else "caller_owned"
+        worktree_ownership = "guru_owned"
+        created_worktree = True
+    return CheckoutAcquisitionResult(
+        route=plan.route,
+        action=action,
+        checkout=checkout,
+        transaction_id=plan.transaction_id,
+        result_id=plan.result_id,
+        branch_ownership=branch_ownership,
+        worktree_ownership=worktree_ownership,
+        created_branch=created_branch,
+        created_worktree=created_worktree,
+    )
+
+
+def _provenance_marker_path(checkout: WorktreeFacts) -> Path:
+    if checkout.git_dir is None:
+        raise LifecycleContractError(
+            "acquisition_result_mismatch",
+            "transaction_provenance",
+            "Recover only a transaction-created checkout with exact acquisition provenance.",
+        )
+    return checkout.git_dir / PROVENANCE_MARKER_NAME
+
+
+def _provenance_payload(
+    request: CheckoutRequest,
+    plan: CheckoutAcquisitionPlan,
+    result: CheckoutAcquisitionResult,
+) -> dict[str, Any]:
+    return {
+        "schema_version": PROVENANCE_SCHEMA_VERSION,
+        "route": result.route,
+        "transaction_id": result.transaction_id,
+        "result_id": result.result_id,
+        "task_id": request.task_id,
+        "task_ref": request.task_ref,
+        "lifecycle_generation": request.lifecycle_generation,
+        "branch_ref": request.branch_ref,
+        "head": result.checkout.head,
+        "target_path": str(result.checkout.path),
+        "provision_disposition": plan.provision_disposition,
+        "action": result.action,
+        "branch_ownership": result.branch_ownership,
+        "worktree_ownership": result.worktree_ownership,
+        "created_branch": result.created_branch,
+        "created_worktree": result.created_worktree,
+    }
+
+
+def _raise_provenance_mismatch() -> None:
+    raise LifecycleContractError(
+        "acquisition_result_mismatch",
+        "transaction_provenance",
+        "Recover only a transaction-created checkout with exact acquisition provenance.",
+    )
+
+
+def _write_provenance_marker(
+    request: CheckoutRequest,
+    plan: CheckoutAcquisitionPlan,
+    result: CheckoutAcquisitionResult,
+) -> None:
+    marker = _provenance_marker_path(result.checkout)
+    payload = _provenance_payload(request, plan, result)
+    try:
+        with marker.open("x", encoding="utf-8") as stream:
+            stream.write(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+            stream.write("\n")
+    except OSError as exc:
+        raise LifecycleContractError(
+            "acquisition_result_mismatch",
+            "transaction_provenance",
+            "Recover only a transaction-created checkout with exact acquisition provenance.",
+        ) from exc
+
+
+def _require_provenance_marker(
+    request: CheckoutRequest,
+    plan: CheckoutAcquisitionPlan,
+    result: CheckoutAcquisitionResult,
+) -> None:
+    marker = _provenance_marker_path(result.checkout)
+    expected = _provenance_payload(request, plan, result)
+    try:
+        payload = json.loads(marker.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        _raise_provenance_mismatch()
+    if not isinstance(payload, dict) or set(payload) != set(expected):
+        _raise_provenance_mismatch()
+    if any(type(payload[key]) is not type(value) or payload[key] != value for key, value in expected.items()):
+        _raise_provenance_mismatch()
+
+
+def _remove_provenance_marker(checkout: WorktreeFacts) -> None:
+    marker = _provenance_marker_path(checkout)
+    try:
+        marker.unlink()
+    except OSError as exc:
+        raise LifecycleContractError(
+            "acquisition_result_mismatch",
+            "transaction_provenance",
+            "Recover only a transaction-created checkout with exact acquisition provenance.",
+        ) from exc
+
+
+def _rollback_created(
+    request: CheckoutRequest,
+    *,
+    target_path: Path,
+    created_branch: bool,
+    created_worktree: bool,
+) -> None:
+    if created_worktree:
+        registration = find_registration(request.repository, target_path)
+        if registration is not None:
+            facts = inspect_registered_worktree(request.repository, registration)
+            exact = (
+                facts.common_dir == request.repository.common_dir
+                and facts.branch_ref == request.branch_ref
+                and facts.head == request.expected_head
+                and facts.clean
+            )
+            if exact:
+                run_common_git(request.repository, ["worktree", "remove", str(target_path.resolve())])
+    if created_branch:
+        current = local_branch_head(request.repository, request.branch_ref)
+        checked_out = branch_checked_out_paths(request.repository, request.branch_ref)
+        if current == request.expected_head and not checked_out:
+            run_common_git(request.repository, ["update-ref", "-d", request.branch_ref, request.expected_head or ""])
+
+
+def provision_linked_worktree(
+    plan: CheckoutAcquisitionPlan,
+    *,
+    post_acquire: Callable[[CheckoutAcquisitionResult], None] | None = None,
+) -> CheckoutAcquisitionResult:
+    request = _validated_plan(plan)
+    if plan.route != "provision_linked_worktree":
+        raise LifecycleContractError(
+            "invalid_provision_plan",
+            "route",
+            "Use provision_linked_worktree for linked checkout acquisition.",
+        )
+    resolution = discover_validate_classify(request)
+    if resolution.kind == "authority_conflict":
+        _raise_resolution(resolution)
+    if resolution.kind == "checkout_resolved" and resolution.selected is not None:
+        if plan.provision_disposition != "existing_checkout":
+            raise LifecycleContractError(
+                "provision_pre_state_changed",
+                "provision_disposition",
+                "Repeat semantic review against the fresh existing-checkout topology.",
+            )
+        if plan.target_path is not None and resolution.selected.facts.path != plan.target_path.resolve():
+            raise LifecycleContractError(
+                "provision_pre_state_changed",
+                "target_path",
+                "Repeat semantic review for the exact freshly resolved checkout path.",
+            )
+        result = _provision_result(plan, resolution.selected.facts)
+        if post_acquire is not None:
+            post_acquire(result)
+        return result
+    branch_candidates = [
+        row
+        for row in resolution.candidates
+        if row.facts.registration.registered_branch_ref == request.branch_ref
+    ]
+    if branch_candidates:
+        _raise_resolution(resolution)
+    if plan.target_path is None:
+        raise LifecycleContractError(
+            "missing_target_path",
+            "target_path",
+            "Provide one reviewed call-local linked-worktree target path.",
+        )
+    target = plan.target_path.resolve()
+    if target.exists() or find_registration(request.repository, target) is not None:
+        raise LifecycleContractError(
+            "target_path_conflict",
+            "target_path",
+            "Choose an absent path or the exact registered checkout selected for reuse.",
+        )
+    existing_head = local_branch_head(request.repository, request.branch_ref)
+    if existing_head is not None and existing_head != request.expected_head:
+        raise LifecycleContractError(
+            "head_drift",
+            "decision_head",
+            "Refresh the reviewed branch and decision HEAD before provisioning.",
+        )
+    created_branch = existing_head is None
+    live_disposition: ProvisionDisposition = "new_branch" if created_branch else "existing_branch"
+    if plan.provision_disposition != live_disposition:
+        raise LifecycleContractError(
+            "provision_pre_state_changed",
+            "provision_disposition",
+            "Repeat semantic review against the fresh branch and checkout facts.",
+        )
+    created_worktree = False
+    try:
+        if created_branch:
+            short_branch = request.branch_ref.removeprefix("refs/heads/")
+            run_common_git(
+                request.repository,
+                ["worktree", "add", "-b", short_branch, str(target), request.expected_head or ""],
+            )
+        else:
+            short_branch = request.branch_ref.removeprefix("refs/heads/")
+            run_common_git(request.repository, ["worktree", "add", str(target), short_branch])
+        created_worktree = True
+        checkout = _exact_post_state(request, target)
+        result = _provision_result(plan, checkout)
+        _write_provenance_marker(request, plan, result)
+        if post_acquire is not None:
+            _remove_provenance_marker(checkout)
+            post_acquire(result)
+        return result
+    except Exception:
+        _rollback_created(
+            request,
+            target_path=target,
+            created_branch=created_branch,
+            created_worktree=created_worktree,
+        )
+        raise
+
+
+def recover_checkout_acquisition(plan: CheckoutAcquisitionPlan) -> CheckoutAcquisitionResult:
+    request = _validated_plan(plan)
+    if plan.route == "adopt_invocation_checkout":
+        return adopt_invocation_checkout(plan)
+    checkout = _exact_post_state(request)
+    target = plan.target_path.resolve() if plan.target_path is not None else None
+    if target is not None and checkout.path != target:
+        raise LifecycleContractError(
+            "acquisition_result_mismatch",
+            "target_path",
+            "Recover only the exact live checkout for this transaction.",
+        )
+    result = _provision_result(plan, checkout)
+    if result.created_worktree:
+        _require_provenance_marker(request, plan, result)
+    return result
+
+
+def acquire_checkout(
+    plan: CheckoutAcquisitionPlan,
+    *,
+    post_acquire: Callable[[CheckoutAcquisitionResult], None] | None = None,
+) -> CheckoutAcquisitionResult:
+    canonical_head_ref(plan.branch_ref)
+    if plan.route == "adopt_invocation_checkout":
+        result = adopt_invocation_checkout(plan)
+        if post_acquire is not None:
+            post_acquire(result)
+        return result
+    return provision_linked_worktree(plan, post_acquire=post_acquire)
+
+
+__all__ = [
+    "CheckoutAcquisitionPlan",
+    "CheckoutAcquisitionResult",
+    "acquire_checkout",
+    "adopt_invocation_checkout",
+    "provision_linked_worktree",
+    "recover_checkout_acquisition",
+]

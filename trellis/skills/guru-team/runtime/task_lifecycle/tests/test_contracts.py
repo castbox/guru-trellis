@@ -43,6 +43,10 @@ def valid_payloads() -> dict[str, dict]:
         },
         "DeliveryTargetRefDTO": {**base, "target_relation_id": "target:1"},
         "BranchBindingRefDTO": {**base, "binding_epoch": 0, "binding_revision": 1},
+        "CheckoutAcquisitionPlanDTO": {**artifact, "route": "adopt_invocation_checkout", "branch_ref": "codex/task", "decision_head": COMMIT, "task_artifact_expectation": "required", "invocation_checkout": "/tmp/task", "transaction_id": "checkout:1", "result_id": "checkout-result:1"},
+        "CheckoutCandidateDTO": {"candidate_id": "candidate:1", "path": "/tmp/task", "head": COMMIT, "branch_ref": "codex/task", "topology": "linked", "dirty_paths": [], "discovered_at": "2026-09-22T00:00:00Z", "validation_state": "valid", "reason_code": None},
+        "CheckoutResolutionDTO": {"resolution_kind": "checkout_resolved", "reason_code": "unique_candidate", "selected_candidate_id": "candidate:1"},
+        "CheckoutSelectionDTO": {"selection_kind": "explicit_target", "target_path": "/tmp/task", "branch_ref": "codex/task", "expected_head": COMMIT, "selected_at": "2026-09-22T00:00:00Z"},
         "CheckpointRefDTO": {**base, "checkpoint_commit": COMMIT, "checkpoint_ref": "refs/heads/checkpoint", "result_id": "checkpoint:1"},
         "HandoffRefDTO": {**base, "handoff_id": "handoff:1", "receipt_ref": f"refs/heads/guru-task-lifecycle/{TASK_ID}", "result_id": "handoff-result:1"},
         "HandoffInventoryRefDTO": {**base, "handoff_id": "handoff:1", "inventory_id": "inventory:1"},
@@ -72,6 +76,19 @@ def valid_payloads() -> dict[str, dict]:
 
 
 class ContractTests(unittest.TestCase):
+    def test_runtime_error_shape_has_exact_dispatcher_fields(self):
+        error = LifecycleContractError("target_path_conflict", "target_path", "Choose another target.")
+        self.assertEqual(set(error.as_dict()), {"code", "field_path", "remediation"})
+        self.assertNotIn("details", error.__dataclass_fields__)
+        for alias in ("details", "message", "unknown"):
+            with self.subTest(alias=alias), self.assertRaises(TypeError):
+                LifecycleContractError(
+                    "target_path_conflict",
+                    "target_path",
+                    "Choose another target.",
+                    **{alias: "not allowed"},
+                )
+
     def test_catalog_is_closed_and_every_named_dto_has_a_valid_example(self):
         payloads = valid_payloads()
         self.assertEqual(set(dto_names()), set(payloads))
@@ -80,6 +97,26 @@ class ContractTests(unittest.TestCase):
                 self.assertEqual(validate_dto(name, payload), payload)
                 with self.assertRaises(LifecycleContractError):
                     validate_dto(name, {**payload, "authorization": "confirmed"})
+
+    def test_checkout_timestamps_enforce_the_declared_rfc3339_domain(self):
+        payloads = valid_payloads()
+        valid_cases = [
+            ("CheckoutCandidateDTO", "discovered_at", "2026-09-22t00:00:00z"),
+            ("CheckoutSelectionDTO", "selected_at", "0000-01-01T00:00:00Z"),
+            ("CheckoutSelectionDTO", "selected_at", "2016-12-31T23:59:60Z"),
+        ]
+        for name, field, value in valid_cases:
+            with self.subTest(name=name, value=value):
+                self.assertEqual(validate_dto(name, {**payloads[name], field: value})[field], value)
+
+        invalid_cases = [
+            ("CheckoutCandidateDTO", "discovered_at", "not-a-date"),
+            ("CheckoutCandidateDTO", "discovered_at", "2026-13-22T00:00:00Z"),
+            ("CheckoutSelectionDTO", "selected_at", "2016-12-30T23:59:60Z"),
+        ]
+        for name, field, value in invalid_cases:
+            with self.subTest(name=name, value=value), self.assertRaises(LifecycleContractError):
+                validate_dto(name, {**payloads[name], field: value})
 
     def test_task_artifact_projection_rejects_machine_and_git_authority(self):
         payload = valid_payloads()["TaskArtifactDTO"]
@@ -93,6 +130,84 @@ class ContractTests(unittest.TestCase):
         }.items():
             with self.subTest(field=field), self.assertRaises(LifecycleContractError):
                 validate_dto("TaskArtifactDTO", {**payload, field: value})
+
+    def test_checkout_machine_facts_are_limited_to_call_local_dtos(self):
+        payloads = valid_payloads()
+        self.assertEqual(validate_dto("CheckoutCandidateDTO", payloads["CheckoutCandidateDTO"])["path"], "/tmp/task")
+        for name in ("TaskArtifactDTO", "TaskLifecycleDTO", "BranchBindingRefDTO", "ResultRefDTO"):
+            with self.subTest(name=name), self.assertRaises(LifecycleContractError):
+                validate_dto(name, {**payloads[name], "checkout_path": "/tmp/task"})
+
+    def test_checkout_plan_has_a_closed_task_artifact_expectation(self):
+        payload = valid_payloads()["CheckoutAcquisitionPlanDTO"]
+        self.assertEqual(
+            validate_dto("CheckoutAcquisitionPlanDTO", {**payload, "task_artifact_expectation": "absent"})[
+                "task_artifact_expectation"
+            ],
+            "absent",
+        )
+        with self.assertRaises(LifecycleContractError):
+            validate_dto("CheckoutAcquisitionPlanDTO", {**payload, "task_artifact_expectation": "optional"})
+
+    def test_checkout_candidate_can_represent_detached_or_unreadable_live_facts(self):
+        candidate = valid_payloads()["CheckoutCandidateDTO"]
+        detached = {
+            **candidate,
+            "head": None,
+            "branch_ref": None,
+            "topology": "registered",
+            "validation_state": "invalid_candidate",
+            "reason_code": "detached_checkout",
+        }
+        self.assertEqual(validate_dto("CheckoutCandidateDTO", detached), detached)
+
+    def test_checkout_candidate_reason_matches_validation_state(self):
+        candidate = valid_payloads()["CheckoutCandidateDTO"]
+        valid = [
+            candidate,
+            {**candidate, "topology": "primary"},
+            {**candidate, "validation_state": "invalid_candidate", "reason_code": "detached_checkout"},
+            {**candidate, "validation_state": "authority_conflict", "reason_code": "task_artifact_mismatch"},
+        ]
+        for payload in valid:
+            with self.subTest(valid=payload["validation_state"]):
+                self.assertEqual(validate_dto("CheckoutCandidateDTO", payload), payload)
+
+        invalid = [
+            {**candidate, "reason_code": "unexpected_reason"},
+            {**candidate, "head": None},
+            {**candidate, "branch_ref": None},
+            {**candidate, "topology": "registered"},
+            {**candidate, "dirty_paths": ["modified.txt"]},
+            {**candidate, "validation_state": "invalid_candidate", "reason_code": None},
+            {**candidate, "validation_state": "authority_conflict", "reason_code": None},
+        ]
+        for payload in invalid:
+            with self.subTest(invalid=payload["validation_state"]), self.assertRaises(LifecycleContractError):
+                validate_dto("CheckoutCandidateDTO", payload)
+
+    def test_checkout_resolution_selection_matches_resolution_kind(self):
+        resolution = valid_payloads()["CheckoutResolutionDTO"]
+        valid = [
+            resolution,
+            {"resolution_kind": "selection_required", "reason_code": "no_candidates", "candidate_ids": []},
+            {"resolution_kind": "selection_required", "reason_code": "multiple_candidates", "candidate_ids": ["candidate:1", "candidate:2"]},
+            {"resolution_kind": "authority_conflict", "reason_code": "task_artifact_mismatch", "candidate_ids": []},
+        ]
+        for payload in valid:
+            with self.subTest(valid=payload["resolution_kind"]):
+                self.assertEqual(validate_dto("CheckoutResolutionDTO", payload), payload)
+
+        invalid = [
+            {**resolution, "selected_candidate_id": None},
+            {**resolution, "candidate_ids": ["candidate:1"]},
+            {"resolution_kind": "selection_required", "reason_code": "multiple_candidates"},
+            {"resolution_kind": "selection_required", "reason_code": "multiple_candidates", "candidate_ids": [], "selected_candidate_id": None},
+            {"resolution_kind": "authority_conflict", "reason_code": "task_artifact_mismatch"},
+        ]
+        for payload in invalid:
+            with self.subTest(invalid=payload["resolution_kind"]), self.assertRaises(LifecycleContractError):
+                validate_dto("CheckoutResolutionDTO", payload)
 
     def test_path_and_branch_primitives_reject_non_portable_values(self):
         payloads = valid_payloads()

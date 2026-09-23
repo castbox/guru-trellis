@@ -289,6 +289,7 @@ def _validate_registry(
             active.append(skill_id)
         elif state == "planned":
             planned.append(skill_id)
+            continue
         else:
             errors.append(ownership_error("skill_registry_contract_invalid", f"skills[{index}].state", "expected active or planned"))
             continue
@@ -399,8 +400,16 @@ def _validate_repository(
         candidate.name for candidate in package_root.iterdir()
         if candidate.is_dir() and not candidate.is_symlink()
     ) if package_root.is_dir() else []
-    if package_ids != sorted(active_skill_ids):
-        errors.append(ownership_error("canonical_package_set_mismatch", SKILL_PACKAGE_ROOT_RELATIVE.as_posix(), f"packages={package_ids} active={sorted(active_skill_ids)}"))
+    active_package_ids = sorted(active_skill_ids)
+    planned_package_ids = sorted(set(package_ids) & set(planned_skill_ids))
+    for skill_id in planned_package_ids:
+        errors.append(ownership_error(
+            "planned_skill_package_present",
+            (SKILL_PACKAGE_ROOT_RELATIVE / skill_id).as_posix(),
+            "planned Skill ids reserve identity only and must not have a canonical package",
+        ))
+    if package_ids != active_package_ids:
+        errors.append(ownership_error("canonical_package_set_mismatch", SKILL_PACKAGE_ROOT_RELATIVE.as_posix(), f"packages={package_ids} active={active_package_ids}"))
 
     overlay_root = repo_root / OVERLAY_ROOT_RELATIVE
     overlay_paths = collect_overlay_paths(overlay_root, errors)
@@ -431,6 +440,7 @@ def _validate_repository(
         "overlay_payload_aggregate_sha256": payload_aggregate_sha256(overlay_root, regular_overlay_paths),
         "active_skill_count": len(active_skill_ids),
         "planned_skill_count": len(planned_skill_ids),
+        "planned_skill_ids": sorted(planned_skill_ids),
         "canonical_package_count": len(package_ids),
         "platform_capabilities": capability_facts,
     }
