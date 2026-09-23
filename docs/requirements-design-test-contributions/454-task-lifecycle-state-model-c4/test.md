@@ -40,7 +40,7 @@ production activation 或 Release Gate 证明。
 - rebind transaction只从`source_binding.binding_epoch`派生unchanged epoch，不再接受第二份
   `target_binding_epoch`；成功rebind后target HEAD前进时，lost-output recovery必须拒绝。
 
-上述五项必须由独立test method/fixture直接断言；四象限循环、schema循环、aggregate runtime count与broader suite
+上述七项必须由独立test method/fixture直接断言；四象限循环、schema循环、aggregate runtime count与broader suite
 结果不能单独作为这些行为的覆盖声明。
 
 完整 installer/upgrade/workflow-switch/multi-platform Release matrix 保持 deferred；broader suite 的既有失败必须
