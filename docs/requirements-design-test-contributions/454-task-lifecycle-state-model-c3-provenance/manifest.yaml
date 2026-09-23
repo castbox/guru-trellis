@@ -1,0 +1,38 @@
+schema_version: "1.0"
+task_ref: "454-task-lifecycle-state-model"
+task_locator: ".trellis/tasks/09-20-454-task-lifecycle-state-model"
+issue_ref: "https://github.com/castbox/guru-trellis/issues/454"
+source_version: "current-main-0.6.17-guru.60"
+expected_current_version: "current-main-0.6.17-guru.60"
+target_version: "current-main-0.6.17-guru.61"
+status: "reviewed_promoted"
+authority_scope: "isolated_contribution"
+architecture_impact: "architecture_impact"
+change_path: "target_native"
+contribution:
+  requirements: "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c3-provenance/requirements.md"
+  design: "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c3-provenance/design.md"
+  test: "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c3-provenance/test.md"
+  traceability: "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c3-provenance/traceability.md"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.61"
+  status: "active"
+design_constitution:
+  authority_owner: "docs/architecture"
+  candidate_locator: "docs/architecture/00-foundation/design-constitution.md"
+  identity_kind: "version"
+  candidate_identity: "guru-trellis-design-constitution-v1"
+  identity_status: "current"
+architecture_candidate:
+  contribution_locator: ".trellis/tasks/09-20-454-task-lifecycle-state-model/planning/architecture-change-contract.md"
+  contribution_identity: "architecture-contribution-454-task-lifecycle-state-model-c3-provenance-v1"
+  adr_required: false
+public_contracts:
+  rdt_owner: "guru-maintain-requirements-design-test-ssot:promotion"
+  architecture_candidate: "guru-maintain-architecture-baseline:2.0"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+architecture_promotion_owner: "guru-maintain-architecture-baseline"
+architecture_contribution: "docs/architecture/contributions/454-task-lifecycle-state-model-c3-provenance.md"
+promotion_decision: "reviewed_promoted"
+shared_current_write: true

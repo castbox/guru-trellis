@@ -6,7 +6,7 @@
 - Lifecycle generation: `1`
 - Requirement authority: live `castbox/guru-trellis#454`
 - Guru Architecture public contract: `guru-maintain-architecture-baseline:2.0`
-- Current baseline: `current-main-0.6.17-guru.60`
+- Current baseline: `current-main-0.6.17-guru.61`
 - Constitution: `docs/architecture/00-foundation/design-constitution.md` /
   `guru-trellis-design-constitution-v1` / `current`
 - Project change contract: `docs/architecture/06-governance/change-contract.md` /
@@ -14,11 +14,13 @@
 - Change path: `target_native`
 - Current candidate contribution id:
   `architecture-contribution-454-task-lifecycle-state-model-c3-provenance-v1`
-- Contribution locator: this file
+- Contribution locator:
+  `docs/architecture/contributions/454-task-lifecycle-state-model-c3-provenance.md`
 - Expected current identity: `current-main-0.6.17-guru.60`
-- Promotion state: `reviewed_candidate`
+- Promoted successor identity: `current-main-0.6.17-guru.61`
+- Promotion state: `reviewed_promoted`
 - C3 RDT candidate:
-  `docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c3/`
+  `docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c3-provenance/`
 
 The promoted `architecture-contribution-454-task-lifecycle-state-model-v1`
 remains immutable evidence for C2 and D0. The promoted
@@ -30,12 +32,13 @@ HEAD facts cannot prove transaction origin after same-path replacement.
 
 ## 2. Boundary And Decision
 
-Current `.60` authority already contains the shared lifecycle kernel, D0
-stage-evidence correction and the promoted C3 checkout substrate. The remaining
-current production graph still uses
+Current `.61` authority contains the shared lifecycle kernel, D0 stage-evidence
+correction, the promoted C3 checkout substrate and the reviewed provenance
+continuity delta. The remaining current production graph still uses
 the predecessor task/workspace model.
 
-C3 adds only the next target-native substrate slice:
+The promoted C3 provenance delta adds only the next target-native substrate
+slice:
 
 1. call-local checkout acquisition, candidate, resolution and selection DTOs;
 2. common-dir based live Git/worktree fact inspection;
@@ -64,15 +67,15 @@ Decision refs: `ARCH-FND-001..006`, `ARCH-GOV-006..009`, `ARCH-GAP-009`,
 
 | Concern | Applicability | C3 candidate contract |
 | --- | --- | --- |
-| authority-binding | applicable | Bind Architecture 2.0, current `.60`, Issue #454 and generation 1. |
+| authority-binding | applicable | Bind Architecture 2.0, promotion expected current `.60`, promoted current `.61`, Issue #454 and generation 1. |
 | constitution-binding | applicable | Use official Git extension surfaces, unique owners, minimum state and one-way convergence. |
 | boundary-and-decision | applicable | C3 is `target_native`; checkout facts remain call-local, while one owner-private transaction marker supplies only non-reconstructible creation provenance to output-loss recovery. The planned Skill id has no package tree. |
 | owner-and-single-writer | applicable | The checkout acquisition transaction is the sole marker writer and recovery is its sole reader; C3 otherwise writes shared checkout DTO/runtime and non-active planned metadata. E434 exclusively owns complete package composition and activation. |
 | compatibility-and-exit | applicable | No alias, adapter, dual-read or dual-write; predecessor remains active only until E434 atomic cutover. |
 | gap-and-deviation | applicable | Narrow `ARCH-GAP-011` by adding checkout substrate without claiming branch/session/resource or production completion. |
-| parallel-scope | applicable | Task-local contract and C3 canonical files only; shared current and active selectors are forbidden. |
+| parallel-scope | applicable | Before promotion, only the task-local contract and C3 canonical files are allowed. The reviewed promotion additionally owns the exact `.61` Architecture/RDT authority and navigation declared by the promotion contribution; all other shared current files and active selectors remain forbidden. |
 | evidence-and-freshness | applicable | Bind the complete dirty/untracked C3 worktree, same-path replacement and marker lifecycle tests, schema validation, line limits and zero legacy-reader/forbidden-mechanism checks. |
-| review-and-promotion | applicable | The provenance delta is a new task-owned `reviewed_candidate` against current `.60`; it requires fresh Phase 2, Task Commit, independent full-diff Branch Review and serialized promotion before Publication. |
+| review-and-promotion | applicable | The provenance delta was independently reviewed against expected current `.60` and serialized into `.61` as `reviewed_promoted`; the promotion-created diff requires fresh Phase 2, Task Commit and independent full-diff Branch Review before Publication. |
 
 ## 4. Owner And Single Writer
 
@@ -109,10 +112,12 @@ activation candidate.
 
 ## 6. Parallel Scope
 
-Allowed: the C3 runtime, shared DTO additions, focused tests,
+Allowed before promotion: the C3 runtime, shared DTO additions, focused tests,
 `guru-ensure-task-checkout` `state=planned` registry row, canonical
 `planned_skill_ids`, active-package ownership validation updates, and this
-task-local planning authority.
+task-local planning authority. The reviewed promotion additionally owns only
+the exact `.61` Architecture/RDT authority files and navigation declared by the
+promotion contribution.
 
 Forbidden: `.trellis/scripts/**`, shared current Architecture/RDT, source lock,
 active/integrated registry selector, `active_skill_ids`, active graph manifest,
@@ -121,12 +126,12 @@ D/E package migration.
 
 ## 7. Before And After
 
-Before: `.60` contains the promoted C3 checkout substrate, but output-loss
+Before the reviewed provenance delta: `.60` contains the promoted C3 checkout substrate, but output-loss
 recovery proves only path, branch and HEAD. After the original Guru-created
 worktree is removed, an honest caller can recreate the same branch/HEAD at the
 same path and the current recovery incorrectly restores Guru ownership.
 
-After candidate:
+After promoted successor `.61`:
 
 - DTO count changes from 35 to 39 with four call-local checkout DTOs;
 - live resolution derives candidates from `git worktree list --porcelain -z`
@@ -179,16 +184,16 @@ framework/extension boundary. The marker is a bounded transaction-recovery
 implementation of the existing conservative ownership rule; it adds no owner,
 compatibility exit or durable lifecycle authority.
 
-Promotion state: `reviewed_candidate`. The prior reviewed committed range
-`origin/main@9c2238bad7e73ea4a1f23dddcb7e8e9204c244da...e965b7e8b6850614a2cd21f899a02b3ea9da73f3`
-proves only the original `.60` C3 promotion. This provenance delta has no
-committed review or promotion yet.
+Promotion state: `reviewed_promoted`. The independent reviewed committed range
+is `origin/main@9c2238bad7e73ea4a1f23dddcb7e8e9204c244da...b816aca8d6520bf90c52c6210ff3155174da86f3`.
+It closed `BR454-C3-P2-010` and `BR454-C3-P2-011` without a new P0-P3 finding
+and serialized expected current `.60` into successor `.61`. This promotion does
+not prove the promotion-created worktree diff's downstream gates.
 
 ## 9. Resume Boundary
 
-The active task is already `in_progress`. This implementation-discovery update
-does not reactivate, commit, promote or publish anything. A fresh
-`task_impact_sync(stage=implementation_discovery)` must bind current `.60`, the
-new provenance contribution, current project-check descriptor and the complete
-worktree candidate before source or test edits. After implementation, fresh
-`task_impact_sync(stage=phase2)` and `guru-check-task` are mandatory.
+The active task remains `in_progress`. The serialized `.60 -> .61` promotion
+does not reactivate, commit, publish or authorize any Git/GitHub mutation. Its
+promotion-created dirty diff must re-enter fresh
+`task_impact_sync(stage=phase2)` and `guru-check-task`, then Task Commit and an
+independent complete committed-range Branch Review before Publication.

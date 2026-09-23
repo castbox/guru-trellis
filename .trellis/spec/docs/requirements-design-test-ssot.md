@@ -2,13 +2,13 @@
 
 ## Current identity
 
-- version：`current-main-0.6.17-guru.60`
+- version：`current-main-0.6.17-guru.61`
 - status：`active`
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
-- Architecture inheritance：`docs/architecture/README.md`，`current-main-0.6.17-guru.60` / `active`
-- source binding：reviewed #454 C3 contribution + inherited immutable `current-main-0.6.17-guru.59` authority promoted to `current-main-0.6.17-guru.60`；current registry 保持 32 packages / 142 exits / 102 commands并增加一个 planned ID，production workflow 保持 22 mandatory invokes / 98 exits，fixed Fork source 为 `eb370008c7689d4e272ae626bd002190ecbb3296`。`.60` 完整继承 C2 shared lifecycle kernel 与 D0 stage-evidence correction，并只承接 C3 checkout acquisition/live resolution substrate；C4-C7、D443、D436、E434、#434 production graph activation 与 #410 Release Gate matrix 仍未完成或未验证，package suite `19/20` 与 preset suite `85/86` 均未声明通过。
+- Architecture inheritance：`docs/architecture/README.md`，`current-main-0.6.17-guru.61` / `active`
+- source binding：reviewed #454 C3 provenance contribution + inherited immutable `current-main-0.6.17-guru.60` authority promoted to `current-main-0.6.17-guru.61`；current registry 保持 32 packages / 142 exits / 102 commands并增加一个 planned ID，production workflow 保持 22 mandatory invokes / 98 exits，fixed Fork source 为 `eb370008c7689d4e272ae626bd002190ecbb3296`。`.61` 完整继承 C2 shared lifecycle kernel、D0 stage-evidence correction 与 C3 checkout acquisition/live resolution substrate，并增加 transaction provenance continuity；C4-C7、D443、D436、E434、#434 production graph activation 与 #410 Release Gate matrix 仍未完成或未验证，package `19/20`、shared runtime `119/128`、lifecycle integration `38/44` 与 preset 272 with 2 errors/3 skips 均未声明通过。
 
 ## 读取与更新
 
@@ -18,4 +18,4 @@
 
 ## Freshness
 
-每次 gate 必须重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 和 source binding。locator 不存在、版本不一致、traceability 断裂或 projection 落后时，不得沿用本页，进入 owner `repair`。软件四轴与 current knowledge identity 独立；`.59` snapshot 不证明 `.60` promotion-created diff 之后的 fresh Phase 2、Task Commit、完整 Branch Review、Publication、push、PR、merge、tag、Release 或 Issue closure。R454-C3/D454-C3/T454-C3 的 current delta 与双向 trace 在三层 `.60` authority 定义；C4-C7、D443、D436、E434 仍是未完成边界，R454/D454/T454 的 C2+D0 authority 与 R452/R443/R436/R435/R419/R418/R410/R408 及更早证据作为 inherited history 保留。
+每次 gate 必须重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 和 source binding。locator 不存在、版本不一致、traceability 断裂或 projection 落后时，不得沿用本页，进入 owner `repair`。软件四轴与 current knowledge identity 独立；`.60` snapshot 不证明 `.61` promotion-created diff 之后的 fresh Phase 2、Task Commit、完整 Branch Review、Publication、push、PR、merge、tag、Release 或 Issue closure。R454-C3/D454-C3/T454-C3 的 current delta 与双向 trace 在三层 `.61` authority 定义；C4-C7、D443、D436、E434 仍是未完成边界，R454/D454/T454 的 C2+D0 authority 与 R452/R443/R436/R435/R419/R418/R410/R408 及更早证据作为 inherited history 保留。

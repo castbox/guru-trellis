@@ -6,7 +6,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.60` | [requirement-main.md](./versions/current-main-0.6.17-guru.60/requirement-main.md) | #454 C3 checkout substrate；完整继承 immutable `.59`，Architecture 为 `.60/active` |
+| `active` | `current-main-0.6.17-guru.61` | [requirement-main.md](./versions/current-main-0.6.17-guru.61/requirement-main.md) | #454 C3 checkout acquisition provenance；完整继承 immutable `.60`，Architecture 为 `.61/active` |
+| `superseded` | `current-main-0.6.17-guru.60` | [requirement-main.md](./versions/current-main-0.6.17-guru.60/requirement-main.md) | #454 C3 checkout substrate；immutable history |
 | `superseded` | `current-main-0.6.17-guru.59` | [requirement-main.md](./versions/current-main-0.6.17-guru.59/requirement-main.md) | #454 Task Lifecycle State Model C2+D0；immutable history |
 | `superseded` | `current-main-0.6.17-guru.58` | [requirement-main.md](./versions/current-main-0.6.17-guru.58/requirement-main.md) | #452 All Platform Support；immutable history |
 | `superseded` | `current-main-0.6.17-guru.57` | [requirement-main.md](./versions/current-main-0.6.17-guru.57/requirement-main.md) | #443 Task Identity Session Binding；immutable history |
@@ -35,9 +36,9 @@
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
 当前框架源码固定为 `castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296`，CI `35621578090`，CLI/core `0.6.17`，package manager `pnpm@10.32.1`；Guru current extension revision 为 `0.6.17-guru.42`，target repository axis 为 `v0.6.17-guru.1`。released `v0.6.16-guru.1` 与 extension `0.6.16-guru.41` 保持 immutable history。
-Docs `.60` 完整继承 immutable `.59` 并只承接 #454 C3 checkout substrate；current registry 保持 32 packages / 142 exits / 102 commands并增加一个 planned ID，`guru-bind-task-session` 保持 `deferred`，production workflow 保持 22 mandatory invokes / 98 exits。#454 C4-C7、D443、D436 与 E434 未完成，#434 独占 production graph activation；Architecture 为 `.60/active`。Promotion-created diff 尚需 fresh Phase 2/commit/完整 Branch Review；package suite `19/20`、preset suite `85/86` 与完整 Release matrix 均未声明通过。
+Docs `.61` 完整继承 immutable `.60` 并只承接 #454 C3 checkout acquisition provenance continuity；current registry 保持 32 packages / 142 exits / 102 commands并增加一个 planned ID，`guru-bind-task-session` 保持 `deferred`，production workflow 保持 22 mandatory invokes / 98 exits。#454 C4-C7、D443、D436 与 E434 未完成，#434 独占 production graph activation；Architecture 为 `.61/active`。Promotion-created diff 尚需 fresh Phase 2/commit/完整 Branch Review；package `19/20`、shared runtime `119/128`、lifecycle integration `38/44`、preset 272 with 2 errors/3 skips 与完整 Release matrix 均未声明通过。
 
-`R454-C3-01..09 -> D454-C3-01..09 -> T454-C3-01..10`、`R454-01..07 -> D454-01..07 -> T454-01..09` 与继承链见 [current trace](./versions/current-main-0.6.17-guru.60/traceability.md)。实际证明边界由同版本 Test 层维护。
+`R454-C3-01..12 -> D454-C3-01..12 -> T454-C3-01..15`、`R454-01..07 -> D454-01..07 -> T454-01..09` 与继承链见 [current trace](./versions/current-main-0.6.17-guru.61/traceability.md)。实际证明边界由同版本 Test 层维护。
 
 `R378-01..04 -> D378-01..04 -> T378-01..05` 承接固定来源、会话隔离、installed 投影与原 verifier 入口；#388/#389 保留为关联前置，既有 #240/#348/#332/#376 与 Evolution authority 不扩张。
 
@@ -95,4 +96,4 @@ inventory 只承接 current-to-target trace，不替代前两份 Requirements �
 
 旧路径 `requirement-main.md` 与 `guru-team-trellis-flow.md` 仅保留迁移导航，不定义 current。
 
-`.60/active` 完整继承 `.59` 并吸收 reviewed #454 C3 contribution；Architecture current 为 `.60/active`。promotion-created diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review，随后才进入 Publication；C4-C7、D443、D436、E434 与 #434 production graph activation 保持后续边界，#410 独占 post-merge Release Gate matrix且当前仍未验证。
+`.61/active` 完整继承 `.60` 并吸收 reviewed #454 C3 provenance contribution；Architecture current 为 `.61/active`。promotion-created diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review，随后才进入 Publication；C4-C7、D443、D436、E434 与 #434 production graph activation 保持后续边界，#410 独占 post-merge Release Gate matrix且当前仍未验证。
