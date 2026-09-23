@@ -730,7 +730,9 @@
         "guru-verify-extension-installation"
       ],
       "planned_skill_ids": [
-        "guru-ensure-task-checkout"
+        "guru-ensure-task-checkout",
+        "guru-establish-task-branch-binding",
+        "guru-rebind-task-branch"
       ],
       "registry_lifecycle": [
         "planned",

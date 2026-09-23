@@ -59,11 +59,11 @@ owner，不开始生产编辑。
 ## 3. Delivery policy
 
 Phase C 是本 task 的首个独立 Delivery slice。它只交付 substrate、contract primitives 与 planned stable IDs；它不要求
-Phase D443、Phase D436 或 Phase E434 已完成。当前实现状态为 C2 lifecycle kernel 与 D0 stage-evidence contract
-correction 已提交并完成正式 base reconcile；C3 已形成 checkout runtime/DTO candidate，并仅增加非激活的
-`planned` registry metadata 与 canonical `planned_skill_ids`，不创建对应 canonical package directory。任何 finding
-fix 后均须重建 fresh Phase 2、Task Commit 与完整
-Branch Review。C3 fresh gates、C4-C7 与其余 Phase D/E 工作仍未完成。
+Phase D443、Phase D436 或 Phase E434 已完成。C1、C2、D0 与 C3 已完成；PR #465 只完成 C3，不表示
+C3-C7 已全部完成。当前交付为 C4 branch association、establishment 与 rebind substrate；C5-C7、D443、D436、
+E434 与 #434 activation 仍未完成。C4 只增加非激活的 runtime/schema/Docs candidate 与 planned stable IDs，
+不创建对应 canonical package directory，不切换 production graph。任何 finding fix 后均须重建 fresh Phase 2、
+Task Commit 与完整 Branch Review。
 
 独立可交付条件：
 

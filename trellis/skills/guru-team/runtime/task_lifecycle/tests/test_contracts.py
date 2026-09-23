@@ -7,6 +7,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from runtime.task_lifecycle.errors import LifecycleContractError
@@ -19,6 +21,50 @@ GENERATION = 0
 COMMIT = "a" * 40
 OTHER_COMMIT = "b" * 40
 DIGEST = "c" * 64
+BRANCH_NAME = "codex/454-task-lifecycle-state-model-c3-c7"
+
+
+def valid_branch_binding() -> dict:
+    return {
+        "schema_version": "1.0",
+        "task_id": TASK_ID,
+        "lifecycle_generation": GENERATION,
+        "binding_revision": 0,
+        "branch_name": BRANCH_NAME,
+    }
+
+
+def valid_rebind_transactions() -> dict[str, dict]:
+    common = {
+        "schema_version": "1.0",
+        "transaction_id": "rebind:1",
+        "task_id": TASK_ID,
+        "lifecycle_generation": GENERATION,
+        "stage": "prepared",
+        "source_binding": valid_branch_binding(),
+        "target_binding_revision": 1,
+        "target_branch_name": "codex/454-task-lifecycle-state-model-c4",
+        "source_head": COMMIT,
+        "target_head": OTHER_COMMIT,
+        "resource_ledger_revision": 0,
+    }
+    return {
+        "same_checkout_new_ref": {
+            **common,
+            "route": "same_checkout_new_ref",
+            "checkout_root": "/tmp/task",
+            "source_index_sha256": DIGEST,
+            "source_worktree_sha256": DIGEST,
+            "source_status_sha256": DIGEST,
+        },
+        "existing_target": {
+            **common,
+            "route": "existing_target",
+            "source_checkout_root": "/tmp/source",
+            "target_checkout_root": "/tmp/target",
+            "target_task_artifact_sha256": DIGEST,
+        },
+    }
 
 
 def valid_payloads() -> dict[str, dict]:
@@ -76,6 +122,135 @@ def valid_payloads() -> dict[str, dict]:
 
 
 class ContractTests(unittest.TestCase):
+    def test_branch_binding_schema_is_draft_2020_12_and_exactly_five_fields(self):
+        schema = load_contract("task-branch-binding.schema.json")
+        Draft202012Validator.check_schema(schema)
+        validator = Draft202012Validator(schema)
+        payload = valid_branch_binding()
+
+        self.assertEqual(list(validator.iter_errors(payload)), [])
+        self.assertEqual(
+            set(payload),
+            {
+                "schema_version",
+                "task_id",
+                "lifecycle_generation",
+                "binding_revision",
+                "branch_name",
+            },
+        )
+        for field, value in {
+            "binding_epoch": 0,
+            "path": "/tmp/task",
+            "head": COMMIT,
+            "session_id": "session:1",
+            "ownership": "guru",
+        }.items():
+            with self.subTest(field=field):
+                self.assertTrue(list(validator.iter_errors({**payload, field: value})))
+
+    def test_branch_binding_schema_rejects_invalid_revisions_and_branch_names(self):
+        validator = Draft202012Validator(load_contract("task-branch-binding.schema.json"))
+        payload = valid_branch_binding()
+
+        for field, value in [
+            ("lifecycle_generation", True),
+            ("lifecycle_generation", -1),
+            ("lifecycle_generation", 1.5),
+            ("binding_revision", True),
+            ("binding_revision", -1),
+            ("binding_revision", 1.5),
+        ]:
+            with self.subTest(field=field, value=value):
+                self.assertTrue(list(validator.iter_errors({**payload, field: value})))
+
+        for branch_name in [
+            "HEAD",
+            "refs/heads/topic",
+            "refs/tags/v1",
+            "guru-task-lifecycle/task-a",
+            "guru-task-lifecycle",
+            *[f"bad{chr(codepoint)}name" for codepoint in (*range(32), 127)],
+        ]:
+            with self.subTest(branch_name=branch_name):
+                self.assertTrue(
+                    list(validator.iter_errors({**payload, "branch_name": branch_name}))
+                )
+
+        rebind_validator = Draft202012Validator(
+            load_contract("task-branch-rebind-transaction.schema.json")
+        )
+        for route, transaction in valid_rebind_transactions().items():
+            for codepoint in (*range(32), 127):
+                with self.subTest(route=route, codepoint=codepoint):
+                    self.assertTrue(
+                        list(
+                            rebind_validator.iter_errors(
+                                {
+                                    **transaction,
+                                    "target_branch_name": f"bad{chr(codepoint)}name",
+                                }
+                            )
+                        )
+                    )
+
+    def test_rebind_transaction_schema_accepts_only_the_two_closed_routes(self):
+        schema = load_contract("task-branch-rebind-transaction.schema.json")
+        Draft202012Validator.check_schema(schema)
+        validator = Draft202012Validator(schema)
+        transactions = valid_rebind_transactions()
+
+        for route, payload in transactions.items():
+            with self.subTest(route=route):
+                self.assertEqual(list(validator.iter_errors(payload)), [])
+
+        invalid = [
+            {**transactions["same_checkout_new_ref"], "route": "unknown"},
+            {**transactions["same_checkout_new_ref"], "target_checkout_root": "/tmp/target"},
+            {**transactions["existing_target"], "checkout_root": "/tmp/task"},
+            {**transactions["existing_target"], "authorization": "confirmed"},
+        ]
+        for index, payload in enumerate(invalid):
+            with self.subTest(index=index):
+                self.assertTrue(list(validator.iter_errors(payload)))
+
+    def test_rebind_transaction_schema_enforces_route_specific_required_fields(self):
+        validator = Draft202012Validator(
+            load_contract("task-branch-rebind-transaction.schema.json")
+        )
+        transactions = valid_rebind_transactions()
+        required_by_route = {
+            "same_checkout_new_ref": (
+                "checkout_root",
+                "source_index_sha256",
+                "source_worktree_sha256",
+                "source_status_sha256",
+            ),
+            "existing_target": (
+                "source_checkout_root",
+                "target_checkout_root",
+                "target_task_artifact_sha256",
+            ),
+        }
+
+        for route, fields in required_by_route.items():
+            for field in fields:
+                payload = dict(transactions[route])
+                del payload[field]
+                with self.subTest(route=route, field=field):
+                    self.assertTrue(list(validator.iter_errors(payload)))
+
+        for route, payload in transactions.items():
+            for field, value in [
+                ("lifecycle_generation", True),
+                ("target_binding_revision", True),
+                ("target_binding_revision", 0),
+                ("target_binding_revision", 1.5),
+                ("resource_ledger_revision", -1),
+            ]:
+                with self.subTest(route=route, field=field, value=value):
+                    self.assertTrue(list(validator.iter_errors({**payload, field: value})))
+
     def test_runtime_error_shape_has_exact_dispatcher_fields(self):
         error = LifecycleContractError("target_path_conflict", "target_path", "Choose another target.")
         self.assertEqual(set(error.as_dict()), {"code", "field_path", "remediation"})

@@ -23,6 +23,20 @@ GURU_FINISH_ENTRIES = (
     ".opencode/commands/guru-finish-work.md",
 )
 
+PLANNED_SKILL_IDS = [
+    "guru-ensure-task-checkout",
+    "guru-establish-task-branch-binding",
+    "guru-rebind-task-branch",
+]
+PLANNED_SKILL_ROWS = [
+    {
+        "id": skill_id,
+        "state": "planned",
+        "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation.",
+    }
+    for skill_id in PLANNED_SKILL_IDS
+]
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import apply_guru_team_trellis_preset as preset
 import validate_upstream_ownership as ownership
@@ -87,31 +101,19 @@ class CanonicalPlannedIdOwnershipTest(unittest.TestCase):
         payload = ownership.validate_repository(self.repo)
         self.assertEqual(payload["status"], "ok", payload["errors"])
         self.assertEqual(payload["active_skill_count"], 32)
-        self.assertEqual(payload["planned_skill_count"], 1)
-        self.assertEqual(payload["planned_skill_ids"], ["guru-ensure-task-checkout"])
+        self.assertEqual(payload["planned_skill_count"], 3)
+        self.assertEqual(payload["planned_skill_ids"], PLANNED_SKILL_IDS)
         self.assertEqual(payload["canonical_package_count"], 32)
 
         registry = json.loads(
             (self.repo / ownership.SKILL_REGISTRY_RELATIVE).read_text(encoding="utf-8")
         )
         planned = [entry for entry in registry["skills"] if entry.get("state") == "planned"]
-        self.assertEqual(
-            planned,
-            [
-                {
-                    "id": "guru-ensure-task-checkout",
-                    "state": "planned",
-                    "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation.",
-                }
-            ],
-        )
-        self.assertFalse(
-            (
-                self.repo
-                / ownership.SKILL_PACKAGE_ROOT_RELATIVE
-                / "guru-ensure-task-checkout"
-            ).exists()
-        )
+        self.assertEqual(planned, PLANNED_SKILL_ROWS)
+        for skill_id in PLANNED_SKILL_IDS:
+            self.assertFalse(
+                (self.repo / ownership.SKILL_PACKAGE_ROOT_RELATIVE / skill_id).exists()
+            )
 
     def test_planned_canonical_package_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -2443,31 +2445,23 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertEqual(
             public_api["skill_contracts"]["planned_skill_ids"],
-            ["guru-ensure-task-checkout"],
+            PLANNED_SKILL_IDS,
         )
         installed_planned = [
             entry
             for entry in installed_registry["skills"]
             if entry.get("state") == "planned"
         ]
-        self.assertEqual(
-            installed_planned,
-            [
-                {
-                    "id": "guru-ensure-task-checkout",
-                    "state": "planned",
-                    "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation.",
-                }
-            ],
-        )
-        for planned_path in (
-            self.guru_root / "trellis/skills/guru-team/packages/guru-ensure-task-checkout",
-            self.install_dst / "skills/packages/guru-ensure-task-checkout",
-            self.repo / ".agents/skills/guru-ensure-task-checkout",
-            self.repo / ".codex/skills/guru-ensure-task-checkout",
-            self.repo / ".cursor/skills/guru-ensure-task-checkout",
-        ):
-            self.assertFalse(planned_path.exists(), planned_path)
+        self.assertEqual(installed_planned, PLANNED_SKILL_ROWS)
+        for skill_id in PLANNED_SKILL_IDS:
+            for planned_path in (
+                self.guru_root / "trellis/skills/guru-team/packages" / skill_id,
+                self.install_dst / "skills/packages" / skill_id,
+                self.repo / ".agents/skills" / skill_id,
+                self.repo / ".codex/skills" / skill_id,
+                self.repo / ".cursor/skills" / skill_id,
+            ):
+                self.assertFalse(planned_path.exists(), planned_path)
         self.assertIn(
             "guru-base-sync-result-1.0",
             public_api["skill_contracts"]["artifact_schema_ids"],

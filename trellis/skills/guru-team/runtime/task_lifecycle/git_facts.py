@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from hashlib import sha256
 from pathlib import Path
 from typing import Iterable, Sequence
 
@@ -43,6 +44,16 @@ class WorktreeFacts:
     @property
     def clean(self) -> bool:
         return not self.dirty_paths
+
+
+@dataclass(frozen=True)
+class CheckoutStateSnapshot:
+    path: Path
+    head: str
+    branch_ref: str
+    index_sha256: str
+    worktree_sha256: str
+    status_sha256: str
 
 
 def _git(
@@ -210,6 +221,180 @@ def local_branch_head(repository: RepositoryFacts, branch_ref: str) -> str | Non
     return completed.stdout.strip() if completed.returncode == 0 else None
 
 
+def list_local_branch_refs(repository: RepositoryFacts) -> tuple[tuple[str, str], ...]:
+    payload = _git(
+        [
+            "for-each-ref",
+            "--format=%(refname)%00%(objectname)%00",
+            "refs/heads",
+        ],
+        common_dir=repository.common_dir,
+    ).stdout
+    fields = payload.split("\0")
+    rows: list[tuple[str, str]] = []
+    for index in range(0, len(fields) - 1, 2):
+        branch_ref = fields[index].strip()
+        head = fields[index + 1].strip()
+        if branch_ref and head:
+            rows.append((branch_ref, head))
+    return tuple(sorted(rows))
+
+
+def commit_path_bytes(repository: RepositoryFacts, commit: str, path: str) -> bytes | None:
+    completed = subprocess.run(
+        ["git", f"--git-dir={repository.common_dir}", "show", f"{commit}:{path}"],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if completed.returncode == 0:
+        return completed.stdout
+    missing = subprocess.run(
+        ["git", f"--git-dir={repository.common_dir}", "cat-file", "-e", f"{commit}^{{commit}}"],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if missing.returncode != 0:
+        raise LifecycleContractError(
+            "git_fact_unavailable",
+            "commit",
+            "Use one live commit identity from the selected repository.",
+        )
+    return None
+
+
+def is_ancestor(repository: RepositoryFacts, ancestor: str, descendant: str) -> bool:
+    completed = _git(
+        ["merge-base", "--is-ancestor", ancestor, descendant],
+        common_dir=repository.common_dir,
+        check=False,
+    )
+    if completed.returncode not in {0, 1}:
+        raise LifecycleContractError(
+            "git_fact_unavailable",
+            "ancestry",
+            "Restore readable commit ancestry before branch mutation.",
+        )
+    return completed.returncode == 0
+
+
+def git_operation_in_progress(checkout: Path | str) -> bool:
+    path = Path(checkout).resolve()
+    names = (
+        "MERGE_HEAD",
+        "CHERRY_PICK_HEAD",
+        "REVERT_HEAD",
+        "BISECT_LOG",
+        "rebase-apply",
+        "rebase-merge",
+        "sequencer",
+    )
+    for name in names:
+        resolved = _git(["rev-parse", "--git-path", name], cwd=path).stdout.strip()
+        candidate = Path(resolved)
+        if not candidate.is_absolute():
+            candidate = path / candidate
+        if candidate.exists():
+            return True
+    return False
+
+
+def run_checkout_git(checkout: Path | str, args: Iterable[str]) -> subprocess.CompletedProcess[str]:
+    return _git(list(args), cwd=Path(checkout).resolve())
+
+
+def _git_bytes(checkout: Path, args: Sequence[str]) -> bytes:
+    completed = subprocess.run(
+        ["git", *args],
+        cwd=checkout,
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if completed.returncode != 0:
+        raise LifecycleContractError(
+            "git_fact_unavailable",
+            "checkout_state",
+            "Restore a readable checkout before capturing mutation pre-state.",
+        )
+    return completed.stdout
+
+
+def _index_identity(checkout: Path) -> str:
+    raw_path = _git(["rev-parse", "--git-path", "index"], cwd=checkout).stdout.strip()
+    index_path = Path(raw_path)
+    if not index_path.is_absolute():
+        index_path = checkout / index_path
+    try:
+        payload = index_path.read_bytes()
+    except OSError as exc:
+        raise LifecycleContractError(
+            "git_fact_unavailable",
+            "checkout_index",
+            "Restore readable index bytes before branch mutation.",
+        ) from exc
+    return sha256(payload).hexdigest()
+
+
+def _worktree_identity(checkout: Path) -> str:
+    names = _git_bytes(
+        checkout,
+        ["ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+    ).split(b"\0")
+    digest = sha256()
+    for raw_name in sorted(item for item in names if item):
+        name = raw_name.decode("utf-8", errors="surrogateescape")
+        path = checkout / name
+        digest.update(len(raw_name).to_bytes(8, "big"))
+        digest.update(raw_name)
+        try:
+            if path.is_symlink():
+                payload = path.readlink().as_posix().encode("utf-8", errors="surrogateescape")
+                kind = b"symlink"
+            elif path.is_file():
+                payload = path.read_bytes()
+                kind = b"file"
+            elif path.exists():
+                payload = b""
+                kind = b"other"
+            else:
+                payload = b""
+                kind = b"missing"
+        except OSError as exc:
+            raise LifecycleContractError(
+                "git_fact_unavailable",
+                name,
+                "Restore readable working-tree bytes before branch mutation.",
+            ) from exc
+        digest.update(kind)
+        digest.update(len(payload).to_bytes(8, "big"))
+        digest.update(payload)
+    return digest.hexdigest()
+
+
+def capture_checkout_state(checkout: Path | str) -> CheckoutStateSnapshot:
+    path = Path(checkout).resolve()
+    head = _git(["rev-parse", "--verify", "HEAD^{commit}"], cwd=path).stdout.strip()
+    symbolic = _git(["symbolic-ref", "-q", "HEAD"], cwd=path, check=False)
+    if symbolic.returncode != 0:
+        raise LifecycleContractError(
+            "detached_checkout",
+            "checkout",
+            "Use one branch-bound registered checkout for branch mutation.",
+        )
+    branch_ref = symbolic.stdout.strip()
+    status = _git_bytes(path, ["status", "--porcelain=v2", "-z", "--untracked-files=all"])
+    return CheckoutStateSnapshot(
+        path=path,
+        head=head,
+        branch_ref=branch_ref,
+        index_sha256=_index_identity(path),
+        worktree_sha256=_worktree_identity(path),
+        status_sha256=sha256(status).hexdigest(),
+    )
+
+
 def branch_checked_out_paths(repository: RepositoryFacts, branch_ref: str) -> tuple[Path, ...]:
     return tuple(
         row.path
@@ -223,15 +408,22 @@ def run_common_git(repository: RepositoryFacts, args: Iterable[str]) -> subproce
 
 
 __all__ = [
+    "CheckoutStateSnapshot",
     "RepositoryFacts",
     "WorktreeFacts",
     "WorktreeRegistration",
     "branch_checked_out_paths",
+    "capture_checkout_state",
+    "commit_path_bytes",
     "discover_worktree_facts",
     "find_registration",
+    "git_operation_in_progress",
     "inspect_registered_worktree",
     "inspect_repository",
+    "is_ancestor",
+    "list_local_branch_refs",
     "list_worktree_registrations",
     "local_branch_head",
+    "run_checkout_git",
     "run_common_git",
 ]
