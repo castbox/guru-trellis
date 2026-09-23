@@ -1,0 +1,105 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-23T10:28:22Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-20-454-task-lifecycle-state-model",
+    "title": "#454 建立统一 task lifecycle state model",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-20-454-task-lifecycle-state-model",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/454-task-lifecycle-state-model-c3-c7",
+    "commits": [
+      "1e4ba362f43e796f909a091bec0898c4908d5016",
+      "ae12239a80cae92b3d837a4796ed43ec712a2c83",
+      "a47eaaafc2a0a5c2318ef8800eec0020f0e71f89"
+    ],
+    "changed_paths": [
+      ".trellis/tasks/09-20-454-task-lifecycle-state-model/design.md",
+      ".trellis/tasks/09-20-454-task-lifecycle-state-model/implement.md",
+      ".trellis/tasks/09-20-454-task-lifecycle-state-model/prd.md",
+      ".trellis/tasks/09-20-454-task-lifecycle-state-model/task.json",
+      ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/design.md",
+      ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/implement.md",
+      ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/prd.md",
+      ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/task.json"
+    ]
+  },
+  "github": {
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/469"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#454 建立统一 task lifecycle state model",
+    "outcome": "将同一 `454-task-lifecycle-state-model` task 恢复为 active generation 1，保留原 task identity。",
+    "changed_behavior": [
+      "将同一 `454-task-lifecycle-state-model` task 恢复为 active generation 1，保留原 task identity。",
+      "将当前 task branch 与已合并 PR #465 的 C3 `main` 基线协调，并删除上一代 generation 的 `finish-summary.json`。",
+      "本 PR 只完成未完成的 Reactivate transaction recovery，不实现或声称完成 C4-C7。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/09-20-454-task-lifecycle-state-model/design.md",
+          ".trellis/tasks/09-20-454-task-lifecycle-state-model/implement.md",
+          ".trellis/tasks/09-20-454-task-lifecycle-state-model/prd.md",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/design.md",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/implement.md",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/prd.md"
+        ],
+        "change": "将同一 `454-task-lifecycle-state-model` task 恢复为 active generation 1，保留原 task identity。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-20-454-task-lifecycle-state-model/task.json",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/task.json"
+        ],
+        "change": "将同一 `454-task-lifecycle-state-model` task 恢复为 active generation 1，保留原 task identity。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [],
+      "pr_refs": [
+        "PR #469"
+      ],
+      "branches": [
+        "codex/454-task-lifecycle-state-model-c3-c7"
+      ],
+      "paths": [
+        ".trellis/tasks/09-20-454-task-lifecycle-state-model/design.md",
+        ".trellis/tasks/09-20-454-task-lifecycle-state-model/implement.md",
+        ".trellis/tasks/09-20-454-task-lifecycle-state-model/prd.md",
+        ".trellis/tasks/09-20-454-task-lifecycle-state-model/task.json",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/design.md",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/implement.md",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/prd.md",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#454 建立统一 task lifecycle state model",
+        "将同一 `454-task-lifecycle-state-model` task 恢复为 active generat",
+        "完成 design.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#454 建立统一 task lifecycle state model\n将同一 `454-task-lifecycle-state-model` task 恢复为 active generation 1，保留原 task identity。\n将当前 task branch 与已合并 PR #465 的 C3 `main` 基线协调，并删除上一代 generation 的 `finish-summary.json`。\n本 PR 只完成未完成的 Reactivate transaction recovery，不实现或声称完成 C4-C7。\n将同一 `454-task-lifecycle-state-model` task 恢复为 active generat\n完成 design.md 相关变更"
+  }
+}
