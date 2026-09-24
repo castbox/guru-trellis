@@ -145,9 +145,19 @@ caller-created resource不会继承Guru cleanup ownership。Direct handoff在con
 existing-checkout reuse不写marker，recovery保持只读。该marker不成为task/session/branch/workspace/resource
 authority，active registry与production graph计数不变。
 
-当前 Architecture knowledge identity 为 `.61`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
+`ARCH-CUR-039`（`source_confirmed` + `reviewed`）：#454 C4 以 `target_native` 在 `.61` current 上增加
+repository-local TaskBranchBinding、branch establishment 与两条 closed rebind route。Durable binding 只保存
+TaskId、lifecycle generation、opaque binding epoch、epoch-local revision 与 bare branch name；machine path、HEAD、
+session 与 ownership payload 保持 call-local。Establishment 在 binding/ownership 四象限中保留 surviving side，
+仅两侧全部丢失时创建 new epoch/revision 0；rebind 保持 epoch 并严格递增 revision，使用 reviewed expected HEAD
+阻止 candidate-label freshness 替代。`guru-ensure-task-checkout`、`guru-establish-task-branch-binding` 与
+`guru-rebind-task-branch` 仅为 planned IDs；active registry 保持 32 Skills / 142 package exits / 102 commands，
+production workflow 保持 22 mandatory invokes / 98 exits。C5-C7、D443、D436、E434 与 production activation
+未进入 CURRENT。
+
+当前 Architecture knowledge identity 为 `.62`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
 `0.6.17`，framework source/CI 由 canonical source record 与 `EVD-034` 绑定，package manager 为
-`pnpm@10.32.1`。`.60` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
+`pnpm@10.32.1`。`.61` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。
 

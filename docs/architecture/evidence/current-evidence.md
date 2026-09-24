@@ -172,6 +172,26 @@ ownership `32 active + 1 planned`、task/workspace/static/line/diff checks。Pac
 本证据不证明C4-C7、D443、D436、E434、production activation、push、PR、merge、tag、Release或Issue closure；
 promotion-created `.61` diff仍须fresh Phase 2、Task Commit与independent complete Branch Review。
 
+## EVD-037: #454 C4 Branch Association Promotion
+
+本证据支撑 `ARCH-CUR-039`、`ARCH-DOM-024`、`ARCH-INT-027`、`ARCH-GAP-011` 与
+`.61 -> .62` Architecture knowledge promotion。独立完整 Branch Review 绑定
+`origin/main@77fa1a2250998ad8c71f0fffedf9a99a15a76dec...HEAD@c7fab600e6e29385c23c276ac2b1828d0465fd77`，
+P0/P1/P2/P3 为 `0/0/0/0`。Admission 时，`BR454-C4-P3-001` 在 `6ab9dde1` 为可复现的
+`qualified_finding`，并由 `c7fab600` 修复闭环；随后针对修复后的 current supported path 重新执行 qualification，
+normal-scenario 返回 `classified / rejected_not_reproduced`，solution-mechanism 返回
+`classified / qualified_current`。
+
+Fresh focused evidence 为 task-lifecycle runtime `93/93`、Python compile、task validation、`git diff --check`
+与 touched non-generated file line checks。Generation 2 的真实 common-dir binding 仍不存在，因此测试没有
+写入 live task control state。Preset Python suite 的既有结果为 `85/86`，唯一错误来自 E434 前刻意未同步的
+installed task-lifecycle README/schema/registry sidecars；该 broader suite 未在 narrow finding-fix 中重跑，
+不得声明为通过。
+
+本 evidence 不证明 C5-C7、D443、D436、E434、#434 production activation、完整 Release matrix、push、PR、
+merge、tag、Release 或 Issue closure。Promotion-created `.62` diff 仍须 fresh Phase 2、Task Commit 与
+independent complete Branch Review 后才能进入 Publication。
+
 ## EVD-032: #443 Reviewed Promotion Source
 
 本证据支撑 `ARCH-CUR-034`、`ARCH-DOM-019`、`ARCH-INT-022`、`ARCH-GAP-009`、`ADR-014`

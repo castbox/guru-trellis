@@ -1,12 +1,13 @@
 # Design SSOT
 
-唯一 current Design authority：[`versions/current-main-0.6.17-guru.61/design-main.md`](./versions/current-main-0.6.17-guru.61/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；#454 C3 checkout acquisition provenance 与 registry（32 packages / 142 exits / 102 commands + 1 planned ID）见 [`capability-inventory.md`](./versions/current-main-0.6.17-guru.61/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。production workflow 保持 22 mandatory invokes / 98 exits。Architecture 为 `.61` / `active`；`.60` 及更早版本保持 immutable。
+唯一 current Design authority：[`versions/current-main-0.6.17-guru.62/design-main.md`](./versions/current-main-0.6.17-guru.62/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；#454 C4 branch association/establishment/rebind substrate 与 registry（32 packages / 142 exits / 102 commands + 3 planned IDs）见 [`capability-inventory.md`](./versions/current-main-0.6.17-guru.62/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。production workflow 保持 22 mandatory invokes / 98 exits。Architecture 为 `.62` / `active`；`.61` 及更早版本保持 immutable。
 
 Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Architecture。普通 task 通过 RDT `task_impact_sync` / contribution / `promotion` 更新 current。
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.61` | [`design-main.md`](./versions/current-main-0.6.17-guru.61/design-main.md) |
+| `active` | `current-main-0.6.17-guru.62` | [`design-main.md`](./versions/current-main-0.6.17-guru.62/design-main.md) |
+| `superseded` | `current-main-0.6.17-guru.61` | [`design-main.md`](./versions/current-main-0.6.17-guru.61/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.60` | [`design-main.md`](./versions/current-main-0.6.17-guru.60/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.59` | [`design-main.md`](./versions/current-main-0.6.17-guru.59/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.58` | [`design-main.md`](./versions/current-main-0.6.17-guru.58/design-main.md) |

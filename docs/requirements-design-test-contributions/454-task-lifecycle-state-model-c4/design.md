@@ -1,8 +1,8 @@
 # #454 C4 Branch Association Design Contribution
 
-状态：`contribution_candidate`。采用 `target_native`，关联
+状态：`reviewed_promoted`。采用 `target_native`，关联
 `architecture-contribution-454-task-lifecycle-state-model-c4-v1`，expected current 为
-`current-main-0.6.17-guru.61`，candidate successor 由 reviewed promotion 分配。
+`current-main-0.6.17-guru.61`，promoted successor 为 `current-main-0.6.17-guru.62`。
 
 - `D454-C4-01`：`branch_store.py` 在 `<git-common-dir>/trellis/task-branches/<task-id>/<generation>.json`
   读写 closed six-field TaskBranchBinding。`binding_epoch` 是repository-local application control identity；写入
@@ -35,5 +35,5 @@
   通过 source/preset regression 固定，完整 package composition 继续由 E434 交付。
 
 本 slice 不新增 ADR。`ADR-015` 已拥有 TaskId/lifecycle 与 framework-extension boundary；C4 只实现该决策下的
-branch substrate。Architecture/RDT owners 尚未执行 serialized promotion；本次 finding-fix 不代表 Phase 2 或
-Branch Review 已通过，后续 promotion-created diff 仍须 fresh Phase 2、Task Commit 与完整 Branch Review。
+branch substrate。Architecture/RDT owners 已按 reviewed range `origin/main@77fa1a2...c7fab600` 串行执行
+serialized promotion；promotion-created diff 仍须 fresh Phase 2、Task Commit 与完整 Branch Review。

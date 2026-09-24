@@ -1,8 +1,8 @@
 # #454 C4 Branch Association Requirements Contribution
 
-状态：`contribution_candidate`。本 contribution 只承接 C4 branch association、establishment 与 rebind
-substrate；expected current 为 `current-main-0.6.17-guru.61`，candidate successor 由 reviewed promotion
-分配。它不激活 production
+状态：`reviewed_promoted`。本 contribution 只承接 C4 branch association、establishment 与 rebind
+substrate；expected current 为 `current-main-0.6.17-guru.61`，promoted successor 为
+`current-main-0.6.17-guru.62`。它不激活 production
 workflow，不交付完整 Skill package，也不重做 C1、C2、D0 或 C3。
 
 - `R454-C4-01`：TaskBranchBinding 必须存放于 Git common-dir，并以 `TaskId + lifecycle_generation` 为 key。
@@ -37,6 +37,6 @@ workflow，不交付完整 Skill package，也不重做 C1、C2、D0 或 C3。
   不创建 canonical package tree、active selector、workflow edge、installed copy 或平台 projection；E434 独占激活。
 
 C5-C7、D443、D436、E434、#434 activation 与完整 Release matrix 均不属于本 contribution 的完成声明。
-本 contribution 不授权 shared-current write。本次 Branch Review finding-fix 也不声明 fresh Phase 2 或 Branch
-Review 已通过；后续 reviewed promotion 产生的 successor diff 必须重新进入 fresh Phase 2、Task Commit 与完整
-Branch Review。
+Independent Branch Review 绑定 `origin/main@77fa1a2...c7fab600` 且 P0/P1/P2/P3 为 `0/0/0/0`；owners 已将
+expected `.61` 串行提升到 `.62`。Promotion-created successor diff 必须重新进入 fresh Phase 2、Task Commit 与
+完整 Branch Review。

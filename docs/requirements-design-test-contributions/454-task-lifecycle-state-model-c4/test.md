@@ -1,6 +1,6 @@
 # #454 C4 Branch Association Test Contribution
 
-状态：`contribution_candidate`。以下是 C4 focused acceptance；它们不构成 promotion-created diff 的 Phase 2、Branch Review、Publication、
+状态：`reviewed_promoted`。以下是 C4 focused acceptance；它们不构成 promotion-created diff 的 Phase 2、Branch Review、Publication、
 production activation 或 Release Gate 证明。
 
 - `T454-C4-01`（R454-C4-01/02）：Draft 2020-12 与 runtime 同时验证 six-field binding、new epoch revision 0、
@@ -53,6 +53,7 @@ Fresh finding-fix targeted evidence 为 task-lifecycle runtime `93/93`、Python 
 E434 前故意未同步的 installed task-lifecycle README/schema/registry sidecars；该 broader suite 未在本轮 narrow
 finding-fix 重跑，也不授权同步 installed/platform projection。
 
-RDT 与 Architecture current 仍为 `.61/active`，serialized promotion 尚未执行。本次 finding-fix 不声明 fresh
-Phase 2 或 Branch Review 已通过；后续 promotion-created diff 必须 fresh 重走 Phase 2、Task Commit 与完整 Branch
-Review。C5-C7、D443、D436、E434、#434 activation 与完整 Release matrix 保持未验证。
+RDT 与 Architecture current 已由 expected `.61` 串行提升为 `.62/active`。Independent Branch Review 绑定
+`origin/main@77fa1a2...c7fab600` 且 P0/P1/P2/P3 为 `0/0/0/0`；promotion-created diff 必须 fresh 重走
+Phase 2、Task Commit 与完整 Branch Review。C5-C7、D443、D436、E434、#434 activation 与完整 Release matrix
+保持未验证。

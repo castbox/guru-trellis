@@ -3,19 +3,24 @@
 ## Identity And Review State
 
 - contribution identity: `architecture-contribution-454-task-lifecycle-state-model-c4-v1`.
-- lifecycle state: `contribution_candidate`.
+- lifecycle state: `reviewed_promoted`.
 - source authority: live Issue #454 and active generation 2 task planning.
 - task locator: `.trellis/tasks/09-20-454-task-lifecycle-state-model`.
 - related RDT contribution: `docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c4/`.
 - predecessor baseline: `current-main-0.6.17-guru.61` / `active`.
-- candidate successor: assigned by reviewed promotion.
+- promoted successor: `current-main-0.6.17-guru.62` / `active`.
+- reviewed range: `origin/main@77fa1a2250998ad8c71f0fffedf9a99a15a76dec...c7fab600e6e29385c23c276ac2b1828d0465fd77`.
 - design constitution: `guru-trellis-design-constitution-v1` / `current`.
 - project change contract: `guru-trellis-architecture-change-contract-v1`.
 - change path: `target_native`.
 
-This contribution candidate covers only C4 branch association, establishment and rebind substrate. Serialized promotion
-has not run; it does not claim production activation, complete package delivery, shared-current write, Branch Review,
-Publication or Release proof.
+Independent complete Branch Review reported P0/P1/P2/P3 `0/0/0/0`. At admission,
+`BR454-C4-P3-001` was a reproducible `qualified_finding` at
+`6ab9dde1385c03f406ef3663e61dd010533462b7`; it was closed by
+`c7fab600e6e29385c23c276ac2b1828d0465fd77`. Post-fix qualification against the current supported path returned
+normal-scenario `classified / rejected_not_reproduced` and solution-mechanism `classified / qualified_current`. This
+promotion covers only C4 branch association, establishment and rebind substrate. It does not claim production
+activation, complete package delivery, promotion-created Branch Review, Publication or Release proof.
 
 ## Boundary And Decision
 
@@ -81,5 +86,5 @@ C4 does not synchronize installed or platform projections.
 
 No new ADR is required because `ADR-015` already owns lifecycle identity and the framework/extension boundary. C5-C7,
 D443, D436, E434, #434 production graph activation and the complete multi-platform Release matrix remain pending or
-unverified. Serialized promotion has not run. This Branch Review finding-fix does not claim fresh Phase 2 or Branch Review
-success. Any successor diff it creates must re-enter fresh Phase 2, Task Commit and independent complete Branch Review.
+unverified. Architecture/RDT owners promoted expected `.61` to successor `.62`; this promotion-created diff must re-enter
+fresh Phase 2, Task Commit and independent complete Branch Review before Publication.

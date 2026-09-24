@@ -10,8 +10,8 @@
   不表示 CURRENT 已实现或已授权执行。
 - `ARCH-TGT-005`（accepted direction）：统一 task lifecycle 以 immutable TaskId、mutable TaskRef、
   lifecycle generation、portable source/Delivery identity、live checkout/branch resolution 与 owner-scoped
-  resource cleanup 为一个封闭模型。`.61` 已实现 C2 shared kernel、D0 stage-evidence correction、C3
-  checkout acquisition/live resolution substrate与recovery provenance continuity；完整方向继续由 #454 task design 承接，C4-C7、D443、
+  resource cleanup 为一个封闭模型。`.62` 已实现 C2 shared kernel、D0 stage-evidence correction、C3
+  checkout acquisition/live resolution/recovery provenance 与 C4 branch association/establishment/rebind substrate；完整方向继续由 #454 task design 承接，C5-C7、D443、
   D436 与 E434 尚未实现或激活。
 
 TARGET 不表示已实现、已测试、已发布或已授权执行。
