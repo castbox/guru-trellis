@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-task-branch-binding-1.0",
+  "title": "Guru Team durable task branch binding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "lifecycle_generation",
+    "binding_epoch",
+    "binding_revision",
+    "branch_name"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "task_id": {"$ref": "#/$defs/taskId"},
+    "lifecycle_generation": {"type": "integer", "minimum": 0},
+    "binding_epoch": {"type": "integer", "minimum": 0},
+    "binding_revision": {"type": "integer", "minimum": 0},
+    "branch_name": {"$ref": "#/$defs/branchName"}
+  },
+  "$defs": {
+    "taskId": {
+      "type": "string",
+      "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "branchName": {
+      "type": "string",
+      "minLength": 1,
+      "not": {"pattern": "[\\u0000-\\u001F\\u007F]"},
+      "pattern": "^(?!-)(?!HEAD$)(?!refs/)(?!guru-task-lifecycle(?:/|$))(?!/)(?!.*(?:^|/)\\.)(?!.*(?:^|/)[^/]*\\.lock(?:/|$))(?!.*\\.\\.)(?!.*@\\{)(?!.*[ ~^:?*\\[\\]\\\\])(?!.*[./]$)[^/]+(?:/[^/]+)*$"
+    }
+  }
+}

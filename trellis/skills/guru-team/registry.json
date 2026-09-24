@@ -1146,6 +1146,16 @@
       "id": "guru-ensure-task-checkout",
       "state": "planned",
       "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation."
+    },
+    {
+      "id": "guru-establish-task-branch-binding",
+      "state": "planned",
+      "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation."
+    },
+    {
+      "id": "guru-rebind-task-branch",
+      "state": "planned",
+      "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation."
     }
   ]
 }

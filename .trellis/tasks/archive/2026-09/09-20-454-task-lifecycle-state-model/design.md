@@ -41,6 +41,12 @@ forbidden states与public owner completeness执行联合复核。60个finding已
 Architecture、Phase 2、Task Commit 与 Branch Review，且不得把局部 candidate 解释为后续切片或 production
 cutover 已完成。
 
+当前 C4 candidate 的 Delivery prerequisite 包含一项窄 Finalizer recovery 修复。无 predecessor transaction 的
+首次 provenance reprepare preflight 使用真实 Git ancestry 分类 remote：absent、equal 或 strict historical ancestor
+可继续；ahead、diverged、unknown/unprovable commit fail closed。该分类只服务同一 C4 candidate 的正常
+fast-forward publication，不改变 existing-PR recovery，不放宽 predecessor transaction 的 exact old-HEAD 约束，也不
+形成 C5-C7、D443、D436、E434 或 #434 activation 的完成证据。
+
 ## 跨任务实施顺序与依赖边界
 
 本 task 的设计定稿不是 #434 production graph 的激活授权。涉及 #443、#436、#434 的后续工作必须严格按以下

@@ -1109,7 +1109,7 @@ class FinalizeTaskRecoveryTests(unittest.TestCase):
         )
         write.assert_not_called()
 
-    def test_unbound_ordinary_recovery_rejects_terminal_pr_without_fallback(self) -> None:
+    def test_unbound_ordinary_recovery_does_not_consult_terminal_prs(self) -> None:
         head = "b" * 40
         plan = {
             "plan_digest": "d" * 64,
@@ -1129,34 +1129,255 @@ class FinalizeTaskRecoveryTests(unittest.TestCase):
             next_transition="push_content",
             pre_push_remote_head="a" * 40,
         )
-        terminal_prs = [
-            {
-                "number": 337,
-                "url": "https://github.com/castbox/guru-trellis/pull/337",
-                "state": "CLOSED",
-            }
-        ]
         with (
             mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=None),
             mock.patch.object(
                 GTT,
                 "resolve_closeout_terminal_pull_requests",
-                return_value=terminal_prs,
-            ),
-            mock.patch.object(GTT, "finalization_write_transaction") as write,
-            self.assertRaises(GTT.WorkflowError) as raised,
+            ) as terminal_prs,
         ):
-            GTT.classify_unbound_equal_head_recovery(
-                Path("/repo"), plan, transaction
+            recovery = GTT.classify_unbound_equal_head_recovery(
+                Path("/repo"),
+                plan,
+                transaction,
             )
-        self.assertEqual(
-            raised.exception.payload,
-            {
-                "reason_code": "pre_finalizer_terminal_pr_exists",
-                "pull_requests": terminal_prs,
-            },
-        )
-        write.assert_not_called()
+        self.assertIsNone(recovery)
+        terminal_prs.assert_not_called()
+
+    def test_transaction_bound_resume_ignores_historical_terminal_and_keeps_remote_guard(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            sandbox = Path(raw)
+            root = sandbox / "business"
+            root.mkdir()
+            remote = sandbox / "business.git"
+            subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+            for command in (
+                ["git", "init", "-q", "-b", "main"],
+                ["git", "config", "user.name", "Guru Test"],
+                ["git", "config", "user.email", "guru@example.invalid"],
+                ["git", "remote", "add", "origin", str(remote)],
+            ):
+                GTT.run_stdout(command, cwd=root)
+
+            (root / "history.txt").write_text("generation 1\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "history.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-qm", "generation 1"], cwd=root)
+            historical_head = GTT.current_head(root)
+            branch = "fix/454-reactivated"
+            GTT.run_stdout(["git", "switch", "-qc", branch], cwd=root)
+            GTT.run_stdout(["git", "push", "-qu", "origin", branch], cwd=root)
+
+            (root / "history.txt").write_text(
+                "generation 2 review\n", encoding="utf-8"
+            )
+            GTT.run_stdout(["git", "add", "history.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-qm", "generation 2 review"], cwd=root)
+            branch_review_head = GTT.current_head(root)
+            GTT.run_stdout(
+                [
+                    "git",
+                    "push",
+                    "-q",
+                    "origin",
+                    f"{branch_review_head}:refs/tags/review-snapshot",
+                ],
+                cwd=root,
+            )
+
+            (root / "history.txt").write_text(
+                "generation 2 publication\n", encoding="utf-8"
+            )
+            GTT.run_stdout(["git", "add", "history.txt"], cwd=root)
+            GTT.run_stdout(
+                ["git", "commit", "-qm", "generation 2 publication"], cwd=root
+            )
+            publication_head = GTT.current_head(root)
+            self.assertTrue(
+                GTT.is_ancestor(root, historical_head, branch_review_head)
+            )
+            self.assertTrue(
+                GTT.is_ancestor(root, branch_review_head, publication_head)
+            )
+
+            plan = {
+                "plan_digest": "d" * 64,
+                "task": {"active_locator": ".trellis/tasks/454"},
+                "git": {
+                    "repo": "castbox/guru-trellis",
+                    "remote": "origin",
+                    "head_branch": branch,
+                    "base_branch": "main",
+                    "branch_review_commit": branch_review_head,
+                    "publication_head": publication_head,
+                },
+                "publish": {"title": "generation 2", "body": "Closes #454"},
+            }
+            transaction = GTT.finalization_transaction_from_plan(
+                plan,
+                next_transition="push_content",
+                pre_push_remote_head=historical_head,
+            )
+            historical_terminal = [
+                {
+                    "number": 453,
+                    "url": "https://github.com/castbox/guru-trellis/pull/453",
+                    "state": "MERGED",
+                    "headRefOid": historical_head,
+                }
+            ]
+            with (
+                mock.patch.object(
+                    GTT, "resolve_closeout_pull_request", return_value=None
+                ),
+                mock.patch.object(
+                    GTT,
+                    "resolve_closeout_terminal_pull_requests",
+                    return_value=historical_terminal,
+                ) as terminal_prs,
+            ):
+                state, recovery = GTT.finalization_existing_pr_recovery_context(
+                    root,
+                    plan,
+                    transaction,
+                    "prepared",
+                )
+                self.assertEqual(
+                    GTT.finalization_pre_mutation_remote_preflight(
+                        root, plan, transaction
+                    ),
+                    (None, historical_head),
+                )
+            self.assertEqual(state, "prepared")
+            self.assertIsNone(recovery)
+            terminal_prs.assert_not_called()
+
+            GTT.run_stdout(
+                [
+                    "git",
+                    f"--git-dir={remote}",
+                    "update-ref",
+                    f"refs/heads/{branch}",
+                    branch_review_head,
+                ],
+                cwd=sandbox,
+            )
+            with (
+                mock.patch.object(
+                    GTT, "resolve_closeout_pull_request", return_value=None
+                ),
+                self.assertRaises(GTT.WorkflowError) as raised,
+            ):
+                GTT.finalization_pre_mutation_remote_preflight(
+                    root, plan, transaction
+                )
+            self.assertEqual(
+                raised.exception.payload,
+                {
+                    "reason_code": "finalizer_remote_head_drift",
+                    "remote_head": branch_review_head,
+                    "allowed_heads": sorted([historical_head, publication_head]),
+                },
+            )
+
+            GTT.run_stdout(
+                [
+                    "git",
+                    "push",
+                    "-q",
+                    "origin",
+                    f"{publication_head}:refs/heads/{branch}",
+                ],
+                cwd=root,
+            )
+            with (
+                mock.patch.object(
+                    GTT, "resolve_closeout_pull_request", return_value=None
+                ),
+            ):
+                self.assertEqual(
+                    GTT.finalization_pre_mutation_remote_preflight(
+                        root, plan, transaction
+                    ),
+                    (None, publication_head),
+                )
+
+            (root / "history.txt").write_text("ahead\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "history.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-qm", "remote ahead"], cwd=root)
+            ahead_head = GTT.current_head(root)
+            GTT.run_stdout(["git", "push", "-q", "origin", branch], cwd=root)
+            GTT.run_stdout(
+                ["git", "reset", "--hard", "-q", publication_head], cwd=root
+            )
+
+            GTT.run_stdout(
+                ["git", "switch", "-qc", "diverged", historical_head], cwd=root
+            )
+            (root / "diverged.txt").write_text("diverged\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "diverged.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-qm", "remote diverged"], cwd=root)
+            diverged_head = GTT.current_head(root)
+            GTT.run_stdout(
+                ["git", "push", "-q", "--force", "origin", f"HEAD:{branch}"],
+                cwd=root,
+            )
+            GTT.run_stdout(["git", "switch", "-q", branch], cwd=root)
+
+            peer = sandbox / "peer"
+            GTT.run_stdout(
+                ["git", "clone", "-q", "--branch", branch, str(remote), str(peer)],
+                cwd=sandbox,
+            )
+            GTT.run_stdout(["git", "config", "user.name", "Guru Peer"], cwd=peer)
+            GTT.run_stdout(
+                ["git", "config", "user.email", "peer@example.invalid"], cwd=peer
+            )
+            (peer / "peer.txt").write_text("unknown locally\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "peer.txt"], cwd=peer)
+            GTT.run_stdout(["git", "commit", "-qm", "remote unknown"], cwd=peer)
+            unknown_head = GTT.current_head(peer)
+            GTT.run_stdout(["git", "push", "-q", "origin", branch], cwd=peer)
+            self.assertNotEqual(
+                GTT.run(
+                    ["git", "cat-file", "-e", f"{unknown_head}^{{commit}}"],
+                    cwd=root,
+                    check=False,
+                ).returncode,
+                0,
+            )
+
+            for drift_name, remote_head in (
+                ("ahead", ahead_head),
+                ("diverged", diverged_head),
+                ("unknown", unknown_head),
+            ):
+                with self.subTest(drift=drift_name):
+                    GTT.run_stdout(
+                        [
+                            "git",
+                            f"--git-dir={remote}",
+                            "update-ref",
+                            f"refs/heads/{branch}",
+                            remote_head,
+                        ],
+                        cwd=sandbox,
+                    )
+                    with (
+                        mock.patch.object(
+                            GTT, "resolve_closeout_pull_request", return_value=None
+                        ),
+                        self.assertRaises(GTT.WorkflowError) as raised,
+                    ):
+                        GTT.finalization_pre_mutation_remote_preflight(
+                            root, plan, transaction
+                        )
+                    self.assertEqual(
+                        raised.exception.payload["reason_code"],
+                        "finalizer_remote_head_drift",
+                    )
+                    self.assertEqual(
+                        raised.exception.payload["remote_head"], remote_head
+                    )
 
     def test_base_evolution_fallback_uses_real_merge_topology(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -1518,16 +1739,16 @@ class FinalizeTaskRecoveryTests(unittest.TestCase):
 
             GTT.run_stdout(["git", "branch", "-f", "main", base_before], cwd=root)
             with mock.patch.object(
-                GTT, "resolve_closeout_pull_request"
+                GTT, "resolve_closeout_pull_request", return_value=pr
             ) as resolve_pr, self.assertRaises(GTT.WorkflowError) as raised:
                 GTT.classify_provenance_tail_transaction_rebind(
                     root, plan, transaction
                 )
             self.assertEqual(
                 raised.exception.payload["reason_code"],
-                "provenance_tail_transaction_rebind_invalid",
+                "provenance_reprepare_pull_request_exists",
             )
-            resolve_pr.assert_not_called()
+            resolve_pr.assert_called_once()
 
             GTT.run_stdout(
                 ["git", "branch", "-f", "main", selected_base_head], cwd=root
@@ -2257,6 +2478,39 @@ class FinalizeTaskRecoveryTests(unittest.TestCase):
         self.assertEqual(replacement["adopted_pr"], previous["adopted_pr"])
         self.assertEqual(replacement["next_transition"], "push_content")
         self.assertEqual(replacement["pre_push_remote_head"], "a" * 40)
+
+    def test_ordinary_reprepare_binds_current_plan_and_observed_remote(self) -> None:
+        plan = {
+            "plan_digest": "e" * 64,
+            "task": {"active_locator": ".trellis/tasks/454"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "base_branch": "main",
+                "head_branch": "fix/454",
+                "branch_review_commit": "d" * 40,
+                "publication_head": "d" * 40,
+            },
+            "publish": {"title": "fresh", "body": "Refs #454"},
+        }
+        previous = {
+            "mode": "ordinary_publication",
+            "next_transition": "push_content",
+            "pr": None,
+            "branch_review_commit": "b" * 40,
+            "publication_head": "c" * 40,
+            "pre_push_remote_head": "a" * 40,
+        }
+        replacement = GTT.finalization_reprepared_transaction(
+            plan,
+            previous,
+            pre_push_remote_head="a" * 40,
+        )
+        self.assertEqual(replacement["mode"], "ordinary_publication")
+        self.assertEqual(replacement["next_transition"], "push_content")
+        self.assertEqual(replacement["branch_review_commit"], "d" * 40)
+        self.assertEqual(replacement["publication_head"], "d" * 40)
+        self.assertEqual(replacement["pre_push_remote_head"], "a" * 40)
+        self.assertEqual(replacement["publication"], plan["publish"])
 
     def test_content_push_uses_exact_publication_refspec(self) -> None:
         plan = {

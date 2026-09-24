@@ -116,6 +116,13 @@
   directory与同一acquisition owner之间流转；public DTO、task/session binding、resource ledger、installed/platform
   projection均不携带marker。Recovery以fresh live facts + exact marker闭合，direct handoff retirement结束恢复窗口。
 
+- `ARCH-INT-027`：C4 将 six-field TaskBranchBinding 与 C5 current ownership 通过 epoch/revision/branch 窄投影
+  对齐。Discovery 只消费 registered worktree 与 local `refs/heads/*` live facts并排除 retained
+  `refs/heads/guru-task-lifecycle/*` control refs；same-checkout rebind只创建一个 absent ref并保持HEAD/index/worktree
+  bytes，existing-target rebind只接受clean exact artifact与ancestor-compatible target。两个planned Skill IDs与
+  `guru-ensure-task-checkout` 一样不创建package/interface/active graph/installed/platform projection，E434前
+  canonical与installed差异仍是显式未激活边界。
+
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。
 - `skill_api` 与 interface/schema/command projection、distribution、managed/installed file

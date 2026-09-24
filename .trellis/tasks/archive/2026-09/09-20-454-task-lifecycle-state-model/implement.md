@@ -59,11 +59,11 @@ owner，不开始生产编辑。
 ## 3. Delivery policy
 
 Phase C 是本 task 的首个独立 Delivery slice。它只交付 substrate、contract primitives 与 planned stable IDs；它不要求
-Phase D443、Phase D436 或 Phase E434 已完成。当前实现状态为 C2 lifecycle kernel 与 D0 stage-evidence contract
-correction 已提交并完成正式 base reconcile；C3 已形成 checkout runtime/DTO candidate，并仅增加非激活的
-`planned` registry metadata 与 canonical `planned_skill_ids`，不创建对应 canonical package directory。任何 finding
-fix 后均须重建 fresh Phase 2、Task Commit 与完整
-Branch Review。C3 fresh gates、C4-C7 与其余 Phase D/E 工作仍未完成。
+Phase D443、Phase D436 或 Phase E434 已完成。C1、C2、D0 与 C3 已完成；PR #465 只完成 C3，不表示
+C3-C7 已全部完成。当前交付为 C4 branch association、establishment 与 rebind substrate；C5-C7、D443、D436、
+E434 与 #434 activation 仍未完成。C4 只增加非激活的 runtime/schema/Docs candidate 与 planned stable IDs，
+不创建对应 canonical package directory，不切换 production graph。任何 finding fix 后均须重建 fresh Phase 2、
+Task Commit 与完整 Branch Review。
 
 独立可交付条件：
 
@@ -249,18 +249,76 @@ Canonical package/runtime surfaces：
 - planned `guru-establish-task-branch-binding` 与 `guru-rebind-task-branch` IDs 所需的 activation inputs；完整
   canonical packages 由 E434 交付。
 
-Behavior：store位于Git common-dir；key为TaskLifecycleKey；record只保存generation、revision与portable branch ref；
-missing走establishment，conflict走invalid；rebind只实现same-checkout-new-ref与clean existing-target两条route；
+Behavior：store位于Git common-dir；key为TaskLifecycleKey；record保存repository-local application control identity
+`binding_epoch`、epoch内revision与portable branch ref。Association与ownership current set必须共享同一epoch、revision
+与branch。单侧control state丢失时从存续侧恢复原epoch；association与active ownership全部丢失时才建立new epoch/
+revision 0。Rebind只实现same-checkout-new-ref与clean existing-target两条route，保持epoch不变并严格递增revision；
 不同历史返回named reconciliation stop。
 
-Tests：revision 0初始化、strict increment、binding/ownership四象限恢复、unique/zero/multiple candidate、dirty
-same-checkout字节保持、existing-target exact artifact、rollback、output loss recovery、reserved control ref rejection、
-same ref resource incarnation exclusion。
+Candidate label/id只服务当前选择与展示，不是freshness token。Discovery跳过全部保留的
+`refs/heads/guru-task-lifecycle/*` control refs；mutation与output-loss recovery都绑定并fresh验证reviewed expected HEAD，
+不能用candidate label、排序或branch name替代HEAD freshness。
+
+Tests：epoch schema/store parity、revision 0初始化与strict increment、binding/ownership四象限的epoch恢复、全部control
+state丢失新epoch、rebind保持epoch、unique/zero/multiple candidate、candidate label非freshness、mutation/recovery expected
+HEAD drift、retained control-ref discovery exclusion、dirty same-checkout字节保持、existing-target exact artifact、rollback、
+output loss recovery与same-ref resource incarnation exclusion。Epoch延续、新epoch、candidate-label/HEAD分离与retained-ref
+过滤必须由独立回归用例证明，不得只依赖聚合四象限或schema循环断言。
 
 Exit：`branch_substrate_ready`。
 
 Recovery：mutation transaction保存exact pre-state；rollback恢复association与ledger revision。禁止stash、merge、rebase、
 cherry-pick、reset或force push。
+
+C4 Branch Review finding-fix（2026-09-23）：
+
+- C4 contribution与批准设计`b695adc9`重新对齐：`binding_epoch`恢复为repository-local application control identity，
+  由association、ownership、rebind与same-owner recovery共同验证；普通rebind保持epoch，只有association与active
+  ownership全部丢失时才建立new epoch/revision 0；
+- candidate label/id只作为call-local选择标签，不再承担freshness；establishment/rebind mutation与output-loss recovery
+  绑定reviewed expected HEAD并在执行/恢复时fresh reread；
+- branch discovery显式跳过retained `refs/heads/guru-task-lifecycle/*` control refs，不把machine-handoff receipt
+  namespace暴露为普通branch candidate；
+- C4 Test contribution把上述语义拆成实际新增的独立回归场景，不再用聚合runtime计数或同一循环内subcase声明独立
+  覆盖。
+
+C4 Phase 2 finding-fix（2026-09-23）：
+
+- `same_checkout_new_ref` 在调用 `git switch -c` 前即进入rollback eligibility；如果 `post-checkout` hook在Git已经
+  创建并切换target ref后返回非零，rollback以fresh branch state确认原branch已恢复，并且只删除仍指向reviewed
+  pre-state HEAD且未被任何registered checkout使用的target ref；
+- rebind transaction移除重复的`target_binding_epoch`，unchanged epoch只从
+  `source_binding.binding_epoch`派生，避免一个checkpoint同时表达互相矛盾的source/target epoch；
+- 新增成功same-checkout rebind后target HEAD前进的独立lost-output recovery regression，证明recovery继续绑定
+  reviewed HEAD并fail closed；
+- finding-fix targeted evidence为task-lifecycle runtime `93/93`、Python compile、task validation、schema/JSON parse、
+  `git diff --check`与touched non-generated file 3000-line check全部通过。task validation仍将不存在的可选
+  `implement.jsonl`、`check.jsonl`标记为skipped。
+
+本 finding-fix 仅记录当前文档与对应实现/测试修订目标，不表示 fresh Phase 2、Task Commit 或完整 Branch Review 已
+通过；这些门禁必须基于finding-fix后的current committed candidate重新执行。C5-C7、D443、D436、E434、#434
+activation与完整Release matrix状态不变。
+
+C4 Finalizer recovery finding-fix（2026-09-24）：
+
+- `FIN454-C4-P1-001`：首次 Publication 尚无 Finalizer predecessor transaction 时，workflow 允许远端分支不存在、
+  等于 reviewed commit，或为 reviewed commit 的严格历史祖先；现有 provenance reprepare preflight 却只接受前两种
+  拓扑，导致合法的 `09f96f40... -> 4863eac4...` fast-forward publication 在任何 Git/GitHub 副作用前错误返回
+  `finalization_stale`；
+- 修复只收敛无 predecessor transaction 的 preflight：严格历史祖先继续进入 reprepare，并由后续 replacement
+  transaction 绑定 exact `pre_push_remote_head`；ahead、diverged 或 ancestry 无法证明的 remote 继续 fail closed；
+  已存在 predecessor transaction 的 exact old Publication HEAD 合同保持不变；
+- Phase 2 authority review 发现 `.62` 的 `REQ-048`、`DES-046`、`TST-032` 与 `SCN-044` 仍只允许 absent/exact
+  remote，与 workflow 的 strict historical ancestor 合同冲突；本 finding-fix 同步 task planning 与 current RDT，
+  明确 ahead、diverged、unknown/unprovable commit 均 fail closed，旧 Architecture invocation 因此 stale 且不得复用；
+- 回归使用真实临时 Git graph 覆盖 remote absent、equal、strict historical ancestor、ahead、diverged 与 unknown
+  commit，不 mock `is_ancestor()`；canonical/dogfood runtime 继续要求字节一致。该修复只恢复当前 C4 Finalizer
+  正式路径，不表示 Finalizer、Delivery 或 C4 merge 已完成；
+- 实际验证：Finalizer provenance `21/21`、recovery `46/46`、完整 Finalizer package `109/109` 通过，task validator、
+  canonical/dogfood runtime parity 与 `git diff --check` 通过；未重跑 preset `85/86`、完整 repository validation 或
+  Release matrix，不得扩大验证声明；
+- 修复会使当前 committed candidate、Phase 2、Task Commit、Branch Review 与 Publication 证据失效。定向验证完成后，
+  必须从 fresh Phase 2 开始依次重建，禁止复用失败 invocation 的 gate、authoring 输入或 confirmation identity。
 
 ### C5 Path-free session store 与 resource ownership ledger
 
@@ -498,3 +556,91 @@ predecessor数据模型带入target graph。
   `38/44`（`6 failures`）；preset suite `272` 项为 `2 errors, 3 skipped`，两项 error 仍是 raw apply installed
   projection conflict 与 parallel-finish fixture 中的同一 conflict。上述失败未命中本次 provenance marker 路径，
   但不得记为 suite 通过；C4-C7、D443、D436、E434 与完整多平台 Release matrix 继续为后续或未验证边界。
+
+## Branch Review finding-fix（2026-09-24）
+
+- `BR454-C4-P2-SSOT-001`：`.62` Architecture、Requirements、Design、Test 入口与 C4 contribution provenance 仍只
+  绑定 C4 branch association/establishment/rebind contribution 加 immutable `.61`，没有显式承接同一 committed
+  range 中新增的 Finalizer strict-ancestor recovery 与 `pre_push_remote_head` transaction authority。该缺口属于
+  正常维护中的 source binding/provenance 不完整，不通过 branch、PR 或路径元数据补偿。
+- `BR454-C4-P2-TXN-002`：当前 Finalizer runtime 已由 application-level replacement transaction 绑定 exact
+  `pre_push_remote_head`，但 regression 只覆盖独立 ancestry preflight，没有覆盖正式
+  `execute_finalization_transition_result` composition、transaction 写入与后续 pre-mutation preflight 的同一
+  remote identity。修复只增加真实 Git graph 的执行级回归，不改变 runtime 机制，不引入锁、并发、fault injection
+  或 OS/process authority。
+- 两个候选均已通过 `guru-qualify-normal-scenario` 与 `guru-qualify-solution-mechanism` 的
+  `branch_review_candidate_set` qualification，结果均为 `qualified_current`；本轮实现完成后必须从 fresh
+  Phase 2、Task Commit 与完整 Branch Review 重新建立 gate，不能复用本轮 `implementation_required` 或此前
+  Architecture/Publication/Finalizer evidence。C5-C7、D443、D436、E434、#434 activation 与 Release matrix
+  仍不在本 slice 内。
+- finding-fix 已补齐 `.62` Architecture/RDT 入口、C4 contribution/manifest 与 current trace 的 Finalizer
+  provenance source binding，并新增正式 `execute_finalization_transition_result` composition 回归。验证结果：
+  Finalizer provenance `22/22`、完整 Finalizer package `110/110`、Python compile、YAML/JSON parse、task validator、
+  touched non-generated file line limit 与 `git diff --check` 通过；validator 继续将不存在的可选
+  `implement.jsonl`、`check.jsonl` 标为 skipped。上述结果只证明本 finding-fix implementation candidate，尚未
+  建立 fresh Phase 2、Task Commit 或完整 Branch Review。
+
+## C4 Finalizer recovery finding-fix（2026-09-24）
+
+- `FIN454-C4-P1-002`：正式 Finalizer invocation 已合法从 reviewed content `3c9ecc58` 创建 provenance tail
+  `af719fbb`，并建立 `ordinary_publication/push_content` transaction；remote 与 transaction-bound
+  `pre_push_remote_head` 仍为历史 merged PR #469 的 `09f96f40`，当前没有 Open PR，且尚未 push 或 archive。
+  现行 recovery classifier 在承认该 identity-matched transaction 的 current ownership 前，错误地把同
+  branch/base 的历史 terminal PR 解释为 current candidate 冲突。
+- Reactivate branch reuse 的正常恢复以已有且身份匹配的 `ordinary_publication/push_content` transaction 为 current
+  owner。没有 Open PR 时，同 branch/base terminal PR 只作为历史事实；live remote 等于 transaction
+  `pre_push_remote_head` 时允许执行一次到 `publication_head` 的 fast-forward，等于 `publication_head` 时视为合法
+  push-output-loss/converged state 并继续同一 transaction recovery。remote 位于这两个 allowed heads 之外、
+  ahead/diverged/unknown/unprovable，出现 Open PR drift，或 transaction identity 不匹配时均 fail closed。
+- 该恢复不增加宽泛 fallback、PR 人工选择 API、force push 或第二 ledger，也不删除、改写或手工绕过 transaction。
+- 实现删除 transaction-owned no-Open-PR 路径对 terminal PR inventory 的读取，保留既有 transaction plan validation
+  与 remote allowed-head preflight；canonical/dogfood runtime 字节一致。新增真实 Git regression 覆盖历史 terminal
+  PR、`pre_push_remote_head`、`publication_head` 与 allowed-head 外 drift。验证结果为 recovery `47/47`、完整
+  Finalizer package `111/111`、Python compile、task validation 与 `git diff --check` 通过。
+- 上述结果只证明当前 finding-fix implementation candidate，不表示 fresh Phase 2、Task Commit、Branch Review、
+  Publication、Finalizer 或 Delivery gate 已通过。C5-C7、D443、D436、E434、#434 activation 与完整 Release matrix
+  仍未完成。
+
+## C4 Branch Review transaction endpoint finding-fix（2026-09-24）
+
+- `BR454-C4-P1-003`：transaction-bound remote guard 把 distinct intermediate `branch_review_commit` 与
+  `pre_push_remote_head`、`publication_head` 一并视为合法恢复端点；当 remote 由正常外部操作推进到 review commit
+  但尚未到 publication commit 时，现行 preflight 会错误放行后续 publication push。
+- 修复保持 transaction 为唯一 current recovery owner，只允许 transaction 创建时观察到的
+  `pre_push_remote_head` 与 exact `publication_head`。中间 review commit、allowed heads 外 remote、Open PR drift 与
+  transaction identity drift 均继续 fail closed；不增加严格 branch/session 绑定、人工选择 API、force push、第二
+  ledger 或 fallback。
+- 真实 Git regression 使用三个互异 commit，分别表示 historical remote、branch review 与 publication；明确断言
+  historical remote 和 publication endpoint 可恢复，而 intermediate review commit 返回
+  `finalizer_remote_head_drift`。Architecture 已返回 `fitness_regression -> implementation`；修复后必须重建 fresh
+  Phase 2、Task Commit 与完整 Branch Review，当前 Publication 与 Finalizer transaction 不得继续消费。
+- Fresh implementation validation：Finalizer recovery `47/47`、完整 Finalizer package `111/111`、task validator、
+  canonical/dogfood runtime parity 与 `git diff --check` 均通过；Finalizer transaction SHA-256 仍为
+  `af9efa059754058b63c24398856adc4ef65c9c6fa48cf472c731ac94a8b86b3b`，本轮未修改该 transaction。
+
+## C4 same-base transaction reprepare finding-fix（2026-09-24）
+
+- `FIN454-C4-P1-004`：合法 C4 finding-fix 在 predecessor provenance Publication `af719fbb` 后形成
+  `e1dd7c7c -> d3ac0a07`，current Branch Review、Publication 与 live HEAD 已重新绑定同一 reviewed descendant，
+  selected base `origin/main@77fa1a2` 未变化。现行 classifier 只接受 base 演进后的 fresh-reviewed descendant，
+  因而把同 owner、同 base、尚无 Open PR 的 pre-push reprepare 错误判为
+  `provenance_tail_transaction_rebind_invalid`。
+- 修复遵循宽松且最小充分的绑定原则：只要求 existing unbound
+  `ordinary_publication/push_content` transaction 的 task/repository/base/head branch/mode/stage 一致；predecessor
+  review 到 Publication 相等或为合法 provenance tail；selected base 已包含于 predecessor Publication lineage；
+  current Branch Review、Publication、live HEAD 相等且严格后继；task 未 archive 且没有 Open PR。历史 terminal PR
+  不作为 current candidate。
+- remote 只接受 transaction-owned `pre_push_remote_head` 或 exact `publication_head`；中间 reviewed commit、其它
+  remote endpoint、Open PR、identity/lineage/tail/state drift 均 fail closed。合法路径复用既有
+  `reprepare_required/provenance_metadata_tail` 与 replacement transaction，不增加 schema、public DTO、人工
+  selector、fallback、force push、第二 ledger 或 branch/session/path 严格绑定。
+- 真实 Git regression 覆盖 old-review -> valid old provenance tail -> two finding-fix commits、历史 terminal PR
+  忽略、Open PR 拒绝、两个 transaction-owned remote endpoint 接受、中间 remote 拒绝，以及 replacement
+  transaction 绑定 current plan 与实际 observed remote。该 finding-fix 完成后必须从 fresh Phase 2、Task Commit
+  与完整 Branch Review 重新建立 gate；当前 Publication/Finalizer 输入不得继续消费。
+- Fresh implementation validation：Finalizer provenance `23/23`、recovery `48/48`、完整 package `113/113`、
+  canonical/installed runtime parity、canonical/dogfood spec parity、Python compile、task validator、专用 dogfood
+  drift 与 `git diff --check` 均通过。raw preset apply 仍因三项既有 pre-E434 task-lifecycle installed sidecar 返回
+  `conflict`，未被清除、覆盖或误报为通过；该边界与此前 preset `85/86` 一致。本段不表示 Phase 2、Task Commit、
+  Branch Review、Publication、Finalizer 或 Delivery 已通过。C5-C7、D443、D436、E434、#434 activation 与完整
+  Release matrix 状态不变。

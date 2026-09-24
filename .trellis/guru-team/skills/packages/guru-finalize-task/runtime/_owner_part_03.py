@@ -2073,35 +2073,89 @@ def provenance_tail_transaction_rebind_is_reviewed_base_descendant(
         and is_ancestor(root, comparison_head, current_publication_head)
     )
 
+
+def provenance_tail_transaction_reprepare_is_fresh_reviewed_descendant(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+) -> bool:
+    """Accept one freshly reviewed descendant without requiring incidental base movement."""
+    git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
+    base_branch = str(git.get("base_branch") or "")
+    predecessor_reviewed_head = str(transaction.get("branch_review_commit") or "")
+    predecessor_publication_head = str(transaction.get("publication_head") or "")
+    reviewed_content_head = str(git.get("branch_review_commit") or "")
+    current_publication_head = str(
+        git.get("publication_head") or git.get("branch_review_commit") or ""
+    )
+    if not all(
+        re.fullmatch(r"[0-9a-f]{40}", value)
+        for value in (
+            predecessor_reviewed_head,
+            predecessor_publication_head,
+            reviewed_content_head,
+            current_publication_head,
+        )
+    ):
+        return False
+    if (
+        not base_branch
+        or reviewed_content_head != current_publication_head
+        or current_publication_head != current_head(root)
+        or predecessor_publication_head == reviewed_content_head
+        or not is_ancestor(root, predecessor_publication_head, reviewed_content_head)
+    ):
+        return False
+    base_ref = diff_base_ref(root, base_branch)
+    base_proc = run(
+        ["git", "rev-parse", "--verify", base_ref],
+        cwd=root,
+        check=False,
+    )
+    base_head = base_proc.stdout.strip() if base_proc.returncode == 0 else ""
+    if (
+        re.fullmatch(r"[0-9a-f]{40}", base_head) is None
+        or not is_ancestor(root, base_head, predecessor_publication_head)
+    ):
+        return False
+    if predecessor_reviewed_head == predecessor_publication_head:
+        return True
+    return not provenance_tail_commit_errors(
+        root,
+        predecessor_reviewed_head,
+        predecessor_publication_head,
+        target_repo=git.get("repo"),
+        require_current=False,
+    )
+
+
 def provenance_tail_transaction_reprepare_eligible(
     root: Path,
     plan: dict[str, Any],
     transaction: dict[str, Any],
     errors: list[str] | None = None,
 ) -> bool:
-    """Allow only Publication metadata drift to enter the existing reprepare route."""
+    """Allow only a proven stale provenance tail to enter the reprepare route."""
     errors = (
         errors
         if errors is not None
         else provenance_tail_transaction_rebind_errors(root, plan, transaction)
     )
     error_set = set(errors)
-    if "publication" not in error_set or not (
-        error_set & PROVENANCE_TAIL_INAPPLICABLE_ERRORS
-    ):
+    if not (error_set & PROVENANCE_TAIL_INAPPLICABLE_ERRORS):
         return False
     if error_set - (
         PROVENANCE_TAIL_INAPPLICABLE_ERRORS
         | {"publication", "current_reviewed_publication_head"}
     ):
         return False
-    return (
+    return bool(
         provenance_tail_transaction_rebind_base_evolution_tail_parent(
-            root,
-            plan,
-            transaction,
+            root, plan, transaction
         )
-        is not None
+        or provenance_tail_transaction_reprepare_is_fresh_reviewed_descendant(
+            root, plan, transaction
+        )
     )
 
 def classify_provenance_tail_transaction_rebind(
@@ -2201,6 +2255,31 @@ def classify_provenance_tail_transaction_rebind(
                 "errors": errors,
             },
         )
+    if (
+        reprepare_eligible
+        and not base_evolution
+        and not reviewed_base_descendant
+        and provenance_tail_transaction_reprepare_is_fresh_reviewed_descendant(
+            root, plan, transaction
+        )
+    ):
+        candidate = resolve_closeout_pull_request(
+            root,
+            plan["git"]["repo"],
+            plan["git"]["head_branch"],
+            plan["git"]["base_branch"],
+            plan["git"]["remote"],
+        )
+        if candidate is not None:
+            raise WorkflowError(
+                "Fresh-reviewed transaction reprepare is unavailable after pull request creation.",
+                exit_code=2,
+                payload={
+                    "reason_code": "provenance_reprepare_pull_request_exists",
+                    "pull_request": candidate.get("number"),
+                },
+            )
+        return None
     git = plan["git"]
     candidate = resolve_closeout_pull_request(
         root,
