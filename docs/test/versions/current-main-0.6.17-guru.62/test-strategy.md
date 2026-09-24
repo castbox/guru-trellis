@@ -42,7 +42,7 @@
 | `TST-029` | downstream provenance | producer transition 到 workspace consumer 的 source/base/full-candidates exact freshness | producer private runtime 或历史 checkpoint |
 | `TST-030` | #290 distribution | canonical/installed/platform parity、inventory、reapply/drift/mode/sidecar-zero 与代表性 Codex detached wrapper | 独立的重构前稳定版 Release matrix/tag/Release |
 | `TST-031` | Finalizer source/target binding | closed mode、双 checkout、immutable source、apply target、tail lineage 与 postimage | 真实 GitHub fixture 或生产结果 |
-| `TST-032` | Initial reprepare and fail-close | existing-PR precedence、prepared-state inference、absent/exact remote 与 pre-mutation failure | archive 后 terminal live facts |
+| `TST-032` | Initial reprepare and fail-close | existing-PR precedence、prepared-state inference、无 predecessor 时 absent/exact/strict-ancestor remote 可继续，ahead/diverged/unknown commit 在 mutation 前 fail closed，predecessor transaction 保持 exact old-HEAD | archive 后 terminal live facts |
 | `TST-033` | Installed distribution isolation | canonical/installed package、verifier-zero dependency、preset projection、mode/drift/sidecar | release-wide matrix |
 | `TST-034` | Representative installed closeout | release-installed business repo 从 ready 到 Ready PR/terminal projection | 未 fresh 重试时保持 `unverified` |
 | `TST-035` | Structured verifier failure | stage/cell/command/exit/bounded safe tail、outer parse 与 postcheck classification | Finalizer lifecycle authority |
@@ -131,8 +131,9 @@
   immutable source commit 建立 clean detached extension checkout，并生成唯一 manifest tail。
 - `SCN-043 invalid source`：missing/malformed/dirty/mutable/mismatched source 或 postimage 在任何
   push/PR/archive/Ready/Issue mutation 前 fail closed。
-- `SCN-044 initial publication`：无 existing PR/remote/tail 的 `prepared` 输入返回 provenance
-  reprepare；absent 或 exact reviewed remote 可执行，非空 drift 继续拒绝。
+- `SCN-044 initial publication`：无 existing PR/tail 的 `prepared` 输入返回 provenance reprepare；使用真实 Git graph
+  证明无 predecessor transaction 时 absent、exact reviewed 或 strict historical ancestor remote 可执行，ahead、
+  diverged、unknown/unprovable commit 均拒绝；predecessor transaction 仍只接受其 exact old Publication HEAD。
 - `SCN-045 installed projection`：canonical/installed/平台 package 与 reapply bytes/mode 相同，
   Finalizer 对 verifier lifecycle 保持零依赖。
 - `SCN-046 verifier failure evidence`：matrix 与 postcheck failure 在 cleanup 前形成 closed structured

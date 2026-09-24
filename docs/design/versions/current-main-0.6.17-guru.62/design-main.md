@@ -81,8 +81,10 @@
   HEAD 建立；apply executable 只从 extension source checkout 定位，`--repo` 只指向 target。
   apply 后分别验证 source identity/clean 不变、target dirty path 仅 manifest、字段 allowlist、
   mode-specific source postimage、direct parent、single tail 与 publication head。preview 先分类 existing
-  PR，再处理无 remote 的初始 `prepared` provenance reprepare；executor 仅接受 absent remote 或 exact
-  reviewed head，terminal invoke 继续使用原始 publication input 与精确 retired locator。
+  PR，再处理初始 `prepared` provenance reprepare。无 predecessor transaction 时，executor 通过真实 Git ancestry
+  接受 absent remote、exact reviewed head 或 strict historical ancestor，并拒绝 ahead、diverged 与
+  unknown/unprovable commit；已有 predecessor transaction 继续绑定 exact old Publication HEAD。terminal invoke
+  继续使用原始 publication input 与精确 retired locator。
 - `DES-047` Distribution and isolation：Finalizer package-local runtime 独占 binding、两棵 checkout
   lifecycle 与 tail producer；installer 独占 manifest provenance；verifier lifecycle 与 Finalizer 无
   import、call、artifact 或 exit edge。canonical source 经 preset 投影到 dogfood/Shared/Codex/Claude/

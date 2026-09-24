@@ -25,6 +25,12 @@ C3，不表示 C3-C7 已全部完成。当前交付为 C4 branch association、e
 C5-C7、D443、D436、E434 与 #434 activation 仍未完成；完整 Skill package、production graph、
 installed/platform projection 与 predecessor retirement 仍由 E434 在同一原子激活边界交付。
 
+当前 C4 Delivery 还必须恢复同一分支的 Finalizer publication prerequisite：首次 Publication 尚无 predecessor
+transaction 时，remote branch 可以不存在、等于 reviewed HEAD，或为 reviewed HEAD 的严格历史祖先；remote ahead、
+diverged 或 commit identity/ancestry 无法证明时继续 fail closed。该恢复只解除 C4 正常 fast-forward Publication 的
+前置阻塞，不完成 Finalizer、Delivery、C5-C7、D443、D436、E434 或 #434 activation；已有 predecessor
+transaction 仍绑定其 exact old Publication HEAD，不得借此放宽 recovery authority。
+
 ## 背景与已确认事实
 
 ### 当前问题

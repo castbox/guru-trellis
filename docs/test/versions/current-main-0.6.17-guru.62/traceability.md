@@ -38,7 +38,7 @@
 | `TST-029`, `SCN-039` | `REQ-044..045` | `DES-043..044` | Sync-to-Discovery public transition、live observation与 source-aware freshness |
 | `TST-005`, `TST-007`, `TST-030`, `SCN-005`, `SCN-040` | `REQ-046` | `DES-006`, `DES-010`, `DES-042` | #295 canonical/installed/platform/preset contract closure |
 | `TST-031`, `SCN-041..043` | `REQ-047`, `REQ-049` | `DES-045..046` | Finalizer canonical/installed 59/59 + binding/tail negative fixtures |
-| `TST-032`, `SCN-044` | `REQ-048`, `REQ-049`, `BEH-008`, `BEH-010` | `DES-046` | prepared-state/existing-PR/absent-remote focused regression |
+| `TST-032`, `SCN-044` | `REQ-048`, `REQ-049`, `BEH-008`, `BEH-010` | `DES-046` | prepared-state/existing-PR regression plus real Git absent/equal/strict-ancestor acceptance and ahead/diverged/unknown rejection |
 | `TST-033`, `SCN-045` | `REQ-049..050` | `DES-047` | verifier-zero dependency + source/installed/platform/reapply/drift checks |
 | `TST-034`, `SCN-047` | `REQ-050` | `DES-047` | current real fixture `unverified`; local fake-GitHub integration only |
 | `TST-035`, `SCN-046` | `REQ-051` | `DES-048` | verifier 17/17、routing 44/44、closed failure schema/postcheck evidence |

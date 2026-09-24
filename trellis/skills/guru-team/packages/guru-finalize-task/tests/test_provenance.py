@@ -702,17 +702,40 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
             self.assertEqual(apply_calls, [])
             self.assertEqual(len(GTT.worktree_records(root)), 1)
 
-    def test_initial_provenance_reprepare_accepts_absent_remote_only(self) -> None:
+    def test_initial_provenance_reprepare_accepts_absent_equal_or_ancestor_remote(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
+            initialize_provenance_git_repo(root, "castbox/business-repo")
             task_dir = root / ".trellis/tasks/08-27-provenance-reprepare"
             task_dir.mkdir(parents=True)
-            reviewed = "a" * 40
+            (task_dir / "task.json").write_text(
+                json.dumps({"status": "in_progress"}) + "\n",
+                encoding="utf-8",
+            )
+            (root / "history.txt").write_text("base\n", encoding="utf-8")
+            base = commit_provenance_fixture(root, "base")
+            head_branch = "fix/311-provenance-reprepare"
+            subprocess.run(
+                ["git", "switch", "-qc", head_branch, base], cwd=root, check=True
+            )
+            (root / "history.txt").write_text("reviewed\n", encoding="utf-8")
+            reviewed = commit_provenance_fixture(root, "reviewed")
+            subprocess.run(
+                ["git", "switch", "-qc", "ahead", reviewed], cwd=root, check=True
+            )
+            (root / "history.txt").write_text("ahead\n", encoding="utf-8")
+            ahead = commit_provenance_fixture(root, "ahead")
+            subprocess.run(
+                ["git", "switch", "-qc", "diverged", base], cwd=root, check=True
+            )
+            (root / "diverged.txt").write_text("diverged\n", encoding="utf-8")
+            diverged = commit_provenance_fixture(root, "diverged")
+            subprocess.run(["git", "switch", "-q", head_branch], cwd=root, check=True)
             plan = {
                 "git": {
                     "reviewed_content_head": reviewed,
                     "branch_review_commit": reviewed,
-                    "head_branch": "fix/311-provenance-reprepare",
+                    "head_branch": head_branch,
                     "base_branch": "main",
                     "remote": "origin",
                     "repo": "castbox/business-repo",
@@ -724,15 +747,7 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
                     ),
                 },
             }
-            worktrees = [
-                {
-                    "branch": "refs/heads/fix/311-provenance-reprepare",
-                    "worktree": str(root),
-                }
-            ]
             with (
-                mock.patch.object(GTT, "current_head", return_value=reviewed),
-                mock.patch.object(GTT, "worktree_records", return_value=worktrees),
                 mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=None),
                 mock.patch.object(GTT, "closeout_remote_branch_head", return_value=""),
             ):
@@ -743,26 +758,65 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
                 )
             self.assertEqual(facts["remote_head"], "")
             self.assertEqual(facts["reviewed_content_head"], reviewed)
+            self.assertEqual(facts["local_head"], reviewed)
+            self.assertIsNone(facts["pull_request"])
+            self.assertIsNone(facts["base_evolution"])
 
-            with (
-                mock.patch.object(GTT, "current_head", return_value=reviewed),
-                mock.patch.object(GTT, "worktree_records", return_value=worktrees),
-                mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=None),
-                mock.patch.object(
-                    GTT, "closeout_remote_branch_head", return_value="b" * 40
-                ),
-                mock.patch.object(GTT, "is_ancestor", return_value=False),
-                self.assertRaises(GTT.WorkflowError) as caught,
-            ):
-                GTT.finalizer_pre_pr_provenance_reprepare_preflight(
-                    root,
-                    task_dir,
-                    plan,
+            for remote_head in (reviewed, base):
+                with (
+                    self.subTest(remote_head=remote_head),
+                    mock.patch.object(
+                        GTT, "resolve_closeout_pull_request", return_value=None
+                    ),
+                    mock.patch.object(
+                        GTT, "closeout_remote_branch_head", return_value=remote_head
+                    ),
+                ):
+                    facts = GTT.finalizer_pre_pr_provenance_reprepare_preflight(
+                        root,
+                        task_dir,
+                        plan,
+                    )
+                self.assertEqual(facts["remote_head"], remote_head)
+                self.assertEqual(facts["local_head"], reviewed)
+                self.assertIsNone(facts["pull_request"])
+                self.assertIsNone(facts["base_evolution"])
+                self.assertEqual(GTT.current_head(root), reviewed)
+                self.assertEqual(
+                    GTT.run_stdout(["git", "status", "--porcelain"], cwd=root),
+                    "",
                 )
-            self.assertEqual(
-                caught.exception.payload["reason_code"],
-                "provenance_reprepare_remote_not_reviewed_head",
-            )
+
+            for remote_head in (ahead, diverged, "f" * 40):
+                with (
+                    self.subTest(remote_head=remote_head),
+                    mock.patch.object(
+                        GTT, "resolve_closeout_pull_request", return_value=None
+                    ),
+                    mock.patch.object(
+                        GTT, "closeout_remote_branch_head", return_value=remote_head
+                    ),
+                    self.assertRaises(GTT.WorkflowError) as caught,
+                ):
+                    GTT.finalizer_pre_pr_provenance_reprepare_preflight(
+                        root,
+                        task_dir,
+                        plan,
+                    )
+                self.assertEqual(
+                    caught.exception.payload["reason_code"],
+                    "provenance_reprepare_remote_not_reviewed_head",
+                )
+                self.assertEqual(
+                    caught.exception.payload["reviewed_content_head"], reviewed
+                )
+                self.assertEqual(caught.exception.payload["remote_head"], remote_head)
+                self.assertFalse(caught.exception.payload["fast_forwardable"])
+                self.assertEqual(GTT.current_head(root), reviewed)
+                self.assertEqual(
+                    GTT.run_stdout(["git", "status", "--porcelain"], cwd=root),
+                    "",
+                )
 
     def test_installed_provenance_with_immutable_source_needs_no_tail(self) -> None:
         with tempfile.TemporaryDirectory() as raw:

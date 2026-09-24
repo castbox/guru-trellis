@@ -299,6 +299,27 @@ C4 Phase 2 finding-fix（2026-09-23）：
 通过；这些门禁必须基于finding-fix后的current committed candidate重新执行。C5-C7、D443、D436、E434、#434
 activation与完整Release matrix状态不变。
 
+C4 Finalizer recovery finding-fix（2026-09-24）：
+
+- `FIN454-C4-P1-001`：首次 Publication 尚无 Finalizer predecessor transaction 时，workflow 允许远端分支不存在、
+  等于 reviewed commit，或为 reviewed commit 的严格历史祖先；现有 provenance reprepare preflight 却只接受前两种
+  拓扑，导致合法的 `09f96f40... -> 4863eac4...` fast-forward publication 在任何 Git/GitHub 副作用前错误返回
+  `finalization_stale`；
+- 修复只收敛无 predecessor transaction 的 preflight：严格历史祖先继续进入 reprepare，并由后续 replacement
+  transaction 绑定 exact `pre_push_remote_head`；ahead、diverged 或 ancestry 无法证明的 remote 继续 fail closed；
+  已存在 predecessor transaction 的 exact old Publication HEAD 合同保持不变；
+- Phase 2 authority review 发现 `.62` 的 `REQ-048`、`DES-046`、`TST-032` 与 `SCN-044` 仍只允许 absent/exact
+  remote，与 workflow 的 strict historical ancestor 合同冲突；本 finding-fix 同步 task planning 与 current RDT，
+  明确 ahead、diverged、unknown/unprovable commit 均 fail closed，旧 Architecture invocation 因此 stale 且不得复用；
+- 回归使用真实临时 Git graph 覆盖 remote absent、equal、strict historical ancestor、ahead、diverged 与 unknown
+  commit，不 mock `is_ancestor()`；canonical/dogfood runtime 继续要求字节一致。该修复只恢复当前 C4 Finalizer
+  正式路径，不表示 Finalizer、Delivery 或 C4 merge 已完成；
+- 实际验证：Finalizer provenance `21/21`、recovery `46/46`、完整 Finalizer package `109/109` 通过，task validator、
+  canonical/dogfood runtime parity 与 `git diff --check` 通过；未重跑 preset `85/86`、完整 repository validation 或
+  Release matrix，不得扩大验证声明；
+- 修复会使当前 committed candidate、Phase 2、Task Commit、Branch Review 与 Publication 证据失效。定向验证完成后，
+  必须从 fresh Phase 2 开始依次重建，禁止复用失败 invocation 的 gate、authoring 输入或 confirmation identity。
+
 ### C5 Path-free session store 与 resource ownership ledger
 
 Canonical package/runtime surfaces：

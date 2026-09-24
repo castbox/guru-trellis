@@ -103,9 +103,11 @@ identity 与 Issue closeout 在同一 post-merge exact candidate 上完成前均
   extension `repo/ref/commit`，不得 fallback、dual-read 或把 business HEAD 写成 extension source。
 - `REQ-048`：首次 `publication_ready` preview 必须先分类 exact existing PR；无 PR、无 remote
   branch 且缺 metadata tail 时，`prepared` 返回
-  `reprepare_required/provenance_metadata_tail`。对应 executor preflight 只接受 absent remote 或
-  exact reviewed head；push、PR、archive、Ready 与 Issue mutation 在合法 tail 前均为零，既有
-  fresh/post-bind recovery 与 public profile/exit/transaction 合同保持。
+  `reprepare_required/provenance_metadata_tail`。无 predecessor transaction 的对应 executor preflight 接受
+  absent remote、exact reviewed head 或 reviewed head 的 strict historical ancestor；remote ahead、diverged 或
+  commit identity/ancestry unknown/unprovable 时 fail closed。已有 predecessor transaction 仍要求 exact old
+  Publication HEAD；push、PR、archive、Ready 与 Issue mutation 在合法 tail 前均为零，既有 fresh/post-bind
+  recovery 与 public profile/exit/transaction 合同保持。
 - `REQ-049`：source binding、两棵临时 checkout 与 tail producer 归
   `guru-finalize-task` package-local runtime；installer 独占 manifest source provenance。
   source resolution、fetch、checkout、apply 或 postimage validation 失败时在任何远端副作用前

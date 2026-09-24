@@ -1529,9 +1529,10 @@ def finalizer_pre_pr_provenance_reprepare_preflight(
         previous_transaction is None
         and remote_head
         and remote_head != reviewed_content_head
+        and not is_ancestor(root, remote_head, reviewed_content_head)
     ):
         raise WorkflowError(
-            "Provenance reprepare requires no remote branch or the remote branch at reviewed content HEAD.",
+            "Provenance reprepare requires no remote branch, the reviewed content HEAD, or its historical ancestor.",
             exit_code=2,
             payload={
                 "reason_code": "provenance_reprepare_remote_not_reviewed_head",
