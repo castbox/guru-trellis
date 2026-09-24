@@ -438,3 +438,12 @@ Git predecessor/reviewed graph 下 strict historical ancestor 可继续，replac
 `pre_push_remote_head`，后续 pre-mutation preflight 使用同一 remote identity，且 push/PR/archive/Issue mutation
 保持为零。该 evidence 只闭合现有 Finalizer authority，不替代 promotion-created diff 的 fresh Phase 2、Task
 Commit 或完整 Branch Review。
+
+`FIN454-C4-P1-002` 的 required evidence 继续归属 `TST-032/SCN-044`：正式
+且 identity-matched 的 `ordinary_publication/push_content` transaction 是 current owner；无 Open PR 时，同
+branch/base terminal PR 只作为历史事实。remote exact `pre_push_remote_head` 证明单次 fast-forward，remote exact
+`publication_head` 证明 push-output-loss/converged recovery；allowed heads 外的 remote、ahead/diverged/unknown、
+Open PR drift 与 transaction identity drift 均 fail closed。证据不得依赖宽泛 fallback、PR 人工选择、force push、
+第二 ledger 或删除 transaction。当前 recovery `47/47` 与完整 Finalizer package `111/111` 通过；Python compile、
+canonical/dogfood parity、task validation 与 `git diff --check` 同时通过。该 evidence 不替代 fresh Phase 2、Task
+Commit、Branch Review、Publication 或 Finalizer gate。

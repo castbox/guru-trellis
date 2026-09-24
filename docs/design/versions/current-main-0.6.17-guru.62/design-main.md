@@ -83,8 +83,13 @@
   mode-specific source postimage、direct parent、single tail 与 publication head。preview 先分类 existing
   PR，再处理初始 `prepared` provenance reprepare。无 predecessor transaction 时，executor 通过真实 Git ancestry
   接受 absent remote、exact reviewed head 或 strict historical ancestor，并拒绝 ahead、diverged 与
-  unknown/unprovable commit；已有 predecessor transaction 继续绑定 exact old Publication HEAD。terminal invoke
-  继续使用原始 publication input 与精确 retired locator。
+  unknown/unprovable commit；已有 predecessor transaction 继续绑定 exact old Publication HEAD。Reactivate branch
+  reuse 已有身份匹配的 `ordinary_publication/push_content` transaction 时，该 transaction 是 current owner；先拒绝
+  Open PR drift，并把同 branch/base terminal PR 仅保留为历史事实而非 current candidate。live remote exact
+  `pre_push_remote_head` 时至多执行一次到 `publication_head` 的 fast-forward；exact `publication_head` 时按合法
+  push-output-loss/converged state 接续。allowed heads 外的 remote、ahead/diverged/unknown topology 或 transaction
+  identity drift 均 fail closed。该路径不增加宽泛 fallback、PR 人工选择 API、force push 或第二 ledger，也不删除
+  transaction。terminal invoke 继续使用原始 publication input 与精确 retired locator。
 - `DES-047` Distribution and isolation：Finalizer package-local runtime 独占 binding、两棵 checkout
   lifecycle 与 tail producer；installer 独占 manifest provenance；verifier lifecycle 与 Finalizer 无
   import、call、artifact 或 exit edge。canonical source 经 preset 投影到 dogfood/Shared/Codex/Claude/
@@ -603,6 +608,11 @@ D436、E434 与 production activation 保持后续 owner。
 时按真实 Git ancestry 接受 strict historical ancestor remote；executor 创建 replacement transaction 时保存 exact
 `pre_push_remote_head`，随后的 pre-mutation preflight 必须重新读取并匹配该值。该组合不产生第二 ledger、public
 DTO 或 production activation edge；执行级验证由 `TST-032/SCN-044` 承接。
+
+`FIN454-C4-P1-002` 复用该 owner，补充 identity-matched transaction current ownership、同 branch/base terminal
+PR 历史分类、`pre_push_remote_head` single-fast-forward、`publication_head` output-loss convergence 与
+allowed-head/Open-PR/transaction-identity drift fail-close；不得引入宽泛 fallback、PR 人工选择 API、force push、
+第二 ledger 或通过删除 transaction 恢复。
 
 本 slice 不新增 ADR；`ADR-015` 继续拥有 lifecycle identity 与 framework-extension boundary。C5-C7、D443、
 D436、E434 与 production activation 保持后续 owner。

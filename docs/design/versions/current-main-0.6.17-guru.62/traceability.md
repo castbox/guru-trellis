@@ -323,4 +323,7 @@ Architecture inheritance 为 `.62/active`；`ADR-015`、`ARCH-CUR-039`、`ARCH-D
 
 Finalizer provenance 的设计映射继续归属 `DES-046`，并由既有 `REQ-048` / `TST-032` / `SCN-044` 验证
 strict-ancestor initial reprepare、exact `pre_push_remote_head` transaction binding 与 pre-mutation remote
-identity revalidation；不新增 C4 public design owner。
+identity revalidation。`FIN454-C4-P1-002` 同时映射 transaction-bound Reactivate branch reuse 的
+identity-matched transaction ownership、terminal PR 历史分类、`pre_push_remote_head` single-fast-forward、
+`publication_head` output-loss convergence 及 allowed-head/Open-PR/transaction-identity drift fail-close；不新增
+C4 public design owner、宽泛 fallback、PR 人工选择 API、force push 或第二 ledger，也不记录 gate pass。

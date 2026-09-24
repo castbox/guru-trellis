@@ -579,3 +579,24 @@ predecessor数据模型带入target graph。
   touched non-generated file line limit 与 `git diff --check` 通过；validator 继续将不存在的可选
   `implement.jsonl`、`check.jsonl` 标为 skipped。上述结果只证明本 finding-fix implementation candidate，尚未
   建立 fresh Phase 2、Task Commit 或完整 Branch Review。
+
+## C4 Finalizer recovery finding-fix（2026-09-24）
+
+- `FIN454-C4-P1-002`：正式 Finalizer invocation 已合法从 reviewed content `3c9ecc58` 创建 provenance tail
+  `af719fbb`，并建立 `ordinary_publication/push_content` transaction；remote 与 transaction-bound
+  `pre_push_remote_head` 仍为历史 merged PR #469 的 `09f96f40`，当前没有 Open PR，且尚未 push 或 archive。
+  现行 recovery classifier 在承认该 identity-matched transaction 的 current ownership 前，错误地把同
+  branch/base 的历史 terminal PR 解释为 current candidate 冲突。
+- Reactivate branch reuse 的正常恢复以已有且身份匹配的 `ordinary_publication/push_content` transaction 为 current
+  owner。没有 Open PR 时，同 branch/base terminal PR 只作为历史事实；live remote 等于 transaction
+  `pre_push_remote_head` 时允许执行一次到 `publication_head` 的 fast-forward，等于 `publication_head` 时视为合法
+  push-output-loss/converged state 并继续同一 transaction recovery。remote 位于这两个 allowed heads 之外、
+  ahead/diverged/unknown/unprovable，出现 Open PR drift，或 transaction identity 不匹配时均 fail closed。
+- 该恢复不增加宽泛 fallback、PR 人工选择 API、force push 或第二 ledger，也不删除、改写或手工绕过 transaction。
+- 实现删除 transaction-owned no-Open-PR 路径对 terminal PR inventory 的读取，保留既有 transaction plan validation
+  与 remote allowed-head preflight；canonical/dogfood runtime 字节一致。新增真实 Git regression 覆盖历史 terminal
+  PR、`pre_push_remote_head`、`publication_head` 与 allowed-head 外 drift。验证结果为 recovery `47/47`、完整
+  Finalizer package `111/111`、Python compile、task validation 与 `git diff --check` 通过。
+- 上述结果只证明当前 finding-fix implementation candidate，不表示 fresh Phase 2、Task Commit、Branch Review、
+  Publication、Finalizer 或 Delivery gate 已通过。C5-C7、D443、D436、E434、#434 activation 与完整 Release matrix
+  仍未完成。

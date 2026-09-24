@@ -39,6 +39,14 @@ preflight classifies the live remote through real Git ancestry, and `execute_fin
 exact `pre_push_remote_head` into the replacement transaction before the second pre-mutation preflight. The executor
 does not push, create a PR, archive, mark Ready or mutate the Issue until that identity is revalidated.
 
+For `FIN454-C4-P1-002`, an identity-matched `ordinary_publication/push_content` transaction is the recovery owner.
+Classification first rejects Open PR drift and removes same-branch/base terminal PRs from the current candidate set.
+It then compares the live remote with the transaction's two allowed heads: exact `pre_push_remote_head` executes at most
+one fast-forward to `publication_head`, while exact `publication_head` resumes as push-output-loss/converged state.
+Anything outside those heads, ahead/diverged/unknown topology or transaction identity drift stops fail-closed. The design
+adds no broad fallback, manual PR-selection API, force push or second ledger and never repairs recovery by deleting the
+transaction.
+
 本 slice 不新增 ADR。`ADR-015` 已拥有 TaskId/lifecycle 与 framework-extension boundary；C4 只实现该决策下的
 branch substrate。Architecture/RDT owners 已按 reviewed range `origin/main@77fa1a2...c7fab600` 串行执行
 serialized promotion；promotion-created diff 仍须 fresh Phase 2、Task Commit 与完整 Branch Review。

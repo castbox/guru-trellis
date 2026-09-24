@@ -57,6 +57,15 @@ re-read and accept that same remote identity before push, PR, archive or Ready m
 composition on the existing Finalizer authority, not a second lifecycle ledger or a claim that Finalizer delivery is
 complete.
 
+`FIN454-C4-P1-002` extends that same boundary to normal Reactivate branch reuse after a legal provenance tail and
+identity-matched `ordinary_publication/push_content` transaction already exist. That transaction is the current owner.
+With no Open PR, a terminal PR on the same branch/base is historical fact rather than a current candidate. A live remote
+equal to `pre_push_remote_head` admits one fast-forward to `publication_head`; a live remote already equal to
+`publication_head` is a valid push-output-loss/converged state for the same transaction. Any remote outside those two
+allowed heads, ahead/diverged/unknown topology, Open PR drift or transaction identity drift remains fail-closed. This
+adds no broad fallback, manual PR-selection API, force push or second ledger, and never deletes or rewrites the
+transaction.
+
 ## Ownership And Compatibility
 
 - C2 identity/schema primitives remain unchanged; durable TaskBranchBinding and `BranchBindingRefDTO` project the same
@@ -100,6 +109,12 @@ Git graph, asserts replacement transaction creation with exact `pre_push_remote_
 preflight against that transaction, and verifies the remote branch remains unchanged. It is supporting evidence for the
 existing Finalizer `REQ-048` / `DES-046` / `TST-032` contract and does not replace fresh Phase 2 or Branch Review for the
 promotion-created diff.
+
+The `FIN454-C4-P1-002` implementation removes terminal-PR inventory from the exact transaction-owned no-Open-PR path
+and keeps the existing transaction identity plus remote allowed-head preflight. Focused recovery `47/47`, complete
+Finalizer package `111/111`, Python compile, canonical/dogfood parity, task validation and `git diff --check` pass. These
+results support the implementation candidate only; they do not establish fresh Phase 2, Branch Review, Publication,
+Finalizer, Delivery or Release results.
 
 No new ADR is required because `ADR-015` already owns lifecycle identity and the framework/extension boundary. C5-C7,
 D443, D436, E434, #434 production graph activation and the complete multi-platform Release matrix remain pending or

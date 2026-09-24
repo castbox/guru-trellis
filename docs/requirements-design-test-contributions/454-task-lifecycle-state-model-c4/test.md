@@ -33,6 +33,14 @@ graph 覆盖 strict historical ancestor，executor composition 断言 replacemen
 `pre_push_remote_head`，后续 pre-mutation preflight 使用同一 remote identity，并确认 push/PR/archive/Issue mutation
 均未发生。该用例不改变 `T454-C4-01..10` 的 scope，也不把 Finalizer 或 promotion-created diff 宣称为完成。
 
+`FIN454-C4-P1-002` 通过 `TST-032/SCN-044` 的 transaction-bound Reactivate branch reuse regression 覆盖：
+identity-matched `ordinary_publication/push_content` transaction 是 current owner；无 Open PR 时同 branch/base
+terminal PR 不进入 current candidate。remote exact `pre_push_remote_head` 只允许一次 fast-forward，remote exact
+`publication_head` 必须按 push-output-loss/converged state 接续；allowed heads 外的 remote、ahead/diverged/unknown、
+Open PR drift 与 transaction identity drift 均拒绝。覆盖不得借助宽泛 fallback、PR 人工选择、force push、第二
+ledger 或删除 transaction 构造成功路径。当前 recovery `47/47` 与完整 Finalizer package `111/111` 通过；该结果不
+替代 fresh Phase 2、Task Commit、Branch Review、Publication 或 Finalizer gate。
+
 本次 Branch Review finding-fix 的新增独立覆盖固定为：
 
 - association 与 surviving ownership 分别单侧丢失时，各自恢复同一 `binding_epoch`；

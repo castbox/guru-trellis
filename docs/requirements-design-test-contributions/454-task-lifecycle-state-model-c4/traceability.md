@@ -26,3 +26,10 @@ Finalizer provenance closure is intentionally mapped to existing shared authorit
 `REQ-048` / `DES-046` / `TST-032` / `SCN-044` cover strict-ancestor initial reprepare, exact
 `pre_push_remote_head` replacement binding and pre-mutation remote revalidation. The execution regression is located at
 `trellis/skills/guru-team/packages/guru-finalize-task/tests/test_provenance.py`; it is evidence for this mapping only.
+
+`FIN454-C4-P1-002` remains on the same mapping: `REQ-048` owns the transaction-bound Reactivate branch reuse condition,
+`DES-046` owns identity-matched transaction authority plus Open-PR/terminal-PR/allowed-head classification, and
+`TST-032/SCN-044` own pre-push single-fast-forward, publication-head output-loss convergence and drift rejection. No
+broad fallback, manual PR-selection API, force push or second ledger is introduced. The focused recovery `47/47` and
+complete Finalizer package `111/111` pass for the current implementation candidate; this trace does not record a fresh
+Phase 2, Branch Review, Publication or Finalizer gate pass.

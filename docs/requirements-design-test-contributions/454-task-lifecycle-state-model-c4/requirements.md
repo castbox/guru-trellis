@@ -42,6 +42,14 @@ unknown/unprovable commit 在 mutation 前 fail closed。replacement transaction
 `pre_push_remote_head`，随后 pre-mutation preflight 重新读取并校验同一 remote identity；该 guard 不新增 C4
 public DTO、lifecycle ledger 或 activation edge。
 
+`FIN454-C4-P1-002` 进一步约束 Reactivate branch reuse：合法 provenance tail 与
+身份匹配的 `ordinary_publication/push_content` transaction 已存在时，该 transaction 是 current owner。没有 Open
+PR 时，同 branch/base terminal PR 仅为历史事实，不是 current candidate。live remote 等于 transaction
+`pre_push_remote_head` 时可执行一次到 `publication_head` 的 fast-forward；等于 `publication_head` 时作为合法
+push-output-loss/converged state 继续同一 transaction recovery。remote 位于这两个 allowed heads 之外、
+ahead/diverged/unknown/unprovable，出现 Open PR drift，或 transaction identity drift 时均 fail closed。不得新增
+宽泛 fallback、PR 人工选择 API、force push、第二 ledger，也不得删除或改写 transaction。
+
 C5-C7、D443、D436、E434、#434 activation 与完整 Release matrix 均不属于本 contribution 的完成声明。
 Independent Branch Review 绑定 `origin/main@77fa1a2...c7fab600` 且 P0/P1/P2/P3 为 `0/0/0/0`；owners 已将
 expected `.61` 串行提升到 `.62`。Promotion-created successor diff 必须重新进入 fresh Phase 2、Task Commit 与

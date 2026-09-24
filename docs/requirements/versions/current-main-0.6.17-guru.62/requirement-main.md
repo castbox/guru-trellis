@@ -106,8 +106,15 @@ identity 与 Issue closeout 在同一 post-merge exact candidate 上完成前均
   `reprepare_required/provenance_metadata_tail`。无 predecessor transaction 的对应 executor preflight 接受
   absent remote、exact reviewed head 或 reviewed head 的 strict historical ancestor；remote ahead、diverged 或
   commit identity/ancestry unknown/unprovable 时 fail closed。已有 predecessor transaction 仍要求 exact old
-  Publication HEAD；push、PR、archive、Ready 与 Issue mutation 在合法 tail 前均为零，既有 fresh/post-bind
-  recovery 与 public profile/exit/transaction 合同保持。
+  Publication HEAD。Reactivate branch reuse 已有合法 provenance tail 与身份匹配的
+  `ordinary_publication/push_content` transaction 时，该 transaction 是 current owner；没有 Open PR 时，同
+  branch/base terminal PR 仅为历史事实，不是 current candidate。live remote 等于 transaction
+  `pre_push_remote_head` 时允许一次到 `publication_head` 的 fast-forward；等于 `publication_head` 时作为合法
+  push-output-loss/converged state 接续同一 transaction。remote 位于这两个 allowed heads 之外、
+  ahead/diverged/unknown/unprovable，出现 Open PR drift 或 transaction identity drift 时均 fail closed。不得新增
+  宽泛 fallback、PR 人工选择 API、force push 或第二 ledger，也不得删除或改写 transaction。push、PR、archive、
+  Ready 与 Issue mutation 在合法 tail 前均为零，既有 fresh/post-bind recovery 与 public
+  profile/exit/transaction 合同保持。
 - `REQ-049`：source binding、两棵临时 checkout 与 tail producer 归
   `guru-finalize-task` package-local runtime；installer 独占 manifest source provenance。
   source resolution、fetch、checkout、apply 或 postimage validation 失败时在任何远端副作用前
@@ -595,5 +602,10 @@ release-candidate Release matrix 保持 `unverified`，由专门 Release owner �
 `pre_push_remote_head`，后续 pre-mutation preflight 必须验证同一 remote identity。该映射只补齐 provenance，不
 新增 C4 public API、lifecycle authority 或 activation；执行级证据见 `TST-032` / `SCN-044` 与
 `guru-finalize-task/tests/test_provenance.py`。
+
+`FIN454-C4-P1-002` 复用同一 source binding，补充 transaction-bound Reactivate branch reuse、历史 terminal PR
+非 current-candidate 条件、`pre_push_remote_head` single-fast-forward、`publication_head`
+push-output-loss/converged recovery，以及 allowed-head/Open-PR/transaction-identity drift fail-close；它不新增 C4
+requirement identity、宽泛 fallback、PR 人工选择 API、force push 或第二 ledger。
 
 C5-C7、D443、D436、E434、#434 activation 与完整 Release matrix 继续保持独立后续边界。

@@ -358,4 +358,7 @@ Promotion-created diff、C5-C7、D443、D436、E434 与 Release matrix 不得从
 
 该 C4 trace 对 Finalizer provenance 的补充映射为既有 `REQ-048` / `DES-046` / `TST-032` / `SCN-044`：strict-
 ancestor initial reprepare、exact `pre_push_remote_head` replacement binding 与 pre-mutation remote identity
-revalidation。它不创建第二组 C4 requirement/design/test IDs。
+revalidation，以及 `FIN454-C4-P1-002` 的 transaction-bound Reactivate branch reuse、历史 terminal PR 分类、
+`pre_push_remote_head` single-fast-forward、`publication_head` output-loss convergence 与
+allowed-head/Open-PR/transaction-identity drift fail-close。它不创建第二组 C4 requirement/design/test IDs、宽泛
+fallback、PR 人工选择 API、force push 或第二 ledger，也不记录 gate pass。

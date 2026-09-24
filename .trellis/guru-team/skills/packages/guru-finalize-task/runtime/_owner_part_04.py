@@ -21,22 +21,6 @@ def classify_unbound_equal_head_recovery(
         git["remote"],
     )
     if candidate is None:
-        terminal_prs = resolve_closeout_terminal_pull_requests(
-            root,
-            git["repo"],
-            git["head_branch"],
-            git["base_branch"],
-            git["remote"],
-        )
-        if terminal_prs:
-            raise WorkflowError(
-                "Unbound equal-HEAD recovery found a Closed or Merged pull request for the immutable head/base.",
-                exit_code=2,
-                payload={
-                    "reason_code": "pre_finalizer_terminal_pr_exists",
-                    "pull_requests": terminal_prs,
-                },
-            )
         return None
     remote_head = closeout_remote_branch_head(root, plan)
     publication_head = str(
