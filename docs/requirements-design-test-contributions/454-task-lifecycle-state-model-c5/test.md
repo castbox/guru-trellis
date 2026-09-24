@@ -14,8 +14,10 @@ Publication、production activation 或 Release Gate 证明。
 - `T454-C5-05`（R454-C5-07）：rebind 保留旧 incarnation，Guru-owned retired进入cleanup-pending，caller-owned retired
   保持 retained；未收敛同 ref阻止复用。
 - `T454-C5-06`（R454-C5-08/09）：remote current-delivery role与current branch/ref alignment、exact current
-  incarnation只读恢复、无关合法ledger mutation后仍可rematerialize、Finish seal完整inventory、ordinary cleanup仅返回
-  Guru-owned cleanup-pending、caller/unknown与retained-control refs排除，并验证control ref runtime/schema同域。
+  incarnation只读恢复、同仓库多个remote name的精确定位、无关合法ledger mutation后仍可rematerialize、Finish seal
+  把 exact `finish_head` 写入最后一个 current Guru-owned incarnation 并返回完整inventory、ordinary cleanup仅返回
+  带可验证 HEAD 的 Guru-owned cleanup-pending、caller/unknown与retained-control refs排除，并验证control ref
+  runtime/schema同域。
 - `T454-C5-07`（R454-C5-10）：unique candidate自动选择；zero/multiple返回selection-required；discovered与explicit
   target使用同一 fresh validation，explicit target不能覆盖非法repository/task/generation/branch/resource事实。
 - `T454-C5-08`（R454-C5-11）：canonical registry断言新增ID仅planned、无package/interface/command/active graph/

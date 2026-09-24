@@ -69,6 +69,10 @@
       "type": "string",
       "pattern": "^(?![^/]+/[^/]+\\.git$)[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*$"
     },
+    "remoteName": {
+      "type": "string",
+      "pattern": "^(?!.*\\.\\.)(?!.*(?:^|/)\\.)(?!.*//)(?!.*(?:\\.|/|\\.lock)$)[A-Za-z0-9][A-Za-z0-9._/-]*$"
+    },
     "branchRef": {
       "type": "string",
       "pattern": "^refs/heads/(?!-)(?!HEAD$)(?!/)(?!guru-task-lifecycle(?:/|$))(?!.*(?:^|/)\\.)(?!.*(?:^|/)[^/]*\\.lock(?:/|$))(?!.*\\.\\.)(?!.*@\\{)(?!.*[ ~^:?*\\[\\]\\\\])(?!.*[./]$)[^/]+(?:/[^/]+)*$"
@@ -107,9 +111,10 @@
     "remoteBranchRef": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "repository_ref", "ref"],
+      "required": ["kind", "remote_name", "repository_ref", "ref"],
       "properties": {
         "kind": {"const": "remote_branch"},
+        "remote_name": {"$ref": "#/$defs/remoteName"},
         "repository_ref": {"$ref": "#/$defs/repositoryRef"},
         "ref": {
           "oneOf": [
@@ -134,9 +139,10 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "repository_ref", "ref"],
+          "required": ["kind", "remote_name", "repository_ref", "ref"],
           "properties": {
             "kind": {"const": "remote_branch"},
+            "remote_name": {"$ref": "#/$defs/remoteName"},
             "repository_ref": {"$ref": "#/$defs/repositoryRef"},
             "ref": {"$ref": "#/$defs/branchRef"}
           }
@@ -157,9 +163,10 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "repository_ref", "ref"],
+          "required": ["kind", "remote_name", "repository_ref", "ref"],
           "properties": {
             "kind": {"const": "remote_branch"},
+            "remote_name": {"$ref": "#/$defs/remoteName"},
             "repository_ref": {"$ref": "#/$defs/repositoryRef"},
             "ref": {"$ref": "#/$defs/retainedControlRef"}
           }

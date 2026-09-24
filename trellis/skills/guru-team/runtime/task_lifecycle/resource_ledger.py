@@ -57,6 +57,7 @@ _RESOURCE_FIELDS = {
     "expected_cleanup_head",
 }
 _IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
+_REMOTE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*$")
 _COMMIT = re.compile(r"^[0-9a-f]{40}$")
 _RETAINED_CONTROL_REF = re.compile(
     r"^refs/heads/(?=guru-task-lifecycle(?:/|$))(?!-)(?!HEAD$)(?!/)"
@@ -118,6 +119,23 @@ def _normalize_cleanup_head(value: Any, field_path: str) -> str | None:
     return value
 
 
+def _normalize_remote_name(value: Any) -> str:
+    if (
+        not isinstance(value, str)
+        or not _REMOTE_NAME.fullmatch(value)
+        or ".." in value
+        or value.endswith((".", "/", ".lock"))
+        or "/." in value
+        or "//" in value
+    ):
+        raise LifecycleContractError(
+            "invalid_resource_ref",
+            "portable_ref.remote_name",
+            "Use one portable Git remote name.",
+        )
+    return value
+
+
 def _portable_ref_key(value: dict[str, str]) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
@@ -155,9 +173,12 @@ def _worktree_portable_ref(branch_name: str) -> dict[str, str]:
     return {"kind": "linked_worktree", "branch_ref": f"refs/heads/{branch}"}
 
 
-def _remote_portable_ref(repo_ref: str, branch_ref: str, *, retained: bool = False) -> dict[str, str]:
+def _remote_portable_ref(
+    remote_name: str, repo_ref: str, branch_ref: str, *, retained: bool = False
+) -> dict[str, str]:
     return {
         "kind": "remote_branch",
+        "remote_name": _normalize_remote_name(remote_name),
         "repository_ref": normalize_repo_ref(repo_ref),
         "ref": _normalize_full_branch_ref(
             branch_ref,
@@ -203,10 +224,11 @@ def _normalize_portable_ref(
         }
     if (
         kind == "remote_branch"
-        and set(value) == {"kind", "repository_ref", "ref"}
+        and set(value) == {"kind", "remote_name", "repository_ref", "ref"}
         and value.get("kind") == kind
     ):
         return _remote_portable_ref(
+            value.get("remote_name"),
             value.get("repository_ref"),
             value.get("ref"),
             retained=retained,
@@ -566,6 +588,12 @@ class CleanupResolution:
                     "resources",
                     "Ordinary Cleanup requires a non-empty resource set and no reason code.",
                 )
+            if any(row.expected_cleanup_head is None for row in resources):
+                raise LifecycleContractError(
+                    "resource_ledger_conflict",
+                    "resources.expected_cleanup_head",
+                    "Ordinary Cleanup requires an exact sealed HEAD for every resource.",
+                )
             object.__setattr__(
                 self,
                 "inventory_id",
@@ -894,7 +922,7 @@ class ResourceLedgerStore:
         branch_name: str,
         live_branch_present: bool,
         linked_worktree_present: bool,
-        remote_delivery: tuple[str, str] | None = None,
+        remote_delivery: tuple[str, str, str] | None = None,
     ) -> OwnershipCurrent:
         if not live_branch_present:
             raise LifecycleContractError(
@@ -938,8 +966,8 @@ class ResourceLedgerStore:
                 )
             )
         if remote_delivery is not None:
-            repo_ref, remote_ref = remote_delivery
-            portable = _remote_portable_ref(repo_ref, remote_ref)
+            remote_name, repo_ref, remote_ref = remote_delivery
+            portable = _remote_portable_ref(remote_name, repo_ref, remote_ref)
             resources.append(
                 _new_resource(
                     normalized,
@@ -1095,6 +1123,7 @@ class ResourceLedgerStore:
         *,
         expected_epoch: int,
         expected_revision: int,
+        remote_name: str,
         repository_ref: str,
         branch_ref: str,
         ownership: Ownership,
@@ -1120,7 +1149,7 @@ class ResourceLedgerStore:
                 "ownership",
                 "A remote delivery resource must have Guru or caller ownership.",
             )
-        portable = _remote_portable_ref(repository_ref, branch_ref)
+        portable = _remote_portable_ref(remote_name, repository_ref, branch_ref)
         resource = _new_resource(
             key,
             kind="remote_branch",
@@ -1176,6 +1205,7 @@ class ResourceLedgerStore:
         self,
         key: TaskLifecycleKey,
         *,
+        remote_name: str,
         repository_ref: str,
         branch_ref: str,
     ) -> ResourceIncarnation:
@@ -1186,7 +1216,9 @@ class ResourceLedgerStore:
                 "ledger",
                 "Establish the lifecycle ledger before recording retained control refs.",
             )
-        portable = _remote_portable_ref(repository_ref, branch_ref, retained=True)
+        portable = _remote_portable_ref(
+            remote_name, repository_ref, branch_ref, retained=True
+        )
         resource = _new_resource(
             key,
             kind="remote_branch",
@@ -1237,8 +1269,16 @@ class ResourceLedgerStore:
         key: TaskLifecycleKey,
         *,
         finish_result_id: str,
+        finish_head: str,
     ) -> dict[str, Any]:
         finish_id = _identifier(finish_result_id, "finish_result_id")
+        exact_finish_head = _normalize_cleanup_head(finish_head, "finish_head")
+        if exact_finish_head is None:
+            raise LifecycleContractError(
+                "resource_ledger_conflict",
+                "finish_head",
+                "Seal current Guru-owned resources against one exact Finish HEAD.",
+            )
         ledger = self.read(key)
         if ledger is None:
             raise LifecycleContractError(
@@ -1250,7 +1290,12 @@ class ResourceLedgerStore:
         changed = False
         for row in ledger.resources:
             if row.state == "current":
-                sealed.append(_retire(row, row.expected_cleanup_head))
+                cleanup_head = (
+                    exact_finish_head
+                    if row.ownership == "guru_owned"
+                    else row.expected_cleanup_head
+                )
+                sealed.append(_retire(row, cleanup_head))
                 changed = True
             else:
                 sealed.append(row)
@@ -1272,6 +1317,7 @@ class ResourceLedgerStore:
             "task_id": successor.task_id,
             "lifecycle_generation": successor.lifecycle_generation,
             "finish_result_id": finish_id,
+            "finish_head": exact_finish_head,
             "ledger_revision": successor.ledger_revision,
             "inventory_id": inventory_id,
         }

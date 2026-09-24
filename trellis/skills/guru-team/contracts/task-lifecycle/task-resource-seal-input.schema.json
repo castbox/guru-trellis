@@ -9,6 +9,7 @@
     "task_id",
     "lifecycle_generation",
     "finish_result_id",
+    "finish_head",
     "ledger_revision",
     "inventory_id"
   ],
@@ -17,6 +18,7 @@
     "task_id": {"$ref": "#/$defs/taskId"},
     "lifecycle_generation": {"type": "integer", "minimum": 0},
     "finish_result_id": {"$ref": "#/$defs/identifier"},
+    "finish_head": {"$ref": "#/$defs/commit"},
     "ledger_revision": {"type": "integer", "minimum": 0},
     "inventory_id": {"$ref": "#/$defs/identifier"}
   },
@@ -28,6 +30,10 @@
     "identifier": {
       "type": "string",
       "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
     }
   }
 }

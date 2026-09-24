@@ -305,6 +305,7 @@ class ContractTests(unittest.TestCase):
             "ownership": "caller_owned",
             "portable_ref": {
                 "kind": "remote_branch",
+                "remote_name": "origin",
                 "repository_ref": "castbox/guru-trellis",
                 "ref": f"refs/heads/guru-task-lifecycle/{TASK_ID}",
             },
@@ -337,12 +338,35 @@ class ContractTests(unittest.TestCase):
             "acquisition_origin": "publication",
             "portable_ref": {
                 "kind": "remote_branch",
+                "remote_name": "origin",
                 "repository_ref": "castbox/guru-trellis",
                 "ref": f"refs/heads/{BRANCH_NAME}",
             },
             "state": "current",
             "responsibility_role": "current_delivery",
         }
+        current_branch = {
+            **valid_resource(),
+            "resource_id": "resource:current-branch",
+            "state": "current",
+            "responsibility_role": "current_branch",
+        }
+        for remote_name in ("origin", "upstream", "backup/main"):
+            named_delivery = {
+                **current_delivery,
+                "portable_ref": {
+                    **current_delivery["portable_ref"],
+                    "remote_name": remote_name,
+                },
+            }
+            with self.subTest(remote_name=remote_name):
+                self.assertEqual(
+                    list(validator.iter_errors({
+                        **payload,
+                        "resources": [current_branch, named_delivery],
+                    })),
+                    [],
+                )
         for resource in (current_worktree, current_delivery):
             with self.subTest(orphan_role=resource["responsibility_role"]):
                 self.assertTrue(
@@ -366,6 +390,24 @@ class ContractTests(unittest.TestCase):
             {**payload, "resources": [{**valid_resource(), "state": "current"}]},
             {**payload, "resources": [{**valid_resource(), "ownership": "caller_owned"}]},
             {**payload, "resources": [{**valid_resource(), "authorization": "confirmed"}]},
+            {
+                **payload,
+                "resources": [current_branch, {
+                    **current_delivery,
+                    "portable_ref": {
+                        key: value
+                        for key, value in current_delivery["portable_ref"].items()
+                        if key != "remote_name"
+                    },
+                }],
+            },
+            {
+                **payload,
+                "resources": [current_branch, {
+                    **current_delivery,
+                    "portable_ref": {**current_delivery["portable_ref"], "remote_name": "bad name"},
+                }],
+            },
             {
                 **payload,
                 "resources": [{
@@ -405,6 +447,7 @@ class ContractTests(unittest.TestCase):
             "task_id": TASK_ID,
             "lifecycle_generation": GENERATION,
             "finish_result_id": "finish:1",
+            "finish_head": COMMIT,
             "ledger_revision": 5,
             "inventory_id": "resource-inventory:1",
         }
@@ -448,8 +491,41 @@ class ContractTests(unittest.TestCase):
             with self.subTest(kind=payload["resolution_kind"]):
                 self.assertEqual(list(cleanup.iter_errors(payload)), [])
         self.assertTrue(list(cleanup.iter_errors({**resolutions[0], "resources": []})))
+        self.assertTrue(list(cleanup.iter_errors({
+            **resolutions[0],
+            "resources": [{**resource, "expected_cleanup_head": None}],
+        })))
+        remote_resource = {
+            **resource,
+            "kind": "remote_branch",
+            "portable_ref": {
+                "kind": "remote_branch",
+                "remote_name": "upstream",
+                "repository_ref": "castbox/guru-trellis",
+                "ref": f"refs/heads/{BRANCH_NAME}",
+            },
+        }
+        self.assertEqual(
+            list(cleanup.iter_errors({**resolutions[0], "resources": [remote_resource]})),
+            [],
+        )
+        self.assertTrue(list(cleanup.iter_errors({**resolutions[0], "resources": [{
+            **remote_resource,
+            "portable_ref": {**remote_resource["portable_ref"], "remote_name": "bad name"},
+        }]})))
+        self.assertEqual(
+            list(cleanup.iter_errors({
+                **resolutions[1],
+                "candidates": [{**resource, "expected_cleanup_head": None}],
+            })),
+            [],
+        )
         self.assertTrue(list(cleanup.iter_errors({**resolutions[1], "authorization": "confirmed"})))
         self.assertTrue(list(Draft202012Validator(seal_schema).iter_errors({**seal, "resources": []})))
+        self.assertTrue(list(Draft202012Validator(seal_schema).iter_errors({
+            key: value for key, value in seal.items() if key != "finish_head"
+        })))
+        self.assertTrue(list(Draft202012Validator(seal_schema).iter_errors({**seal, "finish_head": None})))
 
     def test_runtime_error_shape_has_exact_dispatcher_fields(self):
         error = LifecycleContractError("target_path_conflict", "target_path", "Choose another target.")

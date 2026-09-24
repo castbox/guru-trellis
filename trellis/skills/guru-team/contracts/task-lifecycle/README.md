@@ -71,8 +71,10 @@ copy of `.trellis/scripts/common/**` and creates no second session store.
 `task-resource-ledger.schema.json` is the closed Git-common-dir ownership
 record at `trellis/task-resources/<task-id>/<generation>.json`. Each resource
 incarnation records its acquisition origin, conservative ownership, portable
-ref, binding epoch/revision, state, responsibility role, and optional exact
-cleanup commit. Unknown or unprovable ownership is represented as
+ref, binding epoch/revision, state, responsibility role, and exact cleanup
+commit when sealed. A remote portable ref includes the remote name, repository
+identity, and branch ref so Cleanup can identify the exact remote incarnation.
+Unknown or unprovable ownership is represented as
 `caller_owned`; checkout paths are never stored.
 
 Ledger mutation owners use exact-byte snapshot/restore through the concrete C4
@@ -80,8 +82,9 @@ port. Conservative active recovery and remote-delivery recording also
 rematerialize an already established exact successor without rewriting it.
 No second transaction store or speculative checkpoint schema is introduced.
 
-`task-resource-seal-input.schema.json` is the minimal Finish input over one
-sealed ledger revision and complete responsibility inventory identity.
+`task-resource-seal-input.schema.json` carries the exact Finish HEAD used to
+seal the current Guru-owned resources and returns one ledger revision and
+complete responsibility inventory identity.
 `task-resource-cleanup-resolution.schema.json` separates ordinary Guru-owned
 cleanup, terminal manual selection, and already-clean results. Ordinary
 Cleanup includes only `guru_owned + cleanup_pending` resources and excludes

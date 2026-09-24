@@ -23,10 +23,12 @@
   resolution。
 - `D454-C5-06`：rebind 把旧 current incarnations 变为 retired。Guru-owned 进入 cleanup-pending，caller-owned 保留；
   target resources按本次 acquisition facts建立 current incarnation。unresolved-ref 查询拒绝尚未收敛的同 ref复用。
-- `D454-C5-07`：Finish seal schema只接收 current lifecycle、finish result 与 ledger revision/inventory identity；
-  Cleanup resolution schema分别表达 ordinary cleanup set、manual selection required 与 already-clean states，不把用户
-  选择或授权写入 ledger。
-- `D454-C5-08`：普通 cleanup projection 过滤 retained handoff control refs，并只返回 Guru-owned cleanup-pending
+- `D454-C5-07`：Finish seal 接收 current lifecycle、finish result 与 exact `finish_head`，将最后一个 current bundle
+  的 Guru-owned incarnation 封存到该 HEAD，再返回 ledger revision/inventory identity；缺少可验证 cleanup HEAD
+  不形成 ordinary cleanup authority。Cleanup resolution schema分别表达 ordinary cleanup set、manual selection
+  required 与 already-clean states，不把用户选择或授权写入 ledger。
+- `D454-C5-08`：remote portable ref 保留 `remote_name`、repository 与 branch ref，使 Cleanup 能验证 exact remote
+  identity；普通 cleanup projection 过滤 retained handoff control refs，并只返回 Guru-owned cleanup-pending
   incarnations。manual terminal cleanup 是独立用户定向路径，不把选择反写成历史 Guru ownership。
 - `D454-C5-09`：三个 C5 schema 固定 ledger、Finish seal input 与 Cleanup resolution；mutation rollback/recovery
   由 runtime exact snapshot 和 successor recognition承接，不制造无人消费的 checkpoint schema。session record继续由

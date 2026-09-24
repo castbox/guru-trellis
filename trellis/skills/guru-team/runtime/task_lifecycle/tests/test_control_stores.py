@@ -21,6 +21,7 @@ TASK_B = "another-task"
 BRANCH = "codex/454-task-lifecycle-state-model-c3-c7"
 TARGET = "codex/454-task-lifecycle-state-model-c5"
 HEAD = "a" * 40
+FINISH_HEAD = "b" * 40
 
 
 class FakeOfficialSessionPort:
@@ -260,7 +261,7 @@ class ResourceLedgerTests(unittest.TestCase):
             branch_name="topic-4",
             live_branch_present=True,
             linked_worktree_present=True,
-            remote_delivery=("castbox/guru-trellis", "refs/heads/topic-4"),
+            remote_delivery=("origin", "castbox/guru-trellis", "refs/heads/topic-4"),
         )
         ledger = self.store.read(self.key(4))
         self.assertEqual(recovered.binding_revision, 2)
@@ -277,9 +278,20 @@ class ResourceLedgerTests(unittest.TestCase):
             branch_name="topic-4",
             live_branch_present=True,
             linked_worktree_present=True,
-            remote_delivery=("castbox/guru-trellis", "refs/heads/topic-4"),
+            remote_delivery=("origin", "castbox/guru-trellis", "refs/heads/topic-4"),
         )
         self.assertEqual(rematerialized, recovered)
+        self.assertEqual(self.store.snapshot(self.key(4)).content, before)
+        with self.assertRaisesRegex(LifecycleContractError, "resource_ownership_conflict"):
+            self.store.recover_active_missing(
+                self.key(4),
+                binding_epoch=14,
+                binding_revision=2,
+                branch_name="topic-4",
+                live_branch_present=True,
+                linked_worktree_present=True,
+                remote_delivery=("upstream", "castbox/guru-trellis", "refs/heads/topic-4"),
+            )
         self.assertEqual(self.store.snapshot(self.key(4)).content, before)
 
     def test_snapshot_restore_and_c4_port_projection_preserve_exact_bytes(self) -> None:
@@ -366,6 +378,22 @@ class ResourceLedgerTests(unittest.TestCase):
                 allowed_current_epoch=7,
                 allowed_current_revision=1,
             )
+        )
+        seal = self.store.seal_for_finish(
+            key, finish_result_id="finish:rebound", finish_head=FINISH_HEAD
+        )
+        resolution = self.store.cleanup_resolution(
+            key,
+            finish_result_id="finish:rebound",
+            inventory_id=seal["inventory_id"],
+        )
+        self.assertEqual(
+            {
+                row.portable_ref["ref"]: row.expected_cleanup_head
+                for row in resolution.resources
+                if row.kind == "local_branch"
+            },
+            {f"refs/heads/{BRANCH}": HEAD, f"refs/heads/{TARGET}": FINISH_HEAD},
         )
 
     def test_caller_owned_rebind_history_stays_retained_and_manual_only(self) -> None:
@@ -461,6 +489,7 @@ class ResourceLedgerTests(unittest.TestCase):
                 key,
                 expected_epoch=7,
                 expected_revision=0,
+                remote_name="origin",
                 repository_ref="castbox/guru-trellis",
                 branch_ref=f"refs/heads/{TARGET}",
                 ownership="guru_owned",
@@ -470,12 +499,14 @@ class ResourceLedgerTests(unittest.TestCase):
             key,
             expected_epoch=7,
             expected_revision=0,
+            remote_name="origin",
             repository_ref="castbox/guru-trellis",
             branch_ref=f"refs/heads/{BRANCH}",
             ownership="guru_owned",
             expected_cleanup_head=HEAD,
         )
         self.assertEqual(remote.responsibility_role, "current_delivery")
+        self.assertEqual(remote.portable_ref["remote_name"], "origin")
         ledger = self.store.read(key)
         current_worktree = next(
             row for row in ledger.resources
@@ -496,6 +527,7 @@ class ResourceLedgerTests(unittest.TestCase):
                 key,
                 expected_epoch=7,
                 expected_revision=0,
+                remote_name="origin",
                 repository_ref="castbox/guru-trellis",
                 branch_ref=f"refs/heads/{BRANCH}",
                 ownership="guru_owned",
@@ -509,6 +541,19 @@ class ResourceLedgerTests(unittest.TestCase):
                 key,
                 expected_epoch=7,
                 expected_revision=0,
+                remote_name="upstream",
+                repository_ref="castbox/guru-trellis",
+                branch_ref=f"refs/heads/{BRANCH}",
+                ownership="guru_owned",
+                expected_cleanup_head=HEAD,
+            )
+        self.assertEqual(self.store.snapshot(key).content, before_remote_retry)
+        with self.assertRaisesRegex(LifecycleContractError, "resource_ownership_conflict"):
+            self.store.record_remote_delivery(
+                key,
+                expected_epoch=7,
+                expected_revision=0,
+                remote_name="origin",
                 repository_ref="castbox/guru-trellis",
                 branch_ref=f"refs/heads/{BRANCH}",
                 ownership="caller_owned",
@@ -516,15 +561,25 @@ class ResourceLedgerTests(unittest.TestCase):
             )
         retained = self.store.record_retained_control_ref(
             key,
+            remote_name="origin",
             repository_ref="castbox/guru-trellis",
             branch_ref=f"refs/heads/guru-task-lifecycle/{TASK_A}",
         )
+        other_remote = self.store.record_retained_control_ref(
+            key,
+            remote_name="upstream",
+            repository_ref="castbox/guru-trellis",
+            branch_ref=f"refs/heads/guru-task-lifecycle/{TASK_A}",
+        )
+        self.assertNotEqual(retained.resource_id, other_remote.resource_id)
+        self.assertNotEqual(retained.portable_ref, other_remote.portable_ref)
         after_unrelated_mutation = self.store.snapshot(key).content
         self.assertEqual(
             self.store.record_remote_delivery(
                 key,
                 expected_epoch=7,
                 expected_revision=0,
+                remote_name="origin",
                 repository_ref="castbox/guru-trellis",
                 branch_ref=f"refs/heads/{BRANCH}",
                 ownership="guru_owned",
@@ -538,10 +593,28 @@ class ResourceLedgerTests(unittest.TestCase):
                 with self.assertRaisesRegex(LifecycleContractError, "invalid_branch_ref"):
                     self.store.record_retained_control_ref(
                         key,
+                        remote_name="origin",
                         repository_ref="castbox/guru-trellis",
                         branch_ref=f"refs/heads/guru-task-lifecycle/{suffix}",
                     )
-        seal = self.store.seal_for_finish(key, finish_result_id="finish:1")
+        with self.assertRaisesRegex(LifecycleContractError, "invalid_resource_ref"):
+            self.store.record_remote_delivery(
+                key,
+                expected_epoch=7,
+                expected_revision=0,
+                remote_name="bad name",
+                repository_ref="castbox/guru-trellis",
+                branch_ref=f"refs/heads/{BRANCH}",
+                ownership="guru_owned",
+            )
+        before_invalid_seal = self.store.snapshot(key).content
+        with self.assertRaisesRegex(LifecycleContractError, "resource_ledger_conflict"):
+            self.store.seal_for_finish(key, finish_result_id="finish:1", finish_head=None)
+        self.assertEqual(self.store.snapshot(key).content, before_invalid_seal)
+        seal = self.store.seal_for_finish(
+            key, finish_result_id="finish:1", finish_head=FINISH_HEAD
+        )
+        self.assertEqual(seal["finish_head"], FINISH_HEAD)
         resolution = self.store.cleanup_resolution(
             key,
             finish_result_id="finish:1",
@@ -551,7 +624,17 @@ class ResourceLedgerTests(unittest.TestCase):
         cleanup_ids = {row.resource_id for row in resolution.resources}
         self.assertIn(remote.resource_id, cleanup_ids)
         self.assertNotIn(retained.resource_id, cleanup_ids)
+        self.assertNotIn(other_remote.resource_id, cleanup_ids)
         self.assertEqual(len(cleanup_ids), 3)
+        self.assertEqual(
+            {row.expected_cleanup_head for row in resolution.resources}, {FINISH_HEAD}
+        )
+        self.assertEqual(
+            next(
+                row for row in resolution.resources if row.kind == "remote_branch"
+            ).portable_ref,
+            remote.portable_ref,
+        )
 
     def test_cleanup_runtime_rejects_shapes_forbidden_by_the_public_schema(self) -> None:
         from runtime.task_lifecycle.resource_ledger import CleanupResolution, CleanupResource
@@ -562,6 +645,7 @@ class ResourceLedgerTests(unittest.TestCase):
                 "remote_branch",
                 {
                     "kind": "remote_branch",
+                    "remote_name": "origin",
                     "repository_ref": "castbox/guru-trellis",
                     "ref": f"refs/heads/guru-task-lifecycle/{TASK_A}",
                 },
@@ -575,6 +659,21 @@ class ResourceLedgerTests(unittest.TestCase):
                 inventory_id="resource-inventory:1",
                 resources=(),
             )
+        with self.assertRaisesRegex(LifecycleContractError, "resource_ledger_conflict"):
+            CleanupResolution(
+                "ordinary_cleanup",
+                self.key(),
+                "finish:1",
+                inventory_id="resource-inventory:1",
+                resources=(
+                    CleanupResource(
+                        "resource:1",
+                        "local_branch",
+                        {"kind": "local_branch", "ref": f"refs/heads/{BRANCH}"},
+                        None,
+                    ),
+                ),
+            )
 
     def test_caller_owned_and_unknown_recovery_never_enter_ordinary_cleanup(self) -> None:
         key = self.key()
@@ -586,7 +685,9 @@ class ResourceLedgerTests(unittest.TestCase):
             live_branch_present=True,
             linked_worktree_present=True,
         )
-        seal = self.store.seal_for_finish(key, finish_result_id="finish:2")
+        seal = self.store.seal_for_finish(
+            key, finish_result_id="finish:2", finish_head=FINISH_HEAD
+        )
         resolution = self.store.cleanup_resolution(
             key,
             finish_result_id="finish:2",

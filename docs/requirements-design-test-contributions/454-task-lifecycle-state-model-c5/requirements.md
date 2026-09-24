@@ -23,11 +23,13 @@ package，也不重做 C1、C2、D0、C3 或 C4。
   猜测 task 的严格 selector。
 - `R454-C5-07`：rebind 必须保留旧 resource incarnation。旧 Guru-owned resource 进入 `cleanup_pending`；旧
   caller-owned resource 保持 retained/manual-only；同一 portable ref 在前一 incarnation 收敛前不得复用。
-- `R454-C5-08`：Finish seal input 必须封存当前 generation 的完整 responsibility inventory。普通 Cleanup 只消费
-  `guru_owned + cleanup_pending`；caller-owned、unknown ownership 与 `refs/heads/guru-task-lifecycle/*` retained control
-  refs 不得进入普通 deletion set。
-- `R454-C5-09`：remote resource identity 必须包含 repository 与完整 ref；零个或一个 remote 可承担
-  `current_delivery` role。Publication 尚未发生时 remote set 可以为空。
+- `R454-C5-08`：Finish seal input 必须携带 exact `finish_head`，封存当前 generation 的完整 responsibility inventory，
+  将最后一个 current bundle 的 Guru-owned resource 的 `expected_cleanup_head` 固定为该 HEAD。普通 Cleanup 只消费
+  `guru_owned + cleanup_pending` 并验证 sealed HEAD；caller-owned、unknown ownership 与
+  `refs/heads/guru-task-lifecycle/*` retained control refs 不得进入普通 deletion set。
+- `R454-C5-09`：remote resource identity 必须包含 portable `remote_name`、repository 与完整 branch ref；零个或一个
+  remote 可承担 `current_delivery` role。Cleanup 用 remote name 与 repository identity 定位并验证完整 remote ref；
+  Publication 尚未发生时 remote set 可以为空。
 - `R454-C5-10`：自动 discovery 只在恰好一个 valid candidate 时自动选择；零个或多个进入 selection-required。
   用户可选 discovered candidate 或显式指定未列出 target，两条路径在 mutation 前使用同一 fresh validation。
 - `R454-C5-11`：`guru-establish-task-identity` 在 C5 只作为 planned stable ID。不得创建 canonical package tree、
