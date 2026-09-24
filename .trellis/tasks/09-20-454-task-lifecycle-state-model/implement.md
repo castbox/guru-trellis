@@ -600,3 +600,20 @@ predecessor数据模型带入target graph。
 - 上述结果只证明当前 finding-fix implementation candidate，不表示 fresh Phase 2、Task Commit、Branch Review、
   Publication、Finalizer 或 Delivery gate 已通过。C5-C7、D443、D436、E434、#434 activation 与完整 Release matrix
   仍未完成。
+
+## C4 Branch Review transaction endpoint finding-fix（2026-09-24）
+
+- `BR454-C4-P1-003`：transaction-bound remote guard 把 distinct intermediate `branch_review_commit` 与
+  `pre_push_remote_head`、`publication_head` 一并视为合法恢复端点；当 remote 由正常外部操作推进到 review commit
+  但尚未到 publication commit 时，现行 preflight 会错误放行后续 publication push。
+- 修复保持 transaction 为唯一 current recovery owner，只允许 transaction 创建时观察到的
+  `pre_push_remote_head` 与 exact `publication_head`。中间 review commit、allowed heads 外 remote、Open PR drift 与
+  transaction identity drift 均继续 fail closed；不增加严格 branch/session 绑定、人工选择 API、force push、第二
+  ledger 或 fallback。
+- 真实 Git regression 使用三个互异 commit，分别表示 historical remote、branch review 与 publication；明确断言
+  historical remote 和 publication endpoint 可恢复，而 intermediate review commit 返回
+  `finalizer_remote_head_drift`。Architecture 已返回 `fitness_regression -> implementation`；修复后必须重建 fresh
+  Phase 2、Task Commit 与完整 Branch Review，当前 Publication 与 Finalizer transaction 不得继续消费。
+- Fresh implementation validation：Finalizer recovery `47/47`、完整 Finalizer package `111/111`、task validator、
+  canonical/dogfood runtime parity 与 `git diff --check` 均通过；Finalizer transaction SHA-256 仍为
+  `af9efa059754058b63c24398856adc4ef65c9c6fa48cf472c731ac94a8b86b3b`，本轮未修改该 transaction。

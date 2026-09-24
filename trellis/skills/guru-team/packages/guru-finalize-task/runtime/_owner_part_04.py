@@ -467,10 +467,7 @@ def finalization_pre_mutation_remote_preflight(
                 "mismatch_fields": identity_mismatches,
             },
         )
-    allowed_heads = {
-        str(transaction["branch_review_commit"]),
-        str(transaction["publication_head"]),
-    }
+    allowed_heads = {str(transaction["publication_head"])}
     if transaction.get("next_transition") == "push_content":
         allowed_heads.add(str(transaction.get("pre_push_remote_head") or ""))
     if remote_head not in allowed_heads:

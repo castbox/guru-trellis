@@ -1167,12 +1167,36 @@ class FinalizeTaskRecoveryTests(unittest.TestCase):
             GTT.run_stdout(["git", "switch", "-qc", branch], cwd=root)
             GTT.run_stdout(["git", "push", "-qu", "origin", branch], cwd=root)
 
-            (root / "history.txt").write_text("generation 2\n", encoding="utf-8")
+            (root / "history.txt").write_text(
+                "generation 2 review\n", encoding="utf-8"
+            )
             GTT.run_stdout(["git", "add", "history.txt"], cwd=root)
-            GTT.run_stdout(["git", "commit", "-qm", "generation 2 publication"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-qm", "generation 2 review"], cwd=root)
+            branch_review_head = GTT.current_head(root)
+            GTT.run_stdout(
+                [
+                    "git",
+                    "push",
+                    "-q",
+                    "origin",
+                    f"{branch_review_head}:refs/tags/review-snapshot",
+                ],
+                cwd=root,
+            )
+
+            (root / "history.txt").write_text(
+                "generation 2 publication\n", encoding="utf-8"
+            )
+            GTT.run_stdout(["git", "add", "history.txt"], cwd=root)
+            GTT.run_stdout(
+                ["git", "commit", "-qm", "generation 2 publication"], cwd=root
+            )
             publication_head = GTT.current_head(root)
             self.assertTrue(
-                GTT.is_ancestor(root, historical_head, publication_head)
+                GTT.is_ancestor(root, historical_head, branch_review_head)
+            )
+            self.assertTrue(
+                GTT.is_ancestor(root, branch_review_head, publication_head)
             )
 
             plan = {
@@ -1183,7 +1207,7 @@ class FinalizeTaskRecoveryTests(unittest.TestCase):
                     "remote": "origin",
                     "head_branch": branch,
                     "base_branch": "main",
-                    "branch_review_commit": publication_head,
+                    "branch_review_commit": branch_review_head,
                     "publication_head": publication_head,
                 },
                 "publish": {"title": "generation 2", "body": "Closes #454"},
@@ -1226,6 +1250,34 @@ class FinalizeTaskRecoveryTests(unittest.TestCase):
             self.assertEqual(state, "prepared")
             self.assertIsNone(recovery)
             terminal_prs.assert_not_called()
+
+            GTT.run_stdout(
+                [
+                    "git",
+                    f"--git-dir={remote}",
+                    "update-ref",
+                    f"refs/heads/{branch}",
+                    branch_review_head,
+                ],
+                cwd=sandbox,
+            )
+            with (
+                mock.patch.object(
+                    GTT, "resolve_closeout_pull_request", return_value=None
+                ),
+                self.assertRaises(GTT.WorkflowError) as raised,
+            ):
+                GTT.finalization_pre_mutation_remote_preflight(
+                    root, plan, transaction
+                )
+            self.assertEqual(
+                raised.exception.payload,
+                {
+                    "reason_code": "finalizer_remote_head_drift",
+                    "remote_head": branch_review_head,
+                    "allowed_heads": sorted([historical_head, publication_head]),
+                },
+            )
 
             GTT.run_stdout(
                 [
