@@ -1,7 +1,7 @@
 # Guru Team Trellis Extension 当前需求
 
 当前 .62 来源：`castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296` / CI `35621578090` / CLI/core `0.6.17`；Guru manifest `0.6.17-guru.42`；repository release target `v0.6.17-guru.1`。Architecture public inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.62` / `active`。
-完整继承 immutable `.61` 业务合同，当前增量为 #454 C4 branch association/establishment/rebind substrate；旧 pin、release mapping、计数及 promotion/evidence 叙述只绑定其明确历史版本。当前 registry 保持 32 packages / 142 exits / 102 commands并增加三个 planned IDs，production workflow 保持 22 mandatory invokes / 98 exits。
+完整继承 immutable `.61` 业务合同，当前增量为 #454 C4 branch association/establishment/rebind substrate 与同范围 bounded Finalizer provenance recovery guard；旧 pin、release mapping、计数及 promotion/evidence 叙述只绑定其明确历史版本。当前 registry 保持 32 packages / 142 exits / 102 commands并增加三个 planned IDs，production workflow 保持 22 mandatory invokes / 98 exits。
 
 `.62` 完整继承 `.61`，吸收 reviewed #454 C4 contribution；RDT 与 Architecture current 均前进到 `.62/active`。本次只提升已验证的 branch association/establishment/rebind delta；promotion-created diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review后才能进入 Publication，C5-C7、D443、D436、E434、Release 与生产验证仍未完成。
 
@@ -589,5 +589,11 @@ release-candidate Release matrix 保持 `unverified`，由专门 Release owner �
 - `R454-C4-08`：target ref 有 unresolved resource incarnation 时禁止复用；成功换绑后 binding 与 current ownership 的 epoch/revision/branch 必须一致。
 - `R454-C4-09`：transaction 捕获 exact control/Git pre-state；失败只恢复 snapshots 与本 transaction 创建的 ref，output-loss recovery 只读重建 exact successor且不重复递增 revision。
 - `R454-C4-10`：`guru-establish-task-branch-binding` 与 `guru-rebind-task-branch` 仅为 planned IDs；E434 前不创建 package、selector、workflow、active graph、installed copy 或平台 projection。
+
+本 C4 source binding 同时承接既有 `REQ-048` 的 Finalizer provenance recovery guard：无 predecessor transaction
+时允许 absent、exact reviewed HEAD 或 strict historical ancestor remote；replacement transaction 固定 exact
+`pre_push_remote_head`，后续 pre-mutation preflight 必须验证同一 remote identity。该映射只补齐 provenance，不
+新增 C4 public API、lifecycle authority 或 activation；执行级证据见 `TST-032` / `SCN-044` 与
+`guru-finalize-task/tests/test_provenance.py`。
 
 C5-C7、D443、D436、E434、#434 activation 与完整 Release matrix 继续保持独立后续边界。

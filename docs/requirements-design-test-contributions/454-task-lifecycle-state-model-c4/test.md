@@ -28,6 +28,11 @@ production activation 或 Release Gate 证明。
   preset focused suite、task validation、`git diff --check` 与 touched non-generated file 3000-line check 只构成
   supporting evidence，不替代以下新增独立语义用例。
 
+本 finding-fix 另以 `TST-032/SCN-044` 的执行级回归承接 Finalizer provenance binding：真实 Git predecessor/reviewed
+graph 覆盖 strict historical ancestor，executor composition 断言 replacement transaction 写入 exact
+`pre_push_remote_head`，后续 pre-mutation preflight 使用同一 remote identity，并确认 push/PR/archive/Issue mutation
+均未发生。该用例不改变 `T454-C4-01..10` 的 scope，也不把 Finalizer 或 promotion-created diff 宣称为完成。
+
 本次 Branch Review finding-fix 的新增独立覆盖固定为：
 
 - association 与 surviving ownership 分别单侧丢失时，各自恢复同一 `binding_epoch`；

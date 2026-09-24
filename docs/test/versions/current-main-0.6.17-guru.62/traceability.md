@@ -1,7 +1,7 @@
 # Test Traceability
 
 当前 .62 来源：immutable predecessor `current-main-0.6.17-guru.61` 与 reviewed #454 C4 contribution；上游固定为 `castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296` / CI `35621578090` / CLI/core `0.6.17`，Guru manifest 与 release target 沿用 predecessor。Architecture public inheritance 为 `docs/architecture/README.md` / `current-main-0.6.17-guru.62` / `active`。
-完整继承 immutable `.61` 业务合同，当前增量为 #454 C4 branch association；本 promotion 只建立 current acceptance authority。
+完整继承 immutable `.61` 业务合同，当前增量为 #454 C4 branch association/establishment/rebind substrate 与同范围 bounded Finalizer provenance recovery guard；本 promotion 只建立 current acceptance authority。
 
 `.62` 完整继承 `.61`，吸收 reviewed #454 C4 contribution；RDT 与 Architecture current 均为 `.62/active`。截至 2026-09-24，提升前 C4 focused acceptance 已建立；promotion-created diff 必须由后续 owner 以 fresh Phase 2、Task Commit 与完整 committed-range Branch Review 独立证明。
 
@@ -344,3 +344,8 @@ D436、E434 与完整 Release matrix 不得从本 trace 推定 PASS。
 来源为 [#454 C4 contribution](../../../requirements-design-test-contributions/454-task-lifecycle-state-model-c4/manifest.yaml)，
 关系为 verifies/accepts。`EVD-037` 记录提升前 exact-range evidence；promotion-created diff、C5-C7、D443、
 D436、E434 与完整 Release matrix 不得从本 trace 推定完成。
+
+For the #454 C4 source binding, `TST-032/SCN-044` additionally records the execution-level composition proof that
+`execute_finalization_transition_result` creates a replacement transaction with the exact `pre_push_remote_head`, the
+next pre-mutation preflight consumes the same remote identity, and no push/PR/archive/Issue mutation occurs. This is a
+trace to existing `REQ-048` / `DES-046`, not a new C4 test authority or a promotion-created Branch Review result.

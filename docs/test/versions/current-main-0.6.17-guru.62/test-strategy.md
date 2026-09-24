@@ -1,7 +1,7 @@
 # 当前测试策略
 
 当前 .62 来源：immutable predecessor `current-main-0.6.17-guru.61` 与 reviewed #454 C4 contribution；上游固定为 `castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296` / CI `35621578090` / CLI/core `0.6.17`，Guru manifest 与 release target 沿用 predecessor。Architecture public inheritance 为 `docs/architecture/README.md` / `current-main-0.6.17-guru.62` / `active`。
-完整继承 immutable `.61` 业务合同，当前增量为 #454 C4 branch association/establishment/rebind substrate；本 promotion 只建立 current acceptance authority，不替代 promotion-created diff 的后续 gates。
+完整继承 immutable `.61` 业务合同，当前增量为 #454 C4 branch association/establishment/rebind substrate 与同范围 bounded Finalizer provenance recovery guard；本 promotion 只建立 current acceptance authority，不替代 promotion-created diff 的后续 gates。
 
 `.62` 完整继承 `.61`，吸收 reviewed #454 C4 contribution；RDT 与 Architecture current 均为 `.62/active`。提升前 exact-range committed candidate、focused tests 与完整 Branch Review 已建立 current acceptance authority。Promotion-created diff 的 fresh Phase 2、Task Commit、完整 Branch Review 和后续门禁仍须独立完成。
 
@@ -497,3 +497,8 @@ P0/P1/P2/P3 为 `0/0/0/0`。
 
 这些状态证明 promotion 输入，不证明 C5-C7、D443、D436、E434、production activation、完整 Release matrix
 或 promotion-created diff 的后续 gates。
+
+Finalizer provenance regression 的 source binding 为 `TST-032/SCN-044`：`test_provenance.py` 通过真实 Git graph
+进入 `execute_finalization_transition_result`，断言 replacement transaction 的 exact `pre_push_remote_head`
+与后续 pre-mutation preflight 使用同一 remote identity，并确认没有远端 mutation。该用例与 C4 focused acceptance
+并列作为 supporting evidence，不把旧 promotion evidence 复用为 current Branch Review。

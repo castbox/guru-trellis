@@ -6,7 +6,7 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.62` | [requirement-main.md](./versions/current-main-0.6.17-guru.62/requirement-main.md) | #454 C4 branch association/establishment/rebind substrate；完整继承 immutable `.61`，Architecture 为 `.62/active` |
+| `active` | `current-main-0.6.17-guru.62` | [requirement-main.md](./versions/current-main-0.6.17-guru.62/requirement-main.md) | #454 C4 branch association/establishment/rebind substrate plus bounded Finalizer provenance recovery guard；完整继承 immutable `.61`，Architecture 为 `.62/active` |
 | `superseded` | `current-main-0.6.17-guru.61` | [requirement-main.md](./versions/current-main-0.6.17-guru.61/requirement-main.md) | #454 C3 checkout acquisition provenance；immutable history |
 | `superseded` | `current-main-0.6.17-guru.60` | [requirement-main.md](./versions/current-main-0.6.17-guru.60/requirement-main.md) | #454 C3 checkout substrate；immutable history |
 | `superseded` | `current-main-0.6.17-guru.59` | [requirement-main.md](./versions/current-main-0.6.17-guru.59/requirement-main.md) | #454 Task Lifecycle State Model C2+D0；immutable history |
@@ -37,7 +37,9 @@
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
 当前框架源码固定为 `castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296`，CI `35621578090`，CLI/core `0.6.17`，package manager `pnpm@10.32.1`；Guru current extension revision 为 `0.6.17-guru.42`，target repository axis 为 `v0.6.17-guru.1`。released `v0.6.16-guru.1` 与 extension `0.6.16-guru.41` 保持 immutable history。
-Docs `.62` 完整继承 immutable `.61` 并只承接 #454 C4 branch association/establishment/rebind substrate；current registry 保持 32 packages / 142 exits / 102 commands并增加三个 planned IDs，`guru-bind-task-session` 保持 `deferred`，production workflow 保持 22 mandatory invokes / 98 exits。#454 C5-C7、D443、D436 与 E434 未完成，#434 独占 production graph activation；Architecture 为 `.62/active`。Promotion-created diff 尚需 fresh Phase 2/commit/完整 Branch Review；focused lifecycle `93/93` 只证明提升前 candidate，preset `85/86` 与完整 Release matrix 均未声明通过。
+Docs `.62` 完整继承 immutable `.61` 并承接 #454 C4 branch association/establishment/rebind substrate 与同范围 bounded Finalizer provenance recovery guard；current registry 保持 32 packages / 142 exits / 102 commands并增加三个 planned IDs，`guru-bind-task-session` 保持 `deferred`，production workflow 保持 22 mandatory invokes / 98 exits。#454 C5-C7、D443、D436 与 E434 未完成，#434 独占 production graph activation；Architecture 为 `.62/active`。Promotion-created diff 尚需 fresh Phase 2/commit/完整 Branch Review；focused lifecycle `93/93` 只证明提升前 candidate，preset `85/86` 与完整 Release matrix 均未声明通过。
+
+`.62` Requirements source binding 还显式承接既有 Finalizer `REQ-048` 的 recovery guard：无 predecessor transaction 时，初始 provenance reprepare 可接受 absent、exact reviewed HEAD 或 strict historical ancestor；ahead、diverged、unknown/unprovable commit 必须在 mutation 前 fail closed。executor 创建的 replacement transaction 保存 exact `pre_push_remote_head`，后续 pre-mutation preflight 必须复核同一 remote identity；该闭合不新增 C4 public requirement owner，也不改变 C5-C7、D443、D436、E434 或 #434 activation 边界。
 
 `R454-C4-01..10 -> D454-C4-01..10 -> T454-C4-01..10`、`R454-C3-01..12 -> D454-C3-01..12 -> T454-C3-01..15` 与继承链见 [current trace](./versions/current-main-0.6.17-guru.62/traceability.md)。实际证明边界由同版本 Test 层维护。
 

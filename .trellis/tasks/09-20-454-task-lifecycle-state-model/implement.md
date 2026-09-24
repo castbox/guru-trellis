@@ -556,3 +556,26 @@ predecessor数据模型带入target graph。
   `38/44`（`6 failures`）；preset suite `272` 项为 `2 errors, 3 skipped`，两项 error 仍是 raw apply installed
   projection conflict 与 parallel-finish fixture 中的同一 conflict。上述失败未命中本次 provenance marker 路径，
   但不得记为 suite 通过；C4-C7、D443、D436、E434 与完整多平台 Release matrix 继续为后续或未验证边界。
+
+## Branch Review finding-fix（2026-09-24）
+
+- `BR454-C4-P2-SSOT-001`：`.62` Architecture、Requirements、Design、Test 入口与 C4 contribution provenance 仍只
+  绑定 C4 branch association/establishment/rebind contribution 加 immutable `.61`，没有显式承接同一 committed
+  range 中新增的 Finalizer strict-ancestor recovery 与 `pre_push_remote_head` transaction authority。该缺口属于
+  正常维护中的 source binding/provenance 不完整，不通过 branch、PR 或路径元数据补偿。
+- `BR454-C4-P2-TXN-002`：当前 Finalizer runtime 已由 application-level replacement transaction 绑定 exact
+  `pre_push_remote_head`，但 regression 只覆盖独立 ancestry preflight，没有覆盖正式
+  `execute_finalization_transition_result` composition、transaction 写入与后续 pre-mutation preflight 的同一
+  remote identity。修复只增加真实 Git graph 的执行级回归，不改变 runtime 机制，不引入锁、并发、fault injection
+  或 OS/process authority。
+- 两个候选均已通过 `guru-qualify-normal-scenario` 与 `guru-qualify-solution-mechanism` 的
+  `branch_review_candidate_set` qualification，结果均为 `qualified_current`；本轮实现完成后必须从 fresh
+  Phase 2、Task Commit 与完整 Branch Review 重新建立 gate，不能复用本轮 `implementation_required` 或此前
+  Architecture/Publication/Finalizer evidence。C5-C7、D443、D436、E434、#434 activation 与 Release matrix
+  仍不在本 slice 内。
+- finding-fix 已补齐 `.62` Architecture/RDT 入口、C4 contribution/manifest 与 current trace 的 Finalizer
+  provenance source binding，并新增正式 `execute_finalization_transition_result` composition 回归。验证结果：
+  Finalizer provenance `22/22`、完整 Finalizer package `110/110`、Python compile、YAML/JSON parse、task validator、
+  touched non-generated file line limit 与 `git diff --check` 通过；validator 继续将不存在的可选
+  `implement.jsonl`、`check.jsonl` 标为 skipped。上述结果只证明本 finding-fix implementation candidate，尚未
+  建立 fresh Phase 2、Task Commit 或完整 Branch Review。

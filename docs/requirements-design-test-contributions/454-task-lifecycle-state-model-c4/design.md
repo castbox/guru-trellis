@@ -34,6 +34,11 @@
 - `D454-C4-10`：registry/extension manifest 只增加两个 planned rows。Package absence 与 installed/platform absence
   通过 source/preset regression 固定，完整 package composition 继续由 E434 交付。
 
+Finalizer provenance binding continues to use the existing `DES-046` owner. Its no-predecessor initial reprepare
+preflight classifies the live remote through real Git ancestry, and `execute_finalization_transition_result` carries the
+exact `pre_push_remote_head` into the replacement transaction before the second pre-mutation preflight. The executor
+does not push, create a PR, archive, mark Ready or mutate the Issue until that identity is revalidated.
+
 本 slice 不新增 ADR。`ADR-015` 已拥有 TaskId/lifecycle 与 framework-extension boundary；C4 只实现该决策下的
 branch substrate。Architecture/RDT owners 已按 reviewed range `origin/main@77fa1a2...c7fab600` 串行执行
 serialized promotion；promotion-created diff 仍须 fresh Phase 2、Task Commit 与完整 Branch Review。

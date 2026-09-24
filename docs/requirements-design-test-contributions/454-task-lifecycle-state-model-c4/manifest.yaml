@@ -31,6 +31,14 @@ architecture_candidate:
 public_contracts:
   rdt_owner: "guru-maintain-requirements-design-test-ssot:promotion"
   architecture_candidate: "guru-maintain-architecture-baseline:2.0"
+  finalizer_owner: "guru-finalize-task"
+provenance_binding:
+  requirement: "REQ-048"
+  design: "DES-046"
+  test: "TST-032"
+  scenario: "SCN-044"
+  transaction_field: "pre_push_remote_head"
+  execution_regression: "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_provenance.py"
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
 architecture_contribution: "docs/architecture/contributions/454-task-lifecycle-state-model-c4.md"

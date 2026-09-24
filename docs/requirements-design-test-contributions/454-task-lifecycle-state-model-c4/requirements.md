@@ -36,6 +36,12 @@ workflow，不交付完整 Skill package，也不重做 C1、C2、D0 或 C3。
 - `R454-C4-10`：`guru-establish-task-branch-binding` 与 `guru-rebind-task-branch` 在 C4 仅作为 planned stable IDs。
   不创建 canonical package tree、active selector、workflow edge、installed copy 或平台 projection；E434 独占激活。
 
+本 contribution 的 provenance binding 还消费既有 Finalizer `REQ-048`：无 predecessor transaction 的首次
+provenance reprepare 接受 absent、exact reviewed HEAD 或 strict historical ancestor remote；ahead、diverged 与
+unknown/unprovable commit 在 mutation 前 fail closed。replacement transaction 必须保留 exact
+`pre_push_remote_head`，随后 pre-mutation preflight 重新读取并校验同一 remote identity；该 guard 不新增 C4
+public DTO、lifecycle ledger 或 activation edge。
+
 C5-C7、D443、D436、E434、#434 activation 与完整 Release matrix 均不属于本 contribution 的完成声明。
 Independent Branch Review 绑定 `origin/main@77fa1a2...c7fab600` 且 P0/P1/P2/P3 为 `0/0/0/0`；owners 已将
 expected `.61` 串行提升到 `.62`。Promotion-created successor diff 必须重新进入 fresh Phase 2、Task Commit 与

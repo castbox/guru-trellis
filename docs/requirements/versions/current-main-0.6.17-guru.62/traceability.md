@@ -355,3 +355,7 @@ Promotion-created diff、C4-C7、D443、D436、E434 与 Release matrix 不得从
 状态为 `reviewed_promoted`；`.61` 是 immutable predecessor，`.62` 是 #454 C4 RDT successor。
 来源为 [#454 C4 contribution](../../../requirements-design-test-contributions/454-task-lifecycle-state-model-c4/manifest.yaml)。
 Promotion-created diff、C5-C7、D443、D436、E434 与 Release matrix 不得从本 trace 推定完成。
+
+该 C4 trace 对 Finalizer provenance 的补充映射为既有 `REQ-048` / `DES-046` / `TST-032` / `SCN-044`：strict-
+ancestor initial reprepare、exact `pre_push_remote_head` replacement binding 与 pre-mutation remote identity
+revalidation。它不创建第二组 C4 requirement/design/test IDs。

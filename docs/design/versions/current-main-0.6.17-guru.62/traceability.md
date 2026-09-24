@@ -320,3 +320,7 @@ Architecture inheritance 为 `.62/active`；`ADR-015`、`ARCH-CUR-039`、`ARCH-D
 `ARCH-GAP-011` 与 `EVD-037` 是 current references。来源为
 [#454 C4 contribution](../../../requirements-design-test-contributions/454-task-lifecycle-state-model-c4/manifest.yaml)，
 状态 `reviewed_promoted`；promotion-created diff 与 remaining phases 不得从本 trace 推定完成。
+
+Finalizer provenance 的设计映射继续归属 `DES-046`，并由既有 `REQ-048` / `TST-032` / `SCN-044` 验证
+strict-ancestor initial reprepare、exact `pre_push_remote_head` transaction binding 与 pre-mutation remote
+identity revalidation；不新增 C4 public design owner。

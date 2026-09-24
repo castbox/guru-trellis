@@ -21,3 +21,8 @@ Architecture source reference：`architecture-contribution-454-task-lifecycle-st
 D436、E434、#434 activation 与完整 Release matrix 继续保持独立后续边界。Architecture/RDT owners 已按
 expected `.61` 串行提升到 `.62`；后续 promotion-created diff 的 fresh Phase 2、Task Commit 与完整 Branch Review
 仍须独立完成。
+
+Finalizer provenance closure is intentionally mapped to existing shared authority rather than a second C4 identity:
+`REQ-048` / `DES-046` / `TST-032` / `SCN-044` cover strict-ancestor initial reprepare, exact
+`pre_push_remote_head` replacement binding and pre-mutation remote revalidation. The execution regression is located at
+`trellis/skills/guru-team/packages/guru-finalize-task/tests/test_provenance.py`; it is evidence for this mapping only.

@@ -5,6 +5,7 @@
 - contribution identity: `architecture-contribution-454-task-lifecycle-state-model-c4-v1`.
 - lifecycle state: `reviewed_promoted`.
 - source authority: live Issue #454 and active generation 2 task planning.
+- provenance extension: bounded Finalizer initial-publication recovery guard in the same C4 change scope, mapped to existing `REQ-048` / `DES-046` / `TST-032` authority.
 - task locator: `.trellis/tasks/09-20-454-task-lifecycle-state-model`.
 - related RDT contribution: `docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c4/`.
 - predecessor baseline: `current-main-0.6.17-guru.61` / `active`.
@@ -19,7 +20,8 @@ Independent complete Branch Review reported P0/P1/P2/P3 `0/0/0/0`. At admission,
 `6ab9dde1385c03f406ef3663e61dd010533462b7`; it was closed by
 `c7fab600e6e29385c23c276ac2b1828d0465fd77`. Post-fix qualification against the current supported path returned
 normal-scenario `classified / rejected_not_reproduced` and solution-mechanism `classified / qualified_current`. This
-promotion covers only C4 branch association, establishment and rebind substrate. It does not claim production
+promotion covers the C4 branch association, establishment and rebind substrate plus the bounded Finalizer provenance
+recovery guard described below. It does not claim production
 activation, complete package delivery, promotion-created Branch Review, Publication or Release proof.
 
 ## Boundary And Decision
@@ -46,6 +48,14 @@ Candidate labels are call-local selection/display identities, not freshness toke
 `refs/heads/guru-task-lifecycle/*` machine-handoff control refs. Every mutation and lost-output recovery binds a reviewed
 expected HEAD and fresh rereads that HEAD together with task artifact, epoch, revision, branch and ownership; branch name,
 candidate label or candidate ordering cannot substitute for that freshness check.
+
+The same C4 provenance boundary includes the Finalizer's initial publication recovery guard. When no predecessor
+transaction exists, a remote branch at absent, exact reviewed HEAD or a strict historical ancestor is a valid
+pre-mutation baseline; ahead, diverged and unknown/unprovable commits remain fail-closed. The executor creates one
+replacement transaction carrying the exact `pre_push_remote_head`, and the subsequent pre-mutation preflight must
+re-read and accept that same remote identity before push, PR, archive or Ready mutation. This is a bounded recovery
+composition on the existing Finalizer authority, not a second lifecycle ledger or a claim that Finalizer delivery is
+complete.
 
 ## Ownership And Compatibility
 
@@ -83,6 +93,13 @@ absent/skipped. The real generation 2 common-dir binding remains absent, so the 
 state. The pre-finding-fix preset suite was `85/86`: raw apply reported the expected pre-E434 installed task-lifecycle
 README/schema/registry sidecars. That broader suite was not passing, was not rerun as part of this narrow finding-fix, and
 C4 does not synchronize installed or platform projections.
+
+The provenance recovery regression is an execution-level composition test in
+`trellis/skills/guru-team/packages/guru-finalize-task/tests/test_provenance.py`: it builds a real predecessor/reviewed
+Git graph, asserts replacement transaction creation with exact `pre_push_remote_head`, re-runs the pre-mutation
+preflight against that transaction, and verifies the remote branch remains unchanged. It is supporting evidence for the
+existing Finalizer `REQ-048` / `DES-046` / `TST-032` contract and does not replace fresh Phase 2 or Branch Review for the
+promotion-created diff.
 
 No new ADR is required because `ADR-015` already owns lifecycle identity and the framework/extension boundary. C5-C7,
 D443, D436, E434, #434 production graph activation and the complete multi-platform Release matrix remain pending or

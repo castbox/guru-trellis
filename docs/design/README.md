@@ -2,6 +2,8 @@
 
 唯一 current Design authority：[`versions/current-main-0.6.17-guru.62/design-main.md`](./versions/current-main-0.6.17-guru.62/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；#454 C4 branch association/establishment/rebind substrate 与 registry（32 packages / 142 exits / 102 commands + 3 planned IDs）见 [`capability-inventory.md`](./versions/current-main-0.6.17-guru.62/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。production workflow 保持 22 mandatory invokes / 98 exits。Architecture 为 `.62` / `active`；`.61` 及更早版本保持 immutable。
 
+`.62` Design source binding 同时承接 C4 范围内的 Finalizer provenance recovery guard：初始 reprepare 在无 predecessor transaction 时按真实 Git ancestry 接受 strict historical ancestor，并由 application-level replacement transaction 保存 exact `pre_push_remote_head`；后续 pre-mutation preflight 必须复用该 remote identity。该段只闭合 `REQ-048` / `TST-032` 的设计映射，不把 C4 变成 Finalizer、C5-C7 或 production activation。
+
 Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Architecture。普通 task 通过 RDT `task_impact_sync` / contribution / `promotion` 更新 current。
 
 | 状态 | 版本 | Locator |

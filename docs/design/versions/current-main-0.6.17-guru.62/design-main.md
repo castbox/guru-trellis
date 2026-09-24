@@ -1,7 +1,7 @@
 # Guru Team Trellis Extension 当前设计
 
 当前 .62 来源：`castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296` / CI `35621578090` / CLI/core `0.6.17`；Guru manifest `0.6.17-guru.42`；repository release target `v0.6.17-guru.1`。Architecture public inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.62` / `active`。
-完整继承 immutable `.61` 业务合同，当前增量为 #454 C4 branch association/establishment/rebind substrate；当前 registry 保持 32 packages / 142 exits / 102 commands并增加三个 planned IDs，production workflow 保持 22 mandatory invokes / 98 exits。
+完整继承 immutable `.61` 业务合同，当前增量为 #454 C4 branch association/establishment/rebind substrate 与同范围 bounded Finalizer provenance recovery guard；当前 registry 保持 32 packages / 142 exits / 102 commands并增加三个 planned IDs，production workflow 保持 22 mandatory invokes / 98 exits。
 
 `.62` 完整继承 `.61`，吸收 reviewed #454 C4 contribution；RDT 与 Architecture current 均为 `.62/active`。本次只提升已验证的 branch association/establishment/rebind delta；promotion-created diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review 后才能进入 Publication。
 
@@ -598,6 +598,11 @@ D436、E434 与 production activation 保持后续 owner。
 - `D454-C4-08`：output-loss recovery只读验证 exact successor、live checkout/artifact、epoch、expected HEAD、cleanliness与ancestry，不调用 mutation owner或增加revision。
 - `D454-C4-09`：durable binding schema与两条 closed rebind checkpoint route分别建模；checkpoint是owner-private短生命周期activation input，不是public DTO或第二authority。
 - `D454-C4-10`：registry/extension manifest只增加两个planned rows。Package absence、active graph absence与installed/platform absence由回归固定，完整package composition继续由E434交付。
+
+`.62` C4 design source binding 还明确复用 `DES-046` 的 Finalizer recovery owner：无 predecessor transaction
+时按真实 Git ancestry 接受 strict historical ancestor remote；executor 创建 replacement transaction 时保存 exact
+`pre_push_remote_head`，随后的 pre-mutation preflight 必须重新读取并匹配该值。该组合不产生第二 ledger、public
+DTO 或 production activation edge；执行级验证由 `TST-032/SCN-044` 承接。
 
 本 slice 不新增 ADR；`ADR-015` 继续拥有 lifecycle identity 与 framework-extension boundary。C5-C7、D443、
 D436、E434 与 production activation 保持后续 owner。

@@ -1,7 +1,7 @@
 # 当前测试计划与证据
 
 当前 .62 来源：immutable predecessor `current-main-0.6.17-guru.61` 与 reviewed #454 C4 contribution；上游固定为 `castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296` / CI `35621578090` / CLI/core `0.6.17`，Guru manifest 与 release target 沿用 predecessor。Architecture public inheritance 为 `docs/architecture/README.md` / `current-main-0.6.17-guru.62` / `active`。
-完整继承 immutable `.61` 业务合同，当前增量为 #454 C4 branch association/establishment/rebind substrate；本 promotion 只建立 current acceptance authority。
+完整继承 immutable `.61` 业务合同，当前增量为 #454 C4 branch association/establishment/rebind substrate 与同范围 bounded Finalizer provenance recovery guard；本 promotion 只建立 current acceptance authority。
 
 `.62` 完整继承 `.61`，吸收 reviewed #454 C4 contribution；RDT 与 Architecture current 均为 `.62/active`。截至 2026-09-24，提升前 `T454-C4-01..10` 的 focused acceptance 已建立；这些结果不替代 promotion-created diff 的 fresh Phase 2、Task Commit 与完整 Branch Review，Publication 必须消费后续 exact-range gate 结果。
 
@@ -432,3 +432,9 @@ Preset Python suite 的既有结果为 `85/86`，唯一错误来自 E434 前刻�
 README/schema/registry sidecars；该 broader suite 未在 narrow finding-fix 中重跑，未声明为通过。`.62`
 promotion diff 完成后必须 fresh 执行 Architecture/RDT task-impact、Phase 2、Task Commit 与完整 committed-range
 Branch Review。C5-C7、D443、D436、E434、完整 Release matrix 与生产 mutation 保持未验证。
+
+本 promotion 的 Finalizer provenance source binding 还必须消费 `TST-032/SCN-044`：新增执行级 fixture 证明真实
+Git predecessor/reviewed graph 下 strict historical ancestor 可继续，replacement transaction 保存 exact
+`pre_push_remote_head`，后续 pre-mutation preflight 使用同一 remote identity，且 push/PR/archive/Issue mutation
+保持为零。该 evidence 只闭合现有 Finalizer authority，不替代 promotion-created diff 的 fresh Phase 2、Task
+Commit 或完整 Branch Review。
