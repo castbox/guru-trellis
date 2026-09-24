@@ -1,0 +1,284 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-task-resource-ledger-1.0",
+  "title": "Guru Team task resource ownership ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "lifecycle_generation",
+    "ledger_revision",
+    "resources"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "task_id": {"$ref": "#/$defs/taskId"},
+    "lifecycle_generation": {"type": "integer", "minimum": 0},
+    "ledger_revision": {"type": "integer", "minimum": 0},
+    "resources": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/resource"}
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "resources": {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "responsibility_role": {
+                  "enum": ["current_worktree", "current_delivery"]
+                }
+              },
+              "required": ["responsibility_role"]
+            }
+          }
+        },
+        "required": ["resources"]
+      },
+      "then": {
+        "properties": {
+          "resources": {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "responsibility_role": {"const": "current_branch"}
+              },
+              "required": ["responsibility_role"]
+            },
+            "minContains": 1,
+            "maxContains": 1
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "taskId": {
+      "type": "string",
+      "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "repositoryRef": {
+      "type": "string",
+      "pattern": "^(?![^/]+/[^/]+\\.git$)[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "branchRef": {
+      "type": "string",
+      "pattern": "^refs/heads/(?!-)(?!HEAD$)(?!/)(?!guru-task-lifecycle(?:/|$))(?!.*(?:^|/)\\.)(?!.*(?:^|/)[^/]*\\.lock(?:/|$))(?!.*\\.\\.)(?!.*@\\{)(?!.*[ ~^:?*\\[\\]\\\\])(?!.*[./]$)[^/]+(?:/[^/]+)*$"
+    },
+    "retainedControlRef": {
+      "type": "string",
+      "pattern": "^refs/heads/(?=guru-task-lifecycle(?:/|$))(?!-)(?!HEAD$)(?!/)(?!.*[\\u0000-\\u0020\\u007F])(?!.*(?:^|/)\\.)(?!.*(?:^|/)[^/]*\\.lock(?:/|$))(?!.*\\.\\.)(?!.*@\\{)(?!.*[ ~^:?*\\[\\]\\\\])(?!.*[./]$)[^/]+(?:/[^/]+)*$"
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "localBranchRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref"],
+      "properties": {
+        "kind": {"const": "local_branch"},
+        "ref": {
+          "oneOf": [
+            {"$ref": "#/$defs/branchRef"},
+            {"$ref": "#/$defs/retainedControlRef"}
+          ]
+        }
+      }
+    },
+    "linkedWorktreeRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "branch_ref"],
+      "properties": {
+        "kind": {"const": "linked_worktree"},
+        "branch_ref": {"$ref": "#/$defs/branchRef"}
+      }
+    },
+    "remoteBranchRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "repository_ref", "ref"],
+      "properties": {
+        "kind": {"const": "remote_branch"},
+        "repository_ref": {"$ref": "#/$defs/repositoryRef"},
+        "ref": {
+          "oneOf": [
+            {"$ref": "#/$defs/branchRef"},
+            {"$ref": "#/$defs/retainedControlRef"}
+          ]
+        }
+      }
+    },
+    "ordinaryPortableRef": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "ref"],
+          "properties": {
+            "kind": {"const": "local_branch"},
+            "ref": {"$ref": "#/$defs/branchRef"}
+          }
+        },
+        {"$ref": "#/$defs/linkedWorktreeRef"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "repository_ref", "ref"],
+          "properties": {
+            "kind": {"const": "remote_branch"},
+            "repository_ref": {"$ref": "#/$defs/repositoryRef"},
+            "ref": {"$ref": "#/$defs/branchRef"}
+          }
+        }
+      ]
+    },
+    "retainedControlPortableRef": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "ref"],
+          "properties": {
+            "kind": {"const": "local_branch"},
+            "ref": {"$ref": "#/$defs/retainedControlRef"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "repository_ref", "ref"],
+          "properties": {
+            "kind": {"const": "remote_branch"},
+            "repository_ref": {"$ref": "#/$defs/repositoryRef"},
+            "ref": {"$ref": "#/$defs/retainedControlRef"}
+          }
+        }
+      ]
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resource_id",
+        "kind",
+        "acquisition_origin",
+        "ownership",
+        "portable_ref",
+        "binding_epoch",
+        "binding_revision",
+        "state",
+        "responsibility_role",
+        "expected_cleanup_head"
+      ],
+      "properties": {
+        "resource_id": {"$ref": "#/$defs/identifier"},
+        "kind": {"enum": ["local_branch", "linked_worktree", "remote_branch"]},
+        "acquisition_origin": {
+          "enum": [
+            "caller_preexisting",
+            "guru_created",
+            "conservative_recovery",
+            "publication",
+            "retained_control"
+          ]
+        },
+        "ownership": {"enum": ["guru_owned", "caller_owned"]},
+        "portable_ref": {
+          "oneOf": [
+            {"$ref": "#/$defs/localBranchRef"},
+            {"$ref": "#/$defs/linkedWorktreeRef"},
+            {"$ref": "#/$defs/remoteBranchRef"}
+          ]
+        },
+        "binding_epoch": {"type": "integer", "minimum": 0},
+        "binding_revision": {"type": "integer", "minimum": 0},
+        "state": {"enum": ["current", "cleanup_pending", "retained", "resolved"]},
+        "responsibility_role": {
+          "enum": [
+            "current_branch",
+            "current_worktree",
+            "current_delivery",
+            "retired_cleanup",
+            "manual_only",
+            "retained_control",
+            "superseded"
+          ]
+        },
+        "expected_cleanup_head": {
+          "oneOf": [
+            {"$ref": "#/$defs/commit"},
+            {"type": "null"}
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "local_branch"}}, "required": ["kind"]},
+          "then": {"properties": {"portable_ref": {"$ref": "#/$defs/localBranchRef"}}}
+        },
+        {
+          "if": {"properties": {"kind": {"const": "linked_worktree"}}, "required": ["kind"]},
+          "then": {"properties": {"portable_ref": {"$ref": "#/$defs/linkedWorktreeRef"}}}
+        },
+        {
+          "if": {"properties": {"kind": {"const": "remote_branch"}}, "required": ["kind"]},
+          "then": {"properties": {"portable_ref": {"$ref": "#/$defs/remoteBranchRef"}}}
+        },
+        {
+          "if": {
+            "properties": {"responsibility_role": {"const": "retained_control"}},
+            "required": ["responsibility_role"]
+          },
+          "then": {
+            "properties": {
+              "acquisition_origin": {"const": "retained_control"},
+              "ownership": {"const": "caller_owned"},
+              "state": {"const": "retained"},
+              "portable_ref": {"$ref": "#/$defs/retainedControlPortableRef"}
+            }
+          },
+          "else": {
+            "properties": {
+              "portable_ref": {"$ref": "#/$defs/ordinaryPortableRef"}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"responsibility_role": {"const": "current_branch"}}},
+          "then": {"properties": {"kind": {"const": "local_branch"}, "state": {"const": "current"}}}
+        },
+        {
+          "if": {"properties": {"responsibility_role": {"const": "current_worktree"}}},
+          "then": {"properties": {"kind": {"const": "linked_worktree"}, "state": {"const": "current"}}}
+        },
+        {
+          "if": {"properties": {"responsibility_role": {"const": "current_delivery"}}},
+          "then": {"properties": {"kind": {"const": "remote_branch"}, "state": {"const": "current"}}}
+        },
+        {
+          "if": {"properties": {"responsibility_role": {"const": "retired_cleanup"}}},
+          "then": {"properties": {"ownership": {"const": "guru_owned"}, "state": {"const": "cleanup_pending"}}}
+        },
+        {
+          "if": {"properties": {"responsibility_role": {"const": "manual_only"}}},
+          "then": {"properties": {"ownership": {"const": "caller_owned"}, "state": {"const": "retained"}}}
+        },
+        {
+          "if": {"properties": {"responsibility_role": {"const": "superseded"}}},
+          "then": {"properties": {"state": {"const": "resolved"}}}
+        }
+      ]
+    }
+  }
+}

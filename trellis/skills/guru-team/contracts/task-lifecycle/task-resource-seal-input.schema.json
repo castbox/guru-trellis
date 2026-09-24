@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-task-resource-seal-input-1.0",
+  "title": "Guru Team Finish resource seal input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "lifecycle_generation",
+    "finish_result_id",
+    "ledger_revision",
+    "inventory_id"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "task_id": {"$ref": "#/$defs/taskId"},
+    "lifecycle_generation": {"type": "integer", "minimum": 0},
+    "finish_result_id": {"$ref": "#/$defs/identifier"},
+    "ledger_revision": {"type": "integer", "minimum": 0},
+    "inventory_id": {"$ref": "#/$defs/identifier"}
+  },
+  "$defs": {
+    "taskId": {
+      "type": "string",
+      "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    }
+  }
+}

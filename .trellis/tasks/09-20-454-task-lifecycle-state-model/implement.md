@@ -343,6 +343,28 @@ Exit：`control_stores_ready`。
 Recovery：session write失败不回滚已成立lifecycle；ledger mutation失败由同一transaction恢复。无法证明的历史ownership
 不补写为Guru-owned。
 
+#### C5 generation 3 implementation candidate（2026-09-24）
+
+- 继续复用同一 `454-task-lifecycle-state-model` identity、
+  `codex/454-task-lifecycle-state-model-c3-c7` branch 与现有 worktree；Reactivate generation 3 的 archive 删除和
+  active task move 保持原样，不创建第二个 Issue、task、branch 或 worktree。
+- C5 采用宽松且最小充分绑定：official schema-2 session record 只承载 `task_id + lifecycle_generation`；缺少
+  context key 时返回 `explicit_task_mode`，零个或多个 discovery candidate 进入人工选择，显式 target 继续使用同一
+  live validation contract。严格校验只约束已建立 authority 的 DTO、epoch、revision、branch 与 resource incarnation
+  一致性，不把自动发现失败解释为 lifecycle 终止。
+- Guru 只增加 official session primitive 的薄 adapter/consumer validation 与 common-dir resource ledger；不复制
+  `.trellis/scripts/common/**`，不创建第二 session store、legacy mapping reader、alias、dual-read 或 dual-write。
+- ownership 无法证明时固定为 caller-owned。active ledger missing 可在 current binding/live resources 验证后保守恢复；
+  terminal ledger missing 不补写历史 ownership，进入 manual cleanup selection。普通 Cleanup 只投影
+  `guru_owned + cleanup_pending`，retained `refs/heads/guru-task-lifecycle/*` control refs 永不进入普通 cleanup set。
+- `guru-establish-task-identity` 只增加 `state=planned` metadata；本 slice 不创建其 package/interface/command/route，
+  不修改 active selector、production workflow、installed/platform projection、D443、D436、E434 或 #434 activation。
+- Task-isolated Architecture/RDT contribution 位于
+  `docs/architecture/contributions/454-task-lifecycle-state-model-c5.md` 与
+  `docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/`。当前状态为
+  `contribution_candidate`；focused implementation、Phase 2 Architecture/RDT owner、serialized promotion、Task Commit、
+  independent full Branch Review、Publication、Finalizer 与 Delivery 均尚未宣称通过。
+
 ### C6 Task creation substrate 与 activation inputs
 
 Planned target Skill IDs：
@@ -644,3 +666,49 @@ predecessor数据模型带入target graph。
   `conflict`，未被清除、覆盖或误报为通过；该边界与此前 preset `85/86` 一致。本段不表示 Phase 2、Task Commit、
   Branch Review、Publication、Finalizer 或 Delivery 已通过。C5-C7、D443、D436、E434、#434 activation 与完整
   Release matrix 状态不变。
+
+## C5 implementation review finding-fix（2026-09-24）
+
+- `C5-P1-SESSION-001`：session adapter 原实现先写 official record，再 fresh resolve `TaskId + generation`；stale
+  target 会返回 `session_invalid` 但留下无效 binding。修复改为 mutation 前先走 official resolver，只有 exact current
+  lifecycle 可写；write 后仍重新读取 exact schema-2 record。该顺序不增加 branch/path/Issue selector，context key
+  缺失仍进入 `explicit_task_mode`。
+- `C5-P1-RECOVERY-002`：新增 transaction schema没有runtime producer/consumer，active-missing 与remote-delivery
+  mutation 在成功后丢失 output 时也无法只读恢复。修复删除 speculative checkpoint schema，并让两个操作只在现有
+  ledger 等于 exact expected successor 时 rematerialize 原结果；任何 revision、ownership、ref 或 cleanup-head mismatch
+  继续返回 conflict，不重复 ownership mutation。
+- `C5-P2-PARITY-003`：Cleanup runtime DTO 与 resource ledger schema 未完整承接 role/state/ownership/ref 不变量。
+  修复增加 runtime closed validation，并使 ledger schema拒绝非retained role使用control ref、role/state/ownership
+  不一致等组合。严格性只作用于已建立 authority，不改变 unique candidate自动选择、zero/multiple人工选择和explicit
+  target同validator路径。
+- 本轮仍只修改 C5 substrate、candidate contribution 与 task-local实施记录；shared current `.62`、production workflow、
+  installed/platform projection、D443、D436、E434 与 #434 activation 均未修改。修复后必须重新运行 focused runtime、
+  schema、compile、task validator、line limit 与 `git diff --check`，再进入 fresh Architecture/Phase 2。
+
+### C5 独立 checker finding closure（2026-09-24）
+
+- `C5-P1-REMOTE-004`：checker 建议用 pre-mutation ledger revision/snapshot identity 约束 remote-delivery
+  output-loss recovery。该建议会把局部幂等读取升级为严格 transaction protocol，与 #454 的宽松最小充分绑定原则及
+  不新增第二 transaction store 的边界冲突。实际 closure 明确区分：active-missing 仍要求 exact whole-ledger
+  successor；remote-delivery 只要求 exact current resource incarnation 仍绑定同一 branch/epoch/revision。无关合法
+  retained-control mutation 不使该结果失效，也不触发 ledger rewrite。
+- `C5-P1-BRANCH-005`：ledger 原先只校验 current worktree 与 current branch 的 ref 一致，current delivery 仅校验
+  epoch/revision。修复使 current delivery 同样必须绑定 current branch 的完整 ref；不一致在构造 successor、读取或恢复
+  时均返回 conflict。该约束只作用于已建立 resource authority，不参与 task discovery 或 selector。
+- `C5-P2-PARITY-006`：runtime 仅按 reserved prefix 识别 retained-control ref，而 schema 另有 suffix domain。修复让
+  runtime 与 schema 共同要求合法 Git branch ref 并保留 `guru-task-lifecycle` reserved namespace，非法空格等 suffix
+  在两侧均被拒绝。
+- 新增 focused coverage 验证 mismatched delivery branch rejection、非法 retained-control ref runtime/schema parity，
+  以及无关 retained-control mutation 后 exact current delivery 仍可只读 rematerialize。本 closure 不新增 selector、
+  transaction token、checkpoint schema、branch/session/path 严格绑定或 ownership 推断。
+
+### C5 第二轮独立 checker finding closure（2026-09-24）
+
+- `C5-P1-CURRENT-007`：runtime/schema 原先允许只有 `current_worktree` 或 `current_delivery`、没有
+  `current_branch` 的孤立 ledger。修复要求任一 current attached resource 都必须存在唯一 current branch，再执行
+  epoch/revision/ref alignment；该不变量只验证已建立 ledger，不参与 candidate discovery、task selection 或人工绑定。
+- `C5-P2-REF-008`：retained-control ref 的 runtime/schema 正则虽已同构，但共同遗漏 ASCII control/space domain。
+  修复在两侧拒绝 `0x00-0x20` 与 `0x7f`，并增加 tab、newline、NUL、DEL parity 负例；合法 reserved control ref
+  继续可用于 handoff/receipt responsibility。
+- reviewer 同时确认 `C5-P1-REMOTE-004` 的最小充分 closure 成立：无关合法 ledger mutation 后，相同 current
+  remote incarnation 仍只读 rematerialize，未新增 ledger-wide expected revision、transaction token 或第二 store。
