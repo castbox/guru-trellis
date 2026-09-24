@@ -1360,6 +1360,16 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
             ),
             mock.patch.object(
                 GTT,
+                "provenance_tail_transaction_rebind_base_evolution_tail_parent",
+                return_value=None,
+            ),
+            mock.patch.object(
+                GTT,
+                "provenance_tail_transaction_reprepare_is_fresh_reviewed_descendant",
+                return_value=False,
+            ),
+            mock.patch.object(
+                GTT,
                 "resolve_closeout_pull_request",
                 return_value={
                     "number": 337,
@@ -1453,7 +1463,7 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
         self.assertEqual(actual, recovery)
         classify_existing.assert_called_once()
 
-    def test_ordinary_provenance_tail_reprepare_preflight_requires_old_remote_head(self) -> None:
+    def test_ordinary_provenance_tail_reprepare_preflight_accepts_owned_remote_heads(self) -> None:
         plan = {
             "task": {"active_locator": ".trellis/tasks/353"},
             "git": {
@@ -1477,6 +1487,7 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
             "branch": "fix/353",
             "branch_review_commit": "a" * 40,
             "publication_head": "a" * 40,
+            "pre_push_remote_head": "d" * 40,
         }
         with (
             mock.patch.object(GTT, "repo_relative", return_value=".trellis/tasks/353"),
@@ -1494,7 +1505,7 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
             mock.patch.object(
                 GTT,
                 "closeout_remote_branch_head",
-                side_effect=["a" * 40, "c" * 40],
+                side_effect=["d" * 40, "a" * 40, "c" * 40],
             ),
             mock.patch.object(GTT, "current_head", return_value="b" * 40),
         ):
@@ -1505,8 +1516,17 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
                 plan,
             )
             self.assertEqual(facts["reviewed_content_head"], "a" * 40)
-            self.assertEqual(facts["remote_head"], "a" * 40)
+            self.assertEqual(facts["remote_head"], "d" * 40)
             self.assertIsNone(facts["base_evolution"])
+            publication_facts = (
+                GTT.finalizer_current_transaction_provenance_reprepare_preflight(
+                    Path("/repo"),
+                    Path("/repo/.trellis/tasks/353"),
+                    transaction,
+                    plan,
+                )
+            )
+            self.assertEqual(publication_facts["remote_head"], "a" * 40)
             with self.assertRaises(GTT.WorkflowError) as raised:
                 GTT.finalizer_current_transaction_provenance_reprepare_preflight(
                     Path("/repo"),
@@ -1518,6 +1538,180 @@ class FinalizeTaskProvenanceTests(unittest.TestCase):
             raised.exception.payload["reason_code"],
             "provenance_reprepare_remote_not_reviewed_head",
         )
+        self.assertEqual(
+            raised.exception.payload["allowed_heads"],
+            ["a" * 40, "d" * 40],
+        )
+
+    def test_fresh_reviewed_descendant_reprepare_reuses_unbound_transaction(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for command in (
+                ["git", "init", "-q", "-b", "main"],
+                ["git", "config", "user.name", "Guru Test"],
+                ["git", "config", "user.email", "guru@example.invalid"],
+            ):
+                GTT.run_stdout(command, cwd=root)
+
+            manifest_path = root / GTT.PROVENANCE_TAIL_MANIFEST_PATH
+            manifest_path.parent.mkdir(parents=True)
+            manifest_path.write_text(
+                json.dumps(
+                    provenance_manifest(
+                        "castbox/guru-trellis",
+                        "c" * 40,
+                        tree_state="dirty",
+                        is_mutable_ref=True,
+                    ),
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (root / "history.txt").write_text("historical\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "."], cwd=root)
+            GTT.run_stdout(["git", "commit", "-qm", "historical remote"], cwd=root)
+            historical_head = GTT.current_head(root)
+            GTT.run_stdout(["git", "switch", "-qc", "fix/454"], cwd=root)
+
+            (root / "history.txt").write_text("old reviewed\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "history.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-qm", "old reviewed"], cwd=root)
+            old_reviewed = GTT.current_head(root)
+
+            before = json.loads(manifest_path.read_text(encoding="utf-8"))
+            after = GTT.provenance_tail_manifest_postimage(
+                before,
+                {
+                    "source_locator": "https://github.com/castbox/guru-trellis.git",
+                    "source_ref": old_reviewed,
+                    "source_commit": old_reviewed,
+                },
+            )
+            manifest_path.write_text(
+                json.dumps(after, indent=2) + "\n", encoding="utf-8"
+            )
+            GTT.run_stdout(["git", "add", str(manifest_path)], cwd=root)
+            GTT.run_stdout(["git", "commit", "-qm", "old publication"], cwd=root)
+            old_publication = GTT.current_head(root)
+
+            for index in (1, 2):
+                (root / "history.txt").write_text(
+                    f"fresh reviewed {index}\n", encoding="utf-8"
+                )
+                GTT.run_stdout(["git", "add", "history.txt"], cwd=root)
+                GTT.run_stdout(
+                    ["git", "commit", "-qm", f"fresh reviewed {index}"], cwd=root
+                )
+            current_reviewed = GTT.current_head(root)
+            task_dir = root / ".trellis/tasks/454"
+            task_dir.mkdir(parents=True)
+
+            plan = {
+                "plan_digest": "d" * 64,
+                "task": {
+                    "active_locator": ".trellis/tasks/454",
+                    "archive_locator": ".trellis/tasks/archive/2026-09/454",
+                },
+                "git": {
+                    "repo": "castbox/guru-trellis",
+                    "remote": "origin",
+                    "head_branch": "fix/454",
+                    "base_branch": "main",
+                    "branch_review_commit": current_reviewed,
+                    "reviewed_content_head": current_reviewed,
+                    "publication_head": current_reviewed,
+                },
+                "publish": {"title": "fresh", "body": "Refs #454"},
+            }
+            predecessor_plan = copy.deepcopy(plan)
+            predecessor_plan["plan_digest"] = "e" * 64
+            predecessor_plan["git"]["branch_review_commit"] = old_reviewed
+            predecessor_plan["git"]["reviewed_content_head"] = old_reviewed
+            predecessor_plan["git"]["publication_head"] = old_publication
+            predecessor_plan["publish"] = copy.deepcopy(plan["publish"])
+            transaction = GTT.finalization_transaction_from_plan(
+                predecessor_plan,
+                next_transition="push_content",
+                pre_push_remote_head=historical_head,
+            )
+
+            errors = GTT.provenance_tail_transaction_rebind_errors(
+                root, plan, transaction
+            )
+            self.assertNotIn("publication", errors)
+
+            self.assertTrue(
+                GTT.provenance_tail_transaction_reprepare_is_fresh_reviewed_descendant(
+                    root, plan, transaction
+                )
+            )
+            self.assertTrue(
+                GTT.provenance_tail_transaction_reprepare_eligible(
+                    root, plan, transaction
+                )
+            )
+            with (
+                mock.patch.object(
+                    GTT, "resolve_closeout_pull_request", return_value=None
+                ),
+                mock.patch.object(
+                    GTT, "resolve_closeout_terminal_pull_requests"
+                ) as terminal_prs,
+            ):
+                self.assertIsNone(
+                    GTT.classify_provenance_tail_transaction_rebind(
+                        root, plan, transaction
+                    )
+            )
+            terminal_prs.assert_not_called()
+
+            for owned_remote_head in (historical_head, old_publication):
+                with mock.patch.object(
+                    GTT,
+                    "closeout_remote_branch_head",
+                    return_value=owned_remote_head,
+                ):
+                    facts = (
+                        GTT.finalizer_current_transaction_provenance_reprepare_preflight(
+                            root, task_dir, transaction, plan
+                        )
+                    )
+                self.assertEqual(facts["reviewed_content_head"], current_reviewed)
+                self.assertEqual(facts["remote_head"], owned_remote_head)
+
+            with (
+                mock.patch.object(
+                    GTT,
+                    "resolve_closeout_pull_request",
+                    return_value={
+                        "number": 454,
+                        "url": "https://github.com/castbox/guru-trellis/pull/454",
+                    },
+                ),
+                self.assertRaises(GTT.WorkflowError) as open_pr,
+            ):
+                GTT.classify_provenance_tail_transaction_rebind(
+                    root, plan, transaction
+                )
+            self.assertEqual(
+                open_pr.exception.payload["reason_code"],
+                "provenance_reprepare_pull_request_exists",
+            )
+
+            with (
+                mock.patch.object(
+                    GTT, "closeout_remote_branch_head", return_value=old_reviewed
+                ),
+                self.assertRaises(GTT.WorkflowError) as intermediate_remote,
+            ):
+                GTT.finalizer_current_transaction_provenance_reprepare_preflight(
+                    root, task_dir, transaction, plan
+                )
+            self.assertEqual(
+                intermediate_remote.exception.payload["reason_code"],
+                "provenance_reprepare_remote_not_reviewed_head",
+            )
 
     def test_base_evolution_provenance_tail_rejects_invalid_real_topologies(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

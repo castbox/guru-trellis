@@ -1739,16 +1739,16 @@ class FinalizeTaskRecoveryTests(unittest.TestCase):
 
             GTT.run_stdout(["git", "branch", "-f", "main", base_before], cwd=root)
             with mock.patch.object(
-                GTT, "resolve_closeout_pull_request"
+                GTT, "resolve_closeout_pull_request", return_value=pr
             ) as resolve_pr, self.assertRaises(GTT.WorkflowError) as raised:
                 GTT.classify_provenance_tail_transaction_rebind(
                     root, plan, transaction
                 )
             self.assertEqual(
                 raised.exception.payload["reason_code"],
-                "provenance_tail_transaction_rebind_invalid",
+                "provenance_reprepare_pull_request_exists",
             )
-            resolve_pr.assert_not_called()
+            resolve_pr.assert_called_once()
 
             GTT.run_stdout(
                 ["git", "branch", "-f", "main", selected_base_head], cwd=root
@@ -2478,6 +2478,39 @@ class FinalizeTaskRecoveryTests(unittest.TestCase):
         self.assertEqual(replacement["adopted_pr"], previous["adopted_pr"])
         self.assertEqual(replacement["next_transition"], "push_content")
         self.assertEqual(replacement["pre_push_remote_head"], "a" * 40)
+
+    def test_ordinary_reprepare_binds_current_plan_and_observed_remote(self) -> None:
+        plan = {
+            "plan_digest": "e" * 64,
+            "task": {"active_locator": ".trellis/tasks/454"},
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "base_branch": "main",
+                "head_branch": "fix/454",
+                "branch_review_commit": "d" * 40,
+                "publication_head": "d" * 40,
+            },
+            "publish": {"title": "fresh", "body": "Refs #454"},
+        }
+        previous = {
+            "mode": "ordinary_publication",
+            "next_transition": "push_content",
+            "pr": None,
+            "branch_review_commit": "b" * 40,
+            "publication_head": "c" * 40,
+            "pre_push_remote_head": "a" * 40,
+        }
+        replacement = GTT.finalization_reprepared_transaction(
+            plan,
+            previous,
+            pre_push_remote_head="a" * 40,
+        )
+        self.assertEqual(replacement["mode"], "ordinary_publication")
+        self.assertEqual(replacement["next_transition"], "push_content")
+        self.assertEqual(replacement["branch_review_commit"], "d" * 40)
+        self.assertEqual(replacement["publication_head"], "d" * 40)
+        self.assertEqual(replacement["pre_push_remote_head"], "a" * 40)
+        self.assertEqual(replacement["publication"], plan["publish"])
 
     def test_content_push_uses_exact_publication_refspec(self) -> None:
         plan = {

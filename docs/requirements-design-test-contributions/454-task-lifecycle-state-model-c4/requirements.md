@@ -50,6 +50,14 @@ push-output-loss/converged state 继续同一 transaction recovery。remote 位�
 ahead/diverged/unknown/unprovable，出现 Open PR drift，或 transaction identity drift 时均 fail closed。不得新增
 宽泛 fallback、PR 人工选择 API、force push、第二 ledger，也不得删除或改写 transaction。
 
+`FIN454-C4-P1-004` 覆盖同一 transaction owner 下的 same-base finding-fix reprepare：predecessor review 到
+Publication 必须相等或为一条合法 provenance tail，selected base 必须已在 predecessor Publication lineage，
+current Branch Review、Publication 与 live HEAD 必须相等且严格后继；task 未 archive 且不存在 Open PR。历史
+terminal PR 不进入 current candidate。remote 只接受 transaction-owned `pre_push_remote_head` 或
+`publication_head`，中间 review commit 与其它 endpoint 均拒绝。合法路径复用既有
+`reprepare_required/provenance_metadata_tail`，不得增加 branch/session/path authority、人工 selector、fallback、
+force push、第二 ledger、schema 或 public DTO。
+
 C5-C7、D443、D436、E434、#434 activation 与完整 Release matrix 均不属于本 contribution 的完成声明。
 Independent Branch Review 绑定 `origin/main@77fa1a2...c7fab600` 且 P0/P1/P2/P3 为 `0/0/0/0`；owners 已将
 expected `.61` 串行提升到 `.62`。Promotion-created successor diff 必须重新进入 fresh Phase 2、Task Commit 与

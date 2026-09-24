@@ -1364,6 +1364,7 @@ def finalizer_current_transaction_provenance_reprepare_preflight(
     current_git = current_plan.get("git") if isinstance(current_plan.get("git"), dict) else {}
     task_ref = repo_relative(root, task_dir)
     previous_publication = str(transaction.get("publication_head") or "")
+    previous_reviewed = str(transaction.get("branch_review_commit") or "")
     current_reviewed = str(
         current_git.get("reviewed_content_head")
         or current_git.get("branch_review_commit")
@@ -1378,9 +1379,21 @@ def finalizer_current_transaction_provenance_reprepare_preflight(
         or transaction.get("repo_ref") != current_git.get("repo")
         or transaction.get("base_branch") != current_git.get("base_branch")
         or transaction.get("branch") != current_git.get("head_branch")
-        or transaction.get("branch_review_commit") != previous_publication
+        or not re.fullmatch(r"[0-9a-f]{40}", previous_reviewed)
         or not re.fullmatch(r"[0-9a-f]{40}", previous_publication)
         or not re.fullmatch(r"[0-9a-f]{40}", current_reviewed)
+        or (
+            previous_reviewed != previous_publication
+            and bool(
+                provenance_tail_commit_errors(
+                    root,
+                    previous_reviewed,
+                    previous_publication,
+                    target_repo=current_git.get("repo"),
+                    require_current=False,
+                )
+            )
+        )
         or not is_ancestor(root, previous_publication, current_reviewed)
         or not provenance_tail_transaction_reprepare_eligible(
             root,
@@ -1394,14 +1407,19 @@ def finalizer_current_transaction_provenance_reprepare_preflight(
             payload={"reason_code": "provenance_reprepare_base_evolution_mismatch"},
         )
     remote_head = closeout_remote_branch_head(root, current_plan)
-    if remote_head != previous_publication:
+    allowed_remote_heads = {
+        previous_publication,
+        str(transaction.get("pre_push_remote_head") or ""),
+    }
+    if remote_head not in allowed_remote_heads:
         raise WorkflowError(
-            "Provenance reprepare requires the remote at the predecessor Publication HEAD.",
+            "Provenance reprepare requires a transaction-owned predecessor remote HEAD.",
             exit_code=2,
             payload={
                 "reason_code": "provenance_reprepare_remote_not_reviewed_head",
                 "reviewed_content_head": current_reviewed,
                 "remote_head": remote_head,
+                "allowed_heads": sorted(allowed_remote_heads),
                 "fast_forwardable": bool(
                     remote_head and is_ancestor(root, remote_head, current_reviewed)
                 ),

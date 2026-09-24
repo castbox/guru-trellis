@@ -41,6 +41,13 @@ Open PR drift 与 transaction identity drift 均拒绝。覆盖不得借助宽�
 ledger 或删除 transaction 构造成功路径。当前 recovery `47/47` 与完整 Finalizer package `111/111` 通过；该结果不
 替代 fresh Phase 2、Task Commit、Branch Review、Publication 或 Finalizer gate。
 
+`FIN454-C4-P1-004` 继续由 `TST-032/SCN-044` 承接：真实 Git fixture 构造 old reviewed commit、合法
+manifest-only predecessor Publication tail 与两个 same-base finding-fix commits；断言 current review、Publication、
+live HEAD 三者相等且严格后继，selected base 已在 predecessor lineage。用例分别证明无 Open PR 时不读取 terminal
+PR inventory、两个 transaction-owned remote endpoint 可恢复、Open PR 与 intermediate reviewed remote 均拒绝，
+并验证 replacement transaction 使用 current plan 和实际 observed remote。不得通过 path、branch name、session、
+candidate label、人工 selector 或 fallback 构造成功路径。
+
 本次 Branch Review finding-fix 的新增独立覆盖固定为：
 
 - association 与 surviving ownership 分别单侧丢失时，各自恢复同一 `binding_epoch`；

@@ -614,5 +614,11 @@ PR 历史分类、`pre_push_remote_head` single-fast-forward、`publication_head
 allowed-head/Open-PR/transaction-identity drift fail-close；不得引入宽泛 fallback、PR 人工选择 API、force push、
 第二 ledger 或通过删除 transaction 恢复。
 
+`FIN454-C4-P1-004` 仍由 `DES-046` 承接：classifier 在 predecessor review-to-Publication 为 equal 或合法
+manifest-only tail、unchanged selected base 已属于 predecessor lineage、current review/Publication/live HEAD
+相等且严格后继时，允许同一 unbound transaction 进入既有 reprepare route。它只检查 Open PR，不把 terminal PR
+inventory 当作 current candidate；preflight 只接受 exact `pre_push_remote_head` 或 `publication_head`。中间 review
+endpoint、archive、identity、ancestry 或 tail drift 均在 mutation 前停止。
+
 本 slice 不新增 ADR；`ADR-015` 继续拥有 lifecycle identity 与 framework-extension boundary。C5-C7、D443、
 D436、E434 与 production activation 保持后续 owner。

@@ -41,6 +41,8 @@ Docs `.62` 完整继承 immutable `.61` 并承接 #454 C4 branch association/est
 
 `.62` Requirements source binding 还显式承接既有 Finalizer `REQ-048` 的 recovery guard：无 predecessor transaction 时，初始 provenance reprepare 可接受 absent、exact reviewed HEAD 或 strict historical ancestor；ahead、diverged、unknown/unprovable commit 必须在 mutation 前 fail closed。executor 创建的 replacement transaction 保存 exact `pre_push_remote_head`，后续 pre-mutation preflight 必须复核同一 remote identity；该闭合不新增 C4 public requirement owner，也不改变 C5-C7、D443、D436、E434 或 #434 activation 边界。
 
+`FIN454-C4-P1-004` 继续复用 `REQ-048`：same-base finding-fix descendant 只需证明同一 unbound transaction、合法 predecessor tail、base lineage、current review/Publication/live HEAD equality、无 Open PR及两个 transaction-owned remote endpoint；terminal PR history 与 branch/session/path 不成为额外绑定 authority。
+
 `R454-C4-01..10 -> D454-C4-01..10 -> T454-C4-01..10`、`R454-C3-01..12 -> D454-C3-01..12 -> T454-C3-01..15` 与继承链见 [current trace](./versions/current-main-0.6.17-guru.62/traceability.md)。实际证明边界由同版本 Test 层维护。
 
 `R378-01..04 -> D378-01..04 -> T378-01..05` 承接固定来源、会话隔离、installed 投影与原 verifier 入口；#388/#389 保留为关联前置，既有 #240/#348/#332/#376 与 Evolution authority 不扩张。

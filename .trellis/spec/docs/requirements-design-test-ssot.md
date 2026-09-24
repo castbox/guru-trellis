@@ -9,6 +9,7 @@
 - Test：`docs/test/README.md`
 - Architecture inheritance：`docs/architecture/README.md`，`current-main-0.6.17-guru.62` / `active`
 - source binding：reviewed #454 C4 contribution + inherited immutable `current-main-0.6.17-guru.61` authority promoted to `current-main-0.6.17-guru.62`；current registry 保持 32 packages / 142 exits / 102 commands并增加三个 planned IDs，production workflow 保持 22 mandatory invokes / 98 exits，fixed Fork source 为 `eb370008c7689d4e272ae626bd002190ecbb3296`。`.62` 完整继承 C2 shared lifecycle kernel、D0 stage-evidence correction、C3 checkout acquisition/provenance 与 C4 branch association/establishment/rebind substrate；C5-C7、D443、D436、E434、#434 production graph activation 与 #410 Release Gate matrix 仍未完成或未验证，focused lifecycle `93/93` 只证明提升前 candidate，preset `85/86` 未声明通过。
+- Finalizer recovery mapping：`FIN454-C4-P1-004` 不创建新 RDT identity；它继续映射 `REQ-048 -> DES-046 -> TST-032/SCN-044`，以同一 unbound transaction、合法 predecessor tail、selected-base lineage、current review/Publication/live HEAD equality、无 Open PR 与 transaction-owned remote endpoints 构成最小充分绑定。
 
 ## 读取与更新
 

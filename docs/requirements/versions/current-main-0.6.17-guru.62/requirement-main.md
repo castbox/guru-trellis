@@ -608,4 +608,11 @@ release-candidate Release matrix 保持 `unverified`，由专门 Release owner �
 push-output-loss/converged recovery，以及 allowed-head/Open-PR/transaction-identity drift fail-close；它不新增 C4
 requirement identity、宽泛 fallback、PR 人工选择 API、force push 或第二 ledger。
 
+`FIN454-C4-P1-004` 在该 owner 下补充 same-base fresh-reviewed reprepare：predecessor review-to-Publication
+必须相等或为合法 provenance tail，selected base 已在 predecessor Publication lineage，current Branch Review、
+Publication 与 live HEAD 相等且严格后继，并且 task 未 archive、没有 Open PR。remote 只接受 transaction-owned
+`pre_push_remote_head` 或 `publication_head`；历史 terminal PR 不作为 current candidate，中间 review commit 与其它
+endpoint 均拒绝。该合法路径复用现有 `reprepare_required/provenance_metadata_tail`，不增加 branch/session/path
+authority、人工 selector、fallback、force push、第二 ledger、schema 或 public DTO。
+
 C5-C7、D443、D436、E434、#434 activation 与完整 Release matrix 继续保持独立后续边界。

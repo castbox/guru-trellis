@@ -617,3 +617,30 @@ predecessor数据模型带入target graph。
 - Fresh implementation validation：Finalizer recovery `47/47`、完整 Finalizer package `111/111`、task validator、
   canonical/dogfood runtime parity 与 `git diff --check` 均通过；Finalizer transaction SHA-256 仍为
   `af9efa059754058b63c24398856adc4ef65c9c6fa48cf472c731ac94a8b86b3b`，本轮未修改该 transaction。
+
+## C4 same-base transaction reprepare finding-fix（2026-09-24）
+
+- `FIN454-C4-P1-004`：合法 C4 finding-fix 在 predecessor provenance Publication `af719fbb` 后形成
+  `e1dd7c7c -> d3ac0a07`，current Branch Review、Publication 与 live HEAD 已重新绑定同一 reviewed descendant，
+  selected base `origin/main@77fa1a2` 未变化。现行 classifier 只接受 base 演进后的 fresh-reviewed descendant，
+  因而把同 owner、同 base、尚无 Open PR 的 pre-push reprepare 错误判为
+  `provenance_tail_transaction_rebind_invalid`。
+- 修复遵循宽松且最小充分的绑定原则：只要求 existing unbound
+  `ordinary_publication/push_content` transaction 的 task/repository/base/head branch/mode/stage 一致；predecessor
+  review 到 Publication 相等或为合法 provenance tail；selected base 已包含于 predecessor Publication lineage；
+  current Branch Review、Publication、live HEAD 相等且严格后继；task 未 archive 且没有 Open PR。历史 terminal PR
+  不作为 current candidate。
+- remote 只接受 transaction-owned `pre_push_remote_head` 或 exact `publication_head`；中间 reviewed commit、其它
+  remote endpoint、Open PR、identity/lineage/tail/state drift 均 fail closed。合法路径复用既有
+  `reprepare_required/provenance_metadata_tail` 与 replacement transaction，不增加 schema、public DTO、人工
+  selector、fallback、force push、第二 ledger 或 branch/session/path 严格绑定。
+- 真实 Git regression 覆盖 old-review -> valid old provenance tail -> two finding-fix commits、历史 terminal PR
+  忽略、Open PR 拒绝、两个 transaction-owned remote endpoint 接受、中间 remote 拒绝，以及 replacement
+  transaction 绑定 current plan 与实际 observed remote。该 finding-fix 完成后必须从 fresh Phase 2、Task Commit
+  与完整 Branch Review 重新建立 gate；当前 Publication/Finalizer 输入不得继续消费。
+- Fresh implementation validation：Finalizer provenance `23/23`、recovery `48/48`、完整 package `113/113`、
+  canonical/installed runtime parity、canonical/dogfood spec parity、Python compile、task validator、专用 dogfood
+  drift 与 `git diff --check` 均通过。raw preset apply 仍因三项既有 pre-E434 task-lifecycle installed sidecar 返回
+  `conflict`，未被清除、覆盖或误报为通过；该边界与此前 preset `85/86` 一致。本段不表示 Phase 2、Task Commit、
+  Branch Review、Publication、Finalizer 或 Delivery 已通过。C5-C7、D443、D436、E434、#434 activation 与完整
+  Release matrix 状态不变。

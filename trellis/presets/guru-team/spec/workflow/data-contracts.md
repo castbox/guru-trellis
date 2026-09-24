@@ -1446,6 +1446,22 @@ Publication. The same `existing_pr_recovery/push_content` transaction records
 the classifier's pre-push remote HEAD before mutation. No DTO, mode, stage or
 schema field changes.
 
+An unbound `ordinary_publication/push_content` transaction may also be
+reprepared when the selected base has not moved. The task, repository,
+base/head branch and transaction mode/stage remain exact; the predecessor
+Branch Review-to-Publication span is either equal or one valid manifest-only
+provenance tail; the selected base is already in the predecessor Publication
+lineage; and the current Branch Review, Publication and live HEAD are one
+strictly newer reviewed descendant. There must be no Open PR or archived task.
+Historical terminal PRs do not become current candidates. The live remote must
+equal either the transaction's exact `pre_push_remote_head` or its exact
+`publication_head`; an intermediate reviewed commit or any other endpoint is
+drift. This classification returns through the existing
+`reprepare_required/provenance_metadata_tail` route and writes one replacement
+current-plan transaction before mutation. It adds no branch/session/path
+authority, manual selector, fallback, force push, ledger, schema field or
+public DTO.
+
 After the exact recovery transaction binds its PR and advances to `archive`,
 `push_archive`, or `mark_ready`, it is the current stage authority. Preview
 validates its complete minimal identity before applying any pre-PR provenance

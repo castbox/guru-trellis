@@ -33,3 +33,8 @@ Finalizer provenance closure is intentionally mapped to existing shared authorit
 broad fallback, manual PR-selection API, force push or second ledger is introduced. The focused recovery `47/47` and
 complete Finalizer package `111/111` pass for the current implementation candidate; this trace does not record a fresh
 Phase 2, Branch Review, Publication or Finalizer gate pass.
+
+`FIN454-C4-P1-004` also remains on that mapping. `REQ-048` owns same-base fresh-reviewed reprepare under one matching
+unbound transaction; `DES-046` owns predecessor-tail/base-lineage/current-review equality and Open-PR classification;
+`TST-032/SCN-044` own both transaction endpoint positives plus intermediate-remote/Open-PR/identity negatives and
+replacement-transaction binding. This adds no C4 authority identity or stricter session/path/branch binding.

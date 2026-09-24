@@ -47,6 +47,14 @@ Anything outside those heads, ahead/diverged/unknown topology or transaction ide
 adds no broad fallback, manual PR-selection API, force push or second ledger and never repairs recovery by deleting the
 transaction.
 
+For `FIN454-C4-P1-004`, the same owner accepts a fresh reviewed descendant without requiring selected-base movement.
+The predecessor review-to-Publication edge is validated as equal or one manifest-only provenance tail, the unchanged
+selected base must already be an ancestor of predecessor Publication, and current review/Publication/live HEAD must be
+identical and strictly newer. Classification checks for an Open PR but does not query terminal PR history; preflight
+accepts only exact transaction-owned pre-push or Publication endpoints. It then uses the existing reprepare projection
+and replacement transaction. Intermediate reviewed endpoints and all identity, archive, ancestry or tail drift stop
+before mutation.
+
 本 slice 不新增 ADR。`ADR-015` 已拥有 TaskId/lifecycle 与 framework-extension boundary；C4 只实现该决策下的
 branch substrate。Architecture/RDT owners 已按 reviewed range `origin/main@77fa1a2...c7fab600` 串行执行
 serialized promotion；promotion-created diff 仍须 fresh Phase 2、Task Commit 与完整 Branch Review。

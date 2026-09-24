@@ -1005,6 +1005,22 @@ invalid predecessor/base/remote ancestry, unreviewed drift, malformed or chained
 tails, and PR/remote/identity/scope/transaction drift while the direct-tail,
 pure-base, base-plus-tail, reprepare and equal-HEAD suites remain passing.
 
+Same-base fresh-reviewed reprepare coverage uses a real topology with a
+predecessor reviewed commit, its valid manifest-only Publication tail, and two
+later finding-fix commits while the selected base remains unchanged. The
+current Branch Review, Publication and live HEAD must be identical; the base
+must already be in the predecessor Publication lineage; the existing unbound
+`ordinary_publication/push_content` transaction remains the only recovery
+owner; and no Open PR may exist. Tests prove historical terminal PRs are not
+queried as current candidates, both transaction-owned remote endpoints are
+accepted, an intermediate reviewed commit is rejected, and the replacement
+transaction binds the current plan plus the actually observed remote before
+mutation. Negative coverage rejects Open PR, archive, identity/mode/stage,
+review/Publication/HEAD, ancestry, predecessor-tail and remote drift. The route
+remains `reprepare_required/provenance_metadata_tail`; no schema, public DTO,
+manual selector, force push, second ledger or stricter branch/session/path
+binding is introduced.
+
 Finish-family integration additionally proves current finish-summary schema 2
 is derived once from the reviewed payload and live facts, historical schema 1
 remains discoverable, and the current runtime/inventories contain no retired

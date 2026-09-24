@@ -66,6 +66,15 @@ allowed heads, ahead/diverged/unknown topology, Open PR drift or transaction ide
 adds no broad fallback, manual PR-selection API, force push or second ledger, and never deletes or rewrites the
 transaction.
 
+`FIN454-C4-P1-004` keeps that recovery available after same-base finding-fix commits. When the predecessor review-to-
+Publication span is equal or one valid provenance tail, the selected base is already in predecessor Publication
+lineage, and current Branch Review/Publication/live HEAD are one strictly newer reviewed descendant, the same unbound
+transaction can enter the existing reprepare route without requiring incidental base movement. No Open PR or archived
+task may exist; terminal PR history is not a current candidate. Remote freshness is proven only by exact equality with
+the transaction-owned `pre_push_remote_head` or `publication_head`; intermediate review commits and every other remote
+endpoint reject. This is the minimal sufficient binding path: it adds no branch/session/path authority, manual selector,
+fallback, force push, second ledger, schema field or public DTO.
+
 ## Ownership And Compatibility
 
 - C2 identity/schema primitives remain unchanged; durable TaskBranchBinding and `BranchBindingRefDTO` project the same
@@ -115,6 +124,14 @@ and keeps the existing transaction identity plus remote allowed-head preflight. 
 Finalizer package `111/111`, Python compile, canonical/dogfood parity, task validation and `git diff --check` pass. These
 results support the implementation candidate only; they do not establish fresh Phase 2, Branch Review, Publication,
 Finalizer, Delivery or Release results.
+
+The `FIN454-C4-P1-004` regression uses the real old-review -> provenance-tail Publication -> two finding-fix topology.
+It proves same-base reprepare accepts both transaction-owned remote endpoints, ignores terminal PR history, rejects an
+Open PR and intermediate remote commit, and writes the replacement transaction from the current plan plus observed
+remote. Finalizer provenance `23/23`, recovery `48/48`, and the complete package `113/113` pass with Python compile,
+task validation, canonical/dogfood parity, dedicated dogfood drift, and `git diff --check`. Raw preset apply remains
+blocked by the three disclosed pre-E434 task-lifecycle installed sidecars; this contribution does not convert that
+broader boundary or the implementation evidence into a gate pass.
 
 No new ADR is required because `ADR-015` already owns lifecycle identity and the framework/extension boundary. C5-C7,
 D443, D436, E434, #434 production graph activation and the complete multi-platform Release matrix remain pending or

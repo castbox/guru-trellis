@@ -38,7 +38,7 @@
 | `TST-029`, `SCN-039` | `REQ-044..045` | `DES-043..044` | Sync-to-Discovery public transition、live observation与 source-aware freshness |
 | `TST-005`, `TST-007`, `TST-030`, `SCN-005`, `SCN-040` | `REQ-046` | `DES-006`, `DES-010`, `DES-042` | #295 canonical/installed/platform/preset contract closure |
 | `TST-031`, `SCN-041..043` | `REQ-047`, `REQ-049` | `DES-045..046` | Finalizer canonical/installed 59/59 + binding/tail negative fixtures |
-| `TST-032`, `SCN-044` | `REQ-048`, `REQ-049`, `BEH-008`, `BEH-010` | `DES-046` | prepared-state/existing-PR regression; real Git initial absent/equal/strict-ancestor acceptance; identity-matched transaction ownership; historical terminal PR exclusion; pre-push single-fast-forward; publication-head output-loss convergence; allowed-head/Open-PR/identity-drift rejection |
+| `TST-032`, `SCN-044` | `REQ-048`, `REQ-049`, `BEH-008`, `BEH-010` | `DES-046` | prepared-state/existing-PR regression; real Git initial absent/equal/strict-ancestor acceptance; identity-matched transaction ownership; historical terminal PR exclusion; pre-push single-fast-forward; publication-head output-loss convergence; same-base predecessor-tail/base-lineage/current-review proof; intermediate-remote/Open-PR/identity-drift rejection |
 | `TST-033`, `SCN-045` | `REQ-049..050` | `DES-047` | verifier-zero dependency + source/installed/platform/reapply/drift checks |
 | `TST-034`, `SCN-047` | `REQ-050` | `DES-047` | current real fixture `unverified`; local fake-GitHub integration only |
 | `TST-035`, `SCN-046` | `REQ-051` | `DES-048` | verifier 17/17、routing 44/44、closed failure schema/postcheck evidence |
@@ -357,3 +357,9 @@ those allowed heads, Open PR drift and transaction identity drift reject. No bro
 push or second ledger is introduced. This row records required coverage, not a current test or gate pass.
 Focused recovery `47/47` and the complete Finalizer package `111/111` pass for the current implementation candidate;
 this row does not record a fresh Phase 2, Branch Review, Publication or Finalizer gate pass.
+
+`FIN454-C4-P1-004` extends the same row with a real same-base old-review/provenance-tail/two-finding-fix topology. It
+binds the unchanged selected base through predecessor lineage, requires current review/Publication/live HEAD equality,
+ignores terminal PR history when no Open PR exists, accepts only the two transaction endpoints, rejects intermediate
+remote and Open PR drift, and verifies replacement-transaction current-plan/observed-remote binding. This remains
+implementation evidence rather than a fresh gate result.

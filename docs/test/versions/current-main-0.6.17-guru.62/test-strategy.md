@@ -42,7 +42,7 @@
 | `TST-029` | downstream provenance | producer transition 到 workspace consumer 的 source/base/full-candidates exact freshness | producer private runtime 或历史 checkpoint |
 | `TST-030` | #290 distribution | canonical/installed/platform parity、inventory、reapply/drift/mode/sidecar-zero 与代表性 Codex detached wrapper | 独立的重构前稳定版 Release matrix/tag/Release |
 | `TST-031` | Finalizer source/target binding | closed mode、双 checkout、immutable source、apply target、tail lineage 与 postimage | 真实 GitHub fixture 或生产结果 |
-| `TST-032` | Initial reprepare and fail-close | existing-PR precedence、prepared-state inference、无 predecessor 时 absent/exact/strict-ancestor remote 可继续；transaction-bound Reactivate reuse 以 identity-matched transaction 为 current owner，排除历史 terminal PR candidate，接受 exact `pre_push_remote_head` single-fast-forward 与 exact `publication_head` output-loss convergence，拒绝 allowed-head/Open-PR/transaction-identity drift | archive 后 terminal live facts |
+| `TST-032` | Initial reprepare and fail-close | existing-PR precedence、prepared-state inference、无 predecessor 时 absent/exact/strict-ancestor remote 可继续；transaction-bound Reactivate reuse 以 identity-matched transaction 为 current owner，排除历史 terminal PR candidate，接受 exact `pre_push_remote_head` single-fast-forward 与 exact `publication_head` output-loss convergence；same-base fresh-reviewed reprepare 验证 predecessor tail、base lineage、current review/Publication/HEAD equality 与 intermediate-remote/Open-PR drift | archive 后 terminal live facts |
 | `TST-033` | Installed distribution isolation | canonical/installed package、verifier-zero dependency、preset projection、mode/drift/sidecar | release-wide matrix |
 | `TST-034` | Representative installed closeout | release-installed business repo 从 ready 到 Ready PR/terminal projection | 未 fresh 重试时保持 `unverified` |
 | `TST-035` | Structured verifier failure | stage/cell/command/exit/bounded safe tail、outer parse 与 postcheck classification | Finalizer lifecycle authority |
@@ -138,7 +138,10 @@
   owner；无 Open PR 时同 branch/base terminal PR 不进入 current candidate；remote exact `pre_push_remote_head`
   只执行一次 fast-forward，remote exact `publication_head` 按 push-output-loss/converged state 接续；allowed heads
   外的 remote、ahead/diverged/unknown、Open PR drift 与 transaction identity drift 均拒绝。用例不引入宽泛
-  fallback、PR 人工选择、force push、第二 ledger 或 transaction 删除。
+  fallback、PR 人工选择、force push、第二 ledger 或 transaction 删除。same-base finding-fix reprepare 另构造
+  predecessor review、合法 provenance Publication tail 与两个后继 commit，验证 base 已在 predecessor lineage、
+  current review/Publication/live HEAD equality、terminal PR inventory exclusion、两个 transaction endpoint、Open PR
+  与 intermediate reviewed remote 拒绝，以及 replacement transaction 的 current-plan/observed-remote binding。
 - `SCN-045 installed projection`：canonical/installed/平台 package 与 reapply bytes/mode 相同，
   Finalizer 对 verifier lifecycle 保持零依赖。
 - `SCN-046 verifier failure evidence`：matrix 与 postcheck failure 在 cleanup 前形成 closed structured
@@ -512,3 +515,10 @@ Finalizer provenance regression 的 source binding 为 `TST-032/SCN-044`：`test
 recovery `47/47` 与完整 Finalizer package `111/111` 通过，并完成 Python compile、canonical/dogfood parity、task
 validation 与 `git diff --check`。这些结果不替代 fresh Phase 2、Task Commit、Branch Review、Publication 或
 Finalizer gate。
+
+`FIN454-C4-P1-004` 在同一 source binding 下增加 same-base fresh-reviewed reprepare regression，覆盖真实
+old-review/provenance-tail/two-finding-fix topology、terminal PR exclusion、Open PR rejection、两个
+transaction-owned remote endpoints、intermediate remote rejection 与 replacement transaction binding。实际结果为
+provenance `23/23`、recovery `48/48`、完整 Finalizer package `113/113`，并通过 Python compile、task validator、
+canonical/dogfood parity、专用 dogfood drift 与 `git diff --check`。raw preset apply 的三项既有 pre-E434 sidecar
+conflict 保持未通过，本段不声明 gate pass。

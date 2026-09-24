@@ -447,3 +447,10 @@ Open PR drift 与 transaction identity drift 均 fail closed。证据不得依�
 第二 ledger 或删除 transaction。当前 recovery `47/47` 与完整 Finalizer package `111/111` 通过；Python compile、
 canonical/dogfood parity、task validation 与 `git diff --check` 同时通过。该 evidence 不替代 fresh Phase 2、Task
 Commit、Branch Review、Publication 或 Finalizer gate。
+
+`FIN454-C4-P1-004` 继续使用 `TST-032/SCN-044`：真实 Git topology 必须包含 predecessor reviewed commit、合法
+manifest-only Publication tail 与两个 same-base finding-fix commits；current review/Publication/live HEAD 相等且
+严格后继，selected base 已在 predecessor lineage。分别验证无 Open PR 时 terminal PR inventory 不参与 current
+classification、exact `pre_push_remote_head` 与 exact `publication_head` 可恢复、Open PR 与 intermediate reviewed
+remote 拒绝，以及 replacement transaction 绑定 current plan 与实际 observed remote。不得使用 path、session、
+branch-name guess、人工 selector 或 fallback 作为证明。
