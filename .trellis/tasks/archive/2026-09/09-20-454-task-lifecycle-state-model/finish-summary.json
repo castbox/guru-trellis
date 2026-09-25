@@ -1,0 +1,259 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-25T06:22:20Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-20-454-task-lifecycle-state-model",
+    "title": "#454 建立统一 task lifecycle state model",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-20-454-task-lifecycle-state-model",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/454-task-lifecycle-state-model-c3-c7",
+    "commits": [
+      "5335bb93af677365172c027523023fdd168a2432",
+      "a1a1634e543d029e2bea65642e89be425adffe75",
+      "f18a51d40f5084b514abc5c062507e926b74f783",
+      "65b56f00ee1e8740b8428ba81139c8ca7ee54f08",
+      "780f911f0276d628a58f3be356f7a4385a9af29a",
+      "29a3647f5b252caea75df118061588800047236c"
+    ],
+    "changed_paths": [
+      ".trellis/spec/architecture/baseline-usage.md",
+      ".trellis/spec/docs/requirements-design-test-ssot.md",
+      ".trellis/tasks/09-20-454-task-lifecycle-state-model/design.md",
+      ".trellis/tasks/09-20-454-task-lifecycle-state-model/implement.md",
+      ".trellis/tasks/09-20-454-task-lifecycle-state-model/prd.md",
+      ".trellis/tasks/09-20-454-task-lifecycle-state-model/task.json",
+      ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/design.md",
+      ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/finish-summary.json",
+      ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/implement.md",
+      ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/prd.md",
+      ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/task.json",
+      "docs/architecture/01-current/system.md",
+      "docs/architecture/02-target/target.md",
+      "docs/architecture/03-domains/ownership.md",
+      "docs/architecture/04-integrations/distribution.md",
+      "docs/architecture/05-gaps/current-to-target.md",
+      "docs/architecture/07-plans/roadmap.md",
+      "docs/architecture/README.md",
+      "docs/architecture/contributions/454-task-lifecycle-state-model-c5.md",
+      "docs/architecture/evidence/current-evidence.md",
+      "docs/design/README.md",
+      "docs/design/versions/current-main-0.6.17-guru.63/capability-inventory.md",
+      "docs/design/versions/current-main-0.6.17-guru.63/decisions.md",
+      "docs/design/versions/current-main-0.6.17-guru.63/design-main.md",
+      "docs/design/versions/current-main-0.6.17-guru.63/manifest.yaml",
+      "docs/design/versions/current-main-0.6.17-guru.63/traceability.md",
+      "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/design.md",
+      "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/manifest.yaml",
+      "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/requirements.md",
+      "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/test.md",
+      "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/traceability.md",
+      "docs/requirements/README.md",
+      "docs/requirements/versions/current-main-0.6.17-guru.63/decisions.md",
+      "docs/requirements/versions/current-main-0.6.17-guru.63/requirement-main.md",
+      "docs/requirements/versions/current-main-0.6.17-guru.63/requirement-non-functional.md",
+      "docs/requirements/versions/current-main-0.6.17-guru.63/traceability.md",
+      "docs/test/README.md",
+      "docs/test/versions/current-main-0.6.17-guru.63/test-plan.md",
+      "docs/test/versions/current-main-0.6.17-guru.63/test-strategy.md",
+      "docs/test/versions/current-main-0.6.17-guru.63/traceability.md",
+      "trellis/skills/guru-team/contracts/task-lifecycle/README.md",
+      "trellis/skills/guru-team/contracts/task-lifecycle/task-resource-cleanup-resolution.schema.json",
+      "trellis/skills/guru-team/contracts/task-lifecycle/task-resource-ledger.schema.json",
+      "trellis/skills/guru-team/contracts/task-lifecycle/task-resource-seal-input.schema.json",
+      "trellis/skills/guru-team/registry.json",
+      "trellis/skills/guru-team/runtime/task_lifecycle/__init__.py",
+      "trellis/skills/guru-team/runtime/task_lifecycle/resource_ledger.py",
+      "trellis/skills/guru-team/runtime/task_lifecycle/session_adapter.py",
+      "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_contracts.py",
+      "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_control_stores.py"
+    ]
+  },
+  "github": {
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/471"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#454 建立统一 task lifecycle state model",
+    "outcome": "交付 #454 C5 的 path-free official session adapter、Git common-dir resource ownership ledger、Finish seal input 和 Cleanup resolution substrate。",
+    "changed_behavior": [
+      "交付 #454 C5 的 path-free official session adapter、Git common-dir resource ownership ledger、Finish seal input 和 Cleanup resolution substrate。",
+      "修复当前远端资源 H1→H2 的单一 incarnation 单调推进，以及正常 Finish 输出丢失重试返回错误 HEAD 的缺陷：同一账本保存 Finish result/HEAD，只读同身份重试并拒绝冲突身份。",
+      "将已审查 C5 Architecture/RDT contribution 串行提升到 `current-main-0.6.17-guru.63`；`guru-establish-task-identity` 仅为 planned ID，不激活生产包或 workflow。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "config",
+        "name": "config",
+        "paths": [
+          "docs/design/versions/current-main-0.6.17-guru.63/manifest.yaml",
+          "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/manifest.yaml"
+        ],
+        "change": "交付 #454 C5 的 path-free official session adapter、Git common-dir resource ownership ledger、Finish seal input 和 Cleanup resolution substrate。"
+      },
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/architecture/baseline-usage.md",
+          ".trellis/spec/docs/requirements-design-test-ssot.md",
+          ".trellis/tasks/09-20-454-task-lifecycle-state-model/design.md",
+          ".trellis/tasks/09-20-454-task-lifecycle-state-model/implement.md",
+          ".trellis/tasks/09-20-454-task-lifecycle-state-model/prd.md",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/design.md",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/implement.md",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/prd.md",
+          "docs/architecture/01-current/system.md",
+          "docs/architecture/02-target/target.md",
+          "docs/architecture/03-domains/ownership.md",
+          "docs/architecture/04-integrations/distribution.md",
+          "docs/architecture/05-gaps/current-to-target.md",
+          "docs/architecture/07-plans/roadmap.md",
+          "docs/architecture/README.md",
+          "docs/architecture/contributions/454-task-lifecycle-state-model-c5.md",
+          "docs/architecture/evidence/current-evidence.md",
+          "docs/design/README.md",
+          "docs/design/versions/current-main-0.6.17-guru.63/capability-inventory.md",
+          "docs/design/versions/current-main-0.6.17-guru.63/decisions.md",
+          "docs/design/versions/current-main-0.6.17-guru.63/design-main.md",
+          "docs/design/versions/current-main-0.6.17-guru.63/traceability.md",
+          "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/design.md",
+          "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/requirements.md",
+          "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/test.md",
+          "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/traceability.md",
+          "docs/requirements/README.md",
+          "docs/requirements/versions/current-main-0.6.17-guru.63/decisions.md",
+          "docs/requirements/versions/current-main-0.6.17-guru.63/requirement-main.md",
+          "docs/requirements/versions/current-main-0.6.17-guru.63/requirement-non-functional.md",
+          "docs/requirements/versions/current-main-0.6.17-guru.63/traceability.md",
+          "docs/test/README.md",
+          "docs/test/versions/current-main-0.6.17-guru.63/test-plan.md",
+          "docs/test/versions/current-main-0.6.17-guru.63/test-strategy.md",
+          "docs/test/versions/current-main-0.6.17-guru.63/traceability.md"
+        ],
+        "change": "交付 #454 C5 的 path-free official session adapter、Git common-dir resource ownership ledger、Finish seal input 和 Cleanup resolution substrate。"
+      },
+      {
+        "kind": "schema",
+        "name": "schema",
+        "paths": [
+          "trellis/skills/guru-team/contracts/task-lifecycle/task-resource-cleanup-resolution.schema.json",
+          "trellis/skills/guru-team/contracts/task-lifecycle/task-resource-ledger.schema.json",
+          "trellis/skills/guru-team/contracts/task-lifecycle/task-resource-seal-input.schema.json"
+        ],
+        "change": "交付 #454 C5 的 path-free official session adapter、Git common-dir resource ownership ledger、Finish seal input 和 Cleanup resolution substrate。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          "trellis/skills/guru-team/runtime/task_lifecycle/__init__.py",
+          "trellis/skills/guru-team/runtime/task_lifecycle/resource_ledger.py",
+          "trellis/skills/guru-team/runtime/task_lifecycle/session_adapter.py",
+          "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_contracts.py",
+          "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_control_stores.py"
+        ],
+        "change": "交付 #454 C5 的 path-free official session adapter、Git common-dir resource ownership ledger、Finish seal input 和 Cleanup resolution substrate。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          "trellis/skills/guru-team/contracts/task-lifecycle/README.md",
+          "trellis/skills/guru-team/registry.json"
+        ],
+        "change": "交付 #454 C5 的 path-free official session adapter、Git common-dir resource ownership ledger、Finish seal input 和 Cleanup resolution substrate。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/09-20-454-task-lifecycle-state-model/task.json",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/task.json"
+        ],
+        "change": "交付 #454 C5 的 path-free official session adapter、Git common-dir resource ownership ledger、Finish seal input 和 Cleanup resolution substrate。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [],
+      "pr_refs": [
+        "PR #471"
+      ],
+      "branches": [
+        "codex/454-task-lifecycle-state-model-c3-c7"
+      ],
+      "paths": [
+        ".trellis/spec/architecture/baseline-usage.md",
+        ".trellis/spec/docs/requirements-design-test-ssot.md",
+        ".trellis/tasks/09-20-454-task-lifecycle-state-model/design.md",
+        ".trellis/tasks/09-20-454-task-lifecycle-state-model/implement.md",
+        ".trellis/tasks/09-20-454-task-lifecycle-state-model/prd.md",
+        ".trellis/tasks/09-20-454-task-lifecycle-state-model/task.json",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/design.md",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/implement.md",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/prd.md",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/task.json",
+        "docs/architecture/01-current/system.md",
+        "docs/architecture/02-target/target.md",
+        "docs/architecture/03-domains/ownership.md",
+        "docs/architecture/04-integrations/distribution.md",
+        "docs/architecture/05-gaps/current-to-target.md",
+        "docs/architecture/07-plans/roadmap.md",
+        "docs/architecture/README.md",
+        "docs/architecture/contributions/454-task-lifecycle-state-model-c5.md",
+        "docs/architecture/evidence/current-evidence.md",
+        "docs/design/README.md",
+        "docs/design/versions/current-main-0.6.17-guru.63/capability-inventory.md",
+        "docs/design/versions/current-main-0.6.17-guru.63/decisions.md",
+        "docs/design/versions/current-main-0.6.17-guru.63/design-main.md",
+        "docs/design/versions/current-main-0.6.17-guru.63/manifest.yaml",
+        "docs/design/versions/current-main-0.6.17-guru.63/traceability.md",
+        "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/design.md",
+        "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/manifest.yaml",
+        "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/requirements.md",
+        "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/test.md",
+        "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/traceability.md",
+        "docs/requirements/README.md",
+        "docs/requirements/versions/current-main-0.6.17-guru.63/decisions.md",
+        "docs/requirements/versions/current-main-0.6.17-guru.63/requirement-main.md",
+        "docs/requirements/versions/current-main-0.6.17-guru.63/requirement-non-functional.md",
+        "docs/requirements/versions/current-main-0.6.17-guru.63/traceability.md",
+        "docs/test/README.md",
+        "docs/test/versions/current-main-0.6.17-guru.63/test-plan.md",
+        "docs/test/versions/current-main-0.6.17-guru.63/test-strategy.md",
+        "docs/test/versions/current-main-0.6.17-guru.63/traceability.md",
+        "trellis/skills/guru-team/contracts/task-lifecycle/README.md",
+        "trellis/skills/guru-team/contracts/task-lifecycle/task-resource-cleanup-resolution.schema.json",
+        "trellis/skills/guru-team/contracts/task-lifecycle/task-resource-ledger.schema.json",
+        "trellis/skills/guru-team/contracts/task-lifecycle/task-resource-seal-input.schema.json",
+        "trellis/skills/guru-team/registry.json",
+        "trellis/skills/guru-team/runtime/task_lifecycle/__init__.py",
+        "trellis/skills/guru-team/runtime/task_lifecycle/resource_ledger.py",
+        "trellis/skills/guru-team/runtime/task_lifecycle/session_adapter.py",
+        "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_contracts.py",
+        "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_control_stores.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#454 建立统一 task lifecycle state model",
+        "交付 #454 C5 的 path-free official session adapter、Git common-d",
+        "完成 baseline-usage.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#454 建立统一 task lifecycle state model\n交付 #454 C5 的 path-free official session adapter、Git common-dir resource ownership ledger、Finish seal input 和 Cleanup resolution substrate。\n修复当前远端资源 H1→H2 的单一 incarnation 单调推进，以及正常 Finish 输出丢失重试返回错误 HEAD 的缺陷：同一账本保存 Finish result/HEAD，只读同身份重试并拒绝冲突身份。\n将已审查 C5 Architecture/RDT contribution 串行提升到 `current-main-0.6.17-guru.63`；`guru-establish-task-identity` 仅为 planned ID，不激活生产包或 workflow。\n交付 #454 C5 的 path-free official session adapter、Git common-d\n完成 baseline-usage.md 相关变更"
+  }
+}
