@@ -1967,3 +1967,32 @@ TaskId-to-TaskRef resolution 与 path-free session primitive。Guru runtime 只�
 不得复制 `.trellis/scripts/common/**`、创建 durable identity index、第二 session store、mapping compatibility reader、
 alias、dual-read 或 dual-write。该 catalog 与 runtime 当前只是 C2 substrate candidate；package registration、workflow
 edge、active manifest、installed/platform projection 和 production activation 仍由后续 owner 独立完成。
+
+## #454 D436 Terminal Lifecycle Package Successor
+
+The preceding #436 and #443 paragraphs describe historical package contracts,
+not the current #454 successor. The five migrated canonical packages consume
+the current TaskLifecycleKey, source/scope/target relation, exact Delivery and
+Closure results, live branch binding, and one Git common-dir resource ledger.
+Completion alone judges accepted-scope completion with seven distinct outcomes.
+Closure alone freezes and converges the exact Issue action set; external change
+returns to semantic review. Its ResultRefDTO/TransactionRefDTO handoff contains
+no provider snapshot or user authorization.
+
+Finish consumes current Closure, rereads required-closed Issues before terminal
+mutation, and verifies the lifecycle-only bookkeeping merge and archive
+post-state. It seals current-generation resources against the PR head, while
+the separate target merge SHA proves archive persistence; after sealing it
+retires that generation's TaskBranchBinding. Finish never deletes resources.
+Cleanup normal mode consumes only ResourceSealRefDTO and the ledger, deleting
+Guru-owned resources after fresh Git checks. Caller-owned resources remain.
+Missing terminal ownership uses explicit manual selection; machine-handoff
+has its own inventory and result route. Reactivate preserves TaskId/source/scope
+while creating generation `g+1` through C3 acquisition, C4 binding, C5 ledger,
+and the official session adapter. Historical receipts do not authorize the
+new generation.
+
+These are canonical source package contracts only. #434/E434 owns the atomic
+workflow, registry selector, active manifest, installed/platform projection,
+and predecessor retirement. Package tests do not prove production activation
+or the full Release matrix.

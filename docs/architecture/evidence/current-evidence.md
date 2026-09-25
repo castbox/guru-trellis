@@ -158,6 +158,18 @@ installed/platform projections、task/lifecycle SSOT 与定向 tests 已通过�
 完整 Release/upgrade matrix、push、PR、远端 merge、tag、Release 或 Issue closure。promotion-created
 diff 仍须 fresh Phase 2、Task Commit 与 independent complete Branch Review 后才能进入 Publication。
 
+## EVD-041: #454 D436 canonical package candidate
+
+来源为 [D436 contribution](../contributions/454-task-lifecycle-d436.md)、#456 `436-*` migration rows
+与 generation 6 的五个 canonical package。Finish 的真实两父 merge/PR-head resource seal、Cleanup 的
+common-dir ledger 与 machine-handoff、Reactivate generation 独立性是本增量的重点验证对象。
+本切片 fresh 五包与共享 runtime 合跑 `206/206`，package integration `20/20`，source validator
+`passed`（32 packages、102 commands），task validator 与 `git diff --check` 通过；
+本记录不以历史 #436 package tests 或 D443 result 冒充 `.66` 的提交后完整 Branch Review。
+`ARCH-CUR-043`、`ARCH-DOM-028`、`ARCH-INT-031`
+只证明非激活 source current；E434/#434 graph/selector/installed/platform 与 #410 Release matrix
+均为独立未验证边界。
+
 ## EVD-040: #454 D443 reviewed source candidate
 
 来源为 [D443 contribution](../contributions/454-task-lifecycle-d443.md) 与 generation 5 的

@@ -35,13 +35,13 @@
     },
     {
       "id": "closure_result",
-      "evidence": "current Closure closed or no_mutation DTO",
+      "evidence": "current Closure ResultRefDTO and shared terminal action-set snapshot",
       "binding": "one task lifecycle",
       "freshness": "current"
     },
     {
       "id": "task_identity",
-      "evidence": "active task and target base",
+      "evidence": "TaskId-resolved active or archived task and target base",
       "binding": "one archive identity",
       "freshness": "live reread"
     },
@@ -88,6 +88,10 @@
       "id": "blocked_output",
       "path": "examples/public-blocked-output.json"
     },
+    {"id": "closure_refresh_output", "path": "examples/public-closure-refresh-output.json"},
+    {"id": "manual_cleanup_output", "path": "examples/public-manual-cleanup-output.json"},
+    {"id": "reentry_input", "path": "examples/public-reentry-input.json"},
+    {"id": "manual_cleanup_authoring", "path": "examples/manual-cleanup-authoring.json"},
     {
       "id": "cleanup_authoring",
       "path": "examples/cleanup-authoring.json"
@@ -115,6 +119,10 @@
       "path": "schemas/finish-transaction.schema.json"
     },
     {
+      "id": "closure_result_snapshot",
+      "path": "schemas/closure-result-snapshot.schema.json"
+    },
+    {
       "id": "success_output",
       "path": "schemas/public-success-output.schema.json"
     },
@@ -125,7 +133,9 @@
     {
       "id": "blocked_output",
       "path": "schemas/public-blocked-output.schema.json"
-    }
+    },
+    {"id": "closure_refresh_output", "path": "schemas/public-closure-refresh-output.schema.json"},
+    {"id": "manual_cleanup_output", "path": "schemas/public-manual-cleanup-output.schema.json"}
   ],
   "validators": [
     {
@@ -159,7 +169,9 @@
         "kind": "stop",
         "id": "task-finish-blocked"
       }
-    }
+    },
+    {"id": "closure_refresh_required", "evidence": "required-closed Issue reopened before terminal mutation", "consumer": {"kind": "workflow", "id": "task-closure-refresh-router"}},
+    {"id": "manual_cleanup_required", "evidence": "terminal archive persisted but resource ledger is missing", "consumer": {"kind": "skill", "id": "guru-cleanup-task-resources"}}
   ],
   "reentry": {
     "identity": "task, closure, allowlist and target baseline",
@@ -198,14 +210,14 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-finish-task-input-1.0",
+        "schema_id": "guru-finish-task-input-2.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
         {
           "id": "closure_completed",
           "schema": {
-            "schema_id": "guru-finish-task-input-1.0",
+            "schema_id": "guru-finish-task-input-2.0",
             "path": "schemas/public-input.schema.json"
           },
           "example": {
@@ -216,7 +228,8 @@
             "field": "profile",
             "value": "closure_completed"
           }
-        }
+        },
+        {"id": "finish_reentry", "schema": {"schema_id": "guru-finish-task-input-2.0", "path": "schemas/public-input.schema.json"}, "example": {"id": "reentry_input", "path": "examples/public-reentry-input.json"}, "discriminator": {"field": "profile", "value": "finish_reentry"}}
       ]
     },
     "invocation": {
@@ -228,7 +241,7 @@
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
-        "schema_id": "guru-finish-task-output-1.0",
+        "schema_id": "guru-finish-task-output-aggregate-2.0",
         "path": "schemas/public-output.schema.json"
       },
       "error_example": {
@@ -246,7 +259,7 @@
       {
         "exit_id": "success",
         "schema": {
-          "schema_id": "guru-finish-task-output-success-1.0",
+          "schema_id": "guru-finish-task-output-success-2.0",
           "path": "schemas/public-success-output.schema.json"
         },
         "example": {
@@ -260,7 +273,7 @@
       {
         "exit_id": "resume_finish",
         "schema": {
-          "schema_id": "guru-finish-task-output-resume-finish-1.0",
+          "schema_id": "guru-finish-task-output-resume-finish-2.0",
           "path": "schemas/public-resume-finish-output.schema.json"
         },
         "example": {
@@ -274,17 +287,17 @@
       {
         "exit_id": "blocked",
         "schema": {
-          "schema_id": "guru-finish-task-output-blocked-1.0",
+          "schema_id": "guru-finish-task-output-blocked-2.0",
           "path": "schemas/public-blocked-output.schema.json"
         },
         "example": {
           "id": "blocked_output",
           "path": "examples/public-blocked-output.json"
         },
-        "consumer_use_ids": [
-          "blocked"
-        ]
-      }
+        "consumer_use_ids": ["blocked"]
+      },
+      {"exit_id": "closure_refresh_required", "schema": {"schema_id": "guru-finish-task-output-closure-refresh-2.0", "path": "schemas/public-closure-refresh-output.schema.json"}, "example": {"id": "closure_refresh_output", "path": "examples/public-closure-refresh-output.json"}, "consumer_use_ids": ["closure_refresh"]},
+      {"exit_id": "manual_cleanup_required", "schema": {"schema_id": "guru-finish-task-output-manual-cleanup-2.0", "path": "schemas/public-manual-cleanup-output.schema.json"}, "example": {"id": "manual_cleanup_output", "path": "examples/public-manual-cleanup-output.json"}, "consumer_use_ids": ["manual_cleanup"]}
     ],
     "consumer_inputs": [
       {
@@ -298,13 +311,9 @@
           "kind": "skill_input_authoring_seed",
           "interface_path": "packages/guru-cleanup-task-resources/interface.json",
           "input_kind": "structured_json",
-          "profile_id": "finish_success",
+          "profile_id": "normal",
           "seed_fields": [
-            "source_exit",
-            "task_ref",
-            "archive_ref",
-            "finish_ref",
-            "lifecycle_generation"
+            "task_id", "lifecycle_generation", "finish_result_id", "inventory_id"
           ],
           "authoring_fields": [
             "profile",
@@ -327,18 +336,9 @@
           "kind": "skill_input_authoring_seed",
           "interface_path": "packages/guru-finish-task/interface.json",
           "input_kind": "structured_json",
-          "profile_id": "closure_completed",
-          "seed_fields": [
-            "source_exit",
-            "task_ref",
-            "closure_exit",
-            "closure_ref",
-            "source_issue"
-          ],
-          "authoring_fields": [
-            "profile",
-            "mode"
-          ],
+          "profile_id": "finish_reentry",
+          "seed_fields": ["task_id", "lifecycle_generation", "transaction_id", "result_id"],
+          "authoring_fields": ["profile", "mode"],
           "authoring_example": {
             "id": "self_authoring",
             "path": "examples/self-authoring.json"
@@ -351,80 +351,52 @@
           "kind": "stop",
           "id": "task-finish-blocked"
         },
-        "payload_kind": "zero_payload"
-      }
+        "payload_kind": "structured_json",
+        "contract": {"kind": "json_schema", "schema_id": "guru-finish-task-blocked-stop-2.0", "path": "consumers/stop/production/finish-blocked.schema.json"}
+      },
+      {"id": "closure_refresh", "consumer": {"kind": "workflow", "id": "task-closure-refresh-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-finish-task-closure-refresh-route-2.0", "path": "consumers/workflow/production/closure-refresh.schema.json"}},
+      {"id": "manual_cleanup", "consumer": {"kind": "skill", "id": "guru-cleanup-task-resources"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-cleanup-task-resources/interface.json", "input_kind": "structured_json", "profile_id": "manual", "seed_fields": ["task_id", "lifecycle_generation", "finish_result_id", "cleanup_state"], "authoring_fields": ["profile", "mode", "selected_targets"], "authoring_example": {"id": "manual_cleanup_authoring", "path": "examples/manual-cleanup-authoring.json"}}}
     ],
     "projections": [
       {
         "id": "cleanup",
         "exit_id": "success",
         "consumer_input_id": "cleanup",
-        "operation": "rename",
+        "operation": "select",
         "mappings": [
-          {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
-          {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "archive_ref",
-            "target": "archive_ref"
-          },
-          {
-            "source": "finish_ref",
-            "target": "finish_ref"
-          },
-          {
-            "source": "lifecycle_generation",
-            "target": "lifecycle_generation"
-          }
+          {"source": "task_id", "target": "task_id"},
+          {"source": "lifecycle_generation", "target": "lifecycle_generation"},
+          {"source": "finish_result_id", "target": "finish_result_id"},
+          {"source": "inventory_id", "target": "inventory_id"}
         ]
       },
       {
         "id": "self",
         "exit_id": "resume_finish",
         "consumer_input_id": "self",
-        "operation": "rename",
+        "operation": "select",
         "mappings": [
-          {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
-          {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "closure_exit",
-            "target": "closure_exit"
-          },
-          {
-            "source": "closure_ref",
-            "target": "closure_ref"
-          },
-          {
-            "source": "source_issue",
-            "target": "source_issue"
-          }
+          {"source": "task_id", "target": "task_id"},
+          {"source": "lifecycle_generation", "target": "lifecycle_generation"},
+          {"source": "transaction_id", "target": "transaction_id"},
+          {"source": "result_id", "target": "result_id"}
         ]
       },
       {
         "id": "blocked",
         "exit_id": "blocked",
         "consumer_input_id": "blocked",
-        "operation": "select",
-        "mappings": []
-      }
+        "operation": "direct"
+      },
+      {"id": "closure_refresh", "exit_id": "closure_refresh_required", "consumer_input_id": "closure_refresh", "operation": "select", "mappings": [{"source": "task_id", "target": "task_id"}, {"source": "lifecycle_generation", "target": "lifecycle_generation"}, {"source": "result_id", "target": "result_id"}]},
+      {"id": "manual_cleanup", "exit_id": "manual_cleanup_required", "consumer_input_id": "manual_cleanup", "operation": "select", "mappings": [{"source": "task_id", "target": "task_id"}, {"source": "lifecycle_generation", "target": "lifecycle_generation"}, {"source": "finish_result_id", "target": "finish_result_id"}, {"source": "cleanup_state", "target": "cleanup_state"}]}
     ],
     "private_artifacts": [
       {
         "id": "finish_transaction",
         "kind": "runtime_checkpoint",
         "schema": {
-          "schema_id": "guru-finish-task-transaction-1.0",
+          "schema_id": "guru-finish-task-transaction-2.0",
           "path": "schemas/finish-transaction.schema.json"
         },
         "persistence": "ignored_runtime"

@@ -1,35 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-finish-task-input-1.0",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["profile", "source_exit", "mode", "task_ref", "closure_exit", "closure_ref", "source_issue"],
-  "properties": {
-    "profile": {"const": "closure_completed"},
-    "source_exit": {"enum": ["closed", "no_mutation", "resume_finish"]},
-    "mode": {"enum": ["workflow", "standalone"]},
-    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/"},
-    "closure_exit": {"enum": ["closed", "no_mutation"]},
-    "closure_ref": {"type": "string", "pattern": "^closure:v3:[0-9a-f]{16}:[0-9a-f]{16}$"},
-    "source_issue": {
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["repo_ref", "number", "disposition"],
-          "properties": {
-            "repo_ref": {"type": "string", "pattern": "^[^/ ]+/[^/ ]+$"},
-            "number": {"type": "integer", "minimum": 1},
-            "disposition": {"const": "exact_source"}
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["disposition"],
-          "properties": {"disposition": {"enum": ["no_issue", "reference_only", "follow_up", "parent"]}}
-        }
-      ]
-    }
+  "$id": "guru-finish-task-input-2.0",
+  "oneOf": [{"$ref": "#/$defs/initial"}, {"$ref": "#/$defs/reentry"}],
+  "$defs": {
+    "taskId": {"type": "string", "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "result": {"type": "object", "additionalProperties": false, "required": ["task_id", "lifecycle_generation", "result_id"], "properties": {"task_id": {"$ref": "#/$defs/taskId"}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "result_id": {"type": "string", "minLength": 1}}},
+    "initial": {"type": "object", "additionalProperties": false, "required": ["profile", "mode", "closure_result"], "properties": {"profile": {"const": "closure_completed"}, "mode": {"enum": ["workflow", "standalone"]}, "closure_result": {"$ref": "#/$defs/result"}}},
+    "reentry": {"type": "object", "additionalProperties": false, "required": ["profile", "mode", "task_id", "lifecycle_generation", "transaction_id", "result_id"], "properties": {"profile": {"const": "finish_reentry"}, "mode": {"enum": ["workflow", "standalone"]}, "task_id": {"$ref": "#/$defs/taskId"}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "transaction_id": {"type": "string", "minLength": 1}, "result_id": {"type": "string", "minLength": 1}}}
   }
 }

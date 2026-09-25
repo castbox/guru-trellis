@@ -234,10 +234,10 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                     output = outputs[projection["exit_id"]]
                     example = json.loads((package / output["example"]["path"]).read_text(encoding="utf-8"))
                     consumer = consumers[projection["consumer_input_id"]]
-                    projected = {
+                    projected = (example if projection["operation"] == "direct" else {
                         mapping["target"]: example[mapping["source"]]
                         for mapping in projection.get("mappings", [])
-                    }
+                    })
                     if consumer["payload_kind"] == "zero_payload":
                         self.assertEqual(projection["operation"], "select")
                         self.assertEqual(projected, {})
@@ -246,7 +246,6 @@ class SkillPackageIntegrationTests(unittest.TestCase):
 
                     contract = consumer["contract"]
                     if contract["kind"] == "json_schema":
-                        self.assertIn("exit_id", projected)
                         validate_json(projected, package / contract["path"], f"{package_id}.{projection['id']}.workflow")
                         continue
 

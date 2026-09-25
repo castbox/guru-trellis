@@ -1,27 +1,24 @@
 ---
 name: guru-cleanup-task-resources
-description: Remove only the current Finish-owned branch, worktree and runtime resources after terminal success.
+description: Clean sealed Guru-owned resources or explicitly selected manual and machine-handoff targets.
 ---
 
 # Guru Cleanup Task Resources
 
-Cleanup consumes one current Finish `success`. It shows the exact owned
-resources, requires an independent confirmation when a deletion remains, and
-preserves user checkouts, other task resources, archives and shared runtime
-state. A fresh empty set or a reviewed set whose resources are already absent
-is a normal `cleaned` terminal state.
+Normal Cleanup consumes only ResourceSealRefDTO and resolves Guru-owned
+incarnations from the common-dir ledger. It preserves caller-owned and unknown
+resources. Manual cleanup requires explicit target selection, fresh validation
+and its own deletion confirmation; machine handoff has a separate profile.
 
-The executor accepts only a complete terminal Finish transaction, an exact
-clean registered worktree for that transaction's head branch, the merged local
-head branch, `origin/<head_branch>`, its exact remote-tracking ref, and
-task-bound runtime files. Existing Git refs must still point to the Finish
-commit. It never force-removes a worktree or removes the checkout executing
-Cleanup.
+Every deletion checks exact Git ref/HEAD and registered worktree state again.
+An absent resource converges through the same ledger resolution. Normal cleanup
+removes linked worktrees, then local branches, then remote branches under exact
+HEAD checks. A moved or dirty target blocks the affected action. The shared
+ledger resolves the complete Guru-owned pending set only after deletion.
+Caller-owned retained resources are never included in normal deletion.
 
-After successful deletion, Cleanup records one ignored-runtime terminal
-receipt before retiring the Finish receipt. An exact same-input retry can
-therefore recover `cleaned` after stdout loss. A pending `remaining_resources`
-route emits only task/archive/Finish continuation identity and does not require
-the Finish receipt to remain readable. The terminal receipt also binds the
-Finish lifecycle generation, and Reactivate invalidates all prior Cleanup
-receipts for the task.
+Manual cleanup records the exact selected result without assigning Guru
+ownership. Machine handoff reads a released source inventory and resolves only
+its Guru-owned pending local resources. Both require independent deletion
+confirmation and can reread a recorded result after output loss. This
+canonical package major does not activate production routing.

@@ -1,1 +1,1 @@
-{"exit_id":"remaining_work","task_ref":".trellis/tasks/example-task","resume_target":"active-task"}
+{"exit_id":"remaining_work","task_artifact":{"task_id":"example-task","task_ref":".trellis/tasks/example-task","lifecycle_generation":0},"reason":{"reason_code":"remaining_work","reason_refs":["scope:current"]}}

@@ -145,6 +145,12 @@
   binding 属于独立 consistency/installation gate。任一不一致仍 fail closed 并阻塞 release，
   但其变化本身不构成 capability loss。
 
+`ARCH-INT-031`（#454 D436）：五个 canonical package 的 schema、interface、consumer、runtime 与
+source tests 按 current lifecycle DTO/ledger 闭合。Closure Result/Transaction refs 投影到 Finish，
+Finish ResourceSealRefDTO 投影到 Cleanup；manual 与 machine-handoff 各有单独入口及目标 consumer。
+这不是 active selector、graph/manifest 或 installed/platform projection；E434/#434 必须原子安装，
+#410 独占完整升级/发布矩阵。
+
 `ARCH-INT-030`（#454 D443）：canonical Bind major 以五个保留成功 router 加一个
 `explicit_task_mode` 提供 TaskLifecycleDTO 最小 handoff，blocked 投影 ReasonDTO；TaskRef 由直接
 consumer fresh 派生。active selector、manifest、managed installed/platform bytes 及 workflow routers

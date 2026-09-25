@@ -1,1 +1,1 @@
-{"code":"schema_mismatch","field_path":"source_issue","remediation":"Use the exact source Issue disposition."}
+{"code":"schema_mismatch","field_path":"action_set","remediation":"Use the reviewed current Issue action set."}

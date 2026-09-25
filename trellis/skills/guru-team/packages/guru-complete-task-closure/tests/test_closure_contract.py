@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 import subprocess
@@ -8,278 +9,213 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.schema import validate_json
+from runtime.task_lifecycle.closure_result import read_terminal_closure_result
+from runtime.task_lifecycle.errors import LifecycleContractError
+from runtime.task_lifecycle.git_facts import inspect_repository
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
 ROOT = PACKAGE.parents[1]
 
 
-def write_json(path: Path, value: dict) -> Path:
-    path.write_text(json.dumps(value))
-    return path
+def fixture():
+    public = json.loads((PACKAGE / "examples/public-input.json").read_text())
+    semantic = json.loads((PACKAGE / "examples/semantic-result.json").read_text())
+    return public, semantic
 
 
-def invocation(tmp_path: Path, disposition: str = "exact_source") -> tuple[list[str], dict, Path]:
-    source_issue = {"disposition": disposition}
-    if disposition == "exact_source":
-        source_issue.update({"repo_ref": "castbox/guru-trellis", "number": 436})
-    public = {
-        "profile": "completion_approved",
-        "source_exit": "completed",
-        "mode": "standalone",
-        "task_ref": ".trellis/tasks/demo",
-        "completion_ref": "completion:v1:demo",
-        "source_issue": source_issue,
-    }
-    semantic = {
-        "profile": "completion_approved",
-        "mode": "standalone",
-        "route": {"typed_exit": "close_issue", "reason": "completed"},
-    }
-    input_path = write_json(tmp_path / "input.json", public)
-    semantic_path = write_json(tmp_path / "semantic.json", semantic)
-    command = [
-        sys.executable,
-        str(PACKAGE / "runtime/invoke.py"),
-        "--root",
-        str(tmp_path),
-        "--input",
-        str(input_path),
-        "--semantic-result",
-        str(semantic_path),
-    ]
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(ROOT)
-    return command, env, semantic_path
-
-
-def install_fake_gh(tmp_path: Path, view_states: list[str]) -> tuple[dict, Path]:
+def fake_gh(tmp_path):
     bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
-    log_path = tmp_path / "gh.log"
-    count_path = tmp_path / "gh-view-count"
+    bin_dir.mkdir(exist_ok=True)
     script = bin_dir / "gh"
     script.write_text(
         "#!/usr/bin/env python3\n"
         "import json, os, pathlib, sys\n"
+        "args = sys.argv[1:]\n"
         "log = pathlib.Path(os.environ['GH_LOG'])\n"
-        "with log.open('a') as stream:\n"
-        "    stream.write(' '.join(sys.argv[1:]) + '\\n')\n"
-        "if 'view' in sys.argv:\n"
-        "    count_path = pathlib.Path(os.environ['GH_VIEW_COUNT'])\n"
-        "    count = int(count_path.read_text()) if count_path.exists() else 0\n"
-        "    states = json.loads(os.environ['GH_VIEW_STATES'])\n"
-        "    print(states[min(count, len(states) - 1)])\n"
-        "    count_path.write_text(str(count + 1))\n"
+        "with log.open('a') as stream: stream.write(' '.join(args) + '\\n')\n"
+        "state = pathlib.Path(os.environ['GH_STATE'])\n"
+        "states = json.loads(state.read_text())\n"
+        "key = args[args.index('--repo') + 1] + '#' + args[2]\n"
+        "if args[1] == 'view': print(states[key])\n"
+        "elif args[1] == 'close':\n"
+        "    if key == os.environ.get('GH_FAIL_ISSUE'): sys.exit(1)\n"
+        "    states[key] = 'CLOSED'; state.write_text(json.dumps(states))\n"
     )
     script.chmod(0o755)
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(ROOT)
-    env["PATH"] = f"{bin_dir}{os.pathsep}{env['PATH']}"
-    env["GH_LOG"] = str(log_path)
-    env["GH_VIEW_COUNT"] = str(count_path)
-    env["GH_VIEW_STATES"] = json.dumps(view_states)
-    return env, log_path
+    state = tmp_path / "states.json"
+    state.write_text(json.dumps({"castbox/guru-trellis#436": "OPEN", "castbox/guru-trellis#437": "OPEN"}))
+    env = {**os.environ, "PYTHONPATH": str(ROOT), "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}",
+           "GH_LOG": str(tmp_path / "gh.log"), "GH_STATE": str(state)}
+    return env, state, tmp_path / "gh.log"
 
 
-def test_contract_assets_and_finish_projection():
+def invoke(tmp_path, public, semantic, env, confirmed=False):
+    if not (tmp_path / ".git").exists():
+        subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    inp = tmp_path / "input.json"
+    review = tmp_path / "semantic.json"
+    inp.write_text(json.dumps(public))
+    review.write_text(json.dumps(semantic))
+    argv = [sys.executable, str(PACKAGE / "runtime/invoke.py"), "--root", str(tmp_path),
+            "--input", str(inp), "--semantic-result", str(review)]
+    if confirmed:
+        argv.append("--confirmed-close")
+    return subprocess.run(argv, text=True, capture_output=True, env=env)
+
+
+def test_contract_assets():
     interface = json.loads((PACKAGE / "interface.json").read_text())
     validate_json(interface, ROOT / "schemas/skill-interface-1.4.schema.json", "interface")
-
-    for artifact in interface["artifacts"]:
-        assert (PACKAGE / artifact["path"]).is_file()
-    for schema in interface["schemas"]:
-        assert (PACKAGE / schema["path"]).is_file()
-
+    assert [item["id"] for item in interface["external_exits"]] == [
+        "no_mutation", "closed", "resume_closure", "external_change_conflict", "blocked",
+    ]
+    for group in ("artifacts", "schemas"):
+        for item in interface[group]:
+            assert (PACKAGE / item["path"]).is_file()
+    for output in interface["public_contracts"]["outputs"]:
+        value = json.loads((PACKAGE / output["example"]["path"]).read_text())
+        validate_json(value, PACKAGE / output["schema"]["path"], output["exit_id"])
+        validate_json(value, PACKAGE / "schemas/public-output.schema.json", output["exit_id"])
     finish = next(item for item in interface["public_contracts"]["consumer_inputs"] if item["id"] == "finish")
-    assert finish["contract"]["kind"] == "skill_input_authoring_seed"
-    assert finish["contract"]["interface_path"] == "packages/guru-finish-task/interface.json"
-    assert finish["contract"]["seed_fields"] == ["source_exit", "task_ref", "closure_exit", "closure_ref", "source_issue"]
-
-    finish_schema = ROOT / "packages/guru-finish-task/schemas/public-input.schema.json"
-    authored = json.loads((PACKAGE / "examples/public-finish-authoring.json").read_text())
-    for exit_id, example_name in (
-        ("no_mutation", "public-output.json"),
-        ("closed", "public-closed-output.json"),
-    ):
-        output = json.loads((PACKAGE / "examples" / example_name).read_text())
-        projection = next(item for item in interface["public_contracts"]["projections"] if item["exit_id"] == exit_id)
-        projected = dict(authored)
-        projected.update({mapping["target"]: output[mapping["source"]] for mapping in projection["mappings"]})
-        validate_json(projected, finish_schema, f"finish_projection.{exit_id}")
+    assert finish["contract"]["seed_fields"] == ["closure_result"]
 
 
-def test_no_mutation_and_exact_closed_recovery(tmp_path):
-    command, env, semantic_path = invocation(tmp_path, disposition="reference_only")
-    semantic = {
-        "profile": "completion_approved",
-        "mode": "standalone",
-        "route": {"typed_exit": "no_mutation", "reason": "reference only"},
-    }
-    write_json(semantic_path, semantic)
-    output = json.loads(subprocess.run(command, text=True, capture_output=True, env=env, check=True).stdout)
-    assert output["exit_id"] == "no_mutation"
-    assert output["closure_exit"] == "no_mutation"
+def test_no_issue_no_mutation_never_calls_provider(tmp_path):
+    public, semantic = fixture()
+    public["source"] = {"kind": "no_issue"}
+    public["action_set"] = []
+    semantic["reviewed_action_set"] = []
+    env, _, log = fake_gh(tmp_path)
+    result = invoke(tmp_path, public, semantic, env)
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["exit_id"] == "no_mutation"
+    assert not log.exists()
 
-    command, _, _ = invocation(tmp_path)
-    facts_path = write_json(
-        tmp_path / "facts.json",
-        {"issue": {"repo_ref": "castbox/guru-trellis", "number": 436, "state": "CLOSED"}},
-    )
-    env, log_path = install_fake_gh(tmp_path, ["CLOSED"])
-    recovered = json.loads(
-        subprocess.run(
-            command + ["--confirmed-close", "--facts", str(facts_path)],
-            text=True,
-            capture_output=True,
-            env=env,
-            check=True,
-        ).stdout
-    )
-    assert recovered["exit_id"] == "closed"
-    assert recovered["closure_exit"] == "closed"
-    assert recovered["issue_ref"] == "castbox/guru-trellis#436"
-    assert log_path.read_text().splitlines() == [
-        "issue view 436 --repo castbox/guru-trellis --json state --jq .state"
-    ]
+    result_ref = json.loads(result.stdout)["result_ref"]
+    snapshot = read_terminal_closure_result(inspect_repository(tmp_path), result_ref)
+    assert snapshot == {"result_ref": result_ref, "terminal": "no_mutation", "action_set": []}
+    with pytest.raises(LifecycleContractError, match="closure_result_stale"):
+        read_terminal_closure_result(inspect_repository(tmp_path), {**result_ref, "result_id": "closure:other"})
 
 
-def test_exact_source_rejects_no_mutation(tmp_path):
-    command, env, semantic_path = invocation(tmp_path)
-    write_json(
-        semantic_path,
-        {
-            "profile": "completion_approved",
-            "mode": "standalone",
-            "route": {"typed_exit": "no_mutation", "reason": "skip source closure"},
-        },
-    )
-
-    result = subprocess.run(command, text=True, capture_output=True, env=env, check=False)
-
-    assert result.returncode == 3
-    error = json.loads(result.stderr)
-    assert error["code"] == "stale_identity"
-    assert error["field_path"] == "semantic_result.route.typed_exit"
-
-
-def test_resume_closure_rejects_wrong_issue_after_stdout_loss(tmp_path):
-    command, env, _ = invocation(tmp_path)
-    pending = json.loads(subprocess.run(command, text=True, capture_output=True, env=env, check=True).stdout)
-    resumed = {
-        "profile": "completion_approved",
-        "source_exit": "resume_closure",
-        "mode": "standalone",
-        "task_ref": ".trellis/tasks/demo",
-        "completion_ref": "completion:v1:demo",
-        "closure_ref": pending["closure_ref"],
-        "source_issue": {"repo_ref": "castbox/other", "number": 99, "disposition": "exact_source"},
-    }
-    input_path = write_json(tmp_path / "wrong-resume.json", resumed)
-    wrong_command = command[:]
-    wrong_command[wrong_command.index("--input") + 1] = str(input_path)
-    result = subprocess.run(wrong_command + ["--confirmed-close"], text=True, capture_output=True, env=env, check=False)
-    assert result.returncode == 3
-    error = json.loads(result.stderr)
-    assert error["code"] == "stale_identity"
-    assert error["field_path"] == "closure_ref"
+def test_close_and_same_owner_output_loss_recovery(tmp_path):
+    public, semantic = fixture()
+    env, state, log = fake_gh(tmp_path)
+    pending = invoke(tmp_path, public, semantic, env)
+    assert pending.returncode == 0, pending.stderr
+    pending_ref = json.loads(pending.stdout)["transaction_ref"]
+    assert not log.exists()
+    public["source_exit"] = "resume_closure"
+    public["transaction_ref"] = pending_ref
+    closed = invoke(tmp_path, public, semantic, env, confirmed=True)
+    assert closed.returncode == 0, closed.stderr
+    assert json.loads(closed.stdout)["result_ref"]["result_id"] == pending_ref["result_id"]
+    retry = invoke(tmp_path, public, semantic, env)
+    assert retry.returncode == 0, retry.stderr
+    assert json.loads(retry.stdout) == json.loads(closed.stdout)
+    assert log.read_text().count("issue close 436") == 1
+    assert json.loads(state.read_text())["castbox/guru-trellis#436"] == "CLOSED"
 
 
-def test_resume_closure_rejects_wrong_disposition_after_stdout_loss(tmp_path):
-    command, env, _ = invocation(tmp_path)
-    pending = json.loads(subprocess.run(command, text=True, capture_output=True, env=env, check=True).stdout)
-    resumed = {
-        "profile": "completion_approved",
-        "source_exit": "resume_closure",
-        "mode": "standalone",
-        "task_ref": ".trellis/tasks/demo",
-        "completion_ref": "completion:v1:demo",
-        "closure_ref": pending["closure_ref"],
-        "source_issue": {"disposition": "reference_only"},
-    }
-    input_path = write_json(tmp_path / "wrong-disposition.json", resumed)
-    wrong_command = command[:]
-    wrong_command[wrong_command.index("--input") + 1] = str(input_path)
-    result = subprocess.run(wrong_command + ["--confirmed-close"], text=True, capture_output=True, env=env, check=False)
-    assert result.returncode == 3
-    error = json.loads(result.stderr)
-    assert error["code"] == "stale_identity"
-    assert error["field_path"] == "closure_ref"
+def test_partial_transaction_conflict_can_be_semantically_reentered(tmp_path):
+    public, semantic = fixture()
+    public["action_set"].append({"issue_ref": {"repo_ref": "castbox/guru-trellis", "issue_number": 437}, "disposition": "close"})
+    semantic["reviewed_action_set"] = copy.deepcopy(public["action_set"])
+    env, state, log = fake_gh(tmp_path)
+    pending = invoke(tmp_path, public, semantic, {**env, "GH_FAIL_ISSUE": "castbox/guru-trellis#437"}, confirmed=True)
+    assert json.loads(pending.stdout)["exit_id"] == "resume_closure"
+    state.write_text(json.dumps({"castbox/guru-trellis#436": "OPEN", "castbox/guru-trellis#437": "OPEN"}))
+    public["source_exit"] = "resume_closure"
+    public["transaction_ref"] = json.loads(pending.stdout)["transaction_ref"]
+    conflict = invoke(tmp_path, public, semantic, env, confirmed=True)
+    assert json.loads(conflict.stdout)["exit_id"] == "external_change_conflict"
+    public["source_exit"] = "external_change_conflict"
+    public["transaction_ref"] = json.loads(conflict.stdout)["transaction_ref"]
+    reviewed = invoke(tmp_path, public, semantic, env, confirmed=True)
+    assert reviewed.returncode == 0, reviewed.stderr
+    assert json.loads(reviewed.stdout)["exit_id"] == "closed"
+    assert log.read_text().count("issue close 436") == 2
 
 
-@pytest.mark.parametrize(
-    ("issue_patch", "field_path"),
-    [
-        ({"repo_ref": "castbox/other"}, "facts.issue.repo_ref"),
-        ({"number": 435}, "facts.issue.number"),
-    ],
-)
-def test_wrong_issue_recovery_facts_fail_closed(tmp_path, issue_patch, field_path):
-    command, env, _ = invocation(tmp_path)
-    issue = {"repo_ref": "castbox/guru-trellis", "number": 436, "state": "CLOSED"}
-    issue.update(issue_patch)
-    facts_path = write_json(tmp_path / "facts.json", {"issue": issue})
-
-    result = subprocess.run(
-        command + ["--confirmed-close", "--facts", str(facts_path)],
-        text=True,
-        capture_output=True,
-        env=env,
-        check=False,
-    )
-
-    assert result.returncode == 3
-    error = json.loads(result.stderr)
-    assert error["code"] == "stale_identity"
-    assert error["field_path"] == field_path
+def test_frozen_scope_binding_action_and_generation_conflict(tmp_path):
+    public, semantic = fixture()
+    env, _, log = fake_gh(tmp_path)
+    assert invoke(tmp_path, public, semantic, env, confirmed=True).returncode == 0
+    for field, value in [
+        ("accepted_scope_identity", "scope:changed"),
+        ("binding_ref", {**public["binding_ref"], "binding_revision": 1}),
+        ("action_set", [{"issue_ref": {"repo_ref": "castbox/guru-trellis", "issue_number": 436}, "disposition": "already_closed_at_review"}]),
+        ("completion_result", {**public["completion_result"], "result_id": "completion:new"}),
+        ("content_head", "b" * 40),
+    ]:
+        changed = copy.deepcopy(public)
+        review = copy.deepcopy(semantic)
+        changed[field] = value
+        if field == "action_set":
+            review["reviewed_action_set"] = value
+        if field == "completion_result":
+            changed["evidence_slots"]["completion"] = value["result_id"]
+        conflict = invoke(tmp_path, changed, review, env, confirmed=True)
+        assert conflict.returncode == 0, conflict.stderr
+        assert json.loads(conflict.stdout)["exit_id"] == "external_change_conflict"
+    assert log.read_text().count("issue close 436") == 1
 
 
-def test_stale_open_recovery_fact_rereads_exact_issue_without_reclosing(tmp_path):
-    command, _, _ = invocation(tmp_path)
-    facts_path = write_json(
-        tmp_path / "facts.json",
-        {"issue": {"repo_ref": "castbox/guru-trellis", "number": 436, "state": "OPEN"}},
-    )
-    env, log_path = install_fake_gh(tmp_path, ["CLOSED"])
-
-    recovered = json.loads(
-        subprocess.run(
-            command + ["--confirmed-close", "--facts", str(facts_path)],
-            text=True,
-            capture_output=True,
-            env=env,
-            check=True,
-        ).stdout
-    )
-
-    assert recovered["exit_id"] == "closed"
-    assert recovered["closure_exit"] == "closed"
-    calls = log_path.read_text().splitlines()
-    assert calls == ["issue view 436 --repo castbox/guru-trellis --json state --jq .state"]
+def test_reopened_required_issue_semantic_reentry(tmp_path):
+    public, semantic = fixture()
+    env, state, log = fake_gh(tmp_path)
+    assert invoke(tmp_path, public, semantic, env, confirmed=True).returncode == 0
+    state.write_text(json.dumps({"castbox/guru-trellis#436": "OPEN"}))
+    changed = invoke(tmp_path, public, semantic, env, confirmed=True)
+    assert changed.returncode == 0, changed.stderr
+    output = json.loads(changed.stdout)
+    assert output["exit_id"] == "external_change_conflict"
+    assert output["reason"]["reason_code"] == "required_closed_issue_reopened"
+    assert log.read_text().count("issue close 436") == 1
+    public["source_exit"] = "external_change_conflict"
+    public["transaction_ref"] = output["transaction_ref"]
+    retried = invoke(tmp_path, public, semantic, env, confirmed=True)
+    assert retried.returncode == 0, retried.stderr
+    assert json.loads(retried.stdout)["exit_id"] == "closed"
+    assert json.loads(retried.stdout)["result_ref"]["result_id"] != output["transaction_ref"]["result_id"]
+    assert log.read_text().count("issue close 436") == 2
 
 
-def test_stale_closed_recovery_fact_uses_live_open_state_and_closes(tmp_path):
-    command, _, _ = invocation(tmp_path)
-    facts_path = write_json(
-        tmp_path / "facts.json",
-        {"issue": {"repo_ref": "castbox/guru-trellis", "number": 436, "state": "CLOSED"}},
-    )
-    env, log_path = install_fake_gh(tmp_path, ["OPEN", "CLOSED"])
+def test_multi_issue_action_set_and_no_authority_item(tmp_path):
+    public, semantic = fixture()
+    public["action_set"].append({"issue_ref": {"repo_ref": "castbox/guru-trellis", "issue_number": 437}, "disposition": "no_close_authority"})
+    semantic["reviewed_action_set"] = copy.deepcopy(public["action_set"])
+    env, _, log = fake_gh(tmp_path)
+    result = invoke(tmp_path, public, semantic, env, confirmed=True)
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["exit_id"] == "closed"
+    assert "437" not in log.read_text()
 
-    closed = json.loads(
-        subprocess.run(
-            command + ["--confirmed-close", "--facts", str(facts_path)],
-            text=True,
-            capture_output=True,
-            env=env,
-            check=True,
-        ).stdout
-    )
 
-    assert closed["exit_id"] == "closed"
-    assert closed["closure_exit"] == "closed"
-    assert log_path.read_text().splitlines() == [
-        "issue view 436 --repo castbox/guru-trellis --json state --jq .state",
-        "issue close 436 --repo castbox/guru-trellis --reason completed",
-        "issue view 436 --repo castbox/guru-trellis --json state --jq .state",
-    ]
+def test_partial_action_set_recovers_only_unfinished_issue(tmp_path):
+    public, semantic = fixture()
+    public["action_set"].append({"issue_ref": {"repo_ref": "castbox/guru-trellis", "issue_number": 437}, "disposition": "close"})
+    semantic["reviewed_action_set"] = copy.deepcopy(public["action_set"])
+    env, _, log = fake_gh(tmp_path)
+    first = invoke(tmp_path, public, semantic, {**env, "GH_FAIL_ISSUE": "castbox/guru-trellis#437"}, confirmed=True)
+    assert first.returncode == 0, first.stderr
+    pending = json.loads(first.stdout)
+    assert pending["exit_id"] == "resume_closure"
+    public["source_exit"] = "resume_closure"
+    public["transaction_ref"] = pending["transaction_ref"]
+    resumed = invoke(tmp_path, public, semantic, env, confirmed=True)
+    assert resumed.returncode == 0, resumed.stderr
+    assert json.loads(resumed.stdout)["exit_id"] == "closed"
+    assert log.read_text().count("issue close 436") == 1
+    assert log.read_text().count("issue close 437") == 2
+
+
+@pytest.mark.parametrize("field", ["source", "completion_result", "binding_ref", "action_set"])
+def test_invalid_input_zero_mutation(tmp_path, field):
+    public, semantic = fixture()
+    public[field] = None
+    env, _, log = fake_gh(tmp_path)
+    failed = invoke(tmp_path, public, semantic, env, confirmed=True)
+    assert failed.returncode != 0
+    assert not log.exists()

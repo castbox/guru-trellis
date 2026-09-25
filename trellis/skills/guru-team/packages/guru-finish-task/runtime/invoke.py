@@ -12,6 +12,11 @@ from pathlib import Path
 
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
+from runtime.task_lifecycle.errors import LifecycleContractError
+from runtime.task_lifecycle.git_facts import inspect_repository
+from runtime.task_lifecycle.identity import resolve_task_id
+from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 
 
 def load(root: Path, package_root: Path, value: str, field: str) -> dict:
@@ -51,26 +56,55 @@ def gh_json(repo_ref: str, *args: str):
 
 
 def finish_ref(public: dict, lifecycle_generation: int = 0) -> str:
-    suffix = hashlib.sha256((public["task_ref"] + public["closure_ref"] + str(lifecycle_generation)).encode()).hexdigest()[:16]
+    suffix = hashlib.sha256((public["task_id"] + public["closure_result"]["result_id"] + str(lifecycle_generation)).encode()).hexdigest()[:16]
     return "finish:v1:" + suffix
 
 
-def closure_binding_digest(source_issue: dict, closure_exit: str) -> str:
-    action = "close_issue" if closure_exit == "closed" else "no_mutation"
-    return hashlib.sha256(json.dumps({"source_issue": source_issue, "action": action}, sort_keys=True, separators=(",", ":")).encode()).hexdigest()[:16]
+def closure_result_for_input(public: dict) -> dict:
+    if public["profile"] == "finish_reentry":
+        return {key: public[key] for key in ("task_id", "lifecycle_generation", "result_id")}
+    return public["closure_result"]
 
 
-def validate_closure_binding(public: dict) -> None:
-    closure_ref = public["closure_ref"]
-    match = re.fullmatch(r"closure:v3:([0-9a-f]{16}):[0-9a-f]{16}", closure_ref)
-    if not match:
-        raise CommandError("stale_identity", "closure_ref", "Finish requires a Closure result bound to its source Issue and disposition.", 3)
-    if match.group(1) != closure_binding_digest(public["source_issue"], public["closure_exit"]):
-        raise CommandError("stale_identity", "closure_ref", "Closure result belongs to another source Issue or disposition.", 3)
-    if public["closure_exit"] == "closed" and public["source_issue"].get("disposition") != "exact_source":
-        raise CommandError("stale_identity", "source_issue.disposition", "Closed Finish input must bind the exact source Issue.", 3)
-    if public["closure_exit"] == "no_mutation" and public["source_issue"].get("disposition") == "exact_source":
-        raise CommandError("stale_identity", "source_issue.disposition", "No-mutation Finish input cannot bind an exact source Issue.", 3)
+def read_closure_snapshot(root: Path, package_root: Path, result: dict) -> dict:
+    try:
+        from runtime.task_lifecycle.closure_result import read_terminal_closure_result
+    except ImportError as exc:
+        raise CommandError("closure_result_reader_missing", "closure_result", "Provide the shared read-only terminal Closure result API.", 3) from exc
+    try:
+        snapshot = read_terminal_closure_result(inspect_repository(root), result)
+    except LifecycleContractError as exc:
+        raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc
+    validate_json(snapshot, package_root / "schemas/closure-result-snapshot.schema.json", "closure_result_snapshot")
+    if snapshot["result_ref"] != result:
+        raise CommandError("stale_identity", "closure_result", "Read the exact terminal Closure result.", 3)
+    actions = snapshot["action_set"]
+    identities = [(row["issue_ref"]["repo_ref"], row["issue_ref"]["issue_number"]) for row in actions]
+    if len(identities) != len(set(identities)) or (snapshot["terminal"] == "closed") != any(row["disposition"] != "no_close_authority" for row in actions):
+        raise CommandError("stale_identity", "closure_result_snapshot", "Read one consistent terminal Closure action set.", 3)
+    return snapshot
+
+
+def resolve_finish_identity(root: Path, result: dict) -> dict:
+    try:
+        identity = resolve_task_id(root, result["task_id"])
+    except LifecycleContractError as exc:
+        raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc
+    if identity.lifecycle_generation != result["lifecycle_generation"]:
+        raise CommandError("stale_identity", "closure_result.lifecycle_generation", "Resolve the exact current task incarnation.", 3)
+    task_ref = identity.task_ref if identity.lifecycle_state == "active" else ".trellis/tasks/" + Path(identity.task_ref).name
+    return {"task_id": result["task_id"], "lifecycle_generation": result["lifecycle_generation"], "task_ref": task_ref, "closure_result": result}
+
+
+def closure_current(actions: list[dict]) -> bool:
+    for action in actions:
+        if action["disposition"] == "no_close_authority":
+            continue
+        issue_ref = action["issue_ref"]
+        issue = gh_json(issue_ref["repo_ref"], "issue", "view", str(issue_ref["issue_number"]), "--json", "number,state")
+        if not isinstance(issue, dict) or issue.get("number") != issue_ref["issue_number"] or str(issue.get("state")).upper() != "CLOSED":
+            return False
+    return True
 
 
 def lifecycle_generation(root: Path, public: dict, archive_ref: str) -> int:
@@ -78,10 +112,11 @@ def lifecycle_generation(root: Path, public: dict, archive_ref: str) -> int:
     for path in candidates:
         if path.is_file() and not path.is_symlink():
             try:
-                value = json.loads(path.read_text()).get("lifecycle_generation", 0)
+                task = json.loads(path.read_text())
+                value = task.get("lifecycle_generation", 0)
             except (OSError, json.JSONDecodeError) as exc:
                 raise CommandError("stale_identity", "task.json.lifecycle_generation", "Task lifecycle generation is invalid.", 3) from exc
-            if not isinstance(value, int) or value < 0:
+            if type(value) is not int or value != public["lifecycle_generation"] or task.get("id") != public["task_id"]:
                 raise CommandError("stale_identity", "task.json.lifecycle_generation", "Task lifecycle generation is invalid.", 3)
             return value
     raise CommandError("stale_identity", "task_ref", "Active task or its current archive is missing.", 3)
@@ -105,7 +140,7 @@ def read_transaction(path: Path, public: dict, bookkeeping: dict, package_root: 
     except json.JSONDecodeError as exc:
         raise CommandError("stale_identity", "finish_transaction", "Discard the invalid private Finish transaction before retry.", 3) from exc
     validate_json(payload, package_root / "schemas/finish-transaction.schema.json", "finish_transaction")
-    expected = {"task_ref": public["task_ref"], "closure_ref": public["closure_ref"], "finish_ref": finish_ref(public, generation), "lifecycle_generation": generation, "repo_ref": bookkeeping["repo_ref"], "base_branch": bookkeeping["base_branch"], "head_branch": bookkeeping["head_branch"]}
+    expected = {"task_ref": public["task_ref"], "task_id": public["task_id"], "closure_result_id": public["closure_result"]["result_id"], "finish_ref": finish_ref(public, generation), "lifecycle_generation": generation, "repo_ref": bookkeeping["repo_ref"], "base_branch": bookkeeping["base_branch"], "head_branch": bookkeeping["head_branch"]}
     if any(payload.get(key) != value for key, value in expected.items()):
         raise CommandError("stale_identity", "finish_transaction", "The private Finish transaction belongs to another identity.", 3)
     return payload
@@ -222,7 +257,7 @@ def publish(root: Path, public: dict, bookkeeping: dict, allowlist: tuple[str, .
         parent_head = git(root, "rev-parse", "HEAD").stdout.strip()
         if git(root, "merge-base", "--is-ancestor", parent_head, bookkeeping["expected_base_head"], check=False).returncode:
             raise CommandError("stale_identity", "bookkeeping.expected_base_head", "The business branch is not contained in the reviewed target baseline.", 3)
-        transaction = {"schema_version": "1.0", "stage": "publish_prepared", "task_ref": public["task_ref"], "closure_ref": public["closure_ref"], "finish_ref": finish_ref(public, generation), "lifecycle_generation": generation, "repo_ref": bookkeeping["repo_ref"], "base_branch": bookkeeping["base_branch"], "head_branch": bookkeeping["head_branch"], "expected_base_head": bookkeeping["expected_base_head"], "archive_ref": bookkeeping["archive_ref"], "parent_head": parent_head}
+        transaction = {"schema_version": "2.0", "stage": "publish_prepared", "task_ref": public["task_ref"], "task_id": public["task_id"], "closure_result_id": public["closure_result"]["result_id"], "finish_ref": finish_ref(public, generation), "lifecycle_generation": generation, "repo_ref": bookkeeping["repo_ref"], "base_branch": bookkeeping["base_branch"], "head_branch": bookkeeping["head_branch"], "expected_base_head": bookkeeping["expected_base_head"], "archive_ref": bookkeeping["archive_ref"], "parent_head": parent_head}
         write_transaction(transaction_file, transaction, package_root)
     parent_head = transaction["parent_head"]
     if transaction["stage"] == "publish_prepared":
@@ -297,10 +332,10 @@ def merge(root: Path, public: dict, bookkeeping: dict, transaction: dict, transa
 def resume(public: dict, reason_code: str, remediation: str) -> dict:
     return {
         "exit_id": "resume_finish",
-        "task_ref": public["task_ref"],
-        "closure_exit": public["closure_exit"],
-        "closure_ref": public["closure_ref"],
-        "source_issue": public["source_issue"],
+        "task_id": public["task_id"],
+        "lifecycle_generation": public["lifecycle_generation"],
+        "transaction_id": finish_ref(public, public["lifecycle_generation"]),
+        "result_id": public["closure_result"]["result_id"],
     }
 
 
@@ -317,20 +352,29 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     except SystemExit as exc:
         raise CommandError("invalid_arguments", "arguments", "Use the finish command contract.") from exc
     root = Path(args.root or ".").resolve()
-    public = load(root, package_root, args.input, "input")
+    supplied = load(root, package_root, args.input, "input")
     semantic = load(root, package_root, args.semantic_result, "semantic_result")
-    validate_json(public, package_root / "schemas/public-input.schema.json", "input")
+    validate_json(supplied, package_root / "schemas/public-input.schema.json", "input")
     validate_json(semantic, package_root / "schemas/semantic-result.schema.json", "semantic_result")
-    if public["profile"] != semantic["profile"] or public["mode"] != semantic["mode"]:
+    if supplied["profile"] != semantic["profile"] or supplied["mode"] != semantic["mode"]:
         raise CommandError("stale_identity", "semantic_result", "Finish identity differs from Closure.", 3)
-    validate_closure_binding(public)
+    result = closure_result_for_input(supplied)
+    public = resolve_finish_identity(root, result)
+    if supplied["profile"] == "finish_reentry" and supplied["transaction_id"] != finish_ref(public, public["lifecycle_generation"]):
+        raise CommandError("stale_identity", "transaction_id", "Resume only the exact Finish and Closure results.", 3)
+    snapshot = read_closure_snapshot(root, package_root, result)
     route = semantic["route"]
     if route["typed_exit"] != "success":
-        out = (
-            resume(public, route["reason_code"], route["remediation"])
-            if route["typed_exit"] == "resume_finish"
-            else {"exit_id": "blocked"}
-        )
+        if route["typed_exit"] == "resume_finish":
+            out = resume(public, route["reason_code"], route["remediation"])
+        elif route["typed_exit"] == "closure_refresh_required":
+            out = {"exit_id": "closure_refresh_required", **public["closure_result"]}
+        else:
+            out = {"exit_id": "blocked", "reason_code": route["reason_code"], "reason_refs": ["closure_result"]}
+        validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
+        return out
+    if not closure_current(snapshot["action_set"]):
+        out = {"exit_id": "closure_refresh_required", **public["closure_result"]}
         validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
         return out
     bookkeeping = semantic["bookkeeping"]
@@ -338,6 +382,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     task_dir = root / task_ref
     archive_dir = root / archive_path
     if task_dir.is_dir():
+        lifecycle_generation(root, public, archive_ref)
         if not args.confirmed_finish:
             return resume(public, "confirmation_required", "Confirm the reviewed local archive projection.")
         project_archive(root, public, task_ref, archive_ref, archive_path)
@@ -360,12 +405,41 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     target_head = verify_target(root, transaction, public)
     if target_head != transaction["target_head"]:
         raise CommandError("stale_identity", "bookkeeping.target", "The verified target baseline changed after Finish success.", 3)
+    store = ResourceLedgerStore(inspect_repository(root))
+    key = TaskLifecycleKey(public["task_id"], generation)
+    branches = BranchBindingStore(store.repository)
+    try:
+        binding = branches.read(key)
+        ledger = store.read(key)
+        if binding is not None and binding.branch_name != bookkeeping["head_branch"]:
+            raise LifecycleContractError("branch_binding_conflict", "binding", "Retire only the exact Finish task branch association.")
+        if ledger is not None and ledger.finish_result_id is None and binding is None:
+            raise LifecycleContractError("branch_binding_required", "binding", "Recover the current branch association before Finish sealing.")
+        # The merge commit proves target persistence; cleanup refs still point at the PR head.
+        seal = store.seal_for_finish(key, finish_result_id=finish_ref(public, generation), finish_head=transaction["commit"])
+    except LifecycleContractError as exc:
+        if exc.code != "resource_ownership_missing":
+            raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc
+        if binding is not None:
+            branches.retire_generation(key, expected_epoch=binding.binding_epoch,
+                                       expected_revision=binding.binding_revision,
+                                       expected_branch_name=binding.branch_name)
+        out = {"exit_id": "manual_cleanup_required", "task_id": public["task_id"], "lifecycle_generation": generation, "finish_result_id": finish_ref(public, generation), "cleanup_state": "manual_cleanup_required"}
+        validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
+        return out
+    if binding is not None:
+        try:
+            branches.retire_generation(key, expected_epoch=binding.binding_epoch,
+                                       expected_revision=binding.binding_revision,
+                                       expected_branch_name=binding.branch_name)
+        except LifecycleContractError as exc:
+            raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc
     out = {
         "exit_id": "success",
-        "task_ref": public["task_ref"],
-        "archive_ref": archive_ref,
-        "finish_ref": finish_ref(public, generation),
-        "lifecycle_generation": generation,
+        "task_id": seal["task_id"],
+        "lifecycle_generation": seal["lifecycle_generation"],
+        "finish_result_id": seal["finish_result_id"],
+        "inventory_id": seal["inventory_id"],
     }
     validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
     return out

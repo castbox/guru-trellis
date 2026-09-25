@@ -1,319 +1,335 @@
 import json
-import os
 import subprocess
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.schema import validate_json
+from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
+from runtime.task_lifecycle.git_facts import inspect_repository
+from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 
 PACKAGE = Path(__file__).resolve().parents[1]
 ROOT = PACKAGE.parents[1]
-TASK_ID = "demo"
-DATE_PREFIXED_LOCATOR = "09-19-demo"
+sys.path.insert(0, str(PACKAGE / "runtime"))
+from invoke import execute, source_transaction_path, transaction_path
+import invoke
 
 
 def git(root, *args):
-    return subprocess.run(["git", *args], cwd=root, text=True, capture_output=True, check=True).stdout.strip()
+    return subprocess.run(["git", *args], cwd=root, check=True, text=True, capture_output=True).stdout.strip()
 
 
-def repository(tmp_path, locator_basename=TASK_ID, archive_task_id=TASK_ID):
+def repository(tmp_path, *, old_branch="codex/demo-old", old_owner="caller_owned"):
     repo = tmp_path / "repo"
-    remote = tmp_path / "remote.git"
     repo.mkdir()
-    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
-    subprocess.run(["git", "init", "-q", "--bare", remote], check=True)
+    git(repo, "init", "-q", "-b", "main")
     git(repo, "config", "user.email", "test@example.com")
     git(repo, "config", "user.name", "Test")
-    git(repo, "remote", "add", "origin", str(remote))
     (repo / ".gitignore").write_text(".trellis/.runtime/\n")
-    archive = repo / ".trellis/tasks/archive/2026-09" / locator_basename
+    git(repo, "add", ".gitignore")
+    git(repo, "commit", "-qm", "initial")
+    archive = repo / ".trellis/tasks/archive/2026-09/09-19-demo"
     archive.mkdir(parents=True)
-    (archive / "task.json").write_text(json.dumps({"id": archive_task_id, "status": "completed", "completedAt": "2026-09-18"}))
+    (archive / "task.json").write_text(json.dumps({"id": "demo", "status": "completed", "lifecycle_generation": 2,
+                                                  "source": {"kind": "no_issue"},
+                                                  "completedAt": "2026-09-19", "worktree_path": "/old/machine/path"}))
+    archive_ref = ".trellis/tasks/archive/2026-09/09-19-demo"
+    (archive / "finish-summary.json").write_text(json.dumps({"schema_version": 2, "task": {
+        "archive_dir": archive_ref, "status": "completed"}}))
     git(repo, "add", ".")
-    git(repo, "commit", "-qm", "archived task")
-    git(repo, "push", "-q", "-u", "origin", "main")
+    git(repo, "commit", "-qm", "archive")
     head = git(repo, "rev-parse", "HEAD")
-    git(repo, "switch", "-qc", "codex/demo-existing")
+    facts = inspect_repository(repo)
+    key = TaskLifecycleKey("demo", 2)
+    binding = BranchBindingStore(facts).establish(key, old_branch)
+    ledger = ResourceLedgerStore(facts)
+    ledger.establish_current(key, binding_epoch=binding.binding_epoch, binding_revision=0,
+                             branch_name=old_branch, branch_ownership=old_owner, worktree_ownership="not_applicable")
+    ledger.seal_for_finish(key, finish_result_id="finish:v1:1234567890abcdef", finish_head=head)
+    finish_dir = repo / ".trellis/.runtime/guru-team/finish"
+    finish_dir.mkdir(parents=True)
+    (finish_dir / "1234567890abcdef.json").write_text(json.dumps({
+        "schema_version": "2.0", "stage": "success", "task_ref": ".trellis/tasks/09-19-demo",
+        "task_id": "demo", "closure_result_id": "closure:demo", "finish_ref": "finish:v1:1234567890abcdef",
+        "lifecycle_generation": 2, "repo_ref": "castbox/guru-trellis", "base_branch": "main",
+        "head_branch": old_branch, "expected_base_head": head, "archive_ref": archive_ref,
+        "parent_head": head, "commit": head, "pr_number": 1,
+        "pr_url": "https://github.com/castbox/guru-trellis/pull/1", "target_head": head,
+    }))
     return repo, head
 
 
-def public_input(locator_basename=TASK_ID, archive_locator_basename=None):
-    archive_locator_basename = archive_locator_basename or locator_basename
-    return {
-        "profile": "reactivate_completed_task",
-        "mode": "standalone",
-        "task_ref": f".trellis/tasks/{locator_basename}",
-        "archive_ref": f".trellis/tasks/archive/2026-09/{archive_locator_basename}",
-        "task_id": TASK_ID,
-    }
-
-
-def invocation(repo, semantic, confirmed=True, public=None):
-    public = public or public_input()
-    input_path = repo.parent / "input.json"
-    semantic_path = repo.parent / "semantic.json"
-    input_path.write_text(json.dumps(public))
-    semantic_path.write_text(json.dumps(semantic))
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(ROOT)
-    command = [sys.executable, str(PACKAGE / "runtime/invoke.py"), "--root", str(repo), "--input", str(input_path), "--semantic-result", str(semantic_path)]
-    if confirmed:
-        command.append("--confirmed-reactivation")
-    return subprocess.run(command, text=True, capture_output=True, env=env)
-
-
-def semantic(workspace, branch, head, disposition="reuse_exact"):
-    return {
-        "profile": "reactivate_completed_task",
-        "mode": "standalone",
-        "reason_refs": ["new evidence"],
-        "workspace": {
-            "disposition": disposition,
-            "workspace_path": str(workspace),
-            "branch_name": branch,
-            "base_branch": "main",
-            "base_head": head,
-            "workspace_mapping": ".trellis/.runtime/guru-team/workspaces/demo.json",
-            "task_mapping": ".trellis/.runtime/guru-team/tasks/demo.json",
-        },
-        "route": {"typed_exit": "reactivated_to_evidence_refresh"},
-    }
-
-
-def test_contract_assets():
-    validate_json(json.loads((PACKAGE / "interface.json").read_text()), ROOT / "schemas/skill-interface-1.4.schema.json", "interface")
-
-
-def test_skill_route_projections_close_against_consumer_inputs():
-    interface = json.loads((PACKAGE / "interface.json").read_text())
-    contracts = interface["public_contracts"]
-    outputs = {
-        "reactivated_to_requirements": {"exit_id": "reactivated_to_requirements", "task_ref": ".trellis/tasks/demo", "resume_target": "requirements"},
-        "reactivated_to_evidence_refresh": {"exit_id": "reactivated_to_evidence_refresh", "task_ref": ".trellis/tasks/demo", "resume_target": "evidence-refresh"},
-    }
-    consumer_schemas = {
-        "requirements": ROOT / "packages/guru-clarify-requirements/schemas/public-active-task-scope-change-input.schema.json",
-        "evidence": ROOT / "packages/guru-review-task-completion/schemas/public-input.schema.json",
-    }
-    consumers = {row["id"]: row for row in contracts["consumer_inputs"]}
-    for projection in contracts["projections"]:
-        if projection["consumer_input_id"] not in consumer_schemas:
-            continue
-        contract = consumers[projection["consumer_input_id"]]["contract"]
-        authored = json.loads((PACKAGE / contract["authoring_example"]["path"]).read_text())
-        source = outputs[projection["exit_id"]]
-        projected = {mapping["target"]: source[mapping["source"]] for mapping in projection["mappings"]}
-        validate_json({**authored, **projected}, consumer_schemas[projection["consumer_input_id"]], projection["consumer_input_id"])
-
-
-def test_reactivate_reuses_exact_workspace_and_invalidates_old_finish(tmp_path):
-    repo, head = repository(tmp_path)
-    receipt = repo / ".trellis/.runtime/guru-team/finish/old.json"
-    receipt.parent.mkdir(parents=True)
-    receipt.write_text(json.dumps({"task_ref": ".trellis/tasks/demo", "finish_ref": "finish:v1:old"}))
-    cleanup_receipt = repo / ".trellis/.runtime/guru-team/cleanup/old.json"
-    cleanup_receipt.parent.mkdir(parents=True, exist_ok=True)
-    cleanup_receipt.write_text(json.dumps({"task_ref": ".trellis/tasks/demo", "finish_ref": "finish:v1:old"}))
-    blocked = invocation(repo, semantic(repo, "codex/demo-existing", head), confirmed=False)
-    assert blocked.returncode == 4 and (repo / ".trellis/tasks/archive/2026-09/demo").exists()
-    completed = invocation(repo, semantic(repo, "codex/demo-existing", head))
-    output = json.loads(completed.stdout)
-    task = json.loads((repo / ".trellis/tasks/demo/task.json").read_text())
-    assert completed.returncode == 0 and output["exit_id"] == "reactivated_to_evidence_refresh"
-    assert task["status"] == "in_progress" and task["completedAt"] is None and task["worktree_path"] == str(repo)
-    assert task["lifecycle_generation"] == 1
-    assert not (repo / ".trellis/tasks/archive/2026-09/demo").exists() and not receipt.exists()
-    assert not cleanup_receipt.exists()
-    workspace_mapping = json.loads((repo / ".trellis/.runtime/guru-team/workspaces/demo.json").read_text())
-    task_mapping = json.loads((repo / ".trellis/.runtime/guru-team/tasks/demo.json").read_text())
-    assert workspace_mapping["workspace_slug"] == "demo"
-    assert task_mapping["task_slug"] == "demo" and task_mapping["workspace_slug"] == "demo"
-
-
-def test_reactivate_creates_new_workspace_from_current_base(tmp_path):
-    repo, head = repository(tmp_path)
-    workspace = tmp_path / "worktrees" / "demo"
-    completed = invocation(repo, semantic(workspace, "codex/demo-reactivated", head, "create_new"))
-    output = json.loads(completed.stdout)
-    task = json.loads((workspace / ".trellis/tasks/demo/task.json").read_text())
-    assert completed.returncode == 0 and output == {
-        "exit_id": "reactivated_to_evidence_refresh",
-        "task_ref": ".trellis/tasks/demo",
-        "resume_target": "evidence-refresh",
-        "lifecycle_generation": 1,
-    }
-    assert git(workspace, "branch", "--show-current") == "codex/demo-reactivated"
-    assert task["branch"] == "codex/demo-reactivated" and task["worktree_path"] == str(workspace)
-    assert (repo / ".trellis/.runtime/guru-team/tasks/demo.json").is_file()
-
-
-def test_reactivate_reuses_exact_workspace_with_date_prefixed_locator(tmp_path):
-    repo, head = repository(tmp_path, DATE_PREFIXED_LOCATOR)
-    public = public_input(DATE_PREFIXED_LOCATOR)
-
-    completed = invocation(repo, semantic(repo, "codex/demo-existing", head), public=public)
-
-    output = json.loads(completed.stdout)
-    task = json.loads((repo / ".trellis/tasks" / DATE_PREFIXED_LOCATOR / "task.json").read_text())
-    assert completed.returncode == 0 and output["task_ref"] == f".trellis/tasks/{DATE_PREFIXED_LOCATOR}"
-    assert task["id"] == TASK_ID and task["status"] == "in_progress"
-    assert not (repo / ".trellis/tasks/archive/2026-09" / DATE_PREFIXED_LOCATOR).exists()
-    assert json.loads((repo / ".trellis/.runtime/guru-team/workspaces/demo.json").read_text())["workspace_slug"] == TASK_ID
-    assert json.loads((repo / ".trellis/.runtime/guru-team/tasks/demo.json").read_text())["task_slug"] == TASK_ID
-
-
-def test_reactivate_creates_new_workspace_with_date_prefixed_locator(tmp_path):
-    repo, head = repository(tmp_path, DATE_PREFIXED_LOCATOR)
-    workspace = tmp_path / "worktrees" / "demo"
-    public = public_input(DATE_PREFIXED_LOCATOR)
-
-    completed = invocation(repo, semantic(workspace, "codex/demo-reactivated", head, "create_new"), public=public)
-
-    output = json.loads(completed.stdout)
-    task = json.loads((workspace / ".trellis/tasks" / DATE_PREFIXED_LOCATOR / "task.json").read_text())
-    assert completed.returncode == 0 and output["task_ref"] == f".trellis/tasks/{DATE_PREFIXED_LOCATOR}"
-    assert git(workspace, "branch", "--show-current") == "codex/demo-reactivated"
-    assert task["id"] == TASK_ID and task["status"] == "in_progress"
-    assert not (workspace / ".trellis/tasks/archive/2026-09" / DATE_PREFIXED_LOCATOR).exists()
-    assert (repo / ".trellis/.runtime/guru-team/tasks/demo.json").is_file()
-
-
-def assert_output_loss_recovery(tmp_path, disposition, locator_basename):
-    repo, head = repository(tmp_path, locator_basename)
-    public = public_input(locator_basename)
-    if disposition == "reuse_exact":
-        workspace = repo
-        branch = "codex/demo-existing"
+def inputs(repo, head, path, *, adopt=False, route="session_binding_recovery_required"):
+    public = {"profile": "reactivate_completed_task", "mode": "standalone",
+              "archived_lifecycle": {"task_id": "demo", "lifecycle_generation": 2}}
+    acquisition = {"task_id": "demo", "task_ref": ".trellis/tasks/09-19-demo", "lifecycle_generation": 3,
+                   "route": "adopt_invocation_checkout" if adopt else "provision_linked_worktree",
+                   "branch_ref": "refs/heads/codex/demo-next", "decision_head": head,
+                   "task_artifact_expectation": "absent", "transaction_id": "reactivate:demo:3", "result_id": "result:demo:3"}
+    if adopt:
+        acquisition["invocation_checkout"] = str(path)
     else:
-        workspace = tmp_path / "worktrees" / "demo"
-        branch = "codex/demo-reactivated"
-    reviewed = semantic(workspace, branch, head, disposition)
-    receipt = repo / ".trellis/.runtime/guru-team/finish/old.json"
-    receipt.parent.mkdir(parents=True)
-    receipt.write_text(json.dumps({"task_ref": public["task_ref"], "finish_ref": "finish:v1:old"}))
+        acquisition.update(target_path=str(path), provision_disposition="new_branch")
+    semantic = {**public, "route": route, "reason_refs": ["new work"],
+                "selected_base_ref": "refs/heads/main", "reviewed_base_head": head,
+                "session_outcome": "recovery_required" if route == "session_binding_recovery_required" else "explicit_task_mode",
+                "acquisition": acquisition}
+    return public, semantic
 
-    first = invocation(repo, reviewed, public=public)
-    assert first.returncode == 0
-    expected_output = json.loads(first.stdout)
-    worktrees_before = git(repo, "worktree", "list", "--porcelain")
-    task_path = workspace / ".trellis/tasks" / locator_basename / "task.json"
-    task_before = task_path.read_text()
-    mappings_before = {
-        path: path.read_text()
-        for path in {
-            repo / ".trellis/.runtime/guru-team/workspaces/demo.json",
-            repo / ".trellis/.runtime/guru-team/tasks/demo.json",
-            workspace / ".trellis/.runtime/guru-team/workspaces/demo.json",
-            workspace / ".trellis/.runtime/guru-team/tasks/demo.json",
-        }
+
+def correction():
+    return {
+        "task_id": "demo", "task_ref": ".trellis/tasks/archive/2026-09/09-19-demo",
+        "lifecycle_generation": 2, "current_source": {"kind": "no_issue"},
+        "reviewed_source": {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454},
+        "accepted_scope_identity": "scope:demo", "target_relation_id": "source:demo", "result_id": "correction:demo",
     }
 
-    recovered = invocation(repo, reviewed, public=public)
 
-    assert recovered.returncode == 0 and json.loads(recovered.stdout) == expected_output
-    assert git(repo, "worktree", "list", "--porcelain") == worktrees_before
-    assert task_path.read_text() == task_before
-    assert all(path.read_text() == content for path, content in mappings_before.items())
-    assert not (workspace / ".trellis/tasks/archive/2026-09" / locator_basename).exists()
-    assert not receipt.exists()
+def test_interface_and_examples_are_closed():
+    interface = json.loads((PACKAGE / "interface.json").read_text())
+    validate_json(interface, ROOT / "schemas/skill-interface-1.4.schema.json", "interface")
+    exits = {row["id"] for row in interface["external_exits"]}
+    assert exits == {"reactivated_to_planning", "session_binding_recovery_required", "resume_reactivation",
+                     "source_correction_required", "reactivate_blocked"}
+    for output in interface["public_contracts"]["outputs"]:
+        payload = json.loads((PACKAGE / output["example"]["path"]).read_text())
+        validate_json(payload, PACKAGE / output["schema"]["path"], output["exit_id"])
+    for projection in interface["public_contracts"]["projections"]:
+        output = next(row for row in interface["public_contracts"]["outputs"] if row["exit_id"] == projection["exit_id"])
+        source = json.loads((PACKAGE / output["example"]["path"]).read_text())
+        consumer = next(row for row in interface["public_contracts"]["consumer_inputs"] if row["id"] == projection["consumer_input_id"])
+        payload = source if projection["operation"] == "direct" else {
+            row["target"]: source[row["source"]] for row in projection["mappings"]
+        }
+        validate_json(payload, PACKAGE / consumer["contract"]["path"], projection["id"])
 
 
-@pytest.mark.parametrize("disposition", ["reuse_exact", "create_new"])
-def test_reactivate_recovers_same_output_after_stdout_loss_without_duplicate_mutation(tmp_path, disposition):
-    assert_output_loss_recovery(tmp_path, disposition, TASK_ID)
-
-
-@pytest.mark.parametrize("disposition", ["reuse_exact", "create_new"])
-def test_reactivate_recovers_date_prefixed_output_after_stdout_loss_without_duplicate_mutation(tmp_path, disposition):
-    assert_output_loss_recovery(tmp_path, disposition, DATE_PREFIXED_LOCATOR)
-
-
-@pytest.mark.parametrize(
-    ("public_change", "semantic_change", "field_path"),
-    [
-        ({"task_ref": ".trellis/tasks/other"}, {}, "archive_ref"),
-        ({"archive_ref": ".trellis/tasks/archive/2026-09/other"}, {}, "archive_ref"),
-        ({}, {"workspace_mapping": ".trellis/.runtime/guru-team/workspaces/other.json"}, "workspace.workspace_mapping"),
-        ({}, {"task_mapping": ".trellis/.runtime/guru-team/tasks/other.json"}, "workspace.task_mapping"),
-    ],
-)
-def test_reactivate_rejects_locator_identity_mismatch(tmp_path, public_change, semantic_change, field_path):
+@pytest.mark.parametrize("adopt", [False, True])
+def test_reactivate_acquires_checkout_and_recovers_exact_transaction(tmp_path, adopt):
     repo, head = repository(tmp_path)
-    public = public_input()
-    public.update(public_change)
-    reviewed = semantic(repo, "codex/demo-existing", head)
-    reviewed["workspace"].update(semantic_change)
-
-    result = invocation(repo, reviewed, public=public)
-
-    error = json.loads(result.stderr)
-    assert result.returncode == 3 and error["code"] == "stale_identity" and error["field_path"] == field_path
-    assert (repo / ".trellis/tasks/archive/2026-09/demo").is_dir()
-    assert not (repo / ".trellis/tasks/demo").exists()
-
-
-def test_reactivate_rejects_active_archive_basename_mismatch_without_mutation(tmp_path):
-    repo, head = repository(tmp_path, DATE_PREFIXED_LOCATOR)
-    public = public_input(DATE_PREFIXED_LOCATOR, "09-20-demo")
-
-    result = invocation(repo, semantic(repo, "codex/demo-existing", head), public=public)
-
-    error = json.loads(result.stderr)
-    assert result.returncode == 3 and error["code"] == "stale_identity" and error["field_path"] == "archive_ref"
-    assert (repo / ".trellis/tasks/archive/2026-09" / DATE_PREFIXED_LOCATOR).is_dir()
-    assert not (repo / ".trellis/tasks" / DATE_PREFIXED_LOCATOR).exists()
-    assert not (repo / ".trellis/.runtime/guru-team/workspaces/demo.json").exists()
-    assert not (repo / ".trellis/.runtime/guru-team/tasks/demo.json").exists()
-
-
-def test_reactivate_rejects_archive_task_id_mismatch_before_move(tmp_path):
-    repo, head = repository(tmp_path, DATE_PREFIXED_LOCATOR, archive_task_id="other")
-    public = public_input(DATE_PREFIXED_LOCATOR)
-
-    result = invocation(repo, semantic(repo, "codex/demo-existing", head), public=public)
-
-    error = json.loads(result.stderr)
-    assert result.returncode == 3 and error["code"] == "stale_identity" and error["field_path"] == "archive_ref"
-    assert (repo / ".trellis/tasks/archive/2026-09" / DATE_PREFIXED_LOCATOR).is_dir()
-    assert not (repo / ".trellis/tasks" / DATE_PREFIXED_LOCATOR).exists()
-    assert not (repo / ".trellis/.runtime/guru-team/workspaces/demo.json").exists()
-    assert not (repo / ".trellis/.runtime/guru-team/tasks/demo.json").exists()
+    checkout = repo if adopt else tmp_path / "worktrees" / "new"
+    if adopt:
+        git(repo, "switch", "-qc", "codex/demo-next")
+    public, semantic = inputs(repo, head, checkout, adopt=adopt)
+    first = execute(repo, public, semantic, confirmed=True)
+    assert first["exit_id"] == "session_binding_recovery_required"
+    assert first["task_id"] == "demo" and first["lifecycle_generation"] == 3
+    metadata_path = checkout / ".trellis/tasks/09-19-demo/task.json"
+    before = metadata_path.read_bytes()
+    metadata = json.loads(before)
+    assert metadata["status"] == "planning" and "worktree_path" not in metadata
+    repository_facts = inspect_repository(repo)
+    key = TaskLifecycleKey("demo", 3)
+    binding = BranchBindingStore(repository_facts).read(key)
+    ledger = ResourceLedgerStore(repository_facts).read(key)
+    assert binding is not None and binding.binding_revision == 0
+    assert BranchBindingStore(repository_facts).read(TaskLifecycleKey("demo", 2)) is None
+    assert ledger is not None and ledger.resources[0].ownership == ("caller_owned" if adopt else "guru_owned")
+    transaction = transaction_path(repository_facts, TaskLifecycleKey("demo", 2))
+    transaction_before = transaction.read_bytes()
+    assert str(checkout) not in transaction_before.decode()
+    assert execute(repo, public, semantic, confirmed=True) == first
+    assert metadata_path.read_bytes() == before and transaction.read_bytes() == transaction_before
+    semantic["route"] = "resume_reactivation"
+    assert execute(repo, public, semantic, confirmed=False)["exit_id"] == "resume_reactivation"
 
 
-def test_reactivate_fast_forwards_finish_branch_to_real_merge_commit(tmp_path):
-    repo = tmp_path / "repo"
-    remote = tmp_path / "remote.git"
-    workspace = tmp_path / "worktrees" / "demo"
-    repo.mkdir()
-    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
-    subprocess.run(["git", "init", "-q", "--bare", remote], check=True)
-    git(repo, "config", "user.email", "test@example.com")
-    git(repo, "config", "user.name", "Test")
-    git(repo, "remote", "add", "origin", str(remote))
-    (repo / ".gitignore").write_text(".trellis/.runtime/\n")
-    git(repo, "add", ".")
-    git(repo, "commit", "-qm", "base")
-    git(repo, "push", "-q", "-u", "origin", "main")
-    workspace.parent.mkdir()
-    git(repo, "worktree", "add", "-qb", "codex/demo-finish", str(workspace), "main")
-    archive = workspace / ".trellis/tasks/archive/2026-09/demo"
-    archive.mkdir(parents=True)
-    (archive / "task.json").write_text(json.dumps({"id": "demo", "status": "completed", "completedAt": "2026-09-19"}))
-    git(workspace, "add", ".")
-    git(workspace, "commit", "-qm", "persist finish")
-    finish_head = git(workspace, "rev-parse", "HEAD")
-    git(repo, "merge", "--no-ff", "codex/demo-finish", "-m", "merge finish")
-    merge_head = git(repo, "rev-parse", "HEAD")
-    git(repo, "push", "-q", "origin", "main")
+def test_source_correction_applies_once_and_stale_generation_is_zero_write(tmp_path):
+    repo, head = repository(tmp_path)
+    public, semantic = inputs(repo, head, tmp_path / "worktrees" / "new")
+    semantic.pop("acquisition")
+    semantic.pop("session_outcome")
+    semantic.pop("selected_base_ref")
+    semantic.pop("reviewed_base_head")
+    semantic["route"] = "source_correction_required"
+    semantic["source_correction"] = correction()
+    from runtime.io import CommandError
+    with pytest.raises(CommandError, match="confirmation_required"):
+        execute(repo, public, semantic, confirmed=False)
+    metadata_path = repo / ".trellis/tasks/archive/2026-09/09-19-demo/task.json"
+    assert json.loads(metadata_path.read_text())["source"] == {"kind": "no_issue"}
+    result = execute(repo, public, semantic, confirmed=True)
+    assert result["exit_id"] == "source_correction_required"
+    corrected = metadata_path.read_bytes()
+    assert json.loads(corrected)["source"] == semantic["source_correction"]["reviewed_source"]
+    receipt = source_transaction_path(inspect_repository(repo), TaskLifecycleKey("demo", 2))
+    assert receipt.is_file()
+    assert execute(repo, public, semantic, confirmed=True) == result
+    assert metadata_path.read_bytes() == corrected
+    altered = json.loads(json.dumps(semantic))
+    altered["source_correction"]["result_id"] = "correction:other"
+    with pytest.raises(Exception, match="source_correction_stale"):
+        execute(repo, public, altered, confirmed=True)
+    assert (repo / ".trellis/tasks/archive/2026-09/09-19-demo").exists()
+    public["archived_lifecycle"]["lifecycle_generation"] = 1
+    semantic["archived_lifecycle"]["lifecycle_generation"] = 1
+    from runtime.task_lifecycle.errors import LifecycleContractError
+    with pytest.raises(LifecycleContractError, match="archived_lifecycle_stale"):
+        execute(repo, public, semantic, confirmed=False)
+    assert not transaction_path(inspect_repository(repo), TaskLifecycleKey("demo", 2)).exists()
 
-    completed = invocation(repo, semantic(workspace, "codex/demo-finish", merge_head))
 
-    output = json.loads(completed.stdout)
-    assert completed.returncode == 0 and output["exit_id"] == "reactivated_to_evidence_refresh"
-    assert finish_head != merge_head and git(workspace, "rev-parse", "HEAD") == merge_head
-    assert git(workspace, "merge-base", "--is-ancestor", finish_head, merge_head) == ""
-    assert (workspace / ".trellis/tasks/demo/task.json").is_file()
-    assert not (workspace / ".trellis/tasks/archive/2026-09/demo").exists()
+def test_ready_source_correction_applied_in_activation_and_recovered(tmp_path):
+    repo, head = repository(tmp_path)
+    checkout = tmp_path / "worktrees" / "new"
+    public, semantic = inputs(repo, head, checkout)
+    semantic["source_correction"] = correction()
+    first = execute(repo, public, semantic, confirmed=True)
+    assert first["exit_id"] == "session_binding_recovery_required"
+    task_path = checkout / ".trellis/tasks/09-19-demo/task.json"
+    assert json.loads(task_path.read_text())["source"] == correction()["reviewed_source"]
+    assert json.loads(transaction_path(inspect_repository(repo), TaskLifecycleKey("demo", 2)).read_text())[
+        "source_correction_result_id"] == "correction:demo"
+    assert execute(repo, public, semantic, confirmed=True) == first
+    changed = json.loads(json.dumps(semantic))
+    changed["source_correction"]["result_id"] = "correction:other"
+    from runtime.task_lifecycle.errors import LifecycleContractError
+    with pytest.raises(LifecycleContractError, match="reactivation_transaction_conflict"):
+        execute(repo, public, changed, confirmed=True)
+
+
+def test_invalid_session_route_does_not_acquire_checkout(tmp_path):
+    repo, head = repository(tmp_path)
+    target = tmp_path / "worktrees" / "new"
+    public, semantic = inputs(repo, head, target, route="reactivated_to_planning")
+    semantic["session_outcome"] = "recovery_required"
+    result = execute(repo, public, semantic, confirmed=True)
+    assert result["exit_id"] == "reactivate_blocked" and result["reason_code"] == "session_route_mismatch"
+    assert not target.exists() and (repo / ".trellis/tasks/archive/2026-09/09-19-demo").is_dir()
+
+
+def test_pending_guru_owned_old_branch_blocks_before_acquisition(tmp_path):
+    repo, head = repository(tmp_path, old_branch="codex/demo-next", old_owner="guru_owned")
+    target = tmp_path / "worktrees" / "new"
+    public, semantic = inputs(repo, head, target)
+    repository_facts = inspect_repository(repo)
+    from runtime.task_lifecycle.errors import LifecycleContractError
+    with pytest.raises(LifecycleContractError, match="branch_responsibility_pending"):
+        execute(repo, public, semantic, confirmed=True)
+    assert not target.exists()
+    assert (repo / ".trellis/tasks/archive/2026-09/09-19-demo/task.json").is_file()
+    assert BranchBindingStore(repository_facts).read(TaskLifecycleKey("demo", 3)) is None
+    assert ResourceLedgerStore(repository_facts).read(TaskLifecycleKey("demo", 3)) is None
+
+
+def test_resolved_old_branch_reuse_releases_only_old_binding(tmp_path):
+    repo, head = repository(tmp_path, old_branch="codex/demo-next", old_owner="guru_owned")
+    git(repo, "branch", "codex/demo-next", head)
+    facts = inspect_repository(repo)
+    key = TaskLifecycleKey("demo", 2)
+    ledger_store = ResourceLedgerStore(facts)
+    prior = ledger_store.read(key)
+    assert prior is not None
+    resolved = replace(prior, ledger_revision=prior.ledger_revision + 1,
+                       resources=tuple(replace(row, state="resolved", responsibility_role="superseded")
+                                       for row in prior.resources))
+    ledger_store._write(resolved)
+    public, semantic = inputs(repo, head, tmp_path / "worktrees" / "new")
+    semantic["acquisition"]["provision_disposition"] = "existing_branch"
+    result = execute(repo, public, semantic, confirmed=True)
+    assert result["exit_id"] == "session_binding_recovery_required"
+    bindings = BranchBindingStore(facts)
+    assert bindings.read(key) is None
+    assert bindings.read(TaskLifecycleKey("demo", 3)).branch_name == "codex/demo-next"
+    assert ledger_store.read(key) == resolved
+    assert ResourceLedgerStore(facts).read(TaskLifecycleKey("demo", 3)).resources[0].ownership == "caller_owned"
+
+
+def test_caller_retained_old_branch_requires_resolved_incarnation(tmp_path):
+    repo, head = repository(tmp_path, old_branch="codex/demo-next")
+    git(repo, "branch", "codex/demo-next", head)
+    key = TaskLifecycleKey("demo", 2)
+    prior = ResourceLedgerStore(inspect_repository(repo)).read(key)
+    assert prior is not None and prior.resources[0].state == "retained"
+    public, semantic = inputs(repo, head, tmp_path / "worktrees" / "new")
+    semantic["acquisition"]["provision_disposition"] = "existing_branch"
+    from runtime.task_lifecycle.errors import LifecycleContractError
+    with pytest.raises(LifecycleContractError, match="branch_responsibility_pending"):
+        execute(repo, public, semantic, confirmed=True)
+    assert ResourceLedgerStore(inspect_repository(repo)).read(key) == prior
+
+
+def test_other_task_binding_still_blocks_branch_reuse(tmp_path):
+    repo, head = repository(tmp_path)
+    facts = inspect_repository(repo)
+    BranchBindingStore(facts).establish(TaskLifecycleKey("another-task", 0), "codex/demo-next")
+    target = tmp_path / "worktrees" / "new"
+    public, semantic = inputs(repo, head, target)
+    from runtime.task_lifecycle.errors import LifecycleContractError
+    with pytest.raises(LifecycleContractError, match="branch_responsibility_pending"):
+        execute(repo, public, semantic, confirmed=True)
+    assert not target.exists()
+
+
+@pytest.mark.parametrize("condition", ["missing_seal", "missing_summary", "unfinished_transaction", "wrong_finish_head"])
+def test_unfinished_archive_cannot_reactivate(tmp_path, condition):
+    repo, head = repository(tmp_path)
+    facts = inspect_repository(repo)
+    if condition == "missing_seal":
+        ResourceLedgerStore(facts).path_for(TaskLifecycleKey("demo", 2)).unlink()
+    elif condition == "missing_summary":
+        (repo / ".trellis/tasks/archive/2026-09/09-19-demo/finish-summary.json").unlink()
+    elif condition == "wrong_finish_head":
+        old_commit = git(repo, "rev-parse", "HEAD^")
+        prior = ResourceLedgerStore(facts).read(TaskLifecycleKey("demo", 2))
+        assert prior is not None
+        ResourceLedgerStore(facts)._write(replace(prior, finish_head=old_commit))
+    else:
+        path = repo / ".trellis/.runtime/guru-team/finish/1234567890abcdef.json"
+        record = json.loads(path.read_text())
+        record["stage"] = "pr_open"
+        record.pop("target_head")
+        path.write_text(json.dumps(record))
+    public, semantic = inputs(repo, head, tmp_path / "worktrees" / "new")
+    from runtime.task_lifecycle.errors import LifecycleContractError
+    with pytest.raises(LifecycleContractError, match="finish_result_unsealed|finish_transaction_unfinished"):
+        execute(repo, public, semantic, confirmed=True)
+    assert not (tmp_path / "worktrees/new").exists()
+
+
+@pytest.mark.parametrize("condition", ["missing_seal", "unfinished_transaction"])
+def test_resume_rechecks_original_finish_generation(tmp_path, condition):
+    repo, head = repository(tmp_path)
+    public, semantic = inputs(repo, head, tmp_path / "worktrees" / "new")
+    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "session_binding_recovery_required"
+    assert transaction_path(inspect_repository(repo), TaskLifecycleKey("demo", 2)).is_file()
+    if condition == "missing_seal":
+        ResourceLedgerStore(inspect_repository(repo)).path_for(TaskLifecycleKey("demo", 2)).unlink()
+    else:
+        path = repo / ".trellis/.runtime/guru-team/finish/1234567890abcdef.json"
+        record = json.loads(path.read_text())
+        record["stage"] = "pr_open"
+        record.pop("target_head")
+        path.write_text(json.dumps(record))
+    semantic["route"] = "resume_reactivation"
+    from runtime.task_lifecycle.errors import LifecycleContractError
+    with pytest.raises(LifecycleContractError, match="finish_result_unsealed|finish_transaction_unfinished"):
+        execute(repo, public, semantic, confirmed=False)
+
+
+def test_session_recovery_then_planning_on_same_incarnation(tmp_path, monkeypatch):
+    repo, head = repository(tmp_path)
+    checkout = tmp_path / "worktrees" / "new"
+    public, semantic = inputs(repo, head, checkout)
+    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "session_binding_recovery_required"
+    observed = []
+    def resolved_session(root, key, task_ref):
+        observed.append((root, key, task_ref))
+        return "session_bound"
+    monkeypatch.setattr(invoke, "session_outcome", resolved_session)
+    before = (checkout / ".trellis/tasks/09-19-demo/task.json").read_bytes()
+    semantic["route"] = "reactivated_to_planning"
+    semantic["session_outcome"] = "session_bound"
+    result = execute(repo, public, semantic, confirmed=True)
+    assert result["exit_id"] == "reactivated_to_planning"
+    assert (result["task_id"], result["task_ref"], result["lifecycle_generation"]) == (
+        "demo", ".trellis/tasks/09-19-demo", 3
+    )
+    assert result["session_outcome"] == "session_bound"
+    assert observed == [(repo, TaskLifecycleKey("demo", 3), ".trellis/tasks/09-19-demo")]
+    assert (checkout / ".trellis/tasks/09-19-demo/task.json").read_bytes() == before

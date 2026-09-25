@@ -1,14 +1,15 @@
 # Test Strategy / Test Plan SSOT
 
-当前 authority：[`versions/current-main-0.6.17-guru.65/test-strategy.md`](./versions/current-main-0.6.17-guru.65/test-strategy.md) 与 [`test-plan.md`](./versions/current-main-0.6.17-guru.65/test-plan.md)。`traceability.md` 连接 Requirements、Design、Architecture `.65/active` 和 evidence；`.64` 及更早版本保持 immutable。
+当前 authority：[`versions/current-main-0.6.17-guru.66/test-strategy.md`](./versions/current-main-0.6.17-guru.66/test-strategy.md) 与 [`test-plan.md`](./versions/current-main-0.6.17-guru.66/test-plan.md)。`traceability.md` 连接 Requirements、Design、Architecture `.66/active` 和 evidence；`.65` 及更早版本保持 immutable。
 
-状态：`active`。`.65` 完整继承 immutable `.64` 并承接 #454 D443 非激活 Bind major。`T454-D443-01..04` 是本次增量的 current acceptance authority，Bind 12/12 只证明提升前 candidate；package integration 19/20 与 installed/platform 不声明通过。promotion-created diff 必须独立完成 fresh Phase 2、Task Commit 与完整 Branch Review。D436、E434、#434 activation、完整 Release Gate 与生产升级仍 `unverified`。
+状态：`active`。`.66` 完整继承 immutable `.65` 并承接 #454 D436 非激活 terminal lifecycle packages。`T454-D436-01..06` 是本次增量的 current acceptance authority；package tests 不能代替 promotion-created diff 的 fresh Phase 2、Task Commit 与完整 Branch Review。E434、#434 activation、installed/platform、完整 Release Gate 与生产升级仍 `unverified`。
 
 `FIN454-C4-P1-004` 在相同 `TST-032/SCN-044` 下增加 same-base old-review/provenance-tail/two-finding-fix topology、terminal PR exclusion、Open PR rejection、两个 transaction endpoint、intermediate remote rejection 与 replacement transaction binding；provenance `23/23`、recovery `48/48`、完整 Finalizer package `113/113` 通过。raw preset apply 仍由三项既有 pre-E434 sidecar 阻塞，专用 dogfood drift 通过；这些实现证据不声明 gate pass。
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.65` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.65/test-strategy.md) |
+| `active` | `current-main-0.6.17-guru.66` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.66/test-strategy.md) |
+| `superseded` | `current-main-0.6.17-guru.65` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.65/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.64` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.64/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.63` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.63/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.62` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.62/test-strategy.md) |
@@ -41,4 +42,4 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [`test-strategy.md`](./versions/current-main-0.6.5-guru.35/test-strategy.md) |
 | `released-history` | `v0.6.5-guru.9` | [`README.md`](./versions/v0.6.5-guru.9/README.md) |
 
-`.65/active` 完整继承 immutable `.64` 并吸收 reviewed #454 D443 contribution；Architecture 为 `.65/active`。D443 的提升前 focused 证据已建立；promotion-created diff 的 fresh gates 由后续 exact-range 结果独立证明。D436、E434、#434 production activation 与完整发布矩阵保持独立且当前未验证。
+`.66/active` 完整继承 immutable `.65` 并吸收 reviewed #454 D436 contribution；Architecture 为 `.66/active`。focused 证据不替代 promotion-created diff 的 fresh gates。E434、#434 production activation 与完整发布矩阵保持独立且当前未验证。

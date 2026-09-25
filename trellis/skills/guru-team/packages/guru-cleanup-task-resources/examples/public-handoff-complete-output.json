@@ -1,0 +1,1 @@
+{"exit_id":"handoff_cleanup_complete","handoff_ref":{"task_id":"example-task","lifecycle_generation":1,"handoff_id":"handoff:example","receipt_ref":"refs/heads/guru-task-lifecycle/example-task","result_id":"handoff-result:example"},"cleanup_result":{"task_id":"example-task","lifecycle_generation":1,"cleanup_result_id":"cleanup-result:example"}}

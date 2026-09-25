@@ -68,6 +68,12 @@
 [全局操作边界](../../../trellis/workflows/guru-team/workflow.md#manual-gitgithub-operations)
 执行已明确的 Git/GitHub 操作。它不新增 lifecycle owner，也不改写 task、Finalizer 或 archive 的完成状态。
 
+`ARCH-DOM-028`（#454 D436）：Completion 独占 scope 完成判断；Closure 独占 source Issue disposition
+及冻结 action set；Finish 独占 archive/bookkeeping 与 terminal resource seal，不删除资源；Cleanup
+独占 Guru-owned 删除结果，保留 caller-owned；Reactivate 独占 archived TaskId 的下一 generation。
+C3/C4/C5 与 Fixed Fork 分别持有 checkout、binding、ledger 和 task/session persistence；五个 package
+只消费这些单写事实。Finish 成功后本代 binding 退役，旧代结果不成为 Reactivate/Cleanup 的当前 authority。
+
 `ARCH-DOM-027`（#454 D443）：Bind 独占当前 session route 判断与官方 pointer 写入/校验。
 C2-C4 拥有 TaskId、live checkout、branch binding，C5 ledger 与 Fixed Fork adapter 分别拥有 resource
 ownership 和 schema-2 persistence。Bind 不从 TaskRef、路径、branch/HEAD 或旧 mapping 派生新 authority；

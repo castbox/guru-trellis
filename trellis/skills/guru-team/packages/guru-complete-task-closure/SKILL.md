@@ -5,12 +5,18 @@ description: Apply the exact source Issue disposition after Completion approval 
 
 # Guru Complete Task Closure
 
-This owner consumes only Completion `completed`. No-Issue, reference-only,
-follow-up and parent dispositions return `no_mutation`. An exact source Issue
-never uses `no_mutation`; after confirmation, its CLOSED/OPEN decision comes
-from a live read of that exact repository and Issue rather than a supplied
-snapshot. An OPEN Issue is closed and post-checked against the same identity.
+Consume only the current Completion `completed` ResultRef. Freshly review source
+relation, accepted scope, target, branch binding, content and evidence slots,
+then author the complete per-Issue action set. No-Issue and relations without
+close authority produce no Issue mutation. Show each exact close action and
+obtain dialogue-local confirmation before invoking with `--confirmed-close`.
+The runtime freezes this entire set in owner-private state, rereads exact Issue
+state, and closes only actions with reviewed close authority.
 
-`resume_closure` carries the exact `closure_ref` transaction identity. Recovery
-must return that identity; changing the source Issue, disposition or action
-fails closed. The identity distinguishes `closed` from `no_mutation`.
+`resume_closure` carries `TransactionRefDTO` for same-owner output-loss
+recovery. A changed frozen authority or reopened required-closed Issue returns
+`external_change_conflict` for fresh Closure semantic re-entry; Finish must
+not repair or replay that disposition. `closed|no_mutation` carry only the
+Closure `ResultRefDTO`. This canonical package is not a production graph
+activation; downstream Finish and workflow projection migration belong to
+the later activation owner.

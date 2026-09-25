@@ -174,9 +174,9 @@ TaskId/generation、当前 branch/ledger、selected base ref、reviewed base HEA
 `planning -> in_progress`。六个 owner ID 仍仅 planned；C7 新代码对 legacy mapping/path 零读写，现有生产
 predecessor 待 E434 同图替换。`ARCH-GAP-011` 仍 partial/open；D443/D436/E434、#434 activation 未进入 CURRENT。
 
-当前 Architecture knowledge identity 为 `.65`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
+当前 Architecture knowledge identity 为 `.66`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
 `0.6.17`，framework source/CI 由 canonical source record 与 `EVD-034` 绑定，package manager 为
-`pnpm@10.32.1`。`.64` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
+`pnpm@10.32.1`。`.65` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。
 
@@ -187,6 +187,15 @@ push、PR、merge、tag、Release 或 Issue closure。
 - `ARCH-CUR-031`（`source_confirmed` + `reviewed`）：#419 以 `target_native` 在 Guru canonical workflow 建立唯一 active-task continuation authority。Adjacent public DTO 直接进入唯一 consumer；deterministic output loss 回原 producer正式恢复，semantic output loss fresh重跑原owner。Phase 1 activation使用exact-pair-first `initial|recovery`；Phase 2、Task Commit、Branch Review、Publication继续复用既有public contracts。upstream merge candidate `43fffc170927c85d9f7fc106cc5a059e80d4530b` / CI `35190729418` 是 #419 reviewed parent，独占 extractor与thin entries；Guru不patch upstream-owned paths。current graph为23 Skills / 100 exits / 79 commands。`ADR-011`、`ARCH-DOM-016`、`ARCH-INT-019`和`EVD-029`定义边界；#410独占Release Gate matrix。
 
 - `ARCH-CUR-032`（`source_confirmed` + `reviewed`）：#435 以 `target_native` 增加 `guru-review-task-delivery`、`guru-publish-task-delivery` 与 `guru-merge-task-delivery` 三个 active/deferred semantic packages，并窄化演进 Planning/Check/Task Commit/Branch Review/Reconcile 合同。每次 Delivery 以受控 merge-commit trailer、GitHub PR/merge identity、repository/base 与 parents 重建跨分支事实，merge 后 task 仍 active；#405 equal-head recovery 归 Publish owner，#407 resolved-tree commit 归 Reconcile owner。active registry 为 26 Skills / 114 package exits / 96 commands，production workflow 保持 22 mandatory invokes / 98 exits。`ADR-012`、`ARCH-DOM-017`、`ARCH-INT-020`、`ARCH-GAP-009`、`ARCH-GOV-011` 与 `EVD-030` 定义边界；#434 独占 production graph 激活，#436 独占 Completion/Closure/Finish/Cleanup/Reactivate，Release matrix 未验证。
+
+`ARCH-CUR-043`（`source_confirmed` + `reviewed`）：#454 D436 以 `target_native` 迁移五个
+terminal lifecycle canonical packages。Completion 用当前 scope/merged Delivery/evidence 判定，Closure
+冻结 action set 并以同一 transaction 恢复；Finish 验证 required-closed Issue、bookkeeping merge 和 archive
+post-state 后封存当前 generation 的 resource ledger，随后退役 TaskBranchBinding。真实非快进 merge 下
+resource cleanup head 是 PR head，目标 merge SHA 只验证 archive。Cleanup normal/manual/machine-handoff
+按 ledger 或显式选择重验，不从历史 mapping/receipt 推断 ownership。Reactivate 创建同 TaskId 的新
+generation 与独立控制态。active registry 32/142/102、production 22/98、installed/platform 均不改变；
+`ARCH-GAP-011` 仍 partial/open，E434/#434 activation 和 Release matrix 未验证。
 
 `ARCH-CUR-042`（`source_confirmed` + `reviewed`）：#454 D443 以 `target_native` 将 canonical
 `guru-bind-task-session` 从 path/mapping 语义迁移至 TaskId/generation、Phase C live binding/checkout、

@@ -1466,6 +1466,110 @@ class ResourceLedgerStore:
             resources=resources,
         )
 
+    def resolve_for_cleanup(
+        self,
+        key: TaskLifecycleKey,
+        *,
+        finish_result_id: str,
+        inventory_id: str,
+        resource_ids: Sequence[str],
+    ) -> str:
+        resolution = self.cleanup_resolution(
+            key, finish_result_id=finish_result_id, inventory_id=inventory_id
+        )
+        if resolution.resolution_kind == "manual_selection_required":
+            raise LifecycleContractError(
+                "resource_ownership_missing", "ledger", "Resolve terminal missing ownership manually."
+            )
+        expected = {row.resource_id for row in resolution.resources}
+        selected = set(resource_ids)
+        if len(selected) != len(resource_ids) or selected != expected:
+            raise LifecycleContractError(
+                "resource_inventory_stale", "resource_ids", "Resolve exactly the sealed pending Guru-owned resources."
+            )
+        ledger = self.read(key)
+        assert ledger is not None
+        if not selected:
+            return self._inventory_id(ledger)
+        successor = replace(
+            ledger,
+            ledger_revision=ledger.ledger_revision + 1,
+            resources=tuple(
+                replace(row, state="resolved", responsibility_role="superseded")
+                if row.resource_id in selected else row
+                for row in ledger.resources
+            ),
+        )
+        self._write(successor)
+        return self._inventory_id(successor)
+
+    def resolve_selected_cleanup(
+        self,
+        key: TaskLifecycleKey,
+        *,
+        finish_result_id: str,
+        resource_ids: Sequence[str],
+    ) -> str:
+        ledger = self.read(key)
+        if ledger is None or ledger.finish_result_id != finish_result_id:
+            raise LifecycleContractError(
+                "resource_ownership_conflict", "finish_result_id", "Select the exact sealed Finish lifecycle."
+            )
+        selected = set(resource_ids)
+        eligible = {
+            row.resource_id for row in ledger.resources
+            if row.ownership == "caller_owned" and row.state == "retained"
+            and row.responsibility_role == "manual_only"
+        }
+        if not selected or len(selected) != len(resource_ids) or not selected <= eligible:
+            raise LifecycleContractError(
+                "resource_ownership_conflict", "resource_ids", "Resolve only exact selected caller-owned retained resources."
+            )
+        successor = replace(
+            ledger,
+            ledger_revision=ledger.ledger_revision + 1,
+            resources=tuple(
+                replace(row, state="resolved", responsibility_role="superseded")
+                if row.resource_id in selected else row
+                for row in ledger.resources
+            ),
+        )
+        self._write(successor)
+        return self._inventory_id(successor)
+
+    def resolve_handoff_cleanup(
+        self,
+        key: TaskLifecycleKey,
+        *,
+        resource_ids: Sequence[str],
+    ) -> str:
+        ledger = self.read(key)
+        if ledger is None:
+            raise LifecycleContractError(
+                "resource_ownership_missing", "ledger", "Recover the source handoff resource ledger."
+            )
+        selected = set(resource_ids)
+        pending = {
+            row.resource_id for row in ledger.resources
+            if row.ownership == "guru_owned" and row.state == "cleanup_pending"
+            and row.responsibility_role == "retired_cleanup"
+        }
+        if not selected or len(selected) != len(resource_ids) or not selected <= pending:
+            raise LifecycleContractError(
+                "resource_ownership_conflict", "resource_ids", "Resolve only the selected pending source handoff incarnations."
+            )
+        successor = replace(
+            ledger,
+            ledger_revision=ledger.ledger_revision + 1,
+            resources=tuple(
+                replace(row, state="resolved", responsibility_role="superseded")
+                if row.resource_id in selected else row
+                for row in ledger.resources
+            ),
+        )
+        self._write(successor)
+        return self._inventory_id(successor)
+
     def terminal_missing_resolution(
         self,
         key: TaskLifecycleKey,
