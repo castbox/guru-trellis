@@ -41,7 +41,7 @@ forbidden states与public owner completeness执行联合复核。60个finding已
 Architecture、Phase 2、Task Commit 与 Branch Review，且不得把局部 candidate 解释为后续切片或 production
 cutover 已完成。
 
-当前 C4 candidate 的 Delivery prerequisite 包含一项窄 Finalizer recovery 修复。无 predecessor transaction 的
+已交付的 C4 切片的 Delivery prerequisite 包含一项窄 Finalizer recovery 修复。无 predecessor transaction 的
 首次 provenance reprepare preflight 使用真实 Git ancestry 分类 remote：absent、equal 或 strict historical ancestor
 可继续；ahead、diverged、unknown/unprovable commit fail closed。该分类只服务同一 C4 candidate 的正常
 fast-forward publication，不改变 existing-PR recovery，不放宽 predecessor transaction 的 exact old-HEAD 约束，也不

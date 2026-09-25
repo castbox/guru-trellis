@@ -59,3 +59,44 @@ epoch, revision, branch, and HEAD, and rejects a branch that has advanced.
 only as planned stable IDs in C4. Their canonical packages, workflow routes,
 installed copies, and platform projections remain owned by the E434 atomic
 activation.
+
+`session_adapter.py` is the C5 boundary over the Fixed Fork official schema-2
+session API. It validates `TaskLifecycleDTO`, writes exactly
+`schema_version/task_id/lifecycle_generation`, and resolves the current TaskRef
+through the official TaskId resolver. A missing context key returns
+`explicit_task_mode`; a session write failure is session-local and never owns
+rollback of an already completed lifecycle mutation. The adapter contains no
+copy of `.trellis/scripts/common/**` and creates no second session store.
+
+`task-resource-ledger.schema.json` is the closed Git-common-dir ownership
+record at `trellis/task-resources/<task-id>/<generation>.json`. Each resource
+incarnation records its acquisition origin, conservative ownership, portable
+ref, binding epoch/revision, state, responsibility role, and exact cleanup
+commit when sealed. A remote portable ref includes the remote name, repository
+identity, and branch ref so Cleanup can identify the exact remote incarnation.
+Unknown or unprovable ownership is represented as
+`caller_owned`; checkout paths are never stored.
+
+The same ledger records the exact `finish_result_id` and `finish_head` once
+Finish seals the current bundle. An exact retry rematerializes the seal without
+rewriting ownership; a different result or HEAD conflicts. Cleanup verifies
+the same Finish result before projecting the sealed inventory. These fields
+belong only to the Finish seal, not to a generic ledger transaction protocol.
+
+Ledger mutation owners use exact-byte snapshot/restore through the concrete C4
+port. Conservative active recovery and remote-delivery recording also
+rematerialize an already established exact successor without rewriting it.
+No second transaction store or speculative checkpoint schema is introduced.
+
+`task-resource-seal-input.schema.json` carries the exact Finish HEAD used to
+seal the current Guru-owned resources and returns one ledger revision and
+complete responsibility inventory identity.
+`task-resource-cleanup-resolution.schema.json` separates ordinary Guru-owned
+cleanup, terminal manual selection, and already-clean results. Ordinary
+Cleanup includes only `guru_owned + cleanup_pending` resources and excludes
+caller-owned, unknown-ownership, and `refs/heads/guru-task-lifecycle/*`
+retained control refs.
+
+C5 remains substrate only. It does not activate D443/D436, create a planned
+Skill package, change the production workflow, or publish installed/platform
+projections; those transitions remain owned by E434.

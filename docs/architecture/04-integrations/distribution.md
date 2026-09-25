@@ -123,6 +123,14 @@
   `guru-ensure-task-checkout` 一样不创建package/interface/active graph/installed/platform projection，E434前
   canonical与installed差异仍是显式未激活边界。
 
+- `ARCH-INT-028`：C5 将 session adapter、resource ledger、Finish seal input 与 Cleanup resolution 仅加入
+  canonical shared substrate；官方 schema-2 session store 保持单写，C4 通过 `OwnershipPort` 消费 ledger。
+  current binding/ownership/incarnation 只校验已建立的 branch、epoch、revision 与 resource identity；
+  自动选择唯一合法 candidate，零/多个由用户选择，显式未发现 target 仍经相同 live validator。
+  对 remote delivery 只按当前 incarnation 和 Git 祖先关系推进 HEAD，不引入 ledger-wide transaction token。
+  planned registry ID 不创建 package 或 active graph edge；installed/platform projection 和完整 Release matrix
+  仍由 E434 或专门 owner 验证，不因 Architecture promotion 宣称已完成。
+
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。
 - `skill_api` 与 interface/schema/command projection、distribution、managed/installed file

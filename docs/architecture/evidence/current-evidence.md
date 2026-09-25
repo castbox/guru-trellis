@@ -192,6 +192,23 @@ installed task-lifecycle README/schema/registry sidecars；该 broader suite 未
 merge、tag、Release 或 Issue closure。Promotion-created `.62` diff 仍须 fresh Phase 2、Task Commit 与
 independent complete Branch Review 后才能进入 Publication。
 
+## EVD-038: #454 C5 Session And Resource Control Promotion
+
+本证据支撑 `ARCH-CUR-040`、`ARCH-DOM-025`、`ARCH-INT-028`、`ARCH-GAP-011` 与
+`.62 -> .63` Architecture knowledge promotion。独立完整 Branch Review 绑定
+`origin/main@5064292675e9dabb4c6382c9397f3469b6b38ea4...HEAD@f18a51d40f5084b514abc5c062507e926b74f783`，
+覆盖三个提交、21 个路径；C5 current 正常路径 P0/P1/P2/P3 未留下 finding。先前 remote HEAD 与
+PRD slice 两个候选已修复，normal-scenario fresh 分类为 `rejected_not_reproduced`；Architecture
+Branch Review 返回 `baseline_current / reviewed_candidate`。这些判断只绑定提升前的已提交 candidate。
+
+Focused lifecycle suite `113/113`、task validator、Draft 2020-12 schema、Python AST、行数及 diff check
+在提升前 C5 范围通过；独立只读 reviewer 没有重跑测试。Fixed Fork 实际联调、installed/platform、
+production graph activation 与完整 Release matrix 未由本证据证明。C6-C7、D443、D436、E434 与
+#434 activation 仍在后续 owner 边界；Issue #454 不因本次 C5 promotion 关闭。
+
+本次 `.63` promotion-created diff 仍须 fresh Phase 2、Task Commit 与独立完整 Branch Review，之后才可
+进入 Publication/Finalizer/Delivery。此证据不证明 push、PR、merge、Release 或 Issue closure。
+
 ## EVD-032: #443 Reviewed Promotion Source
 
 本证据支撑 `ARCH-CUR-034`、`ARCH-DOM-019`、`ARCH-INT-022`、`ARCH-GAP-009`、`ADR-014`

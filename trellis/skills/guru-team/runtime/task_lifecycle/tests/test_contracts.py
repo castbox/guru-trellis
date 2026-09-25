@@ -122,6 +122,21 @@ def valid_payloads() -> dict[str, dict]:
     }
 
 
+def valid_resource() -> dict:
+    return {
+        "resource_id": "resource:1",
+        "kind": "local_branch",
+        "acquisition_origin": "guru_created",
+        "ownership": "guru_owned",
+        "portable_ref": {"kind": "local_branch", "ref": f"refs/heads/{BRANCH_NAME}"},
+        "binding_epoch": 7,
+        "binding_revision": 0,
+        "state": "cleanup_pending",
+        "responsibility_role": "retired_cleanup",
+        "expected_cleanup_head": COMMIT,
+    }
+
+
 class ContractTests(unittest.TestCase):
     def test_branch_binding_schema_is_draft_2020_12_and_exactly_six_fields(self):
         schema = load_contract("task-branch-binding.schema.json")
@@ -270,6 +285,280 @@ class ContractTests(unittest.TestCase):
                             )
                         )
                     )
+
+    def test_resource_ledger_schema_is_closed_and_path_free(self):
+        schema = load_contract("task-resource-ledger.schema.json")
+        Draft202012Validator.check_schema(schema)
+        validator = Draft202012Validator(schema)
+        payload = {
+            "schema_version": "1.0",
+            "task_id": TASK_ID,
+            "lifecycle_generation": GENERATION,
+            "ledger_revision": 4,
+            "finish_result_id": "finish:1",
+            "finish_head": COMMIT,
+            "resources": [valid_resource()],
+        }
+        self.assertEqual(list(validator.iter_errors(payload)), [])
+        retained = {
+            "resource_id": "resource:retained",
+            "kind": "remote_branch",
+            "acquisition_origin": "retained_control",
+            "ownership": "caller_owned",
+            "portable_ref": {
+                "kind": "remote_branch",
+                "remote_name": "origin",
+                "repository_ref": "castbox/guru-trellis",
+                "ref": f"refs/heads/guru-task-lifecycle/{TASK_ID}",
+            },
+            "binding_epoch": 0,
+            "binding_revision": 4,
+            "state": "retained",
+            "responsibility_role": "retained_control",
+            "expected_cleanup_head": None,
+        }
+        self.assertEqual(
+            list(validator.iter_errors({**payload, "resources": [retained]})),
+            [],
+        )
+        current_worktree = {
+            **valid_resource(),
+            "resource_id": "resource:current-worktree",
+            "kind": "linked_worktree",
+            "portable_ref": {
+                "kind": "linked_worktree",
+                "branch_ref": f"refs/heads/{BRANCH_NAME}",
+            },
+            "state": "current",
+            "responsibility_role": "current_worktree",
+            "expected_cleanup_head": None,
+        }
+        current_delivery = {
+            **valid_resource(),
+            "resource_id": "resource:current-delivery",
+            "kind": "remote_branch",
+            "acquisition_origin": "publication",
+            "portable_ref": {
+                "kind": "remote_branch",
+                "remote_name": "origin",
+                "repository_ref": "castbox/guru-trellis",
+                "ref": f"refs/heads/{BRANCH_NAME}",
+            },
+            "state": "current",
+            "responsibility_role": "current_delivery",
+        }
+        current_branch = {
+            **valid_resource(),
+            "resource_id": "resource:current-branch",
+            "state": "current",
+            "responsibility_role": "current_branch",
+        }
+        active = {**payload, "finish_result_id": None, "finish_head": None}
+        self.assertEqual(list(validator.iter_errors({**active, "resources": [current_branch]})), [])
+        for mutation in [
+            {**payload, "finish_head": None},
+            {**payload, "finish_result_id": None},
+            {**payload, "resources": [current_branch]},
+            {**active, "finish_result_id": "finish:1"},
+        ]:
+            self.assertTrue(list(validator.iter_errors(mutation)))
+        self.assertTrue(list(validator.iter_errors({
+            **active,
+            "resources": [current_branch, {**current_delivery, "expected_cleanup_head": None}],
+        })))
+        self.assertTrue(list(validator.iter_errors({
+            **active,
+            "resources": [current_branch, {
+                **current_delivery,
+                "state": "cleanup_pending",
+                "responsibility_role": "retired_cleanup",
+                "expected_cleanup_head": None,
+            }],
+        })))
+        self.assertEqual(list(validator.iter_errors({
+            **active,
+            "resources": [current_branch, {
+                **current_delivery,
+                "acquisition_origin": "conservative_recovery",
+                "ownership": "caller_owned",
+                "expected_cleanup_head": None,
+            }],
+        })), [])
+        for remote_name in ("origin", "upstream", "backup/main"):
+            named_delivery = {
+                **current_delivery,
+                "portable_ref": {
+                    **current_delivery["portable_ref"],
+                    "remote_name": remote_name,
+                },
+            }
+            with self.subTest(remote_name=remote_name):
+                self.assertEqual(
+                    list(validator.iter_errors({
+                        **active,
+                        "resources": [current_branch, named_delivery],
+                    })),
+                    [],
+                )
+        for resource in (current_worktree, current_delivery):
+            with self.subTest(orphan_role=resource["responsibility_role"]):
+                self.assertTrue(
+                    list(validator.iter_errors({**payload, "resources": [resource]}))
+                )
+        for mutation in [
+            {**payload, "checkout_path": "/tmp/task"},
+            {**payload, "ledger_revision": True},
+            {**payload, "resources": [{**valid_resource(), "ownership": "unknown"}]},
+            {**payload, "resources": [{**valid_resource(), "portable_ref": {"kind": "local_branch", "ref": "topic"}}]},
+            {
+                **payload,
+                "resources": [{
+                    **valid_resource(),
+                    "portable_ref": {
+                        "kind": "local_branch",
+                        "ref": f"refs/heads/guru-task-lifecycle/{TASK_ID}",
+                    },
+                }],
+            },
+            {**payload, "resources": [{**valid_resource(), "state": "current"}]},
+            {**payload, "resources": [{**valid_resource(), "ownership": "caller_owned"}]},
+            {**payload, "resources": [{**valid_resource(), "authorization": "confirmed"}]},
+            {
+                **payload,
+                "resources": [current_branch, {
+                    **current_delivery,
+                    "portable_ref": {
+                        key: value
+                        for key, value in current_delivery["portable_ref"].items()
+                        if key != "remote_name"
+                    },
+                }],
+            },
+            {
+                **payload,
+                "resources": [current_branch, {
+                    **current_delivery,
+                    "portable_ref": {**current_delivery["portable_ref"], "remote_name": "bad name"},
+                }],
+            },
+            {
+                **payload,
+                "resources": [{
+                    **retained,
+                    "portable_ref": {
+                        **retained["portable_ref"],
+                        "ref": "refs/heads/guru-task-lifecycle/bad ref",
+                    },
+                }],
+            },
+        ]:
+            self.assertTrue(list(validator.iter_errors(mutation)))
+        for suffix in ("bad\tref", "bad\nref", "bad\x00ref", "bad\x7fref"):
+            invalid_retained = {
+                **retained,
+                "portable_ref": {
+                    **retained["portable_ref"],
+                    "ref": f"refs/heads/guru-task-lifecycle/{suffix}",
+                },
+            }
+            with self.subTest(retained_suffix=repr(suffix)):
+                self.assertTrue(
+                    list(
+                        validator.iter_errors(
+                            {**payload, "resources": [invalid_retained]}
+                        )
+                    )
+                )
+
+    def test_finish_seal_and_cleanup_resolution_schemas_are_minimal_closed_contracts(self):
+        seal_schema = load_contract("task-resource-seal-input.schema.json")
+        cleanup_schema = load_contract("task-resource-cleanup-resolution.schema.json")
+        Draft202012Validator.check_schema(seal_schema)
+        Draft202012Validator.check_schema(cleanup_schema)
+        seal = {
+            "schema_version": "1.0",
+            "task_id": TASK_ID,
+            "lifecycle_generation": GENERATION,
+            "finish_result_id": "finish:1",
+            "finish_head": COMMIT,
+            "ledger_revision": 5,
+            "inventory_id": "resource-inventory:1",
+        }
+        resource = {
+            "resource_id": "resource:1",
+            "kind": "local_branch",
+            "portable_ref": {"kind": "local_branch", "ref": f"refs/heads/{BRANCH_NAME}"},
+            "expected_cleanup_head": COMMIT,
+        }
+        resolutions = [
+            {
+                "schema_version": "1.0",
+                "task_id": TASK_ID,
+                "lifecycle_generation": GENERATION,
+                "finish_result_id": "finish:1",
+                "resolution_kind": "ordinary_cleanup",
+                "inventory_id": "resource-inventory:1",
+                "resources": [resource],
+            },
+            {
+                "schema_version": "1.0",
+                "task_id": TASK_ID,
+                "lifecycle_generation": GENERATION,
+                "finish_result_id": "finish:1",
+                "resolution_kind": "manual_selection_required",
+                "reason_code": "terminal_resource_ledger_missing",
+                "candidates": [],
+            },
+            {
+                "schema_version": "1.0",
+                "task_id": TASK_ID,
+                "lifecycle_generation": GENERATION,
+                "finish_result_id": "finish:1",
+                "resolution_kind": "already_clean",
+                "inventory_id": "resource-inventory:1",
+            },
+        ]
+        self.assertEqual(list(Draft202012Validator(seal_schema).iter_errors(seal)), [])
+        cleanup = Draft202012Validator(cleanup_schema)
+        for payload in resolutions:
+            with self.subTest(kind=payload["resolution_kind"]):
+                self.assertEqual(list(cleanup.iter_errors(payload)), [])
+        self.assertTrue(list(cleanup.iter_errors({**resolutions[0], "resources": []})))
+        self.assertTrue(list(cleanup.iter_errors({
+            **resolutions[0],
+            "resources": [{**resource, "expected_cleanup_head": None}],
+        })))
+        remote_resource = {
+            **resource,
+            "kind": "remote_branch",
+            "portable_ref": {
+                "kind": "remote_branch",
+                "remote_name": "upstream",
+                "repository_ref": "castbox/guru-trellis",
+                "ref": f"refs/heads/{BRANCH_NAME}",
+            },
+        }
+        self.assertEqual(
+            list(cleanup.iter_errors({**resolutions[0], "resources": [remote_resource]})),
+            [],
+        )
+        self.assertTrue(list(cleanup.iter_errors({**resolutions[0], "resources": [{
+            **remote_resource,
+            "portable_ref": {**remote_resource["portable_ref"], "remote_name": "bad name"},
+        }]})))
+        self.assertEqual(
+            list(cleanup.iter_errors({
+                **resolutions[1],
+                "candidates": [{**resource, "expected_cleanup_head": None}],
+            })),
+            [],
+        )
+        self.assertTrue(list(cleanup.iter_errors({**resolutions[1], "authorization": "confirmed"})))
+        self.assertTrue(list(Draft202012Validator(seal_schema).iter_errors({**seal, "resources": []})))
+        self.assertTrue(list(Draft202012Validator(seal_schema).iter_errors({
+            key: value for key, value in seal.items() if key != "finish_head"
+        })))
+        self.assertTrue(list(Draft202012Validator(seal_schema).iter_errors({**seal, "finish_head": None})))
 
     def test_runtime_error_shape_has_exact_dispatcher_fields(self):
         error = LifecycleContractError("target_path_conflict", "target_path", "Choose another target.")

@@ -26,6 +26,7 @@
 | `ARCH-DOM-022` | task checkout substrate | Guru shared lifecycle runtime 独占 call-local checkout plan/candidate/resolution/selection、common-dir live facts、adopt/provision transaction、bounded rollback 与 read-only recovery；machine path 不进入 durable task/session/branch/resource authority；`guru-ensure-task-checkout` 仅是 planned ID，E434 独占完整 package 与 activation |
 | `ARCH-DOM-023` | checkout acquisition provenance | acquisition transaction独占transaction-created worktree marker写入，output-loss recovery是唯一只读consumer，direct handoff独占retirement；marker不成为task/session/branch/workspace/resource authority，replacement resource不得继承Guru ownership |
 | `ARCH-DOM-024` | task branch association | C4 shared lifecycle runtime 独占 Git common-dir TaskBranchBinding、live candidate discovery、establishment/rebind transaction 与 lost-output recovery；C5 ownership owner只通过窄 port提供current/snapshot/restore/establish/rebind/unresolved-ref能力，不向C4暴露ledger representation；E434独占planned package activation |
+| `ARCH-DOM-025` | session and resource control | Fixed Fork official schema-2 session store 独占持久化；C5 adapter 独占 path-free TaskId/generation 投影，缺 context key 不写 session。C5 resource ledger 独占 Git common-dir incarnation/ownership、active conservative recovery、remote HEAD advance、Finish seal 与 Cleanup resolution；C4 只消费 `OwnershipPort`，E434 独占 planned package/production activation |
 
 跨 domain 只使用 interface/schema/typed projection；不得读取对方 private checkpoint 作为 public contract。
 

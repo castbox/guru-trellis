@@ -2,7 +2,7 @@
   "id": "454-task-lifecycle-state-model",
   "name": "454-task-lifecycle-state-model",
   "title": "#454 建立统一 task lifecycle state model",
-  "description": "按已批准的分阶段计划实施统一状态模型、组合矩阵与迁移合同；C1、C2、D0、C3 已完成，当前交付 C4 branch association、establishment 与 rebind substrate。PR #465 只完成 C3；C5-C7、D443、D436、E434 与 #434 activation 仍未完成。不修改 Issue、不提前激活 production graph。",
+  "description": "按已批准的分阶段计划实施统一状态模型、组合矩阵与迁移合同；C1、C2、D0、C3、C4 已分别完成交付，当前交付 C5 path-free session adapter 与 resource ownership ledger substrate。PR #465 只完成 C3，PR #470 只完成 C4；C6-C7、D443、D436、E434 与 #434 activation 仍未完成。不修改 Issue、不提前激活 production graph。",
   "status": "completed",
   "dev_type": null,
   "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/454",
@@ -11,7 +11,7 @@
   "creator": "wesleywu",
   "assignee": "wesleywu",
   "createdAt": "2026-09-20",
-  "completedAt": "2026-09-24",
+  "completedAt": "2026-09-25",
   "branch": "codex/454-task-lifecycle-state-model-c3-c7",
   "base_branch": "main",
   "worktree_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/454-task-lifecycle-state-model-c3-c7",
@@ -23,5 +23,5 @@
   "relatedFiles": [],
   "notes": "",
   "meta": {},
-  "lifecycle_generation": 2
+  "lifecycle_generation": 3
 }
