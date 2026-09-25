@@ -67,6 +67,11 @@ def invoke(tmp_path, public, semantic, env, confirmed=False):
 def test_contract_assets():
     interface = json.loads((PACKAGE / "interface.json").read_text())
     validate_json(interface, ROOT / "schemas/skill-interface-1.4.schema.json", "interface")
+    command = json.loads((PACKAGE / "commands.json").read_text())["commands"][0]
+    assert [argument["flag"] for argument in command["arguments"]] == [
+        "--root", "--input", "--semantic-result", "--confirmed-close",
+    ]
+    assert all((PACKAGE / binding).is_file() for binding in command["schema_bindings"])
     assert [item["id"] for item in interface["external_exits"]] == [
         "no_mutation", "closed", "resume_closure", "external_change_conflict", "blocked",
     ]
