@@ -82,7 +82,7 @@ def valid_payloads() -> dict[str, dict]:
         "SourceRelationRefDTO": {**base, "source_relation_id": "source:1"},
         "SourceCorrectionReadyDTO": {
             **artifact,
-            "current_source": {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454},
+            "current_source": {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454, "disposition": "reference_only"},
             "reviewed_source": {"kind": "no_issue"},
             "accepted_scope_identity": "scope:1",
             "target_relation_id": "target:1",

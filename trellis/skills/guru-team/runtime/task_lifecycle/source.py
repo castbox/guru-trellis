@@ -7,6 +7,10 @@ from .errors import LifecycleContractError
 
 
 REPOSITORY_REF_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*$")
+LEGACY_ISSUE_SCOPE = re.compile(
+    r"^GitHub issue: https://github\.com/([A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*)/issues/([1-9][0-9]*)$"
+)
+ISSUE_DISPOSITIONS = {"exact_source", "reference_only", "follow_up", "parent"}
 BRANCH_REF_PATTERN = re.compile(
     r"^(?!-)(?!HEAD$)(?!/)(?!refs/remotes/)(?!(?:refs/heads/)?guru-task-lifecycle(?:/|$))"
     r"(?!.*(?:^|/)\.)(?!.*(?:^|/)[^/]*\.lock(?:/|$))"
@@ -29,20 +33,38 @@ def normalize_source(value: Any, *, field_path: str = "source") -> dict[str, Any
     kind = value.get("kind")
     if kind == "no_issue" and set(value) == {"kind"}:
         return {"kind": "no_issue"}
-    if kind == "issue" and set(value) == {"kind", "repo_ref", "number"}:
+    if kind == "issue" and set(value) == {"kind", "repo_ref", "number", "disposition"}:
         number = value.get("number")
-        if type(number) is not int or number < 1:
+        disposition = value.get("disposition")
+        if type(number) is not int or number < 1 or not isinstance(disposition, str) or disposition not in ISSUE_DISPOSITIONS:
             raise LifecycleContractError(
-                "invalid_source_relation", f"{field_path}.number", "Use a positive Issue number."
+                "invalid_source_relation", field_path, "Use a positive Issue number and a declared source disposition."
             )
         return {
             "kind": "issue",
             "repo_ref": normalize_repo_ref(value.get("repo_ref"), field_path=f"{field_path}.repo_ref"),
             "number": number,
+            "disposition": value["disposition"],
         }
     raise LifecycleContractError(
-        "invalid_source_relation", field_path, "Use exactly {kind:no_issue} or {kind:issue,repo_ref,number}."
+        "invalid_source_relation", field_path, "Use exactly {kind:no_issue} or {kind:issue,repo_ref,number,disposition}."
     )
+
+
+def task_source(metadata: Any) -> dict[str, Any]:
+    if not isinstance(metadata, dict):
+        raise LifecycleContractError("invalid_source_relation", "task.json", "Read a task metadata object.")
+    if "source" in metadata:
+        return normalize_source(metadata["source"])
+    scope = metadata.get("scope")
+    matched = LEGACY_ISSUE_SCOPE.fullmatch(scope) if isinstance(scope, str) else None
+    if matched is None:
+        raise LifecycleContractError(
+            "source_review_required", "task.json.source", "Review the legacy source relation before Closure."
+        )
+    return normalize_source({
+        "kind": "issue", "repo_ref": matched[1], "number": int(matched[2]), "disposition": "exact_source",
+    })
 
 
 def normalize_branch_ref(value: Any, *, field_path: str = "branch_ref") -> str:
@@ -66,4 +88,4 @@ def normalize_delivery_target(value: Any, *, field_path: str = "delivery_target"
     }
 
 
-__all__ = ["normalize_branch_ref", "normalize_delivery_target", "normalize_repo_ref", "normalize_source"]
+__all__ = ["normalize_branch_ref", "normalize_delivery_target", "normalize_repo_ref", "normalize_source", "task_source"]

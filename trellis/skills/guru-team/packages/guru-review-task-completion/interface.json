@@ -117,10 +117,6 @@
       "path": "examples/evidence-refresh-authoring.json"
     },
     {
-      "id": "requirements_authoring",
-      "path": "examples/requirements-authoring.json"
-    },
-    {
       "id": "closure_authoring",
       "path": "examples/closure-authoring.json"
     },
@@ -250,7 +246,7 @@
     }
   ],
   "reentry": {
-    "identity": "task, scope, Delivery history, authority, evidence, semantic route",
+    "identity": "TaskLifecycleKey, accepted scope identity, exact merge lineage, selected current evidence slots",
     "freshness": "rebuild all facts for every call",
     "stale_behavior": "fail_closed"
   },
@@ -286,14 +282,14 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-review-task-completion-input-aggregate-1.0",
+        "schema_id": "guru-review-task-completion-input-aggregate-2.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
         {
           "id": "completion",
           "schema": {
-            "schema_id": "guru-review-task-completion-input-completion-1.0",
+            "schema_id": "guru-review-task-completion-input-completion-2.0",
             "path": "schemas/public-completion-input.schema.json"
           },
           "example": {
@@ -308,7 +304,7 @@
         {
           "id": "evidence_refresh",
           "schema": {
-            "schema_id": "guru-review-task-completion-input-evidence-refresh-1.0",
+            "schema_id": "guru-review-task-completion-input-evidence-refresh-2.0",
             "path": "schemas/public-evidence-refresh-input.schema.json"
           },
           "example": {
@@ -331,7 +327,7 @@
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
-        "schema_id": "guru-review-task-completion-output-1.0",
+          "schema_id": "guru-review-task-completion-output-aggregate-2.0",
         "path": "schemas/public-output.schema.json"
       },
       "error_example": {
@@ -349,7 +345,7 @@
       {
         "exit_id": "remaining_work",
         "schema": {
-          "schema_id": "guru-review-task-completion-output-remaining-work-1.0",
+          "schema_id": "guru-review-task-completion-output-remaining-work-2.0",
           "path": "schemas/public-remaining-work-output.schema.json"
         },
         "example": {
@@ -363,7 +359,7 @@
       {
         "exit_id": "evidence_pending",
         "schema": {
-          "schema_id": "guru-review-task-completion-output-evidence-pending-1.0",
+          "schema_id": "guru-review-task-completion-output-evidence-pending-2.0",
           "path": "schemas/public-evidence-pending-output.schema.json"
         },
         "example": {
@@ -377,7 +373,7 @@
       {
         "exit_id": "additional_delivery_required",
         "schema": {
-          "schema_id": "guru-review-task-completion-output-additional-delivery-required-1.0",
+          "schema_id": "guru-review-task-completion-output-additional-delivery-required-2.0",
           "path": "schemas/public-additional-delivery-required-output.schema.json"
         },
         "example": {
@@ -391,7 +387,7 @@
       {
         "exit_id": "requirements_revision_required",
         "schema": {
-          "schema_id": "guru-review-task-completion-output-requirements-revision-required-1.0",
+          "schema_id": "guru-review-task-completion-output-requirements-revision-required-2.0",
           "path": "schemas/public-requirements-revision-required-output.schema.json"
         },
         "example": {
@@ -405,7 +401,7 @@
       {
         "exit_id": "implementation_revision_required",
         "schema": {
-          "schema_id": "guru-review-task-completion-output-implementation-revision-required-1.0",
+          "schema_id": "guru-review-task-completion-output-implementation-revision-required-2.0",
           "path": "schemas/public-implementation-revision-required-output.schema.json"
         },
         "example": {
@@ -419,7 +415,7 @@
       {
         "exit_id": "completed",
         "schema": {
-          "schema_id": "guru-review-task-completion-output-completed-1.0",
+          "schema_id": "guru-review-task-completion-output-completed-2.0",
           "path": "schemas/public-completed-output.schema.json"
         },
         "example": {
@@ -433,7 +429,7 @@
       {
         "exit_id": "blocked",
         "schema": {
-          "schema_id": "guru-review-task-completion-output-blocked-1.0",
+          "schema_id": "guru-review-task-completion-output-blocked-2.0",
           "path": "schemas/public-blocked-output.schema.json"
         },
         "example": {
@@ -460,13 +456,18 @@
           "profile_id": "completion_approved",
           "seed_fields": [
             "source_exit",
-            "task_ref",
-            "completion_ref"
+            "completion_result"
           ],
           "authoring_fields": [
             "profile",
             "mode",
-            "source_issue"
+            "source",
+            "accepted_scope_identity",
+            "delivery_target",
+            "binding_ref",
+            "content_head",
+            "evidence_slots",
+            "action_set"
           ],
           "authoring_example": {
             "id": "closure_authoring",
@@ -483,7 +484,7 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-review-task-completion-route-1.0",
+          "schema_id": "guru-review-task-completion-route-2.0",
           "path": "consumers/workflow/production/completion-route.schema.json"
         }
       },
@@ -501,15 +502,15 @@
           "profile_id": "evidence_refresh",
           "seed_fields": [
             "source_exit",
-            "task_ref",
-            "resume_target"
+            "task_artifact",
+            "reason"
           ],
           "authoring_fields": [
             "profile",
             "mode",
-            "authority_refs",
-            "delivery_facts",
-            "evidence_refs"
+            "accepted_scope_identity",
+            "merge_result",
+            "evidence_slots"
           ],
           "authoring_example": {
             "id": "evidence_refresh_authoring",
@@ -526,37 +527,21 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-review-task-completion-route-1.0",
+          "schema_id": "guru-review-task-completion-route-2.0",
           "path": "consumers/workflow/production/completion-route.schema.json"
         }
       },
       {
         "id": "requirements",
         "consumer": {
-          "kind": "skill",
-          "id": "guru-clarify-requirements"
+          "kind": "workflow",
+          "id": "task-requirements-revision-router"
         },
         "payload_kind": "structured_json",
         "contract": {
-          "kind": "skill_input_authoring_seed",
-          "interface_path": "packages/guru-clarify-requirements/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "active_task_scope_change",
-          "seed_fields": [
-            "source_exit",
-            "task_locator",
-            "resume_target"
-          ],
-          "authoring_fields": [
-            "profile",
-            "mode",
-            "target_locator",
-            "continuation_id"
-          ],
-          "authoring_example": {
-            "id": "requirements_authoring",
-            "path": "examples/requirements-authoring.json"
-          }
+          "kind": "json_schema",
+          "schema_id": "guru-review-task-completion-requirements-route-2.0",
+          "path": "consumers/workflow/production/requirements-revision-route.schema.json"
         }
       },
       {
@@ -568,7 +553,7 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-review-task-completion-route-1.0",
+          "schema_id": "guru-review-task-completion-route-2.0",
           "path": "consumers/workflow/production/completion-route.schema.json"
         }
       },
@@ -578,7 +563,12 @@
           "kind": "stop",
           "id": "task-completion-blocked"
         },
-        "payload_kind": "zero_payload"
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-review-task-completion-blocked-stop-2.0",
+          "path": "consumers/stop/production/completion-blocked.schema.json"
+        }
       }
     ],
     "projections": [
@@ -593,12 +583,8 @@
             "target": "source_exit"
           },
           {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "completion_ref",
-            "target": "completion_ref"
+            "source": "result_ref",
+            "target": "completion_result"
           }
         ]
       },
@@ -613,12 +599,12 @@
             "target": "exit_id"
           },
           {
-            "source": "task_ref",
-            "target": "task_ref"
+            "source": "task_artifact",
+            "target": "task_artifact"
           },
           {
-            "source": "resume_target",
-            "target": "resume_target"
+            "source": "reason",
+            "target": "reason"
           }
         ]
       },
@@ -633,12 +619,12 @@
             "target": "source_exit"
           },
           {
-            "source": "task_ref",
-            "target": "task_ref"
+            "source": "task_artifact",
+            "target": "task_artifact"
           },
           {
-            "source": "resume_target",
-            "target": "resume_target"
+            "source": "reason",
+            "target": "reason"
           }
         ]
       },
@@ -653,12 +639,12 @@
             "target": "exit_id"
           },
           {
-            "source": "task_ref",
-            "target": "task_ref"
+            "source": "task_artifact",
+            "target": "task_artifact"
           },
           {
-            "source": "resume_target",
-            "target": "resume_target"
+            "source": "reason",
+            "target": "reason"
           }
         ]
       },
@@ -666,19 +652,19 @@
         "id": "requirements",
         "exit_id": "requirements_revision_required",
         "consumer_input_id": "requirements",
-        "operation": "rename",
+        "operation": "select",
         "mappings": [
           {
             "source": "exit_id",
-            "target": "source_exit"
+            "target": "exit_id"
           },
           {
-            "source": "task_ref",
-            "target": "task_locator"
+            "source": "task_artifact",
+            "target": "task_artifact"
           },
           {
-            "source": "resume_target",
-            "target": "resume_target"
+            "source": "reason",
+            "target": "reason"
           }
         ]
       },
@@ -693,12 +679,12 @@
             "target": "exit_id"
           },
           {
-            "source": "task_ref",
-            "target": "task_ref"
+            "source": "task_artifact",
+            "target": "task_artifact"
           },
           {
-            "source": "resume_target",
-            "target": "resume_target"
+            "source": "reason",
+            "target": "reason"
           }
         ]
       },
@@ -707,7 +693,10 @@
         "exit_id": "blocked",
         "consumer_input_id": "blocked",
         "operation": "select",
-        "mappings": []
+        "mappings": [
+          {"source": "exit_id", "target": "exit_id"},
+          {"source": "reason", "target": "reason"}
+        ]
       }
     ],
     "private_artifacts": []

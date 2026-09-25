@@ -2,7 +2,7 @@
   "id": "454-task-lifecycle-state-model",
   "name": "454-task-lifecycle-state-model",
   "title": "#454 建立统一 task lifecycle state model",
-  "description": "generation 5 只交付 Phase D443 的 guru-bind-task-session major package migration。C1-C7 已由历史 Delivery 交付；D436、E434 与 #434 production activation 仍属后续。保持 workflow、registry selector、manifest 和 installed/platform projection 不变。",
+  "description": "generation 6 交付 Phase D436 的 Reactivate、Completion、Closure、Finish、Cleanup canonical package major migration。C1-C7、D443 已由历史 Delivery 交付；E434 与 #434 production activation 仍属后续。保持 workflow、registry selector、manifest 和 installed/platform projection 不变。",
   "status": "completed",
   "dev_type": null,
   "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/454",
@@ -11,10 +11,10 @@
   "creator": "wesleywu",
   "assignee": "wesleywu",
   "createdAt": "2026-09-20",
-  "completedAt": "2026-09-25",
-  "branch": "codex/454-d443-bind-task-session",
+  "completedAt": "2026-09-26",
+  "branch": "codex/454-d436-lifecycle-packages",
   "base_branch": "main",
-  "worktree_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/454-d443-bind-task-session",
+  "worktree_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/454-d436-lifecycle-packages",
   "commit": null,
   "pr_url": null,
   "subtasks": [],
@@ -23,5 +23,5 @@
   "relatedFiles": [],
   "notes": "",
   "meta": {},
-  "lifecycle_generation": 5
+  "lifecycle_generation": 6
 }

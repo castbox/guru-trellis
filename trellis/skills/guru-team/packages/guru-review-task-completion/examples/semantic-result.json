@@ -1,1 +1,1 @@
-{"profile":"completion","mode":"workflow","authority_refs":["requirements:current"],"delivery_refs":["delivery-cycle:v1:current"],"evidence_refs":["phase2:current"],"remaining_work_refs":[],"route":{"typed_exit":"completed"}}
+{"profile":"completion","mode":"workflow","reviewed_scope_identity":"scope:current","reviewed_merge_result_id":"merge:current","reviewed_evidence_slots":{"planning":"plan:current","delivery_review":"review:current","delivery_publication":"publication:current"},"remaining_work_refs":[],"route":{"typed_exit":"completed"}}

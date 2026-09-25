@@ -1,287 +1,393 @@
+import importlib.util
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-
 from runtime.schema import validate_json
+from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
+from runtime.task_lifecycle.git_facts import inspect_repository
+from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
 ROOT = PACKAGE.parents[1]
-FINISH_REF = "finish:v1:0123456789abcdef"
-LIFECYCLE_GENERATION = 0
-TASK_REF = ".trellis/tasks/demo"
-ARCHIVE_REF = ".trellis/tasks/archive/2026-09/demo"
+SPEC = importlib.util.spec_from_file_location("guru_cleanup_invoke", PACKAGE / "runtime/invoke.py")
+assert SPEC and SPEC.loader
+CLEANUP = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(CLEANUP)
 
 
-def git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(["git", *args], cwd=root, text=True, capture_output=True, check=True)
+def git(root: Path, *args: str) -> str:
+    return subprocess.run(["git", *args], cwd=root, text=True, capture_output=True, check=True).stdout.strip()
 
 
-def init_repo(path: Path) -> str:
-    path.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=path, check=True)
-    git(path, "config", "user.email", "test@example.com")
-    git(path, "config", "user.name", "Test")
-    (path / "tracked").write_text("base\n")
-    git(path, "add", "tracked")
-    git(path, "commit", "-qm", "base")
-    head = git(path, "rev-parse", "HEAD").stdout.strip()
-    git(path, "update-ref", "refs/remotes/origin/main", head)
-    return head
+def fixture(tmp_path: Path, ownership: str = "guru_owned") -> tuple[Path, ResourceLedgerStore, dict, str]:
+    root = tmp_path / "repo"
+    root.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
+    git(root, "config", "user.email", "test@example.invalid")
+    git(root, "config", "user.name", "Test")
+    (root / "tracked").write_text("base\n")
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "base")
+    head = git(root, "rev-parse", "HEAD")
+    git(root, "branch", "codex/demo")
+    store = ResourceLedgerStore(inspect_repository(root))
+    key = TaskLifecycleKey("demo", 0)
+    store.establish_current(key, binding_epoch=0, binding_revision=0, branch_name="codex/demo", branch_ownership=ownership, worktree_ownership="not_applicable")
+    seal = store.seal_for_finish(key, finish_result_id="finish:demo", finish_head=head)
+    public = {"profile": "normal", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 0, "finish_result_id": "finish:demo", "inventory_id": seal["inventory_id"]}
+    return root, store, public, head
 
 
-def write_finish_receipt(root: Path, head: str, head_branch: str = "codex/demo") -> Path:
-    receipt = root / ".trellis/.runtime/guru-team/finish/0123456789abcdef.json"
-    receipt.parent.mkdir(parents=True, exist_ok=True)
-    receipt.write_text(
-        json.dumps(
-            {
-                "schema_version": "1.0",
-                "stage": "success",
-                "task_ref": TASK_REF,
-                "closure_ref": "closure:v1:demo",
-                "finish_ref": FINISH_REF,
-                "lifecycle_generation": LIFECYCLE_GENERATION,
-                "repo_ref": "example/repo",
-                "base_branch": "main",
-                "head_branch": head_branch,
-                "expected_base_head": head,
-                "archive_ref": ARCHIVE_REF,
-                "parent_head": head,
-                "commit": head,
-                "pr_number": 1,
-                "pr_url": "https://github.com/example/repo/pull/1",
-                "target_head": head,
-            }
-        )
-        + "\n"
-    )
-    return receipt
-
-
-def invocation(tmp_path: Path, root: Path, public: dict, semantic: dict) -> list[str]:
+def invoke(tmp_path: Path, root: Path, public: dict, confirmed: bool = False, route: str | None = None) -> dict:
     input_path = tmp_path / "input.json"
     semantic_path = tmp_path / "semantic.json"
     input_path.write_text(json.dumps(public))
-    semantic_path.write_text(json.dumps(semantic))
-    return [
-        sys.executable,
-        str(PACKAGE / "runtime/invoke.py"),
-        "--root",
-        str(root),
-        "--input",
-        str(input_path),
-        "--semantic-result",
-        str(semantic_path),
-    ]
-
-
-def run(command: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(ROOT)
-    return subprocess.run(command, text=True, capture_output=True, env=env, check=check)
-
-
-def public_input(resources: list[dict], source_exit: str = "success") -> dict:
-    return {
-        "profile": "finish_success",
-        "source_exit": source_exit,
-        "mode": "standalone",
-        "task_ref": TASK_REF,
-        "archive_ref": ARCHIVE_REF,
-        "finish_ref": FINISH_REF,
-        "lifecycle_generation": LIFECYCLE_GENERATION,
-        "resources": resources,
-    }
-
-
-def semantic_result(resources: list[dict], exit_id: str = "cleaned") -> dict:
-    route = {"typed_exit": exit_id}
-    if exit_id != "cleaned":
-        route.update({"reason_code": "cleanup_pending", "remediation": "Rediscover remaining resources."})
-    return {
-        "profile": "finish_success",
-        "mode": "standalone",
-        "owned_resources": resources,
-        "route": route,
-    }
+    semantic_path.write_text(json.dumps({"profile": public["profile"], "mode": public["mode"], "route": {"typed_exit": route or ("handoff_cleanup_complete" if public["profile"] == "machine_handoff" else "cleaned")}}))
+    argv = ["--root", str(root), "--input", str(input_path), "--semantic-result", str(semantic_path)]
+    if confirmed:
+        argv.append("--confirmed-cleanup")
+    return CLEANUP.run(PACKAGE, {}, argv)
 
 
 def test_contract_assets():
-    validate_json(
-        json.loads((PACKAGE / "interface.json").read_text()),
-        ROOT / "schemas/skill-interface-1.4.schema.json",
-        "interface",
-    )
-    validate_json(
-        json.loads((PACKAGE / "examples/public-input.json").read_text()),
-        PACKAGE / "schemas/public-input.schema.json",
-        "public_input_example",
-    )
-    validate_json(
-        json.loads((PACKAGE / "examples/semantic-result.json").read_text()),
-        PACKAGE / "schemas/semantic-result.schema.json",
-        "semantic_result_example",
-    )
+    validate_json(json.loads((PACKAGE / "interface.json").read_text()), ROOT / "schemas/skill-interface-1.4.schema.json", "interface")
+    for name in ("public-input", "public-manual-input", "public-handoff-input"):
+        validate_json(json.loads((PACKAGE / "examples" / (name + ".json")).read_text()), PACKAGE / "schemas/public-input.schema.json", name)
 
 
-def test_cleanup_requires_confirmation_and_recovers_cleaned_stdout_loss(tmp_path):
-    repo = tmp_path / "repo"
-    head = init_repo(repo)
-    (repo / ARCHIVE_REF).mkdir(parents=True)
-    (repo / ARCHIVE_REF / "task.json").write_text(json.dumps({"id": "demo", "status": "completed", "lifecycle_generation": 0}) + "\n")
-    runtime = repo / ".trellis/.runtime/guru-team/demo.json"
-    runtime.parent.mkdir(parents=True, exist_ok=True)
-    runtime.write_text(json.dumps({"task_ref": TASK_REF}) + "\n")
-    finish_receipt = write_finish_receipt(repo, head)
-    resources = [{"kind": "runtime", "locator": ".trellis/.runtime/guru-team/demo.json"}]
-    command = invocation(tmp_path, repo, public_input(resources), semantic_result(resources))
-
-    pending = json.loads(run(command).stdout)
-    assert pending == {
-        "exit_id": "remaining_resources",
-        "task_ref": TASK_REF,
-        "archive_ref": ARCHIVE_REF,
-        "finish_ref": FINISH_REF,
-        "lifecycle_generation": LIFECYCLE_GENERATION,
-    }
-    assert runtime.exists()
-
-    cleaned = json.loads(run(command + ["--confirmed-cleanup"]).stdout)
-    assert cleaned == {"exit_id": "cleaned"}
-    assert not runtime.exists()
-    assert not finish_receipt.exists()
-    cleanup_receipt = repo / ".trellis/.runtime/guru-team/cleanup/0123456789abcdef.json"
-    assert cleanup_receipt.is_file()
-    assert json.loads(cleanup_receipt.read_text())["lifecycle_generation"] == 0
-
-    recovered = json.loads(run(command + ["--confirmed-cleanup"]).stdout)
-    assert recovered == {"exit_id": "cleaned"}
+def test_cleanup_reentry_projections_validate_target_owned_profiles():
+    interface = json.loads((PACKAGE / "interface.json").read_text())
+    for exit_id, example, authoring in (
+        ("remaining_resources", "public-remaining-resources-output.json", "self-authoring.json"),
+        ("manual_selection_required", "public-manual-selection-output.json", "manual-authoring.json"),
+    ):
+        output = json.loads((PACKAGE / "examples" / example).read_text())
+        projection = next(row for row in interface["public_contracts"]["projections"] if row["exit_id"] == exit_id)
+        consumer = next(row for row in interface["public_contracts"]["consumer_inputs"] if row["id"] == projection["consumer_input_id"])
+        authored = json.loads((PACKAGE / "examples" / authoring).read_text())
+        projected = {row["target"]: output[row["source"]] for row in projection["mappings"]}
+        assert set(projected) == set(consumer["contract"]["seed_fields"])
+        assert set(authored) == set(consumer["contract"]["authoring_fields"])
+        validate_json({**authored, **projected}, PACKAGE / "schemas/public-input.schema.json", exit_id)
 
 
-def test_cleanup_rejects_terminal_receipt_from_previous_lifecycle_generation(tmp_path):
-    repo = tmp_path / "repo"
-    head = init_repo(repo)
-    archive = repo / ARCHIVE_REF
-    archive.mkdir(parents=True)
-    (archive / "task.json").write_text(json.dumps({"id": "demo", "status": "completed", "lifecycle_generation": 0}) + "\n")
-    finish_receipt = write_finish_receipt(repo, head)
-    resources: list[dict] = []
-    command = invocation(tmp_path, repo, public_input(resources), semantic_result(resources))
-    assert json.loads(run(command).stdout) == {"exit_id": "cleaned"}
-    cleanup_receipt = repo / ".trellis/.runtime/guru-team/cleanup/0123456789abcdef.json"
-    assert cleanup_receipt.is_file()
-
-    (archive / "task.json").write_text(json.dumps({"id": "demo", "status": "completed", "lifecycle_generation": 1}) + "\n")
-    stale_input = public_input(resources)
-    stale_input["lifecycle_generation"] = 1
-    stale_command = invocation(tmp_path, repo, stale_input, semantic_result(resources))
-    result = run(stale_command, check=False)
-    assert result.returncode == 3
-    error = json.loads(result.stderr)
-    assert error["code"] == "stale_identity"
-    assert error["field_path"] == "cleanup_receipt"
-    assert cleanup_receipt.is_file()
+def test_normal_cleanup_deletes_sealed_guru_owned_branch_and_resolves_ledger(tmp_path):
+    root, store, public, _head = fixture(tmp_path)
+    assert invoke(tmp_path, root, public)["exit_id"] == "remaining_resources"
+    assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
+    result = invoke(tmp_path, root, public, confirmed=True)
+    assert result["exit_id"] == "cleaned"
+    assert subprocess.run(["git", "show-ref", "--verify", "--quiet", "refs/heads/codex/demo"], cwd=root).returncode != 0
+    ledger = store.read(TaskLifecycleKey("demo", 0))
+    assert ledger.finish_result_id == "finish:demo"
+    assert [(row.state, row.responsibility_role) for row in ledger.resources] == [("resolved", "superseded")]
+    fresh = store.seal_for_finish(TaskLifecycleKey("demo", 0), finish_result_id="finish:demo", finish_head=_head)
+    assert invoke(tmp_path, root, {**public, "inventory_id": fresh["inventory_id"]}) == result
 
 
-def test_cleanup_accepts_empty_or_already_absent_owned_set(tmp_path):
-    repo = tmp_path / "repo"
-    head = init_repo(repo)
-    (repo / ARCHIVE_REF).mkdir(parents=True)
-    finish_receipt = write_finish_receipt(repo, head)
-    resources: list[dict] = []
-    command = invocation(tmp_path, repo, public_input(resources), semantic_result(resources))
-
-    cleaned = json.loads(run(command).stdout)
-    assert cleaned == {"exit_id": "cleaned"}
-    assert not finish_receipt.exists()
+def test_normal_cleanup_same_seal_recovers_cleaned_after_output_loss(tmp_path):
+    root, store, public, _head = fixture(tmp_path)
+    first = invoke(tmp_path, root, public, confirmed=True)
+    assert first["exit_id"] == "cleaned"
+    assert not git(root, "branch", "--list", "codex/demo")
+    assert invoke(tmp_path, root, public, confirmed=True) == first
+    assert store.read(TaskLifecycleKey("demo", 0)).resources[0].state == "resolved"
+    wrong = {**public, "inventory_id": "resource-inventory:stale"}
+    assert invoke(tmp_path, root, wrong, confirmed=True)["reason_code"] == "resource_inventory_stale"
 
 
-def test_cleanup_accepts_reviewed_resource_that_is_already_absent(tmp_path):
-    repo = tmp_path / "repo"
-    head = init_repo(repo)
-    (repo / ARCHIVE_REF).mkdir(parents=True)
-    finish_receipt = write_finish_receipt(repo, head)
-    resources = [{"kind": "runtime", "locator": ".trellis/.runtime/guru-team/already-absent.json"}]
-    command = invocation(tmp_path, repo, public_input(resources), semantic_result(resources))
-
-    cleaned = json.loads(run(command).stdout)
-    assert cleaned == {"exit_id": "cleaned"}
-    assert not finish_receipt.exists()
-
-
-def test_remaining_resources_route_survives_missing_finish_receipt(tmp_path):
-    repo = tmp_path / "repo"
-    init_repo(repo)
-    resources: list[dict] = []
-    command = invocation(
-        tmp_path,
-        repo,
-        public_input(resources, source_exit="remaining_resources"),
-        semantic_result(resources, exit_id="remaining_resources"),
-    )
-
-    result = json.loads(run(command).stdout)
-    assert result == {
-        "exit_id": "remaining_resources",
-        "task_ref": TASK_REF,
-        "archive_ref": ARCHIVE_REF,
-        "finish_ref": FINISH_REF,
-        "lifecycle_generation": LIFECYCLE_GENERATION,
-    }
+def test_caller_owned_is_retained_and_manual_selection_requires_confirmation(tmp_path):
+    root, store, public, head = fixture(tmp_path, ownership="caller_owned")
+    assert invoke(tmp_path, root, public, confirmed=True)["exit_id"] == "cleaned"
+    assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
+    row = store.read(TaskLifecycleKey("demo", 0)).resources[0]
+    assert row.state == "retained" and row.ownership == "caller_owned"
+    manual = {"profile": "manual", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 0, "finish_result_id": "finish:demo", "cleanup_state": "manual_cleanup_required", "selected_targets": [{"resource_id": row.resource_id, "kind": "local_branch", "portable_ref": row.portable_ref, "expected_cleanup_head": head}]}
+    assert invoke(tmp_path, root, manual)["exit_id"] == "manual_selection_required"
+    assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
+    mismatch = {**manual, "selected_targets": [{**manual["selected_targets"][0], "expected_cleanup_head": "0" * 40}]}
+    assert invoke(tmp_path, root, mismatch, confirmed=True)["reason_code"] == "branch_head_changed"
+    result = invoke(tmp_path, root, manual, confirmed=True)
+    assert result["exit_id"] == "cleaned"
+    assert invoke(tmp_path, root, manual, confirmed=True) == result
+    assert subprocess.run(["git", "show-ref", "--verify", "--quiet", "refs/heads/codex/demo"], cwd=root).returncode != 0
+    assert store.read(TaskLifecycleKey("demo", 0)).resources[0].state == "resolved"
 
 
-def test_cleanup_deletes_only_exact_finish_remote_branch_and_tracking_ref(tmp_path):
-    remote = tmp_path / "remote.git"
-    subprocess.run(["git", "init", "--bare", "-q", str(remote)], check=True)
-    repo = tmp_path / "repo"
-    init_repo(repo)
-    git(repo, "switch", "-c", "codex/demo")
-    (repo / "tracked").write_text("finish\n")
-    git(repo, "commit", "-qam", "finish")
-    head = git(repo, "rev-parse", "HEAD").stdout.strip()
-    git(repo, "switch", "main")
-    git(repo, "merge", "--ff-only", "codex/demo")
-    git(repo, "remote", "add", "origin", str(remote))
-    git(repo, "push", "-u", "origin", "main")
-    git(repo, "push", "-u", "origin", "codex/demo")
-    git(repo, "fetch", "origin")
-    (repo / ARCHIVE_REF).mkdir(parents=True)
-    write_finish_receipt(repo, head)
+def test_manual_cleanup_removes_selected_linked_worktree_before_its_branch(tmp_path):
+    root = tmp_path / "repo"
+    root.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
+    git(root, "config", "user.email", "test@example.invalid")
+    git(root, "config", "user.name", "Test")
+    (root / "tracked").write_text("base\n")
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "base")
+    head = git(root, "rev-parse", "HEAD")
+    checkout = tmp_path / "linked"
+    git(root, "worktree", "add", "-q", "-b", "codex/demo", str(checkout), head)
+    store = ResourceLedgerStore(inspect_repository(root))
+    key = TaskLifecycleKey("demo", 0)
+    store.establish_current(key, binding_epoch=0, binding_revision=0, branch_name="codex/demo",
+                            branch_ownership="caller_owned", worktree_ownership="caller_owned")
+    store.seal_for_finish(key, finish_result_id="finish:demo", finish_head=head)
+    rows = store.read(key).resources
+    assert {row.kind for row in rows} == {"linked_worktree", "local_branch"}
+    targets = [{"resource_id": row.resource_id, "kind": row.kind, "portable_ref": row.portable_ref,
+                "expected_cleanup_head": head} for row in rows]
+    manual = {"profile": "manual", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 0,
+              "finish_result_id": "finish:demo", "cleanup_state": "manual_cleanup_required",
+              "selected_targets": targets}
 
-    wrong = [{"kind": "remote_branch", "locator": "origin/codex/other"}]
-    rejected = run(invocation(tmp_path, repo, public_input(wrong), semantic_result(wrong)) + ["--confirmed-cleanup"], check=False)
-    assert rejected.returncode == 3
-    assert git(repo, "ls-remote", "--heads", "origin", "refs/heads/codex/demo").stdout.strip()
+    branch_only = {**manual, "selected_targets": [row for row in targets if row["kind"] == "local_branch"]}
+    assert invoke(tmp_path, root, branch_only, confirmed=True)["reason_code"] == "branch_checked_out"
+    assert checkout.is_dir() and git(root, "show-ref", "--verify", "refs/heads/codex/demo")
 
-    resources = [
-        {"kind": "remote_branch", "locator": "origin/codex/demo"},
-        {"kind": "remote_tracking", "locator": "refs/remotes/origin/codex/demo"},
-    ]
-    command = invocation(tmp_path, repo, public_input(resources), semantic_result(resources))
-    pending = json.loads(run(command).stdout)
-    assert pending["exit_id"] == "remaining_resources"
-    cleaned = json.loads(run(command + ["--confirmed-cleanup"]).stdout)
-    assert cleaned == {"exit_id": "cleaned"}
-    assert not git(repo, "ls-remote", "--heads", "origin", "refs/heads/codex/demo").stdout.strip()
-    tracking = subprocess.run(
-        ["git", "show-ref", "--verify", "--quiet", "refs/remotes/origin/codex/demo"],
-        cwd=repo,
-    )
-    assert tracking.returncode != 0
+    assert invoke(tmp_path, root, manual, confirmed=True)["exit_id"] == "cleaned"
+    assert not checkout.exists() and not git(root, "branch", "--list", "codex/demo")
+    assert {row.state for row in store.read(key).resources} == {"resolved"}
 
 
-def test_cleanup_rejects_unbound_or_current_worktree(tmp_path):
-    repo = tmp_path / "repo"
-    head = init_repo(repo)
-    write_finish_receipt(repo, head)
-    resources = [{"kind": "worktree", "locator": str(repo)}]
-    command = invocation(tmp_path, repo, public_input(resources), semantic_result(resources))
+def test_manual_selection_refuses_a_current_resource(tmp_path):
+    root, store, public, head = fixture(tmp_path, ownership="caller_owned")
+    active = TaskLifecycleKey("other", 0)
+    store.establish_current(active, binding_epoch=1, binding_revision=0, branch_name="codex/demo",
+                            branch_ownership="caller_owned", worktree_ownership="not_applicable")
+    row = store.read(TaskLifecycleKey("demo", 0)).resources[0]
+    manual = {"profile": "manual", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 0,
+              "finish_result_id": "finish:demo", "cleanup_state": "manual_cleanup_required",
+              "selected_targets": [{"resource_id": row.resource_id, "kind": row.kind,
+                                    "portable_ref": row.portable_ref, "expected_cleanup_head": head}]}
+    assert invoke(tmp_path, root, manual, confirmed=True)["reason_code"] == "resource_in_current_use"
+    assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
 
-    rejected = run(command + ["--confirmed-cleanup"], check=False)
-    assert rejected.returncode == 3
-    assert repo.exists()
+
+def test_manual_selection_refuses_new_generation_binding_missing_from_invoking_checkout(tmp_path):
+    root, store, public, head = fixture(tmp_path, ownership="caller_owned")
+    archived = root / ".trellis/tasks/archive/2026-09/demo"
+    archived.mkdir(parents=True)
+    (archived / "task.json").write_text(json.dumps({"id": "demo", "lifecycle_generation": 0, "status": "completed"}))
+    BranchBindingStore(store.repository).establish(TaskLifecycleKey("demo", 1), "codex/demo")
+    row = store.read(TaskLifecycleKey("demo", 0)).resources[0]
+    manual = {"profile": "manual", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 0,
+              "finish_result_id": "finish:demo", "cleanup_state": "manual_cleanup_required",
+              "selected_targets": [{"resource_id": row.resource_id, "kind": row.kind,
+                                    "portable_ref": row.portable_ref, "expected_cleanup_head": head}]}
+
+    assert invoke(tmp_path, root, manual, confirmed=True)["reason_code"] == "resource_in_current_use"
+    assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
+
+
+def test_manual_selection_accepts_reviewed_caller_owned_head_after_finish(tmp_path):
+    root, store, _public, old_head = fixture(tmp_path, ownership="caller_owned")
+    (root / "tracked").write_text("updated\n")
+    git(root, "add", "tracked")
+    git(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "later")
+    new_head = git(root, "rev-parse", "HEAD")
+    git(root, "update-ref", "refs/heads/codex/demo", new_head, old_head)
+    row = store.read(TaskLifecycleKey("demo", 0)).resources[0]
+    manual = {"profile": "manual", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 0,
+              "finish_result_id": "finish:demo", "cleanup_state": "manual_cleanup_required",
+              "selected_targets": [{"resource_id": row.resource_id, "kind": row.kind,
+                                    "portable_ref": row.portable_ref, "expected_cleanup_head": new_head}]}
+
+    assert invoke(tmp_path, root, manual)["exit_id"] == "manual_selection_required"
+    assert invoke(tmp_path, root, manual, confirmed=True)["exit_id"] == "cleaned"
+    assert not git(root, "branch", "--list", "codex/demo")
+
+
+def test_manual_selection_accepts_reviewed_caller_owned_remote_head_after_finish(tmp_path):
+    root, store, public, old_head = fixture(tmp_path, ownership="caller_owned")
+    remote = tmp_path / "github.com/example/repo.git"
+    remote.parent.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+    git(root, "remote", "add", "origin", str(remote))
+    git(root, "push", "-q", "origin", "refs/heads/codex/demo:refs/heads/codex/demo")
+    fresh = ResourceLedgerStore(inspect_repository(root))
+    fresh_key = TaskLifecycleKey("remote-demo", 0)
+    fresh.establish_current(fresh_key, binding_epoch=0, binding_revision=0, branch_name="codex/demo",
+                            branch_ownership="caller_owned", worktree_ownership="not_applicable")
+    fresh.record_remote_delivery(fresh_key, expected_epoch=0, expected_revision=0,
+                                 remote_name="origin", repository_ref="example/repo",
+                                 branch_ref="refs/heads/codex/demo", ownership="caller_owned",
+                                 expected_cleanup_head=old_head)
+    fresh.seal_for_finish(fresh_key, finish_result_id="finish:remote-demo", finish_head=old_head)
+    (root / "tracked").write_text("updated\n")
+    git(root, "add", "tracked")
+    git(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "later")
+    new_head = git(root, "rev-parse", "HEAD")
+    git(root, "push", "-q", "origin", "HEAD:refs/heads/codex/demo")
+    row = next(row for row in fresh.read(fresh_key).resources if row.kind == "remote_branch")
+    manual = {"profile": "manual", "mode": "standalone", "task_id": "remote-demo", "lifecycle_generation": 0,
+              "finish_result_id": "finish:remote-demo", "cleanup_state": "manual_cleanup_required",
+              "selected_targets": [{"resource_id": row.resource_id, "kind": row.kind,
+                                    "portable_ref": row.portable_ref, "expected_cleanup_head": new_head}]}
+
+    assert invoke(tmp_path, root, manual)["exit_id"] == "manual_selection_required"
+    assert invoke(tmp_path, root, manual, confirmed=True)["exit_id"] == "cleaned"
+    assert not git(root, "ls-remote", "--heads", "origin", "refs/heads/codex/demo")
+
+
+def test_already_absent_guru_resource_converges_and_resolves_ledger(tmp_path):
+    root, store, public, head = fixture(tmp_path)
+    git(root, "update-ref", "-d", "refs/heads/codex/demo", head)
+    assert invoke(tmp_path, root, public, confirmed=True)["exit_id"] == "cleaned"
+    assert store.read(TaskLifecycleKey("demo", 0)).resources[0].state == "resolved"
+
+
+def test_failed_deletion_keeps_ledger_pending_until_retry(tmp_path, monkeypatch):
+    root, store, public, _head = fixture(tmp_path)
+    original = CLEANUP.remove_resource
+    calls = 0
+
+    def fail_once(root, item):
+        nonlocal calls
+        calls += 1
+        return False if calls == 1 else original(root, item)
+
+    monkeypatch.setattr(CLEANUP, "remove_resource", fail_once)
+    assert invoke(tmp_path, root, public, confirmed=True)["reason_code"] == "deletion_incomplete"
+    assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
+    assert store.read(TaskLifecycleKey("demo", 0)).resources[0].state == "cleanup_pending"
+
+    assert invoke(tmp_path, root, public, confirmed=True)["exit_id"] == "cleaned"
+    assert calls == 2
+    assert store.read(TaskLifecycleKey("demo", 0)).resources[0].state == "resolved"
+
+
+def test_normal_cleanup_deletes_worktree_branch_and_remote_in_order(tmp_path, monkeypatch):
+    root = tmp_path / "repo"
+    root.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
+    git(root, "config", "user.email", "test@example.invalid")
+    git(root, "config", "user.name", "Test")
+    (root / "tracked").write_text("base\n")
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "base")
+    head = git(root, "rev-parse", "HEAD")
+    git(root, "branch", "codex/demo")
+    remote = tmp_path / "github.com/example/repo.git"
+    remote.parent.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+    git(root, "remote", "add", "origin", str(remote))
+    git(root, "push", "-q", "origin", "refs/heads/codex/demo:refs/heads/codex/demo")
+    checkout = tmp_path / "linked"
+    git(root, "worktree", "add", "-q", str(checkout), "codex/demo")
+    store = ResourceLedgerStore(inspect_repository(root))
+    key = TaskLifecycleKey("demo", 0)
+    store.establish_current(key, binding_epoch=0, binding_revision=0, branch_name="codex/demo", branch_ownership="guru_owned", worktree_ownership="guru_owned")
+    store.record_remote_delivery(key, expected_epoch=0, expected_revision=0, remote_name="origin", repository_ref="example/repo", branch_ref="refs/heads/codex/demo", ownership="guru_owned", expected_cleanup_head=head)
+    seal = store.seal_for_finish(key, finish_result_id="finish:demo", finish_head=head)
+    public = {"profile": "normal", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 0, "finish_result_id": "finish:demo", "inventory_id": seal["inventory_id"]}
+    removed = []
+    original = CLEANUP.remove_resource
+    def observed(root, item):
+        removed.append(item["kind"])
+        return original(root, item)
+    monkeypatch.setattr(CLEANUP, "remove_resource", observed)
+
+    assert invoke(tmp_path, root, public)["exit_id"] == "remaining_resources"
+    assert checkout.is_dir()
+    (checkout / "tracked").write_text("dirty\n")
+    assert invoke(tmp_path, root, public, confirmed=True)["reason_code"] == "worktree_dirty"
+    assert removed == []
+    assert {row.state for row in store.read(key).resources} == {"cleanup_pending"}
+    assert checkout.is_dir()
+    assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
+    assert git(root, "ls-remote", "--heads", "origin", "refs/heads/codex/demo")
+    (checkout / "tracked").write_text("base\n")
+    result = invoke(tmp_path, root, public, confirmed=True)
+    assert result["exit_id"] == "cleaned"
+    assert removed == ["linked_worktree", "local_branch", "remote_branch"]
+    assert not checkout.exists()
+    assert subprocess.run(["git", "show-ref", "--verify", "--quiet", "refs/heads/codex/demo"], cwd=root).returncode != 0
+    assert git(root, "ls-remote", "--heads", "origin", "refs/heads/codex/demo") == ""
+    assert {row.state for row in store.read(key).resources} == {"resolved"}
+
+
+def test_checked_out_and_dirty_worktree_block_before_result_api(tmp_path):
+    root, _store, public, _head = fixture(tmp_path)
+    git(root, "switch", "-q", "codex/demo")
+    assert invoke(tmp_path, root, public, confirmed=True)["reason_code"] == "branch_checked_out"
+    git(root, "switch", "-q", "main")
+    assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
+
+
+def test_stale_seal_and_moved_target_fail_closed(tmp_path):
+    root, _store, public, _head = fixture(tmp_path)
+    wrong = {**public, "inventory_id": "resource-inventory:stale"}
+    assert invoke(tmp_path, root, wrong, confirmed=True)["reason_code"] == "resource_inventory_stale"
+    git(root, "switch", "-q", "codex/demo")
+    (root / "tracked").write_text("moved\n")
+    git(root, "commit", "-qam", "move")
+    git(root, "switch", "-q", "main")
+    assert invoke(tmp_path, root, public, confirmed=True)["reason_code"] == "branch_head_changed"
+    assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
+
+
+def test_missing_terminal_ledger_and_handoff_require_explicit_route(tmp_path):
+    root, store, public, _head = fixture(tmp_path)
+    store.path_for(TaskLifecycleKey("demo", 0)).unlink()
+    assert invoke(tmp_path, root, public)["exit_id"] == "manual_selection_required"
+    handoff = {"profile": "machine_handoff", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 0, "handoff_inventory": {"task_id": "demo", "lifecycle_generation": 0, "handoff_id": "handoff:demo", "inventory_id": "inventory:demo"}}
+    assert invoke(tmp_path, root, handoff)["reason_code"] == "handoff_inventory_missing"
+
+
+def handoff_fixture(tmp_path: Path) -> tuple[Path, ResourceLedgerStore, dict, str]:
+    root, store, _normal, head = fixture(tmp_path)
+    row = store.read(TaskLifecycleKey("demo", 0)).resources[0]
+    ref = {"task_id": "demo", "lifecycle_generation": 0, "handoff_id": "handoff:demo", "inventory_id": "inventory:demo"}
+    handoff = {"task_id": "demo", "lifecycle_generation": 0, "handoff_id": "handoff:demo",
+               "receipt_ref": "refs/heads/guru-task-lifecycle/demo", "result_id": "handoff-result:demo"}
+    path = store.repository.common_dir / "guru-team/handoff-cleanup/demo/0/handoff:demo.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(json.dumps({"schema_version": "1.0", "inventory_ref": ref, "handoff_ref": handoff,
+                                "resource_ids": [row.resource_id], "state": "released"}))
+    public = {"profile": "machine_handoff", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 0,
+              "handoff_inventory": ref}
+    return root, store, public, head
+
+
+def test_handoff_requires_confirmation_resolves_exact_resource_and_recovers_result(tmp_path):
+    root, store, public, _head = handoff_fixture(tmp_path)
+    pending = invoke(tmp_path, root, public)
+    assert pending["exit_id"] == "handoff_cleanup_remaining"
+    assert pending["handoff_inventory"] == public["handoff_inventory"]
+    assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
+    assert store.read(TaskLifecycleKey("demo", 0)).resources[0].state == "cleanup_pending"
+    assert invoke(tmp_path, root, public, confirmed=True, route="handoff_cleanup_remaining") == pending
+    complete = invoke(tmp_path, root, public, confirmed=True)
+    assert complete["exit_id"] == "handoff_cleanup_complete"
+    assert complete["handoff_ref"]["receipt_ref"] == "refs/heads/guru-task-lifecycle/demo"
+    assert store.read(TaskLifecycleKey("demo", 0)).resources[0].state == "resolved"
+    assert not git(root, "branch", "--list", "codex/demo")
+    assert invoke(tmp_path, root, public, confirmed=True) == complete
+
+
+def test_handoff_already_absent_and_retry_after_deletion_failure(tmp_path, monkeypatch):
+    root, store, public, head = handoff_fixture(tmp_path)
+    original = CLEANUP.remove_resource
+    monkeypatch.setattr(CLEANUP, "remove_resource", lambda *_args: False)
+    assert invoke(tmp_path, root, public, confirmed=True)["reason"]["reason_code"] == "deletion_incomplete"
+    assert store.read(TaskLifecycleKey("demo", 0)).resources[0].state == "cleanup_pending"
+    monkeypatch.setattr(CLEANUP, "remove_resource", original)
+    git(root, "update-ref", "-d", "refs/heads/codex/demo", head)
+    assert invoke(tmp_path, root, public, confirmed=True)["exit_id"] == "handoff_cleanup_complete"
+    assert store.read(TaskLifecycleKey("demo", 0)).resources[0].state == "resolved"
+
+
+def test_handoff_stale_inventory_generation_and_moved_head_do_not_delete(tmp_path):
+    root, store, public, head = handoff_fixture(tmp_path)
+    assert invoke(tmp_path, root, {**public, "lifecycle_generation": 1}, confirmed=True)["reason_code"] == "handoff_inventory_stale"
+    wrong = {**public, "handoff_inventory": {**public["handoff_inventory"], "inventory_id": "inventory:other"}}
+    assert invoke(tmp_path, root, wrong, confirmed=True)["reason_code"] == "handoff_inventory_stale"
+    git(root, "switch", "-q", "codex/demo")
+    (root / "tracked").write_text("moved\n")
+    git(root, "commit", "-qam", "moved")
+    git(root, "switch", "-q", "main")
+    assert invoke(tmp_path, root, public, confirmed=True)["reason_code"] == "branch_head_changed"
+    assert git(root, "rev-parse", "codex/demo") != head
+    assert store.read(TaskLifecycleKey("demo", 0)).resources[0].state == "cleanup_pending"

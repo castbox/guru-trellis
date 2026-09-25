@@ -1,0 +1,1 @@
+{"profile":"manual","mode":"workflow","cleanup_state":"manual_cleanup_required","selected_targets":[{"resource_id":"manual:example","kind":"local_branch","portable_ref":{"kind":"local_branch","ref":"refs/heads/example-task"},"expected_cleanup_head":"1111111111111111111111111111111111111111"}]}

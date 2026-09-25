@@ -25,6 +25,11 @@
 subtraction/Docs SSOT/validation。D443、D436、E434 与 #434 activation 仍未完成；完整 Skill package、production graph、
 installed/platform projection 与 predecessor retirement 仍由 E434 在同一原子激活边界交付。
 
+2026-09-25 当前 generation 6 续接 `main@0ac48e5d24e6d2c32cf2d69080109a6a7adaee9e`：C6/C7 与 D443 已作为
+独立非激活切片合并，D436 负责迁移五个现有 canonical lifecycle package 的语义、输入输出、runtime 和定向验证。
+此切片不重开已关闭的历史 Issue #436，不提前切换 #434 production graph、registry selector、active manifest、
+installed/platform projection，也不以旧 #436 测试或 D443 gate 代替本轮验收。E434 和 #434 激活仍是后续边界。
+
 已交付的 C4 Delivery 恢复了同一分支的 Finalizer publication prerequisite：首次 Publication 尚无 predecessor
 transaction 时，remote branch 可以不存在、等于 reviewed HEAD，或为 reviewed HEAD 的严格历史祖先；remote ahead、
 diverged 或 commit identity/ancestry 无法证明时继续 fail closed。该恢复只解除 C4 正常 fast-forward Publication 的

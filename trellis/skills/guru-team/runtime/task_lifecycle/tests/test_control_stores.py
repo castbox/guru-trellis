@@ -672,6 +672,28 @@ class ResourceLedgerTests(unittest.TestCase):
             ).resources,
             resolution.resources,
         )
+        with self.assertRaisesRegex(LifecycleContractError, "resource_inventory_stale"):
+            self.store.resolve_for_cleanup(
+                key, finish_result_id="finish:1", inventory_id=refreshed_seal["inventory_id"],
+                resource_ids=[remote.resource_id],
+            )
+        resolved_inventory = self.store.resolve_for_cleanup(
+            key, finish_result_id="finish:1", inventory_id=refreshed_seal["inventory_id"],
+            resource_ids=sorted(cleanup_ids),
+        )
+        self.assertEqual(
+            self.store.cleanup_resolution(
+                key, finish_result_id="finish:1", inventory_id=resolved_inventory,
+            ).resolution_kind,
+            "already_clean",
+        )
+        self.assertEqual(
+            self.store.resolve_for_cleanup(
+                key, finish_result_id="finish:1", inventory_id=resolved_inventory,
+                resource_ids=[],
+            ),
+            resolved_inventory,
+        )
 
     def test_remote_delivery_advances_one_incarnation_and_rebind_seals_latest_head(self) -> None:
         checkout = self.root / "published-commits"
@@ -885,6 +907,19 @@ class ResourceLedgerTests(unittest.TestCase):
             inventory_id=seal["inventory_id"],
         )
         self.assertEqual(resolution.resolution_kind, "already_clean")
+        rows = self.store.read(key).resources
+        with self.assertRaisesRegex(LifecycleContractError, "resource_ownership_conflict"):
+            self.store.resolve_selected_cleanup(
+                key, finish_result_id="finish:2", resource_ids=["resource:other"]
+            )
+        selected = rows[0].resource_id
+        inventory = self.store.resolve_selected_cleanup(
+            key, finish_result_id="finish:2", resource_ids=[selected]
+        )
+        updated = self.store.read(key)
+        self.assertEqual(updated.resources[0].state, "resolved")
+        self.assertEqual(updated.resources[1].state, "retained")
+        self.assertEqual(self.store._inventory_id(updated), inventory)
 
 
 if __name__ == "__main__":

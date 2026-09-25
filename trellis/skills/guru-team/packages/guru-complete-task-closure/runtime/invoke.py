@@ -1,69 +1,206 @@
 from __future__ import annotations
-import argparse,hashlib,json,sys,subprocess
+
+import argparse
+import hashlib
+import json
+import subprocess
+import sys
 from pathlib import Path
+
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.task_lifecycle.errors import LifecycleContractError
+from runtime.task_lifecycle.git_facts import inspect_repository
+from runtime.task_lifecycle.identity import resolve_task_id
+from runtime.task_lifecycle.source import task_source
 
-def load(root, package, value, field):
-    p=Path(value); choices=[p] if p.is_absolute() else [root/p,package/p]
-    source=next((x for x in choices if x.is_file() and not x.is_symlink()),None)
-    if source is None: raise CommandError("invalid_json",field,"Provide one regular JSON file.")
-    try: v=json.loads(source.read_text())
-    except json.JSONDecodeError as exc: raise CommandError("invalid_json",field,"Provide valid JSON.") from exc
-    if not isinstance(v,dict): raise CommandError("invalid_json",field,"Provide one JSON object.")
-    return v
 
-def closure_ref(public, action):
-    issue=public.get("source_issue") or {}
-    binding=hashlib.sha256(json.dumps({"source_issue":issue,"action":action},sort_keys=True,separators=(",",":")).encode()).hexdigest()[:16]
-    identity={"task_ref":public["task_ref"],"completion_ref":public["completion_ref"],"source_issue":issue,"action":action}
-    digest=hashlib.sha256(json.dumps(identity,sort_keys=True,separators=(",",":")).encode()).hexdigest()[:16]
-    return "closure:v3:"+binding+":"+digest
+def _load(root: Path, package: Path, name: str, field: str) -> dict:
+    path = Path(name)
+    candidates = [path] if path.is_absolute() else [root / path, package / path]
+    source = next((item for item in candidates if item.is_file() and not item.is_symlink()), None)
+    if source is None:
+        raise CommandError("invalid_json", field, "Provide one regular JSON object.")
+    try:
+        value = json.loads(source.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise CommandError("invalid_json", field, "Provide valid JSON.") from exc
+    if not isinstance(value, dict):
+        raise CommandError("invalid_json", field, "Provide one JSON object.")
+    return value
 
-def closure_output(public, exit_id, action, **extra):
-    out={"exit_id":exit_id,"task_ref":public["task_ref"],"closure_ref":closure_ref(public,action),"source_issue":public["source_issue"]}
-    out.update(extra)
-    return out
 
-def run(package_root:Path, command:dict, argv:list[str])->dict:
-    p=argparse.ArgumentParser(add_help=False); p.add_argument("--root"); p.add_argument("--input",required=True); p.add_argument("--semantic-result",required=True); p.add_argument("--facts"); p.add_argument("--confirmed-close",action="store_true")
-    try:a=p.parse_args(argv)
-    except SystemExit as exc: raise CommandError("invalid_arguments","arguments","Use the closure command contract.") from exc
-    root=Path(a.root or ".").resolve(); public=load(root,package_root,a.input,"input"); semantic=load(root,package_root,a.semantic_result,"semantic_result")
-    validate_json(public,package_root/"schemas/public-input.schema.json","input"); validate_json(semantic,package_root/"schemas/semantic-result.schema.json","semantic_result")
-    if public["profile"]!=semantic["profile"] or public["mode"]!=semantic["mode"]: raise CommandError("stale_identity","semantic_result","Completion and closure identity differ.",3)
-    route=semantic["route"]; exit_id=route["typed_exit"]; issue=public.get("source_issue") or {}
-    action="close_issue" if exit_id=="close_issue" else "no_mutation" if exit_id=="no_mutation" else exit_id
-    expected_closure_ref=closure_ref(public,action)
-    if public.get("source_exit")=="resume_closure":
-        if public.get("closure_ref")!=expected_closure_ref:
-            raise CommandError("stale_identity","closure_ref","Resume must carry the exact original closure transaction identity.",3)
-    if exit_id=="close_issue" and issue.get("disposition")!="exact_source": raise CommandError("stale_identity","source_issue.disposition","Only the exact source Issue may be closed.",3)
-    if exit_id=="no_mutation" and issue.get("disposition")=="exact_source": raise CommandError("stale_identity","semantic_result.route.typed_exit","The exact source Issue must use the live close path.",3)
-    if exit_id=="close_issue":
-        if not a.confirmed_close: return closure_output(public,"resume_closure",action,completion_ref=public["completion_ref"])
-        if a.facts:
-            facts=load(root,package_root,a.facts,"facts")
-            validate_json(facts,package_root/"schemas/live-facts.schema.json","facts")
-            fact_issue=facts["issue"]
-            if fact_issue["repo_ref"]!=issue["repo_ref"]: raise CommandError("stale_identity","facts.issue.repo_ref","Recovery facts must describe the exact source Issue repository.",3)
-            if fact_issue["number"]!=issue["number"]: raise CommandError("stale_identity","facts.issue.number","Recovery facts must describe the exact source Issue number.",3)
-        observed=subprocess.run(["gh","issue","view",str(issue["number"]),"--repo",issue["repo_ref"],"--json","state","--jq",".state"],cwd=root,text=True,capture_output=True)
-        if observed.returncode!=0: return closure_output(public,"resume_closure",action,completion_ref=public["completion_ref"])
-        state=observed.stdout.strip().upper()
-        if state=="CLOSED":
-            out=closure_output(public,"closed",action,issue_ref=f'{issue["repo_ref"]}#{issue["number"]}',closure_exit="closed")
-            validate_json(out,package_root/"schemas/public-output.schema.json","stdout"); return out
-        if state!="OPEN": raise CommandError("stale_identity","source_issue","Issue state is not a recoverable close boundary.",3)
-        proc=subprocess.run(["gh","issue","close",str(issue["number"]),"--repo",issue["repo_ref"],"--reason","completed"],cwd=root,text=True,capture_output=True)
-        if proc.returncode!=0: return closure_output(public,"resume_closure",action,completion_ref=public["completion_ref"])
-        verify=subprocess.run(["gh","issue","view",str(issue["number"]),"--repo",issue["repo_ref"],"--json","state","--jq",".state"],cwd=root,text=True,capture_output=True)
-        if verify.returncode!=0 or verify.stdout.strip().upper()!="CLOSED": raise CommandError("external_command_failed","source_issue","Issue close result could not be verified; resume the same closure transaction.",4)
-        out=closure_output(public,"closed",action,issue_ref=f'{issue["repo_ref"]}#{issue["number"]}',closure_exit="closed")
-    elif exit_id=="no_mutation": out=closure_output(public,"no_mutation",action,closure_exit="no_mutation")
-    else: out={"exit_id":"blocked"}
-    validate_json(out,package_root/"schemas/public-output.schema.json","stdout"); return out
+def _digest(value: dict) -> str:
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()[:24]
 
-if __name__=="__main__":
-    try: print(json.dumps(run(Path(__file__).parents[1],{},sys.argv[1:]),ensure_ascii=False))
-    except CommandError as exc: print(json.dumps({"code":exc.code,"field_path":exc.field_path,"remediation":exc.remediation},ensure_ascii=False),file=sys.stderr); raise SystemExit(exc.exit_status)
+
+def _transaction_ref(key: dict, transaction_id: str) -> dict:
+    return {**key, "transaction_id": transaction_id, "result_id": transaction_id}
+
+
+def _conflict(ref: dict, code: str, evidence: str) -> dict:
+    return {"exit_id": "external_change_conflict", "transaction_ref": ref,
+            "reason": {"reason_code": code, "reason_refs": [evidence]}}
+
+
+def _state(root: Path, issue: dict) -> str | None:
+    try:
+        observed = subprocess.run(
+            ["gh", "issue", "view", str(issue["issue_number"]), "--repo", issue["repo_ref"],
+             "--json", "state", "--jq", ".state"],
+            cwd=root, text=True, capture_output=True,
+        )
+    except OSError:
+        return None
+    if observed.returncode:
+        return None
+    state = observed.stdout.strip().upper()
+    return state if state in {"OPEN", "CLOSED"} else None
+
+
+def _store(path: Path, transaction: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(transaction, sort_keys=True), encoding="utf-8")
+
+
+def run(package_root: Path, command: dict, argv: list[str]) -> dict:
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--root")
+    parser.add_argument("--input", required=True)
+    parser.add_argument("--semantic-result", required=True)
+    parser.add_argument("--confirmed-close", action="store_true")
+    try:
+        args = parser.parse_args(argv)
+    except SystemExit as exc:
+        raise CommandError("invalid_arguments", "arguments", "Use the declared closure command.") from exc
+    root = Path(args.root or ".").resolve()
+    public = _load(root, package_root, args.input, "input")
+    semantic = _load(root, package_root, args.semantic_result, "semantic_result")
+    validate_json(public, package_root / "schemas/public-input.schema.json", "input")
+    validate_json(semantic, package_root / "schemas/semantic-result.schema.json", "semantic_result")
+    if (public["profile"], public["mode"]) != (semantic["profile"], semantic["mode"]):
+        raise CommandError("stale_identity", "semantic_result", "Closure profile or mode changed.", 3)
+
+    completion = public["completion_result"]
+    key = {name: completion[name] for name in ("task_id", "lifecycle_generation")}
+    try:
+        artifact = resolve_task_id(root, key["task_id"])
+        if artifact.lifecycle_state != "active" or artifact.lifecycle_generation != key["lifecycle_generation"]:
+            raise LifecycleContractError("stale_task", "task", "Resolve the current active task generation.")
+        metadata = json.loads((root / artifact.task_ref / "task.json").read_text(encoding="utf-8"))
+        current_source = task_source(metadata)
+    except (LifecycleContractError, OSError, ValueError) as exc:
+        raise CommandError("stale_identity", "task.source", "Reread the current task source relation.", 3) from exc
+    if current_source != public["source"]:
+        raise CommandError("stale_identity", "source", "Use the current task source relation and disposition.", 3)
+    binding = public["binding_ref"]
+    if (binding["task_id"], binding["lifecycle_generation"]) != (key["task_id"], key["lifecycle_generation"]):
+        raise CommandError("stale_identity", "task_lifecycle", "Completion and binding must belong to this lifecycle.", 3)
+    if public["evidence_slots"].get("completion") != completion["result_id"]:
+        raise CommandError("stale_identity", "evidence_slots.completion", "Use the current Completion result.", 3)
+    source = public["source"]
+    actions = public["action_set"]
+    if source["kind"] == "no_issue" and actions:
+        raise CommandError("stale_identity", "action_set", "No-Issue source has no Issue action.", 3)
+    if source["kind"] == "issue" and not any(
+        row["issue_ref"] == {"repo_ref": source["repo_ref"], "issue_number": source["number"]} for row in actions
+    ):
+        raise CommandError("stale_identity", "action_set", "Include the exact source relation in the reviewed action set.", 3)
+    if source["kind"] == "issue":
+        source_action = next(row for row in actions if row["issue_ref"] == {
+            "repo_ref": source["repo_ref"], "issue_number": source["number"],
+        })
+        if source["disposition"] == "exact_source":
+            if source_action["disposition"] == "no_close_authority":
+                raise CommandError("stale_identity", "action_set", "Review the exact source Issue closure action.", 3)
+        elif any(row["disposition"] != "no_close_authority" for row in actions):
+            raise CommandError("stale_identity", "action_set", "Non-exact source relations have no Issue close authority.", 3)
+    identities = [(row["issue_ref"]["repo_ref"], row["issue_ref"]["issue_number"]) for row in actions]
+    if len(identities) != len(set(identities)):
+        raise CommandError("stale_identity", "action_set", "Review each Issue once in the frozen action set.", 3)
+    if semantic["route"]["typed_exit"] == "blocked":
+        output = {"exit_id": "blocked", "reason": semantic["route"]["reason"]}
+        validate_json(output, package_root / "schemas/public-output.schema.json", "stdout")
+        return output
+    if semantic["reviewed_action_set"] != actions:
+        raise CommandError("stale_identity", "semantic_result.reviewed_action_set", "Review the complete current action set.", 3)
+
+    frozen = {name: public[name] for name in (
+        "completion_result", "source", "accepted_scope_identity",
+        "delivery_target", "binding_ref", "content_head", "evidence_slots", "action_set",
+    )}
+    ref = _transaction_ref(key, "closure:" + _digest(frozen))
+    path = inspect_repository(root).common_dir / "guru-team/closure" / key["task_id"] / f'{key["lifecycle_generation"]}.json'
+    transaction = _load(root, package_root, str(path), "transaction") if path.is_file() else None
+    supplied = public.get("transaction_ref")
+    if public["source_exit"] == "external_change_conflict" and transaction is not None:
+        if supplied != transaction["ref"]:
+            raise CommandError("stale_identity", "transaction_ref", "Re-enter the exact conflicting Closure transaction.", 3)
+        previous = transaction["ref"]
+        ref = _transaction_ref(key, "closure:" + _digest({"frozen": frozen, "predecessor": previous}))
+        transaction = {"frozen": frozen, "ref": ref, "verified": []}
+        _store(path, transaction)
+    elif public["source_exit"] == "resume_closure" and transaction is not None and supplied == transaction.get("ref"):
+        ref = transaction["ref"]
+    if transaction is not None and (transaction.get("frozen") != frozen or transaction.get("ref") != ref):
+        output = _conflict(transaction["ref"], "frozen_closure_changed", "closure:action_set")
+    elif supplied is not None and supplied != ref and public["source_exit"] != "external_change_conflict":
+        raise CommandError("stale_identity", "transaction_ref", "Resume the exact Closure transaction.", 3)
+    elif (any(row["disposition"] == "close" for row in actions)
+          and not args.confirmed_close and not (transaction and transaction.get("terminal"))):
+        output = {"exit_id": "resume_closure", "transaction_ref": ref}
+    else:
+        if transaction is None:
+            transaction = {"frozen": frozen, "ref": ref, "verified": []}
+            _store(path, transaction)
+        output = None
+        for row in actions:
+            issue = row["issue_ref"]
+            if row["disposition"] == "no_close_authority":
+                continue
+            issue_key = f'{issue["repo_ref"]}#{issue["issue_number"]}'
+            state = _state(root, issue)
+            if state is None:
+                output = {"exit_id": "resume_closure", "transaction_ref": ref}
+                break
+            if issue_key in transaction["verified"] and state != "CLOSED":
+                output = _conflict(ref, "required_closed_issue_reopened", issue_key)
+                break
+            if row["disposition"] == "already_closed_at_review" and state != "CLOSED":
+                output = _conflict(ref, "required_closed_issue_reopened", issue_key)
+                break
+            if row["disposition"] == "close" and state == "OPEN":
+                if transaction.get("terminal"):
+                    output = _conflict(ref, "required_closed_issue_reopened", issue_key)
+                    break
+                try:
+                    result = subprocess.run(
+                        ["gh", "issue", "close", str(issue["issue_number"]), "--repo", issue["repo_ref"], "--reason", "completed"],
+                        cwd=root, text=True, capture_output=True,
+                    )
+                    complete = result.returncode == 0 and _state(root, issue) == "CLOSED"
+                except OSError:
+                    complete = False
+                if not complete:
+                    output = {"exit_id": "resume_closure", "transaction_ref": ref}
+                    break
+            if issue_key not in transaction["verified"]:
+                transaction["verified"].append(issue_key)
+                _store(path, transaction)
+        if output is None:
+            terminal = "closed" if any(row["disposition"] != "no_close_authority" for row in actions) else "no_mutation"
+            transaction["terminal"] = terminal
+            _store(path, transaction)
+            output = {"exit_id": terminal, "result_ref": {
+                **key, "result_id": ref["result_id"],
+            }}
+    validate_json(output, package_root / "schemas/public-output.schema.json", "stdout")
+    return output
+
+
+if __name__ == "__main__":
+    try:
+        print(json.dumps(run(Path(__file__).parents[1], {}, sys.argv[1:]), ensure_ascii=False))
+    except CommandError as exc:
+        print(json.dumps({"code": exc.code, "field_path": exc.field_path, "remediation": exc.remediation}), file=sys.stderr)
+        raise SystemExit(exc.exit_status)

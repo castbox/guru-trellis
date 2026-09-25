@@ -348,6 +348,39 @@ class BranchBindingStore:
         self._write(successor, exclusive=False)
         return successor
 
+    def retire_generation(
+        self,
+        key: TaskLifecycleKey,
+        *,
+        expected_epoch: int,
+        expected_revision: int,
+        expected_branch_name: str,
+    ) -> BranchBinding | None:
+        current = self.read(key)
+        if current is None:
+            return None
+        if (
+            type(expected_epoch) is not int
+            or type(expected_revision) is not int
+            or current.binding_epoch != expected_epoch
+            or current.binding_revision != expected_revision
+            or current.branch_name != normalize_branch_name(expected_branch_name)
+        ):
+            raise LifecycleContractError(
+                "branch_binding_conflict",
+                "binding",
+                "Retire only the exact completed generation's branch association.",
+            )
+        try:
+            self.path_for(key).unlink()
+        except OSError as exc:
+            raise LifecycleContractError(
+                "branch_binding_write_failed",
+                "binding",
+                "Restore writable branch control state before retiring the generation.",
+            ) from exc
+        return current
+
     def _write(self, binding: BranchBinding, *, exclusive: bool) -> None:
         path = self.path_for(binding.key)
         if exclusive and path.exists():

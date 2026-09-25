@@ -342,6 +342,28 @@ class BranchSubstrateTests(unittest.TestCase):
             self.store.establish(self.key, "main", binding_revision=1)
         self.assertIsNone(self.store.read(self.key))
 
+    def test_retire_completed_generation_requires_exact_binding(self) -> None:
+        old = self.store.establish(self.key, "topic", binding_epoch=EPOCH)
+        next_key = TaskLifecycleKey(TASK_ID, GENERATION + 1)
+        with self.assertRaisesRegex(LifecycleContractError, "branch_binding_conflict"):
+            self.store.retire_generation(
+                self.key, expected_epoch=EPOCH, expected_revision=1,
+                expected_branch_name="topic",
+            )
+        self.assertEqual(self.store.read(self.key), old)
+        self.assertEqual(
+            self.store.retire_generation(
+                self.key, expected_epoch=EPOCH, expected_revision=0,
+                expected_branch_name="topic",
+            ),
+            old,
+        )
+        self.assertIsNone(self.store.retire_generation(
+            self.key, expected_epoch=EPOCH, expected_revision=0,
+            expected_branch_name="topic",
+        ))
+        self.assertEqual(self.store.establish(next_key, "topic").key, next_key)
+
     def test_runtime_branch_name_matches_closed_schema_domain(self) -> None:
         for branch_name in [
             "refs/heads/topic",

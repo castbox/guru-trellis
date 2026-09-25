@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-finish-task-manual-result-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_id", "lifecycle_generation", "finish_result_id", "finish_head", "target_head", "archive_ref"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "task_id": {"type": "string", "minLength": 1},
+    "lifecycle_generation": {"type": "integer", "minimum": 0},
+    "finish_result_id": {"type": "string", "pattern": "^finish:v1:[0-9a-f]{16}$"},
+    "finish_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "target_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "archive_ref": {"type": "string", "pattern": "^\\.trellis/tasks/archive/"}
+  }
+}

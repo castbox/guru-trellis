@@ -18,3 +18,7 @@ GAP 不是 #266 的 implementation backlog，也不自动授权开始后续 Issu
 
 `.65` 对 `ARCH-GAP-011` 的 D443 子缺口记录为 canonical package ready，但旧生产接线仍保持不变；
 D436/E434 package/graph activation、#434 的受控切换和 #410 Release matrix 仍是独立剩余边界。
+
+`.66` 记录 D436 五个 terminal lifecycle canonical package 子缺口 `closed`，但只有 source
+package-ready；E434 完整 owner packages、旧 mapping 退休、#434 production graph/selector/installed
+原子激活和 #410 Release matrix 仍为 `ARCH-GAP-011` 的 `partial/open` 剩余边界。

@@ -1,16 +1,16 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.65`；状态：`active`；predecessor：`current-main-0.6.17-guru.64`；source baseline：reviewed [#454 D443 contribution](./contributions/454-task-lifecycle-d443.md) + inherited immutable `.64` authority；#305 的 `EVO-001..007` 仍是独立 target authority。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD。
+版本：`current-main-0.6.17-guru.66`；状态：`active`；predecessor：`current-main-0.6.17-guru.65`；source baseline：reviewed [#454 D436 contribution](./contributions/454-task-lifecycle-d436.md) + inherited immutable `.65` authority；#305 的 `EVO-001..007` 仍是独立 target authority。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD。
 
 本目录是唯一 Architecture Baseline authority。分区不可互换：FOUNDATION 是横向约束，CURRENT 只放证据证明的实现，TARGET 是已接受方向，GAP 是显式差距，PLAN 是已记录但未自动授权的执行顺序，ADR 是历史决策，EVIDENCE 只支撑判断。
 
-版本历史：`current-main-0.6.17-guru.65` 是唯一 active Architecture baseline；`.64` 及更早 identities 保持 immutable superseded history。`.65` 完整继承 C2-C7，并吸收 D443 Bind canonical major；见 `ARCH-CUR-042`、`ARCH-DOM-027`、`ARCH-INT-030`、`ARCH-GAP-011`、`EVD-040`。active registry 保持 32 Skills / 142 package exits / 102 commands，六个 planned IDs 不激活；production business workflow 仍为 22 mandatory invokes / 98 exits。
+版本历史：`current-main-0.6.17-guru.66` 是唯一 active Architecture baseline；`.65` 及更早 identities 保持 immutable superseded history。`.66` 完整继承 C2-C7/D443，并吸收 D436 五个 terminal lifecycle canonical majors；见 `ARCH-CUR-043`、`ARCH-DOM-028`、`ARCH-INT-031`、`ARCH-GAP-011`、`EVD-041`。active registry 保持 32 Skills / 142 package exits / 102 commands，六个 planned IDs 不激活；production business workflow 仍为 22 mandatory invokes / 98 exits。
 
 `.62` 的 C4 provenance 还明确绑定同一变更范围内的 Finalizer 首次 publication recovery guard：无 predecessor transaction 时只接受 absent、exact reviewed HEAD 或 strict historical ancestor remote，并把 exact `pre_push_remote_head` 写入 replacement transaction，再在任何远端 mutation 前复核同一 remote identity。该 guard 复用既有 Finalizer authority（`REQ-048` / `DES-046` / `TST-032`），不新增 lifecycle owner、public DTO 或生产 activation；执行级回归位于 `guru-finalize-task/tests/test_provenance.py`。
 
 同一 authority 还允许 identity-matched unbound transaction 在 selected base 未变化时承接 fresh-reviewed finding-fix descendant：predecessor review-to-Publication 必须相等或为合法 provenance tail，base 已在 predecessor lineage，current Branch Review/Publication/live HEAD 相等且严格后继，并且没有 Open PR。历史 terminal PR 不作为 current candidate；remote 仅可等于 transaction-owned pre-push 或 Publication endpoint。该最小充分路径不增加 branch/session/path authority 或新的 recovery API。
 
-Repository `v0.6.17-guru.1`、extension `0.6.17-guru.42`、CLI/core `0.6.17` 与固定 Fork source `castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296` 仍保持独立版本轴。`.65` promotion 不是 production graph activation 或软件发布；D436、E434 与 #434 activation 仍未完成。RDT 由独立 owner 从 `.64` 串行提升至 `.65`。promotion-created diff 必须重新通过 Phase 2、task commit 与独立完整 Branch Review；Bind 12/12 只证明提升前 D443 candidate，全局 package 19/20、installed/platform 与完整 Release matrix 均未被声明为通过。
+Repository `v0.6.17-guru.1`、extension `0.6.17-guru.42`、CLI/core `0.6.17` 与固定 Fork source `castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296` 仍保持独立版本轴。`.66` promotion 不是 production graph activation 或软件发布；E434 与 #434 activation 仍未完成。RDT 从 `.65` 串行提升至 `.66`。promotion-created diff 必须重新通过 Phase 2、task commit 与独立完整 Branch Review；installed/platform 与完整 Release matrix 均未被声明为通过。
 
 读取顺序：FOUNDATION -> CURRENT -> DOMAIN/INTEGRATION -> TARGET/GAP -> GOVERNANCE/PLAN -> ADR/EVIDENCE。普通 task 先调用 `guru-maintain-architecture-baseline:task_impact_sync`，需要共享 authority 变化时走 contribution + `promotion`；不完整或冲突走 `repair`。
 

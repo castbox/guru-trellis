@@ -785,3 +785,55 @@ predecessor数据模型带入target graph。
    current。finding fix 后重跑 Phase 2、Task Commit 与完整 `origin/main...HEAD` Branch Review。
 4. Publication 只可声明 D443 package-ready、非激活；PR 使用 `Refs #454`，不得 `Closes #454`。push、PR、
    merge、Finish 和 Cleanup 各由其正式 owner 验证真实前置。完整多平台 Release matrix 留给专门 Issue。
+
+## Phase D436：terminal lifecycle package major migration（generation 6，2026-09-25）
+
+### 当前身份与交付边界
+
+同一 task `454-task-lifecycle-state-model` 经正式 Reactivate 从 generation 5 恢复到 generation 6；
+目标 base 是 `main@0ac48e5d24e6d2c32cf2d69080109a6a7adaee9e`，工作分支为
+`codex/454-d436-lifecycle-packages`。旧 task archive 和 D443 审查只证明历史切片，不证明本次 Phase 2。
+本轮只交付五个已存在的 canonical package major 与 task-local/共享知识增量：
+`guru-reactivate-task`、`guru-review-task-completion`、`guru-complete-task-closure`、
+`guru-finish-task`、`guru-cleanup-task-resources`。#456 `436-*` 账本定义 replace/retire/retain，
+#454 当前 PRD 和设计定义最终状态模型；#436 的历史 package 作为迁移输入。
+
+### 实施顺序
+
+1. 各 package 独立迁移 `SKILL.md`、interface、按 exit 封闭 schema/examples/consumer、runtime 与
+   package-local tests。共享 DTO、Git common-dir ledger、session adapter、checkout/binding API 均作为 C2-C7
+   唯一 substrate 使用；缺失能力先明确归属，不在 package 内建立第二套 store。
+2. Reactivate 保留 stable TaskId 并建立下一 generation；Completion 汇总 scope/Delivery/evidence；Closure
+   冻结并收敛 source action set；Finish 校验 Closure 和归档持久化后封存 ledger；Cleanup 仅按当前 seal
+   删除 Guru-owned 资源，人工/跨机器 route 独立闭合。每个 producer output 与 consumer input 使用显式薄投影。
+3. 定向运行五组 package tests、共享生命周期 runtime/contract、schema/interface/exits/consumer 校验；
+   对正常 no-Issue、Issue source、Reactivate、旧 generation 失效、Closure 外部变化、Finish seal 与 Cleanup
+   caller-owned 保留做组合回归。`git diff --check`、task validator、touched 非生成文件行数检查必须通过。
+4. D436 的 Architecture 与 RDT contribution 先独立审核，串行提升 shared current；提升后的 diff 再 fresh
+   执行 Phase 2、Task Commit 和完整 `origin/main...HEAD` Branch Review。finding fix 使此前 gate 失效。
+5. Publication/Finalizer/Merge 只交付 D436 非激活 canonical package-ready slice。PR 仅 `Refs #454`，
+   Issue 保持 Open；不得切换 workflow、registry selector、active manifest、installed/platform projection，
+   不触碰 #434 dirty worktree、业务仓库或完整 Release matrix owner。
+
+### 退出与未验证边界
+
+成功退出要求五个 canonical package 自洽、target exits 均有唯一声明 consumer、定向/组合验证和完整
+Branch Review通过，且 shared current 文档与当前 candidate 一致。E434/#434 将来独立负责一次性切图、
+完整 package-ready gate、installed/platform/reapply 与生产激活；专门候选 Release matrix 不由本切片代跑。
+
+### D436 提交后验证
+
+- 当前候选 `01a7bba4914dbd739d43e1c3691e9c939299a3fb` 基于 `main@0ac48e5d24e6d2c32cf2d69080109a6a7adaee9e`；PR #474 仅引用 #454，Issue 仍开放。
+- 五个 package、共享 lifecycle runtime 与 package integration 合跑：`pytest --import-mode=importlib` 226/226 通过；`git diff --check origin/main...HEAD` 通过。
+- 本条记录是当前候选的验证事实，不代替 post-promotion Architecture/Phase 2、Task Commit、完整 Branch Review 或 Publication 的正式 typed exit；这些步骤仍须基于后续当前候选完成。
+
+### D436 Branch Review finding-fix
+
+- 完整范围的独立审查发现三个当前正常路径缺陷：合法 rename 后 Finish 错误地将可变目录名当作 TaskId；真实两父 merge 后 Reactivate 错比 target merge SHA 与 ledger 中的 bookkeeping PR head；缺失 ownership 时 Finish 的人工 Cleanup 结果无法在原 checkout 被删除后支撑 Reactivate。
+- Finish 现在校验已解析的 TaskId；Reactivate 分别校验 bookkeeping commit 与 target merge 的祖先关系。人工终态在 Git common-dir 保存最小 Finish identity，Reactivate 只在匹配的人工 Cleanup `cleaned` receipt 存在时恢复；未完成 Finish 或单纯丢失 ledger 仍阻断。
+- Finish/Reactivate 定向测试 39/39；后续补强为真实 linked worktree 与 branch 的成对人工 Cleanup，并验证只选在用 branch 仍被阻断。`29ccfef5` 候选的 Cleanup 15/15、Reactivate 19/19，五包、共享 lifecycle runtime 与 package integration 组合 231/231 通过，`git diff --check` 通过。旧候选的 230/230 不作为后续证据。
+- 对 `origin/main...29ccfef5` 的新独立完整审查发现 normal Cleanup 输出丢失后同一 Finish seal 输入重试被 ledger revision 错误阻断。修复在现有 Git common-dir Cleanup owner 中保存以 TaskId/generation/Finish result/inventory 精确绑定的最小 `cleaned` receipt；同输入恢复同一输出，错误 inventory 仍阻断。新独立回归与五包、共享 lifecycle runtime、package integration 合跑 232/232。该 finding-fix 后仍须重新完成当前候选 Phase 2、Task Commit、完整 Branch Review、Publication 与 Finalizer，不能复用 `29ccfef5` 的 gate。
+- 对 `origin/main...50ab858a` 的 fresh final review 发现 Closure canonical `commands.json` 仍公开可选 `--facts` 和已删除的 `schemas/live-facts.schema.json`，而 runtime 入口不接受该参数。正常调用者按声明执行会得到 `invalid_arguments`。本轮删除这两个过时声明，保持 Closure 自行读取 live Issue state，不恢复第二个 facts authority；package asset test 校验精确 flags 和全部 schema binding 的文件存在。Closure 定向 12/12、五包及共享 runtime/package integration 组合 232/232、source package validator（32 active packages、102 commands）、task validator 和 `git diff --check` 通过。本次修复仍须重建 fresh Phase 2、Task Commit、完整 Branch Review、Publication 和 Finalizer；E434/#434 激活与完整 Release matrix 未验证。
+- 对 `origin/main@0ac48e5d...37c3c051` 的完整范围复审发现四项正常路径问题：Finish 只复核 Closure 的 Issue action，未比对已冻结 source 与当前 task source；人工 Cleanup 从旧 archive checkout 解析 TaskId 时可能漏掉新 generation 的 current binding；caller-owned ref 在 Finish 后前进到重新审核的 HEAD 时被旧 ledger HEAD 拒绝；Finish 重新写入已退役的 `task.json.archive_dir`。四项均经当前 #454 正常场景与机制资格审查。
+- finding-fix 让共享 Closure reader 向 Finish 返回原事务冻结的 source，Finish 在任何归档前与当前 task source 比对；人工 Cleanup 直接检查 Git common-dir 中所有当前 branch binding，并对 caller-owned retained resource 用选定的 live HEAD 作删除 lease，仍严格比对 resource ID/kind/portable ref 与当前使用状态；archive locator 只留在 finish-summary。新增 source correction、新 generation binding、caller-owned 本地与远端 HEAD 演进和归档字段回归。E434 激活与 Release matrix 仍属于后续独立边界；本次修复需重建正式 Phase 2、Task Commit、完整 Branch Review 与 Publication/Finalizer 证据。
+- `0bbe3f94` 删除从 D443 继承的 tracked `finish-summary.json`，使 D436 Finalizer 可按现有合同生成 untracked archive output。随后的完整范围独立复审发现 D436 Finish 新摘要的 source Issue 索引为空，正常按 Issue 历史预览会漏掉归档。当前修复仅从已验证的 `task.source` 投影 Issue 检索键及现有归档文件路径；归档投影时尚未创建 bookkeeping PR，也没有可可靠重建的完整 Delivery 文件集，因此不伪造 PR 引用或业务 `git.changed_paths`。五包与共享 runtime/contract 组合 244/244、Discover 模块单独 9/9 通过；额外 production predecessor 4 项失败和 E434/Release matrix 仍须在激活前处理。

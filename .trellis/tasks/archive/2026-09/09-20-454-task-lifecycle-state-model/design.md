@@ -169,3 +169,24 @@ identity/checkout/branch substrate 是唯一复用层；#456 迁移账本中 `44
 - 本轮 schema/interface/runtime/consumer declaration 在 canonical package 内自洽，但 registry 仍选择
   deferred、production workflow 仍使用旧 graph，installed/platform 活跃投影保持不变。只有 E434 审核完整
   package-ready set 后才原子选择新 major 并映射第六个 router；此 addendum 不产生半激活声明。
+
+## Phase D436 package migration addendum（generation 6）
+
+本轮承接 `main@0ac48e5d24e6d2c32cf2d69080109a6a7adaee9e` 的 C2-C7 substrate 和 D443 canonical
+Bind package。#456 `436-*` 迁移账本与 #454 的统一模型是五个 package 的共同边界；历史 #436 package
+实现和 `.65` 中继承的旧映射/路径描述只用作迁移 inventory，不作为 target authority。
+
+- Completion 保留七个 typed exits，输入按 TaskLifecycleKey、accepted scope、exact Delivery merge lineage
+  和 current evidence slots 封闭；完成结果只给 Closure 必需的 ResultRefDTO，非完成结果只给受影响 owner
+  必需的 TaskArtifactDTO 与 ReasonDTO。
+- Closure 以 Completion、source/scope/target、branch/evidence 与 action set 构成同一冻结事务；Issue
+  disposition 是独立 semantic 判断。输出丢失只恢复同一 action/Issue transaction；外部状态变化进入
+  `external_change_conflict` 的 Closure re-entry，不把 PR closing keyword 当作 Closure。
+- Finish 在任何 terminal mutation 前复核 Closure 需要关闭的 Issue；归档与 bookkeeping 持久化验证通过后，
+  使用唯一 common-dir resource ledger 封存当前 generation 和精确 Finish result，产出 ResourceSealRefDTO，
+  不删除资源。Cleanup 只消费该 seal 并按 ledger owner 分流正常、人工与 machine-handoff 路径。
+- Reactivate 从已正常结束的 archived TaskId/generation 和当前 base 开始，按共享 acquisition、binding、
+  ownership 机制建立 `g+1`，历史 session/Finish/Cleanup 只能作为历史；保留 planning exit，新增 session
+  recovery、same-transaction resume、source correction，退休旧 requirements/implementation/evidence exits。
+- 五个 package 只形成 canonical package-ready major；production workflow、registry selector、active manifest、
+  installed/platform bytes 与旧 edge retirement 全由 E434/#434 同一激活边界拥有。
