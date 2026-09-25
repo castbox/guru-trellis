@@ -144,3 +144,8 @@
   inventory、mode、template hash、sidecar、声明平台 parity 及 extension identity/version
   binding 属于独立 consistency/installation gate。任一不一致仍 fail closed 并阻塞 release，
   但其变化本身不构成 capability loss。
+
+`ARCH-INT-030`（#454 D443）：canonical Bind major 以五个保留成功 router 加一个
+`explicit_task_mode` 提供 TaskLifecycleDTO 最小 handoff，blocked 投影 ReasonDTO；TaskRef 由直接
+consumer fresh 派生。active selector、manifest、managed installed/platform bytes 及 workflow routers
+在 E434 前维持旧 production 合同，不用 D443 source tests 冒充平台分发或升级证明。

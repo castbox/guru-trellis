@@ -1,6 +1,6 @@
 # #454 D443 Bind Session Test Contribution
 
-Status: candidate acceptance, not a record of passing tests. Bind package-local tests and real Git/official-session
+Status: reviewed acceptance promoted into `.65`; this document does not itself certify tests. Bind package-local tests and real Git/official-session
 fixtures must show:
 
 - `T454-D443-01` (R01): generation 0 and later lifecycles; rename/move of TaskRef without stored-path change;

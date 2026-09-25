@@ -21,3 +21,5 @@
 | post-stable refactor | #249 -> #250 -> #292 -> #293 -> #261 -> #248 -> #252 -> #267 | Phase/owner 解耦、Intake、Planning、Publication、Acceptance/Finish、cleanup 与最终重构版 Release | TARGET/PLAN 候选参考；不作为重构前 Release 的前置、owner 或验收范围；#247 已作为 `.50` current predecessor完成独立 Architecture scope，不表示后续 #305 target 已实现 |
 
 PLAN 记录依赖与 owner，不证明 outcome，也不改变各 Issue 的 live authority。
+
+| #454 D443 canonical Bind major | #454 | TaskId/generation、official session pointer 与六个成功出口的非激活迁移 | `.64 -> .65` reviewed contribution；D436 后续，E434 独占 production router/selector/installed 原子切换；#410 matrix 未验证 |

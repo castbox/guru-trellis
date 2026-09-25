@@ -15,3 +15,6 @@
 | `ARCH-GAP-011` | `.64` 已具备 #454 C2/D0/C3/C4/C5 substrate 与 C6 task creation/activation inputs、C7 新代码 subtraction 证据；六个 ID 仅 planned | D443/D436 package migration、E434 完整 owner package/旧 mapping 退休和 #434 graph activation | C2+D0+C3+C4+C5+C6+C7 子缺口 `closed`；完整 lifecycle GAP `partial/open`，后续 owner 与 Release matrix 均未验证 |
 
 GAP 不是 #266 的 implementation backlog，也不自动授权开始后续 Issue。
+
+`.65` 对 `ARCH-GAP-011` 的 D443 子缺口记录为 canonical package ready，但旧生产接线仍保持不变；
+D436/E434 package/graph activation、#434 的受控切换和 #410 Release matrix 仍是独立剩余边界。

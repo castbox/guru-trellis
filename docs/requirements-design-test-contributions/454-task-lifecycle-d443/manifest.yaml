@@ -5,7 +5,7 @@ issue_ref: "https://github.com/castbox/guru-trellis/issues/454"
 source_version: "current-main-0.6.17-guru.64"
 expected_current_version: "current-main-0.6.17-guru.64"
 candidate_successor_version: "current-main-0.6.17-guru.65"
-status: "contribution_candidate"
+status: "reviewed_promoted"
 authority_scope: "isolated_contribution"
 architecture_impact: "architecture_impact"
 change_path: "target_native"
@@ -34,4 +34,5 @@ public_contracts:
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
 architecture_contribution: "docs/architecture/contributions/454-task-lifecycle-d443.md"
-shared_current_write: false
+shared_current_write: true
+promotion_decision: "reviewed_serialized_promotion"

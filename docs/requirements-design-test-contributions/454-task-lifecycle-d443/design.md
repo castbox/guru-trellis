@@ -1,12 +1,14 @@
 # #454 D443 Bind Session Design Contribution
 
-Status: contribution candidate. `ADR-015` and Phase C retain framework, identity, branch, checkout and resource
+Status: reviewed and promoted. `ADR-015` and Phase C retain framework, identity, branch, checkout and resource
 ownership. Bind owns semantic session route and a deterministic official session-port write/validation only.
 
 - `D454-D443-01`: A profile-specific public input names TaskLifecycleDTO, current/target lifecycle as applicable,
   and the intended resume target. The AI judges the route; the runtime validates exact current task identity,
   branch association, checkout registration and task status using the shared substrate before invoking the official
   schema-2 session adapter. It does not parse legacy task/workspace mapping files or stored path/branch/HEAD hints.
+  C4 binding and C3 live facts first identify the unique current checkout; only then does the official TaskId
+  resolver inspect that checkout. A retained old-branch checkout with the same task artifact is noncurrent.
 - `D454-D443-02`: Resume verifies an existing exact pointer. Rebind and Reactivate bind the selected lifecycle;
   switch checks the current source pointer before writing the distinct target. Manual recovery shares the same
   validation and writes only the missing pointer. An already identical pointer is a no-op success; a conflicting

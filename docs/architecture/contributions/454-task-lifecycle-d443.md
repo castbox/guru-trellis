@@ -1,7 +1,7 @@
 # #454 D443 Bind Session Architecture Contribution
 
 - Identity: `architecture-contribution-454-task-lifecycle-d443-v1`.
-- State: contribution candidate; current predecessor `.64/active`; proposed successor `.65` is not promoted.
+- State: reviewed and promoted; immutable predecessor `.64` to current successor `.65`.
 - Source: live #454, generation 5 task, #456 `443-*` migration boundary and reviewed Phase C substrate.
 - Change path: `target_native`; `ADR-015` remains framework/identity owner; no new ADR.
 

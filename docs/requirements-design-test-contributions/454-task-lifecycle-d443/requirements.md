@@ -1,6 +1,6 @@
 # #454 D443 Bind Session Requirements Contribution
 
-Status: contribution candidate against `.64/active`. The accepted authority is live #454 and its target design,
+Status: reviewed contribution promoted from immutable `.64` into `.65/active`. The accepted authority is live #454 and its target design,
 with #456's `443-*` replace/retire inventory. The older #443 implementation and inherited `.64` D443 text
 describe the predecessor, not the target. This candidate does not activate #434.
 
