@@ -77,6 +77,12 @@ identity, and branch ref so Cleanup can identify the exact remote incarnation.
 Unknown or unprovable ownership is represented as
 `caller_owned`; checkout paths are never stored.
 
+The same ledger records the exact `finish_result_id` and `finish_head` once
+Finish seals the current bundle. An exact retry rematerializes the seal without
+rewriting ownership; a different result or HEAD conflicts. Cleanup verifies
+the same Finish result before projecting the sealed inventory. These fields
+belong only to the Finish seal, not to a generic ledger transaction protocol.
+
 Ledger mutation owners use exact-byte snapshot/restore through the concrete C4
 port. Conservative active recovery and remote-delivery recording also
 rematerialize an already established exact successor without rewriting it.

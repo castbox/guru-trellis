@@ -9,6 +9,8 @@
     "task_id",
     "lifecycle_generation",
     "ledger_revision",
+    "finish_result_id",
+    "finish_head",
     "resources"
   ],
   "properties": {
@@ -16,12 +18,43 @@
     "task_id": {"$ref": "#/$defs/taskId"},
     "lifecycle_generation": {"type": "integer", "minimum": 0},
     "ledger_revision": {"type": "integer", "minimum": 0},
+    "finish_result_id": {
+      "oneOf": [{"$ref": "#/$defs/identifier"}, {"type": "null"}]
+    },
+    "finish_head": {
+      "oneOf": [{"$ref": "#/$defs/commit"}, {"type": "null"}]
+    },
     "resources": {
       "type": "array",
       "items": {"$ref": "#/$defs/resource"}
     }
   },
   "allOf": [
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "finish_result_id": {"type": "null"},
+            "finish_head": {"type": "null"}
+          }
+        },
+        {
+          "properties": {
+            "finish_result_id": {"$ref": "#/$defs/identifier"},
+            "finish_head": {"$ref": "#/$defs/commit"},
+            "resources": {
+              "not": {
+                "contains": {
+                  "type": "object",
+                  "properties": {"state": {"const": "current"}},
+                  "required": ["state"]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     {
       "if": {
         "properties": {

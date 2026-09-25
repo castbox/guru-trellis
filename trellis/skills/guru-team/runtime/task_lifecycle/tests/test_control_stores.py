@@ -616,6 +616,24 @@ class ResourceLedgerTests(unittest.TestCase):
             key, finish_result_id="finish:1", finish_head=FINISH_HEAD
         )
         self.assertEqual(seal["finish_head"], FINISH_HEAD)
+        sealed_snapshot = self.store.snapshot(key).content
+        self.assertEqual(
+            self.store.seal_for_finish(
+                key, finish_result_id="finish:1", finish_head=FINISH_HEAD
+            ),
+            seal,
+        )
+        for finish_id, finish_head in (("finish:2", FINISH_HEAD), ("finish:1", HEAD)):
+            with self.subTest(finish_id=finish_id, finish_head=finish_head):
+                with self.assertRaisesRegex(LifecycleContractError, "resource_ledger_conflict"):
+                    self.store.seal_for_finish(
+                        key, finish_result_id=finish_id, finish_head=finish_head
+                    )
+        self.assertEqual(self.store.snapshot(key).content, sealed_snapshot)
+        with self.assertRaisesRegex(LifecycleContractError, "resource_ledger_conflict"):
+            self.store.cleanup_resolution(
+                key, finish_result_id="finish:2", inventory_id=seal["inventory_id"]
+            )
         resolution = self.store.cleanup_resolution(
             key,
             finish_result_id="finish:1",
@@ -635,6 +653,24 @@ class ResourceLedgerTests(unittest.TestCase):
                 row for row in resolution.resources if row.kind == "remote_branch"
             ).portable_ref,
             remote.portable_ref,
+        )
+        self.store.record_retained_control_ref(
+            key,
+            remote_name="origin",
+            repository_ref="castbox/guru-trellis",
+            branch_ref=f"refs/heads/guru-task-lifecycle/{TASK_A}-post-finish",
+        )
+        after_retained = self.store.snapshot(key).content
+        refreshed_seal = self.store.seal_for_finish(
+            key, finish_result_id="finish:1", finish_head=FINISH_HEAD
+        )
+        self.assertNotEqual(refreshed_seal["inventory_id"], seal["inventory_id"])
+        self.assertEqual(self.store.snapshot(key).content, after_retained)
+        self.assertEqual(
+            self.store.cleanup_resolution(
+                key, finish_result_id="finish:1", inventory_id=refreshed_seal["inventory_id"]
+            ).resources,
+            resolution.resources,
         )
 
     def test_remote_delivery_advances_one_incarnation_and_rebind_seals_latest_head(self) -> None:

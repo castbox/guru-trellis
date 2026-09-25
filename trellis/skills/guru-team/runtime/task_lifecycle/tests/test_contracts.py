@@ -295,6 +295,8 @@ class ContractTests(unittest.TestCase):
             "task_id": TASK_ID,
             "lifecycle_generation": GENERATION,
             "ledger_revision": 4,
+            "finish_result_id": "finish:1",
+            "finish_head": COMMIT,
             "resources": [valid_resource()],
         }
         self.assertEqual(list(validator.iter_errors(payload)), [])
@@ -351,12 +353,21 @@ class ContractTests(unittest.TestCase):
             "state": "current",
             "responsibility_role": "current_branch",
         }
+        active = {**payload, "finish_result_id": None, "finish_head": None}
+        self.assertEqual(list(validator.iter_errors({**active, "resources": [current_branch]})), [])
+        for mutation in [
+            {**payload, "finish_head": None},
+            {**payload, "finish_result_id": None},
+            {**payload, "resources": [current_branch]},
+            {**active, "finish_result_id": "finish:1"},
+        ]:
+            self.assertTrue(list(validator.iter_errors(mutation)))
         self.assertTrue(list(validator.iter_errors({
-            **payload,
+            **active,
             "resources": [current_branch, {**current_delivery, "expected_cleanup_head": None}],
         })))
         self.assertTrue(list(validator.iter_errors({
-            **payload,
+            **active,
             "resources": [current_branch, {
                 **current_delivery,
                 "state": "cleanup_pending",
@@ -365,7 +376,7 @@ class ContractTests(unittest.TestCase):
             }],
         })))
         self.assertEqual(list(validator.iter_errors({
-            **payload,
+            **active,
             "resources": [current_branch, {
                 **current_delivery,
                 "acquisition_origin": "conservative_recovery",
@@ -384,7 +395,7 @@ class ContractTests(unittest.TestCase):
             with self.subTest(remote_name=remote_name):
                 self.assertEqual(
                     list(validator.iter_errors({
-                        **payload,
+                        **active,
                         "resources": [current_branch, named_delivery],
                     })),
                     [],

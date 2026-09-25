@@ -713,3 +713,12 @@ predecessor数据模型带入target graph。
   继续可用于 handoff/receipt responsibility。
 - reviewer 同时确认 `C5-P1-REMOTE-004` 的最小充分 closure 成立：无关合法 ledger mutation 后，相同 current
   remote incarnation 仍只读 rematerialize，未新增 ledger-wide expected revision、transaction token 或第二 store。
+
+### C5 promotion 后完整 Branch Review finding-fix（2026-09-25）
+
+- `C5-BR-FINISH-SEAL-RETRY-001`（P2）：首次以 H1 seal 后，普通输出丢失重试若传入 H2，原实现不再修改已退休的资源，
+  却返回 H2，导致 Finish 返回值与 Guru-owned cleanup HEAD 不一致。修复在同一 ledger 记录 exact Finish result/HEAD；
+  同身份重试只读返回，不同 result/HEAD 拒绝，Cleanup 验证 sealed result。保留后续合法 retained-control 记录时的
+  Finish 身份；不增加第二 store、通用 ledger transaction token、strict selector 或 production graph 激活。
+- 对应 closed schema、runtime、focused tests 与合同说明同步。该编辑仅形成 finding-fix candidate；须在定向验证后
+  重新运行 fresh Phase 2、Task Commit 与包含既有 `.63` promotion 的完整 Branch Review，不复用此前 gate。

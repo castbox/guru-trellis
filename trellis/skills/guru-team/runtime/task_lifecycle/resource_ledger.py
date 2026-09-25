@@ -42,6 +42,8 @@ _LEDGER_FIELDS = {
     "task_id",
     "lifecycle_generation",
     "ledger_revision",
+    "finish_result_id",
+    "finish_head",
     "resources",
 }
 _RESOURCE_FIELDS = {
@@ -404,6 +406,8 @@ class ResourceLedger:
     lifecycle_generation: int
     ledger_revision: int
     resources: tuple[ResourceIncarnation, ...]
+    finish_result_id: str | None = None
+    finish_head: str | None = None
     schema_version: str = RESOURCE_LEDGER_SCHEMA_VERSION
 
     def __post_init__(self) -> None:
@@ -417,7 +421,22 @@ class ResourceLedger:
                 "schema_version",
                 "Use the current resource ledger schema version.",
             )
+        if (self.finish_result_id is None) != (self.finish_head is None):
+            raise LifecycleContractError(
+                "resource_ledger_conflict",
+                "finish_result_id",
+                "Keep the Finish result and HEAD together in one sealed ledger.",
+            )
+        if self.finish_result_id is not None:
+            _identifier(self.finish_result_id, "finish_result_id")
+            _normalize_cleanup_head(self.finish_head, "finish_head")
         resources = tuple(self.resources)
+        if self.finish_result_id is not None and any(row.state == "current" for row in resources):
+            raise LifecycleContractError(
+                "resource_ledger_conflict",
+                "resources",
+                "A sealed Finish ledger cannot retain current resources.",
+            )
         if len({row.resource_id for row in resources}) != len(resources):
             raise LifecycleContractError(
                 "resource_ledger_conflict",
@@ -482,6 +501,8 @@ class ResourceLedger:
             "task_id": self.task_id,
             "lifecycle_generation": self.lifecycle_generation,
             "ledger_revision": self.ledger_revision,
+            "finish_result_id": self.finish_result_id,
+            "finish_head": self.finish_head,
             "resources": [row.as_dict() for row in self.resources],
         }
 
@@ -503,6 +524,8 @@ class ResourceLedger:
             lifecycle_generation=payload.get("lifecycle_generation"),
             ledger_revision=payload.get("ledger_revision"),
             resources=tuple(ResourceIncarnation.from_dict(row) for row in resources),
+            finish_result_id=payload.get("finish_result_id"),
+            finish_head=payload.get("finish_head"),
             schema_version=payload.get("schema_version"),
         )
 
@@ -1279,11 +1302,10 @@ class ResourceLedgerStore:
             role="retained_control",
         )
         self._write(
-            ResourceLedger(
-                ledger.task_id,
-                ledger.lifecycle_generation,
-                ledger.ledger_revision + 1,
-                (*ledger.resources, resource),
+            replace(
+                ledger,
+                ledger_revision=ledger.ledger_revision + 1,
+                resources=(*ledger.resources, resource),
             )
         )
         return resource
@@ -1334,8 +1356,23 @@ class ResourceLedgerStore:
                 "ledger",
                 "Use terminal missing resolution instead of inventing ownership.",
             )
+        if ledger.finish_result_id is not None:
+            if (ledger.finish_result_id, ledger.finish_head) != (finish_id, exact_finish_head):
+                raise LifecycleContractError(
+                    "resource_ledger_conflict",
+                    "finish_result_id",
+                    "Retry only the exact sealed Finish result and HEAD.",
+                )
+            return {
+                "schema_version": "1.0",
+                "task_id": ledger.task_id,
+                "lifecycle_generation": ledger.lifecycle_generation,
+                "finish_result_id": finish_id,
+                "finish_head": exact_finish_head,
+                "ledger_revision": ledger.ledger_revision,
+                "inventory_id": self._inventory_id(ledger),
+            }
         sealed: list[ResourceIncarnation] = []
-        changed = False
         for row in ledger.resources:
             if row.state == "current":
                 cleanup_head = (
@@ -1344,21 +1381,22 @@ class ResourceLedgerStore:
                     else row.expected_cleanup_head
                 )
                 sealed.append(_retire(row, cleanup_head))
-                changed = True
             else:
                 sealed.append(row)
-        successor = (
-            ResourceLedger(
-                ledger.task_id,
-                ledger.lifecycle_generation,
-                ledger.ledger_revision + 1,
-                tuple(sealed),
+        if not any(row.state == "current" for row in ledger.resources):
+            raise LifecycleContractError(
+                "resource_ledger_conflict",
+                "resources",
+                "Seal one current resource bundle or retry its existing Finish identity.",
             )
-            if changed
-            else ledger
+        successor = replace(
+            ledger,
+            ledger_revision=ledger.ledger_revision + 1,
+            resources=tuple(sealed),
+            finish_result_id=finish_id,
+            finish_head=exact_finish_head,
         )
-        if changed:
-            self._write(successor)
+        self._write(successor)
         inventory_id = self._inventory_id(successor)
         return {
             "schema_version": "1.0",
@@ -1386,6 +1424,12 @@ class ResourceLedgerStore:
                 TaskLifecycleKey(key.task_id, key.lifecycle_generation),
                 finish_id,
                 reason_code="terminal_resource_ledger_missing",
+            )
+        if ledger.finish_result_id != finish_id:
+            raise LifecycleContractError(
+                "resource_ledger_conflict",
+                "finish_result_id",
+                "Resolve Cleanup only for the exact sealed Finish result.",
             )
         current_inventory = self._inventory_id(ledger)
         if current_inventory != expected_inventory:
