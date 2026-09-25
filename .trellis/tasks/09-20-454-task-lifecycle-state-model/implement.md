@@ -820,3 +820,9 @@ predecessor数据模型带入target graph。
 成功退出要求五个 canonical package 自洽、target exits 均有唯一声明 consumer、定向/组合验证和完整
 Branch Review通过，且 shared current 文档与当前 candidate 一致。E434/#434 将来独立负责一次性切图、
 完整 package-ready gate、installed/platform/reapply 与生产激活；专门候选 Release matrix 不由本切片代跑。
+
+### D436 提交后验证
+
+- 当前候选 `01a7bba4914dbd739d43e1c3691e9c939299a3fb` 基于 `main@0ac48e5d24e6d2c32cf2d69080109a6a7adaee9e`；PR #474 仅引用 #454，Issue 仍开放。
+- 五个 package、共享 lifecycle runtime 与 package integration 合跑：`pytest --import-mode=importlib` 226/226 通过；`git diff --check origin/main...HEAD` 通过。
+- 本条记录是当前候选的验证事实，不代替 post-promotion Architecture/Phase 2、Task Commit、完整 Branch Review 或 Publication 的正式 typed exit；这些步骤仍须基于后续当前候选完成。
