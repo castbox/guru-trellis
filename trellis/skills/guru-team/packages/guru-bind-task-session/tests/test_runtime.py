@@ -307,6 +307,17 @@ class FixedForkIntegrationTest(unittest.TestCase):
                 session.unlink()
                 self.assertEqual(invoke("rebind_missing_session", generation=1)["exit_id"], "session_rebound")
                 self.assertEqual(invoke("resume_current_task", generation=1)["exit_id"], "session_resumed")
+                git(rebound, "mv", ".trellis/tasks/a", ".trellis/tasks/renamed-a")
+                git(rebound, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                    "commit", "-qm", "rename task ref")
+                self.assertEqual(bind.resolve_task_id(rebound, "a").task_ref, ".trellis/tasks/renamed-a")
+                before = session.read_bytes()
+                self.assertEqual(invoke("resume_current_task", generation=1)["exit_id"], "session_resumed")
+                self.assertEqual(session.read_bytes(), before)
+                session.unlink()
+                self.assertEqual(invoke("rebind_missing_session", generation=1)["exit_id"], "session_rebound")
+                self.assertEqual(json.loads(session.read_text()),
+                                 {"schema_version": 2, "task_id": "a", "lifecycle_generation": 1})
 
 
 if __name__ == "__main__":
