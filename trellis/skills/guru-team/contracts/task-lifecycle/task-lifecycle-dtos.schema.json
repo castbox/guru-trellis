@@ -59,11 +59,12 @@
     "IssueSource": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "repo_ref", "number"],
+      "required": ["kind", "repo_ref", "number", "disposition"],
       "properties": {
         "kind": {"const": "issue"},
         "repo_ref": {"$ref": "#/$defs/repoRef"},
-        "number": {"type": "integer", "minimum": 1}
+        "number": {"type": "integer", "minimum": 1},
+        "disposition": {"enum": ["exact_source", "reference_only", "follow_up", "parent"]}
       }
     },
     "NoIssueSource": {

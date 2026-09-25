@@ -22,11 +22,12 @@
         "properties": {
           "reviewed_source": {
             "type": "object", "additionalProperties": false,
-            "required": ["kind", "repo_ref", "number"],
+            "required": ["kind", "repo_ref", "number", "disposition"],
             "properties": {
               "kind": {"const": "issue"},
               "repo_ref": {"type": "string", "pattern": "^(?![^/]+/[^/]+\\.git$)[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*$"},
-              "number": {"type": "integer", "minimum": 1}
+              "number": {"type": "integer", "minimum": 1},
+              "disposition": {"const": "exact_source"}
             }
           }
         }

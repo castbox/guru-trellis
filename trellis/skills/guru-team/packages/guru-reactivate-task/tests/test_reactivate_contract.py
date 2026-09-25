@@ -86,7 +86,7 @@ def correction():
     return {
         "task_id": "demo", "task_ref": ".trellis/tasks/archive/2026-09/09-19-demo",
         "lifecycle_generation": 2, "current_source": {"kind": "no_issue"},
-        "reviewed_source": {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454},
+        "reviewed_source": {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454, "disposition": "reference_only"},
         "accepted_scope_identity": "scope:demo", "target_relation_id": "source:demo", "result_id": "correction:demo",
     }
 

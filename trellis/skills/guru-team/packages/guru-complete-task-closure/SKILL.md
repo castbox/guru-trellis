@@ -10,6 +10,9 @@ relation, accepted scope, target, branch binding, content and evidence slots,
 then author the complete per-Issue action set. No-Issue and relations without
 close authority produce no Issue mutation. Show each exact close action and
 obtain dialogue-local confirmation before invoking with `--confirmed-close`.
+Reread the current `task.json.source` disposition before any action; only a
+missing source with exact canonical Issue scope may normalize to `exact_source`.
+An input source mismatch or non-exact close action fails before mutation.
 The runtime freezes this entire set in owner-private state, rereads exact Issue
 state, and closes only actions with reviewed close authority.
 

@@ -9,7 +9,7 @@
     "completion_result": {"$ref": "#/$defs/result"},
     "source": {"oneOf": [
       {"type": "object", "additionalProperties": false, "required": ["kind"], "properties": {"kind": {"const": "no_issue"}}},
-      {"type": "object", "additionalProperties": false, "required": ["kind", "repo_ref", "number"], "properties": {"kind": {"const": "issue"}, "repo_ref": {"$ref": "#/$defs/repo"}, "number": {"type": "integer", "minimum": 1}}}
+      {"type": "object", "additionalProperties": false, "required": ["kind", "repo_ref", "number", "disposition"], "properties": {"kind": {"const": "issue"}, "repo_ref": {"$ref": "#/$defs/repo"}, "number": {"type": "integer", "minimum": 1}, "disposition": {"enum": ["exact_source", "reference_only", "follow_up", "parent"]}}}
     ]},
     "accepted_scope_identity": {"$ref": "#/$defs/id"},
     "delivery_target": {"type": "object", "additionalProperties": false, "required": ["repo_ref", "branch_ref"],

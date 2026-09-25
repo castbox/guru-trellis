@@ -51,7 +51,7 @@ class CompositionTests(unittest.TestCase):
             "task_ref": TASK_REF,
             "source_profile": profile,
             "reviewed_source": {"kind": "no_issue"} if profile == "standalone_request" else {
-                "kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454,
+                "kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454, "disposition": "exact_source",
             },
             "accepted_scope_identity": "scope:reviewed",
             "delivery_target": {"repo_ref": "castbox/guru-trellis", "branch_ref": "main"},
@@ -91,7 +91,11 @@ class CompositionTests(unittest.TestCase):
 
     def test_creation_rejects_profile_mismatch_and_preexisting_identity(self) -> None:
         payload = self.creation()
-        payload["reviewed_source"] = {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454}
+        payload["reviewed_source"] = {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454, "disposition": "exact_source"}
+        with self.assertRaises(LifecycleContractError):
+            prepare_creation_inputs(self.repo, payload, self.acquisition())
+        payload = self.creation("existing_issue")
+        payload["reviewed_source"]["disposition"] = "reference_only"
         with self.assertRaises(LifecycleContractError):
             prepare_creation_inputs(self.repo, payload, self.acquisition())
         path = self.repo / TASK_REF

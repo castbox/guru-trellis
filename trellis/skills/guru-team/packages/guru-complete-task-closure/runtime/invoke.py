@@ -9,7 +9,10 @@ from pathlib import Path
 
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import inspect_repository
+from runtime.task_lifecycle.identity import resolve_task_id
+from runtime.task_lifecycle.source import task_source
 
 
 def _load(root: Path, package: Path, name: str, field: str) -> dict:
@@ -80,6 +83,16 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
 
     completion = public["completion_result"]
     key = {name: completion[name] for name in ("task_id", "lifecycle_generation")}
+    try:
+        artifact = resolve_task_id(root, key["task_id"])
+        if artifact.lifecycle_state != "active" or artifact.lifecycle_generation != key["lifecycle_generation"]:
+            raise LifecycleContractError("stale_task", "task", "Resolve the current active task generation.")
+        metadata = json.loads((root / artifact.task_ref / "task.json").read_text(encoding="utf-8"))
+        current_source = task_source(metadata)
+    except (LifecycleContractError, OSError, ValueError) as exc:
+        raise CommandError("stale_identity", "task.source", "Reread the current task source relation.", 3) from exc
+    if current_source != public["source"]:
+        raise CommandError("stale_identity", "source", "Use the current task source relation and disposition.", 3)
     binding = public["binding_ref"]
     if (binding["task_id"], binding["lifecycle_generation"]) != (key["task_id"], key["lifecycle_generation"]):
         raise CommandError("stale_identity", "task_lifecycle", "Completion and binding must belong to this lifecycle.", 3)
@@ -93,6 +106,15 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         row["issue_ref"] == {"repo_ref": source["repo_ref"], "issue_number": source["number"]} for row in actions
     ):
         raise CommandError("stale_identity", "action_set", "Include the exact source relation in the reviewed action set.", 3)
+    if source["kind"] == "issue":
+        source_action = next(row for row in actions if row["issue_ref"] == {
+            "repo_ref": source["repo_ref"], "issue_number": source["number"],
+        })
+        if source["disposition"] == "exact_source":
+            if source_action["disposition"] == "no_close_authority":
+                raise CommandError("stale_identity", "action_set", "Review the exact source Issue closure action.", 3)
+        elif any(row["disposition"] != "no_close_authority" for row in actions):
+            raise CommandError("stale_identity", "action_set", "Non-exact source relations have no Issue close authority.", 3)
     identities = [(row["issue_ref"]["repo_ref"], row["issue_ref"]["issue_number"]) for row in actions]
     if len(identities) != len(set(identities)):
         raise CommandError("stale_identity", "action_set", "Review each Issue once in the frozen action set.", 3)

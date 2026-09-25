@@ -53,6 +53,13 @@ def fake_gh(tmp_path):
 def invoke(tmp_path, public, semantic, env, confirmed=False):
     if not (tmp_path / ".git").exists():
         subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    task = tmp_path / ".trellis/tasks/example-task"
+    if not task.exists():
+        task.mkdir(parents=True)
+        (task / "task.json").write_text(json.dumps({
+            "id": "example-task", "status": "in_progress", "lifecycle_generation": 0,
+            "source": public["source"],
+        }))
     inp = tmp_path / "input.json"
     review = tmp_path / "semantic.json"
     inp.write_text(json.dumps(public))
@@ -102,6 +109,55 @@ def test_no_issue_no_mutation_never_calls_provider(tmp_path):
     assert snapshot == {"result_ref": result_ref, "terminal": "no_mutation", "action_set": []}
     with pytest.raises(LifecycleContractError, match="closure_result_stale"):
         read_terminal_closure_result(inspect_repository(tmp_path), {**result_ref, "result_id": "closure:other"})
+
+
+@pytest.mark.parametrize("role", ["reference_only", "follow_up", "parent"])
+def test_non_exact_source_never_closes_issue(tmp_path, role):
+    public, semantic = fixture()
+    public["source"]["disposition"] = role
+    public["action_set"][0]["disposition"] = "no_close_authority"
+    semantic["reviewed_action_set"] = copy.deepcopy(public["action_set"])
+    env, _, log = fake_gh(tmp_path)
+    result = invoke(tmp_path, public, semantic, env, confirmed=True)
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["exit_id"] == "no_mutation"
+    assert not log.exists()
+
+    public["source_exit"] = "completed"
+    public["action_set"][0]["disposition"] = "close"
+    semantic["reviewed_action_set"] = copy.deepcopy(public["action_set"])
+    rejected = invoke(tmp_path, public, semantic, env, confirmed=True)
+    assert rejected.returncode != 0
+    assert not log.exists()
+
+
+def test_current_task_source_role_mismatch_stops_before_provider(tmp_path):
+    public, semantic = fixture()
+    env, _, log = fake_gh(tmp_path)
+    task = tmp_path / ".trellis/tasks/example-task"
+    task.mkdir(parents=True)
+    (task / "task.json").write_text(json.dumps({
+        "id": "example-task", "status": "in_progress", "lifecycle_generation": 0,
+        "source": {**public["source"], "disposition": "reference_only"},
+    }))
+    result = invoke(tmp_path, public, semantic, env, confirmed=True)
+    assert result.returncode != 0
+    assert not log.exists()
+
+
+def test_exact_legacy_scope_is_read_only_source_normalization(tmp_path):
+    public, semantic = fixture()
+    env, _, log = fake_gh(tmp_path)
+    task = tmp_path / ".trellis/tasks/example-task"
+    task.mkdir(parents=True)
+    metadata = {"id": "example-task", "status": "in_progress", "lifecycle_generation": 0,
+                "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/436"}
+    (task / "task.json").write_text(json.dumps(metadata))
+    pending = invoke(tmp_path, public, semantic, env)
+    assert pending.returncode == 0, pending.stderr
+    assert json.loads(pending.stdout)["exit_id"] == "resume_closure"
+    assert json.loads((task / "task.json").read_text()) == metadata
+    assert not log.exists()
 
 
 def test_close_and_same_owner_output_loss_recovery(tmp_path):
