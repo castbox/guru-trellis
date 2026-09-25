@@ -7,7 +7,9 @@ fixtures must show:
   live repository/branch/checkout identity derived from Phase C and official schema-2 session record exactness.
 - `T454-D443-02` (R02): resume, missing-pointer rebind, distinct-task switch and switch-back, Reactivate invalidation
   of old generation, pointer-only manual recovery and same-target idempotent retry. Wrong task/repository/branch,
-  stale generation, conflicting route and missing binding/ownership authority are zero-write stops.
+  stale generation, conflicting route and missing binding/ownership authority are zero-write stops. After a
+  branch rebind, a retained old checkout with the same TaskId/generation must not make the current bound checkout
+  ambiguous; real Git and the official Fixed Fork session port prove rebind and resume without a second writer.
 - `T454-D443-03` (R03): five success schemas and projections, explicit_task_mode without a usable context key,
   ReasonDTO blocked; no TaskRef/path/branch/HEAD/session locator/authorization in output or stored payload.
 - `T454-D443-04` (R04): package source validation, command/consumer closure, source/installed separation, zero

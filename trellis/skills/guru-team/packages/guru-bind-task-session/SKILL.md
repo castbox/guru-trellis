@@ -11,6 +11,10 @@ Review the requested profile and target lifecycle before invoking the recorder.
 The shared C4 branch/ownership readers and C3 checkout validator must agree on
 one live execution checkout for every selected lifecycle. Ordinary dirty work
 does not disqualify a session resume; identity or artifact conflicts do.
+Select that current checkout before calling the Fixed Fork TaskId resolver:
+an old branch may legitimately retain the same task artifact after rebind,
+but it is not another current checkout. Scope official resolution to the
+selected registered checkout and compare its TaskRef/artifact to the C3 result.
 Only the current session pointer is mutable here; branch association, checkout,
 resource ownership, task artifact locator, and lifecycle transitions have
 separate owners. A missing context key yields `explicit_task_mode` with the

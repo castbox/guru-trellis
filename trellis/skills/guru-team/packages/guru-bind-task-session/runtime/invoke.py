@@ -15,6 +15,7 @@ from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycl
 from runtime.task_lifecycle.checkout_resolution import CheckoutRequest, validate_candidate
 from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import discover_worktree_facts, inspect_repository
+from runtime.task_lifecycle.identity import resolve_task_id
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 from runtime.task_lifecycle.schema import validate_dto
 from runtime.task_lifecycle.session_adapter import bind_session, resolve_session
@@ -88,7 +89,27 @@ def _record(official: Any, root: Path) -> tuple[str, Any | None]:
     return "present", record
 
 
-def _current_lifecycle(root: Path, lifecycle: dict[str, Any], resolved: Any) -> None:
+class _CurrentCheckoutPort:
+    def __init__(self, official: Any, workspace: Path) -> None:
+        self.official = official
+        self.workspace = workspace
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self.official, name)
+
+    def resolve_task_identity(self, facts: Any, task_id: str, generation: int) -> Any:
+        # The official resolver scans every worktree in facts. Retired branch
+        # checkouts may legitimately retain the same task artifact after rebind.
+        if not hasattr(facts, "worktrees"):
+            return self.official.resolve_task_identity(facts, task_id, generation)
+        scoped = SimpleNamespace(**vars(facts))
+        scoped.invocation_root = self.workspace
+        scoped.git_root = self.workspace
+        scoped.worktrees = (self.workspace,)
+        return self.official.resolve_task_identity(scoped, task_id, generation)
+
+
+def _current_lifecycle(root: Path, lifecycle: dict[str, Any], official: Any) -> _CurrentCheckoutPort:
     key = TaskLifecycleKey(lifecycle["task_id"], lifecycle["lifecycle_generation"])
     repository = inspect_repository(root)
     binding = BranchBindingStore(repository).read(key)
@@ -100,10 +121,28 @@ def _current_lifecycle(root: Path, lifecycle: dict[str, Any], resolved: Any) -> 
             "session_branch_unresolved", "branch_binding",
             "Resolve one current branch binding and matching resource ownership before session binding.",
         )
-    task_ref = getattr(resolved, "task_ref", None)
-    workspace = getattr(resolved, "workspace", None)
-    task_path = getattr(resolved, "task_path", None)
-    if not isinstance(task_ref, str) or not isinstance(workspace, Path) or not isinstance(task_path, Path):
+    rows = discover_worktree_facts(repository)
+    current = [row for row in rows if row.branch_ref == binding.branch_ref]
+    if len(current) != 1:
+        raise LifecycleContractError(
+            "session_checkout_unresolved", "checkout", "Resolve one current checkout for this task lifecycle.",
+        )
+    workspace = current[0].path
+    identity = resolve_task_id(workspace, key.task_id)
+    if identity.lifecycle_generation != key.lifecycle_generation or identity.lifecycle_state != "active":
+        raise LifecycleContractError(
+            "session_task_resolution_invalid", "task.lifecycle_generation",
+            "Resolve the current active task lifecycle from the bound checkout.",
+        )
+    task_ref = identity.task_ref
+    task_path = workspace / task_ref
+    scoped_official = _CurrentCheckoutPort(official, workspace)
+    resolved = scoped_official.resolve_task_identity(official.repository_facts(root), key.task_id, key.lifecycle_generation)
+    resolved_workspace = getattr(resolved, "workspace", None)
+    resolved_task_path = getattr(resolved, "task_path", None)
+    if (getattr(resolved, "task_ref", None) != task_ref
+            or not isinstance(resolved_workspace, Path) or resolved_workspace.resolve() != workspace
+            or not isinstance(resolved_task_path, Path) or resolved_task_path.resolve() != task_path):
         raise LifecycleContractError(
             "session_task_resolution_invalid", "official_session.resolve_task_identity",
             "Resolve the exact task artifact and workspace through the Fixed Fork resolver.",
@@ -120,7 +159,7 @@ def _current_lifecycle(root: Path, lifecycle: dict[str, Any], resolved: Any) -> 
         )
     request = CheckoutRequest(repository, key.task_id, task_ref, key.lifecycle_generation,
                               binding.branch_ref, status)
-    candidates = tuple(validate_candidate(request, row) for row in discover_worktree_facts(repository))
+    candidates = tuple(validate_candidate(request, row) for row in rows)
     # Dirty work is valid for resumption; all identity/artifact failures remain conflicts.
     if any(row.status == "authority_conflict" for row in candidates):
         raise LifecycleContractError(
@@ -131,6 +170,7 @@ def _current_lifecycle(root: Path, lifecycle: dict[str, Any], resolved: Any) -> 
         raise LifecycleContractError(
             "session_checkout_unresolved", "checkout", "Resolve one current checkout for this task lifecycle.",
         )
+    return scoped_official
 
 
 def execute(root: Path, input_value: str, owner_value: str, *, official: Any | None = None) -> dict[str, Any]:
@@ -154,10 +194,7 @@ def execute(root: Path, input_value: str, owner_value: str, *, official: Any | N
     official = official if official is not None else official_port(root)
 
     try:
-        # The official resolver is the sole authority for current TaskId/generation.
-        facts = official.repository_facts(root)
-        resolved = official.resolve_task_identity(facts, lifecycle["task_id"], lifecycle["lifecycle_generation"])
-        _current_lifecycle(root, lifecycle, resolved)
+        scoped_official = _current_lifecycle(root, lifecycle, official)
         state, record = _record(official, root)
         already_current = state == "present" and (record.task_id, record.lifecycle_generation) == (
             public["task_id"], public["lifecycle_generation"]
@@ -166,15 +203,14 @@ def execute(root: Path, input_value: str, owner_value: str, *, official: Any | N
             if profile == "resume_current_task":
                 if (record.task_id, record.lifecycle_generation) != (public["task_id"], public["lifecycle_generation"]):
                     return _blocked(package, "session_target_mismatch", "session")
-                resolved = resolve_session(official, root)
+                resolved = resolve_session(scoped_official, root)
                 if resolved.status != "session_resolved" or resolved.lifecycle is None:
                     return _blocked(package, "session_invalid", "session")
             elif profile == "switch_task":
                 source = (public["current_task_id"], public["current_lifecycle_generation"])
                 if (record.task_id, record.lifecycle_generation) != source or source == (public["task_id"], public["lifecycle_generation"]):
                     return _blocked(package, "session_source_mismatch", "session")
-                source_resolved = official.resolve_task_identity(facts, *source)
-                _current_lifecycle(root, {"task_id": source[0], "lifecycle_generation": source[1]}, source_resolved)
+                _current_lifecycle(root, {"task_id": source[0], "lifecycle_generation": source[1]}, official)
             elif profile == "reactivate_rebind":
                 if not already_current and (record.task_id != public["task_id"] or record.lifecycle_generation >= public["lifecycle_generation"]):
                     return _blocked(package, "session_target_mismatch", "session")
@@ -189,7 +225,7 @@ def execute(root: Path, input_value: str, owner_value: str, *, official: Any | N
         elif profile == "resume_current_task" or already_current:
             output = {"exit_id": EXITS[owner["route"]], **lifecycle, "resume_target": owner["resume_target"]}
         else:
-            result = bind_session(official, root, lifecycle)
+            result = bind_session(scoped_official, root, lifecycle)
             if result.status == "explicit_task_mode":
                 output = {"exit_id": "explicit_task_mode", **lifecycle}
             elif result.status != "session_bound" or result.lifecycle is None or result.lifecycle.task_id != lifecycle["task_id"] or result.lifecycle.lifecycle_generation != lifecycle["lifecycle_generation"]:

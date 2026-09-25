@@ -185,7 +185,7 @@ class RuntimeTest(unittest.TestCase):
                              {"exit_id": "explicit_task_mode", "task_id": "a", "lifecycle_generation": 0})
         self.assertEqual(self.port.writes, 0)
         self.port.context = "one"
-        self.assertEqual(self.invoke("rebind_missing_session", generation=8)["reason_code"], "stale_lifecycle_generation")
+        self.assertEqual(self.invoke("rebind_missing_session", generation=8)["reason_code"], "session_branch_unresolved")
         self.assertEqual(self.invoke("resume_current_task")["exit_id"], "binding_blocked")
         self.invoke("rebind_missing_session")
         before = dict(self.port.records)
@@ -284,6 +284,29 @@ class FixedForkIntegrationTest(unittest.TestCase):
                                      {"exit_id": "explicit_task_mode", "task_id": "a", "lifecycle_generation": 1})
                     self.assertEqual(session.read_bytes(), before)
                 self.assertEqual(legacy_mapping.read_text(), "not-json")
+
+                git(root, "add", ".trellis/tasks/a/task.json")
+                git(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                    "commit", "-qm", "reactivate")
+                rebound = Path(directory) / "rebound-a"
+                git(root, "worktree", "add", "-qb", "rebound-a", str(rebound), "reactivated-a")
+                with self.assertRaisesRegex(ValueError, "ambiguous_task_identity"):
+                    port.resolve_task_identity(port.repository_facts(root), "a", 1)
+                old = bind.BranchBindingStore(repository).read(key)
+                bind.ResourceLedgerStore(repository).rebind_current(
+                    key, expected_epoch=old.binding_epoch, expected_revision=old.binding_revision,
+                    source_branch_name=old.branch_name, target_branch_name="rebound-a",
+                    expected_cleanup_head=git(root, "rev-parse", "HEAD"),
+                    target_branch_ownership="caller_owned", target_worktree_ownership="caller_owned",
+                    worktree_reassociated=False,
+                )
+                bind.BranchBindingStore(repository).advance(
+                    key, expected_epoch=old.binding_epoch, expected_revision=old.binding_revision,
+                    branch_name="rebound-a",
+                )
+                session.unlink()
+                self.assertEqual(invoke("rebind_missing_session", generation=1)["exit_id"], "session_rebound")
+                self.assertEqual(invoke("resume_current_task", generation=1)["exit_id"], "session_resumed")
 
 
 if __name__ == "__main__":

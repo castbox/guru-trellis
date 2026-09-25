@@ -12,6 +12,10 @@ it does not create a second session store or assume task, branch or resource own
 only the official pointer, not retired mappings. The five historical success exit IDs remain; explicit task mode
 adds one exit, and blocked projects ReasonDTO.
 
+The C4 binding and C3 live validation first select the unique current checkout. Official TaskId resolution then
+checks that checkout's artifact, not every retained old-branch copy: an old resource incarnation can still contain
+the same TaskId/generation after rebind without becoming a second current task authority.
+
 This candidate narrows `ARCH-GAP-011` only at D443. Production workflow, registry selection, active manifest and
 installed/platform projection remain on the old graph until E434 atomically publishes the complete D443/D436
 package set and retires predecessor edges. Code tests, independent full-range review, serialized Architecture/RDT
