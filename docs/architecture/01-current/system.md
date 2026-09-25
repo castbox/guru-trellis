@@ -174,9 +174,9 @@ TaskId/generation、当前 branch/ledger、selected base ref、reviewed base HEA
 `planning -> in_progress`。六个 owner ID 仍仅 planned；C7 新代码对 legacy mapping/path 零读写，现有生产
 predecessor 待 E434 同图替换。`ARCH-GAP-011` 仍 partial/open；D443/D436/E434、#434 activation 未进入 CURRENT。
 
-当前 Architecture knowledge identity 为 `.64`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
+当前 Architecture knowledge identity 为 `.65`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
 `0.6.17`，framework source/CI 由 canonical source record 与 `EVD-034` 绑定，package manager 为
-`pnpm@10.32.1`。`.63` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
+`pnpm@10.32.1`。`.64` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。
 

@@ -1,6 +1,6 @@
 # #454 D443 Bind Session Traceability
 
-Status: contribution candidate based on `.64/active`; no shared authority has been promoted. Architecture candidate:
+Status: contribution promoted from `.64/active` to `.65/active` in shared Architecture/RDT authority. Architecture candidate:
 `architecture-contribution-454-task-lifecycle-d443-v1`; #456 migration rows `443-*` define the exact predecessor
 retirement surface, and `ARCH-GAP-011` remains partial/open until E434.
 
