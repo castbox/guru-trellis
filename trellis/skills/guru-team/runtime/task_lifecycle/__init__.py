@@ -14,6 +14,15 @@ from .checkout_resolution import (
     discover_validate_classify,
     select_or_specify,
 )
+from .composition import (
+    ActivationInputs,
+    CreationInputs,
+    bind_created_session,
+    establish_created_control_state,
+    prepare_activation_inputs,
+    prepare_creation_inputs,
+    recover_created_control_state,
+)
 from .branch_resolution import (
     BranchCandidate,
     EstablishmentResolution,
@@ -63,16 +72,16 @@ from .source import normalize_branch_ref, normalize_delivery_target, normalize_r
 __all__ = [
     "BranchBinding", "BranchBindingStore", "BranchCandidate", "CheckoutAcquisitionPlan",
     "CheckoutAcquisitionResult", "CheckoutCandidate", "CheckoutRequest", "CheckoutResolution",
-    "CheckoutStateSnapshot", "CleanupResolution", "CleanupResource", "EstablishmentResolution",
+    "CheckoutStateSnapshot", "CleanupResolution", "CleanupResource", "CreationInputs", "ActivationInputs", "EstablishmentResolution",
     "LifecycleContractError", "OfficialSessionPort", "OwnershipCurrent", "RebindPlan", "RebindResult",
     "RepositoryFacts", "ResourceIncarnation", "ResourceLedger", "ResourceLedgerSnapshot", "ResourceLedgerStore",
     "SessionAdapterResult", "TaskArtifactIdentity", "TaskLifecycleKey", "WorktreeFacts",
-    "acquire_checkout", "adopt_invocation_checkout", "canonical_head_ref", "discover_validate_classify", "dto_names",
-    "discover_branch_candidates", "establish_branch_binding", "execute_rebind", "inspect_repository",
+    "acquire_checkout", "adopt_invocation_checkout", "bind_created_session", "canonical_head_ref", "discover_validate_classify", "dto_names",
+    "discover_branch_candidates", "establish_branch_binding", "establish_created_control_state", "execute_rebind", "inspect_repository",
     "lifecycle_generation", "load_contract", "normalize_branch_name", "normalize_branch_ref",
     "normalize_delivery_target", "normalize_generation", "normalize_repo_ref", "normalize_source",
-    "normalize_task_id", "normalize_task_ref", "prepare_rebind", "provision_linked_worktree", "reason",
-    "recover_checkout_acquisition", "recover_established_branch_binding", "recover_rebind", "resolve_session",
+    "normalize_task_id", "normalize_task_ref", "prepare_rebind", "prepare_creation_inputs", "prepare_activation_inputs", "provision_linked_worktree", "reason",
+    "recover_checkout_acquisition", "recover_created_control_state", "recover_established_branch_binding", "recover_rebind", "resolve_session",
     "resolve_establishment", "resolve_task_id", "resolve_task_ref", "result_ref", "select_or_specify",
     "task_artifact", "task_identity", "task_inventory", "task_lifecycle", "transaction_ref", "validate_dto",
     "bind_session",

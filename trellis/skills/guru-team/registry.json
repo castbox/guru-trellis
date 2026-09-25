@@ -1143,17 +1143,27 @@
       "workflow_route_id": "solution-mechanism-qualification"
     },
     {
+      "id": "guru-activate-task",
+      "state": "planned",
+      "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation."
+    },
+    {
+      "id": "guru-create-task",
+      "state": "planned",
+      "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation."
+    },
+    {
       "id": "guru-ensure-task-checkout",
       "state": "planned",
       "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation."
     },
     {
-      "id": "guru-establish-task-identity",
+      "id": "guru-establish-task-branch-binding",
       "state": "planned",
       "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation."
     },
     {
-      "id": "guru-establish-task-branch-binding",
+      "id": "guru-establish-task-identity",
       "state": "planned",
       "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation."
     },

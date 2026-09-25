@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-task-creation-input-1.0",
+  "title": "Reviewed task creation requirements",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "task_ref", "source_profile", "reviewed_source", "accepted_scope_identity", "delivery_target", "selected_base_ref", "reviewed_base_head"],
+  "properties": {
+    "task_id": {"type": "string", "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/(?!archive(?:/|$))(?!\\.{1,2}$)[^/\\\\]+$"},
+    "source_profile": {"enum": ["existing_issue", "standalone_request"]},
+    "reviewed_source": {"type": "object"},
+    "accepted_scope_identity": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+    "selected_base_ref": {"type": "string", "minLength": 1},
+    "reviewed_base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "delivery_target": {"type": "object"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"source_profile": {"const": "existing_issue"}}},
+      "then": {
+        "properties": {
+          "reviewed_source": {
+            "type": "object", "additionalProperties": false,
+            "required": ["kind", "repo_ref", "number"],
+            "properties": {
+              "kind": {"const": "issue"},
+              "repo_ref": {"type": "string", "pattern": "^(?![^/]+/[^/]+\\.git$)[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*$"},
+              "number": {"type": "integer", "minimum": 1}
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "reviewed_source": {
+            "type": "object", "additionalProperties": false,
+            "required": ["kind"],
+            "properties": {"kind": {"const": "no_issue"}}
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "delivery_target": {
+          "type": "object", "additionalProperties": false,
+          "required": ["repo_ref", "branch_ref"],
+          "properties": {
+            "repo_ref": {"type": "string", "pattern": "^(?![^/]+/[^/]+\\.git$)[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*$"},
+            "branch_ref": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    }
+  ]
+}

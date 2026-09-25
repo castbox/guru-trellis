@@ -45,7 +45,8 @@ cutover 已完成。
 首次 provenance reprepare preflight 使用真实 Git ancestry 分类 remote：absent、equal 或 strict historical ancestor
 可继续；ahead、diverged、unknown/unprovable commit fail closed。该分类只服务同一 C4 candidate 的正常
 fast-forward publication，不改变 existing-PR recovery，不放宽 predecessor transaction 的 exact old-HEAD 约束，也不
-形成 C5-C7、D443、D436、E434 或 #434 activation 的完成证据。
+形成 C6-C7、D443、D436、E434 或 #434 activation 的完成证据。C5 已由 PR #471 单独交付；当前 generation 4
+继续 C6-C7 的未激活 substrate 和 Docs/validation，不从旧 C5 gate 推导本轮通过。
 
 ## 跨任务实施顺序与依赖边界
 

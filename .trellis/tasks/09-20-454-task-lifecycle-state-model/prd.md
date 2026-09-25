@@ -20,9 +20,9 @@
 - 正常 Cleanup 只删除 Guru 明确拥有的资源；未知 ownership 与 caller-owned 资源只能在用户另行选择并
   确认的手工清理路径中删除。
 
-本 task 已完成规划并进入分阶段实施，不修改 Issue #454。C1、C2、D0、C3 与 C4 已完成；PR #465 只完成
-C3，PR #470 只完成 C4，不表示 C3-C7 已全部完成。当前交付为 C5 path-free session adapter 与 resource
-ownership ledger substrate。C6-C7、D443、D436、E434 与 #434 activation 仍未完成；完整 Skill package、production graph、
+本 task 已完成规划并进入分阶段实施，不修改 Issue #454。C1、C2、D0、C3、C4 与 C5 已分别交付；PR #465、#470、#471
+分别只完成 C3、C4、C5，不表示 C3-C7 已全部完成。当前 generation 4 交付 C6 task creation substrate 与 C7
+subtraction/Docs SSOT/validation。D443、D436、E434 与 #434 activation 仍未完成；完整 Skill package、production graph、
 installed/platform projection 与 predecessor retirement 仍由 E434 在同一原子激活边界交付。
 
 已交付的 C4 Delivery 恢复了同一分支的 Finalizer publication prerequisite：首次 Publication 尚无 predecessor

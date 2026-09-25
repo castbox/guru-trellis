@@ -100,3 +100,30 @@ retained control refs.
 C5 remains substrate only. It does not activate D443/D436, create a planned
 Skill package, change the production workflow, or publish installed/platform
 projections; those transitions remain owned by E434.
+
+The C6 `task-creation-input.schema.json` separates reviewed
+`existing_issue | standalone_request` source from accepted scope identity and
+portable delivery target. Its selected base ref/head and C3 checkout acquisition
+plan are call-local preconditions, not durable task authority. The C3 provision
+dispositions are `new_branch | existing_branch | existing_checkout`: the first
+creates Guru-owned branch and worktree, the second creates only a Guru-owned
+worktree, and the third reuses caller-owned resources. Primary and linked
+adoption preserve caller ownership. After the official task creator writes a
+generation-zero planning artifact containing the reviewed `source` and
+`delivery_target`, `establish_created_control_state` composes the initial C4
+binding and C5 ledger. `recover_created_control_state` reads the exact stable
+task/source/target, binding epoch, ledger and deterministic
+`task-created:<TaskId>` result identity without another mutation. Accepted
+scope remains the separate reviewed input, not a substitute source or closure
+decision; the future package must check its own scope authority and live Issue.
+`bind_created_session` runs the C5 official-backed adapter only after the exact
+initial creation state is verified. Missing context enters explicit-task mode;
+session write failure does not roll back the established task or ownership.
+
+`task-activation-input.schema.json` requires a planning result, current task
+incarnation, base-current or reconciled task-head continuity, and the C5
+`session_bound | explicit_task_mode` outcome. `prepare_activation_inputs`
+checks the live planning status, current branch/ledger pair and head. It does
+not approve planning, select a route, mutate status or claim output-loss
+recovery for the eventual activation owner. The E434 package must provide
+those semantic and transaction contracts before either planned ID is active.

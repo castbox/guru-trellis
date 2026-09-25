@@ -24,8 +24,11 @@ GURU_FINISH_ENTRIES = (
 )
 
 PLANNED_SKILL_IDS = [
+    "guru-activate-task",
+    "guru-create-task",
     "guru-ensure-task-checkout",
     "guru-establish-task-branch-binding",
+    "guru-establish-task-identity",
     "guru-rebind-task-branch",
 ]
 PLANNED_SKILL_ROWS = [
@@ -101,7 +104,7 @@ class CanonicalPlannedIdOwnershipTest(unittest.TestCase):
         payload = ownership.validate_repository(self.repo)
         self.assertEqual(payload["status"], "ok", payload["errors"])
         self.assertEqual(payload["active_skill_count"], 32)
-        self.assertEqual(payload["planned_skill_count"], 3)
+        self.assertEqual(payload["planned_skill_count"], 6)
         self.assertEqual(payload["planned_skill_ids"], PLANNED_SKILL_IDS)
         self.assertEqual(payload["canonical_package_count"], 32)
 
