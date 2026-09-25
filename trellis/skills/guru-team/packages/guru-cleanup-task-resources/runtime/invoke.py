@@ -137,6 +137,13 @@ def manual_receipt(store: ResourceLedgerStore, public: dict[str, Any]) -> tuple[
     return path, identity
 
 
+def normal_receipt(store: ResourceLedgerStore, public: dict[str, Any]) -> tuple[Path, dict[str, Any]]:
+    identity = {field: public[field] for field in ("task_id", "lifecycle_generation", "finish_result_id", "inventory_id")}
+    digest = hashlib.sha256(json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()).hexdigest()[:32]
+    path = store.repository.common_dir / "guru-team" / "cleanup-results" / public["task_id"] / f'normal-{digest}.json'
+    return path, identity
+
+
 def manual_targets_current(root: Path, store: ResourceLedgerStore, resources: list[dict[str, Any]]) -> bool:
     selected = {(row["kind"], json.dumps(row["portable_ref"], sort_keys=True)) for row in resources}
     for ledger in store.iter_ledgers():
@@ -237,13 +244,24 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict[str, Any]:
         key = TaskLifecycleKey(public["task_id"], public["lifecycle_generation"])
         try:
             if public["profile"] == "normal":
-                resolution = store.cleanup_resolution(key, finish_result_id=public["finish_result_id"], inventory_id=public["inventory_id"])
-                if resolution.resolution_kind == "manual_selection_required":
-                    out = pending(public, resolution.reason_code or "manual_selection_required")
+                receipt_path, receipt_identity = normal_receipt(store, public)
+                ledger = store.read(key)
+                if ledger is not None and ledger.finish_result_id != public["finish_result_id"]:
+                    raise LifecycleContractError("resource_ledger_conflict", "finish_result_id", "Recover only the exact sealed Finish result.")
+                if receipt_path.is_file():
+                    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+                    if receipt.get("identity") != receipt_identity:
+                        raise LifecycleContractError("resource_inventory_stale", "normal_receipt", "Recover the exact sealed Cleanup result.")
+                    out = receipt["output"]
                     resources = []
                 else:
-                    resources = [item.as_dict() for item in resolution.resources]
-                    out = {}
+                    resolution = store.cleanup_resolution(key, finish_result_id=public["finish_result_id"], inventory_id=public["inventory_id"])
+                    if resolution.resolution_kind == "manual_selection_required":
+                        out = pending(public, resolution.reason_code or "manual_selection_required")
+                        resources = []
+                    else:
+                        resources = [item.as_dict() for item in resolution.resources]
+                        out = {}
             else:
                 ledger = store.read(key)
                 if ledger is not None and ledger.finish_result_id != public["finish_result_id"]:
@@ -319,8 +337,9 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict[str, Any]:
                             out = blocked(exc.code, exc.field_path)
                         else:
                             out = cleaned(public, successor_id)
-                            if public["profile"] == "manual":
-                                receipt_path, identity = manual_receipt(store, public)
+                            if public["profile"] in {"normal", "manual"}:
+                                receipt_path, identity = (normal_receipt(store, public) if public["profile"] == "normal"
+                                                          else manual_receipt(store, public))
                                 receipt_path.parent.mkdir(parents=True, exist_ok=True)
                                 receipt_path.write_text(json.dumps({"identity": identity, "output": out}, sort_keys=True) + "\n", encoding="utf-8")
     validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")

@@ -88,6 +88,17 @@ def test_normal_cleanup_deletes_sealed_guru_owned_branch_and_resolves_ledger(tmp
     assert invoke(tmp_path, root, {**public, "inventory_id": fresh["inventory_id"]}) == result
 
 
+def test_normal_cleanup_same_seal_recovers_cleaned_after_output_loss(tmp_path):
+    root, store, public, _head = fixture(tmp_path)
+    first = invoke(tmp_path, root, public, confirmed=True)
+    assert first["exit_id"] == "cleaned"
+    assert not git(root, "branch", "--list", "codex/demo")
+    assert invoke(tmp_path, root, public, confirmed=True) == first
+    assert store.read(TaskLifecycleKey("demo", 0)).resources[0].state == "resolved"
+    wrong = {**public, "inventory_id": "resource-inventory:stale"}
+    assert invoke(tmp_path, root, wrong, confirmed=True)["reason_code"] == "resource_inventory_stale"
+
+
 def test_caller_owned_is_retained_and_manual_selection_requires_confirmation(tmp_path):
     root, store, public, head = fixture(tmp_path, ownership="caller_owned")
     assert invoke(tmp_path, root, public, confirmed=True)["exit_id"] == "cleaned"

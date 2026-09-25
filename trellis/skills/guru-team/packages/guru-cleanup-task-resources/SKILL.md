@@ -15,7 +15,10 @@ An absent resource converges through the same ledger resolution. Normal cleanup
 removes linked worktrees, then local branches, then remote branches under exact
 HEAD checks. A moved or dirty target blocks the affected action. The shared
 ledger resolves the complete Guru-owned pending set only after deletion.
-Caller-owned retained resources are never included in normal deletion.
+Caller-owned retained resources are never included in normal deletion. An exact
+common-dir result receipt lets the same Finish seal input recover the same
+`cleaned` output after successful deletion and lost output; an unrelated stale
+inventory still blocks.
 
 Manual cleanup records the exact selected result without assigning Guru
 ownership. Machine handoff reads a released source inventory and resolves only
