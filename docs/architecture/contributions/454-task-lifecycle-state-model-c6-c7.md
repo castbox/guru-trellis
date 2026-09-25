@@ -3,17 +3,17 @@
 ## Identity And State
 
 - contribution identity: `architecture-contribution-454-task-lifecycle-state-model-c6-c7-v1`.
-- state: `candidate_unreviewed`; no shared-current promotion or gate pass is claimed.
+- state: `reviewed_promoted`; expected `.63` has been promoted to `.64` by the serialized Architecture owner.
 - source: live `castbox/guru-trellis#454`, task `.trellis/tasks/09-20-454-task-lifecycle-state-model` generation 4, `implement.md` C6/C7.
-- expected Architecture and RDT baseline: `current-main-0.6.17-guru.63` / `active`.
+- predecessor Architecture and RDT baseline: `current-main-0.6.17-guru.63` / immutable; successor `.64/active`.
 - related RDT candidate: `docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c6-c7/`.
 - constitution/change contract: `guru-trellis-design-constitution-v1` / `guru-trellis-architecture-change-contract-v1`.
 - change path: `target_native`; `ADR-015` remains the identity/framework boundary owner, so no new ADR is proposed.
 
-This is an isolated proposal for C6 shared task-creation substrate and activation inputs, followed by C7 subtraction
-evidence and Phase C validation. It does not assert that code, schema, registry, installer, workflow, or tests have been
-changed in this Docs-only contribution. `.63` continues to own CURRENT; this candidate must not be cited as `.64`
-CURRENT or as evidence that the production graph has switched.
+This reviewed contribution describes C6 shared task-creation substrate and activation inputs, followed by C7
+subtraction evidence and Phase C validation. Independent full-range Branch Review passed for
+`origin/main@0a062919ff568a1fc0259ed7c01b5b67345fd29a...HEAD@9dab07fb0fdf47912e1d907c695feb37efb68c4a`.
+`.64` current incorporates only the nonactivated substrate; it is not evidence that the production graph switched.
 
 ## Proposed Boundary
 
@@ -61,5 +61,6 @@ primitives, not installed planned packages. Full multi-platform Release matrix r
 acceptance obligations, not test results; no Phase 2, Task Commit, independent full Branch Review, serialized Docs
 promotion, Publication, push, PR, merge or release result is asserted here.
 
-This candidate narrows `ARCH-GAP-011` only after implementation and review. The current `.63` gap remains open;
-C6/C7, D443, D436, E434 and #434 activation cannot be inferred from this contribution alone.
+This reviewed contribution narrows `ARCH-GAP-011` without closing the lifecycle gap. The current `.64` gap remains
+partial/open; D443, D436, E434 and #434 activation cannot be inferred from this contribution alone. The promotion
+diff requires fresh Phase 2, Task Commit and independent full Branch Review before Publication.

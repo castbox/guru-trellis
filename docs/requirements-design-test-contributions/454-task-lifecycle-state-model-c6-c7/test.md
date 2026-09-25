@@ -1,6 +1,8 @@
 # #454 C6/C7 Task Creation And Phase C Validation Test Contribution
 
-状态：`candidate_unreviewed`。下列为待运行的 focused acceptance 和证明边界，**不是**通过记录。
+状态：`reviewed_promoted`。下列为 current acceptance 与证明边界；提升前 focused lifecycle `125/125`、
+planned inventory `3/3`、ownership/drift/task/diff check 通过，package integration `19/20` 与 managed fixture
+未通过。各行中的 E434 package、Fork 本地 build、installed/platform 与 #410 matrix 仍未验证。
 
 - `T454-C6C7-01`（R01）：reviewed existing Issue 与 standalone 两条 create path；draft Issue 创建后 live
   reread、Sync/fresh Intake，create 本身零 Issue mutation；no-Issue 不产生伪 Issue/Closure identity。

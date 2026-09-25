@@ -4,8 +4,8 @@ task_locator: ".trellis/tasks/09-20-454-task-lifecycle-state-model"
 issue_ref: "https://github.com/castbox/guru-trellis/issues/454"
 source_version: "current-main-0.6.17-guru.63"
 expected_current_version: "current-main-0.6.17-guru.63"
-candidate_successor_version: "assigned-by-reviewed-promotion"
-status: "candidate_pending_review"
+candidate_successor_version: "current-main-0.6.17-guru.64"
+status: "reviewed_promoted"
 authority_scope: "isolated_contribution"
 architecture_impact: "architecture_impact"
 change_path: "target_native"
@@ -34,5 +34,5 @@ public_contracts:
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
 architecture_contribution: "docs/architecture/contributions/454-task-lifecycle-state-model-c6-c7.md"
-promotion_decision: "pending_independent_review"
-shared_current_write: false
+promotion_decision: "reviewed_serialized_promotion"
+shared_current_write: true

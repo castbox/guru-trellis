@@ -167,9 +167,16 @@ binding/ownership/incarnation 必须一致，但不把该检查升格为 strict 
 只读，rebind seal 最新可验证 HEAD。active registry 保持 32/142/102，production graph 不变；C6-C7、
 D443、D436、E434 与 #434 activation 未进入 CURRENT。
 
-当前 Architecture knowledge identity 为 `.63`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
+`ARCH-CUR-041`（`source_confirmed` + `reviewed`）：#454 C6/C7 在 `.63` 上加入非激活的 task creation
+composition、闭合 creation/activation input schema、两种 acquisition 的五类 ownership 投影、初始 C4 binding
+与 C5 ledger/session 组合及同 owner 只读 creation-result recovery。Activation input 绑定 planning status、
+TaskId/generation、当前 branch/ledger、selected base ref、reviewed base HEAD 和 task HEAD ancestry；它不执行
+`planning -> in_progress`。六个 owner ID 仍仅 planned；C7 新代码对 legacy mapping/path 零读写，现有生产
+predecessor 待 E434 同图替换。`ARCH-GAP-011` 仍 partial/open；D443/D436/E434、#434 activation 未进入 CURRENT。
+
+当前 Architecture knowledge identity 为 `.64`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
 `0.6.17`，framework source/CI 由 canonical source record 与 `EVD-034` 绑定，package manager 为
-`pnpm@10.32.1`。`.62` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
+`pnpm@10.32.1`。`.63` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。
 

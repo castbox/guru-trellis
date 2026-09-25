@@ -1,8 +1,8 @@
 # #454 C6/C7 Task Creation And Phase C Validation Requirements Contribution
 
-状态：`candidate_unreviewed`。Expected current RDT/Architecture 为 `current-main-0.6.17-guru.63 / active`；
-本文件不声明 successor 已提升。只定义 C6 task creation substrate/activation inputs 和 C7 inactive subtraction/
-validation acceptance，不替代 C1-C5 已提升 authority，也不提前实施 D443、D436、E434 或 #434 graph。
+状态：`reviewed_promoted`。Expected predecessor RDT/Architecture 为 `current-main-0.6.17-guru.63`；
+serialized successor 为 `.64/active`。本文件只定义 C6 task creation substrate/activation inputs 和 C7 inactive
+subtraction/validation acceptance，不替代 C1-C5 已提升 authority，也不提前实施 D443、D436、E434 或 #434 graph。
 
 - `R454-C6C7-01`：未来 task creation 只接受 reviewed `existing_issue | standalone_request`；proposed draft
   由独立 Issue owner 创建并 live reread 后重入 Sync/fresh Intake。task source、accepted scope、Completion 与 Closure
@@ -35,4 +35,5 @@ validation acceptance，不替代 C1-C5 已提升 authority，也不提前实施
   分别形成真实结果。代表性 clean throwaway 只在 accepted scope 要求时运行，不证明 planned package 已安装；
   完整多平台 Release matrix 留给 #410。完成 Docs candidate 不等于 runtime、Phase 2 或 production validation pass。
 
-这些要求是待实施/待审查 acceptance，不宣称 `.63` current 已具备 C6/C7 能力。
+这些要求已进入 `.64` 的非激活 current acceptance；完整 E434 package、status mutation、production graph 和
+Release matrix 仍需各自 owner 的后续实现与验证。

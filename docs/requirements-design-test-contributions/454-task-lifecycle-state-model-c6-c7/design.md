@@ -1,8 +1,8 @@
 # #454 C6/C7 Task Creation And Phase C Validation Design Contribution
 
-状态：`candidate_unreviewed`；expected current `.63/active`。关联
+状态：`reviewed_promoted`；immutable predecessor `.63`、current successor `.64/active`。关联
 `architecture-contribution-454-task-lifecycle-state-model-c6-c7-v1`，采用 `target_native`。以下是
-owner/contract design candidate，不声称 package、runtime、schema 或 production projection 已交付。
+owner/contract design；C6 shared runtime/schema 已在非激活 slice 交付，完整 package 或 production projection 未交付。
 
 - `D454-C6C7-01`：task creation composition 只消费 reviewed target/source 与 C2 TaskLifecycle DTO、C3 checkout
   acquisition/resolution、C4 branch association、C5 ledger/session adapter。Issue creation 返回 live Issue 后先走
@@ -34,4 +34,4 @@ owner/contract design candidate，不声称 package、runtime、schema 或 produ
   active/planned inventory、preset/sidecar/managed Python、task/quality checks 与未验证边界，不把条件性
   throwaway 或局部 tests 投影为 Release Gate。
 
-`ADR-015` 已负责 TaskId 与 framework-extension ownership；此候选不新增 ADR 或第二持久状态存储。
+`ADR-015` 已负责 TaskId 与 framework-extension ownership；本提升不新增 ADR 或第二持久状态存储。
