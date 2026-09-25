@@ -155,9 +155,21 @@ session 与 ownership payload 保持 call-local。Establishment 在 binding/owne
 production workflow 保持 22 mandatory invokes / 98 exits。C5-C7、D443、D436、E434 与 production activation
 未进入 CURRENT。
 
-当前 Architecture knowledge identity 为 `.62`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
+`ARCH-CUR-040`（`source_confirmed` + `reviewed`）：#454 C5 以 `target_native` 在 `.62` current 上增加
+path-free official session adapter 与 Git common-dir resource ownership ledger。Fixed Fork schema-2 session store
+仍为唯一 session writer；Guru adapter 只投影 TaskId/generation，缺 context key 返回 `explicit_task_mode`，
+session 写失败不回滚已建立的 lifecycle mutation。Ledger 以 TaskId/generation 保存 portable resource
+incarnations 与 branch/epoch/revision，C4 只经既有 `OwnershipPort` 消费。唯一合法 candidate 自动选择，
+零/多个候选由用户选择，用户也可指定未发现 target；所有选择走同一 live validator。有效 current
+binding/ownership/incarnation 必须一致，但不把该检查升格为 strict selector。Active control loss
+保守恢复 caller-owned；terminal loss 进入人工 Cleanup selection；Finish seal 与普通 Cleanup 只处理
+其拥有的待清理资源。同一 remote incarnation 可随正常 Publication HEAD 单调推进，equal-HEAD retry
+只读，rebind seal 最新可验证 HEAD。active registry 保持 32/142/102，production graph 不变；C6-C7、
+D443、D436、E434 与 #434 activation 未进入 CURRENT。
+
+当前 Architecture knowledge identity 为 `.63`，extension revision 为 `0.6.17-guru.42`，Fork CLI/core 为
 `0.6.17`，framework source/CI 由 canonical source record 与 `EVD-034` 绑定，package manager 为
-`pnpm@10.32.1`。`.61` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
+`pnpm@10.32.1`。`.62` 是 immutable superseded predecessor；历史 release 不包含本次知识提升。promotion-created diff
 必须重新通过 Phase 2、task commit 和独立完整 Branch Review；knowledge promotion 不证明 Publication、
 push、PR、merge、tag、Release 或 Issue closure。
 

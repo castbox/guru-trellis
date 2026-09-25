@@ -1,6 +1,6 @@
 # #454 C5 Session And Resource Control Test Contribution
 
-状态：`contribution_candidate`。以下 focused acceptance 不构成 Phase 2、promotion-created diff Branch Review、
+状态：`reviewed_promoted`，successor 为 `current-main-0.6.17-guru.63`。以下 focused acceptance 不构成 Phase 2、promotion-created diff Branch Review、
 Publication、production activation 或 Release Gate 证明。
 
 - `T454-C5-01`（R454-C5-01/02）：official fake/fixture 覆盖 exact schema-2 record、extra field rejection、context key

@@ -1,7 +1,7 @@
 # #454 C5 Session And Resource Control Traceability
 
-状态：`contribution_candidate`。Expected current RDT/Architecture 为
-`current-main-0.6.17-guru.62 / active`。
+状态：`reviewed_promoted`。Expected current RDT 为 `.62/active`；successor RDT 与 Architecture 为
+`current-main-0.6.17-guru.63 / active`。
 
 | Requirement | Design | Test | Inherited authority |
 | --- | --- | --- | --- |
@@ -18,4 +18,5 @@
 | `R454-C5-11` | `D454-C5-09`, `D454-C5-10` | `T454-C5-08`, `T454-C5-09` | E434 activation ownership |
 
 Architecture source reference：`architecture-contribution-454-task-lifecycle-state-model-c5-v1`。C6-C7、D443、
-D436、E434、#434 activation 与完整 Release matrix 继续保持独立后续边界。Serialized promotion 尚未执行。
+D436、E434、#434 activation 与完整 Release matrix 继续保持独立后续边界。Promotion-created diff
+须重新进入 fresh Phase 2、Task Commit 与完整 Branch Review。

@@ -1,6 +1,6 @@
 # #454 C5 Session And Resource Control Design Contribution
 
-状态：`contribution_candidate`。采用 `target_native`，关联
+状态：`reviewed_promoted`，successor 为 `current-main-0.6.17-guru.63`。采用 `target_native`，关联
 `architecture-contribution-454-task-lifecycle-state-model-c5-v1`，expected current 为
 `current-main-0.6.17-guru.62`。
 

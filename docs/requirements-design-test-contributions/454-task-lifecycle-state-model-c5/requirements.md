@@ -1,6 +1,6 @@
 # #454 C5 Session And Resource Control Requirements Contribution
 
-状态：`contribution_candidate`。本 contribution 只承接 C5 path-free session adapter 与 resource ownership ledger
+状态：`reviewed_promoted`，successor 为 `current-main-0.6.17-guru.63`。本 contribution 只承接 C5 path-free session adapter 与 resource ownership ledger
 substrate；expected current 为 `current-main-0.6.17-guru.62`。它不激活 production workflow，不交付完整 Skill
 package，也不重做 C1、C2、D0、C3 或 C4。
 

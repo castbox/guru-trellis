@@ -3,12 +3,12 @@
 ## Identity And Review State
 
 - contribution identity: `architecture-contribution-454-task-lifecycle-state-model-c5-v1`.
-- lifecycle state: `contribution_candidate`.
+- lifecycle state: `reviewed_promoted`.
 - source authority: live Issue #454 and active generation 3 task planning.
 - task locator: `.trellis/tasks/09-20-454-task-lifecycle-state-model`.
 - related RDT contribution: `docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/`.
 - predecessor baseline: `current-main-0.6.17-guru.62` / `active`.
-- candidate successor: assigned by reviewed promotion.
+- promoted successor: `current-main-0.6.17-guru.63` / `active`.
 - design constitution: `guru-trellis-design-constitution-v1` / `current`.
 - project change contract: `guru-trellis-architecture-change-contract-v1`.
 - change path: `target_native`.
@@ -77,5 +77,8 @@ Finish seal inventory, ordinary Cleanup filtering and retained-control-ref exclu
 parity, C4 port compatibility, task validation, Python compilation, line limits and `git diff --check`.
 
 No new ADR is required because `ADR-015` already owns stable lifecycle identity and the framework/extension boundary.
-This candidate narrows `ARCH-GAP-011` without closing the full lifecycle gap. Serialized promotion has not run; any
-successor diff must re-enter fresh Phase 2, Task Commit and independent complete Branch Review before Publication.
+This reviewed contribution narrows `ARCH-GAP-011` without closing the full lifecycle gap. Independent committed
+Branch Review covered `origin/main@5064292675e9dabb4c6382c9397f3469b6b38ea4...HEAD@f18a51d40f5084b514abc5c062507e926b74f783`
+with no remaining P0-P3 finding in the C5 slice. Architecture promotion binds expected `.62` to `.63` only;
+RDT remains independently owned. The promotion-created diff must re-enter fresh Phase 2, Task Commit and independent
+complete Branch Review before Publication; this state does not claim those downstream gates have passed.

@@ -4,8 +4,8 @@ task_locator: ".trellis/tasks/09-20-454-task-lifecycle-state-model"
 issue_ref: "https://github.com/castbox/guru-trellis/issues/454"
 source_version: "current-main-0.6.17-guru.62"
 expected_current_version: "current-main-0.6.17-guru.62"
-candidate_successor_version: "assigned-by-reviewed-promotion"
-status: "contribution_candidate"
+target_version: "current-main-0.6.17-guru.63"
+status: "reviewed_promoted"
 authority_scope: "isolated_contribution"
 architecture_impact: "architecture_impact"
 change_path: "target_native"
@@ -16,7 +16,7 @@ contribution:
   traceability: "docs/requirements-design-test-contributions/454-task-lifecycle-state-model-c5/traceability.md"
 architecture_baseline:
   locator: "docs/architecture/README.md"
-  version: "current-main-0.6.17-guru.62"
+  version: "current-main-0.6.17-guru.63"
   status: "active"
 design_constitution:
   authority_owner: "docs/architecture"
@@ -29,9 +29,10 @@ architecture_candidate:
   contribution_identity: "architecture-contribution-454-task-lifecycle-state-model-c5-v1"
   adr_required: false
 public_contracts:
-  rdt_owner: "guru-maintain-requirements-design-test-ssot:task_impact_sync"
+  rdt_owner: "guru-maintain-requirements-design-test-ssot:promotion"
   architecture_candidate: "guru-maintain-architecture-baseline:2.0"
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
-promotion_decision: "not_authorized_by_contribution"
-shared_current_write: false
+architecture_contribution: "docs/architecture/contributions/454-task-lifecycle-state-model-c5.md"
+promotion_decision: "reviewed_promoted"
+shared_current_write: true
