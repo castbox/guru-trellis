@@ -1,1 +1,1 @@
-{"profile":"switch_task","mode":"standalone","task_ref":".trellis/tasks/task-b","current_task_ref":".trellis/tasks/task-a","target_task_ref":".trellis/tasks/task-b","continuation_id":"switch-example"}
+{"profile":"switch_task","mode":"standalone","task_id":"task-b","lifecycle_generation":0,"current_task_id":"task-a","current_lifecycle_generation":0,"continuation_id":"switch-example"}

@@ -158,6 +158,16 @@ installed/platform projections、task/lifecycle SSOT 与定向 tests 已通过�
 完整 Release/upgrade matrix、push、PR、远端 merge、tag、Release 或 Issue closure。promotion-created
 diff 仍须 fresh Phase 2、Task Commit 与 independent complete Branch Review 后才能进入 Publication。
 
+## EVD-040: #454 D443 reviewed source candidate
+
+来源为 [D443 contribution](../contributions/454-task-lifecycle-d443.md) 与 generation 5 的
+canonical Bind package。Fixed Fork source-lock SHA `eb370008c7689d4e272ae626bd002190ecbb3296` 的
+实际 session port/real Git fixture 下，Bind 12/12（含旧 checkout 保留后的换绑/恢复）、source package graph、Python compile 与
+`git diff --check` 已通过。全局 integration 19/20，未通过项属于 Closure relative `$ref`；
+这不能冒称 full suite 通过。`ARCH-CUR-042`、`ARCH-DOM-027`、`ARCH-INT-030` 只证明 D443
+非激活 source current；promotion-created diff 的 fresh gates、E434 installed/platform 与完整 Release
+matrix 仍须独立执行。
+
 ## EVD-036: #454 C3 Checkout Acquisition Provenance Promotion
 
 本证据支撑 `ARCH-CUR-038`、`ARCH-DOM-023`、`ARCH-INT-026` 与 `.60 -> .61` promotion。

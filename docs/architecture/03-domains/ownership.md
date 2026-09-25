@@ -67,3 +67,8 @@
 #408 的独立手动请求不进入上述 Guru lifecycle domain，由当前会话 AI 依
 [全局操作边界](../../../trellis/workflows/guru-team/workflow.md#manual-gitgithub-operations)
 执行已明确的 Git/GitHub 操作。它不新增 lifecycle owner，也不改写 task、Finalizer 或 archive 的完成状态。
+
+`ARCH-DOM-027`（#454 D443）：Bind 独占当前 session route 判断与官方 pointer 写入/校验。
+C2-C4 拥有 TaskId、live checkout、branch binding，C5 ledger 与 Fixed Fork adapter 分别拥有 resource
+ownership 和 schema-2 persistence。Bind 不从 TaskRef、路径、branch/HEAD 或旧 mapping 派生新 authority；
+manual recovery 只补官方 pointer。E434 才将新 owner 接入 production graph。

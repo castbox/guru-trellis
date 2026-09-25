@@ -3,19 +3,31 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
-import re
-import subprocess
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-from runtime.io import CommandError
+from runtime.io import CommandError, read_json
 from runtime.schema import validate_json
+from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
+from runtime.task_lifecycle.checkout_resolution import CheckoutRequest, validate_candidate
+from runtime.task_lifecycle.errors import LifecycleContractError
+from runtime.task_lifecycle.git_facts import discover_worktree_facts, inspect_repository
+from runtime.task_lifecycle.identity import resolve_task_id
+from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
+from runtime.task_lifecycle.schema import validate_dto
+from runtime.task_lifecycle.session_adapter import bind_session, resolve_session
 
-PROFILE_ROUTES = {"resume_current_task": "resume", "rebind_missing_session": "rebind", "switch_task": "switch", "reactivate_rebind": "reactivate", "manual_recovery": "manual_recovery"}
 
+PROFILE_ROUTES = {
+    "resume_current_task": "resume",
+    "rebind_missing_session": "rebind",
+    "switch_task": "switch",
+    "reactivate_rebind": "reactivate",
+    "manual_recovery": "manual_recovery",
+}
 EXITS = {
     "resume": "session_resumed",
     "rebind": "session_rebound",
@@ -23,326 +35,217 @@ EXITS = {
     "reactivate": "reactivate_rebound",
     "manual_recovery": "session_manually_recovered",
 }
-TASK_REF_RE = re.compile(r"^\.trellis/tasks(?:/|$)")
 
 
-def load_json(value: str, field: str) -> dict[str, Any]:
-    if value == "-":
-        value = sys.stdin.read()
-    elif isinstance(value, str) and Path(value).is_file():
-        value = Path(value).read_text()
-    try:
-        data = json.loads(value)
-    except Exception as exc:
-        raise CommandError("invalid_json", field, "Provide one JSON object.") from exc
-    if not isinstance(data, dict):
-        raise CommandError("invalid_json", field, "Provide one JSON object.")
-    return data
-
-
-def active_module(root: Path):
+def official_port(root: Path) -> Any:
+    """Load the installed Fixed Fork API, never an alternate session store."""
     init = root / ".trellis/scripts/common/__init__.py"
     if not init.is_file():
-        raise CommandError("stale_identity", "session_identity", "Official Trellis session resolver is unavailable.", 3)
+        raise CommandError("stale_identity", "official_session", "Install the Fixed Fork schema-2 session API.", 3)
     spec = importlib.util.spec_from_file_location(
         "guru_bind_target_common", init, submodule_search_locations=[str(init.parent)]
     )
     if spec is None or spec.loader is None:
-        raise CommandError("stale_identity", "session_identity", "Session resolver cannot be loaded.", 3)
+        raise CommandError("stale_identity", "official_session", "Load the Fixed Fork session API.", 3)
     module = importlib.util.module_from_spec(spec)
-    sys.modules["guru_bind_target_common"] = module
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    return module
+    store = module.session_storage
+    required = (
+        "repository_facts", "session_path", "record_exists", "read_record",
+        "write_record", "resolve_task_identity",
+    )
+    if not all(callable(getattr(store, name, None)) for name in required):
+        raise CommandError("stale_identity", "official_session", "Install the Fixed Fork schema-2 session API.", 3)
+    return SimpleNamespace(resolve_context_key=module.resolve_context_key, **{
+        name: getattr(store, name) for name in required
+    })
 
 
-def session_id(module) -> str:
-    key = module.resolve_context_key()
-    if not key:
-        raise CommandError("stale_identity", "session_identity", "Current session identity is unavailable.", 3)
-    return key
+def _blocked(package: Path, code: str, ref: str) -> dict[str, Any]:
+    output = {"exit_id": "binding_blocked", "reason_code": code, "reason_refs": [ref]}
+    validate_json(output, package / "schemas/public-blocked-output.schema.json", "stdout")
+    return output
 
 
-def _git(root: Path, *args: str) -> str:
-    process = subprocess.run(["git", *args], cwd=root, text=True, capture_output=True)
-    if process.returncode:
-        raise CommandError("stale_identity", "git", "Live Git identity could not be read.", 3)
-    return process.stdout.strip()
-
-
-def _safe_path(path: Path, root: Path, field: str) -> Path:
-    path = path.expanduser().resolve()
+def _record(official: Any, root: Path) -> tuple[str, Any | None]:
     try:
-        path.relative_to(root.resolve())
-    except ValueError as exc:
-        raise CommandError("stale_identity", field, "Path escapes the reviewed repository.", 3) from exc
-    current = root.resolve()
-    for part in path.relative_to(current).parts:
-        current = current / part
-        if current.is_symlink():
-            raise CommandError("stale_identity", field, "Binding path contains a symlink.", 3)
-    return path
+        key = official.resolve_context_key()
+    except (OSError, RuntimeError, ValueError):
+        key = None
+    if not isinstance(key, str) or not key:
+        return "explicit_task_mode", None
+    facts = official.repository_facts(root)
+    path = official.session_path(root, key, facts)
+    if not official.record_exists(path):
+        return "missing", None
+    record = official.read_record(path, root, facts)
+    if record.data != {
+        "schema_version": 2,
+        "task_id": record.task_id,
+        "lifecycle_generation": record.lifecycle_generation,
+    }:
+        raise ValueError("invalid_session_record")
+    return "present", record
 
 
-def _repo_common_dir(path: Path) -> Path:
-    raw = Path(_git(path, "rev-parse", "--git-common-dir"))
-    return (path / raw if not raw.is_absolute() else raw).resolve()
+class _CurrentCheckoutPort:
+    def __init__(self, official: Any, workspace: Path) -> None:
+        self.official = official
+        self.workspace = workspace
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self.official, name)
+
+    def resolve_task_identity(self, facts: Any, task_id: str, generation: int) -> Any:
+        # The official resolver scans every worktree in facts. Retired branch
+        # checkouts may legitimately retain the same task artifact after rebind.
+        if not hasattr(facts, "worktrees"):
+            return self.official.resolve_task_identity(facts, task_id, generation)
+        scoped = SimpleNamespace(**vars(facts))
+        scoped.invocation_root = self.workspace
+        scoped.git_root = self.workspace
+        scoped.worktrees = (self.workspace,)
+        return self.official.resolve_task_identity(scoped, task_id, generation)
 
 
-def _repo_root(path: Path) -> Path:
-    return Path(_git(path, "rev-parse", "--show-toplevel")).resolve()
-
-
-def _worktree_paths(root: Path) -> list[Path]:
-    output = _git(root, "worktree", "list", "--porcelain")
-    paths: list[Path] = []
-    for line in output.splitlines():
-        if line.startswith("worktree "):
-            paths.append(Path(line.removeprefix("worktree ")).resolve())
-    return paths
-
-
-def _mapping_path(base: Path, category: str, task_id: str) -> Path:
-    return base / ".trellis/.runtime/guru-team" / category / f"{task_id}.json"
-
-
-def _read_mapping(path: Path) -> dict[str, Any] | None:
-    if not path.is_file():
-        return None
+def _current_lifecycle(root: Path, lifecycle: dict[str, Any], official: Any) -> _CurrentCheckoutPort:
+    key = TaskLifecycleKey(lifecycle["task_id"], lifecycle["lifecycle_generation"])
+    repository = inspect_repository(root)
+    binding = BranchBindingStore(repository).read(key)
+    ownership = ResourceLedgerStore(repository).read_current(key)
+    if binding is None or ownership is None or (
+        binding.binding_epoch, binding.binding_revision, binding.branch_name
+    ) != (ownership.binding_epoch, ownership.binding_revision, ownership.branch_name):
+        raise LifecycleContractError(
+            "session_branch_unresolved", "branch_binding",
+            "Resolve one current branch binding and matching resource ownership before session binding.",
+        )
+    rows = discover_worktree_facts(repository)
+    current = [row for row in rows if row.branch_ref == binding.branch_ref]
+    if len(current) != 1:
+        raise LifecycleContractError(
+            "session_checkout_unresolved", "checkout", "Resolve one current checkout for this task lifecycle.",
+        )
+    workspace = current[0].path
+    identity = resolve_task_id(workspace, key.task_id)
+    if identity.lifecycle_generation != key.lifecycle_generation or identity.lifecycle_state != "active":
+        raise LifecycleContractError(
+            "session_task_resolution_invalid", "task.lifecycle_generation",
+            "Resolve the current active task lifecycle from the bound checkout.",
+        )
+    task_ref = identity.task_ref
+    task_path = workspace / task_ref
+    scoped_official = _CurrentCheckoutPort(official, workspace)
+    resolved = scoped_official.resolve_task_identity(official.repository_facts(root), key.task_id, key.lifecycle_generation)
+    resolved_workspace = getattr(resolved, "workspace", None)
+    resolved_task_path = getattr(resolved, "task_path", None)
+    if (getattr(resolved, "task_ref", None) != task_ref
+            or not isinstance(resolved_workspace, Path) or resolved_workspace.resolve() != workspace
+            or not isinstance(resolved_task_path, Path) or resolved_task_path.resolve() != task_path):
+        raise LifecycleContractError(
+            "session_task_resolution_invalid", "official_session.resolve_task_identity",
+            "Resolve the exact task artifact and workspace through the Fixed Fork resolver.",
+        )
     try:
-        value = json.loads(path.read_text())
-    except Exception as exc:
-        raise CommandError("stale_identity", "runtime_mapping", f"Invalid runtime mapping: {path}", 3) from exc
-    if not isinstance(value, dict):
-        raise CommandError("stale_identity", "runtime_mapping", f"Invalid runtime mapping: {path}", 3)
-    return value
+        status = json.loads((task_path / "task.json").read_text(encoding="utf-8"))["status"]
+    except (OSError, ValueError, KeyError) as exc:
+        raise LifecycleContractError(
+            "session_task_resolution_invalid", "task.status", "Read the current task status.",
+        ) from exc
+    if not isinstance(status, str) or status not in {"planning", "in_progress"}:
+        raise LifecycleContractError(
+            "session_task_status_invalid", "task.status", "Bind an active task lifecycle.",
+        )
+    request = CheckoutRequest(repository, key.task_id, task_ref, key.lifecycle_generation,
+                              binding.branch_ref, status)
+    candidates = tuple(validate_candidate(request, row) for row in rows)
+    # Dirty work is valid for resumption; all identity/artifact failures remain conflicts.
+    if any(row.status == "authority_conflict" for row in candidates):
+        raise LifecycleContractError(
+            "session_checkout_conflict", "checkout", "Resolve conflicting live checkout facts first.",
+        )
+    valid = [row for row in candidates if row.valid or row.reason_code == "dirty_checkout"]
+    if len(valid) != 1 or valid[0].facts.path != workspace.resolve():
+        raise LifecycleContractError(
+            "session_checkout_unresolved", "checkout", "Resolve one current checkout for this task lifecycle.",
+        )
+    return scoped_official
 
 
-def _task_ref(value: str) -> str:
-    if not isinstance(value, str) or not TASK_REF_RE.match(value.rstrip("/")) or ".." in Path(value).parts:
-        raise CommandError("stale_identity", "task_ref", "Task reference must be a repository-relative .trellis/tasks path.", 3)
-    return value.rstrip("/")
+def execute(root: Path, input_value: str, owner_value: str, *, official: Any | None = None) -> dict[str, Any]:
+    package = Path(__file__).resolve().parents[1]
+    public = read_json(input_value, "input")
+    owner = read_json(owner_value, "owner_result")
+    validate_json(public, package / "schemas/public-input.schema.json", "input")
+    validate_json(owner, package / "schemas/semantic-result.schema.json", "owner_result")
+    for field in ("profile", "mode", "task_id", "lifecycle_generation", "continuation_id"):
+        if owner[field] != public[field]:
+            return _blocked(package, "stale_semantic_result", field)
+    profile = public["profile"]
+    if owner["route"] != PROFILE_ROUTES[profile]:
+        return _blocked(package, "route_mismatch", "owner_result.route")
+    for field in ("current_task_id", "current_lifecycle_generation"):
+        if public.get(field) != owner.get(field):
+            return _blocked(package, "stale_semantic_result", field)
+    lifecycle = {"task_id": public["task_id"], "lifecycle_generation": public["lifecycle_generation"]}
+    validate_dto("TaskLifecycleDTO", lifecycle)
+    root = root.resolve()
+    official = official if official is not None else official_port(root)
 
-
-def _candidate_task_paths(root: Path, task_ref: str, manual: bool) -> list[tuple[Path, Path]]:
-    task_ref = _task_ref(task_ref)
-    task_id = Path(task_ref).name
-    roots: set[Path] = {root.resolve()}
     try:
-        roots.update(_worktree_paths(root))
-    except CommandError:
-        pass
-    mapped_workspaces: set[Path] = set()
-    for candidate_root in list(roots):
-        metadata_id = None
-        meta_locator = candidate_root / task_ref / "task.json"
-        if meta_locator.is_file():
-            try:
-                metadata = json.loads(meta_locator.read_text())
-            except Exception as exc:
-                raise CommandError("stale_identity", "task.json", "Task metadata is not valid JSON.", 3) from exc
-            metadata_id = str(metadata.get("id") or "") or None
-            workspace = metadata.get("worktree_path") or (metadata.get("meta") or {}).get("worktree_path")
-            if workspace:
-                roots.add(Path(str(workspace)).expanduser().resolve())
-        mapping_ids = [task_id] if metadata_id is None else [task_id, metadata_id]
-        for mapping_id in dict.fromkeys(mapping_ids):
-            for category in ("tasks", "workspaces"):
-                mapping = _read_mapping(_mapping_path(candidate_root, category, mapping_id))
-                if mapping and mapping.get("workspace_path"):
-                    mapped_workspaces.add(Path(str(mapping["workspace_path"])).expanduser().resolve())
-    if len(mapped_workspaces) > 1:
-        raise CommandError("stale_identity", "runtime_mapping", "Multiple runtime mappings point at different task workspaces.", 3)
-    if mapped_workspaces:
-        roots = set(mapped_workspaces)
-    candidates: list[tuple[Path, Path]] = []
-    for candidate_root in roots:
-        task_path = (candidate_root / task_ref).resolve()
-        if (task_path / "task.json").is_file():
-            candidates.append((candidate_root, task_path))
-    dedup: dict[str, tuple[Path, Path]] = {str(task_path): (candidate_root, task_path) for candidate_root, task_path in candidates}
-    if not dedup:
-        raise CommandError("stale_identity", "task_ref", "Task artifact cannot be discovered from current checkout, worktrees, or metadata locators.", 3)
-    if len(dedup) != 1:
-        raise CommandError("stale_identity", "task_ref", "Multiple task artifacts match the requested identity.", 3)
-    return list(dedup.values())
-
-
-def task_facts(root: Path, task_ref: str, allow_missing_mappings: bool = False) -> dict[str, Any]:
-    root = _repo_root(root)
-    common_dir = _repo_common_dir(root)
-    _, task_path = _candidate_task_paths(root, task_ref, allow_missing_mappings)[0]
-    task_ref = _task_ref(task_ref)
-    try:
-        task = json.loads((task_path / "task.json").read_text())
-    except Exception as exc:
-        raise CommandError("stale_identity", "task.json", "Official task identity is unavailable.", 3) from exc
-    if not isinstance(task, dict) or not task.get("id") or task.get("status") not in {"planning", "in_progress"}:
-        raise CommandError("stale_identity", "task.json", "Task identity or lifecycle status is invalid.", 3)
-    if task_path.name != task["id"] and not task_path.name.endswith(str(task["id"])):
-        raise CommandError("stale_identity", "task.json.id", "Task artifact directory does not match task identity.", 3)
-    workspace_value = task.get("worktree_path") or (task.get("meta") or {}).get("worktree_path")
-    if not workspace_value:
-        raise CommandError("stale_identity", "task.json.worktree_path", "Task workspace locator is missing.", 3)
-    workspace = Path(str(workspace_value)).expanduser().resolve()
-    if not workspace.is_dir() or (workspace / task_ref).resolve() != task_path:
-        raise CommandError("stale_identity", "workspace", "Task workspace does not match task identity.", 3)
-    if _repo_common_dir(workspace) != common_dir:
-        raise CommandError("stale_identity", "repository_common_dir", "Task workspace belongs to a different repository.", 3)
-    branch = _git(workspace, "branch", "--show-current")
-    if not branch or branch != task.get("branch"):
-        raise CommandError("stale_identity", "branch", "Task branch does not match current checkout.", 3)
-    head = _git(workspace, "rev-parse", "HEAD")
-    base_branch = task.get("base_branch") or (task.get("meta") or {}).get("base_branch")
-    if not base_branch:
-        raise CommandError("stale_identity", "base_branch", "Task base branch is missing.", 3)
-    task_id = str(task["id"])
-    tm = wm = None
-    for candidate_root in (root, workspace):
-        tm = tm or _read_mapping(_mapping_path(candidate_root, "tasks", task_id))
-        wm = wm or _read_mapping(_mapping_path(candidate_root, "workspaces", task_id))
-    if (not tm or not wm) and not allow_missing_mappings:
-        raise CommandError("stale_identity", "runtime_mapping", "Task/workspace mapping identity drifted.", 3)
-    generation = int(task.get("lifecycle_generation") or (task.get("meta") or {}).get("lifecycle_generation") or 1)
-    for mapping, category in ((tm, "tasks"), (wm, "workspaces")):
-        if mapping is None:
-            continue
-        if mapping.get("task_artifact_dir") and mapping.get("task_artifact_dir") != task_ref:
-            raise CommandError("stale_identity", f"{category}.task_artifact_dir", "Runtime mapping points at another task.", 3)
-        if mapping.get("workspace_path") != str(workspace) or mapping.get("repository_common_dir", str(common_dir)) != str(common_dir):
-            raise CommandError("stale_identity", f"{category}.workspace_path", "Runtime mapping workspace or repository identity drifted.", 3)
-        if category == "workspaces" and mapping.get("branch_name") != branch:
-            raise CommandError("stale_identity", "workspaces.branch_name", "Workspace mapping branch drifted.", 3)
-        if mapping.get("lifecycle_generation", generation) != generation:
-            raise CommandError("stale_identity", "lifecycle_generation", "Task and workspace lifecycle generations differ.", 3)
-    return {"task": task, "task_ref": task_ref, "task_path": task_path, "workspace": workspace, "branch": branch, "head": head, "common_dir": common_dir, "base_branch": str(base_branch), "generation": generation, "task_mapping": tm, "workspace_mapping": wm}
-
-
-def _mapping_payloads(root: Path, workspace: Path, task_ref: str, task: dict[str, Any], branch: str, base_branch: str, common_dir: Path, generation: int) -> dict[Path, dict[str, Any]]:
-    slug = str(task["id"])
-    now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    base = {"schema_version": "1.0", "task_slug": slug, "workspace_slug": slug, "workspace_path": str(workspace), "repository_common_dir": str(common_dir), "base_branch": base_branch, "lifecycle_generation": generation, "updated_at": now}
-    return {
-        _mapping_path(root, "tasks", slug): {**base, "task_artifact_dir": task_ref},
-        _mapping_path(root, "workspaces", slug): {**base, "source_checkout": str(root), "branch_name": branch},
-        _mapping_path(workspace, "tasks", slug): {**base, "task_artifact_dir": task_ref},
-        _mapping_path(workspace, "workspaces", slug): {**base, "source_checkout": str(root), "branch_name": branch},
-    }
-
-
-def write_recovery_mappings(root: Path, facts: dict[str, Any], task_ref: str) -> list[Path]:
-    payloads = _mapping_payloads(root, facts["workspace"], task_ref, facts["task"], facts["branch"], facts["base_branch"], facts["common_dir"], facts["generation"])
-    # Check every destination before the first write: conflicts are zero-write.
-    for path, payload in payloads.items():
-        if path.exists():
-            current = _read_mapping(path)
-            if any(current.get(key) != value for key, value in payload.items() if key != "updated_at"):
-                raise CommandError("stale_identity", "runtime_mapping", "Existing mapping conflicts with recovery identity.", 3)
-    created: list[Path] = []
-    for path, payload in payloads.items():
-        if not path.exists():
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
-            created.append(path)
-    return created
-
-
-def _resolved_active_task_path(active: Any) -> Path | None:
-    resolved = getattr(active, "resolved_task_path", None)
-    if resolved is not None:
-        path = Path(resolved).expanduser()
-        return path.resolve() if path.is_absolute() else None
-    task_path = getattr(active, "task_path", None)
-    if task_path is None or str(task_path) == "":
-        return None
-    path = Path(task_path).expanduser()
-    if path.is_absolute():
-        return path.resolve()
-    workspace = getattr(active, "task_workspace_root", None)
-    if workspace is None:
-        return None
-    workspace_path = Path(workspace).expanduser()
-    if not workspace_path.is_absolute():
-        return None
-    return (workspace_path / path).resolve()
-
-
-def _assert_post_write(module, root: Path, facts: dict[str, Any], task_ref: str) -> dict[str, Any]:
-    post = task_facts(root, task_ref, allow_missing_mappings=False)
-    active = module.resolve_active_task(root)
-    if getattr(active, "error", None) or getattr(active, "task_path", None) is None:
-        raise CommandError("stale_identity", "session_identity", "Post-write session boundary validation failed.", 3)
-    expected_path = (post["workspace"] / task_ref).resolve()
-    actual_path = _resolved_active_task_path(active)
-    if actual_path != expected_path or getattr(active, "task_workspace_root", None) and Path(active.task_workspace_root).resolve() != post["workspace"]:
-        raise CommandError("stale_identity", "session_identity", "Post-write session task or workspace does not match.", 3)
-    if getattr(active, "repository_common_dir", None) and Path(active.repository_common_dir).resolve() != post["common_dir"]:
-        raise CommandError("stale_identity", "repository_common_dir", "Post-write repository identity does not match.", 3)
-    return post
-
-
-def execute(root: Path, input_value: str, owner_value: str) -> dict[str, Any]:
-    public = load_json(input_value, "input")
-    owner = load_json(owner_value, "owner_result")
-    package_root = Path(__file__).parents[1]
-    validate_json(public, package_root / "schemas/public-input.schema.json", "input")
-    validate_json(owner, package_root / "schemas/semantic-result.schema.json", "owner_result")
-    for key in ("profile", "mode", "continuation_id"):
-        if owner.get(key) != public.get(key):
-            raise CommandError("stale_identity", f"owner_result.{key}", "Rerun semantic review for the current binding request.", 3)
-    profile = str(public["profile"])
-    expected_route = PROFILE_ROUTES[profile]
-    if owner.get("route") != expected_route:
-        raise CommandError("stale_identity", "owner_result.route", "Semantic route does not match the selected profile.", 3)
-    if profile == "switch_task":
-        current_ref = _task_ref(public.get("current_task_ref") or owner.get("current_task_ref") or "")
-        target_ref = _task_ref(public.get("target_task_ref") or owner.get("target_task_ref") or "")
-        if current_ref == target_ref:
-            raise CommandError("stale_identity", "target_task_ref", "Switch source and target tasks must differ.", 3)
-    else:
-        current_ref = ""
-        target_ref = _task_ref(public.get("task_ref") or owner.get("task_ref") or "")
-    if owner.get("task_ref") and profile != "switch_task" and owner.get("task_ref") != target_ref:
-        raise CommandError("stale_identity", "owner_result.task_ref", "Target task changed.", 3)
-    if profile == "switch_task" and owner.get("target_task_ref") != target_ref:
-        raise CommandError("stale_identity", "target_task_ref", "Switch target changed.", 3)
-    module = active_module(root)
-    sid = session_id(module)
-    if profile == "switch_task":
-        previous = module.resolve_active_task(root)
-        if getattr(previous, "error", None) or str(getattr(previous, "task_path", "")) == "":
-            raise CommandError("stale_identity", "current_task_ref", "Switch source task is not currently bound.", 3)
-        source_facts = task_facts(root, current_ref, allow_missing_mappings=False)
-        if _resolved_active_task_path(previous) != (source_facts["workspace"] / current_ref).resolve():
-            raise CommandError("stale_identity", "current_task_ref", "Current session is bound to another source task.", 3)
-    manual = profile == "manual_recovery"
-    facts = task_facts(root, target_ref, allow_missing_mappings=manual)
-    previous = module.resolve_active_task(root)
-    previous_path = getattr(previous, "task_path", None)
-    previous_error = getattr(previous, "error", None)
-    target_path = (facts["workspace"] / target_ref).resolve()
-    if profile == "resume_current_task":
-        if previous_error or previous_path is None or _resolved_active_task_path(previous) != target_path:
-            raise CommandError("stale_identity", "current_task_ref", "Resume requires the current session to already target the requested task.", 3)
-    elif profile in {"rebind_missing_session", "reactivate_rebind"}:
-        if previous_error:
-            raise CommandError("stale_identity", "current_task_ref", "Current session route is invalid; rebind cannot replace an unknown active task.", 3)
-        if previous_path is not None and _resolved_active_task_path(previous) != target_path:
-            raise CommandError("stale_identity", "current_task_ref", "A different active task requires an explicit switch route.", 3)
-    if facts["generation"] != int(owner["lifecycle_generation"]):
-        raise CommandError("stale_identity", "lifecycle_generation", "Requested lifecycle generation is stale.", 3)
-    created: list[Path] = []
-    if manual:
-        created = write_recovery_mappings(root, facts, target_ref)
-    try:
-        result = module.set_active_task(target_ref, facts["workspace"])
-        if result is None:
-            raise CommandError("stale_identity", "session_identity", "Official session binding could not be established.", 3)
-        facts = _assert_post_write(module, root, facts, target_ref)
-        output = {"exit_id": EXITS[owner["route"]], "task_ref": target_ref, "lifecycle_generation": facts["generation"], "resume_target": owner["resume_target"]}
-        validate_json(output, package_root / "schemas/public-output.schema.json", "stdout")
-        return output
-    except CommandError:
-        raise
+        scoped_official = _current_lifecycle(root, lifecycle, official)
+        state, record = _record(official, root)
+        already_current = state == "present" and (record.task_id, record.lifecycle_generation) == (
+            public["task_id"], public["lifecycle_generation"]
+        )
+        if state == "present":
+            if profile == "resume_current_task":
+                if (record.task_id, record.lifecycle_generation) != (public["task_id"], public["lifecycle_generation"]):
+                    return _blocked(package, "session_target_mismatch", "session")
+                resolved = resolve_session(scoped_official, root)
+                if resolved.status != "session_resolved" or resolved.lifecycle is None:
+                    return _blocked(package, "session_invalid", "session")
+            elif profile == "switch_task":
+                source = (public["current_task_id"], public["current_lifecycle_generation"])
+                if (record.task_id, record.lifecycle_generation) != source or source == (public["task_id"], public["lifecycle_generation"]):
+                    return _blocked(package, "session_source_mismatch", "session")
+                _current_lifecycle(root, {"task_id": source[0], "lifecycle_generation": source[1]}, official)
+            elif profile == "reactivate_rebind":
+                if not already_current and (record.task_id != public["task_id"] or record.lifecycle_generation >= public["lifecycle_generation"]):
+                    return _blocked(package, "session_target_mismatch", "session")
+            elif profile == "manual_recovery" and not already_current:
+                return _blocked(package, "session_target_mismatch", "session")
+            elif not already_current:
+                return _blocked(package, "session_target_mismatch", "session")
+        elif state == "missing" and profile in {"resume_current_task", "switch_task"}:
+            return _blocked(package, "session_missing", "session")
+        if state == "explicit_task_mode":
+            output = {"exit_id": "explicit_task_mode", **lifecycle}
+        elif profile == "resume_current_task" or already_current:
+            output = {"exit_id": EXITS[owner["route"]], **lifecycle, "resume_target": owner["resume_target"]}
+        else:
+            result = bind_session(scoped_official, root, lifecycle)
+            if result.status == "explicit_task_mode":
+                output = {"exit_id": "explicit_task_mode", **lifecycle}
+            elif result.status != "session_bound" or result.lifecycle is None or result.lifecycle.task_id != lifecycle["task_id"] or result.lifecycle.lifecycle_generation != lifecycle["lifecycle_generation"]:
+                return _blocked(package, result.reason_code or "session_invalid", "session")
+            else:
+                output = {"exit_id": EXITS[owner["route"]], **lifecycle, "resume_target": owner["resume_target"]}
+    except LifecycleContractError as exc:
+        return _blocked(package, exc.code, exc.field_path)
+    except (OSError, RuntimeError, ValueError, AttributeError) as exc:
+        reason = str(exc).partition(":")[0]
+        known = {
+            "stale_lifecycle_generation", "stale_task_identity", "ambiguous_task_identity",
+            "task_id_casefold_collision", "unsupported_binding_schema", "invalid_binding_fields",
+        }
+        code = reason if reason in known else "session_identity_invalid"
+        ref = "task_id" if code in known - {"unsupported_binding_schema", "invalid_binding_fields"} else "session"
+        return _blocked(package, code, ref)
+    schema = "public-explicit-output.schema.json" if output["exit_id"] == "explicit_task_mode" else "public-output.schema.json"
+    validate_json(output, package / "schemas" / schema, "stdout")
+    return output
 
 
 def run(package_root: Path, command: dict, argv: list[str]):
@@ -351,7 +254,7 @@ def run(package_root: Path, command: dict, argv: list[str]):
     parser.add_argument("--input", required=True)
     parser.add_argument("--owner-result", required=True)
     args = parser.parse_args(argv)
-    return execute(Path(args.root).resolve(), args.input, args.owner_result)
+    return execute(Path(args.root), args.input, args.owner_result)
 
 
 def main():
@@ -360,7 +263,7 @@ def main():
     parser.add_argument("--input", required=True)
     parser.add_argument("--owner-result", required=True)
     args = parser.parse_args()
-    print(json.dumps(execute(Path(args.root).resolve(), args.input, args.owner_result), ensure_ascii=False, separators=(",", ":")))
+    print(json.dumps(execute(Path(args.root), args.input, args.owner_result), ensure_ascii=False, separators=(",", ":")))
 
 
 if __name__ == "__main__":

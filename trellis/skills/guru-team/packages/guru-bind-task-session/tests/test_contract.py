@@ -2,63 +2,86 @@ import json
 import unittest
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
+
+
+PACKAGE = Path(__file__).resolve().parents[1]
+SHARED = PACKAGE.parents[1] / "contracts/task-lifecycle/task-lifecycle-dtos.schema.json"
+
+
+def load(path):
+    return json.loads((PACKAGE / path).read_text())
+
+
 class ContractTest(unittest.TestCase):
-    def test_interface_declares_unique_routes_and_no_duplicate_binding_store(self):
-        p = Path(__file__).resolve().parents[1]
-        interface = json.loads((p / "interface.json").read_text())
-        exits = [x["id"] for x in interface["external_exits"]]
-        self.assertEqual(len(exits), len(set(exits)))
+    def test_profiles_examples_and_generation_zero(self):
+        interface = load("interface.json")
         self.assertEqual(interface["judgment_mode"], "semantic")
-        self.assertEqual(interface["public_contracts"]["input"]["profiles"][-1]["example"]["path"], "examples/public-manual-recovery-input.json")
-        self.assertEqual(interface.get("private_artifacts", []), [])
-        workspace = next(item for item in interface["entry_preconditions"] if item["id"] == "workspace_identity")
-        self.assertNotIn("base", workspace["evidence"].lower())
-        self.assertNotIn("base", interface["reentry"]["identity"].lower())
+        profiles = interface["public_contracts"]["input"]["profiles"]
+        self.assertEqual(len(profiles), 5)
+        for row in profiles:
+            schema = load(row["schema"]["path"])
+            example = load(row["example"]["path"])
+            Draft202012Validator(schema).validate(example)
+            self.assertEqual(example["lifecycle_generation"], 1 if row["id"] == "reactivate_rebind" else 0)
+            self.assertEqual(example["profile"], row["id"])
+            self.assertNotIn("task_ref", schema["properties"])
+            self.assertNotIn("workspace", json.dumps(schema))
 
-    def test_switch_contract_exposes_explicit_source_and_target_fields(self):
-        p = Path(__file__).resolve().parents[1]
-        for name in ("public-input.schema.json", "semantic-result.schema.json"):
-            schema = json.loads((p / "schemas" / name).read_text())
-            self.assertIn("current_task_ref", schema["properties"])
-            self.assertIn("target_task_ref", schema["properties"])
+    def test_exit_consumer_closure_and_shared_dto(self):
+        interface = load("interface.json")
+        outputs = interface["public_contracts"]["outputs"]
+        exits = {row["id"] for row in interface["external_exits"]}
+        self.assertEqual({row["exit_id"] for row in outputs}, exits)
+        self.assertEqual(len(exits), 7)
+        consumers = {row["id"] for row in interface["public_contracts"]["consumer_inputs"]}
+        self.assertEqual({key for row in outputs for key in row["consumer_use_ids"]}, consumers)
+        shared = load("schemas/public-output.schema.json")
+        explicit = load("schemas/public-explicit-output.schema.json")
+        blocked = load("schemas/public-blocked-output.schema.json")
+        for row in outputs:
+            schema = load(row["schema"]["path"])
+            example = load(row["example"]["path"])
+            if example["exit_id"] != row["exit_id"] and row["exit_id"] not in {
+                "session_resumed", "task_switched", "reactivate_rebound", "session_manually_recovered"
+            }:
+                self.fail("unexpected output example")
+            Draft202012Validator(schema).validate({**example, "exit_id": row["exit_id"]})
+        self.assertEqual(set(shared["properties"]) - {"exit_id", "resume_target"},
+                         {"task_id", "lifecycle_generation"})
+        self.assertEqual(set(shared["required"]), {"exit_id", "task_id", "lifecycle_generation", "resume_target"})
+        self.assertEqual(set(explicit["required"]), {"exit_id", "task_id", "lifecycle_generation"})
+        self.assertFalse(Draft202012Validator(shared).is_valid(load("examples/public-explicit-output.json")))
+        self.assertFalse(Draft202012Validator(explicit).is_valid(load("examples/public-output.json")))
+        self.assertEqual(set(blocked["required"]), {"exit_id", "reason_code", "reason_refs"})
+        catalog = json.loads(SHARED.read_text())
+        for name, example in (
+            ("TaskLifecycleDTO", load("examples/public-output.json")),
+            ("ReasonDTO", load("examples/public-blocked-output.json")),
+        ):
+            dto = {key: value for key, value in example.items() if key in catalog["$defs"][name]["properties"]}
+            Draft202012Validator({"$ref": f"#/$defs/{name}", "$defs": catalog["$defs"]}).validate(dto)
+        for row in interface["public_contracts"]["consumer_inputs"]:
+            if row["id"] == "blocked":
+                self.assertEqual(load(row["contract"]["path"])["properties"], blocked["properties"])
+            elif row["id"] == "explicit_task_mode":
+                self.assertEqual(load(row["contract"]["path"])["properties"], explicit["properties"])
+            else:
+                self.assertEqual(load(row["contract"]["path"])["properties"], shared["properties"])
+
+    def test_no_legacy_mapping_or_locator_authority(self):
+        content = (PACKAGE / "runtime/invoke.py").read_text()
+        for name in ("_mapping_path", "_read_mapping", "write_recovery_mappings", "task_facts", "base_head", "workspace_path"):
+            self.assertNotIn(name, content)
+        self.assertIn("validate_candidate", content)
+        self.assertIn("BranchBindingStore", content)
+        self.assertIn("ResourceLedgerStore", content)
+        interface = load("interface.json")
+        self.assertNotIn("mapping", json.dumps(interface).lower())
+        self.assertEqual(next(row for row in interface["external_exits"] if row["id"] == "explicit_task_mode")
+                         ["consumer"]["id"], "guru-current-phase-router")
+        self.assertEqual(load("examples/public-explicit-output.json")["lifecycle_generation"], 0)
 
 
-class ProfileContractTest(unittest.TestCase):
-    def test_each_profile_example_validates_and_matches_discriminator(self):
-        from jsonschema import Draft202012Validator
-        package = Path(__file__).resolve().parents[1]
-        interface = json.loads((package / 'interface.json').read_text())
-        paths = set()
-        for profile in interface['public_contracts']['input']['profiles']:
-            with self.subTest(profile=profile['id']):
-                example = json.loads((package / profile['example']['path']).read_text())
-                schema = json.loads((package / profile['schema']['path']).read_text())
-                Draft202012Validator(schema).validate(example)
-                self.assertEqual(example[profile['discriminator']['field']], profile['discriminator']['value'])
-                paths.add(profile['example']['path'])
-                if profile['id'] == 'switch_task':
-                    self.assertNotEqual(example['current_task_ref'], example['target_task_ref'])
-        self.assertEqual(len(paths), 5)
-
-    def test_schema_accepts_only_the_five_profile_route_pairs(self):
-        from jsonschema import Draft202012Validator
-        package = Path(__file__).resolve().parents[1]
-        validator = Draft202012Validator(json.loads((package / 'schemas/semantic-result.schema.json').read_text()))
-        value = json.loads((package / 'examples/semantic-result.json').read_text())
-        routes = {'resume_current_task': 'resume', 'rebind_missing_session': 'rebind', 'switch_task': 'switch', 'reactivate_rebind': 'reactivate', 'manual_recovery': 'manual_recovery'}
-        for profile, expected in routes.items():
-            for route in routes.values():
-                with self.subTest(profile=profile, route=route):
-                    self.assertEqual(validator.is_valid({**value, 'profile': profile, 'route': route}), route == expected)
-
-
-class PublicOutputContractTest(unittest.TestCase):
-    def test_public_output_excludes_runtime_binding_identity(self):
-        package = Path(__file__).resolve().parents[1]
-        schema = json.loads((package / 'schemas/public-output.schema.json').read_text())
-        route = json.loads((package / 'consumers/workflow/production/session-binding-route.schema.json').read_text())
-        for value in (schema, route):
-            self.assertNotIn('session_id', value.get('properties', {}))
-            self.assertNotIn('binding_id', value.get('properties', {}))
-            self.assertNotIn('session_id', value.get('required', []))
-            self.assertNotIn('binding_id', value.get('required', []))
+if __name__ == "__main__":
+    unittest.main()

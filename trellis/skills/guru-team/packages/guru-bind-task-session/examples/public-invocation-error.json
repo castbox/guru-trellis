@@ -1,1 +1,1 @@
-{"code":"stale_identity","field_path":"task_ref","remediation":"Reread current task, workspace, session and lifecycle facts."}
+{"code":"stale_identity","field_path":"official_session","remediation":"Reread the official session API and TaskId lifecycle facts."}

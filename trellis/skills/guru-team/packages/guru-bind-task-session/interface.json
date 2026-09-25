@@ -3,7 +3,7 @@
   "schema_version": "1.4",
   "id": "guru-bind-task-session",
   "name": "guru-bind-task-session",
-  "description": "Bind, rebind, switch and resume one exact task identity across short-lived sessions using the official Trellis session resolver.",
+  "description": "Bind, rebind, switch and resume one TaskLifecycleDTO through the Fixed Fork schema-2 session API.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -12,7 +12,6 @@
       "entry_precondition_ids": [
         "task_identity",
         "session_identity",
-        "workspace_identity",
         "lifecycle_freshness"
       ]
     },
@@ -21,7 +20,6 @@
       "entry_precondition_ids": [
         "task_identity",
         "session_identity",
-        "workspace_identity",
         "lifecycle_freshness"
       ]
     }
@@ -29,25 +27,19 @@
   "entry_preconditions": [
     {
       "id": "task_identity",
-      "evidence": "official task.json and task artifact locator",
-      "binding": "one exact task identity",
+      "evidence": "official TaskId/generation resolver",
+      "binding": "one TaskLifecycleDTO",
       "freshness": "read before each invocation"
     },
     {
       "id": "session_identity",
-      "evidence": "current Trellis session context key",
-      "binding": "one current session",
-      "freshness": "required for every write"
-    },
-    {
-      "id": "workspace_identity",
-      "evidence": "task/workspace mappings, live worktree, branch and repository common dir",
-      "binding": "one task workspace",
-      "freshness": "validated before write"
+      "evidence": "Fixed Fork context key or explicit-task mode",
+      "binding": "one current session when available",
+      "freshness": "resolved on each invocation"
     },
     {
       "id": "lifecycle_freshness",
-      "evidence": "task lifecycle generation and current route",
+      "evidence": "official TaskId/generation resolution and current route",
       "binding": "one lifecycle generation",
       "freshness": "old generation fails closed"
     }
@@ -81,6 +73,14 @@
       "path": "examples/public-output.json"
     },
     {
+      "id": "public_explicit_output",
+      "path": "examples/public-explicit-output.json"
+    },
+    {
+      "id": "public_blocked_output",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
       "id": "public_invocation_error",
       "path": "examples/public-invocation-error.json"
     }
@@ -99,6 +99,14 @@
       "path": "schemas/public-output.schema.json"
     },
     {
+      "id": "public_explicit_output",
+      "path": "schemas/public-explicit-output.schema.json"
+    },
+    {
+      "id": "public_blocked_output",
+      "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
       "id": "public_invocation_error",
       "path": "schemas/public-invocation-error.schema.json"
     }
@@ -108,7 +116,7 @@
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-bind-task-session",
-      "objective_scope": "Validate semantic route, exact live task/workspace/session identity, lifecycle freshness, idempotent binding write and typed exit."
+      "objective_scope": "Validate the semantic route and fresh TaskLifecycleDTO via the official resolver; write only the schema-2 session pointer."
     }
   ],
   "external_exits": [
@@ -122,7 +130,7 @@
     },
     {
       "id": "session_rebound",
-      "evidence": "missing binding was recreated for the exact current session and task",
+      "evidence": "missing session pointer was recreated for the exact lifecycle",
       "consumer": {
         "kind": "workflow",
         "id": "guru-bind-task-session-rebind-router"
@@ -130,7 +138,7 @@
     },
     {
       "id": "task_switched",
-      "evidence": "current session switched to an independently validated task",
+      "evidence": "current session switched between independently resolved lifecycle identities",
       "consumer": {
         "kind": "workflow",
         "id": "guru-bind-task-session-switch-router"
@@ -146,10 +154,18 @@
     },
     {
       "id": "session_manually_recovered",
-      "evidence": "explicitly authorized runtime-private mapping and session binding recovery completed",
+      "evidence": "only the schema-2 session pointer was recovered",
       "consumer": {
         "kind": "workflow",
         "id": "guru-bind-task-session-manual-recovery-router"
+      }
+    },
+    {
+      "id": "explicit_task_mode",
+      "evidence": "context key unavailable; lifecycle was resolved without a session write",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-current-phase-router"
       }
     },
     {
@@ -162,8 +178,8 @@
     }
   ],
   "reentry": {
-    "identity": "profile, task ref, session context, workspace/branch identity and lifecycle generation",
-    "freshness": "reread all live facts before every binding write",
+    "identity": "profile, TaskId, lifecycle generation and current session pointer",
+    "freshness": "reread official TaskId and session state before every binding write",
     "stale_behavior": "fail_closed"
   },
   "tests": [
@@ -199,14 +215,14 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-bind-task-session-input-1.0",
+        "schema_id": "guru-bind-task-session-input-2.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
         {
           "id": "resume_current_task",
           "schema": {
-            "schema_id": "guru-bind-task-session-input-1.0",
+            "schema_id": "guru-bind-task-session-input-2.0",
             "path": "schemas/public-input.schema.json"
           },
           "example": {
@@ -221,7 +237,7 @@
         {
           "id": "rebind_missing_session",
           "schema": {
-            "schema_id": "guru-bind-task-session-input-1.0",
+            "schema_id": "guru-bind-task-session-input-2.0",
             "path": "schemas/public-input.schema.json"
           },
           "example": {
@@ -236,7 +252,7 @@
         {
           "id": "switch_task",
           "schema": {
-            "schema_id": "guru-bind-task-session-input-1.0",
+            "schema_id": "guru-bind-task-session-input-2.0",
             "path": "schemas/public-input.schema.json"
           },
           "example": {
@@ -251,7 +267,7 @@
         {
           "id": "reactivate_rebind",
           "schema": {
-            "schema_id": "guru-bind-task-session-input-1.0",
+            "schema_id": "guru-bind-task-session-input-2.0",
             "path": "schemas/public-input.schema.json"
           },
           "example": {
@@ -266,7 +282,7 @@
         {
           "id": "manual_recovery",
           "schema": {
-            "schema_id": "guru-bind-task-session-input-1.0",
+            "schema_id": "guru-bind-task-session-input-2.0",
             "path": "schemas/public-input.schema.json"
           },
           "example": {
@@ -307,7 +323,7 @@
       {
         "exit_id": "session_resumed",
         "schema": {
-          "schema_id": "guru-bind-task-session-output-1.0",
+          "schema_id": "guru-bind-task-session-output-2.0",
           "path": "schemas/public-output.schema.json"
         },
         "example": {
@@ -321,7 +337,7 @@
       {
         "exit_id": "session_rebound",
         "schema": {
-          "schema_id": "guru-bind-task-session-output-1.0",
+          "schema_id": "guru-bind-task-session-output-2.0",
           "path": "schemas/public-output.schema.json"
         },
         "example": {
@@ -335,7 +351,7 @@
       {
         "exit_id": "task_switched",
         "schema": {
-          "schema_id": "guru-bind-task-session-output-1.0",
+          "schema_id": "guru-bind-task-session-output-2.0",
           "path": "schemas/public-output.schema.json"
         },
         "example": {
@@ -349,7 +365,7 @@
       {
         "exit_id": "reactivate_rebound",
         "schema": {
-          "schema_id": "guru-bind-task-session-output-1.0",
+          "schema_id": "guru-bind-task-session-output-2.0",
           "path": "schemas/public-output.schema.json"
         },
         "example": {
@@ -363,7 +379,7 @@
       {
         "exit_id": "session_manually_recovered",
         "schema": {
-          "schema_id": "guru-bind-task-session-output-1.0",
+          "schema_id": "guru-bind-task-session-output-2.0",
           "path": "schemas/public-output.schema.json"
         },
         "example": {
@@ -375,14 +391,26 @@
         ]
       },
       {
-        "exit_id": "binding_blocked",
+        "exit_id": "explicit_task_mode",
         "schema": {
-          "schema_id": "guru-bind-task-session-output-blocked-1.0",
-          "path": "schemas/public-output.schema.json"
+          "schema_id": "guru-bind-task-session-output-explicit-2.0",
+          "path": "schemas/public-explicit-output.schema.json"
         },
         "example": {
-          "id": "public_output",
-          "path": "examples/public-output.json"
+          "id": "public_explicit_output",
+          "path": "examples/public-explicit-output.json"
+        },
+        "consumer_use_ids": ["explicit_task_mode"]
+      },
+      {
+        "exit_id": "binding_blocked",
+        "schema": {
+          "schema_id": "guru-bind-task-session-output-blocked-2.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "public_blocked_output",
+          "path": "examples/public-blocked-output.json"
         },
         "consumer_use_ids": [
           "blocked"
@@ -399,7 +427,7 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-bind-task-session-route-1.0",
+          "schema_id": "guru-bind-task-session-route-2.0",
           "path": "consumers/workflow/production/session-binding-route.schema.json"
         }
       },
@@ -412,7 +440,7 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-bind-task-session-route-1.0",
+          "schema_id": "guru-bind-task-session-route-2.0",
           "path": "consumers/workflow/production/session-binding-route.schema.json"
         }
       },
@@ -425,7 +453,7 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-bind-task-session-route-1.0",
+          "schema_id": "guru-bind-task-session-route-2.0",
           "path": "consumers/workflow/production/session-binding-route.schema.json"
         }
       },
@@ -438,7 +466,7 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-bind-task-session-route-1.0",
+          "schema_id": "guru-bind-task-session-route-2.0",
           "path": "consumers/workflow/production/session-binding-route.schema.json"
         }
       },
@@ -451,8 +479,18 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-bind-task-session-route-1.0",
+          "schema_id": "guru-bind-task-session-route-2.0",
           "path": "consumers/workflow/production/session-binding-route.schema.json"
+        }
+      },
+      {
+        "id": "explicit_task_mode",
+        "consumer": {"kind": "workflow", "id": "guru-current-phase-router"},
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-bind-task-session-explicit-route-2.0",
+          "path": "consumers/workflow/production/explicit-task-route.schema.json"
         }
       },
       {
@@ -461,7 +499,12 @@
           "kind": "stop",
           "id": "task-session-binding-blocked"
         },
-        "payload_kind": "zero_payload"
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-bind-task-session-blocked-route-2.0",
+          "path": "consumers/stop/production/session-binding-blocked.schema.json"
+        }
       }
     ],
     "projections": [
@@ -496,11 +539,16 @@
         "operation": "direct"
       },
       {
+        "id": "explicit_task_mode",
+        "exit_id": "explicit_task_mode",
+        "consumer_input_id": "explicit_task_mode",
+        "operation": "direct"
+      },
+      {
         "id": "blocked",
         "exit_id": "binding_blocked",
         "consumer_input_id": "blocked",
-        "operation": "select",
-        "mappings": []
+        "operation": "direct"
       }
     ],
     "private_artifacts": []
