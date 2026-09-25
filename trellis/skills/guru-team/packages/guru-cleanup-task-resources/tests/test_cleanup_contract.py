@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from runtime.schema import validate_json
-from runtime.task_lifecycle.branch_store import TaskLifecycleKey
+from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.git_facts import inspect_repository
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 
@@ -163,6 +163,72 @@ def test_manual_selection_refuses_a_current_resource(tmp_path):
                                     "portable_ref": row.portable_ref, "expected_cleanup_head": head}]}
     assert invoke(tmp_path, root, manual, confirmed=True)["reason_code"] == "resource_in_current_use"
     assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
+
+
+def test_manual_selection_refuses_new_generation_binding_missing_from_invoking_checkout(tmp_path):
+    root, store, public, head = fixture(tmp_path, ownership="caller_owned")
+    archived = root / ".trellis/tasks/archive/2026-09/demo"
+    archived.mkdir(parents=True)
+    (archived / "task.json").write_text(json.dumps({"id": "demo", "lifecycle_generation": 0, "status": "completed"}))
+    BranchBindingStore(store.repository).establish(TaskLifecycleKey("demo", 1), "codex/demo")
+    row = store.read(TaskLifecycleKey("demo", 0)).resources[0]
+    manual = {"profile": "manual", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 0,
+              "finish_result_id": "finish:demo", "cleanup_state": "manual_cleanup_required",
+              "selected_targets": [{"resource_id": row.resource_id, "kind": row.kind,
+                                    "portable_ref": row.portable_ref, "expected_cleanup_head": head}]}
+
+    assert invoke(tmp_path, root, manual, confirmed=True)["reason_code"] == "resource_in_current_use"
+    assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
+
+
+def test_manual_selection_accepts_reviewed_caller_owned_head_after_finish(tmp_path):
+    root, store, _public, old_head = fixture(tmp_path, ownership="caller_owned")
+    (root / "tracked").write_text("updated\n")
+    git(root, "add", "tracked")
+    git(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "later")
+    new_head = git(root, "rev-parse", "HEAD")
+    git(root, "update-ref", "refs/heads/codex/demo", new_head, old_head)
+    row = store.read(TaskLifecycleKey("demo", 0)).resources[0]
+    manual = {"profile": "manual", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 0,
+              "finish_result_id": "finish:demo", "cleanup_state": "manual_cleanup_required",
+              "selected_targets": [{"resource_id": row.resource_id, "kind": row.kind,
+                                    "portable_ref": row.portable_ref, "expected_cleanup_head": new_head}]}
+
+    assert invoke(tmp_path, root, manual)["exit_id"] == "manual_selection_required"
+    assert invoke(tmp_path, root, manual, confirmed=True)["exit_id"] == "cleaned"
+    assert not git(root, "branch", "--list", "codex/demo")
+
+
+def test_manual_selection_accepts_reviewed_caller_owned_remote_head_after_finish(tmp_path):
+    root, store, public, old_head = fixture(tmp_path, ownership="caller_owned")
+    remote = tmp_path / "github.com/example/repo.git"
+    remote.parent.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+    git(root, "remote", "add", "origin", str(remote))
+    git(root, "push", "-q", "origin", "refs/heads/codex/demo:refs/heads/codex/demo")
+    fresh = ResourceLedgerStore(inspect_repository(root))
+    fresh_key = TaskLifecycleKey("remote-demo", 0)
+    fresh.establish_current(fresh_key, binding_epoch=0, binding_revision=0, branch_name="codex/demo",
+                            branch_ownership="caller_owned", worktree_ownership="not_applicable")
+    fresh.record_remote_delivery(fresh_key, expected_epoch=0, expected_revision=0,
+                                 remote_name="origin", repository_ref="example/repo",
+                                 branch_ref="refs/heads/codex/demo", ownership="caller_owned",
+                                 expected_cleanup_head=old_head)
+    fresh.seal_for_finish(fresh_key, finish_result_id="finish:remote-demo", finish_head=old_head)
+    (root / "tracked").write_text("updated\n")
+    git(root, "add", "tracked")
+    git(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "later")
+    new_head = git(root, "rev-parse", "HEAD")
+    git(root, "push", "-q", "origin", "HEAD:refs/heads/codex/demo")
+    row = next(row for row in fresh.read(fresh_key).resources if row.kind == "remote_branch")
+    manual = {"profile": "manual", "mode": "standalone", "task_id": "remote-demo", "lifecycle_generation": 0,
+              "finish_result_id": "finish:remote-demo", "cleanup_state": "manual_cleanup_required",
+              "selected_targets": [{"resource_id": row.resource_id, "kind": row.kind,
+                                    "portable_ref": row.portable_ref, "expected_cleanup_head": new_head}]}
+
+    assert invoke(tmp_path, root, manual)["exit_id"] == "manual_selection_required"
+    assert invoke(tmp_path, root, manual, confirmed=True)["exit_id"] == "cleaned"
+    assert not git(root, "ls-remote", "--heads", "origin", "refs/heads/codex/demo")
 
 
 def test_already_absent_guru_resource_converges_and_resolves_ledger(tmp_path):

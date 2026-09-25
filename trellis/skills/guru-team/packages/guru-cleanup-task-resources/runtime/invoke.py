@@ -144,19 +144,13 @@ def normal_receipt(store: ResourceLedgerStore, public: dict[str, Any]) -> tuple[
     return path, identity
 
 
-def manual_targets_current(root: Path, store: ResourceLedgerStore, resources: list[dict[str, Any]]) -> bool:
+def manual_targets_current(store: ResourceLedgerStore, resources: list[dict[str, Any]]) -> bool:
     selected = {(row["kind"], json.dumps(row["portable_ref"], sort_keys=True)) for row in resources}
     for ledger in store.iter_ledgers():
         for row in ledger.resources:
             if row.state == "current" and (row.kind, json.dumps(row.portable_ref, sort_keys=True)) in selected:
                 return True
     for binding in BranchBindingStore(store.repository).iter_bindings():
-        try:
-            task = resolve_task_id(root, binding.task_id)
-        except LifecycleContractError:
-            continue
-        if task.lifecycle_state != "active" or task.lifecycle_generation != binding.lifecycle_generation:
-            continue
         if any(row["portable_ref"].get("ref", row["portable_ref"].get("branch_ref")) == binding.branch_ref for row in resources):
             return True
     return False
@@ -285,14 +279,10 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict[str, Any]:
                         item["resource_id"] not in eligible
                         or item["kind"] != eligible[item["resource_id"]].kind
                         or item["portable_ref"] != eligible[item["resource_id"]].portable_ref
-                        or (
-                            eligible[item["resource_id"]].expected_cleanup_head is not None
-                            and item["expected_cleanup_head"] != eligible[item["resource_id"]].expected_cleanup_head
-                        )
                         for item in resources
                     ):
                         raise LifecycleContractError("resource_ownership_conflict", "selected_targets", "Select only exact caller-owned retired resources.")
-                if not out and manual_targets_current(root, store, resources):
+                if not out and manual_targets_current(store, resources):
                     raise LifecycleContractError("resource_in_current_use", "selected_targets", "Do not delete any active task's current resource.")
         except LifecycleContractError as exc:
             out = blocked(exc.code, exc.field_path)

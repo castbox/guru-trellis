@@ -21,7 +21,11 @@ common-dir result receipt lets the same Finish seal input recover the same
 inventory still blocks.
 
 Manual cleanup records the exact selected result without assigning Guru
-ownership. Machine handoff reads a released source inventory and resolves only
+ownership. A retained caller-owned resource is identified by the ledger's
+resource ID, kind and portable ref; its newly reviewed selected HEAD is the
+deletion lease, not the historical Finish HEAD. Current branch bindings in the
+Git common-dir block deletion even if the invoking checkout contains only an
+older archived task generation. Machine handoff reads a released source inventory and resolves only
 its Guru-owned pending local resources. Both require independent deletion
 confirmation and can reread a recorded result after output loss. This
 canonical package major does not activate production routing.

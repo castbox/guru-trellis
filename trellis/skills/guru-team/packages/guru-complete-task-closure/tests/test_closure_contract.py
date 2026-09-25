@@ -106,7 +106,7 @@ def test_no_issue_no_mutation_never_calls_provider(tmp_path):
 
     result_ref = json.loads(result.stdout)["result_ref"]
     snapshot = read_terminal_closure_result(inspect_repository(tmp_path), result_ref)
-    assert snapshot == {"result_ref": result_ref, "terminal": "no_mutation", "action_set": []}
+    assert snapshot == {"result_ref": result_ref, "terminal": "no_mutation", "action_set": [], "source": {"kind": "no_issue"}}
     with pytest.raises(LifecycleContractError, match="closure_result_stale"):
         read_terminal_closure_result(inspect_repository(tmp_path), {**result_ref, "result_id": "closure:other"})
 

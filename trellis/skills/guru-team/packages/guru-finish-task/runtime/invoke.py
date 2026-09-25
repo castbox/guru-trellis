@@ -17,6 +17,7 @@ from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import inspect_repository
 from runtime.task_lifecycle.identity import resolve_task_id
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
+from runtime.task_lifecycle.source import task_source
 
 
 def load(root: Path, package_root: Path, value: str, field: str) -> dict:
@@ -105,6 +106,18 @@ def closure_current(actions: list[dict]) -> bool:
         if not isinstance(issue, dict) or issue.get("number") != issue_ref["issue_number"] or str(issue.get("state")).upper() != "CLOSED":
             return False
     return True
+
+
+def closure_source_current(root: Path, public: dict, frozen_source: dict) -> bool:
+    try:
+        artifact = resolve_task_id(root, public["task_id"])
+        metadata = json.loads((root / artifact.task_ref / "task.json").read_text(encoding="utf-8"))
+        source = task_source(metadata)
+    except (LifecycleContractError, OSError, ValueError) as exc:
+        raise CommandError("stale_identity", "task.source", "Reread the exact current task source before Finish.", 3) from exc
+    if artifact.lifecycle_generation != public["lifecycle_generation"]:
+        raise CommandError("stale_identity", "task.lifecycle_generation", "Use the exact current task generation.", 3)
+    return source == frozen_source
 
 
 def lifecycle_generation(root: Path, public: dict, archive_ref: str) -> int:
@@ -212,7 +225,6 @@ def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, 
     task["status"] = "completed"
     task["lifecycle_generation"] = task.get("lifecycle_generation", 0)
     task["completedAt"] = datetime.now(timezone.utc).date().isoformat()
-    task["archive_dir"] = archive_ref
     archive_dir.parent.mkdir(parents=True, exist_ok=True)
     shutil.move(str(task_dir), str(archive_dir))
     (archive_dir / "task.json").write_text(json.dumps(task, ensure_ascii=False, indent=2) + "\n")
@@ -377,7 +389,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             out = {"exit_id": "blocked", "reason_code": route["reason_code"], "reason_refs": ["closure_result"]}
         validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
         return out
-    if not closure_current(snapshot["action_set"]):
+    if not closure_source_current(root, public, snapshot["source"]) or not closure_current(snapshot["action_set"]):
         out = {"exit_id": "closure_refresh_required", **public["closure_result"]}
         validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
         return out

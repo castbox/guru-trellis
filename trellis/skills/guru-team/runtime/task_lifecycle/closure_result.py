@@ -6,6 +6,7 @@ from typing import Any
 from .errors import LifecycleContractError
 from .git_facts import RepositoryFacts
 from .schema import validate_dto
+from .source import normalize_source
 
 
 def read_terminal_closure_result(repository: RepositoryFacts, result_ref: dict[str, Any]) -> dict[str, Any]:
@@ -34,4 +35,9 @@ def read_terminal_closure_result(repository: RepositoryFacts, result_ref: dict[s
         raise LifecycleContractError(
             "closure_result_stale", "closure_result", "Use the exact terminal Closure result and action set."
         )
-    return {"result_ref": result, "terminal": terminal, "action_set": frozen["action_set"]}
+    return {
+        "result_ref": result,
+        "terminal": terminal,
+        "action_set": frozen["action_set"],
+        "source": normalize_source(frozen.get("source"), field_path="closure_result.source"),
+    }

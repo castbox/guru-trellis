@@ -85,7 +85,8 @@ def test_closure_snapshot_requires_exact_terminal_result_and_disposition(tmp_pat
     subprocess.run(["git", "init", "-q", "-b", "main", str(tmp_path)], check=True)
     ref = {"task_id": "demo", "lifecycle_generation": 0, "result_id": "closure:demo"}
     row = {"issue_ref": {"repo_ref": "example/repo", "issue_number": 7}, "disposition": disposition}
-    snapshot = {"result_ref": ref, "terminal": "closed" if required else "no_mutation", "action_set": [row]}
+    snapshot = {"result_ref": ref, "terminal": "closed" if required else "no_mutation", "action_set": [row],
+                "source": {"kind": "issue", "repo_ref": "example/repo", "number": 7, "disposition": "exact_source"}}
     module = types.ModuleType("runtime.task_lifecycle.closure_result")
     module.read_terminal_closure_result = lambda *_args: snapshot
     monkeypatch.setitem(sys.modules, module.__name__, module)
@@ -132,13 +133,14 @@ def test_reopened_required_closed_issue_refreshes_closure_before_terminal_mutati
     semantic = json.loads((PACKAGE / "examples/semantic-result.json").read_text())
     task = tmp_path / ".trellis/tasks/example-task"
     task.mkdir(parents=True)
-    (task / "task.json").write_text(json.dumps({"id": public["closure_result"]["task_id"], "lifecycle_generation": 1}))
+    source = {"kind": "issue", "repo_ref": "example/repo", "number": 7, "disposition": "exact_source"}
+    (task / "task.json").write_text(json.dumps({"id": public["closure_result"]["task_id"], "lifecycle_generation": 1, "source": source}))
     input_path = tmp_path / "input.json"
     semantic_path = tmp_path / "semantic.json"
     input_path.write_text(json.dumps(public))
     semantic_path.write_text(json.dumps(semantic))
     row = {"issue_ref": {"repo_ref": "example/repo", "issue_number": 7}, "disposition": disposition}
-    monkeypatch.setattr(FINISH, "read_closure_snapshot", lambda *_args: {"result_ref": public["closure_result"], "terminal": "closed", "action_set": [row]})
+    monkeypatch.setattr(FINISH, "read_closure_snapshot", lambda *_args: {"result_ref": public["closure_result"], "terminal": "closed", "action_set": [row], "source": source})
     monkeypatch.setattr(FINISH, "gh_json", lambda *_args: {"number": 7, "state": "OPEN"})
     monkeypatch.setattr(FINISH, "project_archive", lambda *_args: pytest.fail("archive mutation attempted"))
     monkeypatch.setattr(FINISH.ResourceLedgerStore, "seal_for_finish", lambda *_args, **_kwargs: pytest.fail("ledger mutation attempted"))
@@ -148,6 +150,30 @@ def test_reopened_required_closed_issue_refreshes_closure_before_terminal_mutati
     assert output == {"exit_id": "closure_refresh_required", **public["closure_result"]}
     assert task.is_dir()
     assert not (tmp_path / semantic["bookkeeping"]["archive_ref"]).exists()
+
+
+def test_changed_source_role_refreshes_closure_before_finish_archive(tmp_path, monkeypatch):
+    public = json.loads((PACKAGE / "examples/public-input.json").read_text())
+    semantic = json.loads((PACKAGE / "examples/semantic-result.json").read_text())
+    subprocess.run(["git", "init", "-q", "-b", "main", str(tmp_path)], check=True)
+    task = tmp_path / ".trellis/tasks/example-task"
+    task.mkdir(parents=True)
+    (task / "task.json").write_text(json.dumps({"id": "example-task", "lifecycle_generation": 1,
+        "source": {"kind": "issue", "repo_ref": "example/repo", "number": 7, "disposition": "reference_only"}}))
+    input_path = tmp_path / "input.json"
+    semantic_path = tmp_path / "semantic.json"
+    input_path.write_text(json.dumps(public))
+    semantic_path.write_text(json.dumps(semantic))
+    frozen = {"result_ref": public["closure_result"], "terminal": "no_mutation", "action_set": [],
+              "source": {"kind": "issue", "repo_ref": "example/repo", "number": 7, "disposition": "exact_source"}}
+    monkeypatch.setattr(FINISH, "read_closure_snapshot", lambda *_args: frozen)
+    monkeypatch.setattr(FINISH, "project_archive", lambda *_args: pytest.fail("archive mutation attempted"))
+
+    result = FINISH.run(PACKAGE, {}, ["--root", str(tmp_path), "--input", str(input_path),
+        "--semantic-result", str(semantic_path), "--confirmed-finish"])
+
+    assert result == {"exit_id": "closure_refresh_required", **public["closure_result"]}
+    assert task.is_dir()
 
 
 def test_finish_identity_changes_between_lifecycle_generations():
@@ -302,7 +328,7 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     (old_archive / "legacy-finish-summary.json").write_text("{}\n")
     task = repo / ".trellis/tasks/demo"
     task.mkdir(parents=True)
-    (task / "task.json").write_text(json.dumps({"id": "demo", "title": "Demo", "status": "in_progress", "base_branch": "main", "lifecycle_generation": 0}))
+    (task / "task.json").write_text(json.dumps({"id": "demo", "title": "Demo", "status": "in_progress", "base_branch": "main", "lifecycle_generation": 0, "source": {"kind": "no_issue"}}))
     for name in ("prd.md", "design.md", "implement.md"):
         (task / name).write_text("x\n")
     git(repo, "add", ".")
@@ -353,7 +379,7 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     closure_path = store.repository.common_dir / "guru-team/closure/demo/0.json"
     closure_path.parent.mkdir(parents=True)
     closure_path.write_text(json.dumps({"ref": {"task_id": "demo", "lifecycle_generation": 0, "result_id": "closure:demo", "transaction_id": "closure:demo"},
-                                        "frozen": {"action_set": []}, "verified": [], "terminal": "no_mutation"}))
+                                        "frozen": {"source": {"kind": "no_issue"}, "action_set": []}, "verified": [], "terminal": "no_mutation"}))
     def invoke(*flags):
         return FINISH.run(PACKAGE, {}, ["--root", str(repo), "--input", str(input_path), "--semantic-result", str(semantic_path), *flags])
     resume = {"exit_id": "resume_finish", "task_id": "demo", "lifecycle_generation": 0, "transaction_id": FINISH.finish_ref({"task_id": "demo", "closure_result": public["closure_result"]}, 0), "result_id": "closure:demo"}
@@ -362,6 +388,7 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     assert task.exists()
     projected = invoke("--confirmed-finish")
     assert projected == resume and not task.exists() and (repo / archive_ref).is_dir()
+    assert "archive_dir" not in json.loads((repo / archive_ref / "task.json").read_text())
     assert invoke() == resume
     published = invoke("--confirmed-bookkeeping-publish")
     assert published == resume
@@ -419,3 +446,4 @@ def test_finish_accepts_mutable_task_locator_with_stable_task_id(tmp_path, task_
     FINISH.project_archive(repo, {"task_ref": task_ref, "task_id": "demo"}, Path(task_ref), archive_ref, Path(archive_ref))
     assert not task_dir.exists()
     assert (repo / archive_ref / "task.json").is_file()
+    assert "archive_dir" not in json.loads((repo / archive_ref / "task.json").read_text())
