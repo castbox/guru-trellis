@@ -209,6 +209,23 @@ production graph activation 与完整 Release matrix 未由本证据证明。C6-
 本次 `.63` promotion-created diff 仍须 fresh Phase 2、Task Commit 与独立完整 Branch Review，之后才可
 进入 Publication/Finalizer/Delivery。此证据不证明 push、PR、merge、Release 或 Issue closure。
 
+## EVD-039: #454 C6/C7 Nonactivated Substrate Promotion
+
+本证据支撑 `ARCH-CUR-041`、`ARCH-DOM-026`、`ARCH-INT-029`、`ARCH-GAP-011` 与
+`.63 -> .64` Architecture knowledge promotion。独立完整 Branch Review 绑定
+`origin/main@0a062919ff568a1fc0259ed7c01b5b67345fd29a...HEAD@9dab07fb0fdf47912e1d907c695feb37efb68c4a`，
+覆盖两个提交、21 个路径，正式 checker 与 public wrapper 返回 `passed`。首轮普通 selected-base drift
+候选已由 C6 input 的 live base/ref/ancestry 检查关闭；第二位独立 reviewer 报告当前 slice 无 finding。
+
+提升前 focused lifecycle `125/125`、planned inventory `3/3`、ownership、dogfood drift、task validator
+与 `git diff --check` 通过。Package integration `19/20` 的 unchanged closure schema 错误在 clean main 同样
+复现，managed verifier fixture 未通过；这两项不记作通过。Fixed Fork 本轮无新增本地 build，完整 #410
+多平台 Release matrix 未运行。六个 IDs 仅 planned，32/142/102 active inventory 与生产 22/98 graph 未变。
+
+本次 `.64` promotion-created diff 必须重新通过 fresh Phase 2、Task Commit 与独立完整 Branch Review，
+随后才可进入 Publication。D443、D436、E434、#434 activation、installed/platform 切换、push、PR、merge、
+Release、生产升级与 Issue closure 均不由本证据证明。
+
 ## EVD-032: #443 Reviewed Promotion Source
 
 本证据支撑 `ARCH-CUR-034`、`ARCH-DOM-019`、`ARCH-INT-022`、`ARCH-GAP-009`、`ADR-014`

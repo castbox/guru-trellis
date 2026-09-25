@@ -2,7 +2,7 @@
   "id": "454-task-lifecycle-state-model",
   "name": "454-task-lifecycle-state-model",
   "title": "#454 建立统一 task lifecycle state model",
-  "description": "按已批准的分阶段计划实施统一状态模型、组合矩阵与迁移合同；C1、C2、D0、C3、C4 已分别完成交付，当前交付 C5 path-free session adapter 与 resource ownership ledger substrate。PR #465 只完成 C3，PR #470 只完成 C4；C6-C7、D443、D436、E434 与 #434 activation 仍未完成。不修改 Issue、不提前激活 production graph。",
+  "description": "按已批准的分阶段计划实施统一状态模型、组合矩阵与迁移合同；C1、C2、D0、C3、C4、C5 已分别完成交付，当前 generation 4 交付 C6-C7 未激活 substrate、Docs SSOT 与验证。PR #465、#470、#471 分别只完成 C3、C4、C5；D443、D436、E434 与 #434 activation 仍未完成。不修改 Issue、不提前激活 production graph。",
   "status": "completed",
   "dev_type": null,
   "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/454",
@@ -23,5 +23,5 @@
   "relatedFiles": [],
   "notes": "",
   "meta": {},
-  "lifecycle_generation": 3
+  "lifecycle_generation": 4
 }

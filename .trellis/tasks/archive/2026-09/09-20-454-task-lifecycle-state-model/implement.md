@@ -59,10 +59,10 @@ owner，不开始生产编辑。
 ## 3. Delivery policy
 
 Phase C 是本 task 的首个独立 Delivery slice。它只交付 substrate、contract primitives 与 planned stable IDs；它不要求
-Phase D443、Phase D436 或 Phase E434 已完成。C1、C2、D0、C3 与 C4 已完成；PR #465 只完成 C3，
-PR #470 只完成 C4，不表示 C3-C7 已全部完成。当前交付为 C5 path-free session adapter 与 resource ownership
-ledger substrate；C6-C7、D443、D436、E434 与 #434 activation 仍未完成。C5 只增加非激活的 runtime/schema/Docs
-candidate 与 planned stable IDs，
+Phase D443、Phase D436 或 Phase E434 已完成。C1、C2、D0、C3、C4 与 C5 已交付；PR #465、#470、#471
+分别只完成 C3、C4、C5，不表示 C3-C7 已全部完成。当前 generation 4 交付 C6 task creation substrate 与
+C7 subtraction/Docs SSOT/validation；D443、D436、E434 与 #434 activation 仍未完成。C6-C7 只增加非激活的
+runtime/schema/Docs candidate 与 planned stable IDs，
 不创建对应 canonical package directory，不切换 production graph。任何 finding fix 后均须重建 fresh Phase 2、
 Task Commit 与完整 Branch Review。
 
@@ -722,3 +722,33 @@ predecessor数据模型带入target graph。
   Finish 身份；不增加第二 store、通用 ledger transaction token、strict selector 或 production graph 激活。
 - 对应 closed schema、runtime、focused tests 与合同说明同步。该编辑仅形成 finding-fix candidate；须在定向验证后
   重新运行 fresh Phase 2、Task Commit 与包含既有 `.63` promotion 的完整 Branch Review，不复用此前 gate。
+
+### C6/C7 promotion 后完整 Branch Review finding-fix（2026-09-25）
+
+- `C6C7-BR-TASK-ID-001`（P1）：创建准备原先只扫描 task artifacts，未检查 Git common-dir 中尚未退休的 C5
+  resource ledger。现在复用唯一 ledger 的 `iter_ledgers()`，在 mutation 前拒绝相同 TaskId（含大小写折叠）
+  的未解决责任记录；不新建索引或路径 authority。
+- `C6C7-BR-RECOVERY-002`（P2）：创建 output-loss recovery 原先只比对 current ledger 的 role、epoch、revision
+  和 ownership，可能将不同 branch 的 ledger/binding 当作相同结果。现在对 current branch/worktree 的 portable
+  ref 与 C4 binding 做 exact 比对，不一致 fail closed，不重复任何控制状态 mutation。
+- 两项均通过正常路径资格与 application-level mechanism 门禁。新增真实 Git/store API 回归；focused composition
+  `14/14`、完整 lifecycle `127/127`、Python compile、task validator、`git diff --check` 已通过。package integration
+  `19/20` 与 managed verifier fixture 不声明通过。此处是修复候选，仍须 fresh Phase 2、Task Commit 与另一位
+  独立 reviewer 覆盖 `origin/main...HEAD` 全范围，随后才可进入 Publication。
+
+### C6/C7 fresh final review finding-fix（2026-09-25）
+
+- `C6C7-BR-CROSS-CHECKOUT-ID-003`：创建预检只扫描当前 checkout 的 task artifact；旧 task 在另一已注册
+  worktree 归档且资源责任已退休时，相同 TaskId 可被新创建输入接受。Issue #454 的 repository-lifecycle
+  TaskId 唯一性要求覆盖此正常路径。修复从 Git common-dir 的 worktree registration 枚举 task inventory，
+  保留现有未退休 ledger 检查；不可读取的注册 checkout 在创建前阻断，不推断身份或创建额外持久状态。
+- 正常路径和 application-level mechanism 资格均已分类。真实 Git/worktree 回归覆盖另一 checkout 独有的归档
+  与缺失旧 ledger；composition `15/15`、完整 lifecycle `128/128`、Python compile、task validator 与
+  `git diff --check` 通过。本项仍须 fresh Phase 2、Task Commit 与另一位完整范围审查。
+
+### C7 current projection finding-fix（2026-09-25）
+
+- `C6C7-BR-STALE-SPEC-PROJECTION-004`：`.64` 已经是唯一 active Architecture/RDT，两个项目本地
+  `.trellis/spec/` 使用规则却仍声明 `.63/active`。普通 gate 的读入与自身 freshness 条款发生冲突。
+  经正常路径与机制资格分类后，直接演进两个 subordinate current 使用投影至 `.64` 与 C6/C7 source；
+  不修改 immutable `.63`、共享 `.64` authority 或引入第二状态。此修复须重新通过 Phase 2、提交和完整 Branch Review。

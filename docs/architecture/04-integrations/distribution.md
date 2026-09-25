@@ -131,6 +131,13 @@
   planned registry ID 不创建 package 或 active graph edge；installed/platform projection 和完整 Release matrix
   仍由 E434 或专门 owner 验证，不因 Architecture promotion 宣称已完成。
 
+- `ARCH-INT-029`：C6 只在 canonical shared runtime/schema 与 planned registry/manifest 增加 creation 和
+  activation 的组合输入。`new_branch | existing_branch | existing_checkout` 分别投影实际新建或复用的 branch/
+  worktree ownership，adopt route 不携带 provision disposition；context key 缺失仍完成 task lifecycle。
+  六个 planned IDs 无 package/interface/route/I/O 字段，不进入 active selector、mandatory workflow edge、
+  installed/platform projection。C7 证明新增 Phase C 代码不读写旧 mapping/path；E434 独占 predecessor 退休
+  与一次性生产切图，#410 独占完整 Release matrix。
+
 - Capability-loss gate 只比较 `workflow`、`task_data`、`docs_authority`，用于判断升级前后
   用户可观察 workflow capability 是否丢失。
 - `skill_api` 与 interface/schema/command projection、distribution、managed/installed file
