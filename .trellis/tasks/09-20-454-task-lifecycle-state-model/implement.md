@@ -831,4 +831,4 @@ Branch Review通过，且 shared current 文档与当前 candidate 一致。E434
 
 - 完整范围的独立审查发现三个当前正常路径缺陷：合法 rename 后 Finish 错误地将可变目录名当作 TaskId；真实两父 merge 后 Reactivate 错比 target merge SHA 与 ledger 中的 bookkeeping PR head；缺失 ownership 时 Finish 的人工 Cleanup 结果无法在原 checkout 被删除后支撑 Reactivate。
 - Finish 现在校验已解析的 TaskId；Reactivate 分别校验 bookkeeping commit 与 target merge 的祖先关系。人工终态在 Git common-dir 保存最小 Finish identity，Reactivate 只在匹配的人工 Cleanup `cleaned` receipt 存在时恢复；未完成 Finish 或单纯丢失 ledger 仍阻断。
-- Finish/Reactivate 定向测试 39/39，通过真实人工 Cleanup 和原 Finish 事务消失后的恢复；五包、共享 runtime 与 package integration 的旧候选为 230/230。本段不替代修复后新候选的完整 Phase 2、Task Commit、Branch Review、Publication 或 Finalizer 结果。
+- Finish/Reactivate 定向测试 39/39；后续补强为真实 linked worktree 与 branch 的成对人工 Cleanup，并验证只选在用 branch 仍被阻断。当前未提交候选的 Cleanup 15/15、Reactivate 19/19，五包、共享 lifecycle runtime 与 package integration 组合 231/231 通过，`git diff --check` 通过。旧候选的 230/230 不作为当前证据；本段不替代当前候选的正式 Phase 2、Task Commit、Branch Review、Publication 或 Finalizer 结果。

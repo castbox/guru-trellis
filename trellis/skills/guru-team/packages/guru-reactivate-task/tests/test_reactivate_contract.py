@@ -154,7 +154,8 @@ def test_reactivate_accepts_distinct_merge_head_and_bookkeeping_head(tmp_path):
 
 def test_reactivate_after_manual_cleanup_requires_exact_finished_receipt(tmp_path):
     repo, head = repository(tmp_path)
-    git(repo, "branch", "codex/demo-old", head)
+    old_checkout = tmp_path / "old-worktree"
+    git(repo, "worktree", "add", "-q", "-b", "codex/demo-old", str(old_checkout), head)
     facts = inspect_repository(repo)
     key = TaskLifecycleKey("demo", 2)
     ResourceLedgerStore(facts).path_for(key).unlink()
@@ -167,7 +168,10 @@ def test_reactivate_after_manual_cleanup_requires_exact_finished_receipt(tmp_pat
     transaction = repo / ".trellis/.runtime/guru-team/finish/1234567890abcdef.json"
     record = json.loads(transaction.read_text())
     record["cleanup_state"] = "manual_cleanup_required"
-    transaction.write_text(json.dumps(record))
+    old_transaction = old_checkout / ".trellis/.runtime/guru-team/finish/1234567890abcdef.json"
+    old_transaction.parent.mkdir(parents=True)
+    old_transaction.write_text(json.dumps(record))
+    transaction.unlink()
     result = facts.common_dir / "guru-team/finish-results/demo/2-manual.json"
     result.parent.mkdir(parents=True)
     result.write_text(json.dumps({"schema_version": "1.0", "task_id": "demo", "lifecycle_generation": 2,
@@ -188,7 +192,10 @@ def test_reactivate_after_manual_cleanup_requires_exact_finished_receipt(tmp_pat
     cleanup_input.write_text(json.dumps({
         "profile": "manual", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 2,
         "finish_result_id": record["finish_ref"], "cleanup_state": "manual_cleanup_required",
-        "selected_targets": [{"resource_id": "old-branch", "kind": "local_branch",
+        "selected_targets": [{"resource_id": "old-worktree", "kind": "linked_worktree",
+                              "portable_ref": {"kind": "linked_worktree", "branch_ref": "refs/heads/codex/demo-old"},
+                              "expected_cleanup_head": head},
+                             {"resource_id": "old-branch", "kind": "local_branch",
                               "portable_ref": {"kind": "local_branch", "ref": "refs/heads/codex/demo-old"},
                               "expected_cleanup_head": head}],
     }))
@@ -197,8 +204,7 @@ def test_reactivate_after_manual_cleanup_requires_exact_finished_receipt(tmp_pat
     assert cleanup.run(cleanup_package, {}, ["--root", str(repo), "--input", str(cleanup_input),
                                                "--semantic-result", str(cleanup_semantic),
                                                "--confirmed-cleanup"])["exit_id"] == "cleaned"
-    assert git(repo, "branch", "--list", "codex/demo-old") == ""
-    transaction.unlink()
+    assert not old_checkout.exists() and git(repo, "branch", "--list", "codex/demo-old") == ""
     assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "session_binding_recovery_required"
 
 

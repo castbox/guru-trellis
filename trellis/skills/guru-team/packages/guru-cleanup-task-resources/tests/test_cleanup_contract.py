@@ -106,6 +106,40 @@ def test_caller_owned_is_retained_and_manual_selection_requires_confirmation(tmp
     assert store.read(TaskLifecycleKey("demo", 0)).resources[0].state == "resolved"
 
 
+def test_manual_cleanup_removes_selected_linked_worktree_before_its_branch(tmp_path):
+    root = tmp_path / "repo"
+    root.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
+    git(root, "config", "user.email", "test@example.invalid")
+    git(root, "config", "user.name", "Test")
+    (root / "tracked").write_text("base\n")
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "base")
+    head = git(root, "rev-parse", "HEAD")
+    checkout = tmp_path / "linked"
+    git(root, "worktree", "add", "-q", "-b", "codex/demo", str(checkout), head)
+    store = ResourceLedgerStore(inspect_repository(root))
+    key = TaskLifecycleKey("demo", 0)
+    store.establish_current(key, binding_epoch=0, binding_revision=0, branch_name="codex/demo",
+                            branch_ownership="caller_owned", worktree_ownership="caller_owned")
+    store.seal_for_finish(key, finish_result_id="finish:demo", finish_head=head)
+    rows = store.read(key).resources
+    assert {row.kind for row in rows} == {"linked_worktree", "local_branch"}
+    targets = [{"resource_id": row.resource_id, "kind": row.kind, "portable_ref": row.portable_ref,
+                "expected_cleanup_head": head} for row in rows]
+    manual = {"profile": "manual", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 0,
+              "finish_result_id": "finish:demo", "cleanup_state": "manual_cleanup_required",
+              "selected_targets": targets}
+
+    branch_only = {**manual, "selected_targets": [row for row in targets if row["kind"] == "local_branch"]}
+    assert invoke(tmp_path, root, branch_only, confirmed=True)["reason_code"] == "branch_checked_out"
+    assert checkout.is_dir() and git(root, "show-ref", "--verify", "refs/heads/codex/demo")
+
+    assert invoke(tmp_path, root, manual, confirmed=True)["exit_id"] == "cleaned"
+    assert not checkout.exists() and not git(root, "branch", "--list", "codex/demo")
+    assert {row.state for row in store.read(key).resources} == {"resolved"}
+
+
 def test_manual_selection_refuses_a_current_resource(tmp_path):
     root, store, public, head = fixture(tmp_path, ownership="caller_owned")
     active = TaskLifecycleKey("other", 0)

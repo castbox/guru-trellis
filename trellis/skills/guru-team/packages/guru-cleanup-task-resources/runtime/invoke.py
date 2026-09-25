@@ -280,7 +280,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict[str, Any]:
             out = blocked(exc.code, exc.field_path)
             resources = []
         if not out:
-            scheduled_worktree_refs = frozenset(item["portable_ref"]["branch_ref"] for item in resources if item["kind"] == "linked_worktree" and public["profile"] == "normal")
+            scheduled_worktree_refs = frozenset(item["portable_ref"]["branch_ref"] for item in resources if item["kind"] == "linked_worktree")
             conflicts = [code for item in resources for present, code in [inspect_resource(root, item, scheduled_worktree_refs)] if code]
             if conflicts:
                 out = blocked(conflicts[0], public["task_id"])
