@@ -10,7 +10,7 @@ from .branch_store import BranchBinding, BranchBindingStore, TaskLifecycleKey
 from .checkout_acquisition import CheckoutAcquisitionPlan, CheckoutAcquisitionResult
 from .checkout_resolution import canonical_head_ref
 from .errors import LifecycleContractError
-from .git_facts import find_registration, inspect_registered_worktree, inspect_repository, is_ancestor, local_branch_head
+from .git_facts import find_registration, inspect_registered_worktree, inspect_repository, is_ancestor, list_worktree_registrations, local_branch_head
 from .identity import normalize_task_id, normalize_task_ref, resolve_task_ref, task_inventory
 from .resource_ledger import ResourceLedgerStore
 from .schema import load_contract, validate_dto
@@ -225,8 +225,16 @@ def prepare_creation_inputs(
             raise LifecycleContractError("creation_acquisition_mismatch", "acquisition", "Bind the exact invocation checkout.")
     elif acquisition.provision_disposition not in {"new_branch", "existing_branch", "existing_checkout"}:
         raise LifecycleContractError("creation_acquisition_mismatch", "acquisition", "Bind the reviewed provision disposition.")
-    if any(row.task_id.casefold() == task_id.casefold() or row.task_ref == task_ref for row in task_inventory(repository.context_path)):
-        raise LifecycleContractError("task_identity_already_exists", "task_id", "Select an unused TaskId and TaskRef.")
+    for registration in list_worktree_registrations(repository):
+        if registration.bare:
+            continue
+        if not registration.path.is_dir():
+            raise LifecycleContractError("creation_checkout_stale", "git.worktree_list", "Resolve registered task checkouts before creation.")
+        if any(
+            row.task_id.casefold() == task_id.casefold() or row.task_ref == task_ref
+            for row in task_inventory(registration.path)
+        ):
+            raise LifecycleContractError("task_identity_already_exists", "task_id", "Select an unused TaskId and TaskRef.")
     if any(
         ledger.task_id.casefold() == task_id.casefold()
         and any(row.state != "resolved" for row in ledger.resources)

@@ -735,3 +735,13 @@ predecessor数据模型带入target graph。
   `14/14`、完整 lifecycle `127/127`、Python compile、task validator、`git diff --check` 已通过。package integration
   `19/20` 与 managed verifier fixture 不声明通过。此处是修复候选，仍须 fresh Phase 2、Task Commit 与另一位
   独立 reviewer 覆盖 `origin/main...HEAD` 全范围，随后才可进入 Publication。
+
+### C6/C7 fresh final review finding-fix（2026-09-25）
+
+- `C6C7-BR-CROSS-CHECKOUT-ID-003`：创建预检只扫描当前 checkout 的 task artifact；旧 task 在另一已注册
+  worktree 归档且资源责任已退休时，相同 TaskId 可被新创建输入接受。Issue #454 的 repository-lifecycle
+  TaskId 唯一性要求覆盖此正常路径。修复从 Git common-dir 的 worktree registration 枚举 task inventory，
+  保留现有未退休 ledger 检查；不可读取的注册 checkout 在创建前阻断，不推断身份或创建额外持久状态。
+- 正常路径和 application-level mechanism 资格均已分类。真实 Git/worktree 回归覆盖另一 checkout 独有的归档
+  与缺失旧 ledger；composition `15/15`、完整 lifecycle `128/128`、Python compile、task validator 与
+  `git diff --check` 通过。本项仍须 fresh Phase 2、Task Commit 与另一位完整范围审查。
