@@ -4,18 +4,19 @@
   "title": "Planning to implementation activation requirements",
   "type": "object",
   "additionalProperties": false,
-  "required": ["task_id", "task_ref", "lifecycle_generation", "planning_result_id", "continuity", "session_mode"],
+  "required": ["task_id", "task_ref", "lifecycle_generation", "planning_result_id", "selected_base_ref", "continuity", "session_mode"],
   "properties": {
     "task_id": {"type": "string", "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"},
     "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/(?!archive(?:/|$))(?!\\.{1,2}$)[^/\\\\]+$"},
     "lifecycle_generation": {"type": "integer", "minimum": 0},
     "planning_result_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+    "selected_base_ref": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$"},
     "continuity": {
       "oneOf": [
         {
           "type": "object", "additionalProperties": false,
-          "required": ["kind", "task_head"],
-          "properties": {"kind": {"const": "base_current"}, "task_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}}
+          "required": ["kind", "task_head", "base_head"],
+          "properties": {"kind": {"const": "base_current"}, "task_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}}
         },
         {
           "type": "object", "additionalProperties": false,

@@ -10,7 +10,7 @@ from .branch_store import BranchBinding, BranchBindingStore, TaskLifecycleKey
 from .checkout_acquisition import CheckoutAcquisitionPlan, CheckoutAcquisitionResult
 from .checkout_resolution import canonical_head_ref
 from .errors import LifecycleContractError
-from .git_facts import find_registration, inspect_registered_worktree, inspect_repository, local_branch_head
+from .git_facts import find_registration, inspect_registered_worktree, inspect_repository, is_ancestor, local_branch_head
 from .identity import normalize_task_id, normalize_task_ref, resolve_task_ref, task_inventory
 from .resource_ledger import ResourceLedgerStore
 from .schema import load_contract, validate_dto
@@ -238,6 +238,7 @@ class ActivationInputs:
     task_ref: str
     lifecycle_generation: int
     planning_result_id: str
+    selected_base_ref: str
     continuity: dict[str, str]
     session_mode: str
 
@@ -263,11 +264,14 @@ def prepare_activation_inputs(
         raise LifecycleContractError("activation_session_mismatch", "session_mode", "Use the current C5 session outcome.")
     metadata = Path(repo_root) / current.task_ref / "task.json"
     try:
-        status = json.loads(metadata.read_text(encoding="utf-8")).get("status")
+        task_data = json.loads(metadata.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         raise LifecycleContractError("activation_identity_stale", "task_ref", "Read the current planning artifact.") from exc
-    if status != "planning":
+    if task_data.get("status") != "planning":
         raise LifecycleContractError("activation_status_mismatch", "task.status", "Only the activation owner transitions planning to in_progress.")
+    base_ref = canonical_head_ref(data["selected_base_ref"], field_path="selected_base_ref")
+    if task_data.get("base_branch") != base_ref.removeprefix("refs/heads/"):
+        raise LifecycleContractError("activation_base_mismatch", "selected_base_ref", "Use the task's selected delivery base.")
     repository = inspect_repository(repo_root)
     binding = BranchBindingStore(repository).read(key)
     ownership = ResourceLedgerStore(repository).read_current(key)
@@ -280,7 +284,10 @@ def prepare_activation_inputs(
     continuity = data["continuity"]
     if local_branch_head(repository, binding.branch_ref) != continuity["task_head"]:
         raise LifecycleContractError("activation_head_stale", "continuity.task_head", "Refresh the current reviewed task head.")
-    return ActivationInputs(key.task_id, current.task_ref, key.lifecycle_generation, data["planning_result_id"], continuity, data["session_mode"])
+    base_head = continuity["base_head"] if continuity["kind"] == "base_current" else continuity["new_base_head"]
+    if local_branch_head(repository, base_ref) != base_head or not is_ancestor(repository, base_head, continuity["task_head"]):
+        raise LifecycleContractError("activation_base_stale", "continuity", "Refresh the selected base and task continuity before activation.")
+    return ActivationInputs(key.task_id, current.task_ref, key.lifecycle_generation, data["planning_result_id"], data["selected_base_ref"], continuity, data["session_mode"])
 
 
 __all__ = [

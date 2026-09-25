@@ -236,9 +236,11 @@ class CompositionTests(unittest.TestCase):
         self.assertIsNotNone(ResourceLedgerStore(inspect_repository(self.repo)).read(TaskLifecycleKey(TASK_ID, 0)))
 
     def planning_task(self) -> None:
+        self.base_head = self.head
+        self.git("branch", "base", self.base_head)
         path = self.repo / TASK_REF
         path.mkdir(parents=True)
-        (path / "task.json").write_text(json.dumps({"id": TASK_ID, "status": "planning", "lifecycle_generation": 0}), encoding="utf-8")
+        (path / "task.json").write_text(json.dumps({"id": TASK_ID, "status": "planning", "lifecycle_generation": 0, "base_branch": "base"}), encoding="utf-8")
         self.git("add", ".")
         self.git("commit", "-m", "task")
         self.head = self.git("rev-parse", "HEAD")
@@ -253,7 +255,8 @@ class CompositionTests(unittest.TestCase):
     def activation(self) -> dict:
         return {
             "task_id": TASK_ID, "task_ref": TASK_REF, "lifecycle_generation": 0,
-            "planning_result_id": "planning:1", "continuity": {"kind": "base_current", "task_head": self.head},
+            "planning_result_id": "planning:1", "selected_base_ref": "base",
+            "continuity": {"kind": "base_current", "task_head": self.head, "base_head": self.base_head},
             "session_mode": "explicit_task_mode",
         }
 
@@ -264,7 +267,7 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(result.session_mode, "explicit_task_mode")
         reconciled = self.activation()
         reconciled["continuity"] = {
-            "kind": "reconciled", "task_head": self.head, "new_base_head": "a" * 40,
+            "kind": "reconciled", "task_head": self.head, "new_base_head": self.base_head,
             "result_id": "reconcile:1", "resume_target": "task_activation",
         }
         self.assertEqual(prepare_activation_inputs(self.repo, reconciled, session).continuity["kind"], "reconciled")
@@ -295,6 +298,27 @@ class CompositionTests(unittest.TestCase):
         with self.assertRaises(LifecycleContractError) as raised:
             prepare_activation_inputs(self.repo, self.activation(), session)
         self.assertEqual(raised.exception.code, "activation_status_mismatch")
+
+    def test_activation_rejects_selected_base_drift_and_unrelated_reconcile(self) -> None:
+        self.planning_task()
+        session = SessionAdapterResult("explicit_task_mode", TaskLifecycleKey(TASK_ID, 0))
+        self.git("update-ref", "refs/heads/base", self.head)
+        with self.assertRaises(LifecycleContractError) as raised:
+            prepare_activation_inputs(self.repo, self.activation(), session)
+        self.assertEqual(raised.exception.code, "activation_base_stale")
+        reconciled = self.activation()
+        reconciled["continuity"] = {
+            "kind": "reconciled", "task_head": self.head, "new_base_head": self.base_head,
+            "result_id": "reconcile:1", "resume_target": "task_activation",
+        }
+        with self.assertRaises(LifecycleContractError) as raised:
+            prepare_activation_inputs(self.repo, reconciled, session)
+        self.assertEqual(raised.exception.code, "activation_base_stale")
+        wrong_base = self.activation()
+        wrong_base["selected_base_ref"] = "main"
+        with self.assertRaises(LifecycleContractError) as raised:
+            prepare_activation_inputs(self.repo, wrong_base, session)
+        self.assertEqual(raised.exception.code, "activation_base_mismatch")
 
 
 if __name__ == "__main__":

@@ -33,6 +33,8 @@ Task creation must align initial binding and ledger identity, use the C5 adapter
 otherwise return `explicit_task_mode` without undoing a completed lifecycle mutation. Loss of output recovers the
 same established task/result by read-only identity checks; it must not repeat Issue, task, branch, worktree, binding
 or ledger creation. The planned `guru-activate-task` is the sole future `planning -> in_progress` mutation owner;
+its C6 input preparation binds the reviewed selected base HEAD to the live base ref and verifies
+ancestry to the current task HEAD, so ordinary base drift cannot silently reuse stale continuity.
 Planning approval alone is not activation, and its output-loss recovery must not repeat the status mutation.
 
 The six C6 owner IDs (`guru-create-task`, `guru-establish-task-identity`, `guru-establish-task-branch-binding`,

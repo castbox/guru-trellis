@@ -121,9 +121,11 @@ initial creation state is verified. Missing context enters explicit-task mode;
 session write failure does not roll back the established task or ownership.
 
 `task-activation-input.schema.json` requires a planning result, current task
-incarnation, base-current or reconciled task-head continuity, and the C5
+incarnation, selected base ref, base-current reviewed base HEAD or reconciled
+new base HEAD plus task-head continuity, and the C5
 `session_bound | explicit_task_mode` outcome. `prepare_activation_inputs`
-checks the live planning status, current branch/ledger pair and head. It does
+checks the live planning status, current branch/ledger pair, task head,
+selected base identity, live base HEAD, and ancestry. It does
 not approve planning, select a route, mutate status or claim output-loss
 recovery for the eventual activation owner. The E434 package must provide
 those semantic and transaction contracts before either planned ID is active.
