@@ -8,8 +8,9 @@ description: Reactivate one normally finished archived task while preserving its
 Reactivate owns one normally finished archived TaskLifecycleKey, never Finish
 recovery or implementation activation. The AI reviews the fresh archive,
 source relation, target base and shared checkout acquisition disposition. Entry
-requires the archived generation's sealed Finish result and no unfinished
-visible Finish transaction, not merely `status=completed`. A reviewed
+requires the archived generation's sealed Finish result, or the exact completed
+manual Cleanup receipt after Finish returned `manual_cleanup_required`, and no
+unfinished visible Finish transaction, not merely `status=completed`. A reviewed
 SourceCorrectionReadyDTO is applied to the archived task with a private
 recoverable receipt before routing to the source owner; it never advances the
 generation. A ready correction accompanying acquisition is also applied in

@@ -826,3 +826,9 @@ Branch Review通过，且 shared current 文档与当前 candidate 一致。E434
 - 当前候选 `01a7bba4914dbd739d43e1c3691e9c939299a3fb` 基于 `main@0ac48e5d24e6d2c32cf2d69080109a6a7adaee9e`；PR #474 仅引用 #454，Issue 仍开放。
 - 五个 package、共享 lifecycle runtime 与 package integration 合跑：`pytest --import-mode=importlib` 226/226 通过；`git diff --check origin/main...HEAD` 通过。
 - 本条记录是当前候选的验证事实，不代替 post-promotion Architecture/Phase 2、Task Commit、完整 Branch Review 或 Publication 的正式 typed exit；这些步骤仍须基于后续当前候选完成。
+
+### D436 Branch Review finding-fix
+
+- 完整范围的独立审查发现三个当前正常路径缺陷：合法 rename 后 Finish 错误地将可变目录名当作 TaskId；真实两父 merge 后 Reactivate 错比 target merge SHA 与 ledger 中的 bookkeeping PR head；缺失 ownership 时 Finish 的人工 Cleanup 结果无法在原 checkout 被删除后支撑 Reactivate。
+- Finish 现在校验已解析的 TaskId；Reactivate 分别校验 bookkeeping commit 与 target merge 的祖先关系。人工终态在 Git common-dir 保存最小 Finish identity，Reactivate 只在匹配的人工 Cleanup `cleaned` receipt 存在时恢复；未完成 Finish 或单纯丢失 ledger 仍阻断。
+- Finish/Reactivate 定向测试 39/39，通过真实人工 Cleanup 和原 Finish 事务消失后的恢复；五包、共享 runtime 与 package integration 的旧候选为 230/230。本段不替代修复后新候选的完整 Phase 2、Task Commit、Branch Review、Publication 或 Finalizer 结果。

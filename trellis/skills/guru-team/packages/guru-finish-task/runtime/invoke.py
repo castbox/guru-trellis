@@ -126,6 +126,10 @@ def transaction_path(root: Path, public: dict, generation: int) -> Path:
     return root / ".trellis/.runtime/guru-team/finish" / (finish_ref(public, generation).split(":")[-1] + ".json")
 
 
+def manual_result_path(root: Path, key: TaskLifecycleKey) -> Path:
+    return inspect_repository(root).common_dir / "guru-team/finish-results" / key.task_id / f"{key.lifecycle_generation}-manual.json"
+
+
 def write_transaction(path: Path, payload: dict, package_root: Path) -> None:
     validate_json(payload, package_root / "schemas/finish-transaction.schema.json", "finish_transaction")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -203,8 +207,8 @@ def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, 
     if not task_path.is_file() or task_path.is_symlink():
         raise CommandError("stale_identity", "task_ref", "Active task metadata is missing or unsafe.", 3)
     task = json.loads(task_path.read_text())
-    if task.get("id") and task.get("id") != task_dir.name and not task_dir.name.endswith(str(task.get("id"))):
-        raise CommandError("stale_identity", "task.json.id", "Task identity does not match the active locator.", 3)
+    if task.get("id") != public["task_id"]:
+        raise CommandError("stale_identity", "task.json.id", "Task identity does not match the resolved lifecycle.", 3)
     task["status"] = "completed"
     task["lifecycle_generation"] = task.get("lifecycle_generation", 0)
     task["completedAt"] = datetime.now(timezone.utc).date().isoformat()
@@ -424,6 +428,20 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             branches.retire_generation(key, expected_epoch=binding.binding_epoch,
                                        expected_revision=binding.binding_revision,
                                        expected_branch_name=binding.branch_name)
+        transaction["cleanup_state"] = "manual_cleanup_required"
+        write_transaction(transaction_file, transaction, package_root)
+        manual_result = {
+            "schema_version": "1.0", "task_id": key.task_id,
+            "lifecycle_generation": generation, "finish_result_id": finish_ref(public, generation),
+            "finish_head": transaction["commit"], "target_head": transaction["target_head"],
+            "archive_ref": archive_ref,
+        }
+        validate_json(manual_result, package_root / "schemas/manual-finish-result.schema.json", "manual_finish_result")
+        result_path = manual_result_path(root, key)
+        if result_path.is_file() and json.loads(result_path.read_text(encoding="utf-8")) != manual_result:
+            raise CommandError("stale_identity", "manual_finish_result", "Recover the exact manual Finish result.", 3)
+        result_path.parent.mkdir(parents=True, exist_ok=True)
+        result_path.write_text(json.dumps(manual_result, sort_keys=True) + "\n", encoding="utf-8")
         out = {"exit_id": "manual_cleanup_required", "task_id": public["task_id"], "lifecycle_generation": generation, "finish_result_id": finish_ref(public, generation), "cleanup_state": "manual_cleanup_required"}
         validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
         return out

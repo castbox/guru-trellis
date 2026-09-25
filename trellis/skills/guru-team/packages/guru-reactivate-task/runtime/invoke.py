@@ -15,7 +15,7 @@ from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycl
 from runtime.task_lifecycle.checkout_acquisition import CheckoutAcquisitionPlan, acquire_checkout
 from runtime.task_lifecycle.checkout_resolution import canonical_head_ref
 from runtime.task_lifecycle.errors import LifecycleContractError
-from runtime.task_lifecycle.git_facts import commit_path_bytes, discover_worktree_facts, inspect_repository, local_branch_head
+from runtime.task_lifecycle.git_facts import commit_path_bytes, discover_worktree_facts, inspect_repository, is_ancestor, local_branch_head
 from runtime.task_lifecycle.identity import resolve_task_id
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 from runtime.task_lifecycle.results import reason, task_artifact, transaction_ref
@@ -82,19 +82,10 @@ def archived_identity(root: Path, key: TaskLifecycleKey) -> str:
 
 def verify_finish_seal(repository: Any, key: TaskLifecycleKey, archive_ref: str) -> None:
     ledger = ResourceLedgerStore(repository).read(key)
-    if ledger is None or ledger.finish_result_id is None or ledger.finish_head is None:
+    if ledger is not None and (ledger.finish_result_id is None or ledger.finish_head is None):
         raise LifecycleContractError("finish_result_unsealed", "resource_ledger", "Recover and seal Finish for the archived generation first.")
-    committed_task = commit_path_bytes(repository, ledger.finish_head, f"{archive_ref}/task.json")
-    committed_summary = commit_path_bytes(repository, ledger.finish_head, f"{archive_ref}/finish-summary.json")
-    if committed_task is None or committed_summary is None:
-        raise LifecycleContractError("finish_result_unsealed", "finish_head", "The sealed Finish HEAD must contain the terminal task archive.")
-    terminal_task = json.loads(committed_task)
-    terminal_summary = json.loads(committed_summary)
-    if (terminal_task.get("id") != key.task_id or terminal_task.get("lifecycle_generation", 0) != key.lifecycle_generation
-            or terminal_task.get("status") != "completed" or terminal_summary.get("schema_version") != 2
-            or terminal_summary.get("task", {}).get("archive_dir") != archive_ref):
-        raise LifecycleContractError("finish_result_unsealed", "finish_head", "Use a Finish seal for the exact archived TaskLifecycleKey.")
     finish_schema = Path(__file__).resolve().parents[2] / "guru-finish-task/schemas/finish-transaction.schema.json"
+    transactions = []
     for checkout in discover_worktree_facts(repository):
         directory = checkout.path / ".trellis/.runtime/guru-team/finish"
         if not directory.is_dir():
@@ -104,9 +95,52 @@ def verify_finish_seal(repository: Any, key: TaskLifecycleKey, archive_ref: str)
             if transaction.get("task_id") != key.task_id or transaction.get("lifecycle_generation") != key.lifecycle_generation:
                 continue
             validate_json(transaction, finish_schema, "finish_transaction")
-            if (transaction["stage"] != "success" or transaction["finish_ref"] != ledger.finish_result_id
-                    or transaction["target_head"] != ledger.finish_head or transaction["archive_ref"] != archive_ref):
-                raise LifecycleContractError("finish_transaction_unfinished", "finish_transaction", "Resume the exact Finish transaction before Reactivate.")
+            transactions.append(transaction)
+    if ledger is None:
+        result_path = repository.common_dir / "guru-team/finish-results" / key.task_id / f"{key.lifecycle_generation}-manual.json"
+        if not result_path.is_file():
+            raise LifecycleContractError("finish_result_unsealed", "manual_finish_result", "Recover the exact manual Finish result before Reactivate.")
+        manual = json.loads(result_path.read_text(encoding="utf-8"))
+        manual_schema = Path(__file__).resolve().parents[2] / "guru-finish-task/schemas/manual-finish-result.schema.json"
+        validate_json(manual, manual_schema, "manual_finish_result")
+        if (manual["task_id"], manual["lifecycle_generation"], manual["archive_ref"]) != (
+                key.task_id, key.lifecycle_generation, archive_ref):
+            raise LifecycleContractError("finish_result_unsealed", "manual_finish_result", "Use the exact archived manual Finish result.")
+        receipts = repository.common_dir / "guru-team/cleanup-results" / key.task_id
+        completed = []
+        if receipts.is_dir():
+            for path in receipts.glob("manual-*.json"):
+                receipt = json.loads(path.read_text(encoding="utf-8"))
+                identity, output = receipt.get("identity", {}), receipt.get("output", {})
+                if (identity.get("task_id"), identity.get("lifecycle_generation"), identity.get("finish_result_id")) == (
+                        key.task_id, key.lifecycle_generation, manual["finish_result_id"]
+                ) and output.get("exit_id") == "cleaned" and output.get("task_id") == key.task_id and output.get("lifecycle_generation") == key.lifecycle_generation:
+                    completed.append(receipt)
+        if not completed:
+            raise LifecycleContractError("finish_result_unsealed", "manual_cleanup", "Complete the exact manual Cleanup after Finish before Reactivate.")
+        finish_head = manual["finish_head"]
+        finish_result_id = manual["finish_result_id"]
+        if not is_ancestor(repository, finish_head, manual["target_head"]):
+            raise LifecycleContractError("finish_result_unsealed", "manual_finish_result", "Verify the exact merged Finish target.")
+    else:
+        finish_head = ledger.finish_head
+        finish_result_id = ledger.finish_result_id
+    committed_task = commit_path_bytes(repository, finish_head, f"{archive_ref}/task.json")
+    committed_summary = commit_path_bytes(repository, finish_head, f"{archive_ref}/finish-summary.json")
+    if committed_task is None or committed_summary is None:
+        raise LifecycleContractError("finish_result_unsealed", "finish_head", "The sealed Finish HEAD must contain the terminal task archive.")
+    terminal_task = json.loads(committed_task)
+    terminal_summary = json.loads(committed_summary)
+    if (terminal_task.get("id") != key.task_id or terminal_task.get("lifecycle_generation", 0) != key.lifecycle_generation
+            or terminal_task.get("status") != "completed" or terminal_summary.get("schema_version") != 2
+            or terminal_summary.get("task", {}).get("archive_dir") != archive_ref):
+        raise LifecycleContractError("finish_result_unsealed", "finish_head", "Use a Finish seal for the exact archived TaskLifecycleKey.")
+    for transaction in transactions:
+        if (transaction["stage"] != "success" or transaction["finish_ref"] != finish_result_id
+                or transaction["commit"] != finish_head or transaction["archive_ref"] != archive_ref
+                or not is_ancestor(repository, finish_head, transaction["target_head"])
+                or (ledger is None) != (transaction.get("cleanup_state") == "manual_cleanup_required")):
+            raise LifecycleContractError("finish_transaction_unfinished", "finish_transaction", "Resume the exact Finish transaction before Reactivate.")
 
 
 def correct_source(root: Path, key: TaskLifecycleKey, archive_ref: str, correction: dict[str, Any]) -> None:

@@ -21,7 +21,8 @@
     "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "pr_number": {"type": "integer", "minimum": 1},
     "pr_url": {"type": "string", "pattern": "^https://github\\.com/[^/]+/[^/]+/pull/[1-9][0-9]*$"},
-    "target_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+    "target_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "cleanup_state": {"const": "manual_cleanup_required"}
   },
   "allOf": [
     {"if": {"properties": {"stage": {"enum": ["committed", "pr_open", "success"]}}}, "then": {"required": ["commit"]}},

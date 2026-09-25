@@ -285,7 +285,8 @@ def test_merge_rechecks_expected_base_before_github_mutation(tmp_path, monkeypat
     assert mutations == []
 
 
-def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, monkeypatch):
+@pytest.mark.parametrize("missing_ownership", [False, True])
+def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, monkeypatch, missing_ownership):
     repo = tmp_path / "repo"
     remote = tmp_path / "remote.git"
     repo.mkdir()
@@ -364,7 +365,22 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     assert invoke() == resume
     published = invoke("--confirmed-bookkeeping-publish")
     assert published == resume
+    if missing_ownership:
+        store.path_for(key).unlink()
     finished = invoke("--confirmed-bookkeeping-merge")
+    if missing_ownership:
+        assert finished == {"exit_id": "manual_cleanup_required", "task_id": "demo",
+                            "lifecycle_generation": 0, "finish_result_id": resume["transaction_id"],
+                            "cleanup_state": "manual_cleanup_required"}
+        transaction = json.loads(FINISH.transaction_path(repo, {"task_id": "demo", **public}, 0).read_text())
+        assert transaction["cleanup_state"] == "manual_cleanup_required"
+        assert transaction["stage"] == "success" and transaction["commit"] != transaction["target_head"]
+        manual_result = json.loads(FINISH.manual_result_path(repo, key).read_text())
+        validate_json(manual_result, PACKAGE / "schemas/manual-finish-result.schema.json", "manual_finish_result")
+        assert manual_result["finish_head"] == transaction["commit"]
+        assert manual_result["target_head"] == transaction["target_head"]
+        assert binding_store.read(key) is None and invoke() == finished
+        return
     assert finished == {"exit_id": "success", "task_id": "demo", "lifecycle_generation": 0, "finish_result_id": resume["transaction_id"], "inventory_id": finished["inventory_id"]}
     assert binding_store.read(key) is None
     assert store.read(key).finish_head == git(repo, "rev-parse", "HEAD")
@@ -392,13 +408,14 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     assert subprocess.run(["git", "cat-file", "-e", f"{target}:.trellis/tasks/demo/task.json"], cwd=repo).returncode != 0
 
 
-def test_finish_accepts_date_prefixed_task_directory_with_stable_task_id(tmp_path):
+@pytest.mark.parametrize("task_ref", [".trellis/tasks/09-19-demo", ".trellis/tasks/09-19-renamed"])
+def test_finish_accepts_mutable_task_locator_with_stable_task_id(tmp_path, task_ref):
     repo = tmp_path / "repo"; repo.mkdir()
     subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
     subprocess.run(["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "--allow-empty", "-qm", "seed"], cwd=repo, check=True)
-    task_ref = ".trellis/tasks/09-19-demo"; task_dir = repo / task_ref; task_dir.mkdir(parents=True)
+    task_dir = repo / task_ref; task_dir.mkdir(parents=True)
     (task_dir / "task.json").write_text(json.dumps({"id":"demo","status":"in_progress","lifecycle_generation":1}) + "\n")
-    archive_ref = ".trellis/tasks/archive/2026-09/09-19-demo"
-    FINISH.project_archive(repo, {"task_ref": task_ref}, Path(task_ref), archive_ref, Path(archive_ref))
+    archive_ref = ".trellis/tasks/archive/2026-09/" + Path(task_ref).name
+    FINISH.project_archive(repo, {"task_ref": task_ref, "task_id": "demo"}, Path(task_ref), archive_ref, Path(archive_ref))
     assert not task_dir.exists()
     assert (repo / archive_ref / "task.json").is_file()

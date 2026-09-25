@@ -23,6 +23,12 @@ head (the cleanup refs' actual HEAD), then retire its branch binding. The
 target merge commit separately proves that the archive is persisted. `success` hands its
 ResourceSealRefDTO to Cleanup; missing terminal ownership returns
 `manual_cleanup_required`. Finish never deletes a resource. This canonical
+manual route records the minimal terminal identity in Git common-dir so it
+survives removal of the original checkout;
+Reactivate requires its matching completed manual Cleanup receipt before using
+the archived generation. The Finish bookkeeping commit and target merge commit
+remain distinct identities.
+This canonical
 package major is not active until the separate graph activation.
 If the shared Closure result reader is unavailable, Finish stops before
 terminal mutation instead of accepting an unbound caller action list.
