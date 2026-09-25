@@ -101,6 +101,45 @@ class CompositionTests(unittest.TestCase):
             prepare_creation_inputs(self.repo, self.creation(), self.acquisition())
         self.assertEqual(raised.exception.code, "task_identity_already_exists")
 
+    def test_creation_rejects_unretired_prior_generation_resource_identity(self) -> None:
+        self.git("branch", "legacy-task")
+        resources = ResourceLedgerStore(inspect_repository(self.repo))
+        resources.establish_current(
+            TaskLifecycleKey(TASK_ID, 1), binding_epoch=7, binding_revision=0,
+            branch_name="legacy-task", branch_ownership="caller_owned",
+            worktree_ownership="not_applicable",
+        )
+        with self.assertRaises(LifecycleContractError) as raised:
+            prepare_creation_inputs(self.repo, self.creation(), self.acquisition())
+        self.assertEqual(raised.exception.code, "task_identity_already_exists")
+        self.assertFalse((self.repo / TASK_REF).exists())
+
+    def test_recovery_rejects_branch_ledger_disagreement(self) -> None:
+        plan = self.acquisition("provision_linked_worktree")
+        inputs = prepare_creation_inputs(self.repo, self.creation(), plan)
+        acquired = acquire_checkout(plan)
+        task = acquired.checkout.path / TASK_REF
+        task.mkdir(parents=True)
+        (task / "task.json").write_text(json.dumps({
+            "id": TASK_ID, "status": "planning", "lifecycle_generation": 0,
+            "source": inputs.reviewed_source, "delivery_target": inputs.delivery_target,
+        }), encoding="utf-8")
+        self.git("branch", "unrelated-branch")
+        repository = inspect_repository(self.repo)
+        key = TaskLifecycleKey(TASK_ID, 0)
+        binding = BranchBindingStore(repository).establish(key, "codex/new-task")
+        ResourceLedgerStore(repository).establish_current(
+            key, binding_epoch=binding.binding_epoch, binding_revision=0,
+            branch_name="unrelated-branch", branch_ownership=acquired.branch_ownership,
+            worktree_ownership=acquired.worktree_ownership,
+        )
+        with self.assertRaises(LifecycleContractError) as raised:
+            recover_created_control_state(
+                inputs, acquired, expected_epoch=binding.binding_epoch,
+                expected_result_id=inputs.result_id,
+            )
+        self.assertEqual(raised.exception.code, "creation_result_mismatch")
+
     def test_creation_requires_pre_task_plan_and_non_delivery_branch(self) -> None:
         plan = self.acquisition()
         for changes in (

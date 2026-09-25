@@ -154,6 +154,7 @@ def recover_created_control_state(
         ledger.ledger_revision != 1
         or {row.responsibility_role for row in current} != expected
         or any(row.binding_epoch != expected_epoch or row.binding_revision != 0 for row in current)
+        or any(row.branch_ref != binding.branch_ref for row in current if row.responsibility_role in {"current_branch", "current_worktree"})
         or any(row.ownership != result.branch_ownership for row in current if row.responsibility_role == "current_branch")
         or any(row.ownership != result.worktree_ownership for row in current if row.responsibility_role == "current_worktree")
     ):
@@ -225,6 +226,12 @@ def prepare_creation_inputs(
     elif acquisition.provision_disposition not in {"new_branch", "existing_branch", "existing_checkout"}:
         raise LifecycleContractError("creation_acquisition_mismatch", "acquisition", "Bind the reviewed provision disposition.")
     if any(row.task_id.casefold() == task_id.casefold() or row.task_ref == task_ref for row in task_inventory(repository.context_path)):
+        raise LifecycleContractError("task_identity_already_exists", "task_id", "Select an unused TaskId and TaskRef.")
+    if any(
+        ledger.task_id.casefold() == task_id.casefold()
+        and any(row.state != "resolved" for row in ledger.resources)
+        for ledger in ResourceLedgerStore(repository).iter_ledgers()
+    ):
         raise LifecycleContractError("task_identity_already_exists", "task_id", "Select an unused TaskId and TaskRef.")
     return CreationInputs(
         task_id, task_ref, data["source_profile"], source, data["accepted_scope_identity"],

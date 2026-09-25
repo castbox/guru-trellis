@@ -722,3 +722,16 @@ predecessor数据模型带入target graph。
   Finish 身份；不增加第二 store、通用 ledger transaction token、strict selector 或 production graph 激活。
 - 对应 closed schema、runtime、focused tests 与合同说明同步。该编辑仅形成 finding-fix candidate；须在定向验证后
   重新运行 fresh Phase 2、Task Commit 与包含既有 `.63` promotion 的完整 Branch Review，不复用此前 gate。
+
+### C6/C7 promotion 后完整 Branch Review finding-fix（2026-09-25）
+
+- `C6C7-BR-TASK-ID-001`（P1）：创建准备原先只扫描 task artifacts，未检查 Git common-dir 中尚未退休的 C5
+  resource ledger。现在复用唯一 ledger 的 `iter_ledgers()`，在 mutation 前拒绝相同 TaskId（含大小写折叠）
+  的未解决责任记录；不新建索引或路径 authority。
+- `C6C7-BR-RECOVERY-002`（P2）：创建 output-loss recovery 原先只比对 current ledger 的 role、epoch、revision
+  和 ownership，可能将不同 branch 的 ledger/binding 当作相同结果。现在对 current branch/worktree 的 portable
+  ref 与 C4 binding 做 exact 比对，不一致 fail closed，不重复任何控制状态 mutation。
+- 两项均通过正常路径资格与 application-level mechanism 门禁。新增真实 Git/store API 回归；focused composition
+  `14/14`、完整 lifecycle `127/127`、Python compile、task validator、`git diff --check` 已通过。package integration
+  `19/20` 与 managed verifier fixture 不声明通过。此处是修复候选，仍须 fresh Phase 2、Task Commit 与另一位
+  独立 reviewer 覆盖 `origin/main...HEAD` 全范围，随后才可进入 Publication。
