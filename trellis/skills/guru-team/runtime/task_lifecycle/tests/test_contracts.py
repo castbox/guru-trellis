@@ -351,6 +351,28 @@ class ContractTests(unittest.TestCase):
             "state": "current",
             "responsibility_role": "current_branch",
         }
+        self.assertTrue(list(validator.iter_errors({
+            **payload,
+            "resources": [current_branch, {**current_delivery, "expected_cleanup_head": None}],
+        })))
+        self.assertTrue(list(validator.iter_errors({
+            **payload,
+            "resources": [current_branch, {
+                **current_delivery,
+                "state": "cleanup_pending",
+                "responsibility_role": "retired_cleanup",
+                "expected_cleanup_head": None,
+            }],
+        })))
+        self.assertEqual(list(validator.iter_errors({
+            **payload,
+            "resources": [current_branch, {
+                **current_delivery,
+                "acquisition_origin": "conservative_recovery",
+                "ownership": "caller_owned",
+                "expected_cleanup_head": None,
+            }],
+        })), [])
         for remote_name in ("origin", "upstream", "backup/main"):
             named_delivery = {
                 **current_delivery,

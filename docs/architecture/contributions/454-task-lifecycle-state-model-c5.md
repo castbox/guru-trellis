@@ -63,6 +63,13 @@ not a second transaction store or an unused checkpoint schema. Rebind retires th
 incarnation without dropping its responsibility and establishes one current successor. The same portable ref cannot
 represent two unresolved incarnations.
 
+One current remote incarnation keeps its resource identity, origin and ownership across a normally advanced
+Publication HEAD. The caller supplies the freshly validated published HEAD; the ledger accepts only monotonic Git
+ancestry from its prior HEAD, treats an equal-HEAD retry as read-only and rejects identity or ownership drift.
+Guru-owned current remote responsibility begins with an exact HEAD so rebind can seal its latest published HEAD;
+caller-owned conservative recovery may gain a known HEAD without gaining Guru ownership. No ledger-wide token or
+second transaction store is introduced.
+
 Focused evidence must cover context key present/absent, multi-session and A-to-B-to-A switching, generation invalidation,
 session write failure, pre-write stale-generation rejection, acquisition ownership projections, rebind retirement, active
 missing recovery and output-loss rematerialization, terminal missing manual selection, remote responsibility recovery,

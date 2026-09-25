@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -634,6 +635,160 @@ class ResourceLedgerTests(unittest.TestCase):
                 row for row in resolution.resources if row.kind == "remote_branch"
             ).portable_ref,
             remote.portable_ref,
+        )
+
+    def test_remote_delivery_advances_one_incarnation_and_rebind_seals_latest_head(self) -> None:
+        checkout = self.root / "published-commits"
+        subprocess.run(["git", "init", "-q", str(checkout)], check=True)
+        git_command = ["git", "-C", str(checkout)]
+
+        def commit(message: str) -> str:
+            subprocess.run(
+                [
+                    *git_command,
+                    "-c", "user.name=Guru Test",
+                    "-c", "user.email=guru-test@example.invalid",
+                    "commit", "--allow-empty", "-qm", message,
+                ],
+                check=True,
+            )
+            return subprocess.check_output([*git_command, "rev-parse", "HEAD"], text=True).strip()
+
+        first_head = commit("first publication")
+        second_head = commit("second publication")
+        finish_head = commit("finish")
+        repository = RepositoryFacts(checkout, checkout / ".git", checkout / ".git")
+        store = ResourceLedgerStore(repository)
+        key = self.key()
+        store.establish_current(
+            key,
+            binding_epoch=7,
+            binding_revision=0,
+            branch_name=BRANCH,
+            branch_ownership="guru_owned",
+            worktree_ownership="not_applicable",
+        )
+        with self.assertRaisesRegex(LifecycleContractError, "resource_ledger_conflict"):
+            store.record_remote_delivery(
+                key,
+                expected_epoch=7,
+                expected_revision=0,
+                remote_name="origin",
+                repository_ref="castbox/guru-trellis",
+                branch_ref=f"refs/heads/{BRANCH}",
+                ownership="guru_owned",
+            )
+        first = store.record_remote_delivery(
+            key,
+            expected_epoch=7,
+            expected_revision=0,
+            remote_name="origin",
+            repository_ref="castbox/guru-trellis",
+            branch_ref=f"refs/heads/{BRANCH}",
+            ownership="guru_owned",
+            expected_cleanup_head=first_head,
+        )
+        second = store.record_remote_delivery(
+            key,
+            expected_epoch=7,
+            expected_revision=0,
+            remote_name="origin",
+            repository_ref="castbox/guru-trellis",
+            branch_ref=f"refs/heads/{BRANCH}",
+            ownership="guru_owned",
+            expected_cleanup_head=second_head,
+        )
+        self.assertEqual((second.resource_id, second.acquisition_origin), (
+            first.resource_id, first.acquisition_origin,
+        ))
+        self.assertEqual(second.expected_cleanup_head, second_head)
+        after_advance = store.snapshot(key).content
+        self.assertEqual(
+            store.record_remote_delivery(
+                key,
+                expected_epoch=7,
+                expected_revision=0,
+                remote_name="origin",
+                repository_ref="castbox/guru-trellis",
+                branch_ref=f"refs/heads/{BRANCH}",
+                ownership="guru_owned",
+                expected_cleanup_head=second_head,
+            ),
+            second,
+        )
+        self.assertEqual(store.snapshot(key).content, after_advance)
+        with self.assertRaisesRegex(LifecycleContractError, "resource_ownership_conflict"):
+            store.record_remote_delivery(
+                key,
+                expected_epoch=7,
+                expected_revision=0,
+                remote_name="origin",
+                repository_ref="castbox/guru-trellis",
+                branch_ref=f"refs/heads/{BRANCH}",
+                ownership="guru_owned",
+                expected_cleanup_head=first_head,
+            )
+        self.assertEqual(store.snapshot(key).content, after_advance)
+        store.rebind_current(
+            key,
+            expected_epoch=7,
+            expected_revision=0,
+            source_branch_name=BRANCH,
+            target_branch_name=TARGET,
+            expected_cleanup_head=second_head,
+            target_branch_ownership="guru_owned",
+            target_worktree_ownership="not_applicable",
+            worktree_reassociated=False,
+        )
+        seal = store.seal_for_finish(
+            key, finish_result_id="finish:advanced", finish_head=finish_head
+        )
+        resolution = store.cleanup_resolution(
+            key,
+            finish_result_id="finish:advanced",
+            inventory_id=seal["inventory_id"],
+        )
+        remote = next(row for row in resolution.resources if row.kind == "remote_branch")
+        self.assertEqual((remote.resource_id, remote.expected_cleanup_head), (
+            first.resource_id, second_head,
+        ))
+
+    def test_recovered_caller_remote_can_gain_a_known_head_without_changing_origin(self) -> None:
+        key = self.key()
+        self.store.recover_active_missing(
+            key,
+            binding_epoch=7,
+            binding_revision=0,
+            branch_name=BRANCH,
+            live_branch_present=True,
+            linked_worktree_present=False,
+            remote_delivery=("origin", "castbox/guru-trellis", f"refs/heads/{BRANCH}"),
+        )
+        updated = self.store.record_remote_delivery(
+            key,
+            expected_epoch=7,
+            expected_revision=0,
+            remote_name="origin",
+            repository_ref="castbox/guru-trellis",
+            branch_ref=f"refs/heads/{BRANCH}",
+            ownership="caller_owned",
+            expected_cleanup_head=HEAD,
+        )
+        self.assertEqual((updated.acquisition_origin, updated.expected_cleanup_head), (
+            "conservative_recovery", HEAD,
+        ))
+        self.assertEqual(
+            self.store.record_remote_delivery(
+                key,
+                expected_epoch=7,
+                expected_revision=0,
+                remote_name="origin",
+                repository_ref="castbox/guru-trellis",
+                branch_ref=f"refs/heads/{BRANCH}",
+                ownership="caller_owned",
+                expected_cleanup_head=HEAD,
+            ),
+            updated,
         )
 
     def test_cleanup_runtime_rejects_shapes_forbidden_by_the_public_schema(self) -> None:

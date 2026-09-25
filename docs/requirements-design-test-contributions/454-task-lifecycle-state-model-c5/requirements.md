@@ -29,7 +29,10 @@ package，也不重做 C1、C2、D0、C3 或 C4。
   `refs/heads/guru-task-lifecycle/*` retained control refs 不得进入普通 deletion set。
 - `R454-C5-09`：remote resource identity 必须包含 portable `remote_name`、repository 与完整 branch ref；零个或一个
   remote 可承担 `current_delivery` role。Cleanup 用 remote name 与 repository identity 定位并验证完整 remote ref；
-  Publication 尚未发生时 remote set 可以为空。
+  Publication 尚未发生时 remote set 可以为空。同一 current remote incarnation 在再次正常发布时保留原 resource id、
+  origin 与 ownership，以 caller 已验证的当前 HEAD 单调推进 cleanup HEAD；相同 HEAD 重试不改 ledger，旧 HEAD
+  回退或 remote identity/ownership 漂移拒绝。Guru-owned remote 首次记录时必须已有 exact published HEAD；
+  conservative recovery 的 caller-owned remote 可暂时缺少 HEAD，后续已验证的 HEAD 只更新同一 incarnation。
 - `R454-C5-10`：自动 discovery 只在恰好一个 valid candidate 时自动选择；零个或多个进入 selection-required。
   用户可选 discovered candidate 或显式指定未列出 target，两条路径在 mutation 前使用同一 fresh validation。
 - `R454-C5-11`：`guru-establish-task-identity` 在 C5 只作为 planned stable ID。不得创建 canonical package tree、

@@ -29,7 +29,11 @@
   required 与 already-clean states，不把用户选择或授权写入 ledger。
 - `D454-C5-08`：remote portable ref 保留 `remote_name`、repository 与 branch ref，使 Cleanup 能验证 exact remote
   identity；普通 cleanup projection 过滤 retained handoff control refs，并只返回 Guru-owned cleanup-pending
-  incarnations。manual terminal cleanup 是独立用户定向路径，不把选择反写成历史 Guru ownership。
+  incarnations。Guru-owned current remote 必须以 exact published HEAD 建立；同一 incarnation 的再次发布只在旧 HEAD
+  为新 HEAD 祖先时更新该 HEAD 并保留 resource id、origin 与 ownership，相同 HEAD 重试不写入，remote/ref/owner
+  不一致或 HEAD 回退均拒绝。caller-owned conservative recovery 可由无 HEAD 状态补入已验证 HEAD，rebind 将最近的
+  remote HEAD 封存到 retired incarnation；manual terminal cleanup 是独立用户定向路径，不把选择反写成历史
+  Guru ownership。
 - `D454-C5-09`：三个 C5 schema 固定 ledger、Finish seal input 与 Cleanup resolution；mutation rollback/recovery
   由 runtime exact snapshot 和 successor recognition承接，不制造无人消费的 checkpoint schema。session record继续由
   official schema-2 primitive拥有，不新增 Guru session schema。

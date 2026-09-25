@@ -12,7 +12,7 @@ from typing import Any, Iterable, Iterator, Literal, Sequence
 from .branch_resolution import Ownership, OwnershipCurrent
 from .branch_store import TaskLifecycleKey, normalize_branch_name
 from .errors import LifecycleContractError
-from .git_facts import RepositoryFacts
+from .git_facts import RepositoryFacts, is_ancestor
 from .source import normalize_repo_ref
 
 
@@ -336,6 +336,17 @@ class ResourceIncarnation:
                 "resource_ledger_conflict",
                 "ownership",
                 "Only Guru-owned resources enter ordinary cleanup responsibility.",
+            )
+        if (
+            self.kind == "remote_branch"
+            and self.ownership == "guru_owned"
+            and self.responsibility_role in {"current_delivery", "retired_cleanup"}
+            and self.expected_cleanup_head is None
+        ):
+            raise LifecycleContractError(
+                "resource_ledger_conflict",
+                "expected_cleanup_head",
+                "Keep an exact published HEAD for Guru-owned remote cleanup responsibility.",
             )
         if self.responsibility_role in {"manual_only", "retained_control"} and self.ownership != "caller_owned":
             raise LifecycleContractError(
@@ -1167,12 +1178,49 @@ class ResourceLedgerStore:
             if row.responsibility_role == "current_delivery"
         ]
         if deliveries:
-            if len(deliveries) == 1 and deliveries[0] == resource:
-                return deliveries[0]
+            existing = deliveries[0]
+            if (
+                len(deliveries) == 1
+                and existing.resource_id == resource.resource_id
+                and existing.portable_ref == resource.portable_ref
+                and existing.ownership == resource.ownership
+                and existing.binding_epoch == resource.binding_epoch
+                and existing.binding_revision == resource.binding_revision
+            ):
+                if existing.expected_cleanup_head == expected_cleanup_head:
+                    return existing
+                if expected_cleanup_head is not None and (
+                    existing.expected_cleanup_head is None
+                    or is_ancestor(
+                        self.repository,
+                        existing.expected_cleanup_head,
+                        expected_cleanup_head,
+                    )
+                ):
+                    successor = replace(existing, expected_cleanup_head=expected_cleanup_head)
+                    self._write(
+                        ResourceLedger(
+                            ledger.task_id,
+                            ledger.lifecycle_generation,
+                            ledger.ledger_revision + 1,
+                            tuple(
+                                successor if row.resource_id == existing.resource_id else row
+                                for row in ledger.resources
+                            ),
+                        )
+                    )
+                    persisted = self.read(key)
+                    if persisted is not None and successor in persisted.resources:
+                        return successor
+                    raise LifecycleContractError(
+                        "resource_ownership_conflict",
+                        "post_state",
+                        "Keep the advanced remote delivery in the current incarnation.",
+                    )
             raise LifecycleContractError(
                 "resource_ownership_conflict",
                 "remote_delivery",
-                "Recover only the exact current remote delivery successor.",
+                "Keep the current remote identity and advance only its published HEAD.",
             )
         self._write(
             ResourceLedger(

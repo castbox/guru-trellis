@@ -274,6 +274,17 @@
           "then": {"properties": {"kind": {"const": "remote_branch"}, "state": {"const": "current"}}}
         },
         {
+          "if": {
+            "properties": {
+              "kind": {"const": "remote_branch"},
+              "ownership": {"const": "guru_owned"},
+              "responsibility_role": {"enum": ["current_delivery", "retired_cleanup"]}
+            },
+            "required": ["kind", "ownership", "responsibility_role"]
+          },
+          "then": {"properties": {"expected_cleanup_head": {"$ref": "#/$defs/commit"}}}
+        },
+        {
           "if": {"properties": {"responsibility_role": {"const": "retired_cleanup"}}},
           "then": {"properties": {"ownership": {"const": "guru_owned"}, "state": {"const": "cleanup_pending"}}}
         },

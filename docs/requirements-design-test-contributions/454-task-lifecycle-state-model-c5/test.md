@@ -17,7 +17,9 @@ Publication、production activation 或 Release Gate 证明。
   incarnation只读恢复、同仓库多个remote name的精确定位、无关合法ledger mutation后仍可rematerialize、Finish seal
   把 exact `finish_head` 写入最后一个 current Guru-owned incarnation 并返回完整inventory、ordinary cleanup仅返回
   带可验证 HEAD 的 Guru-owned cleanup-pending、caller/unknown与retained-control refs排除，并验证control ref
-  runtime/schema同域。
+  runtime/schema同域。另以真实 Git ancestry 覆盖同一 remote H1→H2 的同 incarnation推进、相同 HEAD 无写重试、
+  旧 HEAD 回退拒绝、首次 Guru-owned remote 无 HEAD 拒绝、rebind 封存最新 H2，以及 caller-owned conservative
+  recovery 从无 HEAD 补入已验证 HEAD 且保持 origin；schema/runtime 同步约束 Guru-owned remote cleanup HEAD。
 - `T454-C5-07`（R454-C5-10）：unique candidate自动选择；zero/multiple返回selection-required；discovered与explicit
   target使用同一 fresh validation，explicit target不能覆盖非法repository/task/generation/branch/resource事实。
 - `T454-C5-08`（R454-C5-11）：canonical registry断言新增ID仅planned、无package/interface/command/active graph/
