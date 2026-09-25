@@ -229,6 +229,10 @@ def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, 
     shutil.move(str(task_dir), str(archive_dir))
     (archive_dir / "task.json").write_text(json.dumps(task, ensure_ascii=False, indent=2) + "\n")
     branch = git(root, "branch", "--show-current").stdout.strip() or "detached"
+    source = task_source(task)
+    issue_refs = [f"#{source['number']}"] if source["kind"] == "issue" else []
+    artifacts = {key: name for key, name in (("prd", "prd.md"), ("design", "design.md"), ("implement", "implement.md")) if (archive_dir / name).is_file()}
+    archive_paths = sorted([archive_ref, *(f"{archive_ref}/{name}" for name in ("task.json", *artifacts.values(), "finish-summary.json"))])
     summary = {
         "schema_version": 2,
         "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
@@ -236,8 +240,8 @@ def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, 
         "task": {"slug": archive_dir.name, "title": task.get("title", archive_dir.name), "status": "completed", "artifact_dir": public["task_ref"], "archive_dir": archive_ref},
         "git": {"base_branch": task.get("base_branch", "main"), "branch": branch, "commits": [], "changed_paths": []},
         "github": {"pr_url": ""},
-        "artifacts": {key: name for key, name in (("prd", "prd.md"), ("design", "design.md"), ("implement", "implement.md")) if (archive_dir / name).is_file()},
-        "index": {"problem": task.get("title", archive_dir.name), "outcome": "任务已完成并归档。", "changed_behavior": ["持久化 Completion、Closure 与 Finish 终态"], "affected_surfaces": [{"kind": "task-artifact", "name": "task archive", "paths": [archive_ref], "change": "归档当前 task 并写入完成摘要。"}], "contract_changes": [], "search_terms": {"issue_refs": [], "pr_refs": [], "branches": [branch], "paths": [], "commands": [], "config_keys": [], "schema_fields": [], "symbols": [], "phrases": ["完成任务归档", "写入完成摘要", "保留 task identity"]}, "retrieval_text": f"{task.get('title', archive_dir.name)}；完成任务归档；写入完成摘要；保留 task identity"},
+        "artifacts": artifacts,
+        "index": {"problem": task.get("title", archive_dir.name), "outcome": "任务已完成并归档。", "changed_behavior": ["持久化 Completion、Closure 与 Finish 终态"], "affected_surfaces": [{"kind": "task-artifact", "name": "task archive", "paths": archive_paths, "change": "归档当前 task 并写入完成摘要。"}], "contract_changes": [], "search_terms": {"issue_refs": issue_refs, "pr_refs": [], "branches": [branch], "paths": archive_paths, "commands": [], "config_keys": [], "schema_fields": [], "symbols": [], "phrases": ["完成任务归档", "写入完成摘要", "保留 task identity"]}, "retrieval_text": f"{task.get('title', archive_dir.name)}；{'；'.join(issue_refs)}；完成任务归档；写入完成摘要；保留 task identity"},
     }
     schema = root / ".trellis/guru-team/schemas/finish-summary.schema.json"
     if schema.is_file():
