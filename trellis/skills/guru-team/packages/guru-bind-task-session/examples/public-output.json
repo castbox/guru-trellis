@@ -1,1 +1,1 @@
-{"exit_id":"session_rebound","task_ref":".trellis/tasks/example","lifecycle_generation":1,"resume_target":"phase-2"}
+{"exit_id":"session_rebound","task_id":"example","lifecycle_generation":0,"resume_target":"phase-2"}

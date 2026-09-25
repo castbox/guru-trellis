@@ -146,3 +146,26 @@ Guru source preparation validation时，Guru substrate 的 framework-dependent s
 具体文件、切片、测试、entry/exit criteria 与 rollback boundary 以 `implement.md`、
 `planning/phase-c-surface-inventory.md` 和 `planning/phase-c-migration-retirement-ledger.md` 为 Phase C 实施计划
 SSOT。
+
+## Phase D443 package migration addendum（generation 5）
+
+本节是 #454 target contract 在 Bind package 的当轮落地，不回写 #443 已归档 task 的历史实现事实。
+`origin/main@81659a0d9437358061a6442616e3fc4aaa1872ab` 的 C5 session adapter 与 C2-C4
+identity/checkout/branch substrate 是唯一复用层；#456 迁移账本中 `443-*` 项定义 replace/retire 边界。
+共享 `.64` 中继承的旧 D443 workspace/mapping/base-provenance 描述仅反映旧 #443 package，不是本轮 target。
+
+- Bind 的语义 owner 先按 `resume_current_task | rebind_missing_session | switch_task |
+  reactivate_rebind | manual_recovery` 判定唯一 task lifecycle 和真实 current route，随后确定性 runtime
+  以 official schema-2 session port 验证 TaskId/generation、repository、live task checkout 和当前会话身份。
+  `manual_recovery` 只恢复该 session pointer；branch binding 或 ownership 缺失属于各自 owner，不由 Bind 修补。
+- 五个保留 success exits 的公共 payload 均为 `TaskLifecycleDTO + resume_target`；新增
+  `explicit_task_mode` 用于缺失可用 context key 的合法显式 task route。consumer fresh 派生可变 TaskRef，
+  public Bind DTO 不携带 TaskRef、checkout path、branch、HEAD、session key、resource ownership 或授权。
+  `binding_blocked` 只携带 ReasonDTO，旧 exit 与 router identity 不被静默重命名。
+- `resume` 验证现有 exact pointer；`rebind`、`reactivate_rebind` 和 `manual_recovery` 写入同一
+  official session store，重试同一绑定不制造第二条记录；`switch` 验证源和目标是不同任务且当前 route
+  属于源，再将同一 session 指向目标。generation 0 是合法新任务入口；上一 generation 的 pointer 不可
+  继续驱动 Reactivate 后任务。stale/mismatch 先拒绝、零业务 mutation。
+- 本轮 schema/interface/runtime/consumer declaration 在 canonical package 内自洽，但 registry 仍选择
+  deferred、production workflow 仍使用旧 graph，installed/platform 活跃投影保持不变。只有 E434 审核完整
+  package-ready set 后才原子选择新 major 并映射第六个 router；此 addendum 不产生半激活声明。

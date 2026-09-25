@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-bind-task-session-output-blocked-2.0",
+  "$id": "guru-bind-task-session-blocked-route-2.0",
   "type": "object", "additionalProperties": false,
   "required": ["exit_id", "reason_code", "reason_refs"],
   "properties": {

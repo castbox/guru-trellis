@@ -752,3 +752,36 @@ predecessor数据模型带入target graph。
   `.trellis/spec/` 使用规则却仍声明 `.63/active`。普通 gate 的读入与自身 freshness 条款发生冲突。
   经正常路径与机制资格分类后，直接演进两个 subordinate current 使用投影至 `.64` 与 C6/C7 source；
   不修改 immutable `.63`、共享 `.64` authority 或引入第二状态。此修复须重新通过 Phase 2、提交和完整 Branch Review。
+
+## Phase D443：Bind package major migration（generation 5，2026-09-25）
+
+本轮从 `origin/main@81659a0d9437358061a6442616e3fc4aaa1872ab` 续接同一 #454 task identity，
+通过现行 Reactivate owner 恢复到 generation 5，执行分支为 `codex/454-d443-bind-task-session`。
+历史 C1-C7 和 #443 归档结论不是本轮的 package/check/review pass。
+
+### 范围与 owner
+
+- 迁移 canonical `trellis/skills/guru-team/packages/guru-bind-task-session/` 的 Skill、interface、
+  public input/output schema、consumer projection、runtime、examples 和 package-local tests；保留五个成功 exit
+  与 router ID，新增 `explicit_task_mode`，blocked 只输出 ReasonDTO。
+- TaskLifecycleDTO 仅包含 `task_id + lifecycle_generation`（包括 generation 0）。TaskRef 由直接 consumer fresh
+  派生；Bind 不持有 branch、checkout、resource ledger 或机器路径 authority。manual recovery 仅重建当前
+  official schema-2 session pointer，不修复 task/workspace mappings。
+- 使用 C5 official-backed session adapter 和 C2-C4 live identity/checkout/binding substrate；不得复制 Fixed Fork
+  task/session store。#456 归档 reconcile 的 `443-*` rows 是迁移 inventory，#454 当前合同优先于旧 #443
+  package 与 `.64` 中继承的旧 D443 描述。
+- 本轮只形成 package-ready canonical candidate；#434/E434 独占 workflow routers、registry selector、active
+  manifest、installed/platform publication 和旧 production edge retirement。D436 Reactivate/Completion/Closure/
+  Finish/Cleanup 仍是下一实施单元；不修改 #434 dirty worktree 或业务仓库。
+
+### 验证与交付门禁
+
+1. 以实际 official session port 和真实 Git checkout fixture 验证 resume、rebind、switch、reactivate、
+   pointer-only manual recovery、context-key 缺失的 explicit mode、generation 0、stale/mismatch zero-write。
+2. 校验 schema/interface/exits/consumer/projection 闭包、canonical package 与 shared DTO 一致性，并检查
+   target Bind package 没有 legacy mapping/path authority。运行相关 package/runtime tests、task validator、
+   `git diff --check` 和 touched non-generated code 行数检查。
+3. Docs/Architecture impact 按当前 package delta fresh 审查；只有独立 contribution 审核后才可串行提升 shared
+   current。finding fix 后重跑 Phase 2、Task Commit 与完整 `origin/main...HEAD` Branch Review。
+4. Publication 只可声明 D443 package-ready、非激活；PR 使用 `Refs #454`，不得 `Closes #454`。push、PR、
+   merge、Finish 和 Cleanup 各由其正式 owner 验证真实前置。完整多平台 Release matrix 留给专门 Issue。
