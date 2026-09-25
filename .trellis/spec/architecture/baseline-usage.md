@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.63`
+- version：`current-main-0.6.17-guru.64`
 - status：`active`
-- source binding：reviewed #454 C5 contribution + inherited immutable `.62` authority；active registry 保持 32 Skills / 142 package exits / 102 commands并保留 planned IDs，production workflow 保持 22 mandatory invokes / 98 exits；current 增量见 `ARCH-CUR-040` / `ARCH-DOM-025` / `ARCH-INT-028` / `ARCH-GAP-011` / `ADR-015` / `EVD-038`，fixed Fork source 为 `eb370008c7689d4e272ae626bd002190ecbb3296`。`.63` 继承 C2/D0/C3/C4 substrate，新增 C5 path-free official session adapter、resource ownership ledger、Finish seal input 与 Cleanup resolution；C6-C7、D443、D436、E434 与 #434 production graph activation 尚未完成。`113/113` 只证明提升前 C5 focused candidate；installed/platform 与完整 Release matrix 均未声明通过，promotion diff 须 fresh 复审。
+- source binding：reviewed #454 C6/C7 contribution + inherited immutable `.63` authority；active registry 保持 32 Skills / 142 package exits / 102 commands与六个 planned IDs，production workflow 保持 22 mandatory invokes / 98 exits；current 增量见 `ARCH-CUR-041` / `ARCH-DOM-026` / `ARCH-INT-029` / `ARCH-GAP-011` / `EVD-039`，fixed Fork source 为 `eb370008c7689d4e272ae626bd002190ecbb3296`。`.64` 继承 C2/D0/C3/C4/C5，新增非激活 C6 task creation composition、activation inputs 与 C7 subtraction/validation；D443、D436、E434 与 #434 production graph activation 尚未完成。当前 focused lifecycle `128/128`；package integration `19/20`、managed fixture、installed/platform 与完整 Release matrix 均未声明通过，promotion diff 须 fresh 复审。
 - Finalizer recovery binding：既有 `REQ-048/DES-046/TST-032/SCN-044` 同时覆盖 same-base fresh-reviewed transaction reprepare；只消费合法 predecessor tail、selected-base lineage、current review/Publication/live HEAD equality、Open PR absence 与 transaction-owned remote endpoints，不把 terminal PR history、branch name、session 或 path 提升为 authority。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`

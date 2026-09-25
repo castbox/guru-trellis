@@ -745,3 +745,10 @@ predecessor数据模型带入target graph。
 - 正常路径和 application-level mechanism 资格均已分类。真实 Git/worktree 回归覆盖另一 checkout 独有的归档
   与缺失旧 ledger；composition `15/15`、完整 lifecycle `128/128`、Python compile、task validator 与
   `git diff --check` 通过。本项仍须 fresh Phase 2、Task Commit 与另一位完整范围审查。
+
+### C7 current projection finding-fix（2026-09-25）
+
+- `C6C7-BR-STALE-SPEC-PROJECTION-004`：`.64` 已经是唯一 active Architecture/RDT，两个项目本地
+  `.trellis/spec/` 使用规则却仍声明 `.63/active`。普通 gate 的读入与自身 freshness 条款发生冲突。
+  经正常路径与机制资格分类后，直接演进两个 subordinate current 使用投影至 `.64` 与 C6/C7 source；
+  不修改 immutable `.63`、共享 `.64` authority 或引入第二状态。此修复须重新通过 Phase 2、提交和完整 Branch Review。
