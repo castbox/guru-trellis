@@ -1,0 +1,9 @@
+{
+  "profile": "archived_review_refresh",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/archive/2026-09/09-16-example",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "reviewed_base_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "pr_title": "Reviewed existing pull request",
+  "pr_body": "Existing Publication-reviewed bytes."
+}

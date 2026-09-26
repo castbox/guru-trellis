@@ -27,7 +27,7 @@
         ]
       },
       "files": [
-        "examples/public-archived-review-refresh-input.json",
+        "evals/files/archived-review-refresh-input.json",
         "evals/files/archived-review-refresh-post-owner-facts.json"
       ],
       "native_execution_mode": "post_owner"

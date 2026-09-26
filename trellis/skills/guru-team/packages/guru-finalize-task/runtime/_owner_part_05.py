@@ -1525,6 +1525,10 @@ def finalization_preview_context(
             state, existing_pr_recovery = finalization_existing_pr_recovery_context(
                 root, plan, current_transaction, state
             )
+        if current_transaction is None and state in {"prepared", "content_pushed"}:
+            finalization_pre_mutation_remote_preflight(
+                root, plan, None, existing_pr_recovery=existing_pr_recovery,
+            )
     if (
         not archived
         and isinstance(prepared, dict)

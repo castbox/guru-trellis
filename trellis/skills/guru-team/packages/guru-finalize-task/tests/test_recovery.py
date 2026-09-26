@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from argparse import Namespace
+
 from support import *  # noqa: F403
 
 
@@ -2242,6 +2244,35 @@ class FinalizeTaskRecoveryTests(unittest.TestCase):
             "pre_finalizer_terminal_pr_exists",
         )
         self.assertEqual(raised.exception.payload["pull_requests"], terminal)
+
+    def test_preview_uses_the_same_terminal_pr_preflight_before_confirming(self) -> None:
+        plan = {"git": {"repo": "castbox/guru-trellis", "remote": "origin", "head_branch": "feat/208", "base_branch": "main"}}
+        terminal = [{"number": 59, "state": "MERGED"}]
+        error = GTT.WorkflowError(
+            "Terminal PR already exists.", exit_code=2,
+            payload={"reason_code": "pre_finalizer_terminal_pr_exists", "pull_requests": terminal},
+        )
+        public_input = {"profile": "publication_ready", "task_ref": ".trellis/tasks/208"}
+        with (
+            mock.patch.object(GTT, "official_after_archive_hook_state"),
+            mock.patch.object(GTT, "finalization_eval_preview_context", return_value=None),
+            mock.patch.object(GTT, "finalization_task_dir", return_value=Path("/repo/.trellis/tasks/208")),
+            mock.patch.object(GTT, "task_dir_is_archived", return_value=False),
+            mock.patch.object(GTT, "load_config", return_value={}),
+            mock.patch.object(GTT, "finalization_read_transaction", return_value=None),
+            mock.patch.object(GTT, "finalization_publication_owner_result", return_value={"owner_status": "current"}),
+            mock.patch.object(GTT, "load_task_runtime_identity", return_value={}),
+            mock.patch.object(GTT, "assert_workspace_boundary"),
+            mock.patch.object(GTT, "finalization_prepare_publication_ready", return_value={}),
+            mock.patch.object(GTT, "prepare_closeout", return_value={"plan": plan}),
+            mock.patch.object(GTT, "resolve_closeout_pre_draft_state", return_value="prepared"),
+            mock.patch.object(GTT, "finalization_existing_pr_recovery_context", return_value=("prepared", None)),
+            mock.patch.object(GTT, "finalization_pre_mutation_remote_preflight", side_effect=error) as preflight,
+            self.assertRaises(GTT.WorkflowError) as raised,
+        ):
+            GTT.finalization_preview_context(Path("/repo"), Namespace(), public_input)
+        self.assertEqual(raised.exception.payload["reason_code"], "pre_finalizer_terminal_pr_exists")
+        preflight.assert_called_once_with(Path("/repo"), plan, None, existing_pr_recovery=None)
 
     def test_terminal_pr_discovery_binds_same_repository_and_state(self) -> None:
         values = [
