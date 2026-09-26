@@ -1,0 +1,64 @@
+{
+  "$schema":"../../schemas/skill-interface-1.4.schema.json", "schema_version":"1.4",
+  "id":"guru-establish-task-identity", "name":"guru-establish-task-identity",
+  "description":"Resolve an immutable TaskId and its current source relation, requesting fresh review for ambiguous legacy source.",
+  "state":"active", "judgment_mode":"semantic",
+  "modes":{
+    "workflow":{"routing":"global_workflow","entry_precondition_ids":["active_task","source_authority"]},
+    "standalone":{"routing":"direct_discovery","entry_precondition_ids":["active_task","source_authority"]}
+  },
+  "entry_preconditions":[
+    {"id":"active_task","evidence":"unique active TaskId, generation and task artifact","binding":"one active task incarnation","freshness":"reread current task inventory"},
+    {"id":"source_authority","evidence":"task.json.source, canonical legacy scope, or fresh reviewed legacy relation","binding":"current task source relation","freshness":"fresh semantic judgment for ambiguous legacy source"}
+  ],
+  "runtime_dependency":{"extension_id":"guru-team","api_version":"1.0","manifest_path":".trellis/guru-team/extension.json","dispatcher":"run-skill-command","distribution":"guru-team-preset","package_portability":"not-self-contained"},
+  "ordered_stages":["forward_behavior","ai_review_gate","conditional_human_confirmation","recorder_validator","typed_exit"],
+  "artifacts":[
+    {"id":"public_input","path":"examples/public-input.json"},{"id":"reviewed_input","path":"examples/public-reviewed-source-input.json"},
+    {"id":"established_output","path":"examples/public-identity-established-output.json"},{"id":"review_output","path":"examples/public-source-review-required-output.json"},
+    {"id":"invalid_output","path":"examples/public-invalid-task-state-output.json"},{"id":"blocked_output","path":"examples/public-blocked-output.json"},
+    {"id":"invocation_error","path":"examples/public-invocation-error.json"}
+  ],
+  "schemas":[
+    {"id":"public_input","path":"schemas/public-input.schema.json"},{"id":"public_output","path":"schemas/public-output.schema.json"},
+    {"id":"established_output","path":"schemas/public-identity-established-output.schema.json"},
+    {"id":"review_output","path":"schemas/public-source-review-required-output.schema.json"},
+    {"id":"invalid_output","path":"schemas/public-invalid-task-state-output.schema.json"},
+    {"id":"blocked_output","path":"schemas/public-blocked-output.schema.json"},
+    {"id":"invocation_error","path":"schemas/public-invocation-error.schema.json"}
+  ],
+  "validators":[{"id":"public_invocation","command":"scripts/invoke.sh","runtime_command":"invoke-guru-establish-task-identity","objective_scope":"Resolve exact task identity and source without modifying task metadata."}],
+  "external_exits":[
+    {"id":"identity_established","evidence":"unique active TaskId and a current or reviewed source relation","consumer":{"kind":"workflow","id":"guru-current-task-identity-router"}},
+    {"id":"source_review_required","evidence":"noncanonical legacy source requires fresh semantic review","consumer":{"kind":"workflow","id":"guru-task-source-review-router"}},
+    {"id":"invalid_task_state","evidence":"task id, ref or generation is invalid or ambiguous","consumer":{"kind":"stop","id":"invalid-task-state"}},
+    {"id":"blocked","evidence":"current source authority is malformed or conflicts with the reviewed relation","consumer":{"kind":"stop","id":"task-identity-blocked"}}
+  ],
+  "reentry":{"identity":"immutable TaskId and lifecycle generation","freshness":"reread active artifact and source authority","stale_behavior":"fail_closed"},
+  "tests":["tests/test_contract.py"],
+  "platform_destinations":["shared","claude","cursor","opencode","codex","kilo","kiro","gemini","antigravity","devin","qoder","codebuddy","copilot","droid","dsh","pi","reasonix","zcode","trae","omp","grok","kimi","snow"],
+  "public_contracts":{
+    "input":{"kind":"structured_json","aggregate_schema":{"schema_id":"guru-establish-task-identity-input-1.0","path":"schemas/public-input.schema.json"},"profiles":[
+      {"id":"active_task","schema":{"schema_id":"guru-establish-task-identity-input-1.0","path":"schemas/public-input.schema.json"},"example":{"id":"public_input","path":"examples/public-input.json"},"discriminator":{"field":"profile","value":"active_task"}}
+    ]},
+    "invocation":{"command_id":"run-skill-command","wrapper":"scripts/invoke.sh","input_binding":{"kind":"structured_json","profile_id":"active_task"},"stdout_contract":"single_typed_exit","error_schema":{"schema_id":"guru-establish-task-identity-error-1.0","path":"schemas/public-invocation-error.schema.json"},"error_example":{"id":"invocation_error","path":"examples/public-invocation-error.json"},"example_argv":["--input","examples/public-input.json"]},
+    "outputs":[
+      {"exit_id":"identity_established","schema":{"schema_id":"guru-establish-task-identity-established-1.0","path":"schemas/public-identity-established-output.schema.json"},"example":{"id":"established_output","path":"examples/public-identity-established-output.json"},"consumer_use_ids":["established_projection"]},
+      {"exit_id":"source_review_required","schema":{"schema_id":"guru-establish-task-identity-review-1.0","path":"schemas/public-source-review-required-output.schema.json"},"example":{"id":"review_output","path":"examples/public-source-review-required-output.json"},"consumer_use_ids":["review_projection"]},
+      {"exit_id":"invalid_task_state","schema":{"schema_id":"guru-establish-task-identity-invalid-1.0","path":"schemas/public-invalid-task-state-output.schema.json"},"example":{"id":"invalid_output","path":"examples/public-invalid-task-state-output.json"},"consumer_use_ids":["invalid_projection"]},
+      {"exit_id":"blocked","schema":{"schema_id":"guru-establish-task-identity-blocked-1.0","path":"schemas/public-blocked-output.schema.json"},"example":{"id":"blocked_output","path":"examples/public-blocked-output.json"},"consumer_use_ids":["blocked_projection"]}
+    ],
+    "consumer_inputs":[
+      {"id":"established_input","consumer":{"kind":"workflow","id":"guru-current-task-identity-router"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-current-task-identity-input-1.0","path":"consumers/workflow/production/established.schema.json"}},
+      {"id":"review_input","consumer":{"kind":"workflow","id":"guru-task-source-review-router"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-task-source-review-input-1.0","path":"consumers/workflow/production/review.schema.json"}},
+      {"id":"invalid_input","consumer":{"kind":"stop","id":"invalid-task-state"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-task-identity-invalid-input-1.0","path":"consumers/stop/production/invalid.schema.json"}},
+      {"id":"blocked_input","consumer":{"kind":"stop","id":"task-identity-blocked"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-task-identity-blocked-input-1.0","path":"consumers/stop/production/blocked.schema.json"}}
+    ],
+    "projections":[
+      {"id":"established_projection","exit_id":"identity_established","consumer_input_id":"established_input","operation":"direct"},
+      {"id":"review_projection","exit_id":"source_review_required","consumer_input_id":"review_input","operation":"direct"},
+      {"id":"invalid_projection","exit_id":"invalid_task_state","consumer_input_id":"invalid_input","operation":"direct"},
+      {"id":"blocked_projection","exit_id":"blocked","consumer_input_id":"blocked_input","operation":"direct"}
+    ],"private_artifacts":[]
+  }
+}

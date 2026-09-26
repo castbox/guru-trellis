@@ -232,6 +232,47 @@ class ResourceLedgerTests(unittest.TestCase):
     def key(generation=0):
         return TaskLifecycleKey(TASK_A, generation)
 
+    def test_cleanup_seal_cannot_cross_reactivation_generation(self) -> None:
+        old_key = self.key(0)
+        new_key = self.key(1)
+        for key, branch in ((old_key, "topic-0"), (new_key, "topic-1")):
+            self.store.establish_current(
+                key,
+                binding_epoch=key.lifecycle_generation + 1,
+                binding_revision=0,
+                branch_name=branch,
+                branch_ownership="guru_owned",
+                worktree_ownership="not_applicable",
+            )
+        old_seal = self.store.seal_for_finish(
+            old_key, finish_result_id="finish-old", finish_head=HEAD
+        )
+        new_seal = self.store.seal_for_finish(
+            new_key, finish_result_id="finish-new", finish_head=FINISH_HEAD
+        )
+        self.assertEqual(
+            self.store.cleanup_resolution(
+                old_key,
+                finish_result_id=old_seal["finish_result_id"],
+                inventory_id=old_seal["inventory_id"],
+            ).resolution_kind,
+            "ordinary_cleanup",
+        )
+        with self.assertRaisesRegex(LifecycleContractError, "resource_ledger_conflict"):
+            self.store.cleanup_resolution(
+                new_key,
+                finish_result_id=old_seal["finish_result_id"],
+                inventory_id=old_seal["inventory_id"],
+            )
+        self.assertEqual(
+            self.store.cleanup_resolution(
+                new_key,
+                finish_result_id=new_seal["finish_result_id"],
+                inventory_id=new_seal["inventory_id"],
+            ).resolution_kind,
+            "ordinary_cleanup",
+        )
+
     def test_five_acquisition_projections_are_conservative_and_path_free(self) -> None:
         cases = [
             (0, "caller_owned", "not_applicable", 1),

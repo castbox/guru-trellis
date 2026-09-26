@@ -130,7 +130,7 @@ class ChangeRequestReviewPackageTest(unittest.TestCase):
         output = self.run_command(review_invoke, envelope)
         self.assertEqual("ready", output["exit_id"])
         owner = envelope["owner_result"]
-        self.assertEqual("2.0", owner["schema_version"])
+        self.assertEqual("3.0", owner["schema_version"])
         self.assertNotEqual(owner["prerequisites"]["clarity"]["content_sha256"], self.target["content_sha256"])
         self.assertEqual(self.transition["target_disposition"], output["transition"]["target_disposition"])
         for value in owner["prerequisites"].values():

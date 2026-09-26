@@ -37,7 +37,9 @@ def invoke(tmp_path, public, semantic):
 
 def test_contract_assets_and_projection(tmp_path):
     interface = json.loads((PACKAGE / "interface.json").read_text())
-    validate_json(interface, ROOT / "schemas/skill-interface-1.4.schema.json", "interface")
+    assert interface["$schema"] == "../../schemas/skill-interface-1.7.schema.json"
+    assert interface["schema_version"] == "1.7"
+    validate_json(interface, ROOT / "schemas/skill-interface-1.7.schema.json", "interface")
     assert len(interface["external_exits"]) == 7
     for group in ("artifacts", "schemas"):
         for item in interface[group]:
@@ -65,7 +67,7 @@ def test_contract_assets_and_projection(tmp_path):
     ("closeout", ["planning", "task_commit_pair", "phase2_check", "branch_review", "closeout_publication"]),
     ("pre_cutover_recovered", ["planning", "restore", "merge_recovery"]),
 ])
-def test_exact_closeout_and_recovery_lineage(tmp_path, lineage, slots):
+def test_pre_cutover_lineage_cannot_enter_current_completion(tmp_path, lineage, slots):
     public, semantic = fixture()
     public["merge_result"] = {
         "task_id": "example-task", "lifecycle_generation": 0, "repo_ref": "castbox/guru-trellis",
@@ -74,10 +76,8 @@ def test_exact_closeout_and_recovery_lineage(tmp_path, lineage, slots):
     public["evidence_slots"] = {name: name + ":current" for name in slots}
     semantic["reviewed_evidence_slots"] = copy.deepcopy(public["evidence_slots"])
     result = invoke(tmp_path, public, semantic)
-    assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["exit_id"] == "completed"
-    public["evidence_slots"]["delivery_review"] = "old:review"
-    assert invoke(tmp_path, public, semantic).returncode == 3
+    assert result.returncode != 0
+    assert json.loads(result.stderr)["code"] == "schema_mismatch"
 
 
 @pytest.mark.parametrize("change", ["generation", "task_id", "locator", "scope", "merge", "evidence", "remaining"])
@@ -117,3 +117,73 @@ def test_noncomplete_routes_use_artifact_and_reason(tmp_path, route):
     assert output["reason"] == semantic["route"]["reason"]
     assert ("task_artifact" in output) == (route != "blocked")
     assert "resume_target" not in output and "completion_ref" not in output
+
+
+def reactivation_fixture():
+    public = json.loads((PACKAGE / "examples/public-reactivation-validation-input.json").read_text())
+    semantic = json.loads((PACKAGE / "examples/reactivation-semantic-result.json").read_text())
+    return public, semantic
+
+
+@pytest.mark.parametrize("archive_month", ["2026-09", "2026-08"])
+def test_reactivation_validation_and_evidence_refresh(tmp_path, archive_month):
+    public, semantic = reactivation_fixture()
+    archive_ref = f".trellis/tasks/archive/{archive_month}/example-task"
+    public["reactivation_anchor"]["archive_ref"] = archive_ref
+    semantic["reviewed_reactivation_anchor"]["archive_ref"] = archive_ref
+    interface = json.loads((PACKAGE / "interface.json").read_text())
+    profile = next(row for row in interface["public_contracts"]["input"]["profiles"]
+                   if row["id"] == "reactivation_validation")
+    validate_json(public, PACKAGE / profile["schema"]["path"], "profile")
+    output = json.loads(invoke(tmp_path, public, semantic).stdout)
+    assert output["exit_id"] == "completed"
+    assert output["result_ref"]["lifecycle_generation"] == 1
+    assert "merge_result" not in public
+
+    semantic["route"] = {"typed_exit": "evidence_pending", "reason": {
+        "reason_code": "evidence_pending", "reason_refs": ["validation:current"]}}
+    pending = json.loads(invoke(tmp_path, public, semantic).stdout)
+    assert pending["exit_id"] == "evidence_pending"
+    refreshed = json.loads((PACKAGE / "examples/reactivation-evidence-refresh-authoring.json").read_text())
+    refreshed["reactivation_anchor"]["archive_ref"] = archive_ref
+    refreshed.update({"source_exit": pending["exit_id"], "task_artifact": pending["task_artifact"],
+                      "reason": pending["reason"]})
+    validate_json(refreshed, PACKAGE / "schemas/public-evidence-refresh-input.schema.json", "refresh")
+    semantic["profile"] = "evidence_refresh"
+    semantic["route"] = {"typed_exit": "completed"}
+    assert json.loads(invoke(tmp_path, refreshed, semantic).stdout)["result_ref"]["lifecycle_generation"] == 1
+
+
+@pytest.mark.parametrize("change,code", [
+    ("old_merge", "schema_mismatch"), ("dual_basis", "schema_mismatch"),
+    ("wrong_generation", "stale_identity"), ("wrong_task", "stale_identity"),
+    ("old_archive", "stale_identity"), ("old_review", "schema_mismatch"),
+    ("stale_validation", "stale_identity"), ("missing_validation", "stale_identity"),
+    ("old_closeout", "schema_mismatch"),
+])
+def test_reactivation_cannot_inherit_old_completion_or_delivery(tmp_path, change, code):
+    public, semantic = reactivation_fixture()
+    if change == "old_merge":
+        public.pop("reactivation_anchor")
+        public["merge_result"] = fixture()[0]["merge_result"]
+    elif change == "dual_basis":
+        public["merge_result"] = fixture()[0]["merge_result"]
+    elif change == "wrong_generation":
+        public["task_artifact"]["lifecycle_generation"] = 2
+    elif change == "wrong_task":
+        public["reactivation_anchor"]["task_id"] = "other-task"
+    elif change == "old_archive":
+        semantic["reviewed_reactivation_anchor"]["archive_head"] = "d" * 40
+    elif change == "old_review":
+        semantic["reviewed_merge_result_id"] = "merge:old"
+    elif change == "stale_validation":
+        semantic["reviewed_evidence_slots"]["validation"] = "validation:old"
+    elif change == "missing_validation":
+        public["evidence_slots"].pop("validation")
+    else:
+        public.pop("reactivation_anchor")
+        public["merge_result"] = {"task_id": "example-task", "lifecycle_generation": 0,
+                                  "merge_lineage": "closeout", "result_id": "old:merge"}
+    result = invoke(tmp_path, public, semantic)
+    assert result.returncode != 0
+    assert json.loads(result.stderr)["code"] == code

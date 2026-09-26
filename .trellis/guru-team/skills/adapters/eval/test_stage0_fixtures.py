@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import hashlib
+import io
 import json
 import os
 from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import unittest
 from unittest import mock
@@ -20,6 +21,7 @@ from adapters.eval.fixture_io import (
     run_git,
     write_fake_gh,
 )
+from adapters.eval.archived_fixtures import PINNED_OLD_SOURCE_SHA
 from adapters.eval.owner_runtime import (
     compose_production_owner_command_runtime,
     load_package_owner_runtime,
@@ -28,8 +30,6 @@ from adapters.eval.stage0_fixtures import (
     build_clarity_owner,
     build_readiness_owner,
     stage0_command,
-    workspace_plan,
-    workspace_prerequisites,
 )
 
 
@@ -46,7 +46,7 @@ class ReadinessAdapterTests(unittest.TestCase):
         shutil.copytree(SKILLS / "runtime", installed / "runtime", ignore=ignore)
         shutil.copytree(SKILLS / "consumers", installed / "skills/consumers", ignore=ignore)
         for skill in ("guru-sync-base", "guru-discover-change-context", "guru-clarify-requirements",
-                      "guru-review-contract-wording", "guru-review-change-request", "guru-create-task-workspace"):
+                      "guru-review-contract-wording", "guru-review-change-request"):
             shutil.copytree(SKILLS / "packages" / skill, cls.packages / skill, ignore=ignore)
         (cls.fixture / ".gitignore").write_text(".trellis/.runtime/\n__pycache__/\n*.pyc\n")
         for relative in ("docs/requirements.md", "trellis/runtime.py", "trellis/test_runtime.py"):
@@ -144,29 +144,6 @@ class ReadinessAdapterTests(unittest.TestCase):
                     output = stage0_command(self.fixture, package.name, "invoke", state["invocation"], "--invocation", "-")
                     self.assertEqual("ready", output["exit_id"])
 
-    def test_workspace_prerequisites_consume_production_ready_transition(self):
-        runtime = load_package_owner_runtime(self.target, "guru-create-task-workspace")
-        binary = write_fake_gh(self.root, "workspace-created")
-        with mock.patch.dict(os.environ, {"PATH": f"{binary}:{os.environ['PATH']}"}):
-            prerequisites, issue, transition = workspace_prerequisites(runtime, self.fixture, "workflow")
-        self.assertEqual("readiness_current", transition["stage"])
-        self.assertEqual(
-            prerequisites["discovery"]["context_result_sha256"],
-            transition["context_result_sha256"],
-        )
-        self.assertEqual(prerequisites["readiness"]["facts_sha256"], transition["readiness_facts_sha256"])
-        self.assertEqual(hashlib.sha256(issue["title"].encode()).hexdigest(), transition["target"]["title_sha256"])
-        plan = workspace_plan(
-            runtime, self.fixture, "workspace-created", "workflow", prerequisites, issue
-        )
-        self.assertNotIn("scope", plan)
-        self.assertNotIn("task_artifacts", plan["side_effects"])
-        self.assertNotIn("write_task_artifacts", plan["side_effects"]["operations"])
-        self.assertFalse(hasattr(runtime, "task_workspace_scope_digest"))
-        self.assertFalse(hasattr(runtime, "TASK_WORKSPACE_ARTIFACT_NAMES"))
-        self.assertFalse((self.fixture / ".trellis/tasks").exists())
-        self.assertEqual("", run_git(self.fixture, "status", "--porcelain"))
-
     def test_task_commit_bindings_use_package_wrappers(self):
         runtime = SimpleNamespace()
         compose_production_owner_command_runtime(self.target, runtime)
@@ -232,6 +209,33 @@ class ReadinessAdapterTests(unittest.TestCase):
         )
         payload = json.loads(case.read_text(encoding="utf-8"))
         self.assertEqual(relative, payload["public_invocation"]["arguments"][1])
+
+
+class HistoricalWorkspaceAdapterTests(unittest.TestCase):
+    def test_workspace_prerequisites_run_at_pinned_old_source_version(self):
+        repository = next(parent for parent in SKILLS.parents if (parent / ".git").exists())
+        self.assertFalse((SKILLS / "packages/guru-create-task-workspace/interface.json").exists())
+        with tempfile.TemporaryDirectory(prefix="guru-pinned-old-workspace-") as temp:
+            snapshot = Path(temp)
+            result = subprocess.run(
+                ["git", "archive", "--format=tar", PINNED_OLD_SOURCE_SHA, "trellis/skills/guru-team"],
+                cwd=repository, capture_output=True, check=True,
+            )
+            with tarfile.open(fileobj=io.BytesIO(result.stdout)) as archive:
+                archive.extractall(snapshot, filter="data")
+            old_skills = snapshot / "trellis/skills/guru-team"
+            self.assertTrue((old_skills / "packages/guru-create-task-workspace/interface.json").is_file())
+            completed = subprocess.run(
+                [sys.executable, "-B", "-m", "unittest",
+                 "adapters.eval.test_stage0_fixtures.ReadinessAdapterTests."
+                 "test_workspace_prerequisites_consume_production_ready_transition", "-v"],
+                cwd=old_skills, env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+                text=True, capture_output=True, timeout=120,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            self.assertIn("Ran 1 test", completed.stderr)
+            self.assertIn("OK", completed.stderr)
+            self.assertNotIn("skipped", completed.stderr)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,199 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-create-task",
+  "commands": [
+    {
+      "id": "record-task-plan",
+      "owner": "guru-create-task",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository context.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Reviewed task creation plan.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/public-input.schema.json"
+      ],
+      "validator_id": "record_plan",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "create-task",
+      "owner": "guru-create-task",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository context.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Reviewed task creation plan.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "repo_write",
+      "schema_bindings": [
+        "schemas/public-input.schema.json",
+        "schemas/public-output.schema.json"
+      ],
+      "validator_id": "create_task",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "check-task-creation-result",
+      "owner": "guru-create-task",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository context.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Reviewed task creation plan.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/public-output.schema.json"
+      ],
+      "validator_id": "check_result",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "recover-created-task-result",
+      "owner": "guru-create-task",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository context.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Reviewed task creation identity.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/public-input.schema.json",
+        "schemas/public-output.schema.json"
+      ],
+      "validator_id": "recover_result",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "invoke-guru-create-task",
+      "owner": "guru-create-task",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository context.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Reviewed task creation or recovery input.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "repo_write",
+      "schema_bindings": [
+        "schemas/public-input.schema.json",
+        "schemas/public-output.schema.json"
+      ],
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    }
+  ]
+}

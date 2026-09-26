@@ -1,14 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-finish-task-transaction-1.0",
+  "$id": "guru-finish-task-transaction-2.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "stage", "task_ref", "closure_ref", "finish_ref", "lifecycle_generation", "repo_ref", "base_branch", "head_branch", "expected_base_head", "archive_ref", "parent_head"],
+  "required": ["schema_version", "stage", "task_ref", "task_id", "closure_result_id", "finish_ref", "lifecycle_generation", "repo_ref", "base_branch", "head_branch", "expected_base_head", "archive_ref", "parent_head"],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "2.0"},
     "stage": {"enum": ["publish_prepared", "committed", "pr_open", "success"]},
     "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/"},
-    "closure_ref": {"type": "string", "minLength": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "closure_result_id": {"type": "string", "minLength": 1},
     "finish_ref": {"type": "string", "pattern": "^finish:v1:[0-9a-f]{16}$"},
     "lifecycle_generation": {"type": "integer", "minimum": 0},
     "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
@@ -20,7 +21,8 @@
     "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "pr_number": {"type": "integer", "minimum": 1},
     "pr_url": {"type": "string", "pattern": "^https://github\\.com/[^/]+/[^/]+/pull/[1-9][0-9]*$"},
-    "target_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+    "target_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "cleanup_state": {"const": "manual_cleanup_required"}
   },
   "allOf": [
     {"if": {"properties": {"stage": {"enum": ["committed", "pr_open", "success"]}}}, "then": {"required": ["commit"]}},

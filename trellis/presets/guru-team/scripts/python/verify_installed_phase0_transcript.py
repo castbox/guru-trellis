@@ -1608,7 +1608,7 @@ def verify_created_activation(
             raise RuntimeError(f"primary/worktree mapping mismatch: {relative}")
     wrappers = workspace / ".trellis/guru-team/scripts/bash"
     boundary = json_stdout(run(
-        [wrappers / "check-workspace-boundary.sh", "--task", task_ref, "--json"],
+        [wrappers / "check-task-checkout-boundary.sh", "--task", task_ref, "--json"],
         cwd=workspace, env=env,
     ), "created workspace boundary")
     if boundary.get("status") != "ok":

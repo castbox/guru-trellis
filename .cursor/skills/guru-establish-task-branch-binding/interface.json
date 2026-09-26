@@ -1,0 +1,74 @@
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4", "id": "guru-establish-task-branch-binding", "name": "guru-establish-task-branch-binding",
+  "description": "Establish or recover one current task branch binding from live validated candidates and ownership state.",
+  "state": "active", "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {"routing": "global_workflow", "entry_precondition_ids": ["active_task_identity", "current_candidates"]},
+    "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["active_task_identity", "current_candidates"]}
+  },
+  "entry_preconditions": [
+    {"id": "active_task_identity", "evidence": "exact active TaskId, generation and task artifact", "binding": "one active task incarnation", "freshness": "reread on every attempt"},
+    {"id": "current_candidates", "evidence": "live registered checkout, branch binding and ownership state", "binding": "one repository and reviewed candidate set", "freshness": "rediscover before mutation or recovery"}
+  ],
+  "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [
+    {"id": "public_input", "path": "examples/public-input.json"}, {"id": "recover_input", "path": "examples/public-recover-input.json"},
+    {"id": "established_output", "path": "examples/public-binding-established-output.json"},
+    {"id": "selection_output", "path": "examples/public-selection-required-output.json"},
+    {"id": "invalid_output", "path": "examples/public-invalid-task-state-output.json"},
+    {"id": "blocked_output", "path": "examples/public-blocked-output.json"},
+    {"id": "invocation_error", "path": "examples/public-invocation-error.json"}
+  ],
+  "schemas": [
+    {"id": "public_input", "path": "schemas/public-input.schema.json"},
+    {"id": "public_output", "path": "schemas/public-output.schema.json"},
+    {"id": "established_output", "path": "schemas/public-binding-established-output.schema.json"},
+    {"id": "selection_output", "path": "schemas/public-selection-required-output.schema.json"},
+    {"id": "invalid_output", "path": "schemas/public-invalid-task-state-output.schema.json"},
+    {"id": "blocked_output", "path": "schemas/public-blocked-output.schema.json"},
+    {"id": "invocation_error", "path": "schemas/public-invocation-error.schema.json"}
+  ],
+  "validators": [
+    {"id": "candidate_discovery", "command": "scripts/discover-candidates.sh", "runtime_command": "discover-task-branch-binding-candidates", "objective_scope": "Read live candidate facts without mutation."},
+    {"id": "plan_recorder", "command": "scripts/record-plan.sh", "runtime_command": "record-task-branch-binding-plan", "objective_scope": "Validate the reviewed candidate input without mutation."},
+    {"id": "branch_executor", "command": "scripts/establish.sh", "runtime_command": "establish-task-branch-binding", "objective_scope": "Establish matching C4/C5 state for one reviewed current candidate."},
+    {"id": "result_checker", "command": "scripts/check-result.sh", "runtime_command": "check-task-branch-binding-result", "objective_scope": "Reread the exact result and current state."},
+    {"id": "result_recovery", "command": "scripts/recover-result.sh", "runtime_command": "recover-established-task-branch-binding-result", "objective_scope": "Recover an exact established result without writing."},
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-establish-task-branch-binding", "objective_scope": "Resolve current candidates, establish the reviewed state, or recover the exact result."}
+  ],
+  "external_exits": [
+    {"id": "binding_established", "evidence": "current binding and ownership match a uniquely validated live candidate", "consumer": {"kind": "workflow", "id": "guru-task-branch-established-router"}},
+    {"id": "selection_required", "evidence": "zero or multiple candidates, local branch acquisition, or stale reviewed selection", "consumer": {"kind": "workflow", "id": "guru-task-branch-selection-router"}},
+    {"id": "invalid_task_state", "evidence": "task artifact identity or generation does not match", "consumer": {"kind": "stop", "id": "invalid-task-state"}},
+    {"id": "blocked", "evidence": "branch and ownership authority conflict or exact recovery cannot be proved", "consumer": {"kind": "stop", "id": "task-branch-binding-blocked"}}
+  ],
+  "reentry": {"identity": "TaskId, generation and current binding revision", "freshness": "live task, branch and ownership reread", "stale_behavior": "fail_closed"},
+  "tests": ["tests/test_contract.py"],
+  "platform_destinations": ["shared", "claude", "cursor", "opencode", "codex", "kilo", "kiro", "gemini", "antigravity", "devin", "qoder", "codebuddy", "copilot", "droid", "dsh", "pi", "reasonix", "zcode", "trae", "omp", "grok", "kimi", "snow"],
+  "public_contracts": {
+    "input": {"kind": "structured_json", "aggregate_schema": {"schema_id": "guru-establish-task-branch-binding-input-1.0", "path": "schemas/public-input.schema.json"}, "profiles": [
+      {"id": "active_task", "schema": {"schema_id": "guru-establish-task-branch-binding-input-1.0", "path": "schemas/public-input.schema.json"}, "example": {"id": "public_input", "path": "examples/public-input.json"}, "discriminator": {"field": "profile", "value": "active_task"}}
+    ]},
+    "invocation": {"command_id": "run-skill-command", "wrapper": "scripts/invoke.sh", "input_binding": {"kind": "structured_json", "profile_id": "active_task"}, "stdout_contract": "single_typed_exit", "error_schema": {"schema_id": "guru-establish-task-branch-binding-error-1.0", "path": "schemas/public-invocation-error.schema.json"}, "error_example": {"id": "invocation_error", "path": "examples/public-invocation-error.json"}, "example_argv": ["--input", "examples/public-input.json"]},
+    "outputs": [
+      {"exit_id": "binding_established", "schema": {"schema_id": "guru-establish-task-branch-binding-established-1.0", "path": "schemas/public-binding-established-output.schema.json"}, "example": {"id": "established_output", "path": "examples/public-binding-established-output.json"}, "consumer_use_ids": ["established_projection"]},
+      {"exit_id": "selection_required", "schema": {"schema_id": "guru-establish-task-branch-binding-selection-1.0", "path": "schemas/public-selection-required-output.schema.json"}, "example": {"id": "selection_output", "path": "examples/public-selection-required-output.json"}, "consumer_use_ids": ["selection_projection"]},
+      {"exit_id": "invalid_task_state", "schema": {"schema_id": "guru-establish-task-branch-binding-invalid-1.0", "path": "schemas/public-invalid-task-state-output.schema.json"}, "example": {"id": "invalid_output", "path": "examples/public-invalid-task-state-output.json"}, "consumer_use_ids": ["invalid_projection"]},
+      {"exit_id": "blocked", "schema": {"schema_id": "guru-establish-task-branch-binding-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["blocked_projection"]}
+    ],
+    "consumer_inputs": [
+      {"id": "established_input", "consumer": {"kind": "workflow", "id": "guru-task-branch-established-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-task-branch-established-input-1.0", "path": "consumers/workflow/production/established.schema.json"}},
+      {"id": "selection_input", "consumer": {"kind": "workflow", "id": "guru-task-branch-selection-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-task-branch-selection-input-1.0", "path": "consumers/workflow/production/selection.schema.json"}},
+      {"id": "invalid_input", "consumer": {"kind": "stop", "id": "invalid-task-state"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-task-branch-invalid-input-1.0", "path": "consumers/stop/production/invalid.schema.json"}},
+      {"id": "blocked_input", "consumer": {"kind": "stop", "id": "task-branch-binding-blocked"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-task-branch-blocked-input-1.0", "path": "consumers/stop/production/blocked.schema.json"}}
+    ],
+    "projections": [
+      {"id": "established_projection", "exit_id": "binding_established", "consumer_input_id": "established_input", "operation": "direct"},
+      {"id": "selection_projection", "exit_id": "selection_required", "consumer_input_id": "selection_input", "operation": "direct"},
+      {"id": "invalid_projection", "exit_id": "invalid_task_state", "consumer_input_id": "invalid_input", "operation": "direct"},
+      {"id": "blocked_projection", "exit_id": "blocked", "consumer_input_id": "blocked_input", "operation": "direct"}
+    ], "private_artifacts": []
+  }
+}

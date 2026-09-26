@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -11,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.identity import (
+    discover_archived_issue_candidate,
     normalize_generation,
     normalize_task_id,
     normalize_task_ref,
@@ -106,6 +108,79 @@ class IdentityTests(unittest.TestCase):
         for value in ["", "-demo", "demo/task", "task.lock", "task.", "task..child", "Straße", None, True]:
             with self.subTest(value=value), self.assertRaises(LifecycleContractError):
                 normalize_task_id(value)
+
+    def test_legacy_archive_issue_discovery_requires_unique_committed_source(self):
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.repo, check=True)
+        subprocess.run(["git", "remote", "add", "origin", "https://github.com/example/repo.git"], cwd=self.repo, check=True)
+        subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=self.repo, check=True)
+        subprocess.run(["git", "config", "user.name", "Test"], cwd=self.repo, check=True)
+        archive_ref = ".trellis/tasks/archive/2026-09/legacy-task"
+        task = self.write_task(archive_ref, "immutable-task-id")
+        metadata = json.loads((task / "task.json").read_text(encoding="utf-8"))
+        metadata.update({"status": "completed", "scope": "GitHub issue: https://github.com/example/repo/issues/154"})
+        (task / "task.json").write_text(json.dumps(metadata), encoding="utf-8")
+        (task / "finish-summary.json").write_text(json.dumps({
+            "schema_version": 2,
+            "task": {"archive_dir": archive_ref, "status": "completed"},
+            "github": {"source_issues": []},
+            "index": {"search_terms": {"issue_refs": []}},
+        }), encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=self.repo, check=True)
+        subprocess.run(["git", "commit", "-qm", "archive legacy task"], cwd=self.repo, check=True)
+        head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repo, check=True, text=True, capture_output=True).stdout.strip()
+
+        candidate = discover_archived_issue_candidate(self.repo, "example/repo", 154, head)
+        self.assertEqual((candidate.task_id, candidate.task_ref, candidate.archive_head),
+                         ("immutable-task-id", archive_ref, head))
+        for repo_ref, number in (("other/repo", 154), ("example/repo", 155)):
+            with self.subTest(repo_ref=repo_ref, number=number), self.assertRaisesRegex(
+                LifecycleContractError, "archived_issue_candidate_not_unique"
+            ):
+                discover_archived_issue_candidate(self.repo, repo_ref, number, head)
+
+        second_ref = ".trellis/tasks/archive/2026-09/second-task"
+        second = self.write_task(second_ref, "second-immutable-id")
+        second_metadata = dict(metadata, id="second-immutable-id")
+        (second / "task.json").write_text(json.dumps(second_metadata), encoding="utf-8")
+        (second / "finish-summary.json").write_text(json.dumps({
+            "schema_version": 2, "task": {"archive_dir": second_ref, "status": "completed"},
+            "github": {"source_issues": [154]},
+        }), encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=self.repo, check=True)
+        subprocess.run(["git", "commit", "-qm", "second source archive"], cwd=self.repo, check=True)
+        new_head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repo, check=True, text=True, capture_output=True).stdout.strip()
+        with self.assertRaisesRegex(LifecycleContractError, "archived_issue_candidate_not_unique"):
+            discover_archived_issue_candidate(self.repo, "example/repo", 154, new_head)
+
+    def test_legacy_local_issue_scope_needs_matching_origin_even_with_empty_index(self):
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.repo, check=True)
+        subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=self.repo, check=True)
+        subprocess.run(["git", "config", "user.name", "Test"], cwd=self.repo, check=True)
+        archive_ref = ".trellis/tasks/archive/2026-09/legacy-task"
+        task = self.write_task(archive_ref, "immutable-task-id")
+        metadata = json.loads((task / "task.json").read_text(encoding="utf-8"))
+        metadata.update(status="completed", scope="GitHub Issue #237")
+        (task / "task.json").write_text(json.dumps(metadata), encoding="utf-8")
+        (task / "finish-summary.json").write_text(json.dumps({
+            "schema_version": 2, "task": {"archive_dir": archive_ref, "status": "completed"},
+            "github": {"source_issues": []},
+        }), encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=self.repo, check=True)
+        subprocess.run(["git", "commit", "-qm", "archive local issue"], cwd=self.repo, check=True)
+        head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repo, check=True, text=True, capture_output=True).stdout.strip()
+        with self.assertRaisesRegex(LifecycleContractError, "archived_issue_candidate_not_unique"):
+            discover_archived_issue_candidate(self.repo, "example/repo", 237, head)
+        subprocess.run(["git", "remote", "add", "origin", "git@github.com:example/repo.git"], cwd=self.repo, check=True)
+        self.assertEqual(discover_archived_issue_candidate(self.repo, "example/repo", 237, head).task_id,
+                         "immutable-task-id")
+        subprocess.run(["git", "remote", "set-url", "origin", "ssh://git@github.com/example/repo.git"], cwd=self.repo, check=True)
+        self.assertEqual(discover_archived_issue_candidate(self.repo, "example/repo", 237, head).task_id,
+                         "immutable-task-id")
+        for repo_ref, number in (("other/repo", 237), ("example/repo", 238)):
+            with self.subTest(repo_ref=repo_ref, number=number), self.assertRaisesRegex(
+                LifecycleContractError, "archived_issue_candidate_not_unique"
+            ):
+                discover_archived_issue_candidate(self.repo, repo_ref, number, head)
 
 
 if __name__ == "__main__":

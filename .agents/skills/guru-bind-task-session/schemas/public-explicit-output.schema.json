@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-bind-task-session-output-explicit-2.0",
+  "type": "object", "additionalProperties": false,
+  "required": ["exit_id", "task_id", "lifecycle_generation"],
+  "properties": {
+    "exit_id": {"const": "explicit_task_mode"},
+    "task_id": {"$ref": "#/$defs/taskId"},
+    "lifecycle_generation": {"type": "integer", "minimum": 0}
+  },
+  "$defs": {"taskId": {"type": "string", "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"}}
+}

@@ -79,6 +79,24 @@ class NormalScenarioQualificationContractTest(unittest.TestCase):
         self.assert_valid(self.load(PACKAGE / "examples/semantic-result.json"), self.load(PACKAGE / "schemas/semantic-result.schema.json"))
         self.assert_valid(self.load(PACKAGE / "examples/public-invocation.json"), self.load(SKILLS / "consumers/workflow/production/normal-scenario-qualification-invocation.schema.json"))
 
+    def test_delivery_profile_uses_current_caller_across_contract_and_evals(self) -> None:
+        schema = self.load(PACKAGE / "schemas/public-publication-candidate-set-input.schema.json")
+        example = self.load(PACKAGE / "examples/public-publication-candidate-set-input.json")
+        self.assertEqual("publication_candidate_set", example["profile"])
+        self.assertEqual("guru-review-task-delivery", example["caller"])
+        self.assert_valid(example, schema)
+        retired = copy.deepcopy(example)
+        retired["caller"] = "guru-review-task-publication"
+        self.assert_invalid(retired, schema)
+        for name in ("public-classified-output", "public-mechanism-revision-required-output", "public-scope-confirmation-required-output"):
+            output_schema = self.load(PACKAGE / "schemas" / f"{name}.schema.json")
+            targets = output_schema["properties"]["resume_target"].get("enum", output_schema.get("$defs", {}).get("resumeTarget", {}).get("enum"))
+            self.assertIn("guru-review-task-delivery", targets)
+            self.assertNotIn("guru-review-task-publication", targets)
+        delivery_evals = [row for row in self.load(PACKAGE / "evals/evals.json")["evals"] if row["input_profile_id"] == "publication_candidate_set"]
+        self.assertEqual(16, len(delivery_evals))
+        self.assertTrue(all("fixed caller guru-review-task-delivery" in row["prompt"] for row in delivery_evals))
+
     def test_selector_binding_is_closed_mutually_exclusive_and_value_free(self) -> None:
         interface = self.load(PACKAGE / "interface.json")
         schema = self.load(SKILLS / "schemas/skill-interface-1.6.schema.json")
@@ -137,8 +155,8 @@ class NormalScenarioQualificationContractTest(unittest.TestCase):
 
     def test_legacy_interface_schemas_are_byte_identical(self) -> None:
         expected = {
-            "skill-interface-1.4.schema.json": "5dd8e1913de60204de8e22b9f296a4b38f36fb7f0918eb77dd686533f7622f55",
-            "skill-interface-1.5.schema.json": "53b240a7d66742a82cdb3150973872fa66b7ed9bf776bb6cebd0f27e33ab7f45",
+            "skill-interface-1.4.schema.json": "0f4b962aeb8755b62d24a1329b67a2e139b8ffa9f9461dbcbee319c977d2e707",
+            "skill-interface-1.5.schema.json": "5436f269fc1b368f2f47d5125a31eae9c6108de26bafcaf8190c6edcc3b2b4ae",
         }
         for name, digest in expected.items():
             self.assertEqual(

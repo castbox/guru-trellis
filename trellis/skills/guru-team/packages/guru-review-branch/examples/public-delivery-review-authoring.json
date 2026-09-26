@@ -1,0 +1,6 @@
+{
+  "profile": "delivery_review",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/example-task",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}

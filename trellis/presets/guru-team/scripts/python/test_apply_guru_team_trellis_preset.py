@@ -23,22 +23,8 @@ GURU_FINISH_ENTRIES = (
     ".opencode/commands/guru-finish-work.md",
 )
 
-PLANNED_SKILL_IDS = [
-    "guru-activate-task",
-    "guru-create-task",
-    "guru-ensure-task-checkout",
-    "guru-establish-task-branch-binding",
-    "guru-establish-task-identity",
-    "guru-rebind-task-branch",
-]
-PLANNED_SKILL_ROWS = [
-    {
-        "id": skill_id,
-        "state": "planned",
-        "reason": "Stable ID reserved; the complete package is delivered only by the E434 atomic activation.",
-    }
-    for skill_id in PLANNED_SKILL_IDS
-]
+PLANNED_SKILL_IDS: list[str] = []
+PLANNED_SKILL_ROWS: list[dict[str, str]] = []
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import apply_guru_team_trellis_preset as preset
@@ -100,33 +86,32 @@ class CanonicalPlannedIdOwnershipTest(unittest.TestCase):
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(self.repo / relative, destination)
 
-    def test_planned_id_is_registered_without_a_canonical_package(self) -> None:
+    def test_activation_registers_all_canonical_packages(self) -> None:
         payload = ownership.validate_repository(self.repo)
         self.assertEqual(payload["status"], "ok", payload["errors"])
-        self.assertEqual(payload["active_skill_count"], 32)
-        self.assertEqual(payload["planned_skill_count"], 6)
+        self.assertEqual(payload["active_skill_count"], 34)
+        self.assertEqual(payload["planned_skill_count"], 0)
         self.assertEqual(payload["planned_skill_ids"], PLANNED_SKILL_IDS)
-        self.assertEqual(payload["canonical_package_count"], 32)
+        self.assertEqual(payload["canonical_package_count"], 34)
 
         registry = json.loads(
             (self.repo / ownership.SKILL_REGISTRY_RELATIVE).read_text(encoding="utf-8")
         )
         planned = [entry for entry in registry["skills"] if entry.get("state") == "planned"]
         self.assertEqual(planned, PLANNED_SKILL_ROWS)
-        for skill_id in PLANNED_SKILL_IDS:
-            self.assertFalse(
-                (self.repo / ownership.SKILL_PACKAGE_ROOT_RELATIVE / skill_id).exists()
-            )
+        for skill_id in ("guru-create-issue", "guru-ensure-task-checkout"):
+            self.assertTrue((self.repo / ownership.SKILL_PACKAGE_ROOT_RELATIVE / skill_id / "interface.json").is_file())
 
     def test_planned_canonical_package_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repo = Path(directory)
             self.copy_source(repo)
-            (
-                repo
-                / ownership.SKILL_PACKAGE_ROOT_RELATIVE
-                / "guru-ensure-task-checkout"
-            ).mkdir()
+            registry_path = repo / ownership.SKILL_REGISTRY_RELATIVE
+            registry = json.loads(registry_path.read_text(encoding="utf-8"))
+            row = next(item for item in registry["skills"] if item["id"] == "guru-ensure-task-checkout")
+            row.clear()
+            row.update({"id": "guru-ensure-task-checkout", "state": "planned", "reason": "Fixture pending package"})
+            registry_path.write_text(json.dumps(registry), encoding="utf-8")
             payload = ownership.validate_repository(repo)
         self.assertEqual(payload["status"], "error")
         self.assertIn(
@@ -333,7 +318,7 @@ STAGE0_SKILL_IDS = (
     "guru-clarify-requirements",
     "guru-review-contract-wording",
     "guru-review-change-request",
-    "guru-create-task-workspace",
+    "guru-create-task",
 )
 
 
@@ -342,32 +327,38 @@ def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> No
     testcase.assertIn("<!-- guru-team-overlay: v1 -->", text, path)
     testcase.assertIn("`.trellis/workflow.md`", text, path)
     for skill_id in (
-        "guru-review-task-publication",
-        "guru-finalize-task",
-        "guru-merge-task-pr",
+        "guru-review-task-delivery",
+        "guru-publish-task-delivery",
+        "guru-merge-task-delivery",
+        "guru-review-task-completion",
+        "guru-complete-task-closure",
+        "guru-finish-task",
+        "guru-cleanup-task-resources",
     ):
         testcase.assertIn(skill_id, text, path)
     for exit_id in (
         "ready",
-        "return_to_task_work",
-        "publication_review_stale",
-        "resume_finalization",
-        "reprepare_required",
+        "remaining_work",
+        "additional_delivery_required",
         "ready_for_merge",
-        "merged",
-        "merge_blocked",
-        "closure_mismatch",
-        "blocked",
+        "delivered",
+        "closed",
+        "no_mutation",
+        "success",
+        "cleaned",
     ):
         testcase.assertIn(exit_id, text, path)
     testcase.assertIn("not user choices", text, path)
     testcase.assertIn("Do not add a routine confirmation", text, path)
     testcase.assertIn("exclusive finish entry", text, path)
     testcase.assertIn("`trellis-finish-work` Skill is not applicable", text, path)
-    testcase.assertIn("Before Finalizer, do not call `task.py archive`", text, path)
+    testcase.assertIn("Do not archive before the current Closure and Finish owners", text, path)
     testcase.assertIn("clear affirmative such as `确认继续`", text, path)
     testcase.assertIn("Continue mapped internal exits automatically", text, path)
     for forbidden in (
+        "guru-review-task-publication",
+        "guru-finalize-task",
+        "guru-merge-task-pr",
         "guru-verify-extension-installation",
         "verification_required",
         "not_required",
@@ -478,14 +469,14 @@ class CanonicalWorkflowBaseEvolutionTest(unittest.TestCase):
 
     def test_verifier_shell_second_hops_use_checkout_local_managed_python(self) -> None:
         root = preset.guru_root_from_script()
-        for script_name in ("finish-work.sh", "prepare-task.sh"):
+        for script_name in ("check-task-checkout-boundary.sh", "record-agent-recovery.sh", "check-agent-recovery.sh"):
             with self.subTest(script=script_name):
                 script = (
                     root
                     / f"trellis/workflows/guru-team/scripts/bash/{script_name}"
                 ).read_text(encoding="utf-8")
                 self.assertIn(
-                    '$SCRIPT_DIR/../../../../skills/guru-team/runtime/resolve-python.sh',
+                    '$RUNTIME_ASSETS/resolve-python.sh',
                     script,
                 )
                 self.assertIn(
@@ -495,20 +486,17 @@ class CanonicalWorkflowBaseEvolutionTest(unittest.TestCase):
                 self.assertIn('exec "$RUNTIME_ASSETS/resolve-python.sh"', script)
                 self.assertNotIn("python3", script)
 
-    def test_dogfood_spec_matches_finalizer_six_exit_contract(self) -> None:
+    def test_dogfood_spec_and_current_finish_contract_are_explicit(self) -> None:
         root = preset.guru_root_from_script()
         spec = (root / ".trellis/spec/workflow/index.md").read_text(encoding="utf-8")
         interface = json.loads(
-            (root / "trellis/skills/guru-team/packages/guru-finalize-task/interface.json").read_text(
+            (root / "trellis/skills/guru-team/packages/guru-finish-task/interface.json").read_text(
                 encoding="utf-8"
             )
         )
 
-        self.assertEqual(6, len(interface["external_exits"]))
-        self.assertIn("six public exits", spec)
-        self.assertIn("six external\nexits", spec)
-        self.assertNotIn("five public exits", spec)
-        self.assertNotIn("five external\nsix exits", spec)
+        self.assertEqual(5, len(interface["external_exits"]))
+        self.assertIn("guru-finalize-task", spec)  # Archived spec text remains until serialized promotion.
 
 
 class Phase0TranscriptOwnerBindingTest(unittest.TestCase):
@@ -1001,13 +989,19 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
     def install(self, platforms: set[str] | None = None) -> dict[str, object]:
         return preset.install_assets(self.workflow_src, self.install_dst, self.repo, platforms)
 
-    def test_legacy_finalizer_wrappers_import_shared_runtime_from_canonical_and_installed_roots(self) -> None:
-        self.install({"codex", "cursor"})
+    def test_shared_wrappers_import_runtime_from_canonical_and_installed_roots(self) -> None:
+        installed = self.install({"codex", "cursor"})
+        self.assertEqual(installed["skill_packages"]["status"], "ok", {
+            "package_conflicts": installed["skill_packages"]["conflicts"],
+            "overlay_conflicts": installed["overlays"]["conflicts"],
+            "validation": installed["skill_installed_validation"]["errors"],
+        })
+        self.assertTrue((self.install_dst / "runtime/task_lifecycle/identity.py").is_file())
         canonical_root = self.repo / "trellis"
         canonical_wrappers = canonical_root / "workflows/guru-team/scripts/bash"
         canonical_wrappers.mkdir(parents=True)
         wrappers = (
-            "check-workspace-boundary.sh",
+            "check-task-checkout-boundary.sh",
             "check-agent-recovery.sh",
             "record-agent-recovery.sh",
         )
@@ -1016,11 +1010,6 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         shutil.copytree(
             self.guru_root / "trellis/skills/guru-team/runtime",
             canonical_root / "skills/guru-team/runtime",
-        )
-        shutil.copytree(
-            self.guru_root
-            / "trellis/skills/guru-team/packages/guru-finalize-task",
-            canonical_root / "skills/guru-team/packages/guru-finalize-task",
         )
         _ensure_managed_python_runtime(self.repo, self.guru_root, activate=True)
         env = os.environ.copy()
@@ -1360,21 +1349,16 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         payload = self.install()
 
         self.assertEqual(payload["platforms"], ["claude", "codex", "cursor"])
-        self.assertIn(Path("scripts/bash/check-workspace-boundary.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/start-task.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-task-checkout-boundary.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertNotIn(Path("scripts/bash/start-task.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/discover-skill-contract.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/discover-skill-evals.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/run-skill-evals.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/run-skill-command.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/preview-finalization.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/record-finalization-gate.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/check-finalization-gate.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/execute-finalization-transition.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/preview-task-pr-merge.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/record-task-pr-merge.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/check-task-pr-merge.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/execute-task-pr-merge.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/invoke-task-pr-merge.sh"), preset.MANAGED_ASSET_PATHS)
+        for retired in ("prepare-task.sh", "finish-work.sh", "preview-finalization.sh",
+                        "record-task-workspace-plan.sh", "record-task-publication-review.sh",
+                        "invoke-task-pr-merge.sh"):
+            self.assertNotIn(Path("scripts/bash") / retired, preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/sync-base.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-base-sync.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/preview-change-context-history.sh"), preset.MANAGED_ASSET_PATHS)
@@ -1395,14 +1379,13 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn(Path("scripts/bash/check-subagent-liveness.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-commit-messages.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("schemas/finish-summary.schema.json"), preset.MANAGED_ASSET_PATHS)
-        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh").is_file())
+        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-task-checkout-boundary.sh").is_file())
         start_task = self.repo / ".trellis/guru-team/scripts/bash/start-task.sh"
-        self.assertTrue(start_task.is_file())
-        self.assertTrue(os.access(start_task, os.X_OK))
+        self.assertFalse(start_task.exists())
         installed_manifest = json.loads(
             (self.repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8")
         )
-        self.assertIn(".trellis/guru-team/scripts/bash/start-task.sh", installed_manifest["install"]["managed_assets"])
+        self.assertNotIn(".trellis/guru-team/scripts/bash/start-task.sh", installed_manifest["install"]["managed_assets"])
         self.assertEqual(installed_manifest["skill_packages"]["status"], "ok")
         self.assertEqual(installed_manifest["skill_packages"]["sidecars"], [])
         self.assertEqual(installed_manifest["skill_packages"]["conflicts"], [])
@@ -1410,20 +1393,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/discover-skill-contract.sh", os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/discover-skill-evals.sh", os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/run-skill-evals.sh", os.X_OK))
-        self.assertTrue(
-            os.access(
-                self.repo
-                / ".trellis/guru-team/scripts/bash/record-task-publication-review.sh",
-                os.X_OK,
-            )
-        )
-        self.assertTrue(
-            os.access(
-                self.repo
-                / ".trellis/guru-team/scripts/bash/check-task-publication-review.sh",
-                os.X_OK,
-            )
-        )
+        self.assertFalse((self.repo / ".trellis/guru-team/scripts/bash/record-task-publication-review.sh").exists())
+        self.assertFalse((self.repo / ".trellis/guru-team/scripts/bash/check-task-publication-review.sh").exists())
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh", os.X_OK))
         for name in (
@@ -1437,8 +1408,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             "execute-task-pr-merge.sh",
             "invoke-task-pr-merge.sh",
         ):
-            self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash" / name).is_file())
-            self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash" / name, os.X_OK))
+            self.assertFalse((self.repo / ".trellis/guru-team/scripts/bash" / name).exists())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/sync-base.sh", os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-base-sync.sh", os.X_OK))
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/preview-change-context-history.sh", os.X_OK))
@@ -1469,9 +1439,9 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertFalse((self.repo / ".trellis/agents/implement.md").exists())
         self.assertFalse((self.repo / ".codex/prompts/trellis-start.md").exists())
         self.assertFalse((self.repo / ".cursor/commands/trellis-continue.md").exists())
-        self.assertTrue((self.repo / ".agents/skills/guru-create-task-workspace/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".codex/skills/guru-create-task-workspace/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".cursor/skills/guru-create-task-workspace/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/guru-create-task/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".codex/skills/guru-create-task/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/guru-create-task/SKILL.md").is_file())
         self.assertTrue((self.repo / ".codex/prompts/guru-finish-work.md").is_file())
         self.assertTrue((self.repo / ".cursor/commands/guru-finish-work.md").is_file())
         self.assertTrue((self.repo / ".claude/commands/guru/finish-work.md").is_file())
@@ -1496,7 +1466,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 (self.repo / relative).read_bytes(),
                 (self.guru_root / "trellis/presets/guru-team/overlays" / relative).read_bytes(),
             )
-        self.assertTrue((self.repo / ".claude/skills/guru-create-task-workspace/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".claude/skills/guru-create-task/SKILL.md").is_file())
 
     def test_non_current_installed_manifest_fails_before_reapply(self) -> None:
         self.install()
@@ -1569,8 +1539,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         payload = self.install({"claude"})
 
         self.assertEqual(payload["platforms"], ["claude"])
-        self.assertTrue((self.repo / ".agents/skills/guru-create-task-workspace/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".claude/skills/guru-create-task-workspace/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/guru-create-task/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".claude/skills/guru-create-task/SKILL.md").is_file())
         installed_finish_integration = (
             self.repo
             / ".trellis/guru-team/skills/tests/test_finish_family_integration.py"
@@ -1583,18 +1553,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 / "trellis/skills/guru-team/tests/test_finish_family_integration.py"
             ).read_bytes(),
         )
-        installed_continuity_integration = (
-            self.repo
-            / ".trellis/guru-team/skills/tests/test_base_continuity_integration.py"
-        )
-        self.assertTrue(installed_continuity_integration.is_file())
-        self.assertEqual(
-            installed_continuity_integration.read_bytes(),
-            (
-                self.guru_root
-                / "trellis/skills/guru-team/tests/test_base_continuity_integration.py"
-            ).read_bytes(),
-        )
+        self.assertFalse((self.repo / ".trellis/guru-team/skills/tests/test_base_continuity_integration.py").exists())
         self.assertTrue((self.repo / ".claude/commands/guru/finish-work.md").is_file())
         assert_thin_guru_finish_entry(self, self.repo / ".claude/commands/guru/finish-work.md")
         self.assertFalse((self.repo / ".claude/commands/trellis/continue.md").exists())
@@ -1607,8 +1566,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         payload = self.install({"opencode"})
 
         self.assertEqual(payload["platforms"], ["opencode"])
-        self.assertTrue((self.repo / ".agents/skills/guru-create-task-workspace/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".opencode/skills/guru-create-task-workspace/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/guru-create-task/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".opencode/skills/guru-create-task/SKILL.md").is_file())
         entry = self.repo / ".opencode/commands/guru-finish-work.md"
         self.assertTrue(entry.is_file())
         assert_thin_guru_finish_entry(self, entry)
@@ -1664,11 +1623,60 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                         (canonical_root / legacy_relative).read_bytes(),
                     )
 
+    def test_completion_alternate_authoring_is_managed_and_loadable_in_every_projection(self) -> None:
+        package_result = preset.install_skill_packages(
+            self.repo, self.guru_root, self.install_dst,
+            {"claude", "codex", "cursor"}, None,
+        )
+
+        self.assertEqual(package_result["status"], "ok")
+        skill_id = "guru-review-task-completion"
+        relative = Path("examples/reactivation-evidence-refresh-authoring.json")
+        canonical_root = self.guru_root / "trellis/skills/guru-team/packages" / skill_id
+        expected = json.loads((canonical_root / relative).read_text(encoding="utf-8"))
+        roots = (
+            self.repo / ".trellis/guru-team/skills/packages" / skill_id,
+            self.repo / ".agents/skills" / skill_id,
+            self.repo / ".codex/skills" / skill_id,
+            self.repo / ".claude/skills" / skill_id,
+            self.repo / ".cursor/skills" / skill_id,
+        )
+        managed = {record["path"] for record in package_result["files"]}
+        projections = preset.managed_source_projections(
+            self.repo, self.install_dst, {"claude", "codex", "cursor"}
+        )
+        for root in roots:
+            with self.subTest(root=root):
+                interface = json.loads((root / "interface.json").read_text(encoding="utf-8"))
+                consumer = next(
+                    item for item in interface["public_contracts"]["consumer_inputs"]
+                    if item["id"] == "evidence"
+                )
+                alternate = consumer["contract"]["alternate_authoring"][0]
+                self.assertEqual(alternate["authoring_example"]["path"], relative.as_posix())
+                projected = root / alternate["authoring_example"]["path"]
+                self.assertEqual(json.loads(projected.read_text(encoding="utf-8")), expected)
+                self.assertEqual(set(expected), set(alternate["authoring_fields"]))
+                self.assertIn(projected.relative_to(self.repo).as_posix(), managed)
+                self.assertEqual(projections[projected.relative_to(self.repo)], canonical_root / relative)
+
+    def test_completion_missing_alternate_authoring_example_fails_closed(self) -> None:
+        canonical = (
+            self.guru_root
+            / "trellis/skills/guru-team/packages/guru-review-task-completion"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            package = Path(directory) / canonical.name
+            shutil.copytree(canonical, package)
+            (package / "examples/reactivation-evidence-refresh-authoring.json").unlink()
+            with self.assertRaisesRegex(SystemExit, "Missing canonical Skill authoring example"):
+                preset.skill_platform_public_files(package)
+
     def test_merge_private_gate_generations_stay_out_of_every_platform_projection(self) -> None:
         payload = self.install({"claude", "codex", "cursor", "opencode"})
 
         self.assertEqual(payload["skill_packages"]["status"], "ok")
-        package_relative = Path("guru-merge-task-pr")
+        package_relative = Path("guru-merge-task-delivery")
         canonical_root = (
             self.guru_root / "trellis/skills/guru-team/packages" / package_relative
         )
@@ -1676,8 +1684,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             self.repo / ".trellis/guru-team/skills/packages" / package_relative
         )
         private_paths = (
-            Path("schemas/task-pr-merge-gate-2.0.schema.json"),
-            Path("examples/task-pr-merge-gate-2.0.json"),
+            Path("schemas/merge-gate.schema.json"),
+            Path("examples/private-merge-gate.json"),
         )
         platform_roots = (
             self.repo / ".agents/skills" / package_relative,
@@ -1700,7 +1708,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         retired_paths = (
             Path("schemas/task-pr-merge-gate.schema.json"),
             Path("examples/task-pr-merge-gate.json"),
-            Path("schemas/public-ready-for-merge-input.schema.json"),
         )
         for platform_root in platform_roots:
             for relative in retired_paths:
@@ -1835,11 +1842,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotEqual(upgraded["skill_installed_validation"]["returncode"], 0)
         self.assertEqual(upgraded["skill_activation_validation"]["returncode"], 0)
 
-        backup.unlink()
         recovered = self.install({"codex"})
 
         self.assertEqual(recovered["overlays"]["status"], "ok")
         self.assertEqual(recovered["overlays"]["sidecars"], [])
+        self.assertFalse(backup.exists())
         installed_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed_manifest["overlays"]["status"], "ok")
 
@@ -1862,8 +1869,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertEqual(exit_code, 0)
         self.assertTrue((self.repo / ".codex/prompts/guru-finish-work.md").is_file())
         self.assertTrue((self.repo / ".cursor/commands/guru-finish-work.md").is_file())
-        self.assertTrue((self.repo / ".codex/skills/guru-create-task-workspace/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".cursor/skills/guru-create-task-workspace/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".codex/skills/guru-create-task/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/guru-create-task/SKILL.md").is_file())
         self.assertFalse((self.repo / ".codex/prompts/trellis-start.md").exists())
         self.assertFalse((self.repo / ".cursor/commands/trellis-continue.md").exists())
         self.assertFalse((self.repo / ".claude").exists())
@@ -2047,6 +2054,20 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.tmp.cleanup()
 
+    def test_activated_managed_removal_prunes_only_its_empty_skill_directory(self) -> None:
+        retired = self.repo / ".agents/skills/guru-retired/consumers"
+        unrelated = self.repo / ".agents/skills/guru-unrelated/consumers"
+        retired.mkdir(parents=True)
+        unrelated.mkdir(parents=True)
+        preset.prune_empty_activated_skill_removals(self.repo, {
+            "skill_packages": {"removals": [{
+                "path": ".agents/skills/guru-retired/consumers/old.schema.json",
+                "action": "removed_managed",
+            }]}
+        })
+        self.assertFalse(retired.parent.exists())
+        self.assertTrue(unrelated.is_dir())
+
     def test_install_assets_writes_installed_extension_manifest(self) -> None:
         with mock.patch.dict(
             os.environ,
@@ -2096,8 +2117,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("run-skill-command", public_api["companion_scripts"])
         self.assertIn("record-planning-approval", public_api["companion_scripts"])
         self.assertIn("check-planning-approval", public_api["companion_scripts"])
-        self.assertIn("record-task-publication-review", public_api["companion_scripts"])
-        self.assertIn("check-task-publication-review", public_api["companion_scripts"])
+        self.assertIn("record-task-delivery-review", public_api["companion_scripts"])
+        self.assertIn("check-task-delivery-review", public_api["companion_scripts"])
         self.assertIn("execute-extension-verification", public_api["companion_scripts"])
         self.assertIn("record-extension-verification", public_api["companion_scripts"])
         self.assertIn("check-extension-verification", public_api["companion_scripts"])
@@ -2116,51 +2137,29 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
 
         self.assertIn(
-            "guru-phase2-check-4.0",
+            "guru-phase2-check-5.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
-        workspace_interface = json.loads(
-            (
-                self.guru_root
-                / "trellis/skills/guru-team/packages/guru-create-task-workspace/interface.json"
-            ).read_text(encoding="utf-8")
-        )
-        workspace_result_contract = next(
-            artifact
-            for artifact in workspace_interface["public_contracts"]["private_artifacts"]
-            if artifact["id"] == "task_workspace_result"
-        )
-        workspace_result_schema = json.loads(
-            (
-                self.guru_root
-                / "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-result.schema.json"
-            ).read_text(encoding="utf-8")
-        )
-        workspace_result_schema_id = workspace_result_schema["$id"]
-        self.assertEqual(
-            workspace_result_contract["schema"]["schema_id"],
-            workspace_result_schema_id,
-        )
-        self.assertEqual(
-            workspace_result_schema_id,
-            "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-3.0.json",
+        task_interface = json.loads((
+            self.guru_root / "trellis/skills/guru-team/packages/guru-create-task/interface.json"
+        ).read_text(encoding="utf-8"))
+        task_created_schema_id = next(
+            output["schema"]["schema_id"]
+            for output in task_interface["public_contracts"]["outputs"]
+            if output["exit_id"] == "created"
         )
         for manifest in (canonical, installed["extension"]):
             skill_contracts = manifest["public_api"]["skill_contracts"]
             self.assertIn(
-                workspace_result_schema_id,
+                task_created_schema_id,
+                skill_contracts["typed_output_schema_ids"],
+            )
+            self.assertNotIn(
+                "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-3.0.json",
                 skill_contracts["private_artifact_schema_ids"],
             )
             self.assertNotIn(
-                "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-2.0.json",
-                skill_contracts["private_artifact_schema_ids"],
-            )
-            self.assertIn(
                 "guru-task-workspace-result-3.0",
-                skill_contracts["artifact_schema_ids"],
-            )
-            self.assertNotIn(
-                "guru-task-workspace-result-2.0",
                 skill_contracts["artifact_schema_ids"],
             )
         self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.4")
@@ -2185,9 +2184,9 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         for field, expected_count in (
-            ("public_input_schema_ids", 88),
-            ("typed_output_schema_ids", 100),
-            ("private_artifact_schema_ids", 22),
+            ("public_input_schema_ids", 108),
+            ("typed_output_schema_ids", 151),
+            ("private_artifact_schema_ids", 21),
         ):
             self.assertEqual(
                 public_api["skill_contracts"][field],
@@ -2255,14 +2254,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "guru-stage0-clarify-requirements-input-initial-change-request-1.0",
             public_input_schema_ids,
         )
-        self.assertIn(
-            "guru-merge-task-pr-input-ready-for-merge-2.0",
-            public_input_schema_ids,
-        )
-        self.assertIn(
-            "guru-merge-task-pr-input-standalone-merge-2.0",
-            public_input_schema_ids,
-        )
+        self.assertIn("guru-merge-task-delivery-input-aggregate-1.0", public_input_schema_ids)
         self.assertNotIn(
             "guru-merge-task-pr-input-ready-for-merge-1.0",
             public_input_schema_ids,
@@ -2274,7 +2266,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         private_artifact_schema_ids = public_api["skill_contracts"][
             "private_artifact_schema_ids"
         ]
-        self.assertIn("guru-task-pr-merge-gate-2.0", private_artifact_schema_ids)
+        self.assertIn("guru-merge-task-delivery-private-gate-1.0", private_artifact_schema_ids)
         self.assertNotIn("guru-task-pr-merge-gate-1.0", private_artifact_schema_ids)
         typed_output_schema_ids = public_api["skill_contracts"]["typed_output_schema_ids"]
         architecture_output_schema_ids = {
@@ -2486,11 +2478,11 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn(
-            "guru-change-request-review-2.0",
+            "guru-change-request-review-3.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn(
-            "guru-task-publication-readiness-4.0",
+            "guru-publish-task-delivery-gate-1.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         schema_relative = Path("schemas/contract-wording-review.schema.json")
@@ -2526,7 +2518,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             self.repo / ".cursor/skills/guru-review-contract-wording",
         ):
             self.assertFalse((package_root / schema_relative).exists())
-        readiness_schema_relative = Path("schemas/change-request-review.schema.json")
+        readiness_schema_relative = Path("schemas/change-request-review-3.0.schema.json")
         readiness_canonical_root = (
             self.guru_root
             / "trellis/skills/guru-team/packages/guru-review-change-request"
@@ -2543,6 +2535,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             self.repo / ".cursor/skills/guru-review-change-request",
         ):
             self.assertFalse((package_root / readiness_schema_relative).exists())
+            self.assertFalse((package_root / "schemas/change-request-review.schema.json").exists())
         self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.4")
         self.assertEqual(
             public_api["skill_contracts"]["interface_schema_ids"],
@@ -2792,11 +2785,19 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 ],
                 cwd=repo,
                 env=environment,
-                check=True,
+                check=False,
                 capture_output=True,
                 text=True,
             )
-            self.assertEqual(json.loads(completed.stdout)["status"], "ok")
+            payload = json.loads(completed.stdout)
+            self.assertEqual(completed.returncode, 0, {
+                "package_conflicts": payload["skill_packages"]["conflicts"],
+                "package_sidecars": payload["skill_packages"]["sidecars"],
+                "overlay_conflicts": payload["overlays"]["conflicts"],
+                "overlay_sidecars": payload["overlays"]["sidecars"],
+                "validation": payload["skill_installed_validation"]["errors"],
+            })
+            self.assertEqual(payload["status"], "ok")
             status = subprocess.run(
                 ["git", "status", "--short", "--untracked-files=all"],
                 cwd=repo,

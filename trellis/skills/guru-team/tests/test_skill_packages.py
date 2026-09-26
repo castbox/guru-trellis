@@ -190,8 +190,12 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             "--root", str(REPO), "--mode", "source", "--json",
         )
         self.assertEqual(payload["status"], "passed")
-        self.assertEqual(payload["active_packages"], 32)
-        self.assertEqual(payload["complete_package_commands"], 32)
+        active_count = sum(
+            row["state"] == "active"
+            for row in json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))["skills"]
+        )
+        self.assertEqual(payload["active_packages"], active_count)
+        self.assertEqual(payload["complete_package_commands"], active_count)
         self.assertGreater(payload["commands"], 0)
         self.assertGreater(payload["package_test_count"], 0)
 
@@ -252,8 +256,6 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                     self.assertEqual(contract["kind"], "skill_input_authoring_seed")
                     self.assertEqual(set(projected), set(contract["seed_fields"]))
                     self.assertFalse(set(contract["seed_fields"]) & set(contract["authoring_fields"]))
-                    authoring = json.loads((package / contract["authoring_example"]["path"]).read_text(encoding="utf-8"))
-                    self.assertEqual(set(authoring), set(contract["authoring_fields"]))
                     target_interface_path = SKILLS / contract["interface_path"]
                     target_interface = json.loads(target_interface_path.read_text(encoding="utf-8"))
                     profile = next(
@@ -261,11 +263,16 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                         if item["id"] == contract["profile_id"]
                     )
                     target_package = target_interface_path.parent
-                    validate_json(
-                        {**authoring, **projected},
-                        target_package / profile["schema"]["path"],
-                        f"{package_id}.{projection['id']}.skill_input",
-                    )
+                    variants = [contract, *contract.get("alternate_authoring", [])]
+                    for variant in variants:
+                        self.assertFalse(set(contract["seed_fields"]) & set(variant["authoring_fields"]))
+                        authoring = json.loads((package / variant["authoring_example"]["path"]).read_text(encoding="utf-8"))
+                        self.assertEqual(set(authoring), set(variant["authoring_fields"]))
+                        validate_json(
+                            {**authoring, **projected},
+                            target_package / profile["schema"]["path"],
+                            f"{package_id}.{projection['id']}.{variant.get('id', 'primary')}.skill_input",
+                        )
 
     def test_source_validator_rejects_duplicate_command_owner(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -325,7 +332,11 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 cwd=target,
             )
             self.assertEqual(installed["status"], "passed")
-            self.assertEqual(len(installed["facts"]["active_ids"]), 32)
+            active_count = sum(
+                row["state"] == "active"
+                for row in json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))["skills"]
+            )
+            self.assertEqual(len(installed["facts"]["active_ids"]), active_count)
             source_commands = sum(
                 len(json.loads(path.read_text(encoding="utf-8"))["commands"])
                 for path in (SKILLS / "packages").glob("guru-*/commands.json")
@@ -421,7 +432,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 any("contains package-private tests directory" in error for error in payload["errors"])
             )
 
-    def test_interface_declared_non_invoke_wrapper_is_projected_and_invocable(self) -> None:
+    def test_new_task_wrapper_is_projected_and_invocable(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             target = Path(temporary) / "repo"
             (target / ".trellis").mkdir(parents=True)
@@ -435,13 +446,13 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 {"codex", "cursor", "claude"},
             )
 
-            skill_id = "guru-restore-archived-task"
+            skill_id = "guru-create-task"
             package = target / ".trellis/guru-team/skills/packages" / skill_id
             interface = json.loads(
                 (package / "interface.json").read_text(encoding="utf-8")
             )
             public_wrapper = interface["public_contracts"]["invocation"]["wrapper"]
-            self.assertEqual("scripts/restore-archived-task.sh", public_wrapper)
+            self.assertEqual("scripts/invoke.sh", public_wrapper)
             self.assertTrue((package / public_wrapper).is_file())
 
             for platform in (".agents", ".codex", ".claude", ".cursor"):
@@ -449,7 +460,6 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 wrapper = projection / public_wrapper
                 self.assertTrue(wrapper.is_file(), wrapper)
                 self.assertTrue(wrapper.stat().st_mode & 0o111, wrapper)
-                self.assertFalse((projection / "scripts/invoke.sh").exists())
                 process = subprocess.run(
                     [str(wrapper), "--help"],
                     cwd=target,
@@ -459,7 +469,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                     check=False,
                 )
                 self.assertEqual(0, process.returncode, process.stderr)
-                self.assertIn("usage: restore-archived-task", process.stdout)
+                self.assertIn("usage:", process.stdout)
 
     def test_production_eval_contract_registration_survives_installation(self) -> None:
         canonical_manifest = json.loads(
@@ -513,6 +523,13 @@ class SkillPackageIntegrationTests(unittest.TestCase):
         for relative, schema_id in schema_ids.items():
             schema = json.loads((SKILLS / relative).read_text(encoding="utf-8"))
             self.assertEqual(schema["$id"], schema_id)
+        current_interface_schema = json.loads(
+            (SKILLS / "schemas/skill-interface-1.7.schema.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            current_interface_schema["$id"],
+            "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.7.json",
+        )
         production_contract = json.loads(
             (SKILLS / "contracts/production-current-4.0.json").read_text(encoding="utf-8")
         )

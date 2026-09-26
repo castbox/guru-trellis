@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.4.schema.json",
-  "schema_version": "1.4",
+  "$schema": "../../schemas/skill-interface-1.7.schema.json",
+  "schema_version": "1.7",
   "id": "guru-review-task-completion",
   "name": "guru-review-task-completion",
   "description": "Review all current task Delivery and evidence facts and select one bounded completion route.",
@@ -124,6 +124,10 @@
       "id": "evidence_refresh_input",
       "path": "examples/public-evidence-refresh-input.json"
     },
+    {"id": "reactivation_validation_input", "path": "examples/public-reactivation-validation-input.json"},
+    {"id": "reactivation_semantic_result", "path": "examples/reactivation-semantic-result.json"},
+    {"id": "reactivation_evidence_refresh_input", "path": "examples/public-reactivation-evidence-refresh-input.json"},
+    {"id": "reactivation_evidence_refresh_authoring", "path": "examples/reactivation-evidence-refresh-authoring.json"},
     {
       "id": "invocation_error",
       "path": "examples/public-invocation-error.json"
@@ -142,6 +146,7 @@
       "id": "evidence_refresh_input",
       "path": "schemas/public-evidence-refresh-input.schema.json"
     },
+    {"id": "reactivation_validation_input", "path": "schemas/public-reactivation-validation-input.schema.json"},
     {
       "id": "semantic_result",
       "path": "schemas/semantic-result.schema.json"
@@ -216,8 +221,8 @@
       "id": "requirements_revision_required",
       "evidence": "requirements authority must change",
       "consumer": {
-        "kind": "skill",
-        "id": "guru-clarify-requirements"
+        "kind": "workflow",
+        "id": "task-requirements-revision-router"
       }
     },
     {
@@ -246,7 +251,7 @@
     }
   ],
   "reentry": {
-    "identity": "TaskLifecycleKey, accepted scope identity, exact merge lineage, selected current evidence slots",
+    "identity": "TaskLifecycleKey, accepted scope identity, same-generation Delivery merge result or prior archived-generation Reactivate anchor, selected current evidence slots",
     "freshness": "rebuild all facts for every call",
     "stale_behavior": "fail_closed"
   },
@@ -315,6 +320,12 @@
             "field": "profile",
             "value": "evidence_refresh"
           }
+        },
+        {
+          "id": "reactivation_validation",
+          "schema": {"schema_id": "guru-review-task-completion-input-reactivation-validation-2.0", "path": "schemas/public-reactivation-validation-input.schema.json"},
+          "example": {"id": "reactivation_validation_input", "path": "examples/public-reactivation-validation-input.json"},
+          "discriminator": {"field": "profile", "value": "reactivation_validation"}
         }
       ]
     },
@@ -515,7 +526,17 @@
           "authoring_example": {
             "id": "evidence_refresh_authoring",
             "path": "examples/evidence-refresh-authoring.json"
-          }
+          },
+          "alternate_authoring": [
+            {
+              "id": "reactivation_evidence",
+              "authoring_fields": ["profile", "mode", "accepted_scope_identity", "reactivation_anchor", "evidence_slots"],
+              "authoring_example": {
+                "id": "reactivation_evidence_refresh_authoring",
+                "path": "examples/reactivation-evidence-refresh-authoring.json"
+              }
+            }
+          ]
         }
       },
       {

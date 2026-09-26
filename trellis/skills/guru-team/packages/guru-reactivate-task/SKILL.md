@@ -17,6 +17,12 @@ generation. A ready correction accompanying acquisition is also applied in
 the Reactivate transaction and bound to its recovery receipt, including when
 the selected checkout predates the separate archive correction. Confirm source correction or acquisition side effects in the
 current dialogue.
+For a normally committed old schema-2 archive, absent generation or explicit
+generation zero with a matching retired `task.json.archive_dir` uses the
+unique Git archive and old Finalizer-residue check when no C5 ledger exists.
+Other explicit-generation archives require the current Finish seal or exact
+manual Cleanup receipt. An empty old finish-summary Issue index does not
+exclude a candidate whose committed task source identifies the Issue.
 
 The executor keeps TaskId, moves the archived artifact into the active locator,
 increments the generation and enters planning. It composes the shared checkout,

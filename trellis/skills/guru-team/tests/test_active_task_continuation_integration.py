@@ -18,14 +18,14 @@ EXTRACTOR_PATH = ".trellis/scripts/common/continuation_contract.py"
 
 FORMAL_WRAPPER_CASES = (
     (
-        "activation failure stops before mutation",
-        "trellis/presets/guru-team/scripts/python/test_start_task_wrapper.py",
-        "test_wrapper_blocks_before_upstream_task_start_when_boundary_fails",
+        "activation fails before mutation on stale planning identity",
+        "trellis/skills/guru-team/packages/guru-activate-task/tests/test_contract.py",
+        "test_activation_rejects_stale_planning_identity",
     ),
     (
         "activation output loss rematerializes without repeating mutation",
-        "trellis/presets/guru-team/scripts/python/test_start_task_wrapper.py",
-        "test_recovery_rematerializes_success_without_repeating_upstream_start",
+        "trellis/skills/guru-team/packages/guru-activate-task/tests/test_contract.py",
+        "test_activation_status_only_and_read_only_recovery",
     ),
     (
         "Phase 2 lost output rematerializes only after the checker passes",
@@ -48,19 +48,19 @@ FORMAL_WRAPPER_CASES = (
         "test_nonterminal_record_and_invoke_are_idempotent_and_retain",
     ),
     (
-        "Task Commit and Publication use their formal public invocation paths",
-        "trellis/skills/guru-team/tests/test_closeout_happy_path_integration.py",
-        "test_supported_internal_and_wrapper_routes_are_equivalent",
+        "Delivery Review routes to Publish through its current public contract",
+        "trellis/skills/guru-team/packages/guru-review-task-delivery/tests/test_contract.py",
+        "test_ready_projection_matches_publish_review_ready_seed",
     ),
     (
-        "Publication failure retains its current owner checkpoint",
-        "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
-        "test_public_wrapper_keeps_checkpoint_when_checker_or_projection_fails",
+        "Delivery Review rejects stale content",
+        "trellis/skills/guru-team/packages/guru-review-task-delivery/tests/test_runtime.py",
+        "test_post_review_dirty_content_fails_closed",
     ),
     (
-        "confirmation is consumed once and mapped transitions stop at the next side effect",
+        "current finish graph has one marker per active exit",
         "trellis/skills/guru-team/tests/test_finish_family_integration.py",
-        "test_confirm_continue_drives_actual_loaded_closeout_once",
+        "test_every_active_exit_has_one_matching_marker_and_consumer",
     ),
 )
 
@@ -188,27 +188,31 @@ class ActiveTaskContinuationIntegrationTests(unittest.TestCase):
         rows = dict(markdown_table(body, "#### Phase 1 recovery matrix"))
         self.assertEqual(len(rows), 9)
         actions = "\n".join(rows.values())
-        self.assertIn("`guru-create-task-workspace` recovery/rematerialization", actions)
+        self.assertIn("`guru-create-task` read-only result recovery", actions)
         self.assertIn("`guru-review-contract-wording:planning_artifacts`", actions)
         self.assertIn(
             "`guru-maintain-architecture-baseline:task_impact_sync(stage=planning)`",
             actions,
         )
         self.assertIn("`guru-approve-task-plan`", actions)
-        self.assertIn("`start-task.sh --mode initial <task-path>`", actions)
-        self.assertIn("`start-task.sh --mode recovery <task-path>`", actions)
+        self.assertIn("`guru-activate-task` once", actions)
+        self.assertIn("`guru-activate-task` read-only recovery", actions)
         recovery = rows[
             "Activation mutation succeeded but its result was lost and the exact task is already `in_progress`"
         ]
-        self.assertIn("without calling `task.py start` again", recovery)
+        self.assertIn("never repeat the status mutation", recovery)
 
     def test_phase2_matrix_checks_before_rematerialization_and_freshly_reruns_failure(self):
         with tempfile.TemporaryDirectory(prefix="guru-continuation-phase2-") as temporary:
             body = load_upstream_extractor(Path(temporary)).extract_continuation_contract(
                 WORKFLOW
             )
-        rows = dict(markdown_table(body, "#### Phase 2-to-Finalizer recovery matrix"))
-        self.assertEqual(len(rows), 9)
+        rows = dict(markdown_table(body, "#### Phase 2-to-Completion recovery matrix"))
+        self.assertEqual(len(rows), 13)
+        self.assertIn(
+            "preceding archived generation's verified Git identity",
+            rows["Reactivated task needs only validation, without business changes or new Delivery"],
+        )
         phase2_loss = rows[
             "The `passed` DTO was lost but the producer checkpoint may still be current"
         ]
@@ -229,12 +233,8 @@ class ActiveTaskContinuationIntegrationTests(unittest.TestCase):
                 "Branch Review DTO is absent/stale/lost or its producer checkpoint retired"
             ],
         )
-        self.assertIn(
-            "live Issue/PR/payload authority",
-            rows[
-                "Publication DTO is absent/stale/lost or its producer checkpoint retired"
-            ],
-        )
+        self.assertIn("current slice, Issue, PR and Refs-only payload",
+                      rows["Delivery Review DTO is absent/stale/lost"])
 
     def test_active_state_breadcrumbs_only_delegate_to_the_continuation_contract(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")

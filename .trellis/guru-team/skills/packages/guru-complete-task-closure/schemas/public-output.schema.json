@@ -1,1 +1,22 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-complete-task-closure-output-aggregate-1.0","oneOf":[{"$ref":"#/$defs/no_mutation"},{"$ref":"#/$defs/closed"},{"$ref":"#/$defs/resume_closure"},{"$ref":"#/$defs/blocked"}],"$defs":{"task_ref":{"type":"string","pattern":"^\\.trellis/tasks/"},"source_issue":{"oneOf":[{"type":"object","additionalProperties":false,"required":["repo_ref","number","disposition"],"properties":{"repo_ref":{"type":"string","pattern":"^[^/ ]+/[^/ ]+$"},"number":{"type":"integer","minimum":1},"disposition":{"const":"exact_source"}}},{"type":"object","additionalProperties":false,"required":["disposition"],"properties":{"disposition":{"enum":["no_issue","reference_only","follow_up","parent"]}}}]},"no_mutation":{"type":"object","additionalProperties":false,"required":["exit_id","task_ref","closure_exit","closure_ref","source_issue"],"properties":{"exit_id":{"const":"no_mutation"},"task_ref":{"$ref":"#/$defs/task_ref"},"closure_exit":{"const":"no_mutation"},"closure_ref":{"type":"string","pattern":"^closure:v3:[0-9a-f]{16}:[0-9a-f]{16}$"},"source_issue":{"$ref":"#/$defs/source_issue"}}},"closed":{"type":"object","additionalProperties":false,"required":["exit_id","task_ref","issue_ref","closure_exit","closure_ref","source_issue"],"properties":{"exit_id":{"const":"closed"},"task_ref":{"$ref":"#/$defs/task_ref"},"issue_ref":{"type":"string","pattern":"^[^/ ]+/[^/ ]+#[1-9][0-9]*$"},"closure_exit":{"const":"closed"},"closure_ref":{"type":"string","pattern":"^closure:v3:[0-9a-f]{16}:[0-9a-f]{16}$"},"source_issue":{"$ref":"#/$defs/source_issue"}}},"resume_closure":{"type":"object","additionalProperties":false,"required":["exit_id","task_ref","completion_ref","closure_ref","source_issue"],"properties":{"exit_id":{"const":"resume_closure"},"task_ref":{"$ref":"#/$defs/task_ref"},"completion_ref":{"type":"string","minLength":1},"closure_ref":{"type":"string","pattern":"^closure:v3:[0-9a-f]{16}:[0-9a-f]{16}$"},"source_issue":{"$ref":"#/$defs/source_issue"}}},"blocked":{"type":"object","additionalProperties":false,"required":["exit_id"],"properties":{"exit_id":{"const":"blocked"}}}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "guru-complete-task-closure-output-aggregate-2.0",
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+    "key": {"task_id": {"type": "string", "minLength": 1}, "lifecycle_generation": {"type": "integer", "minimum": 0}},
+    "result": {"type": "object", "additionalProperties": false, "required": ["task_id", "lifecycle_generation", "result_id"],
+      "properties": {"task_id": {"type": "string", "minLength": 1}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "result_id": {"$ref": "#/$defs/id"}}},
+    "transaction": {"type": "object", "additionalProperties": false, "required": ["task_id", "lifecycle_generation", "transaction_id", "result_id"],
+      "properties": {"task_id": {"type": "string", "minLength": 1}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "transaction_id": {"$ref": "#/$defs/id"}, "result_id": {"$ref": "#/$defs/id"}}},
+    "reason": {"type": "object", "additionalProperties": false, "required": ["reason_code", "reason_refs"],
+      "properties": {"reason_code": {"$ref": "#/$defs/id"}, "reason_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}},
+    "closed": {"type": "object", "additionalProperties": false, "required": ["exit_id", "result_ref"],
+      "properties": {"exit_id": {"enum": ["closed", "no_mutation"]}, "result_ref": {"$ref": "#/$defs/result"}}},
+    "resume": {"type": "object", "additionalProperties": false, "required": ["exit_id", "transaction_ref"],
+      "properties": {"exit_id": {"const": "resume_closure"}, "transaction_ref": {"$ref": "#/$defs/transaction"}}},
+    "conflict": {"type": "object", "additionalProperties": false, "required": ["exit_id", "transaction_ref", "reason"],
+      "properties": {"exit_id": {"const": "external_change_conflict"}, "transaction_ref": {"$ref": "#/$defs/transaction"}, "reason": {"$ref": "#/$defs/reason"}}},
+    "blocked": {"type": "object", "additionalProperties": false, "required": ["exit_id", "reason"],
+      "properties": {"exit_id": {"const": "blocked"}, "reason": {"$ref": "#/$defs/reason"}}}
+  },
+  "oneOf": [{"$ref": "#/$defs/closed"}, {"$ref": "#/$defs/resume"}, {"$ref": "#/$defs/conflict"}, {"$ref": "#/$defs/blocked"}]
+}

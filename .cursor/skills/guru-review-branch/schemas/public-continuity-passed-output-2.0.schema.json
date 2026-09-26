@@ -12,6 +12,6 @@
     "old_base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "new_base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "candidate_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-    "resume_target": {"enum": ["publication_review", "task_finalization", "finalization_resume"]}
+    "resume_target": {"enum": ["publication_review", "delivery_publication", "finalization_resume"]}
   }
 }

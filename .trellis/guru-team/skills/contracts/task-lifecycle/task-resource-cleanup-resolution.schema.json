@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-task-resource-cleanup-resolution-1.0",
+  "title": "Guru Team task resource Cleanup resolution",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "task_id",
+        "lifecycle_generation",
+        "finish_result_id",
+        "resolution_kind",
+        "inventory_id",
+        "resources"
+      ],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "task_id": {"$ref": "#/$defs/taskId"},
+        "lifecycle_generation": {"type": "integer", "minimum": 0},
+        "finish_result_id": {"$ref": "#/$defs/identifier"},
+        "resolution_kind": {"const": "ordinary_cleanup"},
+        "inventory_id": {"$ref": "#/$defs/identifier"},
+        "resources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/ordinaryCleanupResource"}
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "task_id",
+        "lifecycle_generation",
+        "finish_result_id",
+        "resolution_kind",
+        "reason_code",
+        "candidates"
+      ],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "task_id": {"$ref": "#/$defs/taskId"},
+        "lifecycle_generation": {"type": "integer", "minimum": 0},
+        "finish_result_id": {"$ref": "#/$defs/identifier"},
+        "resolution_kind": {"const": "manual_selection_required"},
+        "reason_code": {"$ref": "#/$defs/identifier"},
+        "candidates": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/cleanupResource"}
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "task_id",
+        "lifecycle_generation",
+        "finish_result_id",
+        "resolution_kind",
+        "inventory_id"
+      ],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "task_id": {"$ref": "#/$defs/taskId"},
+        "lifecycle_generation": {"type": "integer", "minimum": 0},
+        "finish_result_id": {"$ref": "#/$defs/identifier"},
+        "resolution_kind": {"const": "already_clean"},
+        "inventory_id": {"$ref": "#/$defs/identifier"}
+      }
+    }
+  ],
+  "$defs": {
+    "taskId": {
+      "type": "string",
+      "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "repositoryRef": {
+      "type": "string",
+      "pattern": "^(?![^/]+/[^/]+\\.git$)[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "remoteName": {
+      "type": "string",
+      "pattern": "^(?!.*\\.\\.)(?!.*(?:^|/)\\.)(?!.*//)(?!.*(?:\\.|/|\\.lock)$)[A-Za-z0-9][A-Za-z0-9._/-]*$"
+    },
+    "branchRef": {
+      "type": "string",
+      "pattern": "^refs/heads/(?!-)(?!HEAD$)(?!/)(?!guru-task-lifecycle(?:/|$))(?!.*(?:^|/)\\.)(?!.*(?:^|/)[^/]*\\.lock(?:/|$))(?!.*\\.\\.)(?!.*@\\{)(?!.*[ ~^:?*\\[\\]\\\\])(?!.*[./]$)[^/]+(?:/[^/]+)*$"
+    },
+    "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "portableRef": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "ref"],
+          "properties": {
+            "kind": {"const": "local_branch"},
+            "ref": {"$ref": "#/$defs/branchRef"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "branch_ref"],
+          "properties": {
+            "kind": {"const": "linked_worktree"},
+            "branch_ref": {"$ref": "#/$defs/branchRef"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "remote_name", "repository_ref", "ref"],
+          "properties": {
+            "kind": {"const": "remote_branch"},
+            "remote_name": {"$ref": "#/$defs/remoteName"},
+            "repository_ref": {"$ref": "#/$defs/repositoryRef"},
+            "ref": {"$ref": "#/$defs/branchRef"}
+          }
+        }
+      ]
+    },
+    "ordinaryCleanupResource": {
+      "allOf": [
+        {"$ref": "#/$defs/cleanupResource"},
+        {"type": "object", "properties": {"expected_cleanup_head": {"$ref": "#/$defs/commit"}}}
+      ]
+    },
+    "cleanupResource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resource_id", "kind", "portable_ref", "expected_cleanup_head"],
+      "properties": {
+        "resource_id": {"$ref": "#/$defs/identifier"},
+        "kind": {"enum": ["local_branch", "linked_worktree", "remote_branch"]},
+        "portable_ref": {"$ref": "#/$defs/portableRef"},
+        "expected_cleanup_head": {
+          "oneOf": [
+            {"$ref": "#/$defs/commit"},
+            {"type": "null"}
+          ]
+        }
+      }
+    }
+  }
+}

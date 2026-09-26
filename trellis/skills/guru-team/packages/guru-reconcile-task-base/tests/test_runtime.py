@@ -23,7 +23,7 @@ class RuntimeTest(unittest.TestCase):
     def runtime_snapshot(self):
         root=self.repo/'.trellis/.runtime'; return {p.relative_to(root).as_posix():p.read_bytes() for p in root.rglob('*') if p.is_file()}
     def public(self, profile='post_check'):
-        targets={'post_plan':'task_activation','post_check':'task_commit','post_commit':'branch_review','post_branch_review':'publication_review','post_publication':'task_finalization','finalizer_base_mismatch':'finalization_resume'}
+        targets={'post_plan':'task_activation','post_check':'task_commit','post_commit':'branch_review','post_branch_review':'publication_review','post_publication':'delivery_publication','finalizer_base_mismatch':'finalization_resume'}
         value={'profile':profile,'mode':'workflow','task_ref':self.task_ref,'task_head':self.head,'selected_base_ref':self.new,'resume_target':targets[profile]}
         if profile in {'post_branch_review','post_publication','finalizer_base_mismatch'}:
             value.update({'old_base_head':self.old,'new_base_head':self.new,'branch_review_commit':self.head})
@@ -252,6 +252,22 @@ class RuntimeTest(unittest.TestCase):
             self.assertEqual('review_continuity_required', output['exit_id'])
     def test_guard_unchanged_and_new_pair_write_nothing(self):
         before=self.runtime_snapshot(); public=self.public(); path=self.write('public.json',public); result=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)]); self.assertEqual('new_pair',result['status']); self.assertEqual(self.old,result['old_base_head']); public['selected_base_ref']=self.old; path=self.write('same.json',public); self.assertEqual('unchanged',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)])['status']); self.assertEqual(before,self.runtime_snapshot())
+    def test_delivery_review_pair_resumes_delivery_publication(self):
+        public=self.public('post_publication')
+        unchanged={**public,'selected_base_ref':self.old,'old_base_head':self.old,'new_base_head':self.old}
+        result=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('delivery-unchanged.json',unchanged))])
+        self.assertEqual(('unchanged','delivery_publication'),(result['status'],result['resume_target']))
+        result=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('delivery-new.json',public))])
+        self.assertEqual(('new_pair','delivery_publication'),(result['status'],result['resume_target']))
+        public,candidate_tree,receipt=self.execute_reconciliation('post_publication')
+        owner=record.run(PACKAGE,{},[
+            '--root',str(self.repo),'--skill-input',str(self.write('delivery-public.json',public)),
+            '--semantic-review-file',str(self.write('delivery-gate.json',self.continuity_gate(candidate_tree))),
+            '--typed-exit','review_continuity_required',
+            '--reconciliation-result',str(self.write('delivery-receipt.json',receipt)),
+        ])
+        output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(self.write('delivery-envelope.json',{'public_input':public,'owner_result':owner}))])
+        self.assertEqual(('review_continuity_required','delivery_publication'),(output['exit_id'],output['resume_target']))
     def test_pre_review_input_rejects_caller_supplied_pair(self):
         public=self.public('post_commit'); public.update({'old_base_head':self.old,'new_base_head':self.new})
         with self.assertRaises(CommandError) as raised:

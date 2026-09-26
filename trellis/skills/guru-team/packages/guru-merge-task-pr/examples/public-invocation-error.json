@@ -1,5 +1,0 @@
-{
-  "code": "expected_head_changed",
-  "field_path": "input.expected_head_sha",
-  "remediation": "Rerun the live merge preview against the current PR head."
-}

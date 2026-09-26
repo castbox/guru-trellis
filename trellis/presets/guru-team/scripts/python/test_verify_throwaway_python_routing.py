@@ -257,27 +257,33 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
 
     def test_matrix_installed_runner_requires_target_resolver(self) -> None:
         path = self.root / "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
-        path.write_text(path.read_text().replace(
-            'str(installed_python),', 'sys.executable,', 1))
+        text = path.read_text(encoding="utf-8")
+        anchor = 'verify_native_platform_load(target, platform,'
+        self.assertIn(anchor, text)
+        path.write_text(text.replace(
+            anchor, 'verify_native_platform_load(source_root, platform,', 1),
+            encoding="utf-8")
         with self.assertRaisesRegex(ROUTING.RoutingError, "matrix installed managed runner drift"):
             self.check()
 
     def test_matrix_wrappers_and_parallel_helper_are_registered(self) -> None:
         result = self.check()
         self.assertEqual({Path(row["owner"]).name for row in result["shell_python_helpers"]},
-                         {"check-skill-packages.sh", "check-workspace-boundary.sh",
-                          "discover-skill-contract.sh", "run-skill-evals.sh", "start-task.sh"})
+                         {"check-skill-packages.sh", "discover-skill-contract.sh",
+                          "run-skill-evals.sh"})
         self.assertIn(ROUTING.PARALLEL_OWNER, {row["path"] for row in result["python_helpers"]})
         self.assertTrue(any(row["invocation_path"].endswith("/preview-change-context-history.sh")
                             for row in result["package_platform_wrappers"]))
 
-    def test_transcript_activation_wrappers_require_inventory(self) -> None:
+    def test_current_shell_wrappers_require_inventory(self) -> None:
         for owner in (
-            "trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh",
-            "trellis/workflows/guru-team/scripts/bash/start-task.sh",
+            "trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh",
+            "trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh",
+            "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
         ):
             with self.subTest(owner=owner):
                 inventory = self.load_inventory()
+                self.assertIn(owner, {row["owner"] for row in inventory["shell_python_helpers"]})
                 inventory["shell_python_helpers"] = [
                     row for row in inventory["shell_python_helpers"]
                     if row["owner"] != owner
@@ -296,8 +302,9 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
             .read_text(encoding="utf-8")
         )
 
-    def test_transcript_activation_wrappers_reject_path_python(self) -> None:
-        for name in ("check-workspace-boundary.sh", "start-task.sh"):
+    def test_current_shell_wrappers_reject_path_python(self) -> None:
+        for name in ("check-skill-packages.sh", "discover-skill-contract.sh",
+                     "run-skill-evals.sh"):
             with self.subTest(name=name):
                 path = self.root / "trellis/workflows/guru-team/scripts/bash" / name
                 original = path.read_text(encoding="utf-8")
@@ -307,6 +314,29 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
                 ):
                     self.check()
                 path.write_text(original, encoding="utf-8")
+
+    def test_retired_helpers_are_historical_only(self) -> None:
+        inventory = self.load_inventory()
+        historical = {
+            "verify_installed_closeout.py",
+            "verify_installed_phase0_transcript.py",
+            "verify_installed_task_workspace.py",
+        }
+        registered = {Path(row["path"]).name for row in inventory["python_helpers"]}
+        self.assertTrue(historical <= registered)
+        self.assertEqual(
+            {"verify_installed_parallel_finish.py"}, registered - historical,
+        )
+        matrix = (self.root / ROUTING.MATRIX_OWNER).read_text(encoding="utf-8")
+        smoke = ROUTING.ast.get_source_segment(
+            matrix,
+            next(node for node in ROUTING.ast.parse(matrix).body
+                 if isinstance(node, ROUTING.ast.FunctionDef)
+                 and node.name == "_run_installed_smokes"),
+        )
+        self.assertIsNotNone(smoke)
+        for name in historical:
+            self.assertNotIn(name, smoke)
 
     def test_shared_runtime_launcher_drift_fails_with_python_matrix(self) -> None:
         path = self.root / "trellis/skills/guru-team/runtime/launch.sh"
@@ -338,11 +368,13 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
 
     def test_parallel_helper_requires_inventory(self) -> None:
         inventory = self.load_inventory()
+        self.assertIn(ROUTING.PARALLEL_OWNER,
+                      {row["path"] for row in inventory["python_helpers"]})
         inventory["python_helpers"] = [row for row in inventory["python_helpers"]
                                        if row["path"] != ROUTING.PARALLEL_OWNER]
         self.write_inventory(inventory)
         self.refresh_secondary_inventory()
-        with self.assertRaisesRegex(ROUTING.RoutingError, "direct helper inventory drift"):
+        with self.assertRaisesRegex(ROUTING.RoutingError, "current/historical helper inventory drift"):
             self.check()
 
     def test_checkpoint_rejects_same_physical_non_managed_interpreter(self) -> None:
@@ -415,8 +447,9 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
 
     def test_package_runtime_path_python_subprocess_fails(self) -> None:
         path = self.root / Path(
-            "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py"
+            "trellis/skills/guru-team/packages/guru-approve-task-plan/runtime/artifacts.py"
         )
+        self.assertTrue(path.is_file())
         path.write_text(
             path.read_text(encoding="utf-8")
             + '\nsubprocess.run(["python3", "-V"])\n',
@@ -427,8 +460,9 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
 
     def test_package_runtime_managed_subprocess_requires_inventory(self) -> None:
         path = self.root / Path(
-            "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py"
+            "trellis/skills/guru-team/packages/guru-approve-task-plan/runtime/artifacts.py"
         )
+        self.assertTrue(path.is_file())
         path.write_text(
             path.read_text(encoding="utf-8")
             + '\nsubprocess.run([sys.executable, "-V"])\n',
@@ -462,22 +496,22 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
         with self.assertRaisesRegex(ROUTING.RoutingError, "secondary caller inventory drift"):
             self.check()
 
-    def test_finalizer_provenance_python_launcher_drift_fails(self) -> None:
+    def test_plan_task_lookup_python_launcher_drift_fails(self) -> None:
         path = self.root / Path(
-            "trellis/skills/guru-team/packages/guru-finalize-task/runtime/_owner_part_01.py"
+            "trellis/skills/guru-team/packages/guru-approve-task-plan/runtime/artifacts.py"
         )
         text = path.read_text(encoding="utf-8")
-        marker = 'run([sys.executable, "./.trellis/scripts/task.py", "current"],'
+        marker = '[sys.executable, "./.trellis/scripts/task.py", "current"],'
         self.assertIn(marker, text)
         path.write_text(
             text.replace(
                 marker,
-                'run(["./.trellis/scripts/task.py", "current"],',
+                '["python3", "./.trellis/scripts/task.py", "current"],',
                 1,
             ),
             encoding="utf-8",
         )
-        with self.assertRaisesRegex(ROUTING.RoutingError, "secondary caller inventory drift"):
+        with self.assertRaisesRegex(ROUTING.RoutingError, "unmanaged Python subprocess"):
             self.check()
 
     def test_nested_verifier_entry_is_registered(self) -> None:

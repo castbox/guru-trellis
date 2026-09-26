@@ -24,7 +24,9 @@ def git(root, *args):
     return subprocess.run(["git", *args], cwd=root, check=True, text=True, capture_output=True).stdout.strip()
 
 
-def repository(tmp_path, *, old_branch="codex/demo-old", old_owner="caller_owned"):
+def repository(tmp_path, *, old_branch="codex/demo-old", old_owner="caller_owned", legacy=False,
+               legacy_scope=False, legacy_schema_version=1, local_issue_scope=False,
+               legacy_explicit_generation=False, legacy_locator=True):
     repo = tmp_path / "repo"
     repo.mkdir()
     git(repo, "init", "-q", "-b", "main")
@@ -35,16 +37,31 @@ def repository(tmp_path, *, old_branch="codex/demo-old", old_owner="caller_owned
     git(repo, "commit", "-qm", "initial")
     archive = repo / ".trellis/tasks/archive/2026-09/09-19-demo"
     archive.mkdir(parents=True)
-    (archive / "task.json").write_text(json.dumps({"id": "demo", "status": "completed", "lifecycle_generation": 2,
-                                                  "source": {"kind": "no_issue"},
-                                                  "completedAt": "2026-09-19", "worktree_path": "/old/machine/path"}))
+    metadata = {"id": "demo", "status": "completed", "source": {"kind": "no_issue"},
+                "completedAt": "2026-09-19", "worktree_path": "/old/machine/path"}
+    if legacy_scope:
+        metadata.pop("source")
+        metadata["scope"] = ("GitHub Issue #131" if local_issue_scope else
+                             "GitHub issue: https://github.com/castbox/guru-trellis/issues/131")
+    if not legacy:
+        metadata["lifecycle_generation"] = 2
+    elif legacy_explicit_generation:
+        metadata["lifecycle_generation"] = 0
+        if legacy_locator:
+            metadata["archive_dir"] = ".trellis/tasks/archive/2026-09/09-19-demo"
+    (archive / "task.json").write_text(json.dumps(metadata))
     archive_ref = ".trellis/tasks/archive/2026-09/09-19-demo"
-    (archive / "finish-summary.json").write_text(json.dumps({"schema_version": 2, "task": {
-        "archive_dir": archive_ref, "status": "completed"}}))
+    summary = {"schema_version": legacy_schema_version if legacy else 2, "task": {
+        "archive_dir": archive_ref, "artifact_dir": ".trellis/tasks/09-19-demo", "status": "completed"}}
+    if legacy and legacy_schema_version == 2:
+        summary.update(generator="guru-team.finalize-task", github={"source_issues": [131]})
+    (archive / "finish-summary.json").write_text(json.dumps(summary))
     git(repo, "add", ".")
     git(repo, "commit", "-qm", "archive")
     head = git(repo, "rev-parse", "HEAD")
     facts = inspect_repository(repo)
+    if legacy:
+        return repo, head
     key = TaskLifecycleKey("demo", 2)
     binding = BranchBindingStore(facts).establish(key, old_branch)
     ledger = ResourceLedgerStore(facts)
@@ -64,10 +81,10 @@ def repository(tmp_path, *, old_branch="codex/demo-old", old_owner="caller_owned
     return repo, head
 
 
-def inputs(repo, head, path, *, adopt=False, route="session_binding_recovery_required"):
+def inputs(repo, head, path, *, adopt=False, route="session_binding_recovery_required", generation=2):
     public = {"profile": "reactivate_completed_task", "mode": "standalone",
-              "archived_lifecycle": {"task_id": "demo", "lifecycle_generation": 2}}
-    acquisition = {"task_id": "demo", "task_ref": ".trellis/tasks/09-19-demo", "lifecycle_generation": 3,
+              "archived_lifecycle": {"task_id": "demo", "lifecycle_generation": generation}}
+    acquisition = {"task_id": "demo", "task_ref": ".trellis/tasks/09-19-demo", "lifecycle_generation": generation + 1,
                    "route": "adopt_invocation_checkout" if adopt else "provision_linked_worktree",
                    "branch_ref": "refs/heads/codex/demo-next", "decision_head": head,
                    "task_artifact_expectation": "absent", "transaction_id": "reactivate:demo:3", "result_id": "result:demo:3"}
@@ -150,6 +167,102 @@ def test_reactivate_accepts_distinct_merge_head_and_bookkeeping_head(tmp_path):
     transaction.write_text(json.dumps(record))
     public, semantic = inputs(repo, head, tmp_path / "worktrees/new")
     assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "session_binding_recovery_required"
+
+
+@pytest.mark.parametrize("schema_version", [1, 2])
+def test_committed_legacy_archive_reactivates_and_recovers(tmp_path, schema_version):
+    repo, head = repository(tmp_path, legacy=True, legacy_schema_version=schema_version)
+    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
+    first = execute(repo, public, semantic, confirmed=True)
+    assert first["exit_id"] == "session_binding_recovery_required"
+    assert (first["task_id"], first["lifecycle_generation"]) == ("demo", 1)
+    assert execute(repo, public, semantic, confirmed=True) == first
+    semantic["route"] = "resume_reactivation"
+    assert execute(repo, public, semantic, confirmed=False)["exit_id"] == "resume_reactivation"
+
+
+def test_explicit_zero_generation_legacy_schema_two_archive_reactivates(tmp_path):
+    repo, head = repository(tmp_path, legacy=True, legacy_schema_version=2, legacy_explicit_generation=True)
+    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
+    first = execute(repo, public, semantic, confirmed=True)
+    assert (first["exit_id"], first["lifecycle_generation"]) == ("session_binding_recovery_required", 1)
+
+
+def test_explicit_zero_generation_without_legacy_locator_requires_seal(tmp_path):
+    repo, head = repository(tmp_path, legacy=True, legacy_schema_version=2,
+                            legacy_explicit_generation=True, legacy_locator=False)
+    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
+    from runtime.task_lifecycle.errors import LifecycleContractError
+    with pytest.raises(LifecycleContractError, match="finish_result_unsealed"):
+        execute(repo, public, semantic, confirmed=True)
+    assert not (tmp_path / "worktrees/new").exists()
+
+
+@pytest.mark.parametrize("schema_version", [1, 2])
+@pytest.mark.parametrize("local_issue_scope", [False, True])
+def test_legacy_scope_source_correction_and_reactivation_recovery(tmp_path, schema_version, local_issue_scope):
+    repo, head = repository(tmp_path, legacy=True, legacy_scope=True, legacy_schema_version=schema_version,
+                            local_issue_scope=local_issue_scope)
+    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
+    semantic.pop("acquisition")
+    semantic.pop("session_outcome")
+    semantic.pop("selected_base_ref")
+    semantic.pop("reviewed_base_head")
+    semantic["route"] = "source_correction_required"
+    semantic["source_correction"] = {
+        **correction(), "lifecycle_generation": 0,
+        "current_source": {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 131,
+                           "disposition": "exact_source"},
+    }
+    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "source_correction_required"
+    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "source_correction_required"
+    corrected = json.loads((repo / ".trellis/tasks/archive/2026-09/09-19-demo/task.json").read_text())
+    assert corrected["source"] == semantic["source_correction"]["reviewed_source"]
+    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
+    semantic["source_correction"] = {
+        **correction(), "lifecycle_generation": 0,
+        "current_source": {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 131,
+                           "disposition": "exact_source"},
+    }
+    first = execute(repo, public, semantic, confirmed=True)
+    assert first["exit_id"] == "session_binding_recovery_required"
+    assert execute(repo, public, semantic, confirmed=True) == first
+
+
+@pytest.mark.parametrize("schema_version", [1, 2])
+@pytest.mark.parametrize("condition", ["missing_git_archive", "wrong_task_identity", "wrong_summary", "old_finalizer_residue"])
+def test_legacy_archive_requires_unique_committed_terminal_identity(tmp_path, condition, schema_version):
+    repo, head = repository(tmp_path, legacy=True, legacy_schema_version=schema_version)
+    archive = repo / ".trellis/tasks/archive/2026-09/09-19-demo"
+    if condition == "missing_git_archive":
+        original_task = (archive / "task.json").read_bytes()
+        original_summary = (archive / "finish-summary.json").read_bytes()
+        git(repo, "rm", "-rq", str(archive.relative_to(repo)))
+        git(repo, "commit", "-qm", "remove archive")
+        # The artifact is present on disk but no longer belongs to the selected base.
+        archive.mkdir(parents=True)
+        (archive / "task.json").write_bytes(original_task)
+        (archive / "finish-summary.json").write_bytes(original_summary)
+        head = git(repo, "rev-parse", "HEAD")
+    elif condition == "wrong_task_identity":
+        path = archive / "task.json"
+        task = json.loads(path.read_text())
+        task["source"] = {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454}
+        path.write_text(json.dumps(task))
+    elif condition == "wrong_summary":
+        path = archive / "finish-summary.json"
+        summary = json.loads(path.read_text())
+        summary["generated_at"] = "uncommitted"
+        path.write_text(json.dumps(summary))
+    else:
+        path = repo / ".trellis/.runtime/guru-team/finalization-transaction/demo/finalization-transaction.json"
+        path.parent.mkdir(parents=True)
+        path.write_text(json.dumps({"task_ref": ".trellis/tasks/09-19-demo", "next_transition": "push_archive"}))
+    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
+    from runtime.task_lifecycle.errors import LifecycleContractError
+    with pytest.raises(LifecycleContractError, match="finish_result_unsealed|finish_transaction_unfinished"):
+        execute(repo, public, semantic, confirmed=True)
+    assert not (tmp_path / "worktrees/new").exists()
 
 
 def test_reactivate_after_manual_cleanup_requires_exact_finished_receipt(tmp_path):

@@ -14,8 +14,9 @@ clarification loop, scans wording independently, or
 creates an issue, branch, worktree, or Trellis task. It reuses the current
 outputs of `guru-clarify-requirements` and `guru-review-contract-wording`;
 Discovery cognition is not reopened through a private artifact. Issue #112's
-`guru-create-task-workspace` consumer owns every task-creation side effect and
-consumes the checked typed exit directly. It does not persist the private
+the `guru-task-intake-router` consumes the checked ready exit, dispatching
+`proposed_draft` to Issue creation and `existing_issue | standalone_request`
+to task creation after their own fresh gates. It does not persist the private
 `issue-review.json`-shaped result under the task.
 
 Before any newly observed scenario participates in readiness, scope conclusion,
@@ -189,7 +190,7 @@ records the route and objective evidence only, never authorization state.
 
 ## Five Typed Exits
 
-- `ready` -> Skill `guru-create-task-workspace`
+- `ready` -> workflow `guru-task-intake-router`
 - `clarify_requirements` -> Skill `guru-clarify-requirements`
 - `review_wording` -> Skill `guru-review-contract-wording`
 - `refresh_context` -> Skill `guru-sync-base`

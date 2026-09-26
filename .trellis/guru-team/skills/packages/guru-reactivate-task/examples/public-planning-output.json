@@ -1,1 +1,1 @@
-{"exit_id":"reactivated_to_planning","task_ref":".trellis/tasks/example-task","resume_target":"planning","lifecycle_generation":1}
+{"exit_id":"reactivated_to_planning","task_id":"example-task","task_ref":".trellis/tasks/example-task","lifecycle_generation":1,"binding_epoch":1,"binding_revision":0,"session_outcome":"explicit_task_mode"}

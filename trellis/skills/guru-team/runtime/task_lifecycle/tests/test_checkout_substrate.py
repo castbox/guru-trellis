@@ -276,7 +276,7 @@ class CheckoutSubstrateTests(unittest.TestCase):
                 )
             )
 
-    def test_pre_task_candidate_rejects_another_active_task_authority(self) -> None:
+    def test_pre_task_candidate_allows_unrelated_active_task(self) -> None:
         self.fixture.git("checkout", "-b", "task-prebuilt-conflict")
         self.remove_task_artifact(self.fixture.repo)
         other = self.fixture.repo / ".trellis/tasks/09-21-other-active"
@@ -302,19 +302,26 @@ class CheckoutSubstrateTests(unittest.TestCase):
                 artifact_expectation="absent",
             )
         )
-        self.assertEqual(
-            (resolution.kind, resolution.reason_code),
-            ("authority_conflict", "active_task_authority_conflict"),
-        )
-        with self.assertRaisesRegex(LifecycleContractError, "active_task_authority_conflict"):
-            adopt_invocation_checkout(
-                self.plan(
-                    "adopt_invocation_checkout",
-                    "task-prebuilt-conflict",
-                    invocation=self.fixture.repo,
-                    artifact_expectation="absent",
-                )
+        self.assertEqual((resolution.kind, resolution.reason_code),
+                         ("checkout_resolved", "unique_validated_candidate"))
+        adopted = adopt_invocation_checkout(
+            self.plan(
+                "adopt_invocation_checkout", "task-prebuilt-conflict",
+                invocation=self.fixture.repo, artifact_expectation="absent",
             )
+        )
+        self.assertEqual(adopted.checkout.path, self.fixture.repo.resolve())
+        self.assertTrue((other / "task.json").is_file())
+        target = self.root / "unrelated-active-provision"
+        provisioned = provision_linked_worktree(
+            self.plan(
+                "provision_linked_worktree", "task-prebuilt-other",
+                disposition="new_branch", target=target,
+                head=self.fixture.head, artifact_expectation="absent",
+            )
+        )
+        self.assertEqual(provisioned.checkout.path, target.resolve())
+        self.assertTrue((target / ".trellis/tasks/09-21-other-active/task.json").is_file())
 
     def test_transaction_and_result_ids_match_shared_identifier_grammar(self) -> None:
         self.fixture.git("checkout", "-b", "task-identifiers")

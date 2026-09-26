@@ -19,6 +19,8 @@ The supported profiles are the ten existing lifecycle profiles:
 fixes one caller and return owner. The caller supplies only the current target,
 candidate references, and live locators; it does not supply a decision, severity,
 approval, prior result, worker report, or mechanism classification.
+`publication_candidate_set` returns to `guru-review-task-delivery` for the
+current Delivery Review, including after scope clarification or mechanism revision.
 
 ## Semantic review
 

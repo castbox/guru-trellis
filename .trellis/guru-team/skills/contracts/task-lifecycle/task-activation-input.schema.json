@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-task-activation-input-1.0",
+  "title": "Planning to implementation activation requirements",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "task_ref", "lifecycle_generation", "planning_result_id", "selected_base_ref", "continuity", "session_mode"],
+  "properties": {
+    "task_id": {"type": "string", "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/(?!archive(?:/|$))(?!\\.{1,2}$)[^/\\\\]+$"},
+    "lifecycle_generation": {"type": "integer", "minimum": 0},
+    "planning_result_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+    "selected_base_ref": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$"},
+    "continuity": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "task_head", "base_head"],
+          "properties": {"kind": {"const": "base_current"}, "task_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}}
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "task_head", "new_base_head", "result_id", "resume_target"],
+          "properties": {
+            "kind": {"const": "reconciled"},
+            "task_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "new_base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "result_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+            "resume_target": {"const": "task_activation"}
+          }
+        }
+      ]
+    },
+    "session_mode": {"enum": ["session_bound", "explicit_task_mode"]}
+  }
+}

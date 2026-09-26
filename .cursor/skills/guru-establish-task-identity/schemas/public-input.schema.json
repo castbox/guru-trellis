@@ -1,0 +1,13 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-establish-task-identity-input-1.0",
+  "type":"object","additionalProperties":false,"required":["profile","mode","task_id","task_ref","lifecycle_generation"],
+  "properties":{
+    "profile":{"const":"active_task"},"mode":{"enum":["workflow","standalone"]},
+    "task_id":{"type":"string","minLength":1},"task_ref":{"type":"string","minLength":1},
+    "lifecycle_generation":{"type":"integer","minimum":0},
+    "reviewed_source":{"oneOf":[
+      {"type":"object","additionalProperties":false,"required":["kind"],"properties":{"kind":{"const":"no_issue"}}},
+      {"type":"object","additionalProperties":false,"required":["kind","repo_ref","number","disposition"],"properties":{"kind":{"const":"issue"},"repo_ref":{"type":"string","minLength":3},"number":{"type":"integer","minimum":1},"disposition":{"enum":["reference_only","follow_up","parent"]}}}
+    ]}
+  }
+}

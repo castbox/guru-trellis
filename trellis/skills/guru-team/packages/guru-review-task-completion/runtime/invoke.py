@@ -10,11 +10,8 @@ from runtime.io import CommandError
 from runtime.schema import validate_json
 
 
-LINEAGE_SLOTS = {
-    "closeout": {"planning", "task_commit_pair", "phase2_check", "branch_review", "closeout_publication"},
-    "delivery": {"planning", "delivery_review", "delivery_publication"},
-    "pre_cutover_recovered": {"planning", "restore", "merge_recovery"},
-}
+DELIVERY_SLOTS = {"planning", "delivery_review", "delivery_publication"}
+REACTIVATION_SLOTS = {"reactivation", "validation"}
 NON_COMPLETE = {
     "remaining_work", "evidence_pending", "additional_delivery_required",
     "requirements_revision_required", "implementation_revision_required",
@@ -54,19 +51,31 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         raise CommandError("stale_identity", "semantic_result", "Completion profile or mode changed.", 3)
 
     artifact = public["task_artifact"]
-    merge = public["merge_result"]
-    if (artifact["task_id"], artifact["lifecycle_generation"]) != (merge["task_id"], merge["lifecycle_generation"]):
-        raise CommandError("stale_identity", "merge_result", "Merge result belongs to another lifecycle.", 3)
-    if "task_ref" in merge and merge["task_ref"] != artifact["task_ref"]:
-        raise CommandError("stale_identity", "merge_result.task_ref", "Merge task locator differs.", 3)
-    lineage = "delivery" if "delivery_cycle_ref" in merge else merge["merge_lineage"]
     slots = public["evidence_slots"]
-    if set(slots) != LINEAGE_SLOTS[lineage]:
-        raise CommandError("stale_identity", "evidence_slots", "Use exactly the current slots for this merge lineage.", 3)
+    if "merge_result" in public:
+        merge = public["merge_result"]
+        if (artifact["task_id"], artifact["lifecycle_generation"]) != (merge["task_id"], merge["lifecycle_generation"]):
+            raise CommandError("stale_identity", "merge_result", "Merge result belongs to another lifecycle.", 3)
+        if merge["task_ref"] != artifact["task_ref"]:
+            raise CommandError("stale_identity", "merge_result.task_ref", "Merge task locator differs.", 3)
+        if set(slots) != DELIVERY_SLOTS:
+            raise CommandError("stale_identity", "evidence_slots", "Use exactly the current Delivery evidence slots.", 3)
+        reviewed_basis = (semantic.get("reviewed_merge_result_id") == merge["result_id"]
+                          and "reviewed_reactivation_anchor" not in semantic)
+    else:
+        anchor = public["reactivation_anchor"]
+        if (artifact["task_id"] != anchor["task_id"]
+                or artifact["lifecycle_generation"] != anchor["archived_generation"] + 1
+                or artifact["task_ref"].startswith(".trellis/tasks/archive/")):
+            raise CommandError("stale_identity", "reactivation_anchor", "Review the preceding archived generation and current active task.", 3)
+        if set(slots) != REACTIVATION_SLOTS:
+            raise CommandError("stale_identity", "evidence_slots", "Use current reactivation and validation evidence.", 3)
+        reviewed_basis = (semantic.get("reviewed_reactivation_anchor") == anchor
+                          and "reviewed_merge_result_id" not in semantic)
     if (semantic["reviewed_scope_identity"] != public["accepted_scope_identity"]
-            or semantic["reviewed_merge_result_id"] != merge["result_id"]
+            or not reviewed_basis
             or semantic["reviewed_evidence_slots"] != slots):
-        raise CommandError("stale_identity", "semantic_result", "Review the exact scope, merge result and selected evidence slots.", 3)
+        raise CommandError("stale_identity", "semantic_result", "Review the exact scope, completion basis and selected evidence slots.", 3)
 
     exit_id = semantic["route"]["typed_exit"]
     if exit_id == "completed":

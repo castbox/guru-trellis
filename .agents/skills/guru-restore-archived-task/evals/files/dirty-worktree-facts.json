@@ -1,1 +1,0 @@
-{"scenario":"dirty-worktree","owner_staging":{"recipe":"restore-dirty-worktree"},"public_invocation":{"arguments":["--root",".","--input","placeholder","--semantic-result","placeholder","--facts","placeholder"]}}

@@ -363,7 +363,6 @@ def discover_referenced_shell_helpers(verifier_text: str) -> list[dict[str, str]
 
 MATRIX_OWNER = "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
 PARALLEL_OWNER = "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py"
-TRANSCRIPT_OWNER = "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py"
 
 
 def matrix_shell_references(repo_root: Path) -> list[dict[str, str]]:
@@ -391,46 +390,6 @@ def matrix_shell_references(repo_root: Path) -> list[dict[str, str]]:
             references.add("trellis/workflows/guru-team/scripts/bash/" + path.right.value)
     return [{"owner": path, "classification": "installed_managed"}
             for path in sorted(references)]
-
-
-def transcript_activation_shell_references(repo_root: Path) -> list[dict[str, str]]:
-    """Read the installed transcript's bounded activation-wrapper calls."""
-    tree = ast.parse((repo_root / TRANSCRIPT_OWNER).read_text(encoding="utf-8"))
-    activation = next((
-        node for node in tree.body
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-        and node.name == "verify_created_activation"
-    ), None)
-    if activation is None:
-        raise RoutingError("installed transcript activation entry is missing")
-    references = set()
-    for node in ast.walk(activation):
-        if not (
-            isinstance(node, ast.BinOp)
-            and isinstance(node.op, ast.Div)
-            and isinstance(node.left, ast.Name)
-            and node.left.id == "wrappers"
-            and isinstance(node.right, ast.Constant)
-            and isinstance(node.right.value, str)
-            and node.right.value.endswith(".sh")
-        ):
-            continue
-        references.add(
-            "trellis/workflows/guru-team/scripts/bash/" + node.right.value
-        )
-    expected = {
-        "trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh",
-        "trellis/workflows/guru-team/scripts/bash/start-task.sh",
-    }
-    if references != expected:
-        raise RoutingError(
-            "installed transcript activation wrapper drift: "
-            f"expected={sorted(expected)} discovered={sorted(references)}"
-        )
-    return [
-        {"owner": path, "classification": "installed_managed"}
-        for path in sorted(references)
-    ]
 
 
 def matrix_parallel_source(repo_root: Path) -> str:
@@ -529,7 +488,6 @@ def discover_shell_python_helpers(
     for reference in [
         *discover_referenced_shell_helpers(verifier_text),
         *matrix_shell_references(repo_root),
-        *transcript_activation_shell_references(repo_root),
     ]:
         owner = reference["owner"]
         classification = reference["classification"]
@@ -1505,16 +1463,22 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
     }
     smoke_source = ast.get_source_segment(matrix_source, smoke)
     if not all(token in smoke_source for token in (
-        'target / ".trellis/guru-team/runtime/resolve-python.sh"',
-        "str(installed_python)", "str(target)", "str(installed_runtime)",
-        "*(str(value) for value in args)", "_run(argv,",
+        'wrappers / "check-skill-packages.sh"',
+        'wrappers / "run-skill-evals.sh"',
+        'verify_native_platform_load(target, platform,',
     )):
         raise RoutingError("matrix installed managed runner drift")
     discovered_helpers.add(PARALLEL_OWNER)
     expected_direct_helper_paths = {str(row.get("path")) for row in helpers}
-    if discovered_helpers != expected_direct_helper_paths:
+    historical_only = {
+        "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
+        "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+        "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py",
+    }
+    if (discovered_helpers != {PARALLEL_OWNER}
+            or expected_direct_helper_paths != discovered_helpers | historical_only):
         raise RoutingError(
-            "direct helper inventory drift: "
+            "current/historical helper inventory drift: "
             f"registered={sorted(expected_direct_helper_paths)} discovered={sorted(discovered_helpers)}"
         )
 

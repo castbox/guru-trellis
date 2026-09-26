@@ -1,1 +1,1 @@
-{"exit_id":"completed","task_ref":".trellis/tasks/example-task","completion_ref":"completion:v1:111111111111111111111111"}
+{"exit_id":"completed","result_ref":{"task_id":"example-task","lifecycle_generation":0,"result_id":"completion:111111111111111111111111"}}

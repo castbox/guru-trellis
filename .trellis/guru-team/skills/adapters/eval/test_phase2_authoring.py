@@ -13,6 +13,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from adapters.eval import phase2_authoring, native_adapter, owner_staging
+from adapters.eval.eval_support import package_tree_sha256
 from adapters.eval.owner_runtime import load_package_runtime_module
 from runtime.schema import validate_json
 
@@ -41,6 +42,12 @@ def request(root: Path, case_id: str) -> dict:
 
 
 class Phase2AuthoringTests(unittest.TestCase):
+    def test_source_and_installed_package_identity_excludes_private_tests(self):
+        installed = REPO / ".trellis/guru-team/skills/packages/guru-check-task"
+        self.assertTrue((PACKAGE / "tests").is_dir())
+        self.assertFalse((installed / "tests").exists())
+        self.assertEqual(package_tree_sha256(PACKAGE), package_tree_sha256(installed))
+
     def test_fact_only_staging_executes_actual_boundary_tests(self):
         for case_id, successful in (("native-owner-clean", True), ("native-owner-finding", False)):
             with self.subTest(case=case_id), tempfile.TemporaryDirectory() as temp:

@@ -1,4 +1,4 @@
-"""Post-owner transport fixtures, not evidence of native semantic review."""
+"""Pinned-old post-owner transport fixtures, not current graph evidence."""
 from __future__ import annotations
 
 import hashlib
@@ -19,6 +19,10 @@ MERGE = "guru-merge-task-pr"
 BRANCH = "guru-review-branch"
 PUBLICATION = "guru-review-task-publication"
 FINALIZER = "guru-finalize-task"
+# This commit contains the complete predecessor package graph and its archived
+# evals. The current source/installed graph deliberately does not ship it.
+PINNED_OLD_SOURCE_SHA = "bab8cfcd534692735b9240b25dd8bc63e40a5cb4"
+RETIRED_PACKAGES = (MERGE, PUBLICATION, FINALIZER)
 RECIPES = {
     "merge-archived-review": (MERGE, "archived_review_request"),
     "review-archived-passed": (BRANCH, "archived_review"),
@@ -195,10 +199,12 @@ def publication_semantic(package: Path, public: dict, pr: dict, recipe: str) -> 
 def stage_archived_owner_execution(request: dict, fixture: Path, target: Path, request_package: Path,
                                    recipe: str, public_input_path: Path) -> tuple[Path, Path, dict[str, str]]:
     skill, profile = RECIPES[recipe]
+    packages = fixture / ".trellis/guru-team/skills/packages"
+    if any(not (packages / name / "interface.json").is_file() for name in RETIRED_PACKAGES):
+        raise ValueError(f"Archived recipe {recipe} requires the pinned-old package graph at {PINNED_OLD_SOURCE_SHA}")
     template = read(public_input_path)
     if request["skill_id"] != skill or template.get("profile") != profile or request.get("native_execution_mode", "post_owner") != "post_owner":
         raise ValueError("Archived fixture recipe requires its exact Skill/profile in post_owner mode")
-    packages = fixture / ".trellis/guru-team/skills/packages"
     package = packages / skill
     for name in ("interface.json", "evals/evals.json"):
         if hashlib.sha256((package / name).read_bytes()).digest() != hashlib.sha256((request_package / name).read_bytes()).digest():

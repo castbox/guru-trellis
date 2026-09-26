@@ -1,18 +1,14 @@
 from __future__ import annotations
 
 import copy
-import importlib.util
 import json
 import os
 import re
 import shutil
 import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
-from unittest import mock
 
 
 class ApproveTaskPlanPackageContractTests(unittest.TestCase):
@@ -26,11 +22,20 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
     def read(self, relative: str) -> dict:
         return json.loads((self.package / relative).read_text(encoding="utf-8"))
 
-    def add_delivery_policy(self, path: Path) -> Path:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        payload["delivery_policy"] = copy.deepcopy(self.example["delivery_policy"])
-        path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
-        return path
+    def planning_fixture(self, root: Path) -> tuple[Path, Path]:
+        subprocess.run(["git", "init", "-q", str(root)], check=True)
+        task = root / ".trellis/tasks/current"
+        task.mkdir(parents=True)
+        for name in ("prd.md", "design.md", "implement.md"):
+            (task / name).write_text(f"# {name}\n", encoding="utf-8")
+        authoring = {key: self.example[key] for key in (
+            "mode", "authority_refs", "delivery_policy", "docs_ssot_plan",
+            "semantic_review", "typed_exit", "consumer", "reason",
+        )}
+        authoring["mode"] = "workflow"
+        owner_input = root / "planning-owner-input.json"
+        owner_input.write_text(json.dumps(authoring) + "\n", encoding="utf-8")
+        return task, owner_input
 
     def test_architecture_stage_consumes_adjacent_completed_owner_result(self) -> None:
         skill = (self.package / "SKILL.md").read_text(encoding="utf-8")
@@ -40,179 +45,10 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             self.assertRegex(text, r"second\s+external")
             self.assertRegex(text, r"already\s+completed")
 
-    def load_python_module(self, name: str, path: Path):
-        spec = importlib.util.spec_from_file_location(name, path)
-        self.assertIsNotNone(spec)
-        self.assertIsNotNone(spec.loader)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return module
-
-    def load_eval_modules(self):
-        adapter_root = self.package.parents[1]
-        shared_root = self.package.parents[1]
-        if not (shared_root / "runtime/io.py").is_file():
-            shared_root = self.package.parents[2]
-        sys.path.insert(0, str(shared_root))
-        try:
-            common = self.load_python_module(
-                "guru_approve_task_plan_common_composition_test",
-                self.package / "runtime/common.py",
-            )
-            owner_runtime = self.load_python_module(
-                "guru_team_owner_runtime_composition_test",
-                adapter_root / "adapters/eval/owner_runtime.py",
-            )
-            publication = self.load_python_module(
-                "guru_review_task_publication_owner_composition_test",
-                self.package.parent
-                / "guru-review-task-publication/runtime/owner.py",
-            )
-        finally:
-            sys.path.pop(0)
-        from adapters.eval import production_fixtures
-        return common, owner_runtime, production_fixtures, publication
-
-    def test_production_fixture_composition_reuses_publication_owner(self) -> None:
-        _, owner_runtime, production_fixtures, publication = self.load_eval_modules()
-        runtime = SimpleNamespace()
-        runtime_target = Path("/tmp/guru-team/run-skill-command.sh")
-        with mock.patch.object(
-            owner_runtime,
-            "load_package_owner_runtime",
-            return_value=publication,
-        ) as loader:
-            owner_runtime.compose_production_fixture_runtime(runtime_target, runtime)
-        loader.assert_called_once_with(runtime_target, "guru-review-task-publication")
-        for name in ("load_config", "write_json", "write_runtime_mappings"):
-            self.assertIs(getattr(runtime, name), getattr(publication, name))
-
-    def test_production_fixture_composition_preserves_existing_capabilities(self) -> None:
-        _, owner_runtime, production_fixtures, publication = self.load_eval_modules()
-        existing = {
-            "load_config": object(),
-            "write_json": object(),
-            "write_runtime_mappings": object(),
-        }
-        runtime = SimpleNamespace(**existing)
-        with mock.patch.object(
-            owner_runtime,
-            "load_package_owner_runtime",
-            return_value=publication,
-        ) as loader:
-            owner_runtime.compose_production_fixture_runtime(Path("/unused"), runtime)
-        loader.assert_not_called()
-        for name, value in existing.items():
-            self.assertIs(getattr(runtime, name), value)
-
-    def test_review_branch_reuses_production_owner_command_composition(self) -> None:
-        _, owner_runtime, production_fixtures, publication = self.load_eval_modules()
-        runtime = SimpleNamespace()
-        runtime_target = Path("/tmp/guru-team/run-skill-command.sh")
-        with (
-            mock.patch.object(
-                owner_runtime,
-                "load_package_owner_runtime",
-                return_value=publication,
-            ),
-            mock.patch.object(
-                owner_runtime,
-                "compose_production_owner_command_runtime",
-            ) as composition,
-        ):
-            owner_runtime.compose_review_branch_eval_runtime(runtime_target, runtime)
-        composition.assert_called_once_with(runtime_target, runtime)
-
-    def test_production_owner_command_composition_preserves_existing_bindings(self) -> None:
-        _, owner_runtime, production_fixtures, _ = self.load_eval_modules()
-        names = (
-            "cmd_record_planning_approval",
-            "cmd_check_planning_approval",
-            "cmd_record_phase2_check",
-            "cmd_check_phase2_check",
-            "cmd_review_branch",
-            "cmd_check_review_gate",
-        )
-        existing = {name: object() for name in names}
-        runtime = SimpleNamespace(**existing)
-        owner_runtime.compose_production_owner_command_runtime(
-            Path("/tmp/guru-team/run-skill-command.sh"), runtime,
-        )
-        for name, value in existing.items():
-            self.assertIs(getattr(runtime, name), value)
-
-    def test_approve_planning_staging_uses_composed_fixture_runtime(self) -> None:
-        common, owner_runtime, production_fixtures, publication = self.load_eval_modules()
-        for name in ("load_config", "write_json", "write_runtime_mappings"):
-            self.assertFalse(hasattr(common, name))
-        with mock.patch.object(
-            owner_runtime,
-            "load_package_owner_runtime",
-            return_value=publication,
-        ):
-            owner_runtime.compose_production_fixture_runtime(Path("/unused"), common)
-
-        with tempfile.TemporaryDirectory() as temp:
-            fixture = Path(temp)
-            subprocess.run(["git", "init", "-q"], cwd=fixture, check=True)
-            (fixture / ".trellis/guru-team").mkdir(parents=True)
-            subprocess.run(
-                ["git", "config", "user.email", "eval@example.com"],
-                cwd=fixture,
-                check=True,
-            )
-            subprocess.run(
-                ["git", "config", "user.name", "Guru Eval"],
-                cwd=fixture,
-                check=True,
-            )
-            task, _ = production_fixtures.production_task_fixture(common, fixture)
-            staged = production_fixtures.production_planning_input(
-                common, fixture, task, "approved",
-            )
-            self.add_delivery_policy(staged)
-            payload = json.loads(staged.read_text(encoding="utf-8"))
-            self.assertEqual(payload["typed_exit"], "approved")
-            self.assertEqual(
-                payload["consumer"],
-                {"kind": "workflow", "id": "phase-1-task-activation"},
-            )
-            self.assertTrue(staged.read_bytes().endswith(b"\n"))
-
     def test_approve_planning_staging_uses_real_record_and_check_wrappers(self) -> None:
-        common, owner_runtime, production_fixtures, publication = self.load_eval_modules()
-        repo = next(
-            parent for parent in self.package.parents
-            if (parent / ".trellis/guru-team/scripts/bash/run-skill-command.sh").is_file()
-        )
-        runtime_target = repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
-        with mock.patch.object(
-            owner_runtime,
-            "load_package_owner_runtime",
-            return_value=publication,
-        ):
-            owner_runtime.compose_production_fixture_runtime(runtime_target, common)
-        owner_runtime.compose_production_owner_command_runtime(runtime_target, common)
-
         with tempfile.TemporaryDirectory() as temp:
             fixture = Path(temp)
-            subprocess.run(["git", "init", "-q"], cwd=fixture, check=True)
-            (fixture / ".trellis/guru-team").mkdir(parents=True)
-            subprocess.run(
-                ["git", "config", "user.email", "eval@example.com"],
-                cwd=fixture,
-                check=True,
-            )
-            subprocess.run(
-                ["git", "config", "user.name", "Guru Eval"],
-                cwd=fixture,
-                check=True,
-            )
-            task, _ = production_fixtures.production_task_fixture(common, fixture)
-            owner_input = production_fixtures.production_planning_input(
-                common, fixture, task, "approved",
-            )
-            self.add_delivery_policy(owner_input)
+            task, owner_input = self.planning_fixture(fixture)
             task_ref = task.relative_to(fixture).as_posix()
             recorded = subprocess.run(
                 [
@@ -247,36 +83,36 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
                 checked["consumer"],
                 {"kind": "workflow", "id": "phase-1-task-activation"},
             )
+            checkpoint = json.loads(Path(checked["artifact_path"]).read_text(encoding="utf-8"))
+            self.assertEqual(checkpoint["delivery_policy"], self.example["delivery_policy"])
+            public_input = fixture / "public-input.json"
+            public_input.write_text(json.dumps({"mode": "workflow", "task_ref": task_ref}), encoding="utf-8")
+            invoked = subprocess.run(
+                [
+                    str(self.package / "scripts/invoke.sh"), "--root", str(fixture),
+                    "--input", str(public_input), "--owner-result", checked["artifact_path"],
+                ],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(invoked.returncode, 0, invoked.stderr)
+            self.assertEqual(json.loads(invoked.stdout), {
+                "exit_id": "approved", "task_ref": task_ref,
+                "planning_result_id": f"planning:{checkpoint['reviewed_content_sha256']}",
+            })
+            self.assertFalse(Path(checked["artifact_path"]).exists())
 
     def test_clarify_scope_uses_real_record_check_and_invoke_wrappers(self) -> None:
-        common, owner_runtime, production_fixtures, publication = self.load_eval_modules()
-        with mock.patch.object(
-            owner_runtime,
-            "load_package_owner_runtime",
-            return_value=publication,
-        ):
-            owner_runtime.compose_production_fixture_runtime(Path("/unused"), common)
-
         with tempfile.TemporaryDirectory() as temp:
             fixture = Path(temp)
-            subprocess.run(["git", "init", "-q"], cwd=fixture, check=True)
-            (fixture / ".trellis/guru-team").mkdir(parents=True)
-            subprocess.run(
-                ["git", "config", "user.email", "eval@example.com"],
-                cwd=fixture,
-                check=True,
-            )
-            subprocess.run(
-                ["git", "config", "user.name", "Guru Eval"],
-                cwd=fixture,
-                check=True,
-            )
-            task, _ = production_fixtures.production_task_fixture(common, fixture)
+            task, owner_input = self.planning_fixture(fixture)
             task_ref = task.relative_to(fixture).as_posix()
-            owner_input = production_fixtures.production_planning_input(
-                common, fixture, task, "clarify_scope",
-            )
-            self.add_delivery_policy(owner_input)
+            authoring = json.loads(owner_input.read_text(encoding="utf-8"))
+            authoring["typed_exit"] = "clarify_scope"
+            authoring["consumer"] = {"kind": "workflow", "id": "guru-task-plan-clarify-scope-router"}
+            authoring["semantic_review"].update({
+                "status": "clarify_scope", "scope_proposals": ["scope-proposal:R13"],
+            })
+            owner_input.write_text(json.dumps(authoring) + "\n", encoding="utf-8")
 
             recorded = subprocess.run(
                 [
@@ -453,9 +289,21 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         consumer_schema = json.loads(
             (self.repo / "consumers/workflow/production/approve-task-plan-approved.schema.json").read_text(encoding="utf-8")
         )
-        Draft202012Validator(consumer_schema).validate(
-            self.read("examples/public-approved-output.json")
+        self.assertTrue(consumer_schema["$id"].endswith("approved-input-3.0"))
+        approved = self.read("examples/public-approved-output.json")
+        consumer = Draft202012Validator(consumer_schema)
+        consumer.validate(approved)
+        self.assertFalse(consumer.is_valid({key: value for key, value in approved.items() if key != "planning_result_id"}))
+        activation = json.loads(
+            (self.package.parent / "guru-activate-task/examples/public-activate-input.json").read_text(encoding="utf-8")
         )
+        activation_schema = json.loads(
+            (self.package.parent / "guru-activate-task/schemas/public-input.schema.json").read_text(encoding="utf-8")
+        )
+        activation["activation"]["task_ref"] = approved["task_ref"]
+        activation["activation"]["task_id"] = Path(approved["task_ref"]).name
+        activation["activation"]["planning_result_id"] = approved["planning_result_id"]
+        Draft202012Validator(activation_schema).validate(activation)
 
     def test_compact_gate_has_four_closed_semantic_routes(self) -> None:
         from jsonschema import Draft202012Validator
@@ -761,7 +609,10 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
                 cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
             )
             self.assertEqual(result.returncode, 0, result)
-            self.assertEqual(json.loads(result.stdout), {"exit_id": "approved", "task_ref": task_ref})
+            self.assertEqual(json.loads(result.stdout), {
+                "exit_id": "approved", "task_ref": task_ref,
+                "planning_result_id": f"planning:{owner['reviewed_content_sha256']}",
+            })
             self.assertFalse(checkpoint.exists())
             self.assertFalse(checkpoint.parent.exists())
 
@@ -805,7 +656,11 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         self.assertTrue(policy["validation_boundaries"])
         self.assertIn("remaining_work_owner", policy)
         approved = self.read("examples/public-approved-output.json")
-        self.assertEqual({"exit_id", "task_ref"}, set(approved))
+        self.assertEqual({"exit_id", "task_ref", "planning_result_id"}, set(approved))
+        self.assertEqual(
+            approved["planning_result_id"],
+            f"planning:{self.example['reviewed_content_sha256']}",
+        )
         self.assertNotIn("delivery_policy", approved)
 
     def test_wrappers_are_dispatcher_only_and_package_is_not_portable(self) -> None:

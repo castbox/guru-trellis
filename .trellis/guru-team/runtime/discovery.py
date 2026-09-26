@@ -15,6 +15,7 @@ CURRENT_INTERFACE_SCHEMA_IDS = {
     "guru-team-skill-interface-1.4",
     "guru-team-skill-interface-1.5",
     "guru-team-skill-interface-1.6",
+    "guru-team-skill-interface-1.7",
 }
 
 

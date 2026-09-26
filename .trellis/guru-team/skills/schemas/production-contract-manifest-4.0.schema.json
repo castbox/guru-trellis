@@ -26,7 +26,7 @@
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": {"enum": ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.5", "guru-team-skill-interface-1.6"]}
+      "items": {"enum": ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.5", "guru-team-skill-interface-1.6", "guru-team-skill-interface-1.7"]}
     },
     "registry_schema_id": {"const": "guru-team-skill-registry-1.4"},
     "eval_schema_ids": {
@@ -240,7 +240,7 @@
       "properties": {
         "id": {"$ref": "#/$defs/skillId"},
         "interface_schema_id": {
-          "enum": ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.5", "guru-team-skill-interface-1.6"]
+          "enum": ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.5", "guru-team-skill-interface-1.6", "guru-team-skill-interface-1.7"]
         },
         "eval_schema_id": {
           "enum": ["guru-team-skill-evals-1.0", "guru-team-skill-evals-2.0"]

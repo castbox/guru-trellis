@@ -54,6 +54,9 @@ class SourceAndResultTests(unittest.TestCase):
     def test_only_exact_legacy_issue_scope_normalizes_without_writing(self):
         expected = {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454, "disposition": "exact_source"}
         self.assertEqual(task_source({"scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/454"}), expected)
+        self.assertEqual(task_source({"scope": "GitHub Issue #454"}, repo_ref="castbox/guru-trellis"), expected)
+        with self.assertRaises(LifecycleContractError):
+            task_source({"scope": "GitHub Issue #454"})
         for scope in ["related to #454", "GitHub issue: https://github.com/castbox/guru-trellis/issues/454/", None]:
             with self.subTest(scope=scope), self.assertRaises(LifecycleContractError):
                 task_source({"scope": scope})

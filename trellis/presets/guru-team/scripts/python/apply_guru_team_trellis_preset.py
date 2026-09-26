@@ -65,7 +65,6 @@ GURU_OVERLAY_REMOVAL_SIDECAR = (
 ).encode("utf-8")
 SKILL_INTEGRATION_TEST_PATHS = (
     Path("tests/test_finish_family_integration.py"),
-    Path("tests/test_base_continuity_integration.py"),
     Path("tests/test_delivery_family_integration.py"),
 )
 PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS = {
@@ -104,6 +103,7 @@ CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "skill-interface-1.4.schema.json",
     "skill-interface-1.5.schema.json",
     "skill-interface-1.6.schema.json",
+    "skill-interface-1.7.schema.json",
     "skill-registry-1.3.schema.json",
     "skill-registry-1.4.schema.json",
     "skill-registry.schema.json",
@@ -119,6 +119,7 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("eval_runner.py"),
     Path("installed.py"),
     Path("io.py"),
+    Path("lifecycle_helpers.py"),
     Path("launch.sh"),
     Path("probe.py"),
     Path("python-runtime.json"),
@@ -129,6 +130,23 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("temporary-inventory.json"),
     Path("temporary_lifecycle.py"),
     Path("validate.py"),
+    Path("task_lifecycle/__init__.py"),
+    Path("task_lifecycle/branch_resolution.py"),
+    Path("task_lifecycle/branch_store.py"),
+    Path("task_lifecycle/checkout_acquisition.py"),
+    Path("task_lifecycle/checkout_resolution.py"),
+    Path("task_lifecycle/closure_result.py"),
+    Path("task_lifecycle/composition.py"),
+    Path("task_lifecycle/errors.py"),
+    Path("task_lifecycle/git_facts.py"),
+    Path("task_lifecycle/handoff_cleanup.py"),
+    Path("task_lifecycle/identity.py"),
+    Path("task_lifecycle/rebind.py"),
+    Path("task_lifecycle/resource_ledger.py"),
+    Path("task_lifecycle/results.py"),
+    Path("task_lifecycle/schema.py"),
+    Path("task_lifecycle/session_adapter.py"),
+    Path("task_lifecycle/source.py"),
 )
 
 
@@ -203,9 +221,7 @@ MANAGED_ASSET_PATHS = [
     Path("schemas/finish-summary.schema.json"),
     Path("scripts/bash/check-env.sh"),
     Path("scripts/bash/version.sh"),
-    Path("scripts/bash/prepare-task.sh"),
-    Path("scripts/bash/check-workspace-boundary.sh"),
-    Path("scripts/bash/start-task.sh"),
+    Path("scripts/bash/check-task-checkout-boundary.sh"),
     Path("scripts/bash/check-skill-packages.sh"),
     Path("scripts/bash/discover-skill-contract.sh"),
     Path("scripts/bash/discover-skill-evals.sh"),
@@ -224,29 +240,15 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/check-contract-wording-review.sh"),
     Path("scripts/bash/record-change-request-review.sh"),
     Path("scripts/bash/check-change-request-review.sh"),
-    Path("scripts/bash/record-task-workspace-plan.sh"),
-    Path("scripts/bash/create-task-workspace.sh"),
-    Path("scripts/bash/check-task-workspace-result.sh"),
     Path("scripts/bash/resolve-human-artifacts.sh"),
     Path("scripts/bash/record-planning-approval.sh"),
     Path("scripts/bash/check-planning-approval.sh"),
     Path("scripts/bash/record-phase2-check.sh"),
     Path("scripts/bash/check-phase2-check.sh"),
-    Path("scripts/bash/record-task-publication-review.sh"),
-    Path("scripts/bash/check-task-publication-review.sh"),
     Path("scripts/bash/execute-extension-verification.sh"),
     Path("scripts/bash/record-extension-verification.sh"),
     Path("scripts/bash/check-extension-verification.sh"),
     Path("scripts/bash/invoke-extension-verification.sh"),
-    Path("scripts/bash/preview-finalization.sh"),
-    Path("scripts/bash/record-finalization-gate.sh"),
-    Path("scripts/bash/check-finalization-gate.sh"),
-    Path("scripts/bash/execute-finalization-transition.sh"),
-    Path("scripts/bash/preview-task-pr-merge.sh"),
-    Path("scripts/bash/record-task-pr-merge.sh"),
-    Path("scripts/bash/check-task-pr-merge.sh"),
-    Path("scripts/bash/execute-task-pr-merge.sh"),
-    Path("scripts/bash/invoke-task-pr-merge.sh"),
     Path("scripts/bash/record-agent-recovery.sh"),
     Path("scripts/bash/check-agent-recovery.sh"),
     Path("scripts/bash/prepare-task-commit.sh"),
@@ -254,7 +256,6 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/create-task-commit.sh"),
     Path("scripts/bash/review-branch.sh"),
     Path("scripts/bash/check-review-gate.sh"),
-    Path("scripts/bash/finish-work.sh"),
 ]
 LEGACY_MANAGED_ASSET_HASHES = {
     Path("scripts/python/guru_team_trellis.py"): frozenset({
@@ -1055,6 +1056,16 @@ def prune_empty_managed_skill_parents(repo: Path, path: Path) -> None:
         current = current.parent
 
 
+def prune_empty_activated_skill_removals(repo: Path, result: dict[str, Any]) -> None:
+    for removal in result.get("skill_packages", {}).get("removals", []):
+        if removal.get("action") != "removed_managed":
+            continue
+        relative = Path(removal["path"])
+        target = repo / relative
+        if skill_path_is_managed(relative) and not target.exists():
+            prune_empty_managed_skill_parents(repo, target)
+
+
 def prune_empty_unselected_skill_projections(
     repo: Path, platforms: set[str]
 ) -> None:
@@ -1239,14 +1250,20 @@ def skill_platform_public_files(package_root: Path) -> list[Path]:
             if isinstance(ref, dict) and isinstance(ref.get("example"), dict)
         }
     }
-    public_authoring_paths = {
-        str(item["contract"]["authoring_example"]["path"])
-        for item in interface.get("public_contracts", {}).get("consumer_inputs", [])
-        if isinstance(item, dict)
-        and isinstance(item.get("contract"), dict)
-        and isinstance(item["contract"].get("authoring_example"), dict)
-        and isinstance(item["contract"]["authoring_example"].get("path"), str)
-    }
+    public_authoring_paths: set[Path] = set()
+    for item in interface.get("public_contracts", {}).get("consumer_inputs", []):
+        if not isinstance(item, dict) or not isinstance(item.get("contract"), dict):
+            continue
+        contract = item["contract"]
+        for index, variant in enumerate((contract, *contract.get("alternate_authoring", []))):
+            example = variant.get("authoring_example")
+            if not isinstance(example, dict) or not isinstance(example.get("path"), str):
+                continue
+            relative = Path(example["path"])
+            source = package_root / relative
+            if index and (not source.is_file() or source.is_symlink()):
+                raise SystemExit(f"Missing canonical Skill authoring example: {source}")
+            public_authoring_paths.add(relative)
     public_wrapper = str(
         interface.get("public_contracts", {})
         .get("invocation", {})
@@ -1264,7 +1281,7 @@ def skill_platform_public_files(package_root: Path) -> list[Path]:
         if relative in required_schema_paths or relative in required_public_paths:
             result.append(path)
             continue
-        if relative_text in public_authoring_paths:
+        if relative in public_authoring_paths:
             result.append(path)
             continue
         if relative_text in private_paths or relative_text in private_artifact_paths:
@@ -2445,6 +2462,7 @@ def install_assets(
                 if isinstance(item, dict) and isinstance(item.get("path"), str)
             )
             activate_staged_repository(staging_repo, repo, activation_paths)
+            prune_empty_activated_skill_removals(repo, result)
             prune_empty_unselected_skill_projections(
                 repo, platforms or set(DEFAULT_DOGFOOD_PLATFORMS)
             )
@@ -2533,7 +2551,7 @@ def _install_assets_in_place(
         dst / "scripts/bash/check-env.sh",
         dst / "scripts/bash/version.sh",
         dst / "scripts/bash/prepare-task.sh",
-        dst / "scripts/bash/check-workspace-boundary.sh",
+        dst / "scripts/bash/check-task-checkout-boundary.sh",
         dst / "scripts/bash/start-task.sh",
         dst / "scripts/bash/check-skill-packages.sh",
         dst / "scripts/bash/discover-skill-contract.sh",
@@ -2730,6 +2748,25 @@ def install_overlays(
         for relative in canonical_by_path
         if overlay_selected(Path(relative), platforms)
     }
+    recovered_sidecars: set[str] = set()
+    for sidecar_text in pending_recovery_sidecars:
+        target_text = sidecar_text[:-4]
+        source = canonical_by_path.get(target_text)
+        target = repo / target_text
+        sidecar = repo / sidecar_text
+        if (
+            target_text in desired_paths
+            and source is not None
+            and target.is_file()
+            and not target.is_symlink()
+            and sidecar.is_file()
+            and not sidecar.is_symlink()
+            and target.read_bytes() == source.read_bytes()
+        ):
+            sidecar.unlink()
+            recovered_sidecars.add(sidecar_text)
+    sidecars = [path for path in sidecars if path not in recovered_sidecars]
+    managed_backups = [path for path in managed_backups if path not in recovered_sidecars]
     for relative in sorted(desired_paths):
         source = canonical_by_path[relative]
         relative = source.relative_to(overlay_root)
@@ -2869,6 +2906,7 @@ def main() -> int:
         "skill_source_validation": result["skill_source_validation"],
         "upstream_ownership_validation": result["upstream_ownership_validation"],
         "skill_installed_validation": result["skill_installed_validation"],
+        "skill_activation_validation": result["skill_activation_validation"],
         "python_runtime": result["python_runtime"],
         "config": ".trellis/guru-team/config.yml",
         "workflow_marketplace": WORKFLOW_MARKETPLACE,

@@ -1,4 +1,5 @@
 {
   "exit_id": "approved",
-  "task_ref": ".trellis/tasks/07-26-example"
+  "task_ref": ".trellis/tasks/07-26-example",
+  "planning_result_id": "planning:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 }

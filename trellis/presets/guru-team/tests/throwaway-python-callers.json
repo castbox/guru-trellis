@@ -78,17 +78,6 @@
       ]
     },
     {
-      "id": "shell-helper-installed-check-workspace-boundary",
-      "owner": "trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh",
-      "kind": "shell_wrapper_second_hop",
-      "classification": "installed_managed",
-      "expected_launcher": "installed resolve-python.sh",
-      "route": [
-        "trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh",
-        "trellis/skills/guru-team/runtime/resolve-python.sh"
-      ]
-    },
-    {
       "id": "shell-helper-installed-discover-skill-contract",
       "owner": "trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh",
       "kind": "shell_wrapper_second_hop",
@@ -107,17 +96,6 @@
       "expected_launcher": "installed resolve-python.sh",
       "route": [
         "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh",
-        "trellis/skills/guru-team/runtime/resolve-python.sh"
-      ]
-    },
-    {
-      "id": "shell-helper-installed-start-task",
-      "owner": "trellis/workflows/guru-team/scripts/bash/start-task.sh",
-      "kind": "shell_wrapper_second_hop",
-      "classification": "installed_managed",
-      "expected_launcher": "installed resolve-python.sh",
-      "route": [
-        "trellis/workflows/guru-team/scripts/bash/start-task.sh",
         "trellis/skills/guru-team/runtime/resolve-python.sh"
       ]
     }
@@ -460,42 +438,6 @@
       "ordinal": 1
     },
     {
-      "id": "package-runtime-python_subprocess_second_hop-4c31592d6758",
-      "owner": "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/recover.py",
-      "kind": "python_subprocess_second_hop",
-      "classification": "installed_managed",
-      "expected_launcher": "sys.executable",
-      "anchor_sha256": "4c31592d6758646c6b024864977da17d5f2b10a5b9eb22758f39efcb47b3b6c3",
-      "ordinal": 1
-    },
-    {
-      "id": "package-runtime-python_subprocess_second_hop-5417c9bc88d7",
-      "owner": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/_owner_part_01.py",
-      "kind": "python_subprocess_second_hop",
-      "classification": "installed_managed",
-      "expected_launcher": "sys.executable",
-      "anchor_sha256": "5417c9bc88d7a84f4f5d75a7d8b733b21fb5bc22135f34325738ed9359b0c521",
-      "ordinal": 1
-    },
-    {
-      "id": "package-runtime-python_subprocess_second_hop-3ba09952d640",
-      "owner": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/_owner_part_03.py",
-      "kind": "python_subprocess_second_hop",
-      "classification": "installed_managed",
-      "expected_launcher": "sys.executable",
-      "anchor_sha256": "3ba09952d64069372d0165bca6b419e221e0650e3d582659f97dbb958e7e8906",
-      "ordinal": 1
-    },
-    {
-      "id": "package-runtime-python_subprocess_second_hop-70eaa11ff3ab",
-      "owner": "trellis/skills/guru-team/packages/guru-finalize-task/runtime/_owner_part_04.py",
-      "kind": "python_subprocess_second_hop",
-      "classification": "installed_managed",
-      "expected_launcher": "sys.executable",
-      "anchor_sha256": "70eaa11ff3abc12bfed8f037b71879d8df7e8a9fa250e03c6708125eabd08b06",
-      "ordinal": 1
-    },
-    {
       "id": "package-runtime-python_argv_second_hop-6cda203bedf9",
       "owner": "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/execute.py",
       "kind": "python_argv_second_hop",
@@ -511,24 +453,6 @@
       "classification": "installed_managed",
       "expected_launcher": "managed dynamic sys.executable",
       "anchor_sha256": "1ce00a5eb26e47ef9cf9b8c90dd1bb82002607a05a0e779a2f710e66648c59d1",
-      "ordinal": 1
-    },
-    {
-      "id": "package-runtime-python_subprocess_second_hop-70c153e0881c",
-      "owner": "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/_owner_part_01.py",
-      "kind": "python_subprocess_second_hop",
-      "classification": "installed_managed",
-      "expected_launcher": "sys.executable",
-      "anchor_sha256": "70c153e0881c5658064c6bd2f483d794b68fabdc1901ea0be1e4aa3b1e6222f1",
-      "ordinal": 1
-    },
-    {
-      "id": "package-runtime-python_subprocess_second_hop-06297fc43ed2",
-      "owner": "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/_owner_part_03.py",
-      "kind": "python_subprocess_second_hop",
-      "classification": "installed_managed",
-      "expected_launcher": "sys.executable",
-      "anchor_sha256": "06297fc43ed2374fd07bd6d1fbade6620a913f7f1dea11cbfd9a964a6c988b23",
       "ordinal": 1
     }
   ],

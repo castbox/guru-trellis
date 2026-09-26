@@ -1,35 +1,27 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-reactivate-task-semantic-result-1.0",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["profile", "mode", "route", "reason_refs"],
-  "properties": {
-    "profile": {"const": "reactivate_completed_task"},
-    "mode": {"enum": ["workflow", "standalone"]},
-    "reason_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
-    "workspace": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["disposition", "workspace_path", "branch_name", "base_branch", "base_head", "workspace_mapping", "task_mapping"],
-      "properties": {
-        "disposition": {"enum": ["reuse_exact", "create_new"]},
-        "workspace_path": {"type": "string", "minLength": 1},
-        "branch_name": {"type": "string", "minLength": 1},
-        "base_branch": {"type": "string", "minLength": 1},
-        "base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-        "workspace_mapping": {"type": "string", "pattern": "^\\.trellis/\\.runtime/guru-team/workspaces/[A-Za-z0-9._-]+\\.json$"},
-        "task_mapping": {"type": "string", "pattern": "^\\.trellis/\\.runtime/guru-team/tasks/[A-Za-z0-9._-]+\\.json$"}
-      }
-    },
-    "route": {
-      "oneOf": [
-        {"type": "object", "additionalProperties": false, "required": ["typed_exit"], "properties": {"typed_exit": {"enum": ["reactivated_to_requirements", "reactivated_to_planning", "reactivated_to_implementation", "reactivated_to_evidence_refresh"]}}},
-        {"type": "object", "additionalProperties": false, "required": ["typed_exit", "reason_code", "remediation"], "properties": {"typed_exit": {"const": "reactivate_blocked"}, "reason_code": {"type": "string", "minLength": 1}, "remediation": {"type": "string", "minLength": 1}}}
-      ]
-    }
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-reactivate-task-semantic-result-2.0",
+  "type":"object","additionalProperties":false,"required":["profile","mode","archived_lifecycle","route","reason_refs"],
+  "properties":{
+    "profile":{"const":"reactivate_completed_task"},"mode":{"enum":["workflow","standalone"]},
+    "archived_lifecycle":{"$ref":"#/$defs/lifecycle"},
+    "route":{"enum":["reactivated_to_planning","session_binding_recovery_required","resume_reactivation","source_correction_required","reactivate_blocked"]},
+    "reason_refs":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},
+    "reason_code":{"type":"string","minLength":1},
+    "selected_base_ref":{"type":"string","minLength":1},"reviewed_base_head":{"$ref":"#/$defs/head"},
+    "session_outcome":{"enum":["session_bound","explicit_task_mode","recovery_required"]},
+    "source_correction":{"type":"object"},
+    "acquisition":{"oneOf":[{"$ref":"#/$defs/adopt"},{"$ref":"#/$defs/provision"}]}
   },
-  "allOf": [
-    {"if": {"properties": {"route": {"properties": {"typed_exit": {"const": "reactivate_blocked"}}}}}, "then": {"not": {"required": ["workspace"]}}, "else": {"required": ["workspace"]}}
-  ]
+  "allOf":[
+    {"if":{"properties":{"route":{"const":"reactivate_blocked"}}},"then":{"required":["reason_code"],"not":{"required":["acquisition"]}}},
+    {"if":{"properties":{"route":{"const":"source_correction_required"}}},"then":{"required":["source_correction"],"not":{"required":["acquisition"]}}},
+    {"if":{"properties":{"route":{"enum":["reactivated_to_planning","session_binding_recovery_required","resume_reactivation"]}}},"then":{"required":["selected_base_ref","reviewed_base_head","acquisition"],"allOf":[{"if":{"properties":{"route":{"const":"resume_reactivation"}}},"else":{"required":["session_outcome"]}}]}}
+  ],
+  "$defs":{
+    "lifecycle":{"type":"object","additionalProperties":false,"required":["task_id","lifecycle_generation"],"properties":{"task_id":{"type":"string","pattern":"^[A-Za-z0-9][A-Za-z0-9._-]*$"},"lifecycle_generation":{"type":"integer","minimum":0}}},
+    "head":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "common":{"type":"object","required":["task_id","task_ref","lifecycle_generation","route","branch_ref","decision_head","task_artifact_expectation","transaction_id","result_id"],"properties":{"task_id":{"type":"string","minLength":1},"task_ref":{"type":"string","pattern":"^\\.trellis/tasks/(?!archive/)[^/]+$"},"lifecycle_generation":{"type":"integer","minimum":1},"branch_ref":{"type":"string","minLength":1},"decision_head":{"$ref":"#/$defs/head"},"task_artifact_expectation":{"const":"absent"},"transaction_id":{"type":"string","minLength":1},"result_id":{"type":"string","minLength":1}}},
+    "adopt":{"allOf":[{"$ref":"#/$defs/common"},{"type":"object","additionalProperties":false,"required":["invocation_checkout"],"properties":{"task_id":{},"task_ref":{},"lifecycle_generation":{},"route":{"const":"adopt_invocation_checkout"},"branch_ref":{},"decision_head":{},"task_artifact_expectation":{},"transaction_id":{},"result_id":{},"invocation_checkout":{"type":"string","pattern":"^/"}}}]},
+    "provision":{"allOf":[{"$ref":"#/$defs/common"},{"type":"object","additionalProperties":false,"required":["target_path","provision_disposition"],"properties":{"task_id":{},"task_ref":{},"lifecycle_generation":{},"route":{"const":"provision_linked_worktree"},"branch_ref":{},"decision_head":{},"task_artifact_expectation":{},"transaction_id":{},"result_id":{},"target_path":{"type":"string","pattern":"^/"},"provision_disposition":{"enum":["new_branch","existing_branch","existing_checkout"]}}}]}
+  }
 }

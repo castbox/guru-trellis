@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "3.0",
   "skill_id": "guru-review-change-request",
   "generated_at": "2026-01-01T00:00:00Z",
   "mode": "workflow",
@@ -204,7 +204,7 @@
   ],
   "consumer": {
     "kind": "skill",
-    "id": "guru-create-task-workspace"
+    "id": "guru-task-intake-router"
   },
   "facts_sha256": "3c730dae782fa73c099478a9bd28b8cd8cb54dc1716a7505368bd7f958e86441"
 }

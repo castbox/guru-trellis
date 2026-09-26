@@ -207,7 +207,10 @@ def verify_payload(bookkeeping: dict) -> None:
     text = "\n".join([bookkeeping["commit_subject"], bookkeeping["commit_body"], bookkeeping["pr_title"], bookkeeping["pr_body"], bookkeeping["merge_subject"], bookkeeping["merge_body"]])
     if re.search(r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?[ \t]*(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#[1-9][0-9]*\b", text):
         raise CommandError("stale_identity", "semantic_result.bookkeeping", "Bookkeeping payload must not close an Issue.", 3)
-    if "Guru-Delivery-Task:" in text or "Guru-Delivery-Cycle:" in text:
+    if any(f"{key}:" in text for key in (
+        "Guru-Delivery-Task", "Guru-Delivery-Cycle",
+        "Guru-Task-Identity", "Guru-Delivery-Schema", "Guru-Delivery-Head",
+    )):
         raise CommandError("stale_identity", "semantic_result.bookkeeping", "Bookkeeping payload must not publish a business Delivery identity.", 3)
 
 
@@ -398,6 +401,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
         return out
     bookkeeping = semantic["bookkeeping"]
+    verify_payload(bookkeeping)
     task_ref, archive_ref, archive_path, allowlist = lifecycle_roots(public, semantic)
     task_dir = root / task_ref
     archive_dir = root / archive_path

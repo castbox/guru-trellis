@@ -1,1 +1,1 @@
-{"exit_id":"requirements_revision_required","task_ref":".trellis/tasks/example-task","resume_target":"requirements"}
+{"exit_id":"requirements_revision_required","task_artifact":{"task_id":"example-task","task_ref":".trellis/tasks/example-task","lifecycle_generation":0},"reason":{"reason_code":"requirements_stale","reason_refs":["scope:current"]}}

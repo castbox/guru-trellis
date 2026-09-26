@@ -31,8 +31,9 @@ NON_OWNERS = (
     "guru-review-change-request",
     "guru-review-contract-wording",
     "guru-create-task-commit",
-    "guru-review-task-publication",
-    "guru-finalize-task",
+    "guru-review-task-delivery",
+    "guru-publish-task-delivery",
+    "guru-merge-task-delivery",
     "guru-reconcile-task-base",
 )
 UPSTREAM_EVIDENCE_PATHS = (
@@ -232,7 +233,7 @@ class SemanticRetrievalContractTest(unittest.TestCase):
                 self.assertEqual(
                     OWNERSHIP.classify_guru_path(
                         relative,
-                        inventory["guru_owned_rules"],
+                        inventory,
                     ),
                     [],
                 )

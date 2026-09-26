@@ -1,0 +1,12 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-rebind-task-branch-plan-request-1.0",
+  "type":"object","additionalProperties":false,
+  "required":["route","task_id","task_ref","lifecycle_generation","expected_status","current_checkout","target_branch_name","selected_base_ref","reviewed_base_head"],
+  "properties":{
+    "route":{"enum":["same_checkout_new_ref","existing_target"]},
+    "task_id":{"type":"string","minLength":1},"task_ref":{"type":"string","minLength":1},
+    "lifecycle_generation":{"type":"integer","minimum":0},"expected_status":{"enum":["planning","in_progress"]},
+    "current_checkout":{"type":"string","minLength":1},"target_branch_name":{"type":"string","minLength":1},
+    "selected_base_ref":{"type":"string","minLength":1},"reviewed_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"}
+  }
+}

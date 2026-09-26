@@ -121,7 +121,7 @@
       "exit_bindings": [
         {
           "exit_id": "approved",
-          "output_schema_id": "guru-production-approve-task-plan-output-approved-2.0",
+          "output_schema_id": "guru-production-approve-task-plan-output-approved-3.0",
           "output_example_id": "approved_output",
           "consumer_input_id": "approved_workflow_input",
           "projection_id": "project_approved",
@@ -618,7 +618,8 @@
   ],
   "interface_schema_ids": [
     "guru-team-skill-interface-1.4",
-    "guru-team-skill-interface-1.6"
+    "guru-team-skill-interface-1.6",
+    "guru-team-skill-interface-1.7"
   ],
   "eval_schema_ids": [
     "guru-team-skill-evals-1.0",

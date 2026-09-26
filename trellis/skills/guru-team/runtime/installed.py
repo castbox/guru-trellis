@@ -219,12 +219,13 @@ def public_files(package: Path, interface: dict[str, Any], files: list[Path]) ->
         if isinstance(item, dict) and isinstance(item.get("path"), str) and str(item.get("path")) not in output_examples
     }
     public_authoring_paths = {
-        str(item.get("contract", {}).get("authoring_example", {}).get("path"))
+        str(variant["authoring_example"]["path"])
         for item in interface.get("public_contracts", {}).get("consumer_inputs", [])
-        if isinstance(item, dict)
-        and isinstance(item.get("contract"), dict)
-        and isinstance(item["contract"].get("authoring_example"), dict)
-        and isinstance(item["contract"]["authoring_example"].get("path"), str)
+        if isinstance(item, dict) and isinstance(item.get("contract"), dict)
+        for variant in (item["contract"], *item["contract"].get("alternate_authoring", []))
+        if isinstance(variant, dict)
+        and isinstance(variant.get("authoring_example"), dict)
+        and isinstance(variant["authoring_example"].get("path"), str)
     }
     wrapper = str(interface.get("public_contracts", {}).get("invocation", {}).get("wrapper", ""))
     result = []
@@ -265,6 +266,9 @@ def workflow_facts(root: Path, workflow: Path, active: dict[str, dict[str, Any]]
             except json.JSONDecodeError:
                 errors.append(f"installed workflow has invalid {kind} marker JSON")
                 continue
+            if not isinstance(payload, dict):
+                errors.append(f"installed workflow has invalid {kind} marker object")
+                continue
             if kind == "invoke": invokes.append(payload)
             elif kind == "exit": exits.append(payload)
             else: targets.append((match.group(1), str(payload.get("id") or "")))
@@ -273,20 +277,29 @@ def workflow_facts(root: Path, workflow: Path, active: dict[str, dict[str, Any]]
             skill_id: entry for skill_id, entry in active.items()
             if entry.get("workflow_integration_state", "integrated") == "integrated"
         }
+        declared_invokes = [{"skill": skill_id, "required": True} for skill_id in integrated]
+        for item in invokes:
+            if item not in declared_invokes:
+                errors.append(f"installed workflow has undeclared invoke marker {item}")
         for skill_id in integrated:
             count = sum(item.get("skill") == skill_id and item.get("required") is True for item in invokes)
             if count != 1:
                 errors.append(f"active skill {skill_id} has {count} mandatory invoke markers")
         declared_consumers: set[tuple[str, str]] = set()
+        declared_exits: list[dict[str, Any]] = []
         for skill_id, entry in integrated.items():
             interface = entry["interface_data"]
             for declared in interface.get("external_exits", []):
                 consumer = declared.get("consumer", {})
+                declared_exits.append({"skill": skill_id, "exit": declared.get("id"), "consumer": consumer})
                 if consumer.get("kind") in {"workflow", "stop"}:
                     declared_consumers.add((consumer["kind"], consumer["id"]))
                 matching = [item for item in exits if item.get("skill") == skill_id and item.get("exit") == declared.get("id") and item.get("consumer") == consumer]
                 if len(matching) != 1:
                     errors.append(f"active skill {skill_id} exit {declared.get('id')} has {len(matching)} matching exit markers")
+        for item in exits:
+            if item not in declared_exits:
+                errors.append(f"installed workflow has undeclared exit marker {item}")
         for consumer in declared_consumers:
             matches = [item for item in targets if item == consumer]
             other = [item for item in targets if item[1] == consumer[1] and item[0] != consumer[0]]
@@ -399,6 +412,13 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
                     Path("runtime") / path.name,
                     path,
                 )
+        lifecycle_root = kernel_root / "task_lifecycle"
+        if lifecycle_root.is_dir():
+            for path in collect_files(root, lifecycle_root, "installed task lifecycle runtime", errors):
+                if path.suffix == ".py":
+                    expect(path, Path("runtime/task_lifecycle") / path.name, path)
+                else:
+                    errors.append(f"unexpected installed task lifecycle runtime file: {path.name}")
     selected_roots: dict[Path, set[str]] = {Path(".agents/skills"): {"shared"}}
     for platform in selected:
         selected_roots.setdefault(platform_roots[platform], set()).add(platform)

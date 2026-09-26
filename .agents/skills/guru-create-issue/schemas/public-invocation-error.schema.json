@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-create-issue-error-1.0","type":"object","additionalProperties":false,"required":["code","field_path","remediation"],"properties":{"code":{"enum":["invalid_arguments","invalid_json","schema_mismatch","stale_identity","internal_error"]},"field_path":{"type":"string"},"remediation":{"type":"string"}}}

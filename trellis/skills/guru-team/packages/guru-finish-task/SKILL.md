@@ -19,7 +19,11 @@ merge. The executor recovers only that exact transaction and returns `success`
 only after the remote target baseline contains the final archive and no active
 copy. The archive locator belongs in finish-summary, not in the retired
 `task.json.archive_dir` metadata field. The reviewed payload forbids
-Issue-closing keywords and Delivery trailers.
+Issue-closing keywords and both legacy `Guru-Delivery-Task` /
+`Guru-Delivery-Cycle` and current `Guru-Task-Identity` /
+`Guru-Delivery-Schema` / `Guru-Delivery-Head` trailers. Validate the current
+semantic payload before local archive projection and on every successful
+re-entry, including an already open bookkeeping PR before its merge.
 Only after remote target verification does Finish seal the current generation
 and exact result in the common-dir resource ledger against the bookkeeping PR
 head (the cleanup refs' actual HEAD), then retire its branch binding. The

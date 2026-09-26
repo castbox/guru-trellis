@@ -1,1 +1,1 @@
-{"exit_id":"evidence_pending","task_ref":".trellis/tasks/example-task","resume_target":"evidence-refresh"}
+{"exit_id":"evidence_pending","task_artifact":{"task_id":"example-task","task_ref":".trellis/tasks/example-task","lifecycle_generation":0},"reason":{"reason_code":"evidence_pending","reason_refs":["validation:current"]}}

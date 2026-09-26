@@ -46,39 +46,27 @@ Before editing workflow behavior:
 - `trellis/workflows/guru-team/config-template.yml` defines default Guru Team behavior.
 - `trellis/workflows/guru-team/scripts/bash/*.sh` are thin executable wrappers.
 - `trellis/skills/guru-team/packages/*/runtime/` owns Skill-specific deterministic behavior; `trellis/skills/guru-team/runtime/` is a closed inventory containing only shared command dispatch, schema, discovery, installation validation, eval, and I/O primitives.
-- Phase 0 base selection/sync is owned by the active `guru-sync-base` package plus
-  shared `sync-base` / `check-base-sync` runtime commands; `prepare-task` reuses
-  that core and does not define a second resolver.
-- The six-package/23-exit Phase 0 graph uses the workflow-owned five-stage
-  `base_current` -> `context_current` -> `clarity_current` ->
-  `wording_current` -> `readiness_current` transition family and versioned
-  call-local invocation envelopes. `guru-sync-base` public invocation is the
-  only authoritative sync; normal pre-task transport is stdin/stdout only and
-  writes no owner/prerequisite/transition repository files. Compatibility
-  `prepare-task` is a local diagnostic, not a workflow hop.
+- Phase 0 base selection/sync is owned by `guru-sync-base`; the current Intake
+  route carries checked call-local transitions through discovery, clarification,
+  wording, and change-request review. A proposed draft enters the separate
+  `guru-create-issue` owner and fresh Intake; an existing Issue or standalone
+  request enters `guru-create-task`.
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
-- Registry 1.4 accepts integrated, deferred, and standalone-only active rows.
-  Integrated packages select Interface 1.4, normal-scenario qualification selects
-  Interface 1.6, and the source-only verifier selects Interface 1.5. The registry
-  contains 32 active packages, 142 exits, and 102 commands; global business workflow markers
-  are 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Registry,
-  discovery, invocation, installation, and validation read only the live
-  current package graph. The planning/check/commit/qualification closure is
-  defined only by `contracts/production-current.json` with contract id
-  `production-current-v4`; it contains four packages, 20 profiles, 15 exits,
-  authoring seeds, schemas, examples, production control, and eval bindings
-  without an alternate execution path. Versioned v2/v3 files are immutable
-  legacy assets.
+- The live registry and selected Interfaces, not old cardinalities, define the
+  active packages. This #434 candidate has 34 active packages, 155 exits, and
+  104 commands; the business workflow has 33 mandatory invokes and 153 exits.
+  `production-current-v4` remains a four-package submanifest, not the complete
+  Delivery/Completion lifecycle selector. The standalone extension verifier
+  does not enter a business task.
 - `discover-skill-contract` is the stable deterministic public discovery
-  command. It returns the closed current Interface 1.4 contract and portable errors; the
+  command. It returns the selected current Interface contract and portable errors; the
   exact package invocation remains package-owned and callers do not import the
   companion Python source.
 - `guru-discover-change-context` owns the semantic Phase 0 current-state/history discovery loop; its deterministic runtime reads only archived `finish-summary.json:index.*` and persists no repo-level cache.
-- `guru-create-task-workspace` owns the final Intake mutation closed loop. Its
-  recorder/executor/checker publish stdout plan/result contracts, create either
-  one exact reviewed issue or one exact workspace/task invocation, persist no
-  Guru-owned task-local scope aggregate, and use only official `task.json` plus
-  ignored `.trellis/.runtime/guru-team/**` mappings for workspace identity.
+- Task creation, immutable identity, branch binding, checkout resolution,
+  session binding, and Planning activation are separate current owners. TaskId
+  and lifecycle generation, live Git checkout facts, and their selected
+  branch/resource contracts replace old task/workspace mapping authority.
 - `guru-approve-task-plan` owns the Phase 1 semantic planning approval closed
   loop. Its shared recorder/checker validate the compact schema 3.0 semantic
   projection in ignored owner-private runtime; consumers receive only one
@@ -87,45 +75,27 @@ Before editing workflow behavior:
   severity classification, Docs SSOT review, finding full rerun, four typed
   exits, and the ignored current schema 5.0 `phase2-check.json` owner checkpoint;
   unchanged official `trellis-check` workers provide ephemeral evidence only.
-- `guru-review-branch` is the sole Phase 3.5 semantic owner. Global workflow
-  and platform entries only invoke its profile-specific public inputs and consume
-  its six typed exits, including bounded continuity and archived review;
-  review scripts are package-owned deterministic
-  recorder/validator implementation details.
-- `guru-review-task-publication` is the sole publication semantic owner after
-  Branch Review. The owner reads approved scope, the complete current diff,
-  validation results, and live issue state, then authors and reviews the current
-  PR title/body in memory. Its checked `ready` DTO carries that exact payload
-  directly to Finalizer without task-local publication content artifacts. The
-  Skill owns three target-authored profiles: two ordinary profiles and
-  `archived_publication_review`. Its ignored `pr-readiness.json` checkpoint has
-  separate ordinary and archived schema variants. Ordinary profiles retain
-  metadata-only internal revision and Finalizer preflight; the archived profile
-  uses read-only preflight. Ten-dimension review returns `ready` /
-  `return_to_task_work` / `blocked` for ordinary profiles and
-  `archived_ready|blocked` for archived review; workflow owns only routes.
+- `guru-review-branch` owns the independent committed full-diff review and
+  bounded continuity. Its current `passed` exit enters Delivery Review;
+  historical archived-review output stops for explicit legacy disposition.
+- `guru-review-task-delivery` reviews one slice and its Refs-only PR payload;
+  `guru-publish-task-delivery` owns push/PR recovery and
+  `guru-merge-task-delivery` returns a Delivery result, not Task Completion.
+- `guru-review-task-completion` judges the entire accepted task scope across
+  Deliveries. Only `completed` enters `guru-complete-task-closure`, the separate
+  source Issue disposition owner. `guru-finish-task` archives the current
+  generation through a bookkeeping-only PR after Closure; only verified Finish
+  enters `guru-cleanup-task-resources`. Normally finished archives may enter
+  `guru-reactivate-task` under a new generation of the same TaskId.
 - `guru-verify-extension-installation` is the source-repository-owned semantic
   verifier for clean throwaway installation adequacy. It is standalone-only,
   accepts `source_repository_verification`, returns `verified|blocked`, and is
-  unreachable from business tasks, Publication, Finalizer, and finish-work.
-- `guru-finalize-task` is the active semantic owner of exact Publication payload
-  readiness, current-conversation Finalizer confirmation, five distinct input
-  profiles, six public exits, and the owner-private transaction/recovery loop.
-  Four ordinary profiles retain their contracts; `archived_review_refresh`
-  validates current review and archive continuity without transaction mutation.
-  Current re-entry uses ignored `finalization-transaction.json`; no retired
-  task-local aggregate participates in current preparation or archive selection.
-  Package discovery, global invocation after publication `ready`, the exact
-  manifest-selected Guru-owned daily entries, and automatic machine recovery
-  routing are active. Terminal
-  `ready_for_merge` evals feed
-  `guru-merge-task-pr`. Upstream
-  `trellis-finish-work` entries are owned only by official Trellis and are not
-  installed or managed by the Guru preset.
-- Current task and worktree identity comes only from official `task.json`, the
-  ignored runtime mapping, the current checkout, and live `git worktree list`
-  facts. Missing or mismatched current identity fails closed; no alternate task
-  identity artifact participates in resolution.
+  unreachable from business-task Delivery, Completion, Closure, and Finish.
+- The old `guru-create-task-workspace`, `guru-review-task-publication`,
+  `guru-finalize-task`, `guru-merge-task-pr`, and `guru-restore-archived-task`
+  contracts and their 32/142, 22/98 snapshots are pinned-old history only.
+  Old in-flight transactions require a compatible pinned version or reviewed
+  manual disposition, never an adapter into the current lifecycle.
 
 ## Required Validation
 
@@ -160,23 +130,23 @@ repository actually grows those assets.
 
 The durable contracts for `guru-review-branch` are split across:
 
-- `skill-package-contract.md`: public Interface 1.4 I/O, active publication
-  bridge, private state and routing discriminator;
+- `skill-package-contract.md`: selected public I/O, current Delivery Review
+  handoff, private state and routing discriminator;
 - `workflow-contract.md`: thin Phase 3.5 invocation and typed consumers;
 - `data-contracts.md`: scenario/disposition/finding artifact shapes;
 - `companion-scripts.md`: deterministic recorder/checker boundary;
 - `quality-guidelines.md`: lifecycle, eval, distribution and upgrade coverage.
 
-## Task Publication Review Closed-Loop Owner
+## Delivery And Task Closeout Owners
 
-The durable contracts for `guru-review-task-publication` are split across
-`skill-package-contract.md`, `workflow-contract.md`, `data-contracts.md`,
-`companion-scripts.md`, and `quality-guidelines.md`. Together they own the three
-Interface 1.4 profiles, four minimal exits, ordinary/archived private gate variants, semantic/runtime
-  boundary, thin routing, real-wrapper eval, participation in the current
-  32-Skill/142-exit/102-command package closure, and install/update checks. The global
-business workflow projection is 22 invokes, 98 exits, 35 workflow targets, and
-24 stop targets.
+The current Delivery Review, Publish, Merge, Completion, Closure, Finish,
+Cleanup, and Reactivate contracts are split across `skill-package-contract.md`,
+`workflow-contract.md`, `data-contracts.md`, `companion-scripts.md`, and
+`quality-guidelines.md`. The workflow invokes each stable Skill id and consumes
+its typed exits; entry conditions, semantic judgments, recovery, and private
+state remain with the owning package. Each Delivery PR is Refs-only. Completion
+alone decides whole-task adequacy, Closure owns source Issue disposition, and
+Finish's bookkeeping PR is not a business Delivery.
 
 ## Extension Installation Verification Closed-Loop Owner
 
@@ -187,21 +157,8 @@ across `skill-package-contract.md`, `workflow-contract.md`,
 two minimal exits, one ignored source-session private result, clean-throwaway
 executor, retry/stale/redaction rules, and
 canonical/installed/platform/update/reapply verification. Business tasks and
-Finalizer do not consume this Skill.
+their closeout owners do not consume this Skill.
 
-## Task Finalization Closed-Loop Owner
-
-The durable contracts for active `guru-finalize-task` are split across
-`skill-package-contract.md`, `workflow-contract.md`, `companion-scripts.md`,
-`quality-guidelines.md`, `preset/installer.md`, `preset/upstream-ownership.md`,
-and `docs/public-docs.md`. Together they own its five profiles, six external
-exits, dialogue-only side-effect confirmation, owner-private minimal transaction,
-archive contract, real-wrapper eval, and additive distribution. The dedicated
-archived profile remains read-only and does not enter the ordinary transaction.
-
-The current package graph contains 32 active Skills, 142 external exits, and 102 commands
-with Interface-declared target-owned `skill_input_authoring_seed` handoffs. Global workflow
-markers are 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Issue #119 combined acceptance
-additionally requires the descriptor-bound daily entries selected by the target, terminal
-`ready_for_merge` and Merge evals, current ownership
-validation, and installed integration coverage.
+The retired Publication/Finalizer/PR Merge/Restore contracts in those specs are
+explicitly historical. Their old evals and DTOs do not authorize current
+Delivery or Finish, and old in-flight state is not auto-migrated.

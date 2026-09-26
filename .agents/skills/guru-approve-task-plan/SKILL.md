@@ -67,8 +67,10 @@ checkpoint, gate, handoff, archive, schema, or public DTO. Mapped exits and
 same-scope re-entry continue automatically.
 
 After the semantic result exists, record and validate only the compact 3.0
-owner-private projection. Its one composite planning-content token serves only
-the adjacent freshness checker; it is not semantic or workflow authority.
+owner-private projection. Its composite planning-content token serves the
+adjacent freshness checker; the checked `approved` exit projects it as the
+minimal `planning_result_id` consumed by Activation. The token is not semantic
+or workflow authority, and Activation must not recompute it from current files.
 Return exactly one of `approved`,
 `revision_required`, `clarify_scope`, or `blocked`. The public input only routes
 the owner entry; it never supplies findings, approval status, or a preselected

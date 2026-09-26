@@ -77,17 +77,6 @@ def production_task_fixture(runtime: Any, fixture: Path) -> tuple[Path, str]:
     run_git(fixture, "update-ref", "refs/remotes/origin/main", base_head)
     run_git(fixture, "remote", "add", "origin", "https://github.com/example/guru-extension.git")
     run_git(fixture, "checkout", "-q", "-b", "eval/current")
-    runtime.write_runtime_mappings(
-        fixture,
-        runtime.load_config(fixture),
-        {
-            "workspace_slug": "current",
-            "task_slug": "current",
-            "task_dir": ".trellis/tasks/current",
-            "branch_name": "eval/current",
-        },
-        fixture,
-    )
     return task, base_head
 
 def production_planning_input(

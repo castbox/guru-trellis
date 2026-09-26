@@ -8,31 +8,35 @@ steps and does not turn a manual result into Guru completion.
 
 Load current task, repository, and phase facts with the live context helpers,
 then read `.trellis/workflow.md`. Use its Phase 3.6/3.7 route and mandatory load
-these active owners by stable Skill id:
+the applicable active owners by stable Skill id:
 
 This is the exclusive finish entry for a Guru task. The upstream-owned
 `trellis-finish-work` Skill is not applicable to Guru tasks and must not be
-loaded or invoked. Before Finalizer, do not call `task.py archive`,
-or any task archival executor.
+loaded or invoked. Do not archive before the current Closure and Finish owners
+complete their declared transitions.
 
 All GitHub platform operations use authenticated, explicitly repo-bound
 `gh`/`gh api` only. Do not use or fall back to App, MCP, connector, or browser
 UI; keep Git transport on `git`.
 
-- `guru-review-task-publication`
-- `guru-finalize-task`
-- `guru-merge-task-pr`
+- `guru-review-task-delivery`
+- `guru-publish-task-delivery`
+- `guru-merge-task-delivery`
+- `guru-review-task-completion`
+- `guru-complete-task-closure`
+- `guru-finish-task`
+- `guru-cleanup-task-resources`
 
-Consume only their current public typed exits and mapped workflow consumers:
+Consume only current public typed exits and their mapped workflow consumers:
 
-- Publication `ready` enters finalization; `return_to_task_work` resumes the
-  complete Phase 2 route; `blocked` stops with its concrete reason.
-- Finalization `publication_review_stale` re-enters publication review, and
-  `resume_finalization` or `reprepare_required` re-enters finalization.
-  `ready_for_merge` enters `guru-merge-task-pr`; `blocked` stops with its
-  concrete reason.
-- Merge `merged` is terminal; `merge_blocked` and `closure_mismatch` stop with
-  their concrete reason.
+- Delivery Review `ready` enters publication; a checked `ready_for_merge`
+  enters the expected-head Delivery merge. `delivered` enters Completion,
+  never directly closes the Issue or archives the task.
+- Completion `remaining_work` retains the active task; `additional_delivery_required`
+  plans another slice under the same TaskId. Only `completed` enters Closure.
+- Closure `closed` or `no_mutation` enters Finish. Only Finish `success` enters
+  Cleanup; Cleanup `cleaned` ends the route, while remaining resources stay
+  with the Cleanup owner.
 
 Missing, stale, unknown, multiple, or unmapped exits fail closed. Mapped
 stale, resume, and reprepare transitions are internal workflow
@@ -40,10 +44,12 @@ routes, not user choices. Do not add a routine confirmation between them.
 When the user gives a clear affirmative such as `确认继续` for the exact action
 just displayed, consume it for that action without asking them to repeat its
 SHA, digest, PR, or plan identity. Continue mapped internal exits automatically.
-Finalizer side effects and expected-head merge each keep their own exact
+Each independent Git/GitHub or resource mutation keeps its own exact
 dialogue-local confirmation; new external authority or a material scope decision
-may also pause the route.
+may also pause the route. Old Finalizer/PR residue is not a new-graph DTO:
+route an in-flight old task to a pinned compatible version or explicit manual
+disposition after checking its exact task, PR, local/remote HEAD and base.
 
 Do not call deterministic closeout scripts directly, reproduce package
-internals or artifact schemas, or create a handoff artifact. Return only the
-terminal `merged` result or the concrete declared blocker.
+internals or artifact schemas, or create a handoff artifact. Return the
+current task state or the concrete declared blocker.

@@ -21,7 +21,7 @@ DIMENSIONS = (
 )
 CATEGORIES = {"requirement_gap", "delivery_conflict", "wording_gap", "context_stale", "target_complete", "current_history_conflict", "duplicate_reuse_conflict", "prerequisite_mismatch"}
 CONSUMERS = {
-    "ready": {"kind": "skill", "id": "guru-create-task-workspace"},
+    "ready": {"kind": "workflow", "id": "guru-task-intake-router"},
     "clarify_requirements": {"kind": "skill", "id": "guru-clarify-requirements"},
     "review_wording": {"kind": "skill", "id": "guru-review-contract-wording"},
     "refresh_context": {"kind": "skill", "id": "guru-sync-base"},
@@ -73,7 +73,7 @@ def sha(text):
 
 
 def validate_owner(package_root, payload, field="input"):
-    validate_json(payload, package_root / "schemas/change-request-review.schema.json", field)
+    validate_json(payload, package_root / "schemas/change-request-review-3.0.schema.json", field)
     return payload
 
 
@@ -242,7 +242,7 @@ def validate_semantics(authored, target, prerequisites, linked):
 def build_result(authored, target, prerequisites):
     linked = linkage(target, prerequisites)
     validate_semantics(authored, target, prerequisites, linked)
-    result = {"schema_version": "2.0", "skill_id": "guru-review-change-request", "generated_at": authored.get("generated_at"), "mode": authored.get("mode"), "target": target, "prerequisites": prerequisites, "evidence_linkage": linked, "semantic_review": authored.get("semantic_review"), "typed_exit": authored.get("typed_exit"), "reason": authored.get("reason"), "affected_evidence": authored.get("affected_evidence"), "consumer": authored.get("consumer")}
+    result = {"schema_version": "3.0", "skill_id": "guru-review-change-request", "generated_at": authored.get("generated_at"), "mode": authored.get("mode"), "target": target, "prerequisites": prerequisites, "evidence_linkage": linked, "semantic_review": authored.get("semantic_review"), "typed_exit": authored.get("typed_exit"), "reason": authored.get("reason"), "affected_evidence": authored.get("affected_evidence"), "consumer": authored.get("consumer")}
     result["facts_sha256"] = digest(result)
     return result
 

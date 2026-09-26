@@ -1,0 +1,40 @@
+schema_version: "1.0"
+task_ref: "434-task-delivery-lifecycle"
+task_locator: ".trellis/tasks/09-18-434-task-delivery-lifecycle"
+issue_ref: "https://github.com/castbox/guru-trellis/issues/434"
+source_version: "current-main-0.6.17-guru.66"
+expected_current_version: "current-main-0.6.17-guru.66"
+candidate_successor_version: "current-main-0.6.17-guru.67"
+status: "task_current"
+implementation_status: "local_activation_candidate_complete"
+verification_status: "targeted_and_local_clean_sample_passed_two_readonly_reviews_clear_formal_gates_pending"
+authority_scope: "isolated_contribution"
+architecture_impact: "architecture_impact"
+change_path: "target_native"
+contribution:
+  requirements: "docs/requirements-design-test-contributions/434-task-delivery-lifecycle/requirements.md"
+  design: "docs/requirements-design-test-contributions/434-task-delivery-lifecycle/design.md"
+  test: "docs/requirements-design-test-contributions/434-task-delivery-lifecycle/test.md"
+  traceability: "docs/requirements-design-test-contributions/434-task-delivery-lifecycle/traceability.md"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.66"
+  status: "active"
+design_constitution:
+  authority_owner: "docs/architecture"
+  candidate_locator: "docs/architecture/00-foundation/design-constitution.md"
+  identity_kind: "version"
+  candidate_identity: "guru-trellis-design-constitution-v1"
+  identity_status: "current"
+architecture_candidate:
+  contribution_locator: "docs/architecture/contributions/434-task-delivery-lifecycle.md"
+  contribution_identity: "architecture-contribution-434-task-delivery-lifecycle-v1"
+  adr_required: true
+public_contracts:
+  rdt_owner: "guru-maintain-requirements-design-test-ssot:task_impact_sync"
+  architecture_candidate: "guru-maintain-architecture-baseline:2.0"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+architecture_promotion_owner: "guru-maintain-architecture-baseline"
+architecture_contribution: "docs/architecture/contributions/434-task-delivery-lifecycle.md"
+shared_current_write: false
+promotion_decision: "pending_review"

@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-establish-task-branch-binding-established-1.0","type":"object","additionalProperties":false,"required":["exit_id","task_id","lifecycle_generation"],"properties":{"exit_id":{"const":"binding_established"},"task_id":{"type":"string","minLength":1},"lifecycle_generation":{"type":"integer","minimum":0}}}

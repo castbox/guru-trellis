@@ -57,20 +57,37 @@ Route preparation through standard intake and the existing global workflow:
    remain exclusively owned by `guru-create-task-commit`.
 7. Invoke `guru-review-branch` again for one independent full
    `origin/<base>...HEAD` review of the complete post-promotion delivery.
-8. Only the fresh passed post-promotion Branch Review enters
-   `guru-review-task-publication`, which generates and semantically reviews the
-   Chinese PR title and body from the live Issue, exact diff, current
-   validation, and reviewed-content identity.
-9. Only Publication's current minimal result enters `guru-finalize-task`.
-   Finalizer exclusively owns its push, PR creation, archive, and Ready
-   transaction. Only `guru-finalize-task:ready_for_merge` may enter
-   `guru-merge-task-pr`, which exclusively owns expected-head merge and closure
-   verification.
+8. Only the fresh passed post-promotion Branch Review enters the current
+   Architecture publication check and `guru-review-task-delivery`. Review the
+   preparation slice, remaining release work, exact diff, validation and
+   reviewed-content identity, then author a truthful Chinese Refs-only PR
+   title/body. Only its checked `ready` enters `guru-publish-task-delivery`.
+9. Publish owns its reviewed push, PR binding and Ready transaction. Only its
+   checked `ready_for_merge` enters `guru-merge-task-delivery`, which owns the
+   independently confirmed expected-head merge. Only its checked `delivered`
+   enters `guru-review-task-completion`; output loss returns to the original
+   Publish or Merge owner against the same PR and HEAD.
+10. Completion reviews the *whole preparation task* against its accepted
+    preparation scope and all Delivery/evidence facts. A merged PR alone does
+    not complete the task. If that scope still includes post-merge release
+    actions or any other remaining work, follow Completion's incomplete route
+    and do not Finish; clarify the preparation boundary through its owner.
+    Only `completed` enters `guru-complete-task-closure`. The release Issue is
+    `reference_only`, so Closure must return `no_mutation`, never close it.
+11. After the acceptance-finish Architecture check, `guru-finish-task` owns
+    archive and a separately reviewed, confirmed bookkeeping commit, PR and
+    expected-head merge. Only its checked `success` enters
+    `guru-cleanup-task-resources`, whose exact resource deletion needs its own
+    review and confirmation. Finish bookkeeping is not another business
+    Delivery or a release-status commit.
 
 The Stage 1 preparation PR is reference-only because the release Issue still
 owns the post-merge exact-candidate, tag, smoke, and GitHub Release work. Its
-Publication payload uses `Refs #<issue>`; Issue closure remains the independent
-Stage 2 boundary after those requirements are complete.
+Delivery Review payload uses `Refs #<issue>` with no closing keyword. The
+preparation task's source disposition is `reference_only` and its Completion
+can cover only accepted preparation scope; Closure has no Issue mutation.
+Release Issue closure remains the independent Stage 2 boundary after those
+requirements are complete.
 
 Each `guru-create-task-commit` invocation exclusively owns its exact task commit
 preview, confirmation, and commit mutation. The first review cannot be reused
@@ -79,22 +96,24 @@ for promotion-created bytes, and the second review cannot run before promotion.
 The honest path is exactly:
 
 ```text
-stable_plan -> pre_promotion_delivery -> guru-create-task-commit -> pre_promotion_commit -> guru-review-branch_pre_promotion -> serialized_architecture_rdt_promotion -> fresh_phase2 -> guru-create-task-commit -> post_promotion_commit -> guru-review-branch_post_promotion -> guru-review-task-publication -> guru-finalize-task
+stable_plan -> pre_promotion_delivery -> guru-create-task-commit -> pre_promotion_commit -> guru-review-branch_pre_promotion -> serialized_architecture_rdt_promotion -> fresh_phase2 -> guru-create-task-commit -> post_promotion_commit -> guru-review-branch_post_promotion -> guru-review-task-delivery -> guru-publish-task-delivery -> guru-merge-task-delivery -> guru-review-task-completion -> guru-complete-task-closure:no_mutation -> guru-finish-task -> guru-cleanup-task-resources
 ```
 
-Owner-private lifecycle metadata and the existing Finalizer metadata tail
-excluded by `guru-reviewed-content-1.0` do not change reviewed delivery
-identity and MUST NOT create a release-status commit, self-reference loop, or
-an additional Branch Review. Any non-allowlisted tracked change returns to task
-work. Architecture/RDT promotion is an intentional reviewed-content mutation,
-not lifecycle metadata, and therefore requires the explicit fresh Phase 2,
-commit, and post-promotion Branch Review above.
+Owner-private lifecycle metadata does not prove reviewed delivery identity and
+MUST NOT create a release-status commit or self-reference loop. Finish's
+terminal bookkeeping is separately reviewed after Completion/Closure, never a
+substitute for Delivery Review or an additional business Branch Review. Any
+non-allowlisted tracked delivery change returns to task work. Architecture/RDT
+promotion is an intentional reviewed-content mutation, not lifecycle metadata,
+and therefore requires the explicit fresh Phase 2, commit, and post-promotion
+Branch Review above.
 
 ### Stage 2: Post-Merge Exact Candidate
 
-After the preparation PR is merged, discard the preparation branch HEAD,
-Branch Review, Publication result, and all earlier release evidence. Fresh-fetch
-`origin/main`, prove its live merge/base lineage, and freeze one exact candidate
+After Stage 1 Delivery and Finish bookkeeping merges, discard the preparation
+branch HEAD, Branch Review, Delivery Review result, and all earlier release
+evidence. Fresh-fetch `origin/main`, prove its live merge/base lineage (including
+the terminal archive), and freeze one exact candidate
 commit and tree. Every release check and later mutation must bind that same
 candidate identity; the preparation reviewed HEAD is never substituted for it.
 
@@ -124,18 +143,29 @@ body from the live Issue, exact candidate diff, current validation evidence,
 and candidate identity, then perform semantic review. Do not create a
 task-local body handoff.
 
+Only after the candidate gate passes, independently confirm annotated tag
+creation/push for that candidate. Verify the remote tag points to the exact
+candidate before running the separately confirmed tag-pinned smoke. Only a
+passing smoke for that tag and candidate permits the separately confirmed
+GitHub Release; verify its tag and published state. Freshly review the live
+release Issue against these exact results before the separate Issue-closure
+confirmation and mutation. A failed or skipped check blocks the later action;
+the Stage 1 reference-only Closure never substitutes for this Stage 2 decision.
+
 ## Reviewed-Content Freshness
 
 Use the existing `guru-reviewed-content-1.0` owner contract. Changes to actual
 delivery bytes, durable README or Docs authority, configuration, schema,
-scripts, or tests make every affected Phase 2, Branch Review, Publication,
-Finalizer, or exact-candidate gate stale and require its owner to rerun.
+scripts, or tests make every affected Phase 2, Branch Review, Delivery Review,
+Publish, Merge, Completion, Finish, or exact-candidate gate stale and require
+its owner to rerun.
 
 Changes confined to `.trellis/tasks/**`, `.trellis/workspace/**`,
 `.trellis/.runtime/**`, `.trellis/guru-team/extension.json`, or `.DS_Store`
 remain lifecycle/provenance metadata only when the current owner contract
-allows them. They do not refresh, repair, or prove a gate. Metadata commits are
-never used to record or recover release progress.
+allows them. They do not refresh, repair, or prove a gate. Finish's exact
+terminal bookkeeping is owner-controlled; arbitrary metadata commits are never
+used to record or recover release progress.
 
 ## Forbidden Persistence
 
@@ -158,8 +188,11 @@ that authorizes only that displayed action:
 | Mutation | Exclusive owner or boundary |
 | --- | --- |
 | task commit | `guru-create-task-commit` |
-| complete Finalizer transaction | `guru-finalize-task` exact transaction boundary |
-| preparation PR merge | `guru-merge-task-pr` |
+| preparation PR push/bind/Ready | `guru-publish-task-delivery` |
+| preparation PR merge | `guru-merge-task-delivery` |
+| Finish archive projection | `guru-finish-task` |
+| Finish bookkeeping publication | `guru-finish-task` |
+| Finish bookkeeping PR merge | `guru-finish-task` |
 | annotated tag creation/push | post-merge tag boundary |
 | tag-pinned smoke | post-tag smoke boundary |
 | GitHub Release creation | post-smoke Release boundary |
@@ -167,24 +200,15 @@ that authorizes only that displayed action:
 | branch/worktree/task cleanup | cleanup boundary |
 
 Confirmation for one row cannot authorize, pre-authorize, or be reused for any
-other row. The complete Finalizer transaction row MUST be displayed once with
-its exact repository, branch, reviewed/publication identity, PR target and the
-fixed action set that current `guru-finalize-task` may execute: provenance
-reprepare when required, content push, Draft PR binding or creation, archive,
-archive push, and Ready transition. It MUST receive one current-dialogue answer
-immediately before the public Finalizer transaction executes. That answer
-authorizes only the displayed complete Finalizer transaction; it does not
-authorize the later preparation PR merge or any post-merge release row.
-
-Keep `guru-finalize-task` as the unchanged semantic and mutation owner, use only
-its existing public I/O, atomic Happy Path, and same-owner recovery, and add no
-public Finalizer field, exit, consumer, or owner. The repository-private release
-orchestrator MUST NOT require a pause or additional confirmation between
-Finalizer-owned push, PR binding/creation, archive, archive push, and Ready
-steps, because the current public transaction exposes no such intermediate
-boundary. A failed transaction does not authorize a retry. Tag, smoke, Release,
-Issue closure, merge, and cleanup remain independently reviewable even when the
-same user performs them consecutively.
+other row. Publish's reviewed preview identifies its exact repository, branch,
+HEAD, PR payload and remote actions before one current-dialogue confirmation;
+it does not authorize the later preparation PR merge. Finish has three distinct
+owner-confirmed mutations (archive projection, bookkeeping publication, and
+bookkeeping merge), not a single inherited Publish confirmation. A failed or
+changed plan requires its owner's fresh review and confirmation; Completion and
+reference-only Closure cannot borrow a mutation confirmation or close the
+release Issue. Tag, smoke, Release, Issue closure, and cleanup remain separately
+reviewable even when the same user performs them consecutively.
 
 ## Fail-Closed Stops
 
