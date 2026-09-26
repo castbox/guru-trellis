@@ -55,7 +55,7 @@
       "expected_exit": "review_continuity_required",
       "expected_output": "The DTO preserves the prior full-review commit and carries the current reconciled task HEAD to bounded continuity review.",
       "input_profile_id": "post_publication",
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "review_continuity_required"}, {"id": "resume-publication", "kind": "json_path", "pointer": "/resume_target", "operation": "equals", "expected": "task_finalization"}]},
+      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "review_continuity_required"}, {"id": "resume-publication", "kind": "json_path", "pointer": "/resume_target", "operation": "equals", "expected": "delivery_publication"}]},
       "files": ["evals/files/post-publication-continuity-input.json", "evals/files/post-publication-continuity-facts.json"]
     },
     {

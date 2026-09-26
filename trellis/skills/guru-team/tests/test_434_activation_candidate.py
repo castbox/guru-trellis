@@ -61,6 +61,17 @@ class ActivationCandidateTests(unittest.TestCase):
         self.ids = current - RETIRED | NEW
         self.interfaces = {skill: read_json(PACKAGES / skill / "interface.json") for skill in self.ids}
 
+    def test_candidate_adr_id_does_not_reuse_accepted_decision(self) -> None:
+        seen: dict[str, Path] = {}
+        for path in sorted((ROOT / "docs/architecture/adr").glob("[0-9][0-9][0-9]-*.md")):
+            match = re.match(r"# (ADR-\d{3}):", path.read_text(encoding="utf-8"))
+            self.assertIsNotNone(match, path)
+            decision_id = match.group(1)
+            self.assertEqual(path.name[:3], decision_id[-3:], path)
+            self.assertNotIn(decision_id, seen, (seen.get(decision_id), path))
+            seen[decision_id] = path
+        self.assertEqual(seen["ADR-016"].name, "016-task-delivery-lifecycle.md")
+
     def test_candidate_packages_and_unique_skill_consumers(self) -> None:
         self.assertEqual((len(self.ids), sum(len(i["external_exits"]) for i in self.interfaces.values())),
                          (34, 155))

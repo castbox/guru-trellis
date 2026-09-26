@@ -209,6 +209,10 @@
 
 首次 `origin/main@bab8cfcd...a6b6d633` 完整提交范围的全新只读审核发现两项正常路径问题，连续无 finding 计数归零：Finish 在 Guru-owned linked task worktree 后直接调用 Cleanup，会触发调用目录自删保护；公开 extension manifest 漏报 active Completion Interface 1.7。修复保留 Cleanup 保护，由 global workflow 与 Skill 在同一 Git common-dir 的非删除目标 checkout 调用，缺少保留 checkout 时停止人工处置；manifest 增加 1.7 并同步 data-contracts、installed manifest 和回归断言。直接从 task checkout 调用被阻断、改用 retained checkout 清理成功的正反例通过；定向 installer/图/Cleanup 125/125、qualification eval 48/48、source/installed 及 dogfood drift 通过，两次 preset apply 收敛零 sidecar。此前 Phase 2 与两次未提交候选清洁审核不覆盖新修复，须重新正式 Phase 2、提交、完整 Branch Review 和两轮连续全新只读审核；shared `.66 -> .67` 晋升仍未执行。
 
+下一轮全新完整提交范围只读审核发现一项 P2：Reconcile `post_publication` eval 输入已是 `delivery_publication`，断言却仍指向旧 `task_finalization`。Architecture live authority 回读另发现候选 ADR-012 与 #435 已接受决定重号。已将 eval 与其五份 installed/platform 投影修正，新增覆盖每个 eval resume 断言（保留 post-check/post-commit 的 `phase2` 归一化）的回归；候选决定重编号 ADR-016，保留 shared ADR-012..015，并新增文件名/标题/ID 唯一性回归。两次 preset apply 消费本次五份旧 managed backup，零 sidecar、source/installed、dogfood drift、定向 24/24、图/集成 35/35、Completion 27/27、Reactivate 35/35、Identity 3/3、installer/upgrade 162/162 通过。连续无 finding 计数为零；新的正式 Phase 2、提交后完整 Branch Review 与两轮全新独立审核尚未完成。
+
+本轮正式 Architecture Phase 2 对 `.66` 返回 `baseline_current/reviewed_candidate`；九维 Phase 2 对当前 dirty candidate 依次 recorder/checker/wrapper 返回 `passed`。本段与 RDT/Architecture 状态说明是随后写入的证据文字，必须刷新 Phase 2 的 content identity 后才能进入 Task Commit；独立完整提交范围 review 与 shared 晋升仍待执行。
+
 ## Expected File Areas
 
 - `trellis/workflows/guru-team/` 与 `.trellis/workflow.md`

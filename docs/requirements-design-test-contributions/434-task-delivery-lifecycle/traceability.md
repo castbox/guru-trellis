@@ -1,6 +1,6 @@
 # #434 Global Delivery Lifecycle Traceability
 
-Status: finding-fix candidate. Architecture contribution `architecture-contribution-434-task-delivery-lifecycle-v1` remains against `.66/active`; `ADR-012` remains proposed. The first complete committed-range review found Cleanup handoff and public Interface 1.7 manifest defects; fixes invalidate the prior Phase 2 and earlier clean reviews. Fresh Phase 2, commit, Branch Review and serialized promotion remain pending.
+Status: finding-fix candidate. Architecture contribution `architecture-contribution-434-task-delivery-lifecycle-v1` remains against `.66/active`; `ADR-016` remains proposed. The first complete committed-range review found Cleanup handoff and public Interface 1.7 manifest defects. The next independent review found a post-publication Reconcile eval asserting the retired Finalizer target; an Architecture authority reread found the proposed ADR duplicated accepted ADR-012. Both are repaired in this candidate. Current dirty-candidate Architecture and nine-dimension Phase 2 returned `baseline_current` and `passed` before this evidence-only status update; refreshed Phase 2, commit, independent Branch Review and serialized promotion remain pending. Earlier clean reviews are stale.
 
 | Requirement | Design | Test | Owner boundary |
 | --- | --- | --- | --- |

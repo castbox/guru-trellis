@@ -11,7 +11,7 @@
 - design constitution: `docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`.
 - project change contract: `docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`.
 - change path: `target_native`.
-- proposed decision: [ADR-012](../adr/012-task-delivery-lifecycle.md).
+- proposed decision: [ADR-016](../adr/016-task-delivery-lifecycle.md).
 
 This candidate records the #434 activation change set on the
 selected base. #435/#436/#443 historical capabilities and #454 C2-C7/D443/D436
@@ -27,10 +27,14 @@ remains shared current authority. The first complete committed-range review of
 `origin/main...a6b6d633` found two normal-path defects: Cleanup invoked from
 its own linked task worktree and the public manifest omitting the active
 Interface 1.7 selector. The revised workflow/Skill route Cleanup from a
-retained same-common-dir checkout; the manifest now declares 1.7. Focused
-regression passes, but prior Phase 2 and earlier clean reviews do not cover
-these edits. Fresh Phase 2, new commit, complete Branch Review, serialized
-promotion and the dedicated multi-platform Release matrix remain open.
+retained same-common-dir checkout; the manifest now declares 1.7. The next
+independent review of `origin/main...a74fe13a` found a stale post-publication
+Reconcile eval assertion; Architecture authority reread found that the proposed
+ADR reused accepted ADR-012. The eval now binds `delivery_publication`, and
+the distinct proposed decision is ADR-016. Focused regressions and a current
+dirty-candidate Phase 2 pass; this evidence-only update requires refreshed Phase 2. Earlier clean reviews do not cover these edits. New commit,
+complete Branch Review, serialized promotion and the dedicated multi-platform
+Release matrix remain open.
 
 ## Before And Target
 
@@ -98,7 +102,7 @@ receipts cannot be projected into either current completion path.
 | `compatibility-and-exit` | `applicable` | Directly replace the old active closeout graph. No dual graph, old-output adapter or schema dual-read remains on current main. |
 | `gap-and-deviation` | `applicable` | Close the pre-merge archive/Restore coupling and early closure-intent gap without adding an Acceptance phase or generic archive recovery. |
 | `parallel-scope` | `applicable` |  #435/#436/#443 may build isolated additive packages; none may switch production workflow before #434 activation. Shared current promotion remains serialized. |
-| `evidence-and-freshness` | `applicable` | Current source/installed closure reports 34 active/104 commands and 33 mandatory invokes/153 production exits, with zero sidecars and dogfood drift. Activation 4/4 and projected Completion authoring variants 47/47 passed earlier. Revised focused Cleanup/workflow/manifest/installer 125/125 and qualification 48/48 pass. The first committed-range review found two defects now repaired; fresh Phase 2 and complete Branch Review are pending. Pinned-old eval is historical only; remote marketplace is unused and the dedicated full Release matrix is outside #434 acceptance. |
+| `evidence-and-freshness` | `applicable` | Current source/installed closure reports 34 active/104 commands and 33 mandatory invokes/153 production exits, with zero sidecars and dogfood drift. The second committed-range review found a stale eval assertion; Architecture authority reread found a duplicate ADR ID. Both repairs have focused regressions; installer/upgrade 162, graph/integration 35, Completion 27, Reactivate 35, Identity 3, focused Reconcile/graph 24 pass as separately collected suites. Architecture and nine-dimension Phase 2 returned current/passed before this evidence update; refreshed gate and committed Branch Review remain. Pinned-old eval is historical only; remote marketplace is unused and the dedicated full Release matrix is outside #434 acceptance. |
 | `review-and-promotion` | `applicable` | Independent full-diff review precedes expected-current promotion; promotion-created diff repeats Phase 2, commit and full Branch Review. |
 
 ## Compatibility And Deletion
@@ -141,16 +145,16 @@ Earlier planning result was bound to `.56` and is stale after base reconciliatio
 change contract, exact owner split, target-native path, old asset exit,
 parallel package boundary, contribution/ADR requirement and promotion re-entry.
 The implementation before/after state and exact child interfaces are now in
-the candidate; its current test evidence is recorded above. The previous Phase 2
-predates the two finding fixes and must be rerun, followed by a complete
+the candidate; its current test evidence is recorded above. The first fresh
+Phase 2 has passed on the dirty candidate; this status update requires a refresh, followed by a complete
 committed Branch Review before promotion.
 
 ## Review, ADR, And Promotion
 
-The candidate requires ADR-012 because it changes lifecycle concepts, closure
+The candidate requires ADR-016 because it changes lifecycle concepts, closure
 ownership, archive timing, recovery semantics and the active owner graph.
-Independent committed Branch Review is pending; two earlier clean read-only reviews
-and the first finding-bearing committed review do not establish the revised candidate. Expected current identity is
+Independent committed Branch Review is pending; earlier clean read-only reviews
+and two finding-bearing committed reviews do not establish the revised candidate. Expected current identity is
 `current-main-0.6.17-guru.66`; any current advance requires fresh synchronization.
 Promotion is required only after implementation, project checks and independent
 full-diff Architecture review. Promotion-created bytes must re-enter Phase 2,

@@ -957,11 +957,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-26T20:49:40Z",
+  "installed_at": "2026-09-26T21:28:54Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "a6b6d633c304dc5c51b0e24fbf0baf8e7a69df9a",
-    "commit": "a6b6d633c304dc5c51b0e24fbf0baf8e7a69df9a",
+    "ref": "a74fe13a74a41010ceeb7a2e593f981ee452e6e3",
+    "commit": "a74fe13a74a41010ceeb7a2e593f981ee452e6e3",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1216,7 +1216,7 @@
       {
         "id": "guru-reconcile-task-base",
         "interface_sha256": "dbc967273ae8bb24acd4be651c8418d8fff21beaccca03c4356fef9034b67d27",
-        "tree_sha256": "4ae052ea1c162418b66bc1b158ad70320d98d99e43a46a3fd68fdd954c8f8465"
+        "tree_sha256": "16406e823e0fa9d7f4318631029c80e65f62404742e44021109160060e4fc1b6"
       },
       {
         "id": "guru-review-branch",
@@ -8977,7 +8977,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/evals/evals.json",
-        "sha256": "5d9a9afdb17010bcb87fff25469b3611f9c0cf03f86297f02d9f9bf15c8864a4",
+        "sha256": "0f5084bfaafde6a6319eaab532517215b84e2ad2de24e08385ffba8be1d341fa",
         "executable": false,
         "action": "unchanged"
       },
@@ -33505,7 +33505,7 @@
       {
         "path": ".agents/skills/guru-reconcile-task-base/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/evals/evals.json",
-        "sha256": "5d9a9afdb17010bcb87fff25469b3611f9c0cf03f86297f02d9f9bf15c8864a4",
+        "sha256": "0f5084bfaafde6a6319eaab532517215b84e2ad2de24e08385ffba8be1d341fa",
         "executable": false,
         "action": "unchanged"
       },
@@ -33918,7 +33918,7 @@
       {
         "path": ".codex/skills/guru-reconcile-task-base/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/evals/evals.json",
-        "sha256": "5d9a9afdb17010bcb87fff25469b3611f9c0cf03f86297f02d9f9bf15c8864a4",
+        "sha256": "0f5084bfaafde6a6319eaab532517215b84e2ad2de24e08385ffba8be1d341fa",
         "executable": false,
         "action": "unchanged"
       },
@@ -34331,7 +34331,7 @@
       {
         "path": ".claude/skills/guru-reconcile-task-base/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/evals/evals.json",
-        "sha256": "5d9a9afdb17010bcb87fff25469b3611f9c0cf03f86297f02d9f9bf15c8864a4",
+        "sha256": "0f5084bfaafde6a6319eaab532517215b84e2ad2de24e08385ffba8be1d341fa",
         "executable": false,
         "action": "unchanged"
       },
@@ -34744,7 +34744,7 @@
       {
         "path": ".cursor/skills/guru-reconcile-task-base/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/evals/evals.json",
-        "sha256": "5d9a9afdb17010bcb87fff25469b3611f9c0cf03f86297f02d9f9bf15c8864a4",
+        "sha256": "0f5084bfaafde6a6319eaab532517215b84e2ad2de24e08385ffba8be1d341fa",
         "executable": false,
         "action": "unchanged"
       },

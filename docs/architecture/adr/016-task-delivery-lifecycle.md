@@ -1,4 +1,4 @@
-# ADR-012: Separate business Delivery from task completion and finish
+# ADR-016: Separate business Delivery from task completion and finish
 
 状态：`proposed`。来源：Issue #434 `2026-09-18-r4` 与 task-owned
 [Architecture contribution](../contributions/434-task-delivery-lifecycle.md)。
