@@ -9,6 +9,11 @@ Normal Cleanup consumes only ResourceSealRefDTO and resolves Guru-owned
 incarnations from the common-dir ledger. It preserves caller-owned and unknown
 resources. Manual cleanup requires explicit target selection, fresh validation
 and its own deletion confirmation; machine handoff has a separate profile.
+Invoke from a retained checkout of the same Git common-dir that is outside
+the selected deletion set (`--root` may name that checkout). After Finish in a
+linked task worktree, first move the Cleanup invocation to the retained
+checkout. If none is available, stop for manual disposition; do not attempt
+to remove the invoking checkout.
 
 Every deletion checks exact Git ref/HEAD and registered worktree state again.
 An absent resource converges through the same ledger resolution. Normal cleanup

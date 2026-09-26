@@ -308,6 +308,32 @@ def test_normal_cleanup_deletes_worktree_branch_and_remote_in_order(tmp_path, mo
     assert {row.state for row in store.read(key).resources} == {"resolved"}
 
 
+def test_finish_cleanup_handoff_uses_retained_checkout(tmp_path):
+    root = tmp_path / "repo"
+    root.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
+    git(root, "config", "user.email", "test@example.invalid")
+    git(root, "config", "user.name", "Test")
+    (root / "tracked").write_text("base\n")
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "base")
+    head = git(root, "rev-parse", "HEAD")
+    checkout = tmp_path / "task-worktree"
+    git(root, "worktree", "add", "-q", "-b", "codex/demo", str(checkout), head)
+    store = ResourceLedgerStore(inspect_repository(root))
+    key = TaskLifecycleKey("demo", 0)
+    store.establish_current(key, binding_epoch=0, binding_revision=0, branch_name="codex/demo",
+                            branch_ownership="guru_owned", worktree_ownership="guru_owned")
+    seal = store.seal_for_finish(key, finish_result_id="finish:demo", finish_head=head)
+    public = {"profile": "normal", "mode": "standalone", "task_id": "demo",
+              "lifecycle_generation": 0, "finish_result_id": "finish:demo", "inventory_id": seal["inventory_id"]}
+
+    assert invoke(tmp_path, checkout, public, confirmed=True)["reason_code"] == "worktree_identity_changed"
+    assert checkout.is_dir()
+    assert invoke(tmp_path, root, public, confirmed=True)["exit_id"] == "cleaned"
+    assert not checkout.exists()
+
+
 def test_checked_out_and_dirty_worktree_block_before_result_api(tmp_path):
     root, _store, public, _head = fixture(tmp_path)
     git(root, "switch", "-q", "codex/demo")

@@ -463,7 +463,7 @@ The canonical and installed extension manifests publish one closed current
 contract under `public_api.skill_contracts`:
 
 - `interface_schema_id` is `guru-team-skill-interface-1.4`, with
-  `interface_schema_ids` publishing current 1.4, 1.5, and 1.6 selectors;
+  `interface_schema_ids` publishing current 1.4, 1.5, 1.6, and 1.7 selectors;
 - `registry_schema_id` is `guru-team-skill-registry-1.4`;
 - `public_input_schema_ids`, `typed_output_schema_ids`, and
   `private_artifact_schema_ids` are exact inventories from all active

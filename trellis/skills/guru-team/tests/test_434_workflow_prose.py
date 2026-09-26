@@ -40,6 +40,12 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
         self.assertIn("a separate manual operation cannot produce their results", manual)
         self.assertNotIn("Publication, Finalizer, Merge, and archive contracts", manual)
 
+    def test_finish_handoff_runs_cleanup_outside_deletion_targets(self) -> None:
+        completion = section(self.workflow, "#### 3.7 Completion, Closure and Finish")
+        self.assertIn("retained checkout of the same Git common-dir", completion)
+        self.assertIn("not among the sealed deletion targets", completion)
+        self.assertIn("move the invocation to the retained checkout", completion)
+
     def test_installed_workflow_contract_selects_current_graph(self) -> None:
         contract = (SPEC / "workflow-contract.md").read_text(encoding="utf-8")
         current = contract.split("## Integrated Public Graph\n", 1)[1].split("\n## ", 1)[0]

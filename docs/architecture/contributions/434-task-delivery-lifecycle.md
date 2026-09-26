@@ -13,7 +13,7 @@
 - change path: `target_native`.
 - proposed decision: [ADR-012](../adr/012-task-delivery-lifecycle.md).
 
-This candidate now records the uncommitted #434 activation change set on the
+This candidate records the #434 activation change set on the
 selected base. #435/#436/#443 historical capabilities and #454 C2-C7/D443/D436
 source changes are merged. The former 32 active / six planned selector and
 22/98 graph have been replaced in this worktree by 34 active packages / 155
@@ -23,10 +23,14 @@ conflicts and sidecars after the managed-backup recovery. Current integration,
 fixed complete-old/new graphs and mixed-graph rejection pass. The representative
 Codex clean/focused local workflow sample and two preset reapplications pass;
 remote marketplace installation is outside #434 acceptance. `.66`
-remains shared current authority. After the 1.7 installed-distribution fix,
-two fresh independent read-only subagent reviews of the uncommitted candidate
-found no P0-P3 findings. Formal Phase 2, committed Branch Review, serialized promotion and
-the dedicated multi-platform Release matrix remain open.
+remains shared current authority. The first complete committed-range review of
+`origin/main...a6b6d633` found two normal-path defects: Cleanup invoked from
+its own linked task worktree and the public manifest omitting the active
+Interface 1.7 selector. The revised workflow/Skill route Cleanup from a
+retained same-common-dir checkout; the manifest now declares 1.7. Focused
+regression passes, but prior Phase 2 and earlier clean reviews do not cover
+these edits. Fresh Phase 2, new commit, complete Branch Review, serialized
+promotion and the dedicated multi-platform Release matrix remain open.
 
 ## Before And Target
 
@@ -77,6 +81,9 @@ receipts cannot be projected into either current completion path.
   before merge. Validation precedes the initial local archive mutation.
 - Installed graph validation rejects parsed invoke/exit markers outside the
   currently declared package graph, not just missing required markers.
+- Cleanup uses a retained checkout outside its sealed deletion targets as the
+  invocation root; the self-worktree guard remains unchanged. Public extension
+  manifest schema discovery lists active Interface 1.7 as well as 1.4-1.6.
 - RDT and Architecture serialized owners remain the only writers of shared
   current authority.
 
@@ -91,7 +98,7 @@ receipts cannot be projected into either current completion path.
 | `compatibility-and-exit` | `applicable` | Directly replace the old active closeout graph. No dual graph, old-output adapter or schema dual-read remains on current main. |
 | `gap-and-deviation` | `applicable` | Close the pre-merge archive/Restore coupling and early closure-intent gap without adding an Acceptance phase or generic archive recovery. |
 | `parallel-scope` | `applicable` |  #435/#436/#443 may build isolated additive packages; none may switch production workflow before #434 activation. Shared current promotion remains serialized. |
-| `evidence-and-freshness` | `applicable` | Current source/installed closure reports 34 active/104 commands and 33 mandatory invokes/153 production exits, with zero sidecars and dogfood drift. Activation 4/4 and projected Completion authoring variants 47/47 pass. Installer/upgrade/native-load 181/181, focused gate 62/62, lifecycle/Completion/Finish 217/217, current graph/qualification 95 passed/1 source-environment skip, and a local Codex clean/focused sample passed. Two fresh independent read-only reviews found no P0-P3 on the uncommitted candidate; formal Phase 2 and committed full Branch Review remain pending. Pinned-old eval is historical only; remote marketplace is unused and the dedicated full Release matrix is outside #434 acceptance. |
+| `evidence-and-freshness` | `applicable` | Current source/installed closure reports 34 active/104 commands and 33 mandatory invokes/153 production exits, with zero sidecars and dogfood drift. Activation 4/4 and projected Completion authoring variants 47/47 passed earlier. Revised focused Cleanup/workflow/manifest/installer 125/125 and qualification 48/48 pass. The first committed-range review found two defects now repaired; fresh Phase 2 and complete Branch Review are pending. Pinned-old eval is historical only; remote marketplace is unused and the dedicated full Release matrix is outside #434 acceptance. |
 | `review-and-promotion` | `applicable` | Independent full-diff review precedes expected-current promotion; promotion-created diff repeats Phase 2, commit and full Branch Review. |
 
 ## Compatibility And Deletion
@@ -130,19 +137,20 @@ The preset's shared schema inventory and installed provenance must include
 Descriptor: `guru-trellis-architecture-convergence:repository:1` /
 `guru-trellis-architecture-convergence@1`.
 
-Earlier planning result was bound to `.56` and is stale after base reconciliation. A fresh Planning architecture review must bind `.66`, constitution,
+Earlier planning result was bound to `.56` and is stale after base reconciliation. A fresh Planning architecture review binds `.66`, constitution,
 change contract, exact owner split, target-native path, old asset exit,
 parallel package boundary, contribution/ADR requirement and promotion re-entry.
 The implementation before/after state and exact child interfaces are now in
-the candidate; its current test evidence is recorded above. Independent Phase 2
-and complete Branch Review remain required before promotion.
+the candidate; its current test evidence is recorded above. The previous Phase 2
+predates the two finding fixes and must be rerun, followed by a complete
+committed Branch Review before promotion.
 
 ## Review, ADR, And Promotion
 
 The candidate requires ADR-012 because it changes lifecycle concepts, closure
 ownership, archive timing, recovery semantics and the active owner graph.
-Independent committed Branch Review is pending; two earlier read-only reviews
-do not establish the revised candidate. Expected current identity is
+Independent committed Branch Review is pending; two earlier clean read-only reviews
+and the first finding-bearing committed review do not establish the revised candidate. Expected current identity is
 `current-main-0.6.17-guru.66`; any current advance requires fresh synchronization.
 Promotion is required only after implementation, project checks and independent
 full-diff Architecture review. Promotion-created bytes must re-enter Phase 2,

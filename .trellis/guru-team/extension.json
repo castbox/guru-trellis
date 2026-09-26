@@ -452,7 +452,8 @@
         "interface_schema_ids": [
           "guru-team-skill-interface-1.4",
           "guru-team-skill-interface-1.5",
-          "guru-team-skill-interface-1.6"
+          "guru-team-skill-interface-1.6",
+          "guru-team-skill-interface-1.7"
         ],
         "public_input_schema_ids": [
           "guru-activate-task-input-1.0",
@@ -956,11 +957,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-26T19:49:55Z",
+  "installed_at": "2026-09-26T20:49:40Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "0f39af9ce6e109c1d325e93860abf76b3cda5ec2",
-    "commit": "0f39af9ce6e109c1d325e93860abf76b3cda5ec2",
+    "ref": "a6b6d633c304dc5c51b0e24fbf0baf8e7a69df9a",
+    "commit": "a6b6d633c304dc5c51b0e24fbf0baf8e7a69df9a",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1030,7 +1031,7 @@
       ".trellis/spec/workflow/subtraction-first-compatibility.md": "995c5ebccdfc9d4485155878f97c90be7315ce404f710e2419010cf677971bff",
       ".trellis/spec/workflow/workflow-contract.md": "c6388e36c5914c60eda6a45c3719d325b7e75e62c4b376cae95b341181c79235",
       ".trellis/spec/workflow/skill-package-contract.md": "6ea65d6d474c4b06b92e57069d8a0851aeaaab583402a352119348165cd6976f",
-      ".trellis/spec/workflow/data-contracts.md": "c32247204ef62eaefc9b4abff793a0d2be0cc471a32f03542d82157dbfe58907",
+      ".trellis/spec/workflow/data-contracts.md": "95095c93582a40031d3a2d13a815ccfe383bdcfdc6b6b213543261cc39a5e5b9",
       ".trellis/spec/workflow/companion-scripts.md": "7b02ade76c2e346d49f4b8632341e8a15bdc983593fac8c49798aefe02ef71c2",
       ".trellis/spec/workflow/quality-guidelines.md": "414cb4bb61788d11ea5e5623de9d9e864064986d658f14744e2720d25a3a3f1d",
       ".trellis/guru-team/trellis-source.json": "020380d67f12570b9da19a7fd9f0f581eabe93e9274634fe32acd55b46e822b0"
@@ -1120,7 +1121,7 @@
       {
         "id": "guru-cleanup-task-resources",
         "interface_sha256": "049aac57874f61532ac0e928c561449e1f0494c3346c9a289ac3f5023351d300",
-        "tree_sha256": "d708c4f74231b16548f9b0f70f4abd55c2eb88d00bd6e2015852322b4916a6a6"
+        "tree_sha256": "20bc4fe22ff5f0d8365f343bd8b377afacdea946e712f2615e724d5f485764dc"
       },
       {
         "id": "guru-complete-task-closure",
@@ -1467,7 +1468,7 @@
         "source": "trellis/skills/guru-team/schemas/skill-interface-1.7.schema.json",
         "sha256": "525b9a78fe269c8a6db367d19e4b768f741865173c9374789b728d0f14e30447",
         "executable": false,
-        "action": "installed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/schemas/skill-registry-1.3.schema.json",
@@ -3859,7 +3860,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md",
-        "sha256": "90abd02733a0a7e3813eafcc2c3c28bfd669d5ac0f4e58f0fd41980988683a51",
+        "sha256": "db7ce89f523c1f20a5fcfec4db1051a91e3df28e089abea11b1ec9b869ad3e00",
         "executable": false,
         "action": "unchanged"
       },
@@ -17838,7 +17839,7 @@
       {
         "path": ".agents/skills/guru-cleanup-task-resources/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md",
-        "sha256": "90abd02733a0a7e3813eafcc2c3c28bfd669d5ac0f4e58f0fd41980988683a51",
+        "sha256": "db7ce89f523c1f20a5fcfec4db1051a91e3df28e089abea11b1ec9b869ad3e00",
         "executable": false,
         "action": "unchanged"
       },
@@ -18020,7 +18021,7 @@
       {
         "path": ".codex/skills/guru-cleanup-task-resources/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md",
-        "sha256": "90abd02733a0a7e3813eafcc2c3c28bfd669d5ac0f4e58f0fd41980988683a51",
+        "sha256": "db7ce89f523c1f20a5fcfec4db1051a91e3df28e089abea11b1ec9b869ad3e00",
         "executable": false,
         "action": "unchanged"
       },
@@ -18202,7 +18203,7 @@
       {
         "path": ".claude/skills/guru-cleanup-task-resources/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md",
-        "sha256": "90abd02733a0a7e3813eafcc2c3c28bfd669d5ac0f4e58f0fd41980988683a51",
+        "sha256": "db7ce89f523c1f20a5fcfec4db1051a91e3df28e089abea11b1ec9b869ad3e00",
         "executable": false,
         "action": "unchanged"
       },
@@ -18384,7 +18385,7 @@
       {
         "path": ".cursor/skills/guru-cleanup-task-resources/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md",
-        "sha256": "90abd02733a0a7e3813eafcc2c3c28bfd669d5ac0f4e58f0fd41980988683a51",
+        "sha256": "db7ce89f523c1f20a5fcfec4db1051a91e3df28e089abea11b1ec9b869ad3e00",
         "executable": false,
         "action": "unchanged"
       },

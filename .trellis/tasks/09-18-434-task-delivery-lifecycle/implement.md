@@ -207,6 +207,8 @@
 
 修复 1.7 installed 分发后，稳定候选的 installer/upgrade/native-load 181/181、focused gate 62/62、lifecycle/Completion/Finish 217/217、当前图/qualification 宽测 95 passed/1 个源环境 skip 均通过。source/installed 为 34 active、104 commands、33 invokes、153 production exits，零 sidecar；dogfood drift、task validate、diff check 和代表性 fresh Git 本地安装样本通过。两位全新只读 subagent 串行审核当前未提交候选，均未发现 P0-P3（连续 2/2）；这只支持修复质量判断，不替代正式 Phase 2、提交后的完整 Branch Review 或 shared `.66 -> .67` 晋升。旧前驱 corpus 留在 pinned-old 版本，本任务不在新图运行其已退役终态 eval；旧 #154/PR #156 仍只允许 pinned-old 或逐项人工处置，业务仓未写入。远端 marketplace 不属于使用场景或验收，完整多平台 Release matrix 保留给专门 gate。
 
+首次 `origin/main@bab8cfcd...a6b6d633` 完整提交范围的全新只读审核发现两项正常路径问题，连续无 finding 计数归零：Finish 在 Guru-owned linked task worktree 后直接调用 Cleanup，会触发调用目录自删保护；公开 extension manifest 漏报 active Completion Interface 1.7。修复保留 Cleanup 保护，由 global workflow 与 Skill 在同一 Git common-dir 的非删除目标 checkout 调用，缺少保留 checkout 时停止人工处置；manifest 增加 1.7 并同步 data-contracts、installed manifest 和回归断言。直接从 task checkout 调用被阻断、改用 retained checkout 清理成功的正反例通过；定向 installer/图/Cleanup 125/125、qualification eval 48/48、source/installed 及 dogfood drift 通过，两次 preset apply 收敛零 sidecar。此前 Phase 2 与两次未提交候选清洁审核不覆盖新修复，须重新正式 Phase 2、提交、完整 Branch Review 和两轮连续全新只读审核；shared `.66 -> .67` 晋升仍未执行。
+
 ## Expected File Areas
 
 - `trellis/workflows/guru-team/` 与 `.trellis/workflow.md`

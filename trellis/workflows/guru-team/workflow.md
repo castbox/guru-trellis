@@ -954,6 +954,13 @@ it is not a Delivery cycle and never triggers Completion. The target base must
 actually contain the unique terminal archive before `success` can feed
 `guru-cleanup-task-resources`. Cleanup owns a separate exact resource review
 and confirmation; failure does not undo Completion, Closure or Finish.
+Before invoking Cleanup, resolve a retained checkout of the same Git common-dir
+that is not among the sealed deletion targets, and invoke Cleanup with that
+checkout as its repository root. In particular, after Finish in a Guru-owned
+linked task worktree, move the invocation to the retained checkout before
+reviewing or deleting the task worktree. If no suitable retained checkout is
+available, stop and report the remaining resources for manual disposition;
+do not run Cleanup from a worktree it must remove.
 
 For a normally finished archived task, `guru-reactivate-task` first verifies
 the original TaskId, source, archive Git identity, accepted scope and current
