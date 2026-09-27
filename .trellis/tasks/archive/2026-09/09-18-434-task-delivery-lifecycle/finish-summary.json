@@ -1,0 +1,76 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-27T18:06:38Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-18-434-task-delivery-lifecycle",
+    "title": "#434 重构 Guru Task Delivery Lifecycle：任务内多次交付，成功后再完成与归档",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-18-434-task-delivery-lifecycle",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-18-434-task-delivery-lifecycle"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/434-task-delivery-lifecycle",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#434 重构 Guru Task Delivery Lifecycle：任务内多次交付，成功后再完成与归档",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-09/09-18-434-task-delivery-lifecycle",
+          ".trellis/tasks/archive/2026-09/09-18-434-task-delivery-lifecycle/design.md",
+          ".trellis/tasks/archive/2026-09/09-18-434-task-delivery-lifecycle/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-18-434-task-delivery-lifecycle/implement.md",
+          ".trellis/tasks/archive/2026-09/09-18-434-task-delivery-lifecycle/prd.md",
+          ".trellis/tasks/archive/2026-09/09-18-434-task-delivery-lifecycle/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#434"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/434-task-delivery-lifecycle"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-09/09-18-434-task-delivery-lifecycle",
+        ".trellis/tasks/archive/2026-09/09-18-434-task-delivery-lifecycle/design.md",
+        ".trellis/tasks/archive/2026-09/09-18-434-task-delivery-lifecycle/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-18-434-task-delivery-lifecycle/implement.md",
+        ".trellis/tasks/archive/2026-09/09-18-434-task-delivery-lifecycle/prd.md",
+        ".trellis/tasks/archive/2026-09/09-18-434-task-delivery-lifecycle/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "#434 重构 Guru Task Delivery Lifecycle：任务内多次交付，成功后再完成与归档；#434；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}

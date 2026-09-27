@@ -3,7 +3,7 @@
   "name": "434-task-delivery-lifecycle",
   "title": "#434 重构 Guru Task Delivery Lifecycle：任务内多次交付，成功后再完成与归档",
   "description": "名称绑定已审查的 Issue #434 与 Task Delivery Lifecycle 全局图重构。",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/434",
   "package": null,
@@ -11,7 +11,7 @@
   "creator": "wesleywu",
   "assignee": "wesleywu",
   "createdAt": "2026-09-18",
-  "completedAt": null,
+  "completedAt": "2026-09-27",
   "branch": "codex/434-task-delivery-lifecycle",
   "base_branch": "main",
   "worktree_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/434-task-delivery-lifecycle",
@@ -22,5 +22,6 @@
   "parent": null,
   "relatedFiles": [],
   "notes": "",
-  "meta": {}
+  "meta": {},
+  "lifecycle_generation": 0
 }
