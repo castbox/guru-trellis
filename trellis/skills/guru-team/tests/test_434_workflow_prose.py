@@ -5,6 +5,9 @@ import unittest
 
 
 WORKFLOW = Path(__file__).resolve().parents[4] / "trellis/workflows/guru-team/workflow.md"
+README = Path(__file__).resolve().parents[4] / "README.md"
+CONTRIBUTION = Path(__file__).resolve().parents[4] / "docs/architecture/contributions/434-task-delivery-lifecycle.md"
+DISCOVERY = Path(__file__).resolve().parents[1] / "packages/guru-discover-change-context/references/contract.md"
 SPEC = Path(__file__).resolve().parents[4] / "trellis/presets/guru-team/spec/workflow"
 PROJECT_INDEX = Path(__file__).resolve().parents[4] / ".trellis/spec/workflow/index.md"
 INSTALLER_SPEC = Path(__file__).resolve().parents[4] / ".trellis/spec/preset/installer.md"
@@ -34,6 +37,51 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
         self.assertNotIn("Publication is the sole semantic owner", prose)
         self.assertNotIn("Finalizer only executes", prose)
 
+    def test_root_readme_does_not_offer_retired_archived_review_entry(self) -> None:
+        prose = README.read_text(encoding="utf-8").split("## 已归档任务复审\n", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("legacy-archived-review-disposition-required", prose)
+        self.assertIn("pinned-old", prose)
+        self.assertIn("guru-reactivate-task/SKILL.md", prose)
+        self.assertNotIn("guru-merge-task-pr/SKILL.md", prose)
+        self.assertNotIn("archived_review_request", prose)
+        self.assertNotIn("复审成功才产生新的 `ready_for_merge`", prose)
+
+    def test_root_readme_routes_normal_delivery_and_release_preparation(self) -> None:
+        readme = README.read_text(encoding="utf-8")
+        delivery = readme.split("### 规划、检查与审查能力\n", 1)[1].split("\n### 多平台一致体验", 1)[0]
+        for skill in ("guru-review-task-delivery", "guru-publish-task-delivery",
+                      "guru-merge-task-delivery", "guru-review-task-completion"):
+            self.assertIn(skill, delivery)
+        self.assertNotIn("直接交给 Finalizer", delivery)
+        release = readme.split("## 仓库维护者正式发布入口\n", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("Delivery Review、Publish、Merge、Completion、Closure、Finish", release)
+        self.assertNotIn("Publication、Finalizer 和 Merge owners", release)
+
+    def test_promoted_architecture_contribution_has_only_post_promotion_gates(self) -> None:
+        prose = CONTRIBUTION.read_text(encoding="utf-8")
+        self.assertIn("reviewed_promoted", prose)
+        self.assertIn("serialized promotion has completed", prose)
+        self.assertIn("post-promotion Phase 2 and committed Branch Review remain separate gates", prose)
+        self.assertNotIn("serialized promotion remain open", prose)
+        self.assertNotIn("before promotion.", prose)
+
+    def test_issue_refresh_returns_to_draft_without_created_issue(self) -> None:
+        route = self.workflow.split("| guru-sync-base |", 1)[1].split("\n", 1)[0]
+        self.assertIn("`guru-create-issue:created` supplies the newly created exact source Issue", route)
+        self.assertIn("`guru-create-issue:refresh_review` has no created Issue", route)
+        creation = section(self.workflow, "#### 0.5 Issue and task creation")
+        self.assertIn("`guru-create-issue:refresh_review` returns with the proposed draft", creation)
+        self.assertIn("without\ninventing an Issue number", creation)
+
+    def test_created_issue_reenters_discovery_as_live_issue(self) -> None:
+        discovery = DISCOVERY.read_text(encoding="utf-8")
+        self.assertIn("`guru-create-issue:created` does not use this draft\nbinding", discovery)
+        self.assertIn("`issue_binding=null` and a digest of the complete live body", discovery)
+        self.assertIn("creation-attempt marker", discovery)
+        self.assertIn("original draft is not carried across Sync as\nsource authority", discovery)
+        creation = section(self.workflow, "#### 0.5 Issue and task creation")
+        self.assertIn("live created Issue as `kind=issue`", creation)
+
     def test_phase_and_manual_routes_do_not_reintroduce_old_chain(self) -> None:
         phase = section(self.workflow, "## Phase Index")
         manual = section(self.workflow, "### Manual Git/GitHub Operations")
@@ -47,6 +95,27 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
         self.assertIn("retained checkout of the same Git common-dir", completion)
         self.assertIn("not among the sealed deletion targets", completion)
         self.assertIn("move the invocation to the retained checkout", completion)
+
+    def test_normally_finished_original_task_reactivates_before_new_intake(self) -> None:
+        no_task = self.workflow.split("[workflow-state:no_task]\n", 1)[1].split(
+            "[/workflow-state:no_task]", 1
+        )[0]
+        self.assertLess(no_task.index("normally finished archives by source Issue"),
+                        no_task.index("invoke `guru-select-workflow-mode`"))
+        self.assertIn("explicit original TaskId", no_task)
+        self.assertIn("invoke `guru-reactivate-task` for that archive", no_task)
+        self.assertIn("ambiguous\nor conflicting identity stops at `invalid-task-state`", no_task)
+        self.assertIn("old Finalizer residue is not a normally completed archive", no_task)
+
+    def test_projected_archive_reenters_original_finish_not_reactivate(self) -> None:
+        no_task = self.workflow.split("[workflow-state:no_task]\n", 1)[1].split(
+            "[/workflow-state:no_task]", 1
+        )[0]
+        self.assertIn("An archive projected by the current Finish but not yet verified", no_task)
+        self.assertIn("`guru-finish-task:finish_reentry`", no_task)
+        self.assertIn("never create a replacement task", no_task)
+        self.assertLess(no_task.index("an incomplete closeout, not a Reactivate candidate"),
+                        no_task.index("normally finished archives by source Issue"))
 
     def test_installed_workflow_contract_selects_current_graph(self) -> None:
         contract = (SPEC / "workflow-contract.md").read_text(encoding="utf-8")

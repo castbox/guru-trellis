@@ -1,9 +1,9 @@
 # ADR-016: Separate business Delivery from task completion and finish
 
-状态：`proposed`。来源：Issue #434 `2026-09-18-r4` 与 task-owned
+状态：`accepted`（`current-main-0.6.17-guru.67`）。来源：Issue #434 `2026-09-18-r4` 与 task-owned
 [Architecture contribution](../contributions/434-task-delivery-lifecycle.md)。
-当前 predecessor 为 `current-main-0.6.17-guru.66`；本 ADR 未经 serialized
-Architecture promotion，不是 current authority。
+predecessor 为 `current-main-0.6.17-guru.66`；由 expected-current-bound serialized
+Architecture promotion 接受，post-promotion gates 仍需独立验证。
 
 ## Context
 
@@ -13,7 +13,7 @@ terminal transaction。task 在业务 Delivery merge 前归档；Merge 后发现
 该模型无法表达一个 active task 的多次顺序业务 Delivery，也把正常完成后的再次工作
 与 merge 前提前归档回退混为同一恢复语义。
 
-## Proposed Decision
+## Decision
 
 1. 业务 Delivery、Task Completion、Issue Closure、Official Finish 与 Resource
    Cleanup 成为五个顺序概念，各由独立 semantic/action owner 承接。
@@ -45,7 +45,7 @@ terminal transaction。task 在业务 Delivery merge 前归档；Merge 后发现
 
 ## Consequences And Adoption Gate
 
-目标图能表达多次 Delivery 和正常结束后的同 identity Reactivate，但激活必须等待 #435、#454 D443/D436 与 Phase E 必需 package 的完整接口、切换前 32 active / 149 exits / 102 commands inventory 和 installed projection reconciliation。切换会删除旧 current owner/edge，旧版本 task 不能在新 main 上依赖旧
+目标图能表达多次 Delivery 和正常结束后的同 identity Reactivate，但激活必须等待 #435、#454 D443/D436 与 Phase E 必需 package 的完整接口、切换前 active registry 32 packages / 142 exits / 102 commands（另有非激活 source exits）和 installed projection reconciliation。切换会删除旧 current owner/edge，旧版本 task 不能在新 main 上依赖旧
 Restore 自动迁移。采用前必须证明 source/installed/four-platform graph closure、mixed graph
 fail-closed、A/B multi-delivery、Completion/Closure/Finish/Cleanup、Reactivate、preset reapply
 和本地 canonical workflow 样本 + preset 的代表性 clean throwaway。远端 marketplace 安装不在 #434 验收范围；完整多平台 Release Gate matrix 由专门 Release Issue 独立执行。

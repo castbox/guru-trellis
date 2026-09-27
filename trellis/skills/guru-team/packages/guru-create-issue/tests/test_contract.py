@@ -34,6 +34,7 @@ class CreateIssueTests(unittest.TestCase):
                 "identity_sha256": "20f7bc7e724fac50c2879df50cb8faad40583a302a7d672e152d2c0bff6078c6",
                 "content_sha256": "4fbe4dfb113dd20b0e7ed107d8094c44311c18b44fdafdaedffb4f1e49b9d570",
             },
+            "reviewed_label_identity_sha256": "ad9937d4e61b88a14e943756cc7c0bb47a7ad86bbaf0679f24a2c332f92f7a3b",
             "draft": self.draft,
         }
         self.issue = {
@@ -151,6 +152,72 @@ class CreateIssueTests(unittest.TestCase):
         issue = {**self.issue, "labels": [{"name": "enhancement"}]}
         with patch.object(MODULE, "_gh", side_effect=[issue["url"], json.dumps(issue)]):
             self.assertEqual(MODULE.invoke({**self.request, "draft": draft})["exit_id"], "created")
+
+    def test_changed_labels_refresh_before_creation_or_recovery(self) -> None:
+        changed = {**self.request, "draft": {**self.draft, "labels": ["bug"]}}
+        self.assertEqual(MODULE._reviewed_target(changed["draft"], changed["reviewed_target"]),
+                         self.request["reviewed_target"])
+        for action in ("create_issue", "recover_created_issue_result"):
+            with self.subTest(action=action), patch.object(MODULE, "_gh") as gh:
+                result = MODULE.invoke({**changed, "action": action})
+                self.assertEqual(result, {"exit_id": "refresh_review", "reason_code": "reviewed_draft_stale"})
+                gh.assert_not_called()
+
+    def test_label_set_order_and_case_do_not_stale_review(self) -> None:
+        draft = {**self.draft, "labels": ["PRIORITY:HIGH", "Enhancement"]}
+        review_id = MODULE._reviewed_label_identity(self.request["reviewed_target"],
+                                                    ["enhancement", "priority:high"])
+        request = {**self.request, "reviewed_label_identity_sha256": review_id, "draft": draft}
+        issue = {**self.issue, "labels": [{"name": "enhancement"}, {"name": "priority:high"}],
+                 "body": MODULE._created_body(request, datetime(2026, 9, 26, 12, 0, tzinfo=timezone.utc))}
+        with patch.object(MODULE, "_gh", side_effect=[issue["url"], json.dumps(issue)]) as gh:
+            self.assertEqual(MODULE.invoke(request)["exit_id"], "created")
+        self.assertEqual(gh.call_count, 2)
+
+    def test_added_or_removed_label_refreshes(self) -> None:
+        review_id = MODULE._reviewed_label_identity(self.request["reviewed_target"],
+                                                    ["enhancement", "priority:high"])
+        request = {**self.request, "reviewed_label_identity_sha256": review_id}
+        for labels in (["enhancement"], ["enhancement", "priority:high", "bug"]):
+            with self.subTest(labels=labels), patch.object(MODULE, "_gh") as gh:
+                changed = {**request, "draft": {**self.draft, "labels": labels}}
+                self.assertEqual(MODULE.invoke(changed)["exit_id"], "refresh_review")
+                gh.assert_not_called()
+
+    def test_review_identity_is_required_and_scoped_to_target(self) -> None:
+        without_identity = {key: value for key, value in self.request.items()
+                            if key != "reviewed_label_identity_sha256"}
+        with patch.object(MODULE, "_gh") as gh:
+            with self.assertRaises(MODULE.CommandError):
+                MODULE.invoke(without_identity)
+            changed = {**self.request, "reviewed_label_identity_sha256": MODULE._reviewed_label_identity(
+                {"identity_sha256": "0" * 64}, self.draft["labels"])}
+            self.assertEqual(MODULE.invoke(changed)["exit_id"], "refresh_review")
+        gh.assert_not_called()
+
+    def test_candidate_input_and_current_exit_contracts(self) -> None:
+        root = PACKAGE.parents[4]
+        interface = json.loads((PACKAGE / "interface.json").read_text())
+        schema = PACKAGE / "schemas/public-input.schema.json"
+        self.assertEqual(json.loads(schema.read_text())["$id"], "guru-create-issue-input-1.0")
+        self.assertEqual(interface["public_contracts"]["input"]["aggregate_schema"]["schema_id"],
+                         "guru-create-issue-input-1.0")
+        manifest = json.loads((root / "trellis/guru-team-extension.json").read_text())
+        self.assertIn("guru-create-issue-input-1.0", manifest["public_api"]["skill_contracts"]["public_input_schema_ids"])
+        for name in ("public-create-input.json", "public-recover-input.json"):
+            example = json.loads((PACKAGE / "examples" / name).read_text())
+            MODULE.validate_json(example, schema, name)
+            self.assertEqual(example["reviewed_label_identity_sha256"],
+                             MODULE._reviewed_label_identity(example["reviewed_target"], example["draft"]["labels"]))
+        for output in interface["public_contracts"]["outputs"]:
+            exit_id = output["exit_id"]
+            example = json.loads((PACKAGE / output["example"]["path"]).read_text())
+            MODULE.validate_json(example, PACKAGE / output["schema"]["path"], exit_id)
+            projection = next(row for row in interface["public_contracts"]["projections"]
+                              if row["exit_id"] == exit_id)
+            consumer = next(row for row in interface["public_contracts"]["consumer_inputs"]
+                            if row["id"] == projection["consumer_input_id"])
+            MODULE.validate_json(example, PACKAGE / consumer["contract"]["path"], exit_id)
 
     def test_changed_reviewed_draft_refreshes_before_any_provider_call(self) -> None:
         changed = {**self.request, "draft": {**self.draft, "body": "Changed after review."}}

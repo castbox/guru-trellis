@@ -515,3 +515,88 @@ def test_finish_archive_is_discoverable_by_source_issue(tmp_path):
     spec.loader.exec_module(module)
     preview = module.preview(repo, {"issue_refs": ["#454"]}, 20)
     assert [row["finish_summary_path"] for row in preview["candidates"]] == [f"{archive_ref}/finish-summary.json"]
+
+
+def test_finish_archive_retires_only_its_generation_sessions(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+    subprocess.run(["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                    "commit", "--allow-empty", "-qm", "seed"], cwd=repo, check=True)
+    shutil.copytree(ROOT.parents[2] / ".trellis/scripts/common", repo / ".trellis/scripts/common",
+                    ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+    task_ref = ".trellis/tasks/demo"
+    task_dir = repo / task_ref
+    task_dir.mkdir(parents=True)
+    (task_dir / "task.json").write_text(json.dumps({
+        "id": "demo", "title": "Demo", "status": "in_progress", "lifecycle_generation": 1,
+        "source": {"kind": "no_issue"},
+    }) + "\n")
+    sessions = inspect_repository(repo).common_dir / "trellis/sessions"
+    sessions.mkdir(parents=True)
+    current = sessions / "codex_finished.json"
+    other = sessions / "codex_other.json"
+    current.write_text(json.dumps({"schema_version": 2, "task_id": "demo", "lifecycle_generation": 1}))
+    other.write_text(json.dumps({"schema_version": 2, "task_id": "other", "lifecycle_generation": 0}))
+
+    archive_ref = ".trellis/tasks/archive/2026-09/demo"
+    FINISH.project_archive(repo, {"task_ref": task_ref, "task_id": "demo"}, Path(task_ref), archive_ref, Path(archive_ref))
+
+    assert not current.exists() and other.is_file()
+    probe = subprocess.run(
+        [sys.executable, "-c", "from pathlib import Path; from common.active_task import resolve_active_task; "
+         "a = resolve_active_task(Path('.')); print(a.task_path, a.error)"],
+        cwd=repo, env={**os.environ, "PYTHONPATH": str(repo / ".trellis/scripts"),
+                       "TRELLIS_CONTEXT_ID": "codex_finished"},
+        text=True, capture_output=True, check=True,
+    )
+    assert probe.stdout.strip() == "None None"
+
+
+def test_finish_archive_keeps_active_task_when_official_session_api_is_missing(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+    task_ref = ".trellis/tasks/demo"
+    task_dir = repo / task_ref
+    task_dir.mkdir(parents=True)
+    (task_dir / "task.json").write_text(json.dumps({
+        "id": "demo", "status": "in_progress", "lifecycle_generation": 0,
+        "source": {"kind": "no_issue"},
+    }))
+    session = inspect_repository(repo).common_dir / "trellis/sessions/codex_finished.json"
+    session.parent.mkdir(parents=True)
+    session.write_text(json.dumps({"schema_version": 2, "task_id": "demo", "lifecycle_generation": 0}))
+
+    archive_ref = ".trellis/tasks/archive/2026-09/demo"
+    with pytest.raises(CommandError) as caught:
+        FINISH.project_archive(repo, {"task_ref": task_ref, "task_id": "demo"}, Path(task_ref), archive_ref, Path(archive_ref))
+    assert caught.value.code == "official_session_unavailable"
+    assert task_dir.is_dir() and session.is_file()
+    assert not (repo / archive_ref).exists()
+
+
+def test_finish_archive_keeps_active_task_when_official_session_method_is_missing(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+    common = repo / ".trellis/scripts/common"
+    common.mkdir(parents=True)
+    (common / "__init__.py").write_text("class ActiveTask: pass\nactive_task = ActiveTask()\n")
+    task_ref = ".trellis/tasks/demo"
+    task_dir = repo / task_ref
+    task_dir.mkdir(parents=True)
+    (task_dir / "task.json").write_text(json.dumps({
+        "id": "demo", "status": "in_progress", "lifecycle_generation": 0,
+        "source": {"kind": "no_issue"},
+    }))
+    session = inspect_repository(repo).common_dir / "trellis/sessions/codex_finished.json"
+    session.parent.mkdir(parents=True)
+    session.write_text(json.dumps({"schema_version": 2, "task_id": "demo", "lifecycle_generation": 0}))
+
+    archive_ref = ".trellis/tasks/archive/2026-09/demo"
+    with pytest.raises(CommandError) as caught:
+        FINISH.project_archive(repo, {"task_ref": task_ref, "task_id": "demo"}, Path(task_ref), archive_ref, Path(archive_ref))
+    assert caught.value.code == "official_session_unavailable"
+    assert task_dir.is_dir() and session.is_file()
+    assert not (repo / archive_ref).exists()

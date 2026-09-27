@@ -1239,7 +1239,7 @@ def readiness_owner_for_issue(
             "sha256": target_content_sha256,
             "summary": "The current reviewed issue title and body.",
         }],
-        "consumer": {"kind": "skill", "id": "guru-create-task-workspace"},
+        "consumer": {"kind": "workflow", "id": "guru-task-intake-router"},
     }
     if typed_exit in {"clarify_requirements", "review_wording", "refresh_context"}:
         category = {

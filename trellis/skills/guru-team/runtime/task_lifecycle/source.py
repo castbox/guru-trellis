@@ -73,6 +73,25 @@ def task_source(metadata: Any, *, repo_ref: str | None = None) -> dict[str, Any]
     })
 
 
+def legacy_archive_source(metadata: dict[str, Any], summary: dict[str, Any], archive_ref: str,
+                          *, repo_ref: str | None = None) -> dict[str, Any]:
+    try:
+        return task_source(metadata, repo_ref=repo_ref)
+    except LifecycleContractError as exc:
+        if exc.code != "source_review_required" or "source" in metadata or not (
+            summary.get("schema_version") == 1 or (
+                summary.get("schema_version") == 2 and (
+                    "lifecycle_generation" not in metadata or (
+                        metadata.get("lifecycle_generation") == 0 and metadata.get("archive_dir") == archive_ref
+                    )
+                )
+            )
+        ):
+            raise
+        # An old task without a structured source needs an explicit reviewed correction.
+        return {"kind": "no_issue"}
+
+
 def normalize_branch_ref(value: Any, *, field_path: str = "branch_ref") -> str:
     if not isinstance(value, str) or not BRANCH_REF_PATTERN.fullmatch(value) or value.endswith((".", "/")):
         raise LifecycleContractError(
@@ -94,4 +113,4 @@ def normalize_delivery_target(value: Any, *, field_path: str = "delivery_target"
     }
 
 
-__all__ = ["normalize_branch_ref", "normalize_delivery_target", "normalize_repo_ref", "normalize_source", "task_source"]
+__all__ = ["legacy_archive_source", "normalize_branch_ref", "normalize_delivery_target", "normalize_repo_ref", "normalize_source", "task_source"]

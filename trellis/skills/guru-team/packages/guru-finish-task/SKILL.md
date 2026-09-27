@@ -17,7 +17,11 @@ The normal transaction has three independently confirmed mutations: local
 archive projection, bookkeeping commit/push/PR publication, and expected-head
 merge. The executor recovers only that exact transaction and returns `success`
 only after the remote target baseline contains the final archive and no active
-copy. The archive locator belongs in finish-summary, not in the retired
+copy. Before moving the task out of the active tree, the archive projection
+uses the Fixed Fork session API to retire only pointers for this exact TaskId
+and generation. A projected but unsealed archive resumes the original Finish
+transaction by explicit identity; it is not a Reactivate candidate. The archive
+locator belongs in finish-summary, not in the retired
 `task.json.archive_dir` metadata field. The reviewed payload forbids
 Issue-closing keywords and both legacy `Guru-Delivery-Task` /
 `Guru-Delivery-Cycle` and current `Guru-Task-Identity` /

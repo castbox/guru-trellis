@@ -170,7 +170,7 @@ Reactivate 保留：task id、source Issue、历史 planning、历史 Delivery �
 2. 已进入旧 Publication/Finalizer/Merge 且状态一致：固定旧 extension/workflow version 完成旧链，并 fresh 验证终态；不能把版本切换等同于迁移。
 3. 旧链状态不完整或依赖 Restore：停止自动推进，记录 exact task/PR/remote/local/base/Finalizer facts，由人工逐项选择 pinned-old completion 或资源处置。`castbox/ai-chat-roleplay-backend#154` 的旧 PR #156 已 merged、remote head 落后于本地 reviewed head、旧 Finalizer preview 为 prepared 而执行遇 terminal PR 前置拒绝；预览/执行必须就同一前置事实给出一致阻断，不允许直接改映射、复用 merged PR 或伪造新 Delivery。
 
-不新增 current-main legacy dispatcher。正常结束的旧 archive 可按 source Issue 从历史 finish-summary/index 中发现，再核对唯一 TaskId、source、Git archive identity 与 terminal facts，由 Reactivate fresh 验证；未完成 residue 不满足该入口。业务仓的 live Test Application/Deployment 仍归其 owner。
+不新增 current-main legacy dispatcher。正常结束的旧 archive 可按 source Issue 从历史 finish-summary/index 中发现，再核对唯一 TaskId、source、Git archive identity 与 terminal facts，由 Reactivate fresh 验证；旧 `task.json` 无结构化来源但 summary/ledger 指向该 Issue 时，只产生候选，必须先审查并走 `source_correction_required`，再进入 Reactivate。未完成 residue 不满足该入口。业务仓的 live Test Application/Deployment 仍归其 owner。
 
 ## 9. Docs And Architecture Design
 

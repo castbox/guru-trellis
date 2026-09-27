@@ -376,7 +376,7 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-contract-wording-pass-router | Route the checked profile to change-request review, planning approval, or the standalone caller. |
 | guru-contract-wording-change-router | Re-enter the affected wording route and any required upstream refresh. |
 | guru-task-intake-router | Project `ready.transition.target.kind` exactly once: `proposed_draft` invokes `guru-create-issue`, while `existing_issue` and `standalone_request` invoke `guru-create-task`; never turn an Issue creation result into task creation without fresh Sync and Intake. |
-| guru-sync-base | Re-enter `guru-sync-base` and then fresh Intake for the exact source Issue; no task creation is implied. |
+| guru-sync-base | Re-enter `guru-sync-base` and then fresh Intake. `guru-create-issue:created` supplies the newly created exact source Issue and continues as a live Issue, never as a draft/Issue binding; `guru-create-issue:refresh_review` has no created Issue and retains the proposed draft for renewed review. `guru-create-task:refresh_review` retains its existing reviewed source route. No task creation is implied by this target. |
 | guru-task-created | Resolve the new TaskId, generation, binding and checkout from live facts, then enter Phase 1; never reuse the creation checkout path as durable identity. |
 | guru-current-task-identity-router | Resume the current task owner only after exact TaskId, generation and source authority validation. |
 | guru-task-source-review-router | Return ambiguous legacy source to fresh semantic review; do not guess Issue disposition from branch or PR text. |
@@ -607,12 +607,25 @@ A task bound to the current repository and TaskId must be validated; an incomple
 conflicting identity stops at `invalid-task-state`. An unfinished task for the
 same Issue must resolve to its existing identity rather than create a duplicate;
 missing or conflicting bindings stop at `invalid-task-state`.
-Only when no relevant active task or archived incomplete-closeout identity exists does the request
+An archive projected by the current Finish but not yet verified on the target
+base is an incomplete closeout, not a Reactivate candidate. Resolve its exact
+TaskId/generation and original Closure/Finish transaction, then re-enter
+`guru-finish-task:finish_reentry` when those inputs are current. If the
+transaction cannot be recovered uniquely, stop for the documented per-case
+manual disposition; never create a replacement task or treat the projection
+as a normally finished archive.
+For a request to continue the original accepted scope, discover relevant
+normally finished archives by source Issue or explicit original TaskId before
+mode selection. Prove one TaskId, source, accepted scope and terminal Git
+identity, then invoke `guru-reactivate-task` for that archive; an ambiguous
+or conflicting identity stops at `invalid-task-state`, not new task creation.
+Legacy archives discovered by Issue are only candidates until this check.
+An old Finalizer residue is not a normally completed archive: keep the task
+and PR facts unchanged and route to pinned-old or per-case manual disposition.
+Only when no relevant active task, archived incomplete-closeout identity, or
+normally finished original-task Reactivate candidate exists does the request
 invoke `guru-select-workflow-mode`, including requests without an Issue or
-task-free wording. For legacy archives, discover candidates by source Issue,
-then prove unique TaskId/source/terminal Git identity before Reactivate. An
-old Finalizer residue is not a normally completed archive: keep the task and
-PR facts unchanged and route to pinned-old or per-case manual disposition.
+task-free wording.
 `这次走 task-free` is direct.
 Otherwise: high-confidence bounded low-risk -> `task_free`; insufficient
 evidence -> one question; complex/high-risk -> `standard_intake`. Mapped exits
@@ -677,9 +690,11 @@ guru-clarify-requirements -> guru-review-contract-wording ->
 guru-review-change-request -> `guru-task-intake-router` ->
 `guru-create-issue` or `guru-create-task` by `ready.transition.target.kind`.
 
-Only `guru-create-task:created` enters planning; Issue creation returns to Sync
-and fresh Intake. The workflow does not create the issue, branch, worktree, or
-task directly. A Scope Change Gate during any active phase
+Only `guru-create-task:created` enters planning. `guru-create-issue:created`
+returns to Sync and fresh Intake with the live created Issue as `kind=issue`;
+`guru-create-issue:refresh_review` returns with the proposed draft, without
+inventing an Issue number. The workflow does not create the issue, branch,
+worktree, or task directly. A Scope Change Gate during any active phase
 uses guru-clarify-requirements and returns only through its mapped router.
 
 ## Phase 1: Plan

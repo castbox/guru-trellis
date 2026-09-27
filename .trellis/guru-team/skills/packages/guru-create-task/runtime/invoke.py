@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -23,6 +24,7 @@ from runtime.task_lifecycle.composition import (
 from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import find_registration, inspect_registered_worktree, inspect_repository
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
+from runtime.task_lifecycle.session_adapter import resolve_session
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
@@ -76,11 +78,15 @@ def _create_official_task(checkout: Path, inputs: Any, task: dict[str, Any]) -> 
     command = [
         sys.executable, str(script), "create", task["title"],
         "--description", task["description"], "--slug", directory,
+        "--task-id", inputs.task_id,
         "--creator", task["creator"], "--assignee", task["assignee"],
         "--base-branch", inputs.selected_base_ref.removeprefix("refs/heads/"),
         "--no-start",
     ]
-    completed = subprocess.run(command, cwd=checkout, text=True, capture_output=True, check=False)
+    completed = subprocess.run(
+        command, cwd=checkout, text=True, capture_output=True, check=False,
+        env={**os.environ, "TZ": "Asia/Shanghai"},
+    )
     if completed.returncode and _task_date_prefix() != directory[:5]:
         raise LifecycleContractError("creation_date_stale", "task_ref", "Review a TaskRef for the current Shanghai business date.")
     if completed.returncode or not (task_path / "task.json").is_file():
@@ -90,7 +96,7 @@ def _create_official_task(checkout: Path, inputs: Any, task: dict[str, Any]) -> 
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         raise LifecycleContractError("official_task_create_failed", "task.json", "Read the new official task artifact.") from exc
-    if metadata.get("status") != "planning" or metadata.get("name") != slug:
+    if metadata.get("status") != "planning" or metadata.get("name") != slug or metadata.get("id") != inputs.task_id:
         raise LifecycleContractError("official_task_create_failed", "task.json", "Use the exact new planning task.")
     for legacy in (
         "branch", "worktree_path", "base_head", "entry_head", "workspace_slug",
@@ -99,7 +105,6 @@ def _create_official_task(checkout: Path, inputs: Any, task: dict[str, Any]) -> 
         "followup_issues", "archive_dir",
     ):
         metadata.pop(legacy, None)
-    metadata["id"] = inputs.task_id
     metadata["lifecycle_generation"] = 0
     metadata["source"] = inputs.reviewed_source
     metadata["delivery_target"] = inputs.delivery_target
@@ -159,12 +164,19 @@ def invoke(root: Path, data: dict[str, Any]) -> dict[str, Any]:
             if binding is None:
                 raise LifecycleContractError("creation_result_mismatch", "binding", "Recover the completed initial binding.")
             recover_created_control_state(inputs, acquired, expected_epoch=binding.binding_epoch, expected_result_id=inputs.result_id)
-            session = bind_created_session(
-                _official_port(acquired.checkout.path), inputs, acquired,
-                expected_epoch=binding.binding_epoch,
-            )
-            if session.status not in {"session_bound", "explicit_task_mode"}:
-                return {"exit_id": "blocked", "reason_code": session.reason_code or session.status}
+            official = _official_port(acquired.checkout.path)
+            current = resolve_session(official, acquired.checkout.path)
+            if current.status == "session_resolved":
+                if current.lifecycle != key or current.task_ref != inputs.task_ref:
+                    return {"exit_id": "blocked", "reason_code": "session_current_task_conflict"}
+            elif current.status == "explicit_task_mode" and current.reason_code == "session_record_missing":
+                session = bind_created_session(
+                    official, inputs, acquired, expected_epoch=binding.binding_epoch,
+                )
+                if session.status != "session_bound":
+                    return {"exit_id": "blocked", "reason_code": session.reason_code or session.status}
+            elif current.status != "explicit_task_mode" or current.reason_code != "context_key_unavailable":
+                return {"exit_id": "blocked", "reason_code": current.reason_code or current.status}
         else:
             _require_current_task_date(data["creation"]["task_ref"])
             inputs = prepare_creation_inputs(root, data["creation"], plan)

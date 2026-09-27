@@ -27,6 +27,14 @@ def _sha(value: str) -> str:
     return hashlib.sha256(value.encode()).hexdigest()
 
 
+def _label_identity(labels: list[str]) -> list[str]:
+    return sorted({label.casefold() for label in labels})
+
+
+def _reviewed_label_identity(target: dict[str, Any], labels: list[str]) -> str:
+    return _digest({"reviewed_target": target["identity_sha256"], "labels": _label_identity(labels)})
+
+
 def _reviewed_target(draft: dict[str, Any], target: dict[str, Any]) -> dict[str, Any]:
     title_sha256 = _sha(draft["title"])
     body_sha256 = _sha(draft["body"])
@@ -96,6 +104,7 @@ def _created_body(data: dict[str, Any], reviewed_at: datetime) -> str:
     # The stable marker distinguishes this attempt from a later identical draft.
     attempt_id = _digest({
         "reviewed_target": data["reviewed_target"]["identity_sha256"],
+        "reviewed_label_identity_sha256": data["reviewed_label_identity_sha256"],
         "reviewed_at": reviewed_at.isoformat(),
     })
     return f'{data["draft"]["body"]}\n\n<!-- guru-create-issue:{attempt_id} -->'
@@ -109,7 +118,7 @@ def _same_issue(record: dict[str, Any], draft: dict[str, Any], reviewed_at: date
         and record.get("body") == created_body
         and isinstance(labels, list)
         and all(isinstance(name, str) and name for name in names)
-        and sorted({name.casefold() for name in names}) == sorted({name.casefold() for name in draft["labels"]})
+        and _label_identity(names) == _label_identity(draft["labels"])
         and record.get("state") == "OPEN"
         and type(record.get("number")) is int
         and _utc(record.get("createdAt")) >= _creation_floor(reviewed_at)
@@ -128,7 +137,9 @@ def _result(repo: str, issue: dict[str, Any]) -> dict[str, Any]:
 def invoke(data: dict[str, Any], *, command_id: str = "invoke-guru-create-issue") -> dict[str, Any]:
     validate_json(data, PACKAGE / "schemas/public-input.schema.json", "input")
     draft = data["draft"]
-    if data["reviewed_target"] != _reviewed_target(draft, data["reviewed_target"]):
+    if (data["reviewed_target"] != _reviewed_target(draft, data["reviewed_target"])
+            or data["reviewed_label_identity_sha256"] != _reviewed_label_identity(
+                data["reviewed_target"], draft["labels"])):
         return {"exit_id": "refresh_review", "reason_code": "reviewed_draft_stale"}
     repo = draft["repo_ref"]
     reviewed_at = _utc(data["reviewed_at"])

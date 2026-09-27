@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.66`
+- version：`current-main-0.6.17-guru.67`
 - status：`active`
-- source binding：reviewed #454 D436 contribution + inherited immutable `.65` authority；active registry 保持 32 Skills / 142 package exits / 102 commands 与六个 planned IDs，production workflow 保持 22 mandatory invokes / 98 exits；current 增量见 `ARCH-CUR-043` / `ARCH-DOM-028` / `ARCH-INT-031` / `ARCH-GAP-011` / `EVD-041`，fixed Fork source 为 `eb370008c7689d4e272ae626bd002190ecbb3296`。`.66` 继承 C2-C7/D443 并增加五个非激活 D436 terminal lifecycle canonical packages；E434 与 #434 production graph activation 尚未完成。五包、共享 lifecycle runtime 与 package integration 定向合跑 `226/226`；installed/platform 与完整 Release matrix 均未声明通过，promotion diff 须 fresh Phase 2/commit/完整 Branch Review。
+- source binding：reviewed #434 contribution + inherited immutable `.66` authority；active registry 为 34 Skills / 155 package exits / 104 commands，零 planned IDs，production workflow 为 33 mandatory invokes / 153 exits。current 增量见 `ADR-016` / `ARCH-CUR-044` / `ARCH-DOM-029` / `ARCH-INT-032` / `ARCH-GAP-009/011` / `EVD-042`，fixed Fork source 为 `71f43cd8955c676f8ab8215216f61376fe9c01fe`。`.66` 的五个非激活 D436 packages 与旧图是 immutable predecessor；#434 已激活 current graph。promotion-created diff 须 fresh Phase 2/commit/完整 Branch Review；完整多平台 Release matrix 与业务仓生产验证不由本 projection 证明。
 - Finalizer recovery binding：既有 `REQ-048/DES-046/TST-032/SCN-044` 同时覆盖 same-base fresh-reviewed transaction reprepare；只消费合法 predecessor tail、selected-base lineage、current review/Publication/live HEAD equality、Open PR absence 与 transaction-owned remote endpoints，不把 terminal PR history、branch name、session 或 path 提升为 authority。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`

@@ -102,7 +102,8 @@ class InstalledReadinessTransitionTests(unittest.TestCase):
             actual, _ = transcript.invoke_public(root, env, "guru-review-change-request", envelope, exit_id)
             self.assertEqual(transcript.operation_delta(counts, transcript.operation_counts(env)), {})
             if exit_id == "ready":
-                self.assertEqual(actual["profile"], "execute_reviewed_plan")
+                self.assertEqual(actual["exit_id"], "ready")
+                self.assertEqual(actual["mode"], "workflow")
                 self.assertEqual(actual["transition"]["clarity"], clarity["transition"]["clarity"])
                 self.assertEqual(actual["transition"]["target_content_sha256"], wording["transition"]["target_content_sha256"])
                 self.assertNotEqual(actual["transition"]["clarity"]["content_sha256"], actual["transition"]["target_content_sha256"])

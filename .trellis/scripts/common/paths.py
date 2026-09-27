@@ -11,7 +11,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 
 
@@ -29,7 +28,6 @@ DIR_SCRIPTS = "scripts"
 # File names
 FILE_CURRENT_TASK = ".current-task"
 FILE_TASK_JSON = "task.json"
-TASK_DATE_TIMEZONE = ZoneInfo("Asia/Shanghai")
 
 # =============================================================================
 # Repository Root
@@ -320,31 +318,13 @@ def has_current_task(repo_root: Path | None = None) -> bool:
 # Task ID Generation
 # =============================================================================
 
-def _task_business_datetime(value: datetime | None = None) -> datetime:
-    """Return a task identity instant interpreted in Asia/Shanghai."""
-    current = value if value is not None else datetime.now(TASK_DATE_TIMEZONE)
-    if current.tzinfo is None:
-        current = current.replace(tzinfo=TASK_DATE_TIMEZONE)
-    return current.astimezone(TASK_DATE_TIMEZONE)
-
-
-def generate_task_date_prefix(value: datetime | None = None) -> str:
+def generate_task_date_prefix() -> str:
     """Generate task ID based on date (MM-DD format).
 
     Returns:
         Date prefix string (e.g., "01-21").
     """
-    return _task_business_datetime(value).strftime("%m-%d")
-
-
-def generate_task_date(value: datetime | None = None) -> str:
-    """Generate the task business date in Asia/Shanghai."""
-    return _task_business_datetime(value).strftime("%Y-%m-%d")
-
-
-def generate_task_archive_month(value: datetime | None = None) -> str:
-    """Generate the task archive month in Asia/Shanghai."""
-    return _task_business_datetime(value).strftime("%Y-%m")
+    return datetime.now().strftime("%m-%d")
 
 
 # =============================================================================

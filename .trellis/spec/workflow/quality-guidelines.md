@@ -1038,10 +1038,12 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert 32 active Skills, 142 package
-exits, and 102 commands, exactly one selected `production-current-v4`
-four-Skill/15-exit current manifest, and business workflow markers of 22
-invokes, 98 exits, 35 workflow targets, and 24 stop targets.
+Source/installed/platform/representative local clean checks assert 34 active Skills,
+155 package exits, and 104 commands, exactly one selected `production-current-v4`
+four-Skill/15-exit current manifest, and business workflow markers of 33 invokes
+and 153 exits. Workflow/stop targets are derived from the current registry and
+Interface graph, not predecessor fixed counts. Full multi-platform Release matrix
+belongs to the dedicated gate; remote marketplace installation is unused.
 
 ## Extension Installation Verification Quality
 
@@ -1168,11 +1170,11 @@ Publication, Finalizer, and Merge public wrappers in one shared owner repository
 actual stdout and declared projections bind every edge. It explicitly excludes a
 verifier hop and scans terminal task/runtime state for verifier residue.
 
-Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
-script modes match after fresh install, update, and preset reapply. Package
-closure is 32 active Skills, 142 exits, and 102 commands; business global markers remain 22
-invokes, 98 exits, 35 workflow targets, and 24 stop targets. Upstream Finish
-assets remain unchanged.
+The historical #174 pinned-old replay compared canonical, installed shared,
+Codex, Claude, and Cursor package/corpus bytes and script modes after its
+install/update/reapply. Its predecessor graph had 32 active Skills, 142 exits,
+102 commands and 22 invokes/98 exits; those numbers are not current acceptance.
+Upstream Finish assets remain unchanged.
 
 Canonical package tests must execute in the source repository, where the
 canonical `trellis/**` package tree is available. A clean installed business

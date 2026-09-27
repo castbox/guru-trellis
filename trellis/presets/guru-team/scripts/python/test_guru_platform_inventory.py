@@ -42,6 +42,7 @@ def successful_install_result(platforms: set[str]) -> dict[str, object]:
         "skill_source_validation": {},
         "upstream_ownership_validation": {},
         "skill_installed_validation": {"returncode": 0},
+        "skill_activation_validation": {"status": "passed"},
         "python_runtime": {},
     }
 
@@ -114,7 +115,7 @@ class PlatformInventoryTest(unittest.TestCase):
         )
 
         for skill_root in inventory.selected_skill_roots(inventory.PLATFORM_FLAGS):
-            expected = skill_root / "guru-create-task-workspace/SKILL.md"
+            expected = skill_root / "guru-create-task/SKILL.md"
             self.assertIn(expected, projections)
         self.assertEqual(
             [

@@ -20,7 +20,7 @@ from common.paths import get_repo_root
 
 
 def main() -> None:
-    """Keep caller context, but load phase instructions from the task workspace."""
+    """Keep caller context, but load task workflow instructions from its workspace."""
     probe = argparse.ArgumentParser(add_help=False)
     probe.add_argument("--mode", "-m", default="default")
     options, _ = probe.parse_known_args()
@@ -30,7 +30,7 @@ def main() -> None:
         if active.error and options.mode != "default":
             print(f"Error: {active.error}", file=sys.stderr)
             sys.exit(1)
-        if options.mode == "phase" and active.task_workspace_root:
+        if options.mode in {"phase", "continuation"} and active.task_workspace_root:
             os.chdir(active.task_workspace_root)
         _main()
         if active.error:

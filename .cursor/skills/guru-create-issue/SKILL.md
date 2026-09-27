@@ -8,9 +8,15 @@ description: Create one reviewed proposed GitHub Issue, or recover its exact res
 `judgment_mode=semantic`. Accept only a current
 `guru-review-change-request:ready` transition whose `target.kind` is
 `proposed_draft`. Before mutation reread the selected repository, title,
-body, labels and duplicate disposition. The input carries the exact reviewed
-target digests; any repo, title or body drift returns `refresh_review` before
-provider access. The current conversation must show
+body, labels and duplicate disposition. At this Skill's AI review gate, capture
+`reviewed_label_identity_sha256` by canonically digesting the reviewed target's
+`identity_sha256` and the sorted, unique, case-folded reviewed label names:
+`{"reviewed_target": target.identity_sha256, "labels": sorted_label_set}`.
+Keep this review-time identity unchanged across creation and read-only recovery;
+never derive it from a changed invocation draft. The runtime independently
+recomputes it from `draft.labels`. The input carries the exact reviewed
+target digests; any repo, title, body or label-identity drift returns
+`refresh_review` before provider access. The current conversation must show
 the exact GitHub Issue side effect. Do not create a Trellis task here.
 Capture a UTC `reviewed_at` when the current duplicate decision is made and
 reuse that same value on output-loss recovery; an older same-content Issue is

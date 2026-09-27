@@ -158,6 +158,99 @@ installed/platform projections、task/lifecycle SSOT 与定向 tests 已通过�
 完整 Release/upgrade matrix、push、PR、远端 merge、tag、Release 或 Issue closure。promotion-created
 diff 仍须 fresh Phase 2、Task Commit 与 independent complete Branch Review 后才能进入 Publication。
 
+## EVD-042: #434 atomic lifecycle activation candidate
+
+本证据支撑 `ADR-016`、`ARCH-CUR-044`、`ARCH-DOM-029`、`ARCH-INT-032` 与
+`ARCH-GAP-009/011` 的 current activation 子缺口。#434 在 selected
+`origin/main@bab8cfcd534692735b9240b25dd8bc63e40a5cb4` 上消费 #435/#436/#443
+与 #454 D443/D436 exact interfaces；七个 E434 packages 与 active graph/selector/manifest/
+installed/声明平台投影为同一候选。旧归档按 Issue 查找验证唯一已提交终态；旧链在途任务
+只允许 pinned-old 或人工处置，#154/PR #156 不是新 Delivery。
+
+当前 Fork 锁从历史 `eb370008`、PR #10 的 `c49ad996` 前进到合并提交
+`645c817e4830a44564b0dc43b2adf75e306b1e81`、tree
+`0845f24e9f22cbca524370887166e183b454c147`、成功 push CI `36312060945`。
+PR #11 在旧 checkout 留有同 TaskId/代次副本时使用正式绑定分支的注册 checkout；
+Fork CLI `2303/2303`、core `422 passed/1 skipped`、build/typecheck/lint 及 PR/main CI 通过。
+#434 dogfood 的官方 session resolver 已按新模板更新；组合 source/installed、preset reapply、
+零 sidecar 与本地续接场景需对新锁重验，不沿用 PR #10 的旧候选结果。
+新锁下 source/installed validator 已分别通过（34 active / 104 commands；33 invokes /
+153 production exits，零 sidecar）；本地 Codex clean/focused 样本两次 update/reapply
+及 session binding 通过，当前图/文案 28/28，现行 Stage 0 readiness 初装/reapply
+1/1。广义 installer 旧 fixture 的 Workspace `ready` consumer 与现行
+`guru-task-intake-router` 不同；旧 Workspace/Finalizer/parallel-Finish 链仅作 pinned-old
+证据或人工处置，不可凭旧测试失败恢复退役 API，也不可将其视为现行 gate 通过。
+最终组合 gate、两轮全新只读审核和正式 Phase 2/Branch Review 尚需刷新。
+首轮全新审核发现 Finish 归档仍留下当前代 session pointer，妨碍按 Issue 发现已归档原 task；该 P1 使连续无 finding 计数归零。修复在 canonical Finish 投影前精确清除当前 TaskId/代次指针，缺官方 API 时保留 active task 并阻断；其他 TaskId 指针保留，未封存投影只回到原 Finish transaction 或逐案人工处置。定向 Finish 3/3、路由文案 1/1 通过；installed 投影与完整候选门禁尚未刷新。
+修复后的投影经二次 apply 收敛，六个本轮生成的旧版 Finish `.bak` 清理后零 sidecar，workflow 字节和 dogfood drift 一致。Finish/Cleanup/Reactivate 55/20/35、图/终态/续接 97/97、runtime 88 pass/1 skip、installer/upgrade/reapply 99/99、source/installed validator、task validate 与 diff check 通过。较宽本地入口组 149 pass/2 skip/1 fail；唯一失败是 pinned-old `test_installed_closeout_owner_boundary` 的六步 Workspace/Publication fixture 在新安装中找不到已退役脚本，不当作新图失败也不声称全组通过。独立连续审核和正式后续门禁仍待刷新。
+
+后续全新审核发现无 context key 的单会话 fallback 可从另一个注册 checkout 借用 task。
+`castbox/Trellis` PR #12 已将 fallback 限定为调用工作树，合并为
+`main@80ffa4efb6040572c15e7597eb1ecc3732096c68`（tree
+`69ab91d009857735f08dffdf8190accf820da71d`，main CI `36321117001` 成功）。
+#434 安装侧 linked-worktree 回归先在旧 resolver 上失败、按新模板同步后通过；
+显式 context key 的跨 worktree 路径保持原样。本次 source lock 提升使此前组合和审核
+结果失效，须重新验证、正式 Phase 2、Task Commit 及独立 Branch Review。
+
+promotion 前组合 gate：installer/graph `118/118`、定向 runtime `132/132`、宽扫
+runtime/graph `155/155`，此前完整 runtime `333/333`；source/installed、dogfood
+drift、task validation、diff check、代表性本地 clean install、两次 reapply 和递归零
+`.new/.bak` 均通过。对同一未提交候选的两轮独立只读审核连续无 P0-P3；首个
+`origin/main...HEAD@ce8158ef4f6b99d73faa5c3e6a2b97f6a5be43c8` 的正式
+Phase 2、九维 Check 和 committed Branch Review 亦通过，但均早于此次 RDT/
+Architecture promotion-created diff，不能跨 SHA 复用。后者必须 fresh Phase 2、
+Task Commit、完整独立 Branch Review 后才可 Publication。远端 marketplace 安装
+非 #434 使用路径；完整多平台 Release matrix 和业务仓生产验证不由本证据证明。
+
+Fork PR #12 的无 key 跨工作树 fallback 修复后，当前锁为
+`80ffa4efb6040572c15e7597eb1ecc3732096c68`、tree
+`69ab91d009857735f08dffdf8190accf820da71d`、成功 main CI `36321117001`。
+T434-38 在旧 resolver 上复现借用，在新模板上通过；显式 key 路径不变。
+本地初装与二次 reapply、source/installed、dogfood drift、零 sidecar、
+生命周期 197 pass/2 skip、现行图 91 pass/1 skip、installer/upgrade 98/98、
+#434 29/29、Task Validate 与 diff check 通过。旧 predecessor 的四项失败仍为
+pinned-old 夹具与现行终态已退役合同，不纳入新图 pass；旧 #154/PR #156
+只允许兼容旧版或逐案人工处置。此条不证明新的正式 Phase 2、完整 Branch Review、
+两轮独立审核、live Delivery 或专门 Release matrix，以上均需独立取证。
+
+2026-09-27 首位新鲜只读审核指出 current RDT/Architecture 的 installed 索引仍绑定
+`.66` 与旧 Fork `eb370008`（P2）。两处索引已对齐 `.67`、34/155/104、33/153
+及 `80ffa4ef`；canonical/dogfood data contract 也统一到同一 source lock，新增四份
+current 文档、design manifest 与双 source lock 一致性回归。#434 定向候选 38/38，
+重投影后 30/30、dogfood drift、diff check 与零 `.new/.bak` 通过。先前两轮
+审核不覆盖这些编辑，连续无 finding 计数重置；正式 Phase 2/Branch Review 未复用。
+
+后续独立只读审核指出两个正常路径缺口：显式跨工作树 session 的 Phase Index 与
+continuation 从不同 workflow 读取（P2），以及新 TaskId 被旧 slug 的官方创建预检
+阻断（P3）。#434 的 `get_context.py` 现在对两种 mode 使用相同 task checkout，
+端到端双 workflow 夹具通过。Fork PR #13 合并为
+`castbox/Trellis/main@622179c2b47a022134f867433518a399f7f183db`，tree
+`e740f6b7c4de7791691e8f1d2d1d139dee7568d3`，main CI `36326723322`
+成功；官方 create 可选 `--task-id`，默认 slug 语义不变，显式 ID 在创建前验唯一。
+Fork 完整提交钩子 CLI 2305/2305，build/typecheck/lint 成功。#434 固定新锁，
+官方双脚本与合并模板字节一致，Guru Create Task 直接传入审核过的 TaskId 并验证
+初始 artifact；定向 33 pass/1 skip。一次 preset apply 产生且只产生本轮旧 Create Task
+runtime 的一个 `.bak`，逐项核对并清除后第二次 apply `ok`，source/installed
+validator、drift 和零 sidecar 通过。两轮全新独立审核、正式 Phase 2/Task Commit/
+完整 Branch Review、live Delivery 与专门 Release matrix 尚未由此证明。
+
+Fork PR #14 合并到 `castbox/Trellis/main@9d14daf4f92d28ad38b7ceb8eb0817b76aca8794`，tree
+`356035b50e35302ea7542abcbc84b89674f60a7f`，main CI `36329643951` 成功。
+显式 `--task-id` 在官方创建前拒绝与 Guru lifecycle 不兼容的 ID；通用 `task.py start`
+保留普通 Trellis 行为，Guru 安装的三平台 `trellis-meta` 入口明确使用
+`guru-activate-task`。Fork 非 marketplace CLI `2277/2277`、build/typecheck/lint
+通过；marketplace 测试不是 #434 使用路径。#434 的新 source lock、投影与 `T434-39`
+须在完整候选组合 gate 和 fresh 独立审核中重新验证；此段不证明 Phase 2、committed
+Branch Review、Delivery、专门 Release matrix 或业务生产。
+
+Fork PR #15 合并到 `castbox/Trellis/main@71f43cd8955c676f8ab8215216f61376fe9c01fe`，tree
+`c2b523b40a3bd59a715d26017cf61bfef47b3b0a`，main CI `36332562361` 成功。
+固定 Fork 的 `get_context.py --mode continuation` 与 `phase` 现从同一显式绑定
+task checkout 读取 workflow；提交钩子 CLI `2306/2306`、core `422 passed / 1 skipped`，
+build/typecheck/lint 通过。#434 的 installed 脚本与精确 Fork 模板 byte parity 和
+current Requirements source pin 回归须在修复候选组合 gate 中重验；远端 marketplace
+不在本任务使用路径。此修复不替代正式 Phase 2、committed Branch Review 或 Release matrix。
+
 ## EVD-041: #454 D436 canonical package candidate
 
 来源为 [D436 contribution](../contributions/454-task-lifecycle-d436.md)、#456 `436-*` migration rows

@@ -10,11 +10,13 @@ import tempfile
 import unittest
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.schema import validate_json
+from runtime.task_lifecycle.session_adapter import bind_session, resolve_session
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
@@ -104,6 +106,27 @@ class CreateTaskTests(unittest.TestCase):
         self.assertEqual(self.git("status", "--porcelain"), before)
         self.assertEqual(self.invoke(self.payload)["exit_id"], "invalid_task_state")
 
+    def test_distinct_task_id_can_reuse_a_historical_slug(self) -> None:
+        prefix = "01-01" if Path(self.ref).name[:5] != "01-01" else "01-02"
+        prior = self.root / ".trellis/tasks/archive/2025-01" / f"{prefix}-example-task"
+        prior.mkdir(parents=True)
+        (prior / "task.json").write_text(json.dumps({
+            "id": "historical-task-id", "name": "example-task", "status": "completed",
+            "lifecycle_generation": 0,
+        }), encoding="utf-8")
+        self.git("add", ".trellis/tasks/archive")
+        self.git("commit", "-qm", "historical task")
+        head = self.git("rev-parse", "HEAD")
+        self.git("branch", "-f", "main", head)
+        self.payload["creation"]["reviewed_base_head"] = head
+        self.payload["acquisition"]["decision_head"] = head
+        result = self.invoke(self.payload)
+        self.assertEqual(result["exit_id"], "created", result)
+        current = json.loads((self.root / self.ref / "task.json").read_text(encoding="utf-8"))
+        self.assertEqual(current["id"], "example-task")
+        self.assertEqual(json.loads((prior / "task.json").read_text(encoding="utf-8"))["id"],
+                         "historical-task-id")
+
     def test_stale_base_and_invocation_head_are_distinct(self) -> None:
         stale = json.loads(json.dumps(self.payload))
         stale["creation"]["reviewed_base_head"] = "a" * 40
@@ -159,6 +182,8 @@ class CreateTaskTests(unittest.TestCase):
                              {"exit_id": "refresh_review", "reason_code": "creation_date_stale"})
         self.assertEqual(len(official_calls), 1)
         self.assertEqual(official_calls[0][official_calls[0].index("--slug") + 1], Path(self.ref).name)
+        self.assertEqual(official_calls[0][official_calls[0].index("--task-id") + 1],
+                         self.payload["creation"]["task_id"])
         self.assertFalse((self.root / self.ref).exists())
 
     def test_recovery_retries_incomplete_session_binding_before_created(self) -> None:
@@ -174,14 +199,75 @@ class CreateTaskTests(unittest.TestCase):
         blocked = self.invoke_with_port(self.payload, BrokenSessionPort())
         self.assertEqual(blocked, {"exit_id": "blocked", "reason_code": "official_session_target_invalid"})
         recovery = {**self.payload, "action": "recover_created_task_result"}
-        self.assertEqual(self.invoke_with_port(recovery, BrokenSessionPort()), blocked)
+        self.assertEqual(self.invoke_with_port(recovery, BrokenSessionPort()),
+                         {"exit_id": "blocked", "reason_code": "official_session_record_invalid"})
         self.assertEqual(self.invoke(recovery)["exit_id"], "created")
+
+    def test_recovery_preserves_a_later_current_task_route(self) -> None:
+        class SessionPort:
+            def __init__(self, task_ref):
+                self.task_ref = task_ref
+                self.records = {}
+                self.writes = 0
+
+            def resolve_context_key(self, platform_input=None, platform=None):
+                return "codex-test"
+
+            def repository_facts(self, root):
+                return SimpleNamespace(common_dir=root / ".git")
+
+            def session_path(self, root, key, facts):
+                return facts.common_dir / "sessions" / f"{key}.json"
+
+            def record_exists(self, path):
+                return path in self.records
+
+            def read_record(self, path, root, facts):
+                data = self.records[path]
+                return SimpleNamespace(data=data, task_id=data["task_id"],
+                                       lifecycle_generation=data["lifecycle_generation"])
+
+            def write_record(self, path, data, root):
+                self.writes += 1
+                self.records[path] = data
+
+            def resolve_task_identity(self, facts, task_id, lifecycle_generation):
+                refs = {"example-task": self.task_ref, "another-task": ".trellis/tasks/another-task"}
+                return SimpleNamespace(task_ref=refs[task_id])
+
+        port = SessionPort(self.ref)
+        created = self.invoke_with_port(self.payload, port)
+        recovery = {**self.payload, "action": "recover_created_task_result"}
+        self.assertEqual(self.invoke_with_port(recovery, port), created)
+        self.assertEqual(port.writes, 1)
+
+        port.records.clear()
+        self.assertEqual(self.invoke_with_port(recovery, port), created)
+        self.assertEqual(port.writes, 2)
+
+        self.assertEqual(bind_session(port, self.root, {"task_id": "another-task",
+                                                       "lifecycle_generation": 0}).status, "session_bound")
+        self.assertEqual(self.invoke_with_port(recovery, port),
+                         {"exit_id": "blocked", "reason_code": "session_current_task_conflict"})
+        self.assertEqual(port.writes, 3)
+        self.assertEqual(resolve_session(port, self.root).lifecycle.task_id, "another-task")
 
     def test_merged_fixed_fork_official_store_and_session_port(self) -> None:
         if not os.environ.get("TRELLIS_FIXED_FORK_SOURCE"):
             self.skipTest("Set TRELLIS_FIXED_FORK_SOURCE to the merged Fixed Fork checkout")
-        result = MODULE.invoke(self.root, self.payload)
+        real_run = subprocess.run
+        created = []
+
+        def capture_create(command, **options):
+            if len(command) > 1 and str(command[1]).endswith("/.trellis/scripts/task.py"):
+                self.assertEqual(options["env"]["TZ"], "Asia/Shanghai")
+                created.append(command)
+            return real_run(command, **options)
+
+        with patch.dict(os.environ, {"TZ": "UTC"}), patch.object(MODULE.subprocess, "run", side_effect=capture_create):
+            result = MODULE.invoke(self.root, self.payload)
         self.assertEqual(result["exit_id"], "created")
+        self.assertEqual(len(created), 1)
         self.assertEqual(MODULE.invoke(self.root, {**self.payload, "action": "recover_created_task_result"}), result)
         data = json.loads((self.root / self.ref / "task.json").read_text())
         self.assertEqual((data["id"], data["source"], data["lifecycle_generation"]),

@@ -182,6 +182,29 @@ class IdentityTests(unittest.TestCase):
             ):
                 discover_archived_issue_candidate(self.repo, repo_ref, number, head)
 
+    def test_legacy_unstructured_scope_uses_committed_summary_as_candidate_only(self):
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.repo, check=True)
+        subprocess.run(["git", "remote", "add", "origin", "https://github.com/example/repo.git"], cwd=self.repo, check=True)
+        subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=self.repo, check=True)
+        subprocess.run(["git", "config", "user.name", "Test"], cwd=self.repo, check=True)
+        archive_ref = ".trellis/tasks/archive/2026-07/legacy-task"
+        task = self.write_task(archive_ref, "legacy-task-id")
+        metadata = json.loads((task / "task.json").read_text(encoding="utf-8"))
+        metadata.update(status="completed", scope="workflow,preset,docs,companion-scripts")
+        (task / "task.json").write_text(json.dumps(metadata), encoding="utf-8")
+        (task / "finish-summary.json").write_text(json.dumps({
+            "schema_version": 1, "task": {"archive_dir": archive_ref, "status": "completed"},
+            "github": {"source_issues": [17]},
+        }), encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=self.repo, check=True)
+        subprocess.run(["git", "commit", "-qm", "archive unstructured source"], cwd=self.repo, check=True)
+        head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repo, check=True, text=True, capture_output=True).stdout.strip()
+        candidate = discover_archived_issue_candidate(self.repo, "example/repo", 17, head)
+        self.assertEqual((candidate.task_id, candidate.task_ref), ("legacy-task-id", archive_ref))
+        for repo_ref, number in (("other/repo", 17), ("example/repo", 18)):
+            with self.assertRaisesRegex(LifecycleContractError, "archived_issue_candidate_not_unique"):
+                discover_archived_issue_candidate(self.repo, repo_ref, number, head)
+
 
 if __name__ == "__main__":
     unittest.main()

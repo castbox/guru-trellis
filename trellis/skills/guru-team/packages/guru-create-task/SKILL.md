@@ -32,9 +32,12 @@ materialization and C4/C5 control-state establishment, then
 port; without one continue in explicit-task mode. Session failure after
 creation does not erase a durable task. If output was lost, use only
 `recover-created-task-result`; it rereads the task, branch binding and
-resource ownership without creating a second task or checkout, then retries
-the official session binding. Recovery returns `created` only after that bind
-is complete or explicit-task mode is current.
+resource ownership without creating a second task or checkout. It reads the
+current session route first: the same task remains unchanged, a missing record
+may retry the official attach, and a different or invalid current route blocks
+without overwriting it. Return to `guru-bind-task-session` for an explicit
+task switch or rebind. Recovery returns `created` only after the same binding,
+a completed missing-record attach, or explicit-task mode is current.
 
 Return exactly one exit: `created -> guru-task-created`, `refresh_review ->
 guru-sync-base` for changed base authority or a stale creation date, `blocked ->

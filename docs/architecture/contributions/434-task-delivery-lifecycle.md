@@ -3,7 +3,7 @@
 ## Identity And Authority Boundary
 
 - candidate identity: `architecture-contribution-434-task-delivery-lifecycle-v1`.
-- lifecycle state: `reviewed_candidate`; not promoted.
+- lifecycle state: `reviewed_promoted` by expected `.66 -> .67` serialized promotion; post-promotion gates remain independent.
 - source authority: `castbox/guru-trellis#434`, contract `2026-09-18-r4`.
 - task locator: `.trellis/tasks/09-18-434-task-delivery-lifecycle`.
 - behavior authority: task `prd.md` and `design.md`.
@@ -23,7 +23,7 @@ conflicts and sidecars after the managed-backup recovery. Current integration,
 fixed complete-old/new graphs and mixed-graph rejection pass. The representative
 Codex clean/focused local workflow sample and two preset reapplications pass;
 remote marketplace installation is outside #434 acceptance. `.66`
-remains shared current authority. Earlier committed reviews exposed Cleanup's
+is immutable superseded history after `.67` promotion. Earlier committed reviews exposed Cleanup's
 invoking-worktree handoff, the Interface 1.7 manifest, a stale Reconcile eval
 and an ADR number collision; those fixes remain in this candidate. Later
 reviews exposed the old task metadata identity check and a pre-review dirty
@@ -59,8 +59,32 @@ match. The final installer/graph gate now passes 118/118; the focused
 Merge/Completion/Finish/Issue/runtime suite passes 132/132. Two fresh,
 independent read-only full-candidate reviews consecutively found no P0-P3,
 but neither is a committed Branch Review. Fresh Phase 2, task commit,
-full-range Branch Review and serialized promotion remain open. The dedicated
+and full-range post-promotion Branch Review remain open. The `.66 -> .67`
+serialized promotion has completed; its generated changes are included in
+the fresh gate candidate. The dedicated
 multi-platform Release matrix belongs to its separate gate.
+The latest finding-fix retires only the current TaskId/generation's official
+schema-2 session pointers before Finish archive projection. An unavailable
+session API blocks before moving the task; projected but unsealed archives
+resume the original Finish transaction or require per-case disposition, not
+Reactivate. Current source/installed validators, dogfood drift, Finish and
+terminal integration, and focused installer/upgrade gates pass after this
+projection. One broad local-entry test remains pinned-old because its fixture
+requires the removed Workspace/Publication chain; it is not new-graph proof.
+Two fresh no-finding reviews and formal Phase 2/committed Branch Review must
+still bind this amended candidate.
+The latest independent review exposed an actual fixed-Fork continuation mismatch:
+the prior locked CLI loaded the invoking checkout workflow while Phase loaded
+the bound task checkout. Fork PR #15 is merged at
+`71f43cd8955c676f8ab8215216f61376fe9c01fe` (tree
+`c2b523b40a3bd59a715d26017cf61bfef47b3b0a`, successful main CI
+`36332562361`); the installed script now matches that template byte-for-byte.
+The same review found that the current Requirements entry still named an older
+Fork without `--task-id`; current `.67` and the top-level source lock now agree.
+The targeted 24/24, source/installed closure, drift and zero-sidecar checks
+pass, but the complete combination gate and two fresh independent reviews must
+be repeated before formal Phase 2 and committed review. Marketplace is not a
+supported deployment path for this task; the full Release matrix remains external.
 
 ## Before And Target
 
@@ -135,14 +159,14 @@ receipts cannot be projected into either current completion path.
 
 | Concern | Applicability | Candidate contract |
 | --- | --- | --- |
-| `authority-binding` | `applicable` | Bind #434 r4 and #454 current contract, merged #435/#436/#443 plus D443/D436 exact interfaces, current `.66`, derived candidate 34/155/104 and 33/153, and current installed graph; old 32/39 inventories are historical. |
+| `authority-binding` | `applicable` | Bind #434 r4 and #454 current contract, merged #435/#436/#443 plus D443/D436 exact interfaces, active `.67` (predecessor `.66`), derived candidate 34/155/104 and 33/153, and current installed graph; old 32/39 inventories are historical. |
 | `constitution-binding` | `applicable` | Use official Trellis extension surfaces; preserve semantic completeness, owner isolation, minimum complexity and one-way convergence. |
 | `boundary-and-decision` | `applicable` | Delivery, Completion, Closure, Finish, Cleanup and Reactivate are distinct lifecycle concepts with closed owners and unique edges. |
 | `owner-and-single-writer` | `applicable` | Child packages own step semantics; #434 owns only the global graph; deterministic scripts do not decide routes or completion. |
 | `compatibility-and-exit` | `applicable` | Directly replace the old active closeout graph. No dual graph, old-output adapter or schema dual-read remains on current main. |
 | `gap-and-deviation` | `applicable` | Close the pre-merge archive/Restore coupling and early closure-intent gap without adding an Acceptance phase or generic archive recovery. |
 | `parallel-scope` | `applicable` |  #435/#436/#443 may build isolated additive packages; none may switch production workflow before #434 activation. Shared current promotion remains serialized. |
-| `evidence-and-freshness` | `applicable` | After the nested handoff correction, source/installed closure held at 34 active/104 commands and 33 mandatory invokes/153 production exits with zero sidecars; broad runtime 333/333, installer/graph 117/117 and Merge 23/23 passed. Installed-mode terminal integration 6/6 now runs in the default candidate gate; full gates and two independent clean reviews must be refreshed after this test change. Formal Phase 2, committed Branch Review and promotion remain separate gates. Pinned-old eval is historical; the dedicated full multi-platform Release matrix is outside #434 acceptance. |
+| `evidence-and-freshness` | `applicable` | Source/installed closure held at 34 active/104 commands and 33 mandatory invokes/153 production exits with zero sidecars; broad runtime 333/333, installer/graph 118/118 and Merge 23/23 passed before the `.67` promotion. Installed-mode terminal integration 6/6 runs in the default candidate gate; fresh complete gates and two independent clean reviews must cover the promoted bytes and later fixes. Promotion is complete, while post-promotion Phase 2 and committed Branch Review remain separate gates. Pinned-old eval is historical; the dedicated full multi-platform Release matrix is outside #434 acceptance. |
 | `review-and-promotion` | `applicable` | Independent full-diff review precedes expected-current promotion; promotion-created diff repeats Phase 2, commit and full Branch Review. |
 
 ## Compatibility And Deletion
@@ -189,8 +213,8 @@ the candidate; its current test evidence is recorded above. Change Context
 now uses the same TaskId/generation branch binding as its runtime, and current
 preset reapply retires recognized predecessor script entrypoints without
 mutating unknown local edits. An earlier Phase 2 passed a prior dirty candidate;
-the current candidate needs a fresh result and complete committed Branch Review
-before promotion.
+the `.66 -> .67` promotion is complete, and the promoted candidate needs a fresh
+Phase 2 result and complete committed Branch Review before Delivery publication.
 The #389 Workspace test matrix is now described only as pinned-old history in
 the quality guide; active Checkout and Cleanup guidance points to current
 TaskId/generation and Finish routing, without reviving a predecessor entry.
@@ -199,9 +223,9 @@ TaskId/generation and Finish routing, without reviving a predecessor entry.
 
 The candidate requires ADR-016 because it changes lifecycle concepts, closure
 ownership, archive timing, recovery semantics and the active owner graph.
-Independent committed Branch Review is pending; earlier clean read-only reviews
-and two finding-bearing committed reviews do not establish the revised candidate. Expected current identity is
-`current-main-0.6.17-guru.66`; any current advance requires fresh synchronization.
-Promotion is required only after implementation, project checks and independent
-full-diff Architecture review. Promotion-created bytes must re-enter Phase 2,
-Task Commit and independent Branch Review before Delivery publication.
+Independent committed Branch Review of the promotion-created diff is pending;
+earlier clean read-only reviews and two finding-bearing committed reviews do
+not establish the revised candidate. The serialized promotion consumed expected
+predecessor `current-main-0.6.17-guru.66` and made `.67` active; it must not be
+repeated for this contribution. Its new bytes re-enter Phase 2, Task Commit
+and independent Branch Review before Delivery publication.

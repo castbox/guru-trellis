@@ -1,4 +1,4 @@
-"""Validated repository-scoped session storage; reads never migrate bindings."""
+"""Validated repository-scoped schema-2 session storage."""
 
 from __future__ import annotations
 
@@ -10,7 +10,8 @@ from pathlib import Path
 from typing import Any
 
 from .history_paths import RetiredDataPathError, require_active_path
-from .io import read_json_checked, write_json
+from .io import JSON_READ_MISSING, read_json_checked, write_json
+from .task_utils import TaskIdentityError, lifecycle_generation
 
 
 class SessionBindingError(ValueError):
@@ -28,14 +29,20 @@ class RepositoryFacts:
 @dataclass(frozen=True)
 class SessionRecord:
     path: Path
+    root: Path
+    task_id: str
+    lifecycle_generation: int
+    data: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class ResolvedTask:
     workspace: Path
     task_ref: str
-    data: dict[str, Any]
-    legacy: bool
+    task_path: Path
 
 
 def _git(root: Path, *args: str) -> str:
-    # Process-local Git overrides must not substitute another checkout's facts.
     env = {k: v for k, v in os.environ.items() if k not in {
         "GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE",
     }}
@@ -49,14 +56,18 @@ def _git(root: Path, *args: str) -> str:
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise SessionBindingError(f"git_discovery_failed: {root}: {exc}") from exc
     if result.returncode:
-        raise SessionBindingError(f"git_discovery_failed: {root}: {result.stderr.strip()}")
+        raise SessionBindingError(
+            f"git_discovery_failed: {root}: {result.stderr.strip()}"
+        )
     return result.stdout
 
 
 def _common_dir(root: Path) -> Path:
     value = _git(root, "rev-parse", "--git-common-dir").rstrip("\r\n")
     if not value:
-        raise SessionBindingError(f"git_discovery_failed: empty common directory: {root}")
+        raise SessionBindingError(
+            f"git_discovery_failed: empty common directory: {root}"
+        )
     return (root / value).resolve()
 
 
@@ -68,8 +79,12 @@ def repository_facts(root: Path) -> RepositoryFacts:
     except SessionBindingError as exc:
         if apparent_git or "not a git repository" not in str(exc):
             raise
-        return RepositoryFacts(root, None, ())
-    git_root = Path(_git(root, "rev-parse", "--show-toplevel").rstrip("\r\n")).resolve()
+        facts = RepositoryFacts(root, None, (), root)
+        validate_workspace(root, facts)
+        return facts
+    git_root = Path(
+        _git(root, "rev-parse", "--show-toplevel").rstrip("\r\n")
+    ).resolve()
     output = _git(root, "worktree", "list", "--porcelain", "-z")
     worktrees = tuple(dict.fromkeys(
         Path(field[len("worktree "):]).resolve()
@@ -89,7 +104,9 @@ def validate_workspace(root: Path, facts: RepositoryFacts) -> Path:
         if root != facts.invocation_root:
             raise SessionBindingError(f"foreign_workspace: {root}")
     else:
-        top = Path(_git(root, "rev-parse", "--show-toplevel").rstrip("\r\n")).resolve()
+        top = Path(
+            _git(root, "rev-parse", "--show-toplevel").rstrip("\r\n")
+        ).resolve()
         if top not in facts.worktrees:
             raise SessionBindingError(f"unregistered_workspace: {root}")
         containing = [p for p in facts.worktrees if p == root or p in root.parents]
@@ -104,28 +121,54 @@ def validate_workspace(root: Path, facts: RepositoryFacts) -> Path:
     return root
 
 
-def legacy_roots(facts: RepositoryFacts, known_roots: tuple[Path, ...] = ()) -> tuple[Path, ...]:
-    """Discover only registered roots and the caller's nested project suffix."""
-    if facts.git_root is None:
-        return (facts.invocation_root,)
-    suffixes = {facts.invocation_root.relative_to(facts.git_root)}
-    for root in known_roots:
-        validate_workspace(root, facts)
-        containing = [p for p in facts.worktrees if p == root or p in root.parents]
-        suffixes.add(root.relative_to(max(containing, key=lambda p: len(p.parts))))
-    roots = {facts.invocation_root}
+def workspace_roots(facts: RepositoryFacts) -> tuple[Path, ...]:
+    """Return live Trellis roots at the caller's repository-relative suffix."""
+    if facts.common_dir is None or facts.git_root is None:
+        return (validate_workspace(facts.invocation_root, facts),)
+    suffix = facts.invocation_root.relative_to(facts.git_root)
+    roots: set[Path] = set()
     for worktree in facts.worktrees:
-        for candidate in (worktree, *(worktree / suffix for suffix in suffixes)):
-            require_active_path(candidate / ".trellis", candidate)
-            if (candidate / ".trellis").is_dir():
-                roots.add(validate_workspace(candidate, facts))
+        candidate = worktree / suffix
+        require_active_path(candidate / ".trellis", candidate)
+        if (candidate / ".trellis").is_dir():
+            roots.add(validate_workspace(candidate, facts))
     return tuple(sorted(roots))
 
 
-def sessions_directory(root: Path, facts: RepositoryFacts, *, legacy: bool = False) -> Path:
+def _bound_task_workspace(
+    facts: RepositoryFacts, task_id: str, generation: int,
+    workspaces: tuple[Path, ...],
+) -> Path | None:
+    if facts.common_dir is None:
+        return None
+    path = facts.common_dir / "trellis" / "task-branches" / task_id / f"{generation}.json"
+    require_active_path(path, facts.invocation_root)
+    binding, reason = read_json_checked(path)
+    if reason == JSON_READ_MISSING:
+        return None
+    if binding is None or set(binding) != {
+        "schema_version", "task_id", "lifecycle_generation", "binding_epoch",
+        "binding_revision", "branch_name",
+    } or (binding["schema_version"] != "1.0" or binding["task_id"] != task_id
+          or type(binding["lifecycle_generation"]) is not int
+          or binding["lifecycle_generation"] != generation
+          or type(binding["binding_epoch"]) is not int or binding["binding_epoch"] < 0
+          or type(binding["binding_revision"]) is not int or binding["binding_revision"] < 0
+          or not isinstance(binding["branch_name"], str) or not binding["branch_name"]):
+        raise SessionBindingError(f"invalid_task_branch_binding: {path}")
+    matches = [
+        workspace for workspace in workspaces
+        if _git(workspace, "branch", "--show-current").strip() == binding["branch_name"]
+    ]
+    if len(matches) != 1:
+        raise SessionBindingError(f"current_task_checkout_unresolved: {path}")
+    return matches[0]
+
+
+def sessions_directory(root: Path, facts: RepositoryFacts) -> Path:
     directory = (
         facts.common_dir / "trellis" / "sessions"
-        if facts.common_dir is not None and not legacy
+        if facts.common_dir is not None
         else root / ".trellis" / ".runtime" / "sessions"
     )
     require_active_path(directory, root)
@@ -133,17 +176,32 @@ def sessions_directory(root: Path, facts: RepositoryFacts, *, legacy: bool = Fal
     return directory
 
 
-def session_path(root: Path, key: str, facts: RepositoryFacts, *, legacy: bool = False) -> Path:
+def session_path(root: Path, key: str, facts: RepositoryFacts) -> Path:
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", key):
         raise SessionBindingError("invalid_context_key")
-    path = sessions_directory(root, facts, legacy=legacy) / f"{key}.json"
+    path = sessions_directory(root, facts) / f"{key}.json"
     require_active_path(path, root)
     require_active_path(path, facts.invocation_root)
     return path
 
 
+def unsupported_checkout_session_paths(
+    facts: RepositoryFacts, key: str
+) -> tuple[Path, ...]:
+    """Locate obsolete checkout-local bindings without reading their payload."""
+    if facts.common_dir is None:
+        return ()
+    paths: list[Path] = []
+    for workspace in workspace_roots(facts):
+        path = workspace / ".trellis" / ".runtime" / "sessions" / f"{key}.json"
+        require_active_path(path, workspace)
+        require_active_path(path, facts.invocation_root)
+        if record_exists(path):
+            paths.append(path)
+    return tuple(sorted(paths))
+
+
 def record_exists(path: Path) -> bool:
-    """Only ENOENT means absent; permissions and dangling links are errors."""
     try:
         path.lstat()
         return True
@@ -151,8 +209,10 @@ def record_exists(path: Path) -> bool:
         return False
 
 
-def task_location(ref: str, workspace: Path, *, metadata: bool = True) -> tuple[str, Path]:
-    """Validate against the effective tasks root, retaining lexical project paths."""
+def task_location(
+    ref: str, workspace: Path, *, metadata: bool = True
+) -> tuple[str, Path]:
+    """Validate an explicit CLI TaskRef inside one live workspace."""
     from .paths import get_tasks_dir
 
     if not isinstance(ref, str) or not ref.strip():
@@ -164,79 +224,181 @@ def task_location(ref: str, workspace: Path, *, metadata: bool = True) -> tuple[
         normalized = ".trellis/" + normalized
     candidate = Path(normalized)
     if not candidate.is_absolute():
-        candidate = workspace / normalized if normalized.startswith(".trellis/") else get_tasks_dir(workspace) / normalized
+        candidate = (
+            workspace / normalized
+            if normalized.startswith(".trellis/")
+            else get_tasks_dir(workspace) / normalized
+        )
     try:
         require_active_path(candidate, workspace)
         require_active_path(candidate / "task.json", workspace)
         tasks = get_tasks_dir(workspace)
     except RetiredDataPathError as exc:
-        # A retired target is stale, unlike forbidden session storage, which
-        # must propagate the retirement exception before any content access.
         raise SessionBindingError(f"invalid_task_path: {exc}") from exc
     try:
         relative = candidate.resolve().relative_to(tasks.resolve())
     except ValueError as exc:
         raise SessionBindingError(f"invalid_task_path: {ref}") from exc
     if len(relative.parts) != 1 or relative.parts[0] == "archive":
-        raise SessionBindingError(f"invalid_task_path: not an active task: {ref}")
+        raise SessionBindingError(
+            f"invalid_task_path: not an active task: {ref}"
+        )
     lexical = tasks / relative
     if metadata:
         data, reason = read_json_checked(lexical / "task.json")
         if data is None:
-            raise SessionBindingError(f"task_metadata_{reason}: {lexical / 'task.json'}")
+            raise SessionBindingError(
+                f"task_metadata_{reason}: {lexical / 'task.json'}"
+            )
     return lexical.relative_to(workspace).as_posix(), lexical
 
 
-def read_record(path: Path, root: Path, facts: RepositoryFacts, *, legacy: bool = False, metadata: bool = True) -> SessionRecord:
+def read_record(path: Path, root: Path, facts: RepositoryFacts) -> SessionRecord:
     require_active_path(path, root)
     require_active_path(path, facts.invocation_root)
     data, reason = read_json_checked(path)
     if data is None:
         raise SessionBindingError(f"binding_{reason}: {path}")
-    versioned = "schema_version" in data
-    if not legacy or versioned:
-        if type(data.get("schema_version")) is not int or data["schema_version"] != 1:
-            raise SessionBindingError(f"unsupported_binding_schema: {path}")
-        common = data.get("repository_common_dir")
-        if common != (str(facts.common_dir) if facts.common_dir else None):
-            raise SessionBindingError(f"common_dir_mismatch: {path}")
-        declared = data.get("task_workspace_root")
-        if not isinstance(declared, str) or not Path(declared).is_absolute():
-            raise SessionBindingError(f"invalid_workspace: {path}")
-        workspace = validate_workspace(Path(declared), facts)
-        if legacy and workspace != root:
-            raise SessionBindingError(f"foreign_legacy_workspace: {path}")
+    if type(data.get("schema_version")) is not int or data["schema_version"] != 2:
+        raise SessionBindingError(
+            f"unsupported_binding_schema: {path}; run task.py start"
+        )
+    expected = {"schema_version", "task_id", "lifecycle_generation"}
+    if set(data) != expected:
+        raise SessionBindingError(f"invalid_binding_fields: {path}")
+    task_id = data.get("task_id")
+    if not isinstance(task_id, str) or not task_id.strip():
+        raise SessionBindingError(f"invalid_task_id: {path}")
+    try:
+        generation = lifecycle_generation(data, path)
+    except TaskIdentityError as exc:
+        raise SessionBindingError(str(exc)) from exc
+    return SessionRecord(path, root.resolve(), task_id, generation, data)
+
+
+def records(
+    facts: RepositoryFacts,
+    *,
+    key: str | None = None,
+    ignore_unsupported: bool = False,
+) -> list[SessionRecord]:
+    directory = sessions_directory(facts.invocation_root, facts)
+    if key is not None:
+        path = session_path(facts.invocation_root, key, facts)
+        paths = [path] if record_exists(path) else []
     else:
-        workspace = validate_workspace(root, facts)
-    ref = data.get("current_task")
-    if not isinstance(ref, str) or Path(ref).is_absolute():
-        raise SessionBindingError(f"invalid_task_ref: {path}")
-    canonical, _ = task_location(ref, workspace, metadata=metadata)
-    return SessionRecord(path, workspace, canonical, data, legacy)
-
-
-def records(facts: RepositoryFacts, *, key: str | None = None, metadata: bool = False) -> list[SessionRecord]:
-    """Preflight all selected stores before any lifecycle mutation."""
-    stores = [(facts.invocation_root, False)]
-    result = []
-    for root, legacy in stores:
-        directory = sessions_directory(root, facts, legacy=legacy)
-        if key is not None:
-            path = session_path(root, key, facts, legacy=legacy)
-            paths = [path] if record_exists(path) else []
-        else:
-            try:
-                paths = sorted(p for p in directory.iterdir() if p.suffix == ".json")
-            except FileNotFoundError:
-                paths = []
-        for path in paths:
-            result.append(read_record(path, root, facts, legacy=legacy or facts.common_dir is None, metadata=metadata))
-        if not legacy and facts.common_dir is not None:
-            # Versioned bindings also identify nested Trellis projects. Carry
-            # their suffixes into legacy cleanup when invoked from the top level.
-            roots = legacy_roots(facts, tuple(record.workspace for record in result))
-            stores.extend((workspace, True) for workspace in roots)
+        try:
+            paths = sorted(p for p in directory.iterdir() if p.suffix == ".json")
+        except FileNotFoundError:
+            paths = []
+    result: list[SessionRecord] = []
+    for path in paths:
+        try:
+            result.append(read_record(path, facts.invocation_root, facts))
+        except SessionBindingError as exc:
+            if ignore_unsupported and str(exc).startswith(
+                "unsupported_binding_schema:"
+            ):
+                continue
+            raise
     return result
+
+
+def _visible_identity_candidates(task_ref: str) -> set[str]:
+    candidates = {task_ref}
+    parts = task_ref.split("-", 2)
+    if len(parts) == 3 and all(part.isdigit() for part in parts[:2]):
+        candidates.add(parts[2])
+    return candidates
+
+
+def resolve_task_identity(
+    facts: RepositoryFacts, task_id: str, generation: int,
+    *, preferred_workspace: Path | None = None,
+) -> ResolvedTask:
+    """Resolve one session identity from current registered-worktree facts."""
+    folded = task_id.casefold()
+    exact: list[ResolvedTask] = []
+    generation_mismatches: list[tuple[Path, int]] = []
+    casefold_conflicts: list[tuple[Path, str]] = []
+    workspaces = workspace_roots(facts)
+    bound_workspace = _bound_task_workspace(facts, task_id, generation, workspaces)
+    for workspace in (bound_workspace,) if bound_workspace is not None else workspaces:
+        tasks = workspace / ".trellis" / "tasks"
+        require_active_path(tasks, workspace)
+        if not tasks.is_dir():
+            continue
+        for directory in sorted(tasks.iterdir()):
+            if directory.name == "archive":
+                continue
+            require_active_path(directory, workspace)
+            if not directory.is_dir():
+                continue
+            task_json = directory / "task.json"
+            visible_match = any(
+                value.casefold() == folded
+                for value in _visible_identity_candidates(directory.name)
+            )
+            try:
+                require_active_path(task_json, workspace)
+            except RetiredDataPathError:
+                if visible_match:
+                    raise SessionBindingError(
+                        f"invalid_task_metadata_path: {task_json}"
+                    )
+                continue
+            data, reason = read_json_checked(task_json)
+            if data is None:
+                if visible_match:
+                    raise SessionBindingError(
+                        f"task_metadata_{reason}: {task_json}"
+                    )
+                continue
+            candidate_id = data.get("id")
+            if not isinstance(candidate_id, str) or not candidate_id.strip():
+                if visible_match:
+                    raise SessionBindingError(f"invalid_task_id: {task_json}")
+                continue
+            if candidate_id.casefold() != folded:
+                continue
+            if candidate_id != task_id:
+                casefold_conflicts.append((directory, candidate_id))
+                continue
+            try:
+                candidate_generation = lifecycle_generation(data, task_json)
+            except TaskIdentityError as exc:
+                raise SessionBindingError(str(exc)) from exc
+            task_ref = directory.relative_to(workspace).as_posix()
+            resolved = ResolvedTask(workspace, task_ref, directory)
+            if candidate_generation == generation:
+                exact.append(resolved)
+            else:
+                generation_mismatches.append((directory, candidate_generation))
+    if casefold_conflicts:
+        detail = ", ".join(
+            f"{path}={value!r}" for path, value in casefold_conflicts
+        )
+        raise SessionBindingError(
+            f"task_id_casefold_collision: {task_id!r}: {detail}"
+        )
+    if len(exact) > 1 or (exact and generation_mismatches):
+        if preferred_workspace is not None:
+            local = [row for row in exact if row.workspace == preferred_workspace.resolve()]
+            if len(local) == 1:
+                return local[0]
+        raise SessionBindingError(f"ambiguous_task_identity: {task_id!r}")
+    if exact:
+        return exact[0]
+    if generation_mismatches:
+        detail = ", ".join(
+            f"{path} has generation {value}"
+            for path, value in generation_mismatches
+        )
+        raise SessionBindingError(
+            f"stale_lifecycle_generation: {task_id!r} expected {generation}: "
+            f"{detail}"
+        )
+    raise SessionBindingError(f"stale_task_identity: {task_id!r}")
 
 
 def write_record(path: Path, data: dict[str, Any], root: Path) -> None:
@@ -244,19 +406,25 @@ def write_record(path: Path, data: dict[str, Any], root: Path) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         if not write_json(path, data):
-            raise SessionBindingError(f"binding_write_failed: {path}; earlier changes may remain")
+            raise SessionBindingError(
+                f"binding_write_failed: {path}; earlier changes may remain"
+            )
     except OSError as exc:
-        raise SessionBindingError(f"binding_write_failed: {path}: {exc}; earlier changes may remain") from exc
+        raise SessionBindingError(
+            f"binding_write_failed: {path}: {exc}; earlier changes may remain"
+        ) from exc
 
 
 def remove_records(selected: list[SessionRecord]) -> int:
     removed = 0
-    for record in sorted(selected, key=lambda r: not r.legacy):
-        # Clear fallback first, so a failed deletion cannot expose older ownership.
-        require_active_path(record.path, record.workspace)
+    for record in selected:
+        require_active_path(record.path, record.root)
         try:
             record.path.unlink()
         except OSError as exc:
-            raise SessionBindingError(f"binding_clear_failed: {record.path}: {exc}; {removed} records already cleared") from exc
+            raise SessionBindingError(
+                f"binding_clear_failed: {record.path}: {exc}; "
+                f"{removed} records already cleared"
+            ) from exc
         removed += 1
     return removed

@@ -203,3 +203,15 @@ Fixed Fork schema-2 session adapter。五个成功 exit ID 保留，增加 `expl
 ReasonDTO。该 source package 不改变 active registry 32/142/102、六个 planned IDs、production 22/98
 及 installed/platform 投影；旧生产 predecessor 直到 E434 同图切换时才退休。`ARCH-GAP-011`
 仍 partial/open，D436/E434、#434 activation 和 Release matrix 未验证。
+
+`ARCH-CUR-044`（`source_confirmed` + `reviewed`）：#434 将七个 E434 package 与 #435/#436/#443
+和 #454 D443/D436 current interfaces 经组合 package-ready gate 后一并接入 production。registry
+为 34 active / 155 exits / 104 commands、零 planned，workflow 为 33 mandatory invokes / 153
+production exits；旧 Workspace/Publication/Finalizer/Merge/Restore selector 与混合边不再是 current。
+同一 active TaskId 可以顺序交付多次；Merge 只交付 nested Delivery result，Completion fresh 判断
+remaining scope；completed 后 Closure、Finish、Cleanup 依次处理。Finish 的 bookkeeping PR 不作为
+业务 Delivery，Cleanup 从保留 checkout 执行；Reactivate 新 generation 与历史 receipts 隔离，
+旧归档按来源 Issue 唯一验证。旧在途任务仅走 pinned-old 或逐项人工处置，不投影旧 DTO。
+`ADR-016`、`ARCH-DOM-029`、`ARCH-INT-032` 与 `EVD-042` 是当前配套 authority；前文
+`.66` 非激活计数及“待 #434 切图”段落只描述 predecessor。完整 Release matrix 与业务仓生产
+验证不属于此 current 实现证据。

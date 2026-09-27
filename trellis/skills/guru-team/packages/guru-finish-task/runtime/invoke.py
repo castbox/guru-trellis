@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import re
 import shutil
@@ -228,6 +229,7 @@ def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, 
     task["status"] = "completed"
     task["lifecycle_generation"] = task.get("lifecycle_generation", 0)
     task["completedAt"] = datetime.now(timezone.utc).date().isoformat()
+    retire_archived_sessions(root, public["task_id"], task["lifecycle_generation"])
     archive_dir.parent.mkdir(parents=True, exist_ok=True)
     shutil.move(str(task_dir), str(archive_dir))
     (archive_dir / "task.json").write_text(json.dumps(task, ensure_ascii=False, indent=2) + "\n")
@@ -250,6 +252,35 @@ def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, 
     if schema.is_file():
         validate_json(summary, schema, "finish_summary")
     (archive_dir / "finish-summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n")
+
+
+def retire_archived_sessions(root: Path, task_id: str, generation: int) -> None:
+    repository = inspect_repository(root)
+    if not (repository.common_dir / "trellis/sessions").exists():
+        return
+    init = root / ".trellis/scripts/common/__init__.py"
+    if not init.is_file():
+        raise CommandError("official_session_unavailable", "session", "Install the Fixed Fork session API before Finish archive projection.", 3)
+    package_name = "guru_finish_target_common_" + hashlib.sha256(str(root.resolve()).encode()).hexdigest()[:16]
+    spec = importlib.util.spec_from_file_location(
+        package_name, init, submodule_search_locations=[str(init.parent)]
+    )
+    if spec is None or spec.loader is None:
+        raise CommandError("official_session_unavailable", "session", "Load the Fixed Fork session API before Finish archive projection.", 3)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    try:
+        spec.loader.exec_module(module)
+    except ImportError as exc:
+        raise CommandError("official_session_unavailable", "session", "Install the Fixed Fork session API before Finish archive projection.", 3) from exc
+    active_task = getattr(module, "active_task", None)
+    if not all(callable(getattr(active_task, name, None)) for name in ("task_session_records", "clear_task_from_sessions")):
+        raise CommandError("official_session_unavailable", "session", "Install the Fixed Fork session API before Finish archive projection.", 3)
+    try:
+        selected = active_task.task_session_records(task_id, generation, root)
+        active_task.clear_task_from_sessions(task_id, generation, root, selected=selected)
+    except (OSError, ValueError) as exc:
+        raise CommandError("session_retirement_failed", "session", str(exc), 3) from exc
 
 
 def current_remote_head(root: Path, base_branch: str) -> str:

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import importlib
 import importlib.util
 import json
 import sys
@@ -42,20 +44,23 @@ def official_port(root: Path) -> Any:
     init = root / ".trellis/scripts/common/__init__.py"
     if not init.is_file():
         raise CommandError("stale_identity", "official_session", "Install the Fixed Fork schema-2 session API.", 3)
+    package_name = "guru_bind_target_common_" + hashlib.sha256(str(init.resolve()).encode()).hexdigest()[:16]
     spec = importlib.util.spec_from_file_location(
-        "guru_bind_target_common", init, submodule_search_locations=[str(init.parent)]
+        package_name, init, submodule_search_locations=[str(init.parent)]
     )
     if spec is None or spec.loader is None:
         raise CommandError("stale_identity", "official_session", "Load the Fixed Fork session API.", 3)
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    store = module.session_storage
+    store = importlib.import_module(f"{package_name}.session_storage")
     required = (
         "repository_facts", "session_path", "record_exists", "read_record",
         "write_record", "resolve_task_identity",
     )
     if not all(callable(getattr(store, name, None)) for name in required):
+        raise CommandError("stale_identity", "official_session", "Install the Fixed Fork schema-2 session API.", 3)
+    if not callable(getattr(module, "resolve_context_key", None)):
         raise CommandError("stale_identity", "official_session", "Install the Fixed Fork schema-2 session API.", 3)
     return SimpleNamespace(resolve_context_key=module.resolve_context_key, **{
         name: getattr(store, name) for name in required

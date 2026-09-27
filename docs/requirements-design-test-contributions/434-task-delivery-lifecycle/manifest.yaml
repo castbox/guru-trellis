@@ -5,10 +5,10 @@ issue_ref: "https://github.com/castbox/guru-trellis/issues/434"
 source_version: "current-main-0.6.17-guru.66"
 expected_current_version: "current-main-0.6.17-guru.66"
 candidate_successor_version: "current-main-0.6.17-guru.67"
-status: "task_current"
+status: "reviewed_promoted"
 implementation_status: "local_activation_candidate_complete"
-verification_status: "committed_review_findings_fixed_targeted_passed_fresh_gates_pending"
-authority_scope: "isolated_contribution"
+verification_status: "pre_promotion_review_and_targeted_passed_post_promotion_gates_pending"
+authority_scope: "reviewed_shared_promotion"
 architecture_impact: "architecture_impact"
 change_path: "target_native"
 contribution:
@@ -36,5 +36,5 @@ public_contracts:
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
 architecture_contribution: "docs/architecture/contributions/434-task-delivery-lifecycle.md"
-shared_current_write: false
-promotion_decision: "pending_review"
+shared_current_write: true
+promotion_decision: "reviewed_promoted_expected_66_to_67"

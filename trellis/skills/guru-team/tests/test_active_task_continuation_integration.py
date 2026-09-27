@@ -150,6 +150,96 @@ def markdown_table(body: str, heading: str) -> list[tuple[str, str]]:
 
 
 class ActiveTaskContinuationIntegrationTests(unittest.TestCase):
+    def test_phase_and_continuation_use_the_same_bound_task_worktree(self):
+        with tempfile.TemporaryDirectory(prefix="guru-bound-workflow-") as temporary:
+            primary = Path(temporary) / "primary"
+            linked = Path(temporary) / "linked"
+            primary.mkdir()
+            subprocess.run(["git", "init", "-q", "-b", "main", str(primary)], check=True)
+            workflow = primary / ".trellis/workflow.md"
+            workflow.parent.mkdir()
+            workflow.write_text("## Phase Index\nprimary phase\n## Phase 1: Plan\n"
+                                "[trellis-continuation]\nprimary continuation\n[/trellis-continuation]\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(primary), "add", ".trellis/workflow.md"], check=True)
+            subprocess.run(["git", "-C", str(primary), "-c", "user.name=Fixture",
+                            "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"], check=True)
+            subprocess.run(["git", "-C", str(primary), "worktree", "add", "-q", "-b", "linked", str(linked)], check=True)
+            (linked / ".trellis/workflow.md").write_text(
+                "## Phase Index\nlinked phase\n## Phase 1: Plan\n"
+                "[trellis-continuation]\nlinked continuation\n[/trellis-continuation]\n", encoding="utf-8")
+            task = linked / ".trellis/tasks/linked-task"
+            task.mkdir(parents=True)
+            (task / "task.json").write_text(json.dumps({"id": "linked-task", "status": "in_progress",
+                                                       "lifecycle_generation": 0}), encoding="utf-8")
+            sessions = primary / ".git/trellis/sessions"
+            sessions.mkdir(parents=True)
+            (sessions / "codex_bound.json").write_text(
+                json.dumps({"schema_version": 2, "task_id": "linked-task", "lifecycle_generation": 0}),
+                encoding="utf-8")
+            env = {key: value for key, value in os.environ.items()
+                   if key not in {"CODEX_THREAD_ID", "TRELLIS_CONTEXT_ID"}}
+            env["TRELLIS_CONTEXT_ID"] = "codex_bound"
+            for mode, expected in (("phase", "linked phase"), ("continuation", "linked continuation")):
+                result = subprocess.run(
+                    [sys.executable, str(REPO / ".trellis/scripts/get_context.py"), "--mode", mode],
+                    cwd=primary, env=env, text=True, capture_output=True, check=False,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(expected, result.stdout)
+                self.assertNotIn(f"primary {mode}", result.stdout)
+
+    def test_contextless_fallback_stays_in_its_registered_worktree(self):
+        with tempfile.TemporaryDirectory(prefix="guru-contextless-worktree-") as temporary:
+            primary = Path(temporary) / "primary"
+            linked = Path(temporary) / "linked"
+            primary.mkdir()
+            subprocess.run(["git", "init", "-q", "-b", "main", str(primary)], check=True)
+            (primary / ".trellis").mkdir()
+            (primary / ".trellis/workflow.md").write_text("# Fixture\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(primary), "add", ".trellis/workflow.md"], check=True)
+            subprocess.run(
+                ["git", "-C", str(primary), "-c", "user.name=Fixture",
+                 "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],
+                check=True,
+            )
+            subprocess.run(
+                ["git", "-C", str(primary), "worktree", "add", "-q", "-b", "linked", str(linked)],
+                check=True,
+            )
+            task = linked / ".trellis/tasks/linked-task"
+            task.mkdir(parents=True)
+            (task / "task.json").write_text(
+                json.dumps({"id": "linked-task", "status": "in_progress",
+                            "lifecycle_generation": 0}), encoding="utf-8",
+            )
+            sessions = primary / ".git/trellis/sessions"
+            sessions.mkdir(parents=True)
+            (sessions / "codex_linked.json").write_text(
+                json.dumps({"schema_version": 2, "task_id": "linked-task",
+                            "lifecycle_generation": 0}), encoding="utf-8",
+            )
+            code = (
+                "import json, sys; from pathlib import Path; "
+                f"sys.path.insert(0, {str(REPO / '.trellis/scripts')!r}); "
+                "from common.active_task import resolve_active_task; "
+                "task = resolve_active_task(Path.cwd(), allow_single_session_fallback=True, "
+                "allow_environment_context=False); "
+                "print(json.dumps({'task': task.task_path, 'source': task.source_type, "
+                "'error': task.error}))"
+            )
+            env = {key: value for key, value in os.environ.items()
+                   if key not in {"CODEX_THREAD_ID", "TRELLIS_CONTEXT_ID"}}
+            def resolve(worktree: Path) -> dict:
+                result = subprocess.run(
+                    [sys.executable, "-B", "-c", code], cwd=worktree, env=env,
+                    text=True, capture_output=True, check=True,
+                )
+                return json.loads(result.stdout)
+
+            self.assertEqual(resolve(primary), {"task": None, "source": "none", "error": None})
+            self.assertEqual(resolve(linked), {"task": ".trellis/tasks/linked-task",
+                                               "source": "session-fallback", "error": None})
+
     def test_exact_upstream_protocol_extracts_one_nonempty_guru_contract(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         lines = [line.strip() for line in workflow.splitlines()]
@@ -276,7 +366,8 @@ class ActiveTaskContinuationIntegrationTests(unittest.TestCase):
             sessions = fixture / ".trellis/.runtime/sessions"
             sessions.mkdir(parents=True)
             (sessions / "codex_continuation-fixture.json").write_text(
-                json.dumps({"current_task": ".trellis/tasks/active-continuation"}),
+                json.dumps({"schema_version": 2, "task_id": "active-continuation",
+                            "lifecycle_generation": 0}),
                 encoding="utf-8",
             )
 

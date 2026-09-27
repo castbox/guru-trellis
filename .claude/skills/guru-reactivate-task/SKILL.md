@@ -23,6 +23,14 @@ unique Git archive and old Finalizer-residue check when no C5 ledger exists.
 Other explicit-generation archives require the current Finish seal or exact
 manual Cleanup receipt. An empty old finish-summary Issue index does not
 exclude a candidate whose committed task source identifies the Issue.
+When an old archive has no structured or parseable source but its committed
+finish-summary indexes the Issue, the index is discovery evidence only. The AI
+reviews the source against the old ledger and Issue; a source correction must
+be applied before Reactivate can advance the generation.
+For old backfilled summaries, the unique Git addition identifies the archive
+lineage; the terminal summary is the latest committed version at the reviewed
+head and must match the working tree. A normal committed backfill revision does
+not invalidate that lineage.
 
 The executor keeps TaskId, moves the archived artifact into the active locator,
 increments the generation and enters planning. It composes the shared checkout,

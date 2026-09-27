@@ -155,3 +155,12 @@ Finish ResourceSealRefDTO 投影到 Cleanup；manual 与 machine-handoff 各有�
 `explicit_task_mode` 提供 TaskLifecycleDTO 最小 handoff，blocked 投影 ReasonDTO；TaskRef 由直接
 consumer fresh 派生。active selector、manifest、managed installed/platform bytes 及 workflow routers
 在 E434 前维持旧 production 合同，不用 D443 source tests 冒充平台分发或升级证明。
+
+`ARCH-INT-032`（#434 current）：七个 E434 packages、active registry/Interface selector、
+workflow graph、extension manifest、managed installed distribution 与声明的 Shared/Codex/Claude/Cursor
+入口以同一候选投影。Completion 选择 Interface 1.7 的两个 evidence-refresh authoring variants；
+旧 schema 1.4-1.6 保持历史字节身份。source/installed 的完整旧图、新图和混图负例、reapply/
+drift/零 sidecar 与代表性本地 clean install 均为 targeted gate；退休 managed script 仅在
+known bytes/manifest hash 匹配时删除，本地未知编辑保留 conflict。远端 marketplace 安装
+不是 #434 实际路径，完整多平台 Release matrix 仍由独立 owner 承担。此前 D443/D436
+非激活及 planned rows 的叙述仅是 `.65/.66` predecessor 状态。

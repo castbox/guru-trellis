@@ -11,6 +11,13 @@ outcome. Review the exact planning artifacts and acceptance before invocation;
 the recorder cannot approve a plan. A changed plan or base returns to its
 owner. The only task mutation is `planning -> in_progress`, with no legacy
 branch/path field written. Do not call the old `task.py start` status writer.
+Reread the official current session record for both activation and result
+recovery through the binding owner's current-branch checkout scope. A retained
+old checkout may contain the same TaskId and generation, but is not a second
+current route. A declared `session_bound` must still resolve to the exact TaskId,
+generation and TaskRef; explicit-task mode requires no available context key.
+If the record is missing, stale or switched to another task, stop for the
+session-binding owner instead of trusting the earlier session outcome.
 
 Use `scripts/invoke.sh --root <task-checkout> --input -` with the reviewed
 structured input. If output is lost after the transition, invoke the

@@ -1,7 +1,7 @@
 {
   "$schema": "../../schemas/skill-interface-1.4.schema.json",
   "schema_version": "1.4", "id": "guru-create-task", "name": "guru-create-task",
-  "description": "Create one TaskId/source in the reviewed checkout and establish initial branch/ownership, with read-only result recovery.",
+  "description": "Create one TaskId/source in the reviewed checkout and establish initial branch/ownership; recover the result without repeating creation or replacing another current session route.",
   "state": "active", "judgment_mode": "semantic",
   "modes": {"workflow":{"routing":"global_workflow","entry_precondition_ids":["reviewed_target","reviewed_base","acquisition"]},"standalone":{"routing":"direct_discovery","entry_precondition_ids":["reviewed_target","reviewed_base","acquisition"]}},
   "entry_preconditions": [

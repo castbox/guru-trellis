@@ -659,6 +659,7 @@ def main() -> int:
     p_create = subparsers.add_parser("create", help="Create new task")
     p_create.add_argument("title", help="Task title (required, non-empty)")
     p_create.add_argument("--slug", "-s", help="Task slug without the MM-DD date prefix")
+    p_create.add_argument("--task-id", help="Stable TaskId independent of the directory slug")
     p_create.add_argument("--creator", help="Explicit task creator")
     p_create.add_argument("--assignee", "-a", help="Explicit task assignee")
     p_create.add_argument("--priority", "-p", default="P2", help="Priority (P0-P3)")

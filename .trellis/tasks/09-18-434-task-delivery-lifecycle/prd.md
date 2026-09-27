@@ -13,7 +13,7 @@
 - GitHub Issue：`castbox/guru-trellis#434`
 - 合同版本：`2026-09-18-r4`
 - 子能力 Issue：#435、#436、#443
-- 2026-09-26 协调基线：`origin/main@bab8cfcd534692735b9240b25dd8bc63e40a5cb4`；Architecture/RDT current authority 为 `current-main-0.6.17-guru.66`。切换前 source registry 为 32 active / 149 exits / 102 commands，旧生产图为 22 invokes / 98 exits；这些计数只是历史快照。#434 本地激活候选为 34 active / 155 exits / 104 commands、33 invokes / 153 production exits，installed 与选定平台投影已同步；广义测试、本地 clean install、旧/混合图负例和两轮独立只读审核曾在文档修订前通过，当前候选仍需重新审核及正式 Phase 2、提交后 Branch Review 与共享 authority promotion，不能称作已验收激活。
+- 2026-09-26 协调基线：`origin/main@bab8cfcd534692735b9240b25dd8bc63e40a5cb4`；Architecture/RDT 当时的 current authority 为 `current-main-0.6.17-guru.66`。切换前 source registry 为 32 active / 149 exits / 102 commands，旧生产图为 22 invokes / 98 exits；这些计数只是历史快照。#434 本地激活候选为 34 active / 155 exits / 104 commands、33 invokes / 153 production exits，installed 与选定平台投影已同步；Architecture/RDT `.66 -> .67` 晋升已经完成。广义测试、本地 clean install、旧/混合图负例和两轮独立只读审核曾在晋升及后续修订前通过，当前候选仍需重新审核及正式 Phase 2、提交后完整 Branch Review，不能称作已验收交付。
 - 官方 Trellis 扩展约束：workflow 行为写入 canonical `.trellis/workflow.md`；preset/overlay 分发受控内容，不修改 Trellis 上游源码或全局安装。远端 marketplace 安装不是本任务的使用场景或验收项。
 
 ## Functional Requirements
@@ -101,7 +101,7 @@ Issue reopen 仅触发 fresh 核对，不自动激活。旧 `guru-restore-archiv
 - 切图前已开始且仍依赖旧 Restore 的任务，必须按其 pinned 旧版本完成，或由人工逐项处置。
 - 不建设通用旧链迁移状态机，不批量改写 archived task，不自动把不完整旧 archive 当成已正常结束 task。
 - 正常结束的旧格式 archive 仅能经新 Reactivate fresh 验证后承接。
-- 旧归档按来源 Issue 查找时，必须读取旧 finish-summary/index 及 archive Git 身份作候选发现，再验证唯一 TaskId/source；不能因目录名、Issue 状态或旧 Finalizer residue 猜测已正常结束。
+- 旧归档按来源 Issue 查找时，必须读取旧 finish-summary/index 及 archive Git 身份作候选发现，再验证唯一 TaskId/source；没有结构化来源、只在旧 summary/ledger 中记载 Issue 的归档必须先人工语义核对并修正来源，不能直接进入 Reactivate。不能因目录名、Issue 状态或旧 Finalizer residue 猜测已正常结束。
 - `castbox/ai-chat-roleplay-backend#154` 是在途旧链阻断实例：旧 PR #156 已合并、远端 head 与本地 reviewed head 不同，旧 Finalizer preview 可 prepared 而执行被 terminal PR 前置阻断。旧版本完成或逐项人工处置必须明确此差异；不得修改业务 task branch/mapping、复用已合并 PR、绕过 Finalizer 或将旧 DTO 伪装成 Delivery result。该业务仓 Test Application/Deployment 和上游 #52 P8 仍是独立外部阻塞，不在本 task 代执行。
 
 ### R8. 分发与升级一致性

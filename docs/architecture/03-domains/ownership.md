@@ -78,3 +78,12 @@ C3/C4/C5 与 Fixed Fork 分别持有 checkout、binding、ledger 和 task/sessio
 C2-C4 拥有 TaskId、live checkout、branch binding，C5 ledger 与 Fixed Fork adapter 分别拥有 resource
 ownership 和 schema-2 persistence。Bind 不从 TaskRef、路径、branch/HEAD 或旧 mapping 派生新 authority；
 manual recovery 只补官方 pointer。E434 才将新 owner 接入 production graph。
+
+`ARCH-DOM-029`（#434 current）：Delivery Review/Publish/Merge 单写每轮业务交付，Completion
+单写 whole-task 判定；Closure 单写 Issue action set，Finish 单写 bookkeeping/archive/seal，Cleanup
+单写同代 Guru-owned 资源移除，Reactivate 单写新代控制态。#434 只拥有全局边、精确 consumer
+投影与旧边退休，不复制 #435/#436/#443 或 D443/D436 的 step-local semantics。
+当前 Create/Commit/Change Context/Delivery/Publish/Merge/Reconcile 使用 TaskId/generation、
+common-dir branch binding 与 registered checkout，不从退休的 task metadata/path 构造身份。
+旧归档 source Issue 搜索先验证唯一 terminal TaskId；在途旧链不进入本图。
+前述 #435/#443 deferred 表述保留为 `.55/.57` predecessor history，不是 `.67` current。

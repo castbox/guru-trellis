@@ -173,7 +173,10 @@ class CurrentFinishGraphTests(unittest.TestCase):
         self.assertIn("archived_review_passed", text)
         self.assertIn("legacy-archived-review-disposition-required", text)
         self.assertIn("pinned compatible old version or per-case manual disposition", text)
-        self.assertIn("unique TaskId/source/terminal Git identity", text)
+        self.assertIn(
+            "Prove one TaskId, source, accepted scope and terminal Git identity",
+            " ".join(text.split()),
+        )
         for item in markers("skill-exit"):
             self.assertNotIn(item["skill"], RETIRED)
             self.assertNotIn(item["consumer"].get("id"), RETIRED)
@@ -187,8 +190,8 @@ class CurrentFinishGraphTests(unittest.TestCase):
             "A checkout path alone does not bind its task identity",
             "current repository and TaskId must be validated",
             "An unfinished task for the same Issue must resolve to its existing identity",
-            "no relevant active task or archived incomplete-closeout identity",
-            "discover candidates by source Issue",
+            "no relevant active task, archived incomplete-closeout identity, or normally finished original-task Reactivate candidate",
+            "discover relevant normally finished archives by source Issue or explicit original TaskId",
             "old Finalizer residue is not a normally completed archive",
         ):
             self.assertIn(phrase, " ".join(state.split()))

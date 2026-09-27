@@ -125,6 +125,8 @@
 - 同月 archive 更新、跨月旧 archive 删除+新 archive、旧格式正常 archive。
 - duplicate task、active/archive 双副本、旧 PR 复用、未正常结束 residue 均 fail closed。
 - schema 1 与旧 schema 2（task metadata 尚无 `lifecycle_generation`）正常完成的 archive 以当前基线中的唯一 Git 归档提交、TaskId/代次/终态及未完成 Finalizer residue 校验；有显式代次的新 schema 2 必须经过 C5 Finish seal/manual receipt。旧 `scope` 来源通过共享 `task_source()` 读取，审核后的 source correction 与后续事务恢复均需重验，不能把 `status=completed` 单独当作 seal。
+- 真实 #17 旧归档 `scope=workflow,preset,docs,companion-scripts` 没有可解析来源，但 committed `finish-summary.github.source_issues=[17]` 与旧 ledger 指向原 Issue。按 Issue 检索仅在同仓且旧格式终态候选上采纳该索引；缺失的结构化来源按未核准来源处理，必须先由 AI 核对并修正，再允许 Reactivate 增代。普通 `task_source()` 严格合同不变，修正和跨 checkout 的旧档源事实重验使用限定的 legacy 解析；定向 identity/source/Reactivate 55/55 和随后阻断测试 48/48 通过。连续零 finding 审核计数因该 P2 归零。
+- 真实 #17 的 summary 在 #100 backfill 新增后又经已提交的修订；旧终态校验保留唯一 summary 新增提交，但以 reviewed head 中最新已提交 summary 与 worktree 的一致性判断终态，不冻结在首次新增字节。#17 只读唯一终态验证通过；新增回归和 identity/Reactivate 定向集 49/49 通过。该修复后的完整组合 gate 和两轮独立审核仍需重跑。
 
 ## Step 8. Atomicity And Migration Tests
 
@@ -245,6 +247,20 @@
 
 2026-09-27 本候选完整 installer/graph 重跑 118/118，Merge/Completion/Finish/Issue/runtime 定向 132/132，source/installed 34 active/104 commands、dogfood drift、task validate 与 diff check 通过，最终没有受管 `.new/.bak`。两位互不依赖的全新只读 reviewer 串行覆盖 `origin/main...d7f57ce1` 加全部未提交/未跟踪 #434 改动，连续两轮均无 P0-P3；此结果只证明提交前候选修复，不替代最新内容身份的正式 Phase 2、Task Commit、独立 committed full-range Branch Review。旧 #154 仍限定 pinned-old 或逐项人工处置，完整多平台 Release matrix 仍由专门 gate 承担。
 
+2026-09-27 Fork PR #11 合入后锁定 `main@645c817e4830a44564b0dc43b2adf75e306b1e81`（tree `0845f24e9f22cbca524370887166e183b454c147`，成功 main CI `36312060945`）；#434 `origin/main` 仍为 `bab8cfcd534692735b9240b25dd8bc63e40a5cb4`。按新 Fork CLI 更新官方 session resolver，本地 Codex clean/focused 样本两次 update/reapply 及 session binding 验证通过，不包含远端 marketplace。现行 readiness fixture 的 `ready` consumer 修正为 `guru-task-intake-router`，4.0 公开 DTO 断言对齐后，真实安装初装/reapply 集成 1/1 通过；当前 #434 图/文案 28/28，source validator 34 active/104 commands、installed validator 33 invokes/153 production exits、零 sidecar 通过。广义 installer discover 曾报的 Stage 0 同源 `semantic_review.ai_review_gate` 失败源于旧 fixture 仍指向已退役 Workspace consumer；旧 Workspace/Finalizer/parallel-Finish 端到端夹具及旧 #154 在途链只属于 pinned-old 或逐案人工处置，不恢复退役 API，也不将这份旧 suite 的失败记为新图 pass。当前候选的 installer/组合 gate、两轮全新只读审核及正式 Phase 2/提交后 Branch Review 仍需刷新。
+
+2026-09-27 首位全新只读审核发现 P1，连续无问题计数归零：Finish 归档前未清除 schema-2 session pointer，使随后 `get_context` 在按 Issue 检索旧归档之前报 `stale_task_identity`。canonical Finish 已在搬移 task 前调用 Fixed Fork 的精确 TaskId/代次 session API；官方 API 或方法缺失时阻断并保留 active task，其他 task pointer 不受影响。未封存的投影归档属于原 Finish reentry/逐案人工处置，不进入 Reactivate 或替代 task 创建。T434-37 定向 4 项通过；安装投影、组合 gate、连续两轮全新只读审核及正式 Phase 2/提交后 Branch Review 尚待刷新。
+
+投影第一次生成 6 个 Finish 旧版 `.bak` 并报告 conflict；逐一确认是本轮改动的 preimage 后只清除此 6 个 sidecar，第二次 apply `ok`、零 sidecar，canonical/dogfood workflow 字节一致且 drift pass。Finish 55/55、Cleanup 20/20、Reactivate 35/35、现行图/Finish/续接 97/97、runtime 真实目录 88 pass/1 explicit skip、installer/upgrade/reapply 99/99，source 34 active/104 commands、installed validator、task validate 与 diff check 均通过。另一个本地入口宽测 149 pass/2 skip/1 fail；唯一失败 `test_installed_closeout_owner_boundary::test_fixture_uses_installed_entries_without_eval_adapter` 仍强制旧 `guru-create-task-workspace`、Publication/Finalizer 六步链，属 pinned-old，不恢复退役 API 或计入现行 graph pass。默认 pytest 收集的 fixture 同名模块与跨包 `runtime` 导入冲突已用真实目录排除和包独立进程解决；这些收集错误并非产品断言。连续两轮全新只读审核计数仍为零，正式 Phase 2/提交后 Branch Review 待新候选执行。
+
+2026-09-27 第二位新鲜审核发现无 context key 的唯一 session fallback 会从另一注册工作树借用 task，连续无 finding 计数仍为零。Fork PR #12 的精确修复已合入 `castbox/Trellis/main@80ffa4efb6040572c15e7597eb1ecc3732096c68`（tree `69ab91d009857735f08dffdf8190accf820da71d`，PR/main CI 成功，main run `36321117001`）；本地 2304/2304。#434 新增 T434-38 linked-worktree 安装侧回归，旧 resolver 预期失败，新官方模板通过；source lock、两处投影及 `.67` active RDT/Architecture 来源已对齐。固定 Fork CLI 同版本 update 保留原有用户 config，受管 active_task 模板与构建字节一致；两次 preset apply、dogfood drift、零 sidecar。当前候选：生命周期 197 pass/2 skip、图/集成 91 pass/1 skip、installer/upgrade 98/98、readiness 初装/reapply 1/1、#434 29/29、Fork preparation 3/3；Delivery Review 13/13、Publish 20/20、Merge 24/24、Review Branch 35/35、Reconcile 44/44、Check 29/29、Commit 27/27、Architecture 26/26、RDT 9/9、两个资格包 23/23 与 24/24。source/installed validator、代表性本地 clean init + preset 两次 apply、workflow/runtime 字节 parity、task validate 与 diff check 通过。一次 installer 子目录调用缺仓库根 runtime、跨 package pytest 同名 `common` 收集冲突已按正确入口/独立进程重跑；不计为产品通过。独立连续两轮审核与正式 Phase 2/提交后 Branch Review 尚待最新内容身份执行；不执行 marketplace 或完整多平台 Release matrix。
+
+2026-09-27 首位全新只读审核发现 current RDT/Architecture installed 索引仍为 `.66` 和旧 Fork SHA（P2），连续无 finding 计数归零。两处索引现对齐 `.67`、34/155/104、33/153 与 `80ffa4ef`；canonical/dogfood data contract、design manifest/source lock 的一致性纳入 #434 回归。定向 38/38，preset reapply 后 30/30、dogfood drift、diff check、零 sidecar 通过。两轮全新只读审核须从零开始；正式 Phase 2、Task Commit 与提交后的完整 Branch Review 仍待本候选执行。
+
+下一位全新只读审核发现 Test SSOT 入口 README 将 current 验收截断于 `T434-36`（P3），遗漏既有 `T434-37..38` 的 Finish session retirement 和无 key 跨工作树隔离。入口索引已与 `.67` test-plan/strategy/traceability 对齐到 `T434-38`，增加索引回归；两轮连续无 finding 再次从零开始。
+
+2026-09-27 新一位全新只读审核发现两项正常路径问题，连续无 finding 计数仍为零：显式跨 worktree session 的 `phase` 取任务 checkout、`continuation` 却取调用 checkout（P2）；不同 TaskId/日期可合法重用 slug，但官方 create 按 slug 查旧 TaskId 冲突（P3）。#434 `get_context.py` 两种 mode 统一到任务 checkout 并补双版本 workflow 实跑夹具。Fork PR #13 提供可选 `task.py create --task-id`，默认保持 slug，显式 ID 从唯一性预检到首次 task.json 写入均一致；合并 `main@622179c2b47a022134f867433518a399f7f183db`，tree `e740f6b7c4de7791691e8f1d2d1d139dee7568d3`，成功 main CI `36326723322`。Fork 提交钩子 2305/2305、build/typecheck/lint；#434 两份官方脚本与模板字节一致，Create Task 传入/验证审核 TaskId，定向 33 pass/1 skip。首次 preset apply 仅生成本轮旧 Create Task runtime 的一个受管 `.bak`，逐行核对后清除此精确 sidecar，二次 apply `ok`、source/installed、dogfood drift、零 sidecar。新候选仍须组合 gate、连续两轮全新只读审核和正式 Phase 2/提交后 Branch Review；marketplace/完整 Release matrix 不进入本次验收。
+
 - `trellis/workflows/guru-team/` 与 `.trellis/workflow.md`
 - `trellis/skills/guru-team/` 与 `.trellis/guru-team/skills/`
 - `trellis/presets/guru-team/`、extension manifests、overlay/platform projections
@@ -253,6 +269,33 @@
 - `docs/requirements-design-test-contributions/434-task-delivery-lifecycle/`
 - `docs/architecture/contributions/`、必要 ADR 和 promoted authority files
 - graph、installation 与 integration 的直接 tests/fixtures
+
+2026-09-27 首位全新只读审核又发现通用 `task.py start` 被 installed `trellis-meta`
+列为 Guru task 常用激活命令，以及官方显式 `--task-id` 仅检空而可创建 Guru 不接受的
+TaskId（两项 P2），连续零 finding 计数归零。Fork PR #14 合入
+`main@9d14daf4f92d28ad38b7ceb8eb0817b76aca8794`，tree
+`356035b50e35302ea7542abcbc84b89674f60a7f`，成功 main CI `36329643951`；
+官方 create 在写入前执行 control-ref-safe 校验，普通 Trellis start 行为保留，
+Guru installed `trellis-meta` 三平台说明改为 Activation owner。Fork 非 marketplace
+CLI 2277/2277、定向 492/492、build/typecheck/lint 通过；#434 本地 2 项定向
+通过。第一次 CLI `update --skip-all` 因既有 `get_context.py` retirement conflict
+拒绝且未写入，未以 `--force` 覆盖已审查的 Guru 脚本；三份 pristine 文档及 v2
+模板 hash 直接按合并模板精确投影，TaskId 脚本仅合并增量。组合 gate、两轮全新
+只读审核与正式 Phase 2/committed Branch Review 尚未代表当前候选。
+
+2026-09-28 第一位全新只读审核发现固定 Fork `continuation` 仍从调用 checkout
+读取 workflow（P1），而 current Requirements 入口仍给出不支持 `--task-id` 的旧 pin
+（P2）；连续零 finding 计数归零。Fork PR #15 合并为
+`castbox/Trellis/main@71f43cd8955c676f8ab8215216f61376fe9c01fe`，tree
+`c2b523b40a3bd59a715d26017cf61bfef47b3b0a`，main CI `36332562361`
+成功。官方模板与 dogfood `get_context.py` 将 `phase`、`continuation` 一起切到
+绑定任务 checkout，跨 worktree 两组定向 37/37、提交钩子全量 CLI 2306/2306、
+core 422 pass/1 skip、build/typecheck/lint 通过。#434 两份 source lock、current
+Requirements/Design/Architecture 与安装入口统一新 SHA；显式 Fork checkout 比对
+锁定 tree 与 installed `get_context.py` 字节，当前 24/24、source/installed 和
+dogfood drift 通过且零 sidecar。组合 gate、连续两轮全新审核、正式 Phase 2 和提交后
+完整 Branch Review 仍待本候选执行。marketplace 不在使用路径，完整多平台 Release
+matrix 仍归专门 gate。
 
 ## Stop Conditions
 

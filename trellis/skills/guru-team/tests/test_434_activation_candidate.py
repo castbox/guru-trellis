@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import os
 import re
 import subprocess
@@ -11,6 +12,7 @@ import unittest
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
+import yaml
 
 
 SKILLS = Path(__file__).resolve().parents[1]
@@ -72,6 +74,94 @@ class ActivationCandidateTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("Ran 6 tests", result.stderr)
+
+    def test_installed_fixed_fork_session_port_supports_task_identity(self) -> None:
+        runtime = PACKAGES / "guru-bind-task-session/runtime/invoke.py"
+        spec = importlib.util.spec_from_file_location("guru_434_installed_session_probe", runtime)
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        port = module.official_port(ROOT)
+        for name in ("resolve_context_key", "repository_facts", "resolve_task_identity",
+                     "session_path", "record_exists", "read_record", "write_record"):
+            self.assertTrue(callable(getattr(port, name, None)), name)
+
+    def test_current_authority_indexes_bind_exact_fixed_fork_source(self) -> None:
+        lock = read_json(ROOT / "trellis/presets/guru-team/source/trellis-source.json")
+        self.assertEqual(read_json(ROOT / ".trellis/guru-team/trellis-source.json"), lock)
+        manifest = yaml.safe_load(
+            (ROOT / "docs/design/versions/current-main-0.6.17-guru.67/manifest.yaml")
+            .read_text(encoding="utf-8")
+        )
+        self.assertEqual(manifest["framework_source"], f"castbox/Trellis@{lock['commit']}")
+        for relative in (
+            "docs/requirements/README.md",
+            "docs/requirements/versions/current-main-0.6.17-guru.67/requirement-main.md",
+            "docs/design/versions/current-main-0.6.17-guru.67/design-main.md",
+            ".trellis/spec/docs/requirements-design-test-ssot.md",
+            ".trellis/spec/architecture/baseline-usage.md",
+            "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+            ".trellis/spec/workflow/data-contracts.md",
+        ):
+            with self.subTest(path=relative):
+                text = (ROOT / relative).read_text(encoding="utf-8")
+                self.assertIn(lock["commit"], text)
+                if relative.endswith("design-main.md"):
+                    self.assertIn(f"D434-00`：当前 Fork source lock 为 `castbox/Trellis@{lock['commit']}", text)
+                else:
+                    self.assertNotIn("eb370008c7689d4e272ae626bd002190ecbb3296", text)
+                    self.assertNotIn("645c817e4830a44564b0dc43b2adf75e306b1e81", text)
+                    self.assertNotIn("80ffa4efb6040572c15e7597eb1ecc3732096c68", text)
+
+    def test_fixed_fork_context_template_matches_installed_script(self) -> None:
+        checkout = os.environ.get("GURU_FIXED_TRELLIS_CHECKOUT")
+        if not checkout:
+            self.skipTest("set GURU_FIXED_TRELLIS_CHECKOUT for exact fixed-Fork source proof")
+        lock = read_json(ROOT / "trellis/presets/guru-team/source/trellis-source.json")
+        tree = subprocess.run(
+            ["git", "-C", checkout, "rev-parse", f"{lock['commit']}^{{tree}}"],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        self.assertEqual(tree, lock["tree"])
+        source = subprocess.run(
+            ["git", "-C", checkout, "show",
+             f"{lock['commit']}:packages/cli/src/templates/trellis/scripts/get_context.py"],
+            check=True, capture_output=True,
+        ).stdout
+        self.assertEqual(source, (ROOT / ".trellis/scripts/get_context.py").read_bytes())
+        self.assertIn(b'options.mode in {"phase", "continuation"}', source)
+
+    def test_current_test_index_includes_latest_acceptance_cases(self) -> None:
+        index = (ROOT / "docs/test/README.md").read_text(encoding="utf-8")
+        self.assertIn("`T434-01..39`", index)
+        self.assertNotIn("`T434-01..36`", index)
+
+    def test_official_task_id_and_generic_start_guidance_match_guru_activation(self) -> None:
+        source = ROOT / ".trellis/scripts/common/task_store.py"
+        self.assertIn("TASK_ID_PATTERN.fullmatch(task_id)", source.read_text(encoding="utf-8"))
+        for platform in (".agents", ".claude", ".cursor"):
+            with self.subTest(platform=platform):
+                guide = (ROOT / platform / "skills/trellis-meta/references/local-architecture/task-system.md").read_text(encoding="utf-8")
+                self.assertIn("Guru Team uses `guru-activate-task` instead", guide)
+                commands = guide.split("## Common Commands", 1)[1].split("```bash", 1)[1].split("```", 1)[0]
+                self.assertNotIn("task.py start", commands)
+        with tempfile.TemporaryDirectory(prefix="guru-434-task-id-") as temporary:
+            root = Path(temporary)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            (root / ".trellis").mkdir()
+            (root / ".trellis/scripts").symlink_to(ROOT / ".trellis/scripts")
+            for task_id in ("issue 434", "issue.", "issue.lock", "issue..434"):
+                result = subprocess.run(
+                    [sys.executable, str(ROOT / ".trellis/scripts/task.py"), "create", "candidate",
+                     "--description", "TaskId fixture", "--slug", "candidate", "--task-id", task_id,
+                     "--creator", "test", "--assignee", "test", "--no-start"],
+                    cwd=root, capture_output=True, text=True,
+                    env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}, check=False,
+                )
+                self.assertNotEqual(result.returncode, 0, (task_id, result.stdout, result.stderr))
+                self.assertIn("--task-id", result.stderr)
+                self.assertFalse(any((root / ".trellis/tasks").glob("*/task.json")))
 
     def test_candidate_adr_id_does_not_reuse_accepted_decision(self) -> None:
         seen: dict[str, Path] = {}

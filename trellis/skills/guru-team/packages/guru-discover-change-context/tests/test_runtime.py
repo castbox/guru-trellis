@@ -63,7 +63,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
   with tempfile.TemporaryDirectory() as name:
    case=Path(name);repo=case/"repo";repo.mkdir()
    guru=repo/".trellis/guru-team";installed_package=guru/"skills/packages"/PACKAGE.name
-   ignore=shutil.ignore_patterns("__pycache__","*.pyc","*.pyo")
+   ignore=shutil.ignore_patterns("__pycache__",".pytest_cache","*.pyc","*.pyo")
    shutil.copytree(PACKAGE,installed_package,ignore=ignore)
    shutil.copytree(SKILLS/"consumers",guru/"skills/consumers",ignore=ignore)
    shutil.copytree(SKILLS/"schemas",guru/"skills/schemas",ignore=ignore)

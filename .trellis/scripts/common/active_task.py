@@ -2,7 +2,8 @@
 """Session-scoped active task resolution.
 
 The pointer is keyed by session under the Git common directory. Non-Git
-projects keep local storage; legacy records are read without promotion.
+projects keep local storage; obsolete checkout-local records are only detected
+so callers can require an explicit rebind.
 """
 
 from __future__ import annotations
@@ -13,16 +14,18 @@ import re
 import sys
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from .io import read_json as _io_read_json
 from .history_paths import RetiredDataPathError, require_active_path
 from .session_storage import (
-    SessionBindingError, read_record, record_exists, records, remove_records,
-    repository_facts, session_path, task_location, validate_workspace, write_record,
+    SessionBindingError, SessionRecord, read_record, record_exists, records, remove_records,
+    repository_facts, resolve_task_identity, session_path, sessions_directory,
+    task_location, unsupported_checkout_session_paths, validate_workspace,
+    write_record,
 )
+from .task_utils import TaskIdentityError, read_task_identity
 
 DIR_WORKFLOW = ".trellis"
 DIR_TASKS = "tasks"
@@ -43,26 +46,6 @@ _SESSION_KEYS = ("session_id", "sessionId", "sessionID")
 _CONVERSATION_KEYS = ("conversation_id", "conversationId", "conversationID")
 _TRANSCRIPT_KEYS = ("transcript_path", "transcriptPath", "transcript")
 _NESTED_KEYS = ("input", "properties", "event", "hook_input", "hookInput")
-_KNOWN_PLATFORMS = {
-    "claude",
-    "codex",
-    "cursor",
-    "opencode",
-    "gemini",
-    "droid",
-    "qoder",
-    "codebuddy",
-    "kiro",
-    "copilot",
-    "pi",
-    "trae",
-    "grok",
-    "kimi",
-    "zcode",
-    "snow",
-    "dsh",
-}
-
 # Every name below records how it was checked. Do NOT add a name by analogy
 # with a neighbour: a 2026-08-05 audit of all 21 platforms found 12 of the 21
 # declared names had never existed anywhere — they were pattern-guessed from a
@@ -610,17 +593,25 @@ def resolve_active_task(
         if context_key:
             path = session_path(root, context_key, facts)
             if record_exists(path):
-                record = read_record(path, root, facts, legacy=facts.common_dir is None, metadata=False)
+                record = read_record(path, root, facts)
             else:
-                candidates = records(facts, key=context_key, metadata=False)
-                if len(candidates) > 1:
-                    raise SessionBindingError(f"ambiguous_legacy_binding: {context_key}")
-                record = candidates[0] if candidates else None
+                unsupported = unsupported_checkout_session_paths(
+                    facts, context_key
+                )
+                if unsupported:
+                    raise SessionBindingError(
+                        "unsupported_binding_schema: "
+                        f"{unsupported[0]}; run task.py start"
+                    )
             if record is not None:
-                _, resolved = task_location(record.task_ref, record.workspace)
-                return ActiveTask(record.task_ref, "session", context_key,
+                resolved = resolve_task_identity(
+                    facts, record.task_id, record.lifecycle_generation,
+                    preferred_workspace=root,
+                )
+                return ActiveTask(resolved.task_ref, "session", context_key,
                                   invocation_root=root, repository_common_dir=facts.common_dir,
-                                  task_workspace_root=record.workspace, resolved_task_path=resolved)
+                                  task_workspace_root=resolved.workspace,
+                                  resolved_task_path=resolved.task_path)
             # A known key never falls through to somebody else's session.
         elif allow_single_session_fallback:
             return _resolve_single_session_fallback(root) or ActiveTask(
@@ -630,10 +621,9 @@ def resolve_active_task(
     except RetiredDataPathError:
         raise
     except (ValueError, OSError, RuntimeError) as exc:
-        return ActiveTask(record.task_ref if record else None, "session" if context_key else "none", context_key, True,
+        return ActiveTask(None, "session" if context_key else "none", context_key, True,
                           invocation_root=root,
                           repository_common_dir=facts.common_dir if facts else None,
-                          task_workspace_root=record.workspace if record else None,
                           error=str(exc) or type(exc).__name__)
 
 
@@ -644,8 +634,8 @@ def _resolve_single_session_fallback(repo_root: Path) -> ActiveTask | None:
     sub-agents). Returns None if 0 or ≥2 session files are present — refuses
     to pick across windows so 04-21's multi-session isolation contract holds.
     """
-    # Compatibility is checkout-local, including when the common store exists.
-    directory = _runtime_sessions_dir(repo_root)
+    facts = repository_facts(repo_root)
+    directory = sessions_directory(repo_root, facts)
     files = sorted(directory.glob("*.json")) if directory.is_dir() else []
     for file in files:
         require_active_path(file, repo_root)
@@ -653,45 +643,17 @@ def _resolve_single_session_fallback(repo_root: Path) -> ActiveTask | None:
         return None
 
     session_file = files[0]
-    facts = repository_facts(repo_root)
-    # A common record supersedes this legacy record even for child compatibility.
-    common_path = session_path(repo_root, session_file.stem, facts)
-    if facts.common_dir is not None and record_exists(common_path):
-        record = read_record(common_path, repo_root, facts)
-        if record.workspace != repo_root.resolve():
-            return None
-    else:
-        record = read_record(session_file, repo_root, facts, legacy=True)
-    _, resolved = task_location(record.task_ref, record.workspace)
-    return ActiveTask(record.task_ref, "session-fallback", session_file.stem,
+    record = read_record(session_file, repo_root, facts)
+    resolved = resolve_task_identity(
+        facts, record.task_id, record.lifecycle_generation,
+        preferred_workspace=repo_root,
+    )
+    if resolved.workspace != repo_root.resolve():
+        return None
+    return ActiveTask(resolved.task_ref, "session-fallback", session_file.stem,
                       invocation_root=repo_root, repository_common_dir=facts.common_dir,
-                      task_workspace_root=record.workspace, resolved_task_path=resolved)
-
-
-def _utc_now() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
-def _context_metadata(
-    platform_input: dict[str, Any] | None,
-    platform: str | None,
-    context_key: str | None = None,
-) -> dict[str, Any]:
-    data = _as_dict(platform_input) or {}
-    platform_name = _detect_platform(data, platform)
-    if platform_name == "session" and context_key:
-        prefix = context_key.split("_", 1)[0]
-        if prefix in _KNOWN_PLATFORMS:
-            platform_name = prefix
-    metadata: dict[str, Any] = {
-        "platform": platform_name,
-        "last_seen_at": _utc_now(),
-    }
-    for key in (*_SESSION_KEYS, *_CONVERSATION_KEYS, *_TRANSCRIPT_KEYS):
-        value = _lookup_string(data, (key,))
-        if value:
-            metadata[key] = value
-    return metadata
+                      task_workspace_root=resolved.workspace,
+                      resolved_task_path=resolved.task_path)
 
 
 def set_active_task(
@@ -714,10 +676,24 @@ def set_active_task(
         canonical, resolved = task_location(task_path, workspace)
     except SessionBindingError:
         return None
+    try:
+        identity = read_task_identity(resolved / "task.json", workspace)
+    except TaskIdentityError as exc:
+        raise SessionBindingError(str(exc)) from exc
+    selected = resolve_task_identity(
+        facts, identity.task_id, identity.lifecycle_generation,
+        preferred_workspace=repo_root,
+    )
+    if selected.task_path != resolved or selected.workspace != workspace:
+        raise SessionBindingError(
+            f"ambiguous_task_identity: explicit target cannot be selected: {resolved}"
+        )
     context_path = session_path(repo_root, context_key, facts)
-    context = _context_metadata(platform_input, platform, context_key)
-    context.update(schema_version=1, repository_common_dir=str(facts.common_dir) if facts.common_dir else None,
-                   task_workspace_root=str(workspace), current_task=canonical, current_run=None)
+    context = {
+        "schema_version": 2,
+        "task_id": identity.task_id,
+        "lifecycle_generation": identity.lifecycle_generation,
+    }
     write_record(context_path, context, repo_root)
     return ActiveTask(canonical, "session", context_key, invocation_root=facts.invocation_root,
                       repository_common_dir=facts.common_dir, task_workspace_root=workspace,
@@ -753,43 +729,35 @@ def clear_active_task(
         raise SessionBindingError(previous.error)
     if not previous.task_path or not previous.context_key:
         return previous
-    # Remove all shadowed legacy records for this key, even an older assignment.
     remove_records(records(repository_facts(repo_root), key=previous.context_key))
     return previous
 
 
-def clear_task_from_sessions(task_path: str, repo_root: Path) -> int:
-    """Delete all session runtime files that point at a task."""
-    workspace = repo_root.resolve()
-    target, _ = task_location(task_path, workspace, metadata=False)
-    all_records = records(repository_facts(workspace))
-    matched = [r for r in all_records if r.workspace == workspace and r.task_ref == target]
-    keys = {r.path.stem for r in matched if not r.legacy}
-    selected = [r for r in all_records if r in matched or (r.legacy and r.path.stem in keys)]
+def task_session_records(
+    task_id: str, lifecycle_generation: int, repo_root: Path
+) -> list[SessionRecord]:
+    """Preflight and select sessions for one exact lifecycle identity."""
+    all_records = records(
+        repository_facts(repo_root), ignore_unsupported=True
+    )
+    return [
+        record for record in all_records
+        if record.task_id == task_id
+        and record.lifecycle_generation == lifecycle_generation
+    ]
+
+
+def clear_task_from_sessions(
+    task_id: str,
+    lifecycle_generation: int,
+    repo_root: Path,
+    *,
+    selected: list[SessionRecord] | None = None,
+) -> int:
+    """Delete schema-2 sessions for one exact lifecycle identity."""
+    if selected is None:
+        selected = task_session_records(task_id, lifecycle_generation, repo_root)
     return remove_records(selected)
-
-
-def repoint_task_in_sessions(old_path: str, new_path: str, repo_root: Path) -> int:
-    """Move every session pointer from `old_path` to `new_path`.
-
-    Rename is the one lifecycle step where the task survives under a different
-    name, so clearing the pointers (what archive does) would be wrong: the user
-    would silently lose their active task and have to run `task.py start`
-    again to get context injection back. Repointing keeps the session valid
-    across the rename.
-    """
-    # The source no longer exists after the move; validate its containment
-    # without requiring the old metadata to remain on disk.
-    workspace = repo_root.resolve()
-    all_records = records(repository_facts(workspace))
-    target, _ = task_location(old_path, workspace, metadata=False)
-    replacement, _ = task_location(new_path, workspace)
-    selected = [r for r in all_records
-                if r.workspace == workspace and r.task_ref == target]
-    for record in selected:
-        context = dict(record.data, current_task=replacement)
-        write_record(record.path, context, workspace)
-    return len(selected)
 
 
 def get_current_task_source(

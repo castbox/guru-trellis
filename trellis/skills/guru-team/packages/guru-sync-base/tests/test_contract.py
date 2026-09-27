@@ -28,28 +28,18 @@ class BaseSyncPackageContractTests(unittest.TestCase):
         spec.loader.exec_module(module)
         return module
 
-    def load_workspace_prepare(self):
-        package_runtime = self.package.parent / "guru-create-task-workspace" / "runtime"
-        shared_runtime = self.package.parents[1]
-        previous_common = sys.modules.pop("common", None)
-        sys.path.insert(0, str(shared_runtime))
-        sys.path.insert(0, str(package_runtime))
-        try:
-            spec = importlib.util.spec_from_file_location(
-                "guru_create_task_workspace_test_prepare",
-                package_runtime / "prepare.py",
-            )
-            self.assertIsNotNone(spec)
-            self.assertIsNotNone(spec.loader)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            return module
-        finally:
-            sys.path.remove(str(package_runtime))
-            sys.path.remove(str(shared_runtime))
-            sys.modules.pop("common", None)
-            if previous_common is not None:
-                sys.modules["common"] = previous_common
+    def assert_current_base(self, checkout: Path, provenance: dict, selected: str) -> None:
+        def rev(ref: str) -> str:
+            return subprocess.check_output(["git", "-C", str(checkout), "rev-parse", ref], text=True).strip()
+
+        self.assertEqual(provenance["selected_base"], selected)
+        head = rev("HEAD")
+        self.assertEqual(head, rev(f"refs/heads/{selected}"))
+        self.assertEqual(head, rev(f"refs/remotes/origin/{selected}"))
+        self.assertEqual(
+            (provenance["decision_head"], provenance["local_base_head"], provenance["remote_base_head"]),
+            (head, head, head),
+        )
 
     def test_identity_modes_stages_runtime_and_exits(self) -> None:
         self.assertEqual(self.interface["id"], "guru-sync-base")
@@ -386,14 +376,7 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             config.parent.mkdir(parents=True)
             config.write_text("base_branch: main\nbase_branch_candidates:\n  - dev\n")
             explicit_against_config = invoke("release/1.3.0")
-            explicit_freshness = self.load_workspace_prepare().reviewed_base_freshness(
-                release,
-                {"base_branch": "main", "base_branch_candidates": ["dev"]},
-                explicit_against_config["transition"]["base"],
-                "release/1.3.0",
-            )
-            self.assertTrue(explicit_freshness["fresh"])
-            self.assertTrue(explicit_freshness["three_way_equal"])
+            self.assert_current_base(release, explicit_against_config["transition"]["base"], "release/1.3.0")
 
             config.write_text("base_branch: release/1.3.0\nbase_branch_candidates: invalid\n")
             configured = invoke()
@@ -406,14 +389,7 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             self.assertEqual(ordered["handoff_repo_locator"], str(dev.resolve()))
             ordered_provenance = ordered["transition"]["base"]
             self.assertEqual(ordered_provenance["ordered_candidates"], ["dev", "main"])
-            ordered_freshness = self.load_workspace_prepare().reviewed_base_freshness(
-                dev,
-                {"base_branch": "", "base_branch_candidates": ["dev", "main"]},
-                ordered_provenance,
-                None,
-            )
-            self.assertTrue(ordered_freshness["fresh"])
-            self.assertTrue(ordered_freshness["three_way_equal"])
+            self.assert_current_base(dev, ordered_provenance, "dev")
 
             subprocess.run(["git", "-C", str(root), "worktree", "remove", str(dev)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             self.assertEqual(invoke(), {"exit_id": "blocked"})
@@ -423,14 +399,7 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             remote_default_provenance = remote_default["transition"]["base"]
             self.assertEqual(remote_default_provenance["source"], "remote-default")
             self.assertEqual(remote_default_provenance["ordered_candidates"], ["missing", "main"])
-            remote_default_freshness = self.load_workspace_prepare().reviewed_base_freshness(
-                root,
-                {"base_branch": "", "base_branch_candidates": ["missing"]},
-                remote_default_provenance,
-                None,
-            )
-            self.assertTrue(remote_default_freshness["fresh"])
-            self.assertTrue(remote_default_freshness["three_way_equal"])
+            self.assert_current_base(root, remote_default_provenance, "main")
 
             (release / "dirty.txt").write_text("dirty\n")
             self.assertEqual(invoke("release/1.3.0"), {"exit_id": "blocked"})
@@ -489,14 +458,7 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             self.assertEqual(provenance["decision_head"], remote_head)
             self.assertEqual(provenance["decision_head"], provenance["local_base_head"])
             self.assertEqual(provenance["local_base_head"], provenance["remote_base_head"])
-            freshness = self.load_workspace_prepare().reviewed_base_freshness(
-                root,
-                {"base_branch": "main", "base_branch_candidates": []},
-                provenance,
-                "main",
-            )
-            self.assertTrue(freshness["fresh"])
-            self.assertTrue(freshness["three_way_equal"])
+            self.assert_current_base(root, provenance, "main")
             self.assertEqual(subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"], check=True, text=True, stdout=subprocess.PIPE).stdout.strip(), remote_head)
             self.assertNotEqual(subprocess.run(["git", "-C", str(session), "rev-parse", "HEAD"], check=True, text=True, stdout=subprocess.PIPE).stdout.strip(), remote_head)
             execute = (self.package / "runtime/execute.py").read_text(encoding="utf-8")

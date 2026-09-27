@@ -26,7 +26,7 @@ def git(root, *args):
 
 def repository(tmp_path, *, old_branch="codex/demo-old", old_owner="caller_owned", legacy=False,
                legacy_scope=False, legacy_schema_version=1, local_issue_scope=False,
-               legacy_explicit_generation=False, legacy_locator=True):
+               legacy_explicit_generation=False, legacy_locator=True, unstructured_scope=False):
     repo = tmp_path / "repo"
     repo.mkdir()
     git(repo, "init", "-q", "-b", "main")
@@ -39,7 +39,10 @@ def repository(tmp_path, *, old_branch="codex/demo-old", old_owner="caller_owned
     archive.mkdir(parents=True)
     metadata = {"id": "demo", "status": "completed", "source": {"kind": "no_issue"},
                 "completedAt": "2026-09-19", "worktree_path": "/old/machine/path"}
-    if legacy_scope:
+    if unstructured_scope:
+        metadata.pop("source")
+        metadata["scope"] = "workflow,preset,docs,companion-scripts"
+    elif legacy_scope:
         metadata.pop("source")
         metadata["scope"] = ("GitHub Issue #131" if local_issue_scope else
                              "GitHub issue: https://github.com/castbox/guru-trellis/issues/131")
@@ -53,7 +56,7 @@ def repository(tmp_path, *, old_branch="codex/demo-old", old_owner="caller_owned
     archive_ref = ".trellis/tasks/archive/2026-09/09-19-demo"
     summary = {"schema_version": legacy_schema_version if legacy else 2, "task": {
         "archive_dir": archive_ref, "artifact_dir": ".trellis/tasks/09-19-demo", "status": "completed"}}
-    if legacy and legacy_schema_version == 2:
+    if legacy and (legacy_schema_version == 2 or unstructured_scope):
         summary.update(generator="guru-team.finalize-task", github={"source_issues": [131]})
     (archive / "finish-summary.json").write_text(json.dumps(summary))
     git(repo, "add", ".")
@@ -227,6 +230,46 @@ def test_legacy_scope_source_correction_and_reactivation_recovery(tmp_path, sche
     first = execute(repo, public, semantic, confirmed=True)
     assert first["exit_id"] == "session_binding_recovery_required"
     assert execute(repo, public, semantic, confirmed=True) == first
+
+
+@pytest.mark.parametrize("schema_version", [1, 2])
+def test_legacy_unstructured_scope_can_correct_source_before_reactivation(tmp_path, schema_version):
+    repo, head = repository(tmp_path, legacy=True, legacy_schema_version=schema_version,
+                            unstructured_scope=True)
+    archive = repo / ".trellis/tasks/archive/2026-09/09-19-demo"
+    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
+    from runtime.task_lifecycle.errors import LifecycleContractError
+    with pytest.raises(LifecycleContractError, match="source_review_required"):
+        execute(repo, public, semantic, confirmed=True)
+    assert not (tmp_path / "worktrees/new").exists()
+    for field in ("acquisition", "session_outcome", "selected_base_ref", "reviewed_base_head"):
+        semantic.pop(field)
+    semantic["route"] = "source_correction_required"
+    semantic["source_correction"] = {**correction(), "lifecycle_generation": 0}
+    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "source_correction_required"
+    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "source_correction_required"
+    corrected = json.loads((archive / "task.json").read_text())
+    assert corrected["source"] == semantic["source_correction"]["reviewed_source"]
+    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
+    semantic["source_correction"] = {**correction(), "lifecycle_generation": 0}
+    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "session_binding_recovery_required"
+
+
+def test_legacy_summary_backfill_revision_keeps_unique_terminal_archive(tmp_path):
+    repo, head = repository(tmp_path, legacy=True, legacy_schema_version=1, unstructured_scope=True)
+    archive = repo / ".trellis/tasks/archive/2026-09/09-19-demo"
+    summary = json.loads((archive / "finish-summary.json").read_text())
+    summary["index"] = {"outcome": "revised backfill"}
+    (archive / "finish-summary.json").write_text(json.dumps(summary))
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "revise archived summary backfill")
+    head = git(repo, "rev-parse", "HEAD")
+    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
+    for field in ("acquisition", "session_outcome", "selected_base_ref", "reviewed_base_head"):
+        semantic.pop(field)
+    semantic["route"] = "source_correction_required"
+    semantic["source_correction"] = {**correction(), "lifecycle_generation": 0}
+    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "source_correction_required"
 
 
 @pytest.mark.parametrize("schema_version", [1, 2])

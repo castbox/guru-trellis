@@ -193,8 +193,14 @@ fields.
 Before `context_ready`, validation also binds the live issue or draft, reviewed
 Git blobs/content, canonical query, archive manifest and owner result. A base error
 short-circuits before those later reads. A source issue may be live `open` or
-`closed`. A draft-created issue binding remains open-only and its live body
-digest must equal the original reviewed draft body digest. Every 40-character
+`closed`. A separately bound draft/Issue remains open-only and its live body
+digest must equal the original reviewed draft body digest when claiming that
+same-content binding. `guru-create-issue:created` does not use this draft
+binding: after Sync it enters fresh Intake as a live `issue`, with
+`issue_binding=null` and a digest of the complete live body including the
+creation-attempt marker. The original draft is not carried across Sync as
+source authority. An ordinary Issue edit is reviewed against that fresh live
+Issue, not a stale draft binding. Every 40-character
 reviewed Git identity resolves from `HEAD:<path>` to exactly a `blob`;
 64-character content evidence is checked by exact byte digest.
 

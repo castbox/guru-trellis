@@ -9,7 +9,7 @@ from typing import Any, Iterator
 
 from .errors import LifecycleContractError
 from .git_facts import commit_path_bytes, inspect_repository
-from .source import normalize_repo_ref, task_source
+from .source import legacy_archive_source, normalize_repo_ref
 
 
 TASK_ID_PATTERN = re.compile(r"^(?!.*\.\.)(?!.*(?:\.lock|\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$")
@@ -241,10 +241,22 @@ def discover_archived_issue_candidate(
         if not isinstance(summary, dict) or not isinstance(task, dict):
             continue
         try:
-            source = task_source(task, repo_ref=source_repo if _origin_matches(repository.context_path, source_repo) else None)
+            origin_matches = _origin_matches(repository.context_path, source_repo)
+            source = legacy_archive_source(
+                task, summary, artifact.task_ref, repo_ref=source_repo if origin_matches else None,
+            )
         except LifecycleContractError:
             continue
-        if (source.get("kind"), source.get("repo_ref"), source.get("number")) != ("issue", source_repo, issue_number):
+        exact_source = (source.get("kind"), source.get("repo_ref"), source.get("number")) == (
+            "issue", source_repo, issue_number,
+        )
+        github = summary.get("github", {})
+        indexed_legacy_source = (
+            source == {"kind": "no_issue"} and "source" not in task and origin_matches
+            and isinstance(github, dict) and isinstance(github.get("source_issues"), list)
+            and issue_number in github["source_issues"]
+        )
+        if not (exact_source or indexed_legacy_source):
             continue
         if (
             task.get("id") != artifact.task_id

@@ -8,12 +8,15 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.schema import validate_json
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.git_facts import inspect_repository
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
+from runtime.task_lifecycle.session_adapter import resolve_session
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
@@ -81,9 +84,92 @@ class ActivateTaskTests(unittest.TestCase):
         return subprocess.check_output(["git", *args], cwd=self.root, text=True).strip()
 
     def invoke(self, payload: dict) -> dict:
-        output = MODULE.invoke(self.root, payload)
+        class NoContextPort:
+            @staticmethod
+            def resolve_context_key(platform_input=None, platform=None):
+                return None
+
+            @staticmethod
+            def repository_facts(root):
+                return SimpleNamespace(common_dir=root / ".git", worktrees=(root,))
+
+            @staticmethod
+            def resolve_task_identity(facts, task_id, lifecycle_generation):
+                workspace = facts.worktrees[0]
+                return SimpleNamespace(task_ref=".trellis/tasks/demo", workspace=workspace,
+                                       task_path=workspace / ".trellis/tasks/demo")
+
+        with patch.object(MODULE, "_official_port", return_value=NoContextPort()):
+            output = MODULE.invoke(self.root, payload)
         validate_json(output, PACKAGE / "schemas/public-output.schema.json", "output")
         return output
+
+    def test_activation_requires_live_session_route_and_rechecks_recovery(self) -> None:
+        old_checkout = Path(self.temporary.name) / "old-checkout"
+        self.git("worktree", "add", "-q", "-b", "codex/old-copy", str(old_checkout), "HEAD")
+
+        class SessionPort:
+            def __init__(self, old):
+                self.old = old
+                self.current = None
+                self.writes = 0
+
+            def resolve_context_key(self, platform_input=None, platform=None):
+                return "codex-test"
+
+            def repository_facts(self, root):
+                return SimpleNamespace(common_dir=root / ".git", worktrees=(root, self.old))
+
+            def session_path(self, root, key, facts):
+                return facts.common_dir / "sessions" / f"{key}.json"
+
+            def record_exists(self, path):
+                return self.current is not None
+
+            def read_record(self, path, root, facts):
+                return SimpleNamespace(data=self.current, task_id=self.current["task_id"],
+                                       lifecycle_generation=self.current["lifecycle_generation"])
+
+            def resolve_task_identity(self, facts, task_id, lifecycle_generation):
+                if len(facts.worktrees) != 1:
+                    raise ValueError("ambiguous_task_identity")
+                refs = {"demo": ".trellis/tasks/demo", "another-task": ".trellis/tasks/another-task"}
+                workspace = facts.worktrees[0]
+                return SimpleNamespace(task_ref=refs[task_id], workspace=workspace,
+                                       task_path=workspace / refs[task_id])
+
+            def write_record(self, path, data, root):
+                self.writes += 1
+
+        port = SessionPort(old_checkout)
+        bound = json.loads(json.dumps(self.payload))
+        bound["activation"]["session_mode"] = "session_bound"
+
+        def run(data, checkout=None):
+            with patch.object(MODULE, "_official_port", return_value=port):
+                return MODULE.invoke(checkout or self.root, data)
+
+        self.assertEqual(run(bound), {"exit_id": "blocked", "reason_code": "activation_session_mismatch"})
+        port.current = {"schema_version": 2, "task_id": "another-task", "lifecycle_generation": 0}
+        self.assertEqual(run(bound), {"exit_id": "blocked", "reason_code": "activation_session_mismatch"})
+        self.assertEqual(run(self.payload), {"exit_id": "blocked", "reason_code": "activation_session_mismatch"})
+        self.assertEqual(json.loads(self.task_file.read_text())["status"], "planning")
+
+        port.current = {"schema_version": 2, "task_id": "demo", "lifecycle_generation": 0}
+        self.assertEqual(resolve_session(port, self.root).status, "session_invalid")
+        self.assertEqual(run(bound, old_checkout),
+                         {"exit_id": "blocked", "reason_code": "activation_checkout_mismatch"})
+        self.assertEqual(json.loads((old_checkout / ".trellis/tasks/demo/task.json").read_text())["status"], "planning")
+        self.assertEqual(run(bound)["exit_id"], "activated")
+        after = self.task_file.read_bytes()
+        self.assertEqual(run({**bound, "action": "recover_activation"}, old_checkout),
+                         {"exit_id": "blocked", "reason_code": "activation_checkout_mismatch"})
+        self.assertEqual(json.loads((old_checkout / ".trellis/tasks/demo/task.json").read_text())["status"], "planning")
+        port.current = {"schema_version": 2, "task_id": "another-task", "lifecycle_generation": 0}
+        self.assertEqual(run({**bound, "action": "recover_activation"}),
+                         {"exit_id": "blocked", "reason_code": "activation_session_mismatch"})
+        self.assertEqual(self.task_file.read_bytes(), after)
+        self.assertEqual(port.writes, 0)
 
     def test_activation_status_only_and_read_only_recovery(self) -> None:
         before = json.loads(self.task_file.read_text(encoding="utf-8"))
